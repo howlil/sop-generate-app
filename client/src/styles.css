@@ -1,0 +1,76 @@
+@import url("https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+@import "tailwindcss";
+
+/* Figma design tokens — Login Page Design (node 1-2) */
+@theme {
+  /* Layout — pixel-accurate from Figma */
+  --sidebar-width: 56px;
+  --header-height: 56px;
+  --content-padding: 24px;
+  --card-padding: 16px;
+  /* Radius — from Figma */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  /* Z-index */
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-tooltip: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  /* Colors — from Figma API (r,g,b 0-1 → hex) */
+  --color-bg-body: #f9fafb;
+  --color-bg-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-text-heading: #101928;
+  --color-text-secondary: #6a7282;
+  --color-primary: #2b7fff;
+  --color-primary-active: #155dfc;
+  --color-primary-muted: #eff4ff;
+  --color-icon: #4a5565;
+  --color-icon-muted: #99a1af;
+  --color-notification-dot: #fb2c36;
+  /* Card & button — from Figma Manajemen OPD design */
+  --color-btn-primary-bg: #030213;
+  --color-search-input-bg: #f3f3f5;
+  --color-placeholder: #717182;
+  --color-card-icon-blue: #155dfc;
+  --color-card-icon-green: #00a63e;
+  --color-card-icon-orange: #f54900;
+  --color-card-icon-purple: #9810fa;
+  --color-success: #059669;
+  /* Table — from design */
+  --color-table-header-bg: #f9fafb;
+  --color-table-header-text: #364153;
+  --color-row-icon-bg: #dbeafe;
+  --color-pill-green-bg: #dcfce7;
+  --color-pill-green-text: #008236;
+  --color-pill-gray-bg: #f3f4f6;
+  --color-pill-gray-text: #364153;
+  --color-status-active: #00a63e;
+  --color-toggle-active-bg: #030213;
+  --color-toggle-inactive-bg: #cbced4;
+  --color-status-inactive: #99a1af;
+  --color-row-border: #f3f4f6;
+  /* Typography — Arimo from Figma */
+  --font-heading: 14px;
+  --font-heading-line: 20px;
+  --font-body: 12px;
+  --font-body-line: 16px;
+  --font-weight-bold: 700;
+  --font-weight-regular: 400;
+}
+
+body {
+  font-family: 'Arimo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.manajemen-opd-search::placeholder {
+  color: var(--color-placeholder);
+}
