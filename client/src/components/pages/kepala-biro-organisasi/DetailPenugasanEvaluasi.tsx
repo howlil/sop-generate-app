@@ -13,16 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'Sudah Ditugaskan': return 'bg-green-100 text-green-700'
-    case 'Belum Ditugaskan': return 'bg-yellow-100 text-yellow-700'
-    case 'Selesai': return 'bg-blue-100 text-blue-700'
-    case 'Terverifikasi': return 'bg-indigo-100 text-indigo-700'
-    default: return 'bg-gray-100 text-gray-700'
-  }
-}
+import { StatusBadge } from '@/components/ui/status-badge'
 
 function getHasilStatusColor(s: string) {
   switch (s) {
@@ -36,17 +27,12 @@ function getHasilStatusColor(s: string) {
 export function DetailPenugasanEvaluasi() {
   const { id } = useParams({ from: '/kepala-biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const navigate = useNavigate()
-  const [penugasan, setPenugasan] = useState<Penugasan | null>(() => getPenugasanById(id))
+  const [penugasan, setPenugasan] = useState<Penugasan | null>(() => getPenugasanById(id) ?? null)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [isBAOpen, setIsBAOpen] = useState(false)
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
-
-  useEffect(() => {
-    setPenugasan(getPenugasanById(id))
-    setSelectedSopId(null)
-  }, [id])
 
   useEffect(() => {
     const unsub = subscribe(() => setPenugasan(getPenugasanById(id) ?? null))
@@ -74,7 +60,6 @@ export function DetailPenugasanEvaluasi() {
   }
 
   const sopList = penugasan?.sopList ?? []
-  const selectedSop = sopList.find((s) => s.id === selectedSopId) ?? sopList[0]
   const firstSopId = sopList[0]?.id ?? null
   const effectiveSopId = selectedSopId ?? firstSopId
   const displaySop = sopList.find((s) => s.id === effectiveSopId)
@@ -130,10 +115,7 @@ export function DetailPenugasanEvaluasi() {
                 <span className="font-medium text-gray-900">{penugasan.opd}</span>
               </div>
               <Badge variant="outline" className="text-xs">{penugasan.jenis}</Badge>
-              <Badge className={`text-xs border-0 ${getStatusColor(penugasan.status)}`}>
-                {penugasan.isVerified && <CheckCircle className="w-3 h-3 mr-1 inline" />}
-                {penugasan.status}
-              </Badge>
+              <StatusBadge status={penugasan.status} domain="evaluasi-biro" />
             </div>
           </div>
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-xs text-gray-600">

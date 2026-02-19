@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Plus, Eye, Send, Building, CheckCircle, History } from 'lucide-react'
+import { Plus, Eye, Send, Building, History } from 'lucide-react'
 import { getActiveCaseForSop, addEvaluationCase } from '@/lib/evaluation-case'
 import {
   getPenugasanList,
@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { SearchInput } from '@/components/ui/search-input'
+import { Toast } from '@/components/ui/toast'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Dialog,
   DialogContent,
@@ -248,21 +250,6 @@ export function ManajemenEvaluasiSOP() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Sudah Ditugaskan':
-        return 'bg-green-100 text-green-700'
-      case 'Belum Ditugaskan':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'Selesai':
-        return 'bg-blue-100 text-blue-700'
-      case 'Terverifikasi':
-        return 'bg-indigo-100 text-indigo-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
-  }
-
   const canSubmit = () => {
     return !!(formData.opd && formData.selectedSOPs.length > 0 && formData.timMonev)
   }
@@ -309,6 +296,8 @@ export function ManajemenEvaluasiSOP() {
         title="Manajemen Evaluasi SOP"
         description="Kelola penugasan evaluasi SOP per OPD"
       />
+      {toastMessage && <Toast message={toastMessage} type="success" />}
+
       <div className="bg-white rounded-md border border-gray-200 p-3">
         <div className="flex items-center gap-2 flex-wrap">
           <SearchInput
@@ -332,12 +321,6 @@ export function ManajemenEvaluasiSOP() {
           </div>
         </div>
       </div>
-
-      {toastMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-800 text-xs px-4 py-2 rounded-md">
-          {toastMessage}
-        </div>
-      )}
 
       <div className="bg-white rounded-md border border-gray-200 overflow-x-auto">
         <table className="w-full text-xs">
@@ -364,12 +347,7 @@ export function ManajemenEvaluasiSOP() {
                   <Badge variant="outline" className="text-xs">{item.jenis}</Badge>
                 </td>
                 <td className="py-2.5 px-3 text-center">
-                  <Badge className={`text-xs border-0 ${getStatusColor(item.status)}`}>
-                    {item.status === 'Terverifikasi' && item.isVerified && (
-                      <CheckCircle className="w-3 h-3 mr-1 inline" />
-                    )}
-                    {item.status}
-                  </Badge>
+                  <StatusBadge status={item.status} domain="evaluasi-biro" />
                 </td>
                 <td className="py-2.5 px-3">
                   <div className="flex items-center justify-center gap-1">
@@ -610,7 +588,7 @@ export function ManajemenEvaluasiSOP() {
                     >
                       <div className="flex justify-between items-start">
                         <span className="font-medium text-gray-900">{p.opd} — {p.jenis}</span>
-                        <Badge className={`text-xs border-0 ${getStatusColor(p.status)}`}>{p.status}</Badge>
+                        <StatusBadge status={p.status} domain="evaluasi-biro" />
                       </div>
                       {p.tanggalEvaluasi && (
                         <p className="text-gray-600">Tgl evaluasi: {new Date(p.tanggalEvaluasi).toLocaleDateString('id-ID')}</p>

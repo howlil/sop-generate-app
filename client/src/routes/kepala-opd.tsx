@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
-import { BookOpen, FileText, UserPlus } from 'lucide-react'
+import { BookOpen, FileText, UserPlus, Users } from 'lucide-react'
 import { isKepalaOPD } from '@/lib/role'
 import { AppLogo } from '@/components/layout/AppLogo'
 import { HeaderProfile } from '@/components/layout/HeaderProfile'
@@ -16,6 +16,7 @@ export const Route = createFileRoute('/kepala-opd')({
 
 const sidebarItems = [
   { to: '/kepala-opd/manajemen-tim-penyusun', label: 'Manajemen Tim Penyusun', icon: UserPlus },
+  { to: '/kepala-opd/pelaksana-sop', label: 'Kelola Pelaksana SOP', icon: Users },
   { to: '/kepala-opd/manajemen-peraturan', label: 'Manajemen Peraturan', icon: BookOpen },
   { to: '/kepala-opd/daftar-sop', label: 'Daftar SOP', icon: FileText },
 ]

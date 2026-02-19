@@ -30,7 +30,7 @@ export function StatCard({
       ) : (
         <p className="text-xs text-gray-700 mb-2">{label}</p>
       )}
-      <p className={cn('text-xl text-gray-900', valueClassName)}>{value}</p>
+      <p className={cn('text-sm text-gray-900', valueClassName)}>{value}</p>
     </div>
   )
 }

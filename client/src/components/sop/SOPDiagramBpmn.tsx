@@ -15,6 +15,7 @@ import {
   type UsedSides,
   type PathUpdatedPayload,
 } from './shapes/FlowchartArrowConnector'
+import type { OccupiedSegment } from './shapes/orthogonalRouter'
 import type {
   Implementer,
   SOPStep,
@@ -103,6 +104,8 @@ export function SOPDiagramBpmn({
 }: SOPDiagramBpmnProps) {
   const [arrowConfigs, setArrowConfigs] = useState<Record<string, ArrowConnectionConfig>>({})
   const [usedSides, setUsedSides] = useState<UsedSides>({})
+  const routedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
+  routedSegmentsRef.current = new Map()
   const [arrowsReady, setArrowsReady] = useState(false)
   const layoutRef = useRef<{
     steps: Array<{
@@ -234,6 +237,13 @@ export function SOPDiagramBpmn({
           })
         }
       }
+    })
+    list.sort((a, b) => {
+      const labelA = (a.label ?? '').toLowerCase()
+      const labelB = (b.label ?? '').toLowerCase()
+      const orderA = !a.label ? 0 : (labelA === 'ya' || labelA === 'yes') ? 1 : 2
+      const orderB = !b.label ? 0 : (labelB === 'ya' || labelB === 'yes') ? 1 : 2
+      return orderA - orderB
     })
     return list
   }, [processedSteps, labelConfig?.custom_labels])
@@ -407,10 +417,24 @@ export function SOPDiagramBpmn({
     calculateGlobalLayout()
   }, [calculateGlobalLayout])
 
+  const bpmnBoundsRef = useRef<{ left: number; top: number; right: number; bottom: number } | null>(null)
+
   useEffect(() => {
     if (processedSteps.length > 0) {
       setArrowsReady(false)
-      const t = requestAnimationFrame(() => setArrowsReady(true))
+      const t = requestAnimationFrame(() => {
+        const container = document.getElementById('bpmn-container')
+        if (container) {
+          const containerRect = container.getBoundingClientRect()
+          bpmnBoundsRef.current = {
+            left: 0,
+            top: 0,
+            right: containerRect.width,
+            bottom: containerRect.height,
+          }
+        }
+        setArrowsReady(true)
+      })
       return () => cancelAnimationFrame(t)
     }
   }, [processedSteps.length])
@@ -453,12 +477,22 @@ export function SOPDiagramBpmn({
 
   const effectiveArrowConfig = useMemo(() => ({ ...(arrowConfig ?? {}), ...arrowConfigs }), [arrowConfig, arrowConfigs])
 
+  const A4_LANDSCAPE_PX = 1052
+  const printScale = Math.min(1, A4_LANDSCAPE_PX / diagramWidth)
+
   return (
-    <div className="diagram-wrapper w-full overflow-x-auto">
+    <div
+      className="diagram-wrapper w-full overflow-x-auto print-page [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
+      style={{ '--bpmn-print-scale': printScale } as React.CSSProperties}
+    >
       <div
         id="bpmn-container"
-        className="diagram-container relative mx-auto"
-        style={{ width: diagramWidth, minHeight: totalDiagramHeight }}
+        className="diagram-container relative mx-auto print:origin-top-left"
+        style={{
+          width: diagramWidth,
+          minHeight: totalDiagramHeight,
+          printColorAdjust: 'exact',
+        }}
       >
         <table className="border-2 border-black relative z-10 w-full my-5" style={{ width: diagramWidth }}>
           <tbody>
@@ -640,6 +674,8 @@ export function SOPDiagramBpmn({
                 manualConfig={effectiveArrowConfig[conn.id]}
                 manualLabelPosition={labelConfig?.positions?.[conn.id]}
                 onPathUpdated={onPathUpdated}
+                constraintRect={bpmnBoundsRef.current}
+                routedSegmentsRef={routedSegmentsRef}
               />
             ))}
           </svg>

@@ -21,6 +21,7 @@ import { Route as KepalaBiroOrganisasiIndexRouteImport } from './routes/kepala-b
 import { Route as TimPenyusunSopSayaRouteImport } from './routes/tim-penyusun.sop-saya'
 import { Route as TimEvaluasiPenugasanRouteImport } from './routes/tim-evaluasi.penugasan'
 import { Route as TimEvaluasiLaporanRouteImport } from './routes/tim-evaluasi.laporan'
+import { Route as KepalaOpdPelaksanaSopRouteImport } from './routes/kepala-opd.pelaksana-sop'
 import { Route as KepalaOpdManajemenTimPenyusunRouteImport } from './routes/kepala-opd.manajemen-tim-penyusun'
 import { Route as KepalaOpdManajemenPeraturanRouteImport } from './routes/kepala-opd.manajemen-peraturan'
 import { Route as KepalaOpdInitiateProyekRouteImport } from './routes/kepala-opd.initiate-proyek'
@@ -99,6 +100,11 @@ const TimEvaluasiLaporanRoute = TimEvaluasiLaporanRouteImport.update({
   id: '/laporan',
   path: '/laporan',
   getParentRoute: () => TimEvaluasiRoute,
+} as any)
+const KepalaOpdPelaksanaSopRoute = KepalaOpdPelaksanaSopRouteImport.update({
+  id: '/pelaksana-sop',
+  path: '/pelaksana-sop',
+  getParentRoute: () => KepalaOpdRoute,
 } as any)
 const KepalaOpdManajemenTimPenyusunRoute =
   KepalaOpdManajemenTimPenyusunRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/kepala-opd/initiate-proyek': typeof KepalaOpdInitiateProyekRoute
   '/kepala-opd/manajemen-peraturan': typeof KepalaOpdManajemenPeraturanRoute
   '/kepala-opd/manajemen-tim-penyusun': typeof KepalaOpdManajemenTimPenyusunRoute
+  '/kepala-opd/pelaksana-sop': typeof KepalaOpdPelaksanaSopRoute
   '/tim-evaluasi/laporan': typeof TimEvaluasiLaporanRoute
   '/tim-evaluasi/penugasan': typeof TimEvaluasiPenugasanRouteWithChildren
   '/tim-penyusun/sop-saya': typeof TimPenyusunSopSayaRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/kepala-opd/initiate-proyek': typeof KepalaOpdInitiateProyekRoute
   '/kepala-opd/manajemen-peraturan': typeof KepalaOpdManajemenPeraturanRoute
   '/kepala-opd/manajemen-tim-penyusun': typeof KepalaOpdManajemenTimPenyusunRoute
+  '/kepala-opd/pelaksana-sop': typeof KepalaOpdPelaksanaSopRoute
   '/tim-evaluasi/laporan': typeof TimEvaluasiLaporanRoute
   '/tim-penyusun/sop-saya': typeof TimPenyusunSopSayaRoute
   '/kepala-biro-organisasi': typeof KepalaBiroOrganisasiIndexRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/kepala-opd/initiate-proyek': typeof KepalaOpdInitiateProyekRoute
   '/kepala-opd/manajemen-peraturan': typeof KepalaOpdManajemenPeraturanRoute
   '/kepala-opd/manajemen-tim-penyusun': typeof KepalaOpdManajemenTimPenyusunRoute
+  '/kepala-opd/pelaksana-sop': typeof KepalaOpdPelaksanaSopRoute
   '/tim-evaluasi/laporan': typeof TimEvaluasiLaporanRoute
   '/tim-evaluasi/penugasan': typeof TimEvaluasiPenugasanRouteWithChildren
   '/tim-penyusun/sop-saya': typeof TimPenyusunSopSayaRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/kepala-opd/initiate-proyek'
     | '/kepala-opd/manajemen-peraturan'
     | '/kepala-opd/manajemen-tim-penyusun'
+    | '/kepala-opd/pelaksana-sop'
     | '/tim-evaluasi/laporan'
     | '/tim-evaluasi/penugasan'
     | '/tim-penyusun/sop-saya'
@@ -329,6 +339,7 @@ export interface FileRouteTypes {
     | '/kepala-opd/initiate-proyek'
     | '/kepala-opd/manajemen-peraturan'
     | '/kepala-opd/manajemen-tim-penyusun'
+    | '/kepala-opd/pelaksana-sop'
     | '/tim-evaluasi/laporan'
     | '/tim-penyusun/sop-saya'
     | '/kepala-biro-organisasi'
@@ -359,6 +370,7 @@ export interface FileRouteTypes {
     | '/kepala-opd/initiate-proyek'
     | '/kepala-opd/manajemen-peraturan'
     | '/kepala-opd/manajemen-tim-penyusun'
+    | '/kepala-opd/pelaksana-sop'
     | '/tim-evaluasi/laporan'
     | '/tim-evaluasi/penugasan'
     | '/tim-penyusun/sop-saya'
@@ -470,6 +482,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/tim-evaluasi/laporan'
       preLoaderRoute: typeof TimEvaluasiLaporanRouteImport
       parentRoute: typeof TimEvaluasiRoute
+    }
+    '/kepala-opd/pelaksana-sop': {
+      id: '/kepala-opd/pelaksana-sop'
+      path: '/pelaksana-sop'
+      fullPath: '/kepala-opd/pelaksana-sop'
+      preLoaderRoute: typeof KepalaOpdPelaksanaSopRouteImport
+      parentRoute: typeof KepalaOpdRoute
     }
     '/kepala-opd/manajemen-tim-penyusun': {
       id: '/kepala-opd/manajemen-tim-penyusun'
@@ -644,6 +663,7 @@ interface KepalaOpdRouteChildren {
   KepalaOpdInitiateProyekRoute: typeof KepalaOpdInitiateProyekRoute
   KepalaOpdManajemenPeraturanRoute: typeof KepalaOpdManajemenPeraturanRoute
   KepalaOpdManajemenTimPenyusunRoute: typeof KepalaOpdManajemenTimPenyusunRoute
+  KepalaOpdPelaksanaSopRoute: typeof KepalaOpdPelaksanaSopRoute
   KepalaOpdIndexRoute: typeof KepalaOpdIndexRoute
   KepalaOpdDetailSopIdRoute: typeof KepalaOpdDetailSopIdRoute
 }
@@ -653,6 +673,7 @@ const KepalaOpdRouteChildren: KepalaOpdRouteChildren = {
   KepalaOpdInitiateProyekRoute: KepalaOpdInitiateProyekRoute,
   KepalaOpdManajemenPeraturanRoute: KepalaOpdManajemenPeraturanRoute,
   KepalaOpdManajemenTimPenyusunRoute: KepalaOpdManajemenTimPenyusunRoute,
+  KepalaOpdPelaksanaSopRoute: KepalaOpdPelaksanaSopRoute,
   KepalaOpdIndexRoute: KepalaOpdIndexRoute,
   KepalaOpdDetailSopIdRoute: KepalaOpdDetailSopIdRoute,
 }

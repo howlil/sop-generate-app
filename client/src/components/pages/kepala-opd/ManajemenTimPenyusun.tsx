@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Toast } from '@/components/ui/toast'
+import { StatusBadge } from '@/components/ui/status-badge'
 
 interface TimPenyusun {
   id: string
@@ -181,9 +183,7 @@ export function ManajemenTimPenyusun() {
         description="Kelola anggota tim penyusun SOP"
       />
       {toastMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-800 text-xs px-4 py-2 rounded-md">
-          {toastMessage}
-        </div>
+        <Toast message={toastMessage} type="success" />
       )}
 
       <div className="bg-white rounded-md border border-gray-200 p-3">
@@ -231,16 +231,13 @@ export function ManajemenTimPenyusun() {
                   </td>
                   <td className="py-2.5 px-3 text-gray-600">{tim.jabatan}</td>
                   <td className="py-2.5 px-3 text-center">
-                    <Badge
-                      className={`text-xs cursor-pointer border-0 ${
-                        tim.status === 'Aktif'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
-                      }`}
+                    <button
+                      type="button"
                       onClick={() => handleToggleStatus(tim.id)}
+                      className="inline-flex"
                     >
-                      {tim.status}
-                    </Badge>
+                      <StatusBadge status={tim.status} domain="tim-penyusun" />
+                    </button>
                   </td>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center justify-center gap-1">

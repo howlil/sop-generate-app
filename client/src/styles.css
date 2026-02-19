@@ -74,3 +74,32 @@ body {
 .manajemen-opd-search::placeholder {
   color: var(--color-placeholder);
 }
+
+/* ── Print: flowchart page breaks + A4 landscape ──────── */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm 15mm;
+  }
+
+  .print-page {
+    page-break-after: always;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-page.print-last-page,
+  .print-page:last-child {
+    page-break-after: avoid;
+  }
+
+  .print-break-after-page {
+    page-break-after: always;
+  }
+
+  .diagram-container {
+    transform: scale(var(--bpmn-print-scale, 1));
+    transform-origin: top left;
+  }
+}

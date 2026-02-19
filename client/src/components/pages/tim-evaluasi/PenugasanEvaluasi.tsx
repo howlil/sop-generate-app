@@ -4,6 +4,7 @@ import { Eye, Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { SearchInput } from '@/components/ui/search-input'
 
 interface Penugasan {
@@ -94,24 +95,6 @@ export function PenugasanEvaluasi() {
     return matchSearch && matchStatus
   })
 
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      assigned: 'bg-purple-100 text-purple-700',
-      'in-progress': 'bg-blue-100 text-blue-700',
-      completed: 'bg-green-100 text-green-700',
-    }
-    return badges[status] || 'bg-gray-100 text-gray-700'
-  }
-
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      assigned: 'Ditugaskan',
-      'in-progress': 'Dalam Pelaksanaan',
-      completed: 'Selesai (Hasil Evaluasi)',
-    }
-    return labels[status] || status
-  }
-
   return (
     <div className="space-y-3">
       <PageHeader
@@ -166,9 +149,7 @@ export function PenugasanEvaluasi() {
                   <td className="py-2.5 px-3 text-gray-700">{penugasan.opd}</td>
                   <td className="py-2.5 px-3 font-medium text-gray-900">{penugasan.sop}</td>
                   <td className="py-2.5 px-3 text-center">
-                    <Badge className={`${getStatusBadge(penugasan.status)} text-xs border-0`}>
-                      {getStatusLabel(penugasan.status)}
-                    </Badge>
+                    <StatusBadge status={penugasan.status} domain="penugasan-evaluasi" />
                   </td>
                   <td className="py-2.5 px-3 text-center">
                     <div className="flex items-center justify-center gap-1">

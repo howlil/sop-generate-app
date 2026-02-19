@@ -11,6 +11,7 @@ import {
   RotateCcw,
   History,
   Settings2,
+  MoreHorizontal,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { Toast } from '@/components/ui/toast'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { SOPHeaderInfo } from '@/components/sop/SOPHeaderInfo'
 import { SOPDiagram, type ProsedurRow } from '@/components/sop/SOPDiagram'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -281,17 +289,12 @@ export function DetailSOPPenyusun() {
       .filter(Boolean)
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3">
       {toastMessage && (
-        <div
-          className={`rounded-md border p-3 text-xs ${
-            toastMessage.type === 'success'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-amber-50 border-amber-200 text-amber-800'
-          }`}
-        >
-          {toastMessage.message}
-        </div>
+        <Toast
+          message={toastMessage.message}
+          type={toastMessage.type === 'error' ? 'error' : 'success'}
+        />
       )}
 
       <PageHeader
@@ -303,7 +306,7 @@ export function DetailSOPPenyusun() {
         description={metadata.name}
       />
 
-      <div className="bg-white rounded-md border border-gray-200 p-3 print:hidden">
+      <div className="flex-shrink-0 bg-white rounded-md border border-gray-200 p-3 print:hidden">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
@@ -317,23 +320,23 @@ export function DetailSOPPenyusun() {
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
-              Versi {versions[0]?.version || '1.0'}
-            </Badge>
-            <Badge className="bg-yellow-100 text-yellow-700 text-xs border-0">Draft</Badge>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave}>
-              <Save className="w-3.5 h-3.5" />
-              Simpan Perubahan
-            </Button>
+                <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
+                  Versi {versions[0]?.version || '1.0'}
+                </Badge>
+                <Badge className="bg-yellow-100 text-yellow-700 text-xs border-0">Draft</Badge>
+                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave}>
+                  <Save className="w-3.5 h-3.5" />
+                  Simpan Perubahan
+                </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden rounded-lg border border-gray-200 bg-white">
           {/* Panel 1: Komentar (kiri, bisa diminimize) */}
           <div
-            className={`bg-white rounded-md border border-gray-200 transition-all ${
-              isCommentsCollapsed ? 'w-12' : 'w-[340px]'
+            className={`flex flex-col flex-shrink-0 border-r border-gray-200 bg-white transition-[width] duration-200 overflow-hidden ${
+              isCommentsCollapsed ? 'w-12' : 'w-[min(280px,22%)] min-w-[180px]'
             }`}
           >
             <div className="p-3 border-b border-gray-200 flex items-center justify-between">
@@ -348,7 +351,7 @@ export function DetailSOPPenyusun() {
               ) : (
                 <div className="text-xs text-gray-700 font-medium">
                   {komentarList.filter((k) => k.status === 'open').length}
-                </div>
+              </div>
               )}
               <Button
                 variant="ghost"
@@ -358,77 +361,77 @@ export function DetailSOPPenyusun() {
                 title={isCommentsCollapsed ? 'Tampilkan komentar' : 'Minimize komentar'}
               >
                 {isCommentsCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-              </Button>
-            </div>
+                </Button>
+              </div>
 
             {!isCommentsCollapsed && (
               <div className="p-3">
-                <ScrollArea className="h-[calc(100vh-260px)]">
-                  <div className="space-y-2">
-                    {komentarList.map((komentar) => (
-                      <div
-                        key={komentar.id}
-                        className={`p-2.5 rounded-md border text-xs ${
-                          komentar.status === 'resolved'
-                            ? 'bg-gray-50 border-gray-200'
-                            : 'bg-blue-50 border-blue-200'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between mb-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                              <span className="text-xs text-white font-semibold">
-                                {komentar.user.charAt(0)}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold text-gray-900">{komentar.user}</p>
-                              <p className="text-xs text-gray-500">{komentar.role}</p>
-                            </div>
+                <ScrollArea className="flex-1 min-h-0">
+                <div className="space-y-2">
+                  {komentarList.map((komentar) => (
+                    <div
+                      key={komentar.id}
+                      className={`p-2.5 rounded-md border text-xs ${
+                        komentar.status === 'resolved'
+                          ? 'bg-gray-50 border-gray-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                            <span className="text-xs text-white font-semibold">
+                              {komentar.user.charAt(0)}
+                            </span>
                           </div>
-                          {komentar.status === 'open' ? (
-                            <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 border-0">Open</Badge>
-                          ) : (
-                            <Badge className="bg-green-600 text-white text-xs px-1.5 py-0 border-0">
-                              <Check className="w-3 h-3" />
-                            </Badge>
-                          )}
+                          <div>
+                            <p className="text-xs font-semibold text-gray-900">{komentar.user}</p>
+                            <p className="text-xs text-gray-500">{komentar.role}</p>
+                          </div>
                         </div>
-                        <Badge variant="secondary" className="text-xs mb-1.5">
-                          {komentar.bagian}
-                        </Badge>
-                        <p className="text-xs text-gray-900 mb-2">{komentar.isi}</p>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-500">{komentar.timestamp}</p>
-                          {komentar.status === 'open' && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 text-xs px-2 text-green-700 hover:text-green-800 hover:bg-green-50"
-                              onClick={() => handleResolveComment(komentar.id)}
-                            >
-                              <Check className="w-3 h-3 mr-1" />
-                              Resolve
-                            </Button>
-                          )}
-                        </div>
+                        {komentar.status === 'open' ? (
+                          <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 border-0">Open</Badge>
+                        ) : (
+                          <Badge className="bg-green-600 text-white text-xs px-1.5 py-0 border-0">
+                            <Check className="w-3 h-3" />
+                          </Badge>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </div>
-            )}
+                      <Badge variant="secondary" className="text-xs mb-1.5">
+                        {komentar.bagian}
+                      </Badge>
+                      <p className="text-xs text-gray-900 mb-2">{komentar.isi}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500">{komentar.timestamp}</p>
+                        {komentar.status === 'open' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs px-2 text-green-700 hover:text-green-800 hover:bg-green-50"
+                            onClick={() => handleResolveComment(komentar.id)}
+                          >
+                            <Check className="w-3 h-3 mr-1" />
+                            Resolve
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
           </div>
 
           {/* Panel 2: View SOP (utama, tidak bisa diminimize) */}
-          <div className="flex-1 bg-white rounded-md border border-gray-200 p-4">
-            <ScrollArea className="h-[calc(100vh-180px)]">
+          <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200 p-4">
+            <ScrollArea className="flex-1 min-h-0">
               <div className="space-y-8">
                 <SOPHeaderInfo {...metadata} editable={false} />
 
                 {!isEditingSteps ? (
                   <div className="flex justify-center">
-                    <div className="w-[calc(297mm-3cm)] max-w-[calc(297mm-3cm)]">
+                    <div className="w-full">
                       <div className="flex justify-center print:hidden mb-3">
                         <Tabs
                           value={activeTab}
@@ -444,7 +447,7 @@ export function DetailSOPPenyusun() {
                             </TabsTrigger>
                           </TabsList>
                         </Tabs>
-                      </div>
+                </div>
                       <SOPDiagram
                         key={diagramVersion}
                         rows={prosedurRows}
@@ -456,8 +459,8 @@ export function DetailSOPPenyusun() {
                   </div>
                 ) : (
                   <div className="flex justify-center">
-                    <div className="w-[calc(297mm-3cm)] max-w-[calc(297mm-3cm)]">
-                      <div className="mb-3 flex items-center justify-between">
+                  <div className="w-full max-w-full">
+                      <div className="mb-2 flex items-center justify-between">
                         <p className="text-xs font-semibold text-gray-900">Edit langkah / prosedur</p>
                         <p className="text-[11px] text-gray-500">
                           No akan otomatis mengikuti urutan baris.
@@ -467,26 +470,26 @@ export function DetailSOPPenyusun() {
                         <table className="w-full text-xs">
                           <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
-                              <th className="px-2 py-2 text-left w-10">No</th>
-                              <th className="px-2 py-2 text-left w-[32%]">Kegiatan</th>
-                              <th className="px-2 py-2 text-left w-[13%]">Tipe</th>
-                              <th className="px-2 py-2 text-left w-[16%]">Pelaksana</th>
-                              <th className="px-2 py-2 text-left w-[15%]">Kelengkapan</th>
-                              <th className="px-2 py-2 text-left w-[10%]">Waktu</th>
-                              <th className="px-2 py-2 text-left w-[14%]">Output</th>
-                              <th className="px-2 py-2 text-left w-[18%]">Keterangan</th>
-                              <th className="px-2 py-2 text-center w-14">Aksi</th>
+                              <th className="px-2 py-1 text-left w-10">No</th>
+                              <th className="px-2 py-1 text-left w-[28%]">Kegiatan</th>
+                              <th className="px-2 py-1 text-left w-[12%]">Tipe</th>
+                              <th className="px-2 py-1 text-left w-[14%]">Pelaksana</th>
+                              <th className="px-2 py-1 text-left w-[13%]">Kelengkapan</th>
+                              <th className="px-2 py-1 text-left w-[8%]">Waktu</th>
+                              <th className="px-2 py-1 text-left w-[12%]">Output</th>
+                              <th className="px-2 py-1 text-left w-[23%]">Keterangan</th>
+                              <th className="px-1 py-1 text-center w-10">Aksi</th>
                             </tr>
                           </thead>
                           <tbody>
                             {prosedurRows.map((row, idx) => (
                               <tr key={row.id} className="border-b border-gray-100 align-top">
-                                <td className="px-2 py-2 text-center align-middle">
+                                <td className="px-2 py-1 text-center align-middle">
                                   {idx + 1}
                                 </td>
-                                <td className="px-2 py-2">
+                                <td className="px-2 py-1">
                                   <Textarea
-                                    className="text-xs min-h-[48px]"
+                                    className="text-xs min-h-[40px]"
                                     value={row.kegiatan}
                                     onChange={(e) =>
                                       setProsedurRows((prev) =>
@@ -497,30 +500,60 @@ export function DetailSOPPenyusun() {
                                     }
                                   />
                                 </td>
-                                <td className="px-2 py-2">
-                                  <select
-                                    className="w-full h-8 rounded-md border border-gray-200 px-1 text-xs"
-                                    value={row.type || (idx === 0 || idx === prosedurRows.length - 1 ? 'terminator' : 'task')}
-                                    onChange={(e) =>
-                                      setProsedurRows((prev) =>
-                                        prev.map((r, i) =>
-                                          i === idx ? { ...r, type: e.target.value as any } : r
-                                        )
-                                      )
-                                    }
-                                  >
-                                    <option value="task">Task</option>
-                                    <option value="decision">Decision</option>
-                                    <option value="terminator">
-                                      {idx === 0
-                                        ? 'Start'
-                                        : idx === prosedurRows.length - 1
-                                        ? 'End'
-                                        : 'Terminator'}
-                                    </option>
-                                  </select>
+                                <td className="px-2 py-1">
+                                  {(() => {
+                                    const yesIndex = row.id_next_step_if_yes
+                                      ? prosedurRows.findIndex((r) => r.id === row.id_next_step_if_yes)
+                                      : -1
+                                    const noIndex = row.id_next_step_if_no
+                                      ? prosedurRows.findIndex((r) => r.id === row.id_next_step_if_no)
+                                      : -1
+                                    const hasDecisionTarget = yesIndex !== -1 || noIndex !== -1
+                                    return (
+                                      <div className="space-y-1">
+                                        <select
+                                          className="w-full h-8 rounded-md border border-gray-200 px-1 text-xs"
+                                          value={
+                                            row.type ||
+                                            (idx === 0 || idx === prosedurRows.length - 1
+                                              ? 'terminator'
+                                              : 'task')
+                                          }
+                                          onChange={(e) =>
+                                            setProsedurRows((prev) =>
+                                              prev.map((r, i) =>
+                                                i === idx ? { ...r, type: e.target.value as any } : r
+                                              )
+                                            )
+                                          }
+                                        >
+                                          <option value="task">Task</option>
+                                          <option value="decision">Decision</option>
+                                          <option value="terminator">
+                                            {idx === 0
+                                              ? 'Start'
+                                              : idx === prosedurRows.length - 1
+                                              ? 'End'
+                                              : 'Terminator'}
+                                          </option>
+                                        </select>
+                                        {row.type === 'decision' && (
+                                          <p className="text-[10px] text-gray-500">
+                                            {!hasDecisionTarget
+                                              ? 'Belum diatur cabang Ya/Tidak.'
+                                              : [
+                                                  yesIndex !== -1 ? `Ya → ${yesIndex + 1}` : null,
+                                                  noIndex !== -1 ? `Tidak → ${noIndex + 1}` : null,
+                                                ]
+                                                  .filter(Boolean)
+                                                  .join(' • ')}
+                                          </p>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
                                 </td>
-                                <td className="px-2 py-2">
+                                <td className="px-2 py-1">
                                   <select
                                     className="w-full h-8 rounded-md border border-gray-200 px-1 text-xs"
                                     value={
@@ -548,9 +581,9 @@ export function DetailSOPPenyusun() {
                                     ))}
                                   </select>
                                 </td>
-                                <td className="px-2 py-2">
+                                <td className="px-2 py-1">
                                   <Textarea
-                                    className="text-xs min-h-[40px]"
+                                    className="text-xs min-h-[36px]"
                                     value={row.mutu_kelengkapan}
                                     onChange={(e) =>
                                       setProsedurRows((prev) =>
@@ -561,7 +594,7 @@ export function DetailSOPPenyusun() {
                                     }
                                   />
                                 </td>
-                                <td className="px-2 py-2">
+                                <td className="px-2 py-1">
                                   {(() => {
                                     const match = (row.mutu_waktu || '').match(/^(\d+)\s*(\w+)?/i)
                                     const amount = match ? match[1] : ''
@@ -595,7 +628,7 @@ export function DetailSOPPenyusun() {
                                         <Input
                                           type="number"
                                           min={0}
-                                          className="h-8 text-xs w-14"
+                                          className="h-8 text-xs w-12"
                                           value={amount}
                                           onChange={(e) => updateMutuWaktu(e.target.value, unit)}
                                         />
@@ -614,9 +647,9 @@ export function DetailSOPPenyusun() {
                                     )
                                   })()}
                                 </td>
-                                <td className="px-2 py-2">
+                                <td className="px-2 py-1">
                                   <Textarea
-                                    className="text-xs min-h-[40px]"
+                                    className="text-xs min-h-[36px]"
                                     value={row.output}
                                     onChange={(e) =>
                                       setProsedurRows((prev) =>
@@ -627,9 +660,9 @@ export function DetailSOPPenyusun() {
                                     }
                                   />
                                 </td>
-                                <td className="px-2 py-2">
+                                <td className="px-2 py-1">
                                   <Textarea
-                                    className="text-xs min-h-[40px]"
+                                    className="text-xs min-h-[36px]"
                                     value={row.keterangan}
                                     onChange={(e) =>
                                       setProsedurRows((prev) =>
@@ -640,80 +673,86 @@ export function DetailSOPPenyusun() {
                                     }
                                   />
                                 </td>
-                                <td className="px-2 py-2 text-center align-middle">
-                                  <div className="flex items-center justify-center gap-1">
-                                    {row.type === 'decision' && (
+                                <td className="px-1 py-1 text-center align-middle">
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-7 w-7 p-0 text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-                                        title="Atur cabang decision"
-                                        onClick={() => {
-                                          setDecisionStepIndex(idx)
-                                          setDecisionYesId(row.id_next_step_if_yes || '')
-                                          setDecisionNoId(row.id_next_step_if_no || '')
-                                          setIsDecisionDialogOpen(true)
-                                        }}
+                                        className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                                        title="Aksi langkah"
                                       >
-                                        <Settings2 className="w-3.5 h-3.5" />
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                      title="Tambah langkah setelah baris ini"
-                                      onClick={() =>
-                                        setProsedurRows((prev) => {
-                                          const idBase = Date.now().toString()
-                                          const newRow: ProsedurRow = {
-                                            id: `${idBase}-${idx + 1}`,
-                                            no: idx + 2,
-                                            kegiatan: '',
-                                            pelaksana: implementers.reduce(
-                                              (acc, impl, i2) => ({
-                                                ...acc,
-                                                [impl.id]: i2 === 0 ? '√' : '',
-                                              }),
-                                              {} as Record<string, string>
-                                            ),
-                                            mutu_kelengkapan: '',
-                                            mutu_waktu: '',
-                                            output: '',
-                                            keterangan: '',
-                                          }
-                                          const next = [...prev]
-                                          next.splice(idx + 1, 0, newRow)
-                                          return next.map((r, i2) => ({ ...r, no: i2 + 1 }))
-                                        })
-                                      }
-                                    >
-                                      +
-                                    </Button>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      disabled={prosedurRows.length === 1}
-                                      title="Hapus langkah"
-                                      onClick={() =>
-                                        setProsedurRows((prev) =>
-                                          prev.filter((_, i) => i !== idx).map((r, i2) => ({
-                                            ...r,
-                                            no: i2 + 1,
-                                          }))
-                                        )
-                                      }
-                                    >
-                                      <X className="w-3.5 h-3.5" />
-                                    </Button>
-                                  </div>
+                                        <MoreHorizontal className="w-4 h-4" />
+                </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="min-w-[9rem]">
+                                      {row.type === 'decision' && (
+                                        <DropdownMenuItem
+                                          onClick={() => {
+                                            setDecisionStepIndex(idx)
+                                            const yesId = row.id_next_step_if_yes || ''
+                                            const noId = row.id_next_step_if_no || ''
+                                            setDecisionYesId(yesId)
+                                            setDecisionNoId(noId === yesId && yesId ? '' : noId)
+                                            setIsDecisionDialogOpen(true)
+                                          }}
+                                        >
+                                          <Settings2 className="w-3 h-3 mr-1.5 text-gray-500" />
+                                          <span>Atur cabang decision</span>
+                                        </DropdownMenuItem>
+                                      )}
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          setProsedurRows((prev) => {
+                                            const idBase = Date.now().toString()
+                                            const newRow: ProsedurRow = {
+                                              id: `${idBase}-${idx + 1}`,
+                                              no: idx + 2,
+                                              kegiatan: '',
+                                              pelaksana: implementers.reduce(
+                                                (acc, impl, i2) => ({
+                                                  ...acc,
+                                                  [impl.id]: i2 === 0 ? '√' : '',
+                                                }),
+                                                {} as Record<string, string>
+                                              ),
+                                              mutu_kelengkapan: '',
+                                              mutu_waktu: '',
+                                              output: '',
+                                              keterangan: '',
+                                            }
+                                            const next = [...prev]
+                                            next.splice(idx + 1, 0, newRow)
+                                            return next.map((r, i2) => ({ ...r, no: i2 + 1 }))
+                                          })
+                                        }
+                                      >
+                                        <span className="mr-1.5 text-blue-600">+</span>
+                                        <span>Tambah langkah setelah ini</span>
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        disabled={prosedurRows.length === 1}
+                                        onClick={() =>
+                                          setProsedurRows((prev) =>
+                                            prev.filter((_, i) => i !== idx).map((r, i2) => ({
+                                              ...r,
+                                              no: i2 + 1,
+                                            }))
+                                          )
+                                        }
+                                        className="text-red-600 data-[disabled]:text-gray-400"
+                                      >
+                                        <X className="w-3 h-3 mr-1.5" />
+                                        <span>Hapus langkah</span>
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                                 </td>
                               </tr>
                             ))}
                           </tbody>
                         </table>
-                      </div>
+              </div>
                       <div className="flex justify-between items-center mt-2">
                         <Button
                           variant="outline"
@@ -757,8 +796,8 @@ export function DetailSOPPenyusun() {
 
           {/* Panel 3: Form edit (kanan) */}
           <div
-            className={`bg-white rounded-md border border-gray-200 transition-all ${
-              isEditPanelCollapsed ? 'w-10' : 'w-[420px]'
+            className={`flex flex-col flex-shrink-0 bg-white transition-[width] duration-200 overflow-hidden ${
+              isEditPanelCollapsed ? 'w-10' : 'w-[min(380px,30%)] min-w-[280px]'
             }`}
           >
             <div className="p-3 border-b border-gray-200 flex items-center justify-between gap-2">
@@ -783,8 +822,8 @@ export function DetailSOPPenyusun() {
                       Header, metadata & pengaturan diagram
                     </p>
                   </div>
-                )}
-              </div>
+                            )}
+                          </div>
               {!isEditPanelCollapsed && (
                 <Button
                   variant="outline"
@@ -796,10 +835,10 @@ export function DetailSOPPenyusun() {
                   Riwayat
                 </Button>
               )}
-            </div>
+                        </div>
 
             {!isEditPanelCollapsed && (
-              <ScrollArea className="h-[calc(100vh-220px)]">
+              <ScrollArea className="flex-1 min-h-0">
                 <div className="p-3 space-y-4">
                 {/* Section 1: Header SOP */}
                 <div className="rounded-md border border-gray-200">
@@ -818,7 +857,7 @@ export function DetailSOPPenyusun() {
                         <ChevronLeft className="w-3.5 h-3.5 rotate-180" />
                       )}
                     </Button>
-                  </div>
+                            </div>
 
                   <div className={`p-3 space-y-3 ${isHeaderCollapsed ? 'hidden' : ''}`}>
                     <div className="space-y-1.5">
@@ -840,7 +879,7 @@ export function DetailSOPPenyusun() {
                         }}
                       />
                       <p className="text-[11px] text-gray-500">Disimpan sebagai data URL (mock).</p>
-                    </div>
+                          </div>
 
                     <div className="grid grid-cols-1 gap-2">
                       <div className="space-y-1.5">
@@ -877,9 +916,9 @@ export function DetailSOPPenyusun() {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
                         <Label className="text-xs">Dasar hukum</Label>
-                        <Button
-                          variant="outline"
-                          size="sm"
+                            <Button
+                              variant="outline"
+                              size="sm"
                           className="h-7 text-xs"
                           onClick={() => setIsLawBasisOpen(true)}
                         >
@@ -897,19 +936,19 @@ export function DetailSOPPenyusun() {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 w-6 p-0 text-gray-500 hover:text-red-600"
-                                onClick={() => {
+                              onClick={() => {
                                   const next = (metadata.lawBasis ?? []).filter((_, i) => i !== idx)
                                   handleMetadataChange('lawBasis', next)
-                                }}
+                              }}
                                 title="Hapus"
-                              >
+                            >
                                 <X className="w-3.5 h-3.5" />
-                              </Button>
+                            </Button>
                             </div>
                           ))
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
@@ -1002,15 +1041,15 @@ export function DetailSOPPenyusun() {
                             >
                               <X className="w-4 h-4" />
                             </Button>
-                          </div>
-                        ))}
+                    </div>
+                  ))}
                         {(metadata.implementQualification ?? []).length === 0 && (
                           <p className="text-[11px] text-gray-500">
                             Belum ada kualifikasi. Klik &quot;Tambah&quot; untuk menambahkan.
                           </p>
                         )}
-                      </div>
-                    </div>
+                </div>
+            </div>
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
@@ -1060,8 +1099,8 @@ export function DetailSOPPenyusun() {
                           <p className="text-[11px] text-gray-500">
                             Belum ada peralatan/perlengkapan. Klik &quot;Tambah&quot; untuk menambahkan.
                           </p>
-                        )}
-                      </div>
+          )}
+        </div>
                     </div>
 
                     <div className="space-y-1.5">
@@ -1132,7 +1171,7 @@ export function DetailSOPPenyusun() {
                         >
                           Tambah
                         </Button>
-                      </div>
+              </div>
                       <div className="space-y-2">
                         {implementers.map((imp, idx) => (
                           <div key={imp.id} className="flex items-center gap-2">
@@ -1153,26 +1192,21 @@ export function DetailSOPPenyusun() {
                             >
                               <X className="w-4 h-4" />
                             </Button>
-                          </div>
+            </div>
                         ))}
-                      </div>
+        </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Section 2: area kontrol prosedur/diagram */}
                 <div className="rounded-md border border-gray-200">
-                  <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xs font-semibold text-gray-900">Prosedur & Diagram</p>
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-100 text-[10px] text-gray-600">
-                          Flowchart · BPMN
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-gray-500">
-                        Atur tabel langkah dan susunan visual diagram.
-                      </p>
+                  <div className="px-3 py-2 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold text-gray-900">Prosedur & Diagram</p>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-gray-100 text-[10px] text-gray-600">
+                        Flowchart · BPMN
+                      </span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
@@ -1194,18 +1228,6 @@ export function DetailSOPPenyusun() {
                         Perbaiki diagram
                       </Button>
                     </div>
-                  </div>
-                  <div className="px-3 py-2 text-[11px] text-gray-600 border-t border-gray-100 bg-gray-50/60">
-                    <ul className="list-disc list-inside space-y-0.5">
-                      <li>
-                        <span className="font-semibold">Ubah langkah</span> membuka editor tabel di panel
-                        tengah untuk mengubah urutan dan isi tahapan.
-                      </li>
-                      <li>
-                        <span className="font-semibold">Perbaiki diagram</span> memaksa penyusunan ulang
-                        posisi shape & panah jika layout terasa berantakan.
-                      </li>
-                    </ul>
                   </div>
                 </div>
               </div>
@@ -1288,7 +1310,7 @@ export function DetailSOPPenyusun() {
                         Snapshot
                       </Badge>
                     )}
-                  </div>
+    </div>
                   <p className="text-xs text-gray-500">
                     {new Date(version.date).toLocaleDateString('id-ID', {
                       day: 'numeric',
@@ -1517,7 +1539,7 @@ export function DetailSOPPenyusun() {
           <DialogHeader>
             <DialogTitle className="text-sm">Atur cabang keputusan</DialogTitle>
             <DialogDescription className="text-xs">
-              Pilih langkah tujuan untuk jawaban <strong>Ya</strong> dan <strong>Tidak</strong>.
+              Pilih langkah tujuan untuk jawaban <strong>Ya</strong> dan <strong>Tidak</strong>. Keduanya harus mengarah ke tahap yang berbeda.
             </DialogDescription>
           </DialogHeader>
           {decisionStepIndex !== null && (
@@ -1535,7 +1557,11 @@ export function DetailSOPPenyusun() {
                 >
                   <option value="">Pilih tahap</option>
                   {prosedurRows.map((row, idx) => (
-                    <option key={row.id} value={row.id} disabled={idx === decisionStepIndex}>
+                    <option
+                      key={row.id}
+                      value={row.id}
+                      disabled={idx === decisionStepIndex || row.id === decisionYesId}
+                    >
                       {idx + 1}. {row.kegiatan || '(tanpa judul)'}
                     </option>
                   ))}
@@ -1550,7 +1576,11 @@ export function DetailSOPPenyusun() {
                 >
                   <option value="">Pilih tahap</option>
                   {prosedurRows.map((row, idx) => (
-                    <option key={row.id} value={row.id} disabled={idx === decisionStepIndex}>
+                    <option
+                      key={row.id}
+                      value={row.id}
+                      disabled={idx === decisionStepIndex || row.id === decisionNoId}
+                    >
                       {idx + 1}. {row.kegiatan || '(tanpa judul)'}
                     </option>
                   ))}
@@ -1572,6 +1602,13 @@ export function DetailSOPPenyusun() {
               className="h-8 text-xs"
               onClick={() => {
                 if (decisionStepIndex === null) return
+                if (decisionYesId && decisionNoId && decisionYesId === decisionNoId) {
+                  setToastMessage({
+                    type: 'error',
+                    message: 'Tahap jika Ya dan Tahap jika Tidak harus berbeda.',
+                  })
+                  return
+                }
                 setProsedurRows((prev) =>
                   prev.map((row, idx) =>
                     idx === decisionStepIndex

@@ -2,20 +2,21 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import {
   ArrowLeft,
-  Download,
   MessageSquare,
   Check,
   X,
   Send,
   History,
   Printer,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SOPHeaderInfo } from '@/components/sop/SOPHeaderInfo'
 import { SOPDiagram, type ProsedurRow } from '@/components/sop/SOPDiagram'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -38,7 +39,6 @@ interface Version {
   author: string
   changes: string
   snapshot: unknown
-  /** Event saat snapshot dibuat (submit, ajukan evaluasi, disahkan, dll.) */
   eventLabel?: string
 }
 
@@ -47,7 +47,8 @@ export function DetailSOP() {
   const id = 'id' in params ? params.id : undefined
   const navigate = useNavigate()
 
-  const [activePanel, setActivePanel] = useState<'none' | 'comments' | 'history'>('none')
+  const [isCommentsCollapsed, setIsCommentsCollapsed] = useState(true)
+  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(true)
   const [selectedBagian, setSelectedBagian] = useState('')
   const [newComment, setNewComment] = useState('')
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
@@ -242,15 +243,14 @@ export function DetailSOP() {
     window.print()
   }
 
-  const togglePanel = (panel: 'comments' | 'history') => {
-    setActivePanel(activePanel === panel ? 'none' : panel)
-  }
+  const openComments = komentarList.filter((k) => k.status === 'open').length
+  const resolvedComments = komentarList.filter((k) => k.status === 'resolved').length
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3">
       {toastMessage && (
         <div
-          className={`rounded-md border px-4 py-2 text-xs print:hidden ${
+          className={`flex-shrink-0 rounded-md border px-4 py-2 text-xs print:hidden ${
             toastMessage.includes('berhasil')
               ? 'bg-green-50 border-green-200 text-green-800'
               : 'bg-amber-50 border-amber-200 text-amber-800'
@@ -278,7 +278,7 @@ export function DetailSOP() {
       />
 
       {id && getActiveCaseForSop(id) && (
-        <div className="bg-blue-50 rounded-md border border-blue-200 p-3 print:hidden">
+        <div className="flex-shrink-0 bg-blue-50 rounded-md border border-blue-200 p-3 print:hidden">
           <h3 className="text-xs font-semibold text-blue-900 mb-2">Evaluasi Aktif</h3>
           {(() => {
             const ec = getActiveCaseForSop(id)!
@@ -312,7 +312,7 @@ export function DetailSOP() {
         </div>
       )}
 
-      <div className="bg-white rounded-md border border-gray-200 p-3 print:hidden">
+      <div className="flex-shrink-0 bg-white rounded-md border border-gray-200 p-3 print:hidden">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
@@ -329,21 +329,17 @@ export function DetailSOP() {
             <Button
               variant="outline"
               size="sm"
-              className={`h-8 text-xs gap-1.5 ${
-                activePanel === 'comments' ? 'bg-blue-50 border-blue-300' : ''
-              }`}
-              onClick={() => togglePanel('comments')}
+              className={`h-8 text-xs gap-1.5 ${!isCommentsCollapsed ? 'bg-blue-50 border-blue-300' : ''}`}
+              onClick={() => setIsCommentsCollapsed((v) => !v)}
             >
               <MessageSquare className="w-3.5 h-3.5" />
-              Komentar ({komentarList.filter((k) => k.status === 'open').length})
+              Komentar ({openComments})
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className={`h-8 text-xs gap-1.5 ${
-                activePanel === 'history' ? 'bg-blue-50 border-blue-300' : ''
-              }`}
-              onClick={() => togglePanel('history')}
+              className={`h-8 text-xs gap-1.5 ${!isHistoryCollapsed ? 'bg-blue-50 border-blue-300' : ''}`}
+              onClick={() => setIsHistoryCollapsed((v) => !v)}
             >
               <History className="w-3.5 h-3.5" />
               Riwayat
@@ -352,21 +348,128 @@ export function DetailSOP() {
               <Printer className="w-3.5 h-3.5" />
               Print
             </Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handlePrint}>
-              <Download className="w-3.5 h-3.5" />
-              Export PDF
-            </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-3">
+      {/* ── Three-panel workspace ───────────────────────────── */}
+      <div className="flex flex-1 min-h-0 overflow-hidden rounded-lg border border-gray-200 bg-white">
+
+        {/* Left: Komentar */}
         <div
-          className={`transition-all ${
-            activePanel === 'none' ? 'flex-1' : 'flex-[2]'
-          } bg-white rounded-lg border border-gray-200 p-4`}
+          className={`flex flex-col flex-shrink-0 border-r border-gray-200 bg-white transition-[width] duration-200 overflow-hidden ${
+            isCommentsCollapsed ? 'w-0' : 'w-[min(320px,28%)] min-w-[220px]'
+          }`}
         >
-          <ScrollArea className="h-[calc(100vh-180px)]">
+          {!isCommentsCollapsed && (
+            <>
+              <div className="p-3 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900">Komentar Internal</h3>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    {openComments} terbuka &bull; {resolvedComments} resolved
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setIsCommentsCollapsed(true)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="p-3 border-b border-gray-200 flex-shrink-0">
+                <Label className="text-xs font-medium text-blue-900 mb-1.5 block">
+                  Tambah Komentar Baru
+                </Label>
+                <select
+                  className="w-full h-8 rounded-md border border-gray-300 px-2 text-xs mb-2"
+                  value={selectedBagian}
+                  onChange={(e) => setSelectedBagian(e.target.value)}
+                >
+                  <option value="">Pilih bagian dokumen...</option>
+                  {bagianOptions.map((bagian) => (
+                    <option key={bagian} value={bagian}>
+                      {bagian}
+                    </option>
+                  ))}
+                </select>
+                <Textarea
+                  className="text-xs min-h-[60px] mb-2"
+                  placeholder="Tulis komentar Anda..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
+                <Button size="sm" className="h-7 text-xs gap-1 w-full" onClick={handleAddComment}>
+                  <Send className="w-3 h-3" />
+                  Kirim Komentar
+                </Button>
+              </div>
+
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-3 space-y-2">
+                  {komentarList.map((komentar) => (
+                    <div
+                      key={komentar.id}
+                      className={`p-2.5 rounded-md border text-xs ${
+                        komentar.status === 'resolved'
+                          ? 'bg-gray-50 border-gray-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
+                            <span className="text-xs text-white font-semibold">
+                              {komentar.user.charAt(0)}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-gray-900">{komentar.user}</p>
+                            <p className="text-xs text-gray-500">{komentar.role}</p>
+                          </div>
+                        </div>
+                        {komentar.status === 'open' ? (
+                          <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 border-0">
+                            Open
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-600 text-white text-xs px-1.5 py-0 border-0">
+                            <Check className="w-3 h-3" />
+                          </Badge>
+                        )}
+                      </div>
+                      <Badge className="bg-gray-200 text-gray-700 text-xs border-0 mb-1.5">
+                        {komentar.bagian}
+                      </Badge>
+                      <p className="text-xs text-gray-900 mb-2">{komentar.isi}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-500">{komentar.timestamp}</p>
+                        {komentar.status === 'open' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 text-xs px-2 text-green-700 hover:text-green-800 hover:bg-green-50"
+                            onClick={() => handleResolveComment(komentar.id)}
+                          >
+                            <Check className="w-3 h-3 mr-1" />
+                            Resolve
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </div>
+
+        {/* Center: SOP View (read-only) */}
+        <div className="flex-1 flex flex-col min-w-0 p-4">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="space-y-8">
               <SOPHeaderInfo {...metadata} editable={false} />
 
@@ -387,210 +490,109 @@ export function DetailSOP() {
                 </Tabs>
               </div>
 
-              <SOPDiagram
-                rows={prosedurRows}
-                implementers={implementers}
-                diagramType={activeTab}
-              />
+              <div className="w-full">
+                <SOPDiagram
+                  rows={prosedurRows}
+                  implementers={implementers}
+                  diagramType={activeTab}
+                  name={metadata.name}
+                />
+              </div>
             </div>
           </ScrollArea>
         </div>
 
-        {activePanel === 'comments' && (
-          <div className="flex-1 bg-white rounded-md border border-gray-200 p-4 animate-in slide-in-from-right print:hidden">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Komentar Internal</h3>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  {komentarList.filter((k) => k.status === 'open').length} terbuka •{' '}
-                  {komentarList.filter((k) => k.status === 'resolved').length} resolved
-                </p>
+        {/* Right: Riwayat Versi */}
+        <div
+          className={`flex flex-col flex-shrink-0 bg-white transition-[width] duration-200 overflow-hidden ${
+            isHistoryCollapsed ? 'w-0' : 'w-[min(320px,28%)] min-w-[220px]'
+          }`}
+        >
+          {!isHistoryCollapsed && (
+            <>
+              <div className="p-3 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900">Riwayat Versi</h3>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    {versions.length} versi terdokumentasi
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => setIsHistoryCollapsed(true)}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => setActivePanel('none')}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-              <Label className="text-xs font-medium text-blue-900 mb-1.5 block">
-                Tambah Komentar Baru
-              </Label>
-              <select
-                className="w-full h-8 rounded-md border border-blue-300 px-2 text-xs mb-2"
-                value={selectedBagian}
-                onChange={(e) => setSelectedBagian(e.target.value)}
-              >
-                <option value="">Pilih bagian dokumen...</option>
-                {bagianOptions.map((bagian) => (
-                  <option key={bagian} value={bagian}>
-                    {bagian}
-                  </option>
-                ))}
-              </select>
-              <Textarea
-                className="text-xs min-h-[60px] mb-2"
-                placeholder="Tulis komentar Anda..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
-              <Button size="sm" className="h-7 text-xs gap-1 w-full" onClick={handleAddComment}>
-                <Send className="w-3 h-3" />
-                Kirim Komentar
-              </Button>
-            </div>
-            <ScrollArea className="h-[calc(100vh-430px)]">
-              <div className="space-y-2">
-                {komentarList.map((komentar) => (
-                  <div
-                    key={komentar.id}
-                    className={`p-2.5 rounded-md border text-xs ${
-                      komentar.status === 'resolved'
-                        ? 'bg-gray-50 border-gray-200'
-                        : 'bg-blue-50 border-blue-200'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 bg-orange-600 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-semibold">
-                            {komentar.user.charAt(0)}
-                          </span>
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-gray-900">{komentar.user}</p>
-                          <p className="text-xs text-gray-500">{komentar.role}</p>
-                        </div>
-                      </div>
-                      {komentar.status === 'open' ? (
-                        <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 border-0">
-                          Open
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-green-600 text-white text-xs px-1.5 py-0 border-0">
-                          <Check className="w-3 h-3" />
-                        </Badge>
-                      )}
-                    </div>
-                    <Badge className="bg-gray-200 text-gray-700 text-xs border-0 mb-1.5">
-                      {komentar.bagian}
-                    </Badge>
-                    <p className="text-xs text-gray-900 mb-2">{komentar.isi}</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-gray-500">{komentar.timestamp}</p>
-                      {komentar.status === 'open' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 text-xs px-2 text-green-700 hover:text-green-800 hover:bg-green-50"
-                          onClick={() => handleResolveComment(komentar.id)}
-                        >
-                          <Check className="w-3 h-3 mr-1" />
-                          Resolve
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
 
-        {activePanel === 'history' && (
-          <div className="flex-1 bg-white rounded-md border border-gray-200 p-4 animate-in slide-in-from-right print:hidden">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">Riwayat Versi</h3>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  {versions.length} versi terdokumentasi
-                </p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                onClick={() => setActivePanel('none')}
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <div className="space-y-3">
-                {versions.map((version, index) => (
-                  <div key={version.id} className="relative pl-6">
-                    {index < versions.length - 1 && (
-                      <div className="absolute left-2 top-6 bottom-0 w-px bg-gray-200" />
-                    )}
-                    <div
-                      className={`absolute left-0 top-1 w-4 h-4 rounded-full border-2 ${
-                        index === 0 ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
-                      }`}
-                    />
-                    <div className="bg-gray-50 rounded-md border border-gray-200 p-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs font-semibold text-gray-900">
-                            Versi {version.version}
-                          </p>
-                          {version.eventLabel && (
-                            <Badge variant="secondary" className="text-xs border-0">
-                              {version.eventLabel}
-                            </Badge>
-                          )}
-                          {index === 0 && (
-                            <Badge className="bg-blue-600 text-white text-xs border-0">
-                              Current
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          {new Date(version.date).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                      <p className="text-xs text-gray-700 mb-2">{version.changes}</p>
-                      <div className="flex items-center gap-1.5 text-gray-600 mb-2">
-                        <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
-                          <span className="text-xs text-white font-semibold">
-                            {version.author.charAt(0)}
-                          </span>
-                        </div>
-                        <p className="text-xs">{version.author}</p>
-                      </div>
-                      {index > 0 && (
-                        <div className="flex gap-1.5 pt-2 border-t border-gray-200">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => setToastMessage('Lihat versi (read-only) — fitur lengkap di backend')}
-                          >
-                            Lihat versi
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            onClick={() => setToastMessage('Pulihkan sebagai draft baru — salinan versi ini akan dibuat sebagai draft')}
-                          >
-                            Pulihkan sebagai draft baru
-                          </Button>
-                        </div>
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-3 space-y-3">
+                  {versions.map((version, index) => (
+                    <div key={version.id} className="relative pl-6">
+                      {index < versions.length - 1 && (
+                        <div className="absolute left-2 top-6 bottom-0 w-px bg-gray-200" />
                       )}
+                      <div
+                        className={`absolute left-0 top-1 w-4 h-4 rounded-full border-2 ${
+                          index === 0 ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
+                        }`}
+                      />
+                      <div className="bg-gray-50 rounded-md border border-gray-200 p-3">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-xs font-semibold text-gray-900">
+                              Versi {version.version}
+                            </p>
+                            {version.eventLabel && (
+                              <Badge variant="secondary" className="text-xs border-0">
+                                {version.eventLabel}
+                              </Badge>
+                            )}
+                            {index === 0 && (
+                              <Badge className="bg-blue-600 text-white text-xs border-0">
+                                Current
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 whitespace-nowrap">
+                            {new Date(version.date).toLocaleDateString('id-ID', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-700 mb-2">{version.changes}</p>
+                        <div className="flex items-center gap-1.5 text-gray-600">
+                          <div className="w-5 h-5 bg-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-xs text-white font-semibold">
+                              {version.author.charAt(0)}
+                            </span>
+                          </div>
+                          <p className="text-xs">{version.author}</p>
+                        </div>
+                        {index > 0 && (
+                          <div className="flex gap-1.5 pt-2 mt-2 border-t border-gray-200">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => setToastMessage('Lihat versi (read-only) — fitur lengkap di backend')}
+                            >
+                              Lihat versi
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
+                  ))}
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

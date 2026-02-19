@@ -1,5 +1,8 @@
-import { useLayoutEffect, useState, useRef } from 'react'
+import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
 import type { ArrowConnectionConfig, ArrowPathPoint } from '../sopDiagramTypes'
+import { routeOrthogonal, scorePath, pathToSegments, type OccupiedSegment } from './orthogonalRouter'
+
+/* ───────────────────────── Public types ─────────────────────────── */
 
 export interface FlowchartConnection {
   id: string
@@ -10,12 +13,8 @@ export interface FlowchartConnection {
   targetType?: string
 }
 
-/** Obstacle element id for collision detection */
-export interface ArrowObstacle {
-  id: string
-}
+export interface ArrowObstacle { id: string }
 
-/** Per-element sides already used by connections; used for scoring. */
 export type UsedSides = Record<
   string,
   {
@@ -26,6 +25,11 @@ export type UsedSides = Record<
 
 type Side = 'top' | 'bottom' | 'left' | 'right'
 
+/**
+ * Konvensi arah panah:
+ * - Tail (pangkal) selalu di start: dari connection.from, pakai sSide & startPoint.
+ * - Head (mata panah ">") selalu di end: ke connection.to, pakai eSide & endPoint.
+ */
 export interface PathUpdatedPayload {
   connectionId: string
   from: string
@@ -39,85 +43,58 @@ export interface PathUpdatedPayload {
   labelPosition?: { x: number; y: number }
 }
 
+type BoundsRect = { left: number; top: number; right: number; bottom: number }
+
+/**
+ * Shared mutable ref holding segments of all already-routed arrows.
+ * Each connector reads others' segments as penalties and writes its own after routing.
+ * Using a ref avoids re-render loops while allowing cross-connector coordination.
+ */
+export type RoutedPathsRef = MutableRefObject<Map<string, OccupiedSegment[]>>
+
+/* ───────────────────────── Props ─────────────────────────── */
+
 interface FlowchartArrowConnectorProps {
   connection: FlowchartConnection
   idcontainer: string
   idarrow: string | number
-  /** Other element ids to avoid when routing (excluding from/to) */
   obstacles?: ArrowObstacle[]
-  /** Sides already in use per element; affects scoring */
   usedSides?: UsedSides
-  /** When set and valid, path is taken from here and auto-routing is skipped */
   manualConfig?: ArrowConnectionConfig | null
-  /** Override label position when set */
   manualLabelPosition?: { x: number; y: number } | null
-  /** Callback when path is computed (auto or from manual); parent can persist to arrowConfig */
   onPathUpdated?: (payload: PathUpdatedPayload) => void
+  constraintRect?: BoundsRect | null
+  /** Shared ref for cross-arrow overlap avoidance */
+  routedSegmentsRef?: RoutedPathsRef
 }
 
-function getElementPosition(
-  elementId: string,
-  container: HTMLElement
-): { left: number; top: number; width: number; height: number; right: number; bottom: number } | null {
+/* ───────────────────────── Helpers ─────────────────────────── */
+
+type ElemPos = {
+  left: number; top: number; width: number; height: number
+  right: number; bottom: number
+}
+
+function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
   const el = document.getElementById(elementId)
   if (!el) return null
-  const rect = el.getBoundingClientRect()
-  const containerRect = container.getBoundingClientRect()
+  const r = el.getBoundingClientRect()
+  const c = container.getBoundingClientRect()
   return {
-    left: rect.left - containerRect.left,
-    top: rect.top - containerRect.top,
-    width: rect.width,
-    height: rect.height,
-    right: rect.right - containerRect.left,
-    bottom: rect.bottom - containerRect.top,
+    left: Math.round(r.left - c.left),
+    top: Math.round(r.top - c.top),
+    width: Math.round(r.width),
+    height: Math.round(r.height),
+    right: Math.round(r.right - c.left),
+    bottom: Math.round(r.bottom - c.top),
   }
-}
-
-const SAMPLE_STEP = 10
-const OBSTACLE_PADDING = 15
-const ESCAPE_OFFSET = 30
-
-function isPointInRect(
-  p: { x: number; y: number },
-  rect: { left: number; top: number; right: number; bottom: number }
-): boolean {
-  return (
-    p.x >= rect.left - OBSTACLE_PADDING &&
-    p.x <= rect.right + OBSTACLE_PADDING &&
-    p.y >= rect.top - OBSTACLE_PADDING &&
-    p.y <= rect.bottom + OBSTACLE_PADDING
-  )
-}
-
-function isPathColliding(
-  points: { x: number; y: number }[],
-  obstacleRects: { left: number; top: number; right: number; bottom: number }[]
-): boolean {
-  for (let i = 0; i < points.length - 1; i++) {
-    const p1 = points[i]
-    const p2 = points[i + 1]
-    const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y)
-    if (dist < 1) continue
-    const numSamples = Math.max(2, Math.ceil(dist / SAMPLE_STEP))
-    for (let j = 1; j < numSamples; j++) {
-      const t = j / numSamples
-      const pt = {
-        x: p1.x + t * (p2.x - p1.x),
-        y: p1.y + t * (p2.y - p1.y),
-      }
-      for (const obs of obstacleRects) {
-        if (isPointInRect(pt, obs)) return true
-      }
-    }
-  }
-  return false
 }
 
 function getFixedDistancePoint(
   start: { x: number; y: number },
   end: { x: number; y: number },
   distance: number,
-  offset = 19
+  offset = 19,
 ): { x: number; y: number } {
   const dx = end.x - start.x
   const dy = end.y - start.y
@@ -138,18 +115,181 @@ function pathToD(points: { x: number; y: number }[]): string {
 
 function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boolean {
   if (!c?.startPoint || !c?.endPoint) return false
-  const { startPoint, endPoint } = c
-  return (
-    typeof startPoint.x === 'number' &&
-    typeof startPoint.y === 'number' &&
-    typeof endPoint.x === 'number' &&
-    typeof endPoint.y === 'number' &&
-    !isNaN(startPoint.x) &&
-    !isNaN(startPoint.y) &&
-    !isNaN(endPoint.x) &&
-    !isNaN(endPoint.y)
-  )
+  const { startPoint: s, endPoint: e } = c
+  return [s.x, s.y, e.x, e.y].every(v => typeof v === 'number' && !isNaN(v))
 }
+
+/* ─────────────────────────────────────────────────────────────────
+ *  Side-pair selection — implements the arrow connector algorithm:
+ *
+ *  Case 0: Start (terminator) → next task: head selalu top; tail
+ *          menurut posisi: start kiri → right→top, sejajar → bottom→top,
+ *          start kanan → left→top.
+ *  Case 1: Same column → tail=bottom, head=top (straight vertical)
+ *  Case 2: Different columns →
+ *          dest RIGHT: P1 bottom→left,  P2 right→top
+ *          dest LEFT:  P1 bottom→right, P2 left→top
+ *  Case 3: Decision branching →
+ *    3.1  Ya/Tidak "next-to" outputs: follow Case 1/2, but Tidak
+ *         always uses horizontal exit to avoid overlap with Ya.
+ *    3.2  Loop-back (dest above src): use horizontal U-turn
+ *         (right→right or left→left), checking usedSides.
+ *
+ *  Overlap prevention: before choosing a route, check usedSides to
+ *  see if the anchor is already occupied. If so, switch to the
+ *  alternative pair.
+ * ─────────────────────────────────────────────────────────────── */
+
+function selectSidePairs(
+  conn: FlowchartConnection,
+  from: ElemPos,
+  to: ElemPos,
+  usedSides: UsedSides,
+): Array<[Side, Side]> {
+  const dx = (to.left + to.width / 2) - (from.left + from.width / 2)
+  const dy = (to.top + to.height / 2) - (from.top + from.height / 2)
+
+  const colThreshold = Math.max(from.width, to.width) * 0.5
+  const sameCol   = Math.abs(dx) < colThreshold
+  const destRight = !sameCol && dx > 0
+  const destLeft  = !sameCol && dx < 0
+  const destBelow = dy > 10
+  const destAbove = dy < -10
+
+  const isStartTerminator = conn.sourceType === 'flowchart-terminator'
+  const isDecSrc = conn.sourceType === 'flowchart-decision'
+  const lbl = (conn.label ?? '').toLowerCase()
+  const isYa    = lbl === 'ya' || lbl === 'yes'
+  const isTidak = lbl === 'tidak' || lbl === 'no'
+
+  const srcOutBusy = (s: Side) =>
+    (usedSides[conn.from]?.out?.[s] ?? []).some(id => id !== conn.id)
+  const dstInBusy = (s: Side) =>
+    (usedSides[conn.to]?.in?.[s] ?? []).some(id => id !== conn.id)
+
+  const pairs: Array<[Side, Side]> = []
+
+  /* ── Case 0: Start (terminator) → next task: head selalu top ─────
+   *  - Start di kiri task berikutnya → tail right, head top
+   *  - Posisi sejajar → tail bottom, head top
+   *  - Start di kanan → tail left, head top
+   *  Hanya berlaku untuk start (terminator), tidak untuk end. */
+  if (isStartTerminator && destBelow) {
+    if (destRight) {
+      if (!srcOutBusy('right')) pairs.push(['right', 'top'])
+      pairs.push(['bottom', 'top'])
+    } else if (destLeft) {
+      if (!srcOutBusy('left')) pairs.push(['left', 'top'])
+      pairs.push(['bottom', 'top'])
+    } else {
+      pairs.push(['bottom', 'top'])
+    }
+  }
+
+  /* ── Case 3: Decision source with branching ──────────────── */
+  if (isDecSrc && (isYa || isTidak)) {
+
+    if (destAbove) {
+      // Case 3.2  Loop-back to earlier shape — horizontal U-turn
+      if (!srcOutBusy('right') && !dstInBusy('right')) pairs.push(['right', 'right'])
+      if (!srcOutBusy('left')  && !dstInBusy('left'))  pairs.push(['left', 'left'])
+      pairs.push(['right', 'top'], ['left', 'top'])
+    }
+
+    else if (isYa) {
+      // Ya branch: always exits from bottom
+      if (sameCol && destBelow) {
+        pairs.push(['bottom', 'top'])
+      } else if (destRight) {
+        pairs.push(['bottom', 'left'], ['right', 'top'])
+      } else if (destLeft) {
+        pairs.push(['bottom', 'right'], ['left', 'top'])
+      } else {
+        pairs.push(['bottom', 'top'])
+      }
+    }
+
+    else if (isTidak) {
+      // Tidak branch: exits from left/right to avoid overlap with Ya
+      if (sameCol && destBelow) {
+        // Same column & below → must use horizontal exit (Case 2)
+        if (!srcOutBusy('right')) pairs.push(['right', 'top'])
+        if (!srcOutBusy('left'))  pairs.push(['left', 'top'])
+        pairs.push(['right', 'top'], ['left', 'top'])
+      } else if (destRight) {
+        if (srcOutBusy('bottom') || dstInBusy('left'))
+          pairs.push(['right', 'top'], ['bottom', 'left'])
+        else
+          pairs.push(['right', 'top'], ['bottom', 'left'])
+      } else if (destLeft) {
+        if (srcOutBusy('bottom') || dstInBusy('right'))
+          pairs.push(['left', 'top'], ['bottom', 'right'])
+        else
+          pairs.push(['left', 'top'], ['bottom', 'right'])
+      } else {
+        pairs.push(['right', 'top'], ['left', 'top'])
+      }
+    }
+  }
+
+  /* ── Non-decision loop-back (dest above src) ─────────────── */
+  else if (destAbove) {
+    if (sameCol) {
+      if (!srcOutBusy('right') && !dstInBusy('right')) pairs.push(['right', 'right'])
+      if (!srcOutBusy('left')  && !dstInBusy('left'))  pairs.push(['left', 'left'])
+      pairs.push(['top', 'bottom'])
+    } else if (destRight) {
+      pairs.push(['right', 'bottom'], ['top', 'right'])
+    } else {
+      pairs.push(['left', 'bottom'], ['top', 'left'])
+    }
+  }
+
+  /* ── Case 1: Same column (straight vertical) ────────────── */
+  else if (sameCol) {
+    if (destBelow) pairs.push(['bottom', 'top'])
+    else           pairs.push(['top', 'bottom'])
+  }
+
+  /* ── Case 2: Different columns ──────────────────────────── */
+  else if (destRight) {
+    if (srcOutBusy('bottom') || dstInBusy('left'))
+      pairs.push(['right', 'top'], ['bottom', 'left'])
+    else
+      pairs.push(['bottom', 'left'], ['right', 'top'])
+  }
+  else if (destLeft) {
+    if (srcOutBusy('bottom') || dstInBusy('right'))
+      pairs.push(['left', 'top'], ['bottom', 'right'])
+    else
+      pairs.push(['bottom', 'right'], ['left', 'top'])
+  }
+
+  /* ── General fallbacks ──────────────────────────────────── */
+  pairs.push(
+    ['bottom', 'top'], ['top', 'bottom'],
+    ['right', 'left'], ['left', 'right'],
+    ['bottom', 'left'], ['bottom', 'right'],
+    ['right', 'top'], ['left', 'top'],
+  )
+
+  const seen = new Set<string>()
+  return pairs.filter(([s, e]) => {
+    const k = `${s}-${e}`
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+}
+
+/* ───────────────────────── Constants ─────────────────────────── */
+
+const SHAPE_MARGIN = 10
+const BOUNDS_MARGIN = 15
+const MAX_TRIES = 8
+const GOOD_SCORE_LIMIT = 500
+
+/* ───────────────────────── Component ─────────────────────────── */
 
 export function FlowchartArrowConnector({
   connection,
@@ -160,62 +300,41 @@ export function FlowchartArrowConnector({
   manualConfig,
   manualLabelPosition,
   onPathUpdated,
+  constraintRect = null,
+  routedSegmentsRef,
 }: FlowchartArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
   const emittedRef = useRef(false)
-  /** Avoid re-emitting same auto path when usedSides updates (prevents infinite setState loop) */
-  const lastEmittedAutoSigRef = useRef<string | null>(null)
+  const lastAutoSigRef = useRef<string | null>(null)
+
+  // Store usedSides in a ref so it's always fresh inside the effect
+  // without being a dependency (prevents infinite setState loops).
+  const usedSidesRef = useRef(usedSides)
+  usedSidesRef.current = usedSides
 
   useLayoutEffect(() => {
-    const container =
-      document.getElementById(idcontainer) ?? document.querySelector<HTMLElement>(`#${idcontainer}`)
-    if (!container) {
-      setPathData('')
-      setLabelPos(null)
-      return
-    }
+    const container = document.getElementById(idcontainer)
+    if (!container) { setPathData(''); setLabelPos(null); return }
 
-    const hasValidManual =
-      isValidManualConfig(manualConfig) && manualConfig!.startPoint && manualConfig!.endPoint
+    /* ── Manual path ─────────────────────────────────────────── */
+    if (isValidManualConfig(manualConfig) && manualConfig!.startPoint && manualConfig!.endPoint) {
+      const { startPoint, endPoint, bendPoints = [] } = manualConfig!
+      setPathData(pathToD([startPoint, ...bendPoints, endPoint]))
 
-    if (hasValidManual && manualConfig!) {
-      const { startPoint, endPoint, bendPoints = [] } = manualConfig
-      const points = [startPoint, ...bendPoints, endPoint]
-      const d = pathToD(points)
-      setPathData(d)
-      if (connection.label) {
-        const pos =
-          manualLabelPosition ??
-          getFixedDistancePoint(
-            startPoint,
-            bendPoints.length ? bendPoints[0] : endPoint,
-            30,
-            19
-          )
-        setLabelPos(pos)
-      } else setLabelPos(null)
+      const lp = connection.label
+        ? manualLabelPosition ?? getFixedDistancePoint(startPoint, bendPoints[0] ?? endPoint, 30, 19)
+        : null
+      setLabelPos(lp)
+
       if (onPathUpdated && !emittedRef.current) {
-        const pos =
-          connection.label &&
-          (manualLabelPosition ??
-            getFixedDistancePoint(
-              startPoint,
-              bendPoints.length ? bendPoints[0] : endPoint,
-              30,
-              19
-            ))
         onPathUpdated({
-          connectionId: connection.id,
-          from: connection.from,
-          to: connection.to,
-          sSide: manualConfig.sSide,
-          eSide: manualConfig.eSide,
-          startPoint: { ...startPoint },
-          endPoint: { ...endPoint },
-          bendPoints: bendPoints.map((p) => ({ ...p })),
+          connectionId: connection.id, from: connection.from, to: connection.to,
+          sSide: manualConfig!.sSide, eSide: manualConfig!.eSide,
+          startPoint: { ...startPoint }, endPoint: { ...endPoint },
+          bendPoints: bendPoints.map(p => ({ ...p })),
           label: connection.label ?? undefined,
-          labelPosition: pos ?? undefined,
+          labelPosition: lp ?? undefined,
         })
         emittedRef.current = true
       }
@@ -223,364 +342,113 @@ export function FlowchartArrowConnector({
     }
 
     emittedRef.current = false
+
+    /* ── Auto-routing (Grid + Dijkstra) ──────────────────────── */
     const fromPos = getElementPosition(connection.from, container)
     const toPos = getElementPosition(connection.to, container)
-    if (!fromPos || !toPos) {
-      setPathData('')
-      setLabelPos(null)
-      return
-    }
+    if (!fromPos || !toPos) { setPathData(''); setLabelPos(null); return }
 
-    const obstacleRects = obstacles
-      .map((o) => o.id)
-      .filter((id) => id !== connection.from && id !== connection.to)
-      .map((id) => getElementPosition(id, container))
-      .filter((r): r is NonNullable<typeof r> => r != null)
-      .map((r) => ({
-        left: r.left,
-        top: r.top,
-        right: r.right,
-        bottom: r.bottom,
-      }))
+    const obsRects = obstacles
+      .map(o => o.id)
+      .filter(id => id !== connection.from && id !== connection.to)
+      .map(id => getElementPosition(id, container))
+      .filter((r): r is ElemPos => r != null)
+      .map(r => ({ left: r.left, top: r.top, width: r.width, height: r.height }))
 
-    const fromCenter = {
-      x: fromPos.left + fromPos.width / 2,
-      y: fromPos.top + fromPos.height / 2,
-    }
-    const toCenter = {
-      x: toPos.left + toPos.width / 2,
-      y: toPos.top + toPos.height / 2,
-    }
-    const deltaX = toCenter.x - fromCenter.x
-    const deltaY = toCenter.y - fromCenter.y
-
-    // Rule: connector must connect only to one of 4 cardinal points (top, bottom, left, right) — center of each edge
-    const fromPoints: Record<Side, { x: number; y: number }> = {
-      top: { x: fromCenter.x, y: fromPos.top },
-      bottom: { x: fromCenter.x, y: fromPos.bottom },
-      left: { x: fromPos.left, y: fromCenter.y },
-      right: { x: fromPos.right, y: fromCenter.y },
-    }
-    const toPoints: Record<Side, { x: number; y: number }> = {
-      top: { x: toCenter.x, y: toPos.top },
-      bottom: { x: toCenter.x, y: toPos.bottom },
-      left: { x: toPos.left, y: toCenter.y },
-      right: { x: toPos.right, y: toCenter.y },
-    }
-
-    const startSides: Side[] = ['right', 'left', 'bottom', 'top']
-    const endSides: Side[] = ['top', 'left', 'right', 'bottom']
-
-    interface Candidate {
-      points: { x: number; y: number }[]
-      start: { x: number; y: number }
-      end: { x: number; y: number }
-      bendPoints: { x: number; y: number }[]
-      type: string
-      sSide: Side
-      eSide: Side
-      length: number
-      score: number
-    }
-
-    const candidates: Candidate[] = []
-
-    for (const sSide of startSides) {
-      for (const eSide of endSides) {
-        const start = fromPoints[sSide]
-        const end = toPoints[eSide]
-
-        if (sSide === 'bottom' && eSide === 'top' && fromPos.bottom <= toPos.top) {
-          const overlapLeft = Math.max(fromPos.left, toPos.left)
-          const overlapRight = Math.min(fromPos.right, toPos.right)
-          if (overlapRight > overlapLeft) {
-            const midX = overlapLeft + (overlapRight - overlapLeft) / 2
-            const pts = [{ x: midX, y: start.y }, { x: midX, y: end.y }]
-            candidates.push({
-              points: pts,
-              start: pts[0],
-              end: pts[1],
-              bendPoints: [],
-              type: 'straight_v',
-              sSide,
-              eSide,
-              length: Math.abs(start.y - end.y),
-              score: 0,
-            })
-          }
+    const globalBounds = constraintRect
+      ? {
+          left: Math.round(constraintRect.left),
+          top: Math.round(constraintRect.top),
+          width: Math.round(constraintRect.right - constraintRect.left),
+          height: Math.round(constraintRect.bottom - constraintRect.top),
         }
-        if (sSide === 'top' && eSide === 'bottom' && fromPos.top >= toPos.bottom) {
-          const overlapLeft = Math.max(fromPos.left, toPos.left)
-          const overlapRight = Math.min(fromPos.right, toPos.right)
-          if (overlapRight > overlapLeft) {
-            const midX = overlapLeft + (overlapRight - overlapLeft) / 2
-            const pts = [{ x: midX, y: start.y }, { x: midX, y: end.y }]
-            candidates.push({
-              points: pts,
-              start: pts[0],
-              end: pts[1],
-              bendPoints: [],
-              type: 'straight_v',
-              sSide,
-              eSide,
-              length: Math.abs(start.y - end.y),
-              score: 0,
-            })
-          }
-        }
-        if (sSide === 'right' && eSide === 'left' && fromPos.right <= toPos.left) {
-          const overlapTop = Math.max(fromPos.top, toPos.top)
-          const overlapBottom = Math.min(fromPos.bottom, toPos.bottom)
-          if (overlapBottom > overlapTop) {
-            const midY = overlapTop + (overlapBottom - overlapTop) / 2
-            const pts = [{ x: start.x, y: midY }, { x: end.x, y: midY }]
-            candidates.push({
-              points: pts,
-              start: pts[0],
-              end: pts[1],
-              bendPoints: [],
-              type: 'straight_h',
-              sSide,
-              eSide,
-              length: Math.abs(start.x - end.x),
-              score: 0,
-            })
-          }
-        }
-        if (sSide === 'left' && eSide === 'right' && fromPos.left >= toPos.right) {
-          const overlapTop = Math.max(fromPos.top, toPos.top)
-          const overlapBottom = Math.min(fromPos.bottom, toPos.bottom)
-          if (overlapBottom > overlapTop) {
-            const midY = overlapTop + (overlapBottom - overlapTop) / 2
-            const pts = [{ x: start.x, y: midY }, { x: end.x, y: midY }]
-            candidates.push({
-              points: pts,
-              start: pts[0],
-              end: pts[1],
-              bendPoints: [],
-              type: 'straight_h',
-              sSide,
-              eSide,
-              length: Math.abs(start.x - end.x),
-              score: 0,
-            })
-          }
-        }
+      : { left: 0, top: 0, width: container.scrollWidth, height: container.scrollHeight }
 
-        if ((sSide === 'top' || sSide === 'bottom') && (eSide === 'left' || eSide === 'right')) {
-          const bend = { x: start.x, y: end.y }
-          candidates.push({
-            points: [start, bend, end],
-            start,
-            end,
-            bendPoints: [bend],
-            type: 'one_bend_vh',
-            sSide,
-            eSide,
-            length: Math.abs(start.y - bend.y) + Math.abs(bend.x - end.x),
-            score: 0,
-          })
-        }
-        if ((sSide === 'left' || sSide === 'right') && (eSide === 'top' || eSide === 'bottom')) {
-          const bend = { x: end.x, y: start.y }
-          candidates.push({
-            points: [start, bend, end],
-            start,
-            end,
-            bendPoints: [bend],
-            type: 'one_bend_hv',
-            sSide,
-            eSide,
-            length: Math.abs(start.x - bend.x) + Math.abs(bend.y - end.y),
-            score: 0,
-          })
-        }
-        // Vertical-to-vertical (bottom↔top) with 1 bend — agar panah "Tidak" (dari diamond ke step di atas) selalu punya path
-        if (sSide === 'bottom' && eSide === 'top') {
-          const bendViaTargetX = { x: end.x, y: start.y }
-          candidates.push({
-            points: [start, bendViaTargetX, end],
-            start,
-            end,
-            bendPoints: [bendViaTargetX],
-            type: 'one_bend_vv_hthenv',
-            sSide,
-            eSide,
-            length: Math.abs(start.x - end.x) + Math.abs(start.y - end.y),
-            score: 0,
-          })
-          const bendViaSourceX = { x: start.x, y: end.y }
-          candidates.push({
-            points: [start, bendViaSourceX, end],
-            start,
-            end,
-            bendPoints: [bendViaSourceX],
-            type: 'one_bend_vv_vthenh',
-            sSide,
-            eSide,
-            length: Math.abs(start.x - end.x) + Math.abs(start.y - end.y),
-            score: 0,
-          })
-        }
-        if (sSide === 'top' && eSide === 'bottom') {
-          const bendViaTargetX = { x: end.x, y: start.y }
-          candidates.push({
-            points: [start, bendViaTargetX, end],
-            start,
-            end,
-            bendPoints: [bendViaTargetX],
-            type: 'one_bend_vv_hthenv',
-            sSide,
-            eSide,
-            length: Math.abs(start.x - end.x) + Math.abs(start.y - end.y),
-            score: 0,
-          })
-          const bendViaSourceX = { x: start.x, y: end.y }
-          candidates.push({
-            points: [start, bendViaSourceX, end],
-            start,
-            end,
-            bendPoints: [bendViaSourceX],
-            type: 'one_bend_vv_vthenh',
-            sSide,
-            eSide,
-            length: Math.abs(start.x - end.x) + Math.abs(start.y - end.y),
-            score: 0,
-          })
-        }
+    const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
+    const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
 
-        if (sSide === eSide) {
-          if (sSide === 'top' || sSide === 'bottom') {
-            const b1 = {
-              x: start.x,
-              y: sSide === 'top' ? Math.min(start.y, end.y) - ESCAPE_OFFSET : Math.max(start.y, end.y) + ESCAPE_OFFSET,
-            }
-            const b2 = { x: end.x, y: b1.y }
-            candidates.push({
-              points: [start, b1, b2, end],
-              start,
-              end,
-              bendPoints: [b1, b2],
-              type: 'two_bend_vhv',
-              sSide,
-              eSide,
-              length:
-                Math.abs(start.y - b1.y) + Math.abs(b1.x - b2.x) + Math.abs(b2.y - end.y),
-              score: 0,
-            })
-          }
-          if (sSide === 'left' || sSide === 'right') {
-            const b1 = {
-              x: sSide === 'left' ? Math.min(start.x, end.x) - ESCAPE_OFFSET : Math.max(start.x, end.x) + ESCAPE_OFFSET,
-              y: start.y,
-            }
-            const b2 = { x: b1.x, y: end.y }
-            candidates.push({
-              points: [start, b1, b2, end],
-              start,
-              end,
-              bendPoints: [b1, b2],
-              type: 'two_bend_hvh',
-              sSide,
-              eSide,
-              length:
-                Math.abs(start.x - b1.x) + Math.abs(b1.y - b2.y) + Math.abs(b2.x - end.x),
-              score: 0,
-            })
-          }
-        }
+    const sidePairs = selectSidePairs(connection, fromPos, toPos, usedSidesRef.current)
+
+    // Collect occupied segments from other already-routed arrows
+    const occupied: OccupiedSegment[] = []
+    if (routedSegmentsRef) {
+      for (const [id, segs] of routedSegmentsRef.current) {
+        if (id !== connection.id) occupied.push(...segs)
       }
     }
 
-    candidates.forEach((p) => {
-      let score = p.length
-      if (p.type.startsWith('one_bend')) score += 10
-      if (p.type.startsWith('two_bend')) score += 30
-      if (p.sSide === 'right' && deltaX < -10) score += 150
-      if (p.sSide === 'left' && deltaX > 10) score += 150
-      if (p.sSide === 'bottom' && deltaY < -10) score += 150
-      if (p.sSide === 'top' && deltaY > 10) score += 150
-      if (p.eSide === 'right' && deltaX > 10) score += 100
-      if (p.eSide === 'left' && deltaX < -10) score += 100
-      if (p.eSide === 'bottom' && deltaY > 10) score += 100
-      if (p.eSide === 'top' && deltaY < -10) score += 100
+    let bestPath: { x: number; y: number }[] | null = null
+    let bestSides: [Side, Side] | null = null
+    let bestScore = Infinity
 
-      const srcUsed = usedSides[connection.from] ?? { in: {}, out: {} }
-      const tgtUsed = usedSides[connection.to] ?? { in: {}, out: {} }
-      if (srcUsed.in?.[p.sSide]) score += 800
-      if (tgtUsed.out?.[p.eSide]) score += 800
-      if (srcUsed.out?.[p.sSide]) score += 100
-      if (tgtUsed.in?.[p.eSide]) score += 100
-      if (!srcUsed.in?.[p.sSide] && !srcUsed.out?.[p.sSide]) score -= 150
-      if (!tgtUsed.in?.[p.eSide] && !tgtUsed.out?.[p.eSide]) score -= 150
+    for (const [sSide, eSide] of sidePairs.slice(0, MAX_TRIES)) {
+      const path = routeOrthogonal({
+        pointA: { shape: fromShape, side: sSide, distance: 0.5 },
+        pointB: { shape: toShape, side: eSide, distance: 0.5 },
+        obstacles: obsRects,
+        shapeMargin: SHAPE_MARGIN,
+        globalBounds,
+        globalBoundsMargin: BOUNDS_MARGIN,
+        occupiedSegments: occupied,
+      })
 
-      p.score = score
-    })
+      if (path.length < 2) continue
+      const score = scorePath(path, occupied)
 
-    const unique = Array.from(
-      new Map(candidates.map((c) => [JSON.stringify(c.points), c])).values()
-    )
-    unique.sort((a, b) => a.score - b.score)
-
-    // Rule: connector must not cross diagram — only use a path that does not intersect other shapes
-    let best: Candidate | null = null
-    for (const path of unique) {
-      if (!isPathColliding(path.points, obstacleRects)) {
-        best = path
-        break
+      if (score < bestScore) {
+        bestPath = path; bestSides = [sSide, eSide]; bestScore = score
+        if (score <= GOOD_SCORE_LIMIT) break
       }
     }
-    // Do not fallback to a colliding path; skip drawing if no valid path exists
-    if (!best) {
-      setPathData('')
-      setLabelPos(null)
-      return
+
+    // Fallback: straight line if all routing attempts fail
+    if (!bestPath || !bestSides) {
+      bestPath = [
+        { x: fromPos.left + fromPos.width / 2, y: fromPos.bottom },
+        { x: toPos.left + toPos.width / 2, y: toPos.top },
+      ]
+      bestSides = ['bottom', 'top']
     }
 
-    const d = pathToD(best.points)
-    setPathData(d)
+    // Register this arrow's segments for other arrows to avoid
+    if (routedSegmentsRef) {
+      routedSegmentsRef.current.set(connection.id, pathToSegments(bestPath))
+    }
 
-    let labelPosition: { x: number; y: number } | null = null
-    if (connection.label) {
-      const start = best.start
-      const end = best.bendPoints.length ? best.bendPoints[0] : best.end
-      labelPosition =
-        manualLabelPosition ?? getFixedDistancePoint(start, end, 30, 19)
-      setLabelPos(labelPosition)
-    } else setLabelPos(null)
+    setPathData(pathToD(bestPath))
 
+    let lp: { x: number; y: number } | null = null
+    if (connection.label && bestPath.length >= 2) {
+      lp = manualLabelPosition ?? getFixedDistancePoint(bestPath[0], bestPath[1], 30, 19)
+    }
+    setLabelPos(lp)
+
+    const [sSide, eSide] = bestSides
     const payload: PathUpdatedPayload = {
-      connectionId: connection.id,
-      from: connection.from,
-      to: connection.to,
-      sSide: best.sSide,
-      eSide: best.eSide,
-      startPoint: { ...best.start },
-      endPoint: { ...best.end },
-      bendPoints: best.bendPoints.map((p) => ({ ...p })),
+      connectionId: connection.id, from: connection.from, to: connection.to,
+      sSide, eSide,
+      startPoint: { ...bestPath[0] },
+      endPoint: { ...bestPath[bestPath.length - 1] },
+      bendPoints: bestPath.slice(1, -1).map(p => ({ ...p })),
       label: connection.label ?? undefined,
-      labelPosition: labelPosition ?? undefined,
+      labelPosition: lp ?? undefined,
     }
-    const sig = `${connection.id}:${best.sSide}:${best.eSide}:${JSON.stringify(best.points)}`
-    if (onPathUpdated && lastEmittedAutoSigRef.current !== sig) {
-      lastEmittedAutoSigRef.current = sig
+    const sig = `${connection.id}:${sSide}:${eSide}:${JSON.stringify(bestPath)}`
+    if (onPathUpdated && lastAutoSigRef.current !== sig) {
+      lastAutoSigRef.current = sig
       onPathUpdated(payload)
     }
+
+    return () => {
+      routedSegmentsRef?.current.delete(connection.id)
+    }
   }, [
-    idcontainer,
-    connection.id,
-    connection.from,
-    connection.to,
-    connection.label,
-    manualConfig,
-    manualLabelPosition,
-    obstacles,
-    usedSides,
-    onPathUpdated,
+    idcontainer, connection.id, connection.from, connection.to,
+    connection.label, connection.sourceType, connection.targetType,
+    manualConfig, manualLabelPosition, obstacles, onPathUpdated, constraintRect,
   ])
 
   if (!pathData) return null
-
   const effectiveLabelPos = manualLabelPosition ?? labelPos
 
   return (
@@ -588,31 +456,20 @@ export function FlowchartArrowConnector({
       <defs>
         <marker
           id={`arrowhead-flow-${idarrow}`}
-          markerWidth="10"
-          markerHeight="8"
-          refX="7"
-          refY="4"
-          orient="auto"
+          markerWidth="10" markerHeight="8" refX="7" refY="4" orient="auto"
         >
           <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="black" />
         </marker>
       </defs>
       <path
-        d={pathData}
-        fill="none"
-        stroke="black"
-        strokeWidth="2"
+        d={pathData} fill="none" stroke="black" strokeWidth="2"
         markerEnd={`url(#arrowhead-flow-${idarrow})`}
       />
       {connection.label && effectiveLabelPos && (
         <text
-          x={effectiveLabelPos.x}
-          y={effectiveLabelPos.y}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize="11"
-          fontFamily="Arial"
-          fill="black"
+          x={effectiveLabelPos.x} y={effectiveLabelPos.y}
+          textAnchor="middle" dominantBaseline="middle"
+          fontSize="11" fontFamily="Arial" fill="black"
         >
           {connection.label}
         </text>

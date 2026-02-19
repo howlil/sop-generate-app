@@ -11,8 +11,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { SearchInput } from '@/components/ui/search-input'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Toast } from '@/components/ui/toast'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { getActiveCaseForSop, getRiwayatEvaluasiForSop, addEvaluationCase } from '@/lib/evaluation-case'
 import type { EvaluationCaseSourceType } from '@/lib/evaluation-case'
 
@@ -216,26 +218,6 @@ export function DaftarSOP() {
     { id: 'p4', nama: 'Permendikbud No. 8/2025' },
   ]
 
-  const getStatusBadge = (status: StatusSOP) => {
-    const variants: Record<StatusSOP, string> = {
-      Draft: 'bg-gray-100 text-gray-700',
-      'Review Internal': 'bg-blue-100 text-blue-700',
-      'Siap Dievaluasi': 'bg-sky-100 text-sky-700',
-      'Diajukan Evaluasi': 'bg-amber-100 text-amber-700',
-      'Disahkan · Diajukan Evaluasi': 'bg-emerald-100 text-emerald-700 border border-amber-300',
-      'Dalam Evaluasi': 'bg-violet-100 text-violet-700',
-      'Tidak Sesuai': 'bg-red-100 text-red-700',
-      Sesuai: 'bg-green-100 text-green-700',
-      Terverifikasi: 'bg-teal-100 text-teal-700',
-      Disahkan: 'bg-emerald-100 text-emerald-700',
-    }
-    return (
-      <span className={`inline-flex h-5 px-1.5 items-center rounded text-xs border-0 ${variants[status] ?? 'bg-gray-100 text-gray-700'}`}>
-        {status}
-      </span>
-    )
-  }
-
   /** SOP baru: boleh ajukan jika Siap Dievaluasi. SOP lama: boleh ajukan jika Disahkan/Terverifikasi. */
   const canAjukanEvaluasi = (status: StatusSOP) =>
     status === 'Siap Dievaluasi' || status === 'Disahkan' || status === 'Terverifikasi'
@@ -340,9 +322,7 @@ export function DaftarSOP() {
         description="Kelola dan pantau semua SOP di lingkungan Dinas Pendidikan"
       />
       {toastMessage && (
-        <div className="bg-green-50 border border-green-200 text-green-800 text-xs px-4 py-2 rounded-md">
-          {toastMessage}
-        </div>
+        <Toast message={toastMessage} type="success" />
       )}
 
       <div className="bg-white rounded-md border border-gray-200 p-3">
@@ -512,7 +492,9 @@ export function DaftarSOP() {
                         })}
                       </p>
                     </td>
-                    <td className="p-3">{getStatusBadge(sop.status)}</td>
+                    <td className="p-3">
+                      <StatusBadge status={sop.status} domain="sop" />
+                    </td>
                     <td className="p-3">
                       <div className="flex items-center gap-1 flex-wrap">
                         <Link to="/kepala-opd/detail-sop/$id" params={{ id: sop.id }}>
@@ -617,7 +599,7 @@ export function DaftarSOP() {
                           <p className="text-sm font-medium text-gray-900 mt-0.5">{sop.judul}</p>
                           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                             <span className="text-xs text-gray-500">v{sop.versi}</span>
-                            {getStatusBadge(sop.status)}
+                            <StatusBadge status={sop.status} domain="sop" />
                           </div>
                           {riwayat.length > 0 && (
                             <div className="mt-2 p-2 bg-gray-100 rounded border border-gray-200">
@@ -677,7 +659,7 @@ export function DaftarSOP() {
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-gray-600">Versi {selectedSOP.versi}</p>
                   <span className="text-gray-400">•</span>
-                  {getStatusBadge(selectedSOP.status)}
+                  <StatusBadge status={selectedSOP.status} domain="sop" />
                 </div>
               </div>
               <div className="p-3 bg-green-50 rounded-md border border-green-100">

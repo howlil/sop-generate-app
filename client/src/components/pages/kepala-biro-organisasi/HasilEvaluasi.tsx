@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { FileCheck, Eye, Download, CheckCircle, FileText } from 'lucide-react'
+import { Eye, Download, CheckCircle, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { SearchInput } from '@/components/ui/search-input'
+import { StatusBadge } from '@/components/ui/status-badge'
 import {
   Dialog,
   DialogContent,
@@ -163,19 +164,6 @@ export function HasilEvaluasi() {
     return hasil.sopList.every((sop) => sop.status === 'Sesuai') && !hasil.isVerified
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Sesuai':
-        return 'bg-green-100 text-green-700'
-      case 'Perlu Perbaikan':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'Tidak Sesuai':
-        return 'bg-red-100 text-red-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
-  }
-
   return (
     <div className="space-y-3">
       <PageHeader
@@ -228,12 +216,7 @@ export function HasilEvaluasi() {
               </p>
               <div className="flex gap-1 flex-wrap">
                 {hasil.sopList.map((sop, idx) => (
-                  <span
-                    key={idx}
-                    className={`inline-flex h-5 px-1.5 items-center rounded text-xs ${getStatusColor(sop.status)}`}
-                  >
-                    {sop.status}
-                  </span>
+                  <StatusBadge key={idx} status={sop.status} domain="sop" />
                 ))}
               </div>
 
@@ -329,11 +312,7 @@ export function HasilEvaluasi() {
                         <p className="text-xs font-semibold text-gray-900">{sop.nama}</p>
                         <p className="text-xs text-gray-500">{sop.nomor}</p>
                       </div>
-                      <span
-                        className={`inline-flex h-5 px-1.5 items-center rounded text-xs ${getStatusColor(sop.status)}`}
-                      >
-                        {sop.status}
-                      </span>
+                      <StatusBadge status={sop.status} domain="sop" />
                     </div>
                     <div className="space-y-1.5">
                       <div className="p-2 bg-blue-50 rounded border border-blue-100">
