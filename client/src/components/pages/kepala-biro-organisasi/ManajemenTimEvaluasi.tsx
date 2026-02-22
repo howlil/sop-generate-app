@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, Plus, Edit, Trash2, MoreVertical } from 'lucide-react'
+import { Users, Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SearchInput } from '@/components/ui/search-input'
@@ -12,12 +12,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -27,7 +21,6 @@ interface TimMonev {
   nip: string
   jabatan: string
   email: string
-  phone: string
   jumlahEvaluasi: number
 }
 
@@ -44,7 +37,6 @@ export function ManajemenTimEvaluasi() {
       nip: '197503152000032001',
       jabatan: 'IV/a - Pembina',
       email: 'siti.aminah@pemda.go.id',
-      phone: '0812-1111-2222',
       jumlahEvaluasi: 45,
     },
     {
@@ -53,7 +45,6 @@ export function ManajemenTimEvaluasi() {
       nip: '198201102005011002',
       jabatan: 'III/b - Penata Muda Tk.I',
       email: 'bambang.s@pemda.go.id',
-      phone: '0813-3333-4444',
       jumlahEvaluasi: 38,
     },
     {
@@ -62,7 +53,6 @@ export function ManajemenTimEvaluasi() {
       nip: '198805252010012003',
       jabatan: 'IV/b - Pembina Tk.I',
       email: 'dewi.k@pemda.go.id',
-      phone: '0814-5555-6666',
       jumlahEvaluasi: 32,
     },
   ])
@@ -72,14 +62,14 @@ export function ManajemenTimEvaluasi() {
     nip: '',
     jabatan: '',
     email: '',
-    phone: '',
   })
 
   const filteredTim = timList.filter(
     (tim) =>
       tim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tim.nip.includes(searchQuery) ||
-      tim.jabatan.toLowerCase().includes(searchQuery.toLowerCase())
+      tim.jabatan.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tim.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const handleDelete = (id: string) => {
@@ -95,7 +85,6 @@ export function ManajemenTimEvaluasi() {
       nip: tim.nip,
       jabatan: tim.jabatan,
       email: tim.email,
-      phone: tim.phone,
     })
     setIsEditDialogOpen(true)
   }
@@ -106,7 +95,6 @@ export function ManajemenTimEvaluasi() {
       nip: '',
       jabatan: '',
       email: '',
-      phone: '',
     })
   }
 
@@ -144,7 +132,7 @@ export function ManajemenTimEvaluasi() {
       <div className="bg-white rounded-md border border-gray-200 p-3">
         <div className="flex items-center gap-2 flex-wrap">
           <SearchInput
-            placeholder="Cari nama, NIP, atau golongan/jabatan..."
+            placeholder="Cari nama, NIP, jabatan, atau email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -170,7 +158,9 @@ export function ManajemenTimEvaluasi() {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Nama</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">NIP</th>
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Jabatan</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">Email</th>
                 <th className="text-center py-2.5 px-3 font-medium text-gray-700">Jumlah Evaluasi</th>
                 <th className="text-center py-2.5 px-3 font-medium text-gray-700">Aksi</th>
               </tr>
@@ -189,35 +179,37 @@ export function ManajemenTimEvaluasi() {
                       <p className="font-medium text-gray-900">{tim.name}</p>
                     </div>
                   </td>
+                  <td className="py-2.5 px-3 text-gray-600 font-mono text-xs">{tim.nip}</td>
                   <td className="py-2.5 px-3">
                     <Badge variant="outline" className="text-xs">
                       {tim.jabatan}
                     </Badge>
                   </td>
+                  <td className="py-2.5 px-3 text-gray-600 text-xs">{tim.email}</td>
                   <td className="py-2.5 px-3 text-center">
                     <span className="font-semibold text-gray-900">{tim.jumlahEvaluasi}</span>
                   </td>
                   <td className="py-2.5 px-3 text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-sm" className="h-7 w-7 p-0">
-                          <MoreVertical className="w-3.5 h-3.5" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="text-xs">
-                        <DropdownMenuItem onClick={() => openEditDialog(tim)}>
-                          <Edit className="w-3.5 h-3.5 mr-2" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(tim.id)}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 mr-2" />
-                          Hapus
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center justify-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => openEditDialog(tim)}
+                        title="Edit"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDelete(tim.id)}
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -270,15 +262,6 @@ export function ManajemenTimEvaluasi() {
                 placeholder="email@pemda.go.id"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Nomor Telepon</Label>
-              <Input
-                className="h-9 text-xs"
-                placeholder="0812-xxxx-xxxx"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
           </div>
@@ -339,14 +322,6 @@ export function ManajemenTimEvaluasi() {
                 className="h-9 text-xs"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Nomor Telepon</Label>
-              <Input
-                className="h-9 text-xs"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
             </div>
           </div>

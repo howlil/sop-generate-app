@@ -1,4 +1,6 @@
 import { Input } from '@/components/ui/input'
+import type { TTESignaturePayload } from '@/lib/tte-types'
+import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 
 export interface SOPHeaderInfoProps {
   name: string
@@ -21,6 +23,8 @@ export interface SOPHeaderInfoProps {
   warning?: string
   recordData?: string[]
   signature?: string
+  /** Tanda tangan elektronik BSRE (jika SOP sudah disahkan dengan TTE). */
+  tteSignaturePayload?: TTESignaturePayload | null
   editable?: boolean
   onMetadataChange?: (field: string, value: unknown) => void
 }
@@ -44,6 +48,7 @@ export function SOPHeaderInfo({
   warning = '-',
   recordData = [],
   signature = '',
+  tteSignaturePayload,
   editable = false,
   onMetadataChange,
 }: SOPHeaderInfoProps) {
@@ -61,70 +66,76 @@ export function SOPHeaderInfo({
   return (
     <div className="flex justify-center">
       <div className="px-4 lg:px-0 print:px-0 overflow-x-auto">
-        <div className="print-page print-break-after-page w-[calc(297mm-3cm)] min-w-[calc(297mm-3cm)] max-w-[calc(297mm-3cm)] box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
-          <table className="w-full border-collapse border-2 border-black text-sm bg-white">
+        <div className="print-page print-break-after-page w-full max-w-[calc(297mm-3cm)] min-w-0 box-border print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)] print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+          <table className="w-full border-collapse border-2 border-black text-sm bg-white table-fixed">
+            <colgroup>
+              <col style={{ width: '45%' }} />
+              <col style={{ width: '26%' }} />
+              <col style={{ width: '2%' }} />
+              <col style={{ width: '27%' }} />
+            </colgroup>
             <tbody>
               {/* Baris 1: Kolom kiri (rowspan 7) = logo + instansi */}
               <tr>
                 <th
                   rowSpan={7}
-                  className="w-[47%] border-2 py-0.5 px-2 border-black align-top bg-white"
+                  className="border-2 py-0.5 px-2 border-black align-top bg-white min-w-0 break-words"
                 >
                   <img
                     className="mx-auto h-36 my-4"
                     src={institutionLogo || "/logo_unand_kecil.png"}
-                    alt="Logo Kementerian Pendidikan Kebudayaan, Riset dan Teknologi"
+                    alt="Logo OPD"
                   />
                   {institutionLines.length > 0 ? (
-                    <div>
+                    <div className="break-words min-w-0">
                       {institutionLines.slice(0, 4).map((line, idx) => (
                         <h4
                           key={idx}
-                          className={idx < 3 ? 'font-semibold text-sm leading-tight' : 'font-[450] text-sm leading-tight'}
+                          className="font-bold text-sm leading-tight break-words"
                         >
                           {line}
                         </h4>
                       ))}
                     </div>
                   ) : (
-                    <>
-                      <h4 className="font-semibold text-sm leading-tight">
-                        KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI
+                    <div className="break-words min-w-0">
+                      <h4 className="font-bold text-sm leading-tight break-words">
+                        PEMERINTAH KABUPATEN PADANG
                       </h4>
-                      <h4 className="font-semibold text-sm leading-tight">UNIVERSITAS ANDALAS</h4>
-                      <h4 className="font-semibold text-sm leading-tight">
-                        FAKULTAS TEKNOLOGI INFORMASI
+                      <h4 className="font-bold text-sm leading-tight break-words">DINAS PENDIDIKAN</h4>
+                      <h4 className="font-bold text-sm leading-tight break-words">
+                        BIDANG PENDIDIKAN DASAR
                       </h4>
-                      <h4 className="font-[450] text-sm leading-tight">
-                        DEPARTEMEN SISTEM INFORMASI
+                      <h4 className="font-bold text-sm leading-tight break-words">
+                        SEKSI KURIKULUM DAN PENILAIAN
                       </h4>
-                    </>
+                    </div>
                   )}
                 </th>
               </tr>
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap w-0">
+                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap overflow-hidden">
                   NOMOR SOP
                 </td>
-                <td className="border-2 py-0.5 px-2 border-black w-0">:</td>
-                <td className="border-2 py-0.5 px-2 border-black">
+                <td className="border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
+                <td className="border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">
                   {editable ? (
                     <Input
-                      className="h-6 text-xs border-0 p-0 min-h-0 w-full bg-transparent"
+                      className="h-6 text-xs border-0 p-0 min-h-0 w-full bg-transparent break-words"
                       value={number}
                       onChange={(e) => handleChange('number', e.target.value)}
                     />
                   ) : (
-                    number || ' - '
+                    <span className="break-words">{number || ' - '}</span>
                   )}
                 </td>
               </tr>
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap">
+                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap overflow-hidden">
                   TANGGAL PEMBUATAN
                 </td>
-                <td className="border-2 py-0.5 px-2 border-black">:</td>
-                <td className="border-2 py-0.5 px-2 border-black">
+                <td className="border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
+                <td className="border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">
                   {editable ? (
                     <Input
                       type="date"
@@ -138,11 +149,11 @@ export function SOPHeaderInfo({
                 </td>
               </tr>
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap">
+                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap overflow-hidden">
                   TANGGAL REVISI
                 </td>
-                <td className="border-2 py-0.5 px-2 border-black">:</td>
-                <td className="border-2 py-0.5 px-2 border-black">
+                <td className="border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
+                <td className="border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">
                   {editable ? (
                     <Input
                       type="date"
@@ -156,11 +167,11 @@ export function SOPHeaderInfo({
                 </td>
               </tr>
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap">
+                <td className="font-bold border-2 py-0.5 px-2 border-black whitespace-nowrap overflow-hidden">
                   TANGGAL EFEKTIF
                 </td>
-                <td className="border-2 py-0.5 px-2 border-black">:</td>
-                <td className="border-2 py-0.5 px-2 border-black">
+                <td className="border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
+                <td className="border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">
                   {editable ? (
                     <Input
                       type="date"
@@ -174,57 +185,69 @@ export function SOPHeaderInfo({
                 </td>
               </tr>
               <tr>
-                <td className="font-bold align-top border-2 py-0.5 px-2 border-black whitespace-nowrap">
+                <td className="font-bold align-top border-2 py-0.5 px-2 border-black whitespace-nowrap overflow-hidden">
                   DISAHKAN OLEH
                 </td>
-                <td className="align-top border-2 py-0.5 px-2 border-black">:</td>
-                <td className="text-center font-bold border-2 py-0.5 px-2 border-black">
-                  <p>{picRole},</p>
-                  <div className="flex justify-center h-24 min-h-24">
-                    {signature ? (
-                      <img
-                        src={signature}
-                        alt="Tanda Tangan"
-                        className="max-w-full max-h-24 object-contain"
+                <td className="align-top border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
+                <td className="text-center font-bold border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">
+                  <div className="min-h-[6rem]">
+                    {tteSignaturePayload ? (
+                      <TTESignatureBlock
+                        payload={tteSignaturePayload}
+                        roleLabel={picRole}
+                        qrSize={72}
                       />
-                    ) : null}
+                    ) : (
+                      <>
+                        <p>{picRole},</p>
+                        <div className="flex justify-center h-24 min-h-24">
+                          {signature ? (
+                            <img
+                              src={signature}
+                              alt="Tanda Tangan"
+                              className="max-w-full max-h-24 object-contain"
+                            />
+                          ) : null}
+                        </div>
+                        <p>{picName}</p>
+                        <p>NIP. {picNumber}</p>
+                      </>
+                    )}
                   </div>
-                  <p>{picName}</p>
-                  <p>NIP. {picNumber}</p>
                 </td>
               </tr>
               <tr>
-                <td className="font-bold align-top border-2 py-0.5 px-2 border-black whitespace-nowrap">
+                <td className="font-bold align-top border-2 py-0.5 px-2 border-black whitespace-nowrap overflow-hidden">
                   SOP
                 </td>
-                <td className="border-2 py-0.5 px-2 border-black">:</td>
-                <td className="font-bold border-2 py-0.5 px-2 border-black">{name || ' - '}</td>
+                <td className="border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
+                <td className="font-bold border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">{name || ' - '}</td>
               </tr>
 
               {/* DASAR HUKUM | KUALIFIKASI PELAKSANAAN */}
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black">DASAR HUKUM</td>
-                <td colSpan={3} className="font-bold border-2 py-0.5 px-2 border-black">
+                <td className="font-bold border-2 py-0.5 px-2 border-black overflow-hidden">DASAR HUKUM</td>
+                <td colSpan={3} className="font-bold border-2 py-0.5 px-2 border-black overflow-hidden">
                   KUALIFIKASI PELAKSANAAN
                 </td>
               </tr>
               <tr>
-                <td className="align-top border-2 py-0.5 px-2 border-black">
+                <td className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {lawBasis.length > 0 ? (
-                    <ol className="list-decimal list-outside ml-5 text-left">
+                    <ol className="list-decimal list-outside ml-5 text-left break-words">
                       {lawBasis.map((item, i) => (
-                        <li key={i}>{item}</li>
+                        <li key={i} className="break-words">{item}</li>
                       ))}
                     </ol>
                   ) : (
                     <p> - </p>
                   )}
                 </td>
-                <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black">
+                <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {implementQualification.length > 0 ? (
-                    <ol className="list-decimal list-outside ml-5 text-left">
+                    <ol className="list-decimal list-outside ml-5 text-left break-words">
                       {implementQualification.map((item, i) => (
-                        <li key={i}>{item}</li>
+                        <li key={i} className="break-words">{item}</li>
                       ))}
                     </ol>
                   ) : (
@@ -235,30 +258,30 @@ export function SOPHeaderInfo({
 
               {/* KETERKAITAN | PERALATAN */}
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black">
+                <td className="font-bold border-2 py-0.5 px-2 border-black overflow-hidden">
                   KETERKAITAN DENGAN POS AP LAIN
                 </td>
-                <td colSpan={3} className="font-bold border-2 py-0.5 px-2 border-black">
+                <td colSpan={3} className="font-bold border-2 py-0.5 px-2 border-black overflow-hidden">
                   PERALATAN / PERLENGKAPAN
                 </td>
               </tr>
               <tr>
-                <td className="align-top border-2 py-0.5 px-2 border-black">
+                <td className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {relatedSop.length > 0 ? (
-                    <ol className="list-decimal list-outside ml-5 text-left">
+                    <ol className="list-decimal list-outside ml-5 text-left break-words">
                       {relatedSop.map((item, i) => (
-                        <li key={i}>{item}</li>
+                        <li key={i} className="break-words">{item}</li>
                       ))}
                     </ol>
                   ) : (
                     <p> - </p>
                   )}
                 </td>
-                <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black">
+                <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {equipment.length > 0 ? (
-                    <ol className="list-decimal list-outside ml-5 columns-3 text-left">
+                    <ol className="list-decimal list-outside ml-5 text-left columns-3 break-words">
                       {equipment.map((item, i) => (
-                        <li key={i}>{item}</li>
+                        <li key={i} className="break-words">{item}</li>
                       ))}
                     </ol>
                   ) : (
@@ -269,20 +292,26 @@ export function SOPHeaderInfo({
 
               {/* PERINGATAN | PENCATATAN DAN PENDATAAN */}
               <tr>
-                <td className="font-bold border-2 py-0.5 px-2 border-black">PERINGATAN</td>
-                <td colSpan={3} className="font-bold border-2 py-0.5 px-2 border-black">
+                <td className="font-bold border-2 py-0.5 px-2 border-black overflow-hidden">PERINGATAN</td>
+                <td colSpan={3} className="font-bold border-2 py-0.5 px-2 border-black overflow-hidden">
                   PENCATATAN DAN PENDATAAN
                 </td>
               </tr>
               <tr>
-                <td className="align-top border-2 py-0.5 px-2 border-black">
+                <td className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {warning ?? ''}
                 </td>
-                <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black">
+                <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {recordData.length > 0 ? (
-                    <ul className="list-none ml-0 text-left">
+                    <ul className="list-none ml-0 text-left break-words space-y-1">
                       {recordData.map((item, i) => (
-                        <li key={i}>- {item}</li>
+                        <li
+                          key={i}
+                          className="break-words"
+                          style={{ paddingLeft: '1.25rem', textIndent: '-1.25rem' }}
+                        >
+                          - {item}
+                        </li>
                       ))}
                     </ul>
                   ) : (

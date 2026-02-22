@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useState, useMemo, type ReactNode } from 'react'
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 
 export interface PageHeaderContent {
@@ -18,8 +18,12 @@ const PageHeaderContext = createContext<PageHeaderContextValue | null>(null)
 
 export function PageHeaderProvider({ children }: { children: ReactNode }) {
   const [headerContent, setHeaderContent] = useState<PageHeaderContent | null>(null)
+  const value = useMemo(
+    () => ({ headerContent, setHeaderContent }),
+    [headerContent]
+  )
   return (
-    <PageHeaderContext.Provider value={{ headerContent, setHeaderContent }}>
+    <PageHeaderContext.Provider value={value}>
       {children}
     </PageHeaderContext.Provider>
   )

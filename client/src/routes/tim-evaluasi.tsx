@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
-import { ClipboardCheck } from 'lucide-react'
+import { ClipboardCheck, PenLine } from 'lucide-react'
 import { isTimEvaluasi } from '@/lib/role'
 import { AppLogo } from '@/components/layout/AppLogo'
 import { HeaderProfile } from '@/components/layout/HeaderProfile'
@@ -16,6 +16,7 @@ export const Route = createFileRoute('/tim-evaluasi')({
 
 const sidebarItems = [
   { to: '/tim-evaluasi/penugasan', label: 'Penugasan & Hasil Evaluasi', icon: ClipboardCheck },
+  { to: '/tim-evaluasi/ttd-elektronik', label: 'TTD Elektronik', icon: PenLine },
 ]
 
 function TimEvaluasiLayout() {
@@ -31,7 +32,8 @@ function TimEvaluasiLayout() {
           {sidebarItems.map(({ to, label, icon: Icon }) => {
             const isActive =
               pathname === to ||
-              (to === '/tim-evaluasi/penugasan' && (pathname.startsWith('/tim-evaluasi/penugasan') || pathname.startsWith('/tim-evaluasi/pelaksanaan')))
+              (to === '/tim-evaluasi/penugasan' && (pathname.startsWith('/tim-evaluasi/penugasan') || pathname.startsWith('/tim-evaluasi/pelaksanaan'))) ||
+              (to === '/tim-evaluasi/ttd-elektronik' && pathname === '/tim-evaluasi/ttd-elektronik')
             return (
               <Link
                 key={to}

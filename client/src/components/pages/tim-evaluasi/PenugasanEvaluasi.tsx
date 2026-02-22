@@ -89,8 +89,7 @@ export function PenugasanEvaluasi() {
   const filteredPenugasan = penugasanList.filter((p) => {
     const matchSearch =
       p.sop.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.opd.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.kodePenugasan.toLowerCase().includes(searchQuery.toLowerCase())
+      p.opd.toLowerCase().includes(searchQuery.toLowerCase())
     const matchStatus = filterStatus === 'all' || p.status === filterStatus
     return matchSearch && matchStatus
   })
@@ -123,14 +122,11 @@ export function PenugasanEvaluasi() {
       </div>
 
       <div className="bg-white rounded-md border border-gray-200">
-        <div className="p-3 border-b border-gray-200">
-          <h2 className="text-xs font-semibold text-gray-900">Daftar Penugasan & Hasil Evaluasi</h2>
-        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="text-left py-2.5 px-3 font-medium text-gray-700">Kode Penugasan</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">Tanggal Penugasan</th>
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">OPD</th>
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">SOP</th>
                 <th className="text-center py-2.5 px-3 font-medium text-gray-700">Status</th>
@@ -143,8 +139,12 @@ export function PenugasanEvaluasi() {
                   key={penugasan.id}
                   className="border-b border-gray-100 hover:bg-gray-50 transition-all"
                 >
-                  <td className="py-2.5 px-3 font-mono text-gray-900 text-[11px]">
-                    {penugasan.kodePenugasan}
+                  <td className="py-2.5 px-3 text-gray-700">
+                    {new Date(penugasan.tanggalPenugasan).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
                   </td>
                   <td className="py-2.5 px-3 text-gray-700">{penugasan.opd}</td>
                   <td className="py-2.5 px-3 font-medium text-gray-900">{penugasan.sop}</td>
@@ -154,7 +154,7 @@ export function PenugasanEvaluasi() {
                   <td className="py-2.5 px-3 text-center">
                     <div className="flex items-center justify-center gap-1">
                       <Link to="/tim-evaluasi/penugasan/detail/$id" params={{ id: penugasan.id }}>
-                        <Button variant="outline" size="sm" className="h-7 px-2 text-xs" title="Detail">
+                        <Button variant="outline" size="icon-sm" className="h-7 w-7 p-0" title="Detail">
                           <Eye className="w-3.5 h-3.5" />
                         </Button>
                       </Link>
@@ -163,9 +163,8 @@ export function PenugasanEvaluasi() {
                           to="/tim-evaluasi/pelaksanaan/$id"
                           params={{ id: penugasan.id }}
                         >
-                          <Button size="sm" className="h-7 px-2 text-xs gap-1">
+                          <Button size="icon-sm" className="h-7 w-7 p-0" title={penugasan.status === 'assigned' ? 'Mulai' : 'Lanjutkan'}>
                             <Play className="w-3.5 h-3.5" />
-                            {penugasan.status === 'assigned' ? 'Mulai' : 'Lanjutkan'}
                           </Button>
                         </Link>
                       )}

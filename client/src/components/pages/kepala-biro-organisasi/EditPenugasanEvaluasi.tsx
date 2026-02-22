@@ -11,6 +11,7 @@ import {
   updatePenugasan,
   type Penugasan,
 } from '@/lib/penugasan-store'
+import { STATUS_SOP_CAN_SELECT_FOR_EVALUASI, type StatusSOP } from '@/lib/sop-status'
 
 const opdList = [
   { id: 'opd1', nama: 'Dinas Pendidikan', kode: 'DISDIK' },
@@ -19,28 +20,26 @@ const opdList = [
   { id: 'opd4', nama: 'Bagian Umum', kode: 'BAGUM' },
 ]
 
-const sopByOPD: Record<string, Array<{ id: string; nama: string; nomor: string; status: string }>> = {
+const sopByOPD: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>> = {
   'Dinas Pendidikan': [
-    { id: 'sop1', nama: 'SOP Penerimaan Siswa Baru', nomor: 'SOP-DISDIK-001/2026', status: 'Disahkan' },
-    { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi' },
-    { id: 'sop3', nama: 'SOP Kelulusan', nomor: 'SOP-DISDIK-010/2026', status: 'Disahkan' },
-    { id: '1', nama: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027', nomor: 'SOP/DISDIK/PLY/2026/001', status: 'Disahkan' },
-    { id: '2', nama: 'SOP Pelaksanaan Ujian Akhir Sekolah', nomor: 'SOP/DISDIK/PLY/2026/005', status: 'Terverifikasi' },
-    { id: '3', nama: 'SOP Pengelolaan Data Kepegawaian Guru', nomor: 'SOP/DISDIK/ADM/2026/003', status: 'Dalam Evaluasi' },
+    { id: 'sop1', nama: 'SOP Penerimaan Siswa Baru', nomor: 'SOP-DISDIK-001/2026', status: 'Berlaku' },
+    { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi dari Kepala Biro' },
+    { id: 'sop3', nama: 'SOP Kelulusan', nomor: 'SOP-DISDIK-010/2026', status: 'Berlaku' },
+    { id: '1', nama: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027', nomor: 'SOP/DISDIK/PLY/2026/001', status: 'Berlaku' },
+    { id: '2', nama: 'SOP Pelaksanaan Ujian Akhir Sekolah', nomor: 'SOP/DISDIK/PLY/2026/005', status: 'Siap Dievaluasi' },
+    { id: '3', nama: 'SOP Pengelolaan Data Kepegawaian Guru', nomor: 'SOP/DISDIK/ADM/2026/003', status: 'Dievaluasi Tim Evaluasi' },
   ],
   'Dinas Kesehatan': [
-    { id: 'sop4', nama: 'SOP Pelayanan Kesehatan Dasar', nomor: 'SOP-DINKES-012/2026', status: 'Disahkan' },
-    { id: 'sop5', nama: 'SOP Imunisasi', nomor: 'SOP-DINKES-018/2026', status: 'Terverifikasi' },
+    { id: 'sop4', nama: 'SOP Pelayanan Kesehatan Dasar', nomor: 'SOP-DINKES-012/2026', status: 'Berlaku' },
+    { id: 'sop5', nama: 'SOP Imunisasi', nomor: 'SOP-DINKES-018/2026', status: 'Terverifikasi dari Kepala Biro' },
   ],
   DPMPTSP: [
-    { id: 'sop6', nama: 'SOP Perizinan Usaha', nomor: 'SOP-DPMPTSP-005/2026', status: 'Disahkan' },
+    { id: 'sop6', nama: 'SOP Perizinan Usaha', nomor: 'SOP-DPMPTSP-005/2026', status: 'Diajukan Evaluasi' },
   ],
   'Bagian Umum': [
-    { id: 'sop7', nama: 'SOP Pengadaan Barang', nomor: 'SOP-BAGUM-015/2026', status: 'Terverifikasi' },
+    { id: 'sop7', nama: 'SOP Pengadaan Barang', nomor: 'SOP-BAGUM-015/2026', status: 'Siap Dievaluasi' },
   ],
 }
-
-const LAYAK_EVALUASI_STATUS = ['Disahkan', 'Terverifikasi', 'Siap Dievaluasi', 'Diajukan Evaluasi', 'Disahkan · Diajukan Evaluasi']
 
 const timMonevList = [
   { id: 'tm1', nama: 'Dra. Siti Aminah, M.Si' },
@@ -101,7 +100,7 @@ export function EditPenugasanEvaluasi() {
   const handleSave = () => {
     if (!id || !penugasan || !canSubmit()) return
     const opdSOPs = (sopByOPD[formData.opd] ?? []).filter((s) =>
-      LAYAK_EVALUASI_STATUS.includes(s.status)
+      STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status)
     )
     const sopList = opdSOPs
       .filter((s) => formData.selectedSOPs.includes(s.id))
@@ -144,14 +143,16 @@ export function EditPenugasanEvaluasi() {
         />
         <p className="text-sm text-gray-500">Penugasan tidak ditemukan.</p>
         <Link to="/kepala-biro-organisasi/manajemen-evaluasi-sop">
-          <Button variant="outline" size="sm">Kembali ke Daftar</Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" title="Kembali ke Daftar">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
         </Link>
       </div>
     )
   }
 
   const availableSOPs = (sopByOPD[formData.opd] ?? []).filter((s) =>
-    LAYAK_EVALUASI_STATUS.includes(s.status)
+    STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status)
   )
 
   return (
@@ -169,6 +170,13 @@ export function EditPenugasanEvaluasi() {
         ]}
         title="Edit Perencanaan & Penugasan"
         description="Ubah informasi perencanaan evaluasi dan penugasan tim monev"
+        leading={
+          <Link to="/kepala-biro-organisasi/manajemen-evaluasi-sop">
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Kembali">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          </Link>
+        }
       />
 
       <div className="bg-white rounded-md border border-gray-200 p-4 max-w-3xl">
@@ -261,7 +269,7 @@ export function EditPenugasanEvaluasi() {
                   })
                 ) : (
                   <p className="text-xs text-gray-500 text-center py-4">
-                    Tidak ada SOP dengan status layak evaluasi untuk OPD ini
+                    Tidak ada SOP dengan status Siap Dievaluasi / Berlaku / Diajukan Evaluasi untuk OPD ini
                   </p>
                 )}
               </div>

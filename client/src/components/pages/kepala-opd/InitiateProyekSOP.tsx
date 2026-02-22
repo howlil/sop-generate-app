@@ -145,9 +145,8 @@ export function InitiateProyekSOP() {
         description="Buat proyek SOP baru dan tugaskan ke tim penyusun"
         leading={
           <Link to="/kepala-opd/daftar-sop">
-            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-              Kembali
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Kembali">
+              <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
         }

@@ -477,12 +477,12 @@ export function SOPDiagramBpmn({
 
   const effectiveArrowConfig = useMemo(() => ({ ...(arrowConfig ?? {}), ...arrowConfigs }), [arrowConfig, arrowConfigs])
 
-  const A4_LANDSCAPE_PX = 1052
+  const A4_LANDSCAPE_PX = 1123 /* 297mm at 96dpi */
   const printScale = Math.min(1, A4_LANDSCAPE_PX / diagramWidth)
 
   return (
     <div
-      className="diagram-wrapper w-full overflow-x-auto print-page [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
+      className="diagram-wrapper w-full max-w-[calc(297mm-3cm)] min-w-0 mx-auto overflow-x-auto print-page print:max-w-[calc(297mm-3cm)] [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
       style={{ '--bpmn-print-scale': printScale } as React.CSSProperties}
     >
       <div

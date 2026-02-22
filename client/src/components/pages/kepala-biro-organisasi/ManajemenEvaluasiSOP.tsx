@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Plus, Eye, Send, Building, History } from 'lucide-react'
+import { Plus, Eye, Send, Building, History, Pencil } from 'lucide-react'
 import { getActiveCaseForSop, addEvaluationCase } from '@/lib/evaluation-case'
 import {
   getPenugasanList,
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { STATUS_SOP_CAN_SELECT_FOR_EVALUASI, type StatusSOP, type StatusHasilEvaluasi } from '@/lib/sop-status'
 
 type StatusEvaluasi = 'Belum Ditugaskan' | 'Sudah Ditugaskan' | 'Selesai' | 'Terverifikasi'
 
@@ -32,7 +33,8 @@ interface SOPItem {
   id: string
   nama: string
   nomor: string
-  status?: 'Sesuai' | 'Perlu Perbaikan' | 'Tidak Sesuai'
+  /** Hasil evaluasi per SOP (bukan status SOP). */
+  status?: StatusHasilEvaluasi
   catatan?: string
   rekomendasi?: string
 }
@@ -160,31 +162,29 @@ export function ManajemenEvaluasiSOP() {
   /** OPD yang mengajukan request evaluasi ke Biro (request dari OPD). Tampilkan badge "Request Biro" saat pilih OPD. */
   const opdYangRequestBiro = ['DPMPTSP']
 
-  /** SOP per OPD; hanya yang statusnya layak evaluasi (Disahkan/Terverifikasi) ditampilkan. */
+  /** SOP per OPD; status SOP = single source of truth. Filter layak evaluasi: Siap Dievaluasi, Berlaku, Diajukan Evaluasi. */
   const [sopByOPD] = useState<
-    Record<string, Array<{ id: string; nama: string; nomor: string; status: string }>>
+    Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>>
   >({
     'Dinas Pendidikan': [
-      { id: 'sop1', nama: 'SOP Penerimaan Siswa Baru', nomor: 'SOP-DISDIK-001/2026', status: 'Disahkan' },
-      { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi' },
-      { id: 'sop3', nama: 'SOP Kelulusan', nomor: 'SOP-DISDIK-010/2026', status: 'Disahkan' },
-      { id: '1', nama: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027', nomor: 'SOP/DISDIK/PLY/2026/001', status: 'Disahkan' },
-      { id: '2', nama: 'SOP Pelaksanaan Ujian Akhir Sekolah', nomor: 'SOP/DISDIK/PLY/2026/005', status: 'Terverifikasi' },
-      { id: '3', nama: 'SOP Pengelolaan Data Kepegawaian Guru', nomor: 'SOP/DISDIK/ADM/2026/003', status: 'Dalam Evaluasi' },
+      { id: 'sop1', nama: 'SOP Penerimaan Siswa Baru', nomor: 'SOP-DISDIK-001/2026', status: 'Berlaku' },
+      { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi dari Kepala Biro' },
+      { id: 'sop3', nama: 'SOP Kelulusan', nomor: 'SOP-DISDIK-010/2026', status: 'Berlaku' },
+      { id: '1', nama: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027', nomor: 'SOP/DISDIK/PLY/2026/001', status: 'Berlaku' },
+      { id: '2', nama: 'SOP Pelaksanaan Ujian Akhir Sekolah', nomor: 'SOP/DISDIK/PLY/2026/005', status: 'Siap Dievaluasi' },
+      { id: '3', nama: 'SOP Pengelolaan Data Kepegawaian Guru', nomor: 'SOP/DISDIK/ADM/2026/003', status: 'Dievaluasi Tim Evaluasi' },
     ],
     'Dinas Kesehatan': [
-      { id: 'sop4', nama: 'SOP Pelayanan Kesehatan Dasar', nomor: 'SOP-DINKES-012/2026', status: 'Disahkan' },
-      { id: 'sop5', nama: 'SOP Imunisasi', nomor: 'SOP-DINKES-018/2026', status: 'Terverifikasi' },
+      { id: 'sop4', nama: 'SOP Pelayanan Kesehatan Dasar', nomor: 'SOP-DINKES-012/2026', status: 'Berlaku' },
+      { id: 'sop5', nama: 'SOP Imunisasi', nomor: 'SOP-DINKES-018/2026', status: 'Terverifikasi dari Kepala Biro' },
     ],
     DPMPTSP: [
-      { id: 'sop6', nama: 'SOP Perizinan Usaha', nomor: 'SOP-DPMPTSP-005/2026', status: 'Disahkan' },
+      { id: 'sop6', nama: 'SOP Perizinan Usaha', nomor: 'SOP-DPMPTSP-005/2026', status: 'Diajukan Evaluasi' },
     ],
     'Bagian Umum': [
-      { id: 'sop7', nama: 'SOP Pengadaan Barang', nomor: 'SOP-BAGUM-015/2026', status: 'Terverifikasi' },
+      { id: 'sop7', nama: 'SOP Pengadaan Barang', nomor: 'SOP-BAGUM-015/2026', status: 'Siap Dievaluasi' },
     ],
   })
-
-  const LAYAK_EVALUASI_STATUS = ['Disahkan', 'Terverifikasi', 'Siap Dievaluasi', 'Diajukan Evaluasi', 'Disahkan · Diajukan Evaluasi']
 
   /** Riwayat evaluasi untuk satu SOP: penugasan yang sudah Selesai/Terverifikasi dan memuat SOP ini. */
   const getRiwayatEvaluasiSop = (sopId: string) =>
@@ -257,7 +257,7 @@ export function ManajemenEvaluasiSOP() {
   const handleTugaskan = () => {
     if (!canSubmit()) return
     const opdSOPs = (sopByOPD[formData.opd] ?? []).filter((s) =>
-      LAYAK_EVALUASI_STATUS.includes(s.status)
+      STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status)
     )
     const sopList = opdSOPs.filter((s) => formData.selectedSOPs.includes(s.id))
     try {
@@ -351,13 +351,12 @@ export function ManajemenEvaluasiSOP() {
                 </td>
                 <td className="py-2.5 px-3">
                   <div className="flex items-center justify-center gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => goToDetail(item)}>
-                      <Eye className="w-3 h-3 mr-1" />
-                      Detail
+                    <Button variant="ghost" size="icon-sm" className="h-7 w-7 p-0" onClick={() => goToDetail(item)} title="Detail">
+                      <Eye className="w-3.5 h-3.5" />
                     </Button>
                     {item.status !== 'Selesai' && item.status !== 'Terverifikasi' && (
-                      <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => openEditDialog(item)}>
-                        Edit
+                      <Button variant="ghost" size="icon-sm" className="h-7 w-7 p-0" onClick={() => openEditDialog(item)} title="Edit">
+                        <Pencil className="w-3.5 h-3.5" />
                       </Button>
                     )}
                   </div>
@@ -384,7 +383,7 @@ export function ManajemenEvaluasiSOP() {
             <DialogDescription className="text-xs">
               {editingPenugasanId
                 ? 'Ubah OPD, SOP, atau tim monev untuk penugasan ini.'
-                : 'Pilih OPD dan SOP yang akan dievaluasi, lalu tugaskan tim monev. Jika OPD punya request evaluasi, akan tampil badge &quot;Request Biro&quot; dan jenis penugasan otomatis Request OPD; selain itu Inisiasi Biro.'}
+                : 'Pilih OPD dan SOP yang akan dievaluasi, lalu tugaskan tim monev.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -419,9 +418,6 @@ export function ManajemenEvaluasiSOP() {
                   </Badge>
                 )}
               </div>
-              <p className="text-xs text-gray-500">
-                OPD dengan badge &quot;Request Biro&quot; = ada request evaluasi dari OPD tersebut. Jenis penugasan (Inisiasi Biro / Request OPD) mengikuti pilihan OPD.
-              </p>
             </div>
 
             {formData.opd && (
@@ -431,10 +427,10 @@ export function ManajemenEvaluasiSOP() {
                 </Label>
                 <div className="border border-gray-200 rounded-md p-3 max-h-60 overflow-y-auto space-y-2">
                   {(sopByOPD[formData.opd] ?? [])
-                    .filter((s) => LAYAK_EVALUASI_STATUS.includes(s.status))
+                    .filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
                     .length > 0 ? (
                     (sopByOPD[formData.opd] ?? [])
-                      .filter((s) => LAYAK_EVALUASI_STATUS.includes(s.status))
+                      .filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
                       .map((sop) => {
                         const activeCase = getActiveCaseForSop(sop.id)
                         const inCase = !!activeCase
@@ -474,7 +470,7 @@ export function ManajemenEvaluasiSOP() {
                       })
                   ) : (
                     <p className="text-xs text-gray-500 text-center py-4">
-                      Tidak ada SOP dengan status layak evaluasi untuk OPD ini
+                      Tidak ada SOP dengan status Siap Dievaluasi / Berlaku / Diajukan Evaluasi untuk OPD ini
                     </p>
                   )}
                 </div>
@@ -526,7 +522,7 @@ export function ManajemenEvaluasiSOP() {
               className="h-8 text-xs gap-1.5"
               onClick={() => {
                 if (editingPenugasanId) {
-                  const opdSOPs = (sopByOPD[formData.opd] ?? []).filter((s) => LAYAK_EVALUASI_STATUS.includes(s.status))
+                  const opdSOPs = (sopByOPD[formData.opd] ?? []).filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
                   const sopList = opdSOPs.filter((s) => formData.selectedSOPs.includes(s.id)).map((s) => ({ id: s.id, nama: s.nama, nomor: s.nomor }))
                   updateStorePenugasan(editingPenugasanId, {
                     jenis: formData.jenis,
@@ -594,7 +590,7 @@ export function ManajemenEvaluasiSOP() {
                         <p className="text-gray-600">Tgl evaluasi: {new Date(p.tanggalEvaluasi).toLocaleDateString('id-ID')}</p>
                       )}
                       {sopInBatch?.status && (
-                        <p className="text-gray-700">Hasil SOP ini: <span className={sopInBatch.status === 'Sesuai' ? 'text-green-700 font-medium' : sopInBatch.status === 'Tidak Sesuai' ? 'text-red-700 font-medium' : ''}>{sopInBatch.status}</span></p>
+                        <p className="text-gray-700">Hasil SOP ini: <span className={sopInBatch.status === 'Sesuai' ? 'text-green-700 font-medium' : sopInBatch.status === 'Revisi Biro' ? 'text-amber-700 font-medium' : ''}>{sopInBatch.status}</span></p>
                       )}
                     </div>
                   )

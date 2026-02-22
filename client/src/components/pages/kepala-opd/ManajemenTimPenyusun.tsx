@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Eye, Edit, Trash2, UserCheck, UserX, Search } from 'lucide-react'
+import { Plus, Edit, Trash2, UserCheck, UserX, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -33,7 +33,6 @@ export function ManajemenTimPenyusun() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
@@ -170,11 +169,6 @@ export function ManajemenTimPenyusun() {
     setIsEditOpen(true)
   }
 
-  const openDetailDialog = (tim: TimPenyusun) => {
-    setSelectedTim(tim)
-    setIsDetailOpen(true)
-  }
-
   return (
     <div className="space-y-3">
       <PageHeader
@@ -215,7 +209,12 @@ export function ManajemenTimPenyusun() {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Nama</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">NIP</th>
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Jabatan</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">Email</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">No. HP</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">Tgl Bergabung</th>
+                <th className="text-center py-2.5 px-3 font-medium text-gray-700">Total SOP</th>
                 <th className="text-center py-2.5 px-3 font-medium text-gray-700">Status</th>
                 <th className="text-center py-2.5 px-3 font-medium text-gray-700">Aksi</th>
               </tr>
@@ -229,7 +228,14 @@ export function ManajemenTimPenyusun() {
                   <td className="py-2.5 px-3">
                     <p className="font-medium text-gray-900">{tim.nama}</p>
                   </td>
+                  <td className="py-2.5 px-3 font-mono text-gray-600 text-[11px]">{tim.nip}</td>
                   <td className="py-2.5 px-3 text-gray-600">{tim.jabatan}</td>
+                  <td className="py-2.5 px-3 text-gray-600">{tim.email}</td>
+                  <td className="py-2.5 px-3 text-gray-600">{tim.noHP}</td>
+                  <td className="py-2.5 px-3 text-gray-600">
+                    {new Date(tim.tanggalBergabung).toLocaleDateString('id-ID')}
+                  </td>
+                  <td className="py-2.5 px-3 text-center font-medium text-gray-900">{tim.jumlahSOPDisusun}</td>
                   <td className="py-2.5 px-3 text-center">
                     <button
                       type="button"
@@ -241,14 +247,6 @@ export function ManajemenTimPenyusun() {
                   </td>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center justify-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => openDetailDialog(tim)}
-                      >
-                        <Eye className="w-3 h-3" />
-                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -283,7 +281,7 @@ export function ManajemenTimPenyusun() {
               Isi data pegawai yang akan ditunjuk sebagai tim penyusun SOP
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 pb-0">
             <div className="space-y-1.5">
               <Label className="text-xs">Nama Lengkap *</Label>
               <Input
@@ -344,7 +342,7 @@ export function ManajemenTimPenyusun() {
               </select>
             </div>
           </div>
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-3">
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsCreateOpen(false)}>
               Batal
             </Button>
@@ -364,7 +362,7 @@ export function ManajemenTimPenyusun() {
               Perbarui data tim penyusun SOP
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 pb-0">
             <div className="space-y-1.5">
               <Label className="text-xs">Nama Lengkap *</Label>
               <Input
@@ -420,72 +418,12 @@ export function ManajemenTimPenyusun() {
               </select>
             </div>
           </div>
-          <DialogFooter className="gap-2">
+          <DialogFooter className="gap-2 pt-3">
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsEditOpen(false)}>
               Batal
             </Button>
             <Button size="sm" className="h-8 text-xs" onClick={handleEdit}>
               Simpan Perubahan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Detail Dialog */}
-      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Detail Tim Penyusun SOP</DialogTitle>
-          </DialogHeader>
-          {selectedTim && (
-            <div className="space-y-3">
-              <div className="p-3 bg-gray-50 rounded-md">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-semibold text-sm">{selectedTim.nama}</h3>
-                    <p className="text-xs text-gray-500 font-mono">{selectedTim.nip}</p>
-                  </div>
-                  <Badge
-                    className={`text-xs border-0 ${
-                      selectedTim.status === 'Aktif'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {selectedTim.status}
-                  </Badge>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 border border-gray-200 rounded-md">
-                  <p className="text-xs text-gray-500 mb-1">Jabatan</p>
-                  <p className="text-xs font-medium text-gray-900">{selectedTim.jabatan}</p>
-                </div>
-                <div className="p-3 border border-gray-200 rounded-md">
-                  <p className="text-xs text-gray-500 mb-1">Tanggal Bergabung</p>
-                  <p className="text-xs font-medium text-gray-900">
-                    {new Date(selectedTim.tanggalBergabung).toLocaleDateString('id-ID')}
-                  </p>
-                </div>
-                <div className="p-3 border border-gray-200 rounded-md">
-                  <p className="text-xs text-gray-500 mb-1">Email</p>
-                  <p className="text-xs font-medium text-gray-900">{selectedTim.email}</p>
-                </div>
-                <div className="p-3 border border-gray-200 rounded-md">
-                  <p className="text-xs text-gray-500 mb-1">No. HP</p>
-                  <p className="text-xs font-medium text-gray-900">{selectedTim.noHP}</p>
-                </div>
-              </div>
-              <div className="p-3 bg-blue-50 rounded-md border border-blue-100">
-                <p className="text-xs text-gray-600 mb-1">Riwayat Penyusunan</p>
-                <p className="text-sm font-semibold text-blue-700">{selectedTim.jumlahSOPDisusun} SOP</p>
-                <p className="text-xs text-gray-600">Total SOP yang pernah disusun</p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button size="sm" className="h-8 text-xs" onClick={() => setIsDetailOpen(false)}>
-              Tutup
             </Button>
           </DialogFooter>
         </DialogContent>

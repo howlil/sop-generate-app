@@ -27,7 +27,7 @@ interface Laporan {
   opd: string
   tanggalEvaluasi: string
   tanggalLaporan: string
-  status: 'Sesuai' | 'Tidak Sesuai'
+  status: 'Sesuai' | 'Revisi Biro'
   jumlahTemuan: number
 }
 
@@ -40,7 +40,7 @@ const laporanList: Laporan[] = [
     opd: 'Dinas Pendidikan',
     tanggalEvaluasi: '2026-01-28',
     tanggalLaporan: '2026-01-29',
-    status: 'Tidak Sesuai',
+    status: 'Revisi Biro',
     jumlahTemuan: 3,
   },
   {
@@ -137,7 +137,7 @@ export function LaporanEvaluasi() {
   const getStatusBadge = (status: string) => {
     const badges: Record<string, string> = {
       Sesuai: 'bg-green-100 text-green-700',
-      'Tidak Sesuai': 'bg-red-100 text-red-700',
+      'Revisi Biro': 'bg-amber-100 text-amber-700',
     }
     return badges[status] || 'bg-gray-100 text-gray-700'
   }
@@ -163,7 +163,7 @@ export function LaporanEvaluasi() {
           >
             <option value="all">Semua Status</option>
             <option value="Sesuai">Sesuai</option>
-            <option value="Tidak Sesuai">Tidak Sesuai</option>
+            <option value="Revisi Biro">Revisi Biro</option>
           </select>
         </div>
       </div>
@@ -272,18 +272,18 @@ export function LaporanEvaluasi() {
                 className={`p-4 rounded-md ${
                   selectedLaporan.status === 'Sesuai'
                     ? 'bg-green-50 border border-green-200'
-                    : 'bg-red-50 border border-red-200'
+                    : 'bg-amber-50 border border-amber-200'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   {selectedLaporan.status === 'Sesuai' ? (
                     <CheckCircle className="w-5 h-5 text-green-600" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-amber-600" />
                   )}
                   <span
                     className={`text-sm font-semibold ${
-                      selectedLaporan.status === 'Sesuai' ? 'text-green-700' : 'text-red-700'
+                      selectedLaporan.status === 'Sesuai' ? 'text-green-700' : 'text-amber-700'
                     }`}
                   >
                     Status Hasil Evaluasi: {selectedLaporan.status}

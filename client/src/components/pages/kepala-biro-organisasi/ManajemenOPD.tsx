@@ -51,6 +51,7 @@ interface KepalaOPD {
   id: string
   opdId: string
   name: string
+  nip: string
   email: string
   phone: string
   isActive: boolean
@@ -77,12 +78,12 @@ export function ManajemenOPD() {
   ])
 
   const [kepalaList, setKepalaList] = useState<KepalaOPD[]>([
-    { id: 'k1', opdId: '1', name: 'Dr. Ahmad Pratama', email: 'ahmad.pratama@pemda.go.id', phone: '0812-3456-7890', isActive: true, startedAt: '2024-01-15', totalSOP: 245 },
-    { id: 'k2', opdId: '2', name: 'Dr. Siti Nurhaliza', email: 'siti.nurhaliza@pemda.go.id', phone: '0812-9876-5432', isActive: true, startedAt: '2024-01-15', totalSOP: 189 },
-    { id: 'k3', opdId: '3', name: 'Ir. Budi Santoso', email: 'budi.santoso@pemda.go.id', phone: '0812-5555-6666', isActive: true, startedAt: '2024-01-20', totalSOP: 156 },
-    { id: 'k4', opdId: '4', name: 'Ir. Andi Wijaya, MT', email: 'andi.wijaya@pemda.go.id', phone: '0813-7777-8888', isActive: true, startedAt: '2024-01-18', totalSOP: 178 },
-    { id: 'k5', opdId: '5', name: 'Drs. Hendra Kusuma, M.Si', email: 'hendra.kusuma@pemda.go.id', phone: '0814-2222-3333', isActive: true, startedAt: '2024-01-12', totalSOP: 98 },
-    { id: 'k6', opdId: '6', name: 'Dra. Sri Wahyuni', email: 'sri.wahyuni@pemda.go.id', phone: '0815-4444-5555', isActive: true, startedAt: '2024-02-01', totalSOP: 134 },
+    { id: 'k1', opdId: '1', name: 'Dr. Ahmad Pratama', nip: '196801151992031001', email: 'ahmad.pratama@pemda.go.id', phone: '0812-3456-7890', isActive: true, startedAt: '2024-01-15', totalSOP: 245 },
+    { id: 'k2', opdId: '2', name: 'Dr. Siti Nurhaliza', nip: '197503152000032001', email: 'siti.nurhaliza@pemda.go.id', phone: '0812-9876-5432', isActive: true, startedAt: '2024-01-15', totalSOP: 189 },
+    { id: 'k3', opdId: '3', name: 'Ir. Budi Santoso', nip: '198201102005011002', email: 'budi.santoso@pemda.go.id', phone: '0812-5555-6666', isActive: true, startedAt: '2024-01-20', totalSOP: 156 },
+    { id: 'k4', opdId: '4', name: 'Ir. Andi Wijaya, MT', nip: '198505252010012003', email: 'andi.wijaya@pemda.go.id', phone: '0813-7777-8888', isActive: true, startedAt: '2024-01-18', totalSOP: 178 },
+    { id: 'k5', opdId: '5', name: 'Drs. Hendra Kusuma, M.Si', nip: '197012081998031002', email: 'hendra.kusuma@pemda.go.id', phone: '0814-2222-3333', isActive: true, startedAt: '2024-01-12', totalSOP: 98 },
+    { id: 'k6', opdId: '6', name: 'Dra. Sri Wahyuni', nip: '198305152003122001', email: 'sri.wahyuni@pemda.go.id', phone: '0815-4444-5555', isActive: true, startedAt: '2024-02-01', totalSOP: 134 },
   ])
 
   const getKepalaAktif = (opdId: string) => kepalaList.find((k) => k.opdId === opdId && k.isActive)
@@ -138,12 +139,12 @@ export function ManajemenOPD() {
   const [kepalaFormOpen, setKepalaFormOpen] = useState(false)
   const [tambahPenugasanOpen, setTambahPenugasanOpen] = useState(false)
   const [editingKepala, setEditingKepala] = useState<KepalaOPD | null>(null)
-  const [kepalaForm, setKepalaForm] = useState({ name: '', email: '', phone: '', startedAt: '' })
-  const [penugasanForm, setPenugasanForm] = useState({ opdId: '', name: '', email: '', phone: '', startedAt: new Date().toISOString().slice(0, 10) })
+  const [kepalaForm, setKepalaForm] = useState({ name: '', nip: '', email: '', phone: '', startedAt: '' })
+  const [penugasanForm, setPenugasanForm] = useState({ opdId: '', name: '', nip: '', email: '', startedAt: new Date().toISOString().slice(0, 10) })
   const [riwayatDialogOpen, setRiwayatDialogOpen] = useState(false)
   const [riwayatDialogPerson, setRiwayatDialogPerson] = useState<{ name: string; email: string } | null>(null)
   const [pindahDialogOpen, setPindahDialogOpen] = useState(false)
-  const [pindahDialogPerson, setPindahDialogPerson] = useState<{ name: string; email: string; phone: string } | null>(null)
+  const [pindahDialogPerson, setPindahDialogPerson] = useState<{ name: string; email: string; phone: string; nip?: string } | null>(null)
   const [pindahForm, setPindahForm] = useState({ opdId: '', startedAt: new Date().toISOString().slice(0, 10) })
 
   const openRiwayatKepala = (opd: OPD) => {
@@ -153,10 +154,10 @@ export function ManajemenOPD() {
   const openKepalaForm = (kepala?: KepalaOPD) => {
     if (kepala) {
       setEditingKepala(kepala)
-      setKepalaForm({ name: kepala.name, email: kepala.email, phone: kepala.phone, startedAt: kepala.startedAt })
+      setKepalaForm({ name: kepala.name, nip: kepala.nip ?? '', email: kepala.email, phone: kepala.phone, startedAt: kepala.startedAt })
     } else {
       setEditingKepala(null)
-      setKepalaForm({ name: '', email: '', phone: '', startedAt: new Date().toISOString().slice(0, 10) })
+      setKepalaForm({ name: '', nip: '', email: '', phone: '', startedAt: new Date().toISOString().slice(0, 10) })
     }
     setKepalaFormOpen(true)
   }
@@ -164,7 +165,7 @@ export function ManajemenOPD() {
     if (!selectedOPD || !kepalaForm.name) return
     if (editingKepala) {
       setKepalaList((prev) =>
-        prev.map((k) => (k.id === editingKepala.id ? { ...k, ...kepalaForm } : k))
+        prev.map((k) => (k.id === editingKepala.id ? { ...k, ...kepalaForm, nip: kepalaForm.nip } : k))
       )
     } else {
       const existingActive = getKepalaAktif(selectedOPD.id)
@@ -173,6 +174,7 @@ export function ManajemenOPD() {
         id: 'k' + Date.now(),
         opdId: selectedOPD.id,
         name: kepalaForm.name,
+        nip: kepalaForm.nip,
         email: kepalaForm.email,
         phone: kepalaForm.phone,
         isActive: true,
@@ -200,8 +202,9 @@ export function ManajemenOPD() {
       id: 'k' + Date.now(),
       opdId: penugasanForm.opdId,
       name: penugasanForm.name,
+      nip: penugasanForm.nip,
       email: penugasanForm.email,
-      phone: penugasanForm.phone,
+      phone: '',
       isActive: true,
       startedAt: today,
       totalSOP: 0,
@@ -216,7 +219,7 @@ export function ManajemenOPD() {
       return next
     })
     setTambahPenugasanOpen(false)
-    setPenugasanForm({ opdId: '', name: '', email: '', phone: '', startedAt: new Date().toISOString().slice(0, 10) })
+    setPenugasanForm({ opdId: '', name: '', nip: '', email: '', startedAt: new Date().toISOString().slice(0, 10) })
   }
 
   const savePindahJabatan = () => {
@@ -262,6 +265,7 @@ export function ManajemenOPD() {
     name: string
     email: string
     phone: string
+    nip: string
     activeAssignment?: KepalaOPD & { opdName: string }
   }> = uniqueUsers.map((u) => {
     const first = kepalaList.find((k) => k.name === u.name && (k.email ?? '') === u.email)
@@ -270,6 +274,7 @@ export function ManajemenOPD() {
       name: u.name,
       email: u.email,
       phone: first?.phone ?? '',
+      nip: first?.nip ?? '',
       activeAssignment: active
         ? { ...active, opdName: opdList.find((o) => o.id === active.opdId)?.name ?? active.opdId }
         : undefined,
@@ -279,6 +284,7 @@ export function ManajemenOPD() {
     (p) =>
       p.name.toLowerCase().includes(searchUserQuery.toLowerCase()) ||
       p.email.toLowerCase().includes(searchUserQuery.toLowerCase()) ||
+      (p.nip ?? '').includes(searchUserQuery) ||
       (p.activeAssignment?.opdName ?? '').toLowerCase().includes(searchUserQuery.toLowerCase())
   )
   const getRiwayatForUser = (name: string, email: string) =>
@@ -347,7 +353,7 @@ export function ManajemenOPD() {
                 size="sm"
                 className="h-8 gap-1.5 text-xs shrink-0"
                 onClick={() => {
-                  setPenugasanForm({ opdId: opdList[0]?.id ?? '', name: '', email: '', phone: '', startedAt: new Date().toISOString().slice(0, 10) })
+                  setPenugasanForm({ opdId: opdList[0]?.id ?? '', name: '', nip: '', email: '', startedAt: new Date().toISOString().slice(0, 10) })
                   setTambahPenugasanOpen(true)
                 }}
               >
@@ -422,9 +428,10 @@ export function ManajemenOPD() {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Nama Kepala</th>
+                <th className="text-left py-2.5 px-3 font-medium text-gray-700">NIP</th>
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Email</th>
                 <th className="text-left py-2.5 px-3 font-medium text-gray-700">Jabatan Aktif</th>
-                <th className="text-center py-2.5 px-3 font-medium text-gray-700">Mulai</th>
+                <th className="text-center py-2.5 px-3 font-medium text-gray-700">Mulai menjabat</th>
                 <th className="text-center py-2.5 px-3 font-medium text-gray-700">Aksi</th>
               </tr>
             </thead>
@@ -434,6 +441,7 @@ export function ManajemenOPD() {
                 return (
                   <tr key={`${p.name}|${p.email}`} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-2.5 px-3 font-medium text-gray-900">{p.name}</td>
+                    <td className="py-2.5 px-3 text-gray-600 font-mono text-xs">{p.nip || '—'}</td>
                     <td className="py-2.5 px-3 text-gray-600">{p.email}</td>
                     <td className="py-2.5 px-3">{act?.opdName ?? '—'}</td>
                     <td className="py-2.5 px-3 text-center">{act ? new Date(act.startedAt).toLocaleDateString('id-ID') : '—'}</td>
@@ -448,7 +456,7 @@ export function ManajemenOPD() {
                           className="h-7 w-7 p-0"
                           title="Pindah jabatan"
                           onClick={() => {
-                            setPindahDialogPerson({ name: p.name, email: p.email, phone: p.phone })
+                            setPindahDialogPerson({ name: p.name, email: p.email, phone: p.phone, nip: p.nip })
                             setPindahForm({ opdId: '', startedAt: new Date().toISOString().slice(0, 10) })
                             setPindahDialogOpen(true)
                           }}
@@ -650,83 +658,81 @@ export function ManajemenOPD() {
 
       {/* Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-sm">Detail OPD</DialogTitle>
+            <DialogTitle className="text-sm font-semibold text-gray-900">Detail OPD</DialogTitle>
           </DialogHeader>
           {selectedOPD && (
-            <div className="space-y-3">
-              <div className="p-3 bg-gray-50 rounded-md">
-                <div className="flex items-center gap-2 mb-2">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  <h3 className="font-semibold text-sm">{selectedOPD.name}</h3>
-                </div>
-                <div className="flex gap-2">
-                  <Badge variant="outline" className="text-xs">{selectedOPD.code}</Badge>
+            <div className="space-y-4">
+              <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-xl border border-blue-100/80">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-white/80 rounded-lg shadow-sm">
+                    <Building2 className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-gray-900">{selectedOPD.name}</h3>
+                    <Badge variant="outline" className="mt-1.5 text-xs font-medium text-gray-600 border-gray-300">{selectedOPD.code}</Badge>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1 text-gray-500">Kategori</div>
-                  <div className="col-span-2 font-medium">{selectedOPD.category}</div>
+              <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 space-y-3 text-xs">
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Kategori</span>
+                  <span className="font-medium text-gray-900">{selectedOPD.category}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1 text-gray-500">Kepala (aktif)</div>
-                  <div className="col-span-2 font-medium">
-                    {getKepalaAktif(selectedOPD.id)?.name ?? '—'}
-                  </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Kepala (aktif)</span>
+                  <span className="font-medium text-gray-900">{getKepalaAktif(selectedOPD.id)?.name ?? '—'}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1 text-gray-500">Email OPD</div>
-                  <div className="col-span-2 font-medium">{selectedOPD.email}</div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Email OPD</span>
+                  <span className="font-medium text-gray-900 break-all text-right">{selectedOPD.email}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1 text-gray-500">Telepon</div>
-                  <div className="col-span-2 font-medium">{selectedOPD.phone}</div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-gray-500">Telepon</span>
+                  <span className="font-medium text-gray-900">{selectedOPD.phone}</span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-1 text-gray-500">Dibuat</div>
-                  <div className="col-span-2 font-medium">
+                <div className="flex justify-between gap-3 pt-1 border-t border-gray-200/80">
+                  <span className="text-gray-500">Dibuat</span>
+                  <span className="font-medium text-gray-900">
                     {new Date(selectedOPD.createdAt).toLocaleDateString('id-ID', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric',
                     })}
-                  </div>
+                  </span>
                 </div>
               </div>
 
-              <div className="border-t pt-3">
-                <h4 className="text-xs font-semibold mb-2">Total SOP</h4>
-                <div className="p-2 bg-blue-50 rounded-md text-center">
-                  <p className="text-lg font-semibold text-blue-600">{selectedOPD.totalSOP}</p>
-                </div>
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-center">
+                <p className="text-[10px] uppercase tracking-wider text-blue-600/80 font-medium mb-1">Total SOP</p>
+                <p className="text-2xl font-bold text-blue-700">{selectedOPD.totalSOP}</p>
               </div>
 
-              <div className="border-t pt-3">
-                <h4 className="text-xs font-semibold mb-2">Riwayat Kepala OPD</h4>
-                <div className="space-y-1.5">
+              <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                <h4 className="text-xs font-semibold text-gray-700 mb-3">Riwayat Kepala OPD</h4>
+                <div className="space-y-2">
                   {getKepalaByOPD(selectedOPD.id).map((k) => (
-                    <div key={k.id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-xs">
-                      <span className="font-medium">{k.name}</span>
-                      <Badge className={k.isActive ? 'bg-green-100 text-green-700 border-0 text-xs' : 'bg-gray-200 text-gray-700 border-0 text-xs'}>
+                    <div key={k.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-gray-100 text-xs">
+                      <div>
+                        <span className="font-medium text-gray-900">{k.name}</span>
+                        {k.nip && <span className="block text-gray-500 font-mono text-[10px] mt-0.5">{k.nip}</span>}
+                      </div>
+                      <Badge className={k.isActive ? 'bg-emerald-100 text-emerald-700 border-0 text-xs' : 'bg-gray-100 text-gray-600 border-0 text-xs'}>
                         {k.isActive ? 'Aktif' : 'Nonaktif'}
                       </Badge>
                     </div>
                   ))}
                   {getKepalaByOPD(selectedOPD.id).length === 0 && (
-                    <p className="text-gray-500 text-xs">Belum ada kepala OPD</p>
+                    <p className="text-gray-500 text-xs py-2">Belum ada kepala OPD</p>
                   )}
                 </div>
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button size="sm" className="h-8 text-xs" onClick={() => setIsDetailDialogOpen(false)}>Tutup</Button>
-            {selectedOPD && (
-              <Button size="sm" className="h-8 text-xs" onClick={() => { setRiwayatKepalaOpen(true); setIsDetailDialogOpen(false); }}>Riwayat Kepala OPD</Button>
-            )}
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsDetailDialogOpen(false)}>Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -755,6 +761,7 @@ export function ManajemenOPD() {
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
                             <p className="font-medium text-gray-900 text-sm">{k.name}</p>
+                            {k.nip && <p className="text-xs text-gray-600 mt-0.5 font-mono">{k.nip}</p>}
                             <p className="text-xs text-gray-500 mt-0.5 truncate">{k.email}</p>
                             {k.phone && (
                               <p className="text-xs text-gray-400 mt-0.5">{k.phone}</p>
@@ -765,7 +772,7 @@ export function ManajemenOPD() {
                               {k.isActive ? 'Aktif' : 'Nonaktif'}
                             </Badge>
                             <div className="flex items-center gap-3 text-xs text-gray-500">
-                              <span>Mulai: {new Date(k.startedAt).toLocaleDateString('id-ID')}</span>
+                              <span>Mulai menjabat: {new Date(k.startedAt).toLocaleDateString('id-ID')}</span>
                               {k.endedAt && (
                                 <span>Selesai: {new Date(k.endedAt).toLocaleDateString('id-ID')}</span>
                               )}
@@ -799,6 +806,10 @@ export function ManajemenOPD() {
             <div className="space-y-1.5">
               <Label className="text-xs">Nama *</Label>
               <Input className="h-9 text-xs" value={kepalaForm.name} onChange={(e) => setKepalaForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nama lengkap dengan gelar" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">NIP</Label>
+              <Input className="h-9 text-xs" value={kepalaForm.nip} onChange={(e) => setKepalaForm((f) => ({ ...f, nip: e.target.value }))} placeholder="Contoh: 197503152000032001" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Email</Label>
@@ -848,12 +859,12 @@ export function ManajemenOPD() {
               <Input className="h-9 text-xs" value={penugasanForm.name} onChange={(e) => setPenugasanForm((f) => ({ ...f, name: e.target.value }))} placeholder="Nama lengkap dengan gelar" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Email</Label>
-              <Input type="email" className="h-9 text-xs" value={penugasanForm.email} onChange={(e) => setPenugasanForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@pemda.go.id" />
+              <Label className="text-xs">NIP</Label>
+              <Input className="h-9 text-xs" value={penugasanForm.nip} onChange={(e) => setPenugasanForm((f) => ({ ...f, nip: e.target.value }))} placeholder="Contoh: 197503152000032001" />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Telepon</Label>
-              <Input className="h-9 text-xs" value={penugasanForm.phone} onChange={(e) => setPenugasanForm((f) => ({ ...f, phone: e.target.value }))} placeholder="0812-xxxx-xxxx" />
+              <Label className="text-xs">Email</Label>
+              <Input type="email" className="h-9 text-xs" value={penugasanForm.email} onChange={(e) => setPenugasanForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@pemda.go.id" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Mulai menjabat</Label>
@@ -891,6 +902,7 @@ export function ManajemenOPD() {
             <div className="space-y-3">
               <div className="rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-xs">
                 <p className="font-medium text-gray-900">{pindahDialogPerson.name}</p>
+                {pindahDialogPerson.nip && <p className="text-gray-600 font-mono">{pindahDialogPerson.nip}</p>}
                 <p className="text-gray-600">{pindahDialogPerson.email}</p>
               </div>
               <div className="space-y-1.5">
@@ -945,7 +957,7 @@ export function ManajemenOPD() {
                 <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="text-left py-2 px-3 font-medium text-gray-700">OPD</th>
-                    <th className="text-center py-2 px-3 font-medium text-gray-700">Mulai</th>
+                    <th className="text-center py-2 px-3 font-medium text-gray-700">Mulai menjabat</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-700">Selesai</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-700">Status</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-700">Aksi</th>

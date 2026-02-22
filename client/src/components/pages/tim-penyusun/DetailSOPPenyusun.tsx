@@ -4,12 +4,12 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Download,
   Save,
   Check,
   X,
   RotateCcw,
   History,
+  PenLine,
   Settings2,
   MoreHorizontal,
 } from 'lucide-react'
@@ -41,20 +41,24 @@ import { SOPDiagram, type ProsedurRow } from '@/components/sop/SOPDiagram'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { getPeraturanList, subscribe as subscribePeraturan } from '@/lib/peraturan-store'
 import type { Peraturan } from '@/lib/peraturan-store'
+import { setSopStatusOverride } from '@/lib/sop-status-store'
 
+/** Hanya Kepala OPD dan Tim Evaluasi yang dapat membuat komentar; Tim Penyusun tidak bisa membuat komentar, hanya melihat dan resolve. */
 interface Komentar {
   id: string
   user: string
-  role: string
+  role: 'Kepala OPD' | 'Tim Evaluasi' | 'Tim Penyusun'
   timestamp: string
   bagian: string
   isi: string
   status: 'open' | 'resolved'
 }
 
+/** Versi SOP: minor (1.0→1.1) saat review internal/biro sebelum disahkan; major (1.x→2.0) saat disahkan lalu evaluasi. */
 interface Version {
   id: string
   version: string
+  revisionType: 'major' | 'minor'
   date: string
   author: string
   changes: string
@@ -64,10 +68,10 @@ interface Version {
 const initialMetadata = {
   institutionLogo: '/logo_unand_kecil.png',
   institutionLines: [
-    'KEMENTERIAN PENDIDIKAN TINGGI, SAINS, DAN TEKNOLOGI',
-    'UNIVERSITAS ANDALAS',
-    'FAKULTAS TEKNOLOGI INFORMASI',
-    'DEPARTEMEN SISTEM INFORMASI',
+    'PEMERINTAH KABUPATEN PADANG',
+    'DINAS PENDIDIKAN',
+    'BIDANG PENDIDIKAN DASAR',
+    'SEKSI KURIKULUM DAN PENILAIAN',
   ] as string[],
   name: 'Percobaan',
   number: 'T.001/UN15/KP.01.00/2024',
@@ -165,6 +169,7 @@ export function DetailSOPPenyusun() {
   const [selectedRelatedPos, setSelectedRelatedPos] = useState<string[]>([])
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false)
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false)
+  const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'riwayat'>('edit')
   const [isDecisionDialogOpen, setIsDecisionDialogOpen] = useState(false)
   const [decisionStepIndex, setDecisionStepIndex] = useState<number | null>(null)
   const [decisionYesId, setDecisionYesId] = useState<string>('')
@@ -180,6 +185,7 @@ export function DetailSOPPenyusun() {
     return subscribePeraturan(() => setPeraturanList(getPeraturanList()))
   }, [])
 
+  /** Komentar hanya dari Kepala OPD dan Tim Evaluasi (Tim Penyusun tidak bisa membuat komentar). */
   const [komentarList, setKomentarList] = useState<Komentar[]>([
     {
       id: '1',
@@ -192,39 +198,51 @@ export function DetailSOPPenyusun() {
     },
     {
       id: '2',
-      user: 'Siti Nurhaliza',
-      role: 'Tim Penyusun',
+      user: 'Dra. Siti Aminah, M.Si',
+      role: 'Tim Evaluasi',
       timestamp: '2026-02-09 10:15',
       bagian: 'Prosedur - Baris 1',
-      isi: 'Waktu terlalu singkat, perlu disesuaikan',
+      isi: 'Waktu proses terlalu singkat, perlu disesuaikan dengan standar pelayanan',
       status: 'resolved',
     },
   ])
 
-  const [versions, setVersions] = useState<Version[]>([
+  const [versions, _setVersions] = useState<Version[]>([
     {
-      id: 'v3',
-      version: '3.0',
+      id: 'v2.1',
+      version: '2.1',
+      revisionType: 'minor',
       date: '2026-02-10',
       author: 'Budi Santoso',
       changes: 'Perbaikan metadata dan penambahan prosedur baru',
       snapshot: { metadata: initialMetadata, prosedurRows: initialProsedurRows },
     },
     {
-      id: 'v2',
+      id: 'v2.0',
       version: '2.0',
+      revisionType: 'major',
       date: '2026-02-05',
       author: 'Ahmad Pratama',
-      changes: 'Revisi mayor sesuai feedback evaluasi',
-      snapshot: null,
+      changes: 'Revisi major setelah SOP disahkan dan hasil evaluasi',
+      snapshot: { metadata: initialMetadata, prosedurRows: initialProsedurRows },
     },
     {
-      id: 'v1',
+      id: 'v1.1',
+      version: '1.1',
+      revisionType: 'minor',
+      date: '2026-01-28',
+      author: 'Budi Santoso',
+      changes: 'Revisi minor dari review internal',
+      snapshot: { metadata: initialMetadata, prosedurRows: initialProsedurRows },
+    },
+    {
+      id: 'v1.0',
       version: '1.0',
+      revisionType: 'major',
       date: '2026-01-20',
       author: 'Budi Santoso',
       changes: 'Versi awal dokumen',
-      snapshot: null,
+      snapshot: { metadata: initialMetadata, prosedurRows: initialProsedurRows },
     },
   ])
 
@@ -267,13 +285,7 @@ export function DetailSOPPenyusun() {
     setToastMessage({ type: 'success', message: `Berhasil rollback ke versi ${selectedVersion.version}` })
   }
 
-  const handleSave = () => {
-    setToastMessage({ type: 'success', message: 'Perubahan berhasil disimpan' })
-  }
 
-  const handlePrint = () => {
-    window.print()
-  }
 
   const relatedPosOptions = [
     'POS Penerimaan Siswa Baru',
@@ -304,35 +316,54 @@ export function DetailSOPPenyusun() {
         ]}
         title="Edit Dokumen SOP"
         description={metadata.name}
+        leading={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => navigate({ to: '/tim-penyusun/sop-saya' })}
+            title="Kembali"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        }
       />
 
-      <div className="flex-shrink-0 bg-white rounded-md border border-gray-200 p-3 print:hidden">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 px-2 text-xs"
-              onClick={() => navigate({ to: '/tim-penyusun/sop-saya' })}
-            >
-              <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-              Kembali
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-                <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
-                  Versi {versions[0]?.version || '1.0'}
-                </Badge>
-                <Badge className="bg-yellow-100 text-yellow-700 text-xs border-0">Draft</Badge>
-                <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSave}>
-                  <Save className="w-3.5 h-3.5" />
-                  Simpan Perubahan
-                </Button>
-          </div>
+      <div className="flex flex-1 flex-col min-h-0 overflow-hidden rounded-lg border border-gray-200 bg-white print:hidden">
+        <div className="flex-shrink-0 flex items-center justify-end gap-2 p-3 border-b border-gray-200">
+          <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
+            v{versions[0]?.version || '1.0'}
+          </Badge>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => {
+              if (id) {
+                setSopStatusOverride(id, 'Sedang Disusun')
+                setToastMessage({ type: 'success', message: 'Status diubah menjadi Sedang Disusun' })
+              }
+            }}
+          >
+            <Save className="w-3.5 h-3.5" />
+            Simpan sebagai draft
+          </Button>
+          <Button
+            size="sm"
+            className="h-8 text-xs gap-1.5"
+            onClick={() => {
+              if (id) {
+                setSopStatusOverride(id, 'Diperiksa Kepala OPD')
+                setToastMessage({ type: 'success', message: 'SOP diserahkan ke Kepala OPD' })
+                navigate({ to: '/tim-penyusun/sop-saya' })
+              }
+            }}
+          >
+            <Check className="w-3.5 h-3.5" />
+            Serahkan ke Kepala OPD
+          </Button>
         </div>
-      </div>
-
-      <div className="flex flex-1 min-h-0 overflow-hidden rounded-lg border border-gray-200 bg-white">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* Panel 1: Komentar (kiri, bisa diminimize) */}
           <div
             className={`flex flex-col flex-shrink-0 border-r border-gray-200 bg-white transition-[width] duration-200 overflow-hidden ${
@@ -344,13 +375,12 @@ export function DetailSOPPenyusun() {
                 <div className="min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900">Komentar</h3>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    {komentarList.filter((k) => k.status === 'open').length} terbuka •{' '}
-                    {komentarList.filter((k) => k.status === 'resolved').length} resolved
+                    Dari Kepala OPD & Tim Evaluasi · {komentarList.filter((k) => k.role !== 'Tim Penyusun' && k.status === 'open').length} terbuka · {komentarList.filter((k) => k.role !== 'Tim Penyusun' && k.status === 'resolved').length} resolved
                   </p>
                 </div>
               ) : (
                 <div className="text-xs text-gray-700 font-medium">
-                  {komentarList.filter((k) => k.status === 'open').length}
+                  {komentarList.filter((k) => k.role !== 'Tim Penyusun' && k.status === 'open').length}
               </div>
               )}
               <Button
@@ -368,7 +398,7 @@ export function DetailSOPPenyusun() {
               <div className="p-3">
                 <ScrollArea className="flex-1 min-h-0">
                 <div className="space-y-2">
-                  {komentarList.map((komentar) => (
+                  {komentarList.filter((k) => k.role !== 'Tim Penyusun').map((komentar) => (
                     <div
                       key={komentar.id}
                       className={`p-2.5 rounded-md border text-xs ${
@@ -397,9 +427,11 @@ export function DetailSOPPenyusun() {
                           </Badge>
                         )}
                       </div>
-                      <Badge variant="secondary" className="text-xs mb-1.5">
-                        {komentar.bagian}
-                      </Badge>
+                      {komentar.bagian ? (
+                        <Badge variant="secondary" className="text-xs mb-1.5">
+                          {komentar.bagian}
+                        </Badge>
+                      ) : null}
                       <p className="text-xs text-gray-900 mb-2">{komentar.isi}</p>
                       <div className="flex items-center justify-between">
                         <p className="text-xs text-gray-500">{komentar.timestamp}</p>
@@ -423,11 +455,12 @@ export function DetailSOPPenyusun() {
           )}
           </div>
 
-          {/* Panel 2: View SOP (utama, tidak bisa diminimize) */}
+          {/* Panel 2: View SOP (utama) — preview A4 landscape */}
           <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200 p-4">
             <ScrollArea className="flex-1 min-h-0">
-              <div className="space-y-8">
-                <SOPHeaderInfo {...metadata} editable={false} />
+              <div className="sop-a4-preview p-2">
+                <div className="space-y-8">
+                  <SOPHeaderInfo {...metadata} editable={false} />
 
                 {!isEditingSteps ? (
                   <div className="flex justify-center">
@@ -741,9 +774,9 @@ export function DetailSOPPenyusun() {
                                           )
                                         }
                                         className="text-red-600 data-[disabled]:text-gray-400"
+                                        title="Hapus langkah"
                                       >
-                                        <X className="w-3 h-3 mr-1.5" />
-                                        <span>Hapus langkah</span>
+                                        <X className="w-3 h-3" />
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
@@ -790,9 +823,10 @@ export function DetailSOPPenyusun() {
                     </div>
                   </div>
                 )}
+                </div>
+                </div>
+              </ScrollArea>
               </div>
-            </ScrollArea>
-          </div>
 
           {/* Panel 3: Form edit (kanan) */}
           <div
@@ -800,9 +834,8 @@ export function DetailSOPPenyusun() {
               isEditPanelCollapsed ? 'w-10' : 'w-[min(380px,30%)] min-w-[280px]'
             }`}
           >
-            <div className="p-3 border-b border-gray-200 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <Button
+            <div className="p-3 border-b border-gray-200 flex items-center gap-2">
+              <Button
                   variant="ghost"
                   size="sm"
                   className="h-7 w-7 p-0 shrink-0"
@@ -816,29 +849,38 @@ export function DetailSOPPenyusun() {
                   )}
                 </Button>
                 {!isEditPanelCollapsed && (
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-gray-900 truncate">Edit SOP</h3>
-                    <p className="text-xs text-gray-600 mt-0.5 truncate">
-                      Header, metadata & pengaturan diagram
-                    </p>
+                  <div className="flex flex-1 min-w-0 rounded-md bg-gray-100 p-0.5 gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setRightPanelTab('edit')}
+                      className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+                        rightPanelTab === 'edit'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <PenLine className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">Edit</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRightPanelTab('riwayat')}
+                      className={`flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs font-medium transition-colors ${
+                        rightPanelTab === 'riwayat'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      <History className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">Riwayat</span>
+                    </button>
                   </div>
-                            )}
-                          </div>
-              {!isEditPanelCollapsed && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5 shrink-0"
-                  onClick={() => setIsHistoryOpen(true)}
-                >
-                  <History className="w-3.5 h-3.5" />
-                  Riwayat
-                </Button>
-              )}
-                        </div>
+                )}
+            </div>
 
             {!isEditPanelCollapsed && (
               <ScrollArea className="flex-1 min-h-0">
+                {rightPanelTab === 'edit' && (
                 <div className="p-3 space-y-4">
                 {/* Section 1: Header SOP */}
                 <div className="rounded-md border border-gray-200">
@@ -1231,9 +1273,59 @@ export function DetailSOPPenyusun() {
                   </div>
                 </div>
               </div>
-              </ScrollArea>
+                )}
+                {rightPanelTab === 'riwayat' && (
+                <div className="p-3 space-y-3">
+                  <p className="text-xs text-gray-600 mb-3">{versions.length} versi terdokumentasi</p>
+                  {versions.map((version, index) => (
+                    <div key={version.id} className="bg-gray-50 rounded-md border border-gray-200 p-3 mb-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-xs font-semibold text-gray-900">v{version.version}</p>
+                          {index === 0 && (
+                            <Badge className="bg-blue-600 text-white text-xs border-0">Current</Badge>
+                          )}
+                          <Badge
+                            variant="secondary"
+                            className={`text-xs border-0 ${
+                              version.revisionType === 'major'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-gray-200 text-gray-700'
+                            }`}
+                          >
+                            {version.revisionType === 'major' ? 'Revisi major' : 'Revisi minor'}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {new Date(version.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                      </div>
+                      <p className="text-xs text-gray-700 mb-2">{version.changes}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600">Author: {version.author}</p>
+                        {version.snapshot && index !== 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs gap-1"
+                            onClick={() => {
+                              setSelectedVersion(version)
+                              setIsRollbackDialogOpen(true)
+                            }}
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            Rollback
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                )}
+            </ScrollArea>
             )}
           </div>
+      </div>
       </div>
 
       <Dialog open={isRollbackDialogOpen} onOpenChange={setIsRollbackDialogOpen}>
@@ -1247,7 +1339,7 @@ export function DetailSOPPenyusun() {
           {selectedVersion && (
             <div className="space-y-3">
               <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
-                <p className="text-xs font-semibold text-gray-900 mb-1">Versi {selectedVersion.version}</p>
+                <p className="text-xs font-semibold text-gray-900 mb-1">v{selectedVersion.version} — {selectedVersion.revisionType === 'major' ? 'Revisi major' : 'Revisi minor'}</p>
                 <p className="text-xs text-gray-700 mb-2">{selectedVersion.changes}</p>
                 <p className="text-xs text-gray-600">
                   Tanggal:{' '}
@@ -1262,7 +1354,7 @@ export function DetailSOPPenyusun() {
               <div className="p-3 bg-amber-50 rounded-md border border-amber-200">
                 <p className="text-xs text-amber-900">
                   <strong>Peringatan:</strong> Rollback akan mengganti seluruh konten dokumen dengan
-                  versi {selectedVersion.version}. Perubahan yang belum disimpan akan hilang.
+                  v{selectedVersion.version}. Perubahan yang belum disimpan akan hilang.
                 </p>
               </div>
             </div>
@@ -1299,18 +1391,22 @@ export function DetailSOPPenyusun() {
             {versions.map((version, index) => (
               <div key={version.id} className="bg-gray-50 rounded-md border border-gray-200 p-3">
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-gray-900">Versi {version.version}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs font-semibold text-gray-900">v{version.version}</p>
                     {index === 0 && (
                       <Badge className="bg-blue-600 text-white text-xs border-0">Current</Badge>
                     )}
-                    {version.snapshot && (
-                      <Badge className="bg-green-100 text-green-700 text-xs border-0">
-                        <RotateCcw className="w-3 h-3 mr-1" />
-                        Snapshot
-                      </Badge>
-                    )}
-    </div>
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs border-0 ${
+                        version.revisionType === 'major'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      {version.revisionType === 'major' ? 'Revisi major' : 'Revisi minor'}
+                    </Badge>
+                  </div>
                   <p className="text-xs text-gray-500">
                     {new Date(version.date).toLocaleDateString('id-ID', {
                       day: 'numeric',

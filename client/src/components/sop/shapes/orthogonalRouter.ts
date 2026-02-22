@@ -492,9 +492,45 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
   ;(isVert(pointB.side) ? vs : hs).push(isVert(pointB.side) ? oB.x : oB.y)
 
   const uhs = [...new Set(hs)].sort((a, b) => a - b)
-  for (let i = 0; i < uhs.length - 1; i++) hs.push(Math.round((uhs[i] + uhs[i + 1]) / 2))
+  for (let i = 0; i < uhs.length - 1; i++) {
+    const a = uhs[i], b = uhs[i + 1], gap = b - a
+    hs.push(Math.round((a + b) / 2))
+    if (gap > 24) {
+      hs.push(Math.round(a + gap / 3))
+      hs.push(Math.round(a + (2 * gap) / 3))
+    }
+  }
   const uvs = [...new Set(vs)].sort((a, b) => a - b)
-  for (let i = 0; i < uvs.length - 1; i++) vs.push(Math.round((uvs[i] + uvs[i + 1]) / 2))
+  for (let i = 0; i < uvs.length - 1; i++) {
+    const a = uvs[i], b = uvs[i + 1], gap = b - a
+    vs.push(Math.round((a + b) / 2))
+    if (gap > 24) {
+      vs.push(Math.round(a + gap / 3))
+      vs.push(Math.round(a + (2 * gap) / 3))
+    }
+  }
+
+  /* Minimum grid resolution mengikuti lebar/tinggi bounds (A4 landscape canvas): tambah garis
+   * merata di dalam bounds agar path punya cukup waypoint untuk belokan halus */
+  if (gb) {
+    const g = R.of(gb)
+    const W = g.r - g.l
+    const H = g.b - g.t
+    const stepX = Math.max(40, Math.floor(W / 10))
+    const stepY = Math.max(32, Math.floor(H / 10))
+    if (W > 60 && stepX > 0) {
+      for (let x = g.l + stepX; x < g.r; x += stepX) {
+        const px = Math.round(x)
+        if (!vs.includes(px)) vs.push(px)
+      }
+    }
+    if (H > 48 && stepY > 0) {
+      for (let y = g.t + stepY; y < g.b; y += stepY) {
+        const py = Math.round(y)
+        if (!hs.includes(py)) hs.push(py)
+      }
+    }
+  }
 
   const grid = buildGrid(vs, hs, bounds)
   const spots = gridToSpots(grid, allObs)

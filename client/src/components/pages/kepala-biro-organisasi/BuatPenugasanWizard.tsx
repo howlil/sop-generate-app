@@ -209,11 +209,10 @@ export function BuatPenugasanWizard() {
         ]}
         title="Buat Penugasan Evaluasi"
         description="Inisiasi evaluasi SOP dan tugaskan ke tim evaluasi"
-        actions={
+        leading={
           <Link to="/kepala-biro-organisasi/manajemen-evaluasi-sop">
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
-              <ArrowLeft className="w-3.5 h-3.5" />
-              Kembali
+            <Button variant="ghost" size="icon" className="h-8 w-8" title="Kembali">
+              <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
         }

@@ -1,6 +1,10 @@
 /**
  * Store untuk daftar penugasan evaluasi SOP (shared antara list dan halaman edit).
+ * Status SOP (lifecycle) = @/lib/sop-status; status hasil evaluasi per SOP = StatusHasilEvaluasi.
  */
+
+import type { StatusHasilEvaluasi } from '@/lib/sop-status'
+import type { TTESignaturePayload } from '@/lib/tte-types'
 
 export type StatusEvaluasi = 'Belum Ditugaskan' | 'Sudah Ditugaskan' | 'Selesai' | 'Terverifikasi'
 
@@ -8,7 +12,8 @@ export interface SOPItem {
   id: string
   nama: string
   nomor: string
-  status?: 'Sesuai' | 'Perlu Perbaikan' | 'Tidak Sesuai'
+  /** Hasil evaluasi per SOP (bukan status SOP). */
+  status?: StatusHasilEvaluasi
   catatan?: string
   rekomendasi?: string
 }
@@ -28,6 +33,8 @@ export interface Penugasan {
   nomorBA?: string
   tanggalVerifikasi?: string
   kepalaBiro?: string
+  /** Payload TTE BSRE setelah verifikasi batch (untuk tampilan BA). */
+  tteSignaturePayload?: TTESignaturePayload
 }
 
 let list: Penugasan[] = []

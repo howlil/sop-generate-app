@@ -6,9 +6,6 @@ import {
   Eye,
   CheckCircle,
   XCircle,
-  Plus,
-  Trash2,
-  FileText,
   AlertTriangle,
   ArrowLeft,
   List,
@@ -16,13 +13,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Building,
+  FileText,
 } from 'lucide-react'
+import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -31,15 +28,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-
-interface Temuan {
-  id: string
-  bagianSOP: string
-  kategori: 'minor' | 'major' | 'critical'
-  temuan: string
-  referensiAturan: string
-  rekomendasi: string
-}
+import { getPenugasanById, updatePenugasan } from '@/lib/penugasan-store'
 
 export function PelaksanaanEvaluasi() {
   const { id } = useParams({ from: '/tim-evaluasi/pelaksanaan/$id' })
@@ -54,10 +43,8 @@ export function PelaksanaanEvaluasi() {
     jenis: 'Evaluasi Rutin',
   }
 
-  const [temuanList, setTemuanList] = useState<Temuan[]>([])
-  const [kesimpulan, setKesimpulan] = useState('')
-  const [rekomendasi, setRekomendasi] = useState('')
-  const [statusEvaluasi, setStatusEvaluasi] = useState<'Sesuai' | 'Tidak Sesuai' | null>(null)
+  const [komentarEvaluasi, setKomentarEvaluasi] = useState('')
+  const [statusEvaluasi, setStatusEvaluasi] = useState<'Sesuai' | 'Revisi Biro' | null>(null)
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -66,13 +53,20 @@ export function PelaksanaanEvaluasi() {
 
   useEffect(() => {
     if (!id) return
+    const fromStore = getPenugasanById(id)
+    const sopItem = fromStore?.sopList?.find(
+      (s) => s.nama === penugasanInfo.sop || s.nomor === penugasanInfo.kodeSOP
+    )
+    if (sopItem?.status === 'Sesuai' || sopItem?.status === 'Revisi Biro') {
+      setStatusEvaluasi(sopItem.status)
+      if (sopItem.catatan) setKomentarEvaluasi(sopItem.catatan)
+      return
+    }
     const raw = localStorage.getItem(`evaluasi_draft_${id}`)
     if (raw) {
       try {
         const data = JSON.parse(raw)
-        if (data.temuanList) setTemuanList(data.temuanList)
-        if (data.kesimpulan) setKesimpulan(data.kesimpulan)
-        if (data.rekomendasi) setRekomendasi(data.rekomendasi)
+        if (data.komentarEvaluasi) setKomentarEvaluasi(data.komentarEvaluasi)
         if (data.statusEvaluasi) setStatusEvaluasi(data.statusEvaluasi)
       } catch {
         // ignore
@@ -86,63 +80,12 @@ export function PelaksanaanEvaluasi() {
     return () => clearTimeout(t)
   }, [toast])
 
-  const bagianSOPOptions = [
-    '1. Tujuan',
-    '2. Ruang Lingkup',
-    '3. Definisi',
-    '4. Dasar Hukum',
-    '5. Persyaratan',
-    '6. Prosedur Kerja',
-    '7. Diagram Alir',
-    '8. Lampiran',
-    'Umum',
-  ]
-
-  const addTemuan = () => {
-    setTemuanList((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        bagianSOP: '',
-        kategori: 'minor',
-        temuan: '',
-        referensiAturan: '',
-        rekomendasi: '',
-      },
-    ])
-  }
-
-  const removeTemuan = (tid: string) => {
-    setTemuanList((prev) => prev.filter((t) => t.id !== tid))
-  }
-
-  const updateTemuan = (tid: string, field: keyof Temuan, value: string) => {
-    setTemuanList((prev) =>
-      prev.map((t) => (t.id === tid ? { ...t, [field]: value } : t))
-    )
-  }
-
-  const getKategoriColor = (kategori: string) => {
-    switch (kategori) {
-      case 'minor':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'major':
-        return 'bg-orange-100 text-orange-700'
-      case 'critical':
-        return 'bg-red-100 text-red-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
-  }
-
   const handleSaveDraft = () => {
     if (!id) return
     localStorage.setItem(
       `evaluasi_draft_${id}`,
       JSON.stringify({
-        temuanList,
-        kesimpulan,
-        rekomendasi,
+        komentarEvaluasi,
         statusEvaluasi,
       })
     )
@@ -154,13 +97,26 @@ export function PelaksanaanEvaluasi() {
       setToast({ type: 'error', message: 'Silakan tetapkan status evaluasi terlebih dahulu' })
       return
     }
-    if (statusEvaluasi === 'Tidak Sesuai' && temuanList.length === 0) {
-      setToast({ type: 'error', message: 'Status "Tidak Sesuai" harus memiliki minimal 1 temuan' })
+    if (statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim()) {
+      setToast({ type: 'error', message: 'Status "Revisi Biro" wajib diisi komentar evaluasi' })
       return
     }
-    if (!kesimpulan.trim()) {
-      setToast({ type: 'error', message: 'Kesimpulan evaluasi harus diisi' })
-      return
+    const penugasan = id ? getPenugasanById(id) : undefined
+    if (penugasan?.sopList?.length) {
+      const updatedSopList = penugasan.sopList.map((sop) => {
+        const isCurrentSop = sop.nama === penugasanInfo.sop || sop.nomor === penugasanInfo.kodeSOP
+        if (!isCurrentSop) return sop
+        return {
+          ...sop,
+          status: statusEvaluasi,
+          catatan: komentarEvaluasi.trim() || undefined,
+        }
+      })
+      updatePenugasan(id!, {
+        sopList: updatedSopList,
+        status: 'Selesai',
+        tanggalEvaluasi: new Date().toISOString().split('T')[0],
+      })
     }
     setToast({ type: 'success', message: 'Hasil evaluasi berhasil dikirim ke Biro Organisasi' })
     setIsSubmitOpen(false)
@@ -169,7 +125,7 @@ export function PelaksanaanEvaluasi() {
     }, 1500)
   }
 
-  const isFormComplete = statusEvaluasi !== null && kesimpulan.trim() !== ''
+  const isFormComplete = statusEvaluasi !== null && (statusEvaluasi !== 'Revisi Biro' || komentarEvaluasi.trim() !== '')
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0">
@@ -192,17 +148,9 @@ export function PelaksanaanEvaluasi() {
           </Button>
         }
         actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveDraft}>
-              <Save className="w-3.5 h-3.5" /> Simpan Draft
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsPreviewOpen(true)}>
-              <Eye className="w-3.5 h-3.5" /> Preview
-            </Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsSubmitOpen(true)} disabled={!isFormComplete}>
-              <Send className="w-3.5 h-3.5" /> Kirim Hasil
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsPreviewOpen(true)}>
+            <Eye className="w-3.5 h-3.5" /> Preview
+          </Button>
         }
       />
 
@@ -220,19 +168,27 @@ export function PelaksanaanEvaluasi() {
 
       {/* Satu blok: info penugasan + 3 panel (workspace seperti Detail Biro) */}
       <div className="flex-1 min-h-0 rounded-lg border border-gray-200 overflow-hidden bg-white flex flex-col">
-        {/* Bagian atas: informasi penugasan */}
-        <div className="p-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-sm font-semibold text-gray-900 mb-3">Informasi Penugasan</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <Building className="w-4 h-4 text-gray-500" />
-              <span className="font-medium text-gray-900">{penugasanInfo.opd}</span>
+        {/* Bagian atas: informasi penugasan + aksi Simpan Draft & Kirim Hasil */}
+        <div className="p-4 border-b border-gray-200 flex-shrink-0 flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="text-sm font-semibold text-gray-900 mb-3">Informasi Penugasan</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <Building className="w-4 h-4 text-gray-500 shrink-0" />
+                <span className="font-medium text-gray-900">{penugasanInfo.opd}</span>
+              </div>
             </div>
-            <Badge variant="outline" className="text-xs font-mono">{penugasanInfo.kode}</Badge>
-            <Badge className="bg-purple-100 text-purple-700 text-xs border-0">{penugasanInfo.jenis}</Badge>
+            <p className="text-xs text-gray-600 mt-2">{penugasanInfo.sop}</p>
+            <p className="text-[10px] text-gray-500 font-mono mt-0.5">{penugasanInfo.kodeSOP}</p>
           </div>
-          <p className="text-xs text-gray-600 mt-2">{penugasanInfo.sop}</p>
-          <p className="text-[10px] text-gray-500 font-mono mt-0.5">{penugasanInfo.kodeSOP}</p>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveDraft}>
+              <Save className="w-3.5 h-3.5" /> Simpan Draft
+            </Button>
+            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsSubmitOpen(true)} disabled={!isFormComplete}>
+              <Send className="w-3.5 h-3.5" /> Kirim Hasil ke Biro
+            </Button>
+          </div>
         </div>
 
         {/* Tiga panel: Daftar SOP | Preview SOP | Form Evaluasi */}
@@ -274,23 +230,13 @@ export function PelaksanaanEvaluasi() {
             )}
           </div>
 
-          {/* Tengah: Preview SOP */}
+          {/* Tengah: Preview SOP (template sama dengan Kepala OPD / Tim Penyusun) */}
           <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200">
             <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0">
               <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 min-h-0">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{penugasanInfo.sop}</p>
-                  <p className="text-xs text-gray-500 font-mono">{penugasanInfo.kodeSOP}</p>
-                </div>
-                <div className="mt-4 border border-dashed border-gray-200 rounded-md p-8 text-center bg-gray-50/50">
-                  <FileText className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                  <p className="text-xs text-gray-500">Preview dokumen SOP</p>
-                  <p className="text-[10px] text-gray-400 mt-1">Dokumen dapat dilampirkan atau ditautkan di sini</p>
-                </div>
-              </div>
+            <div className="flex-1 min-h-0 flex flex-col">
+              <SOPPreviewTemplate name={penugasanInfo.sop} number={penugasanInfo.kodeSOP} />
             </div>
           </div>
 
@@ -336,116 +282,34 @@ export function PelaksanaanEvaluasi() {
                       <button
                         type="button"
                         className={`p-3 rounded-md border transition-all ${
-                          statusEvaluasi === 'Tidak Sesuai' ? 'border-red-600 bg-red-50' : 'border-gray-200 bg-white hover:bg-gray-50'
+                          statusEvaluasi === 'Revisi Biro' ? 'border-amber-600 bg-amber-50' : 'border-gray-200 bg-white hover:bg-gray-50'
                         }`}
-                        onClick={() => setStatusEvaluasi('Tidak Sesuai')}
+                        onClick={() => setStatusEvaluasi('Revisi Biro')}
                       >
-                        <XCircle className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Tidak Sesuai' ? 'text-red-600' : 'text-gray-400'}`} />
-                        <span className={`text-xs font-semibold block ${statusEvaluasi === 'Tidak Sesuai' ? 'text-red-600' : 'text-gray-700'}`}>Tidak Sesuai</span>
+                        <XCircle className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-400'}`} />
+                        <span className={`text-xs font-semibold block ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-700'}`}>Revisi Biro</span>
                       </button>
                     </div>
-                    {statusEvaluasi === 'Tidak Sesuai' && temuanList.length === 0 && (
+                    {statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim() && (
                       <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md flex items-start gap-2">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <p className="text-[10px] text-amber-800">Minimal 1 temuan wajib untuk status Tidak Sesuai.</p>
+                        <p className="text-[10px] text-amber-800">Komentar evaluasi wajib untuk status Revisi Biro.</p>
                       </div>
                     )}
                   </div>
 
-                  {/* Temuan */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label className="text-xs font-semibold text-gray-900">Temuan Evaluasi</Label>
-                      <Button size="sm" className="h-7 text-[10px] gap-1 px-2" onClick={addTemuan}>
-                        <Plus className="w-3 h-3" /> Tambah
-                      </Button>
-                    </div>
-                    {temuanList.length === 0 ? (
-                      <div className="py-6 border border-dashed border-gray-200 rounded-md bg-gray-50 text-center">
-                        <FileText className="w-8 h-8 text-gray-300 mx-auto mb-1" />
-                        <p className="text-[10px] text-gray-500">Belum ada temuan</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {temuanList.map((temuan) => (
-                          <div key={temuan.id} className="border border-gray-200 rounded-md p-2 bg-gray-50">
-                            <div className="flex items-center justify-between gap-1 mb-2">
-                              <select
-                                className="h-6 flex-1 rounded border border-gray-200 px-1.5 text-[10px] bg-white"
-                                value={temuan.kategori}
-                                onChange={(e) => updateTemuan(temuan.id, 'kategori', e.target.value as Temuan['kategori'])}
-                              >
-                                <option value="minor">Minor</option>
-                                <option value="major">Major</option>
-                                <option value="critical">Critical</option>
-                              </select>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0" onClick={() => removeTemuan(temuan.id)}>
-                                <Trash2 className="w-3 h-3 text-red-600" />
-                              </Button>
-                            </div>
-                            <select
-                              className="h-7 w-full rounded border border-gray-200 px-1.5 text-[10px] bg-white mb-1.5"
-                              value={temuan.bagianSOP}
-                              onChange={(e) => updateTemuan(temuan.id, 'bagianSOP', e.target.value)}
-                            >
-                              <option value="">Bagian SOP</option>
-                              {bagianSOPOptions.map((b) => (
-                                <option key={b} value={b}>{b}</option>
-                              ))}
-                            </select>
-                            <Textarea
-                              className="text-[10px] min-h-[50px] bg-white mb-1.5"
-                              placeholder="Deskripsi temuan..."
-                              value={temuan.temuan}
-                              onChange={(e) => updateTemuan(temuan.id, 'temuan', e.target.value)}
-                            />
-                            <Input
-                              className="h-7 text-[10px] bg-white mb-1.5"
-                              placeholder="Referensi aturan"
-                              value={temuan.referensiAturan}
-                              onChange={(e) => updateTemuan(temuan.id, 'referensiAturan', e.target.value)}
-                            />
-                            <Textarea
-                              className="text-[10px] min-h-[40px] bg-white"
-                              placeholder="Rekomendasi perbaikan..."
-                              value={temuan.rekomendasi}
-                              onChange={(e) => updateTemuan(temuan.id, 'rekomendasi', e.target.value)}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Kesimpulan & Rekomendasi */}
+                  {/* Komentar Evaluasi */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-gray-900">Kesimpulan Evaluasi *</Label>
+                    <Label className="text-xs font-semibold text-gray-900">Komentar Evaluasi</Label>
                     <Textarea
                       className="text-xs min-h-[80px]"
-                      placeholder="Kesimpulan umum evaluasi..."
-                      value={kesimpulan}
-                      onChange={(e) => setKesimpulan(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-gray-900">Rekomendasi Umum</Label>
-                    <Textarea
-                      className="text-xs min-h-[60px]"
-                      placeholder="Rekomendasi (opsional)..."
-                      value={rekomendasi}
-                      onChange={(e) => setRekomendasi(e.target.value)}
+                      placeholder="Komentar evaluasi (wajib jika status Revisi Biro)..."
+                      value={komentarEvaluasi}
+                      onChange={(e) => setKomentarEvaluasi(e.target.value)}
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2 pt-2">
-                    <Button variant="outline" size="sm" className="h-8 text-xs w-full gap-1.5" onClick={handleSaveDraft}>
-                      <Save className="w-3.5 h-3.5" /> Simpan Draft
-                    </Button>
-                    <Button size="sm" className="h-8 text-xs w-full gap-1.5" onClick={() => setIsSubmitOpen(true)} disabled={!isFormComplete}>
-                      <Send className="w-3.5 h-3.5" /> Kirim Hasil ke Biro
-                    </Button>
                   </div>
-                </div>
               </>
             )}
           </div>
@@ -464,53 +328,28 @@ export function PelaksanaanEvaluasi() {
               className={`p-4 rounded-md ${
                 statusEvaluasi === 'Sesuai'
                   ? 'bg-green-50 border border-green-200'
-                  : statusEvaluasi === 'Tidak Sesuai'
-                    ? 'bg-red-50 border border-red-200'
+                  : statusEvaluasi === 'Revisi Biro'
+                    ? 'bg-amber-50 border border-amber-200'
                     : 'bg-gray-50 border border-gray-200'
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 {statusEvaluasi === 'Sesuai' ? (
                   <CheckCircle className="w-5 h-5 text-green-600" />
-                ) : statusEvaluasi === 'Tidak Sesuai' ? (
-                  <XCircle className="w-5 h-5 text-red-600" />
+                ) : statusEvaluasi === 'Revisi Biro' ? (
+                  <XCircle className="w-5 h-5 text-amber-600" />
                 ) : (
                   <AlertTriangle className="w-5 h-5 text-gray-600" />
                 )}
-                <span className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-700' : statusEvaluasi === 'Tidak Sesuai' ? 'text-red-700' : 'text-gray-700'}`}>
+                <span className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-700' : statusEvaluasi === 'Revisi Biro' ? 'text-amber-700' : 'text-gray-700'}`}>
                   Status: {statusEvaluasi || 'Belum Ditetapkan'}
                 </span>
               </div>
-              {kesimpulan && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-900 mb-1">Kesimpulan:</p>
-                  <p className="text-xs text-gray-700 leading-relaxed">{kesimpulan}</p>
-                </div>
-              )}
-            </div>
-            {temuanList.length > 0 && (
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                <p className="text-xs font-semibold text-gray-900 mb-3">Temuan ({temuanList.length}):</p>
-                <div className="space-y-3">
-                  {temuanList.map((t, idx) => (
-                    <div key={t.id} className="p-3 bg-white rounded-md border border-gray-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline" className="text-xs">#{idx + 1}</Badge>
-                        <Badge className={`text-xs border-0 ${getKategoriColor(t.kategori)}`}>{t.kategori}</Badge>
-                        {t.bagianSOP && <Badge variant="secondary" className="text-xs">{t.bagianSOP}</Badge>}
-                      </div>
-                      <p className="text-xs text-gray-900 mb-1"><strong>Temuan:</strong> {t.temuan}</p>
-                      {t.referensiAturan && <p className="text-xs text-gray-700 mb-1"><strong>Referensi:</strong> {t.referensiAturan}</p>}
-                      <p className="text-xs text-gray-700"><strong>Rekomendasi:</strong> {t.rekomendasi}</p>
-                    </div>
-                  ))}
-                </div>
               </div>
-            )}
-            {rekomendasi && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-xs font-semibold text-gray-900 mb-1">Rekomendasi Umum:</p>
-                <p className="text-xs text-gray-700 leading-relaxed">{rekomendasi}</p>
+            {komentarEvaluasi.trim() && (
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-md">
+                <p className="text-xs font-semibold text-gray-900 mb-1">Komentar Evaluasi:</p>
+                <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{komentarEvaluasi}</p>
               </div>
             )}
           </div>
@@ -527,10 +366,9 @@ export function PelaksanaanEvaluasi() {
             <DialogTitle className="text-sm">Konfirmasi Kirim Hasil Evaluasi</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className={`p-3 rounded-md ${statusEvaluasi === 'Sesuai' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <div className={`p-3 rounded-md ${statusEvaluasi === 'Sesuai' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
               <p className="text-xs mb-1 text-gray-700">Status:</p>
-              <p className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-red-600'}`}>{statusEvaluasi}</p>
-              {temuanList.length > 0 && <p className="text-xs text-gray-700 mt-1">{temuanList.length} temuan</p>}
+              <p className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-amber-600'}`}>{statusEvaluasi}</p>
             </div>
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
               <p className="text-xs text-amber-800">

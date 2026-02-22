@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import type { StatusSOP, StatusHasilEvaluasi } from '@/lib/sop-status'
 
 type StatusDomain =
   | 'sop'
@@ -16,17 +17,23 @@ interface StatusBadgeProps {
   label?: ReactNode
 }
 
-const sopStatusClasses: Record<string, string> = {
+/** Warna badge untuk status SOP (sumber: @/lib/sop-status). Domain sop = status dokumen SOP. */
+const sopStatusClasses: Record<StatusSOP | StatusHasilEvaluasi, string> = {
   Draft: 'bg-gray-100 text-gray-700',
-  'Review Internal': 'bg-blue-100 text-blue-700',
+  'Sedang Disusun': 'bg-slate-100 text-slate-700',
+  'Diperiksa Kepala OPD': 'bg-blue-100 text-blue-700',
+  'Revisi dari Kepala OPD': 'bg-amber-100 text-amber-700',
   'Siap Dievaluasi': 'bg-sky-100 text-sky-700',
+  Berlaku: 'bg-emerald-100 text-emerald-700',
   'Diajukan Evaluasi': 'bg-amber-100 text-amber-700',
-  'Disahkan · Diajukan Evaluasi': 'bg-emerald-100 text-emerald-700 border border-amber-300',
-  'Dalam Evaluasi': 'bg-violet-100 text-violet-700',
-  'Tidak Sesuai': 'bg-red-100 text-red-700',
+  'Dievaluasi Tim Evaluasi': 'bg-violet-100 text-violet-700',
+  'Revisi dari Tim Evaluasi': 'bg-orange-100 text-orange-700',
+  'Terverifikasi dari Kepala Biro': 'bg-teal-100 text-teal-700',
+  Dicabut: 'bg-red-100 text-red-700',
+  Batal: 'bg-gray-200 text-gray-600',
   Sesuai: 'bg-green-100 text-green-700',
-  Terverifikasi: 'bg-teal-100 text-teal-700',
-  Disahkan: 'bg-emerald-100 text-emerald-700',
+  'Perlu Perbaikan': 'bg-amber-100 text-amber-700',
+  'Revisi Biro': 'bg-amber-100 text-amber-700',
 }
 
 const penugasanEvaluasiClasses: Record<string, string> = {

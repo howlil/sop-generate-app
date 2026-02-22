@@ -9,9 +9,8 @@ import {
   ChevronRight,
   Building,
   Play,
-  Calendar,
-  Users,
 } from 'lucide-react'
+import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -164,13 +163,9 @@ export function DetailPenugasanTimEvaluasi() {
               <Building className="w-4 h-4 text-gray-500" />
               <span className="font-medium text-gray-900">{penugasan.opd}</span>
             </div>
-            <Badge variant="outline" className="text-xs font-mono">
-              {penugasan.kodePenugasan}
-            </Badge>
             <Badge className={`${getStatusBadge(penugasan.status)} text-xs border-0`}>
               {getStatusLabel(penugasan.status)}
             </Badge>
-            <Badge className="bg-purple-100 text-purple-700 text-xs border-0">{penugasan.jenis}</Badge>
           </div>
           <p className="text-xs text-gray-600 mt-2">{penugasan.sop}</p>
           <p className="text-[10px] text-gray-500 font-mono mt-0.5">{penugasan.kodeSOP}</p>
@@ -225,31 +220,13 @@ export function DetailPenugasanTimEvaluasi() {
             )}
           </div>
 
-          {/* Tengah: Preview SOP */}
+          {/* Tengah: Preview SOP (template sama dengan Kepala OPD / Tim Penyusun) */}
           <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200">
             <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0">
               <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 min-h-0">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{penugasan.sop}</p>
-                  <p className="text-xs text-gray-500 font-mono">{penugasan.kodeSOP}</p>
-                </div>
-                <div className="mt-4 space-y-2">
-                  {Object.entries(sopContent).map(([bagian, isi], idx) => (
-                    <div
-                      key={idx}
-                      className="border border-gray-200 rounded-md p-3 bg-gray-50"
-                    >
-                      <h4 className="text-xs font-semibold text-gray-900 mb-2">{bagian}</h4>
-                      <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-line">
-                        {isi}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="flex-1 min-h-0 flex flex-col">
+              <SOPPreviewTemplate name={penugasan.sop} number={penugasan.kodeSOP} />
             </div>
           </div>
 
@@ -284,40 +261,13 @@ export function DetailPenugasanTimEvaluasi() {
                   </Button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-3 space-y-4 min-h-0">
-                  <div className="p-3 bg-gray-50 rounded-md border border-gray-100">
-                    <p className="text-[10px] font-semibold text-gray-500 mb-2">Informasi Penugasan</p>
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      <Badge variant="outline" className="text-xs font-mono">
-                        {penugasan.kodePenugasan}
-                      </Badge>
-                      <Badge className={`${getStatusBadge(penugasan.status)} text-xs border-0`}>
-                        {getStatusLabel(penugasan.status)}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">{penugasan.jenis}</Badge>
-                    </div>
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Users className="w-3.5 h-3.5 text-blue-600" />
-                      <p className="text-xs text-gray-700">{penugasan.opd}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-orange-600" />
-                      <p className="text-xs text-gray-700">
-                        {new Date(penugasan.tanggalPenugasan).toLocaleDateString('id-ID', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-xs">
                     <p className="font-semibold text-blue-900 mb-1">Instruksi Evaluasi:</p>
                     <ul className="list-disc pl-4 space-y-0.5 text-blue-800">
                       <li>Lakukan review SOP secara menyeluruh dan objektif</li>
                       <li>Dokumentasikan temuan dengan detail dan terstruktur</li>
                       <li>Berikan rekomendasi yang konstruktif dan dapat ditindaklanjuti</li>
-                      <li>Tetapkan status Sesuai/Tidak Sesuai berdasarkan hasil review</li>
+                      <li>Tetapkan status Sesuai/Revisi Biro berdasarkan hasil review</li>
                       <li>Submit hasil evaluasi setelah selesai</li>
                     </ul>
                   </div>

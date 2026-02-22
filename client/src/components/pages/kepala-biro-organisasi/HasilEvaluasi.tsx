@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from '@tanstack/react-router'
 import { Eye, Download, CheckCircle, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import type { TTESignaturePayload } from '@/lib/tte-types'
+import { getTTEProfile, verifyPin, addTTESignature } from '@/lib/tte'
+import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
+import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
+import type { StatusHasilEvaluasi } from '@/lib/sop-status'
 
 interface HasilEvaluasiItem {
   id: string
@@ -22,7 +28,7 @@ interface HasilEvaluasiItem {
   sopList: Array<{
     nama: string
     nomor: string
-    status: 'Sesuai' | 'Perlu Perbaikan' | 'Tidak Sesuai'
+    status: StatusHasilEvaluasi
     catatan: string
     rekomendasi: string
   }>
@@ -30,6 +36,7 @@ interface HasilEvaluasiItem {
   nomorBA?: string
   tanggalVerifikasi?: string
   kepalaBiro?: string
+  tteSignaturePayload?: TTESignaturePayload
 }
 
 export function HasilEvaluasi() {
@@ -38,6 +45,10 @@ export function HasilEvaluasi() {
   const [isBAOpen, setIsBAOpen] = useState(false)
   const [selectedHasil, setSelectedHasil] = useState<HasilEvaluasiItem | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [pinDialogOpen, setPinDialogOpen] = useState(false)
+  const [pendingVerifikasiId, setPendingVerifikasiId] = useState<string | null>(null)
+  const tteProfile = getTTEProfile('kepala-biro-organisasi')
+  const canVerifyWithTTE = tteProfile?.emailVerified === true
 
   useEffect(() => {
     if (!toastMessage) return
@@ -139,29 +150,57 @@ export function HasilEvaluasi() {
     setIsBAOpen(true)
   }
 
-  const handleVerifikasi = (id: string) => {
+  const runVerifikasiWithTTE = (id: string, nip: string, nama: string) => {
+    const h = hasilList.find((x) => x.id === id)
+    if (!h) return
     const batchNumber = `BA/BIRO/${String(
-      hasilList.filter((h) => h.isVerified).length + 1
+      hasilList.filter((x) => x.isVerified).length + 1
     ).padStart(3, '0')}/II/2026`
+    const payload = addTTESignature(
+      'kepala-biro-organisasi',
+      nip,
+      nama,
+      'batch-evaluasi-' + id,
+      h.batchName,
+      batchNumber
+    )
     setHasilList(
-      hasilList.map((h) =>
-        h.id === id
+      hasilList.map((item) =>
+        item.id === id
           ? {
-              ...h,
+              ...item,
               isVerified: true,
               nomorBA: batchNumber,
               tanggalVerifikasi: new Date().toISOString().split('T')[0],
-              kepalaBiro: 'Dr. H. Muhammad Ridwan, M.Si',
+              kepalaBiro: nama,
+              tteSignaturePayload: payload,
             }
-          : h
+          : item
       )
     )
-    setToastMessage('Batch evaluasi berhasil diverifikasi. Berita Acara telah dibuat.')
+    setToastMessage('Batch evaluasi berhasil diverifikasi dengan TTE BSRE. Berita Acara telah dibuat.')
+    setPendingVerifikasiId(null)
     setIsDetailOpen(false)
   }
 
+  const handleVerifikasiClick = (id: string) => {
+    if (!canVerifyWithTTE) return
+    setPendingVerifikasiId(id)
+    setPinDialogOpen(true)
+  }
+
+  const handlePinConfirm = (pin: string): boolean => {
+    const profile = getTTEProfile('kepala-biro-organisasi')
+    if (!profile || !verifyPin(pin, profile.pinHash)) return false
+    if (pendingVerifikasiId) {
+      runVerifikasiWithTTE(pendingVerifikasiId, profile.nip, profile.nama)
+    }
+    return true
+  }
+
+  /** Verifikasi batch tersedia jika evaluasi selesai (ada hasil) dan belum diverifikasi; tidak peduli Sesuai/Revisi per SOP. */
   const canVerify = (hasil: HasilEvaluasiItem) => {
-    return hasil.sopList.every((sop) => sop.status === 'Sesuai') && !hasil.isVerified
+    return hasil.sopList.length > 0 && !hasil.isVerified
   }
 
   return (
@@ -245,21 +284,21 @@ export function HasilEvaluasi() {
             <div className="flex gap-1">
               <Button
                 variant="ghost"
-                size="sm"
-                className="h-7 text-xs flex-1"
+                size="icon-sm"
+                className="h-7 w-7 p-0"
                 onClick={() => openDetailDialog(hasil)}
+                title="Detail"
               >
-                <Eye className="w-3 h-3 mr-1" />
-                Detail
+                <Eye className="w-3.5 h-3.5" />
               </Button>
               {canVerify(hasil) && (
                 <Button
-                  size="sm"
-                  className="h-7 text-xs flex-1"
+                  size="icon-sm"
+                  className="h-7 w-7 p-0"
                   onClick={() => handleVerifikasi(hasil.id)}
+                  title="Verifikasi"
                 >
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Verifikasi
+                  <CheckCircle className="w-3.5 h-3.5" />
                 </Button>
               )}
             </div>
@@ -333,17 +372,25 @@ export function HasilEvaluasi() {
               {canVerify(selectedHasil) && (
                 <div className="p-3 bg-yellow-50 rounded-md border border-yellow-200">
                   <p className="text-xs text-gray-700 mb-2">
-                    <strong>Semua SOP dalam batch ini berstatus "Sesuai".</strong> Batch evaluasi ini
-                    dapat diverifikasi oleh Kepala Biro untuk menghasilkan Berita Acara.
+                    Batch evaluasi ini selesai. Verifikasi dengan TTE BSRE untuk menghasilkan Berita Acara (tanpa memandang hasil per SOP).
                   </p>
-                  <Button
-                    size="sm"
-                    className="h-8 text-xs gap-1.5"
-                    onClick={() => handleVerifikasi(selectedHasil.id)}
-                  >
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Verifikasi Batch Ini
-                  </Button>
+                  {canVerifyWithTTE ? (
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs gap-1.5"
+                      onClick={() => handleVerifikasiClick(selectedHasil.id)}
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Verifikasi Batch Ini (TTE)
+                    </Button>
+                  ) : (
+                    <Link to="/kepala-biro-organisasi/ttd-elektronik">
+                      <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        Buat TTD dulu
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               )}
 
@@ -471,10 +518,8 @@ export function HasilEvaluasi() {
                   <h4 className="font-semibold mb-2">Kesimpulan:</h4>
                   <div className="p-3 bg-green-50 rounded-md border border-green-200">
                     <p className="leading-relaxed">
-                      Berdasarkan hasil monitoring dan evaluasi,{' '}
-                      <strong>seluruh {selectedHasil.sopList.length} SOP</strong> dalam batch ini
-                      dinyatakan <strong className="text-green-700">SESUAI</strong> dengan standar
-                      yang telah ditetapkan dan dapat terus diimplementasikan.
+                      Berdasarkan hasil monitoring dan evaluasi, telah dilaksanakan verifikasi terhadap{' '}
+                      <strong>{selectedHasil.sopList.length} SOP</strong> dalam batch ini.
                     </p>
                   </div>
                 </div>
@@ -490,8 +535,18 @@ export function HasilEvaluasi() {
                     <p className="font-semibold">{selectedHasil.evaluator}</p>
                   </div>
                   <div className="text-center">
-                    <p className="mb-16">Kepala Biro Organisasi,</p>
-                    <p className="font-semibold">{selectedHasil.kepalaBiro}</p>
+                    {selectedHasil.tteSignaturePayload ? (
+                      <TTESignatureBlock
+                        payload={selectedHasil.tteSignaturePayload}
+                        roleLabel="Kepala Biro Organisasi"
+                        qrSize={80}
+                      />
+                    ) : (
+                      <>
+                        <p className="mb-16">Kepala Biro Organisasi,</p>
+                        <p className="font-semibold">{selectedHasil.kepalaBiro}</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -517,6 +572,15 @@ export function HasilEvaluasi() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PinVerificationDialog
+        open={pinDialogOpen}
+        onOpenChange={setPinDialogOpen}
+        title="Verifikasi PIN TTE"
+        description="Masukkan PIN TTE BSRE untuk memverifikasi batch evaluasi ini."
+        onConfirm={handlePinConfirm}
+        confirmLabel="Verifikasi"
+      />
     </div>
   )
 }

@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from '@tanstack/react-router'
+import { useParams, useNavigate, Link } from '@tanstack/react-router'
 import { ArrowLeft, FileText, CheckCircle, Download, Building, ChevronLeft, ChevronRight, List, MessageSquare } from 'lucide-react'
+import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { getPenugasanById, getPenugasanList, subscribe, updatePenugasan } from '@/lib/penugasan-store'
 import type { Penugasan } from '@/lib/penugasan-store'
+import { getTTEProfile, verifyPin, addTTESignature } from '@/lib/tte'
+import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
+import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -19,7 +23,7 @@ function getHasilStatusColor(s: string) {
   switch (s) {
     case 'Sesuai': return 'bg-green-100 text-green-700'
     case 'Perlu Perbaikan': return 'bg-yellow-100 text-yellow-700'
-    case 'Tidak Sesuai': return 'bg-red-100 text-red-700'
+    case 'Revisi Biro': return 'bg-amber-100 text-amber-700'
     default: return 'bg-gray-100 text-gray-700'
   }
 }
@@ -33,30 +37,50 @@ export function DetailPenugasanEvaluasi() {
   const [isBAOpen, setIsBAOpen] = useState(false)
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
+  const [pinDialogOpen, setPinDialogOpen] = useState(false)
+  const tteProfile = getTTEProfile('kepala-biro-organisasi')
+  const canVerifyWithTTE = tteProfile?.emailVerified === true
 
   useEffect(() => {
     const unsub = subscribe(() => setPenugasan(getPenugasanById(id) ?? null))
     return unsub
   }, [id])
 
+  /** Verifikasi batch tersedia jika status Selesai, ada SOP, dan belum diverifikasi (tanpa syarat semua SOP Sesuai). */
   const canVerify = (item: Penugasan) =>
-    (item.status === 'Selesai' || item.status === 'Terverifikasi') &&
+    item.status === 'Selesai' &&
     (item.sopList?.length ?? 0) > 0 &&
-    (item.sopList ?? []).every((s) => s.status === 'Sesuai') &&
     !item.isVerified
 
-  const handleVerifikasi = () => {
-    if (!penugasan) return
+  const runVerifikasiWithTTE = () => {
+    if (!penugasan || !tteProfile) return
     const verifiedCount = getPenugasanList().filter((h) => h.isVerified).length
     const batchNumber = `BA/BIRO/${String(verifiedCount + 1).padStart(3, '0')}/II/2026`
+    const payload = addTTESignature(
+      'kepala-biro-organisasi',
+      tteProfile.nip,
+      tteProfile.nama,
+      'batch-evaluasi-' + penugasan.id,
+      penugasan.opd,
+      batchNumber
+    )
     updatePenugasan(penugasan.id, {
       status: 'Terverifikasi',
       isVerified: true,
       nomorBA: batchNumber,
       tanggalVerifikasi: new Date().toISOString().split('T')[0],
-      kepalaBiro: 'Dr. H. Muhammad Ridwan, M.Si',
+      kepalaBiro: tteProfile.nama,
+      tteSignaturePayload: payload,
     })
-    setToastMessage('Batch evaluasi berhasil diverifikasi. Berita Acara telah dibuat.')
+    setToastMessage('Batch evaluasi berhasil diverifikasi dengan TTE BSRE. Berita Acara telah dibuat.')
+    setPinDialogOpen(false)
+  }
+
+  const handlePinConfirm = (pin: string): boolean => {
+    const profile = getTTEProfile('kepala-biro-organisasi')
+    if (!profile || !verifyPin(pin, profile.pinHash)) return false
+    runVerifikasiWithTTE()
+    return true
   }
 
   const sopList = penugasan?.sopList ?? []
@@ -68,8 +92,8 @@ export function DetailPenugasanEvaluasi() {
     return (
       <div className="p-6">
         <p className="text-sm text-gray-500">Penugasan tidak ditemukan.</p>
-        <Button variant="outline" size="sm" className="mt-4" onClick={() => navigate({ to: '/kepala-biro-organisasi/manajemen-evaluasi-sop' })}>
-          <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Kembali
+        <Button variant="outline" size="icon" className="h-8 w-8 mt-4" onClick={() => navigate({ to: '/kepala-biro-organisasi/manajemen-evaluasi-sop' })} title="Kembali">
+          <ArrowLeft className="w-4 h-4" />
         </Button>
       </div>
     )
@@ -117,6 +141,24 @@ export function DetailPenugasanEvaluasi() {
               <Badge variant="outline" className="text-xs">{penugasan.jenis}</Badge>
               <StatusBadge status={penugasan.status} domain="evaluasi-biro" />
             </div>
+            {canVerify(penugasan) && (
+              canVerifyWithTTE ? (
+                <Button size="sm" className="h-8 text-xs gap-1.5 shrink-0" onClick={() => setPinDialogOpen(true)}>
+                  <CheckCircle className="w-3.5 h-3.5" /> Verifikasi Batch (TTE)
+                </Button>
+              ) : (
+                <Link to="/kepala-biro-organisasi/ttd-elektronik">
+                  <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 shrink-0">
+                    <CheckCircle className="w-3.5 h-3.5" /> Buat TTD dulu
+                  </Button>
+                </Link>
+              )
+            )}
+            {penugasan.isVerified && penugasan.nomorBA && (
+              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 shrink-0" onClick={() => setIsBAOpen(true)}>
+                <FileText className="w-3.5 h-3.5" /> Lihat BA
+              </Button>
+            )}
           </div>
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 text-xs text-gray-600">
             {penugasan.tanggalRequest && (
@@ -199,29 +241,19 @@ export function DetailPenugasanEvaluasi() {
           )}
         </div>
 
-        {/* Tengah: Preview SOP (tetap tampil) */}
+        {/* Tengah: Preview SOP (template sama dengan Kepala OPD / Tim Penyusun) */}
         <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200">
-          <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+          <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 flex items-center justify-between">
             <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
+            {displaySop?.status && (
+              <Badge className={`text-xs ${getHasilStatusColor(displaySop.status)}`}>{displaySop.status}</Badge>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto p-4 min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col">
             {displaySop ? (
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">{displaySop.nama}</p>
-                  <p className="text-xs text-gray-500 font-mono">{displaySop.nomor}</p>
-                </div>
-                {displaySop.status && (
-                  <Badge className={`text-xs ${getHasilStatusColor(displaySop.status)}`}>{displaySop.status}</Badge>
-                )}
-                <div className="mt-4 border border-dashed border-gray-200 rounded-md p-8 text-center bg-gray-50/50">
-                  <FileText className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                  <p className="text-xs text-gray-500">Preview dokumen SOP</p>
-                  <p className="text-[10px] text-gray-400 mt-1">Dokumen dapat dilampirkan atau ditautkan di sini</p>
-                </div>
-              </div>
+              <SOPPreviewTemplate name={displaySop.nama} number={displaySop.nomor} />
             ) : (
-              <div className="flex items-center justify-center h-full text-xs text-gray-400">
+              <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
                 Pilih SOP di daftar kiri
               </div>
             )}
@@ -258,51 +290,7 @@ export function DetailPenugasanEvaluasi() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <div className="flex-1 overflow-y-auto p-3 space-y-4 min-h-0">
-                {displaySop && (
-                  <>
-                    {displaySop.catatan && (
-                      <div className="p-2 bg-blue-50 rounded-md border border-blue-100">
-                        <p className="text-[10px] font-semibold text-blue-800 mb-0.5">Catatan evaluator</p>
-                        <p className="text-xs text-blue-900">{displaySop.catatan}</p>
-                      </div>
-                    )}
-                    {displaySop.rekomendasi && (
-                      <div className="p-2 bg-green-50 rounded-md border border-green-100">
-                        <p className="text-[10px] font-semibold text-green-800 mb-0.5">Rekomendasi</p>
-                        <p className="text-xs text-green-900">{displaySop.rekomendasi}</p>
-                      </div>
-                    )}
-                    {!displaySop.catatan && !displaySop.rekomendasi && (
-                      <p className="text-xs text-gray-400">Tidak ada catatan atau rekomendasi untuk SOP ini.</p>
-                    )}
-                  </>
-                )}
-
-                {penugasan.isVerified && penugasan.nomorBA && (
-                  <div className="p-2 bg-indigo-50 rounded-md border border-indigo-100">
-                    <p className="text-[10px] font-semibold text-indigo-800 mb-0.5">Berita Acara</p>
-                    <p className="text-xs text-indigo-900 mb-1">{penugasan.nomorBA}</p>
-                    <p className="text-[10px] text-indigo-700 mt-1">
-                      Rekomendasi: Berita Acara dapat diarsipkan di Biro Organisasi atau dikirim ke OPD terkait untuk tindak lanjut.
-                    </p>
-                    <Button size="sm" variant="outline" className="h-7 text-xs mt-2 gap-1" onClick={() => setIsBAOpen(true)}>
-                      <FileText className="w-3 h-3" /> Lihat BA
-                    </Button>
-                  </div>
-                )}
-
-                {canVerify(penugasan) && (
-                  <div className="p-3 bg-amber-50 rounded-md border border-amber-200">
-                    <p className="text-xs text-gray-700 mb-2">
-                      Semua SOP dalam batch ini berstatus &quot;Sesuai&quot;. Verifikasi batch untuk menghasilkan Berita Acara.
-                    </p>
-                    <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleVerifikasi}>
-                      <CheckCircle className="w-3.5 h-3.5" /> Verifikasi Batch
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <div className="flex-1 overflow-y-auto p-3 min-h-0" />
             </>
           )}
         </div>
@@ -329,11 +317,24 @@ export function DetailPenugasanEvaluasi() {
                 <p><strong>Jumlah SOP:</strong> {sopList.length}</p>
               </div>
               <p className="leading-relaxed">
-                Berdasarkan hasil monitoring dan evaluasi, seluruh {sopList.length} SOP dalam batch ini dinyatakan <strong className="text-green-700">SESUAI</strong>.
+                Berdasarkan hasil monitoring dan evaluasi, batch ini telah diverifikasi dengan {sopList.length} SOP.
               </p>
               <div className="grid grid-cols-2 gap-8 mt-6">
                 <div className="text-center"><p className="mb-12">Evaluator</p><p className="font-semibold">{penugasan.timMonev}</p></div>
-                <div className="text-center"><p className="mb-12">Kepala Biro Organisasi</p><p className="font-semibold">{penugasan.kepalaBiro}</p></div>
+                <div className="text-center">
+                  {penugasan.tteSignaturePayload ? (
+                    <TTESignatureBlock
+                      payload={penugasan.tteSignaturePayload}
+                      roleLabel="Kepala Biro Organisasi"
+                      qrSize={80}
+                    />
+                  ) : (
+                    <>
+                      <p className="mb-12">Kepala Biro Organisasi</p>
+                      <p className="font-semibold">{penugasan.kepalaBiro}</p>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -343,6 +344,15 @@ export function DetailPenugasanEvaluasi() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PinVerificationDialog
+        open={pinDialogOpen}
+        onOpenChange={setPinDialogOpen}
+        title="Verifikasi PIN TTE"
+        description="Masukkan PIN TTE BSRE untuk memverifikasi batch evaluasi ini."
+        onConfirm={handlePinConfirm}
+        confirmLabel="Verifikasi"
+      />
     </div>
   )
 }

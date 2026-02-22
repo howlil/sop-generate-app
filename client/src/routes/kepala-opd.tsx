@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
-import { BookOpen, FileText, UserPlus, Users } from 'lucide-react'
+import { BookOpen, FileText, PenLine, UserPlus, Users } from 'lucide-react'
 import { isKepalaOPD } from '@/lib/role'
 import { AppLogo } from '@/components/layout/AppLogo'
 import { HeaderProfile } from '@/components/layout/HeaderProfile'
@@ -19,6 +19,7 @@ const sidebarItems = [
   { to: '/kepala-opd/pelaksana-sop', label: 'Kelola Pelaksana SOP', icon: Users },
   { to: '/kepala-opd/manajemen-peraturan', label: 'Manajemen Peraturan', icon: BookOpen },
   { to: '/kepala-opd/daftar-sop', label: 'Daftar SOP', icon: FileText },
+  { to: '/kepala-opd/ttd-elektronik', label: 'TTD Elektronik', icon: PenLine },
 ]
 
 function KepalaOPDLayout() {
@@ -37,7 +38,8 @@ function KepalaOPDLayout() {
             (to === '/kepala-opd/daftar-sop' &&
               (pathname.startsWith('/kepala-opd/daftar-sop') ||
                 pathname.startsWith('/kepala-opd/initiate-proyek') ||
-                pathname.startsWith('/kepala-opd/detail-sop')))
+                pathname.startsWith('/kepala-opd/detail-sop'))) ||
+            (to === '/kepala-opd/ttd-elektronik' && pathname === '/kepala-opd/ttd-elektronik')
             return (
               <Link
                 key={to}

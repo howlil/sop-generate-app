@@ -4,7 +4,6 @@ import {
   Filter,
   Eye,
   Send,
-  CheckCircle2,
   Plus,
   FileText,
   ChevronDown,
@@ -31,18 +30,8 @@ import { Toast } from '@/components/ui/toast'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { getActiveCaseForSop, getRiwayatEvaluasiForSop, addEvaluationCase } from '@/lib/evaluation-case'
 import type { EvaluationCaseSourceType } from '@/lib/evaluation-case'
-
-type StatusSOP =
-  | 'Draft'
-  | 'Review Internal'
-  | 'Siap Dievaluasi'
-  | 'Diajukan Evaluasi'
-  | 'Disahkan · Diajukan Evaluasi'
-  | 'Dalam Evaluasi'
-  | 'Tidak Sesuai'
-  | 'Sesuai'
-  | 'Terverifikasi'
-  | 'Disahkan'
+import { STATUS_SOP_ALL, canAjukanEvaluasiSOP, type StatusSOP } from '@/lib/sop-status'
+import { mergeSopStatus, setSopStatusOverride } from '@/lib/sop-status-store'
 
 interface SOP {
   id: string
@@ -84,8 +73,6 @@ export function DaftarSOP() {
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
   const [selectedSopIdsForAjukan, setSelectedSopIdsForAjukan] = useState<Set<string>>(new Set())
-  const [isSahkanDialogOpen, setIsSahkanDialogOpen] = useState(false)
-  const [selectedSOP, setSelectedSOP] = useState<SOP | null>(null)
 
   const [sopList, setSopList] = useState<SOP[]>([
     {
@@ -99,7 +86,7 @@ export function DaftarSOP() {
       unitTerkait: 'Bidang Pendidikan Dasar',
       peraturan: 'Permendikbud No. 1/2026',
       peraturanId: 'p1',
-      status: 'Disahkan',
+      status: 'Berlaku',
       versi: '3.0',
       kategori: 'Pelayanan',
     },
@@ -114,7 +101,7 @@ export function DaftarSOP() {
       unitTerkait: 'Bidang Pendidikan Dasar',
       peraturan: 'Permendikbud No. 1/2026',
       peraturanId: 'p1',
-      status: 'Terverifikasi',
+      status: 'Terverifikasi dari Kepala Biro',
       versi: '2.1',
       kategori: 'Pelayanan',
     },
@@ -129,7 +116,7 @@ export function DaftarSOP() {
       unitTerkait: 'Bidang SDM',
       peraturan: 'Permendikbud No. 5/2025',
       peraturanId: 'p2',
-      status: 'Dalam Evaluasi',
+      status: 'Dievaluasi Tim Evaluasi',
       versi: '1.0',
       kategori: 'Administrasi',
       evaluationCaseId: 'EV-2026-001',
@@ -145,7 +132,7 @@ export function DaftarSOP() {
       unitTerkait: 'Bidang Pendidikan Dasar',
       peraturan: 'Perda No. 3/2025',
       peraturanId: 'p3',
-      status: 'Tidak Sesuai',
+      status: 'Revisi dari Tim Evaluasi',
       versi: '1.2',
       kategori: 'Pelayanan',
     },
@@ -160,7 +147,7 @@ export function DaftarSOP() {
       unitTerkait: 'Bidang Keuangan',
       peraturan: 'Permendikbud No. 8/2025',
       peraturanId: 'p4',
-      status: 'Siap Dievaluasi',
+      status: 'Diperiksa Kepala OPD',
       versi: '1.0',
       kategori: 'Administrasi',
     },
@@ -190,7 +177,7 @@ export function DaftarSOP() {
       unitTerkait: 'Bidang Pelayanan',
       peraturan: 'Perda No. 3/2025',
       peraturanId: 'p3',
-      status: 'Sesuai',
+      status: 'Siap Dievaluasi',
       versi: '2.0',
       kategori: 'Pelayanan',
     },
@@ -218,22 +205,11 @@ export function DaftarSOP() {
     { id: 'p4', nama: 'Permendikbud No. 8/2025' },
   ]
 
-  /** SOP baru: boleh ajukan jika Siap Dievaluasi. SOP lama: boleh ajukan jika Disahkan/Terverifikasi. */
-  const canAjukanEvaluasi = (status: StatusSOP) =>
-    status === 'Siap Dievaluasi' || status === 'Disahkan' || status === 'Terverifikasi'
-  /** Boleh tandai "siap dievaluasi" (belum request) hanya dari Review Internal / Tidak Sesuai. */
-  const canTandaiSiapDievaluasi = (status: StatusSOP) =>
-    status === 'Review Internal' || status === 'Tidak Sesuai'
-  const canSahkan = (status: StatusSOP) => status === 'Sesuai' || status === 'Terverifikasi'
+  const mergedSopList = mergeSopStatus(sopList)
 
-  const handleTandaiSiapDievaluasi = (sop: SOP) => {
-    setSopList((prev) => prev.map((p) => (p.id === sop.id ? { ...p, status: 'Siap Dievaluasi' as StatusSOP } : p)))
-    setToastMessage(`SOP "${sop.judul}" ditandai Siap Dievaluasi. Gunakan "Request Evaluasi" untuk mengajukan ke Biro.`)
-  }
-
-  /** Daftar SOP yang eligible untuk diajukan (belum dalam evaluasi aktif). */
-  const eligibleSopsForEvaluasi = sopList.filter(
-    (sop) => canAjukanEvaluasi(sop.status) && !getActiveCaseForSop(sop.id)
+  /** Daftar SOP yang eligible untuk diajukan evaluasi: hanya Siap Dievaluasi dan Berlaku (belum dalam evaluasi aktif). */
+  const eligibleSopsForEvaluasi = mergedSopList.filter(
+    (sop) => canAjukanEvaluasiSOP(sop.status) && !getActiveCaseForSop(sop.id)
   )
 
   const toggleSopSelectionForAjukan = (sopId: string) => {
@@ -261,9 +237,8 @@ export function DaftarSOP() {
       setSopList((prev) =>
         prev.map((p) => {
           if (!ids.includes(p.id)) return p
-          const isSopLama = p.status === 'Disahkan' || p.status === 'Terverifikasi'
-          const nextStatus: StatusSOP = isSopLama ? 'Disahkan · Diajukan Evaluasi' : 'Diajukan Evaluasi'
-          return { ...p, status: nextStatus }
+          setSopStatusOverride(p.id, 'Diajukan Evaluasi')
+          return { ...p, status: 'Diajukan Evaluasi' as StatusSOP }
         })
       )
       setToastMessage(`${ids.length} SOP berhasil diajukan untuk evaluasi (${newCase.id})`)
@@ -274,18 +249,7 @@ export function DaftarSOP() {
     }
   }
 
-  const handleSahkan = (sop: SOP) => {
-    setSelectedSOP(sop)
-    setIsSahkanDialogOpen(true)
-  }
-
-  const confirmSahkan = () => {
-    setToastMessage(`SOP "${selectedSOP?.judul}" berhasil disahkan`)
-    setIsSahkanDialogOpen(false)
-    setSelectedSOP(null)
-  }
-
-  const filteredList = sopList.filter((sop) => {
+  const filteredList = mergedSopList.filter((sop) => {
     const matchSearch =
       sop.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
       sop.nomorSOP.toLowerCase().includes(searchQuery.toLowerCase())
@@ -368,16 +332,9 @@ export function DaftarSOP() {
                     onChange={(e) => setFilterStatus(e.target.value)}
                   >
                     <option value="all">Semua Status</option>
-                    <option value="Draft">Draft</option>
-                    <option value="Review Internal">Review Internal</option>
-                    <option value="Siap Dievaluasi">Siap Dievaluasi</option>
-                    <option value="Diajukan Evaluasi">Diajukan Evaluasi</option>
-                    <option value="Disahkan · Diajukan Evaluasi">Disahkan · Diajukan Evaluasi</option>
-                    <option value="Dalam Evaluasi">Dalam Evaluasi</option>
-                    <option value="Tidak Sesuai">Tidak Sesuai</option>
-                    <option value="Sesuai">Sesuai</option>
-                    <option value="Terverifikasi">Terverifikasi</option>
-                    <option value="Disahkan">Disahkan</option>
+                    {STATUS_SOP_ALL.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -496,45 +453,22 @@ export function DaftarSOP() {
                       <StatusBadge status={sop.status} domain="sop" />
                     </td>
                     <td className="p-3">
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <Link to="/kepala-opd/detail-sop/$id" params={{ id: sop.id }}>
-                          <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1">
-                            <Eye className="w-3.5 h-3.5" />
-                            Detail
-                          </Button>
-                        </Link>
-                        {canTandaiSiapDievaluasi(sop.status) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs gap-1 text-sky-700 hover:text-sky-800 hover:bg-sky-50"
-                            onClick={() => handleTandaiSiapDievaluasi(sop)}
-                            title="Tandai siap dievaluasi (belum mengajukan request)"
-                          >
-                            Siap Dievaluasi
-                          </Button>
-                        )}
-                        {canAjukanEvaluasi(sop.status) && getActiveCaseForSop(sop.id) && (
-                          <span
-                            className="inline-flex items-center h-7 px-2 text-xs text-gray-500 bg-gray-100 rounded cursor-default"
-                            title={`Sedang dievaluasi dalam ${getActiveCaseForSop(sop.id)?.id}`}
-                          >
-                            <Send className="w-3.5 h-3.5 mr-1 opacity-50" />
-                            Sedang dievaluasi
-                          </span>
-                        )}
-                        {canSahkan(sop.status) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs gap-1 text-green-700 hover:text-green-800 hover:bg-green-50"
-                            onClick={() => handleSahkan(sop)}
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            Sahkan
-                          </Button>
-                        )}
-                      </div>
+                      <Link
+                        to="/kepala-opd/detail-sop/$id"
+                        params={{ id: sop.id }}
+                        state={{
+                          sopStatus: sop.status,
+                          waktuPenugasan: sop.waktuPenugasan,
+                          unitTerkait: sop.unitTerkait,
+                          timPenyusun: sop.timPenyusun,
+                          terakhirDiperbarui: sop.terakhirDiperbarui,
+                          deskripsiProyek: sop.deskripsi,
+                        }}
+                      >
+                        <Button variant="ghost" size="icon-sm" className="h-7 w-7 p-0" title="Detail">
+                          <Eye className="w-3.5 h-3.5" />
+                        </Button>
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -546,7 +480,7 @@ export function DaftarSOP() {
         {filteredList.length > 0 && (
           <div className="border-t border-gray-200 p-3 flex items-center justify-between">
             <p className="text-xs text-gray-600">
-              Menampilkan {filteredList.length} dari {sopList.length} SOP
+              Menampilkan {filteredList.length} dari {mergedSopList.length} SOP
             </p>
             <div className="flex gap-1">
               <Button variant="outline" size="sm" className="h-7 px-2 text-xs" disabled>
@@ -576,7 +510,7 @@ export function DaftarSOP() {
               <div className="p-6 text-center text-gray-500">
                 <FileText className="w-10 h-10 mx-auto mb-2 text-gray-400" />
                 <p className="text-sm">Tidak ada SOP yang eligible untuk dievaluasi</p>
-                <p className="text-xs mt-1">SOP harus berstatus Siap Dievaluasi, Disahkan, atau Terverifikasi dan tidak sedang dalam evaluasi aktif.</p>
+                <p className="text-xs mt-1">SOP harus berstatus Siap Dievaluasi atau Berlaku dan tidak sedang dalam evaluasi aktif.</p>
               </div>
             ) : (
               <ul className="divide-y divide-gray-100">
@@ -638,59 +572,6 @@ export function DaftarSOP() {
             >
               <Send className="w-3.5 h-3.5" />
               Ajukan Evaluasi ({selectedSopIdsForAjukan.size} SOP)
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isSahkanDialogOpen} onOpenChange={setIsSahkanDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Sahkan SOP</DialogTitle>
-            <DialogDescription className="text-xs">
-              SOP ini akan disahkan dan menjadi berlaku resmi
-            </DialogDescription>
-          </DialogHeader>
-          {selectedSOP && (
-            <div className="space-y-3">
-              <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
-                <p className="text-xs font-mono text-gray-700 mb-1">{selectedSOP.nomorSOP}</p>
-                <p className="text-xs font-medium text-gray-900 mb-1">{selectedSOP.judul}</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-gray-600">Versi {selectedSOP.versi}</p>
-                  <span className="text-gray-400">•</span>
-                  <StatusBadge status={selectedSOP.status} domain="sop" />
-                </div>
-              </div>
-              <div className="p-3 bg-green-50 rounded-md border border-green-100">
-                <p className="text-xs text-green-900 mb-2">
-                  <strong>Pengesahan SOP</strong>
-                </p>
-                <ul className="text-xs text-green-900 space-y-1 list-disc list-inside">
-                  <li>SOP akan mendapat status &quot;Disahkan&quot;</li>
-                  <li>SOP berlaku resmi dan dapat digunakan</li>
-                  <li>Dokumen SOP akan terkunci (read-only)</li>
-                  <li>Revisi hanya dapat dilakukan melalui prosedur resmi</li>
-                </ul>
-              </div>
-            </div>
-          )}
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setIsSahkanDialogOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5 bg-green-600 hover:bg-green-700"
-              onClick={confirmSahkan}
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Sahkan SOP
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -367,6 +367,14 @@ export function FlowchartArrowConnector({
     const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
     const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
 
+    const dy = (toPos.top + toPos.height / 2) - (fromPos.top + fromPos.height / 2)
+    const destAbove = dy < -10
+    const isLoopBack = destAbove && connection.sourceType === 'flowchart-decision'
+    const canvasW = constraintRect ? constraintRect.right - constraintRect.left : 0
+    const boundsMargin = isLoopBack
+      ? (canvasW > 0 ? Math.min(56, Math.max(28, Math.round(canvasW * 0.048))) : 32)
+      : (canvasW > 0 ? Math.min(24, Math.max(15, Math.round(canvasW * 0.018))) : BOUNDS_MARGIN)
+
     const sidePairs = selectSidePairs(connection, fromPos, toPos, usedSidesRef.current)
 
     // Collect occupied segments from other already-routed arrows
@@ -388,7 +396,7 @@ export function FlowchartArrowConnector({
         obstacles: obsRects,
         shapeMargin: SHAPE_MARGIN,
         globalBounds,
-        globalBoundsMargin: BOUNDS_MARGIN,
+        globalBoundsMargin: boundsMargin,
         occupiedSegments: occupied,
       })
 

@@ -75,6 +75,28 @@ body {
   color: var(--color-placeholder);
 }
 
+/* ── SOP: preview A4 landscape (297×210mm); lebar normal di layar, landscape saat print ──────── */
+.sop-a4-preview {
+  width: 100%;
+  max-width: 297mm;
+  min-width: 0;
+  min-height: 210mm;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@media print {
+  .sop-a4-preview {
+    width: 297mm;
+    min-width: 297mm;
+    min-height: 210mm;
+    box-shadow: none;
+  }
+}
+
 /* ── Print: flowchart page breaks + A4 landscape ──────── */
 @media print {
   @page {

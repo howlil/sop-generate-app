@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
-import { Building2, Users, FileCheck } from 'lucide-react'
+import { Building2, FileCheck, PenLine, Users } from 'lucide-react'
 import { isKepalaBiroOrganisasi } from '@/lib/role'
 import { AppLogo } from '@/components/layout/AppLogo'
 import { HeaderProfile } from '@/components/layout/HeaderProfile'
@@ -18,6 +18,7 @@ const sidebarItems = [
   { to: '/kepala-biro-organisasi/manajemen-opd', label: 'Manajemen OPD', icon: Building2 },
   { to: '/kepala-biro-organisasi/manajemen-tim-evaluasi', label: 'Manajemen Tim Evaluasi', icon: Users },
   { to: '/kepala-biro-organisasi/manajemen-evaluasi-sop', label: 'Manajemen Evaluasi SOP', icon: FileCheck },
+  { to: '/kepala-biro-organisasi/ttd-elektronik', label: 'TTD Elektronik', icon: PenLine },
 ]
 
 function KepalaBiroOrganisasiLayout() {
@@ -32,7 +33,10 @@ function KepalaBiroOrganisasiLayout() {
         </div>
         <nav className="flex-1 flex flex-col items-center gap-1 pt-4">
           {sidebarItems.map(({ to, label, icon: Icon }) => {
-            const isActive = pathname === to
+            const isActive =
+              pathname === to ||
+              (to === '/kepala-biro-organisasi/ttd-elektronik' &&
+                pathname === '/kepala-biro-organisasi/ttd-elektronik')
             return (
               <Link
                 key={to}

@@ -36,7 +36,10 @@ const DEFAULT_LAYOUT = {
   nextPageSteps: 8,
 }
 
-const PAGE_WIDTH_CLASS = 'w-[calc(297mm-3cm)] min-w-[calc(297mm-3cm)] max-w-[calc(297mm-3cm)]'
+const PAGE_WIDTH_CLASS = 'w-full max-w-[calc(297mm-3cm)] min-w-0 print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)]'
+
+/** Lebar konten A4 landscape (297mm - 3cm) dalam px @ 96dpi, untuk perhitungan bounds/margin yang konsisten */
+export const A4_LANDSCAPE_CONTENT_WIDTH_PX = Math.round((297 - 30) * (96 / 25.4))
 
 /* ───────────────────────── Props ─────────────────────────── */
 
@@ -199,28 +202,47 @@ export function SOPDiagramFlowchart({
   const pelaksanaBoundsRef = useRef<Record<number, { left: number; top: number; right: number; bottom: number }>>({})
 
   const [arrowsReady, setArrowsReady] = useState(false)
+  const [, setBoundsVersion] = useState(0)
+
+  const measurePelaksanaBounds = useCallback(() => {
+    for (let pi = 0; pi < allPages.length; pi++) {
+      const container = document.getElementById(sopAreaId(pi))
+      if (!container) continue
+      const cells = container.querySelectorAll('td[data-implementer-id]')
+      if (cells.length === 0) continue
+      const containerRect = container.getBoundingClientRect()
+      let minLeft = Infinity, maxRight = -Infinity, minTop = Infinity, maxBottom = -Infinity
+      cells.forEach((cell) => {
+        const rect = cell.getBoundingClientRect()
+        minLeft = Math.min(minLeft, rect.left - containerRect.left)
+        maxRight = Math.max(maxRight, rect.right - containerRect.left)
+        minTop = Math.min(minTop, rect.top - containerRect.top)
+        maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
+      })
+      pelaksanaBoundsRef.current[pi] = { left: minLeft, top: minTop, right: maxRight, bottom: maxBottom }
+    }
+    setArrowsReady(true)
+  }, [allPages])
+
   useEffect(() => {
-    const t = requestAnimationFrame(() => {
-      for (let pi = 0; pi < allPages.length; pi++) {
-        const container = document.getElementById(sopAreaId(pi))
-        if (!container) continue
-        const cells = container.querySelectorAll('td[data-implementer-id]')
-        if (cells.length === 0) continue
-        const containerRect = container.getBoundingClientRect()
-        let minLeft = Infinity, maxRight = -Infinity, minTop = Infinity, maxBottom = -Infinity
-        cells.forEach((cell) => {
-          const rect = cell.getBoundingClientRect()
-          minLeft = Math.min(minLeft, rect.left - containerRect.left)
-          maxRight = Math.max(maxRight, rect.right - containerRect.left)
-          minTop = Math.min(minTop, rect.top - containerRect.top)
-          maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
-        })
-        pelaksanaBoundsRef.current[pi] = { left: minLeft, top: minTop, right: maxRight, bottom: maxBottom }
-      }
-      setArrowsReady(true)
-    })
+    const t = requestAnimationFrame(() => measurePelaksanaBounds())
     return () => cancelAnimationFrame(t)
-  }, [allPages, implementers])
+  }, [measurePelaksanaBounds])
+
+  useEffect(() => {
+    const observers: ResizeObserver[] = []
+    for (let pi = 0; pi < allPages.length; pi++) {
+      const container = document.getElementById(sopAreaId(pi))
+      if (!container) continue
+      const ro = new ResizeObserver(() => {
+        setBoundsVersion((v) => v + 1)
+        requestAnimationFrame(() => measurePelaksanaBounds())
+      })
+      ro.observe(container)
+      observers.push(ro)
+    }
+    return () => observers.forEach((ro) => ro.disconnect())
+  }, [allPages.length, measurePelaksanaBounds])
 
   /* ── Render ─────────────────────────────────────── */
 
@@ -314,7 +336,7 @@ function FlowchartPage({
 }: FlowchartPageProps) {
   return (
     <div
-      className={`print-page px-4 lg:px-0 print:px-0 mx-auto ${PAGE_WIDTH_CLASS} print:max-w-[calc(297mm-3cm)] box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
+      className={`print-page px-4 lg:px-0 print:px-0 mx-auto ${PAGE_WIDTH_CLASS} box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
     >
       <div id={areaId} className="relative">
         {/* ── OPC-in shapes at top ──────────────── */}
