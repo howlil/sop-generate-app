@@ -5,19 +5,14 @@ import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { SEED_TIM_MONEV_LIST, type TimMonev } from '@/lib/seed/tim-evaluasi-seed'
+import { SEED_TIM_MONEV_LIST } from '@/lib/seed/tim-evaluasi-seed'
+import type { TimMonev } from '@/lib/types/tim'
+import { generateId } from '@/utils/generate-id'
 
 export function ManajemenTimEvaluasi() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -72,7 +67,7 @@ export function ManajemenTimEvaluasi() {
     setTimList((prev) => [
       ...prev,
       {
-        id: String(Date.now()),
+        id: generateId(),
         ...formData,
         jumlahEvaluasi: 0,
       },
@@ -166,120 +161,98 @@ export function ManajemenTimEvaluasi() {
         </Table.Table>
       </Table.Card>
 
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Tambah Anggota Tim Monev</DialogTitle>
-            <DialogDescription className="text-xs">
-              Lengkapi form berikut untuk menambah anggota tim monitoring dan evaluasi
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <FormField label="Nama Lengkap" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: Dr. Ahmad Pratama, M.Si"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </FormField>
-            <FormField label="NIP" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="197503152000032001"
-                value={formData.nip}
-                onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Golongan / Jabatan di Instansi" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: IV/a, Analis Kebijakan"
-                value={formData.jabatan}
-                onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Email" required>
-              <Input
-                type="email"
-                className="h-9 text-xs"
-                placeholder="email@pemda.go.id"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </FormField>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setIsCreateDialogOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button size="sm" className="h-8 text-xs" onClick={handleCreateSubmit}>
-              Simpan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        title="Tambah Anggota Tim Monev"
+        description="Lengkapi form berikut untuk menambah anggota tim monitoring dan evaluasi"
+        confirmLabel="Simpan"
+        cancelLabel="Batal"
+        onConfirm={handleCreateSubmit}
+        confirmDisabled={!formData.name || !formData.nip}
+        size="md"
+      >
+        <div className="space-y-3">
+          <FormField label="Nama Lengkap" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: Dr. Ahmad Pratama, M.Si"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </FormField>
+          <FormField label="NIP" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="197503152000032001"
+              value={formData.nip}
+              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Golongan / Jabatan di Instansi" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: IV/a, Analis Kebijakan"
+              value={formData.jabatan}
+              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Email" required>
+            <Input
+              type="email"
+              className="h-9 text-xs"
+              placeholder="email@pemda.go.id"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </FormField>
+        </div>
+      </FormDialog>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Edit Anggota Tim Monev</DialogTitle>
-            <DialogDescription className="text-xs">
-              Perbarui informasi anggota tim
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <FormField label="Nama Lengkap" required>
-              <Input
-                className="h-9 text-xs"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </FormField>
-            <FormField label="NIP" required>
-              <Input
-                className="h-9 text-xs"
-                value={formData.nip}
-                onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Golongan / Jabatan di Instansi" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: IV/a, Analis Kebijakan"
-                value={formData.jabatan}
-                onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Email" required>
-              <Input
-                type="email"
-                className="h-9 text-xs"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </FormField>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setIsEditDialogOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button size="sm" className="h-8 text-xs" onClick={handleEditSubmit}>
-              Simpan Perubahan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        title="Edit Anggota Tim Monev"
+        description="Perbarui informasi anggota tim"
+        confirmLabel="Simpan Perubahan"
+        cancelLabel="Batal"
+        onConfirm={handleEditSubmit}
+        confirmDisabled={!formData.name || !formData.nip}
+        size="md"
+      >
+        <div className="space-y-3">
+          <FormField label="Nama Lengkap" required>
+            <Input
+              className="h-9 text-xs"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+          </FormField>
+          <FormField label="NIP" required>
+            <Input
+              className="h-9 text-xs"
+              value={formData.nip}
+              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Golongan / Jabatan di Instansi" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: IV/a, Analis Kebijakan"
+              value={formData.jabatan}
+              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Email" required>
+            <Input
+              type="email"
+              className="h-9 text-xs"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </FormField>
+        </div>
+      </FormDialog>
 
       <ConfirmDialog
         open={deleteTimId != null}

@@ -2,30 +2,28 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Building2, FileCheck, PenLine, Users } from 'lucide-react'
 import { isKepalaBiroOrganisasi } from '@/lib/stores'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
+import { ROUTES } from '@/lib/constants/routes'
+import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 
 export const Route = createFileRoute('/kepala-biro-organisasi')({
   beforeLoad: () => {
     if (typeof window !== 'undefined' && !isKepalaBiroOrganisasi()) {
-      throw redirect({ to: '/', search: { denied: 'kepala-biro-organisasi' } })
+      throw redirect({ to: ROUTES.HOME, search: { denied: 'kepala-biro-organisasi' } })
     }
   },
   component: KepalaBiroOrganisasiLayout,
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: '/kepala-biro-organisasi/manajemen-opd', label: 'Manajemen OPD', icon: Building2 },
-  { to: '/kepala-biro-organisasi/manajemen-tim-evaluasi', label: 'Manajemen Tim Evaluasi', icon: Users },
-  { to: '/kepala-biro-organisasi/manajemen-evaluasi-sop', label: 'Manajemen Evaluasi SOP', icon: FileCheck },
-  { to: '/kepala-biro-organisasi/ttd-elektronik', label: 'TTD Elektronik', icon: PenLine },
+  { to: ROUTES.KEPALA_BIRO.OPD, label: 'Manajemen OPD', icon: Building2 },
+  { to: ROUTES.KEPALA_BIRO.TIM_EVALUASI, label: 'Manajemen Tim Evaluasi', icon: Users },
+  { to: ROUTES.KEPALA_BIRO.EVALUASI_SOP, label: 'Manajemen Evaluasi SOP', icon: FileCheck },
+  { to: ROUTES.KEPALA_BIRO.TTD, label: 'TTD Elektronik', icon: PenLine },
 ]
 
-function isSidebarActive(pathname: string, item: SidebarItem) {
-  return (
-    pathname === item.to ||
-    (item.to === '/kepala-biro-organisasi/ttd-elektronik' &&
-      pathname === '/kepala-biro-organisasi/ttd-elektronik')
-  )
-}
+const isSidebarActive = createSidebarActiveMatcher({
+  [ROUTES.KEPALA_BIRO.EVALUASI_SOP]: ['/kepala-biro-organisasi/manajemen-evaluasi-sop'],
+})
 
 function KepalaBiroOrganisasiLayout() {
   return (

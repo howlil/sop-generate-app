@@ -2,14 +2,7 @@
  * Seed data untuk Manajemen Tim Evaluasi (Kepala Biro Organisasi).
  */
 
-export interface TimMonev {
-  id: string
-  name: string
-  nip: string
-  jabatan: string
-  email: string
-  jumlahEvaluasi: number
-}
+import type { TimMonev } from '@/lib/types/tim'
 
 export const SEED_TIM_MONEV_LIST: TimMonev[] = [
   {

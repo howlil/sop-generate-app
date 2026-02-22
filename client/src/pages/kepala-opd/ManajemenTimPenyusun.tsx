@@ -1,37 +1,22 @@
-import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, UserCheck, UserX, Search } from 'lucide-react'
+import { useState } from 'react'
+import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { DialogFooterActions } from '@/components/ui/dialog-footer-actions'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { showToast } from '@/lib/stores'
+import { generateId } from '@/utils/generate-id'
 import { StatusBadge } from '@/components/ui/status-badge'
-
-interface TimPenyusun {
-  id: string
-  nama: string
-  nip: string
-  jabatan: string
-  email: string
-  noHP: string
-  status: 'Aktif' | 'Nonaktif'
-  jumlahSOPDisusun: number
-  tanggalBergabung: string
-}
+import { SEED_TIM_PENYUSUN_LIST } from '@/lib/seed/tim-penyusun-seed'
+import type { TimPenyusun } from '@/lib/types/tim'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
+import { formatDateId } from '@/utils/format-date'
 
 export function ManajemenTimPenyusun() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -49,52 +34,7 @@ export function ManajemenTimPenyusun() {
     status: 'Aktif' as 'Aktif' | 'Nonaktif',
   })
 
-  const [timList, setTimList] = useState<TimPenyusun[]>([
-    {
-      id: '1',
-      nama: 'Ahmad Pratama, S.Sos',
-      nip: '199203152020121001',
-      jabatan: 'Kepala Seksi Organisasi',
-      email: 'ahmad.pratama@disdik.go.id',
-      noHP: '081234567890',
-      status: 'Aktif',
-      jumlahSOPDisusun: 12,
-      tanggalBergabung: '2023-01-15',
-    },
-    {
-      id: '2',
-      nama: 'Siti Nurhaliza, S.Pd',
-      nip: '199105102019032005',
-      jabatan: 'Staf Bagian Tata Usaha',
-      email: 'siti.nurhaliza@disdik.go.id',
-      noHP: '082345678901',
-      status: 'Aktif',
-      jumlahSOPDisusun: 8,
-      tanggalBergabung: '2023-03-20',
-    },
-    {
-      id: '3',
-      nama: 'Budi Santoso, S.T',
-      nip: '198808252018031002',
-      jabatan: 'Kepala Sub Bagian Perencanaan',
-      email: 'budi.santoso@disdik.go.id',
-      noHP: '083456789012',
-      status: 'Aktif',
-      jumlahSOPDisusun: 15,
-      tanggalBergabung: '2022-06-10',
-    },
-    {
-      id: '4',
-      nama: 'Dewi Kusuma, S.E',
-      nip: '199012152021022001',
-      jabatan: 'Staf Keuangan',
-      email: 'dewi.kusuma@disdik.go.id',
-      noHP: '084567890123',
-      status: 'Nonaktif',
-      jumlahSOPDisusun: 5,
-      tanggalBergabung: '2021-09-01',
-    },
-  ])
+  const [timList, setTimList] = useState<TimPenyusun[]>(SEED_TIM_PENYUSUN_LIST)
 
   const filteredList = timList.filter(
     (tim) =>
@@ -102,6 +42,8 @@ export function ManajemenTimPenyusun() {
       tim.nip.includes(searchQuery) ||
       tim.jabatan.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  const isFormValid = formData.nama.trim() !== '' && formData.nip.trim() !== '' && formData.jabatan.trim() !== '' && formData.email.trim() !== '' && formData.noHP.trim() !== ''
 
   const resetForm = () => {
     setFormData({
@@ -118,7 +60,7 @@ export function ManajemenTimPenyusun() {
     setTimList((prev) => [
       ...prev,
       {
-        id: String(Date.now()),
+        id: generateId(),
         ...formData,
         jumlahSOPDisusun: 0,
         tanggalBergabung: new Date().toISOString().split('T')[0],
@@ -217,7 +159,7 @@ export function ManajemenTimPenyusun() {
                 <Table.Td className="text-gray-600">{tim.email}</Table.Td>
                 <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
                 <Table.Td className="text-gray-600">
-                  {new Date(tim.tanggalBergabung).toLocaleDateString('id-ID')}
+                  {formatDateId(tim.tanggalBergabung)}
                 </Table.Td>
                 <Table.Td className="text-center font-medium text-gray-900">{tim.jumlahSOPDisusun}</Table.Td>
                 <Table.Td className="text-center">
@@ -226,7 +168,7 @@ export function ManajemenTimPenyusun() {
                     onClick={() => handleToggleStatus(tim.id)}
                     className="inline-flex"
                   >
-                    <StatusBadge status={tim.status} domain="tim-penyusun" />
+                    <StatusBadge status={tim.status} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
                   </button>
                 </Table.Td>
                 <Table.Td>
@@ -247,145 +189,137 @@ export function ManajemenTimPenyusun() {
       </Table.Card>
 
       {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Tambah Tim Penyusun SOP</DialogTitle>
-            <DialogDescription className="text-xs">
-              Isi data pegawai yang akan ditunjuk sebagai tim penyusun SOP
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-3 pb-0">
-            <FormField label="Nama Lengkap" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: Ahmad Pratama, S.Sos"
-                value={formData.nama}
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-              />
-            </FormField>
-            <FormField label="NIP" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: 199203152020121001"
-                value={formData.nip}
-                onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Jabatan" required className="col-span-2">
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: Kepala Seksi Organisasi"
-                value={formData.jabatan}
-                onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Email" required>
-              <Input
-                type="email"
-                className="h-9 text-xs"
-                placeholder="Contoh: ahmad@disdik.go.id"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </FormField>
-            <FormField label="No. HP" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: 081234567890"
-                value={formData.noHP}
-                onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Status" required>
-              <Select
-                value={formData.status}
-                onValueChange={(status) =>
-                  setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })
-                }
-                options={[
-                  { value: 'Aktif', label: 'Aktif' },
-                  { value: 'Nonaktif', label: 'Nonaktif' },
-                ]}
-              />
-            </FormField>
-          </div>
-          <DialogFooterActions
-            cancelLabel="Batal"
-            confirmLabel="Simpan"
-            onCancel={() => setIsCreateOpen(false)}
-            onConfirm={handleCreate}
-          />
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        title="Tambah Tim Penyusun SOP"
+        description="Isi data pegawai yang akan ditunjuk sebagai tim penyusun SOP"
+        confirmLabel="Simpan"
+        cancelLabel="Batal"
+        onConfirm={handleCreate}
+        confirmDisabled={!isFormValid}
+        size="md"
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Nama Lengkap" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: Ahmad Pratama, S.Sos"
+              value={formData.nama}
+              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+            />
+          </FormField>
+          <FormField label="NIP" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: 199203152020121001"
+              value={formData.nip}
+              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Jabatan" required className="col-span-2">
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: Kepala Seksi Organisasi"
+              value={formData.jabatan}
+              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Email" required>
+            <Input
+              type="email"
+              className="h-9 text-xs"
+              placeholder="Contoh: ahmad@disdik.go.id"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </FormField>
+          <FormField label="No. HP" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: 081234567890"
+              value={formData.noHP}
+              onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Status" required>
+            <Select
+              value={formData.status}
+              onValueChange={(status) =>
+                setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })
+              }
+              options={[
+                { value: 'Aktif', label: 'Aktif' },
+                { value: 'Nonaktif', label: 'Nonaktif' },
+              ]}
+            />
+          </FormField>
+        </div>
+      </FormDialog>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Edit Tim Penyusun SOP</DialogTitle>
-            <DialogDescription className="text-xs">
-              Perbarui data tim penyusun SOP
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-3 pb-0">
-            <FormField label="Nama Lengkap" required>
-              <Input
-                className="h-9 text-xs"
-                value={formData.nama}
-                onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-              />
-            </FormField>
-            <FormField label="NIP" required>
-              <Input
-                className="h-9 text-xs"
-                value={formData.nip}
-                onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Jabatan" required className="col-span-2">
-              <Input
-                className="h-9 text-xs"
-                value={formData.jabatan}
-                onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Email" required>
-              <Input
-                type="email"
-                className="h-9 text-xs"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </FormField>
-            <FormField label="No. HP" required>
-              <Input
-                className="h-9 text-xs"
-                value={formData.noHP}
-                onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Status" required>
-              <Select
-                value={formData.status}
-                onValueChange={(status) =>
-                  setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })
-                }
-                options={[
-                  { value: 'Aktif', label: 'Aktif' },
-                  { value: 'Nonaktif', label: 'Nonaktif' },
-                ]}
-              />
-            </FormField>
-          </div>
-          <DialogFooterActions
-            cancelLabel="Batal"
-            confirmLabel="Simpan Perubahan"
-            onCancel={() => setIsEditOpen(false)}
-            onConfirm={handleEdit}
-          />
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isEditOpen}
+        onOpenChange={setIsEditOpen}
+        title="Edit Tim Penyusun SOP"
+        description="Perbarui data tim penyusun SOP"
+        confirmLabel="Simpan Perubahan"
+        cancelLabel="Batal"
+        onConfirm={handleEdit}
+        confirmDisabled={!isFormValid}
+        size="md"
+      >
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Nama Lengkap" required>
+            <Input
+              className="h-9 text-xs"
+              value={formData.nama}
+              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
+            />
+          </FormField>
+          <FormField label="NIP" required>
+            <Input
+              className="h-9 text-xs"
+              value={formData.nip}
+              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Jabatan" required className="col-span-2">
+            <Input
+              className="h-9 text-xs"
+              value={formData.jabatan}
+              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Email" required>
+            <Input
+              type="email"
+              className="h-9 text-xs"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </FormField>
+          <FormField label="No. HP" required>
+            <Input
+              className="h-9 text-xs"
+              value={formData.noHP}
+              onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Status" required>
+            <Select
+              value={formData.status}
+              onValueChange={(status) =>
+                setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })
+              }
+              options={[
+                { value: 'Aktif', label: 'Aktif' },
+                { value: 'Nonaktif', label: 'Nonaktif' },
+              ]}
+            />
+          </FormField>
+        </div>
+      </FormDialog>
 
       <ConfirmDialog
         open={deleteTimId != null}

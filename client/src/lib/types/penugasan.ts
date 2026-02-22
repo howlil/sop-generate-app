@@ -36,3 +36,20 @@ export interface Penugasan {
   kepalaBiro?: string
   tteSignaturePayload?: TTESignaturePayload
 }
+
+export type JenisEvaluasi = 'Evaluasi Rutin' | 'Evaluasi Khusus' | 'Evaluasi Insidental'
+
+export type StatusPenugasanTimEvaluasi = 'assigned' | 'in-progress' | 'completed'
+
+export interface PenugasanTimEvaluasiItem {
+  id: string
+  kodePenugasan: string
+  opd: string
+  sop: string
+  kodeSOP: string
+  jenis: JenisEvaluasi
+  tanggalPenugasan: string
+  status: StatusPenugasanTimEvaluasi
+}
+
+export type PenugasanDetailItem = PenugasanTimEvaluasiItem

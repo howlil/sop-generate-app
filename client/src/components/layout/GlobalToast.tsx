@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect } from 'react'
 import { useAppStore } from '@/lib/stores/app-store'
 import { Toast } from '@/components/ui/toast'

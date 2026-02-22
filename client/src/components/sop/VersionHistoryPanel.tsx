@@ -1,6 +1,7 @@
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { formatDateIdLong } from '@/utils/format-date'
 
 export interface VersionHistoryItem {
   id: string
@@ -48,12 +49,7 @@ export function VersionHistoryPanel({
   summary,
   className,
 }: VersionHistoryPanelProps) {
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    })
+  const formatDate = (date: string) => formatDateIdLong(date)
 
   return (
     <div className={`p-3 space-y-3 ${className ?? ''}`}>

@@ -11,6 +11,8 @@ import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
 import { mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
 import type { SOPSayaItem } from '@/lib/types/sop'
 import { SEED_SOP_SAYA } from '@/lib/seed/sop-daftar'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
+import { formatDateIdLong } from '@/utils/format-date'
 
 export function SOPSaya() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -92,14 +94,10 @@ export function SOPSaya() {
                   </Table.Td>
                   <Table.Td className="font-mono text-gray-700 text-[11px]">{sop.nomorSOP}</Table.Td>
                   <Table.Td className="text-center text-gray-600">
-                    {new Date(sop.terakhirDiubah).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    {formatDateIdLong(sop.terakhirDiubah)}
                   </Table.Td>
                   <Table.Td className="text-center">
-                    <StatusBadge status={sop.status} domain="sop" className="text-xs" />
+                    <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} className="text-xs" />
                   </Table.Td>
                   <Table.Td className="text-center">
                     <div className="flex items-center justify-center gap-1">

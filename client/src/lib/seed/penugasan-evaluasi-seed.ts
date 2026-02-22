@@ -2,8 +2,9 @@
  * Seed data untuk Manajemen Evaluasi SOP, Edit Penugasan, dan Penugasan (Tim Evaluasi).
  */
 
-import type { Penugasan } from '@/lib/types/penugasan'
+import type { Penugasan, PenugasanTimEvaluasiItem } from '@/lib/types/penugasan'
 import type { StatusSOP } from '@/lib/types/sop'
+
 
 export const SEED_PENUGASAN_INITIAL: Penugasan[] = [
   {
@@ -97,23 +98,11 @@ export const SEED_SOP_BY_OPD: Record<string, Array<{ id: string; nama: string; n
   ],
 }
 
-export const SEED_TIM_MONEV_LIST: { id: string; nama: string }[] = [
+export const SEED_TIM_MONEV_OPTIONS: { id: string; nama: string }[] = [
   { id: 'tm1', nama: 'Dra. Siti Aminah, M.Si' },
   { id: 'tm2', nama: 'Dr. Bambang Suryanto' },
   { id: 'tm3', nama: 'Ir. Dewi Kusumawati, MT' },
 ]
-
-/** Penugasan list untuk halaman Tim Evaluasi (PenugasanEvaluasi) - shape berbeda dari Penugasan store */
-export interface PenugasanTimEvaluasiItem {
-  id: string
-  kodePenugasan: string
-  opd: string
-  sop: string
-  kodeSOP: string
-  jenis: 'Evaluasi Rutin' | 'Evaluasi Khusus' | 'Evaluasi Insidental'
-  tanggalPenugasan: string
-  status: 'assigned' | 'in-progress' | 'completed'
-}
 
 export const SEED_PENUGASAN_TIM_EVALUASI: PenugasanTimEvaluasiItem[] = [
   { id: '1', kodePenugasan: 'TUG-EVL-012/2026', opd: 'Dinas Pendidikan', sop: 'SOP Penerimaan Siswa Baru 2026', kodeSOP: 'SOP/DISDIK/PLY/2026/001', jenis: 'Evaluasi Rutin', tanggalPenugasan: '2026-01-20', status: 'in-progress' },
@@ -122,3 +111,6 @@ export const SEED_PENUGASAN_TIM_EVALUASI: PenugasanTimEvaluasiItem[] = [
   { id: '4', kodePenugasan: 'TUG-EVL-010/2026', opd: 'Dinas Pendidikan', sop: 'SOP Ujian Akhir Semester', kodeSOP: 'SOP/DISDIK/ADM/2025/003', jenis: 'Evaluasi Rutin', tanggalPenugasan: '2025-12-15', status: 'completed' },
   { id: '5', kodePenugasan: 'TUG-EVL-009/2025', opd: 'Dinas Sosial', sop: 'SOP Bantuan Sosial', kodeSOP: 'SOP/DINSOS/PLY/2025/008', jenis: 'Evaluasi Insidental', tanggalPenugasan: '2025-12-10', status: 'completed' },
 ]
+
+/** OPD yang mengajukan request evaluasi ke Biro. */
+export const SEED_OPD_REQUEST_BIRO: string[] = ['DPMPTSP']

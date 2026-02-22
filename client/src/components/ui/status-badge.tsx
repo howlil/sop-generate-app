@@ -2,12 +2,7 @@ import { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/cn'
 import type { StatusSOP, StatusHasilEvaluasi } from '@/lib/types/sop'
-
-type StatusDomain =
-  | 'sop'
-  | 'penugasan-evaluasi'
-  | 'evaluasi-biro'
-  | 'tim-penyusun'
+import type { StatusDomain } from '@/lib/constants/status-domains'
 
 interface StatusBadgeProps {
   status: string
@@ -57,7 +52,7 @@ const timStatusClasses: Record<string, string> = {
 function getClassFor(domain: StatusDomain, status: string): string {
   switch (domain) {
     case 'sop':
-      return sopStatusClasses[status] ?? 'bg-gray-100 text-gray-700'
+      return sopStatusClasses[status as StatusSOP | StatusHasilEvaluasi] ?? 'bg-gray-100 text-gray-700'
     case 'penugasan-evaluasi':
       return penugasanEvaluasiClasses[status] ?? 'bg-gray-100 text-gray-700'
     case 'evaluasi-biro':

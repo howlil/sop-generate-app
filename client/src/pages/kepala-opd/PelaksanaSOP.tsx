@@ -3,42 +3,17 @@ import { Plus, Edit2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { Input } from '@/components/ui/input'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { showToast } from '@/lib/stores'
-
-interface PelaksanaSOP {
-  id: string
-  nama: string
-  deskripsi: string
-  /** Jumlah POS/SOP yang menggunakan pelaksana ini. Jika > 0, tidak boleh dihapus. */
-  jumlahPos: number
-}
+import { generateId } from '@/utils/generate-id'
+import { SEED_PELAKSANA_LIST } from '@/lib/seed/pelaksana-seed'
+import type { PelaksanaSOP } from '@/lib/types/sop'
 
 export function PelaksanaSOPPage() {
-  const [pelaksanaList, setPelaksanaList] = useState<PelaksanaSOP[]>([
-    {
-      id: 'pel-1',
-      nama: 'Pelaksana Utama',
-      deskripsi: 'Menangani SOP layanan utama dan administrasi umum.',
-      jumlahPos: 3,
-    },
-    {
-      id: 'pel-2',
-      nama: 'Pelaksana Pendukung',
-      deskripsi: 'Membantu pelaksanaan POS pendukung lintas unit.',
-      jumlahPos: 0,
-    },
-  ])
+  const [pelaksanaList, setPelaksanaList] = useState<PelaksanaSOP[]>(SEED_PELAKSANA_LIST)
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingPelaksana, setEditingPelaksana] = useState<PelaksanaSOP | null>(null)
@@ -83,7 +58,7 @@ export function PelaksanaSOPPage() {
       showToast('Data pelaksana SOP berhasil diperbarui.')
     } else {
       const newPel: PelaksanaSOP = {
-        id: `pel-${Date.now()}`,
+        id: generateId('pel'),
         nama: trimmedNama,
         deskripsi: pelaksanaDeskripsi.trim(),
         jumlahPos: safeJumlah,
@@ -195,64 +170,51 @@ export function PelaksanaSOPPage() {
       </div>
 
       {/* Dialog: tambah / edit Pelaksana SOP */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-sm">
-              {editingPelaksana ? 'Edit Pelaksana SOP' : 'Tambah Pelaksana SOP'}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              Atur master data pelaksana SOP yang dapat dikaitkan dengan berbagai POS.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <FormField label="Nama pelaksana">
-              <Input
-                className="h-8 text-xs"
-                value={pelaksanaNama}
-                onChange={(e) => setPelaksanaNama(e.target.value)}
-                placeholder="Mis. Pelaksana Utama"
-              />
-            </FormField>
-            <FormField label="Deskripsi">
-              <Input
-                className="h-8 text-xs"
-                value={pelaksanaDeskripsi}
-                onChange={(e) => setPelaksanaDeskripsi(e.target.value)}
-                placeholder="Ringkasan peran atau cakupan tugas"
-              />
-            </FormField>
-            <FormField label="Jumlah POS">
-              <Input
-                type="number"
-                min={0}
-                className="h-8 text-xs w-24"
-                value={pelaksanaJumlahPos}
-                onChange={(e) => setPelaksanaJumlahPos(e.target.value)}
-              />
-              <p className="text-[10px] text-gray-500 mt-1">
-                Jika jumlah POS &gt; 0, pelaksana tidak dapat dihapus.
-              </p>
-            </FormField>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => {
-                setIsDialogOpen(false)
-                setEditingPelaksana(null)
-              }}
-            >
-              Batal
-            </Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSimpanPelaksana}>
-              Simpan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open)
+          if (!open) {
+            setEditingPelaksana(null)
+          }
+        }}
+        title={editingPelaksana ? 'Edit Pelaksana SOP' : 'Tambah Pelaksana SOP'}
+        description="Atur master data pelaksana SOP yang dapat dikaitkan dengan berbagai POS."
+        confirmLabel="Simpan"
+        cancelLabel="Batal"
+        onConfirm={handleSimpanPelaksana}
+        confirmDisabled={!pelaksanaNama.trim()}
+        size="md"
+      >
+        <FormField label="Nama pelaksana">
+          <Input
+            className="h-8 text-xs"
+            value={pelaksanaNama}
+            onChange={(e) => setPelaksanaNama(e.target.value)}
+            placeholder="Mis. Pelaksana Utama"
+          />
+        </FormField>
+        <FormField label="Deskripsi">
+          <Input
+            className="h-8 text-xs"
+            value={pelaksanaDeskripsi}
+            onChange={(e) => setPelaksanaDeskripsi(e.target.value)}
+            placeholder="Ringkasan peran atau cakupan tugas"
+          />
+        </FormField>
+        <FormField label="Jumlah POS">
+          <Input
+            type="number"
+            min={0}
+            className="h-8 text-xs w-24"
+            value={pelaksanaJumlahPos}
+            onChange={(e) => setPelaksanaJumlahPos(e.target.value)}
+          />
+          <p className="text-[10px] text-gray-500 mt-1">
+            Jika jumlah POS &gt; 0, pelaksana tidak dapat dihapus.
+          </p>
+        </FormField>
+      </FormDialog>
 
       <ConfirmDialog
         open={deletePelaksana != null}

@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router'
 import { Building2, UserCircle, ClipboardCheck, Users } from 'lucide-react'
-import { setRole, ROLES } from '@/lib/stores'
+import { setRole, ROLES, getRoleLabel } from '@/lib/stores'
+import { DASHBOARD_DESCRIPTIONS } from '@/lib/seed/user-seed'
 
 export const Route = createFileRoute('/')({
   validateSearch: (s: Record<string, unknown>) => ({ denied: (s.denied as string) ?? undefined }),
@@ -8,34 +9,10 @@ export const Route = createFileRoute('/')({
 })
 
 const dashboards = [
-  {
-    to: '/kepala-opd',
-    label: 'Kepala OPD',
-    description: 'Dashboard untuk kepala organisasi perangkat daerah',
-    icon: Building2,
-    role: ROLES.KEPALA_OPD,
-  },
-  {
-    to: '/kepala-biro-organisasi',
-    label: 'Kepala Biro Organisasi',
-    description: 'Manajemen OPD, tim evaluasi, dan evaluasi SOP',
-    icon: UserCircle,
-    role: ROLES.KEPALA_BIRO_ORGANISASI,
-  },
-  {
-    to: '/tim-evaluasi',
-    label: 'Tim Evaluasi',
-    description: 'Evaluasi dan penilaian dokumen SOP',
-    icon: ClipboardCheck,
-    role: ROLES.TIM_EVALUASI,
-  },
-  {
-    to: '/tim-penyusun',
-    label: 'Tim Penyusun',
-    description: 'Penyusunan dan pengajuan SOP',
-    icon: Users,
-    role: ROLES.TIM_PENYUSUN,
-  },
+  { to: '/kepala-opd', icon: Building2, role: ROLES.KEPALA_OPD },
+  { to: '/kepala-biro-organisasi', icon: UserCircle, role: ROLES.KEPALA_BIRO_ORGANISASI },
+  { to: '/tim-evaluasi', icon: ClipboardCheck, role: ROLES.TIM_EVALUASI },
+  { to: '/tim-penyusun', icon: Users, role: ROLES.TIM_PENYUSUN },
 ]
 
 function IndexPage() {
@@ -67,7 +44,7 @@ function IndexPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-4xl mx-auto">
-          {dashboards.map(({ to, label, description, icon: Icon, role }) => (
+          {dashboards.map(({ to, icon: Icon, role }) => (
             <Link
               key={to}
               to={to}
@@ -78,8 +55,8 @@ function IndexPage() {
                 <Icon className="w-5 h-5 text-blue-600" />
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold text-gray-900 mb-0.5">{label}</h2>
-                <p className="text-xs text-gray-500">{description}</p>
+                <h2 className="text-sm font-semibold text-gray-900 mb-0.5">{getRoleLabel(role)}</h2>
+                <p className="text-xs text-gray-500">{DASHBOARD_DESCRIPTIONS[role]}</p>
               </div>
             </Link>
           ))}

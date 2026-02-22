@@ -1,5 +1,5 @@
 /**
- * Types SOP (status, daftar, prosedur).
+ * Types SOP: status, daftar, prosedur, metadata, template, pelaksana.
  */
 
 export type StatusSOP =
@@ -85,4 +85,44 @@ export interface ProsedurRow {
   type?: ProsedurStepType
   id_next_step_if_yes?: string
   id_next_step_if_no?: string
+}
+
+export interface SOPDetailMetadata {
+  institutionLogo: string
+  institutionLines: string[]
+  name: string
+  number: string
+  version: number
+  createdDate: string
+  revisionDate: string
+  effectiveDate: string
+  picName: string
+  picNumber: string
+  picRole: string
+  section: string
+  lawBasis: string[]
+  implementQualification: string[]
+  relatedSop: string[]
+  equipment: string[]
+  warning: string
+  recordData: string[]
+  signature: string
+}
+
+export type DetailSOPViewMetadata = Omit<SOPDetailMetadata, 'institutionLogo' | 'institutionLines'>
+
+export interface SOPTemplate {
+  id: string
+  kode: string
+  judul: string
+  opd: string
+  kategori: string
+  versi: string
+}
+
+export interface PelaksanaSOP {
+  id: string
+  nama: string
+  deskripsi: string
+  jumlahPos: number
 }

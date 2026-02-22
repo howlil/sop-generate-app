@@ -17,15 +17,10 @@ import {
 } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { showToast } from '@/lib/stores'
-
-interface SOPTemplate {
-  id: string
-  kode: string
-  judul: string
-  opd: string
-  kategori: string
-  versi: string
-}
+import { SEED_TIM_PENYUSUN_OPTIONS } from '@/lib/seed/tim-penyusun-seed'
+import { SEED_SOP_TEMPLATES } from '@/lib/seed/initiate-proyek-seed'
+import type { SOPTemplate } from '@/lib/types/sop'
+import { formatDatetime } from '@/utils/format-date'
 
 export function InitiateProyekSOP() {
   const navigate = useNavigate()
@@ -41,46 +36,13 @@ export function InitiateProyekSOP() {
   })
 
   // Default dari backend: otomatis terisi ketika proyek diinisiasi
-  const waktuPenugasan = new Date().toLocaleString('id-ID', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  const waktuPenugasan = formatDatetime(new Date())
   // Terakhir diperbarui: di-update oleh backend ketika ada perubahan detail
   const terakhirDiperbarui = '-'
 
-  const sopTemplates: SOPTemplate[] = [
-    {
-      id: '1',
-      kode: 'SOP/DINKES/PLY/2026/001',
-      judul: 'SOP Pelayanan Kesehatan Masyarakat',
-      opd: 'Dinas Kesehatan',
-      kategori: 'Pelayanan',
-      versi: '2.0',
-    },
-    {
-      id: '2',
-      kode: 'SOP/DISHUB/PLY/2026/003',
-      judul: 'SOP Penerbitan Izin Trayek',
-      opd: 'Dinas Perhubungan',
-      kategori: 'Pelayanan',
-      versi: '1.5',
-    },
-    {
-      id: '3',
-      kode: 'SOP/DPUPR/ADM/2026/005',
-      judul: 'SOP Pengadaan Barang dan Jasa',
-      opd: 'Dinas PUPR',
-      kategori: 'Administrasi',
-      versi: '3.0',
-    },
-  ]
+  const sopTemplates = SEED_SOP_TEMPLATES
 
-  const timPenyusunOptions = [
-    { id: '1', nama: 'Ahmad Pratama, S.Sos', jabatan: 'Kepala Seksi Kurikulum' },
-    { id: '2', nama: 'Siti Nurhaliza, S.Pd', jabatan: 'Staff Kurikulum' },
-    { id: '3', nama: 'Budi Santoso, S.T', jabatan: 'Kepala TU' },
-    { id: '4', nama: 'Rina Wijaya, S.Pd', jabatan: 'Staff Administrasi' },
-  ]
+  const timPenyusunOptions = SEED_TIM_PENYUSUN_OPTIONS
 
   const togglePenyusun = (nama: string) => {
     if (formData.penyusun.includes(nama)) {

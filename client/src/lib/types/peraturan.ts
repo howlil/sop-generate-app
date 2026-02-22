@@ -17,3 +17,20 @@ export interface Peraturan {
   createdBy: string
   version: number
 }
+
+export interface JenisPeraturan {
+  id: string
+  nama: string
+  kode: string
+  deskripsi: string
+  tingkat: 'Pusat' | 'Daerah' | 'Internal'
+  jumlahPeraturan: number
+  createdBy: string
+}
+
+export interface RiwayatVersiEntry {
+  version: number
+  tanggal: string
+  diubahOleh: string
+  sopYangMengait: { id: string; nama: string }[]
+}

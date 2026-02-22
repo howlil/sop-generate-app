@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
-import { getRole, getRoleLabel, getRoleNip, clearRole, type Role } from '@/lib/stores'
+import { getRole, getRoleLabel, getRoleNip, getRoleDisplayName, clearRole, type Role } from '@/lib/stores'
 
 interface HeaderProfileProps {
   /** Judul header fallback (jika tidak ada page header dari konteks) */
@@ -32,7 +32,7 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
   }
 
   const roleLabel = role ? getRoleLabel(role as Role) : '-'
-  const mockName = role ? `Pengguna ${roleLabel}` : 'Pengguna'
+  const displayName = role ? getRoleDisplayName(role as Role) : 'Pengguna'
   const nip = role ? getRoleNip(role as Role) : null
 
   return (
@@ -63,7 +63,7 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col gap-0.5">
-                <p className="text-sm font-medium text-gray-900">{mockName}</p>
+                <p className="text-sm font-medium text-gray-900">{displayName}</p>
                 <p className="text-xs text-gray-500">{roleLabel}</p>
                 {nip && nip !== '-' && (
                   <p className="text-xs text-gray-500">NIP. {nip}</p>

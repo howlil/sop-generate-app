@@ -20,6 +20,7 @@ import {
   hashPin,
   getTTEVerificationSuccessUrl,
 } from '@/lib/tte'
+import { formatDateIdLong } from '@/utils/format-date'
 
 const ROLE_LABEL: Record<TTERole, string> = {
   'kepala-opd': 'Kepala OPD',
@@ -167,11 +168,7 @@ export function TTDElektronikPage({
                 </Table.Td>
                 <Table.Td className="px-4 py-3 text-gray-600">
                   {profile?.createdAt
-                    ? new Date(profile.createdAt).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })
+                    ? formatDateIdLong(profile.createdAt)
                     : '—'}
                 </Table.Td>
               </Table.BodyRow>

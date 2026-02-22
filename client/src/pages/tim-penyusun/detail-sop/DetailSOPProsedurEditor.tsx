@@ -275,7 +275,7 @@ export function DetailSOPProsedurEditor({
                       <DropdownMenuItem
                         onClick={() =>
                           setProsedurRows((prev) => {
-                            const idBase = Date.now().toString()
+                            const idBase = crypto.randomUUID()
                             const newRow: ProsedurRow = {
                               id: `${idBase}-${idx + 1}`,
                               no: idx + 2,
@@ -333,8 +333,8 @@ export function DetailSOPProsedurEditor({
             setProsedurRows((prev) => [
               ...prev,
               {
-                id: String(Date.now()),
-                id_step: String(Date.now()),
+                id: crypto.randomUUID(),
+                id_step: crypto.randomUUID(),
                 no: prev.length + 1,
                 kegiatan: '',
                 pelaksana: implementers.reduce(

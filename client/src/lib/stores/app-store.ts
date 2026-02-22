@@ -1,14 +1,10 @@
 import { create } from 'zustand'
 import { persist, PersistStorage } from 'zustand/middleware'
+import { ROLE_NIPS as SEED_ROLE_NIPS, ROLE_DISPLAY_NAMES } from '@/lib/seed/user-seed'
+import { ROLES, ROLE_LABELS, type RoleKey } from '@/lib/constants/roles'
 
-export const ROLES = {
-  KEPALA_OPD: 'kepala-opd',
-  KEPALA_BIRO_ORGANISASI: 'kepala-biro-organisasi',
-  TIM_EVALUASI: 'tim-evaluasi',
-  TIM_PENYUSUN: 'tim-penyusun',
-} as const
-
-export type Role = (typeof ROLES)[keyof typeof ROLES]
+export { ROLES } from '@/lib/constants/roles'
+export type { RoleKey as Role } from '@/lib/constants/roles'
 
 export type ToastType = 'success' | 'error'
 
@@ -18,9 +14,9 @@ interface ToastState {
 }
 
 interface AppState {
-  role: Role | null
+  role: RoleKey | null
   toast: ToastState
-  setRole: (role: Role | null) => void
+  setRole: (role: RoleKey | null) => void
   clearRole: () => void
   showToast: (message: string, type?: ToastType) => void
   clearToast: () => void
@@ -31,18 +27,18 @@ const initialToast: ToastState = { message: null, type: 'success' }
 const PERSIST_KEY = 'biro-organisasi-role'
 
 /** Kompatibel dengan format lama: localStorage pernah simpan role sebagai string. */
-const roleStorage: PersistStorage<{ role: Role | null }> = {
+const roleStorage: PersistStorage<{ role: RoleKey | null }> = {
   getItem: (name) => {
     if (typeof window === 'undefined') return null
     const raw = localStorage.getItem(name)
     if (!raw) return null
     try {
-      const parsed = JSON.parse(raw) as { state?: { role: Role | null }; version?: number }
-      if (parsed?.state != null) return parsed
+      const parsed = JSON.parse(raw) as { state?: { role: RoleKey | null }; version?: number }
+      if (parsed?.state != null) return parsed as { state: { role: RoleKey | null }; version?: number }
       return null
     } catch {
-      const valid = Object.values(ROLES).includes(raw as Role)
-      return { state: { role: valid ? (raw as Role) : null }, version: 0 }
+      const valid = Object.values(ROLES).includes(raw as RoleKey)
+      return { state: { role: valid ? (raw as RoleKey) : null }, version: 0 }
     }
   },
   setItem: (name, value) => {
@@ -73,11 +69,11 @@ export const useAppStore = create<AppState>()(
   )
 )
 
-export function getRole(): Role | null {
+export function getRole(): RoleKey | null {
   return useAppStore.getState().role
 }
 
-export function setRole(role: Role): void {
+export function setRole(role: RoleKey): void {
   useAppStore.getState().setRole(role)
 }
 
@@ -89,27 +85,16 @@ export function showToast(message: string, type: ToastType = 'success'): void {
   useAppStore.getState().showToast(message, type)
 }
 
-const ROLE_LABELS: Record<Role, string> = {
-  [ROLES.KEPALA_OPD]: 'Kepala OPD',
-  [ROLES.KEPALA_BIRO_ORGANISASI]: 'Kepala Biro Organisasi',
-  [ROLES.TIM_EVALUASI]: 'Tim Evaluasi',
-  [ROLES.TIM_PENYUSUN]: 'Tim Penyusun',
-}
-
-const ROLE_NIPS: Record<Role, string> = {
-  [ROLES.KEPALA_OPD]: '197001011990031001',
-  [ROLES.KEPALA_BIRO_ORGANISASI]: '196512311988021002',
-  [ROLES.TIM_EVALUASI]: '198003051999031003',
-  [ROLES.TIM_PENYUSUN]: '198512152010121004',
-}
-
-export function getRoleLabel(role: Role): string {
+export function getRoleLabel(role: RoleKey): string {
   return ROLE_LABELS[role] ?? role
 }
 
-/** NIP dummy per aktor sampai terhubung ke data user/auth. */
-export function getRoleNip(role: Role): string {
-  return ROLE_NIPS[role] ?? '-'
+export function getRoleNip(role: RoleKey): string {
+  return SEED_ROLE_NIPS[role] ?? '-'
+}
+
+export function getRoleDisplayName(role: RoleKey): string {
+  return ROLE_DISPLAY_NAMES[role] ?? getRoleLabel(role)
 }
 
 export function isKepalaBiroOrganisasi(): boolean {

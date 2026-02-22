@@ -1,15 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import {
   Save,
   Send,
-  Eye,
   CheckCircle,
   XCircle,
   AlertTriangle,
   List,
   MessageSquare,
-  Building,
 } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
@@ -24,67 +22,38 @@ import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { InfoCard } from '@/components/ui/info-card'
 import { getPenugasanById, updatePenugasan } from '@/lib/stores/penugasan-store'
+import { SEED_PENUGASAN_DETAIL_BY_ID } from '@/lib/seed/penugasan-detail-seed'
+import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
+import { useCollapsiblePanels } from '@/hooks/useCollapsiblePanels'
+import { ROUTES } from '@/lib/constants/routes'
 
 export function PelaksanaanEvaluasi() {
   const { id } = useParams({ from: '/tim-evaluasi/pelaksanaan/$id' })
   const navigate = useNavigate()
 
+  const seedDetail = SEED_PENUGASAN_DETAIL_BY_ID[id ?? '1']
   const penugasanInfo = {
-    id: id ?? '1',
-    kode: 'TUG-EVL-012/2026',
-    opd: 'Dinas Pendidikan',
-    sop: 'SOP Penerimaan Siswa Baru 2026',
-    kodeSOP: 'SOP/DISDIK/PLY/2026/001',
-    jenis: 'Evaluasi Rutin',
+    id: seedDetail?.id ?? id ?? '1',
+    kode: seedDetail?.kodePenugasan ?? '-',
+    opd: seedDetail?.opd ?? '-',
+    sop: seedDetail?.sop ?? '-',
+    kodeSOP: seedDetail?.kodeSOP ?? '-',
+    jenis: seedDetail?.jenis ?? 'Evaluasi Rutin',
   }
 
-  const [komentarEvaluasi, setKomentarEvaluasi] = useState('')
-  const [statusEvaluasi, setStatusEvaluasi] = useState<'Sesuai' | 'Revisi Biro' | null>(null)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const {
+    komentarEvaluasi, setKomentarEvaluasi,
+    statusEvaluasi, setStatusEvaluasi,
+    saveDraft: handleSaveDraft,
+  } = useEvaluasiDraft(id)
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
-  const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
-  const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
-
-  useEffect(() => {
-    if (!id) return
-    const fromStore = getPenugasanById(id)
-    const sopItem = fromStore?.sopList?.find(
-      (s) => s.nama === penugasanInfo.sop || s.nomor === penugasanInfo.kodeSOP
-    )
-    if (sopItem?.status === 'Sesuai' || sopItem?.status === 'Revisi Biro') {
-      setStatusEvaluasi(sopItem.status)
-      if (sopItem.catatan) setKomentarEvaluasi(sopItem.catatan)
-      return
-    }
-    const raw = localStorage.getItem(`evaluasi_draft_${id}`)
-    if (raw) {
-      try {
-        const data = JSON.parse(raw)
-        if (data.komentarEvaluasi) setKomentarEvaluasi(data.komentarEvaluasi)
-        if (data.statusEvaluasi) setStatusEvaluasi(data.statusEvaluasi)
-      } catch {
-        // ignore
-      }
-    }
-  }, [id])
-
-  const handleSaveDraft = () => {
-    if (!id) return
-    localStorage.setItem(
-      `evaluasi_draft_${id}`,
-      JSON.stringify({
-        komentarEvaluasi,
-        statusEvaluasi,
-      })
-    )
-    showToast('Draft evaluasi berhasil disimpan')
-  }
+  const { leftCollapsed: leftPanelCollapsed, setLeftCollapsed: setLeftPanelCollapsed, rightCollapsed: rightPanelCollapsed, setRightCollapsed: setRightPanelCollapsed } = useCollapsiblePanels()
 
   const handleSubmit = () => {
     if (!statusEvaluasi) {
@@ -115,7 +84,7 @@ export function PelaksanaanEvaluasi() {
     showToast('Hasil evaluasi berhasil dikirim ke Biro Organisasi')
     setIsSubmitOpen(false)
     setTimeout(() => {
-      navigate({ to: '/tim-evaluasi/penugasan' })
+      navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN })
     }, 1500)
   }
 
@@ -125,44 +94,36 @@ export function PelaksanaanEvaluasi() {
     <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0">
       <PageHeader
         breadcrumb={[
-          { label: 'Penugasan Evaluasi', to: '/tim-evaluasi/penugasan' },
+          { label: 'Penugasan Evaluasi', to: ROUTES.TIM_EVALUASI.PENUGASAN },
           { label: 'Pelaksanaan Evaluasi' },
         ]}
         title={penugasanInfo.sop}
         description={`${penugasanInfo.kodeSOP} • ${penugasanInfo.opd}`}
         leading={
-          <BackButton size="icon" onClick={() => navigate({ to: '/tim-evaluasi/penugasan' })} />
-        }
-        actions={
-          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsPreviewOpen(true)}>
-            <Eye className="w-3.5 h-3.5" /> Preview
-          </Button>
+          <BackButton size="icon" onClick={() => navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN })} />
         }
       />
 
       <DetailWorkspace
         header={
-          <div className="p-4 flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-gray-900 mb-3">Informasi Penugasan</h2>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1.5">
-                  <Building className="w-4 h-4 text-gray-500 shrink-0" />
-                  <span className="font-medium text-gray-900">{penugasanInfo.opd}</span>
-                </div>
+          <>
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold text-gray-900">Informasi penugasan</h2>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50" onClick={handleSaveDraft}>
+                  <Save className="w-3.5 h-3.5" /> Simpan Draft
+                </Button>
+                <Button size="sm" className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5" onClick={() => setIsSubmitOpen(true)} disabled={!isFormComplete}>
+                  <Send className="w-3.5 h-3.5" /> Kirim Hasil ke Biro
+                </Button>
               </div>
-              <p className="text-xs text-gray-600 mt-2">{penugasanInfo.sop}</p>
-              <p className="text-[10px] text-gray-500 font-mono mt-0.5">{penugasanInfo.kodeSOP}</p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={handleSaveDraft}>
-                <Save className="w-3.5 h-3.5" /> Simpan Draft
-              </Button>
-              <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsSubmitOpen(true)} disabled={!isFormComplete}>
-                <Send className="w-3.5 h-3.5" /> Kirim Hasil ke Biro
-              </Button>
+            <div className="pt-2 flex flex-wrap items-center gap-3 text-xs">
+              <span className="font-medium text-gray-900">{penugasanInfo.opd}</span>
+              <span className="text-gray-700">{penugasanInfo.sop}</span>
+              <span className="text-gray-500 font-mono">{penugasanInfo.kodeSOP}</span>
             </div>
-          </div>
+          </>
         }
         leftPanel={
           <CollapsibleSidePanel
@@ -225,10 +186,10 @@ export function PelaksanaanEvaluasi() {
                   </button>
                 </div>
                 {statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim() && (
-                  <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-md flex items-start gap-2">
+                  <InfoCard variant="warning" className="mt-2 flex items-start gap-2">
                     <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <p className="text-[10px] text-amber-800">Komentar evaluasi wajib untuk status Revisi Biro.</p>
-                  </div>
+                  </InfoCard>
                 )}
               </FormField>
 
@@ -245,49 +206,6 @@ export function PelaksanaanEvaluasi() {
         }
       />
 
-      {/* Dialog Preview */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Preview Hasil Evaluasi</DialogTitle>
-            <DialogDescription className="text-xs">{penugasanInfo.sop}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div
-              className={`p-4 rounded-md ${
-                statusEvaluasi === 'Sesuai'
-                  ? 'bg-green-50 border border-green-200'
-                  : statusEvaluasi === 'Revisi Biro'
-                    ? 'bg-amber-50 border border-amber-200'
-                    : 'bg-gray-50 border border-gray-200'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                {statusEvaluasi === 'Sesuai' ? (
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                ) : statusEvaluasi === 'Revisi Biro' ? (
-                  <XCircle className="w-5 h-5 text-amber-600" />
-                ) : (
-                  <AlertTriangle className="w-5 h-5 text-gray-600" />
-                )}
-                <span className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-700' : statusEvaluasi === 'Revisi Biro' ? 'text-amber-700' : 'text-gray-700'}`}>
-                  Status: {statusEvaluasi || 'Belum Ditetapkan'}
-                </span>
-              </div>
-              </div>
-            {komentarEvaluasi.trim() && (
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-md">
-                <p className="text-xs font-semibold text-gray-900 mb-1">Komentar Evaluasi:</p>
-                <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{komentarEvaluasi}</p>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button size="sm" className="h-8 text-xs" onClick={() => setIsPreviewOpen(false)}>Tutup</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Dialog Konfirmasi Kirim */}
       <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
         <DialogContent>
@@ -295,15 +213,15 @@ export function PelaksanaanEvaluasi() {
             <DialogTitle className="text-sm">Konfirmasi Kirim Hasil Evaluasi</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <div className={`p-3 rounded-md ${statusEvaluasi === 'Sesuai' ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+            <InfoCard variant={statusEvaluasi === 'Sesuai' ? 'success' : 'warning'}>
               <p className="text-xs mb-1 text-gray-700">Status:</p>
               <p className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-amber-600'}`}>{statusEvaluasi}</p>
-            </div>
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
+            </InfoCard>
+            <InfoCard variant="warning">
               <p className="text-xs text-amber-800">
                 <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah.
               </p>
-            </div>
+            </InfoCard>
             <p className="text-xs text-gray-700">
               Hasil akan dikirim ke <strong>Biro Organisasi</strong> dan <strong>{penugasanInfo.opd}</strong>.
             </p>

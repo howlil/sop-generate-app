@@ -19,15 +19,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { showToast } from '@/lib/stores'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -233,7 +227,7 @@ export function DaftarSOP() {
                       <p className="text-gray-700">{formatDateIdLong(sop.terakhirDiperbarui)}</p>
                     </Table.Td>
                     <Table.Td>
-                      <StatusBadge status={sop.status} domain="sop" />
+                      <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} />
                     </Table.Td>
                     <Table.Td>
                       <IconActionButton
@@ -278,85 +272,67 @@ export function DaftarSOP() {
         )}
       </div>
 
-      <Dialog open={isRequestEvaluasiDialogOpen} onOpenChange={setIsRequestEvaluasiDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Request Evaluasi SOP</DialogTitle>
-            <DialogDescription className="text-xs">
-              Pilih SOP yang eligible untuk dievaluasi. Bisa memilih beberapa sekaligus. Setelah diajukan, SOP tidak dapat diubah hingga evaluasi selesai.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto min-h-0 border border-gray-200 rounded-md">
-            {eligibleSopsForEvaluasi.length === 0 ? (
-              <EmptyState
-                icon={<FileText className="w-10 h-10" />}
-                title="Tidak ada SOP yang eligible untuk dievaluasi"
-                description="SOP harus berstatus Siap Dievaluasi atau Berlaku dan tidak sedang dalam evaluasi aktif."
-              />
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {eligibleSopsForEvaluasi.map((sop) => {
-                  const riwayat = getRiwayatEvaluasiForSop(sop.id)
-                  const isSelected = selectedSopIdsForAjukan.has(sop.id)
-                  return (
-                    <li key={sop.id} className="p-3 hover:bg-gray-50">
-                      <div className="flex items-start gap-3">
-                        <label className="flex items-center pt-0.5 cursor-pointer shrink-0">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleSopSelectionForAjukan(sop.id)}
-                            className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                          />
-                        </label>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-mono text-gray-600">{sop.nomorSOP}</p>
-                          <p className="text-sm font-medium text-gray-900 mt-0.5">{sop.judul}</p>
-                          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                            <span className="text-xs text-gray-500">v{sop.versi}</span>
-                            <StatusBadge status={sop.status} domain="sop" />
-                          </div>
-                          {riwayat.length > 0 && (
-                            <div className="mt-2 p-2 bg-gray-100 rounded border border-gray-200">
-                              <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">Riwayat evaluasi</p>
-                              <ul className="text-xs text-gray-700 space-y-0.5">
-                                {riwayat.map((c) => (
-                                  <li key={c.id}>
-                                    {c.id} — {c.status} {c.timEvaluator ? `(${c.timEvaluator})` : ''}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
+      <FormDialog
+        open={isRequestEvaluasiDialogOpen}
+        onOpenChange={setIsRequestEvaluasiDialogOpen}
+        title="Request Evaluasi SOP"
+        description="Pilih SOP yang eligible untuk dievaluasi. Bisa memilih beberapa sekaligus. Setelah diajukan, SOP tidak dapat diubah hingga evaluasi selesai."
+        confirmLabel={`Ajukan Evaluasi (${selectedSopIdsForAjukan.size} SOP)`}
+        onConfirm={confirmAjukanEvaluasiBulk}
+        confirmDisabled={selectedSopIdsForAjukan.size === 0}
+        size="lg"
+      >
+        <div className="overflow-y-auto min-h-0 border border-gray-200 rounded-md">
+          {eligibleSopsForEvaluasi.length === 0 ? (
+            <EmptyState
+              icon={<FileText className="w-10 h-10" />}
+              title="Tidak ada SOP yang eligible untuk dievaluasi"
+              description="SOP harus berstatus Siap Dievaluasi atau Berlaku dan tidak sedang dalam evaluasi aktif."
+            />
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {eligibleSopsForEvaluasi.map((sop) => {
+                const riwayat = getRiwayatEvaluasiForSop(sop.id)
+                const isSelected = selectedSopIdsForAjukan.has(sop.id)
+                return (
+                  <li key={sop.id} className="p-3 hover:bg-gray-50">
+                    <div className="flex items-start gap-3">
+                      <label className="flex items-center pt-0.5 cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSopSelectionForAjukan(sop.id)}
+                          className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                        />
+                      </label>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-mono text-gray-600">{sop.nomorSOP}</p>
+                        <p className="text-sm font-medium text-gray-900 mt-0.5">{sop.judul}</p>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <span className="text-xs text-gray-500">v{sop.versi}</span>
+                          <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} />
                         </div>
+                        {riwayat.length > 0 && (
+                          <div className="mt-2 p-2 bg-gray-100 rounded border border-gray-200">
+                            <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">Riwayat evaluasi</p>
+                            <ul className="text-xs text-gray-700 space-y-0.5">
+                              {riwayat.map((c) => (
+                                <li key={c.id}>
+                                  {c.id} — {c.status} {c.timEvaluator ? `(${c.timEvaluator})` : ''}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                       </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
-          </div>
-          <DialogFooter className="gap-2 flex-shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setIsRequestEvaluasiDialogOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5 bg-amber-600 hover:bg-amber-700"
-              onClick={confirmAjukanEvaluasiBulk}
-              disabled={selectedSopIdsForAjukan.size === 0}
-            >
-              <Send className="w-3.5 h-3.5" />
-              Ajukan Evaluasi ({selectedSopIdsForAjukan.size} SOP)
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      </FormDialog>
     </div>
   )
 }

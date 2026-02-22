@@ -2,16 +2,8 @@
  * Seed data untuk halaman Detail Penugasan (Tim Evaluasi) — lookup penugasan by id & konten preview SOP.
  */
 
-export interface PenugasanDetailItem {
-  id: string
-  kodePenugasan: string
-  opd: string
-  sop: string
-  kodeSOP: string
-  jenis: 'Evaluasi Rutin' | 'Evaluasi Khusus' | 'Evaluasi Insidental'
-  tanggalPenugasan: string
-  status: 'assigned' | 'in-progress' | 'completed'
-}
+import type { PenugasanDetailItem } from '@/lib/types/penugasan'
+export type { PenugasanDetailItem } from '@/lib/types/penugasan'
 
 export const SEED_PENUGASAN_DETAIL_BY_ID: Record<string, PenugasanDetailItem> = {
   '1': {

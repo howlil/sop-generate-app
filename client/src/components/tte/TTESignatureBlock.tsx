@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import type { TTESignaturePayload } from '@/lib/types/tte'
 import { getValidasiPengesahanUrl } from '@/lib/tte'
+import { formatDateIdLong } from '@/utils/format-date'
 
 export interface TTESignatureBlockProps {
   payload: TTESignaturePayload
@@ -36,11 +37,7 @@ export function TTESignatureBlock({
   }, [payload.id, qrSize])
 
   const signedDate = payload.signedAt
-    ? new Date(payload.signedAt).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
+    ? formatDateIdLong(payload.signedAt)
     : '—'
 
   return (

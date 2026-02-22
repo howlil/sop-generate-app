@@ -34,7 +34,7 @@ export function DetailWorkspace({
       )}
     >
       {header != null && (
-        <div className="flex-shrink-0 border-b border-gray-200">
+        <div className="flex-shrink-0 border-b border-gray-200 bg-white px-4 py-3 min-h-[3rem]">
           {header}
         </div>
       )}

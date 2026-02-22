@@ -2,23 +2,25 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { FileText } from 'lucide-react'
 import { isTimPenyusun } from '@/lib/stores'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
+import { ROUTES } from '@/lib/constants/routes'
+import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 
 export const Route = createFileRoute('/tim-penyusun')({
   beforeLoad: () => {
     if (typeof window !== 'undefined' && !isTimPenyusun()) {
-      throw redirect({ to: '/', search: { denied: 'tim-penyusun' } })
+      throw redirect({ to: ROUTES.HOME, search: { denied: 'tim-penyusun' } })
     }
   },
   component: TimPenyusunLayout,
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: '/tim-penyusun/sop-saya', label: 'SOP Saya', icon: FileText },
+  { to: ROUTES.TIM_PENYUSUN.SOP_SAYA, label: 'SOP Saya', icon: FileText },
 ]
 
-function isSidebarActive(pathname: string, item: SidebarItem) {
-  return pathname === item.to || pathname.startsWith('/tim-penyusun/detail-sop')
-}
+const isSidebarActive = createSidebarActiveMatcher({
+  [ROUTES.TIM_PENYUSUN.SOP_SAYA]: ['/tim-penyusun/sop-saya', '/tim-penyusun/detail-sop'],
+})
 
 function TimPenyusunLayout() {
   return (

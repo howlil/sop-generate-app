@@ -2,34 +2,29 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { BookOpen, FileText, PenLine, UserPlus, Users } from 'lucide-react'
 import { isKepalaOPD } from '@/lib/stores'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
+import { ROUTES } from '@/lib/constants/routes'
+import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 
 export const Route = createFileRoute('/kepala-opd')({
   beforeLoad: () => {
     if (typeof window !== 'undefined' && !isKepalaOPD()) {
-      throw redirect({ to: '/', search: { denied: 'kepala-opd' } })
+      throw redirect({ to: ROUTES.HOME, search: { denied: 'kepala-opd' } })
     }
   },
   component: KepalaOPDLayout,
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: '/kepala-opd/manajemen-tim-penyusun', label: 'Manajemen Tim Penyusun', icon: UserPlus },
-  { to: '/kepala-opd/pelaksana-sop', label: 'Kelola Pelaksana SOP', icon: Users },
-  { to: '/kepala-opd/manajemen-peraturan', label: 'Manajemen Peraturan', icon: BookOpen },
-  { to: '/kepala-opd/daftar-sop', label: 'Daftar SOP', icon: FileText },
-  { to: '/kepala-opd/ttd-elektronik', label: 'TTD Elektronik', icon: PenLine },
+  { to: ROUTES.KEPALA_OPD.TIM_PENYUSUN, label: 'Manajemen Tim Penyusun', icon: UserPlus },
+  { to: ROUTES.KEPALA_OPD.PELAKSANA_SOP, label: 'Kelola Pelaksana SOP', icon: Users },
+  { to: ROUTES.KEPALA_OPD.PERATURAN, label: 'Manajemen Peraturan', icon: BookOpen },
+  { to: ROUTES.KEPALA_OPD.DAFTAR_SOP, label: 'Daftar SOP', icon: FileText },
+  { to: ROUTES.KEPALA_OPD.TTD, label: 'TTD Elektronik', icon: PenLine },
 ]
 
-function isSidebarActive(pathname: string, item: SidebarItem) {
-  return (
-    pathname === item.to ||
-    (item.to === '/kepala-opd/daftar-sop' &&
-      (pathname.startsWith('/kepala-opd/daftar-sop') ||
-        pathname.startsWith('/kepala-opd/initiate-proyek') ||
-        pathname.startsWith('/kepala-opd/detail-sop'))) ||
-    (item.to === '/kepala-opd/ttd-elektronik' && pathname === '/kepala-opd/ttd-elektronik')
-  )
-}
+const isSidebarActive = createSidebarActiveMatcher({
+  [ROUTES.KEPALA_OPD.DAFTAR_SOP]: ['/kepala-opd/daftar-sop', '/kepala-opd/initiate-proyek', '/kepala-opd/detail-sop'],
+})
 
 function KepalaOPDLayout() {
   return (

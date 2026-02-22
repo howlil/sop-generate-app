@@ -47,6 +47,6 @@ export function updatePenugasan(id: string, patch: Partial<Penugasan>) {
   usePenugasanStore.getState().update(id, patch)
 }
 
-export function subscribe(cb: () => void): () => void {
+export function subscribePenugasan(cb: () => void): () => void {
   return usePenugasanStore.subscribe(cb)
 }

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
 import { Textarea } from '@/components/ui/textarea'
 import { SearchInput } from '@/components/ui/search-input'
+import { EditableStringList } from '@/components/ui/editable-string-list'
 import {
   Dialog,
   DialogContent,
@@ -15,15 +16,8 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { Peraturan } from '@/lib/types/peraturan'
-import type { SOPDetailMetadata } from '@/lib/seed/sop-detail-seed'
-
-const RELATED_POS_OPTIONS = [
-  'POS Penerimaan Siswa Baru',
-  'POS Ujian Sekolah',
-  'POS Mutasi Siswa',
-  'POS Pengadaan Barang/Jasa',
-  'POS Pengaduan Masyarakat',
-]
+import type { SOPDetailMetadata } from '@/lib/types/sop'
+import { SEED_RELATED_POS_OPTIONS } from '@/lib/seed/sop-detail-seed'
 
 function toLines(value: string): string[] {
   return value
@@ -34,7 +28,7 @@ function toLines(value: string): string[] {
 
 export interface DetailSOPMetadataPanelProps {
   metadata: SOPDetailMetadata
-  onMetadataChange: (field: string, value: unknown) => void
+  onMetadataChange: <K extends keyof SOPDetailMetadata>(field: K, value: SOPDetailMetadata[K]) => void
   implementers: { id: string; name: string }[]
   onImplementersChange: React.Dispatch<React.SetStateAction<{ id: string; name: string }[]>>
   peraturanList: Peraturan[]
@@ -206,159 +200,30 @@ export function DetailSOPMetadataPanel({
             </FormField>
 
             <FormField label="Kualifikasi pelaksanaan">
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() =>
-                    onMetadataChange('implementQualification', [
-                      ...(metadata.implementQualification ?? []),
-                      '',
-                    ])
-                  }
-                >
-                  Tambah
-                </Button>
-              </div>
-              <div className="space-y-2 mt-1.5">
-                {(metadata.implementQualification ?? []).map((item: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Input
-                      className="h-9 text-xs flex-1"
-                      value={item}
-                      onChange={(e) => {
-                        const v = e.target.value
-                        const next = [...(metadata.implementQualification ?? [])]
-                        next[idx] = v
-                        onMetadataChange('implementQualification', next)
-                      }}
-                      placeholder={`Kualifikasi ${idx + 1}`}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 w-9 p-0 text-gray-500 hover:text-red-600"
-                      onClick={() => {
-                        const next = (metadata.implementQualification ?? []).filter(
-                          (_: string, i: number) => i !== idx
-                        )
-                        onMetadataChange('implementQualification', next)
-                      }}
-                      title="Hapus"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                {(metadata.implementQualification ?? []).length === 0 && (
-                  <p className="text-[11px] text-gray-500">
-                    Belum ada kualifikasi. Klik &quot;Tambah&quot; untuk menambahkan.
-                  </p>
-                )}
-              </div>
+              <EditableStringList
+                items={metadata.implementQualification ?? []}
+                onChange={(next) => onMetadataChange('implementQualification', next)}
+                placeholder="Kualifikasi"
+                emptyMessage="Belum ada kualifikasi. Klik &quot;Tambah&quot; untuk menambahkan."
+              />
             </FormField>
 
             <FormField label="Peralatan dan perlengkapan">
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() =>
-                    onMetadataChange('equipment', [...(metadata.equipment ?? []), ''])
-                  }
-                >
-                  Tambah
-                </Button>
-              </div>
-              <div className="space-y-2 mt-1.5">
-                {(metadata.equipment ?? []).map((item: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Input
-                      className="h-9 text-xs flex-1"
-                      value={item}
-                      onChange={(e) => {
-                        const v = e.target.value
-                        const next = [...(metadata.equipment ?? [])]
-                        next[idx] = v
-                        onMetadataChange('equipment', next)
-                      }}
-                      placeholder={`Peralatan ${idx + 1}`}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 w-9 p-0 text-gray-500 hover:text-red-600"
-                      onClick={() => {
-                        const next = (metadata.equipment ?? []).filter(
-                          (_: string, i: number) => i !== idx
-                        )
-                        onMetadataChange('equipment', next)
-                      }}
-                      title="Hapus"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                {(metadata.equipment ?? []).length === 0 && (
-                  <p className="text-[11px] text-gray-500">
-                    Belum ada peralatan/perlengkapan. Klik &quot;Tambah&quot; untuk menambahkan.
-                  </p>
-                )}
-              </div>
+              <EditableStringList
+                items={metadata.equipment ?? []}
+                onChange={(next) => onMetadataChange('equipment', next)}
+                placeholder="Peralatan"
+                emptyMessage="Belum ada peralatan/perlengkapan. Klik &quot;Tambah&quot; untuk menambahkan."
+              />
             </FormField>
 
             <FormField label="Pencatatan dan pendataan">
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() =>
-                    onMetadataChange('recordData', [...(metadata.recordData ?? []), ''])
-                  }
-                >
-                  Tambah
-                </Button>
-              </div>
-              <div className="space-y-2 mt-1.5">
-                {(metadata.recordData ?? []).map((item: string, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <Input
-                      className="h-9 text-xs flex-1"
-                      value={item}
-                      onChange={(e) => {
-                        const v = e.target.value
-                        const next = [...(metadata.recordData ?? [])]
-                        next[idx] = v
-                        onMetadataChange('recordData', next)
-                      }}
-                      placeholder={`Pencatatan ${idx + 1}`}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-9 w-9 p-0 text-gray-500 hover:text-red-600"
-                      onClick={() => {
-                        const next = (metadata.recordData ?? []).filter(
-                          (_: string, i: number) => i !== idx
-                        )
-                        onMetadataChange('recordData', next)
-                      }}
-                      title="Hapus"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-                {(metadata.recordData ?? []).length === 0 && (
-                  <p className="text-[11px] text-gray-500">
-                    Belum ada pencatatan/pendataan. Klik &quot;Tambah&quot; untuk menambahkan.
-                  </p>
-                )}
-              </div>
+              <EditableStringList
+                items={metadata.recordData ?? []}
+                onChange={(next) => onMetadataChange('recordData', next)}
+                placeholder="Pencatatan"
+                emptyMessage="Belum ada pencatatan/pendataan. Klik &quot;Tambah&quot; untuk menambahkan."
+              />
             </FormField>
 
             <FormField label="Aktor pelaksana">
@@ -532,7 +397,7 @@ export function DetailSOPMetadataPanel({
           />
           <div className="border border-gray-200 rounded-md overflow-hidden">
             <div className="divide-y divide-gray-100">
-              {RELATED_POS_OPTIONS.filter((x) =>
+              {SEED_RELATED_POS_OPTIONS.filter((x) =>
                 x.toLowerCase().includes(relatedPosQuery.toLowerCase())
               ).map((x) => {
                 const already = (metadata.relatedSop ?? []).includes(x)

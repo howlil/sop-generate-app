@@ -47,17 +47,17 @@ export function SOPListCard({
     return (
       <div className={`p-2 ${className ?? ''}`}>
         <div className="p-2 rounded-md border border-blue-200 bg-blue-50 text-xs">
-          <span className="block font-medium text-gray-900 truncate" title={sop.nama}>
+          <p className="font-medium text-gray-900 truncate w-full" title={sop.nama}>
             {sop.nama}
-          </span>
-          <span className="block text-[10px] text-gray-500 font-mono mt-0.5">
-            {sop.nomor}
-          </span>
-          {sop.status && (
-            <span className="mt-1 inline-block">
-              <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
+          </p>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap" title={sop.nomor}>
+              {sop.nomor}
             </span>
-          )}
+            {sop.status && (
+              <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
+            )}
+          </div>
         </div>
       </div>
     )
@@ -70,22 +70,24 @@ export function SOPListCard({
           key={sop.id}
           type="button"
           variant="ghost"
-          className={`w-full justify-start text-left h-auto p-2 rounded-md border text-xs transition-colors ${
+          className={`w-full justify-start text-left h-auto p-2 rounded-md border text-xs transition-colors flex flex-col items-stretch ${
             selectedId === sop.id
               ? 'border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100 hover:text-blue-900'
               : 'border-gray-100 hover:bg-gray-50 text-gray-700'
           }`}
           onClick={() => onSelect?.(sop.id)}
         >
-          <span className="block font-medium truncate w-full text-left" title={sop.nama}>
+          <p className="font-medium truncate w-full" title={sop.nama}>
             {sop.nama}
-          </span>
-          <span className="block text-[10px] text-gray-500 font-mono">{sop.nomor}</span>
-          {sop.status && (
-            <span className="mt-1 inline-block">
-              <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
+          </p>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap" title={sop.nomor}>
+              {sop.nomor}
             </span>
-          )}
+            {sop.status && (
+              <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
+            )}
+          </div>
         </Button>
       ))}
     </div>

@@ -3,26 +3,10 @@
  * OPD yang sedang login (mock): hanya peraturan dengan createdBy === currentOPDId yang bisa diedit.
  */
 
-import type { Peraturan } from '@/lib/types/peraturan'
+import type { Peraturan, JenisPeraturan, RiwayatVersiEntry } from '@/lib/types/peraturan'
+export type { JenisPeraturan, RiwayatVersiEntry } from '@/lib/types/peraturan'
 
 export const SEED_MANAJEMEN_PERATURAN_OPD_ID = '1'
-
-export interface JenisPeraturan {
-  id: string
-  nama: string
-  kode: string
-  deskripsi: string
-  tingkat: 'Pusat' | 'Daerah' | 'Internal'
-  jumlahPeraturan: number
-  createdBy: string
-}
-
-export interface RiwayatVersiEntry {
-  version: number
-  tanggal: string
-  diubahOleh: string
-  sopYangMengait: { id: string; nama: string }[]
-}
 
 export const SEED_JENIS_PERATURAN: JenisPeraturan[] = [
   { id: '1', nama: 'Peraturan Menteri Pendidikan dan Kebudayaan', kode: 'Permendikbud', deskripsi: 'Peraturan yang ditetapkan oleh Menteri Pendidikan dan Kebudayaan', tingkat: 'Pusat', jumlahPeraturan: 3, createdBy: 'biro' },

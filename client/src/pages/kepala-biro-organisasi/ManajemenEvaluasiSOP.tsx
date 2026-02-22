@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Plus, Eye, Send, Building, History, Pencil } from 'lucide-react'
+import { Plus, Eye, Building, History, Pencil } from 'lucide-react'
 import { getActiveCaseForSop, addEvaluationCase } from '@/lib/stores/evaluasi-store'
 import type { Penugasan, SOPItem } from '@/lib/types/penugasan'
 import {
@@ -8,13 +8,13 @@ import {
   setPenugasanList as setStorePenugasanList,
   addPenugasan as addStorePenugasan,
   updatePenugasan as updateStorePenugasan,
-  subscribe as subscribePenugasan,
+  subscribePenugasan,
 } from '@/lib/stores/penugasan-store'
 import {
   SEED_PENUGASAN_INITIAL,
   SEED_OPD_LIST_EVALUASI,
   SEED_SOP_BY_OPD,
-  SEED_TIM_MONEV_LIST,
+  SEED_TIM_MONEV_OPTIONS,
 } from '@/lib/seed/penugasan-evaluasi-seed'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,7 @@ import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { showToast } from '@/lib/stores'
+import { generateId } from '@/utils/generate-id'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { StatusBadge } from '@/components/ui/status-badge'
 import {
@@ -32,10 +33,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { STATUS_SOP_CAN_SELECT_FOR_EVALUASI } from '@/lib/types/sop'
+import { formatDateId } from '@/utils/format-date'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export function ManajemenEvaluasiSOP() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -79,7 +83,7 @@ export function ManajemenEvaluasiSOP() {
 
   const [riwayatSopId, setRiwayatSopId] = useState<string | null>(null)
 
-  const timMonevList = SEED_TIM_MONEV_LIST
+  const timMonevList = SEED_TIM_MONEV_OPTIONS
 
   const filteredList = penugasanList.filter((item) => {
     const q = searchQuery.toLowerCase()
@@ -140,7 +144,7 @@ export function ManajemenEvaluasiSOP() {
     )
     const sopList = opdSOPs.filter((s) => formData.selectedSOPs.includes(s.id))
     try {
-      const sourceRef = String(Date.now())
+      const sourceRef = generateId('src')
       const ec = addEvaluationCase({
         source_type: formData.jenis === 'Request OPD' ? 'OPD_REQUEST' : 'BIRO_INITIATIVE',
         source_ref: sourceRef,
@@ -150,7 +154,7 @@ export function ManajemenEvaluasiSOP() {
         opd: formData.opd,
       })
       addStorePenugasan({
-        id: String(Date.now()),
+        id: generateId(),
         jenis: formData.jenis,
         tanggalRequest: formData.jenis === 'Request OPD' ? new Date().toISOString().slice(0, 10) : undefined,
         opd: formData.opd,
@@ -220,7 +224,7 @@ export function ManajemenEvaluasiSOP() {
                     <Badge variant="outline" className="text-xs">{item.jenis}</Badge>
                   </Table.Td>
                   <Table.Td className="text-center">
-                    <StatusBadge status={item.status} domain="evaluasi-biro" />
+                    <StatusBadge status={item.status} domain={STATUS_DOMAIN.EVALUASI_BIRO} />
                   </Table.Td>
                   <Table.Td>
                     <div className="flex items-center justify-center gap-1">
@@ -238,181 +242,148 @@ export function ManajemenEvaluasiSOP() {
       </Table.Card>
 
       {/* Create / Edit Dialog - Form sama untuk buat dan edit */}
-      <Dialog
+      <FormDialog
         open={isCreateOpen}
         onOpenChange={(open) => {
           setIsCreateOpen(open)
           if (!open) setEditingPenugasanId(null)
         }}
+        title={editingPenugasanId ? 'Edit Perencanaan & Penugasan' : 'Buat Perencanaan & Penugasan'}
+        description={
+          editingPenugasanId
+            ? 'Ubah OPD, SOP, atau tim monev untuk penugasan ini.'
+            : 'Pilih OPD dan SOP yang akan dievaluasi, lalu tugaskan tim monev.'
+        }
+        confirmLabel={editingPenugasanId ? 'Simpan' : 'Tugaskan'}
+        cancelLabel="Batal"
+        onConfirm={() => {
+          if (editingPenugasanId) {
+            const opdSOPs = (sopByOPD[formData.opd] ?? []).filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
+            const sopList = opdSOPs.filter((s) => formData.selectedSOPs.includes(s.id)).map((s) => ({ id: s.id, nama: s.nama, nomor: s.nomor }))
+            updateStorePenugasan(editingPenugasanId, {
+              jenis: formData.jenis,
+              opd: formData.opd,
+              sopList,
+              timMonev: formData.timMonev,
+              catatan: formData.catatan,
+            })
+            showToast('Penugasan berhasil diperbarui.')
+            setIsCreateOpen(false)
+            setEditingPenugasanId(null)
+          } else {
+            handleTugaskan()
+          }
+        }}
+        confirmDisabled={!canSubmit()}
+        size="xl"
       >
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-sm">
-              {editingPenugasanId ? 'Edit Perencanaan & Penugasan' : 'Buat Perencanaan & Penugasan'}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              {editingPenugasanId
-                ? 'Ubah OPD, SOP, atau tim monev untuk penugasan ini.'
-                : 'Pilih OPD dan SOP yang akan dievaluasi, lalu tugaskan tim monev.'}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <FormField label="Pilih OPD" required>
-              <div className="flex flex-wrap items-center gap-2">
-                <Select
-                  className="flex-1 min-w-[200px]"
-                  value={formData.opd}
-                  onValueChange={(opd) => {
-                    setFormData({
-                      ...formData,
-                      opd,
-                      selectedSOPs: [],
-                      jenis: opdYangRequestBiro.includes(opd) ? 'Request OPD' : 'Inisiasi Biro',
-                    })
-                  }}
-                  placeholder="Pilih OPD"
-                  options={opdList.map((opd) => ({
-                    value: opd.nama,
-                    label: `${opd.nama} (${opd.kode})${opdYangRequestBiro.includes(opd.nama) ? ' — Request Biro' : ''}`,
-                  }))}
-                />
-                {formData.opd && opdYangRequestBiro.includes(formData.opd) && (
-                  <Badge variant="default" className="shrink-0 px-2.5 py-1 text-xs font-semibold gap-1">
-                    <Building className="w-3.5 h-3.5" aria-hidden />
-                    Request Biro
-                  </Badge>
-                )}
-              </div>
-            </FormField>
-
-            {formData.opd && (
-              <FormField
-                label="Pilih SOP untuk Dievaluasi (layak evaluasi). Gunakan ikon Riwayat untuk melihat riwayat evaluasi SOP."
-                required
-              >
-                <div className="border border-gray-200 rounded-md p-3 max-h-60 overflow-y-auto space-y-2">
-                  {(sopByOPD[formData.opd] ?? [])
-                    .filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
-                    .length > 0 ? (
-                    (sopByOPD[formData.opd] ?? [])
-                      .filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
-                      .map((sop) => {
-                        const activeCase = getActiveCaseForSop(sop.id)
-                        const inCase = !!activeCase
-                        return (
-                          <label
-                            key={sop.id}
-                            className={`flex items-start gap-2 p-2 rounded ${inCase ? 'bg-gray-100 cursor-not-allowed opacity-80' : 'hover:bg-gray-50 cursor-pointer'}`}
-                          >
-                            <input
-                              type="checkbox"
-                              className="w-3.5 h-3.5 mt-0.5 rounded border-gray-300"
-                              checked={formData.selectedSOPs.includes(sop.id)}
-                              onChange={() => toggleSOP(sop.id)}
-                              disabled={inCase}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-gray-900">{sop.nama}</p>
-                              <p className="text-xs text-gray-500">{sop.nomor}</p>
-                              {inCase && (
-                                <p className="text-xs text-amber-700 mt-0.5">
-                                  Sudah dalam evaluasi ({activeCase.id})
-                                </p>
-                              )}
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-sm"
-                              className="h-7 w-7 p-0 shrink-0"
-                              title="Riwayat evaluasi SOP ini"
-                              onClick={(e) => { e.preventDefault(); setRiwayatSopId(sop.id); }}
-                            >
-                              <History className="w-3.5 h-3.5 text-gray-500" />
-                            </Button>
-                          </label>
-                        )
-                      })
-                  ) : (
-                    <p className="text-xs text-gray-500 text-center py-4">
-                      Tidak ada SOP dengan status Siap Dievaluasi / Berlaku / Diajukan Evaluasi untuk OPD ini
-                    </p>
-                  )}
-                </div>
-                <p className="text-xs text-gray-500 mt-1">{formData.selectedSOPs.length} SOP dipilih</p>
-              </FormField>
+        <FormField label="Pilih OPD" required>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              className="flex-1 min-w-[200px]"
+              value={formData.opd}
+              onValueChange={(opd) => {
+                setFormData({
+                  ...formData,
+                  opd,
+                  selectedSOPs: [],
+                  jenis: opdYangRequestBiro.includes(opd) ? 'Request OPD' : 'Inisiasi Biro',
+                })
+              }}
+              placeholder="Pilih OPD"
+              options={opdList.map((opd) => ({
+                value: opd.nama,
+                label: `${opd.nama} (${opd.kode})${opdYangRequestBiro.includes(opd.nama) ? ' — Request Biro' : ''}`,
+              }))}
+            />
+            {formData.opd && opdYangRequestBiro.includes(formData.opd) && (
+              <Badge variant="default" className="shrink-0 px-2.5 py-1 text-xs font-semibold gap-1">
+                <Building className="w-3.5 h-3.5" aria-hidden />
+                Request Biro
+              </Badge>
             )}
-
-            <FormField label="Pilih Tim Monev" required>
-              <Select
-                value={formData.timMonev}
-                onValueChange={(timMonev) => setFormData({ ...formData, timMonev })}
-                placeholder="Pilih Tim Monev"
-                options={timMonevList.map((tim) => ({
-                  value: tim.nama,
-                  label: tim.nama,
-                }))}
-              />
-            </FormField>
-
-            <FormField label="Catatan">
-              <Textarea
-                className="text-xs min-h-[60px]"
-                placeholder="Catatan atau instruksi untuk tim monev"
-                value={formData.catatan}
-                onChange={(e) => setFormData({ ...formData, catatan: e.target.value })}
-              />
-            </FormField>
           </div>
+        </FormField>
 
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => {
-                setIsCreateOpen(false)
-                setEditingPenugasanId(null)
-              }}
-            >
-              Batal
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => {
-                if (editingPenugasanId) {
-                  const opdSOPs = (sopByOPD[formData.opd] ?? []).filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
-                  const sopList = opdSOPs.filter((s) => formData.selectedSOPs.includes(s.id)).map((s) => ({ id: s.id, nama: s.nama, nomor: s.nomor }))
-                  updateStorePenugasan(editingPenugasanId, {
-                    jenis: formData.jenis,
-                    opd: formData.opd,
-                    sopList,
-                    timMonev: formData.timMonev,
-                    catatan: formData.catatan,
+        {formData.opd && (
+          <FormField
+            label="Pilih SOP untuk Dievaluasi (layak evaluasi). Gunakan ikon Riwayat untuk melihat riwayat evaluasi SOP."
+            required
+          >
+            <div className="border border-gray-200 rounded-md p-3 max-h-60 overflow-y-auto space-y-2">
+              {(sopByOPD[formData.opd] ?? [])
+                .filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
+                .length > 0 ? (
+                (sopByOPD[formData.opd] ?? [])
+                  .filter((s) => STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(s.status))
+                  .map((sop) => {
+                    const activeCase = getActiveCaseForSop(sop.id)
+                    const inCase = !!activeCase
+                    return (
+                      <label
+                        key={sop.id}
+                        className={`flex items-start gap-2 p-2 rounded ${inCase ? 'bg-gray-100 cursor-not-allowed opacity-80' : 'hover:bg-gray-50 cursor-pointer'}`}
+                      >
+                        <input
+                          type="checkbox"
+                          className="w-3.5 h-3.5 mt-0.5 rounded border-gray-300"
+                          checked={formData.selectedSOPs.includes(sop.id)}
+                          onChange={() => toggleSOP(sop.id)}
+                          disabled={inCase}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-gray-900">{sop.nama}</p>
+                          <p className="text-xs text-gray-500">{sop.nomor}</p>
+                          {inCase && (
+                            <p className="text-xs text-amber-700 mt-0.5">
+                              Sudah dalam evaluasi ({activeCase.id})
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="h-7 w-7 p-0 shrink-0"
+                          title="Riwayat evaluasi SOP ini"
+                          onClick={(e) => { e.preventDefault(); setRiwayatSopId(sop.id); }}
+                        >
+                          <History className="w-3.5 h-3.5 text-gray-500" />
+                        </Button>
+                      </label>
+                    )
                   })
-                  showToast('Penugasan berhasil diperbarui.')
-                  setIsCreateOpen(false)
-                  setEditingPenugasanId(null)
-                } else {
-                  handleTugaskan()
-                }
-              }}
-              disabled={!canSubmit()}
-            >
-              {editingPenugasanId ? (
-                'Simpan'
               ) : (
-                <>
-                  <Send className="w-3 h-3" />
-                  Tugaskan
-                </>
+                <p className="text-xs text-gray-500 text-center py-4">
+                  Tidak ada SOP dengan status Siap Dievaluasi / Berlaku / Diajukan Evaluasi untuk OPD ini
+                </p>
               )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">{formData.selectedSOPs.length} SOP dipilih</p>
+          </FormField>
+        )}
+
+        <FormField label="Pilih Tim Monev" required>
+          <Select
+            value={formData.timMonev}
+            onValueChange={(timMonev) => setFormData({ ...formData, timMonev })}
+            placeholder="Pilih Tim Monev"
+            options={timMonevList.map((tim) => ({
+              value: tim.nama,
+              label: tim.nama,
+            }))}
+          />
+        </FormField>
+
+        <FormField label="Catatan">
+          <Textarea
+            className="text-xs min-h-[60px]"
+            placeholder="Catatan atau instruksi untuk tim monev"
+            value={formData.catatan}
+            onChange={(e) => setFormData({ ...formData, catatan: e.target.value })}
+          />
+        </FormField>
+      </FormDialog>
 
       {/* Dialog Riwayat Evaluasi per SOP */}
       <Dialog open={!!riwayatSopId} onOpenChange={(open) => !open && setRiwayatSopId(null)}>
@@ -445,10 +416,10 @@ export function ManajemenEvaluasiSOP() {
                     >
                       <div className="flex justify-between items-start">
                         <span className="font-medium text-gray-900">{p.opd} — {p.jenis}</span>
-                        <StatusBadge status={p.status} domain="evaluasi-biro" />
+                        <StatusBadge status={p.status} domain={STATUS_DOMAIN.EVALUASI_BIRO} />
                       </div>
                       {p.tanggalEvaluasi && (
-                        <p className="text-gray-600">Tgl evaluasi: {new Date(p.tanggalEvaluasi).toLocaleDateString('id-ID')}</p>
+                        <p className="text-gray-600">Tgl evaluasi: {formatDateId(p.tanggalEvaluasi)}</p>
                       )}
                       {sopInBatch?.status && (
                         <p className="text-gray-700">Hasil SOP ini: <span className={sopInBatch.status === 'Sesuai' ? 'text-green-700 font-medium' : sopInBatch.status === 'Revisi Biro' ? 'text-amber-700 font-medium' : ''}>{sopInBatch.status}</span></p>

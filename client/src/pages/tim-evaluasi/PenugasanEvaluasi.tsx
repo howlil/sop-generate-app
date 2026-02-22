@@ -9,6 +9,8 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { Select } from '@/components/ui/select'
 import { SEED_PENUGASAN_TIM_EVALUASI } from '@/lib/seed/penugasan-evaluasi-seed'
+import { formatDateIdLong } from '@/utils/format-date'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export function PenugasanEvaluasi() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -64,16 +66,12 @@ export function PenugasanEvaluasi() {
             {filteredPenugasan.map((penugasan) => (
               <Table.BodyRow key={penugasan.id}>
                 <Table.Td className="text-gray-700">
-                  {new Date(penugasan.tanggalPenugasan).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
+                  {formatDateIdLong(penugasan.tanggalPenugasan)}
                 </Table.Td>
                 <Table.Td className="text-gray-700">{penugasan.opd}</Table.Td>
                 <Table.Td className="font-medium text-gray-900">{penugasan.sop}</Table.Td>
                 <Table.Td className="text-center">
-                  <StatusBadge status={penugasan.status} domain="penugasan-evaluasi" />
+                  <StatusBadge status={penugasan.status} domain={STATUS_DOMAIN.PENUGASAN_EVALUASI} />
                 </Table.Td>
                 <Table.Td className="text-center">
                   <div className="flex items-center justify-center gap-1">

@@ -1,6 +1,8 @@
 import { useParams } from '@tanstack/react-router'
 import { getTTESignatureById, getTTEAuditLog } from '@/lib/tte'
 import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
+import { formatDatetime } from '@/utils/format-date'
+import { InfoField, InfoGrid } from '@/components/ui/info-field'
 
 export function ValidasiPengesahanPage() {
   const params = useParams({ strict: false })
@@ -57,28 +59,20 @@ export function ValidasiPengesahanPage() {
           </div>
 
           <div className="space-y-4 text-sm">
-            <div className="grid grid-cols-2 gap-2">
-              <p className="text-gray-500">Dokumen</p>
-              <p className="font-medium text-gray-900">{signature.documentLabel}</p>
-              <p className="text-gray-500">ID Dokumen</p>
-              <p className="font-mono text-xs text-gray-900">{signature.documentId}</p>
-              <p className="text-gray-500">Referensi</p>
-              <p className="text-gray-900">{signature.referenceId}</p>
-              <p className="text-gray-500">Ditandatangani oleh</p>
-              <p className="text-gray-900">{signature.nama} (NIP. {signature.nip})</p>
-              <p className="text-gray-500">Jabatan</p>
-              <p className="text-gray-900">{roleLabel}</p>
-              <p className="text-gray-500">Waktu tanda tangan</p>
-              <p className="text-gray-900">
-                {new Date(signature.signedAt).toLocaleString('id-ID', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
-            </div>
+            <InfoGrid cols={2}>
+              <InfoField label="Dokumen" direction="vertical">{signature.documentLabel}</InfoField>
+              <InfoField label="ID Dokumen" direction="vertical">
+                <span className="font-mono text-xs">{signature.documentId}</span>
+              </InfoField>
+              <InfoField label="Referensi" direction="vertical">{signature.referenceId}</InfoField>
+              <InfoField label="Ditandatangani oleh" direction="vertical">
+                {signature.nama} (NIP. {signature.nip})
+              </InfoField>
+              <InfoField label="Jabatan" direction="vertical">{roleLabel}</InfoField>
+              <InfoField label="Waktu tanda tangan" direction="vertical">
+                {formatDatetime(signature.signedAt)}
+              </InfoField>
+            </InfoGrid>
 
             <div className="pt-4 border-t border-gray-200">
               <h2 className="text-xs font-semibold text-gray-700 mb-2">Blok TTE</h2>
@@ -99,7 +93,7 @@ export function ValidasiPengesahanPage() {
                   className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs border-b border-gray-100 pb-2 last:border-0"
                 >
                   <span className="text-gray-500">
-                    {new Date(entry.timestamp).toLocaleString('id-ID')}
+                    {formatDatetime(entry.timestamp)}
                   </span>
                   <span className="font-medium">
                     {entry.action === 'pengesahan_sop' ? 'Pengesahan SOP' : 'Verifikasi Evaluasi'}

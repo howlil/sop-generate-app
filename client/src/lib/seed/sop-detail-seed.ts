@@ -2,29 +2,9 @@
  * Seed data untuk Detail SOP (Tim Penyusun): metadata, prosedur, implementers, versi, komentar.
  */
 
-import type { ProsedurRow } from '@/lib/types/sop'
-
-export interface SOPDetailMetadata {
-  institutionLogo: string
-  institutionLines: string[]
-  name: string
-  number: string
-  version: number
-  createdDate: string
-  revisionDate: string
-  effectiveDate: string
-  picName: string
-  picNumber: string
-  picRole: string
-  section: string
-  lawBasis: string[]
-  implementQualification: string[]
-  relatedSop: string[]
-  equipment: string[]
-  warning: string
-  recordData: string[]
-  signature: string
-}
+import type { ProsedurRow, SOPDetailMetadata, DetailSOPViewMetadata } from '@/lib/types/sop'
+import type { KomentarItem } from '@/lib/types/komentar'
+import type { VersionSeed, DetailSOPVersionSeed } from '@/lib/types/version'
 
 export const SEED_SOP_DETAIL_METADATA: SOPDetailMetadata = {
   institutionLogo: '/logo_unand_kecil.png',
@@ -119,17 +99,7 @@ export const SEED_IMPLEMENTERS: { id: string; name: string }[] = [
   { id: 'impl-5', name: 'Kabag. Akademik' },
 ]
 
-export interface KomentarSeed {
-  id: string
-  user: string
-  role: 'Kepala OPD' | 'Tim Evaluasi' | 'Tim Penyusun'
-  timestamp: string
-  bagian: string
-  isi: string
-  status: 'open' | 'resolved'
-}
-
-export const SEED_KOMENTAR_LIST: KomentarSeed[] = [
+export const SEED_KOMENTAR_LIST: KomentarItem[] = [
   {
     id: '1',
     user: 'Dr. Ahmad Fauzi',
@@ -150,16 +120,6 @@ export const SEED_KOMENTAR_LIST: KomentarSeed[] = [
   },
 ]
 
-export interface VersionSeed {
-  id: string
-  version: string
-  revisionType: 'major' | 'minor'
-  date: string
-  author: string
-  changes: string
-  snapshot: { metadata: SOPDetailMetadata; prosedurRows: ProsedurRow[] } | null
-}
-
 /** Build initial versions with snapshot pointing to seed metadata/prosedur (shared ref). */
 export function getInitialVersions(): VersionSeed[] {
   return [
@@ -171,26 +131,6 @@ export function getInitialVersions(): VersionSeed[] {
 }
 
 // --- Seed untuk halaman Detail SOP (Kepala OPD) ---
-
-export interface DetailSOPViewMetadata {
-  name: string
-  number: string
-  version: number
-  createdDate: string
-  revisionDate: string
-  effectiveDate: string
-  picName: string
-  picNumber: string
-  picRole: string
-  section: string
-  lawBasis: string[]
-  implementQualification: string[]
-  relatedSop: string[]
-  equipment: string[]
-  warning: string
-  recordData: string[]
-  signature: string
-}
 
 export const SEED_DETAIL_SOP_VIEW_METADATA: DetailSOPViewMetadata = {
   name: 'Percobaan',
@@ -212,17 +152,6 @@ export const SEED_DETAIL_SOP_VIEW_METADATA: DetailSOPViewMetadata = {
   warning: '-',
   recordData: [],
   signature: '',
-}
-
-export interface DetailSOPVersionSeed {
-  id: string
-  version: string
-  date: string
-  author: string
-  changes: string
-  snapshot: { metadata: DetailSOPViewMetadata; prosedurRows: ProsedurRow[] } | null
-  eventLabel?: string
-  revisionType?: 'major' | 'minor'
 }
 
 export const SEED_DETAIL_SOP_VERSIONS: DetailSOPVersionSeed[] = [
@@ -258,6 +187,15 @@ export const SEED_DETAIL_SOP_VERSIONS: DetailSOPVersionSeed[] = [
   },
 ]
 
+/** Opsi POS terkait untuk DetailSOPMetadataPanel. */
+export const SEED_RELATED_POS_OPTIONS: string[] = [
+  'POS Penerimaan Siswa Baru',
+  'POS Ujian Sekolah',
+  'POS Mutasi Siswa',
+  'POS Pengadaan Barang/Jasa',
+  'POS Pengaduan Masyarakat',
+]
+
 /** User saat ini (Kepala OPD) untuk komentar baru di halaman Detail SOP. */
 export const SEED_DETAIL_SOP_CURRENT_USER = {
   user: 'Dr. Ahmad Fauzi',
@@ -265,7 +203,7 @@ export const SEED_DETAIL_SOP_CURRENT_USER = {
 } as const
 
 /** Komentar awal untuk halaman Detail SOP (Kepala OPD). */
-export const SEED_DETAIL_SOP_KOMENTAR_INITIAL: KomentarSeed[] = [
+export const SEED_DETAIL_SOP_KOMENTAR_INITIAL: KomentarItem[] = [
   {
     id: '1',
     user: SEED_DETAIL_SOP_CURRENT_USER.user,

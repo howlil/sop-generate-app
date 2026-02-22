@@ -1,4 +1,4 @@
-import { Link, Outlet, useRouterState } from '@tanstack/react-router'
+import { Link, Outlet, useLocation } from '@tanstack/react-router'
 import type { LucideIcon } from 'lucide-react'
 import { AppLogo } from '@/components/layout/AppLogo'
 import { HeaderProfile } from '@/components/layout/HeaderProfile'
@@ -28,7 +28,7 @@ export function RoleLayout({
   title,
   subtitle,
 }: RoleLayoutProps) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const { pathname } = useLocation()
 
   return (
     <div className="h-screen flex">

@@ -3,7 +3,7 @@
  */
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import type { Peraturan, StatusPeraturan } from '@/lib/types/peraturan'
+import type { Peraturan } from '@/lib/types/peraturan'
 
 interface PeraturanState {
   list: Peraturan[]
@@ -89,6 +89,6 @@ export function getPeraturanDicabut(): Peraturan[] {
   return getPeraturanList().filter((p) => p.status === 'Dicabut')
 }
 
-export function subscribe(cb: () => void): () => void {
+export function subscribePeraturan(cb: () => void): () => void {
   return usePeraturanStore.subscribe(cb)
 }

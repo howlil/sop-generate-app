@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { showToast } from '@/lib/stores'
+import { generateId } from '@/utils/generate-id'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,7 +37,7 @@ import {
   updatePeraturan,
   removePeraturan,
   setPeraturanDicabut,
-  subscribe as subscribePeraturan,
+  subscribePeraturan,
 } from '@/lib/stores/peraturan-store'
 import type { Peraturan } from '@/lib/types/peraturan'
 import {
@@ -44,9 +46,9 @@ import {
   SEED_OPD_NAMES as OPD_NAMES,
   SEED_JENIS_PERATURAN,
   SEED_RIWAYAT_VERSI_PERATURAN,
-  type JenisPeraturan,
-  type RiwayatVersiEntry,
 } from '@/lib/seed/peraturan-seed'
+import type { JenisPeraturan, RiwayatVersiEntry } from '@/lib/types/peraturan'
+import { formatDateIdLong } from '@/utils/format-date'
 
 export function ManajemenPeraturan() {
   const [activeTab, setActiveTab] = useState('jenis')
@@ -139,7 +141,7 @@ export function ManajemenPeraturan() {
     } else {
       setJenisList((prev) => [
         ...prev,
-        { id: String(Date.now()), ...jenisFormData, jumlahPeraturan: 0, createdBy: CURRENT_OPD_ID },
+        { id: generateId(), ...jenisFormData, jumlahPeraturan: 0, createdBy: CURRENT_OPD_ID },
       ])
       showToast('Jenis peraturan berhasil ditambahkan')
     }
@@ -212,7 +214,7 @@ export function ManajemenPeraturan() {
       showToast('Peraturan berhasil diperbarui (versi baru).')
     } else {
       addPeraturan({
-        id: String(Date.now()),
+        id: generateId(),
         ...peraturanFormData,
         status: 'Berlaku',
         digunakan: 0,
@@ -464,11 +466,7 @@ export function ManajemenPeraturan() {
                       <Table.BodyRow key={entry.version}>
                         <Table.Td className="text-center font-medium">{entry.version}</Table.Td>
                         <Table.Td className="text-gray-600">
-                          {new Date(entry.tanggal).toLocaleDateString('id-ID', {
-                            day: 'numeric',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                          {formatDateIdLong(entry.tanggal)}
                         </Table.Td>
                         <Table.Td className="text-gray-600">{entry.diubahOleh}</Table.Td>
                         <Table.Td className="text-gray-700">
@@ -497,186 +495,146 @@ export function ManajemenPeraturan() {
       </Dialog>
 
       {/* Jenis Dialog */}
-      <Dialog open={isJenisDialogOpen} onOpenChange={setIsJenisDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">
-              {editingJenis ? 'Edit Jenis Peraturan' : 'Tambah Jenis Peraturan'}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              {editingJenis
-                ? 'Perbarui informasi jenis peraturan'
-                : 'Tambahkan jenis peraturan baru'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <FormField label="Nama Jenis Peraturan" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: Peraturan Menteri Pendidikan dan Kebudayaan"
-                value={jenisFormData.nama}
-                onChange={(e) => setJenisFormData({ ...jenisFormData, nama: e.target.value })}
-              />
-            </FormField>
-            <FormField label="Kode/Singkatan" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: Permendikbud"
-                value={jenisFormData.kode}
-                onChange={(e) => setJenisFormData({ ...jenisFormData, kode: e.target.value })}
-              />
-              <p className="text-xs text-gray-500 mt-1">Kode yang akan muncul di dropdown</p>
-            </FormField>
-            <FormField label="Tingkat" required>
-              <Select
-                value={jenisFormData.tingkat}
-                onValueChange={(tingkat) =>
-                  setJenisFormData({
-                    ...jenisFormData,
-                    tingkat: tingkat as 'Pusat' | 'Daerah' | 'Internal',
-                  })
-                }
-                options={[
-                  { value: 'Pusat', label: 'Pusat' },
-                  { value: 'Daerah', label: 'Daerah' },
-                  { value: 'Internal', label: 'Internal' },
-                ]}
-              />
-            </FormField>
-            <FormField label="Deskripsi">
-              <Textarea
-                className="text-xs min-h-[60px]"
-                placeholder="Deskripsi singkat tentang jenis peraturan ini..."
-                value={jenisFormData.deskripsi}
-                onChange={(e) =>
-                  setJenisFormData({ ...jenisFormData, deskripsi: e.target.value })
-                }
-              />
-            </FormField>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setIsJenisDialogOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs"
-              onClick={handleSaveJenis}
-              disabled={!jenisFormData.nama || !jenisFormData.kode}
-            >
-              {editingJenis ? 'Perbarui' : 'Tambah'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isJenisDialogOpen}
+        onOpenChange={setIsJenisDialogOpen}
+        title={editingJenis ? 'Edit Jenis Peraturan' : 'Tambah Jenis Peraturan'}
+        description={editingJenis
+          ? 'Perbarui informasi jenis peraturan'
+          : 'Tambahkan jenis peraturan baru'}
+        confirmLabel={editingJenis ? 'Perbarui' : 'Tambah'}
+        cancelLabel="Batal"
+        onConfirm={handleSaveJenis}
+        confirmDisabled={!jenisFormData.nama || !jenisFormData.kode}
+        size="md"
+      >
+        <FormField label="Nama Jenis Peraturan" required>
+          <Input
+            className="h-9 text-xs"
+            placeholder="Contoh: Peraturan Menteri Pendidikan dan Kebudayaan"
+            value={jenisFormData.nama}
+            onChange={(e) => setJenisFormData({ ...jenisFormData, nama: e.target.value })}
+          />
+        </FormField>
+        <FormField label="Kode/Singkatan" required>
+          <Input
+            className="h-9 text-xs"
+            placeholder="Contoh: Permendikbud"
+            value={jenisFormData.kode}
+            onChange={(e) => setJenisFormData({ ...jenisFormData, kode: e.target.value })}
+          />
+          <p className="text-xs text-gray-500 mt-1">Kode yang akan muncul di dropdown</p>
+        </FormField>
+        <FormField label="Tingkat" required>
+          <Select
+            value={jenisFormData.tingkat}
+            onValueChange={(tingkat) =>
+              setJenisFormData({
+                ...jenisFormData,
+                tingkat: tingkat as 'Pusat' | 'Daerah' | 'Internal',
+              })
+            }
+            options={[
+              { value: 'Pusat', label: 'Pusat' },
+              { value: 'Daerah', label: 'Daerah' },
+              { value: 'Internal', label: 'Internal' },
+            ]}
+          />
+        </FormField>
+        <FormField label="Deskripsi">
+          <Textarea
+            className="text-xs min-h-[60px]"
+            placeholder="Deskripsi singkat tentang jenis peraturan ini..."
+            value={jenisFormData.deskripsi}
+            onChange={(e) =>
+              setJenisFormData({ ...jenisFormData, deskripsi: e.target.value })
+            }
+          />
+        </FormField>
+      </FormDialog>
 
       {/* Peraturan Dialog */}
-      <Dialog open={isPeraturanDialogOpen} onOpenChange={setIsPeraturanDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">
-              {editingPeraturan ? 'Edit Peraturan' : 'Tambah Peraturan'}
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              {editingPeraturan
-                ? 'Perbarui informasi peraturan'
-                : 'Tambahkan peraturan baru ke database'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <FormField label="Jenis Peraturan" required>
-              <Select
-                value={peraturanFormData.jenisPeraturan}
-                onValueChange={(jenisPeraturan) =>
-                  setPeraturanFormData({
-                    ...peraturanFormData,
-                    jenisPeraturan,
-                  })
-                }
-                placeholder="Pilih Jenis Peraturan"
-                options={jenisList.map((jenis) => ({
-                  value: jenis.kode,
-                  label: `${jenis.kode} - ${jenis.nama}`,
-                }))}
-              />
-            </FormField>
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Nomor" required>
-                <Input
-                  className="h-9 text-xs"
-                  placeholder="Contoh: 1"
-                  value={peraturanFormData.nomor}
-                  onChange={(e) =>
-                    setPeraturanFormData({ ...peraturanFormData, nomor: e.target.value })
-                  }
-                />
-              </FormField>
-              <FormField label="Tahun" required>
-                <Input
-                  className="h-9 text-xs"
-                  placeholder="2026"
-                  value={peraturanFormData.tahun}
-                  onChange={(e) =>
-                    setPeraturanFormData({ ...peraturanFormData, tahun: e.target.value })
-                  }
-                  maxLength={4}
-                />
-              </FormField>
-            </div>
-            <FormField label="Tentang" required>
-              <Input
-                className="h-9 text-xs"
-                placeholder="Contoh: Penerimaan Peserta Didik Baru"
-                value={peraturanFormData.tentang}
-                onChange={(e) =>
-                  setPeraturanFormData({ ...peraturanFormData, tentang: e.target.value })
-                }
-              />
-            </FormField>
-            <FormField label="Tanggal Terbit">
-              <Input
-                type="date"
-                className="h-9 text-xs"
-                value={peraturanFormData.tanggalTerbit}
-                onChange={(e) =>
-                  setPeraturanFormData({
-                    ...peraturanFormData,
-                    tanggalTerbit: e.target.value,
-                  })
-                }
-              />
-            </FormField>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs"
-              onClick={() => setIsPeraturanDialogOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs"
-              onClick={handleSavePeraturan}
-              disabled={
-                !peraturanFormData.jenisPeraturan ||
-                !peraturanFormData.nomor ||
-                !peraturanFormData.tahun ||
-                !peraturanFormData.tentang
+      <FormDialog
+        open={isPeraturanDialogOpen}
+        onOpenChange={setIsPeraturanDialogOpen}
+        title={editingPeraturan ? 'Edit Peraturan' : 'Tambah Peraturan'}
+        description={editingPeraturan
+          ? 'Perbarui informasi peraturan'
+          : 'Tambahkan peraturan baru ke database'}
+        confirmLabel={editingPeraturan ? 'Perbarui' : 'Tambah'}
+        cancelLabel="Batal"
+        onConfirm={handleSavePeraturan}
+        confirmDisabled={
+          !peraturanFormData.jenisPeraturan ||
+          !peraturanFormData.nomor ||
+          !peraturanFormData.tahun ||
+          !peraturanFormData.tentang
+        }
+        size="md"
+      >
+        <FormField label="Jenis Peraturan" required>
+          <Select
+            value={peraturanFormData.jenisPeraturan}
+            onValueChange={(jenisPeraturan) =>
+              setPeraturanFormData({
+                ...peraturanFormData,
+                jenisPeraturan,
+              })
+            }
+            placeholder="Pilih Jenis Peraturan"
+            options={jenisList.map((jenis) => ({
+              value: jenis.kode,
+              label: `${jenis.kode} - ${jenis.nama}`,
+            }))}
+          />
+        </FormField>
+        <div className="grid grid-cols-2 gap-3">
+          <FormField label="Nomor" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: 1"
+              value={peraturanFormData.nomor}
+              onChange={(e) =>
+                setPeraturanFormData({ ...peraturanFormData, nomor: e.target.value })
               }
-            >
-              {editingPeraturan ? 'Perbarui' : 'Tambah'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            />
+          </FormField>
+          <FormField label="Tahun" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="2026"
+              value={peraturanFormData.tahun}
+              onChange={(e) =>
+                setPeraturanFormData({ ...peraturanFormData, tahun: e.target.value })
+              }
+              maxLength={4}
+            />
+          </FormField>
+        </div>
+        <FormField label="Tentang" required>
+          <Input
+            className="h-9 text-xs"
+            placeholder="Contoh: Penerimaan Peserta Didik Baru"
+            value={peraturanFormData.tentang}
+            onChange={(e) =>
+              setPeraturanFormData({ ...peraturanFormData, tentang: e.target.value })
+            }
+          />
+        </FormField>
+        <FormField label="Tanggal Terbit">
+          <Input
+            type="date"
+            className="h-9 text-xs"
+            value={peraturanFormData.tanggalTerbit}
+            onChange={(e) =>
+              setPeraturanFormData({
+                ...peraturanFormData,
+                tanggalTerbit: e.target.value,
+              })
+            }
+          />
+        </FormField>
+      </FormDialog>
 
       <ConfirmDialog
         open={deleteConfirm != null}

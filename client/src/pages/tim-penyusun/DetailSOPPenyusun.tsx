@@ -18,23 +18,22 @@ import { showToast } from '@/lib/stores'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
-import { getPeraturanList, subscribe as subscribePeraturan } from '@/lib/stores/peraturan-store'
+import { getPeraturanList, subscribePeraturan } from '@/lib/stores/peraturan-store'
 import type { Peraturan } from '@/lib/types/peraturan'
 import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
-import {
-  SEED_KOMENTAR_LIST,
-  getInitialVersions,
-  type KomentarSeed,
-  type VersionSeed,
-} from '@/lib/seed/sop-detail-seed'
+import { SEED_KOMENTAR_LIST, getInitialVersions } from '@/lib/seed/sop-detail-seed'
+import type { VersionSeed } from '@/lib/types/version'
 import { useDetailSOPMetadata } from '@/hooks/useDetailSOPMetadata'
 import { useDetailSOPProsedur } from '@/hooks/useDetailSOPProsedur'
-import { KomentarPanel, type KomentarItem } from '@/components/sop/KomentarPanel'
+import { useKomentar } from '@/hooks/useKomentar'
+import { KomentarPanel } from '@/components/sop/KomentarPanel'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
 import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
 import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
+import { formatDateIdLong } from '@/utils/format-date'
+import { computeVersionDiff } from '@/utils/version-diff'
+import { ROUTES } from '@/lib/constants/routes'
 
-type Komentar = KomentarSeed
 type Version = VersionSeed
 
 export function DetailSOPPenyusun() {
@@ -68,62 +67,17 @@ export function DetailSOPPenyusun() {
     return subscribePeraturan(() => setPeraturanList(getPeraturanList()))
   }, [])
 
-  /** Komentar hanya dari Kepala OPD dan Tim Evaluasi (Tim Penyusun tidak bisa membuat komentar). */
-  const [komentarList, setKomentarList] = useState<Komentar[]>(() => [...SEED_KOMENTAR_LIST])
+  const { displayList: komentarDisplay, handleResolveComment } = useKomentar({
+    initialData: [...SEED_KOMENTAR_LIST],
+    excludeRoles: ['Tim Penyusun'],
+  })
 
   const [versions, _setVersions] = useState<Version[]>(() => getInitialVersions())
 
-  /** Perbedaan versi saat ini vs versi yang dilihat (untuk card diff di panel riwayat) */
-  const versionDiff = useMemo(() => {
-    if (!viewingVersion?.snapshot) return []
-    const cur = { metadata, prosedurRows }
-    const view = viewingVersion.snapshot
-    const out: { label: string; current: string; viewed: string }[] = []
-    if (String(cur.metadata.name ?? '') !== String(view.metadata?.name ?? '')) {
-      out.push({ label: 'Nama SOP', current: String(cur.metadata.name ?? ''), viewed: String(view.metadata?.name ?? '') })
-    }
-    if (String(cur.metadata.number ?? '') !== String(view.metadata?.number ?? '')) {
-      out.push({ label: 'Nomor SOP', current: String(cur.metadata.number ?? ''), viewed: String(view.metadata?.number ?? '') })
-    }
-    if (Number(cur.metadata.version) !== Number(view.metadata?.version)) {
-      out.push({ label: 'Versi', current: String(cur.metadata.version ?? ''), viewed: String(view.metadata?.version ?? '') })
-    }
-    if (cur.prosedurRows.length !== (view.prosedurRows?.length ?? 0)) {
-      out.push({
-        label: 'Jumlah langkah',
-        current: String(cur.prosedurRows.length),
-        viewed: String(view.prosedurRows?.length ?? 0),
-      })
-    }
-    const maxRows = Math.max(cur.prosedurRows.length, view.prosedurRows?.length ?? 0)
-    for (let i = 0; i < maxRows; i++) {
-      const rCur = cur.prosedurRows[i]
-      const rView = view.prosedurRows?.[i]
-      const prefix = `Langkah ${i + 1}`
-      if (!rView) {
-        out.push({ label: prefix, current: rCur?.kegiatan ?? '-', viewed: '(dihapus)' })
-        continue
-      }
-      if (!rCur) {
-        out.push({ label: prefix, current: '(ditambahkan)', viewed: rView.kegiatan ?? '-' })
-        continue
-      }
-      if (String(rCur.kegiatan ?? '') !== String(rView.kegiatan ?? '')) {
-        out.push({ label: `${prefix} — Kegiatan`, current: String(rCur.kegiatan ?? ''), viewed: String(rView.kegiatan ?? '') })
-      }
-      if (String(rCur.mutu_waktu ?? '') !== String(rView.mutu_waktu ?? '')) {
-        out.push({ label: `${prefix} — Waktu`, current: String(rCur.mutu_waktu ?? ''), viewed: String(rView.mutu_waktu ?? '') })
-      }
-    }
-    return out
-  }, [viewingVersion, metadata, prosedurRows])
-
-  const handleResolveComment = (cid: string) => {
-    setKomentarList((prev) =>
-      prev.map((k) => (k.id === cid ? { ...k, status: 'resolved' as const } : k))
-    )
-    showToast('Komentar ditandai sebagai resolved')
-  }
+  const versionDiff = useMemo(
+    () => computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot),
+    [viewingVersion, metadata, prosedurRows]
+  )
 
   const handleRollback = () => {
     if (!selectedVersion?.snapshot) {
@@ -142,52 +96,57 @@ export function DetailSOPPenyusun() {
     <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3">
       <PageHeader
         breadcrumb={[
-          { label: 'SOP Saya', to: '/tim-penyusun/sop-saya' },
+          { label: 'SOP Saya', to: ROUTES.TIM_PENYUSUN.SOP_SAYA },
           { label: 'Edit SOP' },
         ]}
         title="Edit Dokumen SOP"
         description={metadata.name}
         leading={
-          <BackButton size="icon" onClick={() => navigate({ to: '/tim-penyusun/sop-saya' })} />
+          <BackButton size="icon" onClick={() => navigate({ to: ROUTES.TIM_PENYUSUN.SOP_SAYA })} />
         }
       />
 
       <DetailWorkspace
         className="print:hidden"
         header={
-          <div className="flex items-center justify-end gap-2 p-3">
-            <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
-              v{versions[0]?.version || '1.0'}
-            </Badge>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => {
-                if (id) {
-                  setSopStatusOverride(id, 'Sedang Disusun')
-                  showToast('Status diubah menjadi Sedang Disusun')
-                }
-              }}
-            >
-              <Save className="w-3.5 h-3.5" />
-              Simpan sebagai draft
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={() => {
-                if (id) {
-                  setSopStatusOverride(id, 'Diperiksa Kepala OPD')
-                  showToast('SOP diserahkan ke Kepala OPD')
-                  navigate({ to: '/tim-penyusun/sop-saya' })
-                }
-              }}
-            >
-              <Check className="w-3.5 h-3.5" />
-              Serahkan ke Kepala OPD
-            </Button>
-          </div>
+          <>
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-sm font-semibold text-gray-900">Dokumen SOP</h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+                  onClick={() => {
+                    if (id) {
+                      setSopStatusOverride(id, 'Sedang Disusun')
+                      showToast('Status diubah menjadi Sedang Disusun')
+                    }
+                  }}
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  Simpan sebagai draft
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
+                  onClick={() => {
+                    if (id) {
+                      setSopStatusOverride(id, 'Diperiksa Kepala OPD')
+                      showToast('SOP diserahkan ke Kepala OPD')
+                      navigate({ to: '/tim-penyusun/sop-saya' })
+                    }
+                  }}
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  Serahkan ke Kepala OPD
+                </Button>
+              </div>
+            </div>
+            <div className="pt-2">
+              <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">v{versions[0]?.version || '1.0'}</Badge>
+            </div>
+          </>
         }
         main={
           <div className="flex flex-col h-full p-4">
@@ -267,28 +226,13 @@ export function DetailSOPPenyusun() {
             activeTab={rightPanelTab}
             onTabChange={(id) => setRightPanelTab(id as 'edit' | 'komentar' | 'riwayat')}
           >
-            {rightPanelTab === 'komentar' && (() => {
-              const fromKepalaDanTim = komentarList.filter((k) => k.role !== 'Tim Penyusun')
-              const openCount = fromKepalaDanTim.filter((k) => k.status === 'open').length
-              const resolvedCount = fromKepalaDanTim.filter((k) => k.status === 'resolved').length
-              const comments: KomentarItem[] = fromKepalaDanTim.map((k) => ({
-                id: k.id,
-                user: k.user,
-                role: k.role,
-                status: k.status,
-                bagian: k.bagian,
-                isi: k.isi,
-                timestamp: k.timestamp,
-              }))
-              return (
-                <KomentarPanel
-                  comments={comments}
-                  onResolve={handleResolveComment}
-                  summary={`Dari Kepala OPD & Tim Evaluasi · ${openCount} terbuka · ${resolvedCount} resolved`}
-                  avatarVariant="blue"
-                />
-              )
-            })()}
+            {rightPanelTab === 'komentar' && (
+              <KomentarPanel
+                comments={komentarDisplay}
+                onResolve={handleResolveComment}
+                avatarVariant="blue"
+              />
+            )}
             {rightPanelTab === 'edit' && (
               <DetailSOPMetadataPanel
                 metadata={metadata}
@@ -332,11 +276,7 @@ export function DetailSOPPenyusun() {
                 <p className="text-xs text-gray-700 mb-2">{selectedVersion.changes}</p>
                 <p className="text-xs text-gray-600">
                   Tanggal:{' '}
-                  {new Date(selectedVersion.date).toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  {formatDateIdLong(selectedVersion.date)}
                 </p>
                 <p className="text-xs text-gray-600">Author: {selectedVersion.author}</p>
               </div>
@@ -409,11 +349,7 @@ export function DetailSOPPenyusun() {
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-500">
-                    {new Date(version.date).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
+                    {formatDateIdLong(version.date)}
                   </p>
                 </div>
                 <p className="text-xs text-gray-700 mb-2">{version.changes}</p>
