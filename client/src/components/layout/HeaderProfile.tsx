@@ -11,8 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
-import { getRole, getRoleLabel, getRoleNip, clearRole } from '@/lib/role'
-import type { Role } from '@/lib/role'
+import { getRole, getRoleLabel, getRoleNip, clearRole, type Role } from '@/lib/stores'
 
 interface HeaderProfileProps {
   /** Judul header fallback (jika tidak ada page header dari konteks) */

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { VerifikasiTTDBerhasilPage } from '@/components/pages/validasi/VerifikasiTTDBerhasilPage'
+import { VerifikasiTTDBerhasilPage } from '@/pages/validasi/VerifikasiTTDBerhasilPage'
 
 export const Route = createFileRoute('/validasi/ttd/berhasil')({
   validateSearch: (search: Record<string, unknown>) => ({

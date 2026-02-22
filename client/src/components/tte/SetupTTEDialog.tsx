@@ -9,7 +9,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { TTERole } from '@/lib/tte-types'
+import type { TTERole } from '@/lib/types/tte'
 import { hashPin, setTTEProfile } from '@/lib/tte'
 
 export interface SetupTTEDialogProps {

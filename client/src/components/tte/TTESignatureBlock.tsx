@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import type { TTESignaturePayload } from '@/lib/tte-types'
+import type { TTESignaturePayload } from '@/lib/types/tte'
 import { getValidasiPengesahanUrl } from '@/lib/tte'
 
 export interface TTESignatureBlockProps {

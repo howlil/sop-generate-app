@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import type { StatusSOP, StatusHasilEvaluasi } from '@/lib/sop-status'
+import { cn } from '@/utils/cn'
+import type { StatusSOP, StatusHasilEvaluasi } from '@/lib/types/sop'
 
 type StatusDomain =
   | 'sop'
@@ -17,7 +17,7 @@ interface StatusBadgeProps {
   label?: ReactNode
 }
 
-/** Warna badge untuk status SOP (sumber: @/lib/sop-status). Domain sop = status dokumen SOP. */
+/** Warna badge untuk status SOP (sumber: @/lib/types/sop). */
 const sopStatusClasses: Record<StatusSOP | StatusHasilEvaluasi, string> = {
   Draft: 'bg-gray-100 text-gray-700',
   'Sedang Disusun': 'bg-slate-100 text-slate-700',

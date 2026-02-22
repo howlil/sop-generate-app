@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router'
 import { Building2, UserCircle, ClipboardCheck, Users } from 'lucide-react'
-import { setRole, ROLES } from '@/lib/role'
+import { setRole, ROLES } from '@/lib/stores'
 
 export const Route = createFileRoute('/')({
   validateSearch: (s: Record<string, unknown>) => ({ denied: (s.denied as string) ?? undefined }),

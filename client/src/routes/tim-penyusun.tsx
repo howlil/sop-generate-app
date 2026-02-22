@@ -1,9 +1,7 @@
-import { createFileRoute, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { FileText } from 'lucide-react'
-import { isTimPenyusun } from '@/lib/role'
-import { AppLogo } from '@/components/layout/AppLogo'
-import { HeaderProfile } from '@/components/layout/HeaderProfile'
-import { PageHeaderProvider } from '@/components/layout/PageHeaderContext'
+import { isTimPenyusun } from '@/lib/stores'
+import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 
 export const Route = createFileRoute('/tim-penyusun')({
   beforeLoad: () => {
@@ -14,48 +12,21 @@ export const Route = createFileRoute('/tim-penyusun')({
   component: TimPenyusunLayout,
 })
 
-const sidebarItems = [
+const sidebarItems: SidebarItem[] = [
   { to: '/tim-penyusun/sop-saya', label: 'SOP Saya', icon: FileText },
 ]
 
+function isSidebarActive(pathname: string, item: SidebarItem) {
+  return pathname === item.to || pathname.startsWith('/tim-penyusun/detail-sop')
+}
+
 function TimPenyusunLayout() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-
   return (
-    <div className="h-screen flex">
-      <aside className="w-14 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-        <div className="p-2 flex flex-col items-center">
-          <AppLogo />
-        </div>
-        <nav className="flex-1 flex flex-col items-center gap-1 pt-4">
-          {sidebarItems.map(({ to, label, icon: Icon }) => {
-            const isActive =
-              pathname === to || pathname.startsWith('/tim-penyusun/detail-sop')
-            return (
-              <Link
-                key={to}
-                to={to}
-                className={`w-10 h-10 flex items-center justify-center rounded-md transition-all ${
-                  isActive ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 text-gray-600'
-                }`}
-                title={label}
-                aria-label={label}
-              >
-                <Icon className="w-5 h-5" />
-              </Link>
-            )
-          })}
-        </nav>
-      </aside>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        <PageHeaderProvider>
-          <HeaderProfile title="Tim Penyusun" subtitle="Penyusunan SOP" />
-          <main className="flex-1 overflow-auto p-6 bg-gray-50">
-            <Outlet />
-          </main>
-        </PageHeaderProvider>
-      </div>
-    </div>
+    <RoleLayout
+      sidebarItems={sidebarItems}
+      isActive={isSidebarActive}
+      title="Tim Penyusun"
+      subtitle="Penyusunan SOP"
+    />
   )
 }

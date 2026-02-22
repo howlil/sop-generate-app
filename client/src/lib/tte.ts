@@ -1,14 +1,11 @@
 /**
- * TTE (Tanda Tangan Elektronik) BSRE - helpers: PIN hash, profile, signatures, audit log.
- * Data disimpan di localStorage sebagai mock; nanti bisa diganti dengan API backend.
+ * TTE (Tanda Tangan Elektronik) BSRE — service: PIN, profile, signatures, audit.
  */
-
-import type { TTEProfile, TTESignaturePayload, TTEAuditEntry, TTERole } from './tte-types'
-import { TTE_STORAGE_KEYS } from './tte-types'
+import type { TTEProfile, TTESignaturePayload, TTEAuditEntry, TTERole } from '@/lib/types/tte'
+import { TTE_STORAGE_KEYS } from '@/lib/types/tte'
 
 const PIN_SALT = 'tte-bsre-salt-v1'
 
-/** Hash PIN sederhana untuk simulasi (production: gunakan backend + bcrypt/argon). */
 export function hashPin(pin: string): string {
   let h = 0
   const s = PIN_SALT + pin
@@ -50,7 +47,6 @@ export function setTTEProfile(
   localStorage.setItem(profileKey(role), JSON.stringify(full))
 }
 
-/** Mengembalikan profil TTE yang punya verificationToken cocok (untuk halaman verifikasi email). */
 export function getTTEProfileByVerificationToken(token: string): TTEProfile | null {
   if (typeof window === 'undefined' || !token) return null
   for (const role of ['kepala-opd', 'kepala-biro-organisasi', 'tim-evaluasi'] as TTERole[]) {
@@ -60,7 +56,6 @@ export function getTTEProfileByVerificationToken(token: string): TTEProfile | nu
   return null
 }
 
-/** Selesaikan verifikasi email: set emailVerified true dan hapus token. Mengembalikan role yang diverifikasi. */
 export function verifyTTEEmail(token: string): TTERole | null {
   const profile = getTTEProfileByVerificationToken(token)
   if (!profile) return null
@@ -104,7 +99,6 @@ function appendAuditEntry(entry: TTEAuditEntry): void {
   localStorage.setItem(TTE_STORAGE_KEYS.AUDIT_LOG, JSON.stringify(log))
 }
 
-/** Menambahkan tanda tangan baru dan entri audit; mengembalikan payload untuk ditampilkan + QR. */
 export function addTTESignature(
   role: TTERole,
   nip: string,
@@ -157,7 +151,6 @@ export function getTTESignatureById(id: string): TTESignaturePayload | null {
   return getTTESignatures().find((s) => s.id === id) ?? null
 }
 
-/** URL dasar untuk halaman validasi pengesahan (untuk QR). */
 export function getValidasiPengesahanBaseUrl(): string {
   if (typeof window !== 'undefined') return window.location.origin
   return ''
@@ -168,7 +161,6 @@ export function getValidasiPengesahanUrl(signatureId: string): string {
   return `${base}/validasi/pengesahan/${signatureId}`
 }
 
-/** URL halaman verifikasi berhasil TTD (link yang dikirim ke email). */
 export function getTTEVerificationSuccessUrl(token: string): string {
   const base = getValidasiPengesahanBaseUrl()
   return `${base}/validasi/ttd/berhasil?token=${encodeURIComponent(token)}`

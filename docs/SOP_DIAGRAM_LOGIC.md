@@ -2,6 +2,8 @@
 
 Dokumen ini mendefinisikan **mental model** dan **kontrak** agar build Flowchart + BPMN setara dengan implementasi Vue (SopFlowchartTemplate, SopBpmnTemplate, ArrowConnector). Gunakan sebagai referensi untuk agent AI atau developer.
 
+**Analisis use case routing (tercover vs belum):** lihat **docs/FLOWCHART-ROUTING-USECASES.md**.
+
 ---
 
 ## 1. Mental Model Besar
@@ -32,6 +34,13 @@ Arrow connector adalah "otak routing" panah.
 
 - Ambil posisi box source/target dari DOM relatif terhadap container (`getBoundingClientRect`).
 - Buat **titik anchor 4 sisi** shape (`top` / `bottom` / `left` / `right` center) untuk source dan target.
+
+### 2.3.1 Scan phase (sebelum routing per panah)
+
+- **Scan semua koneksi** dulu: untuk setiap koneksi dari decision dengan label "Tidak", sisi **left** dan **right** dari shape **target** ditandai "reserved" untuk koneksi itu.
+- Tujuannya: koneksi linear (mis. A di kiri B → bottom A ke left B) jangan mengambil left B dulu, karena di bawah mungkin ada decision yang butuh left B (loop-back). Kalau linear di-route dulu dan pakai left B, decision terpaksa pakai top B → path crossing.
+- **Urutan routing**: koneksi di-route dalam urutan **Tidak** (decision) dulu, lalu **Ya**, lalu **linear**. Jadi decision dapat prioritas pilih sisi (left/right), baru koneksi linear memakai sisi yang tersisa (mis. top).
+- **Reserved sides** diteruskan ke connector: saat memilih pasangan sisi (startSide, endSide), pasangan yang memakai sisi target yang "reserved" untuk koneksi lain dideprioritaskan (dipindah ke akhir daftar kandidat).
 
 ### 2.4 Generate kandidat path ortogonal
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TTDElektronikPage } from '@/components/pages/ttd-elektronik/TTDElektronikPage'
-import { getRoleNip, ROLES } from '@/lib/role'
+import { TTDElektronikPage } from '@/pages/ttd-elektronik/TTDElektronikPage'
+import { getRoleNip, ROLES } from '@/lib/stores'
 
 export const Route = createFileRoute('/kepala-biro-organisasi/ttd-elektronik')({
   component: () => (
