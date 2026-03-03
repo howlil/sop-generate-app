@@ -128,6 +128,14 @@ export function splitCrossPageConnections(
 /**
  * Collect OPC shapes that belong to a specific page, split into
  * shapes that appear at the top vs bottom of the page.
+ *
+ * Semantik:
+ * - Forward (fromPage < toPage): OPC-out di bottom (alur ke halaman berikutnya),
+ *   OPC-in di top (alur diterima dari halaman sebelumnya).
+ * - Loop-back (fromPage > toPage): OPC-out di top (alur kembali ke halaman awal),
+ *   OPC-in di bottom (alur diterima dari halaman lanjut).
+ * Dengan ini, halaman pertama tidak punya OPC-in di top, dan halaman terakhir
+ * tidak punya OPC-out di bottom untuk loop-back.
  */
 export function getOpcShapesForPage(
   pageIndex: number,
@@ -137,14 +145,30 @@ export function getOpcShapesForPage(
   const bottom: OpcPair[] = []
 
   for (const opc of opcPairs) {
+    const isForward = opc.fromPage < opc.toPage
+    const isLoopBack = opc.fromPage > opc.toPage
+
     if (opc.fromPage === pageIndex) {
-      // Outgoing from this page → placed at bottom
-      bottom.push(opc)
+      // Outgoing from this page
+      if (isForward) {
+        bottom.push(opc) // alur ke halaman berikutnya → bottom
+      } else if (isLoopBack) {
+        top.push(opc) // alur kembali ke halaman awal → top
+      }
     }
     if (opc.toPage === pageIndex) {
-      // Incoming to this page → placed at top
-      top.push(opc)
+      // Incoming to this page
+      if (isForward) {
+        top.push(opc) // diterima dari halaman sebelumnya → top
+      } else if (isLoopBack) {
+        bottom.push(opc) // diterima dari halaman lanjut → bottom
+      }
     }
   }
+  // Urutan konsisten agar posisi OPC dan huruf (A,B,C) stabil
+  const bySeq = (a: OpcPair, b: OpcPair) =>
+    a.fromSeq !== b.fromSeq ? a.fromSeq - b.fromSeq : a.toSeq - b.toSeq
+  top.sort(bySeq)
+  bottom.sort(bySeq)
   return { top, bottom }
 }

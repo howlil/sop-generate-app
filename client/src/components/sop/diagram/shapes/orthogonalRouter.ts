@@ -40,9 +40,9 @@ export interface RouteOptions {
 /* ── Penalties & Thresholds ─────────────────────────────────── */
 
 const OVERLAP_PENALTY = 5000
-const CROSS_PENALTY = 1000
-const NEAR_PENALTY = 300
-const NEAR_THRESHOLD = 8
+const CROSS_PENALTY = 1100
+const NEAR_PENALTY = 350
+const NEAR_THRESHOLD = 10
 const BEND_FACTOR = 1.5
 
 /* ── Rectangle utility ──────────────────────────────────────── */
@@ -438,7 +438,7 @@ export function scorePath(path: Point[], occupied: OccupiedSegment[]): number {
       else if (segmentsNearby(seg, occ, NEAR_THRESHOLD)) score += NEAR_PENALTY
     }
   }
-  score += Math.max(0, path.length - 2) * 100
+  score += Math.max(0, path.length - 2) * 220
   return score
 }
 

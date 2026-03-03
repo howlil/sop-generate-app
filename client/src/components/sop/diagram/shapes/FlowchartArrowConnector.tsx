@@ -115,6 +115,24 @@ function pathToD(points: { x: number; y: number }[]): string {
   return d
 }
 
+/** Self-healing: hapus titik tengah yang koliner dan duplikat berurutan agar path terstruktur. */
+function simplifyPathCollinear(points: { x: number; y: number }[]): { x: number; y: number }[] {
+  if (points.length <= 2) return points
+  const out = [points[0]]
+  for (let i = 1; i < points.length - 1; i++) {
+    const prev = out[out.length - 1]
+    const cur = points[i]
+    const next = points[i + 1]
+    const duplicate = prev.x === cur.x && prev.y === cur.y
+    const collinear =
+      (prev.x === cur.x && cur.x === next.x) || (prev.y === cur.y && cur.y === next.y)
+    if (!duplicate && !collinear) out.push(cur)
+  }
+  const last = points[points.length - 1]
+  if (out[out.length - 1].x !== last.x || out[out.length - 1].y !== last.y) out.push(last)
+  return out.length >= 2 ? out : [points[0], points[points.length - 1]]
+}
+
 function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boolean {
   if (!c?.startPoint || !c?.endPoint) return false
   const { startPoint: s, endPoint: e } = c
@@ -170,7 +188,8 @@ function selectSidePairs(
 
   const isStartTerminator = conn.sourceType === 'flowchart-terminator'
   const isDecSrc = conn.sourceType === 'flowchart-decision'
-  const lbl = (conn.label ?? '').trim().toLowerCase()
+  const isOpcSrc = conn.sourceType === 'flowchart-opc'
+  const isOpcTarget = conn.targetType === 'flowchart-opc'
   const isYa    = isYaLabel(conn.label ?? '')
   const isTidak = isTidakLabel(conn.label ?? '')
 
@@ -180,6 +199,19 @@ function selectSidePairs(
     (usedSides[conn.to]?.in?.[s] ?? []).some(id => id !== conn.id)
 
   const pairs: Array<[Side, Side]> = []
+
+  /* ── Case OPC: Off-Page Connector — posisi mengikuti kolom sumber ─────
+   *  Step → OPC-out: tail bottom, head top (lurus ke bawah, rute terdekat)
+   *  OPC-in → Step: tail bottom OPC, head left/right step (OPC keluar bottom, step terima dari samping)
+   */
+  if (isOpcTarget && destBelow) {
+    pairs.push(['bottom', 'top'])
+  }
+  if (isOpcSrc && destBelow) {
+    if (destRight) pairs.push(['bottom', 'left'], ['right', 'top'])
+    else if (destLeft) pairs.push(['bottom', 'right'], ['left', 'top'])
+    else pairs.push(['bottom', 'top'])
+  }
 
   /* ── Case 0: Start (terminator) → next task: head selalu top ─────
    *  - Start di kiri task berikutnya → tail right, head top
@@ -205,7 +237,8 @@ function selectSidePairs(
       // Case 3.2  Loop-back to earlier shape — horizontal U-turn
       if (!srcOutBusy('right') && !dstInBusy('right')) pairs.push(['right', 'right'])
       if (!srcOutBusy('left')  && !dstInBusy('left'))  pairs.push(['left', 'left'])
-      pairs.push(['right', 'top'], ['left', 'top'])
+      // Untuk decision loop-back, kita sangat memaksa anchor horizontal (right→right / left→left).
+      // Alternatif vertikal akan tetap tersedia lewat fallback umum di bawah, tapi dengan prioritas rendah.
     }
 
     else if (isYa) {
@@ -223,7 +256,16 @@ function selectSidePairs(
 
     else if (isTidak) {
       // Tidak branch: exits from left/right to avoid overlap with Ya
-      if (sameCol && destBelow) {
+      // Case 3.3: Branch (Tidak) ke decision di bawah — head JANGAN di top target.
+      // Target decision punya linear input (mis. 7→8) yang butuh top. Supaya tidak persilangan:
+      // head masuk di right/left target, sehingga linear bisa pakai top.
+      const isTargetDecision = conn.targetType === 'flowchart-decision'
+      if (destBelow && isTargetDecision) {
+        if (!srcOutBusy('right') && !dstInBusy('right')) pairs.push(['right', 'right'])
+        if (!srcOutBusy('right') && !dstInBusy('left'))  pairs.push(['right', 'left'])
+        if (!srcOutBusy('left')  && !dstInBusy('right')) pairs.push(['left', 'right'])
+        if (!srcOutBusy('left')  && !dstInBusy('left'))  pairs.push(['left', 'left'])
+      } else if (sameCol && destBelow) {
         // Same column & below → must use horizontal exit (Case 2)
         if (!srcOutBusy('right')) pairs.push(['right', 'top'])
         if (!srcOutBusy('left'))  pairs.push(['left', 'top'])
@@ -310,10 +352,21 @@ function selectSidePairs(
 
 /* ───────────────────────── Constants ─────────────────────────── */
 
-const SHAPE_MARGIN = 10
+const SHAPE_MARGIN = 16
 const BOUNDS_MARGIN = 15
-const MAX_TRIES = 8
-const GOOD_SCORE_LIMIT = 500
+/** Inset from pelaksana column left/right so path never touches vertical cell borders. */
+const PATH_COLUMN_INSET = 24
+/** Extra inset on right to avoid path crossing into Mutu Baku (getBoundingClientRect can include border). */
+const PATH_COLUMN_INSET_RIGHT_EXTRA = 12
+/** Inset from container top/bottom so path does not sit on horizontal border. */
+const PATH_VERTICAL_INSET = 12
+/** Penalty per pixel of horizontal span to prefer less "ruwet" / shorter-sideways paths. */
+const HORIZONTAL_SPAN_PENALTY_PER_PX = 0.55
+/** Inset applied to globalBounds when passing to router so grid points stay away from border. */
+const ROUTER_INTERNAL_INSET = 4
+const MAX_TRIES = 5
+const GOOD_SCORE_LIMIT = 480
+const ROUTING_IDLE_TIMEOUT_MS = 120
 
 /* ───────────────────────── Component ─────────────────────────── */
 
@@ -375,32 +428,72 @@ export function FlowchartArrowConnector({
     const toPos = getElementPosition(connection.to, container)
     if (!fromPos || !toPos) { setPathData(''); setLabelPos(null); return }
 
+    const isOpcConnection =
+      connection.sourceType === 'flowchart-opc' || connection.targetType === 'flowchart-opc'
+    const HEADER_OBSTACLE_PREFIX = 'sop-page-'
+    const HEADER_OBSTACLE_SUFFIX = '-table-header'
     const obsRects = obstacles
       .map(o => o.id)
       .filter(id => id !== connection.from && id !== connection.to)
-      .map(id => getElementPosition(id, container))
-      .filter((r): r is ElemPos => r != null)
-      .map(r => ({ left: r.left, top: r.top, width: r.width, height: r.height }))
-
-    const globalBounds = constraintRect
-      ? {
-          left: Math.round(constraintRect.left),
-          top: Math.round(constraintRect.top),
-          width: Math.round(constraintRect.right - constraintRect.left),
-          height: Math.round(constraintRect.bottom - constraintRect.top),
+      .map(id => {
+        const r = getElementPosition(id, container)
+        if (!r) return null
+        const rect = { left: r.left, top: r.top, width: r.width, height: r.height }
+        if (isOpcConnection && id.startsWith(HEADER_OBSTACLE_PREFIX) && id.endsWith(HEADER_OBSTACLE_SUFFIX)) {
+          const pad = 18
+          return {
+            left: Math.max(0, rect.left - pad),
+            top: Math.max(0, rect.top - pad),
+            width: rect.width + 2 * pad,
+            height: rect.height + 2 * pad,
+          }
         }
-      : { left: 0, top: 0, width: container.scrollWidth, height: container.scrollHeight }
+        return rect
+      })
+      .filter((r): r is { left: number; top: number; width: number; height: number } => r != null)
+
+    // Path must stay strictly inside pelaksana column (no Kegiatan/Mutu Baku/KET).
+    // Use pelaksana horizontal bounds + full container height; inset so path does not touch vertical borders.
+    const pathAllowedBounds = constraintRect
+      ? (() => {
+          const left = Math.round(constraintRect.left + PATH_COLUMN_INSET)
+          const right = Math.round(constraintRect.right - PATH_COLUMN_INSET - PATH_COLUMN_INSET_RIGHT_EXTRA)
+          const w = Math.max(20, right - left)
+          const top = PATH_VERTICAL_INSET
+          const height = Math.max(40, container.scrollHeight - 2 * PATH_VERTICAL_INSET)
+          return {
+            left,
+            top,
+            width: w,
+            height,
+          }
+        })()
+      : null
+    const globalBounds = pathAllowedBounds
+      ? {
+          left: pathAllowedBounds.left + ROUTER_INTERNAL_INSET,
+          top: pathAllowedBounds.top + ROUTER_INTERNAL_INSET,
+          width: Math.max(12, pathAllowedBounds.width - 2 * ROUTER_INTERNAL_INSET),
+          height: Math.max(40, pathAllowedBounds.height - 2 * ROUTER_INTERNAL_INSET),
+        }
+      : {
+          left: 0,
+          top: 0,
+          width: container.scrollWidth,
+          height: container.scrollHeight,
+        }
 
     const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
     const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
 
     const dy = (toPos.top + toPos.height / 2) - (fromPos.top + fromPos.height / 2)
     const destAbove = dy < -10
+    const destBelow = dy > 10
     const isLoopBack = destAbove && connection.sourceType === 'flowchart-decision'
-    const canvasW = constraintRect ? constraintRect.right - constraintRect.left : 0
+    const canvasW = pathAllowedBounds ? pathAllowedBounds.width : (constraintRect ? constraintRect.right - constraintRect.left : 0)
     const boundsMargin = isLoopBack
-      ? (canvasW > 0 ? Math.min(56, Math.max(28, Math.round(canvasW * 0.048))) : 32)
-      : (canvasW > 0 ? Math.min(24, Math.max(15, Math.round(canvasW * 0.018))) : BOUNDS_MARGIN)
+      ? (canvasW > 0 ? Math.min(60, Math.max(32, Math.round(canvasW * 0.05))) : 36)
+      : (canvasW > 0 ? Math.min(28, Math.max(18, Math.round(canvasW * 0.022))) : BOUNDS_MARGIN)
 
     const reservedSides = reservedSidesRef?.current
     const sidePairs = selectSidePairs(
@@ -424,9 +517,17 @@ export function FlowchartArrowConnector({
     const used = usedSidesRef.current
     const anchorDistance = (count: number) => (count + 1) / (count + 2)
 
+    const runRouting = () => {
     let bestPath: { x: number; y: number }[] | null = null
     let bestSides: [Side, Side] | null = null
     let bestScore = Infinity
+
+    const preferHorizontalLoopback =
+      isLoopBack && isTidakLabel(connection.label ?? '')
+    const preferYaBottomTail =
+      destBelow && connection.sourceType === 'flowchart-decision' && isYaLabel(connection.label ?? '')
+    const preferOpcStraight =
+      destBelow && (connection.targetType === 'flowchart-opc' || connection.sourceType === 'flowchart-opc')
 
     for (const [sSide, eSide] of sidePairs.slice(0, MAX_TRIES)) {
       const outCount = (used[connection.from]?.out?.[sSide] ?? []).filter((id) => id !== connection.id).length
@@ -445,7 +546,29 @@ export function FlowchartArrowConnector({
       })
 
       if (path.length < 2) continue
-      const score = scorePath(path, occupied)
+      let score = scorePath(path, occupied)
+
+      // Kurangi path "ruwet": penalisasi rentang horizontal lebar agar path tidak memanjang ke samping tidak perlu
+      const pathMinX = Math.min(...path.map((p) => p.x))
+      const pathMaxX = Math.max(...path.map((p) => p.x))
+      score += (pathMaxX - pathMinX) * HORIZONTAL_SPAN_PENALTY_PER_PX
+
+      // Untuk decision Tidak loop-back, paksa prioritas tinggi ke anchor horizontal (right→right / left→left)
+      // dibanding kombinasi lain (mis. right→top) meskipun path-nya sedikit lebih panjang.
+      if (preferHorizontalLoopback) {
+        const isHorizontal = (sSide === eSide) && (sSide === 'left' || sSide === 'right')
+        if (!isHorizontal) score += 10_000
+      }
+
+      // Untuk decision Ya ke bawah: tail harus dari bottom agar tidak bersilangan dengan
+      // linear atau branch lain. Contoh: 8 Ya → 9, tail dari bottom 8.
+      if (preferYaBottomTail && sSide !== 'bottom') score += 8_000
+
+      // OPC: Step → OPC-out lurus ke bawah (tail bottom, head top); OPC-in → Step keluar bottom.
+      if (preferOpcStraight) {
+        if (connection.targetType === 'flowchart-opc' && eSide !== 'top') score += 6_000
+        if (connection.sourceType === 'flowchart-opc' && sSide !== 'bottom') score += 6_000
+      }
 
       if (score < bestScore) {
         bestPath = path; bestSides = [sSide, eSide]; bestScore = score
@@ -468,13 +591,39 @@ export function FlowchartArrowConnector({
         bestPath = fallbackPath
         bestSides = [sSide, eSide]
       } else {
+        // Ultimate fallback: orthogonal path inside globalBounds (no diagonal, stay in pelaksana column)
+        const xLeft = globalBounds.left
+        const xRight = globalBounds.left + globalBounds.width
+        const clampX = (x: number) => Math.round(Math.max(xLeft, Math.min(xRight, x)))
+        const fromCenterX = fromPos.left + fromPos.width / 2
+        const toCenterX = toPos.left + toPos.width / 2
+        const x1 = clampX(fromCenterX)
+        const x2 = clampX(toCenterX)
+        const xCor = Math.round((x1 + x2) / 2)
         bestPath = [
-          { x: fromPos.left + fromPos.width / 2, y: fromPos.bottom },
-          { x: toPos.left + toPos.width / 2, y: toPos.top },
+          { x: x1, y: fromPos.bottom },
+          { x: xCor, y: fromPos.bottom },
+          { x: xCor, y: toPos.top },
+          { x: x2, y: toPos.top },
         ]
         bestSides = ['bottom', 'top']
       }
     }
+
+    // Self-healing: clamp SEMUA waypoint ke koridor agar path tidak pernah keluar (border/horizontal/vertikal)
+    if (pathAllowedBounds && bestPath.length >= 2) {
+      const xL = pathAllowedBounds.left
+      const xR = pathAllowedBounds.left + pathAllowedBounds.width
+      const yT = pathAllowedBounds.top
+      const yB = pathAllowedBounds.top + pathAllowedBounds.height
+      bestPath = bestPath.map((p) => ({
+        x: Math.round(Math.max(xL, Math.min(xR, p.x))),
+        y: Math.round(Math.max(yT, Math.min(yB, p.y))),
+      }))
+    }
+
+    // Path terstruktur: buang titik koliner (redundan) agar path lebih rapi dan kurang ruwet
+    bestPath = simplifyPathCollinear(bestPath)
 
     // Register this arrow's segments for other arrows to avoid
     if (routedSegmentsRef) {
@@ -504,8 +653,15 @@ export function FlowchartArrowConnector({
       lastAutoSigRef.current = sig
       onPathUpdated(payload)
     }
+    }
 
+    const useIdle = typeof requestIdleCallback !== 'undefined'
+    const scheduleId = useIdle
+      ? requestIdleCallback(runRouting, { timeout: ROUTING_IDLE_TIMEOUT_MS })
+      : requestAnimationFrame(runRouting)
     return () => {
+      if (useIdle) cancelIdleCallback(scheduleId)
+      else cancelAnimationFrame(scheduleId)
       routedSegmentsRef?.current.delete(connection.id)
     }
   }, [

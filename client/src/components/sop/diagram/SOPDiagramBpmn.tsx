@@ -2,6 +2,7 @@ import {
   useMemo,
   useState,
   useEffect,
+  useLayoutEffect,
   useCallback,
   useRef,
 } from 'react'
@@ -15,6 +16,8 @@ import {
   type UsedSides,
   type PathUpdatedPayload,
 } from './shapes/FlowchartArrowConnector'
+import { BpmnArrowConnector } from './shapes/BpmnArrowConnector'
+import type { BpmnConnectionMeta, BpmnLaneLayout } from './shapes/bpmnRouter'
 import type { OccupiedSegment } from './shapes/orthogonalRouter'
 import type {
   Implementer,
@@ -85,6 +88,8 @@ export interface SOPDiagramBpmnProps {
   name?: string
   steps: SOPStep[]
   implementers: Implementer[]
+  /** Seed untuk paksa susun ulang path (tombol "Perbaiki diagram"); sama dengan Flowchart pathLayoutSeed */
+  pathLayoutSeed?: number
   arrowConfig?: ArrowConfig
   labelConfig?: LabelConfig
   editMode?: boolean
@@ -96,6 +101,7 @@ export function SOPDiagramBpmn({
   name = '',
   steps,
   implementers,
+  pathLayoutSeed = 0,
   arrowConfig,
   labelConfig,
   editMode = false,
@@ -105,7 +111,10 @@ export function SOPDiagramBpmn({
   const [arrowConfigs, setArrowConfigs] = useState<Record<string, ArrowConnectionConfig>>({})
   const [usedSides, setUsedSides] = useState<UsedSides>({})
   const routedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
-  routedSegmentsRef.current = new Map()
+  const obstacleRectsRef = useRef<Array<{ left: number; top: number; width: number; height: number }> | null>(null)
+  useLayoutEffect(() => {
+    routedSegmentsRef.current = new Map()
+  }, [pathLayoutSeed])
   const [arrowsReady, setArrowsReady] = useState(false)
   const layoutRef = useRef<{
     steps: Array<{
@@ -143,6 +152,7 @@ export function SOPDiagramBpmn({
       }>
     }>
   >([])
+  const [bpmnLaneLayoutForRouter, setBpmnLaneLayoutForRouter] = useState<BpmnLaneLayout | null>(null)
 
   const orderedImplementer = useMemo(() => {
     if (!implementers?.length) return []
@@ -238,20 +248,77 @@ export function SOPDiagramBpmn({
         }
       }
     })
+    // Tie-breaker bergantung seed agar "Perbaiki diagram" mengubah urutan route → alur path berubah
+    const hashId = (seed: number, id: string) =>
+      (id.split('').reduce((acc, c, i) => acc + (c.charCodeAt(0) * ((seed + 1) * (i + 31) + seed * 7)), 0) >>> 0)
     list.sort((a, b) => {
       const labelA = (a.label ?? '').toLowerCase()
       const labelB = (b.label ?? '').toLowerCase()
       const orderA = !a.label ? 0 : (labelA === 'ya' || labelA === 'yes') ? 1 : 2
       const orderB = !b.label ? 0 : (labelB === 'ya' || labelB === 'yes') ? 1 : 2
-      return orderA - orderB
+      const diff = orderA - orderB
+      if (diff !== 0) return diff
+      return hashId(pathLayoutSeed, a.id) - hashId(pathLayoutSeed, b.id)
     })
+    // Rotasi berdasarkan seed agar urutan route berubah setiap klik "Perbaiki diagram"
+    if (list.length > 1 && pathLayoutSeed > 0) {
+      const rot = pathLayoutSeed % list.length
+      if (rot !== 0) return [...list.slice(rot), ...list.slice(0, rot)]
+    }
     return list
-  }, [processedSteps, labelConfig?.custom_labels])
+  }, [processedSteps, labelConfig?.custom_labels, pathLayoutSeed])
 
   const obstacles = useMemo(
     () => processedSteps.map((s) => ({ id: `bpmn-step-${s.seq_number}` })),
     [processedSteps]
   )
+
+  useLayoutEffect(() => {
+    const container = document.getElementById('bpmn-container')
+    if (!container) {
+      obstacleRectsRef.current = null
+      return
+    }
+    const OBSTACLE_MARGIN = 10
+    const rects = obstacles.map((o) => {
+      const el = document.getElementById(o.id)
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      const c = container.getBoundingClientRect()
+      return {
+        left: Math.round(r.left - c.left) - OBSTACLE_MARGIN,
+        top: Math.round(r.top - c.top) - OBSTACLE_MARGIN,
+        width: Math.round(r.width) + OBSTACLE_MARGIN * 2,
+        height: Math.round(r.height) + OBSTACLE_MARGIN * 2,
+      }
+    })
+    const filtered = rects.filter((r): r is NonNullable<typeof r> => r != null)
+    obstacleRectsRef.current = filtered.length > 0 ? filtered : null
+  }, [pathLayoutSeed, obstacles])
+
+  const bpmnConnectionsMeta = useMemo((): BpmnConnectionMeta[] => {
+    if (!laneLayouts.length) return []
+    const stepMap = new Map<string, { lane: number; columnIndex: number }>()
+    laneLayouts.flatMap((l) => l.steps).forEach((s) => {
+      stepMap.set(s.id, { lane: s.lane, columnIndex: s.columnIndex })
+    })
+    return bpmnConnections.map((conn) => {
+      const fromStep = stepMap.get(conn.from)
+      const toStep = stepMap.get(conn.to)
+      return {
+        id: conn.id,
+        from: conn.from,
+        to: conn.to,
+        label: conn.label ?? null,
+        sourceType: conn.sourceType,
+        targetType: conn.targetType,
+        fromLane: fromStep?.lane ?? 0,
+        toLane: toStep?.lane ?? 0,
+        fromCol: fromStep?.columnIndex ?? 0,
+        toCol: toStep?.columnIndex ?? 0,
+      }
+    })
+  }, [bpmnConnections, laneLayouts])
 
   const onPathUpdated = useCallback((payload: PathUpdatedPayload) => {
     setArrowConfigs((prev) => ({
@@ -411,6 +478,22 @@ export function SOPDiagramBpmn({
       }
     })
     setLaneLayouts(layouts)
+
+    if (layouts.length > 0) {
+      let laneTop = 0
+      const lanes = layouts.map((l, i) => {
+        const info = { index: i, top: laneTop, height: l.height }
+        laneTop += l.height + ROW_SPACING
+        return info
+      })
+      setBpmnLaneLayoutForRouter({
+        lanes,
+        columnStartXs,
+        columnWidths: maxColumnWidths,
+      })
+    } else {
+      setBpmnLaneLayoutForRouter(null)
+    }
   }, [processedSteps, orderedImplementer, bpmnConnections])
 
   useEffect(() => {
@@ -422,20 +505,28 @@ export function SOPDiagramBpmn({
   useEffect(() => {
     if (processedSteps.length > 0) {
       setArrowsReady(false)
-      const t = requestAnimationFrame(() => {
-        const container = document.getElementById('bpmn-container')
-        if (container) {
-          const containerRect = container.getBoundingClientRect()
-          bpmnBoundsRef.current = {
-            left: 0,
-            top: 0,
-            right: containerRect.width,
-            bottom: containerRect.height,
-          }
-        }
-        setArrowsReady(true)
-      })
-      return () => cancelAnimationFrame(t)
+      let cancelled = false
+      const run = () => {
+        requestAnimationFrame(() => {
+          if (cancelled) return
+          requestAnimationFrame(() => {
+            if (cancelled) return
+            const container = document.getElementById('bpmn-container')
+            if (container) {
+              const containerRect = container.getBoundingClientRect()
+              bpmnBoundsRef.current = {
+                left: 0,
+                top: 0,
+                right: containerRect.width,
+                bottom: containerRect.height,
+              }
+            }
+            setArrowsReady(true)
+          })
+        })
+      }
+      run()
+      return () => { cancelled = true }
     }
   }, [processedSteps.length])
 
@@ -663,21 +754,50 @@ export function SOPDiagramBpmn({
             className="absolute inset-0 h-full z-20 pointer-events-none"
             style={{ width: diagramWidth }}
           >
-            {bpmnConnections.map((conn, idx) => (
-              <FlowchartArrowConnector
-                key={conn.id}
-                connection={conn}
-                idcontainer="bpmn-container"
-                idarrow={`bpmn-${idx}-${conn.id}`}
-                obstacles={obstacles}
-                usedSides={usedSides}
-                manualConfig={effectiveArrowConfig[conn.id]}
-                manualLabelPosition={labelConfig?.positions?.[conn.id]}
-                onPathUpdated={onPathUpdated}
-                constraintRect={bpmnBoundsRef.current}
-                routedSegmentsRef={routedSegmentsRef}
-              />
-            ))}
+            {bpmnConnections.map((conn, idx) => {
+              const meta = bpmnConnectionsMeta[idx]
+              const hasValidLayout =
+                bpmnLaneLayoutForRouter?.lanes?.length != null && bpmnLaneLayoutForRouter.lanes.length > 0
+              const useBpmnConnector =
+                hasValidLayout && bpmnLaneLayoutForRouter && meta && bpmnConnectionsMeta.length === bpmnConnections.length
+              if (useBpmnConnector) {
+                return (
+                  <BpmnArrowConnector
+                    key={conn.id}
+                    connection={meta}
+                    idcontainer="bpmn-container"
+                    idarrow={`bpmn-${idx}-${conn.id}`}
+                    obstacles={obstacles}
+                    usedSides={usedSides}
+                    laneLayout={bpmnLaneLayoutForRouter}
+                    connectionIndex={idx}
+                    allConnectionsMeta={bpmnConnectionsMeta}
+                    manualConfig={effectiveArrowConfig[conn.id]}
+                    manualLabelPosition={labelConfig?.positions?.[conn.id]}
+                    onPathUpdated={onPathUpdated}
+                    constraintRect={bpmnBoundsRef.current}
+                    routedSegmentsRef={routedSegmentsRef}
+                    rerouteVersion={pathLayoutSeed}
+                    obstacleRectsRef={obstacleRectsRef}
+                  />
+                )
+              }
+              return (
+                <FlowchartArrowConnector
+                  key={conn.id}
+                  connection={conn}
+                  idcontainer="bpmn-container"
+                  idarrow={`bpmn-${idx}-${conn.id}`}
+                  obstacles={obstacles}
+                  usedSides={usedSides}
+                  manualConfig={effectiveArrowConfig[conn.id]}
+                  manualLabelPosition={labelConfig?.positions?.[conn.id]}
+                  onPathUpdated={onPathUpdated}
+                  constraintRect={bpmnBoundsRef.current}
+                  routedSegmentsRef={routedSegmentsRef}
+                />
+              )
+            })}
           </svg>
         )}
       </div>

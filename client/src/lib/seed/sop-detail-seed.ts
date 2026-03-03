@@ -35,68 +35,33 @@ export const SEED_SOP_DETAIL_METADATA: SOPDetailMetadata = {
   signature: '',
 }
 
+/** Helper: buat objek pelaksana dengan satu impl aktif (impl-1..impl-3). */
+function pel(active: 'impl-1' | 'impl-2' | 'impl-3'): Record<string, string> {
+  return { 'impl-1': active === 'impl-1' ? '√' : '', 'impl-2': active === 'impl-2' ? '√' : '', 'impl-3': active === 'impl-3' ? '√' : '' }
+}
+
+/** Data dummy: 14 kegiatan, 3 decision, 3 pelaksana. */
 export const SEED_SOP_DETAIL_PROSEDUR_ROWS: ProsedurRow[] = [
-  {
-    id: '1',
-    no: 1,
-    kegiatan: 'Pemohon mengisi formulir pengajuan online',
-    pelaksana: { 'impl-1': '√', 'impl-2': '', 'impl-3': '', 'impl-4': '', 'impl-5': '' },
-    mutu_kelengkapan: 'Formulir terisi lengkap',
-    mutu_waktu: '5 Menit',
-    output: 'Draft pengajuan',
-    keterangan: 'Pemohon memulai proses.',
-  },
-  {
-    id: '2',
-    no: 2,
-    kegiatan: 'Admin Prodi verifikasi berkas dan kelengkapan',
-    pelaksana: { 'impl-1': '', 'impl-2': '√', 'impl-3': '', 'impl-4': '', 'impl-5': '' },
-    mutu_kelengkapan: 'Checklist verifikasi',
-    mutu_waktu: '15 Menit',
-    output: 'Status verifikasi',
-    keterangan: 'Cek kelengkapan dokumen.',
-  },
-  {
-    id: '3',
-    no: 3,
-    type: 'decision',
-    kegiatan: 'Berkas lengkap?',
-    pelaksana: { 'impl-1': '', 'impl-2': '√', 'impl-3': '', 'impl-4': '', 'impl-5': '' },
-    mutu_kelengkapan: '-',
-    mutu_waktu: '-',
-    output: '-',
-    keterangan: 'Jika tidak lengkap kembali ke verifikasi.',
-    id_next_step_if_yes: '4',
-    id_next_step_if_no: '2',
-  },
-  {
-    id: '4',
-    no: 4,
-    kegiatan: 'Kaprodi review substansi pengajuan',
-    pelaksana: { 'impl-1': '', 'impl-2': '', 'impl-3': '√', 'impl-4': '', 'impl-5': '' },
-    mutu_kelengkapan: 'Dokumen final',
-    mutu_waktu: '1 Hari',
-    output: 'Catatan review',
-    keterangan: 'Review isi dokumen.',
-  },
-  {
-    id: '5',
-    no: 5,
-    kegiatan: 'Dekan menandatangani dan mengesahkan',
-    pelaksana: { 'impl-1': '', 'impl-2': '', 'impl-3': '', 'impl-4': '√', 'impl-5': '' },
-    mutu_kelengkapan: 'Dokumen siap tanda tangan',
-    mutu_waktu: '1 Hari',
-    output: 'Dokumen disahkan',
-    keterangan: 'Final approval.',
-  },
+  { id: '1', no: 1, kegiatan: 'Pemohon mengisi formulir pengajuan', pelaksana: pel('impl-1'), mutu_kelengkapan: 'Formulir terisi lengkap', mutu_waktu: '5 Menit', output: 'Draft pengajuan', keterangan: '' },
+  { id: '2', no: 2, kegiatan: 'Pemohon mengunggah dokumen pendukung', pelaksana: pel('impl-1'), mutu_kelengkapan: 'Dokumen wajib terunggah', mutu_waktu: '10 Menit', output: 'Dokumen terunggah', keterangan: '' },
+  { id: '3', no: 3, type: 'decision', kegiatan: 'Berkas lengkap?', pelaksana: pel('impl-2'), mutu_kelengkapan: '-', mutu_waktu: '-', output: '-', keterangan: 'Tidak: perbaiki di langkah 2.', id_next_step_if_yes: '4', id_next_step_if_no: '2' },
+  { id: '4', no: 4, kegiatan: 'Admin verifikasi kelengkapan berkas', pelaksana: pel('impl-2'), mutu_kelengkapan: 'Berkas diverifikasi', mutu_waktu: '1 Hari', output: 'Hasil verifikasi', keterangan: '' },
+  { id: '5', no: 5, type: 'decision', kegiatan: 'Verifikasi lolos?', pelaksana: pel('impl-2'), mutu_kelengkapan: '-', mutu_waktu: '-', output: '-', keterangan: 'Tidak: perbaiki berkas.', id_next_step_if_yes: '6', id_next_step_if_no: '4' },
+  { id: '6', no: 6, kegiatan: 'Admin input data ke sistem', pelaksana: pel('impl-2'), mutu_kelengkapan: 'Data terekam di sistem', mutu_waktu: '20 Menit', output: 'Data pengajuan di sistem', keterangan: '' },
+  { id: '7', no: 7, kegiatan: 'Pejabat berwenang review dokumen', pelaksana: pel('impl-3'), mutu_kelengkapan: 'Dokumen direview', mutu_waktu: '2 Hari', output: 'Catatan review', keterangan: '' },
+  { id: '8', no: 8, type: 'decision', kegiatan: 'Disetujui?', pelaksana: pel('impl-3'), mutu_kelengkapan: '-', mutu_waktu: '-', output: '-', keterangan: 'Tidak: notifikasi penolakan.', id_next_step_if_yes: '9', id_next_step_if_no: '13' },
+  { id: '9', no: 9, kegiatan: 'Pejabat berwenang menandatangani', pelaksana: pel('impl-3'), mutu_kelengkapan: 'Dokumen siap ditandatangani', mutu_waktu: '1 Hari', output: 'Dokumen sah', keterangan: '' },
+  { id: '10', no: 10, kegiatan: 'Admin arsipkan dokumen', pelaksana: pel('impl-2'), mutu_kelengkapan: 'Arsip lengkap', mutu_waktu: '1 Hari', output: 'Berkas tertutup', keterangan: '' },
+  { id: '11', no: 11, kegiatan: 'Admin kirim notifikasi ke pemohon', pelaksana: pel('impl-2'), mutu_kelengkapan: 'Notifikasi terkirim', mutu_waktu: '30 Menit', output: 'Pemohon dapat notifikasi', keterangan: '' },
+  { id: '12', no: 12, kegiatan: 'Pemohon menerima notifikasi hasil', pelaksana: pel('impl-1'), mutu_kelengkapan: 'Notifikasi dibaca', mutu_waktu: '-', output: 'Pemohon dapat hasil', keterangan: '' },
+  { id: '13', no: 13, kegiatan: 'Pemohon konfirmasi penerimaan', pelaksana: pel('impl-1'), mutu_kelengkapan: 'Konfirmasi tercatat', mutu_waktu: '5 Hari', output: 'Berkas ditutup', keterangan: '' },
+  { id: '14', no: 14, kegiatan: 'Notifikasi dan penutupan berkas', pelaksana: pel('impl-3'), mutu_kelengkapan: 'Notifikasi terkirim / penolakan tercatat', mutu_waktu: '1 Hari', output: 'Proses selesai', keterangan: 'Dari jalur disetujui (13) atau penolakan (8 Tidak).' },
 ]
 
 export const SEED_IMPLEMENTERS: { id: string; name: string }[] = [
-  { id: 'impl-1', name: 'Pemohon / Mahasiswa' },
-  { id: 'impl-2', name: 'Admin Prodi' },
-  { id: 'impl-3', name: 'Kaprodi' },
-  { id: 'impl-4', name: 'Dekan' },
-  { id: 'impl-5', name: 'Kabag. Akademik' },
+  { id: 'impl-1', name: 'Pemohon' },
+  { id: 'impl-2', name: 'Admin' },
+  { id: 'impl-3', name: 'Pejabat Berwenang' },
 ]
 
 export const SEED_KOMENTAR_LIST: KomentarItem[] = [
@@ -156,7 +121,7 @@ export const SEED_DETAIL_SOP_VIEW_METADATA: DetailSOPViewMetadata = {
 
 export const SEED_DETAIL_SOP_VERSIONS: DetailSOPVersionSeed[] = [
   {
-    id: 'v3',
+        id: 'v3',
     version: '3.0',
     date: '2026-02-10',
     author: 'Budi Santoso',

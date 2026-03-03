@@ -32,7 +32,7 @@ const DEFAULT_LAYOUT = {
   widthWaktu: 10,
   widthOutput: 15,
   widthKeterangan: 15,
-  firstPageSteps: 7,
+  firstPageSteps: 8,
   nextPageSteps: 8,
 }
 
@@ -160,6 +160,11 @@ export function SOPDiagramFlowchart({
       }
       return hashId(pathLayoutSeed, a.id) - hashId(pathLayoutSeed, b.id)
     })
+    // Rotasi berdasarkan seed agar urutan route jelas berubah setiap klik "Perbaiki diagram"
+    if (list.length > 1 && pathLayoutSeed > 0) {
+      const rot = pathLayoutSeed % list.length
+      if (rot !== 0) return [...list.slice(rot), ...list.slice(0, rot)]
+    }
     return list
   }, [steps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed])
 
@@ -320,6 +325,7 @@ export function SOPDiagramFlowchart({
             isLastPage={pageIndex === allPages.length - 1}
             routedSegmentsRef={routedSegmentsRef}
             reservedSidesRef={reservedSidesRef}
+            pathLayoutSeed={pathLayoutSeed}
           />
         )
       })}
@@ -354,6 +360,7 @@ interface FlowchartPageProps {
   routedSegmentsRef: RoutedPathsRef
   /** From scan phase: target sides reserved for decision Tidak (left/right). Key `${shapeId}-${side}`, value Set of connectionIds. */
   reservedSidesRef: MutableRefObject<Map<string, Set<string>>>
+  pathLayoutSeed?: number
 }
 
 function FlowchartPage({
@@ -377,23 +384,47 @@ function FlowchartPage({
   isLastPage,
   routedSegmentsRef,
   reservedSidesRef,
+  pathLayoutSeed = 0,
 }: FlowchartPageProps) {
   return (
     <div
       className={`print-page px-4 lg:px-0 print:px-0 mx-auto ${PAGE_WIDTH_CLASS} box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
     >
       <div id={areaId} className="relative">
-        {/* ── OPC-in shapes at top ──────────────── */}
+        {/* ── OPC-in shapes at top (sejajar kolom pelaksana sumber) ──────────────── */}
         {opcTop.length > 0 && (
-          <div className="flex justify-around items-end pb-2">
-            {opcTop.map((opc) => (
-              <FlowchartOffPageConnector
-                key={`opc-in-${opc.fromSeq}-${opc.toSeq}`}
-                id={`opc-in-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
-                letter={opc.letter}
-              />
-            ))}
-          </div>
+          <table className="w-full border-collapse table-fixed text-sm" style={{ marginBottom: 4 }}>
+            <colgroup>
+              <col style={{ width: '5%' }} />
+              <col style={{ width: `${config.widthKegiatan}%` }} />
+              {implementers.map((impl) => (
+                <col key={impl.id} style={{ width: `${pelaksanaColWidth}%` }} />
+              ))}
+              <col style={{ width: `${config.widthKelengkapan}%` }} />
+              <col style={{ width: `${config.widthWaktu}%` }} />
+              <col style={{ width: `${config.widthOutput}%` }} />
+              <col style={{ width: `${config.widthKeterangan}%` }} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td colSpan={2} className="p-0" />
+                {implementers.map((impl) => (
+                  <td key={impl.id} className="p-0 text-center align-bottom">
+                    <div className="flex flex-wrap justify-center items-end gap-2">
+                      {opcTop.filter((o) => o.fromImplId === impl.id).map((opc) => (
+                        <FlowchartOffPageConnector
+                          key={`opc-in-${opc.fromSeq}-${opc.toSeq}`}
+                          id={`opc-in-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
+                          letter={opc.letter}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                ))}
+                <td colSpan={4} className="p-0" />
+              </tr>
+            </tbody>
+          </table>
         )}
 
         {/* ── Table ─────────────────────────────── */}
@@ -513,17 +544,40 @@ function FlowchartPage({
           </tbody>
         </table>
 
-        {/* ── OPC-out shapes at bottom ──────────── */}
+        {/* ── OPC-out shapes at bottom (sejajar kolom pelaksana sumber) ──────────── */}
         {opcBottom.length > 0 && (
-          <div className="flex justify-around items-start pt-2">
-            {opcBottom.map((opc) => (
-              <FlowchartOffPageConnector
-                key={`opc-out-${opc.fromSeq}-${opc.toSeq}`}
-                id={`opc-out-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
-                letter={opc.letter}
-              />
-            ))}
-          </div>
+          <table className="w-full border-collapse table-fixed text-sm" style={{ marginTop: 8 }}>
+            <colgroup>
+              <col style={{ width: '5%' }} />
+              <col style={{ width: `${config.widthKegiatan}%` }} />
+              {implementers.map((impl) => (
+                <col key={impl.id} style={{ width: `${pelaksanaColWidth}%` }} />
+              ))}
+              <col style={{ width: `${config.widthKelengkapan}%` }} />
+              <col style={{ width: `${config.widthWaktu}%` }} />
+              <col style={{ width: `${config.widthOutput}%` }} />
+              <col style={{ width: `${config.widthKeterangan}%` }} />
+            </colgroup>
+            <tbody>
+              <tr>
+                <td colSpan={2} className="p-0" />
+                {implementers.map((impl) => (
+                  <td key={impl.id} className="p-0 text-center align-top">
+                    <div className="flex flex-wrap justify-center items-start gap-2">
+                      {opcBottom.filter((o) => o.fromImplId === impl.id).map((opc) => (
+                        <FlowchartOffPageConnector
+                          key={`opc-out-${opc.fromSeq}-${opc.toSeq}`}
+                          id={`opc-out-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
+                          letter={opc.letter}
+                        />
+                      ))}
+                    </div>
+                  </td>
+                ))}
+                <td colSpan={4} className="p-0" />
+              </tr>
+            </tbody>
+          </table>
         )}
 
         {/* ── Arrow SVG overlay (scoped to this page) */}
@@ -534,7 +588,7 @@ function FlowchartPage({
           >
             {connections.map((conn, idx) => (
               <FlowchartArrowConnector
-                key={conn.id}
+                key={`${conn.id}-v${pathLayoutSeed}`}
                 connection={conn}
                 idcontainer={areaId}
                 idarrow={`p${pageIndex}-${idx}-${conn.id}`}

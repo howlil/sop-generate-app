@@ -118,6 +118,7 @@ export function SOPPreviewTemplate({
                     name={metadata.name}
                     steps={diagramSteps}
                     implementers={implementers}
+                    pathLayoutSeed={pathLayoutSeed}
                   />
                 )}
               </div>

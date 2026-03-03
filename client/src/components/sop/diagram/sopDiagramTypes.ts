@@ -67,6 +67,16 @@ export interface LabelConfig {
   positions?: LabelPositions
 }
 
+/** Normalized "Ya" label for decision branches (ya|yes|y). */
+export function isYaLabel(lbl: string | null | undefined): boolean {
+  return /^(ya|yes|y)$/.test((lbl ?? '').trim().toLowerCase())
+}
+
+/** Normalized "Tidak" label for decision branches (tidak|no|n). */
+export function isTidakLabel(lbl: string | null | undefined): boolean {
+  return /^(tidak|no|n)$/.test((lbl ?? '').trim().toLowerCase())
+}
+
 export function getFullTimeUnit(unit: string): string {
   const map: Record<string, string> = {
     h: 'Jam',
