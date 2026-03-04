@@ -7,6 +7,8 @@ import {
   Building2,
   Users,
   RefreshCw,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
@@ -91,6 +93,18 @@ export function DetailSOP() {
     }
   )
 
+  const canReviewDecision = sopStatus === 'Diperiksa Kepala OPD' && id
+  const handleSetuju = () => {
+    if (!id) return
+    setSopStatusOverride(id, 'Siap Dievaluasi')
+    showToast('SOP disetujui. Status berubah menjadi Siap Dievaluasi.')
+  }
+  const handleTidakSetuju = () => {
+    if (!id) return
+    setSopStatusOverride(id, 'Revisi dari Kepala OPD')
+    showToast('SOP dikembalikan untuk revisi. Beri komentar sebagai arahan untuk Tim Penyusun.')
+  }
+
   const versions: Version[] = SEED_DETAIL_SOP_VERSIONS as Version[]
 
   const versionDiff = useMemo(
@@ -111,7 +125,31 @@ export function DetailSOP() {
           <BackButton size="icon" onClick={() => navigate({ to: ROUTES.KEPALA_OPD.DAFTAR_SOP })} />
         }
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            {canReviewDecision && (
+              <>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="h-8 text-xs gap-1.5 bg-green-600 hover:bg-green-700"
+                  onClick={handleSetuju}
+                  title="Setujui SOP sehingga status menjadi Siap Dievaluasi"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Setuju → Siap Dievaluasi
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 text-xs gap-1.5 border-amber-300 text-amber-800 hover:bg-amber-50"
+                  onClick={handleTidakSetuju}
+                  title="Kembalikan untuk revisi; beri komentar sebagai arahan"
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  Tidak Setuju → Revisi
+                </Button>
+              </>
+            )}
             <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
               Versi {versions[0]?.version || '1.0'}
             </Badge>
@@ -216,12 +254,16 @@ export function DetailSOP() {
                   timestamp: k.timestamp,
                 }))}
                 onResolve={handleResolveComment}
-                addForm={{
-                  value: newComment,
-                  onChange: setNewComment,
-                  onSubmit: handleAddComment,
-                  submitLabel: 'Kirim Komentar',
-                }}
+                addForm={
+                  canReviewDecision
+                    ? {
+                        value: newComment,
+                        onChange: setNewComment,
+                        onSubmit: handleAddComment,
+                        submitLabel: 'Kirim Komentar',
+                      }
+                    : undefined
+                }
                 avatarVariant="orange"
                 showFilters={false}
               />

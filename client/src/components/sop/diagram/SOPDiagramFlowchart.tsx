@@ -6,7 +6,7 @@ import {
   type PathUpdatedPayload,
   type RoutedPathsRef,
 } from './shapes/FlowchartArrowConnector'
-import type { OccupiedSegment } from './shapes/orthogonalRouter'
+import { buildCorridorGraph, type OccupiedSegment, type CellInfo, type CorridorGraph } from './shapes/orthogonalRouter'
 import { FlowchartOffPageConnector } from './shapes/flowchart/OffPageConnector'
 import type {
   ProsedurRow,
@@ -16,7 +16,7 @@ import type {
   ArrowConfig,
   LabelConfig,
 } from './sopDiagramTypes'
-import { getFullTimeUnit } from './sopDiagramTypes'
+import { getFullTimeUnit, isYaLabel, isTidakLabel } from './sopDiagramTypes'
 import {
   splitStepsIntoPages,
   splitCrossPageConnections,
@@ -32,7 +32,7 @@ const DEFAULT_LAYOUT = {
   widthWaktu: 10,
   widthOutput: 15,
   widthKeterangan: 15,
-  firstPageSteps: 8,
+  firstPageSteps: 7,
   nextPageSteps: 8,
 }
 
@@ -78,28 +78,32 @@ export function SOPDiagramFlowchart({
   pathLayoutSeed = 0,
 }: SOPDiagramFlowchartProps) {
   const config = { ...DEFAULT_LAYOUT, ...layoutConfig }
-  const pelaksanaColWidth = implementers.length > 0 ? 70 / implementers.length : 70
+  const sortedSteps = useMemo(() => [...steps].sort((a, b) => a.seq_number - b.seq_number), [steps])
+  const MIN_PELAKSANA_COL_WIDTH = 10
+  const pelaksanaColWidth = implementers.length > 0
+    ? Math.max(MIN_PELAKSANA_COL_WIDTH, 70 / implementers.length)
+    : 70
 
   const rowIdToSeq = useMemo(() => new Map(rows.map((r) => [r.id, r.no])), [rows])
 
   /* ── Pagination ─────────────────────────────────── */
 
   const allPages = useMemo(
-    () => splitStepsIntoPages(steps, config.firstPageSteps, config.nextPageSteps),
-    [steps, config.firstPageSteps, config.nextPageSteps],
+    () => splitStepsIntoPages(sortedSteps, config.firstPageSteps, config.nextPageSteps),
+    [sortedSteps, config.firstPageSteps, config.nextPageSteps],
   )
 
   /* ── Build connections (same logic as before) ───── */
 
   const allConnections = useMemo<FlowchartConnection[]>(() => {
     const list: FlowchartConnection[] = []
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i]
+    for (let i = 0; i < sortedSteps.length; i++) {
+      const step = sortedSteps[i]
       if (step.type === 'decision' && step.id_next_step_if_yes && step.id_next_step_if_no) {
         const toYes = rowIdToSeq.get(step.id_next_step_if_yes)
         const toNo = rowIdToSeq.get(step.id_next_step_if_no)
-        const stepYes = steps.find((s) => s.seq_number === toYes)
-        const stepNo = steps.find((s) => s.seq_number === toNo)
+        const stepYes = sortedSteps.find((s) => s.seq_number === toYes)
+        const stepNo = sortedSteps.find((s) => s.seq_number === toNo)
         if (toYes != null) {
           const customYes = labelConfig?.custom_labels?.[`step-${step.seq_number}-yes`]
           list.push({
@@ -122,8 +126,8 @@ export function SOPDiagramFlowchart({
             targetType: stepNo ? stepShapeType(stepNo) : 'flowchart-process',
           })
         }
-      } else if (i < steps.length - 1) {
-        const toStep = steps[i + 1]
+      } else if (i < sortedSteps.length - 1) {
+        const toStep = sortedSteps[i + 1]
         list.push({
           id: `conn-${step.seq_number}-to-${toStep.seq_number}`,
           from: `sop-step-${step.seq_number}`,
@@ -138,16 +142,12 @@ export function SOPDiagramFlowchart({
       const n = id.match(/sop-step-(\d+)/)?.[1]
       return n != null ? Number(n) : -1
     }
-    const isYaLabel = (lbl: string) => /^(ya|yes|y)$/.test(lbl.trim().toLowerCase())
-    const isTidakLabel = (lbl: string) => /^(tidak|no|n)$/.test(lbl.trim().toLowerCase())
     // Hash yang bergantung pada seed sehingga urutan koneksi berubah per klik "Perbaiki diagram"
     const hashId = (seed: number, id: string) =>
       (id.split('').reduce((acc, c, i) => acc + (c.charCodeAt(0) * ((seed + 1) * (i + 31) + seed * 7)), 0) >>> 0)
     list.sort((a, b) => {
-      const labelA = (a.label ?? '').trim().toLowerCase()
-      const labelB = (b.label ?? '').trim().toLowerCase()
-      const orderA = !a.label ? 0 : isYaLabel(labelA) ? 1 : isTidakLabel(labelA) ? 2 : 0
-      const orderB = !b.label ? 0 : isYaLabel(labelB) ? 1 : isTidakLabel(labelB) ? 2 : 0
+      const orderA = !a.label ? 0 : isYaLabel(a.label) ? 1 : isTidakLabel(a.label) ? 2 : 0
+      const orderB = !b.label ? 0 : isYaLabel(b.label) ? 1 : isTidakLabel(b.label) ? 2 : 0
       const typeDiff = orderB - orderA
       if (typeDiff !== 0) return typeDiff
       if (orderA === 2) {
@@ -160,11 +160,6 @@ export function SOPDiagramFlowchart({
       }
       return hashId(pathLayoutSeed, a.id) - hashId(pathLayoutSeed, b.id)
     })
-    // Rotasi berdasarkan seed agar urutan route jelas berubah setiap klik "Perbaiki diagram"
-    if (list.length > 1 && pathLayoutSeed > 0) {
-      const rot = pathLayoutSeed % list.length
-      if (rot !== 0) return [...list.slice(rot), ...list.slice(0, rot)]
-    }
     return list
   }, [steps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed])
 
@@ -172,9 +167,8 @@ export function SOPDiagramFlowchart({
   const reservedSidesRef = useRef<Map<string, Set<string>>>(new Map())
   reservedSidesRef.current = useMemo(() => {
     const m = new Map<string, Set<string>>()
-    const isTidakLabel = (lbl: string) => /^(tidak|no|n)$/.test((lbl ?? '').trim().toLowerCase())
     for (const c of allConnections) {
-      if (c.sourceType !== 'flowchart-decision' || !isTidakLabel(c.label ?? '')) continue
+      if (c.sourceType !== 'flowchart-decision' || !isTidakLabel(c.label)) continue
       for (const side of ['left', 'right'] as const) {
         const key = `${c.to}-${side}`
         if (!m.has(key)) m.set(key, new Set())
@@ -253,18 +247,39 @@ export function SOPDiagramFlowchart({
     for (let pi = 0; pi < allPages.length; pi++) {
       const container = document.getElementById(sopAreaId(pi))
       if (!container) continue
-      const cells = container.querySelectorAll('td[data-implementer-id]')
-      if (cells.length === 0) continue
       const containerRect = container.getBoundingClientRect()
+
+      // Hanya kolom pelaksana (td[data-implementer-id]) — path tidak boleh masuk kolom NO, KEGIATAN, MUTU BAKU, KET
+      const implCells = container.querySelectorAll('td[data-implementer-id]')
       let minLeft = Infinity, maxRight = -Infinity, minTop = Infinity, maxBottom = -Infinity
-      cells.forEach((cell) => {
+      implCells.forEach((cell) => {
         const rect = cell.getBoundingClientRect()
         minLeft = Math.min(minLeft, rect.left - containerRect.left)
         maxRight = Math.max(maxRight, rect.right - containerRect.left)
         minTop = Math.min(minTop, rect.top - containerRect.top)
         maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
       })
-      pelaksanaBoundsRef.current[pi] = { left: minLeft, top: minTop, right: maxRight, bottom: maxBottom }
+
+      const opcEls = container.querySelectorAll('[id^="opc-"]')
+      opcEls.forEach((el) => {
+        const rect = el.getBoundingClientRect()
+        minTop = Math.min(minTop, rect.top - containerRect.top)
+        maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
+      })
+
+      if (minLeft === Infinity) minLeft = 0
+      if (maxRight === -Infinity) maxRight = containerRect.width
+      // PAD lebih ketat: path tidak boleh terlalu dekat ke border kolom pelaksana
+      const PAD_LEFT = 8   // padding dari kiri kolom pelaksana pertama
+      const PAD_RIGHT = 8  // padding dari kanan kolom pelaksana terakhir
+      const PAD_TOP = 4    // padding dari atas (header row)
+      const PAD_BOTTOM = 8 // padding dari bawah
+      pelaksanaBoundsRef.current[pi] = {
+        left: Math.max(0, minLeft + PAD_LEFT),
+        top: Math.max(0, minTop + PAD_TOP),
+        right: maxRight - PAD_RIGHT,
+        bottom: maxBottom + PAD_BOTTOM,
+      }
     }
     setArrowsReady(true)
   }, [allPages])
@@ -272,6 +287,14 @@ export function SOPDiagramFlowchart({
   useEffect(() => {
     const t = requestAnimationFrame(() => measurePelaksanaBounds())
     return () => cancelAnimationFrame(t)
+  }, [measurePelaksanaBounds])
+
+  useEffect(() => {
+    const onBeforePrint = () => {
+      measurePelaksanaBounds()
+    }
+    window.addEventListener('beforeprint', onBeforePrint)
+    return () => window.removeEventListener('beforeprint', onBeforePrint)
   }, [measurePelaksanaBounds])
 
   useEffect(() => {
@@ -325,7 +348,6 @@ export function SOPDiagramFlowchart({
             isLastPage={pageIndex === allPages.length - 1}
             routedSegmentsRef={routedSegmentsRef}
             reservedSidesRef={reservedSidesRef}
-            pathLayoutSeed={pathLayoutSeed}
           />
         )
       })}
@@ -358,9 +380,111 @@ interface FlowchartPageProps {
   pelaksanaBounds: { left: number; top: number; right: number; bottom: number } | null
   isLastPage: boolean
   routedSegmentsRef: RoutedPathsRef
-  /** From scan phase: target sides reserved for decision Tidak (left/right). Key `${shapeId}-${side}`, value Set of connectionIds. */
   reservedSidesRef: MutableRefObject<Map<string, Set<string>>>
-  pathLayoutSeed?: number
+}
+
+function scanCorridorCells(
+  container: HTMLElement,
+): CellInfo[][] {
+  const cRect = container.getBoundingClientRect()
+  const grid: CellInfo[][] = []
+  const table = container.querySelector('table')
+  if (!table) return grid
+
+  const SHAPE_PAD = 8
+  const HEADER_EXTRA_PAD = 12 // Extra padding untuk header agar path tidak menimpa
+
+  const thead = table.querySelector('thead')
+  if (thead) {
+    const thRect = thead.getBoundingClientRect()
+    const numImplCols = table.querySelectorAll('td[data-implementer-id]').length
+      ? new Set(
+          Array.from(table.querySelectorAll<HTMLElement>('td[data-implementer-id]')).map(
+            (td) => td.dataset.implementerId,
+          ),
+        ).size
+      : 1
+    const headerRow: CellInfo[] = []
+    for (let ci = 0; ci < numImplCols; ci++) {
+      const rect = {
+        left: Math.round(thRect.left - cRect.left),
+        top: Math.round(thRect.top - cRect.top),
+        width: Math.round(thRect.width / numImplCols),
+        height: Math.round(thRect.height) + HEADER_EXTRA_PAD, // Extend header obstacle downward
+      }
+      rect.left += ci * rect.width
+      // shapeRect lebih besar dari rect biasa untuk header
+      const shapeRect = {
+        left: rect.left - SHAPE_PAD,
+        top: rect.top - SHAPE_PAD,
+        width: rect.width + SHAPE_PAD * 2,
+        height: rect.height + SHAPE_PAD * 2,
+      }
+      headerRow.push({
+        row: 0,
+        col: ci,
+        rect,
+        center: { x: Math.round(rect.left + rect.width / 2), y: Math.round(rect.top + rect.height / 2) },
+        occupied: true,
+        shapeRect,
+      })
+    }
+    if (headerRow.length > 0) grid.push(headerRow)
+  }
+
+  const tbody = table.querySelector('tbody')
+  if (!tbody) return grid
+
+  const trs = tbody.querySelectorAll('tr')
+  const headerRows = grid.length
+
+  for (let ri = 0; ri < trs.length; ri++) {
+    const tr = trs[ri]
+    const row: CellInfo[] = []
+    const tds = tr.querySelectorAll<HTMLElement>('td[data-implementer-id]')
+
+    for (let ci = 0; ci < tds.length; ci++) {
+      const td = tds[ci]
+      const tdRect = td.getBoundingClientRect()
+      const rect = {
+        left: Math.round(tdRect.left - cRect.left),
+        top: Math.round(tdRect.top - cRect.top),
+        width: Math.round(tdRect.width),
+        height: Math.round(tdRect.height),
+      }
+
+      const shapeEl = td.querySelector<HTMLElement>('span[id^="sop-step-"], span[id^="opc-"]')
+      let occupied = false
+      let shapeRect: CellInfo['shapeRect']
+
+      if (shapeEl) {
+        const sr = shapeEl.getBoundingClientRect()
+        occupied = true
+        shapeRect = {
+          left: Math.round(sr.left - cRect.left) - SHAPE_PAD,
+          top: Math.round(sr.top - cRect.top) - SHAPE_PAD,
+          width: Math.round(sr.width) + SHAPE_PAD * 2,
+          height: Math.round(sr.height) + SHAPE_PAD * 2,
+        }
+      }
+
+      row.push({
+        row: ri + headerRows,
+        col: ci,
+        rect,
+        center: {
+          x: Math.round(rect.left + rect.width / 2),
+          y: Math.round(rect.top + rect.height / 2),
+        },
+        occupied,
+        shapeRect,
+      })
+    }
+
+    if (row.length > 0) grid.push(row)
+  }
+
+  return grid
 }
 
 function FlowchartPage({
@@ -384,50 +508,44 @@ function FlowchartPage({
   isLastPage,
   routedSegmentsRef,
   reservedSidesRef,
-  pathLayoutSeed = 0,
 }: FlowchartPageProps) {
+  const corridorGraphRef = useRef<CorridorGraph | null>(null)
+  const [graphReady, setGraphReady] = useState(false)
+
+  useEffect(() => {
+    if (!arrowsReady) return
+    const container = document.getElementById(areaId)
+    if (!container) return
+
+    const frame = requestAnimationFrame(() => {
+      const cells = scanCorridorCells(container)
+      if (cells.length > 0) {
+        corridorGraphRef.current = buildCorridorGraph(cells)
+      }
+      setGraphReady(true)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [arrowsReady, areaId, pageSteps.length, implementers.length])
+
   return (
     <div
       className={`print-page px-4 lg:px-0 print:px-0 mx-auto ${PAGE_WIDTH_CLASS} box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
     >
       <div id={areaId} className="relative">
-        {/* ── OPC-in shapes at top (sejajar kolom pelaksana sumber) ──────────────── */}
         {opcTop.length > 0 && (
-          <table className="w-full border-collapse table-fixed text-sm" style={{ marginBottom: 4 }}>
-            <colgroup>
-              <col style={{ width: '5%' }} />
-              <col style={{ width: `${config.widthKegiatan}%` }} />
-              {implementers.map((impl) => (
-                <col key={impl.id} style={{ width: `${pelaksanaColWidth}%` }} />
+          <div className={`flex items-end pb-2 ${opcTop.length > 3 ? 'flex-wrap gap-2 justify-start px-4' : 'justify-evenly'}`}>
+            {opcTop
+              .sort((a, b) => a.toSeq - b.toSeq)
+              .map((opc) => (
+                <FlowchartOffPageConnector
+                  key={`opc-in-${opc.fromSeq}-${opc.toSeq}`}
+                  id={`opc-in-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
+                  letter={opc.letter}
+                />
               ))}
-              <col style={{ width: `${config.widthKelengkapan}%` }} />
-              <col style={{ width: `${config.widthWaktu}%` }} />
-              <col style={{ width: `${config.widthOutput}%` }} />
-              <col style={{ width: `${config.widthKeterangan}%` }} />
-            </colgroup>
-            <tbody>
-              <tr>
-                <td colSpan={2} className="p-0" />
-                {implementers.map((impl) => (
-                  <td key={impl.id} className="p-0 text-center align-bottom">
-                    <div className="flex flex-wrap justify-center items-end gap-2">
-                      {opcTop.filter((o) => o.fromImplId === impl.id).map((opc) => (
-                        <FlowchartOffPageConnector
-                          key={`opc-in-${opc.fromSeq}-${opc.toSeq}`}
-                          id={`opc-in-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
-                          letter={opc.letter}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                ))}
-                <td colSpan={4} className="p-0" />
-              </tr>
-            </tbody>
-          </table>
+          </div>
         )}
 
-        {/* ── Table ─────────────────────────────── */}
         <table
           className="w-full border-collapse border-2 border-black table-fixed text-sm bg-white"
         >
@@ -493,17 +611,17 @@ function FlowchartPage({
                             aria-hidden
                           >
                             {isTerminator && (
-                              <svg width={78} height={38} xmlns="http://www.w3.org/2000/svg">
+                              <svg width={86} height={42} viewBox="-4 -2 86 42" xmlns="http://www.w3.org/2000/svg">
                                 <rect width={76} height={36} x={0.8} y={0.8} rx={19.2} ry={19.2} fill="none" stroke="black" strokeWidth={2} />
                               </svg>
                             )}
                             {isDecision && (
-                              <svg width={60} height={60} xmlns="http://www.w3.org/2000/svg">
+                              <svg width={66} height={66} viewBox="-3 -3 66 66" xmlns="http://www.w3.org/2000/svg">
                                 <polygon points="30,1 59,30 30,59 1,30" fill="none" stroke="black" strokeWidth={2} />
                               </svg>
                             )}
                             {!isTerminator && !isDecision && (
-                              <svg width={78} height={38} xmlns="http://www.w3.org/2000/svg">
+                              <svg width={82} height={42} viewBox="-2 -2 82 42" xmlns="http://www.w3.org/2000/svg">
                                 <rect width={76} height={36} x={1} y={1} fill="none" stroke="black" strokeWidth={2} />
                               </svg>
                             )}
@@ -544,51 +662,28 @@ function FlowchartPage({
           </tbody>
         </table>
 
-        {/* ── OPC-out shapes at bottom (sejajar kolom pelaksana sumber) ──────────── */}
         {opcBottom.length > 0 && (
-          <table className="w-full border-collapse table-fixed text-sm" style={{ marginTop: 8 }}>
-            <colgroup>
-              <col style={{ width: '5%' }} />
-              <col style={{ width: `${config.widthKegiatan}%` }} />
-              {implementers.map((impl) => (
-                <col key={impl.id} style={{ width: `${pelaksanaColWidth}%` }} />
+          <div className={`flex items-start pt-2 ${opcBottom.length > 3 ? 'flex-wrap gap-2 justify-start px-4' : 'justify-evenly'}`}>
+            {opcBottom
+              .sort((a, b) => a.fromSeq - b.fromSeq)
+              .map((opc) => (
+                <FlowchartOffPageConnector
+                  key={`opc-out-${opc.fromSeq}-${opc.toSeq}`}
+                  id={`opc-out-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
+                  letter={opc.letter}
+                />
               ))}
-              <col style={{ width: `${config.widthKelengkapan}%` }} />
-              <col style={{ width: `${config.widthWaktu}%` }} />
-              <col style={{ width: `${config.widthOutput}%` }} />
-              <col style={{ width: `${config.widthKeterangan}%` }} />
-            </colgroup>
-            <tbody>
-              <tr>
-                <td colSpan={2} className="p-0" />
-                {implementers.map((impl) => (
-                  <td key={impl.id} className="p-0 text-center align-top">
-                    <div className="flex flex-wrap justify-center items-start gap-2">
-                      {opcBottom.filter((o) => o.fromImplId === impl.id).map((opc) => (
-                        <FlowchartOffPageConnector
-                          key={`opc-out-${opc.fromSeq}-${opc.toSeq}`}
-                          id={`opc-out-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
-                          letter={opc.letter}
-                        />
-                      ))}
-                    </div>
-                  </td>
-                ))}
-                <td colSpan={4} className="p-0" />
-              </tr>
-            </tbody>
-          </table>
+          </div>
         )}
 
-        {/* ── Arrow SVG overlay (scoped to this page) */}
-        {arrowsReady && connections.length > 0 && (
+        {arrowsReady && graphReady && connections.length > 0 && (
           <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-20"
+            className="absolute inset-0 w-full h-full pointer-events-none z-20 print:break-inside-avoid"
             aria-hidden
           >
             {connections.map((conn, idx) => (
               <FlowchartArrowConnector
-                key={`${conn.id}-v${pathLayoutSeed}`}
+                key={conn.id}
                 connection={conn}
                 idcontainer={areaId}
                 idarrow={`p${pageIndex}-${idx}-${conn.id}`}
@@ -600,6 +695,7 @@ function FlowchartPage({
                 constraintRect={pelaksanaBounds}
                 routedSegmentsRef={routedSegmentsRef}
                 reservedSidesRef={reservedSidesRef}
+                corridorGraph={corridorGraphRef.current}
               />
             ))}
           </svg>

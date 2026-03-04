@@ -1,14 +1,12 @@
 /**
- * Orthogonal Router v2 — A* with occupied-segment awareness
+ * Orthogonal Router v3 — A* with binary-heap open list
  *
- * Grid-based A* approach for optimal orthogonal path finding:
- * - Manhattan-distance heuristic for efficient search
- * - Occupied-segment penalty: heavily penalizes paths overlapping existing arrows
- * - Near-segment penalty: penalizes paths running parallel and close to existing arrows
- * - Crossing penalty: penalizes paths crossing existing arrows at a point
- * - Bend penalty to prefer straighter paths
- * - Edge-obstacle validation to prevent paths through obstacle interiors
- * - Post-process nudging with overlap-aware offset selection
+ * Performance targets (per arrow, ~10 obstacles):
+ *   A* search  : O(G log G)  — binary heap extracts min in O(log G)
+ *   Grid build : O(R^2)      — R = unique ruler lines (typically < 40)
+ *   Adjacency  : O(G)        — Map-based O(1) spot lookup
+ *   Edge check : O(N)        — N obstacles per edge
+ *   Total      : O(G log G + G·N + G·S) where S = occupied segments
  */
 
 export type Side = 'top' | 'right' | 'bottom' | 'left'
@@ -37,15 +35,20 @@ export interface RouteOptions {
   occupiedSegments?: OccupiedSegment[]
 }
 
-/* ── Penalties & Thresholds ─────────────────────────────────── */
+/* ── Penalties ────────────────────────────────────────────────── */
 
-const OVERLAP_PENALTY = 5000
-const CROSS_PENALTY = 1100
-const NEAR_PENALTY = 350
-const NEAR_THRESHOLD = 10
-const BEND_FACTOR = 1.5
+const OVERLAP_PENALTY = 8000
+const CROSS_PENALTY = 2000
+const NEAR_PENALTY = 600
+const NEAR_THRESHOLD = 12
+/**
+ * Penalti tambahan untuk setiap belokan (pergantian arah).
+ * Nilai lebih besar membuat pathfinder lebih memilih jalur
+ * yang lurus dan mengurangi zig-zag yang tidak perlu.
+ */
+const BEND_FACTOR = 6
 
-/* ── Rectangle utility ──────────────────────────────────────── */
+/* ── Compact rectangle ────────────────────────────────────────── */
 
 class R {
   constructor(readonly l: number, readonly t: number, readonly w: number, readonly h: number) {}
@@ -61,18 +64,9 @@ class R {
   union(o: R) {
     return R.ltrb(Math.min(this.l, o.l), Math.min(this.t, o.t), Math.max(this.r, o.r), Math.max(this.b, o.b))
   }
-  get nw(): Point { return { x: this.l, y: this.t } }
-  get ne(): Point { return { x: this.r, y: this.t } }
-  get sw(): Point { return { x: this.l, y: this.b } }
-  get se(): Point { return { x: this.r, y: this.b } }
-  get n(): Point { return { x: this.cx, y: this.t } }
-  get s(): Point { return { x: this.cx, y: this.b } }
-  get e(): Point { return { x: this.r, y: this.cy } }
-  get west(): Point { return { x: this.l, y: this.cy } }
-  get center(): Point { return { x: this.cx, y: this.cy } }
 }
 
-/* ── Segment analysis ───────────────────────────────────────── */
+/* ── Segment analysis ─────────────────────────────────────────── */
 
 function rangesOverlap(a1: number, a2: number, b1: number, b2: number): boolean {
   const aMin = Math.min(a1, a2), aMax = Math.max(a1, a2)
@@ -122,15 +116,12 @@ function segmentsCross(
   return false
 }
 
-function edgePenalty(
-  a: Point,
-  b: Point,
-  occupied: OccupiedSegment[],
-): number {
+function edgePenalty(a: Point, b: Point, occupied: OccupiedSegment[]): number {
   if (occupied.length === 0) return 0
   const seg = { x1: a.x, y1: a.y, x2: b.x, y2: b.y }
   let penalty = 0
-  for (const occ of occupied) {
+  for (let i = 0; i < occupied.length; i++) {
+    const occ = occupied[i]
     if (segmentsOverlap(seg, occ)) penalty += OVERLAP_PENALTY
     else if (segmentsCross(seg, occ)) penalty += CROSS_PENALTY
     else if (segmentsNearby(seg, occ, NEAR_THRESHOLD)) penalty += NEAR_PENALTY
@@ -138,54 +129,100 @@ function edgePenalty(
   return penalty
 }
 
-/* ── A* pathfinding ─────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+ *  Binary min-heap for A* open list — O(log n) push/pop
+ * ═══════════════════════════════════════════════════════════════════ */
 
-function pk(p: Point) { return `${p.x},${p.y}` }
-
-function dirOf(a: Point, b: Point): 'h' | 'v' | null {
-  if (a.y === b.y) return 'h'
-  if (a.x === b.x) return 'v'
-  return null
+interface ANode {
+  p: Point
+  g: number
+  f: number
+  prevDir: 0 | 1 | -1  // 0=none, 1=horizontal, -1=vertical
+  parent: ANode | null
 }
+
+class MinHeap {
+  private data: ANode[] = []
+
+  get size() { return this.data.length }
+
+  push(node: ANode) {
+    this.data.push(node)
+    this._bubbleUp(this.data.length - 1)
+  }
+
+  pop(): ANode | undefined {
+    const top = this.data[0]
+    const last = this.data.pop()
+    if (this.data.length > 0 && last) {
+      this.data[0] = last
+      this._sinkDown(0)
+    }
+    return top
+  }
+
+  private _bubbleUp(i: number) {
+    const d = this.data
+    while (i > 0) {
+      const parent = (i - 1) >> 1
+      if (d[parent].f <= d[i].f) break
+      const tmp = d[parent]; d[parent] = d[i]; d[i] = tmp
+      i = parent
+    }
+  }
+
+  private _sinkDown(i: number) {
+    const d = this.data
+    const len = d.length
+    while (true) {
+      let smallest = i
+      const l = 2 * i + 1, r = 2 * i + 2
+      if (l < len && d[l].f < d[smallest].f) smallest = l
+      if (r < len && d[r].f < d[smallest].f) smallest = r
+      if (smallest === i) break
+      const tmp = d[smallest]; d[smallest] = d[i]; d[i] = tmp
+      i = smallest
+    }
+  }
+}
+
+/* ── A* pathfinding with heap ─────────────────────────────────── */
+
+function pk(x: number, y: number) { return (x << 16) | (y & 0xffff) }
+function pkp(p: Point) { return pk(p.x, p.y) }
 
 interface AdjEntry { to: Point; dist: number }
 
 function astar(
-  adj: Map<string, AdjEntry[]>,
+  adj: Map<number, AdjEntry[]>,
   src: Point,
   dst: Point,
   occupied: OccupiedSegment[],
 ): Point[] {
-  const sk = pk(src), dk = pk(dst)
+  const sk = pkp(src), dk = pkp(dst)
   if (!adj.has(sk) || !adj.has(dk)) return []
 
-  interface Node { p: Point; g: number; f: number; prevDir: 'h' | 'v' | null; parent: Node | null }
-
-  const gBest = new Map<string, number>()
+  const gBest = new Map<number, number>()
   gBest.set(sk, 0)
 
-  const open: Node[] = [{
-    p: src,
-    g: 0,
+  const open = new MinHeap()
+  open.push({
+    p: src, g: 0,
     f: Math.abs(dst.x - src.x) + Math.abs(dst.y - src.y),
-    prevDir: null,
-    parent: null,
-  }]
-  const closed = new Set<string>()
+    prevDir: 0, parent: null,
+  })
 
-  while (open.length > 0) {
-    let bi = 0
-    for (let i = 1; i < open.length; i++) {
-      if (open[i].f < open[bi].f) bi = i
-    }
-    const cur = open[bi]
-    open.splice(bi, 1)
+  const closed = new Set<number>()
 
-    const ck = pk(cur.p)
+  while (open.size > 0) {
+    const cur = open.pop()!
+    const ck = pkp(cur.p)
+
     if (ck === dk) {
       const path: Point[] = []
-      let n: Node | null = cur
-      while (n) { path.unshift(n.p); n = n.parent }
+      let n: ANode | null = cur
+      while (n) { path.push(n.p); n = n.parent }
+      path.reverse()
       return path
     }
 
@@ -195,13 +232,14 @@ function astar(
     const neighbors = adj.get(ck)
     if (!neighbors) continue
 
-    for (const { to, dist } of neighbors) {
-      const nk = pk(to)
+    for (let i = 0; i < neighbors.length; i++) {
+      const { to, dist } = neighbors[i]
+      const nk = pkp(to)
       if (closed.has(nk)) continue
 
       let cost = dist
-      const nd = dirOf(cur.p, to)
-      if (cur.prevDir && nd && cur.prevDir !== nd) cost += dist * BEND_FACTOR
+      const nd: 0 | 1 | -1 = to.y === cur.p.y ? 1 : (to.x === cur.p.x ? -1 : 0)
+      if (cur.prevDir !== 0 && nd !== 0 && cur.prevDir !== nd) cost += dist * BEND_FACTOR
       cost += edgePenalty(cur.p, to, occupied)
 
       const tentG = cur.g + cost
@@ -217,97 +255,118 @@ function astar(
   return []
 }
 
-/* ── Grid: rulers → cells → spots → adjacency ──────────────── */
+/* ── Grid: rulers → spots → adjacency ─────────────────────────── */
 
-interface Cell { rect: R; row: number; col: number }
+function buildSpots(
+  vsRaw: number[], hsRaw: number[],
+  bounds: R, obs: R[],
+): Point[] {
+  const vs = dedup(vsRaw.filter(v => v >= bounds.l && v <= bounds.r))
+  const hs = dedup(hsRaw.filter(h => h >= bounds.t && h <= bounds.b))
 
-function buildGrid(vs: number[], hs: number[], bounds: R): { cells: Cell[]; rows: number; cols: number } {
-  const ux = [...new Set(vs)].sort((a, b) => a - b).filter(v => v > bounds.l && v < bounds.r)
-  const uy = [...new Set(hs)].sort((a, b) => a - b).filter(h => h > bounds.t && h < bounds.b)
-  const xs = [bounds.l, ...ux, bounds.r]
-  const ys = [bounds.t, ...uy, bounds.b]
-  const rows = ys.length - 1, cols = xs.length - 1
-  const cells: Cell[] = []
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      cells.push({ rect: R.ltrb(xs[c], ys[r], xs[c + 1], ys[r + 1]), row: r, col: c })
-  return { cells, rows, cols }
-}
+  const blockedSet = new Set<number>()
+  const spots: Point[] = []
+  const seen = new Set<number>()
 
-function gridToSpots(g: { cells: Cell[]; rows: number; cols: number }, obs: R[]): Point[] {
-  const blocked = (p: Point) => obs.some(o => o.contains(p))
-  const raw: Point[] = []
-  for (const { rect: r, row, col } of g.cells) {
-    const fr = row === 0, lr = row === g.rows - 1, fc = col === 0, lc = col === g.cols - 1
-    if ((fr && fc) || (fr && lc) || (lr && fc) || (lr && lc)) {
-      raw.push(r.nw, r.ne, r.sw, r.se)
-    } else if (fr) {
-      raw.push(r.nw, r.n, r.ne)
-    } else if (lr) {
-      raw.push(r.se, r.s, r.sw)
-    } else if (fc) {
-      raw.push(r.nw, r.west, r.sw)
-    } else if (lc) {
-      raw.push(r.ne, r.e, r.se)
-    } else {
-      raw.push(r.nw, r.n, r.ne, r.e, r.se, r.s, r.sw, r.west, r.center)
+  for (let yi = 0; yi < hs.length; yi++) {
+    const y = hs[yi]
+    for (let xi = 0; xi < vs.length; xi++) {
+      const x = vs[xi]
+      const key = pk(x, y)
+      if (seen.has(key)) continue
+      seen.add(key)
+
+      let blocked = false
+      for (let oi = 0; oi < obs.length; oi++) {
+        const o = obs[oi]
+        if (x > o.l && x < o.r && y > o.t && y < o.b) { blocked = true; break }
+      }
+      if (blocked) { blockedSet.add(key); continue }
+      spots.push({ x, y })
     }
   }
-  const seen = new Set<string>()
-  return raw.filter(p => {
-    const k = pk(p)
-    if (seen.has(k)) return false
-    seen.add(k)
-    return !blocked(p)
-  })
+
+  return spots
 }
 
-/**
- * Check that a straight edge between two spots doesn't pass through
- * the strict interior of any obstacle.
- */
-function edgeClear(a: Point, b: Point, obs: R[]): boolean {
-  if (a.x === b.x) {
-    const x = a.x
-    const y1 = Math.min(a.y, b.y), y2 = Math.max(a.y, b.y)
-    return !obs.some(o => x > o.l && x < o.r && o.t < y2 && o.b > y1)
+function dedup(arr: number[]): number[] {
+  const s = [...new Set(arr)]
+  s.sort((a, b) => a - b)
+  return s
+}
+
+function edgeClear(ax: number, ay: number, bx: number, by: number, obs: R[]): boolean {
+  if (ax === bx) {
+    const x = ax
+    const y1 = Math.min(ay, by), y2 = Math.max(ay, by)
+    for (let i = 0; i < obs.length; i++) {
+      const o = obs[i]
+      if (x > o.l && x < o.r && o.t < y2 && o.b > y1) return false
+    }
+    return true
   }
-  if (a.y === b.y) {
-    const y = a.y
-    const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x)
-    return !obs.some(o => y > o.t && y < o.b && o.l < x2 && o.r > x1)
+  if (ay === by) {
+    const y = ay
+    const x1 = Math.min(ax, bx), x2 = Math.max(ax, bx)
+    for (let i = 0; i < obs.length; i++) {
+      const o = obs[i]
+      if (y > o.t && y < o.b && o.l < x2 && o.r > x1) return false
+    }
+    return true
   }
   return true
 }
 
-function spotsToAdj(spots: Point[], obs: R[]): Map<string, AdjEntry[]> {
-  const xs = [...new Set(spots.map(p => p.x))].sort((a, b) => a - b)
-  const ys = [...new Set(spots.map(p => p.y))].sort((a, b) => a - b)
+function buildAdj(spots: Point[], obs: R[]): Map<number, AdjEntry[]> {
+  const adj = new Map<number, AdjEntry[]>()
+  const spotKeys = new Set<number>()
+  for (const p of spots) {
+    const k = pkp(p)
+    spotKeys.add(k)
+    adj.set(k, [])
+  }
 
-  const present = new Set(spots.map(pk))
-  const adj = new Map<string, AdjEntry[]>()
-  for (const p of spots) adj.set(pk(p), [])
+  // Group spots by X and Y for efficient neighbor finding
+  const byX = new Map<number, Point[]>()
+  const byY = new Map<number, Point[]>()
+  for (const p of spots) {
+    let xList = byX.get(p.x)
+    if (!xList) { xList = []; byX.set(p.x, xList) }
+    xList.push(p)
+
+    let yList = byY.get(p.y)
+    if (!yList) { yList = []; byY.set(p.y, yList) }
+    yList.push(p)
+  }
+
+  // Sort each group so we can link only adjacent neighbors
+  for (const list of byX.values()) list.sort((a, b) => a.y - b.y)
+  for (const list of byY.values()) list.sort((a, b) => a.x - b.x)
 
   const link = (a: Point, b: Point) => {
-    if (!present.has(pk(a)) || !present.has(pk(b))) return
-    if (!edgeClear(a, b, obs)) return
-    const d = Math.hypot(b.x - a.x, b.y - a.y)
-    adj.get(pk(a))!.push({ to: b, dist: d })
-    adj.get(pk(b))!.push({ to: a, dist: d })
+    if (!edgeClear(a.x, a.y, b.x, b.y, obs)) return
+    const d = Math.abs(b.x - a.x) + Math.abs(b.y - a.y)
+    adj.get(pkp(a))!.push({ to: b, dist: d })
+    adj.get(pkp(b))!.push({ to: a, dist: d })
   }
 
-  for (let i = 0; i < ys.length; i++) {
-    for (let j = 0; j < xs.length; j++) {
-      const cur: Point = { x: xs[j], y: ys[i] }
-      if (!present.has(pk(cur))) continue
-      if (j > 0) link(cur, { x: xs[j - 1], y: ys[i] })
-      if (i > 0) link(cur, { x: xs[j], y: ys[i - 1] })
+  // Link vertical neighbors (same X, adjacent Y)
+  for (const list of byX.values()) {
+    for (let i = 0; i < list.length - 1; i++) {
+      link(list[i], list[i + 1])
     }
   }
+  // Link horizontal neighbors (same Y, adjacent X)
+  for (const list of byY.values()) {
+    for (let i = 0; i < list.length - 1; i++) {
+      link(list[i], list[i + 1])
+    }
+  }
+
   return adj
 }
 
-/* ── Helpers ─────────────────────────────────────────────────── */
+/* ── Helpers ──────────────────────────────────────────────────── */
 
 function connPt(cp: ConnectorPoint): Point {
   const s = R.of(cp.shape)
@@ -342,107 +401,76 @@ function simplify(pts: Point[]): Point[] {
   return out
 }
 
-/* ── Post-process nudging (overlap-aware) ───────────────────── */
+/* ── Post-process nudging ─────────────────────────────────────── */
 
-function nudgeHSegments(pts: Point[], obs: R[], occupied: OccupiedSegment[]): Point[] {
+function nudgeSegments(pts: Point[], obs: R[], occupied: OccupiedSegment[]): Point[] {
   if (pts.length < 4) return pts
   const out = pts.map(p => ({ x: p.x, y: p.y }))
 
   for (let i = 1; i < out.length - 2; i++) {
     const a = out[i], b = out[i + 1]
-    if (a.y !== b.y || a.x === b.x) continue
+    const isH = a.y === b.y && a.x !== b.x
+    const isV = a.x === b.x && a.y !== b.y
+    if (!isH && !isV) continue
 
-    const segY = a.y
-    const lo = Math.min(a.x, b.x), hi = Math.max(a.x, b.x)
-
-    let above = -Infinity, below = Infinity
-    for (const o of obs) {
-      if (o.r <= lo || o.l >= hi) continue
-      if (o.b <= segY + 1) above = Math.max(above, o.b)
-      if (o.t >= segY - 1) below = Math.min(below, o.t)
-    }
-    if (above <= -Infinity || below >= Infinity || below - above <= 8) continue
-
-    const candidates = [Math.round((above + below) / 2)]
-    candidates.push(Math.round(above + (below - above) * 0.33))
-    candidates.push(Math.round(above + (below - above) * 0.67))
-
-    for (const mid of candidates) {
-      if (Math.abs(mid - segY) <= 2) continue
-      if (mid <= above || mid >= below) continue
+    if (isH) {
+      const segY = a.y, lo = Math.min(a.x, b.x), hi = Math.max(a.x, b.x)
+      let above = -Infinity, below = Infinity
+      for (const o of obs) {
+        if (o.r <= lo || o.l >= hi) continue
+        if (o.b <= segY + 1) above = Math.max(above, o.b)
+        if (o.t >= segY - 1) below = Math.min(below, o.t)
+      }
+      if (above <= -Infinity || below >= Infinity || below - above <= 8) continue
+      const mid = Math.round((above + below) / 2)
+      if (Math.abs(mid - segY) <= 2 || mid <= above || mid >= below) continue
       if (obs.some(o => o.l < hi && o.r > lo && o.t <= mid && o.b >= mid)) continue
-
       const nudged = { x1: a.x, y1: mid, x2: b.x, y2: mid }
-      const overlaps = occupied.some(occ => segmentsOverlap(nudged, occ))
-      if (!overlaps) {
-        out[i] = { x: a.x, y: mid }
-        out[i + 1] = { x: b.x, y: mid }
-        break
+      if (!occupied.some(occ => segmentsOverlap(nudged, occ))) {
+        out[i] = { x: a.x, y: mid }; out[i + 1] = { x: b.x, y: mid }
       }
-    }
-  }
-  return out
-}
-
-function nudgeVSegments(pts: Point[], obs: R[], occupied: OccupiedSegment[]): Point[] {
-  if (pts.length < 4) return pts
-  const out = pts.map(p => ({ x: p.x, y: p.y }))
-
-  for (let i = 1; i < out.length - 2; i++) {
-    const a = out[i], b = out[i + 1]
-    if (a.x !== b.x || a.y === b.y) continue
-
-    const segX = a.x
-    const lo = Math.min(a.y, b.y), hi = Math.max(a.y, b.y)
-
-    let leftOf = -Infinity, rightOf = Infinity
-    for (const o of obs) {
-      if (o.b <= lo || o.t >= hi) continue
-      if (o.r <= segX + 1) leftOf = Math.max(leftOf, o.r)
-      if (o.l >= segX - 1) rightOf = Math.min(rightOf, o.l)
-    }
-    if (leftOf <= -Infinity || rightOf >= Infinity || rightOf - leftOf <= 8) continue
-
-    const candidates = [Math.round((leftOf + rightOf) / 2)]
-    candidates.push(Math.round(leftOf + (rightOf - leftOf) * 0.33))
-    candidates.push(Math.round(leftOf + (rightOf - leftOf) * 0.67))
-
-    for (const mid of candidates) {
-      if (Math.abs(mid - segX) <= 2) continue
-      if (mid <= leftOf || mid >= rightOf) continue
+    } else {
+      const segX = a.x, lo = Math.min(a.y, b.y), hi = Math.max(a.y, b.y)
+      let leftOf = -Infinity, rightOf = Infinity
+      for (const o of obs) {
+        if (o.b <= lo || o.t >= hi) continue
+        if (o.r <= segX + 1) leftOf = Math.max(leftOf, o.r)
+        if (o.l >= segX - 1) rightOf = Math.min(rightOf, o.l)
+      }
+      if (leftOf <= -Infinity || rightOf >= Infinity || rightOf - leftOf <= 8) continue
+      const mid = Math.round((leftOf + rightOf) / 2)
+      if (Math.abs(mid - segX) <= 2 || mid <= leftOf || mid >= rightOf) continue
       if (obs.some(o => o.t < hi && o.b > lo && o.l <= mid && o.r >= mid)) continue
-
       const nudged = { x1: mid, y1: a.y, x2: mid, y2: b.y }
-      const overlaps = occupied.some(occ => segmentsOverlap(nudged, occ))
-      if (!overlaps) {
-        out[i] = { x: mid, y: a.y }
-        out[i + 1] = { x: mid, y: b.y }
-        break
+      if (!occupied.some(occ => segmentsOverlap(nudged, occ))) {
+        out[i] = { x: mid, y: a.y }; out[i + 1] = { x: mid, y: b.y }
       }
     }
   }
   return out
 }
 
-/* ── Score a completed path against occupied segments ────────── */
+/* ── Score a path ─────────────────────────────────────────────── */
 
 export function scorePath(path: Point[], occupied: OccupiedSegment[]): number {
   if (path.length < 2) return Infinity
   let score = 0
   for (let i = 0; i < path.length - 1; i++) {
-    score += Math.hypot(path[i + 1].x - path[i].x, path[i + 1].y - path[i].y)
+    const dx = path[i + 1].x - path[i].x
+    const dy = path[i + 1].y - path[i].y
+    score += Math.abs(dx) + Math.abs(dy) // Manhattan distance — avoids sqrt
     const seg = { x1: path[i].x, y1: path[i].y, x2: path[i + 1].x, y2: path[i + 1].y }
-    for (const occ of occupied) {
+    for (let j = 0; j < occupied.length; j++) {
+      const occ = occupied[j]
       if (segmentsOverlap(seg, occ)) score += OVERLAP_PENALTY
       else if (segmentsCross(seg, occ)) score += CROSS_PENALTY
       else if (segmentsNearby(seg, occ, NEAR_THRESHOLD)) score += NEAR_PENALTY
     }
   }
-  score += Math.max(0, path.length - 2) * 220
+  score += Math.max(0, path.length - 2) * 100
   return score
 }
 
-/** Convert a Point[] path to OccupiedSegment[] for inter-arrow coordination. */
 export function pathToSegments(path: Point[]): OccupiedSegment[] {
   const segs: OccupiedSegment[] = []
   for (let i = 0; i < path.length - 1; i++)
@@ -450,7 +478,233 @@ export function pathToSegments(path: Point[]): OccupiedSegment[] {
   return segs
 }
 
-/* ── Main routing function ──────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+ *  Corridor-based routing — shared graph built once per page
+ * ═══════════════════════════════════════════════════════════════════ */
+
+export interface CellInfo {
+  row: number
+  col: number
+  rect: Rect
+  center: Point
+  occupied: boolean
+  shapeRect?: Rect
+}
+
+export interface CorridorGraph {
+  spots: Point[]
+  adj: Map<number, AdjEntry[]>
+  shapeObs: R[]
+}
+
+export interface CorridorRouteOptions {
+  graph: CorridorGraph
+  pointA: ConnectorPoint
+  pointB: ConnectorPoint
+  shapeMargin?: number
+  occupiedSegments?: OccupiedSegment[]
+}
+
+/** Lebar obstacle virtual di tepi cell agar path tidak menimpa garis border box tabel */
+const BORDER_OBSTACLE_PX = 6
+/** Lebar obstacle virtual di batas atas cell agar path tidak naik ke header */
+const TOP_BORDER_OBSTACLE_PX = 8
+
+/**
+ * Build a shared corridor graph from the table cell grid.
+ * Runs once per page — all arrows on the page share this graph.
+ * Menambah obstacle virtual di border kiri/kanan tiap cell agar path tidak menimpa garis box.
+ */
+export function buildCorridorGraph(
+  cells: CellInfo[][],
+  margin = 10,
+): CorridorGraph {
+  const rawSpots: Point[] = []
+  const shapeRectsRaw: R[] = []
+  const rows = cells.length
+  if (rows === 0) return { spots: [], adj: new Map(), shapeObs: [] }
+  const cols = cells[0].length
+
+  for (let ri = 0; ri < rows; ri++) {
+    for (let ci = 0; ci < cols; ci++) {
+      const cell = cells[ri][ci]
+      if (cell.occupied && cell.shapeRect) {
+        shapeRectsRaw.push(R.of(cell.shapeRect))
+      }
+      // Virtual obstacle di tepi kiri/kanan cell agar path tidak menimpa garis border tabel
+      const r = cell.rect
+      if (r.width > BORDER_OBSTACLE_PX * 2) {
+        shapeRectsRaw.push(R.ltrb(r.left, r.top, r.left + BORDER_OBSTACLE_PX, r.top + r.height))
+        shapeRectsRaw.push(R.ltrb(r.left + r.width - BORDER_OBSTACLE_PX, r.top, r.left + r.width, r.top + r.height))
+      }
+      // Virtual obstacle di batas atas cell agar path tidak naik ke header / row sebelumnya
+      if (r.height > TOP_BORDER_OBSTACLE_PX * 2) {
+        shapeRectsRaw.push(R.ltrb(r.left, r.top, r.left + r.width, r.top + TOP_BORDER_OBSTACLE_PX))
+      }
+    }
+  }
+
+  const inflated = shapeRectsRaw.map(s => s.inflate(margin, margin))
+
+  const isInsideObs = (pt: Point): boolean => {
+    for (const s of inflated) {
+      if (pt.x > s.l && pt.x < s.r && pt.y > s.t && pt.y < s.b) return true
+    }
+    return false
+  }
+
+  // 1) Cell centers of ALL cells (empty cells are corridor nodes;
+  //    occupied cells get filtered by isInsideObs below)
+  for (let ri = 0; ri < rows; ri++) {
+    for (let ci = 0; ci < cols; ci++) {
+      rawSpots.push(cells[ri][ci].center)
+    }
+  }
+
+  // Offset dari garis border cell agar corridor tidak tepat di edge (path hanya di tengah area pelaksana)
+  // Nilai lebih besar = path lebih jauh dari border cell
+  const EDGE_INSET = 10
+
+  // 2) Titik di tengah koridor antara dua cell horizontal (bukan tepat di border)
+  for (let ri = 0; ri < rows; ri++) {
+    for (let ci = 0; ci < cols - 1; ci++) {
+      const left = cells[ri][ci], right = cells[ri][ci + 1]
+      if (!left.occupied || !right.occupied) {
+        const boundaryX = left.rect.left + left.rect.width
+        const y = Math.round(left.rect.top + left.rect.height / 2)
+        rawSpots.push({ x: Math.round(boundaryX - EDGE_INSET), y })
+        rawSpots.push({ x: Math.round(boundaryX + EDGE_INSET), y })
+      }
+    }
+  }
+
+  // 3) Titik di tengah koridor antara dua cell vertikal (bukan tepat di border)
+  for (let ri = 0; ri < rows - 1; ri++) {
+    for (let ci = 0; ci < cols; ci++) {
+      const top = cells[ri][ci], bot = cells[ri + 1][ci]
+      if (!top.occupied || !bot.occupied) {
+        const boundaryY = top.rect.top + top.rect.height
+        const x = Math.round(top.rect.left + top.rect.width / 2)
+        rawSpots.push({ x, y: Math.round(boundaryY - EDGE_INSET) })
+        rawSpots.push({ x, y: Math.round(boundaryY + EDGE_INSET) })
+      }
+    }
+  }
+
+  // 4) Shape anchor extrusion points
+  for (let ri = 0; ri < rows; ri++) {
+    for (let ci = 0; ci < cols; ci++) {
+      const cell = cells[ri][ci]
+      if (!cell.occupied || !cell.shapeRect) continue
+      const s = R.of(cell.shapeRect)
+      rawSpots.push(
+        { x: Math.round(s.cx), y: Math.round(s.t - margin) },
+        { x: Math.round(s.cx), y: Math.round(s.b + margin) },
+        { x: Math.round(s.l - margin), y: Math.round(s.cy) },
+        { x: Math.round(s.r + margin), y: Math.round(s.cy) },
+      )
+    }
+  }
+
+  // Deduplicate + filter blocked
+  const seen = new Set<number>()
+  const spots: Point[] = []
+  for (const p of rawSpots) {
+    const k = pk(p.x, p.y)
+    if (seen.has(k)) continue
+    seen.add(k)
+    if (!isInsideObs(p)) spots.push(p)
+  }
+
+  const adj = buildAdj(spots, inflated)
+  return { spots, adj, shapeObs: inflated }
+}
+
+/**
+ * Route a single arrow on the shared corridor graph.
+ * Injects start/end anchor nodes and connects them to the corridor.
+ */
+export function routeOnCorridor(opts: CorridorRouteOptions): Point[] {
+  const {
+    graph,
+    pointA,
+    pointB,
+    shapeMargin: margin = 10,
+    occupiedSegments = [],
+  } = opts
+
+  const oA = connPt(pointA)
+  const oB = connPt(pointB)
+  const extA = { x: Math.round(extrudePt(pointA, margin).x), y: Math.round(extrudePt(pointA, margin).y) }
+  const extB = { x: Math.round(extrudePt(pointB, margin).x), y: Math.round(extrudePt(pointB, margin).y) }
+
+  const kA = pkp(extA)
+  const kB = pkp(extB)
+
+  // Shallow-clone adj lists only for nodes we modify
+  const adj = new Map<number, AdjEntry[]>()
+  for (const [k, v] of graph.adj) adj.set(k, [...v])
+
+  if (!adj.has(kA)) adj.set(kA, [])
+  if (!adj.has(kB)) adj.set(kB, [])
+
+  // Group corridor nodes by X and Y for fast axis-aligned lookup
+  const byX = new Map<number, Point[]>()
+  const byY = new Map<number, Point[]>()
+  for (const p of graph.spots) {
+    let xl = byX.get(p.x); if (!xl) { xl = []; byX.set(p.x, xl) }; xl.push(p)
+    let yl = byY.get(p.y); if (!yl) { yl = []; byY.set(p.y, yl) }; yl.push(p)
+  }
+
+  const linkAnchor = (anchor: Point, ak: number) => {
+    const anchorList = adj.get(ak)!
+    const linked = new Set<number>()
+
+    // Vertical neighbors: nodes with same X
+    const sameX = byX.get(anchor.x)
+    if (sameX) {
+      for (const n of sameX) {
+        const nk = pkp(n)
+        if (nk === ak || linked.has(nk)) continue
+        const d = Math.abs(n.y - anchor.y)
+        if (d > 0 && edgeClear(anchor.x, anchor.y, n.x, n.y, graph.shapeObs)) {
+          linked.add(nk)
+          anchorList.push({ to: n, dist: d })
+          const nl = adj.get(nk)
+          if (nl) nl.push({ to: anchor, dist: d })
+        }
+      }
+    }
+
+    // Horizontal neighbors: nodes with same Y
+    const sameY = byY.get(anchor.y)
+    if (sameY) {
+      for (const n of sameY) {
+        const nk = pkp(n)
+        if (nk === ak || linked.has(nk)) continue
+        const d = Math.abs(n.x - anchor.x)
+        if (d > 0 && edgeClear(anchor.x, anchor.y, n.x, n.y, graph.shapeObs)) {
+          linked.add(nk)
+          anchorList.push({ to: n, dist: d })
+          const nl = adj.get(nk)
+          if (nl) nl.push({ to: anchor, dist: d })
+        }
+      }
+    }
+  }
+
+  linkAnchor(extA, kA)
+  linkAnchor(extB, kB)
+
+  const path = astar(adj, extA, extB, occupiedSegments)
+  if (path.length === 0) return []
+
+  return simplify([oA, ...path, oB])
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ *  Legacy ruler-based routing (fallback)
+ * ═══════════════════════════════════════════════════════════════════ */
 
 export function routeOrthogonal(opts: RouteOptions): Point[] {
   const {
@@ -484,66 +738,43 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     )
   }
 
-  const vs: number[] = [], hs: number[] = []
-  for (const o of allObs) { vs.push(o.l, o.r); hs.push(o.t, o.b) }
+  // Collect ruler lines from obstacle edges
+  const vs: number[] = [bounds.l, bounds.r]
+  const hs: number[] = [bounds.t, bounds.b]
+  for (const o of allObs) {
+    vs.push(o.l, o.r)
+    hs.push(o.t, o.b)
+  }
 
   const oA = connPt(pointA), oB = connPt(pointB)
-  ;(isVert(pointA.side) ? vs : hs).push(isVert(pointA.side) ? oA.x : oA.y)
-  ;(isVert(pointB.side) ? vs : hs).push(isVert(pointB.side) ? oB.x : oB.y)
+  if (isVert(pointA.side)) vs.push(oA.x); else hs.push(oA.y)
+  if (isVert(pointB.side)) vs.push(oB.x); else hs.push(oB.y)
 
-  const uhs = [...new Set(hs)].sort((a, b) => a - b)
-  for (let i = 0; i < uhs.length - 1; i++) {
-    const a = uhs[i], b = uhs[i + 1], gap = b - a
-    hs.push(Math.round((a + b) / 2))
-    if (gap > 24) {
-      hs.push(Math.round(a + gap / 3))
-      hs.push(Math.round(a + (2 * gap) / 3))
+  // Add midpoints between rulers for routing flexibility
+  const addMidpoints = (arr: number[]) => {
+    const sorted = dedup(arr)
+    const extra: number[] = []
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const gap = sorted[i + 1] - sorted[i]
+      if (gap > 16) extra.push(Math.round((sorted[i] + sorted[i + 1]) / 2))
     }
-  }
-  const uvs = [...new Set(vs)].sort((a, b) => a - b)
-  for (let i = 0; i < uvs.length - 1; i++) {
-    const a = uvs[i], b = uvs[i + 1], gap = b - a
-    vs.push(Math.round((a + b) / 2))
-    if (gap > 24) {
-      vs.push(Math.round(a + gap / 3))
-      vs.push(Math.round(a + (2 * gap) / 3))
-    }
+    return [...arr, ...extra]
   }
 
-  /* Minimum grid resolution mengikuti lebar/tinggi bounds (A4 landscape canvas): tambah garis
-   * merata di dalam bounds agar path punya cukup waypoint untuk belokan halus */
-  if (gb) {
-    const g = R.of(gb)
-    const W = g.r - g.l
-    const H = g.b - g.t
-    const stepX = Math.max(40, Math.floor(W / 10))
-    const stepY = Math.max(32, Math.floor(H / 10))
-    if (W > 60 && stepX > 0) {
-      for (let x = g.l + stepX; x < g.r; x += stepX) {
-        const px = Math.round(x)
-        if (!vs.includes(px)) vs.push(px)
-      }
-    }
-    if (H > 48 && stepY > 0) {
-      for (let y = g.t + stepY; y < g.b; y += stepY) {
-        const py = Math.round(y)
-        if (!hs.includes(py)) hs.push(py)
-      }
-    }
-  }
+  const finalVs = addMidpoints(vs)
+  const finalHs = addMidpoints(hs)
 
-  const grid = buildGrid(vs, hs, bounds)
-  const spots = gridToSpots(grid, allObs)
+  const spots = buildSpots(finalVs, finalHs, bounds, allObs)
 
   const extA = extrudePt(pointA, margin)
   const extB = extrudePt(pointB, margin)
   spots.push(extA, extB)
 
-  const adj = spotsToAdj(spots, allObs)
+  const adj = buildAdj(spots, allObs)
   const path = astar(adj, extA, extB, occupiedSegments)
 
   if (path.length === 0) return []
 
   const simplified = simplify([oA, ...path, oB])
-  return nudgeVSegments(nudgeHSegments(simplified, allObs, occupiedSegments), allObs, occupiedSegments)
+  return nudgeSegments(simplified, allObs, occupiedSegments)
 }
