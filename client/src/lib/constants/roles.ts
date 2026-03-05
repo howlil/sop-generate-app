@@ -7,7 +7,7 @@
 
 export const ROLES = {
   KEPALA_OPD: 'kepala-opd',
-  KEPALA_BIRO_ORGANISASI: 'kepala-biro-organisasi',
+  BIRO_ORGANISASI: 'biro-organisasi',
   TIM_EVALUASI: 'tim-evaluasi',
   TIM_PENYUSUN: 'tim-penyusun',
 } as const
@@ -16,7 +16,7 @@ export type RoleKey = (typeof ROLES)[keyof typeof ROLES]
 
 export const ROLE_LABELS: Record<RoleKey, string> = {
   [ROLES.KEPALA_OPD]: 'Kepala OPD',
-  [ROLES.KEPALA_BIRO_ORGANISASI]: 'Kepala Biro Organisasi',
+  [ROLES.BIRO_ORGANISASI]: 'Biro Organisasi',
   [ROLES.TIM_EVALUASI]: 'Tim Evaluasi',
   [ROLES.TIM_PENYUSUN]: 'Tim Penyusun',
 }
@@ -24,8 +24,7 @@ export const ROLE_LABELS: Record<RoleKey, string> = {
 /** Roles that can sign with TTE. */
 export const TTE_ELIGIBLE_ROLES: RoleKey[] = [
   ROLES.KEPALA_OPD,
-  ROLES.KEPALA_BIRO_ORGANISASI,
-  ROLES.TIM_EVALUASI,
+  ROLES.BIRO_ORGANISASI,
 ]
 
 /** Roles that appear in komentar panels. */

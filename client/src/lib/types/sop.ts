@@ -1,5 +1,8 @@
 /**
  * Types SOP: status, daftar, prosedur, metadata, template, pelaksana.
+ * Alur status: Draft → Sedang Disusun → Selesai → Siap Dievaluasi → (Request) Diajukan Evaluasi
+ * → Tim Evaluasi: Sesuai → Dievaluasi Tim Evaluasi | Revisi Biro → Revisi dari Tim Evaluasi
+ * → Kepala OPD TTD → Berlaku.
  */
 
 export type StatusSOP =
@@ -12,18 +15,20 @@ export type StatusSOP =
   | 'Diajukan Evaluasi'
   | 'Dievaluasi Tim Evaluasi'
   | 'Revisi dari Tim Evaluasi'
-  | 'Terverifikasi dari Kepala Biro'
+  | 'Terverifikasi dari Biro Organisasi'
   | 'Dicabut'
   | 'Batal'
 
 export const STATUS_SOP_ALL: StatusSOP[] = [
   'Draft', 'Sedang Disusun', 'Diperiksa Kepala OPD', 'Revisi dari Kepala OPD',
   'Siap Dievaluasi', 'Berlaku', 'Diajukan Evaluasi', 'Dievaluasi Tim Evaluasi',
-  'Revisi dari Tim Evaluasi', 'Terverifikasi dari Kepala Biro', 'Dicabut', 'Batal',
+  'Revisi dari Tim Evaluasi', 'Terverifikasi dari Biro Organisasi', 'Dicabut', 'Batal',
 ]
 
+/** Status saat Tim Penyusun boleh mengajukan Request Evaluasi (dari Daftar SOP). */
 export const STATUS_SOP_CAN_REQUEST_EVALUASI: StatusSOP[] = ['Siap Dievaluasi', 'Berlaku']
 
+/** Status SOP yang layak dievaluasi oleh Tim Evaluasi (tanpa penugasan). */
 export const STATUS_SOP_CAN_SELECT_FOR_EVALUASI: StatusSOP[] = [
   'Siap Dievaluasi', 'Berlaku', 'Diajukan Evaluasi',
 ]

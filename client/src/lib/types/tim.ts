@@ -1,13 +1,14 @@
 /**
- * Types tim: Tim Penyusun (Kepala OPD) dan Tim Monev/Evaluasi (Kepala Biro).
+ * Types tim: Tim Penyusun (Kepala OPD) dan Tim Monev/Evaluasi (Biro Organisasi).
  */
 
-export interface TimPenyusun {
+import type { ActorProfile } from '@/lib/types/actor'
+
+export interface TimPenyusun extends ActorProfile {
   id: string
-  nama: string
-  nip: string
-  jabatan: string
-  email: string
+  /** OPD pemilik tim penyusun (satu OPD punya banyak tim penyusun). */
+  opdId: string
+  /** Nomor HP kontak langsung anggota tim. */
   noHP: string
   status: 'Aktif' | 'Nonaktif'
   jumlahSOPDisusun: number
@@ -20,11 +21,7 @@ export interface TimPenyusunOption {
   jabatan: string
 }
 
-export interface TimMonev {
+export interface TimMonev extends ActorProfile {
   id: string
-  name: string
-  nip: string
-  jabatan: string
-  email: string
   jumlahEvaluasi: number
 }

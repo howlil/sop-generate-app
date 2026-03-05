@@ -9,7 +9,7 @@ import type { RoleKey } from '@/lib/constants/roles'
 /** NIP dummy per role sampai terhubung ke data user/auth. */
 export const ROLE_NIPS: Record<RoleKey, string> = {
   'kepala-opd': '197001011990031001',
-  'kepala-biro-organisasi': '196512311988021002',
+  'biro-organisasi': '196512311988021002',
   'tim-evaluasi': '198003051999031003',
   'tim-penyusun': '198512152010121004',
 }
@@ -17,15 +17,23 @@ export const ROLE_NIPS: Record<RoleKey, string> = {
 /** Nama tampilan per role (dipakai di header & TTD). */
 export const ROLE_DISPLAY_NAMES: Record<RoleKey, string> = {
   'kepala-opd': 'Kepala OPD',
-  'kepala-biro-organisasi': 'Kepala Biro Organisasi',
+  'biro-organisasi': 'Biro Organisasi',
   'tim-evaluasi': 'Tim Evaluasi (Evaluator)',
   'tim-penyusun': 'Tim Penyusun',
 }
 
+/** Nama orang (user) per role untuk tampilan evaluator/penandatangan. Siap diganti dari auth. */
+export const ROLE_USER_NAMES: Record<RoleKey, string> = {
+  'kepala-opd': 'Dr. Ahmad Pratama',
+  'biro-organisasi': 'Dr. H. Muhammad Ridwan, M.Si',
+  'tim-evaluasi': 'Dra. Siti Aminah, M.Si',
+  'tim-penyusun': 'Ahmad Pratama, S.Sos',
+}
+
 /** Deskripsi singkat per role untuk kartu dashboard (halaman index). */
 export const DASHBOARD_DESCRIPTIONS: Record<RoleKey, string> = {
-  'kepala-opd': 'Dashboard untuk kepala organisasi perangkat daerah',
-  'kepala-biro-organisasi': 'Manajemen OPD, tim evaluasi, dan evaluasi SOP',
+  'kepala-opd': 'Menandatangani SOP (TTE)',
+  'biro-organisasi': 'Manajemen OPD, tim evaluasi, dan evaluasi SOP',
   'tim-evaluasi': 'Evaluasi dan penilaian dokumen SOP',
   'tim-penyusun': 'Penyusunan dan pengajuan SOP',
 }

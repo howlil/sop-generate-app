@@ -112,6 +112,15 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
             >
               {tabs ? (
                 <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 shrink-0"
+                    onClick={() => onCollapsedChange(true)}
+                    title="Sembunyikan panel"
+                  >
+                    <ChevronCollapse className="w-4 h-4" />
+                  </Button>
                   <div className="flex flex-1 min-w-0 rounded-md bg-gray-100 p-0.5 gap-0.5">
                     {tabs.map((tab) => (
                       <button
@@ -131,15 +140,6 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
                       </button>
                     ))}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 shrink-0"
-                    onClick={() => onCollapsedChange(true)}
-                    title="Sembunyikan panel"
-                  >
-                    <ChevronCollapse className="w-4 h-4" />
-                  </Button>
                 </>
               ) : (
                 <>

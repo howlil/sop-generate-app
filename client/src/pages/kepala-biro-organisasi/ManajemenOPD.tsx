@@ -38,7 +38,7 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { SEED_OPD_LIST, SEED_KEPALA_LIST } from '@/lib/seed/opd-seed'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { showToast } from '@/lib/stores'
 import { generateId } from '@/utils/generate-id'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -59,16 +59,11 @@ export function ManajemenOPD() {
   const getKepalaAktif = (opdId: string) => kepalaList.find((k) => k.opdId === opdId && k.isActive)
   const getKepalaByOPD = (opdId: string) => kepalaList.filter((k) => k.opdId === opdId)
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    category: 'Dinas',
-  })
+  const [formData, setFormData] = useState({ name: '' })
 
   const filteredOPD = opdList.filter(
     (opd) =>
       opd.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      opd.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       getKepalaAktif(opd.id)?.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -89,7 +84,7 @@ export function ManajemenOPD() {
 
   const openEditDialog = (opd: OPD) => {
     setSelectedOPD(opd)
-    setFormData({ name: opd.name, code: opd.code, category: opd.category })
+    setFormData({ name: opd.name })
     setIsEditDialogOpen(true)
   }
 
@@ -99,7 +94,7 @@ export function ManajemenOPD() {
   }
 
   const resetForm = () => {
-    setFormData({ name: '', code: '', category: 'Dinas' })
+    setFormData({ name: '' })
   }
 
   const [searchUserQuery, setSearchUserQuery] = useState('')
@@ -108,13 +103,13 @@ export function ManajemenOPD() {
   const [kepalaFormOpen, setKepalaFormOpen] = useState(false)
   const [tambahPenugasanOpen, setTambahPenugasanOpen] = useState(false)
   const [editingKepala, setEditingKepala] = useState<KepalaOPD | null>(null)
-  const [kepalaForm, setKepalaForm] = useState({ name: '', nip: '', email: '', phone: '', startedAt: '' })
-  const [penugasanForm, setPenugasanForm] = useState({ opdId: '', name: '', nip: '', email: '', startedAt: new Date().toISOString().slice(0, 10) })
+  const [kepalaForm, setKepalaForm] = useState({ name: '', nip: '', email: '', phone: '' })
+  const [penugasanForm, setPenugasanForm] = useState({ opdId: '', name: '', nip: '', email: '' })
   const [riwayatDialogOpen, setRiwayatDialogOpen] = useState(false)
   const [riwayatDialogPerson, setRiwayatDialogPerson] = useState<{ name: string; email: string } | null>(null)
   const [pindahDialogOpen, setPindahDialogOpen] = useState(false)
   const [pindahDialogPerson, setPindahDialogPerson] = useState<{ name: string; email: string; phone: string; nip?: string } | null>(null)
-  const [pindahForm, setPindahForm] = useState({ opdId: '', startedAt: new Date().toISOString().slice(0, 10) })
+  const [pindahForm, setPindahForm] = useState({ opdId: '' })
 
   const openRiwayatKepala = (opd: OPD) => {
     setSelectedOPD(opd)
@@ -123,10 +118,10 @@ export function ManajemenOPD() {
   const openKepalaForm = (kepala?: KepalaOPD) => {
     if (kepala) {
       setEditingKepala(kepala)
-      setKepalaForm({ name: kepala.name, nip: kepala.nip ?? '', email: kepala.email, phone: kepala.phone, startedAt: kepala.startedAt })
+      setKepalaForm({ name: kepala.name, nip: kepala.nip ?? '', email: kepala.email, phone: kepala.phone })
     } else {
       setEditingKepala(null)
-      setKepalaForm({ name: '', nip: '', email: '', phone: '', startedAt: new Date().toISOString().slice(0, 10) })
+      setKepalaForm({ name: '', nip: '', email: '', phone: '' })
     }
     setKepalaFormOpen(true)
   }
@@ -147,7 +142,6 @@ export function ManajemenOPD() {
         email: kepalaForm.email,
         phone: kepalaForm.phone,
         isActive: true,
-        startedAt: kepalaForm.startedAt || today,
         totalSOP: 0,
       }
       setKepalaList((prev) => {
@@ -164,7 +158,7 @@ export function ManajemenOPD() {
   }
 
   const savePenugasanKepala = () => {
-    const today = penugasanForm.startedAt || new Date().toISOString().slice(0, 10)
+    const today = new Date().toISOString().slice(0, 10)
     if (!penugasanForm.opdId || !penugasanForm.name) return
     const existingActive = getKepalaAktif(penugasanForm.opdId)
     const newKepala: KepalaOPD = {
@@ -175,7 +169,6 @@ export function ManajemenOPD() {
       email: penugasanForm.email,
       phone: '',
       isActive: true,
-      startedAt: today,
       totalSOP: 0,
     }
     setKepalaList((prev) => {
@@ -188,12 +181,12 @@ export function ManajemenOPD() {
       return next
     })
     setTambahPenugasanOpen(false)
-    setPenugasanForm({ opdId: '', name: '', nip: '', email: '', startedAt: new Date().toISOString().slice(0, 10) })
+    setPenugasanForm({ opdId: '', name: '', nip: '', email: '' })
   }
 
   const savePindahJabatan = () => {
     if (!pindahDialogPerson || !pindahForm.opdId) return
-    const today = pindahForm.startedAt || new Date().toISOString().slice(0, 10)
+    const today = new Date().toISOString().slice(0, 10)
     const { name, email, phone } = pindahDialogPerson
     const currentActive = kepalaList.find((k) => k.name === name && (k.email ?? '') === email && k.isActive)
     const existingActiveAtTarget = getKepalaAktif(pindahForm.opdId)
@@ -205,7 +198,6 @@ export function ManajemenOPD() {
       email,
       phone,
       isActive: true,
-      startedAt: today,
       totalSOP: 0,
     }
     setKepalaList((prev) => {
@@ -220,7 +212,7 @@ export function ManajemenOPD() {
     })
     setPindahDialogOpen(false)
     setPindahDialogPerson(null)
-    setPindahForm({ opdId: '', startedAt: new Date().toISOString().slice(0, 10) })
+    setPindahForm({ opdId: '' })
   }
 
   const uniqueUsers = Array.from(
@@ -260,7 +252,7 @@ export function ManajemenOPD() {
         ...k,
         opdName: opdList.find((o) => o.id === k.opdId)?.name ?? k.opdId,
       }))
-      .sort((a, b) => (b.startedAt > a.startedAt ? 1 : -1))
+      .sort((a, b) => ((b.endedAt ?? '') < (a.endedAt ?? '') ? 1 : -1))
   const setKepalaAktif = (kepalaId: string) => {
     const k = kepalaList.find((x) => x.id === kepalaId)
     if (!k) return
@@ -291,52 +283,45 @@ export function ManajemenOPD() {
   }
 
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'Manajemen OPD' }]}
-        title="Manajemen OPD"
-        description="Kelola data organisasi perangkat daerah dan penugasan kepala OPD"
-      />
-
-      <SearchToolbar
-        searchPlaceholder={activeTab === 'opd' ? 'Cari OPD, kode, atau penanggung jawab...' : 'Cari OPD atau nama kepala...'}
-        searchValue={activeTab === 'opd' ? searchQuery : searchUserQuery}
-        onSearchChange={(e) => (activeTab === 'opd' ? setSearchQuery(e.target.value) : setSearchUserQuery(e.target.value))}
-      >
-        {activeTab === 'opd' ? (
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs shrink-0"
-            onClick={() => {
-              resetForm()
-              setIsCreateDialogOpen(true)
-            }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Tambah OPD
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            className="h-8 gap-1.5 text-xs shrink-0"
-            onClick={() => {
-              setPenugasanForm({
-                opdId: opdList[0]?.id ?? '',
-                name: '',
-                nip: '',
-                email: '',
-                startedAt: new Date().toISOString().slice(0, 10),
-              })
-              setTambahPenugasanOpen(true)
-            }}
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            Tambah Penugasan Kepala
-          </Button>
-        )}
-      </SearchToolbar>
-
-      {/* Tab mengarahkan ke Manajemen OPD / Penugasan Kepala OPD */}
+    <ListPageLayout
+      breadcrumb={[{ label: 'Manajemen OPD' }]}
+      title="Manajemen OPD"
+      description="Kelola data organisasi perangkat daerah dan penugasan kepala OPD"
+      toolbar={
+        <SearchToolbar
+          searchPlaceholder={activeTab === 'opd' ? 'Cari OPD, kode, atau penanggung jawab...' : 'Cari OPD atau nama kepala...'}
+          searchValue={activeTab === 'opd' ? searchQuery : searchUserQuery}
+          onSearchChange={(e) => (activeTab === 'opd' ? setSearchQuery(e.target.value) : setSearchUserQuery(e.target.value))}
+        >
+          {activeTab === 'opd' ? (
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 text-xs shrink-0"
+              onClick={() => {
+                resetForm()
+                setIsCreateDialogOpen(true)
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Tambah OPD
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 text-xs shrink-0"
+              onClick={() => {
+                setPenugasanForm({ opdId: opdList[0]?.id ?? '', name: '', nip: '', email: '' })
+                setTambahPenugasanOpen(true)
+              }}
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              Tambah Kepala OPD
+            </Button>
+          )}
+        </SearchToolbar>
+      }
+    >
+      {/* Tab mengarahkan ke Manajemen OPD / Kepala OPD */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'opd' | 'penugasan')} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-9 bg-white border border-gray-200 w-full">
           <TabsTrigger value="opd" className="text-xs gap-1.5">
@@ -345,7 +330,7 @@ export function ManajemenOPD() {
           </TabsTrigger>
           <TabsTrigger value="penugasan" className="text-xs gap-1.5">
             <Users className="w-3.5 h-3.5" />
-            Penugasan Kepala OPD
+            Kepala OPD
           </TabsTrigger>
         </TabsList>
 
@@ -355,8 +340,6 @@ export function ManajemenOPD() {
               <thead>
                 <Table.HeadRow>
                   <Table.Th>Nama OPD</Table.Th>
-                  <Table.Th>Kode</Table.Th>
-                  <Table.Th>Kategori</Table.Th>
                   <Table.Th align="center">Aksi</Table.Th>
                 </Table.HeadRow>
               </thead>
@@ -371,8 +354,6 @@ export function ManajemenOPD() {
                         <p className="font-medium text-gray-900">{opd.name}</p>
                       </div>
                     </Table.Td>
-                    <Table.Td><Badge variant="outline" className="text-xs">{opd.code}</Badge></Table.Td>
-                    <Table.Td className="text-gray-600">{opd.category}</Table.Td>
                     <Table.Td className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -402,7 +383,6 @@ export function ManajemenOPD() {
                   <Table.Th>NIP</Table.Th>
                   <Table.Th>Email</Table.Th>
                   <Table.Th>Jabatan Aktif</Table.Th>
-                  <Table.Th align="center">Mulai menjabat</Table.Th>
                   <Table.Th align="center">Aksi</Table.Th>
                 </Table.HeadRow>
               </thead>
@@ -415,7 +395,6 @@ export function ManajemenOPD() {
                       <Table.Td className="text-gray-600 font-mono text-xs">{p.nip || '—'}</Table.Td>
                       <Table.Td className="text-gray-600">{p.email}</Table.Td>
                       <Table.Td>{act?.opdName ?? '—'}</Table.Td>
-                      <Table.Td className="text-center">{act ? formatDateId(act.startedAt) : '—'}</Table.Td>
                       <Table.Td>
                         <div className="flex gap-1 justify-center">
                           <Button variant="ghost" size="icon-sm" className="h-7 w-7 p-0" onClick={() => { setRiwayatDialogPerson({ name: p.name, email: p.email }); setRiwayatDialogOpen(true); }} title="Riwayat jabatan">
@@ -428,7 +407,7 @@ export function ManajemenOPD() {
                             title="Pindah jabatan"
                             onClick={() => {
                               setPindahDialogPerson({ name: p.name, email: p.email, phone: p.phone, nip: p.nip })
-                              setPindahForm({ opdId: '', startedAt: new Date().toISOString().slice(0, 10) })
+                              setPindahForm({ opdId: '' })
                               setPindahDialogOpen(true)
                             }}
                           >
@@ -459,7 +438,7 @@ export function ManajemenOPD() {
           </Table.Card>
           {filteredPersons.length === 0 && (
             <div className="p-6 text-center text-gray-500 text-xs">
-              Belum ada penugasan kepala OPD. Gunakan &quot;Tambah Penugasan Kepala&quot; atau dari tab Manajemen OPD pilih OPD → Riwayat Kepala OPD.
+              Belum ada data Kepala OPD. Gunakan &quot;Tambah Kepala OPD&quot; atau dari tab Manajemen OPD pilih OPD → Riwayat Kepala OPD.
             </div>
           )}
         </TabsContent>
@@ -474,14 +453,12 @@ export function ManajemenOPD() {
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={() => {
-          if (formData.name && formData.code) {
+          if (formData.name) {
             setOpdList((prev) => [
               ...prev,
               {
                 id: generateId(),
                 name: formData.name,
-                code: formData.code,
-                category: formData.category,
                 email: '',
                 phone: '',
                 totalSOP: 0,
@@ -494,7 +471,7 @@ export function ManajemenOPD() {
           setIsCreateDialogOpen(false)
           resetForm()
         }}
-        confirmDisabled={!formData.name || !formData.code}
+        confirmDisabled={!formData.name}
         size="md"
       >
         <FormField label="Nama OPD" required>
@@ -505,28 +482,6 @@ export function ManajemenOPD() {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
         </FormField>
-        <div className="grid grid-cols-2 gap-2">
-          <FormField label="Kode OPD" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="DISDIK"
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Kategori">
-            <Select
-              value={formData.category}
-              onValueChange={(category) => setFormData({ ...formData, category })}
-              options={[
-                { value: 'Dinas', label: 'Dinas' },
-                { value: 'Badan', label: 'Badan' },
-                { value: 'Bagian', label: 'Bagian' },
-                { value: 'Kantor', label: 'Kantor' },
-              ]}
-            />
-          </FormField>
-        </div>
       </FormDialog>
 
       {/* Edit Dialog */}
@@ -541,20 +496,13 @@ export function ManajemenOPD() {
           if (selectedOPD) {
             setOpdList(
               opdList.map((opd) =>
-                opd.id === selectedOPD.id
-                  ? {
-                      ...opd,
-                      name: formData.name,
-                      code: formData.code,
-                      category: formData.category,
-                    }
-                  : opd
+                opd.id === selectedOPD.id ? { ...opd, name: formData.name } : opd
               )
             )
           }
           setIsEditDialogOpen(false)
         }}
-        confirmDisabled={!formData.name || !formData.code}
+        confirmDisabled={!formData.name}
         size="md"
       >
         <FormField label="Nama OPD" required>
@@ -564,27 +512,6 @@ export function ManajemenOPD() {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
         </FormField>
-        <div className="grid grid-cols-2 gap-2">
-          <FormField label="Kode OPD" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Kategori">
-            <Select
-              value={formData.category}
-              onValueChange={(category) => setFormData({ ...formData, category })}
-              options={[
-                { value: 'Dinas', label: 'Dinas' },
-                { value: 'Badan', label: 'Badan' },
-                { value: 'Bagian', label: 'Bagian' },
-                { value: 'Kantor', label: 'Kantor' },
-              ]}
-            />
-          </FormField>
-        </div>
       </FormDialog>
 
       {/* Detail Dialog */}
@@ -602,16 +529,11 @@ export function ManajemenOPD() {
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-semibold text-gray-900">{selectedOPD.name}</h3>
-                    <Badge variant="outline" className="mt-1.5 text-xs font-medium text-gray-600 border-gray-300">{selectedOPD.code}</Badge>
                   </div>
                 </div>
               </div>
 
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3 text-xs">
-                <div className="flex justify-between gap-3">
-                  <span className="text-gray-500">Kategori</span>
-                  <span className="font-medium text-gray-900">{selectedOPD.category}</span>
-                </div>
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-500">Kepala (aktif)</span>
                   <span className="font-medium text-gray-900">{getKepalaAktif(selectedOPD.id)?.name ?? '—'}</span>
@@ -694,12 +616,9 @@ export function ManajemenOPD() {
                           </div>
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                             <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
-                              <span>Mulai menjabat: {formatDateId(k.startedAt)}</span>
-                              {k.endedAt && (
-                                <span>Selesai: {formatDateId(k.endedAt)}</span>
-                              )}
-                            </div>
+                            {k.endedAt && (
+                              <span className="text-xs text-gray-500">Selesai: {formatDateId(k.endedAt)}</span>
+                            )}
                             <span className="text-[10px] text-gray-400">{k.totalSOP} SOP</span>
                           </div>
                         </div>
@@ -740,17 +659,14 @@ export function ManajemenOPD() {
         <FormField label="Telepon">
           <Input className="h-9 text-xs" value={kepalaForm.phone} onChange={(e) => setKepalaForm((f) => ({ ...f, phone: e.target.value }))} placeholder="0812-xxxx-xxxx" />
         </FormField>
-        <FormField label="Mulai menjabat">
-          <Input type="date" className="h-9 text-xs" value={kepalaForm.startedAt} onChange={(e) => setKepalaForm((f) => ({ ...f, startedAt: e.target.value }))} />
-        </FormField>
       </FormDialog>
 
-      {/* Tambah Penugasan Kepala: hanya Kepala baru */}
+      {/* Tambah Kepala OPD: hanya Kepala baru */}
       <FormDialog
         open={tambahPenugasanOpen}
         onOpenChange={setTambahPenugasanOpen}
-        title="Tambah Penugasan Kepala OPD"
-        description="Isi data kepala OPD baru dan pilih OPD tujuan."
+        title="Tambah Kepala OPD"
+        description="Isi data Kepala OPD baru dan pilih OPD tujuan."
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={savePenugasanKepala}
@@ -762,10 +678,7 @@ export function ManajemenOPD() {
             value={penugasanForm.opdId}
             onValueChange={(opdId) => setPenugasanForm((f) => ({ ...f, opdId }))}
             placeholder="Pilih OPD"
-            options={opdList.map((opd) => ({
-              value: opd.id,
-              label: `${opd.name} (${opd.code})`,
-            }))}
+            options={opdList.map((opd) => ({ value: opd.id, label: opd.name }))}
           />
         </FormField>
         <FormField label="Nama Kepala" required>
@@ -777,9 +690,6 @@ export function ManajemenOPD() {
         <FormField label="Email">
           <Input type="email" className="h-9 text-xs" value={penugasanForm.email} onChange={(e) => setPenugasanForm((f) => ({ ...f, email: e.target.value }))} placeholder="email@pemda.go.id" />
         </FormField>
-        <FormField label="Mulai menjabat">
-          <Input type="date" className="h-9 text-xs" value={penugasanForm.startedAt} onChange={(e) => setPenugasanForm((f) => ({ ...f, startedAt: e.target.value }))} />
-        </FormField>
       </FormDialog>
 
       {/* Pindah jabatan: per Kepala OPD (orang), pilih OPD tujuan */}
@@ -789,7 +699,7 @@ export function ManajemenOPD() {
           setPindahDialogOpen(open)
           if (!open) {
             setPindahDialogPerson(null)
-            setPindahForm({ opdId: '', startedAt: new Date().toISOString().slice(0, 10) })
+            setPindahForm({ opdId: '' })
           }
         }}
         title="Pindah jabatan"
@@ -814,15 +724,9 @@ export function ManajemenOPD() {
                 placeholder="Pilih OPD"
                 options={opdList
                   .filter((opd) => !getKepalaAktif(opd.id))
-                  .map((opd) => ({
-                    value: opd.id,
-                    label: `${opd.name} (${opd.code})`,
-                  }))}
+                  .map((opd) => ({ value: opd.id, label: opd.name }))}
               />
               <p className="text-xs text-gray-500 mt-1">Hanya OPD yang belum memiliki kepala yang dapat dipilih.</p>
-            </FormField>
-            <FormField label="Mulai menjabat">
-              <Input type="date" className="h-9 text-xs" value={pindahForm.startedAt} onChange={(e) => setPindahForm((f) => ({ ...f, startedAt: e.target.value }))} />
             </FormField>
           </>
         )}
@@ -849,7 +753,6 @@ export function ManajemenOPD() {
                 <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
                   <Table.HeadRow>
                     <Table.Th>OPD</Table.Th>
-                    <Table.Th align="center">Mulai menjabat</Table.Th>
                     <Table.Th align="center">Selesai</Table.Th>
                     <Table.Th align="center">Status</Table.Th>
                     <Table.Th align="center">Aksi</Table.Th>
@@ -859,7 +762,6 @@ export function ManajemenOPD() {
                   {getRiwayatForUser(riwayatDialogPerson.name, riwayatDialogPerson.email).map((r) => (
                     <Table.BodyRow key={r.id}>
                       <Table.Td>{r.opdName}</Table.Td>
-                      <Table.Td className="text-center">{formatDateId(r.startedAt)}</Table.Td>
                       <Table.Td className="text-center">{r.endedAt ? formatDateId(r.endedAt) : '—'}</Table.Td>
                       <Table.Td className="text-center">
                         <StatusBadge status={r.isActive ? 'Aktif' : 'Nonaktif'} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
@@ -917,6 +819,6 @@ export function ManajemenOPD() {
           }
         }}
       />
-    </div>
+    </ListPageLayout>
   )
 }

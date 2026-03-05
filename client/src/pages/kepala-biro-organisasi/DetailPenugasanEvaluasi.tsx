@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate, Link } from '@tanstack/react-router'
+import { useParams, Link } from '@tanstack/react-router'
 import { FileText, CheckCircle, Download, List, MessageSquare, Calendar } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
@@ -15,8 +15,7 @@ import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { Badge } from '@/components/ui/badge'
 import { NotFoundWithBack } from '@/components/ui/not-found'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
+import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { showToast } from '@/lib/stores'
 import {
@@ -32,8 +31,7 @@ import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { InfoCard } from '@/components/ui/info-card'
 
 export function DetailPenugasanEvaluasi() {
-  const { id } = useParams({ from: '/kepala-biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
-  const navigate = useNavigate()
+  const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const [penugasan, setPenugasan] = useState<Penugasan | null>(() => getPenugasanById(id) ?? null)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
   const [isBAOpen, setIsBAOpen] = useState(false)
@@ -41,7 +39,7 @@ export function DetailPenugasanEvaluasi() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
 
   const tte = useTTESignature({
-    role: 'kepala-biro-organisasi',
+    role: 'biro-organisasi',
     documentId: penugasan ? `batch-evaluasi-${penugasan.id}` : undefined,
   })
 
@@ -63,7 +61,7 @@ export function DetailPenugasanEvaluasi() {
         isVerified: true,
         nomorBA: batchNumber,
         tanggalVerifikasi: new Date().toISOString().split('T')[0],
-        kepalaBiro: payload.nama,
+        namaBiro: payload.nama,
         tteSignaturePayload: payload,
       })
       showToast('Batch evaluasi berhasil diverifikasi dengan TTE BSRE. Berita Acara telah dibuat.')
@@ -80,32 +78,23 @@ export function DetailPenugasanEvaluasi() {
       <NotFoundWithBack
         message="Penugasan tidak ditemukan."
         backAction={
-          <BackButton onClick={() => navigate({ to: ROUTES.KEPALA_BIRO.EVALUASI_SOP })}>
-            Kembali
-          </BackButton>
+          <BackButton to={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}>Kembali</BackButton>
         }
       />
     )
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0">
-      <PageHeader
+    <>
+      <DetailPageLayout
         breadcrumb={[
-          { label: 'Manajemen Evaluasi SOP', to: ROUTES.KEPALA_BIRO.EVALUASI_SOP },
+          { label: 'Manajemen Evaluasi SOP', to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
           { label: 'Detail' },
         ]}
         title="Detail Evaluasi SOP"
-        description="Informasi penugasan dan hasil evaluasi"
-        leading={
-          <BackButton
-            size="icon"
-            onClick={() => navigate({ to: ROUTES.KEPALA_BIRO.EVALUASI_SOP })}
-          />
-        }
-      />
-
-      <DetailWorkspace
+        description="Informasi batch evaluasi dan verifikasi (Berita Acara)"
+        backTo={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}
+        backSize="icon"
         header={
           <>
             <div className="flex items-center justify-between gap-4">
@@ -117,7 +106,7 @@ export function DetailPenugasanEvaluasi() {
                       <CheckCircle className="w-3.5 h-3.5" /> Verifikasi Batch (TTE)
                     </Button>
                   ) : (
-                    <Link to="/kepala-biro-organisasi/ttd-elektronik">
+                    <Link to={ROUTES.BIRO_ORGANISASI.TTD}>
                       <Button variant="outline" size="sm" className="h-8 px-3 rounded-md border-gray-200 hover:bg-gray-50 text-xs gap-1.5">
                         <CheckCircle className="w-3.5 h-3.5" /> Buat TTD dulu
                       </Button>
@@ -255,13 +244,13 @@ export function DetailPenugasanEvaluasi() {
                   {penugasan.tteSignaturePayload ? (
                     <TTESignatureBlock
                       payload={penugasan.tteSignaturePayload}
-                      roleLabel="Kepala Biro Organisasi"
+                      roleLabel="Biro Organisasi"
                       qrSize={80}
                     />
                   ) : (
                     <>
-                      <p className="mb-12">Kepala Biro Organisasi</p>
-                      <p className="font-semibold">{penugasan.kepalaBiro}</p>
+                      <p className="mb-12">Biro Organisasi</p>
+                      <p className="font-semibold">{penugasan.namaBiro}</p>
                     </>
                   )}
                 </div>
@@ -283,6 +272,6 @@ export function DetailPenugasanEvaluasi() {
         onConfirm={handlePinConfirm}
         confirmLabel="Verifikasi"
       />
-    </div>
+    </>
   )
 }

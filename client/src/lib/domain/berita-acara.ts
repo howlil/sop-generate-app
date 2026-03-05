@@ -33,8 +33,8 @@ export function buildBeritaAcaraModel(
     evaluator: penugasan.timMonev ?? '-',
     jumlahSOP: penugasan.sopList?.length ?? 0,
     pejabatPenandatangan: {
-      jabatan: 'Kepala Biro Organisasi',
-      nama: penugasan.kepalaBiro ?? '-',
+      jabatan: 'Biro Organisasi',
+      nama: penugasan.namaBiro ?? '-',
     },
     evaluatorPenandatangan: {
       nama: penugasan.timMonev ?? '-',

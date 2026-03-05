@@ -5,18 +5,18 @@ import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { Select } from '@/components/ui/select'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
 import { mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
 import type { SOPSayaItem } from '@/lib/types/sop'
 import { SEED_SOP_SAYA } from '@/lib/seed/sop-daftar'
+import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { formatDateIdLong } from '@/utils/format-date'
+import { useFilteredList } from '@/hooks/useFilteredList'
 
 export function SOPSaya() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
   const [sopList, setSopList] = useState<SOPSayaItem[]>(() => [...SEED_SOP_SAYA])
 
   useEffect(() => {
@@ -25,13 +25,15 @@ export function SOPSaya() {
   }, [])
 
   const mergedList = mergeSopStatus(sopList)
-
-  const filteredSOP = mergedList.filter((sop) => {
-    const matchSearch =
-      sop.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sop.nomorSOP.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchStatus = filterStatus === 'all' || sop.status === filterStatus
-    return matchSearch && matchStatus
+  const {
+    filteredList: filteredSOP,
+    searchQuery,
+    setSearchQuery,
+    filterValue: filterStatus,
+    setFilterValue: setFilterStatus,
+  } = useFilteredList(mergedList, {
+    searchKeys: ['judul', 'nomorSOP'],
+    filterKey: 'status',
   })
 
   /** Boleh edit isi SOP: Draft, Sedang Disusun, Revisi dari Kepala OPD, Revisi dari Tim Evaluasi. */
@@ -42,28 +44,28 @@ export function SOPSaya() {
     status === 'Revisi dari Tim Evaluasi'
 
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'SOP Saya' }]}
-        title="SOP Saya"
-        description="Daftar SOP yang Anda susun"
-      />
-      <SearchToolbar
-        searchPlaceholder="Cari SOP..."
-        searchValue={searchQuery}
-        onSearchChange={(e) => setSearchQuery(e.target.value)}
-      >
-        <Select
-          className="h-8 w-[180px]"
-          value={filterStatus}
-          onValueChange={setFilterStatus}
-          options={[
-            { value: 'all', label: 'Semua Status' },
-            ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
-          ]}
-        />
-      </SearchToolbar>
-
+    <ListPageLayout
+      breadcrumb={[{ label: 'SOP Saya' }]}
+      title="SOP Saya"
+      description="Daftar SOP yang Anda susun"
+      toolbar={
+        <SearchToolbar
+          searchPlaceholder="Cari SOP..."
+          searchValue={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
+        >
+          <Select
+            className="h-8 w-[180px]"
+            value={filterStatus}
+            onValueChange={setFilterStatus}
+            options={[
+              { value: 'all', label: 'Semua Status' },
+              ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
+            ]}
+          />
+        </SearchToolbar>
+      }
+    >
       <div className="bg-white rounded-md border border-gray-200">
         <div className="p-3 border-b border-gray-200">
           <h2 className="text-xs font-semibold text-gray-900">Daftar SOP Saya</h2>
@@ -101,18 +103,17 @@ export function SOPSaya() {
                   </Table.Td>
                   <Table.Td className="text-center">
                     <div className="flex items-center justify-center gap-1">
-                      {canEditSop(sop.status) && (
+                      {canEditSop(sop.status) ? (
                         <IconActionButton
                           icon={Edit}
-                          to="/tim-penyusun/detail-sop/$id"
+                          to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
                           params={{ id: sop.id }}
                           title="Edit"
                         />
-                      )}
-                      {!canEditSop(sop.status) && (
+                      ) : (
                         <IconActionButton
                           icon={Eye}
-                          to="/tim-penyusun/detail-sop/$id"
+                          to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
                           params={{ id: sop.id }}
                           title="Lihat"
                           variant="outline"
@@ -126,6 +127,6 @@ export function SOPSaya() {
           </Table.Table>
         </Table.Root>
       </div>
-    </div>
+    </ListPageLayout>
   )
 }

@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Check, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { FormField } from '@/components/ui/form-field'
-import { Select } from '@/components/ui/select'
 import type { KomentarItem } from '@/lib/types/komentar'
 
 export type { KomentarItem } from '@/lib/types/komentar'
@@ -26,57 +25,27 @@ export interface KomentarPanelProps {
   summary?: React.ReactNode
   /** Warna avatar: default orange (kepala OPD style); "blue" untuk tim penyusun panel */
   avatarVariant?: 'orange' | 'blue'
-  /** Tampilkan filter Asal/Status/Urutan (hanya di panel Tim Penyusun; Kepala OPD tanpa filter) */
-  showFilters?: boolean
   className?: string
 }
 
 /**
  * Panel komentar seragam: optional form tambah + list kartu komentar + optional tombol resolve.
- * Dipakai di Tim Penyusun (read-only + resolve), Kepala OPD (tambah + resolve), dll.
+ * Dipakai di Tim Penyusun (read-only + resolve), Tim Evaluasi, dll.
  */
-const FILTER_ORIGIN_OPTIONS = [
-  { value: 'all', label: 'Semua asal' },
-  { value: 'Kepala OPD', label: 'Kepala OPD' },
-  { value: 'Tim Evaluasi', label: 'Tim Evaluasi' },
-]
-
-const FILTER_STATUS_OPTIONS = [
-  { value: 'all', label: 'Semua status' },
-  { value: 'open', label: 'Terbuka' },
-  { value: 'resolved', label: 'Resolved' },
-]
-
-const SORT_OPTIONS = [
-  { value: 'newest', label: 'Terbaru' },
-  { value: 'oldest', label: 'Terlama' },
-]
-
 export function KomentarPanel({
   comments,
   onResolve,
   addForm,
   summary,
   avatarVariant = 'orange',
-  showFilters = true,
   className,
 }: KomentarPanelProps) {
-  const [filterOrigin, setFilterOrigin] = useState<string>('all')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [sortOrder, setSortOrder] = useState<string>('newest')
-
-  const filteredAndSortedComments = useMemo(() => {
-    let list = comments.filter((c) => {
-      if (filterOrigin !== 'all' && c.role !== filterOrigin) return false
-      if (filterStatus !== 'all' && c.status !== filterStatus) return false
-      return true
-    })
-    list = [...list].sort((a, b) => {
+  const sortedComments = useMemo(() => {
+    return [...comments].sort((a, b) => {
       const cmp = (a.timestamp || '').localeCompare(b.timestamp || '', undefined, { numeric: true })
-      return sortOrder === 'newest' ? -cmp : cmp
+      return -cmp
     })
-    return list
-  }, [comments, filterOrigin, filterStatus, sortOrder])
+  }, [comments])
 
   const avatarBg = avatarVariant === 'blue' ? 'bg-blue-600' : 'bg-orange-600'
   const resolveLabel = avatarVariant === 'blue' ? 'Resolve' : 'Selesai'
@@ -107,43 +76,11 @@ export function KomentarPanel({
       {summary != null && (
         <p className="text-xs text-gray-600 mb-2 px-3 pt-3">{summary}</p>
       )}
-      {showFilters && comments.length > 0 && (
-        <div className="px-3 pb-2 space-y-2 border-b border-gray-100">
-          <div className="grid grid-cols-3 gap-1.5">
-            <FormField label="Asal" variant="muted">
-              <Select
-                value={filterOrigin}
-                onValueChange={setFilterOrigin}
-                options={FILTER_ORIGIN_OPTIONS}
-                className="h-8 text-xs"
-              />
-            </FormField>
-            <FormField label="Status" variant="muted">
-              <Select
-                value={filterStatus}
-                onValueChange={setFilterStatus}
-                options={FILTER_STATUS_OPTIONS}
-                className="h-8 text-xs"
-              />
-            </FormField>
-            <FormField label="Urutan" variant="muted">
-              <Select
-                value={sortOrder}
-                onValueChange={setSortOrder}
-                options={SORT_OPTIONS}
-                className="h-8 text-xs"
-              />
-            </FormField>
-          </div>
-        </div>
-      )}
       <div className="p-3 space-y-2">
-        {filteredAndSortedComments.length === 0 ? (
-          <p className="text-xs text-gray-500">
-            {comments.length === 0 ? 'Belum ada komentar' : 'Tidak ada komentar yang sesuai filter'}
-          </p>
+        {sortedComments.length === 0 ? (
+          <p className="text-xs text-gray-500">Belum ada komentar</p>
         ) : (
-          filteredAndSortedComments.map((komentar) => (
+          sortedComments.map((komentar) => (
             <div
               key={komentar.id}
               className={`p-2.5 rounded-md border text-xs ${

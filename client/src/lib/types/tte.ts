@@ -2,7 +2,7 @@
  * TTE (Tanda Tangan Elektronik) BSRE — types & payload.
  */
 
-export type TTERole = 'kepala-opd' | 'kepala-biro-organisasi' | 'tim-evaluasi'
+export type TTERole = 'kepala-opd' | 'biro-organisasi'
 
 export interface TTEProfile {
   nip: string

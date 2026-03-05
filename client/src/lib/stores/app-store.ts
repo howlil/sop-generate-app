@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, PersistStorage } from 'zustand/middleware'
-import { ROLE_NIPS as SEED_ROLE_NIPS, ROLE_DISPLAY_NAMES } from '@/lib/seed/user-seed'
+import { ROLE_NIPS as SEED_ROLE_NIPS, ROLE_DISPLAY_NAMES, ROLE_USER_NAMES } from '@/lib/seed/user-seed'
 import { ROLES, ROLE_LABELS, type RoleKey } from '@/lib/constants/roles'
 
 export { ROLES } from '@/lib/constants/roles'
@@ -97,8 +97,13 @@ export function getRoleDisplayName(role: RoleKey): string {
   return ROLE_DISPLAY_NAMES[role] ?? getRoleLabel(role)
 }
 
-export function isKepalaBiroOrganisasi(): boolean {
-  return getRole() === ROLES.KEPALA_BIRO_ORGANISASI
+/** Nama orang (user) untuk role, dipakai di evaluator/penandatangan. */
+export function getRoleUserName(role: RoleKey): string {
+  return ROLE_USER_NAMES[role] ?? getRoleDisplayName(role)
+}
+
+export function isBiroOrganisasi(): boolean {
+  return getRole() === ROLES.BIRO_ORGANISASI
 }
 
 export function isKepalaOPD(): boolean {

@@ -9,34 +9,31 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
+import { EmptyState } from '@/components/ui/empty-state'
 import { SEED_TIM_MONEV_LIST } from '@/lib/seed/tim-evaluasi-seed'
 import type { TimMonev } from '@/lib/types/tim'
 import { generateId } from '@/utils/generate-id'
+import { useFilteredList } from '@/hooks/useFilteredList'
 
 export function ManajemenTimEvaluasi() {
-  const [searchQuery, setSearchQuery] = useState('')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimMonev | null>(null)
   const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
 
   const [timList, setTimList] = useState<TimMonev[]>(() => [...SEED_TIM_MONEV_LIST])
-
-  const [formData, setFormData] = useState({
-    name: '',
-    nip: '',
-    jabatan: '',
-    email: '',
+  const { filteredList: filteredTim, searchQuery, setSearchQuery } = useFilteredList(timList, {
+    searchKeys: ['nama', 'nip', 'jabatan', 'email'],
   })
 
-  const filteredTim = timList.filter(
-    (tim) =>
-      tim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tim.nip.includes(searchQuery) ||
-      tim.jabatan.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tim.email.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const [formData, setFormData] = useState({
+    nama: '',
+    nip: '',
+    jabatan: '',
+    pangkat: '',
+    email: '',
+  })
 
   const handleDelete = (id: string) => {
     setDeleteTimId(id)
@@ -45,9 +42,10 @@ export function ManajemenTimEvaluasi() {
   const openEditDialog = (tim: TimMonev) => {
     setSelectedTim(tim)
     setFormData({
-      name: tim.name,
+      nama: tim.nama,
       nip: tim.nip,
       jabatan: tim.jabatan,
+      pangkat: tim.pangkat ?? '',
       email: tim.email,
     })
     setIsEditDialogOpen(true)
@@ -55,15 +53,16 @@ export function ManajemenTimEvaluasi() {
 
   const resetForm = () => {
     setFormData({
-      name: '',
+      nama: '',
       nip: '',
       jabatan: '',
+      pangkat: '',
       email: '',
     })
   }
 
   const handleCreateSubmit = () => {
-    if (!formData.name || !formData.nip) return
+    if (!formData.nama || !formData.nip) return
     setTimList((prev) => [
       ...prev,
       {
@@ -87,30 +86,30 @@ export function ManajemenTimEvaluasi() {
   }
 
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'Manajemen Tim Evaluasi' }]}
-        title="Manajemen Tim Evaluasi"
-        description="Kelola anggota tim monitoring dan evaluasi SOP"
-      />
-      <SearchToolbar
-        searchPlaceholder="Cari nama, NIP, jabatan, atau email..."
-        searchValue={searchQuery}
-        onSearchChange={(e) => setSearchQuery(e.target.value)}
-      >
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() => {
-            resetForm()
-            setIsCreateDialogOpen(true)
-          }}
+    <ListPageLayout
+      breadcrumb={[{ label: 'Manajemen Tim Evaluasi' }]}
+      title="Manajemen Tim Evaluasi"
+      description="Kelola anggota tim monitoring dan evaluasi SOP"
+      toolbar={
+        <SearchToolbar
+          searchPlaceholder="Cari nama, NIP, jabatan, atau email..."
+          searchValue={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
         >
-          <Plus className="w-3.5 h-3.5" />
-          Tambah Anggota
-        </Button>
-      </SearchToolbar>
-
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={() => {
+              resetForm()
+              setIsCreateDialogOpen(true)
+            }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Tambah Anggota
+          </Button>
+        </SearchToolbar>
+      }
+    >
       <Table.Card>
         <Table.Table>
           <thead>
@@ -124,14 +123,23 @@ export function ManajemenTimEvaluasi() {
             </Table.HeadRow>
           </thead>
           <tbody>
-            {filteredTim.map((tim) => (
+            {filteredTim.length === 0 ? (
+              <EmptyState
+                asTableRow
+                colSpan={6}
+                icon={<Users className="w-8 h-8" />}
+                title="Tidak ada anggota tim"
+                description="Coba ubah kata kunci atau tambah anggota baru"
+              />
+            ) : (
+              filteredTim.map((tim) => (
               <Table.BodyRow key={tim.id}>
                 <Table.Td>
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center">
                       <Users className="w-3.5 h-3.5 text-blue-600" />
                     </div>
-                    <p className="font-medium text-gray-900">{tim.name}</p>
+                    <p className="font-medium text-gray-900">{tim.nama}</p>
                   </div>
                 </Table.Td>
                 <Table.Td className="text-gray-600 font-mono text-xs">{tim.nip}</Table.Td>
@@ -156,7 +164,8 @@ export function ManajemenTimEvaluasi() {
                   </div>
                 </Table.Td>
               </Table.BodyRow>
-            ))}
+              ))
+            )}
           </tbody>
         </Table.Table>
       </Table.Card>
@@ -169,7 +178,7 @@ export function ManajemenTimEvaluasi() {
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={handleCreateSubmit}
-        confirmDisabled={!formData.name || !formData.nip}
+        confirmDisabled={!formData.nama || !formData.nip}
         size="md"
       >
         <div className="space-y-3">
@@ -177,8 +186,8 @@ export function ManajemenTimEvaluasi() {
             <Input
               className="h-9 text-xs"
               placeholder="Contoh: Dr. Ahmad Pratama, M.Si"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              value={formData.nama}
+              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
             />
           </FormField>
           <FormField label="NIP" required>
@@ -189,12 +198,20 @@ export function ManajemenTimEvaluasi() {
               onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
             />
           </FormField>
-          <FormField label="Golongan / Jabatan di Instansi" required>
+          <FormField label="Jabatan di Instansi" required>
             <Input
               className="h-9 text-xs"
-              placeholder="Contoh: IV/a, Analis Kebijakan"
+              placeholder="Contoh: Analis Kebijakan"
               value={formData.jabatan}
               onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Pangkat / Golongan" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: IV/a"
+              value={formData.pangkat}
+              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
             />
           </FormField>
           <FormField label="Email" required>
@@ -217,15 +234,15 @@ export function ManajemenTimEvaluasi() {
         confirmLabel="Simpan Perubahan"
         cancelLabel="Batal"
         onConfirm={handleEditSubmit}
-        confirmDisabled={!formData.name || !formData.nip}
+        confirmDisabled={!formData.nama || !formData.nip}
         size="md"
       >
         <div className="space-y-3">
           <FormField label="Nama Lengkap" required>
             <Input
               className="h-9 text-xs"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              value={formData.nama}
+              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
             />
           </FormField>
           <FormField label="NIP" required>
@@ -235,12 +252,20 @@ export function ManajemenTimEvaluasi() {
               onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
             />
           </FormField>
-          <FormField label="Golongan / Jabatan di Instansi" required>
+          <FormField label="Jabatan di Instansi" required>
             <Input
               className="h-9 text-xs"
-              placeholder="Contoh: IV/a, Analis Kebijakan"
+              placeholder="Contoh: Analis Kebijakan"
               value={formData.jabatan}
               onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Pangkat / Golongan" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: IV/a"
+              value={formData.pangkat}
+              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
             />
           </FormField>
           <FormField label="Email" required>
@@ -266,6 +291,6 @@ export function ManajemenTimEvaluasi() {
           }
         }}
       />
-    </div>
+    </ListPageLayout>
   )
 }

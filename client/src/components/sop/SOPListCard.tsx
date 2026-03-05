@@ -19,6 +19,8 @@ export interface SOPListCardProps {
   statusDomain?: 'sop' | 'penugasan-evaluasi'
   /** Class tambahan untuk wrapper */
   className?: string
+  /** 'default' = nama + nomor + status; 'compact' = nama + status saja */
+  variant?: 'default' | 'compact'
 }
 
 /**
@@ -31,6 +33,7 @@ export function SOPListCard({
   onSelect,
   statusDomain = 'sop',
   className,
+  variant = 'default',
 }: SOPListCardProps) {
   if (items.length === 0) {
     return (
@@ -41,6 +44,7 @@ export function SOPListCard({
   }
 
   const isSelectable = onSelect != null && items.length >= 1
+  const isCompact = variant === 'compact'
 
   if (items.length === 1 && !isSelectable) {
     const sop = items[0]
@@ -50,14 +54,21 @@ export function SOPListCard({
           <p className="font-medium text-gray-900 truncate w-full" title={sop.nama}>
             {sop.nama}
           </p>
-          <div className="flex items-center justify-between gap-2 mt-1">
-            <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap" title={sop.nomor}>
-              {sop.nomor}
-            </span>
-            {sop.status && (
+          {!isCompact && (
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap" title={sop.nomor}>
+                {sop.nomor}
+              </span>
+              {sop.status && (
+                <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
+              )}
+            </div>
+          )}
+          {isCompact && sop.status && (
+            <div className="mt-1">
               <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -80,14 +91,21 @@ export function SOPListCard({
           <p className="font-medium truncate w-full" title={sop.nama}>
             {sop.nama}
           </p>
-          <div className="flex items-center justify-between gap-2 mt-1">
-            <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap" title={sop.nomor}>
-              {sop.nomor}
-            </span>
-            {sop.status && (
+          {!isCompact && (
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <span className="text-[10px] text-gray-500 font-mono whitespace-nowrap" title={sop.nomor}>
+                {sop.nomor}
+              </span>
+              {sop.status && (
+                <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
+              )}
+            </div>
+          )}
+          {isCompact && sop.status && (
+            <div className="mt-1">
               <StatusBadge status={sop.status} domain={statusDomain} className="text-[10px] h-auto" />
-            )}
-          </div>
+            </div>
+          )}
         </Button>
       ))}
     </div>

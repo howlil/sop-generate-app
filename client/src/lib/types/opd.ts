@@ -5,8 +5,6 @@
 export interface OPD {
   id: string
   name: string
-  code: string
-  category: string
   email: string
   phone: string
   totalSOP: number
@@ -23,7 +21,6 @@ export interface KepalaOPD {
   email: string
   phone: string
   isActive: boolean
-  startedAt: string
   endedAt?: string
   totalSOP: number
 }

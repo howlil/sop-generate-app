@@ -5,6 +5,7 @@
 import type { StatusSOP } from '@/lib/types/sop'
 import type { Penugasan } from '@/lib/types/penugasan'
 
+/** Status saat Tim Penyusun boleh mengedit isi SOP (alur: Draft, Sedang Disusun, revisi). */
 const EDITABLE_STATUSES: StatusSOP[] = [
   'Draft',
   'Sedang Disusun',
@@ -12,7 +13,8 @@ const EDITABLE_STATUSES: StatusSOP[] = [
   'Revisi dari Tim Evaluasi',
 ]
 
-const SIGNABLE_STATUSES: StatusSOP[] = ['Terverifikasi dari Kepala Biro']
+/** Status saat Kepala OPD boleh TTD SOP (SOP sudah sesuai/terverifikasi). Alur baru: Dievaluasi Tim Evaluasi → TTD → Berlaku. */
+const SIGNABLE_STATUSES: StatusSOP[] = ['Dievaluasi Tim Evaluasi', 'Terverifikasi dari Biro Organisasi']
 
 export function canEditSop(status: StatusSOP): boolean {
   return EDITABLE_STATUSES.includes(status)

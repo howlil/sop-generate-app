@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ClipboardCheck, PenLine } from 'lucide-react'
+import { ClipboardCheck } from 'lucide-react'
 import { isTimEvaluasi } from '@/lib/stores'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
@@ -15,12 +15,11 @@ export const Route = createFileRoute('/tim-evaluasi')({
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: ROUTES.TIM_EVALUASI.PENUGASAN, label: 'Penugasan & Hasil Evaluasi', icon: ClipboardCheck },
-  { to: ROUTES.TIM_EVALUASI.TTD, label: 'TTD Elektronik', icon: PenLine },
+  { to: ROUTES.TIM_EVALUASI.PENUGASAN, label: 'Evaluasi SOP', icon: ClipboardCheck },
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_EVALUASI.PENUGASAN]: ['/tim-evaluasi/penugasan', '/tim-evaluasi/pelaksanaan'],
+  [ROUTES.TIM_EVALUASI.PENUGASAN]: ['/tim-evaluasi/penugasan', '/tim-evaluasi/penugasan/opd', '/tim-evaluasi/evaluasi'],
 })
 
 function TimEvaluasiLayout() {

@@ -1,24 +1,18 @@
 import { useState, useMemo } from 'react'
-import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
+import { useParams, useLocation } from '@tanstack/react-router'
 import {
-  MessageSquare,
   History,
   Calendar,
   Building2,
   Users,
   RefreshCw,
-  CheckCircle2,
-  XCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { BackButton } from '@/components/ui/back-button'
 import { Badge } from '@/components/ui/badge'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
-import { KomentarPanel } from '@/components/sop/KomentarPanel'
+import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
-import { PageHeader } from '@/components/layout/PageHeader'
 import { InfoField } from '@/components/ui/info-field'
 import { showToast } from '@/lib/stores'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
@@ -28,14 +22,11 @@ import {
   SEED_IMPLEMENTERS,
   SEED_DETAIL_SOP_VIEW_METADATA,
   SEED_SOP_DETAIL_PROSEDUR_ROWS,
-  SEED_DETAIL_SOP_KOMENTAR_INITIAL,
   SEED_DETAIL_SOP_VERSIONS,
-  SEED_DETAIL_SOP_CURRENT_USER,
 } from '@/lib/seed/sop-detail-seed'
 import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
-import { computeVersionDiff } from '@/utils/version-diff'
-import { useKomentar } from '@/hooks/useKomentar'
+import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { isSopEligibleForSigning } from '@/lib/domain/sop-status'
 import { ROUTES } from '@/lib/constants/routes'
@@ -45,7 +36,6 @@ type Version = DetailSOPVersionSeed
 export function DetailSOP() {
   const params = useParams({ strict: false })
   const id = 'id' in params ? params.id : undefined
-  const navigate = useNavigate()
   const location = useLocation()
   const penugasanState = location.state as {
     sopStatus?: StatusSOP
@@ -61,27 +51,17 @@ export function DetailSOP() {
     'Draft'
 
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false)
-  const [rightPanelTab, setRightPanelTab] = useState<'komentar' | 'riwayat'>('komentar')
-  const [viewingVersion, setViewingVersion] = useState<Version | null>(null)
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
+  const [viewingVersion, setViewingVersion] = useState<Version | null>(null)
 
   const implementers = SEED_IMPLEMENTERS
   const metadata = SEED_DETAIL_SOP_VIEW_METADATA
   const prosedurRows = SEED_SOP_DETAIL_PROSEDUR_ROWS
 
-  const {
-    displayList: komentarTampil,
-    openCount: openComments,
-    resolvedCount: resolvedComments,
-    newComment,
-    setNewComment,
-    handleAddComment,
-    handleResolveComment,
-  } = useKomentar({
-    initialData: SEED_DETAIL_SOP_KOMENTAR_INITIAL,
-    currentUser: SEED_DETAIL_SOP_CURRENT_USER,
-    excludeRoles: ['Tim Penyusun'],
-  })
+  const versionDiffItems = useMemo(
+    () => versionDiff.computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot ?? undefined),
+    [viewingVersion, metadata, prosedurRows]
+  )
 
   const tte = useTTESignature({ role: 'kepala-opd', documentId: id })
 
@@ -93,89 +73,44 @@ export function DetailSOP() {
     }
   )
 
-  const canReviewDecision = sopStatus === 'Diperiksa Kepala OPD' && id
-  const handleSetuju = () => {
-    if (!id) return
-    setSopStatusOverride(id, 'Siap Dievaluasi')
-    showToast('SOP disetujui. Status berubah menjadi Siap Dievaluasi.')
-  }
-  const handleTidakSetuju = () => {
-    if (!id) return
-    setSopStatusOverride(id, 'Revisi dari Kepala OPD')
-    showToast('SOP dikembalikan untuk revisi. Beri komentar sebagai arahan untuk Tim Penyusun.')
-  }
-
+  /** Kepala OPD hanya menandatangani SOP (TTE). Tanpa tugas Setuju/Tolak atau pemeriksaan. */
   const versions: Version[] = SEED_DETAIL_SOP_VERSIONS as Version[]
 
-  const versionDiff = useMemo(
-    () => computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot),
-    [viewingVersion, metadata, prosedurRows]
-  )
-
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3">
-      <PageHeader
-        breadcrumb={[
-          { label: 'Daftar SOP', to: ROUTES.KEPALA_OPD.DAFTAR_SOP },
-          { label: 'Detail SOP' },
-        ]}
-        title="Detail Dokumen SOP"
-        description={metadata.name}
-        leading={
-          <BackButton size="icon" onClick={() => navigate({ to: ROUTES.KEPALA_OPD.DAFTAR_SOP })} />
-        }
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            {canReviewDecision && (
-              <>
-                <Button
-                  size="sm"
-                  variant="default"
-                  className="h-8 text-xs gap-1.5 bg-green-600 hover:bg-green-700"
-                  onClick={handleSetuju}
-                  title="Setujui SOP sehingga status menjadi Siap Dievaluasi"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  Setuju → Siap Dievaluasi
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 text-xs gap-1.5 border-amber-300 text-amber-800 hover:bg-amber-50"
-                  onClick={handleTidakSetuju}
-                  title="Kembalikan untuk revisi; beri komentar sebagai arahan"
-                >
-                  <XCircle className="w-3.5 h-3.5" />
-                  Tidak Setuju → Revisi
-                </Button>
-              </>
-            )}
-            <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
-              Versi {versions[0]?.version || '1.0'}
-            </Badge>
-            <Badge className="bg-green-100 text-green-700 text-xs border-0">{sopStatus}</Badge>
-            {isSopEligibleForSigning(sopStatus) && (
-              <Button
-                size="sm"
-                className="h-8 text-xs"
-                onClick={tte.openPinDialog}
-                disabled={!tte.canSign}
-                title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Mengesahkan SOP dengan TTE BSRE'}
-              >
-                Mengesahkan
-              </Button>
-            )}
-          </div>
-        }
-      />
-
-      <DetailWorkspace
-        className="print:hidden"
-        header={
+    <>
+    <DetailPageLayout
+      breadcrumb={[
+        { label: 'Daftar SOP', to: ROUTES.TIM_PENYUSUN.DAFTAR_SOP },
+        { label: 'Detail SOP' },
+      ]}
+      title="Detail Dokumen SOP"
+      description={metadata.name}
+      backTo={ROUTES.TIM_PENYUSUN.DAFTAR_SOP}
+      backSize="icon"
+      actions={
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
+            Versi {versions[0]?.version || '1.0'}
+          </Badge>
+          <Badge className="bg-green-100 text-green-700 text-xs border-0">{sopStatus}</Badge>
+          {isSopEligibleForSigning(sopStatus) && (
+            <Button
+              size="sm"
+              className="h-8 text-xs"
+              onClick={tte.openPinDialog}
+              disabled={!tte.canSign}
+              title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Mengesahkan SOP dengan TTE BSRE'}
+            >
+              Mengesahkan
+            </Button>
+          )}
+        </div>
+      }
+      header={
           (penugasanState?.waktuPenugasan ?? penugasanState?.unitTerkait ?? penugasanState?.timPenyusun ?? penugasanState?.deskripsiProyek) ? (
             <>
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-sm font-semibold text-gray-900">Informasi penugasan</h2>
+                <h2 className="text-sm font-semibold text-gray-900">Informasi proyek</h2>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-1.5 pt-2">
                 {penugasanState.waktuPenugasan && (
@@ -208,8 +143,8 @@ export function DetailSOP() {
               )}
             </>
           ) : undefined
-        }
-        main={
+      }
+      main={
           <div className="flex flex-col h-full p-4">
             <SOPPreviewTemplate
               metadata={metadata}
@@ -220,84 +155,47 @@ export function DetailSOP() {
               onActiveTabChange={setActiveTab}
             />
           </div>
-        }
-        rightPanel={
+      }
+      rightPanel={
           <CollapsibleSidePanel
             side="right"
             collapsed={isRightPanelCollapsed}
             onCollapsedChange={setIsRightPanelCollapsed}
             widthCollapsed="w-10 min-w-[2.5rem]"
             widthExpanded="w-[min(320px,28%)] min-w-[220px]"
-            collapseButtonLabel="Komentar"
-            collapseButtonIcon={<MessageSquare className="w-4 h-4 text-gray-500" />}
-            tabs={[
-              {
-                id: 'komentar',
-                label: 'Komentar',
-                icon: <MessageSquare className="w-3.5 h-3.5" />,
-                badge: openComments > 0 || resolvedComments > 0 ? `(${openComments}/${resolvedComments})` : undefined,
-              },
-              { id: 'riwayat', label: 'Riwayat', icon: <History className="w-3.5 h-3.5" /> },
-            ]}
-            activeTab={rightPanelTab}
-            onTabChange={(id) => setRightPanelTab(id as 'komentar' | 'riwayat')}
+            collapseButtonLabel="Riwayat"
+            collapseButtonIcon={<History className="w-4 h-4 text-gray-500" />}
+            tabs={[{ id: 'riwayat', label: 'Riwayat', icon: <History className="w-3.5 h-3.5" /> }]}
+            activeTab="riwayat"
+            onTabChange={() => {}}
           >
-            {rightPanelTab === 'komentar' && (
-              <KomentarPanel
-                comments={komentarTampil.map((k) => ({
-                  id: k.id,
-                  user: k.user,
-                  role: k.role,
-                  status: k.status,
-                  bagian: k.bagian,
-                  isi: k.isi,
-                  timestamp: k.timestamp,
-                }))}
-                onResolve={handleResolveComment}
-                addForm={
-                  canReviewDecision
-                    ? {
-                        value: newComment,
-                        onChange: setNewComment,
-                        onSubmit: handleAddComment,
-                        submitLabel: 'Kirim Komentar',
-                      }
-                    : undefined
-                }
-                avatarVariant="orange"
-                showFilters={false}
-              />
-            )}
-            {rightPanelTab === 'riwayat' && (
-              <VersionHistoryPanel
-                variant="cards"
-                versions={versions.map((v: Version) => ({
-                  id: v.id,
-                  version: v.version,
-                  date: v.date,
-                  author: v.author,
-                  changes: v.changes,
-                  eventLabel: v.eventLabel,
-                  revisionType: v.revisionType,
-                  snapshot: v.snapshot,
-                }))}
-                viewingVersion={viewingVersion}
-                setViewingVersion={(v) => setViewingVersion(v as Version | null)}
-                versionDiff={versionDiff}
-              />
-            )}
+            <VersionHistoryPanel
+              variant="cards"
+              versions={versions.map((v: Version) => ({
+                id: v.id,
+                version: v.version,
+                date: v.date,
+                author: v.author,
+                changes: v.changes,
+                snapshot: v.snapshot,
+              }))}
+              summary={`${versions.length} versi terdokumentasi`}
+              viewingVersion={viewingVersion ? { id: viewingVersion.id, version: viewingVersion.version, date: viewingVersion.date, author: viewingVersion.author, changes: viewingVersion.changes, snapshot: viewingVersion.snapshot } : null}
+              setViewingVersion={(v) => setViewingVersion(v ? versions.find((vx: Version) => vx.id === v.id) ?? null : null)}
+              versionDiff={versionDiffItems}
+            />
           </CollapsibleSidePanel>
-        }
-      />
-
-      <PinVerificationDialog
-        open={tte.pinDialogOpen}
-        onOpenChange={tte.setPinDialogOpen}
-        title="Verifikasi PIN TTE"
-        description="Masukkan PIN TTE BSRE untuk mengesahkan SOP ini."
-        onConfirm={handlePinConfirm}
-        confirmLabel="Mengesahkan"
-      />
-    </div>
+      }
+      workspaceClassName="print:hidden"
+    />
+    <PinVerificationDialog
+      open={tte.pinDialogOpen}
+      onOpenChange={tte.setPinDialogOpen}
+      title="Verifikasi PIN TTE"
+      description="Masukkan PIN TTE BSRE untuk mengesahkan SOP ini."
+      onConfirm={handlePinConfirm}
+      confirmLabel="Mengesahkan"
+    />
+  </>
   )
 }

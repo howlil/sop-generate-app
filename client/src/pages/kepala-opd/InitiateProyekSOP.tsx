@@ -1,4 +1,5 @@
 import { useNavigate, Link } from '@tanstack/react-router'
+import { ROUTES } from '@/lib/constants/routes'
 import { useState } from 'react'
 import { FileText, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -76,19 +77,19 @@ export function InitiateProyekSOP() {
     showToast(
       `Proyek SOP "${formData.judulSOP}" berhasil dibuat. Tim penyusun akan menerima notifikasi untuk mulai menyusun dokumen.`
     )
-    setTimeout(() => navigate({ to: '/kepala-opd/daftar-sop' }), 1500)
+    setTimeout(() => navigate({ to: ROUTES.TIM_PENYUSUN.DAFTAR_SOP }), 1500)
   }
 
   return (
     <div className="space-y-3">
       <PageHeader
         breadcrumb={[
-          { label: 'Daftar SOP', to: '/kepala-opd/daftar-sop' },
-          { label: 'Initiate Proyek SOP' },
+          { label: 'Daftar SOP', to: ROUTES.TIM_PENYUSUN.DAFTAR_SOP },
+          { label: 'Buat SOP Baru' },
         ]}
-        title="Inisiasi Proyek SOP"
-        description="Buat proyek SOP baru dan tugaskan ke tim penyusun"
-        leading={<BackButton to="/kepala-opd/daftar-sop" />}
+        title="Buat SOP Baru"
+        description="Inisiasi proyek SOP baru (status Draft). Setelah disimpan sebagai draft status menjadi Sedang Disusun; klik Selesai di detail SOP untuk status Siap Dievaluasi."
+        leading={<BackButton to={ROUTES.TIM_PENYUSUN.DAFTAR_SOP} />}
       />
 
       <div className="bg-white rounded-md border border-gray-200 p-4">
@@ -213,7 +214,7 @@ export function InitiateProyekSOP() {
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
-          <Link to="/kepala-opd/daftar-sop">
+          <Link to={ROUTES.TIM_PENYUSUN.DAFTAR_SOP}>
             <Button variant="outline" size="sm" className="h-8 text-xs">
               Batal
             </Button>

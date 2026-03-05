@@ -14,7 +14,7 @@ export interface UsePenugasanEvaluasiResult {
 }
 
 /**
- * Domain hook for penugasan evaluasi detail page.
+ * Domain hook untuk Biro: detail batch evaluasi dan verifikasi (Berita Acara).
  * Manages penugasan state, subscription, and verification success handler.
  */
 export function usePenugasanEvaluasi(id: string | undefined): UsePenugasanEvaluasiResult {
@@ -37,7 +37,7 @@ export function usePenugasanEvaluasi(id: string | undefined): UsePenugasanEvalua
       isVerified: true,
       nomorBA: batchNumber,
       tanggalVerifikasi: new Date().toISOString().split('T')[0],
-      kepalaBiro: payload.nama,
+      namaBiro: payload.nama,
       tteSignaturePayload: payload,
     })
   }

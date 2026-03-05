@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, useNavigate, Link } from '@tanstack/react-router'
+import { useParams, Link } from '@tanstack/react-router'
 import { List, MessageSquare, Play } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
@@ -7,15 +7,14 @@ import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { NotFoundWithBack } from '@/components/ui/not-found'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
+import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
+import { ROUTES } from '@/lib/constants/routes'
 import { SEED_PENUGASAN_DETAIL_BY_ID } from '@/lib/seed/penugasan-detail-seed'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export function DetailPenugasanTimEvaluasi() {
   const { id } = useParams({ from: '/tim-evaluasi/penugasan/detail/$id' })
-  const navigate = useNavigate()
   const penugasan = id ? SEED_PENUGASAN_DETAIL_BY_ID[id] ?? null : null
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -23,38 +22,28 @@ export function DetailPenugasanTimEvaluasi() {
   if (!penugasan) {
     return (
       <NotFoundWithBack
-        message="Penugasan tidak ditemukan."
+        message="Data evaluasi tidak ditemukan."
         backAction={
-          <BackButton onClick={() => navigate({ to: '/tim-evaluasi/penugasan' })}>
-            Kembali
-          </BackButton>
+          <BackButton to={ROUTES.TIM_EVALUASI.PENUGASAN}>Kembali</BackButton>
         }
       />
     )
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] min-h-0">
-      <PageHeader
-        breadcrumb={[
-          { label: 'Penugasan Evaluasi', to: '/tim-evaluasi/penugasan' },
-          { label: 'Detail Penugasan' },
-        ]}
-        title={penugasan.sop}
-        description={`${penugasan.kodeSOP} • ${penugasan.opd}`}
-        leading={
-          <BackButton
-            size="icon"
-            onClick={() => navigate({ to: '/tim-evaluasi/penugasan' })}
-          />
-        }
-      />
-
-      <DetailWorkspace
-        header={
+    <DetailPageLayout
+      breadcrumb={[
+        { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN },
+        { label: 'Detail' },
+      ]}
+      title={penugasan.sop}
+      description={`${penugasan.kodeSOP} • ${penugasan.opd}`}
+      backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
+      backSize="icon"
+      header={
           <>
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-sm font-semibold text-gray-900">Informasi penugasan</h2>
+              <h2 className="text-sm font-semibold text-gray-900">Informasi evaluasi</h2>
             </div>
             <div className="pt-2 flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-gray-900">{penugasan.opd}</span>
@@ -113,7 +102,7 @@ export function DetailPenugasanTimEvaluasi() {
               </div>
 
               {penugasan.status !== 'completed' && (
-                <Link to="/tim-evaluasi/pelaksanaan/$id" params={{ id: penugasan.id }}>
+                <Link to={ROUTES.TIM_EVALUASI.PELAKSANAAN} params={{ id: penugasan.id }}>
                   <Button size="sm" className="w-full h-9 text-xs gap-1.5">
                     <Play className="w-3.5 h-3.5" />
                     {penugasan.status === 'assigned' ? 'Mulai Evaluasi' : 'Lanjutkan Evaluasi'}
@@ -123,7 +112,6 @@ export function DetailPenugasanTimEvaluasi() {
             </div>
           </CollapsibleSidePanel>
         }
-      />
-    </div>
+    />
   )
 }

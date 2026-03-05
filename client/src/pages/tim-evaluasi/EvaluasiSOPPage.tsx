@@ -1,4 +1,8 @@
-import { useState } from 'react'
+/**
+ * Halaman evaluasi SOP oleh Tim Evaluasi (langsung per SOP, tanpa penugasan).
+ * Hasil: Sesuai → status SOP "Dievaluasi Tim Evaluasi"; Revisi Biro → "Revisi dari Tim Evaluasi".
+ */
+import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import {
   Save,
@@ -6,11 +10,9 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  List,
   MessageSquare,
 } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
-import { SOPListCard } from '@/components/sop/SOPListCard'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { FormField } from '@/components/ui/form-field'
@@ -26,35 +28,31 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import { getPenugasanById, updatePenugasan } from '@/lib/stores/penugasan-store'
-import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
-import type { StatusSOP } from '@/lib/types/sop'
-import { SEED_PENUGASAN_DETAIL_BY_ID } from '@/lib/seed/penugasan-detail-seed'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useCollapsiblePanels } from '@/hooks/useCollapsiblePanels'
 import { ROUTES } from '@/lib/constants/routes'
+import { setSopStatusOverride, mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
+import { SEED_SOP_DAFTAR } from '@/lib/seed/sop-daftar'
+import type { StatusSOP } from '@/lib/types/sop'
 
-export function PelaksanaanEvaluasi() {
-  const { id } = useParams({ from: '/tim-evaluasi/pelaksanaan/$id' })
+export function EvaluasiSOPPage() {
+  const { sopId } = useParams({ from: '/tim-evaluasi/evaluasi/$sopId' })
   const navigate = useNavigate()
 
-  const seedDetail = SEED_PENUGASAN_DETAIL_BY_ID[id ?? '1']
-  const penugasanInfo = {
-    id: seedDetail?.id ?? id ?? '1',
-    kode: seedDetail?.kodePenugasan ?? '-',
-    opd: seedDetail?.opd ?? '-',
-    sop: seedDetail?.sop ?? '-',
-    kodeSOP: seedDetail?.kodeSOP ?? '-',
-    jenis: seedDetail?.jenis ?? 'Evaluasi Rutin',
-  }
+  const [sopList, setSopList] = useState(() => [...SEED_SOP_DAFTAR])
+  useEffect(() => subscribeSopStatus(() => setSopList((prev) => [...prev])), [])
+  const mergedList = useMemo(() => mergeSopStatus(sopList), [sopList])
+  const sop = useMemo(() => mergedList.find((s) => s.id === sopId), [mergedList, sopId])
 
   const {
-    komentarEvaluasi, setKomentarEvaluasi,
-    statusEvaluasi, setStatusEvaluasi,
+    komentarEvaluasi,
+    setKomentarEvaluasi,
+    statusEvaluasi,
+    setStatusEvaluasi,
     saveDraft: handleSaveDraft,
-  } = useEvaluasiDraft(id)
+  } = useEvaluasiDraft(sopId)
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
-  const { leftCollapsed: leftPanelCollapsed, setLeftCollapsed: setLeftPanelCollapsed, rightCollapsed: rightPanelCollapsed, setRightCollapsed: setRightPanelCollapsed } = useCollapsiblePanels()
+  const { rightCollapsed: rightPanelCollapsed, setRightCollapsed: setRightPanelCollapsed } = useCollapsiblePanels()
 
   const handleSubmit = () => {
     if (!statusEvaluasi) {
@@ -65,34 +63,26 @@ export function PelaksanaanEvaluasi() {
       showToast('Status "Revisi Biro" wajib diisi komentar evaluasi', 'error')
       return
     }
-    const penugasan = id ? getPenugasanById(id) : undefined
-    if (penugasan?.sopList?.length) {
-      const sopStatusBaru: StatusSOP =
-        statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'
-      const updatedSopList = penugasan.sopList.map((sop) => {
-        const isCurrentSop = sop.nama === penugasanInfo.sop || sop.nomor === penugasanInfo.kodeSOP
-        if (!isCurrentSop) return sop
-        if (sop.id) setSopStatusOverride(sop.id, sopStatusBaru)
-        return {
-          ...sop,
-          status: statusEvaluasi,
-          catatan: komentarEvaluasi.trim() || undefined,
-        }
-      })
-      updatePenugasan(id!, {
-        sopList: updatedSopList,
-        status: 'Selesai',
-        tanggalEvaluasi: new Date().toISOString().split('T')[0],
-      })
-    }
-    showToast('Hasil evaluasi berhasil dikirim. Status SOP diperbarui.')
+    if (!sopId) return
+    const newStatus: StatusSOP =
+      statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'
+    setSopStatusOverride(sopId, newStatus)
+    showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
     setIsSubmitOpen(false)
-    setTimeout(() => {
-      navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN })
-    }, 1500)
+    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN }), 1500)
   }
 
-  const isFormComplete = statusEvaluasi !== null && (statusEvaluasi !== 'Revisi Biro' || komentarEvaluasi.trim() !== '')
+  const isFormComplete =
+    statusEvaluasi !== null && (statusEvaluasi !== 'Revisi Biro' || komentarEvaluasi.trim() !== '')
+
+  if (!sop) {
+    return (
+      <div className="space-y-3 p-4">
+        <BackButton to={ROUTES.TIM_EVALUASI.PENUGASAN} />
+        <p className="text-sm text-gray-600">SOP tidak ditemukan.</p>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -101,45 +91,38 @@ export function PelaksanaanEvaluasi() {
           { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN },
           { label: 'Evaluasi SOP' },
         ]}
-        title={penugasanInfo.sop}
-        description={`${penugasanInfo.kodeSOP} • ${penugasanInfo.opd}`}
+        title={sop.judul}
+        description={sop.nomorSOP}
         backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
         backSize="icon"
         header={
           <>
             <div className="flex items-center justify-between gap-4">
-              <h2 className="text-sm font-semibold text-gray-900">Informasi evaluasi</h2>
+              <h2 className="text-sm font-semibold text-gray-900">Evaluasi SOP</h2>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50" onClick={handleSaveDraft}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+                  onClick={handleSaveDraft}
+                >
                   <Save className="w-3.5 h-3.5" /> Simpan Draft
                 </Button>
-                <Button size="sm" className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5" onClick={() => setIsSubmitOpen(true)} disabled={!isFormComplete}>
-                  <Send className="w-3.5 h-3.5" /> Kirim Hasil ke Biro
+                <Button
+                  size="sm"
+                  className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
+                  onClick={() => setIsSubmitOpen(true)}
+                  disabled={!isFormComplete}
+                >
+                  <Send className="w-3.5 h-3.5" /> Kirim Hasil Evaluasi
                 </Button>
               </div>
             </div>
             <div className="pt-2 flex flex-wrap items-center gap-3 text-xs">
-              <span className="font-medium text-gray-900">{penugasanInfo.opd}</span>
-              <span className="text-gray-700">{penugasanInfo.sop}</span>
-              <span className="text-gray-500 font-mono">{penugasanInfo.kodeSOP}</span>
+              <span className="text-gray-700">{sop.judul}</span>
+              <span className="text-gray-500 font-mono">{sop.nomorSOP}</span>
             </div>
           </>
-        }
-        leftPanel={
-          <CollapsibleSidePanel
-            side="left"
-            collapsed={leftPanelCollapsed}
-            onCollapsedChange={setLeftPanelCollapsed}
-            widthExpanded="w-[min(240px,20%)] min-w-[180px]"
-            title="Daftar SOP"
-            subtitle="1 dokumen"
-            collapseButtonLabel="Daftar"
-            collapseButtonIcon={<List className="w-5 h-5" />}
-          >
-            <SOPListCard
-              items={[{ id: penugasanInfo.id, nama: penugasanInfo.sop, nomor: penugasanInfo.kodeSOP }]}
-            />
-          </CollapsibleSidePanel>
         }
         main={
           <div className="flex flex-col h-full">
@@ -147,7 +130,7 @@ export function PelaksanaanEvaluasi() {
               <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
             </div>
             <div className="flex-1 min-h-0 flex flex-col">
-              <SOPPreviewTemplate name={penugasanInfo.sop} number={penugasanInfo.kodeSOP} />
+              <SOPPreviewTemplate name={sop.judul} number={sop.nomorSOP} />
             </div>
           </div>
         }
@@ -171,8 +154,15 @@ export function PelaksanaanEvaluasi() {
                     }`}
                     onClick={() => setStatusEvaluasi('Sesuai')}
                   >
-                    <CheckCircle className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-400'}`} />
-                    <span className={`text-xs font-semibold block ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-700'}`}>Sesuai</span>
+                    <CheckCircle
+                      className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-400'}`}
+                    />
+                    <span
+                      className={`text-xs font-semibold block ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-700'}`}
+                    >
+                      Sesuai
+                    </span>
+                    <span className="text-[10px] text-gray-500 block mt-0.5">→ Dievaluasi Tim Evaluasi</span>
                   </button>
                   <button
                     type="button"
@@ -181,8 +171,15 @@ export function PelaksanaanEvaluasi() {
                     }`}
                     onClick={() => setStatusEvaluasi('Revisi Biro')}
                   >
-                    <XCircle className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-400'}`} />
-                    <span className={`text-xs font-semibold block ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-700'}`}>Revisi Biro</span>
+                    <XCircle
+                      className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-400'}`}
+                    />
+                    <span
+                      className={`text-xs font-semibold block ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-700'}`}
+                    >
+                      Revisi Biro
+                    </span>
+                    <span className="text-[10px] text-gray-500 block mt-0.5">→ Revisi dari Tim Evaluasi</span>
                   </button>
                 </div>
                 {statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim() && (
@@ -196,7 +193,7 @@ export function PelaksanaanEvaluasi() {
               <FormField label="Komentar Evaluasi">
                 <Textarea
                   className="text-xs min-h-[80px]"
-                  placeholder="Komentar evaluasi (wajib jika status Revisi Biro)..."
+                  placeholder="Komentar evaluasi (wajib jika Revisi Biro)..."
                   value={komentarEvaluasi}
                   onChange={(e) => setKomentarEvaluasi(e.target.value)}
                 />
@@ -206,7 +203,6 @@ export function PelaksanaanEvaluasi() {
         }
       />
 
-      {/* Dialog Konfirmasi Kirim */}
       <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
         <DialogContent>
           <DialogHeader>
@@ -214,20 +210,21 @@ export function PelaksanaanEvaluasi() {
           </DialogHeader>
           <div className="space-y-3">
             <InfoCard variant={statusEvaluasi === 'Sesuai' ? 'success' : 'warning'}>
-              <p className="text-xs mb-1 text-gray-700">Status:</p>
-              <p className={`text-sm font-semibold ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-amber-600'}`}>{statusEvaluasi}</p>
+              <p className="text-xs mb-1 text-gray-700">Status SOP setelah dikirim:</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'}
+              </p>
             </InfoCard>
             <InfoCard variant="warning">
               <p className="text-xs text-amber-800">
                 <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah.
               </p>
             </InfoCard>
-            <p className="text-xs text-gray-700">
-              Status SOP akan diperbarui menjadi <strong>{statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'}</strong>. Hasil tercatat untuk verifikasi Biro (Berita Acara).
-            </p>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsSubmitOpen(false)}>Batal</Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsSubmitOpen(false)}>
+              Batal
+            </Button>
             <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSubmit}>
               <Send className="w-3.5 h-3.5" /> Ya, Kirim Hasil
             </Button>

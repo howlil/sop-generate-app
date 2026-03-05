@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { CircleUserRound, LogOut } from 'lucide-react'
+import { ROUTES } from '@/lib/constants/routes'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -28,7 +29,7 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
 
   const handleLogout = () => {
     clearRole()
-    navigate({ to: '/', search: { denied: '' } })
+    navigate({ to: ROUTES.HOME, search: { denied: '' } })
   }
 
   const roleLabel = role ? getRoleLabel(role as Role) : '-'

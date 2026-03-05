@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ROUTES } from '@/lib/constants/routes'
 import type { TTERole } from '@/lib/types/tte'
 import {
   getTTEProfile,
@@ -24,8 +25,7 @@ import { formatDateIdLong } from '@/utils/format-date'
 
 const ROLE_LABEL: Record<TTERole, string> = {
   'kepala-opd': 'Kepala OPD',
-  'kepala-biro-organisasi': 'Kepala Biro Organisasi',
-  'tim-evaluasi': 'Tim Evaluasi (Evaluator)',
+  'biro-organisasi': 'Biro Organisasi',
 }
 
 export interface TTDElektronikPageProps {
@@ -133,11 +133,7 @@ export function TTDElektronikPage({
       <PageHeader
         breadcrumb={[{ label: ROLE_LABEL[role] }, { label: 'TTD Elektronik' }]}
         title="Buat TTD Elektronik (TTE BSRE)"
-        description={
-          role === 'tim-evaluasi'
-            ? 'Kelola tanda tangan elektronik untuk menandatangani hasil evaluasi SOP (TTE BSRE).'
-            : 'Kelola tanda tangan elektronik untuk mengesahkan SOP atau memverifikasi evaluasi.'
-        }
+        description="Kelola tanda tangan elektronik untuk mengesahkan SOP atau memverifikasi evaluasi."
       />
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -298,7 +294,7 @@ export function TTDElektronikPage({
               </p>
               <div className="mt-3">
                 <Link
-                  to="/validasi/ttd/berhasil"
+                  to={ROUTES.VALIDASI.TTD_BERHASIL}
                   search={{ token: verificationToken ?? '' }}
                   className="text-xs text-blue-600 hover:underline break-all"
                   onClick={handleCloseDialog}
@@ -316,7 +312,7 @@ export function TTDElektronikPage({
                 >
                   Tutup
                 </Button>
-                <Link to="/validasi/ttd/berhasil" search={{ token: verificationToken ?? '' }}>
+                <Link to={ROUTES.VALIDASI.TTD_BERHASIL} search={{ token: verificationToken ?? '' }}>
                   <Button
                     type="button"
                     size="sm"

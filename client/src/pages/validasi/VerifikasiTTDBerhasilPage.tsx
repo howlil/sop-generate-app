@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
+import { ROUTES } from '@/lib/constants/routes'
 import { verifyTTEEmail } from '@/lib/tte'
 
 const ROLE_LABEL: Record<string, string> = {
   'kepala-opd': 'Kepala OPD',
-  'kepala-biro-organisasi': 'Kepala Biro Organisasi',
-  'tim-evaluasi': 'Tim Evaluasi (Evaluator)',
+  'biro-organisasi': 'Biro Organisasi',
 }
 
 export interface VerifikasiTTDBerhasilPageProps {
@@ -41,19 +41,14 @@ export function VerifikasiTTDBerhasilPage({ token }: VerifikasiTTDBerhasilPagePr
             kembali dari halaman TTD Elektronik.
           </p>
           <div className="mt-4 flex justify-center gap-2">
-            <Link to="/kepala-opd/ttd-elektronik">
+            <Link to={ROUTES.KEPALA_OPD.TTD}>
               <Button variant="outline" size="sm">
                 Ke TTD Elektronik (Kepala OPD)
               </Button>
             </Link>
-            <Link to="/kepala-biro-organisasi/ttd-elektronik">
+            <Link to={ROUTES.BIRO_ORGANISASI.TTD}>
               <Button variant="outline" size="sm">
-                Ke TTD Elektronik (Kepala Biro)
-              </Button>
-            </Link>
-            <Link to="/tim-evaluasi/ttd-elektronik">
-              <Button variant="outline" size="sm">
-                Ke TTD Elektronik (Tim Evaluasi)
+                Ke TTD Elektronik (Biro Organisasi)
               </Button>
             </Link>
           </div>
@@ -71,12 +66,7 @@ export function VerifikasiTTDBerhasilPage({ token }: VerifikasiTTDBerhasilPagePr
   }
 
   const label = ROLE_LABEL[verifiedRole] ?? verifiedRole
-  const ttdPage =
-    verifiedRole === 'kepala-opd'
-      ? '/kepala-opd/ttd-elektronik'
-      : verifiedRole === 'tim-evaluasi'
-        ? '/tim-evaluasi/ttd-elektronik'
-        : '/kepala-biro-organisasi/ttd-elektronik'
+  const ttdPage = verifiedRole === 'kepala-opd' ? ROUTES.KEPALA_OPD.TTD : ROUTES.BIRO_ORGANISASI.TTD
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">

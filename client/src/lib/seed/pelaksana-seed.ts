@@ -1,5 +1,5 @@
 /**
- * Seed data untuk halaman Pelaksana SOP (Kepala OPD): daftar pelaksana.
+ * Seed data untuk halaman Kelola Pelaksana SOP (Tim Penyusun): daftar pelaksana.
  */
 
 import type { PelaksanaSOP } from '@/lib/types/sop'

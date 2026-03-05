@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { DetailPenugasanEvaluasi } from '@/pages/kepala-biro-organisasi/DetailPenugasanEvaluasi'
 
 export const Route = createFileRoute(
-  '/kepala-biro-organisasi/manajemen-evaluasi-sop/detail/$id'
+  '/biro-organisasi/manajemen-evaluasi-sop/detail/$id'
 )({
   component: DetailPenugasanPage,
 })

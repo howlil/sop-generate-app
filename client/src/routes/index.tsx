@@ -10,7 +10,7 @@ export const Route = createFileRoute('/')({
 
 const dashboards = [
   { to: '/kepala-opd', icon: Building2, role: ROLES.KEPALA_OPD },
-  { to: '/kepala-biro-organisasi', icon: UserCircle, role: ROLES.KEPALA_BIRO_ORGANISASI },
+  { to: '/biro-organisasi', icon: UserCircle, role: ROLES.BIRO_ORGANISASI },
   { to: '/tim-evaluasi', icon: ClipboardCheck, role: ROLES.TIM_EVALUASI },
   { to: '/tim-penyusun', icon: Users, role: ROLES.TIM_PENYUSUN },
 ]
@@ -19,9 +19,9 @@ function IndexPage() {
   const { denied } = useSearch({ from: '/' })
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {denied === 'kepala-biro-organisasi' && (
+      {denied === 'biro-organisasi' && (
         <div className="bg-red-50 border-b border-red-200 px-6 py-2 text-center">
-          <p className="text-xs text-red-700">Akses ditolak. Hanya Kepala Biro Organisasi yang dapat mengakses halaman tersebut. Pilih role Kepala Biro Organisasi di bawah lalu masuk.</p>
+          <p className="text-xs text-red-700">Akses ditolak. Hanya Biro Organisasi yang dapat mengakses halaman tersebut. Pilih role Biro Organisasi di bawah lalu masuk.</p>
         </div>
       )}
       <header className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between">
@@ -39,7 +39,7 @@ function IndexPage() {
             Selamat datang di Biro Organisasi
           </h1>
           <p className="text-xs text-gray-500 mb-4">
-            Pilih role lalu masuk. Hanya Kepala Biro Organisasi yang dapat mengakses Manajemen OPD, Tim Evaluasi, dan Evaluasi SOP.
+            Pilih role lalu masuk. Hanya Biro Organisasi yang dapat mengakses Manajemen OPD, Tim Evaluasi, dan Evaluasi SOP.
           </p>
         </div>
 

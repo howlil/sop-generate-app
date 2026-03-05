@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
+import { useFilteredList } from '@/hooks/useFilteredList'
 import { showToast } from '@/lib/stores'
 import { generateId } from '@/utils/generate-id'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
@@ -40,9 +41,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { STATUS_SOP_CAN_SELECT_FOR_EVALUASI } from '@/lib/types/sop'
 import { formatDateId } from '@/utils/format-date'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
+import { ROUTES } from '@/lib/constants/routes'
 
 export function ManajemenEvaluasiSOP() {
-  const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [editingPenugasanId, setEditingPenugasanId] = useState<string | null>(null)
@@ -70,7 +71,7 @@ export function ManajemenEvaluasiSOP() {
   /** OPD yang mengajukan request evaluasi ke Biro (request dari OPD). Tampilkan badge "Request Biro" saat pilih OPD. */
   const opdYangRequestBiro = ['DPMPTSP']
 
-  /** SOP per OPD; status SOP = single source of truth. Filter layak evaluasi: Siap Dievaluasi, Berlaku, Diajukan Evaluasi. */
+  /** SOP per OPD; status SOP = single source of truth. Filter layak evaluasi: Siap Dievaluasi, Berlaku, Diajukan Evaluasi. Batch/penugasan dipakai untuk verifikasi Berita Acara (1 BA = 1 evaluasi OPD). */
   const [sopByOPD] = useState(SEED_SOP_BY_OPD)
 
   /** Riwayat evaluasi untuk satu SOP: penugasan yang sudah Selesai/Terverifikasi dan memuat SOP ini. */
@@ -85,17 +86,15 @@ export function ManajemenEvaluasiSOP() {
 
   const timMonevList = SEED_TIM_MONEV_OPTIONS
 
-  const filteredList = penugasanList.filter((item) => {
-    const q = searchQuery.toLowerCase()
-    return (
-      item.opd.toLowerCase().includes(q) ||
-      item.jenis.toLowerCase().includes(q) ||
-      item.sopList.some((sop: SOPItem) => sop.nama.toLowerCase().includes(q))
-    )
+  const { filteredList, searchQuery, setSearchQuery } = useFilteredList(penugasanList, {
+    searchKeys: [
+      (item) =>
+        `${item.opd} ${item.jenis} ${(item.sopList ?? []).map((s: SOPItem) => s.nama).join(' ')}`,
+    ],
   })
 
   const goToDetail = (item: Penugasan) => {
-    navigate({ to: '/kepala-biro-organisasi/manajemen-evaluasi-sop/detail/$id', params: { id: item.id } })
+    navigate({ to: ROUTES.BIRO_ORGANISASI.DETAIL_EVALUASI, params: { id: item.id } })
   }
 
   const resetForm = () => {
@@ -173,32 +172,31 @@ export function ManajemenEvaluasiSOP() {
   }
 
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'Manajemen Evaluasi SOP' }]}
-        title="Manajemen Evaluasi SOP"
-        description="Kelola penugasan evaluasi SOP per OPD"
-      />
-
-      <SearchToolbar
-        searchPlaceholder="Cari OPD atau SOP..."
-        searchValue={searchQuery}
-        onSearchChange={(e) => setSearchQuery(e.target.value)}
-      >
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() => {
-            resetForm()
-            setEditingPenugasanId(null)
-            setIsCreateOpen(true)
-          }}
+    <ListPageLayout
+      breadcrumb={[{ label: 'Manajemen Evaluasi SOP' }]}
+      title="Manajemen Evaluasi SOP"
+      description="Kelola batch evaluasi per OPD untuk verifikasi Berita Acara (1 BA = 1 evaluasi OPD). Tim Evaluasi evaluasi langsung dari Daftar SOP Evaluasi."
+      toolbar={
+        <SearchToolbar
+          searchPlaceholder="Cari OPD atau SOP..."
+          searchValue={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
         >
-          <Plus className="w-3.5 h-3.5" />
-          Buat Penugasan Baru
-        </Button>
-      </SearchToolbar>
-
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={() => {
+              resetForm()
+              setEditingPenugasanId(null)
+              setIsCreateOpen(true)
+            }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Buat Penugasan Baru
+          </Button>
+        </SearchToolbar>
+      }
+    >
       <Table.Card>
         <Table.Table>
           <thead>
@@ -213,7 +211,7 @@ export function ManajemenEvaluasiSOP() {
             {filteredList.length === 0 ? (
               <tr>
                 <Table.Td colSpan={4} className="p-8 text-center text-gray-500">
-                  Tidak ada penugasan evaluasi. Gunakan &quot;Buat Penugasan Baru&quot; untuk menambah.
+                  Tidak ada batch evaluasi. Gunakan &quot;Buat Penugasan Baru&quot; untuk membuat batch verifikasi per OPD.
                 </Table.Td>
               </tr>
             ) : (
@@ -435,6 +433,6 @@ export function ManajemenEvaluasiSOP() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </ListPageLayout>
   )
 }

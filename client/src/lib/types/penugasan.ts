@@ -33,7 +33,7 @@ export interface Penugasan {
   isVerified?: boolean
   nomorBA?: string
   tanggalVerifikasi?: string
-  kepalaBiro?: string
+  namaBiro?: string
   tteSignaturePayload?: TTESignaturePayload
 }
 

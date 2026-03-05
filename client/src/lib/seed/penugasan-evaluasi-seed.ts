@@ -1,5 +1,6 @@
 /**
- * Seed data untuk Manajemen Evaluasi SOP, Edit Penugasan, dan Penugasan (Tim Evaluasi).
+ * Seed data untuk Manajemen Evaluasi SOP (Biro: batch per OPD, verifikasi BA).
+* Tim Evaluasi alur baru: evaluasi langsung dari Daftar SOP Evaluasi (tanpa penugasan).
  */
 
 import type { Penugasan, PenugasanTimEvaluasiItem } from '@/lib/types/penugasan'
@@ -22,7 +23,7 @@ export const SEED_PENUGASAN_INITIAL: Penugasan[] = [
     isVerified: true,
     nomorBA: 'BA/BIRO/001/II/2026',
     tanggalVerifikasi: '2026-02-06',
-    kepalaBiro: 'Dr. H. Muhammad Ridwan, M.Si',
+    namaBiro: 'Dr. H. Muhammad Ridwan, M.Si',
   },
   {
     id: '2',
@@ -80,7 +81,7 @@ export const SEED_OPD_LIST_EVALUASI: { id: string; nama: string; kode: string }[
 export const SEED_SOP_BY_OPD: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>> = {
   'Dinas Pendidikan': [
     { id: 'sop1', nama: 'SOP Penerimaan Siswa Baru', nomor: 'SOP-DISDIK-001/2026', status: 'Berlaku' },
-    { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi dari Kepala Biro' },
+    { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi dari Biro Organisasi' },
     { id: 'sop3', nama: 'SOP Kelulusan', nomor: 'SOP-DISDIK-010/2026', status: 'Berlaku' },
     { id: '1', nama: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027', nomor: 'SOP/DISDIK/PLY/2026/001', status: 'Berlaku' },
     { id: '2', nama: 'SOP Pelaksanaan Ujian Akhir Sekolah', nomor: 'SOP/DISDIK/PLY/2026/005', status: 'Siap Dievaluasi' },
@@ -88,7 +89,7 @@ export const SEED_SOP_BY_OPD: Record<string, Array<{ id: string; nama: string; n
   ],
   'Dinas Kesehatan': [
     { id: 'sop4', nama: 'SOP Pelayanan Kesehatan Dasar', nomor: 'SOP-DINKES-012/2026', status: 'Berlaku' },
-    { id: 'sop5', nama: 'SOP Imunisasi', nomor: 'SOP-DINKES-018/2026', status: 'Terverifikasi dari Kepala Biro' },
+    { id: 'sop5', nama: 'SOP Imunisasi', nomor: 'SOP-DINKES-018/2026', status: 'Terverifikasi dari Biro Organisasi' },
   ],
   DPMPTSP: [
     { id: 'sop6', nama: 'SOP Perizinan Usaha', nomor: 'SOP-DPMPTSP-005/2026', status: 'Diajukan Evaluasi' },
@@ -114,3 +115,75 @@ export const SEED_PENUGASAN_TIM_EVALUASI: PenugasanTimEvaluasiItem[] = [
 
 /** OPD yang mengajukan request evaluasi ke Biro. */
 export const SEED_OPD_REQUEST_BIRO: string[] = ['DPMPTSP']
+
+/**
+ * Data dummy: SOP id → { date, evaluatorName }.
+ * Hanya SOP yang sudah pernah dikirim hasil evaluasi (tampil "Selesai Evaluasi").
+ * SOP yang TIDAK ada di sini tampil "Diajukan Evaluasi" (edge case: belum ada evaluator).
+ *
+ * Konsisten dengan SEED_SOP_BY_OPD:
+ * - Dinas Pendidikan: sop1, 1, 3 Selesai | sop2, sop3, 2 Diajukan
+ * - Dinas Kesehatan: sop4 Selesai | sop5 Diajukan
+ * - DPMPTSP: sop6 Selesai
+ * - Bagian Umum: (kosong) → sop7 Diajukan
+ */
+export const SEED_LAST_EVALUATED_BY: Record<string, { date: string; evaluatorName: string }> = {
+  sop1: { date: '2026-02-10', evaluatorName: 'Dra. Siti Aminah, M.Si' },
+  '1': { date: '2026-02-12', evaluatorName: 'Dra. Siti Aminah, M.Si' },
+  '3': { date: '2026-02-01', evaluatorName: 'Ir. Dewi Kusumawati, MT' },
+  sop4: { date: '2026-02-03', evaluatorName: 'Dra. Siti Aminah, M.Si' },
+  sop6: { date: '2026-02-06', evaluatorName: 'Ir. Dewi Kusumawati, MT' },
+}
+
+/** Riwayat evaluasi per SOP: tanggal, evaluator, hasil (Sesuai/Revisi), komentar opsional. */
+export type RiwayatEvaluasiSOPItem = {
+  date: string
+  evaluatorName: string
+  hasil: 'Sesuai' | 'Revisi Biro'
+  komentar?: string
+}
+
+/** Riwayat evaluasi OPD: per OPD, tiap entri terkait satu evaluasi (bisa per SOP). */
+export type RiwayatEvaluasiOPDItem = {
+  date: string
+  evaluatorName: string
+  skor: number
+  sopId?: string
+  sopJudul?: string
+}
+
+/** Riwayat hanya untuk SOP yang ada di SEED_LAST_EVALUATED_BY. Entri terakhir = match date + evaluatorName. */
+export const SEED_RIWAYAT_EVALUASI_SOP: Record<string, RiwayatEvaluasiSOPItem[]> = {
+  sop1: [
+    { date: '2026-02-10', evaluatorName: 'Dra. Siti Aminah, M.Si', hasil: 'Sesuai' },
+    { date: '2025-11-05', evaluatorName: 'Dr. Bambang Suryanto', hasil: 'Revisi Biro', komentar: 'Lengkapi lampiran format pendaftaran.' },
+  ],
+  '1': [
+    { date: '2026-02-12', evaluatorName: 'Dra. Siti Aminah, M.Si', hasil: 'Sesuai' },
+  ],
+  '3': [
+    { date: '2026-02-01', evaluatorName: 'Ir. Dewi Kusumawati, MT', hasil: 'Sesuai' },
+  ],
+  sop4: [
+    { date: '2026-02-03', evaluatorName: 'Dra. Siti Aminah, M.Si', hasil: 'Sesuai' },
+  ],
+  sop6: [
+    { date: '2026-02-06', evaluatorName: 'Ir. Dewi Kusumawati, MT', hasil: 'Revisi Biro', komentar: 'Sinkronisasi dengan peraturan terbaru.' },
+  ],
+}
+
+/** opdId → riwayat evaluasi OPD. Hanya entri untuk SOP yang ada di SEED_LAST_EVALUATED_BY (selesai evaluasi). Judul = match SEED_SOP_BY_OPD. */
+export const SEED_RIWAYAT_EVALUASI_OPD: Record<string, RiwayatEvaluasiOPDItem[]> = {
+  opd1: [
+    { date: '2026-02-12', evaluatorName: 'Dra. Siti Aminah, M.Si', skor: 5, sopId: '1', sopJudul: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027' },
+    { date: '2026-02-01', evaluatorName: 'Ir. Dewi Kusumawati, MT', skor: 5, sopId: '3', sopJudul: 'SOP Pengelolaan Data Kepegawaian Guru' },
+    { date: '2026-02-10', evaluatorName: 'Dra. Siti Aminah, M.Si', skor: 4, sopId: 'sop1', sopJudul: 'SOP Penerimaan Siswa Baru' },
+  ],
+  opd2: [
+    { date: '2026-02-03', evaluatorName: 'Dra. Siti Aminah, M.Si', skor: 4, sopId: 'sop4', sopJudul: 'SOP Pelayanan Kesehatan Dasar' },
+  ],
+  opd3: [
+    { date: '2026-02-06', evaluatorName: 'Ir. Dewi Kusumawati, MT', skor: 3, sopId: 'sop6', sopJudul: 'SOP Perizinan Usaha' },
+  ],
+  opd4: [],
+}

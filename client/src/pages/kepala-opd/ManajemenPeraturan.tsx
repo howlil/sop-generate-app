@@ -13,7 +13,7 @@ import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { showToast } from '@/lib/stores'
 import { generateId } from '@/utils/generate-id'
 import {
@@ -265,32 +265,31 @@ export function ManajemenPeraturan() {
   }
 
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'Manajemen Peraturan' }]}
-        title="Master Data Peraturan"
-        description="Kelola jenis peraturan dan database peraturan"
-      />
-
-      <SearchToolbar
-        searchPlaceholder={
-          activeTab === 'jenis' ? 'Cari jenis peraturan...' : 'Cari peraturan...'
-        }
-        searchValue={searchQuery}
-        onSearchChange={(e) => setSearchQuery(e.target.value)}
-      >
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() =>
-            activeTab === 'jenis' ? openJenisDialog() : openPeraturanDialog()
+    <ListPageLayout
+      breadcrumb={[{ label: 'Manajemen Peraturan' }]}
+      title="Master Data Peraturan"
+      description="Kelola jenis peraturan dan database peraturan"
+      toolbar={
+        <SearchToolbar
+          searchPlaceholder={
+            activeTab === 'jenis' ? 'Cari jenis peraturan...' : 'Cari peraturan...'
           }
+          searchValue={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
         >
-          <Plus className="w-3.5 h-3.5" />
-          Tambah {activeTab === 'jenis' ? 'Jenis' : 'Peraturan'}
-        </Button>
-      </SearchToolbar>
-
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={() =>
+              activeTab === 'jenis' ? openJenisDialog() : openPeraturanDialog()
+            }
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Tambah {activeTab === 'jenis' ? 'Jenis' : 'Peraturan'}
+          </Button>
+        </SearchToolbar>
+      }
+    >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-9 bg-white border border-gray-200">
           <TabsTrigger value="jenis" className="text-xs gap-1.5">
@@ -650,6 +649,6 @@ export function ManajemenPeraturan() {
           else if (deleteConfirm?.type === 'peraturan') doDeletePeraturan(deleteConfirm.id)
         }}
       />
-    </div>
+    </ListPageLayout>
   )
 }

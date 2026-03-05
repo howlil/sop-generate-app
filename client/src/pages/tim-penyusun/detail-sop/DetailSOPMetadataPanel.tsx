@@ -274,75 +274,86 @@ export function DetailSOPMetadataPanel({
 
       {/* Dialog: pilih dasar hukum dari peraturan OPD (searchable) */}
       <Dialog open={isLawBasisOpen} onOpenChange={setIsLawBasisOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto [&>*]:p-0">
+          <DialogHeader className="p-4 pb-2">
             <DialogTitle className="text-sm">Pilih Dasar Hukum</DialogTitle>
-            <DialogDescription className="text-xs">
-              Cari peraturan yang akan ditambahkan ke dasar hukum.
+            <DialogDescription className="text-xs text-gray-500 mt-1">
+              Cari peraturan yang akan ditambahkan ke dasar hukum (nama, jenis, atau nomor/tahun).
             </DialogDescription>
           </DialogHeader>
-          <SearchInput
-            placeholder="Cari peraturan..."
-            value={lawBasisQuery}
-            onChange={(e) => setLawBasisQuery(e.target.value)}
-            className="mb-2 border border-gray-200 rounded-md px-0 py-0"
-            inputClassName="border-0 focus:ring-0 focus:outline-none"
-          />
-          <div className="border border-gray-200 rounded-md overflow-hidden">
-            <ScrollArea className="h-[360px]">
-              <div className="divide-y divide-gray-100">
-                {peraturanList
-                  .filter((p) => p.status === 'Berlaku')
-                  .filter((p) => {
-                    const q = lawBasisQuery.toLowerCase()
-                    if (!q) return true
-                    return (
-                      p.tentang.toLowerCase().includes(q) ||
-                      p.jenisPeraturan.toLowerCase().includes(q) ||
-                      `${p.nomor}/${p.tahun}`.includes(q)
-                    )
-                  })
-                  .map((p) => {
-                    const label = `${p.jenisPeraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`
-                    const already = (metadata.lawBasis ?? []).includes(label)
-                    const selected = selectedLawBasisIds.includes(p.id)
-                    return (
-                      <button
-                        key={p.id}
-                        type="button"
-                        className={`w-full text-left p-3 hover:bg-gray-50 flex items-start gap-2 ${
-                          already ? 'opacity-60 cursor-not-allowed' : ''
-                        }`}
-                        disabled={already}
-                        onClick={() => {
-                          if (already) return
-                          setSelectedLawBasisIds((prev) =>
-                            prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id]
-                          )
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          readOnly
-                          className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-blue-600"
-                        />
-                        <div>
-                          <p className="text-xs font-medium text-gray-900">
-                            {p.jenisPeraturan} No. {p.nomor}/{p.tahun}
-                          </p>
-                          <p className="text-xs text-gray-600 mt-0.5">{p.tentang}</p>
-                        </div>
-                      </button>
-                    )
-                  })}
-                {peraturanList.length === 0 && (
-                  <div className="p-6 text-center text-xs text-gray-500">Belum ada data peraturan.</div>
-                )}
-              </div>
-            </ScrollArea>
+          <div className="px-4 pb-2">
+            <SearchInput
+              placeholder="Cari peraturan (nama, jenis, nomor)..."
+              value={lawBasisQuery}
+              onChange={(e) => setLawBasisQuery(e.target.value)}
+              className="w-full max-w-none border border-gray-200 rounded-lg bg-gray-50/50 focus-within:bg-white focus-within:border-gray-300"
+              inputClassName="border-0 bg-transparent focus:ring-0 focus-visible:ring-0"
+            />
           </div>
-          <DialogFooter className="gap-2">
+          <div className="px-4 pb-4 border-t border-gray-100">
+            <div className="border border-gray-200 rounded-lg overflow-hidden mt-2">
+              <ScrollArea className="h-[320px]">
+                <div className="divide-y divide-gray-100">
+                  {(() => {
+                    const berlakuList = peraturanList.filter((p) => p.status === 'Berlaku')
+                    const q = lawBasisQuery.trim().toLowerCase()
+                    const filtered = q
+                      ? berlakuList.filter(
+                          (p) =>
+                            p.tentang.toLowerCase().includes(q) ||
+                            p.jenisPeraturan.toLowerCase().includes(q) ||
+                            `${p.nomor}/${p.tahun}`.includes(q)
+                        )
+                      : berlakuList
+                    if (filtered.length === 0) {
+                      return (
+                        <div className="p-6 text-center text-xs text-gray-500">
+                          {berlakuList.length === 0
+                            ? 'Belum ada data peraturan.'
+                            : 'Tidak ada peraturan yang cocok dengan pencarian.'}
+                        </div>
+                      )
+                    }
+                    return filtered.map((p) => {
+                      const label = `${p.jenisPeraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`
+                      const already = (metadata.lawBasis ?? []).includes(label)
+                      const selected = selectedLawBasisIds.includes(p.id)
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={`w-full text-left p-3 hover:bg-gray-50 flex items-start gap-2 ${
+                            already ? 'opacity-60 cursor-not-allowed' : ''
+                          }`}
+                          disabled={already}
+                          onClick={() => {
+                            if (already) return
+                            setSelectedLawBasisIds((prev) =>
+                              prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id]
+                            )
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            readOnly
+                            className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-blue-600"
+                          />
+                          <div>
+                            <p className="text-xs font-medium text-gray-900">
+                              {p.jenisPeraturan} No. {p.nomor}/{p.tahun}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-0.5">{p.tentang}</p>
+                          </div>
+                        </button>
+                      )
+                    })
+                  })()}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+          <DialogFooter className="p-4 pt-3 gap-2">
             <Button
               variant="outline"
               size="sm"

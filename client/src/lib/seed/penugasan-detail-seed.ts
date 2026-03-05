@@ -1,5 +1,5 @@
 /**
- * Seed data untuk halaman Detail Penugasan (Tim Evaluasi) — lookup penugasan by id & konten preview SOP.
+ * Seed data untuk Detail batch evaluasi (legacy / dari Biro) — lookup by id & preview SOP.
  */
 
 import type { PenugasanDetailItem } from '@/lib/types/penugasan'

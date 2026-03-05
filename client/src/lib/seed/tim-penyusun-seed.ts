@@ -1,5 +1,5 @@
 /**
- * Seed data untuk Manajemen Tim Penyusun (Kepala OPD) dan opsi tim penyusun di Inisiasi Proyek.
+ * Seed data untuk Manajemen Tim Penyusun (Biro Organisasi). Satu OPD punya banyak tim penyusun.
  */
 
 import type { TimPenyusun, TimPenyusunOption } from '@/lib/types/tim'
@@ -7,6 +7,7 @@ import type { TimPenyusun, TimPenyusunOption } from '@/lib/types/tim'
 export const SEED_TIM_PENYUSUN_LIST: TimPenyusun[] = [
   {
     id: '1',
+    opdId: '1',
     nama: 'Ahmad Pratama, S.Sos',
     nip: '199203152020121001',
     jabatan: 'Kepala Seksi Organisasi',
@@ -18,6 +19,7 @@ export const SEED_TIM_PENYUSUN_LIST: TimPenyusun[] = [
   },
   {
     id: '2',
+    opdId: '1',
     nama: 'Siti Nurhaliza, S.Pd',
     nip: '199105102019032005',
     jabatan: 'Staf Bagian Tata Usaha',
@@ -29,6 +31,7 @@ export const SEED_TIM_PENYUSUN_LIST: TimPenyusun[] = [
   },
   {
     id: '3',
+    opdId: '1',
     nama: 'Budi Santoso, S.T',
     nip: '198808252018031002',
     jabatan: 'Kepala Sub Bagian Perencanaan',
@@ -40,6 +43,7 @@ export const SEED_TIM_PENYUSUN_LIST: TimPenyusun[] = [
   },
   {
     id: '4',
+    opdId: '1',
     nama: 'Dewi Kusuma, S.E',
     nip: '199012152021022001',
     jabatan: 'Staf Keuangan',
@@ -50,6 +54,8 @@ export const SEED_TIM_PENYUSUN_LIST: TimPenyusun[] = [
     tanggalBergabung: '2021-09-01',
   },
 ]
+
+/** Opsi tim penyusun untuk dropdown (mis. Inisiasi Proyek). Dibuat dari SEED_TIM_PENYUSUN_LIST. */
 
 export const SEED_TIM_PENYUSUN_OPTIONS: TimPenyusunOption[] = [
   { id: '1', nama: 'Ahmad Pratama, S.Sos', jabatan: 'Kepala Seksi Kurikulum' },

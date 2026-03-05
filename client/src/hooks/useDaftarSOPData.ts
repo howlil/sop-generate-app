@@ -1,5 +1,5 @@
 /**
- * Data dan derived list untuk Daftar SOP (Kepala OPD).
+ * Data dan derived list untuk Daftar SOP (Tim Penyusun).
  * State: sopList (initial dari seed); mergedSopList, eligibleSopsForEvaluasi, filteredList.
  */
 

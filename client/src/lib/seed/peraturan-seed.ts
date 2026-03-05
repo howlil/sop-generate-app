@@ -1,5 +1,5 @@
 /**
- * Seed data untuk Manajemen Peraturan (Kepala OPD).
+ * Seed data untuk Manajemen Peraturan (Tim Penyusun).
  * OPD yang sedang login (mock): hanya peraturan dengan createdBy === currentOPDId yang bisa diedit.
  */
 

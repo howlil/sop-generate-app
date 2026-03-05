@@ -1,5 +1,5 @@
 /**
- * Seed data untuk Daftar SOP (Kepala OPD) dan SOP Saya (Tim Penyusun).
+ * Seed data untuk Daftar SOP dan SOP Saya (Tim Penyusun).
  * Siap diganti dengan API later.
  */
 
@@ -34,7 +34,7 @@ export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [
     unitTerkait: 'Bidang Pendidikan Dasar',
     peraturan: 'Permendikbud No. 1/2026',
     peraturanId: 'p1',
-    status: 'Terverifikasi dari Kepala Biro',
+    status: 'Terverifikasi dari Biro Organisasi',
     versi: '2.1',
     kategori: 'Pelayanan',
   },
@@ -80,7 +80,7 @@ export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [
     unitTerkait: 'Bidang Keuangan',
     peraturan: 'Permendikbud No. 8/2025',
     peraturanId: 'p4',
-    status: 'Diperiksa Kepala OPD',
+    status: 'Siap Dievaluasi',
     versi: '1.0',
     kategori: 'Administrasi',
   },
@@ -141,7 +141,7 @@ export const SEED_PERATURAN_DAFTAR: { id: string; nama: string }[] = [
 export const SEED_SOP_SAYA: SOPSayaItem[] = [
   { id: '1', nomorSOP: 'PRJ-DISDIK-001/2026', judul: 'SOP Penerimaan Siswa Baru 2026', versi: '0.9', status: 'Revisi dari Tim Evaluasi', terakhirDiubah: '2026-01-28', komentarCount: 3 },
   { id: '2', nomorSOP: 'PRJ-DISDIK-002/2026', judul: 'SOP Pelayanan Perpustakaan Digital', versi: '0.5', status: 'Sedang Disusun', terakhirDiubah: '2026-01-27', komentarCount: 0 },
-  { id: '3', nomorSOP: 'PRJ-DISDIK-003/2025', judul: 'SOP Ujian Akhir Semester', versi: '1.0', status: 'Diperiksa Kepala OPD', terakhirDiubah: '2026-01-20', komentarCount: 0 },
+  { id: '3', nomorSOP: 'PRJ-DISDIK-003/2025', judul: 'SOP Ujian Akhir Semester', versi: '1.0', status: 'Siap Dievaluasi', terakhirDiubah: '2026-01-20', komentarCount: 0 },
   { id: '4', nomorSOP: 'PRJ-DISDIK-004/2025', judul: 'SOP Penilaian Kinerja Guru', versi: '1.5', status: 'Revisi dari Kepala OPD', terakhirDiubah: '2025-12-15', komentarCount: 0 },
   { id: '5', nomorSOP: 'PRJ-DISDIK-005/2025', judul: 'SOP Pengadaan Buku Pelajaran', versi: '2.0', status: 'Berlaku', terakhirDiubah: '2025-11-10', komentarCount: 0 },
 ]

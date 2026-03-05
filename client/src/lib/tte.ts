@@ -49,7 +49,7 @@ export function setTTEProfile(
 
 export function getTTEProfileByVerificationToken(token: string): TTEProfile | null {
   if (typeof window === 'undefined' || !token) return null
-  for (const role of ['kepala-opd', 'kepala-biro-organisasi', 'tim-evaluasi'] as TTERole[]) {
+  for (const role of ['kepala-opd', 'biro-organisasi'] as TTERole[]) {
     const p = getTTEProfile(role)
     if (p?.verificationToken === token) return p
   }
@@ -125,12 +125,7 @@ export function addTTESignature(
   list.unshift(payload)
   saveTTESignatures(list)
 
-  const action =
-    role === 'kepala-opd'
-      ? 'pengesahan_sop'
-      : role === 'tim-evaluasi'
-        ? 'tanda_hasil_evaluasi'
-        : 'verifikasi_evaluasi'
+  const action = role === 'kepala-opd' ? 'pengesahan_sop' : 'verifikasi_evaluasi'
   appendAuditEntry({
     id: 'audit_' + Date.now(),
     timestamp: signedAt,

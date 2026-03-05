@@ -20,7 +20,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { FormDialog } from '@/components/ui/form-dialog'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
+import { TableFooterSummary } from '@/components/ui/table-footer-summary'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { showToast } from '@/lib/stores'
 import { StatusBadge } from '@/components/ui/status-badge'
@@ -30,6 +31,7 @@ import { Select } from '@/components/ui/select'
 import { formatDateIdLong } from '@/utils/format-date'
 import { getRiwayatEvaluasiForSop, addEvaluationCase } from '@/lib/stores/evaluasi-store'
 import type { EvaluationCaseSourceType } from '@/lib/types/evaluasi'
+import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
 import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
 import { SEED_PERATURAN_DAFTAR } from '@/lib/seed/sop-daftar'
@@ -70,7 +72,7 @@ export function DaftarSOP() {
     try {
       const newCase = addEvaluationCase({
         source_type: 'OPD_REQUEST' as EvaluationCaseSourceType,
-        source_ref: 'kepala-opd',
+        source_ref: 'tim-penyusun',
         status: 'Draft',
         sopIds: ids,
       })
@@ -90,14 +92,12 @@ export function DaftarSOP() {
   }
 
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'Daftar SOP' }]}
-        title="Daftar SOP"
-        description="Kelola dan pantau semua SOP di lingkungan Dinas Pendidikan"
-      />
-
-      <SearchToolbar
+    <ListPageLayout
+      breadcrumb={[{ label: 'Daftar SOP' }]}
+      title="Daftar SOP"
+      description="Daftar SOP (Tim Penyusun): buat SOP baru, pantau status, ajukan evaluasi untuk SOP yang Siap Dievaluasi."
+      toolbar={
+        <SearchToolbar
         searchPlaceholder="Cari judul atau nomor SOP..."
         searchValue={filters.searchQuery}
         onSearchChange={(e) => filters.setSearchQuery(e.target.value)}
@@ -185,14 +185,15 @@ export function DaftarSOP() {
           <Send className="w-3.5 h-3.5" />
           Request Evaluasi
         </Button>
-        <Link to="/kepala-opd/initiate-proyek">
+        <Link to={ROUTES.TIM_PENYUSUN.INITIATE_PROYEK}>
           <Button size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="w-3.5 h-3.5" />
             Buat SOP Baru
           </Button>
         </Link>
       </SearchToolbar>
-
+      }
+    >
       <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
         <Table.Root>
           <Table.Table>
@@ -232,8 +233,9 @@ export function DaftarSOP() {
                     <Table.Td>
                       <IconActionButton
                         icon={Eye}
-                        to="/kepala-opd/detail-sop/$id"
+                        to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
                         params={{ id: sop.id }}
+                        search={{ from: 'daftar' }}
                         state={{
                           sopStatus: sop.status,
                           waktuPenugasan: sop.waktuPenugasan,
@@ -253,22 +255,11 @@ export function DaftarSOP() {
         </Table.Root>
 
         {filteredList.length > 0 && (
-          <div className="border-t border-gray-200 p-3 flex items-center justify-between">
-            <p className="text-xs text-gray-600">
-              Menampilkan {filteredList.length} dari {mergedSopList.length} SOP
-            </p>
-            <div className="flex gap-1">
-              <Button variant="outline" size="sm" className="h-7 px-2 text-xs" disabled>
-                Sebelumnya
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 px-2 text-xs bg-blue-50">
-                1
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 px-2 text-xs" disabled>
-                Selanjutnya
-              </Button>
-            </div>
-          </div>
+          <TableFooterSummary
+            displayedCount={filteredList.length}
+            totalCount={mergedSopList.length}
+            label="SOP"
+          />
         )}
       </div>
 
@@ -333,6 +324,6 @@ export function DaftarSOP() {
           )}
         </div>
       </FormDialog>
-    </div>
+    </ListPageLayout>
   )
 }

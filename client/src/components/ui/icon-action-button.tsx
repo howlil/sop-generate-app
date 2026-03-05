@@ -10,6 +10,8 @@ export interface IconActionButtonProps {
   to?: string
   /** Params untuk Link (mis. { id: sop.id }). */
   params?: Record<string, string>
+  /** Search/query untuk Link (mis. { from: 'daftar' }). */
+  search?: Record<string, string>
   /** State untuk Link (mis. data untuk halaman detail). */
   state?: Record<string, unknown>
   onClick?: () => void
@@ -28,6 +30,7 @@ export function IconActionButton({
   title,
   to,
   params,
+  search,
   state,
   onClick,
   disabled,
@@ -54,6 +57,6 @@ export function IconActionButton({
       {iconEl}
     </Button>
   )
-  if (to) return <Link to={to} params={params} state={state}>{btn}</Link>
+  if (to) return <Link to={to} params={params} search={search} state={state}>{btn}</Link>
   return btn
 }

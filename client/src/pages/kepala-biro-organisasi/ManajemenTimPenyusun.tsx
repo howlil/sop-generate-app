@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -9,17 +9,30 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { ListPageLayout } from '@/components/layout/ListPageLayout'
+import { useFilteredList } from '@/hooks/useFilteredList'
 import { showToast } from '@/lib/stores'
 import { generateId } from '@/utils/generate-id'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { SEED_TIM_PENYUSUN_LIST } from '@/lib/seed/tim-penyusun-seed'
+import { SEED_OPD_LIST } from '@/lib/seed/opd-seed'
+import {
+  getTimPenyusunList,
+  getTimPenyusunByOpdId,
+  setTimPenyusunList,
+  addTimPenyusun,
+  updateTimPenyusun,
+  removeTimPenyusun,
+  subscribeTimPenyusun,
+} from '@/lib/stores/tim-penyusun-store'
 import type { TimPenyusun } from '@/lib/types/tim'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { formatDateId } from '@/utils/format-date'
+import { ROUTES } from '@/lib/constants/routes'
 
 export function ManajemenTimPenyusun() {
-  const [searchQuery, setSearchQuery] = useState('')
+  const opdList = SEED_OPD_LIST
+  const [selectedOpdId, setSelectedOpdId] = useState<string>(opdList[0]?.id ?? '')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
@@ -34,16 +47,30 @@ export function ManajemenTimPenyusun() {
     status: 'Aktif' as 'Aktif' | 'Nonaktif',
   })
 
-  const [timList, setTimList] = useState<TimPenyusun[]>(SEED_TIM_PENYUSUN_LIST)
+  const [timList, setTimList] = useState<TimPenyusun[]>(() => getTimPenyusunByOpdId(selectedOpdId))
 
-  const filteredList = timList.filter(
-    (tim) =>
-      tim.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      tim.nip.includes(searchQuery) ||
-      tim.jabatan.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  useEffect(() => {
+    if (getTimPenyusunList().length === 0) {
+      setTimPenyusunList(SEED_TIM_PENYUSUN_LIST)
+    }
+    setTimList(getTimPenyusunByOpdId(selectedOpdId))
+  }, [selectedOpdId])
 
-  const isFormValid = formData.nama.trim() !== '' && formData.nip.trim() !== '' && formData.jabatan.trim() !== '' && formData.email.trim() !== '' && formData.noHP.trim() !== ''
+  useEffect(() => {
+    const unsub = subscribeTimPenyusun(() => setTimList(getTimPenyusunByOpdId(selectedOpdId)))
+    return unsub
+  }, [selectedOpdId])
+
+  const { filteredList, searchQuery, setSearchQuery } = useFilteredList(timList, {
+    searchKeys: ['nama', 'nip', 'jabatan'],
+  })
+
+  const isFormValid =
+    formData.nama.trim() !== '' &&
+    formData.nip.trim() !== '' &&
+    formData.jabatan.trim() !== '' &&
+    formData.email.trim() !== '' &&
+    formData.noHP.trim() !== ''
 
   const resetForm = () => {
     setFormData({
@@ -57,28 +84,26 @@ export function ManajemenTimPenyusun() {
   }
 
   const handleCreate = () => {
-    setTimList((prev) => [
-      ...prev,
-      {
-        id: generateId(),
-        ...formData,
-        jumlahSOPDisusun: 0,
-        tanggalBergabung: new Date().toISOString().split('T')[0],
-      },
-    ])
+    addTimPenyusun({
+      id: generateId(),
+      opdId: selectedOpdId,
+      ...formData,
+      jumlahSOPDisusun: 0,
+      tanggalBergabung: new Date().toISOString().split('T')[0],
+    })
     showToast('Tim penyusun berhasil ditambahkan')
     setIsCreateOpen(false)
     resetForm()
+    // Jangan setTimList di sini: subscription store akan mengupdate timList setelah dialog tertutup, menghindari error removeChild saat portal unmount.
   }
 
   const handleEdit = () => {
     if (!selectedTim) return
-    setTimList((prev) =>
-      prev.map((t) => (t.id === selectedTim.id ? { ...t, ...formData } : t))
-    )
+    updateTimPenyusun(selectedTim.id, formData)
     showToast('Data tim penyusun berhasil diperbarui')
     setIsEditOpen(false)
     resetForm()
+    // Jangan setTimList di sini: subscription store akan mengupdate timList setelah dialog tertutup.
   }
 
   const handleDelete = (id: string) => {
@@ -86,12 +111,12 @@ export function ManajemenTimPenyusun() {
   }
 
   const handleToggleStatus = (id: string) => {
-    setTimList((prev) =>
-      prev.map((t) =>
-        t.id === id ? { ...t, status: t.status === 'Aktif' ? 'Nonaktif' : 'Aktif' } : t
-      )
-    )
-    showToast('Status tim penyusun berhasil diperbarui')
+    const tim = timList.find((t) => t.id === id)
+    if (tim) {
+      updateTimPenyusun(id, { status: tim.status === 'Aktif' ? 'Nonaktif' : 'Aktif' })
+      showToast('Status tim penyusun berhasil diperbarui')
+      // Subscription store akan mengupdate timList.
+    }
   }
 
   const openEditDialog = (tim: TimPenyusun) => {
@@ -107,32 +132,43 @@ export function ManajemenTimPenyusun() {
     setIsEditOpen(true)
   }
 
+  const selectedOpd = opdList.find((o) => o.id === selectedOpdId)
+
   return (
-    <div className="space-y-3">
-      <PageHeader
-        breadcrumb={[{ label: 'Manajemen Tim Penyusun' }]}
-        title="Manajemen Tim Penyusun"
-        description="Kelola anggota tim penyusun SOP"
-      />
-
-      <SearchToolbar
-        searchPlaceholder="Cari nama, NIP, atau jabatan..."
-        searchValue={searchQuery}
-        onSearchChange={(e) => setSearchQuery(e.target.value)}
-      >
-        <Button
-          size="sm"
-          className="h-8 gap-1.5 text-xs"
-          onClick={() => {
-            resetForm()
-            setIsCreateOpen(true)
-          }}
-        >
-          <Plus className="w-3.5 h-3.5" />
-          Tambah Tim Penyusun
-        </Button>
-      </SearchToolbar>
-
+    <ListPageLayout
+      breadcrumb={[{ label: 'Manajemen Tim Penyusun', to: ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN }]}
+      title="Manajemen Tim Penyusun"
+      description="Kelola anggota tim penyusun SOP per OPD. Satu OPD dapat memiliki banyak tim penyusun."
+      toolbar={
+        <>
+          <FormField label="OPD">
+            <Select
+              value={selectedOpdId}
+              onValueChange={setSelectedOpdId}
+              options={opdList.map((o) => ({ value: o.id, label: o.name }))}
+              placeholder="Pilih OPD"
+            />
+          </FormField>
+          <SearchToolbar
+            searchPlaceholder="Cari nama, NIP, atau jabatan..."
+            searchValue={searchQuery}
+            onSearchChange={(e) => setSearchQuery(e.target.value)}
+          >
+            <Button
+              size="sm"
+              className="h-8 gap-1.5 text-xs"
+              onClick={() => {
+                resetForm()
+                setIsCreateOpen(true)
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Tambah Tim Penyusun {selectedOpd ? `(${selectedOpd.name})` : ''}
+            </Button>
+          </SearchToolbar>
+        </>
+      }
+    >
       <Table.Card>
         <Table.Table>
           <thead>
@@ -158,28 +194,17 @@ export function ManajemenTimPenyusun() {
                 <Table.Td className="text-gray-600">{tim.jabatan}</Table.Td>
                 <Table.Td className="text-gray-600">{tim.email}</Table.Td>
                 <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
-                <Table.Td className="text-gray-600">
-                  {formatDateId(tim.tanggalBergabung)}
-                </Table.Td>
+                <Table.Td className="text-gray-600">{formatDateId(tim.tanggalBergabung)}</Table.Td>
                 <Table.Td className="text-center font-medium text-gray-900">{tim.jumlahSOPDisusun}</Table.Td>
                 <Table.Td className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleStatus(tim.id)}
-                    className="inline-flex"
-                  >
+                  <button type="button" onClick={() => handleToggleStatus(tim.id)} className="inline-flex">
                     <StatusBadge status={tim.status} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
                   </button>
                 </Table.Td>
                 <Table.Td>
                   <div className="flex items-center justify-center gap-1">
                     <IconActionButton icon={Edit} title="Edit" onClick={() => openEditDialog(tim)} />
-                    <IconActionButton
-                      icon={Trash2}
-                      title="Hapus"
-                      destructive
-                      onClick={() => handleDelete(tim.id)}
-                    />
+                    <IconActionButton icon={Trash2} title="Hapus" destructive onClick={() => handleDelete(tim.id)} />
                   </div>
                 </Table.Td>
               </Table.BodyRow>
@@ -188,12 +213,19 @@ export function ManajemenTimPenyusun() {
         </Table.Table>
       </Table.Card>
 
-      {/* Create Dialog */}
+      {filteredList.length === 0 && (
+        <div className="py-8 text-center text-gray-500 text-sm">
+          {selectedOpdId
+            ? `Belum ada tim penyusun untuk ${selectedOpd?.name ?? 'OPD ini'}. Klik "Tambah Tim Penyusun" untuk menambah.`
+            : 'Pilih OPD terlebih dahulu.'}
+        </div>
+      )}
+
       <FormDialog
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         title="Tambah Tim Penyusun SOP"
-        description="Isi data pegawai yang akan ditunjuk sebagai tim penyusun SOP"
+        description={selectedOpd ? `Isi data pegawai tim penyusun untuk ${selectedOpd.name}` : 'Isi data pegawai'}
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={handleCreate}
@@ -245,9 +277,7 @@ export function ManajemenTimPenyusun() {
           <FormField label="Status" required>
             <Select
               value={formData.status}
-              onValueChange={(status) =>
-                setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })
-              }
+              onValueChange={(status) => setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })}
               options={[
                 { value: 'Aktif', label: 'Aktif' },
                 { value: 'Nonaktif', label: 'Nonaktif' },
@@ -257,7 +287,6 @@ export function ManajemenTimPenyusun() {
         </div>
       </FormDialog>
 
-      {/* Edit Dialog */}
       <FormDialog
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
@@ -309,9 +338,7 @@ export function ManajemenTimPenyusun() {
           <FormField label="Status" required>
             <Select
               value={formData.status}
-              onValueChange={(status) =>
-                setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })
-              }
+              onValueChange={(status) => setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })}
               options={[
                 { value: 'Aktif', label: 'Aktif' },
                 { value: 'Nonaktif', label: 'Nonaktif' },
@@ -328,12 +355,13 @@ export function ManajemenTimPenyusun() {
         description="Apakah Anda yakin ingin menghapus tim penyusun ini? Tindakan ini tidak dapat dibatalkan."
         onConfirm={() => {
           if (deleteTimId) {
-            setTimList((prev) => prev.filter((t) => t.id !== deleteTimId))
+            removeTimPenyusun(deleteTimId)
             showToast('Tim penyusun berhasil dihapus')
             setDeleteTimId(null)
+            // Subscription store akan mengupdate timList setelah dialog tertutup.
           }
         }}
       />
-    </div>
+    </ListPageLayout>
   )
 }
