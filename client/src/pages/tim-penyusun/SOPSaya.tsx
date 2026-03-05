@@ -7,9 +7,9 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { Select } from '@/components/ui/select'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
+import { STATUS_SOP_ALL, type SOPSayaItem } from '@/lib/types/sop'
+import { canEditSop } from '@/lib/domain/sop-status'
 import { mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
-import type { SOPSayaItem } from '@/lib/types/sop'
 import { SEED_SOP_SAYA } from '@/lib/seed/sop-daftar'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
@@ -35,13 +35,6 @@ export function SOPSaya() {
     searchKeys: ['judul', 'nomorSOP'],
     filterKey: 'status',
   })
-
-  /** Boleh edit isi SOP: Draft, Sedang Disusun, Revisi dari Kepala OPD, Revisi dari Tim Evaluasi. */
-  const canEditSop = (status: StatusSOP) =>
-    status === 'Draft' ||
-    status === 'Sedang Disusun' ||
-    status === 'Revisi dari Kepala OPD' ||
-    status === 'Revisi dari Tim Evaluasi'
 
   return (
     <ListPageLayout

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
-import type { ArrowConnectionConfig, ArrowPathPoint } from '../sopDiagramTypes'
+import type { ArrowConnectionConfig, ArrowPathPoint } from '../logic/sopDiagramTypes'
 import {
   routeBpmn,
   selectBpmnSidePairs,
@@ -11,7 +11,7 @@ import {
   type UsedSides,
   type Side,
   type OccupiedSegment,
-} from './bpmnRouter'
+} from '../logic/bpmnRouter'
 
 /* ───────────────────────── Public types ─────────────────────────── */
 

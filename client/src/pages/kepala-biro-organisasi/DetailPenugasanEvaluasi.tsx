@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
-import { FileText, CheckCircle, Download, List, MessageSquare, Calendar } from 'lucide-react'
+import { FileText, CheckCircle, Download, List, MessageSquare, Calendar, History } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
 import { getPenugasanById, getPenugasanList, subscribePenugasan, updatePenugasan } from '@/lib/stores/penugasan-store'
+import { SEED_OPD_LIST_EVALUASI, SEED_RIWAYAT_EVALUASI_OPD, SEED_RIWAYAT_EVALUASI_SOP } from '@/lib/seed/penugasan-evaluasi-seed'
 import type { Penugasan } from '@/lib/types/penugasan'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
@@ -17,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { InfoCard } from '@/components/ui/info-card'
+import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 
 export function DetailPenugasanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
@@ -37,6 +39,7 @@ export function DetailPenugasanEvaluasi() {
   const [isBAOpen, setIsBAOpen] = useState(false)
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
+  const [rightPanelTab, setRightPanelTab] = useState<'catatan' | 'riwayat'>('catatan')
 
   const tte = useTTESignature({
     role: 'biro-organisasi',
@@ -72,6 +75,9 @@ export function DetailPenugasanEvaluasi() {
   const firstSopId = sopList[0]?.id ?? null
   const effectiveSopId = selectedSopId ?? firstSopId
   const displaySop = sopList.find((s) => s.id === effectiveSopId)
+  const opdId = penugasan ? SEED_OPD_LIST_EVALUASI.find((o) => o.nama === penugasan.opd)?.id ?? null : null
+  const riwayatOpd = opdId ? (SEED_RIWAYAT_EVALUASI_OPD[opdId] ?? []) : []
+  const riwayatSop = effectiveSopId ? (SEED_RIWAYAT_EVALUASI_SOP[effectiveSopId] ?? []) : []
 
   if (!penugasan) {
     return (
@@ -153,11 +159,6 @@ export function DetailPenugasanEvaluasi() {
                   </InfoField>
                 )}
               </InfoGrid>
-              {penugasan.catatan && (
-                <InfoCard variant="neutral">
-                  <p className="text-xs text-gray-700"><strong>Catatan penugasan:</strong> {penugasan.catatan}</p>
-                </InfoCard>
-              )}
             </div>
           </>
         }
@@ -205,11 +206,77 @@ export function DetailPenugasanEvaluasi() {
             collapsed={rightPanelCollapsed}
             onCollapsedChange={setRightPanelCollapsed}
             widthExpanded="w-[min(320px,33%)] min-w-[220px]"
-            title="Catatan & Rekomendasi"
+            tabs={[
+              { id: 'catatan', label: 'Catatan & Rekomendasi', icon: <MessageSquare className="w-3.5 h-3.5" /> },
+              { id: 'riwayat', label: 'Riwayat Penilaian OPD', icon: <History className="w-3.5 h-3.5" /> },
+            ]}
+            activeTab={rightPanelTab}
+            onTabChange={(id) => setRightPanelTab(id as 'catatan' | 'riwayat')}
             collapseButtonLabel="Catatan"
             collapseButtonIcon={<MessageSquare className="w-5 h-5" />}
           >
-            <div className="p-3" />
+            <div className="p-3 space-y-4">
+              {rightPanelTab === 'catatan' && (
+                <>
+                  {!effectiveSopId ? (
+                    <p className="text-xs text-gray-500">
+                      Pilih SOP di daftar kiri untuk melihat riwayat hasil evaluasi.
+                    </p>
+                  ) : (
+                    <RiwayatCardList
+                      title="Riwayat hasil evaluasi SOP ini"
+                      emptyMessage="Belum ada riwayat evaluasi SOP ini."
+                      items={riwayatSop}
+                      renderItem={(r) => (
+                        <>
+                          <div className="flex flex-wrap items-baseline gap-x-1.5">
+                            <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
+                            <span className="text-gray-500">—</span>
+                            <span className="text-gray-600">{r.evaluatorName}</span>
+                            <span
+                              className={
+                                r.hasil === 'Sesuai'
+                                  ? 'text-green-600 font-medium'
+                                  : 'text-amber-600 font-medium'
+                              }
+                            >
+                              · {r.hasil}
+                            </span>
+                          </div>
+                          {r.komentar && (
+                            <p className="text-gray-600 mt-1 leading-snug">
+                              {r.komentar}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    />
+                  )}
+                </>
+              )}
+              {rightPanelTab === 'riwayat' && (
+                <RiwayatCardList
+                  title="Riwayat penilaian OPD"
+                  emptyMessage="Belum ada riwayat penilaian OPD."
+                  items={riwayatOpd}
+                  renderItem={(r) => (
+                    <>
+                      <div className="flex flex-wrap items-baseline gap-x-1.5">
+                        <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
+                        <span className="text-gray-500">—</span>
+                        <span className="text-gray-600">{r.evaluatorName}</span>
+                        <span className="text-blue-600 font-medium">Skor {r.skor}/5</span>
+                      </div>
+                      {r.sopJudul && (
+                        <p className="text-gray-600 mt-1 leading-snug truncate" title={r.sopJudul}>
+                          SOP: {r.sopJudul}
+                        </p>
+                      )}
+                    </>
+                  )}
+                />
+              )}
+            </div>
           </CollapsibleSidePanel>
         }
       />

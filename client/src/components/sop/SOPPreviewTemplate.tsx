@@ -3,18 +3,20 @@ import { useState, useMemo } from 'react'
 import { SOPHeaderInfo, type SOPHeaderInfoProps } from '@/components/sop/diagram/SOPHeaderInfo'
 import { SOPDiagramFlowchart } from '@/components/sop/diagram/SOPDiagramFlowchart'
 import { SOPDiagramBpmn } from '@/components/sop/diagram/SOPDiagramBpmn'
-import { rowsToSteps } from '@/components/sop/diagram/sopDiagramTypes'
+import { rowsToSteps } from '@/components/sop/diagram/logic/sopDiagramTypes'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { TTESignaturePayload } from '@/lib/types/tte'
 import type { ProsedurRow } from '@/lib/types/sop'
 import {
-  SEED_SOP_DETAIL_METADATA,
-  SEED_SOP_DETAIL_PROSEDUR_ROWS,
-  SEED_IMPLEMENTERS,
-} from '@/lib/seed/sop-detail-seed'
+  getInitialSopDetailMetadata,
+  getInitialSopDetailProsedurRows,
+  getInitialSopDetailImplementers,
+} from '@/lib/data/sop-detail'
 
-const DEFAULT_IMPLEMENTERS = SEED_IMPLEMENTERS
+const DEFAULT_METADATA = getInitialSopDetailMetadata()
+const DEFAULT_PROSEDUR_ROWS = getInitialSopDetailProsedurRows()
+const DEFAULT_IMPLEMENTERS = getInitialSopDetailImplementers()
 
 export interface SOPPreviewTemplateProps {
   /** Override nama SOP (default: Percobaan) */
@@ -51,7 +53,7 @@ export function SOPPreviewTemplate({
   tteSignaturePayload = null,
   hideDiagramTabs = false,
   metadata: metadataOverride,
-  prosedurRows = SEED_SOP_DETAIL_PROSEDUR_ROWS,
+  prosedurRows = DEFAULT_PROSEDUR_ROWS,
   implementers = DEFAULT_IMPLEMENTERS,
   pathLayoutSeed = 0,
   editable = false,
@@ -71,7 +73,7 @@ export function SOPPreviewTemplate({
   )
 
   const metadata: SOPHeaderInfoProps = {
-    ...SEED_SOP_DETAIL_METADATA,
+    ...DEFAULT_METADATA,
     ...(nameOverride != null && { name: nameOverride }),
     ...(numberOverride != null && { number: numberOverride }),
     ...metadataOverride,

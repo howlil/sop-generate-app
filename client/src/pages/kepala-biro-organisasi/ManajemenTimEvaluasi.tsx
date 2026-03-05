@@ -11,7 +11,7 @@ import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import { SEED_TIM_MONEV_LIST } from '@/lib/seed/tim-evaluasi-seed'
+import { getInitialTimEvaluasiList } from '@/lib/data/tim-evaluasi'
 import type { TimMonev } from '@/lib/types/tim'
 import { generateId } from '@/utils/generate-id'
 import { useFilteredList } from '@/hooks/useFilteredList'
@@ -22,7 +22,7 @@ export function ManajemenTimEvaluasi() {
   const [selectedTim, setSelectedTim] = useState<TimMonev | null>(null)
   const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
 
-  const [timList, setTimList] = useState<TimMonev[]>(() => [...SEED_TIM_MONEV_LIST])
+  const [timList, setTimList] = useState<TimMonev[]>(() => getInitialTimEvaluasiList())
   const { filteredList: filteredTim, searchQuery, setSearchQuery } = useFilteredList(timList, {
     searchKeys: ['nama', 'nip', 'jabatan', 'email'],
   })
@@ -117,8 +117,8 @@ export function ManajemenTimEvaluasi() {
               <Table.Th>Nama</Table.Th>
               <Table.Th>NIP</Table.Th>
               <Table.Th>Jabatan</Table.Th>
+              <Table.Th>Pangkat</Table.Th>
               <Table.Th>Email</Table.Th>
-              <Table.Th align="center">Jumlah Evaluasi</Table.Th>
               <Table.Th align="center">Aksi</Table.Th>
             </Table.HeadRow>
           </thead>
@@ -148,10 +148,10 @@ export function ManajemenTimEvaluasi() {
                     {tim.jabatan}
                   </Badge>
                 </Table.Td>
-                <Table.Td className="text-gray-600 text-xs">{tim.email}</Table.Td>
-                <Table.Td className="text-center">
-                  <span className="font-semibold text-gray-900">{tim.jumlahEvaluasi}</span>
+                <Table.Td className="text-gray-600 text-xs">
+                  {tim.pangkat ?? '-'}
                 </Table.Td>
+                <Table.Td className="text-gray-600 text-xs">{tim.email}</Table.Td>
                 <Table.Td className="text-center">
                   <div className="flex items-center justify-center gap-1">
                     <IconActionButton icon={Edit} title="Edit" onClick={() => openEditDialog(tim)} />
@@ -173,8 +173,8 @@ export function ManajemenTimEvaluasi() {
       <FormDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
-        title="Tambah Anggota Tim Monev"
-        description="Lengkapi form berikut untuk menambah anggota tim monitoring dan evaluasi"
+        title="Tambah Anggota Tim Evaluasi"
+        description="Lengkapi form berikut untuk menambah anggota tim evaluasi"
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={handleCreateSubmit}
@@ -229,7 +229,7 @@ export function ManajemenTimEvaluasi() {
       <FormDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        title="Edit Anggota Tim Monev"
+        title="Edit Anggota Tim Evaluasi"
         description="Perbarui informasi anggota tim"
         confirmLabel="Simpan Perubahan"
         cancelLabel="Batal"

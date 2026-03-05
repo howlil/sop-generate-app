@@ -17,7 +17,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { SEED_TIM_PENYUSUN_OPTIONS } from '@/lib/seed/tim-penyusun-seed'
 import { SEED_SOP_TEMPLATES } from '@/lib/seed/initiate-proyek-seed'
 import type { SOPTemplate } from '@/lib/types/sop'

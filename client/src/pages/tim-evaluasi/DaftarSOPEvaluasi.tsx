@@ -4,6 +4,7 @@
  */
 import { Building2, Eye } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
+import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -83,7 +84,20 @@ export function DaftarSOPEvaluasi() {
               filteredList.map((opd) => (
                 <Table.BodyRow key={opd.id}>
                   <Table.Td className="font-medium text-gray-900">{opd.nama}</Table.Td>
-                  <Table.Td className="text-center text-gray-700">{opd.jumlahSop}</Table.Td>
+                  <Table.Td className="text-center">
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <span className="text-gray-700">{opd.jumlahSop}</span>
+                    {opd.jumlahLayakEvaluasi > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-amber-100 text-amber-800 border-0 text-xs font-medium shrink-0"
+                        title="SOP baru / perlu evaluasi"
+                      >
+                        {opd.jumlahLayakEvaluasi} baru
+                      </Badge>
+                    )}
+                  </div>
+                </Table.Td>
                   <Table.Td className="text-center">
                     <IconActionButton
                       icon={Eye}

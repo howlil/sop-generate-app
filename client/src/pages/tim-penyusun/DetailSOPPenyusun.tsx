@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { Save, Check, History, PenLine, MessageSquare } from 'lucide-react'
+import { Save, Check, History, PenLine, MessageSquare, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
@@ -13,16 +13,21 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { getPeraturanList, subscribePeraturan } from '@/lib/stores/peraturan-store'
 import type { Peraturan } from '@/lib/types/peraturan'
 import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
-import { SEED_KOMENTAR_LIST, getInitialVersions } from '@/lib/seed/sop-detail-seed'
-import type { VersionSeed } from '@/lib/types/version'
-import { useDetailSOPMetadata } from '@/hooks/useDetailSOPMetadata'
-import { useDetailSOPProsedur } from '@/hooks/useDetailSOPProsedur'
+import {
+  getInitialSopDetailMetadata,
+  getInitialSopDetailProsedurRows,
+  getInitialSopDetailImplementers,
+  getInitialSopDetailKomentar,
+  getInitialSopDetailVersions,
+} from '@/lib/data/sop-detail'
+import type { SOPDetailMetadata, ProsedurRow } from '@/lib/types/sop'
+import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
 import { useKomentar } from '@/hooks/useKomentar'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
@@ -32,29 +37,20 @@ import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { ROUTES } from '@/lib/constants/routes'
 
-type Version = VersionSeed
-
 export function DetailSOPPenyusun() {
   const { id } = useParams({ from: '/tim-penyusun/detail-sop/$id' })
   const navigate = useNavigate()
 
-  const { metadata, setMetadata, handleMetadataChange } = useDetailSOPMetadata()
-  const {
-    prosedurRows,
-    setProsedurRows,
-    implementers,
-    setImplementers,
-    diagramVersion,
-    setDiagramVersion,
-  } = useDetailSOPProsedur()
+  const [metadata, setMetadata] = useState<SOPDetailMetadata>(() => getInitialSopDetailMetadata())
+  const [prosedurRows, setProsedurRows] = useState<ProsedurRow[]>(() => getInitialSopDetailProsedurRows())
+  const [implementers, setImplementers] = useState(() => getInitialSopDetailImplementers())
+  const [diagramVersion, setDiagramVersion] = useState(0)
 
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
   const [isEditingSteps, setIsEditingSteps] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'komentar' | 'riwayat'>('edit')
-  /** Versi yang sedang dilihat di panel riwayat (read-only, untuk bandingkan dengan saat ini) */
-  const [viewingVersion, setViewingVersion] = useState<Version | null>(null)
 
   /** Data peraturan (mock: diasumsikan peraturan OPD tersedia di store). */
   const [peraturanList, setPeraturanList] = useState<Peraturan[]>(() => getPeraturanList())
@@ -64,16 +60,27 @@ export function DetailSOPPenyusun() {
   }, [])
 
   const { displayList: komentarDisplay, handleResolveComment } = useKomentar({
-    initialData: [...SEED_KOMENTAR_LIST],
+    initialData: getInitialSopDetailKomentar(),
     excludeRoles: ['Tim Penyusun'],
   })
 
-  const [versions, _setVersions] = useState<Version[]>(() => getInitialVersions())
+  const [versions, _setVersions] = useState<VersionHistoryItem[]>(
+    () => getInitialSopDetailVersions() as VersionHistoryItem[]
+  )
+
+  const [viewingVersion, setViewingVersion] = useState<VersionHistoryItem | null>(null)
 
   const versionDiffItems = useMemo(
     () => versionDiff.computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot ?? undefined),
     [viewingVersion, metadata, prosedurRows]
   )
+
+  const handleMetadataChange = <K extends keyof SOPDetailMetadata>(
+    field: K,
+    value: SOPDetailMetadata[K]
+  ) => {
+    setMetadata((prev) => ({ ...prev, [field]: value }))
+  }
 
   return (
     <>
@@ -92,6 +99,14 @@ export function DetailSOPPenyusun() {
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-gray-900">Dokumen SOP</h2>
               <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+                  onClick={() => window.print()}
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print SOP
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -242,7 +257,7 @@ export function DetailSOPPenyusun() {
             <DialogDescription className="text-xs">{versions.length} versi terdokumentasi.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            {versions.map((version, index) => (
+            {versions.map((version, _index) => (
               <div
                 key={version.id}
                 className="bg-gray-50 rounded-md border border-gray-200 p-3"

@@ -4,25 +4,18 @@
  */
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import {
-  Send,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  MessageSquare,
-  List,
-  FileText,
-  Building2,
-} from 'lucide-react'
+import { Send, MessageSquare, List, FileText, Building2, Printer } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
-import { Card, CardContent } from '@/components/ui/card'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { showToast, getRole, getRoleUserName, ROLES } from '@/lib/stores'
+import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
+import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
+import { SkorRatingPicker } from '@/components/evaluasi/SkorRatingPicker'
+import { showToast, getRole, getRoleUserName } from '@/lib/stores/app-store'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
@@ -32,14 +25,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
+import { useEvaluasiDraft, getEvaluasiDraft, clearEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useCollapsiblePanels } from '@/hooks/useCollapsiblePanels'
+import { EVALUASI_DISPLAY_STATUS_OPTIONS, STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
+import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from '@/lib/domain/evaluasi'
+import { canSelectSOPForEvaluasi, STATUS_BUKAN_LIST_EVALUASI } from '@/lib/domain/sop-evaluasi'
 import { setSopStatusOverride, mergeSopStatus, subscribeSopStatus, getSopStatusOverride } from '@/lib/stores/sop-status-store'
 import { formatDateId } from '@/utils/format-date'
 import {
-  SEED_LAST_EVALUATED_BY,
   SEED_OPD_LIST_EVALUASI,
   SEED_RIWAYAT_EVALUASI_OPD,
   SEED_RIWAYAT_EVALUASI_SOP,
@@ -48,31 +43,7 @@ import {
 import { SEED_SOP_DAFTAR } from '@/lib/seed/sop-daftar'
 import type { SOPDaftarItem } from '@/lib/types/sop'
 import type { StatusSOP } from '@/lib/types/sop'
-import { canSelectSOPForEvaluasi } from '@/lib/types/sop'
-
-type EvaluasiRecord = { date: string; evaluatorName: string }
-type EvaluasiRecordMap = Record<string, EvaluasiRecord>
-type ParsedEvaluasiMap = Record<string, { date?: string; evaluatorName?: string }>
-
-const EVALUASI_STORAGE_KEY = 'evaluasi_last_by'
-
-function loadEvaluasiRecordMap(): EvaluasiRecordMap {
-  const fromSeed = { ...SEED_LAST_EVALUATED_BY }
-  if (typeof window === 'undefined') return fromSeed
-  try {
-    const raw = localStorage.getItem(EVALUASI_STORAGE_KEY)
-    if (!raw) return fromSeed
-    const parsed = JSON.parse(raw) as ParsedEvaluasiMap
-    const fromStorage = Object.fromEntries(
-      Object.entries(parsed).filter(
-        ([, v]) => v && typeof v.date === 'string' && typeof v.evaluatorName === 'string'
-      )
-    ) as EvaluasiRecordMap
-    return { ...fromSeed, ...fromStorage }
-  } catch {
-    return fromSeed
-  }
-}
+import { useEvaluasiLastBy } from '@/hooks/useEvaluasiLastBy'
 
 export function DetailEvaluasiOPD() {
   const { opdId } = useParams({ from: '/tim-evaluasi/penugasan/opd/$opdId' })
@@ -107,14 +78,10 @@ export function DetailEvaluasiOPD() {
           status: s.status,
         }
       })
-      .filter((s) => s.status !== 'Sedang Disusun')
+      .filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
   }, [opd, mergedList])
 
-  const [lastEvaluatedBy, setLastEvaluatedBy] = useState(loadEvaluasiRecordMap)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(EVALUASI_STORAGE_KEY, JSON.stringify(lastEvaluatedBy))
-  }, [lastEvaluatedBy])
+  const [lastEvaluatedBy, setLastEvaluatedBy] = useEvaluasiLastBy()
 
   /** Di workspace evaluasi: Diajukan Evaluasi (belum dikirim), Selesai Evaluasi (sudah dikirim hasil). */
   const sopsForOpdWithDisplayStatus = useMemo(
@@ -173,7 +140,10 @@ export function DetailEvaluasiOPD() {
     setStatusEvaluasi,
   } = useEvaluasiDraft(effectiveSopId ?? undefined)
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
+  /** Id SOP yang dicentang di popup Kirim (hanya list Sedang Dievaluasi). */
+  const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
 
+  const isFormComplete = isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi ?? '')
   const namaEvaluator = getRole() ? getRoleUserName(getRole()!) : 'Evaluator'
   const lastEvaluatedEntry = effectiveSopId ? lastEvaluatedBy[effectiveSopId] : undefined
   const tanggalTerakhirEvaluasi = lastEvaluatedEntry ? lastEvaluatedEntry.date : null
@@ -187,31 +157,80 @@ export function DetailEvaluasiOPD() {
     setRightCollapsed: setRightPanelCollapsed,
   } = useCollapsiblePanels()
 
-  const handleSubmit = () => {
-    if (!statusEvaluasi) {
-      showToast('Silakan tetapkan status evaluasi terlebih dahulu', 'error')
+  /** Daftar SOP dengan status Sedang Dievaluasi (punya draft lengkap), untuk tampil di popup & kirim sekaligus. */
+  const sedangDievaluasiList = useMemo(() => {
+    const out: Array<{ id: string; judul: string; nomorSOP: string; statusEvaluasi: 'Sesuai' | 'Revisi Biro'; komentarEvaluasi: string }> = []
+    for (const s of sopsFilteredByStatusAndEvaluator) {
+      if (s.displayStatus === 'Selesai Evaluasi') continue
+      if (s.id === effectiveSopId) {
+        if (isFormComplete && statusEvaluasi) {
+          out.push({
+            id: s.id,
+            judul: s.judul,
+            nomorSOP: s.nomorSOP,
+            statusEvaluasi,
+            komentarEvaluasi: komentarEvaluasi?.trim() ?? '',
+          })
+        }
+        continue
+      }
+      const draft = getEvaluasiDraft(s.id)
+      if (draft?.statusEvaluasi) {
+        out.push({
+          id: s.id,
+          judul: s.judul,
+          nomorSOP: s.nomorSOP,
+          statusEvaluasi: draft.statusEvaluasi,
+          komentarEvaluasi: draft.komentarEvaluasi ?? '',
+        })
+      }
+    }
+    return out
+  }, [sopsFilteredByStatusAndEvaluator, effectiveSopId, isFormComplete, statusEvaluasi, komentarEvaluasi])
+
+  useEffect(() => {
+    if (isSubmitOpen && sedangDievaluasiList.length > 0) {
+      setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)))
+    }
+  }, [isSubmitOpen, sedangDievaluasiList])
+
+  const toggleSubmitSelected = (id: string) => {
+    setSubmitSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  const isSubmitCheckAll = sedangDievaluasiList.length > 0 && submitSelectedIds.size === sedangDievaluasiList.length
+  const isSubmitCheckAllIndeterminate =
+    sedangDievaluasiList.length > 0 && submitSelectedIds.size > 0 && submitSelectedIds.size < sedangDievaluasiList.length
+  const setSubmitCheckAll = (checked: boolean) => {
+    if (checked) setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)))
+    else setSubmitSelectedIds(new Set())
+  }
+
+  const handleSubmitAll = () => {
+    const toSubmit = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
+    if (toSubmit.length === 0) {
+      showToast('Pilih minimal satu SOP untuk dikirim.', 'error')
       return
     }
-    if (statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim()) {
-      showToast('Status "Revisi Biro" wajib diisi komentar evaluasi', 'error')
-      return
-    }
-    if (!effectiveSopId) return
-    const newStatus: StatusSOP =
-      statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'
-    setSopStatusOverride(effectiveSopId, newStatus)
     const today = new Date().toISOString().slice(0, 10)
-    setLastEvaluatedBy((prev) => ({
-      ...prev,
-      [effectiveSopId]: { date: today, evaluatorName: namaEvaluator },
-    }))
-    showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
+    for (const item of toSubmit) {
+      const newStatus: StatusSOP = getStatusSopAfterEvaluasi(item.statusEvaluasi)
+      setSopStatusOverride(item.id, newStatus)
+      setLastEvaluatedBy((prev) => ({
+        ...prev,
+        [item.id]: { date: today, evaluatorName: namaEvaluator },
+      }))
+      clearEvaluasiDraft(item.id)
+    }
+    showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. Status berubah menjadi Selesai Evaluasi.`)
     setIsSubmitOpen(false)
     setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN }), 1500)
   }
 
-  const isFormComplete =
-    statusEvaluasi !== null && (statusEvaluasi !== 'Revisi Biro' || komentarEvaluasi.trim() !== '')
   const canEvaluateSelected = selectedSop ? canSelectSOPForEvaluasi(selectedSop.status) : false
 
   const [activeFormTab, setActiveFormTab] = useState<'sop' | 'opd'>('sop')
@@ -232,20 +251,18 @@ export function DetailEvaluasiOPD() {
     )
   }
 
-  /** Sedang Dievaluasi = SOP terpilih yang punya isian form (draft). */
+  /** Sedang Dievaluasi = SOP terpilih yang punya isian form (draft). Selesai Evaluasi tetap dikunci, tidak berubah. */
   const listItems = sopsFilteredByStatusAndEvaluator.map((s) => {
     const isSelectedWithDraft =
       s.id === effectiveSopId && (statusEvaluasi != null || (komentarEvaluasi?.trim() ?? '') !== '')
-    const displayStatus = isSelectedWithDraft ? 'Sedang Dievaluasi' : s.displayStatus
+    const displayStatus =
+      s.displayStatus === 'Selesai Evaluasi'
+        ? 'Selesai Evaluasi'
+        : isSelectedWithDraft
+          ? 'Sedang Dievaluasi'
+          : s.displayStatus
     return { id: s.id, nama: s.judul, nomor: s.nomorSOP, status: displayStatus }
   })
-
-  const statusFilterOptions = [
-    { value: 'all', label: 'Semua Status' },
-    { value: 'Diajukan Evaluasi', label: 'Diajukan Evaluasi' },
-    { value: 'Sedang Dievaluasi', label: 'Sedang Dievaluasi' },
-    { value: 'Selesai Evaluasi', label: 'Selesai Evaluasi' },
-  ]
 
   return (
     <>
@@ -265,9 +282,16 @@ export function DetailEvaluasiOPD() {
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
+                  variant="outline"
+                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+                  onClick={() => window.print()}
+                >
+                  <Printer className="w-3.5 h-3.5" /> Print SOP
+                </Button>
+                <Button
+                  size="sm"
                   className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
                   onClick={() => setIsSubmitOpen(true)}
-                  disabled={!effectiveSopId || !isFormComplete || !canEvaluateSelected}
                 >
                   <Send className="w-3.5 h-3.5" /> Kirim Hasil Evaluasi
                 </Button>
@@ -302,7 +326,7 @@ export function DetailEvaluasiOPD() {
                   className="flex-1 min-w-0 h-8 text-xs"
                   value={filterStatusLeft}
                   onValueChange={setFilterStatusLeft}
-                  options={statusFilterOptions}
+                  options={[...EVALUASI_DISPLAY_STATUS_OPTIONS]}
                   aria-label="Filter by status"
                   title="Filter by status"
                 />
@@ -362,86 +386,51 @@ export function DetailEvaluasiOPD() {
               {activeFormTab === 'sop' && (
                 <>
                   {!effectiveSopId ? (
-                    <p className="text-xs text-gray-500">Pilih SOP di daftar kiri untuk mengisi form evaluasi.</p>
+                    <p className="text-xs text-gray-500">Pilih SOP di daftar kiri untuk mengisi form evaluasi atau melihat riwayat.</p>
                   ) : (
                     <>
-                      <FormField label="Status Hasil Evaluasi" required>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            type="button"
-                            className={`p-3 rounded-md border transition-all ${
-                              statusEvaluasi === 'Sesuai' ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'
-                            }`}
-                            onClick={() => setStatusEvaluasi('Sesuai')}
-                          >
-                            <CheckCircle
-                              className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-400'}`}
+                      {/** Form hanya untuk status Diajukan Evaluasi / Sedang Dievaluasi. Selesai Evaluasi → hanya riwayat. */}
+                      {!lastEvaluatedBy[effectiveSopId] && (
+                        <>
+                          <StatusHasilEvaluasiPicker
+                            value={statusEvaluasi}
+                            onChange={setStatusEvaluasi}
+                            komentarTrim={komentarEvaluasi?.trim() ?? ''}
+                          />
+                          <FormField label="Komentar Evaluasi">
+                            <Textarea
+                              className="text-xs min-h-[80px]"
+                              placeholder="Komentar evaluasi (wajib jika Revisi Biro)..."
+                              value={komentarEvaluasi}
+                              onChange={(e) => setKomentarEvaluasi(e.target.value)}
                             />
-                            <span
-                              className={`text-xs font-semibold block ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-700'}`}
-                            >
-                              Sesuai
-                            </span>
-                            <span className="text-[10px] text-gray-500 block mt-0.5">→ Dievaluasi Tim Evaluasi</span>
-                          </button>
-                          <button
-                            type="button"
-                            className={`p-3 rounded-md border transition-all ${
-                              statusEvaluasi === 'Revisi Biro' ? 'border-amber-600 bg-amber-50' : 'border-gray-200 bg-white hover:bg-gray-50'
-                            }`}
-                            onClick={() => setStatusEvaluasi('Revisi Biro')}
-                          >
-                            <XCircle
-                              className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-400'}`}
-                            />
-                            <span
-                              className={`text-xs font-semibold block ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-700'}`}
-                            >
-                              Revisi Biro
-                            </span>
-                            <span className="text-[10px] text-gray-500 block mt-0.5">→ Revisi dari Tim Evaluasi</span>
-                          </button>
-                        </div>
-                        {statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim() && (
-                          <InfoCard variant="warning" className="mt-2 flex items-start gap-2">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-[10px] text-amber-800">Komentar evaluasi wajib untuk status Revisi Biro.</p>
-                          </InfoCard>
-                        )}
-                      </FormField>
+                          </FormField>
+                        </>
+                      )}
 
-                      <FormField label="Komentar Evaluasi">
-                        <Textarea
-                          className="text-xs min-h-[80px]"
-                          placeholder="Komentar evaluasi (wajib jika Revisi Biro)..."
-                          value={komentarEvaluasi}
-                          onChange={(e) => setKomentarEvaluasi(e.target.value)}
-                        />
-                      </FormField>
+                      {lastEvaluatedBy[effectiveSopId] && (
+                        <p className="text-[11px] text-gray-500">Evaluasi SOP ini sudah selesai. Riwayat di bawah.</p>
+                      )}
 
                       <div className="border-t border-gray-100 pt-3">
-                        <h4 className="text-xs font-semibold text-gray-700 mb-2">Riwayat evaluasi SOP ini</h4>
-                        {riwayatSop.length === 0 ? (
-                          <p className="text-[11px] text-gray-500">Belum ada riwayat evaluasi.</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {riwayatSop.map((r, i) => (
-                              <Card key={i} className="rounded-md">
-                                <CardContent className="p-2.5 text-[11px]">
-                                  <div className="flex flex-wrap items-baseline gap-x-1.5">
-                                    <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
-                                    <span className="text-gray-500">—</span>
-                                    <span className="text-gray-600">{r.evaluatorName}</span>
-                                    <span className={r.hasil === 'Sesuai' ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'}>
-                                      · {r.hasil}
-                                    </span>
-                                  </div>
-                                  {r.komentar && <p className="text-gray-600 mt-1 leading-snug">{r.komentar}</p>}
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        )}
+                        <RiwayatCardList
+                          title="Riwayat evaluasi SOP ini"
+                          emptyMessage="Belum ada riwayat evaluasi."
+                          items={riwayatSop}
+                          renderItem={(r) => (
+                            <>
+                              <div className="flex flex-wrap items-baseline gap-x-1.5">
+                                <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
+                                <span className="text-gray-500">—</span>
+                                <span className="text-gray-600">{r.evaluatorName}</span>
+                                <span className={r.hasil === 'Sesuai' ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'}>
+                                  · {r.hasil}
+                                </span>
+                              </div>
+                              {r.komentar && <p className="text-gray-600 mt-1 leading-snug">{r.komentar}</p>}
+                            </>
+                          )}
+                        />
                       </div>
                     </>
                   )}
@@ -454,51 +443,29 @@ export function DetailEvaluasiOPD() {
                     <p className="text-xs text-gray-500">OPD tidak tersedia.</p>
                   ) : (
                     <>
-                      <FormField label="Nilai evaluasi OPD (1–5)">
-                        <div className="flex flex-wrap gap-1.5">
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <button
-                              key={n}
-                              type="button"
-                              onClick={() => setRatingOPD(n)}
-                              className={`w-9 h-9 rounded-md border text-sm font-semibold transition-all ${
-                                ratingOPD === n
-                                  ? 'border-blue-600 bg-blue-50 text-blue-700'
-                                  : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                              }`}
-                            >
-                              {n}
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-[10px] text-gray-500 mt-1">Setiap evaluasi SOP dapat disertai nilai evaluasi OPD.</p>
-                      </FormField>
+                      <SkorRatingPicker value={ratingOPD} onChange={setRatingOPD} />
 
                       <div className="border-t border-gray-100 pt-3">
-                        <h4 className="text-xs font-semibold text-gray-700 mb-2">Riwayat evaluasi OPD</h4>
-                        {riwayatOpd.length === 0 ? (
-                          <p className="text-[11px] text-gray-500">Belum ada riwayat evaluasi OPD.</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {riwayatOpd.map((r, i) => (
-                              <Card key={i} className="rounded-md">
-                                <CardContent className="p-2.5 text-[11px]">
-                                  <div className="flex flex-wrap items-baseline gap-x-1.5">
-                                    <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
-                                    <span className="text-gray-500">—</span>
-                                    <span className="text-gray-600">{r.evaluatorName}</span>
-                                    <span className="text-blue-600 font-medium">Skor {r.skor}/5</span>
-                                  </div>
-                                  {r.sopJudul && (
-                                    <p className="text-gray-600 mt-1 leading-snug truncate" title={r.sopJudul}>
-                                      SOP: {r.sopJudul}
-                                    </p>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        )}
+                        <RiwayatCardList
+                          title="Riwayat evaluasi OPD"
+                          emptyMessage="Belum ada riwayat evaluasi OPD."
+                          items={riwayatOpd}
+                          renderItem={(r) => (
+                            <>
+                              <div className="flex flex-wrap items-baseline gap-x-1.5">
+                                <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
+                                <span className="text-gray-500">—</span>
+                                <span className="text-gray-600">{r.evaluatorName}</span>
+                                <span className="text-blue-600 font-medium">Skor {r.skor}/5</span>
+                              </div>
+                              {r.sopJudul && (
+                                <p className="text-gray-600 mt-1 leading-snug truncate" title={r.sopJudul}>
+                                  SOP: {r.sopJudul}
+                                </p>
+                              )}
+                            </>
+                          )}
+                        />
                       </div>
                     </>
                   )}
@@ -512,34 +479,75 @@ export function DetailEvaluasiOPD() {
       <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-sm">Konfirmasi Kirim Hasil Evaluasi</DialogTitle>
+            <DialogTitle className="text-sm">Kirim Hasil Evaluasi</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            {selectedSop && (
-              <InfoCard variant="info">
-                <p className="text-[10px] text-gray-500 uppercase tracking-wide mb-0.5">SOP yang dikirim</p>
-                <p className="text-sm font-semibold text-gray-900">{selectedSop.judul}</p>
-                <p className="text-xs text-gray-600 font-mono">{selectedSop.nomorSOP}</p>
+            <p className="text-xs text-gray-600">
+              Hanya SOP dengan status <strong>Sedang Dievaluasi</strong> (sudah diisi form) yang ditampilkan. Centang yang akan dikirim, lalu status berubah menjadi <strong>Selesai Evaluasi</strong>.
+            </p>
+            {sedangDievaluasiList.length === 0 ? (
+              <InfoCard variant="warning">
+                <p className="text-sm text-amber-800">
+                  Belum ada SOP Sedang Dievaluasi. Pilih SOP dengan status <strong>Diajukan Evaluasi</strong> di daftar kiri, isi form evaluasi (status hasil + komentar jika Revisi Biro), lalu buka popup ini lagi.
+                </p>
               </InfoCard>
+            ) : (
+              <>
+                <div className="rounded-md border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
+                      <input
+                        type="checkbox"
+                        checked={isSubmitCheckAll}
+                        ref={(el) => {
+                          if (el) el.indeterminate = isSubmitCheckAllIndeterminate
+                        }}
+                        onChange={(e) => setSubmitCheckAll(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      Centang semua
+                    </label>
+                    <span className="text-[10px] text-gray-500">
+                      ({submitSelectedIds.size} / {sedangDievaluasiList.length} dipilih)
+                    </span>
+                  </div>
+                  <ul className="space-y-1.5 text-xs">
+                    {sedangDievaluasiList.map((item) => (
+                      <li key={item.id} className="flex items-start gap-2 py-1.5 border-b border-gray-100 last:border-0">
+                        <input
+                          type="checkbox"
+                          id={`submit-sop-${item.id}`}
+                          checked={submitSelectedIds.has(item.id)}
+                          onChange={() => toggleSubmitSelected(item.id)}
+                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <label htmlFor={`submit-sop-${item.id}`} className="flex flex-col gap-0.5 cursor-pointer flex-1 min-w-0">
+                          <span className="font-medium text-gray-900">{item.judul}</span>
+                          <span className="text-gray-500 font-mono">{item.nomorSOP}</span>
+                          <span className="text-[10px] text-blue-700 font-medium">→ {STATUS_HASIL_EVALUASI[item.statusEvaluasi]}</span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <InfoCard variant="warning">
+                  <p className="text-xs text-amber-800">
+                    <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah.
+                  </p>
+                </InfoCard>
+              </>
             )}
-            <InfoCard variant={statusEvaluasi === 'Sesuai' ? 'success' : 'warning'}>
-              <p className="text-xs mb-1 text-gray-700">Status SOP setelah dikirim:</p>
-              <p className="text-sm font-semibold text-gray-900">
-                {statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'}
-              </p>
-              <p className="text-[10px] text-gray-500 mt-0.5">→ Tampil sebagai Selesai Evaluasi di daftar.</p>
-            </InfoCard>
-            <InfoCard variant="warning">
-              <p className="text-xs text-amber-800">
-                <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah.
-              </p>
-            </InfoCard>
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsSubmitOpen(false)}>
               Batal
             </Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={handleSubmit}>
+            <Button
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+              onClick={handleSubmitAll}
+              disabled={sedangDievaluasiList.length === 0 || submitSelectedIds.size === 0}
+            >
               <Send className="w-3.5 h-3.5" /> Ya, Kirim Hasil
             </Button>
           </DialogFooter>

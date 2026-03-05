@@ -36,10 +36,10 @@ import { Badge } from '@/components/ui/badge'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
-import { SEED_OPD_LIST, SEED_KEPALA_LIST } from '@/lib/seed/opd-seed'
+import { getInitialOpdList, getInitialKepalaList } from '@/lib/data/opd'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { generateId } from '@/utils/generate-id'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
@@ -51,8 +51,8 @@ export function ManajemenOPD() {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [selectedOPD, setSelectedOPD] = useState<OPD | null>(null)
 
-  const [opdList, setOpdList] = useState<OPD[]>(() => [...SEED_OPD_LIST])
-  const [kepalaList, setKepalaList] = useState<KepalaOPD[]>(() => [...SEED_KEPALA_LIST])
+  const [opdList, setOpdList] = useState<OPD[]>(() => getInitialOpdList())
+  const [kepalaList, setKepalaList] = useState<KepalaOPD[]>(() => getInitialKepalaList())
   const [deleteOpdId, setDeleteOpdId] = useState<string | null>(null)
   const [deleteKepalaId, setDeleteKepalaId] = useState<string | null>(null)
 
@@ -521,65 +521,80 @@ export function ManajemenOPD() {
             <DialogTitle className="text-sm font-semibold text-gray-900">Detail OPD</DialogTitle>
           </DialogHeader>
           {selectedOPD && (
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg border border-gray-200">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-white/80 rounded-lg shadow-sm">
-                    <Building2 className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-gray-900">{selectedOPD.name}</h3>
-                  </div>
+            <div className="space-y-4 text-xs">
+              <div className="flex items-start gap-3 rounded-md border border-gray-200 bg-blue-50 px-3 py-2.5">
+                <div className="p-2 bg-white/80 rounded-md shadow-sm">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-gray-900 text-sm truncate">{selectedOPD.name}</h3>
+                  <p className="text-[11px] text-gray-500 mt-0.5 truncate">{selectedOPD.email}</p>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-3 text-xs">
+              <div className="rounded-md border border-gray-200 bg-gray-50 p-3 space-y-2">
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-500">Kepala (aktif)</span>
-                  <span className="font-medium text-gray-900">{getKepalaAktif(selectedOPD.id)?.name ?? '—'}</span>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <span className="text-gray-500">Email OPD</span>
-                  <span className="font-medium text-gray-900 break-all text-right">{selectedOPD.email}</span>
+                  <span className="font-medium text-gray-900 text-right">
+                    {getKepalaAktif(selectedOPD.id)?.name ?? '—'}
+                  </span>
                 </div>
                 <div className="flex justify-between gap-3">
                   <span className="text-gray-500">Telepon</span>
-                  <span className="font-medium text-gray-900">{selectedOPD.phone}</span>
+                  <span className="font-medium text-gray-900 text-right">{selectedOPD.phone || '—'}</span>
                 </div>
                 <div className="flex justify-between gap-3 pt-1 border-t border-gray-200/80">
                   <span className="text-gray-500">Dibuat</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="font-medium text-gray-900 text-right">
                     {formatDateIdLong(selectedOPD.createdAt)}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-3 pt-1 border-t border-gray-200/80">
+                  <span className="text-gray-500">Ringkasan SOP</span>
+                  <span className="font-medium text-gray-900 text-right">
+                    {selectedOPD.sopBerlaku} Berlaku · {selectedOPD.sopDraft} Draft · {selectedOPD.totalSOP} Total
                   </span>
                 </div>
               </div>
 
-              <div className="rounded-lg border border-gray-200 bg-blue-50 p-4 text-center">
-                <p className="text-[10px] uppercase tracking-wider text-blue-600 font-medium mb-1">Total SOP</p>
-                <p className="text-lg font-semibold text-gray-900">{selectedOPD.totalSOP}</p>
-              </div>
-
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <h4 className="text-xs font-semibold text-gray-700 mb-3">Riwayat Kepala OPD</h4>
-                <div className="space-y-2">
+              <div className="rounded-md border border-gray-200 bg-white p-3">
+                <h4 className="text-xs font-semibold text-gray-700 mb-2">Riwayat Kepala OPD</h4>
+                <div className="space-y-1.5 max-h-52 overflow-auto pr-1">
                   {getKepalaByOPD(selectedOPD.id).map((k) => (
-                    <div key={k.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white border border-gray-200 text-xs">
-                      <div>
-                        <span className="font-medium text-gray-900">{k.name}</span>
-                        {k.nip && <span className="block text-gray-500 font-mono text-[10px] mt-0.5">{k.nip}</span>}
+                    <div
+                      key={k.id}
+                      className="flex items-center justify-between p-2 rounded-md bg-gray-50 text-xs border border-gray-100"
+                    >
+                      <div className="min-w-0">
+                        <span className="font-medium text-gray-900 truncate block">{k.name}</span>
+                        {k.nip && (
+                          <span className="block text-gray-500 font-mono text-[10px] mt-0.5 truncate">
+                            {k.nip}
+                          </span>
+                        )}
                       </div>
-                      <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
+                      <StatusBadge
+                        status={k.isActive ? 'Aktif' : 'Nonaktif'}
+                        domain={STATUS_DOMAIN.TIM_PENYUSUN}
+                      />
                     </div>
                   ))}
                   {getKepalaByOPD(selectedOPD.id).length === 0 && (
-                    <p className="text-gray-500 text-xs py-2">Belum ada kepala OPD</p>
+                    <p className="text-gray-500 text-xs py-2 text-center">Belum ada kepala OPD</p>
                   )}
                 </div>
               </div>
             </div>
           )}
           <DialogFooter className="gap-2 pt-2">
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsDetailDialogOpen(false)}>Tutup</Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setIsDetailDialogOpen(false)}
+            >
+              Tutup
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from '@tanstack/react-router'
 import {
   Save,
   Send,
+  Printer,
   CheckCircle,
   XCircle,
   AlertTriangle,
@@ -16,7 +17,7 @@ import { BackButton } from '@/components/ui/back-button'
 import { FormField } from '@/components/ui/form-field'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
@@ -110,6 +111,9 @@ export function PelaksanaanEvaluasi() {
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-gray-900">Informasi evaluasi</h2>
               <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50" onClick={() => window.print()}>
+                  <Printer className="w-3.5 h-3.5" /> Print SOP
+                </Button>
                 <Button variant="outline" size="sm" className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50" onClick={handleSaveDraft}>
                   <Save className="w-3.5 h-3.5" /> Simpan Draft
                 </Button>

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router'
 import { Building2, UserCircle, ClipboardCheck, Users } from 'lucide-react'
-import { setRole, ROLES, getRoleLabel } from '@/lib/stores'
+import { setRole, ROLES, getRoleLabel } from '@/lib/stores/app-store'
 import { DASHBOARD_DESCRIPTIONS } from '@/lib/seed/user-seed'
 
 export const Route = createFileRoute('/')({

@@ -3,7 +3,7 @@
  * Implements the arrow connector algorithm for flowchart routing.
  */
 
-import { isYaLabel, isTidakLabel } from '../sopDiagramTypes'
+import { isYaLabel, isTidakLabel } from './sopDiagramTypes'
 
 export type Side = 'top' | 'bottom' | 'left' | 'right'
 

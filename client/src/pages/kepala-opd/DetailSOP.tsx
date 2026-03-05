@@ -6,6 +6,7 @@ import {
   Building2,
   Users,
   RefreshCw,
+  Printer,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,16 +15,16 @@ import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField } from '@/components/ui/info-field'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { getSopStatusOverride, setSopStatusOverride } from '@/lib/stores/sop-status-store'
 import type { StatusSOP } from '@/lib/types/sop'
 import {
-  SEED_IMPLEMENTERS,
-  SEED_DETAIL_SOP_VIEW_METADATA,
-  SEED_SOP_DETAIL_PROSEDUR_ROWS,
-  SEED_DETAIL_SOP_VERSIONS,
-} from '@/lib/seed/sop-detail-seed'
+  getInitialSopDetailImplementers,
+  getInitialSopDetailProsedurRows,
+  getSopViewMetadata,
+  getSopViewVersions,
+} from '@/lib/data/sop-detail'
 import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
@@ -54,9 +55,9 @@ export function DetailSOP() {
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
   const [viewingVersion, setViewingVersion] = useState<Version | null>(null)
 
-  const implementers = SEED_IMPLEMENTERS
-  const metadata = SEED_DETAIL_SOP_VIEW_METADATA
-  const prosedurRows = SEED_SOP_DETAIL_PROSEDUR_ROWS
+  const implementers = getInitialSopDetailImplementers()
+  const metadata = getSopViewMetadata()
+  const prosedurRows = getInitialSopDetailProsedurRows()
 
   const versionDiffItems = useMemo(
     () => versionDiff.computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot ?? undefined),
@@ -74,7 +75,7 @@ export function DetailSOP() {
   )
 
   /** Kepala OPD hanya menandatangani SOP (TTE). Tanpa tugas Setuju/Tolak atau pemeriksaan. */
-  const versions: Version[] = SEED_DETAIL_SOP_VERSIONS as Version[]
+  const versions: Version[] = getSopViewVersions() as Version[]
 
   return (
     <>
@@ -89,6 +90,14 @@ export function DetailSOP() {
       backSize="icon"
       actions={
         <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+            onClick={() => window.print()}
+          >
+            <Printer className="w-3.5 h-3.5" /> Print SOP
+          </Button>
           <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
             Versi {versions[0]?.version || '1.0'}
           </Badge>

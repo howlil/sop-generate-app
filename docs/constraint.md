@@ -41,7 +41,7 @@
 
 Detail lengkap: **docs/SOP-VERSIONING.md**.
 
-**Constraint:** Setelah status **Berlaku**, dokumen tidak boleh diubah; perubahan hanya lewat proses Revisi/Amendment yang menciptakan versi baru. Status SOP mengikuti single source of truth di `lib/sop-status.ts`.
+**Constraint:** Setelah status **Berlaku**, dokumen tidak boleh diubah; perubahan hanya lewat proses Revisi/Amendment yang menciptakan versi baru. Status SOP mengikuti single source of truth di `lib/domain/sop-status.ts`.
 
 ---
 

@@ -7,7 +7,7 @@ import type { SOPDaftarItem, SOPSayaItem } from '@/lib/types/sop'
 
 export type { SOPDaftarItem, SOPSayaItem }
 
-export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [
+const BASE_SOP_DAFTAR: SOPDaftarItem[] = [
   {
     id: '1',
     nomorSOP: 'SOP/DISDIK/PLY/2026/001',
@@ -130,6 +130,50 @@ export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [
     kategori: 'Administrasi',
   },
 ]
+
+// Dummy tambahan agar total ~50 SOP di Daftar SOP
+const DUMMY_SOP_DAFTAR: SOPDaftarItem[] = Array.from({ length: 42 }, (_, index) => {
+  const n = index + 9
+  const id = String(n)
+  const pad = n.toString().padStart(3, '0')
+  const statusOptions: SOPDaftarItem['status'][] = [
+    'Berlaku',
+    'Siap Dievaluasi',
+    'Diajukan Evaluasi',
+    'Draft',
+    'Revisi dari Tim Evaluasi',
+    'Dievaluasi Tim Evaluasi',
+    'Terverifikasi dari Biro Organisasi',
+  ]
+  const status = statusOptions[index % statusOptions.length]
+  const kategori = index % 2 === 0 ? 'Pelayanan' : 'Administrasi'
+  const timPenyusun = ['Tim Penyusun A', 'Tim Penyusun B', 'Tim Penyusun C'][index % 3]
+  const peraturanId = ['p1', 'p2', 'p3', 'p4'][index % 4]
+  const peraturanMap: Record<string, string> = {
+    p1: 'Permendikbud No. 1/2026',
+    p2: 'Permendikbud No. 5/2025',
+    p3: 'Perda No. 3/2025',
+    p4: 'Permendikbud No. 8/2025',
+  }
+
+  return {
+    id,
+    nomorSOP: `SOP/DUMMY/PLY/2026/${pad}`,
+    judul: `SOP Dummy ${pad} — Proses Layanan Internal`,
+    deskripsi: 'SOP dummy untuk pengujian skala daftar SOP (UI dan performa).',
+    waktuPenugasan: `2026-01-${((index % 28) + 1).toString().padStart(2, '0')}`,
+    terakhirDiperbarui: `2026-02-${((index % 28) + 1).toString().padStart(2, '0')}`,
+    timPenyusun,
+    unitTerkait: 'Unit Kerja Dummy',
+    peraturan: peraturanMap[peraturanId],
+    peraturanId,
+    status,
+    versi: `1.${index % 5}`,
+    kategori,
+  }
+})
+
+export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [...BASE_SOP_DAFTAR, ...DUMMY_SOP_DAFTAR]
 
 export const SEED_PERATURAN_DAFTAR: { id: string; nama: string }[] = [
   { id: 'p1', nama: 'Permendikbud No. 1/2026' },

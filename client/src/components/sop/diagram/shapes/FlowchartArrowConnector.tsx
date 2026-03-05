@@ -1,17 +1,10 @@
 import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
-import type { ArrowConnectionConfig, ArrowPathPoint } from '../sopDiagramTypes'
-import { routeOrthogonal, scorePath, pathToSegments, type OccupiedSegment } from './orthogonalRouter'
+import type { ArrowConnectionConfig, ArrowPathPoint, FlowchartConnection } from '../logic/sopDiagramTypes'
+import { routeOrthogonal, scorePath, pathToSegments, type OccupiedSegment } from '../logic/orthogonalRouter'
 
-/* ───────────────────────── Public types ─────────────────────────── */
+/* ───────────────────────── Public types (re-export for consumers) ─────────────────────────── */
 
-export interface FlowchartConnection {
-  id: string
-  from: string
-  to: string
-  label?: string | null
-  sourceType?: string
-  targetType?: string
-}
+export type { FlowchartConnection } from '../logic/sopDiagramTypes'
 
 export interface ArrowObstacle { id: string }
 

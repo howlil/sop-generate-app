@@ -6,7 +6,7 @@ import {
   type PathUpdatedPayload,
   type RoutedPathsRef,
 } from './shapes/FlowchartArrowConnector'
-import { buildCorridorGraph, type OccupiedSegment, type CellInfo, type CorridorGraph } from './shapes/orthogonalRouter'
+import { buildCorridorGraph, type OccupiedSegment, type CellInfo, type CorridorGraph } from './logic/orthogonalRouter'
 import { FlowchartOffPageConnector } from './shapes/flowchart/OffPageConnector'
 import type {
   ProsedurRow,
@@ -15,14 +15,14 @@ import type {
   SOPStep,
   ArrowConfig,
   LabelConfig,
-} from './sopDiagramTypes'
-import { getFullTimeUnit, isYaLabel, isTidakLabel } from './sopDiagramTypes'
+} from './logic/sopDiagramTypes'
+import { getFullTimeUnit, isYaLabel, isTidakLabel } from './logic/sopDiagramTypes'
 import {
   splitStepsIntoPages,
   splitCrossPageConnections,
   getOpcShapesForPage,
   type OpcPair,
-} from './flowchartPagination'
+} from './logic/flowchartPagination'
 
 /* ───────────────────────── Defaults ─────────────────────────── */
 

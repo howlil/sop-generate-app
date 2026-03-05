@@ -17,15 +17,15 @@ import {
   type PathUpdatedPayload,
 } from './shapes/FlowchartArrowConnector'
 import { BpmnArrowConnector } from './shapes/BpmnArrowConnector'
-import type { BpmnConnectionMeta, BpmnLaneLayout } from './shapes/bpmnRouter'
-import type { OccupiedSegment } from './shapes/orthogonalRouter'
+import type { BpmnConnectionMeta, BpmnLaneLayout } from './logic/bpmnRouter'
+import type { OccupiedSegment } from './logic/orthogonalRouter'
 import type {
   Implementer,
   SOPStep,
   ArrowConfig,
   ArrowConnectionConfig,
   LabelConfig,
-} from './sopDiagramTypes'
+} from './logic/sopDiagramTypes'
 
 const TASK_MIN_WIDTH = 90
 const TASK_MIN_HEIGHT = 50

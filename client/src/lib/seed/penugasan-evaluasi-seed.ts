@@ -5,6 +5,7 @@
 
 import type { Penugasan, PenugasanTimEvaluasiItem } from '@/lib/types/penugasan'
 import type { StatusSOP } from '@/lib/types/sop'
+import { SEED_OPD_LIST } from '@/lib/seed/opd-seed'
 
 
 export const SEED_PENUGASAN_INITIAL: Penugasan[] = [
@@ -78,7 +79,24 @@ export const SEED_OPD_LIST_EVALUASI: { id: string; nama: string; kode: string }[
   { id: 'opd4', nama: 'Bagian Umum', kode: 'BAGUM' },
 ]
 
-export const SEED_SOP_BY_OPD: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>> = {
+/**
+ * Data dummy SOP per OPD. Setiap status SOP (underlying) punya wakil:
+ * - Berlaku: sop1, sop3, 1, sop4
+ * - Siap Dievaluasi: 2, sop7
+ * - Diajukan Evaluasi: sop6
+ * - Dievaluasi Tim Evaluasi: 3
+ * - Revisi dari Tim Evaluasi: 4
+ * - Terverifikasi dari Biro Organisasi: sop2, sop5
+ *
+ * Tampilan di workspace evaluasi (by lastEvaluatedBy):
+ * - Diajukan Evaluasi (belum dikirim): sop2, sop3, 2, sop5, sop7
+ * - Selesai Evaluasi (sudah dikirim): sop1, 1, 3, 4, sop4, sop6
+ * - Sedang Dievaluasi: hanya saat user isi form (runtime)
+ */
+const BASE_SOP_BY_OPD: Record<
+  string,
+  Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>
+> = {
   'Dinas Pendidikan': [
     { id: 'sop1', nama: 'SOP Penerimaan Siswa Baru', nomor: 'SOP-DISDIK-001/2026', status: 'Berlaku' },
     { id: 'sop2', nama: 'SOP Ujian Sekolah', nomor: 'SOP-DISDIK-005/2026', status: 'Terverifikasi dari Biro Organisasi' },
@@ -86,6 +104,7 @@ export const SEED_SOP_BY_OPD: Record<string, Array<{ id: string; nama: string; n
     { id: '1', nama: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027', nomor: 'SOP/DISDIK/PLY/2026/001', status: 'Berlaku' },
     { id: '2', nama: 'SOP Pelaksanaan Ujian Akhir Sekolah', nomor: 'SOP/DISDIK/PLY/2026/005', status: 'Siap Dievaluasi' },
     { id: '3', nama: 'SOP Pengelolaan Data Kepegawaian Guru', nomor: 'SOP/DISDIK/ADM/2026/003', status: 'Dievaluasi Tim Evaluasi' },
+    { id: '4', nama: 'SOP Revisi Dokumen Kurikulum', nomor: 'SOP/DISDIK/ADM/2026/004', status: 'Revisi dari Tim Evaluasi' },
   ],
   'Dinas Kesehatan': [
     { id: 'sop4', nama: 'SOP Pelayanan Kesehatan Dasar', nomor: 'SOP-DINKES-012/2026', status: 'Berlaku' },
@@ -98,6 +117,44 @@ export const SEED_SOP_BY_OPD: Record<string, Array<{ id: string; nama: string; n
     { id: 'sop7', nama: 'SOP Pengadaan Barang', nomor: 'SOP-BAGUM-015/2026', status: 'Siap Dievaluasi' },
   ],
 }
+
+// Setiap OPD punya minimal 5 SOP dummy untuk Daftar SOP Evaluasi
+export const SEED_SOP_BY_OPD: Record<
+  string,
+  Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>
+> = (() => {
+  const statusPool: StatusSOP[] = [
+    'Berlaku' as StatusSOP,
+    'Siap Dievaluasi' as StatusSOP,
+    'Diajukan Evaluasi' as StatusSOP,
+    'Dievaluasi Tim Evaluasi' as StatusSOP,
+    'Revisi dari Tim Evaluasi' as StatusSOP,
+    'Terverifikasi dari Biro Organisasi' as StatusSOP,
+  ]
+
+  const map: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>> = {
+    ...BASE_SOP_BY_OPD,
+  }
+
+  SEED_OPD_LIST.forEach((opd, idx) => {
+    const name = opd.name
+    const existing = map[name] ? [...map[name]] : []
+    const needed = Math.max(0, 5 - existing.length)
+    for (let i = 0; i < needed; i++) {
+      const n = existing.length + 1
+      const idSuffix = `${(idx + 1).toString().padStart(2, '0')}-${n}`
+      existing.push({
+        id: `sop-${idSuffix}`,
+        nama: `SOP Dummy ${n} — ${name}`,
+        nomor: `SOP/${(opd.name.split(' ')[1] ?? 'OPD').toUpperCase()}/${(2026).toString()}/${idSuffix}`,
+        status: statusPool[(idx + i) % statusPool.length],
+      })
+    }
+    map[name] = existing
+  })
+
+  return map
+})()
 
 export const SEED_TIM_MONEV_OPTIONS: { id: string; nama: string }[] = [
   { id: 'tm1', nama: 'Dra. Siti Aminah, M.Si' },
@@ -117,20 +174,18 @@ export const SEED_PENUGASAN_TIM_EVALUASI: PenugasanTimEvaluasiItem[] = [
 export const SEED_OPD_REQUEST_BIRO: string[] = ['DPMPTSP']
 
 /**
- * Data dummy: SOP id → { date, evaluatorName }.
- * Hanya SOP yang sudah pernah dikirim hasil evaluasi (tampil "Selesai Evaluasi").
- * SOP yang TIDAK ada di sini tampil "Diajukan Evaluasi" (edge case: belum ada evaluator).
+ * SOP id → { date, evaluatorName }. Hanya SOP yang sudah dikirim → tampil "Selesai Evaluasi".
+ * SOP yang tidak ada di sini → tampil "Diajukan Evaluasi".
  *
- * Konsisten dengan SEED_SOP_BY_OPD:
- * - Dinas Pendidikan: sop1, 1, 3 Selesai | sop2, sop3, 2 Diajukan
- * - Dinas Kesehatan: sop4 Selesai | sop5 Diajukan
- * - DPMPTSP: sop6 Selesai
- * - Bagian Umum: (kosong) → sop7 Diajukan
+ * Per status tampilan:
+ * - Selesai Evaluasi: sop1, 1, 3, 4, sop4, sop6
+ * - Diajukan Evaluasi: sop2, sop3, 2, sop5, sop7
  */
 export const SEED_LAST_EVALUATED_BY: Record<string, { date: string; evaluatorName: string }> = {
   sop1: { date: '2026-02-10', evaluatorName: 'Dra. Siti Aminah, M.Si' },
   '1': { date: '2026-02-12', evaluatorName: 'Dra. Siti Aminah, M.Si' },
   '3': { date: '2026-02-01', evaluatorName: 'Ir. Dewi Kusumawati, MT' },
+  '4': { date: '2026-02-08', evaluatorName: 'Dr. Bambang Suryanto' },
   sop4: { date: '2026-02-03', evaluatorName: 'Dra. Siti Aminah, M.Si' },
   sop6: { date: '2026-02-06', evaluatorName: 'Ir. Dewi Kusumawati, MT' },
 }
@@ -164,6 +219,9 @@ export const SEED_RIWAYAT_EVALUASI_SOP: Record<string, RiwayatEvaluasiSOPItem[]>
   '3': [
     { date: '2026-02-01', evaluatorName: 'Ir. Dewi Kusumawati, MT', hasil: 'Sesuai' },
   ],
+  '4': [
+    { date: '2026-02-08', evaluatorName: 'Dr. Bambang Suryanto', hasil: 'Revisi Biro', komentar: 'Lampiran kurikulum perlu disesuaikan dengan SK terbaru.' },
+  ],
   sop4: [
     { date: '2026-02-03', evaluatorName: 'Dra. Siti Aminah, M.Si', hasil: 'Sesuai' },
   ],
@@ -172,10 +230,11 @@ export const SEED_RIWAYAT_EVALUASI_SOP: Record<string, RiwayatEvaluasiSOPItem[]>
   ],
 }
 
-/** opdId → riwayat evaluasi OPD. Hanya entri untuk SOP yang ada di SEED_LAST_EVALUATED_BY (selesai evaluasi). Judul = match SEED_SOP_BY_OPD. */
+/** opdId → riwayat evaluasi OPD. Hanya entri untuk SOP yang ada di SEED_LAST_EVALUATED_BY. Judul = match SEED_SOP_BY_OPD. */
 export const SEED_RIWAYAT_EVALUASI_OPD: Record<string, RiwayatEvaluasiOPDItem[]> = {
   opd1: [
     { date: '2026-02-12', evaluatorName: 'Dra. Siti Aminah, M.Si', skor: 5, sopId: '1', sopJudul: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027' },
+    { date: '2026-02-08', evaluatorName: 'Dr. Bambang Suryanto', skor: 4, sopId: '4', sopJudul: 'SOP Revisi Dokumen Kurikulum' },
     { date: '2026-02-01', evaluatorName: 'Ir. Dewi Kusumawati, MT', skor: 5, sopId: '3', sopJudul: 'SOP Pengelolaan Data Kepegawaian Guru' },
     { date: '2026-02-10', evaluatorName: 'Dra. Siti Aminah, M.Si', skor: 4, sopId: 'sop1', sopJudul: 'SOP Penerimaan Siswa Baru' },
   ],

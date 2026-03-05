@@ -1,5 +1,4 @@
-import type { SOPStep } from './sopDiagramTypes'
-import type { FlowchartConnection } from './shapes/FlowchartArrowConnector'
+import type { SOPStep, FlowchartConnection } from './sopDiagramTypes'
 
 /* ── Types ─────────────────────────────────────────────── */
 

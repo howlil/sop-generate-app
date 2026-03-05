@@ -2,15 +2,40 @@
  * Hook for persisting evaluasi draft to localStorage.
  */
 import { useState, useEffect, useCallback } from 'react'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 
-interface EvaluasiDraftData {
+export interface EvaluasiDraftData {
   komentarEvaluasi: string
   statusEvaluasi: 'Sesuai' | 'Revisi Biro' | null
 }
 
+const DRAFT_STORAGE_PREFIX = 'evaluasi_draft_'
 function getStorageKey(id: string): string {
-  return `evaluasi_draft_${id}`
+  return `${DRAFT_STORAGE_PREFIX}${id}`
+}
+
+/** Baca draft evaluasi dari localStorage (untuk list Sedang Dievaluasi & kirim semua). */
+export function getEvaluasiDraft(sopId: string): EvaluasiDraftData | null {
+  if (typeof window === 'undefined') return null
+  const raw = localStorage.getItem(getStorageKey(sopId))
+  if (!raw) return null
+  try {
+    const data = JSON.parse(raw) as Partial<EvaluasiDraftData>
+    if (data.statusEvaluasi != null) {
+      const komentar = typeof data.komentarEvaluasi === 'string' ? data.komentarEvaluasi : ''
+      if (data.statusEvaluasi !== 'Revisi Biro' || komentar.trim() !== '') {
+        return { komentarEvaluasi: komentar, statusEvaluasi: data.statusEvaluasi }
+      }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+export function clearEvaluasiDraft(sopId: string): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(getStorageKey(sopId))
 }
 
 export function useEvaluasiDraft(id: string | undefined) {

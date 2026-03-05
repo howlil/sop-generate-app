@@ -17,7 +17,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { Peraturan } from '@/lib/types/peraturan'
 import type { SOPDetailMetadata } from '@/lib/types/sop'
-import { SEED_RELATED_POS_OPTIONS } from '@/lib/seed/sop-detail-seed'
+import { getRelatedPosOptions } from '@/lib/data/sop-detail'
 
 function toLines(value: string): string[] {
   return value
@@ -48,6 +48,8 @@ export function DetailSOPMetadataPanel({
   const [isRelatedPosOpen, setIsRelatedPosOpen] = useState(false)
   const [relatedPosQuery, setRelatedPosQuery] = useState('')
   const [selectedRelatedPos, setSelectedRelatedPos] = useState<string[]>([])
+
+  const relatedPosOptions = getRelatedPosOptions()
 
   return (
     <>
@@ -407,8 +409,8 @@ export function DetailSOPMetadataPanel({
             inputClassName="border-0 focus:ring-0 focus:outline-none"
           />
           <div className="border border-gray-200 rounded-md overflow-hidden">
-            <div className="divide-y divide-gray-100">
-              {SEED_RELATED_POS_OPTIONS.filter((x) =>
+              <div className="divide-y divide-gray-100">
+            {relatedPosOptions.filter((x) =>
                 x.toLowerCase().includes(relatedPosQuery.toLowerCase())
               ).map((x) => {
                 const already = (metadata.relatedSop ?? []).includes(x)

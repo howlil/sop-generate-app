@@ -7,7 +7,7 @@ Dokumen ini meringkas alur kerja (workflow) dan siklus hidup (lifecycle) aplikas
 ## 1. Arsitektur Ringkas
 
 - **Client**: React + TanStack Router, state lokal + store in-memory (`penugasan-store`, `evaluation-case`).
-- **Role**: Dipilih di landing (`/`), disimpan di `localStorage` (`lib/role.ts`). Empat role: **Kepala OPD**, **Kepala Biro Organisasi**, **Tim Evaluasi**, **Tim Penyusun**.
+- **Role**: Dipilih di landing (`/`), disimpan di `localStorage` lewat `lib/stores/app-store`. Empat role: **Kepala OPD**, **Kepala Biro Organisasi**, **Tim Evaluasi**, **Tim Penyusun**.
 - **Route per role**: Setiap role punya layout sendiri dengan `beforeLoad` redirect jika role tidak sesuai.
 
 ---
@@ -31,7 +31,7 @@ Dokumen ini meringkas alur kerja (workflow) dan siklus hidup (lifecycle) aplikas
 
 ### 3.2 Status SOP (single source of truth)
 
-**Sumber:** `client/src/lib/sop-status.ts`. Semua aktor (Kepala OPD, Tim Penyusun, Biro) memakai daftar status yang sama; tidak ada status lain di luar ini.
+**Sumber:** `client/src/lib/domain/sop-status.ts` dan `lib/types/sop.ts`. Semua aktor (Kepala OPD, Tim Penyusun, Biro) memakai daftar status yang sama; tidak ada status lain di luar ini.
 
 Alur status SOP:
 

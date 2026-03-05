@@ -25,21 +25,13 @@ export const STATUS_SOP_ALL: StatusSOP[] = [
   'Revisi dari Tim Evaluasi', 'Terverifikasi dari Biro Organisasi', 'Dicabut', 'Batal',
 ]
 
-/** Status saat Tim Penyusun boleh mengajukan Request Evaluasi (dari Daftar SOP). */
-export const STATUS_SOP_CAN_REQUEST_EVALUASI: StatusSOP[] = ['Siap Dievaluasi', 'Berlaku']
-
-/** Status SOP yang layak dievaluasi oleh Tim Evaluasi (tanpa penugasan). */
-export const STATUS_SOP_CAN_SELECT_FOR_EVALUASI: StatusSOP[] = [
-  'Siap Dievaluasi', 'Berlaku', 'Diajukan Evaluasi',
-]
-
-export function canAjukanEvaluasiSOP(status: StatusSOP): boolean {
-  return STATUS_SOP_CAN_REQUEST_EVALUASI.includes(status)
-}
-
-export function canSelectSOPForEvaluasi(status: StatusSOP): boolean {
-  return STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(status)
-}
+/** @deprecated Import dari @/lib/domain/sop-evaluasi */
+export {
+  STATUS_SOP_CAN_REQUEST_EVALUASI,
+  STATUS_SOP_CAN_SELECT_FOR_EVALUASI,
+  canAjukanEvaluasiSOP,
+  canSelectSOPForEvaluasi,
+} from '@/lib/domain/sop-evaluasi'
 
 export type StatusHasilEvaluasi = 'Sesuai' | 'Perlu Perbaikan' | 'Revisi Biro'
 

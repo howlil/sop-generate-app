@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { BookOpen, FileText, Users } from 'lucide-react'
-import { isTimPenyusun } from '@/lib/stores'
+import { isTimPenyusun } from '@/lib/stores/app-store'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'

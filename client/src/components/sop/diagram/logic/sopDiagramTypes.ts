@@ -49,6 +49,16 @@ export interface ArrowConnectionConfig {
 /** Map connectionId → persisted path config. Parent stores; child uses for manual priority. */
 export type ArrowConfig = Record<string, ArrowConnectionConfig>
 
+/** Connection descriptor for flowchart arrows (logic + UI). Dipakai flowchartPagination dan FlowchartArrowConnector. */
+export interface FlowchartConnection {
+  id: string
+  from: string
+  to: string
+  label?: string | null
+  sourceType?: string
+  targetType?: string
+}
+
 /** Label position for arrow label or BPMN decision text */
 export interface LabelPosition {
   x: number

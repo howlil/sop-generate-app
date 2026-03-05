@@ -2,7 +2,7 @@
  * Shared hook for managing komentar (comments) list state.
  */
 import { useState, useCallback } from 'react'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { formatDatetime } from '@/utils/format-date'
 import { generateId } from '@/utils/generate-id'
 import type { KomentarItem } from '@/lib/types/komentar'

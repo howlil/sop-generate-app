@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { generateId } from '@/utils/generate-id'
 import {
   Dialog,

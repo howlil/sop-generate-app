@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Plus, Edit, Trash2, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
@@ -11,28 +11,22 @@ import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/hooks/useFilteredList'
-import { showToast } from '@/lib/stores'
+import { showToast } from '@/lib/stores/app-store'
 import { generateId } from '@/utils/generate-id'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { SEED_TIM_PENYUSUN_LIST } from '@/lib/seed/tim-penyusun-seed'
-import { SEED_OPD_LIST } from '@/lib/seed/opd-seed'
+import { useOpdList } from '@/lib/data/opd'
 import {
-  getTimPenyusunList,
-  getTimPenyusunByOpdId,
-  setTimPenyusunList,
+  useTimPenyusunList,
   addTimPenyusun,
   updateTimPenyusun,
   removeTimPenyusun,
-  subscribeTimPenyusun,
-} from '@/lib/stores/tim-penyusun-store'
+} from '@/lib/data/tim-penyusun'
 import type { TimPenyusun } from '@/lib/types/tim'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
-import { formatDateId } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
 
 export function ManajemenTimPenyusun() {
-  const opdList = SEED_OPD_LIST
-  const [selectedOpdId, setSelectedOpdId] = useState<string>(opdList[0]?.id ?? '')
+  const opdList = useOpdList()
+  const [createOpdId, setCreateOpdId] = useState<string>(opdList[0]?.id ?? '')
+  const [expandedOpdIds, setExpandedOpdIds] = useState<Record<string, boolean>>({})
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
@@ -42,24 +36,12 @@ export function ManajemenTimPenyusun() {
     nama: '',
     nip: '',
     jabatan: '',
+    pangkat: '',
     email: '',
     noHP: '',
-    status: 'Aktif' as 'Aktif' | 'Nonaktif',
   })
 
-  const [timList, setTimList] = useState<TimPenyusun[]>(() => getTimPenyusunByOpdId(selectedOpdId))
-
-  useEffect(() => {
-    if (getTimPenyusunList().length === 0) {
-      setTimPenyusunList(SEED_TIM_PENYUSUN_LIST)
-    }
-    setTimList(getTimPenyusunByOpdId(selectedOpdId))
-  }, [selectedOpdId])
-
-  useEffect(() => {
-    const unsub = subscribeTimPenyusun(() => setTimList(getTimPenyusunByOpdId(selectedOpdId)))
-    return unsub
-  }, [selectedOpdId])
+  const timList = useTimPenyusunList()
 
   const { filteredList, searchQuery, setSearchQuery } = useFilteredList(timList, {
     searchKeys: ['nama', 'nip', 'jabatan'],
@@ -69,6 +51,7 @@ export function ManajemenTimPenyusun() {
     formData.nama.trim() !== '' &&
     formData.nip.trim() !== '' &&
     formData.jabatan.trim() !== '' &&
+    formData.pangkat.trim() !== '' &&
     formData.email.trim() !== '' &&
     formData.noHP.trim() !== ''
 
@@ -77,17 +60,19 @@ export function ManajemenTimPenyusun() {
       nama: '',
       nip: '',
       jabatan: '',
+      pangkat: '',
       email: '',
       noHP: '',
-      status: 'Aktif',
     })
   }
 
   const handleCreate = () => {
+    if (!createOpdId) return
     addTimPenyusun({
       id: generateId(),
-      opdId: selectedOpdId,
+      opdId: createOpdId,
       ...formData,
+      status: 'Aktif',
       jumlahSOPDisusun: 0,
       tanggalBergabung: new Date().toISOString().split('T')[0],
     })
@@ -110,29 +95,24 @@ export function ManajemenTimPenyusun() {
     setDeleteTimId(id)
   }
 
-  const handleToggleStatus = (id: string) => {
-    const tim = timList.find((t) => t.id === id)
-    if (tim) {
-      updateTimPenyusun(id, { status: tim.status === 'Aktif' ? 'Nonaktif' : 'Aktif' })
-      showToast('Status tim penyusun berhasil diperbarui')
-      // Subscription store akan mengupdate timList.
-    }
-  }
-
   const openEditDialog = (tim: TimPenyusun) => {
     setFormData({
       nama: tim.nama,
       nip: tim.nip,
       jabatan: tim.jabatan,
+      pangkat: tim.pangkat ?? '',
       email: tim.email,
       noHP: tim.noHP,
-      status: tim.status,
     })
     setSelectedTim(tim)
     setIsEditOpen(true)
   }
 
-  const selectedOpd = opdList.find((o) => o.id === selectedOpdId)
+  const groupedByOpd = filteredList.reduce<Record<string, TimPenyusun[]>>((acc, tim) => {
+    if (!acc[tim.opdId]) acc[tim.opdId] = []
+    acc[tim.opdId].push(tim)
+    return acc
+  }, {})
 
   return (
     <ListPageLayout
@@ -140,84 +120,123 @@ export function ManajemenTimPenyusun() {
       title="Manajemen Tim Penyusun"
       description="Kelola anggota tim penyusun SOP per OPD. Satu OPD dapat memiliki banyak tim penyusun."
       toolbar={
-        <>
-          <FormField label="OPD">
-            <Select
-              value={selectedOpdId}
-              onValueChange={setSelectedOpdId}
-              options={opdList.map((o) => ({ value: o.id, label: o.name }))}
-              placeholder="Pilih OPD"
-            />
-          </FormField>
-          <SearchToolbar
-            searchPlaceholder="Cari nama, NIP, atau jabatan..."
-            searchValue={searchQuery}
-            onSearchChange={(e) => setSearchQuery(e.target.value)}
+        <SearchToolbar
+          searchPlaceholder="Cari nama, NIP, atau jabatan..."
+          searchValue={searchQuery}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
+        >
+          <Button
+            size="sm"
+            className="h-8 gap-1.5 text-xs"
+            onClick={() => {
+              resetForm()
+              setIsCreateOpen(true)
+            }}
           >
-            <Button
-              size="sm"
-              className="h-8 gap-1.5 text-xs"
-              onClick={() => {
-                resetForm()
-                setIsCreateOpen(true)
-              }}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Tambah Tim Penyusun {selectedOpd ? `(${selectedOpd.name})` : ''}
-            </Button>
-          </SearchToolbar>
-        </>
+            <Plus className="w-3.5 h-3.5" />
+            Tambah Tim Penyusun
+          </Button>
+        </SearchToolbar>
       }
     >
       <Table.Card>
         <Table.Table>
           <thead>
-            <Table.HeadRow>
-              <Table.Th>Nama</Table.Th>
-              <Table.Th>NIP</Table.Th>
-              <Table.Th>Jabatan</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>No. HP</Table.Th>
-              <Table.Th>Tgl Bergabung</Table.Th>
-              <Table.Th align="center">Total SOP</Table.Th>
-              <Table.Th align="center">Status</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
+              <Table.HeadRow>
+              <Table.Th>OPD / Tim Penyusun</Table.Th>
+                <Table.Th>NIP</Table.Th>
+                <Table.Th>Jabatan</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>No. HP</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
           </thead>
           <tbody>
-            {filteredList.map((tim) => (
-              <Table.BodyRow key={tim.id}>
-                <Table.Td>
-                  <p className="font-medium text-gray-900">{tim.nama}</p>
-                </Table.Td>
-                <Table.Td className="font-mono text-gray-600 text-[11px]">{tim.nip}</Table.Td>
-                <Table.Td className="text-gray-600">{tim.jabatan}</Table.Td>
-                <Table.Td className="text-gray-600">{tim.email}</Table.Td>
-                <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
-                <Table.Td className="text-gray-600">{formatDateId(tim.tanggalBergabung)}</Table.Td>
-                <Table.Td className="text-center font-medium text-gray-900">{tim.jumlahSOPDisusun}</Table.Td>
-                <Table.Td className="text-center">
-                  <button type="button" onClick={() => handleToggleStatus(tim.id)} className="inline-flex">
-                    <StatusBadge status={tim.status} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
-                  </button>
-                </Table.Td>
-                <Table.Td>
-                  <div className="flex items-center justify-center gap-1">
-                    <IconActionButton icon={Edit} title="Edit" onClick={() => openEditDialog(tim)} />
-                    <IconActionButton icon={Trash2} title="Hapus" destructive onClick={() => handleDelete(tim.id)} />
-                  </div>
-                </Table.Td>
-              </Table.BodyRow>
-            ))}
+            {Object.entries(groupedByOpd).map(([opdId, tims]) => {
+              const opd = opdList.find((o) => o.id === opdId)
+              if (!opd) return null
+              const isExpanded = expandedOpdIds[opdId] ?? false
+              return (
+                <>
+                  <Table.BodyRow
+                    key={`opd-${opdId}`}
+                    className="bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() =>
+                      setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
+                    }
+                  >
+                    <Table.Td colSpan={6}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
+                            }}
+                            aria-label={isExpanded ? 'Tutup daftar tim' : 'Lihat daftar tim'}
+                          >
+                            <ChevronRight
+                              className={`w-3.5 h-3.5 transition-transform ${
+                                isExpanded ? 'rotate-90' : ''
+                              }`}
+                            />
+                          </button>
+                          <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
+                            <span className="text-[11px] font-semibold text-blue-700">
+                              {opd.name.split(' ')[0][0]}
+                            </span>
+                          </div>
+                          <p className="font-medium text-gray-900 text-xs md:text-sm truncate">
+                            {opd.name}
+                          </p>
+                        </div>
+                        <span className="text-[11px] text-gray-500">
+                          {tims.length} tim penyusun
+                        </span>
+                      </div>
+                    </Table.Td>
+                  </Table.BodyRow>
+                  {isExpanded &&
+                    tims.map((tim) => (
+                      <Table.BodyRow key={tim.id}>
+                        <Table.Td>
+                          <p className="font-medium text-gray-900">{tim.nama}</p>
+                        </Table.Td>
+                        <Table.Td className="font-mono text-gray-600 text-[11px]">
+                          {tim.nip}
+                        </Table.Td>
+                        <Table.Td className="text-gray-600">{tim.jabatan}</Table.Td>
+                        <Table.Td className="text-gray-600">{tim.email}</Table.Td>
+                        <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
+                        <Table.Td>
+                          <div className="flex items-center justify-center gap-1">
+                            <IconActionButton
+                              icon={Edit}
+                              title="Edit"
+                              onClick={() => openEditDialog(tim)}
+                            />
+                            <IconActionButton
+                              icon={Trash2}
+                              title="Hapus"
+                              destructive
+                              onClick={() => handleDelete(tim.id)}
+                            />
+                          </div>
+                        </Table.Td>
+                      </Table.BodyRow>
+                    ))}
+                </>
+              )
+            })}
           </tbody>
         </Table.Table>
       </Table.Card>
 
       {filteredList.length === 0 && (
         <div className="py-8 text-center text-gray-500 text-sm">
-          {selectedOpdId
-            ? `Belum ada tim penyusun untuk ${selectedOpd?.name ?? 'OPD ini'}. Klik "Tambah Tim Penyusun" untuk menambah.`
-            : 'Pilih OPD terlebih dahulu.'}
+          Belum ada tim penyusun. Klik &quot;Tambah Tim Penyusun&quot; untuk menambah.
         </div>
       )}
 
@@ -225,14 +244,22 @@ export function ManajemenTimPenyusun() {
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         title="Tambah Tim Penyusun SOP"
-        description={selectedOpd ? `Isi data pegawai tim penyusun untuk ${selectedOpd.name}` : 'Isi data pegawai'}
+        description="Pilih OPD dan isi data pegawai tim penyusun"
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={handleCreate}
         confirmDisabled={!isFormValid}
         size="md"
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
+          <FormField label="OPD" required>
+            <Select
+              value={createOpdId}
+              onValueChange={setCreateOpdId}
+              options={opdList.map((o) => ({ value: o.id, label: o.name }))}
+              placeholder="Pilih OPD"
+            />
+          </FormField>
           <FormField label="Nama Lengkap" required>
             <Input
               className="h-9 text-xs"
@@ -249,12 +276,20 @@ export function ManajemenTimPenyusun() {
               onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
             />
           </FormField>
-          <FormField label="Jabatan" required className="col-span-2">
+          <FormField label="Jabatan" required>
             <Input
               className="h-9 text-xs"
               placeholder="Contoh: Kepala Seksi Organisasi"
               value={formData.jabatan}
               onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Pangkat / Golongan" required>
+            <Input
+              className="h-9 text-xs"
+              placeholder="Contoh: IV/a"
+              value={formData.pangkat}
+              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
             />
           </FormField>
           <FormField label="Email" required>
@@ -274,16 +309,6 @@ export function ManajemenTimPenyusun() {
               onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
             />
           </FormField>
-          <FormField label="Status" required>
-            <Select
-              value={formData.status}
-              onValueChange={(status) => setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })}
-              options={[
-                { value: 'Aktif', label: 'Aktif' },
-                { value: 'Nonaktif', label: 'Nonaktif' },
-              ]}
-            />
-          </FormField>
         </div>
       </FormDialog>
 
@@ -298,7 +323,7 @@ export function ManajemenTimPenyusun() {
         confirmDisabled={!isFormValid}
         size="md"
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
           <FormField label="Nama Lengkap" required>
             <Input
               className="h-9 text-xs"
@@ -313,11 +338,18 @@ export function ManajemenTimPenyusun() {
               onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
             />
           </FormField>
-          <FormField label="Jabatan" required className="col-span-2">
+          <FormField label="Jabatan" required>
             <Input
               className="h-9 text-xs"
               value={formData.jabatan}
               onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
+            />
+          </FormField>
+          <FormField label="Pangkat / Golongan" required>
+            <Input
+              className="h-9 text-xs"
+              value={formData.pangkat}
+              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
             />
           </FormField>
           <FormField label="Email" required>
@@ -333,16 +365,6 @@ export function ManajemenTimPenyusun() {
               className="h-9 text-xs"
               value={formData.noHP}
               onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Status" required>
-            <Select
-              value={formData.status}
-              onValueChange={(status) => setFormData({ ...formData, status: status as 'Aktif' | 'Nonaktif' })}
-              options={[
-                { value: 'Aktif', label: 'Aktif' },
-                { value: 'Nonaktif', label: 'Nonaktif' },
-              ]}
             />
           </FormField>
         </div>

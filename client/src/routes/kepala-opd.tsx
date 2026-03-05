@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { PenLine } from 'lucide-react'
-import { isKepalaOPD } from '@/lib/stores'
+import { isKepalaOPD } from '@/lib/stores/app-store'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
