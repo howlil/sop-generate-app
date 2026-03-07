@@ -2,7 +2,7 @@
  * Hook for persisting evaluasi draft to localStorage.
  */
 import { useState, useEffect, useCallback } from 'react'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast } from '@/hooks/useUI'
 
 export interface EvaluasiDraftData {
   komentarEvaluasi: string
@@ -39,6 +39,7 @@ export function clearEvaluasiDraft(sopId: string): void {
 }
 
 export function useEvaluasiDraft(id: string | undefined) {
+  const { showToast } = useToast()
   const [komentarEvaluasi, setKomentarEvaluasi] = useState('')
   const [statusEvaluasi, setStatusEvaluasi] = useState<'Sesuai' | 'Revisi Biro' | null>(null)
 

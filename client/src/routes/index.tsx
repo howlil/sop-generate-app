@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router'
 import { Building2, UserCircle, ClipboardCheck, Users } from 'lucide-react'
 import { setRole, ROLES, getRoleLabel } from '@/lib/stores/app-store'
-import { DASHBOARD_DESCRIPTIONS } from '@/lib/seed/user-seed'
+import { getDashboardDescriptions } from '@/lib/data/user-dashboard'
 
 export const Route = createFileRoute('/')({
   validateSearch: (s: Record<string, unknown>) => ({ denied: (s.denied as string) ?? undefined }),
@@ -16,6 +16,7 @@ const dashboards = [
 ]
 
 function IndexPage() {
+  const DASHBOARD_DESCRIPTIONS = getDashboardDescriptions()
   const { denied } = useSearch({ from: '/' })
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

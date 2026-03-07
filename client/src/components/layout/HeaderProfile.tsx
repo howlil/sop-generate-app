@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
-import { getRole, getRoleLabel, getRoleNip, getRoleDisplayName, clearRole, type Role } from '@/lib/stores/app-store'
+import { useAppRole } from '@/hooks/useAppRole'
 
 interface HeaderProfileProps {
   /** Judul header fallback (jika tidak ada page header dari konteks) */
@@ -23,7 +23,7 @@ interface HeaderProfileProps {
 
 export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProfileProps) {
   const navigate = useNavigate()
-  const role = getRole()
+  const { role, getRoleLabel, getRoleNip, getRoleDisplayName, clearRole } = useAppRole()
   const pageHeader = usePageHeaderContext()
   const headerContent = pageHeader?.headerContent
 
@@ -32,9 +32,9 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
     navigate({ to: ROUTES.HOME, search: { denied: '' } })
   }
 
-  const roleLabel = role ? getRoleLabel(role as Role) : '-'
-  const displayName = role ? getRoleDisplayName(role as Role) : 'Pengguna'
-  const nip = role ? getRoleNip(role as Role) : null
+  const roleLabel = role ? getRoleLabel(role) : '-'
+  const displayName = role ? getRoleDisplayName(role) : 'Pengguna'
+  const nip = role ? getRoleNip(role) : null
 
   return (
     <header className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0 gap-4">

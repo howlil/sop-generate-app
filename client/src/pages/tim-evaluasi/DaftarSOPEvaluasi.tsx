@@ -10,7 +10,7 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/lib/constants/routes'
-import { SEED_OPD_LIST_EVALUASI, SEED_SOP_BY_OPD } from '@/lib/seed/penugasan-evaluasi-seed'
+import { getOpdListEvaluasi, getSopByOpd } from '@/lib/data/penugasan-evaluasi'
 import { canSelectSOPForEvaluasi } from '@/lib/types/sop'
 import { useFilteredList } from '@/hooks/useFilteredList'
 
@@ -26,8 +26,10 @@ export interface OpdEvaluasiItem {
 const STATUS_BUKAN_LIST_EVALUASI = 'Sedang Disusun'
 
 function buildOpdList(): OpdEvaluasiItem[] {
-  return SEED_OPD_LIST_EVALUASI.map((opd) => {
-    const sops = (SEED_SOP_BY_OPD[opd.nama] ?? []).filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
+  const opdList = getOpdListEvaluasi()
+  const sopByOpd = getSopByOpd()
+  return opdList.map((opd) => {
+    const sops = (sopByOpd[opd.nama] ?? []).filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
     const jumlahLayakEvaluasi = sops.filter((s) => canSelectSOPForEvaluasi(s.status)).length
     return {
       id: opd.id,

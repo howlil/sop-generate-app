@@ -2,7 +2,7 @@
  * Shared hook for managing komentar (comments) list state.
  */
 import { useState, useCallback } from 'react'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast } from '@/hooks/useUI'
 import { formatDatetime } from '@/utils/format-date'
 import { generateId } from '@/utils/generate-id'
 import type { KomentarItem } from '@/lib/types/komentar'
@@ -15,6 +15,7 @@ interface UseKomentarOptions {
 }
 
 export function useKomentar({ initialData, currentUser, excludeRoles = [] }: UseKomentarOptions) {
+  const { showToast } = useToast()
   const [komentarList, setKomentarList] = useState<KomentarItem[]>(initialData)
   const [newComment, setNewComment] = useState('')
 

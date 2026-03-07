@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast } from '@/hooks/useUI'
 import type { ProsedurRow } from '@/lib/types/sop'
 import { DecisionStepDialog } from './DecisionStepDialog'
 
@@ -27,6 +27,7 @@ export function DetailSOPProsedurEditor({
   implementers,
   onDone,
 }: DetailSOPProsedurEditorProps) {
+  const { showToast } = useToast()
   const [isDecisionDialogOpen, setIsDecisionDialogOpen] = useState(false)
   const [decisionStepIndex, setDecisionStepIndex] = useState<number | null>(null)
   const [decisionYesId, setDecisionYesId] = useState<string>('')

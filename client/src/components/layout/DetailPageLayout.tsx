@@ -4,7 +4,8 @@ import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 
 export interface DetailPageLayoutProps {
-  breadcrumb: BreadcrumbItem[]
+  /** Item breadcrumb. Opsional: null/undefined = tidak tampil breadcrumb. */
+  breadcrumb?: BreadcrumbItem[] | null
   title: string
   description?: string
   /** Route atau path untuk tombol kembali */
@@ -46,7 +47,7 @@ export function DetailPageLayout({
   return (
     <div className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3'}>
       <PageHeader
-        breadcrumb={breadcrumb}
+        breadcrumb={breadcrumb ?? []}
         title={title}
         description={description}
         leading={

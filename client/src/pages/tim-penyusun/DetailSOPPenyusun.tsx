@@ -13,12 +13,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { showToast } from '@/lib/stores/app-store'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
-import { getPeraturanList, subscribePeraturan } from '@/lib/stores/peraturan-store'
 import type { Peraturan } from '@/lib/types/peraturan'
-import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
+import { useToast } from '@/hooks/useUI'
+import { usePeraturan } from '@/hooks/usePeraturan'
+import { useSopStatus } from '@/hooks/useSopStatus'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
@@ -38,6 +38,9 @@ import * as versionDiff from '@/utils/version-diff'
 import { ROUTES } from '@/lib/constants/routes'
 
 export function DetailSOPPenyusun() {
+  const { showToast } = useToast()
+  const { setSopStatusOverride } = useSopStatus()
+  const { list: peraturanList } = usePeraturan()
   const { id } = useParams({ from: '/tim-penyusun/detail-sop/$id' })
   const navigate = useNavigate()
 
@@ -51,13 +54,6 @@ export function DetailSOPPenyusun() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'komentar' | 'riwayat'>('edit')
-
-  /** Data peraturan (mock: diasumsikan peraturan OPD tersedia di store). */
-  const [peraturanList, setPeraturanList] = useState<Peraturan[]>(() => getPeraturanList())
-  useEffect(() => {
-    setPeraturanList(getPeraturanList())
-    return subscribePeraturan(() => setPeraturanList(getPeraturanList()))
-  }, [])
 
   const { displayList: komentarDisplay, handleResolveComment } = useKomentar({
     initialData: getInitialSopDetailKomentar(),

@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { DialogFooterActions } from '@/components/ui/dialog-footer-actions'
+import { cn } from '@/utils/cn'
 
 export interface FormDialogProps {
   open: boolean
@@ -19,6 +20,10 @@ export interface FormDialogProps {
   confirmDisabled?: boolean
   /** Dialog width variant. */
   size?: 'sm' | 'md' | 'lg' | 'xl'
+  /** Class untuk wrapper konten (area form). */
+  contentClassName?: string
+  /** Class untuk DialogContent. */
+  className?: string
   children: ReactNode
 }
 
@@ -43,11 +48,13 @@ export function FormDialog({
   onConfirm,
   confirmDisabled,
   size = 'md',
+  contentClassName,
+  className,
   children,
 }: FormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`${SIZE_MAP[size]} max-h-[90vh] overflow-y-auto`}>
+      <DialogContent className={cn(SIZE_MAP[size], 'max-h-[90vh] overflow-y-auto', className)}>
         <DialogHeader>
           <DialogTitle className="text-sm">{title}</DialogTitle>
           {description != null && (
@@ -55,7 +62,7 @@ export function FormDialog({
           )}
         </DialogHeader>
 
-        <div className="space-y-3">{children}</div>
+        <div className={cn('space-y-3', contentClassName)}>{children}</div>
 
         <DialogFooterActions
           cancelLabel={cancelLabel}

@@ -1,17 +1,14 @@
-import { useState } from 'react'
+import { useEffect, Fragment } from 'react'
 import { Plus, Edit, Trash2, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
-import { Input } from '@/components/ui/input'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { FormDialog } from '@/components/ui/form-dialog'
-import { FormField } from '@/components/ui/form-field'
-import { Select } from '@/components/ui/select'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/hooks/useFilteredList'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast } from '@/hooks/useUI'
+import { useManajemenTimPenyusunState } from '@/hooks/useManajemenTimPenyusunState'
 import { generateId } from '@/utils/generate-id'
 import { useOpdList } from '@/lib/data/opd'
 import {
@@ -22,27 +19,35 @@ import {
 } from '@/lib/data/tim-penyusun'
 import type { TimPenyusun } from '@/lib/types/tim'
 import { ROUTES } from '@/lib/constants/routes'
+import { TimPenyusunFormDialog } from './manajemen-tim-penyusun/TimPenyusunFormDialog'
 
 export function ManajemenTimPenyusun() {
+  const { showToast } = useToast()
   const opdList = useOpdList()
-  const [createOpdId, setCreateOpdId] = useState<string>(opdList[0]?.id ?? '')
-  const [expandedOpdIds, setExpandedOpdIds] = useState<Record<string, boolean>>({})
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
-  const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
+  const state = useManajemenTimPenyusunState()
+  const {
+    isCreateOpen,
+    setIsCreateOpen,
+    isEditOpen,
+    setIsEditOpen,
+    selectedTim,
+    deleteTimId,
+    setDeleteTimId,
+    formData,
+    setFormData,
+    createOpdId,
+    setCreateOpdId,
+    expandedOpdIds,
+    setExpandedOpdIds,
+    resetForm,
+    openEditDialog,
+  } = state
 
-  const [formData, setFormData] = useState({
-    nama: '',
-    nip: '',
-    jabatan: '',
-    pangkat: '',
-    email: '',
-    noHP: '',
-  })
+  useEffect(() => {
+    if (opdList.length > 0 && !createOpdId) setCreateOpdId(opdList[0].id)
+  }, [opdList, createOpdId, setCreateOpdId])
 
   const timList = useTimPenyusunList()
-
   const { filteredList, searchQuery, setSearchQuery } = useFilteredList(timList, {
     searchKeys: ['nama', 'nip', 'jabatan'],
   })
@@ -54,17 +59,6 @@ export function ManajemenTimPenyusun() {
     formData.pangkat.trim() !== '' &&
     formData.email.trim() !== '' &&
     formData.noHP.trim() !== ''
-
-  const resetForm = () => {
-    setFormData({
-      nama: '',
-      nip: '',
-      jabatan: '',
-      pangkat: '',
-      email: '',
-      noHP: '',
-    })
-  }
 
   const handleCreate = () => {
     if (!createOpdId) return
@@ -79,7 +73,6 @@ export function ManajemenTimPenyusun() {
     showToast('Tim penyusun berhasil ditambahkan')
     setIsCreateOpen(false)
     resetForm()
-    // Jangan setTimList di sini: subscription store akan mengupdate timList setelah dialog tertutup, menghindari error removeChild saat portal unmount.
   }
 
   const handleEdit = () => {
@@ -88,24 +81,10 @@ export function ManajemenTimPenyusun() {
     showToast('Data tim penyusun berhasil diperbarui')
     setIsEditOpen(false)
     resetForm()
-    // Jangan setTimList di sini: subscription store akan mengupdate timList setelah dialog tertutup.
   }
 
   const handleDelete = (id: string) => {
     setDeleteTimId(id)
-  }
-
-  const openEditDialog = (tim: TimPenyusun) => {
-    setFormData({
-      nama: tim.nama,
-      nip: tim.nip,
-      jabatan: tim.jabatan,
-      pangkat: tim.pangkat ?? '',
-      email: tim.email,
-      noHP: tim.noHP,
-    })
-    setSelectedTim(tim)
-    setIsEditOpen(true)
   }
 
   const groupedByOpd = filteredList.reduce<Record<string, TimPenyusun[]>>((acc, tim) => {
@@ -142,14 +121,14 @@ export function ManajemenTimPenyusun() {
       <Table.Card>
         <Table.Table>
           <thead>
-              <Table.HeadRow>
+            <Table.HeadRow>
               <Table.Th>OPD / Tim Penyusun</Table.Th>
-                <Table.Th>NIP</Table.Th>
-                <Table.Th>Jabatan</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>No. HP</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
-              </Table.HeadRow>
+              <Table.Th>NIP</Table.Th>
+              <Table.Th>Jabatan</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>No. HP</Table.Th>
+              <Table.Th align="center">Aksi</Table.Th>
+            </Table.HeadRow>
           </thead>
           <tbody>
             {Object.entries(groupedByOpd).map(([opdId, tims]) => {
@@ -157,9 +136,8 @@ export function ManajemenTimPenyusun() {
               if (!opd) return null
               const isExpanded = expandedOpdIds[opdId] ?? false
               return (
-                <>
+                <Fragment key={`opd-${opdId}`}>
                   <Table.BodyRow
-                    key={`opd-${opdId}`}
                     className="bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() =>
                       setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
@@ -227,7 +205,7 @@ export function ManajemenTimPenyusun() {
                         </Table.Td>
                       </Table.BodyRow>
                     ))}
-                </>
+                </Fragment>
               )
             })}
           </tbody>
@@ -240,135 +218,31 @@ export function ManajemenTimPenyusun() {
         </div>
       )}
 
-      <FormDialog
+      <TimPenyusunFormDialog
+        mode="create"
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
-        title="Tambah Tim Penyusun SOP"
-        description="Pilih OPD dan isi data pegawai tim penyusun"
-        confirmLabel="Simpan"
-        cancelLabel="Batal"
+        formData={formData}
+        setFormData={setFormData}
+        createOpdId={createOpdId}
+        setCreateOpdId={setCreateOpdId}
+        opdList={opdList}
+        isFormValid={isFormValid}
         onConfirm={handleCreate}
-        confirmDisabled={!isFormValid}
-        size="md"
-      >
-        <div className="space-y-3">
-          <FormField label="OPD" required>
-            <Select
-              value={createOpdId}
-              onValueChange={setCreateOpdId}
-              options={opdList.map((o) => ({ value: o.id, label: o.name }))}
-              placeholder="Pilih OPD"
-            />
-          </FormField>
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Ahmad Pratama, S.Sos"
-              value={formData.nama}
-              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-            />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: 199203152020121001"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Kepala Seksi Organisasi"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat / Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: IV/a"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              type="email"
-              className="h-9 text-xs"
-              placeholder="Contoh: ahmad@disdik.go.id"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="No. HP" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: 081234567890"
-              value={formData.noHP}
-              onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
-            />
-          </FormField>
-        </div>
-      </FormDialog>
+      />
 
-      <FormDialog
+      <TimPenyusunFormDialog
+        mode="edit"
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
-        title="Edit Tim Penyusun SOP"
-        description="Perbarui data tim penyusun SOP"
-        confirmLabel="Simpan Perubahan"
-        cancelLabel="Batal"
+        formData={formData}
+        setFormData={setFormData}
+        createOpdId={createOpdId}
+        setCreateOpdId={setCreateOpdId}
+        opdList={opdList}
+        isFormValid={isFormValid}
         onConfirm={handleEdit}
-        confirmDisabled={!isFormValid}
-        size="md"
-      >
-        <div className="space-y-3">
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nama}
-              onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-            />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat / Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              type="email"
-              className="h-9 text-xs"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="No. HP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.noHP}
-              onChange={(e) => setFormData({ ...formData, noHP: e.target.value })}
-            />
-          </FormField>
-        </div>
-      </FormDialog>
+      />
 
       <ConfirmDialog
         open={deleteTimId != null}
@@ -380,7 +254,6 @@ export function ManajemenTimPenyusun() {
             removeTimPenyusun(deleteTimId)
             showToast('Tim penyusun berhasil dihapus')
             setDeleteTimId(null)
-            // Subscription store akan mengupdate timList setelah dialog tertutup.
           }
         }}
       />

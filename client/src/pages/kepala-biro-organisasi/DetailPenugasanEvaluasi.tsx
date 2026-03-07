@@ -1,15 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { FileText, CheckCircle, Download, List, MessageSquare, Calendar, History } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getPenugasanById, getPenugasanList, subscribePenugasan, updatePenugasan } from '@/lib/stores/penugasan-store'
-import { SEED_OPD_LIST_EVALUASI, SEED_RIWAYAT_EVALUASI_OPD, SEED_RIWAYAT_EVALUASI_SOP } from '@/lib/seed/penugasan-evaluasi-seed'
-import type { Penugasan } from '@/lib/types/penugasan'
+import { getOpdListEvaluasi, getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/data/penugasan-evaluasi'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { canVerifyPenugasan, generateBANumber } from '@/lib/domain/sop-status'
 import { ROUTES } from '@/lib/constants/routes'
 import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 import { Button } from '@/components/ui/button'
@@ -18,7 +15,8 @@ import { Badge } from '@/components/ui/badge'
 import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast } from '@/hooks/useUI'
+import { usePenugasanEvaluasi } from '@/hooks/usePenugasanEvaluasi'
 import {
   Dialog,
   DialogContent,
@@ -34,8 +32,8 @@ import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 
 export function DetailPenugasanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
-  const [penugasan, setPenugasan] = useState<Penugasan | null>(() => getPenugasanById(id) ?? null)
-  const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
+  const { showToast } = useToast()
+  const { penugasan, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify } = usePenugasanEvaluasi(id)
   const [isBAOpen, setIsBAOpen] = useState(false)
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -46,27 +44,13 @@ export function DetailPenugasanEvaluasi() {
     documentId: penugasan ? `batch-evaluasi-${penugasan.id}` : undefined,
   })
 
-  useEffect(() => {
-    const unsub = subscribePenugasan(() => setPenugasan(getPenugasanById(id) ?? null))
-    return unsub
-  }, [id])
-
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
       documentLabel: penugasan?.opd ?? '',
-      referenceId: generateBANumber(getPenugasanList().filter((h) => h.isVerified).length),
+      referenceId: penugasan?.id ?? '',
     },
     (payload) => {
-      if (!penugasan) return
-      const batchNumber = generateBANumber(getPenugasanList().filter((h) => h.isVerified).length - 1)
-      updatePenugasan(penugasan.id, {
-        status: 'Terverifikasi',
-        isVerified: true,
-        nomorBA: batchNumber,
-        tanggalVerifikasi: new Date().toISOString().split('T')[0],
-        namaBiro: payload.nama,
-        tteSignaturePayload: payload,
-      })
+      handleVerifySuccess(payload)
       showToast('Batch evaluasi berhasil diverifikasi dengan TTE BSRE. Berita Acara telah dibuat.')
     }
   )
@@ -75,9 +59,12 @@ export function DetailPenugasanEvaluasi() {
   const firstSopId = sopList[0]?.id ?? null
   const effectiveSopId = selectedSopId ?? firstSopId
   const displaySop = sopList.find((s) => s.id === effectiveSopId)
-  const opdId = penugasan ? SEED_OPD_LIST_EVALUASI.find((o) => o.nama === penugasan.opd)?.id ?? null : null
-  const riwayatOpd = opdId ? (SEED_RIWAYAT_EVALUASI_OPD[opdId] ?? []) : []
-  const riwayatSop = effectiveSopId ? (SEED_RIWAYAT_EVALUASI_SOP[effectiveSopId] ?? []) : []
+  const opdListEvaluasi = getOpdListEvaluasi()
+  const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
+  const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
+  const opdId = penugasan ? opdListEvaluasi.find((o) => o.nama === penugasan.opd)?.id ?? null : null
+  const riwayatOpd = opdId ? (riwayatEvaluasiOpd[opdId] ?? []) : []
+  const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
 
   if (!penugasan) {
     return (
@@ -106,7 +93,7 @@ export function DetailPenugasanEvaluasi() {
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
               <div className="flex items-center gap-2">
-                {canVerifyPenugasan(penugasan) && (
+                {canVerify && (
                   tte.canSign ? (
                     <Button size="sm" className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5" onClick={tte.openPinDialog}>
                       <CheckCircle className="w-3.5 h-3.5" /> Verifikasi Batch (TTE)

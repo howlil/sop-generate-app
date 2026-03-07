@@ -15,9 +15,9 @@ import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField } from '@/components/ui/info-field'
-import { showToast } from '@/lib/stores/app-store'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
-import { getSopStatusOverride, setSopStatusOverride } from '@/lib/stores/sop-status-store'
+import { useToast } from '@/hooks/useUI'
+import { useSopStatus } from '@/hooks/useSopStatus'
 import type { StatusSOP } from '@/lib/types/sop'
 import {
   getInitialSopDetailImplementers,
@@ -35,6 +35,8 @@ import { ROUTES } from '@/lib/constants/routes'
 type Version = DetailSOPVersionSeed
 
 export function DetailSOP() {
+  const { showToast } = useToast()
+  const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const params = useParams({ strict: false })
   const id = 'id' in params ? params.id : undefined
   const location = useLocation()

@@ -9,21 +9,16 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { STATUS_SOP_ALL, type SOPSayaItem } from '@/lib/types/sop'
 import { canEditSop } from '@/lib/domain/sop-status'
-import { mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
-import { SEED_SOP_SAYA } from '@/lib/seed/sop-daftar'
+import { getInitialSopSayaList } from '@/lib/data/sop-daftar'
+import { useSopStatus } from '@/hooks/useSopStatus'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/hooks/useFilteredList'
 
 export function SOPSaya() {
-  const [sopList, setSopList] = useState<SOPSayaItem[]>(() => [...SEED_SOP_SAYA])
-
-  useEffect(() => {
-    const unsub = subscribeSopStatus(() => setSopList((prev) => [...prev]))
-    return unsub
-  }, [])
-
+  const { mergeSopStatus } = useSopStatus()
+  const [sopList] = useState<SOPSayaItem[]>(() => getInitialSopSayaList())
   const mergedList = mergeSopStatus(sopList)
   const {
     filteredList: filteredSOP,

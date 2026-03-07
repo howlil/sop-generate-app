@@ -1,5 +1,8 @@
 import type { ProsedurRow } from '@/lib/types/sop'
-import { SEED_SOP_DETAIL_PROSEDUR_ROWS, SEED_IMPLEMENTERS } from '@/lib/seed/sop-detail-seed'
+import {
+  getInitialSopDetailProsedurRows,
+  getInitialSopDetailImplementers,
+} from '@/lib/data/sop-detail'
 
 export interface SopPreviewData {
   prosedurRows: ProsedurRow[]
@@ -12,7 +15,7 @@ export interface SopPreviewData {
  */
 export function getSopDetailForPreview(_sopId: string | null): SopPreviewData {
   return {
-    prosedurRows: SEED_SOP_DETAIL_PROSEDUR_ROWS,
-    implementers: SEED_IMPLEMENTERS,
+    prosedurRows: getInitialSopDetailProsedurRows(),
+    implementers: getInitialSopDetailImplementers(),
   }
 }

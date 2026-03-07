@@ -19,7 +19,6 @@ import { BackButton } from '@/components/ui/back-button'
 import { FormField } from '@/components/ui/form-field'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { showToast } from '@/lib/stores/app-store'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
@@ -30,19 +29,19 @@ import {
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
-import { useCollapsiblePanels } from '@/hooks/useCollapsiblePanels'
+import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
 import { ROUTES } from '@/lib/constants/routes'
-import { setSopStatusOverride, mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
-import { SEED_SOP_DAFTAR } from '@/lib/seed/sop-daftar'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { StatusSOP } from '@/lib/types/sop'
+import { useSopStatus } from '@/hooks/useSopStatus'
 
 export function EvaluasiSOPPage() {
   const { sopId } = useParams({ from: '/tim-evaluasi/evaluasi/$sopId' })
   const navigate = useNavigate()
-
-  const [sopList, setSopList] = useState(() => [...SEED_SOP_DAFTAR])
-  useEffect(() => subscribeSopStatus(() => setSopList((prev) => [...prev])), [])
-  const mergedList = useMemo(() => mergeSopStatus(sopList), [sopList])
+  const { showToast } = useToast()
+  const { mergeSopStatus, setSopStatusOverride } = useSopStatus()
+  const [sopList] = useState(() => getInitialSopDaftarList())
+  const mergedList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
   const sop = useMemo(() => mergedList.find((s) => s.id === sopId), [mergedList, sopId])
 
   const {

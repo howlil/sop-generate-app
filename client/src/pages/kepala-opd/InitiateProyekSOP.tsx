@@ -17,9 +17,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { showToast } from '@/lib/stores/app-store'
-import { SEED_TIM_PENYUSUN_OPTIONS } from '@/lib/seed/tim-penyusun-seed'
-import { SEED_SOP_TEMPLATES } from '@/lib/seed/initiate-proyek-seed'
+import { useToast } from '@/hooks/useUI'
+import { getTimPenyusunOptions, getSopTemplates } from '@/lib/data/initiate-proyek'
 import type { SOPTemplate } from '@/lib/types/sop'
 import { formatDatetime } from '@/utils/format-date'
 
@@ -36,14 +35,15 @@ export function InitiateProyekSOP() {
     penyusun: [] as string[],
   })
 
+  const { showToast } = useToast()
   // Default dari backend: otomatis terisi ketika proyek diinisiasi
   const waktuPenugasan = formatDatetime(new Date())
   // Terakhir diperbarui: di-update oleh backend ketika ada perubahan detail
   const terakhirDiperbarui = '-'
 
-  const sopTemplates = SEED_SOP_TEMPLATES
+  const sopTemplates = getSopTemplates()
 
-  const timPenyusunOptions = SEED_TIM_PENYUSUN_OPTIONS
+  const timPenyusunOptions = getTimPenyusunOptions()
 
   const togglePenyusun = (nama: string) => {
     if (formData.penyusun.includes(nama)) {

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
 import type { Penugasan, SOPItem } from '@/lib/types/penugasan'
-import { usePenugasanList } from '@/lib/data/penugasan'
+import { usePenugasanList } from '@/hooks/usePenugasan'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { IconActionButton } from '@/components/ui/icon-action-button'
@@ -30,7 +30,7 @@ function isPenugasanBaru(p: Penugasan): boolean {
 
 export function ManajemenEvaluasiSOP() {
   const navigate = useNavigate()
-  const penugasanList = usePenugasanList()
+  const { list: penugasanList } = usePenugasanList()
   const { filteredList, searchQuery, setSearchQuery } = useFilteredList(penugasanList, {
     searchKeys: [
       (item) =>

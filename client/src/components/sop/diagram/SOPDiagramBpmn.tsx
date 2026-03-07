@@ -6,9 +6,8 @@ import {
   useCallback,
   useRef,
 } from 'react'
-import { Event } from './shapes/bpmn/Event'
+import { Event, Gateway } from './shapes/bpmn/BpmnBasicShapes'
 import { Activity } from './shapes/bpmn/Activity'
-import { Gateway } from './shapes/bpmn/Gateway'
 import { BpmnDecisionText } from './shapes/bpmn/DecisionText'
 import {
   FlowchartArrowConnector,

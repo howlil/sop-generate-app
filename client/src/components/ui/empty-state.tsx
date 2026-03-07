@@ -14,6 +14,14 @@ interface EmptyStateProps {
   /** Untuk tampilan di dalam tabel: satu sel colspan */
   asTableRow?: boolean
   colSpan?: number
+  /** Class untuk wrapper icon. */
+  iconClassName?: string
+  /** Class untuk teks judul. */
+  titleClassName?: string
+  /** Class untuk teks deskripsi. */
+  descriptionClassName?: string
+  /** Class untuk wrapper aksi. */
+  actionClassName?: string
 }
 
 /**
@@ -28,6 +36,10 @@ export function EmptyState({
   className,
   asTableRow,
   colSpan = 1,
+  iconClassName,
+  titleClassName,
+  descriptionClassName,
+  actionClassName,
 }: EmptyStateProps) {
   const content = (
     <div
@@ -38,15 +50,15 @@ export function EmptyState({
       )}
     >
       {icon && (
-        <div className="mb-2 text-gray-400 [&_svg]:w-8 [&_svg]:h-8">
+        <div className={cn('mb-2 text-gray-400 [&_svg]:w-8 [&_svg]:h-8', iconClassName)}>
           {icon}
         </div>
       )}
-      <p className="text-sm text-gray-600">{title}</p>
+      <p className={cn('text-sm text-gray-600', titleClassName)}>{title}</p>
       {description && (
-        <p className="text-xs text-gray-400 mt-1 max-w-sm">{description}</p>
+        <p className={cn('text-xs text-gray-400 mt-1 max-w-sm', descriptionClassName)}>{description}</p>
       )}
-      {action && <div className="mt-3">{action}</div>}
+      {action && <div className={cn('mt-3', actionClassName)}>{action}</div>}
     </div>
   )
 

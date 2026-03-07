@@ -7,13 +7,14 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast } from '@/hooks/useUI'
 import { generateId } from '@/utils/generate-id'
-import { SEED_PELAKSANA_LIST } from '@/lib/seed/pelaksana-seed'
+import { getInitialPelaksanaList } from '@/lib/data/pelaksana'
 import type { PelaksanaSOP } from '@/lib/types/sop'
 
 export function PelaksanaSOPPage() {
-  const [pelaksanaList, setPelaksanaList] = useState<PelaksanaSOP[]>(SEED_PELAKSANA_LIST)
+  const { showToast } = useToast()
+  const [pelaksanaList, setPelaksanaList] = useState<PelaksanaSOP[]>(() => getInitialPelaksanaList())
 
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingPelaksana, setEditingPelaksana] = useState<PelaksanaSOP | null>(null)

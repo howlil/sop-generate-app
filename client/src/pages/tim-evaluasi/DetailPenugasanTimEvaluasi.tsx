@@ -10,12 +10,12 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { ROUTES } from '@/lib/constants/routes'
-import { SEED_PENUGASAN_DETAIL_BY_ID } from '@/lib/seed/penugasan-detail-seed'
+import { getPenugasanDetailById } from '@/lib/data/penugasan-detail'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export function DetailPenugasanTimEvaluasi() {
   const { id } = useParams({ from: '/tim-evaluasi/penugasan/detail/$id' })
-  const penugasan = id ? SEED_PENUGASAN_DETAIL_BY_ID[id] ?? null : null
+  const penugasan = id ? (getPenugasanDetailById(id) ?? null) : null
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
 

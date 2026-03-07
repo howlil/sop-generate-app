@@ -3,27 +3,23 @@
  * State: sopList (initial dari seed); mergedSopList, eligibleSopsForEvaluasi, filteredList.
  */
 
-import { useState, useEffect, useMemo } from 'react'
-import { mergeSopStatus, subscribeSopStatus } from '@/lib/stores/sop-status-store'
-import { getActiveCaseForSop } from '@/lib/stores/evaluasi-store'
+import { useState, useMemo } from 'react'
+import { useSopStatus } from '@/hooks/useSopStatus'
+import { useEvaluasi } from '@/hooks/useEvaluasi'
 import { canAjukanEvaluasiSOP, type SOPDaftarItem } from '@/lib/types/sop'
-import { SEED_SOP_DAFTAR } from '@/lib/seed/sop-daftar'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { DaftarSOPFiltersState } from '@/hooks/useDaftarSOPFilters'
 
 export function useDaftarSOPData(filters: DaftarSOPFiltersState) {
-  const [sopList, setSopList] = useState<SOPDaftarItem[]>(() => [...SEED_SOP_DAFTAR])
+  const { mergeSopStatus } = useSopStatus()
+  const { getActiveCaseForSop } = useEvaluasi()
+  const [sopList, setSopList] = useState<SOPDaftarItem[]>(() => getInitialSopDaftarList())
 
-  useEffect(() => {
-    return subscribeSopStatus(() => {
-      setSopList((prev) => [...prev])
-    })
-  }, [])
-
-  const mergedSopList = useMemo(() => mergeSopStatus(sopList), [sopList])
+  const mergedSopList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
 
   const eligibleSopsForEvaluasi = useMemo(
     () => mergedSopList.filter((sop) => canAjukanEvaluasiSOP(sop.status) && !getActiveCaseForSop(sop.id)),
-    [mergedSopList]
+    [mergedSopList, getActiveCaseForSop]
   )
 
   const filteredList = useMemo(() => {

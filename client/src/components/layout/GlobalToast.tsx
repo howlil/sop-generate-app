@@ -1,12 +1,11 @@
 import { useEffect } from 'react'
-import { useAppStore } from '@/lib/stores/app-store'
 import { Toast } from '@/components/ui/toast'
+import { useToast } from '@/hooks/useUI'
 
 const AUTO_CLOSE_MS = 4000
 
 export function GlobalToast() {
-  const toast = useAppStore((s) => s.toast)
-  const clearToast = useAppStore((s) => s.clearToast)
+  const { toast, clearToast } = useToast()
 
   useEffect(() => {
     if (!toast.message) return

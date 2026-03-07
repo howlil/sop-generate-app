@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import { getPenugasanById, getPenugasanList, subscribePenugasan, updatePenugasan } from '@/lib/stores/penugasan-store'
-import type { Penugasan } from '@/lib/types/penugasan'
+import { useState } from 'react'
 import type { TTESignaturePayload } from '@/lib/types/tte'
 import { canVerifyPenugasan, generateBANumber } from '@/lib/domain/sop-status'
+import { usePenugasanDetail, usePenugasanList } from '@/hooks/usePenugasan'
+import type { Penugasan } from '@/lib/types/penugasan'
 
 export interface UsePenugasanEvaluasiResult {
   penugasan: Penugasan | null
@@ -18,21 +18,14 @@ export interface UsePenugasanEvaluasiResult {
  * Manages penugasan state, subscription, and verification success handler.
  */
 export function usePenugasanEvaluasi(id: string | undefined): UsePenugasanEvaluasiResult {
-  const [penugasan, setPenugasan] = useState<Penugasan | null>(() =>
-    id ? getPenugasanById(id) ?? null : null,
-  )
+  const { penugasan, updatePenugasan } = usePenugasanDetail(id)
+  const { list: penugasanList } = usePenugasanList()
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!id) return
-    const unsub = subscribePenugasan(() => setPenugasan(getPenugasanById(id) ?? null))
-    return unsub
-  }, [id])
 
   const handleVerifySuccess = (payload: TTESignaturePayload) => {
     if (!penugasan) return
-    const batchNumber = generateBANumber(getPenugasanList().filter((h) => h.isVerified).length)
-    updatePenugasan(penugasan.id, {
+    const batchNumber = generateBANumber(penugasanList.filter((h) => h.isVerified).length)
+    updatePenugasan({
       status: 'Terverifikasi',
       isVerified: true,
       nomorBA: batchNumber,

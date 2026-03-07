@@ -9,6 +9,8 @@ export interface UseFilteredListOptions<T> {
   filterValue?: string
   /** Predikat tambahan (e.g. hanya item yang eligible). Opsional. */
   predicate?: (item: T) => boolean
+  /** Jika disediakan, pakai search dari parent (satu search untuk banyak list). */
+  controlledSearch?: [string, (value: string) => void]
 }
 
 /**
@@ -26,8 +28,9 @@ export function useFilteredList<T>(
   filterValue: string
   setFilterValue: (value: string) => void
 } {
-  const { searchKeys, filterKey, predicate } = options
-  const [searchQuery, setSearchQuery] = useState('')
+  const { searchKeys, filterKey, predicate, controlledSearch } = options
+  const [internalSearch, setInternalSearch] = useState('')
+  const [searchQuery, setSearchQuery] = controlledSearch ?? [internalSearch, setInternalSearch]
   const [filterValue, setFilterValue] = useState<string>(options.filterValue ?? 'all')
 
   const filteredList = useMemo(() => {

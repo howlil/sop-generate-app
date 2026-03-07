@@ -2,8 +2,8 @@ import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 export interface ListPageLayoutProps {
-  /** Item breadcrumb */
-  breadcrumb: BreadcrumbItem[]
+  /** Item breadcrumb. Opsional: null/undefined = tidak tampil breadcrumb. */
+  breadcrumb?: BreadcrumbItem[] | null
   /** Judul halaman */
   title: string
   /** Deskripsi di bawah judul */
@@ -36,7 +36,7 @@ export function ListPageLayout({
   return (
     <div className={className ?? 'space-y-3'}>
       <PageHeader
-        breadcrumb={breadcrumb}
+        breadcrumb={breadcrumb ?? []}
         title={title}
         description={description}
         leading={leading}

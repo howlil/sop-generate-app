@@ -13,12 +13,12 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { Select } from '@/components/ui/select'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
-import { SEED_PENUGASAN_TIM_EVALUASI } from '@/lib/seed/penugasan-evaluasi-seed'
+import { getPenugasanTimEvaluasiList } from '@/lib/data/penugasan-evaluasi'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/hooks/useFilteredList'
 
 export function PenugasanEvaluasi() {
-  const penugasanList = SEED_PENUGASAN_TIM_EVALUASI
+  const penugasanList = getPenugasanTimEvaluasiList()
   const {
     filteredList: filteredPenugasan,
     searchQuery,

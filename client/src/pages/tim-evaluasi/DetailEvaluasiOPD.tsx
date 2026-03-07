@@ -4,65 +4,83 @@
  */
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { Send, MessageSquare, List, FileText, Building2, Printer } from 'lucide-react'
+import { Send, List, Printer } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { Button } from '@/components/ui/button'
-import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
-import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
-import { SkorRatingPicker } from '@/components/evaluasi/SkorRatingPicker'
-import { showToast, getRole, getRoleUserName } from '@/lib/stores/app-store'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { InfoCard } from '@/components/ui/info-card'
 import { useEvaluasiDraft, getEvaluasiDraft, clearEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
-import { useCollapsiblePanels } from '@/hooks/useCollapsiblePanels'
-import { EVALUASI_DISPLAY_STATUS_OPTIONS, STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
+import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/lib/constants/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from '@/lib/domain/evaluasi'
-import { canSelectSOPForEvaluasi, STATUS_BUKAN_LIST_EVALUASI } from '@/lib/domain/sop-evaluasi'
-import { setSopStatusOverride, mergeSopStatus, subscribeSopStatus, getSopStatusOverride } from '@/lib/stores/sop-status-store'
+import { STATUS_BUKAN_LIST_EVALUASI } from '@/lib/domain/sop-evaluasi'
+import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
+import { useAppRole } from '@/hooks/useAppRole'
+import { useSopStatus } from '@/hooks/useSopStatus'
 import { formatDateId } from '@/utils/format-date'
 import {
-  SEED_OPD_LIST_EVALUASI,
-  SEED_RIWAYAT_EVALUASI_OPD,
-  SEED_RIWAYAT_EVALUASI_SOP,
-  SEED_SOP_BY_OPD,
-} from '@/lib/seed/penugasan-evaluasi-seed'
-import { SEED_SOP_DAFTAR } from '@/lib/seed/sop-daftar'
+  getOpdListEvaluasi,
+  getSopByOpd,
+  getRiwayatEvaluasiOpd,
+  getRiwayatEvaluasiSop,
+  getLastEvaluatedByInitial,
+} from '@/lib/data/penugasan-evaluasi'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { SOPDaftarItem } from '@/lib/types/sop'
 import type { StatusSOP } from '@/lib/types/sop'
-import { useEvaluasiLastBy } from '@/hooks/useEvaluasiLastBy'
+import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
+import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
+import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
+
+type EvaluasiRecordMap = Record<string, { date: string; evaluatorName: string }>
+
+function loadEvaluasiRecordMap(): EvaluasiRecordMap {
+  const fromSeed = getLastEvaluatedByInitial()
+  if (typeof window === 'undefined') return fromSeed
+  try {
+    const raw = localStorage.getItem(EVALUASI_STORAGE_KEY)
+    if (!raw) return fromSeed
+    const parsed = JSON.parse(raw) as Record<string, { date?: string; evaluatorName?: string }>
+    const fromStorage = Object.fromEntries(
+      Object.entries(parsed).filter(
+        ([, v]) => v && typeof v.date === 'string' && typeof v.evaluatorName === 'string'
+      )
+    ) as EvaluasiRecordMap
+    const merged: EvaluasiRecordMap = { ...fromSeed }
+    for (const [id, v] of Object.entries(fromStorage)) {
+      if (!(id in fromSeed)) merged[id] = v
+    }
+    return merged
+  } catch {
+    return fromSeed
+  }
+}
 
 export function DetailEvaluasiOPD() {
   const { opdId } = useParams({ from: '/tim-evaluasi/penugasan/opd/$opdId' })
   const navigate = useNavigate()
-  const opd = SEED_OPD_LIST_EVALUASI.find((o) => o.id === opdId)
+  const { showToast } = useToast()
+  const { role, getRoleUserName } = useAppRole()
+  const { mergeSopStatus, setSopStatusOverride, getSopStatusOverride } = useSopStatus()
+  const opdListEvaluasi = getOpdListEvaluasi()
+  const opd = opdListEvaluasi.find((o) => o.id === opdId)
+  const sopByOpd = getSopByOpd()
+  const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
+  const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
 
-  const [sopList, setSopList] = useState(() => [...SEED_SOP_DAFTAR] as SOPDaftarItem[])
-  useEffect(() => {
-    return subscribeSopStatus(() => setSopList((prev) => [...prev]))
-  }, [])
+  const [sopList] = useState(() => getInitialSopDaftarList() as SOPDaftarItem[])
+  const mergedSopList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
 
-  const mergedList = useMemo(() => mergeSopStatus(sopList), [sopList])
   /** SOP OPD ini; status "Sedang Disusun" tidak masuk list evaluasi. */
   const sopsForOpd = useMemo(() => {
     if (!opd) return []
-    const fromSeed = SEED_SOP_BY_OPD[opd.nama] ?? []
+    const fromSeed = sopByOpd[opd.nama] ?? []
     return fromSeed
       .map((s) => {
-        const fromStore = mergedList.find((m) => m.id === s.id)
+        const fromStore = mergedSopList.find((m) => m.id === s.id)
         if (fromStore) {
           return {
             id: fromStore.id,
@@ -79,9 +97,17 @@ export function DetailEvaluasiOPD() {
         }
       })
       .filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
-  }, [opd, mergedList])
+  }, [opd, mergedSopList, mergeSopStatus, getSopStatusOverride])
 
-  const [lastEvaluatedBy, setLastEvaluatedBy] = useEvaluasiLastBy()
+  const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>(loadEvaluasiRecordMap)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const initial = getLastEvaluatedByInitial()
+    const toPersist = Object.fromEntries(
+      Object.entries(lastEvaluatedBy).filter(([id]) => !(id in initial))
+    )
+    localStorage.setItem(EVALUASI_STORAGE_KEY, JSON.stringify(toPersist))
+  }, [lastEvaluatedBy])
 
   /** Di workspace evaluasi: Diajukan Evaluasi (belum dikirim), Selesai Evaluasi (sudah dikirim hasil). */
   const sopsForOpdWithDisplayStatus = useMemo(
@@ -144,7 +170,7 @@ export function DetailEvaluasiOPD() {
   const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
 
   const isFormComplete = isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi ?? '')
-  const namaEvaluator = getRole() ? getRoleUserName(getRole()!) : 'Evaluator'
+  const namaEvaluator = role ? getRoleUserName(role) : 'Evaluator'
   const lastEvaluatedEntry = effectiveSopId ? lastEvaluatedBy[effectiveSopId] : undefined
   const tanggalTerakhirEvaluasi = lastEvaluatedEntry ? lastEvaluatedEntry.date : null
   /** Evaluator yang terakhir mengevaluasi SOP terpilih (per SOP bisa beda) */
@@ -231,13 +257,11 @@ export function DetailEvaluasiOPD() {
     setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN }), 1500)
   }
 
-  const canEvaluateSelected = selectedSop ? canSelectSOPForEvaluasi(selectedSop.status) : false
-
   const [activeFormTab, setActiveFormTab] = useState<'sop' | 'opd'>('sop')
   const [ratingOPD, setRatingOPD] = useState<number | null>(null)
 
-  const riwayatSop = effectiveSopId ? (SEED_RIWAYAT_EVALUASI_SOP[effectiveSopId] ?? []) : []
-  const riwayatOpd = opd?.id ? (SEED_RIWAYAT_EVALUASI_OPD[opd.id] ?? []) : []
+  const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
+  const riwayatOpd = opd?.id ? (riwayatEvaluasiOpd[opd.id] ?? []) : []
 
   if (!opd) {
     return (
@@ -368,191 +392,37 @@ export function DetailEvaluasiOPD() {
           </div>
         }
         rightPanel={
-          <CollapsibleSidePanel
-            side="right"
+          <DetailEvaluasiOPDFormPanel
+            opd={opd}
             collapsed={rightPanelCollapsed}
             onCollapsedChange={setRightPanelCollapsed}
-            widthExpanded="w-[min(380px,33%)] min-w-[280px]"
-            tabs={[
-              { id: 'sop', label: 'Evaluasi SOP', icon: <FileText className="w-3.5 h-3.5" /> },
-              { id: 'opd', label: 'Evaluasi OPD', icon: <Building2 className="w-3.5 h-3.5" /> },
-            ]}
-            activeTab={activeFormTab}
-            onTabChange={(id) => setActiveFormTab(id as 'sop' | 'opd')}
-            collapseButtonLabel="Form"
-            collapseButtonIcon={<MessageSquare className="w-5 h-5" />}
-          >
-            <div className="p-3 space-y-4">
-              {activeFormTab === 'sop' && (
-                <>
-                  {!effectiveSopId ? (
-                    <p className="text-xs text-gray-500">Pilih SOP di daftar kiri untuk mengisi form evaluasi atau melihat riwayat.</p>
-                  ) : (
-                    <>
-                      {/** Form hanya untuk status Diajukan Evaluasi / Sedang Dievaluasi. Selesai Evaluasi → hanya riwayat. */}
-                      {!lastEvaluatedBy[effectiveSopId] && (
-                        <>
-                          <StatusHasilEvaluasiPicker
-                            value={statusEvaluasi}
-                            onChange={setStatusEvaluasi}
-                            komentarTrim={komentarEvaluasi?.trim() ?? ''}
-                          />
-                          <FormField label="Komentar Evaluasi">
-                            <Textarea
-                              className="text-xs min-h-[80px]"
-                              placeholder="Komentar evaluasi (wajib jika Revisi Biro)..."
-                              value={komentarEvaluasi}
-                              onChange={(e) => setKomentarEvaluasi(e.target.value)}
-                            />
-                          </FormField>
-                        </>
-                      )}
-
-                      {lastEvaluatedBy[effectiveSopId] && (
-                        <p className="text-[11px] text-gray-500">Evaluasi SOP ini sudah selesai. Riwayat di bawah.</p>
-                      )}
-
-                      <div className="border-t border-gray-100 pt-3">
-                        <RiwayatCardList
-                          title="Riwayat evaluasi SOP ini"
-                          emptyMessage="Belum ada riwayat evaluasi."
-                          items={riwayatSop}
-                          renderItem={(r) => (
-                            <>
-                              <div className="flex flex-wrap items-baseline gap-x-1.5">
-                                <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
-                                <span className="text-gray-500">—</span>
-                                <span className="text-gray-600">{r.evaluatorName}</span>
-                                <span className={r.hasil === 'Sesuai' ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'}>
-                                  · {r.hasil}
-                                </span>
-                              </div>
-                              {r.komentar && <p className="text-gray-600 mt-1 leading-snug">{r.komentar}</p>}
-                            </>
-                          )}
-                        />
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-
-              {activeFormTab === 'opd' && (
-                <>
-                  {!opd ? (
-                    <p className="text-xs text-gray-500">OPD tidak tersedia.</p>
-                  ) : (
-                    <>
-                      <SkorRatingPicker value={ratingOPD} onChange={setRatingOPD} />
-
-                      <div className="border-t border-gray-100 pt-3">
-                        <RiwayatCardList
-                          title="Riwayat evaluasi OPD"
-                          emptyMessage="Belum ada riwayat evaluasi OPD."
-                          items={riwayatOpd}
-                          renderItem={(r) => (
-                            <>
-                              <div className="flex flex-wrap items-baseline gap-x-1.5">
-                                <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
-                                <span className="text-gray-500">—</span>
-                                <span className="text-gray-600">{r.evaluatorName}</span>
-                                <span className="text-blue-600 font-medium">Skor {r.skor}/5</span>
-                              </div>
-                              {r.sopJudul && (
-                                <p className="text-gray-600 mt-1 leading-snug truncate" title={r.sopJudul}>
-                                  SOP: {r.sopJudul}
-                                </p>
-                              )}
-                            </>
-                          )}
-                        />
-                      </div>
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          </CollapsibleSidePanel>
+            activeFormTab={activeFormTab}
+            onTabChange={setActiveFormTab}
+            effectiveSopId={effectiveSopId}
+            lastEvaluatedBy={lastEvaluatedBy}
+            statusEvaluasi={statusEvaluasi}
+            setStatusEvaluasi={setStatusEvaluasi}
+            komentarEvaluasi={komentarEvaluasi ?? ''}
+            setKomentarEvaluasi={setKomentarEvaluasi}
+            riwayatSop={riwayatSop}
+            riwayatOpd={riwayatOpd}
+            ratingOPD={ratingOPD}
+            setRatingOPD={setRatingOPD}
+          />
         }
       />
 
-      <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-sm">Kirim Hasil Evaluasi</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <p className="text-xs text-gray-600">
-              Hanya SOP dengan status <strong>Sedang Dievaluasi</strong> (sudah diisi form) yang ditampilkan. Centang yang akan dikirim, lalu status berubah menjadi <strong>Selesai Evaluasi</strong>.
-            </p>
-            {sedangDievaluasiList.length === 0 ? (
-              <InfoCard variant="warning">
-                <p className="text-sm text-amber-800">
-                  Belum ada SOP Sedang Dievaluasi. Pilih SOP dengan status <strong>Diajukan Evaluasi</strong> di daftar kiri, isi form evaluasi (status hasil + komentar jika Revisi Biro), lalu buka popup ini lagi.
-                </p>
-              </InfoCard>
-            ) : (
-              <>
-                <div className="rounded-md border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
-                      <input
-                        type="checkbox"
-                        checked={isSubmitCheckAll}
-                        ref={(el) => {
-                          if (el) el.indeterminate = isSubmitCheckAllIndeterminate
-                        }}
-                        onChange={(e) => setSubmitCheckAll(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      Centang semua
-                    </label>
-                    <span className="text-[10px] text-gray-500">
-                      ({submitSelectedIds.size} / {sedangDievaluasiList.length} dipilih)
-                    </span>
-                  </div>
-                  <ul className="space-y-1.5 text-xs">
-                    {sedangDievaluasiList.map((item) => (
-                      <li key={item.id} className="flex items-start gap-2 py-1.5 border-b border-gray-100 last:border-0">
-                        <input
-                          type="checkbox"
-                          id={`submit-sop-${item.id}`}
-                          checked={submitSelectedIds.has(item.id)}
-                          onChange={() => toggleSubmitSelected(item.id)}
-                          className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <label htmlFor={`submit-sop-${item.id}`} className="flex flex-col gap-0.5 cursor-pointer flex-1 min-w-0">
-                          <span className="font-medium text-gray-900">{item.judul}</span>
-                          <span className="text-gray-500 font-mono">{item.nomorSOP}</span>
-                          <span className="text-[10px] text-blue-700 font-medium">→ {STATUS_HASIL_EVALUASI[item.statusEvaluasi]}</span>
-                        </label>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <InfoCard variant="warning">
-                  <p className="text-xs text-amber-800">
-                    <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah.
-                  </p>
-                </InfoCard>
-              </>
-            )}
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsSubmitOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              size="sm"
-              className="h-8 text-xs gap-1.5"
-              onClick={handleSubmitAll}
-              disabled={sedangDievaluasiList.length === 0 || submitSelectedIds.size === 0}
-            >
-              <Send className="w-3.5 h-3.5" /> Ya, Kirim Hasil
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DetailEvaluasiOPDSubmitDialog
+        open={isSubmitOpen}
+        onOpenChange={setIsSubmitOpen}
+        sedangDievaluasiList={sedangDievaluasiList}
+        submitSelectedIds={submitSelectedIds}
+        toggleSubmitSelected={toggleSubmitSelected}
+        isSubmitCheckAll={isSubmitCheckAll}
+        isSubmitCheckAllIndeterminate={isSubmitCheckAllIndeterminate}
+        setSubmitCheckAll={setSubmitCheckAll}
+        onConfirm={handleSubmitAll}
+      />
     </>
   )
 }

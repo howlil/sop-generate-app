@@ -17,7 +17,7 @@ import { BackButton } from '@/components/ui/back-button'
 import { FormField } from '@/components/ui/form-field'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { showToast } from '@/lib/stores/app-store'
+import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
@@ -27,19 +27,21 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import { getPenugasanById, updatePenugasan } from '@/lib/stores/penugasan-store'
-import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
 import type { StatusSOP } from '@/lib/types/sop'
-import { SEED_PENUGASAN_DETAIL_BY_ID } from '@/lib/seed/penugasan-detail-seed'
+import { usePenugasanDetail } from '@/hooks/usePenugasan'
+import { useSopStatus } from '@/hooks/useSopStatus'
+import { getPenugasanDetailById } from '@/lib/data/penugasan-detail'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
-import { useCollapsiblePanels } from '@/hooks/useCollapsiblePanels'
 import { ROUTES } from '@/lib/constants/routes'
 
 export function PelaksanaanEvaluasi() {
   const { id } = useParams({ from: '/tim-evaluasi/pelaksanaan/$id' })
   const navigate = useNavigate()
+  const { showToast } = useToast()
+  const { penugasan: penugasanFromStore, updatePenugasan } = usePenugasanDetail(id)
+  const { setSopStatusOverride } = useSopStatus()
 
-  const seedDetail = SEED_PENUGASAN_DETAIL_BY_ID[id ?? '1']
+  const seedDetail = getPenugasanDetailById(id ?? '1')
   const penugasanInfo = {
     id: seedDetail?.id ?? id ?? '1',
     kode: seedDetail?.kodePenugasan ?? '-',
@@ -66,7 +68,7 @@ export function PelaksanaanEvaluasi() {
       showToast('Status "Revisi Biro" wajib diisi komentar evaluasi', 'error')
       return
     }
-    const penugasan = id ? getPenugasanById(id) : undefined
+    const penugasan = penugasanFromStore
     if (penugasan?.sopList?.length) {
       const sopStatusBaru: StatusSOP =
         statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'
@@ -80,7 +82,7 @@ export function PelaksanaanEvaluasi() {
           catatan: komentarEvaluasi.trim() || undefined,
         }
       })
-      updatePenugasan(id!, {
+      updatePenugasan({
         sopList: updatedSopList,
         status: 'Selesai',
         tanggalEvaluasi: new Date().toISOString().split('T')[0],

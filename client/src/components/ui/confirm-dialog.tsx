@@ -18,6 +18,8 @@ export interface ConfirmDialogProps {
   onConfirm: () => void
   /** Jika true, tombol konfirmasi pakai variant destructive (merah). Default true untuk konfirmasi hapus. */
   destructive?: boolean
+  /** Class untuk DialogContent. */
+  className?: string
 }
 
 export function ConfirmDialog({
@@ -29,6 +31,7 @@ export function ConfirmDialog({
   cancelLabel = 'Batal',
   onConfirm,
   destructive = true,
+  className,
 }: ConfirmDialogProps) {
   const handleConfirm = () => {
     onConfirm()
@@ -37,7 +40,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className={className ?? undefined}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description != null && <DialogDescription>{description}</DialogDescription>}

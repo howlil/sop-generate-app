@@ -23,22 +23,25 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { TableFooterSummary } from '@/components/ui/table-footer-summary'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
-import { showToast } from '@/lib/stores/app-store'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { formatDateIdLong } from '@/utils/format-date'
-import { getRiwayatEvaluasiForSop, addEvaluationCase } from '@/lib/stores/evaluasi-store'
 import type { EvaluationCaseSourceType } from '@/lib/types/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
-import { setSopStatusOverride } from '@/lib/stores/sop-status-store'
-import { SEED_PERATURAN_DAFTAR } from '@/lib/seed/sop-daftar'
+import { getPeraturanDaftarOptions } from '@/lib/data/sop-daftar'
+import { useToast } from '@/hooks/useUI'
+import { useEvaluasi } from '@/hooks/useEvaluasi'
+import { useSopStatus } from '@/hooks/useSopStatus'
 import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 
 export function DaftarSOP() {
+  const { showToast } = useToast()
+  const { addEvaluationCase, getRiwayatEvaluasiForSop } = useEvaluasi()
+  const { setSopStatusOverride } = useSopStatus()
   const filters = useDaftarSOPFilters()
   const { setSopList, mergedSopList, eligibleSopsForEvaluasi, filteredList } = useDaftarSOPData({
     searchQuery: filters.searchQuery,
@@ -52,7 +55,7 @@ export function DaftarSOP() {
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
   const [selectedSopIdsForAjukan, setSelectedSopIdsForAjukan] = useState<Set<string>>(new Set())
 
-  const peraturanList = SEED_PERATURAN_DAFTAR
+  const peraturanList = getPeraturanDaftarOptions()
 
   const toggleSopSelectionForAjukan = (sopId: string) => {
     setSelectedSopIdsForAjukan((prev) => {
