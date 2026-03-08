@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
-import { FileText, CheckCircle, Download, List, MessageSquare, Calendar, History, ExternalLink } from 'lucide-react'
+import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
@@ -8,33 +8,24 @@ import { getOpdListEvaluasi, getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { ROUTES } from '@/lib/constants/routes'
-import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
-import { Badge } from '@/components/ui/badge'
 import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { useToast } from '@/hooks/useUI'
 import { usePenugasanEvaluasi } from '@/hooks/usePenugasanEvaluasi'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
-import { InfoCard } from '@/components/ui/info-card'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
+import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
 
 export function DetailPenugasanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
   const { penugasan, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify } = usePenugasanEvaluasi(id)
-  const [isBAOpen, setIsBAOpen] = useState(false)
+  const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('sop')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState<'catatan' | 'riwayat'>('catatan')
@@ -90,9 +81,33 @@ export function DetailPenugasanEvaluasi() {
         backSize="icon"
         header={
           <>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs gap-1.5"
+                  onClick={() => {
+                    setPreviewMainTab('sop')
+                    setTimeout(() => window.print(), 150)
+                  }}
+                >
+                  <Printer className="w-3.5 h-3.5" /> Cetak SOP
+                </Button>
+                {penugasan.isVerified && penugasan.nomorBA && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5"
+                    onClick={() => {
+                      setPreviewMainTab('ba')
+                      setTimeout(() => window.print(), 150)
+                    }}
+                  >
+                    <Printer className="w-3.5 h-3.5" /> Cetak Berita Acara
+                  </Button>
+                )}
                 {canVerify && (
                   tte.canSign ? (
                     <Button size="sm" className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5" onClick={tte.openPinDialog}>
@@ -106,17 +121,11 @@ export function DetailPenugasanEvaluasi() {
                     </Link>
                   )
                 )}
-                {penugasan.isVerified && penugasan.nomorBA && (
-                  <Button variant="outline" size="sm" className="h-8 px-3 rounded-md border-gray-200 hover:bg-gray-50 text-xs gap-1.5" onClick={() => setIsBAOpen(true)}>
-                    <FileText className="w-3.5 h-3.5" /> Lihat BA
-                  </Button>
-                )}
               </div>
             </div>
             <div className="pt-2 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-gray-900">{penugasan.opd}</span>
-                <Badge variant="outline" className="text-xs h-4 px-1.5 border-gray-200">{penugasan.jenis}</Badge>
                 <StatusBadge status={penugasan.status} domain={STATUS_DOMAIN.EVALUASI_BIRO} className="text-xs h-4 px-1.5 border-0" />
               </div>
               <InfoGrid cols={4}>
@@ -126,7 +135,7 @@ export function DetailPenugasanEvaluasi() {
                   </InfoField>
                 )}
                 {penugasan.timMonev && (
-                  <InfoField label="Tim Monev:">
+                  <InfoField label="Evaluator:">
                     {penugasan.timMonev}
                   </InfoField>
                 )}
@@ -170,31 +179,47 @@ export function DetailPenugasanEvaluasi() {
         }
         main={
           <div className="flex flex-col h-full">
-            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 flex items-center justify-between gap-2 flex-wrap">
-              <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
-              <div className="flex items-center gap-2">
-                {displaySop?.status && (
-                  <StatusBadge status={displaySop.status} domain={STATUS_DOMAIN.SOP} />
-                )}
-                {displaySop && (
-                  <Link
-                    to={ROUTES.BIRO_ORGANISASI.DETAIL_SOP}
-                    params={{ id: displaySop.id }}
-                    className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline font-medium"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Lihat detail SOP
-                  </Link>
-                )}
-              </div>
+            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPreviewMainTab('sop')}
+                className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${previewMainTab === 'sop' ? 'bg-white border border-gray-200 text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                Preview SOP
+              </button>
+              {penugasan.isVerified && penugasan.nomorBA && (
+                <button
+                  type="button"
+                  onClick={() => setPreviewMainTab('ba')}
+                  className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${previewMainTab === 'ba' ? 'bg-white border border-gray-200 text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Berita Acara
+                </button>
+              )}
             </div>
-            <div className="flex-1 min-h-0 flex flex-col">
-              {displaySop ? (
-                <SOPPreviewTemplate name={displaySop.nama} number={displaySop.nomor} />
+            <div className="flex-1 min-h-0 flex flex-col overflow-auto scrollbar-hide">
+              {previewMainTab === 'sop' ? (
+                displaySop ? (
+                  <SOPPreviewTemplate name={displaySop.nama} number={displaySop.nomor} />
+                ) : (
+                  <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
+                    Pilih SOP di daftar kiri
+                  </div>
+                )
               ) : (
-                <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
-                  Pilih SOP di daftar kiri
-                </div>
+                penugasan.nomorBA && penugasan.isVerified && (
+                  <div className="p-4 overflow-auto scrollbar-hide">
+                    <BeritaAcaraTemplate
+                      opd={penugasan.opd}
+                      nomorBA={penugasan.nomorBA}
+                      tanggalVerifikasi={penugasan.tanggalVerifikasi}
+                      sopList={(penugasan.sopList ?? []).map((s) => ({ nomor: s.nomor, nama: s.nama }))}
+                      evaluator={penugasan.timMonev}
+                      namaBiro={penugasan.namaBiro}
+                      tteSignaturePayload={penugasan.tteSignaturePayload}
+                    />
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -279,56 +304,6 @@ export function DetailPenugasanEvaluasi() {
           </CollapsibleSidePanel>
         }
       />
-
-      {/* Dialog Berita Acara */}
-      <Dialog open={isBAOpen} onOpenChange={setIsBAOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Berita Acara Verifikasi Evaluasi SOP</DialogTitle>
-          </DialogHeader>
-          {penugasan.nomorBA && penugasan.isVerified && (
-            <div className="space-y-4 text-xs">
-              <div className="text-center border-b pb-4">
-                <h2 className="text-sm font-semibold mb-1">BERITA ACARA</h2>
-                <h3 className="text-sm font-semibold mb-2">VERIFIKASI MONITORING DAN EVALUASI SOP</h3>
-                <p>Nomor: {penugasan.nomorBA}</p>
-              </div>
-              <InfoCard variant="neutral">
-                <div className="space-y-1">
-                  <p><strong>Batch:</strong> {penugasan.opd}</p>
-                  <p><strong>Evaluator:</strong> {penugasan.timMonev}</p>
-                  <p><strong>Tanggal Verifikasi:</strong> {formatDateId(penugasan.tanggalVerifikasi)}</p>
-                  <p><strong>Jumlah SOP:</strong> {sopList.length}</p>
-                </div>
-              </InfoCard>
-              <p className="leading-relaxed">
-                Berdasarkan hasil monitoring dan evaluasi, batch ini telah diverifikasi dengan {sopList.length} SOP.
-              </p>
-              <div className="grid grid-cols-2 gap-8 mt-6">
-                <div className="text-center"><p className="mb-12">Evaluator</p><p className="font-semibold">{penugasan.timMonev}</p></div>
-                <div className="text-center">
-                  {penugasan.tteSignaturePayload ? (
-                    <TTESignatureBlock
-                      payload={penugasan.tteSignaturePayload}
-                      roleLabel="Biro Organisasi"
-                      qrSize={80}
-                    />
-                  ) : (
-                    <>
-                      <p className="mb-12">Biro Organisasi</p>
-                      <p className="font-semibold">{penugasan.namaBiro}</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setIsBAOpen(false)}>Tutup</Button>
-            <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => window.print()}><Download className="w-3.5 h-3.5" /> Unduh PDF</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <PinVerificationDialog
         open={tte.pinDialogOpen}

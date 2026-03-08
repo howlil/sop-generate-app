@@ -114,7 +114,7 @@ export function OPDTab({
                         <Edit className="w-3.5 h-3.5 mr-2" />Edit OPD
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onOpenRiwayat(opd)}>
-                        <Users className="w-3.5 h-3.5 mr-2" />Riwayat Kepala OPD
+                        <Users className="w-3.5 h-3.5 mr-2" />Riwayat OPD
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onDelete(opd.id)}
@@ -222,8 +222,8 @@ export function OPDTab({
                 </div>
               </div>
               <div className="rounded-lg border border-gray-200 bg-white p-3">
-                <h4 className="text-xs font-semibold text-gray-700 mb-2">Riwayat Kepala OPD</h4>
-                <div className="space-y-1.5 max-h-52 overflow-auto pr-1">
+                <h4 className="text-xs font-semibold text-gray-700 mb-2">Riwayat OPD</h4>
+                <div className="space-y-1.5 max-h-52 overflow-auto scrollbar-hide pr-1">
                   {getKepalaByOPD(selectedOPD.id).map((k) => (
                     <div
                       key={k.id}
@@ -257,9 +257,9 @@ export function OPDTab({
       </Dialog>
 
       <Dialog open={riwayatKepalaOpen} onOpenChange={setRiwayatKepalaOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
           <DialogHeader>
-            <DialogTitle className="text-sm">Riwayat Kepala OPD — {selectedOPD?.name}</DialogTitle>
+            <DialogTitle className="text-sm">Riwayat OPD — {selectedOPD?.name}</DialogTitle>
             <DialogDescription className="text-xs">
               Daftar riwayat kepala OPD untuk OPD ini. Hanya untuk melihat; penugasan baru atau perubahan dikelola dari tab Penugasan atau Manajemen OPD.
             </DialogDescription>

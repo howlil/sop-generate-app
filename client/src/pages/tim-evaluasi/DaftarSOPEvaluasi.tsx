@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/lib/constants/routes'
 import { getOpdListEvaluasi, getSopByOpd } from '@/lib/data/penugasan-evaluasi'
-import { canSelectSOPForEvaluasi } from '@/lib/types/sop'
+import { canSelectSOPForEvaluasi } from '@/lib/domain/sop-evaluasi'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
 

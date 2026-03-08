@@ -28,8 +28,7 @@
     { "id": "3", "jenisPeraturan": "SK Kadis", "nomor": "15", "tahun": "2026", "tentang": "Evaluasi Kinerja Guru", "tanggalTerbit": "2026-01-10", "status": "Berlaku", "digunakan": 2, "createdBy": "1", "version": 2 },
     { "id": "4", "jenisPeraturan": "Perpres", "nomor": "12", "tahun": "2025", "tentang": "Pengadaan Barang dan Jasa Pemerintah", "tanggalTerbit": "2025-03-15", "status": "Berlaku", "digunakan": 4, "createdBy": "2", "version": 1 },
     { "id": "5", "jenisPeraturan": "Permendikbud", "nomor": "10", "tahun": "2025", "tentang": "Ujian Sekolah", "tanggalTerbit": "2025-09-01", "status": "Berlaku", "digunakan": 1, "createdBy": "1", "version": 1 },
-    { "id": "6", "jenisPeraturan": "SK Kadis", "nomor": "8", "tahun": "2026", "tentang": "Pembentukan Tim Penyusun SOP", "tanggalTerbit": "2026-01-03", "status": "Berlaku", "digunakan": 0, "createdBy": "1", "version": 1 },
-    { "id": "7", "jenisPeraturan": "Permendikbud", "nomor": "5", "tahun": "2024", "tentang": "Kurikulum Merdeka", "tanggalTerbit": "2024-08-10", "status": "Dicabut", "digunakan": 0, "createdBy": "biro", "version": 1 }
+    { "id": "6", "jenisPeraturan": "SK Kadis", "nomor": "8", "tahun": "2026", "tentang": "Pembentukan Tim Penyusun SOP", "tanggalTerbit": "2026-01-03", "status": "Berlaku", "digunakan": 0, "createdBy": "1", "version": 1 }
   ],
   "opdNames": {
     "1": "Dinas Pendidikan",

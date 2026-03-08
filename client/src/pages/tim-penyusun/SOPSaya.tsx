@@ -4,10 +4,10 @@ import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import { Select } from '@/components/ui/select'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { STATUS_SOP_ALL, type SOPSayaItem } from '@/lib/types/sop'
+import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
+import type { SOPSayaItem } from '@/lib/types/sop'
 import { canEditSop } from '@/lib/domain/sop-status'
 import { getInitialSopSayaList } from '@/lib/data/sop-daftar'
 import { useSopStatus } from '@/hooks/useSopStatus'
@@ -47,14 +47,10 @@ export function SOPSaya() {
           searchValue={searchQuery}
           onSearchChange={(e) => setSearchQuery(e.target.value)}
         >
-          <Select
+          <SOPStatusFilterSelect
             className="h-8 w-[180px]"
             value={filterStatus}
             onValueChange={setFilterStatus}
-            options={[
-              { value: 'all', label: 'Semua Status' },
-              ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
-            ]}
           />
         </SearchToolbar>
       }

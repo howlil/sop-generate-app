@@ -19,7 +19,7 @@ function IndexPage() {
   const DASHBOARD_DESCRIPTIONS = getDashboardDescriptions()
   const { denied } = useSearch({ from: '/' })
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {denied === 'biro-organisasi' && (
         <div className="bg-red-50 border-b border-red-200 px-6 py-2 text-center">
           <p className="text-xs text-red-700">Akses ditolak. Hanya Biro Organisasi yang dapat mengakses halaman tersebut. Pilih role Biro Organisasi di bawah lalu masuk.</p>

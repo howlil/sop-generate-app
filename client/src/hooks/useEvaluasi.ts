@@ -1,9 +1,10 @@
 /**
  * Hook akses evaluasi (evaluation case) — satu titik akses untuk UI.
- * Menggantikan import langsung dari evaluasi-store.
+ * Validasi dan generate ID dari domain; store hanya menyimpan state.
  */
 import { useCallback } from 'react'
 import { useEvaluationCaseStore } from '@/lib/stores/evaluasi-store'
+import { validateSopIdsNotInActiveCase, generateNextEvaluationCaseId } from '@/lib/domain/evaluasi-case'
 import type { EvaluationCase, EvaluationCaseStatus } from '@/lib/types/evaluasi'
 
 const ACTIVE_STATUSES: EvaluationCaseStatus[] = ['Draft', 'Assigned', 'In Progress']
@@ -27,8 +28,14 @@ export function useEvaluasi() {
   )
 
   const addEvaluationCase = useCallback(
-    (payload: Omit<EvaluationCase, 'id' | 'createdAt'>) => addCase(payload),
-    [addCase]
+    (payload: Omit<EvaluationCase, 'id' | 'createdAt'>) => {
+      validateSopIdsNotInActiveCase(payload.sopIds, cases)
+      const id = generateNextEvaluationCaseId(cases)
+      const createdAt = new Date().toISOString().slice(0, 10)
+      const newCase: EvaluationCase = { ...payload, id, createdAt }
+      return addCase(newCase)
+    },
+    [cases, addCase]
   )
 
   return {

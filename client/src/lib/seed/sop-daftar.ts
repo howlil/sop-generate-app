@@ -26,9 +26,7 @@ interface SopDaftarResponse {
 }
 
 const data = sopDaftarData as SopDaftarResponse
-
-/** Id OPD Dinas Pendidikan (untuk filter Kepala OPD). Relasi ke opd.json id. */
-export const OPD_DISDIK_ID = data.opdDisdikId
+// data.opdDisdikId tersedia di JSON bila nanti dibutuhkan untuk filter Kepala OPD.
 
 const cfg = data.dummyConfig
 const authorPool = cfg.authorPool ?? ['Budi Santoso', 'Ahmad Pratama', 'Dra. Siti Aminah']

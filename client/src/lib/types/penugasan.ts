@@ -33,6 +33,9 @@ export interface Penugasan {
   isVerified?: boolean
   nomorBA?: string
   tanggalVerifikasi?: string
+  /** Setelah Biro TTD BA, Kepala OPD menandatangani BA (milik OPD tersebut). Baru setelah ini Kepala OPD boleh TTD tiap SOP. */
+  isSignedByKepalaOPD?: boolean
+  tanggalTTDBaByOpd?: string
   namaBiro?: string
   tteSignaturePayload?: TTESignaturePayload
 }

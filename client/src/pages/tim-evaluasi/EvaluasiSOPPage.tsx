@@ -1,6 +1,6 @@
 /**
  * Halaman evaluasi SOP oleh Tim Evaluasi (langsung per SOP, tanpa penugasan).
- * Hasil: Sesuai → status SOP "Dievaluasi Tim Evaluasi"; Revisi Biro → "Revisi dari Tim Evaluasi".
+ * Hasil: Sesuai → status SOP "Siap Diverifikasi"; Revisi Biro → "Revisi dari Tim Evaluasi".
  */
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
@@ -31,8 +31,9 @@ import { InfoCard } from '@/components/ui/info-card'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
 import { ROUTES } from '@/lib/constants/routes'
+import { STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
+import { getStatusSopAfterEvaluasi } from '@/lib/domain/evaluasi'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
-import type { StatusSOP } from '@/lib/types/sop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 
 export function EvaluasiSOPPage() {
@@ -43,6 +44,13 @@ export function EvaluasiSOPPage() {
   const [sopList] = useState(() => getInitialSopDaftarList())
   const mergedList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
   const sop = useMemo(() => mergedList.find((s) => s.id === sopId), [mergedList, sopId])
+
+  // Workflow: saat Tim Evaluasi membuka halaman evaluasi, status SOP → Sedang Dievaluasi (jika saat ini Diajukan Evaluasi)
+  useEffect(() => {
+    if (sopId && sop?.status === 'Diajukan Evaluasi') {
+      setSopStatusOverride(sopId, 'Sedang Dievaluasi')
+    }
+  }, [sopId, sop?.status, setSopStatusOverride])
 
   const {
     komentarEvaluasi,
@@ -64,8 +72,7 @@ export function EvaluasiSOPPage() {
       return
     }
     if (!sopId) return
-    const newStatus: StatusSOP =
-      statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'
+    const newStatus = getStatusSopAfterEvaluasi(statusEvaluasi)
     setSopStatusOverride(sopId, newStatus)
     showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
     setIsSubmitOpen(false)
@@ -170,7 +177,7 @@ export function EvaluasiSOPPage() {
                     >
                       Sesuai
                     </span>
-                    <span className="text-[10px] text-gray-500 block mt-0.5">→ Dievaluasi Tim Evaluasi</span>
+                    <span className="text-[10px] text-gray-500 block mt-0.5">→ {STATUS_HASIL_EVALUASI.Sesuai}</span>
                   </button>
                   <button
                     type="button"
@@ -220,7 +227,7 @@ export function EvaluasiSOPPage() {
             <InfoCard variant={statusEvaluasi === 'Sesuai' ? 'success' : 'warning'}>
               <p className="text-xs mb-1 text-gray-700">Status SOP setelah dikirim:</p>
               <p className="text-sm font-semibold text-gray-900">
-                {statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'}
+                {statusEvaluasi ? STATUS_HASIL_EVALUASI[statusEvaluasi] : '—'}
               </p>
             </InfoCard>
             <InfoCard variant="warning">

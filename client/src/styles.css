@@ -87,6 +87,11 @@ body {
   background: #fff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sop-a4-preview::-webkit-scrollbar {
+  display: none;
 }
 
 @media print {
@@ -125,4 +130,13 @@ body {
     transform: scale(var(--bpmn-print-scale, 1));
     transform-origin: top left;
   }
+}
+
+/* ── Scrollbar disembunyikan agar area scroll terlihat rapi (scroll tetap berfungsi) ──────── */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

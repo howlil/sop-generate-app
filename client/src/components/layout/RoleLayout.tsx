@@ -60,7 +60,7 @@ export function RoleLayout({
       <div className="flex-1 flex flex-col min-w-0">
         <PageHeaderProvider>
           <HeaderProfile title={title} subtitle={subtitle} />
-          <main className="flex-1 overflow-auto p-6 bg-gray-50">
+          <main className="flex-1 overflow-auto scrollbar-hide p-6 bg-white">
             <Outlet />
           </main>
         </PageHeaderProvider>

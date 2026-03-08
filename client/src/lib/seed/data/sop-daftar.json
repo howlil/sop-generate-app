@@ -30,7 +30,7 @@
       "unitTerkait": "Bidang Pendidikan Dasar",
       "peraturan": "Permendikbud No. 1/2026",
       "peraturanId": "p1",
-      "status": "Terverifikasi dari Biro Organisasi",
+      "status": "Diverifikasi Biro Organisasi",
       "versi": "2.1",
       "kategori": "Pelayanan",
       "author": "Ahmad Pratama"
@@ -47,7 +47,7 @@
       "unitTerkait": "Bidang SDM",
       "peraturan": "Permendikbud No. 5/2025",
       "peraturanId": "p2",
-      "status": "Dievaluasi Tim Evaluasi",
+      "status": "Sedang Dievaluasi",
       "versi": "1.0",
       "kategori": "Administrasi",
       "evaluationCaseId": "EV-2026-001",
@@ -148,13 +148,13 @@
     { "id": "1", "nomorSOP": "PRJ-DISDIK-001/2026", "judul": "SOP Penerimaan Siswa Baru 2026", "versi": "0.9", "status": "Revisi dari Tim Evaluasi", "terakhirDiubah": "2026-01-28", "komentarCount": 3, "author": "Budi Santoso" },
     { "id": "2", "nomorSOP": "PRJ-DISDIK-002/2026", "judul": "SOP Pelayanan Perpustakaan Digital", "versi": "0.5", "status": "Sedang Disusun", "terakhirDiubah": "2026-01-27", "komentarCount": 0, "author": "Budi Santoso" },
     { "id": "3", "nomorSOP": "PRJ-DISDIK-003/2025", "judul": "SOP Ujian Akhir Semester", "versi": "1.0", "status": "Siap Dievaluasi", "terakhirDiubah": "2026-01-20", "komentarCount": 0, "author": "Ahmad Pratama" },
-    { "id": "4", "nomorSOP": "PRJ-DISDIK-004/2025", "judul": "SOP Penilaian Kinerja Guru", "versi": "1.5", "status": "Revisi dari Kepala OPD", "terakhirDiubah": "2025-12-15", "komentarCount": 0, "author": "Dra. Siti Aminah" },
+    { "id": "4", "nomorSOP": "PRJ-DISDIK-004/2025", "judul": "SOP Penilaian Kinerja Guru", "versi": "1.5", "status": "Revisi dari Tim Evaluasi", "terakhirDiubah": "2025-12-15", "komentarCount": 0, "author": "Dra. Siti Aminah" },
     { "id": "5", "nomorSOP": "PRJ-DISDIK-005/2025", "judul": "SOP Pengadaan Buku Pelajaran", "versi": "2.0", "status": "Berlaku", "terakhirDiubah": "2025-11-10", "komentarCount": 0, "author": "Budi Santoso" }
   ],
   "dummyCount": 42,
   "dummyConfig": {
     "opdIds": ["1", "2"],
-    "statusPool": ["Berlaku", "Siap Dievaluasi", "Diajukan Evaluasi", "Draft", "Revisi dari Tim Evaluasi", "Dievaluasi Tim Evaluasi", "Terverifikasi dari Biro Organisasi"],
+    "statusPool": ["Berlaku", "Siap Dievaluasi", "Diajukan Evaluasi", "Draft", "Sedang Dievaluasi", "Revisi dari Tim Evaluasi", "Diverifikasi Biro Organisasi", "Siap Diverifikasi", "Dicabut"],
     "timPenyusunPool": ["Tim Penyusun A", "Tim Penyusun B", "Tim Penyusun C"],
     "peraturanIds": ["p1", "p2", "p3", "p4"],
     "authorPool": ["Budi Santoso", "Ahmad Pratama", "Dra. Siti Aminah"],

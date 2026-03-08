@@ -15,7 +15,12 @@ export function getInitialKepalaList(): KepalaOPD[] {
   return [...SEED_KEPALA_LIST]
 }
 
-/** Hook baca-only daftar OPD (untuk dropdown, filter, dll). */
+/** Daftar OPD (sync; sumber seed). Untuk dropdown, filter, dll. */
+export function getOpdList(): OPD[] {
+  return [...SEED_OPD_LIST]
+}
+
+/** Alias baca-only daftar OPD. Prefer getOpdList() untuk kejelasan (sync data). */
 export function useOpdList(): OPD[] {
-  return SEED_OPD_LIST
+  return getOpdList()
 }

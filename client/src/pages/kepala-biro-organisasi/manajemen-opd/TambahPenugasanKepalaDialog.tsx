@@ -26,8 +26,8 @@ export function TambahPenugasanKepalaDialog({
     <FormDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Tambah Kepala OPD"
-      description="Isi data Kepala OPD baru dan pilih OPD tujuan."
+      title="Tambah OPD"
+      description="Isi data OPD baru dan pilih OPD tujuan."
       confirmLabel="Simpan"
       cancelLabel="Batal"
       onConfirm={onConfirm}

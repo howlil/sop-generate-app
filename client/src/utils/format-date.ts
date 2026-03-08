@@ -35,3 +35,14 @@ export function formatDatetime(value: DateInput): string {
     ? d.toLocaleString(LOCALE_ID, { dateStyle: 'medium', timeStyle: 'short' })
     : '—'
 }
+
+const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+
+/** Format untuk surat resmi: "Padang, Agustus 2025" */
+export function formatTempatTanggal(value: DateInput, tempat = 'Padang'): string {
+  const d = toDate(value)
+  if (!d) return tempat
+  const month = BULAN_ID[d.getMonth()]
+  const year = d.getFullYear()
+  return `${tempat}, ${month} ${year}`
+}

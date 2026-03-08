@@ -1,14 +1,18 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { Building2, FileCheck, PenLine, UserPlus, Users } from 'lucide-react'
-import { isBiroOrganisasi } from '@/lib/stores/app-store'
+import { isBiroOrganisasi, setRole } from '@/lib/stores/app-store'
+import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 
 export const Route = createFileRoute('/biro-organisasi')({
   beforeLoad: () => {
-    if (typeof window !== 'undefined' && !isBiroOrganisasi()) {
-      throw redirect({ to: ROUTES.HOME, search: { denied: 'biro-organisasi' } })
+    if (typeof window !== 'undefined') {
+      setRole(ROLES.BIRO_ORGANISASI)
+      if (!isBiroOrganisasi()) {
+        throw redirect({ to: ROUTES.HOME, search: { denied: 'biro-organisasi' } })
+      }
     }
   },
   component: BiroOrganisasiLayout,

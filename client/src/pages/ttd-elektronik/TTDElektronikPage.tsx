@@ -9,7 +9,7 @@ import { formatDateIdLong } from '@/utils/format-date'
 import { TTEBuatDialog } from './TTEBuatDialog'
 
 const ROLE_LABEL: Record<TTERole, string> = {
-  'kepala-opd': 'Kepala OPD',
+  'kepala-opd': 'OPD',
   'biro-organisasi': 'Biro Organisasi',
 }
 

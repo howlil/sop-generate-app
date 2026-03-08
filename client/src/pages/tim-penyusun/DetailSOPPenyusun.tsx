@@ -272,7 +272,7 @@ export function DetailSOPPenyusun() {
       />
 
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
           <DialogHeader>
             <DialogTitle className="text-sm">Riwayat Versi</DialogTitle>
             <DialogDescription className="text-xs">{versions.length} versi terdokumentasi.</DialogDescription>

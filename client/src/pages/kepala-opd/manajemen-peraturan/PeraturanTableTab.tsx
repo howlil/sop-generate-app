@@ -174,7 +174,7 @@ export function PeraturanTableTab({
 
       {/* Dialog Riwayat Versi Peraturan */}
       <Dialog open={riwayatVersiOpen} onOpenChange={setRiwayatVersiOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
           <DialogHeader>
             <DialogTitle className="text-sm">Riwayat versi</DialogTitle>
             <DialogDescription className="text-xs">

@@ -13,6 +13,7 @@ export const STATUS_SOP_CAN_SELECT_FOR_EVALUASI: StatusSOP[] = [
   'Siap Dievaluasi',
   'Berlaku',
   'Diajukan Evaluasi',
+  'Sedang Dievaluasi',
 ]
 
 export function canAjukanEvaluasiSOP(status: StatusSOP): boolean {

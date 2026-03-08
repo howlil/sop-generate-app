@@ -14,7 +14,9 @@ export const ROUTES = {
     ROOT: '/kepala-opd',
     TTD: '/kepala-opd/ttd-elektronik',
     PANTAU_SOP: '/kepala-opd/pantau-sop',
-    /** Detail SOP (dengan tombol Mengesahkan/TTE bila status Terverifikasi Biro). */
+    /** Berita Acara (BA) milik OPD: daftar BA yang sudah diverifikasi Biro dan menunggu TTD Kepala OPD. Setelah TTD BA, Kepala OPD boleh mengesahkan tiap SOP. */
+    BERITA_ACARA: '/kepala-opd/berita-acara',
+    /** Detail SOP (dengan tombol Mengesahkan/TTE bila status Diverifikasi Biro dan BA sudah ditandatangani OPD). */
     DETAIL_SOP: '/kepala-opd/detail-sop/$id',
   },
 

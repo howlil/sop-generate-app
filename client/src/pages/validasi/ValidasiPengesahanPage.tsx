@@ -43,7 +43,7 @@ export function ValidasiPengesahanPage() {
   }
 
   const roleLabel =
-    signature.role === 'kepala-opd' ? 'Kepala OPD' : 'Biro Organisasi'
+    signature.role === 'kepala-opd' ? 'OPD' : 'Biro Organisasi'
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

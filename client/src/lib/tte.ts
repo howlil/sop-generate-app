@@ -49,7 +49,7 @@ export function setTTEProfile(
 
 export function getTTEProfileByVerificationToken(token: string): TTEProfile | null {
   if (typeof window === 'undefined' || !token) return null
-  for (const role of ['kepala-opd', 'biro-organisasi'] as TTERole[]) {
+  for (const role of ['kepala-opd', 'biro-organisasi', 'tim-penyusun'] as TTERole[]) {
     const p = getTTEProfile(role)
     if (p?.verificationToken === token) return p
   }

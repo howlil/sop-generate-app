@@ -1,37 +1,35 @@
-/**
- * Types SOP: status, daftar, prosedur, metadata, template.
- * Alur status: Draft → Sedang Disusun → Selesai → Siap Dievaluasi → (Request) Diajukan Evaluasi
- * → Tim Evaluasi: Sesuai → Dievaluasi Tim Evaluasi | Revisi Biro → Revisi dari Tim Evaluasi
- * → Kepala OPD TTD → Berlaku.
- */
 
+
+/** Alur workflow SOP: Draft → Sedang Disusun → Siap Dievaluasi → Diajukan Evaluasi → Sedang Dievaluasi → (Revisi/Siap Diverifikasi) → Diverifikasi Biro → Berlaku. */
 export type StatusSOP =
   | 'Draft'
   | 'Sedang Disusun'
-  | 'Diperiksa Kepala OPD'
-  | 'Revisi dari Kepala OPD'
   | 'Siap Dievaluasi'
-  | 'Berlaku'
   | 'Diajukan Evaluasi'
-  | 'Dievaluasi Tim Evaluasi'
+  | 'Sedang Dievaluasi'
   | 'Revisi dari Tim Evaluasi'
-  | 'Terverifikasi dari Biro Organisasi'
+  | 'Siap Diverifikasi'
+  | 'Diverifikasi Biro Organisasi'
+  | 'Berlaku'
   | 'Dicabut'
-  | 'Batal'
 
 export const STATUS_SOP_ALL: StatusSOP[] = [
-  'Draft', 'Sedang Disusun', 'Diperiksa Kepala OPD', 'Revisi dari Kepala OPD',
-  'Siap Dievaluasi', 'Berlaku', 'Diajukan Evaluasi', 'Dievaluasi Tim Evaluasi',
-  'Revisi dari Tim Evaluasi', 'Terverifikasi dari Biro Organisasi', 'Dicabut', 'Batal',
+  'Draft',
+  'Sedang Disusun',
+  'Siap Dievaluasi',
+  'Diajukan Evaluasi',
+  'Sedang Dievaluasi',
+  'Revisi dari Tim Evaluasi',
+  'Siap Diverifikasi',
+  'Diverifikasi Biro Organisasi',
+  'Berlaku',
+  'Dicabut',
 ]
 
-/** @deprecated Import dari @/lib/domain/sop-evaluasi */
-export {
-  STATUS_SOP_CAN_REQUEST_EVALUASI,
-  STATUS_SOP_CAN_SELECT_FOR_EVALUASI,
-  canAjukanEvaluasiSOP,
-  canSelectSOPForEvaluasi,
-} from '@/lib/domain/sop-evaluasi'
+export const SOP_STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
+  { value: 'all', label: 'Semua Status' },
+  ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
+]
 
 export type StatusHasilEvaluasi = 'Sesuai' | 'Perlu Perbaikan' | 'Revisi Biro'
 

@@ -49,7 +49,7 @@
     { "id": "impl-3", "name": "Pejabat Berwenang" }
   ],
   "komentarList": [
-    { "id": "1", "user": "Dr. Ahmad Fauzi", "role": "Kepala OPD", "timestamp": "2026-02-10 14:30", "bagian": "Metadata - Dasar Hukum", "isi": "Perlu ditambahkan referensi ke Permendikbud terbaru", "status": "open" },
+    { "id": "1", "user": "Dr. Ahmad Fauzi", "role": "OPD", "timestamp": "2026-02-10 14:30", "bagian": "Metadata - Dasar Hukum", "isi": "Perlu ditambahkan referensi ke Permendikbud terbaru", "status": "open" },
     { "id": "2", "user": "Dra. Siti Aminah, M.Si", "role": "Tim Evaluasi", "timestamp": "2026-02-09 10:15", "bagian": "Prosedur - Baris 1", "isi": "Waktu proses terlalu singkat, perlu disesuaikan dengan standar pelayanan", "status": "resolved" }
   ],
   "versionList": [

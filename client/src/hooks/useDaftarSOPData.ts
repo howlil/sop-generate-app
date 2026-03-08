@@ -6,7 +6,8 @@
 import { useState, useMemo } from 'react'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useEvaluasi } from '@/hooks/useEvaluasi'
-import { canAjukanEvaluasiSOP, type SOPDaftarItem } from '@/lib/types/sop'
+import { canAjukanEvaluasiSOP } from '@/lib/domain/sop-evaluasi'
+import type { SOPDaftarItem } from '@/lib/types/sop'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { DaftarSOPFiltersState } from '@/hooks/useDaftarSOPFilters'
 

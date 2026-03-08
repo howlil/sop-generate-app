@@ -49,17 +49,17 @@ export function DetailEvaluasiOPDSubmitDialog({
         </DialogHeader>
         <div className="space-y-3">
           <p className="text-xs text-gray-600">
-            Hanya SOP dengan status <strong>Sedang Dievaluasi</strong> (sudah diisi form) yang ditampilkan. Centang yang akan dikirim, lalu status berubah menjadi <strong>Selesai Evaluasi</strong>.
+            SOP yang sudah diisi <strong>status hasil</strong> (Sesuai/Revisi Biro) di form kanan akan muncul di bawah. Centang yang akan dikirim. Jika hasil <strong>Revisi Biro</strong>, wajib isi komentar sebelum kirim.
           </p>
           {sedangDievaluasiList.length === 0 ? (
             <InfoCard variant="warning">
               <p className="text-sm text-amber-800">
-                Belum ada SOP Sedang Dievaluasi. Pilih SOP dengan status <strong>Diajukan Evaluasi</strong> di daftar kiri, isi form evaluasi (status hasil + komentar jika Revisi Biro), lalu buka popup ini lagi.
+                Belum ada SOP yang sudah diisi form. Pilih SOP dengan status <strong>Diajukan Evaluasi</strong> di daftar kiri, isi <strong>status hasil</strong> (Sesuai atau Revisi Biro) di panel kanan, lalu buka popup ini lagi.
               </p>
             </InfoCard>
           ) : (
             <>
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto">
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto scrollbar-hide">
                 <div className="flex items-center gap-2 mb-1.5">
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
                     <input

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useState, useMemo } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import {
   Filter,
   Eye,
@@ -27,10 +27,14 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
+import { SearchInput } from '@/components/ui/search-input'
 import { formatDateIdLong } from '@/utils/format-date'
 import type { EvaluationCaseSourceType } from '@/lib/types/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
+import type { StatusSOP } from '@/lib/types/sop'
+import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
+import { BuatSOPDialog } from '@/components/sop/BuatSOPDialog'
+import { generateId } from '@/utils/generate-id'
 import { canEditSop } from '@/lib/domain/sop-status'
 import { getPeraturanDaftarOptions } from '@/lib/data/sop-daftar'
 import { useToast } from '@/hooks/useUI'
@@ -41,6 +45,7 @@ import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 import { usePagination } from '@/hooks/usePagination'
 
 export function ManajemenSOP() {
+  const navigate = useNavigate()
   const { showToast } = useToast()
   const { addEvaluationCase, getRiwayatEvaluasiForSop } = useEvaluasi()
   const { setSopStatusOverride } = useSopStatus()
@@ -55,7 +60,20 @@ export function ManajemenSOP() {
   })
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
+  const [requestEvaluasiSearchQuery, setRequestEvaluasiSearchQuery] = useState('')
+  const [isBuatSOPDialogOpen, setIsBuatSOPDialogOpen] = useState(false)
   const [selectedSopIdsForAjukan, setSelectedSopIdsForAjukan] = useState<Set<string>>(new Set())
+
+  const eligibleSopsFilteredBySearch = useMemo(() => {
+    const q = requestEvaluasiSearchQuery.trim().toLowerCase()
+    if (!q) return eligibleSopsForEvaluasi
+    return eligibleSopsForEvaluasi.filter(
+      (sop) =>
+        sop.judul.toLowerCase().includes(q) ||
+        sop.nomorSOP.toLowerCase().includes(q) ||
+        (sop.author && sop.author.toLowerCase().includes(q))
+    )
+  }, [eligibleSopsForEvaluasi, requestEvaluasiSearchQuery])
 
   const pagination = usePagination(filteredList.length)
   const rowsToShow = pagination.showPagination
@@ -105,7 +123,7 @@ export function ManajemenSOP() {
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen SOP' }]}
       title="Manajemen SOP"
-      description="Daftar SOP yang Anda kelola. Tim Penyusun menyusun SOP sendiri dan dapat mengajukan evaluasi ke Biro Organisasi (tanpa intervensi Kepala OPD). Klik baris untuk melihat atau mengedit detail SOP."
+      description="Daftar SOP yang Anda kelola. Tim Penyusun menyusun SOP sendiri dan dapat mengajukan evaluasi ke Biro Organisasi (tanpa intervensi OPD). Klik baris untuk melihat atau mengedit detail SOP."
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari judul atau nomor SOP..."
@@ -141,13 +159,9 @@ export function ManajemenSOP() {
                   )}
                 </div>
                 <FormField label="Status">
-                  <Select
+                  <SOPStatusFilterSelect
                     value={filters.filterStatus}
                     onValueChange={filters.setFilterStatus}
-                    options={[
-                      { value: 'all', label: 'Semua Status' },
-                      ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
-                    ]}
                   />
                 </FormField>
                 <FormField label="Peraturan Dasar">
@@ -195,12 +209,10 @@ export function ManajemenSOP() {
             <Send className="w-3.5 h-3.5" />
             Request Evaluasi
           </Button>
-          <Link to={ROUTES.TIM_PENYUSUN.INITIATE_PROYEK}>
-            <Button size="sm" className="h-8 text-xs gap-1.5">
-              <Plus className="w-3.5 h-3.5" />
-              Buat SOP Baru
-            </Button>
-          </Link>
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsBuatSOPDialogOpen(true)}>
+            <Plus className="w-3.5 h-3.5" />
+            Buat SOP Baru
+          </Button>
         </SearchToolbar>
       }
     >
@@ -297,7 +309,10 @@ export function ManajemenSOP() {
 
       <FormDialog
         open={isRequestEvaluasiDialogOpen}
-        onOpenChange={setIsRequestEvaluasiDialogOpen}
+        onOpenChange={(open) => {
+          setIsRequestEvaluasiDialogOpen(open)
+          if (!open) setRequestEvaluasiSearchQuery('')
+        }}
         title="Request Evaluasi SOP"
         description="Pilih SOP yang eligible untuk dievaluasi. Bisa memilih beberapa sekaligus. Setelah diajukan, SOP tidak dapat diubah hingga evaluasi selesai."
         confirmLabel={`Ajukan Evaluasi (${selectedSopIdsForAjukan.size} SOP)`}
@@ -305,16 +320,28 @@ export function ManajemenSOP() {
         confirmDisabled={selectedSopIdsForAjukan.size === 0}
         size="lg"
       >
-        <div className="overflow-y-auto min-h-0 border border-gray-200 rounded-lg">
-          {eligibleSopsForEvaluasi.length === 0 ? (
-            <EmptyState
-              icon={<FileText className="w-10 h-10" />}
-              title="Tidak ada SOP yang eligible untuk dievaluasi"
-              description="SOP harus berstatus Siap Dievaluasi atau Berlaku dan tidak sedang dalam evaluasi aktif."
-            />
-          ) : (
-            <ul className="divide-y divide-gray-100">
-              {eligibleSopsForEvaluasi.map((sop) => {
+        <div className="flex flex-col gap-2">
+          <SearchInput
+            placeholder="Cari judul, nomor SOP, atau pembuat..."
+            value={requestEvaluasiSearchQuery}
+            onChange={(e) => setRequestEvaluasiSearchQuery(e.target.value)}
+            className="w-full max-w-none"
+            inputClassName="border border-gray-200 rounded-md bg-gray-50/50 text-xs h-8"
+          />
+          <div className="overflow-y-auto scrollbar-hide min-h-0 border border-gray-200 rounded-lg max-h-[50vh]">
+            {eligibleSopsForEvaluasi.length === 0 ? (
+              <EmptyState
+                icon={<FileText className="w-10 h-10" />}
+                title="Tidak ada SOP yang eligible untuk dievaluasi"
+                description="SOP harus berstatus Siap Dievaluasi atau Berlaku dan tidak sedang dalam evaluasi aktif."
+              />
+            ) : eligibleSopsFilteredBySearch.length === 0 ? (
+              <div className="py-8 text-center text-xs text-gray-500">
+                Tidak ada SOP yang cocok dengan pencarian.
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {eligibleSopsFilteredBySearch.map((sop) => {
                 const riwayat = getRiwayatEvaluasiForSop(sop.id)
                 const isSelected = selectedSopIdsForAjukan.has(sop.id)
                 return (
@@ -329,13 +356,11 @@ export function ManajemenSOP() {
                         />
                       </label>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-mono text-gray-600">{sop.nomorSOP}</p>
-                        <p className="text-sm font-medium text-gray-900 mt-0.5">{sop.judul}</p>
+                        <p className="text-sm font-medium text-gray-900">{sop.judul}</p>
                         {sop.author && (
                           <p className="text-xs text-gray-500 mt-0.5">Pembuat: {sop.author}</p>
                         )}
-                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                          <span className="text-xs text-gray-500">v{sop.versi}</span>
+                        <div className="mt-1.5">
                           <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} />
                         </div>
                         {riwayat.length > 0 && (
@@ -355,10 +380,38 @@ export function ManajemenSOP() {
                   </li>
                 )
               })}
-            </ul>
-          )}
+              </ul>
+            )}
+          </div>
         </div>
       </FormDialog>
+
+      <BuatSOPDialog
+        open={isBuatSOPDialogOpen}
+        onOpenChange={setIsBuatSOPDialogOpen}
+        onSuccess={(data) => {
+          const newId = generateId()
+          const today = new Date().toISOString().split('T')[0]
+          const newItem: SOPDaftarItem = {
+            id: newId,
+            nomorSOP: data.nomorSOP,
+            judul: data.judul,
+            deskripsi: data.deskripsi,
+            status: 'Draft',
+            waktuPenugasan: today,
+            terakhirDiperbarui: today,
+            timPenyusun: '-',
+            unitTerkait: '-',
+            peraturan: '-',
+            peraturanId: '',
+            versi: '1.0',
+            kategori: 'Pelayanan',
+          }
+          setSopList((prev) => [...prev, newItem])
+          setIsBuatSOPDialogOpen(false)
+          navigate({ to: ROUTES.TIM_PENYUSUN.DETAIL_SOP, params: { id: newId } })
+        }}
+      />
     </ListPageLayout>
   )
 }

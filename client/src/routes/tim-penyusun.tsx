@@ -1,14 +1,18 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { BookOpen, FileText, UserCog } from 'lucide-react'
-import { isTimPenyusun } from '@/lib/stores/app-store'
+import { isTimPenyusun, setRole } from '@/lib/stores/app-store'
+import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 
 export const Route = createFileRoute('/tim-penyusun')({
   beforeLoad: () => {
-    if (typeof window !== 'undefined' && !isTimPenyusun()) {
-      throw redirect({ to: ROUTES.HOME, search: { denied: 'tim-penyusun' } })
+    if (typeof window !== 'undefined') {
+      setRole(ROLES.TIM_PENYUSUN)
+      if (!isTimPenyusun()) {
+        throw redirect({ to: ROUTES.HOME, search: { denied: 'tim-penyusun' } })
+      }
     }
   },
   component: TimPenyusunLayout,

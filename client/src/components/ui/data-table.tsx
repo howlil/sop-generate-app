@@ -37,14 +37,14 @@ const DataTableTable = React.forwardRef<
 ))
 DataTableTable.displayName = 'DataTableTable'
 
-/** Baris header: border-b border-gray-200 bg-gray-50. */
+/** Baris header: border-b border-gray-200 bg-blue-50. */
 const DataTableHeaderRow = React.forwardRef<
   HTMLTableRowElement,
   React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, ...props }, ref) => (
   <tr
     ref={ref}
-    className={cn('border-b border-gray-200 bg-gray-50', className)}
+    className={cn('border-b border-gray-200 bg-blue-50', className)}
     {...props}
   />
 ))

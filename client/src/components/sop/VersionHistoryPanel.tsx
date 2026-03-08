@@ -173,7 +173,7 @@ export function VersionHistoryPanel({
               <p className="text-xs font-semibold text-gray-900 mb-3">
                 Perbedaan: versi saat ini vs v{viewingVersion.version}
               </p>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-hide">
                 {versionDiff.map((d, i) => (
                   <div
                     key={i}

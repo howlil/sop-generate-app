@@ -9,26 +9,32 @@ import { STATUS_SOP_ALL } from '@/lib/types/sop'
 
 const DEFAULT_CLASS = 'bg-gray-100 text-gray-700'
 
-/** Kelas warna per status SOP. Semua nilai StatusSOP harus punya entry (explicit atau fallback DEFAULT_CLASS). */
+/**
+ * Kelas warna per status SOP. Harus 1:1 dengan StatusSOP di lib/types/sop (STATUS_SOP_ALL).
+ * Single source of truth untuk nilai status: lib/types/sop.ts.
+ */
 const sopStatusStyleOverrides: Partial<Record<StatusSOP, string>> = {
   Draft: 'bg-gray-100 text-gray-700',
   'Sedang Disusun': 'bg-slate-100 text-slate-700',
   'Siap Dievaluasi': 'bg-sky-100 text-sky-700',
   'Diajukan Evaluasi': 'bg-amber-100 text-amber-700',
-  'Dievaluasi Tim Evaluasi': 'bg-violet-100 text-violet-700',
+  'Sedang Dievaluasi': 'bg-violet-100 text-violet-700',
   'Revisi dari Tim Evaluasi': 'bg-orange-100 text-orange-700',
-  'Terverifikasi dari Biro Organisasi': 'bg-teal-100 text-teal-700',
+  'Siap Diverifikasi': 'bg-teal-100 text-teal-700',
+  'Diverifikasi Biro Organisasi': 'bg-teal-100 text-teal-700',
+  Berlaku: 'bg-emerald-100 text-emerald-700',
   Dicabut: 'bg-red-100 text-red-700',
 }
 
-/** Style untuk status non-SOP yang kadang dipakai di domain sop (e.g. hasil evaluasi). */
+/** Style untuk nilai di luar StatusSOP yang kadang tampil di konteks SOP (hasil evaluasi / data lama). */
 const sopStatusExtraClasses: Record<string, string> = {
-  'Disahkan Kepala OPD': 'bg-emerald-100 text-emerald-700',
-  'Sedang Dievaluasi': 'bg-blue-100 text-blue-700',
-  'Selesai Evaluasi': 'bg-emerald-100 text-emerald-700',
   Sesuai: 'bg-green-100 text-green-700',
   'Perlu Perbaikan': 'bg-amber-100 text-amber-700',
   'Revisi Biro': 'bg-amber-100 text-amber-700',
+  // Fallback untuk data/seed yang masih pakai nama lama (align ke Diverifikasi Biro Organisasi / revisi)
+  'Terverifikasi dari Biro Organisasi': 'bg-teal-100 text-teal-700',
+  'Revisi dari OPD': 'bg-amber-100 text-amber-700',
+  'Dievaluasi Tim Evaluasi': 'bg-violet-100 text-violet-700',
 }
 
 /** Map final: STATUS_SOP_ALL + overrides. Semua StatusSOP terjamin punya kelas. */

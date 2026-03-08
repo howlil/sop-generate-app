@@ -1,5 +1,6 @@
 /**
  * Store evaluasi (evaluation case) — Zustand.
+ * Validasi dan generate ID ada di lib/domain/evaluasi-case; store hanya state.
  */
 import { create } from 'zustand'
 import type { EvaluationCase, EvaluationCaseStatus } from '@/lib/types/evaluasi'
@@ -10,7 +11,8 @@ const ACTIVE_STATUSES: EvaluationCaseStatus[] = ['Draft', 'Assigned', 'In Progre
 interface EvaluationCaseState {
   cases: EvaluationCase[]
   setCases: (next: EvaluationCase[]) => void
-  addCase: (payload: Omit<EvaluationCase, 'id' | 'createdAt'>) => EvaluationCase
+  /** Menambah case (id & createdAt sudah diisi pemanggil). */
+  addCase: (case_: EvaluationCase) => EvaluationCase
   updateCaseStatus: (id: string, status: EvaluationCaseStatus) => EvaluationCase | undefined
   getActiveCaseForSop: (sopId: string) => EvaluationCase | undefined
   getRiwayatEvaluasiForSop: (sopId: string) => EvaluationCase[]
@@ -27,23 +29,8 @@ export const useEvaluationCaseStore = create<EvaluationCaseState>()((set, get) =
     get().cases.filter(
       (c) => c.sopIds.includes(sopId) && (c.status === 'Completed' || c.status === 'Verified')
     ),
-  addCase: (payload) => {
-    const { cases, getActiveCaseForSop } = get()
-    const conflict = payload.sopIds.find((sopId) => getActiveCaseForSop(sopId))
-    if (conflict) throw new Error('SOP sudah dalam evaluasi aktif. Satu SOP hanya satu case.')
-    const nextNum =
-      cases.length > 0
-        ? Math.max(
-            ...cases.map((c) => {
-              const m = c.id.match(/EV-\d+-(\d+)/)
-              return m ? parseInt(m[1], 10) : 0
-            })
-          ) + 1
-        : 1
-    const year = new Date().getFullYear()
-    const id = `EV-${year}-${String(nextNum).padStart(3, '0')}`
-    const createdAt = new Date().toISOString().slice(0, 10)
-    const newCase: EvaluationCase = { ...payload, id, createdAt }
+  addCase: (newCase) => {
+    const { cases } = get()
     set({ cases: [...cases, newCase] })
     return newCase
   },

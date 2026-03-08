@@ -69,7 +69,7 @@ export function RiwayatJabatanDialog({
             {person ? `${person.name} — ${person.email}` : ''}
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-auto flex-1 min-h-0 border border-gray-200 rounded-lg">
+        <div className="overflow-auto scrollbar-hide flex-1 min-h-0 border border-gray-200 rounded-lg">
           {person && (
             <>
               <Table.Table>

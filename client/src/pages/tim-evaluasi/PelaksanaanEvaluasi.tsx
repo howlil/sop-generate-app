@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import {
   Save,
@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
 import type { StatusSOP } from '@/lib/types/sop'
+import { getStatusSopAfterEvaluasi } from '@/lib/domain/evaluasi'
 import { usePenugasanDetail } from '@/hooks/usePenugasan'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { getPenugasanDetailById } from '@/lib/data/penugasan-detail'
@@ -39,7 +40,7 @@ export function PelaksanaanEvaluasi() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { penugasan: penugasanFromStore, updatePenugasan } = usePenugasanDetail(id)
-  const { setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverride, getSopStatusOverride } = useSopStatus()
 
   const seedDetail = getPenugasanDetailById(id ?? '1')
   const penugasanInfo = {
@@ -50,6 +51,16 @@ export function PelaksanaanEvaluasi() {
     kodeSOP: seedDetail?.kodeSOP ?? '-',
     jenis: seedDetail?.jenis ?? 'Evaluasi Rutin',
   }
+
+  // Workflow: saat Tim Evaluasi membuka halaman pelaksanaan evaluasi, SOP yang dievaluasi → Sedang Dievaluasi (jika saat ini Diajukan Evaluasi)
+  const currentSopId = penugasanFromStore?.sopList?.find(
+    (s) => s.nama === penugasanInfo.sop || s.nomor === penugasanInfo.kodeSOP
+  )?.id
+  useEffect(() => {
+    if (currentSopId && getSopStatusOverride(currentSopId) === 'Diajukan Evaluasi') {
+      setSopStatusOverride(currentSopId, 'Sedang Dievaluasi')
+    }
+  }, [currentSopId, getSopStatusOverride, setSopStatusOverride])
 
   const {
     komentarEvaluasi, setKomentarEvaluasi,
@@ -70,15 +81,14 @@ export function PelaksanaanEvaluasi() {
     }
     const penugasan = penugasanFromStore
     if (penugasan?.sopList?.length) {
-      const sopStatusBaru: StatusSOP =
-        statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'
+      const sopStatusBaru = getStatusSopAfterEvaluasi(statusEvaluasi)
       const updatedSopList = penugasan.sopList.map((sop) => {
         const isCurrentSop = sop.nama === penugasanInfo.sop || sop.nomor === penugasanInfo.kodeSOP
         if (!isCurrentSop) return sop
         if (sop.id) setSopStatusOverride(sop.id, sopStatusBaru)
         return {
           ...sop,
-          status: statusEvaluasi,
+          status: sopStatusBaru,
           catatan: komentarEvaluasi.trim() || undefined,
         }
       })
@@ -229,7 +239,7 @@ export function PelaksanaanEvaluasi() {
               </p>
             </InfoCard>
             <p className="text-xs text-gray-700">
-              Status SOP akan diperbarui menjadi <strong>{statusEvaluasi === 'Sesuai' ? 'Dievaluasi Tim Evaluasi' : 'Revisi dari Tim Evaluasi'}</strong>. Hasil tercatat untuk verifikasi Biro (Berita Acara).
+              Status SOP akan diperbarui menjadi <strong>{statusEvaluasi === 'Sesuai' ? 'Siap Diverifikasi' : 'Revisi dari Tim Evaluasi'}</strong>. Hasil tercatat untuk verifikasi Biro (Berita Acara).
             </p>
           </div>
           <DialogFooter className="gap-2">

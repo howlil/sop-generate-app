@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import {
   Filter,
   Eye,
@@ -29,7 +29,10 @@ import { Select } from '@/components/ui/select'
 import { formatDateIdLong } from '@/utils/format-date'
 import type { EvaluationCaseSourceType } from '@/lib/types/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_SOP_ALL, type StatusSOP } from '@/lib/types/sop'
+import type { StatusSOP } from '@/lib/types/sop'
+import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
+import { BuatSOPDialog } from '@/components/sop/BuatSOPDialog'
+import { generateId } from '@/utils/generate-id'
 import { getPeraturanDaftarOptions } from '@/lib/data/sop-daftar'
 import { useToast } from '@/hooks/useUI'
 import { useEvaluasi } from '@/hooks/useEvaluasi'
@@ -39,6 +42,7 @@ import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 import { usePagination } from '@/hooks/usePagination'
 
 export function DaftarSOP() {
+  const navigate = useNavigate()
   const { showToast } = useToast()
   const { addEvaluationCase, getRiwayatEvaluasiForSop } = useEvaluasi()
   const { setSopStatusOverride } = useSopStatus()
@@ -53,6 +57,7 @@ export function DaftarSOP() {
   })
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
+  const [isBuatSOPDialogOpen, setIsBuatSOPDialogOpen] = useState(false)
   const [selectedSopIdsForAjukan, setSelectedSopIdsForAjukan] = useState<Set<string>>(new Set())
 
   const pagination = usePagination(filteredList.length)
@@ -138,16 +143,12 @@ export function DaftarSOP() {
                   </Button>
                 )}
               </div>
-              <FormField label="Status">
-                <Select
-                  value={filters.filterStatus}
-                  onValueChange={filters.setFilterStatus}
-                  options={[
-                    { value: 'all', label: 'Semua Status' },
-                    ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
-                  ]}
-                />
-              </FormField>
+                <FormField label="Status">
+                  <SOPStatusFilterSelect
+                    value={filters.filterStatus}
+                    onValueChange={filters.setFilterStatus}
+                  />
+                </FormField>
               <FormField label="Peraturan Dasar">
                 <Select
                   value={filters.filterPeraturan}
@@ -193,12 +194,10 @@ export function DaftarSOP() {
           <Send className="w-3.5 h-3.5" />
           Request Evaluasi
         </Button>
-        <Link to={ROUTES.TIM_PENYUSUN.INITIATE_PROYEK}>
-          <Button size="sm" className="h-8 text-xs gap-1.5">
-            <Plus className="w-3.5 h-3.5" />
-            Buat SOP Baru
-          </Button>
-        </Link>
+        <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsBuatSOPDialogOpen(true)}>
+          <Plus className="w-3.5 h-3.5" />
+          Buat SOP Baru
+        </Button>
       </SearchToolbar>
       }
     >
@@ -280,7 +279,7 @@ export function DaftarSOP() {
         confirmDisabled={selectedSopIdsForAjukan.size === 0}
         size="lg"
       >
-        <div className="overflow-y-auto min-h-0 border border-gray-200 rounded-lg">
+        <div className="overflow-y-auto scrollbar-hide min-h-0 border border-gray-200 rounded-lg">
           {eligibleSopsForEvaluasi.length === 0 ? (
             <EmptyState
               icon={<FileText className="w-10 h-10" />}
@@ -331,6 +330,33 @@ export function DaftarSOP() {
           )}
         </div>
       </FormDialog>
+
+      <BuatSOPDialog
+        open={isBuatSOPDialogOpen}
+        onOpenChange={setIsBuatSOPDialogOpen}
+        onSuccess={(data) => {
+          const newId = generateId()
+          const today = new Date().toISOString().split('T')[0]
+          const newItem: SOPDaftarItem = {
+            id: newId,
+            nomorSOP: data.nomorSOP,
+            judul: data.judul,
+            deskripsi: data.deskripsi,
+            status: 'Draft',
+            waktuPenugasan: today,
+            terakhirDiperbarui: today,
+            timPenyusun: '-',
+            unitTerkait: '-',
+            peraturan: '-',
+            peraturanId: '',
+            versi: '1.0',
+            kategori: 'Pelayanan',
+          }
+          setSopList((prev) => [...prev, newItem])
+          setIsBuatSOPDialogOpen(false)
+          navigate({ to: ROUTES.KEPALA_OPD.DETAIL_SOP, params: { id: newId } })
+        }}
+      />
     </ListPageLayout>
   )
 }

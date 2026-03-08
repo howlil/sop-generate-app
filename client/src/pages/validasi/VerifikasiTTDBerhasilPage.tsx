@@ -6,7 +6,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { verifyTTEEmail } from '@/lib/tte'
 
 const ROLE_LABEL: Record<string, string> = {
-  'kepala-opd': 'Kepala OPD',
+  'kepala-opd': 'OPD',
   'biro-organisasi': 'Biro Organisasi',
 }
 
@@ -43,7 +43,7 @@ export function VerifikasiTTDBerhasilPage({ token }: VerifikasiTTDBerhasilPagePr
           <div className="mt-4 flex justify-center gap-2">
             <Link to={ROUTES.KEPALA_OPD.TTD}>
               <Button variant="outline" size="sm">
-                Ke TTD Elektronik (Kepala OPD)
+                Ke TTD Elektronik (OPD)
               </Button>
             </Link>
             <Link to={ROUTES.BIRO_ORGANISASI.TTD}>

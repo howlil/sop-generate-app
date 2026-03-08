@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { useParams, useLocation } from '@tanstack/react-router'
+import { useParams, useLocation, Link } from '@tanstack/react-router'
 import {
   History,
   Calendar,
@@ -7,6 +7,7 @@ import {
   Users,
   RefreshCw,
   Printer,
+  Ban,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,6 +19,7 @@ import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField } from '@/components/ui/info-field'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/useUI'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import type { StatusSOP } from '@/lib/types/sop'
@@ -32,7 +34,10 @@ import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { isSopEligibleForSigning } from '@/lib/domain/sop-status'
+import { usePenugasanList } from '@/hooks/usePenugasan'
+import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/lib/domain/sop-status'
+import { getKepalaOPDOpdId } from '@/lib/data/role-display'
+import { useOpdList } from '@/lib/data/opd'
 import { ROUTES } from '@/lib/constants/routes'
 
 type Version = DetailSOPVersionSeed
@@ -54,6 +59,10 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   } = props
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
+  const { list: penugasanList } = usePenugasanList()
+  const opdId = getKepalaOPDOpdId()
+  const opds = useOpdList()
+  const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
   const params = useParams({ strict: false })
   const id = 'id' in params ? params.id : undefined
   const location = useLocation()
@@ -73,6 +82,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
   const [viewingVersion, setViewingVersion] = useState<Version | null>(null)
+  const [cabutConfirmOpen, setCabutConfirmOpen] = useState(false)
 
   const implementers = getInitialSopDetailImplementers()
   const metadata = getSopViewMetadata()
@@ -93,6 +103,13 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     }
   )
 
+  const handleCabutSop = () => {
+    if (id) {
+      setSopStatusOverride(id, 'Dicabut')
+      showToast('SOP berhasil dicabut.')
+    }
+  }
+
   /** Kepala OPD hanya menandatangani SOP (TTE). Tanpa tugas Setuju/Tolak atau pemeriksaan. */
   const versions: Version[] = getSopViewVersions() as Version[]
 
@@ -101,7 +118,13 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     { label: 'Detail SOP' },
   ]
   const effectiveBackTo = backTo ?? ROUTES.KEPALA_OPD.PANTAU_SOP
-  const canShowSignButton = showSignButton && isSopEligibleForSigning(sopStatus)
+  const canShowSignButton =
+    showSignButton &&
+    canKepalaOpdSignSop(sopStatus, penugasanList, opdName, id ?? '', metadata.number)
+  const needBaSignFirst =
+    showSignButton &&
+    isSopEligibleForSigning(sopStatus) &&
+    !canShowSignButton
 
   const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
   const lastEvaluatedByRecord = id ? getLastEvaluatedByInitial()[id] : undefined
@@ -113,13 +136,13 @@ export function DetailSOP(props: DetailSOPProps = {}) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
         {createdBy && (
           <span>
-            <span className="font-medium text-gray-500">Dibuat oleh:</span>{' '}
+            <span className="font-medium text-gray-500">Penyusun:</span>{' '}
             <span className="text-gray-800">{createdBy}</span>
           </span>
         )}
         {evaluatedBy && (
           <span>
-            <span className="font-medium text-gray-500">Dievaluasi oleh:</span>{' '}
+            <span className="font-medium text-gray-500">Evaluator:</span>{' '}
             <span className="text-gray-800">{evaluatedBy}</span>
           </span>
         )}
@@ -149,6 +172,22 @@ export function DetailSOP(props: DetailSOPProps = {}) {
             Tanda tangan
           </Button>
         )}
+        {needBaSignFirst && (
+          <span className="text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-md">
+            Tandatangani <Link to={ROUTES.KEPALA_OPD.BERITA_ACARA} search={{ id: '' }} className="underline font-medium">Berita Acara</Link> terlebih dahulu untuk mengesahkan SOP.
+          </span>
+        )}
+        {showSignButton && sopStatus === 'Berlaku' && id && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 rounded-md border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+            onClick={() => setCabutConfirmOpen(true)}
+            title="Cabut SOP — status menjadi Dicabut"
+          >
+            <Ban className="w-3.5 h-3.5" /> Cabut SOP
+          </Button>
+        )}
       </div>
     </div>
   )
@@ -172,11 +211,11 @@ export function DetailSOP(props: DetailSOPProps = {}) {
           {hasProyekInfo && (
             <>
               <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-gray-200">
-                <h2 className="text-sm font-semibold text-gray-900">Informasi proyek</h2>
+                <h2 className="text-sm font-semibold text-gray-900">Informasi SOP</h2>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-1.5 pt-2">
                 {penugasanState?.waktuPenugasan && (
-                  <InfoField label="Waktu" icon={<Calendar />}>
+                  <InfoField label="Waktu pembuatan" icon={<Calendar />}>
                     {penugasanState.waktuPenugasan.includes('-')
                       ? formatDateIdLong(penugasanState.waktuPenugasan + 'T00:00:00')
                       : penugasanState.waktuPenugasan}
@@ -258,6 +297,16 @@ export function DetailSOP(props: DetailSOPProps = {}) {
       description="Masukkan PIN TTE BSRE untuk mengesahkan SOP ini."
       onConfirm={handlePinConfirm}
       confirmLabel="Mengesahkan"
+    />
+    <ConfirmDialog
+      open={cabutConfirmOpen}
+      onOpenChange={setCabutConfirmOpen}
+      title="Cabut SOP?"
+      description="SOP ini akan berstatus Dicabut dan tidak lagi berlaku. Anda dapat mengajukan evaluasi ulang jika nanti akan diaktifkan kembali."
+      confirmLabel="Cabut SOP"
+      cancelLabel="Batal"
+      destructive
+      onConfirm={handleCabutSop}
     />
   </>
   )

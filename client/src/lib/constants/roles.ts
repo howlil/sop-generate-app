@@ -15,7 +15,7 @@ export const ROLES = {
 export type RoleKey = (typeof ROLES)[keyof typeof ROLES]
 
 export const ROLE_LABELS: Record<RoleKey, string> = {
-  [ROLES.KEPALA_OPD]: 'Kepala OPD',
+  [ROLES.KEPALA_OPD]: 'OPD',
   [ROLES.BIRO_ORGANISASI]: 'Biro Organisasi',
   [ROLES.TIM_EVALUASI]: 'Tim Evaluasi',
   [ROLES.TIM_PENYUSUN]: 'Tim Penyusun',

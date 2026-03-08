@@ -182,14 +182,14 @@ export function KepalaOPDTab({
       </Table.Card>
       {filteredPersons.length === 0 && (
         <div className="p-6 text-center text-gray-500 text-xs">
-          Belum ada data Kepala OPD. Gunakan &quot;Tambah Kepala OPD&quot; atau dari tab Manajemen OPD pilih OPD → Riwayat Kepala OPD.
+          Belum ada data OPD. Gunakan &quot;Tambah OPD&quot; atau dari tab Manajemen OPD pilih OPD → Riwayat OPD.
         </div>
       )}
 
       <KepalaOPDFormDialog
         open={kepalaFormOpen}
         onOpenChange={setKepalaFormOpen}
-        title={editingKepala ? 'Edit Kepala OPD' : 'Tambah Kepala OPD'}
+        title={editingKepala ? 'Edit OPD' : 'Tambah OPD'}
         description={selectedOPD && !editingKepala ? `OPD: ${selectedOPD.name}` : undefined}
         form={kepalaForm}
         setForm={setKepalaForm}

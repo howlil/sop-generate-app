@@ -12,9 +12,9 @@ export const EVALUASI_DISPLAY_STATUS_OPTIONS = [
   { value: 'Selesai Evaluasi', label: 'Selesai Evaluasi' },
 ] as const
 
-/** Status hasil evaluasi (form): value → label status SOP setelah dikirim. */
+/** Status hasil evaluasi (form): pilihan → status SOP setelah kirim hasil. Sesuai → Siap Diverifikasi; Revisi Biro → Revisi dari Tim Evaluasi. */
 export const STATUS_HASIL_EVALUASI = {
-  Sesuai: 'Dievaluasi Tim Evaluasi',
+  Sesuai: 'Siap Diverifikasi',
   'Revisi Biro': 'Revisi dari Tim Evaluasi',
 } as const
 

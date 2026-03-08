@@ -27,6 +27,8 @@ import {
   getRiwayatEvaluasiOpd,
   getRiwayatEvaluasiSop,
   getLastEvaluatedByInitial,
+  loadEvaluasiRecordMap,
+  type EvaluasiRecordMap,
 } from '@/lib/data/penugasan-evaluasi'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { SOPDaftarItem } from '@/lib/types/sop'
@@ -34,30 +36,6 @@ import type { StatusSOP } from '@/lib/types/sop'
 import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
-
-type EvaluasiRecordMap = Record<string, { date: string; evaluatorName: string }>
-
-function loadEvaluasiRecordMap(): EvaluasiRecordMap {
-  const fromSeed = getLastEvaluatedByInitial()
-  if (typeof window === 'undefined') return fromSeed
-  try {
-    const raw = localStorage.getItem(EVALUASI_STORAGE_KEY)
-    if (!raw) return fromSeed
-    const parsed = JSON.parse(raw) as Record<string, { date?: string; evaluatorName?: string }>
-    const fromStorage = Object.fromEntries(
-      Object.entries(parsed).filter(
-        ([, v]) => v && typeof v.date === 'string' && typeof v.evaluatorName === 'string'
-      )
-    ) as EvaluasiRecordMap
-    const merged: EvaluasiRecordMap = { ...fromSeed }
-    for (const [id, v] of Object.entries(fromStorage)) {
-      if (!(id in fromSeed)) merged[id] = v
-    }
-    return merged
-  } catch {
-    return fromSeed
-  }
-}
 
 export function DetailEvaluasiOPD() {
   const { opdId } = useParams({ from: '/tim-evaluasi/penugasan/opd/$opdId' })
@@ -159,6 +137,15 @@ export function DetailEvaluasiOPD() {
     }
   }, [sopsFilteredByStatusAndEvaluator, effectiveSopId])
 
+  /** Begitu user memilih SOP "Diajukan Evaluasi" di daftar kiri, set status jadi Sedang Dievaluasi agar konsisten dan popup Kirim bisa baca. */
+  useEffect(() => {
+    if (!effectiveSopId) return
+    const sop = sopsForOpd.find((s) => s.id === effectiveSopId)
+    if (sop?.status === 'Diajukan Evaluasi') {
+      setSopStatusOverride(effectiveSopId, 'Sedang Dievaluasi')
+    }
+  }, [effectiveSopId, sopsForOpd, setSopStatusOverride])
+
   const {
     komentarEvaluasi,
     setKomentarEvaluasi,
@@ -169,7 +156,6 @@ export function DetailEvaluasiOPD() {
   /** Id SOP yang dicentang di popup Kirim (hanya list Sedang Dievaluasi). */
   const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
 
-  const isFormComplete = isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi ?? '')
   const namaEvaluator = role ? getRoleUserName(role) : 'Evaluator'
   const lastEvaluatedEntry = effectiveSopId ? lastEvaluatedBy[effectiveSopId] : undefined
   const tanggalTerakhirEvaluasi = lastEvaluatedEntry ? lastEvaluatedEntry.date : null
@@ -183,13 +169,13 @@ export function DetailEvaluasiOPD() {
     setRightCollapsed: setRightPanelCollapsed,
   } = useCollapsiblePanels()
 
-  /** Daftar SOP dengan status Sedang Dievaluasi (punya draft lengkap), untuk tampil di popup & kirim sekaligus. */
+  /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil, atau SOP lain yang punya draft. Supaya SOP Diajukan Evaluasi yang sudah diisi form langsung terbaca di popup Kirim. */
   const sedangDievaluasiList = useMemo(() => {
     const out: Array<{ id: string; judul: string; nomorSOP: string; statusEvaluasi: 'Sesuai' | 'Revisi Biro'; komentarEvaluasi: string }> = []
     for (const s of sopsFilteredByStatusAndEvaluator) {
       if (s.displayStatus === 'Selesai Evaluasi') continue
       if (s.id === effectiveSopId) {
-        if (isFormComplete && statusEvaluasi) {
+        if (statusEvaluasi != null) {
           out.push({
             id: s.id,
             judul: s.judul,
@@ -212,7 +198,7 @@ export function DetailEvaluasiOPD() {
       }
     }
     return out
-  }, [sopsFilteredByStatusAndEvaluator, effectiveSopId, isFormComplete, statusEvaluasi, komentarEvaluasi])
+  }, [sopsFilteredByStatusAndEvaluator, effectiveSopId, statusEvaluasi, komentarEvaluasi])
 
   useEffect(() => {
     if (isSubmitOpen && sedangDievaluasiList.length > 0) {
@@ -237,9 +223,22 @@ export function DetailEvaluasiOPD() {
   }
 
   const handleSubmitAll = () => {
-    const toSubmit = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
-    if (toSubmit.length === 0) {
+    const selected = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
+    if (selected.length === 0) {
       showToast('Pilih minimal satu SOP untuk dikirim.', 'error')
+      return
+    }
+    const toSubmit = selected.filter((item) =>
+      isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
+    )
+    const incomplete = selected.filter(
+      (item) => !isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
+    )
+    if (incomplete.length > 0) {
+      showToast(
+        `Lengkapi komentar untuk SOP dengan hasil Revisi Biro: ${incomplete.map((i) => i.judul).join(', ')}`,
+        'error'
+      )
       return
     }
     const today = new Date().toISOString().slice(0, 10)
@@ -363,7 +362,7 @@ export function DetailEvaluasiOPD() {
                   title="Filter by evaluator"
                 />
               </div>
-              <div className="flex-1 min-h-0 overflow-auto">
+              <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
                 <SOPListCard
                   items={listItems}
                   selectedId={effectiveSopId}

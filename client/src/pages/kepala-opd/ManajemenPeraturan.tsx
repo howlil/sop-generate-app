@@ -87,8 +87,9 @@ export function ManajemenPeraturan() {
     return [{ version: p.version, tanggal: p.tanggalTerbit, diubahOleh: OPD_NAMES[p.createdBy] ?? p.createdBy, sopYangMengait: [] }]
   }
 
-  const canEditJenis = (jenis: JenisPeraturan) => jenis.createdBy === CURRENT_OPD_ID
-  const canEditPeraturan = (p: Peraturan) => p.createdBy === CURRENT_OPD_ID
+  /** Semua jenis dan peraturan boleh diedit/dihapus dari halaman database peraturan. */
+  const canEditJenis = (_jenis: JenisPeraturan) => true
+  const canEditPeraturan = (_p: Peraturan) => true
 
   const openJenisDialog = (jenis?: JenisPeraturan) => {
     if (jenis) {

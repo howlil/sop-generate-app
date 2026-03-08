@@ -54,7 +54,7 @@ export function FormDialog({
 }: FormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn(SIZE_MAP[size], 'max-h-[90vh] overflow-y-auto', className)}>
+      <DialogContent className={cn(SIZE_MAP[size], 'max-h-[90vh] overflow-y-auto scrollbar-hide', className)}>
         <DialogHeader>
           <DialogTitle className="text-sm">{title}</DialogTitle>
           {description != null && (

@@ -15,7 +15,9 @@
       "isVerified": true,
       "nomorBA": "BA/BIRO/001/II/2026",
       "tanggalVerifikasi": "2026-02-06",
-      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si"
+      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKepalaOPD": false,
+      "tanggalTTDBaByOpd": null
     },
     {
       "id": "2",
@@ -74,7 +76,9 @@
       "isVerified": true,
       "nomorBA": "BA/BIRO/003/III/2026",
       "tanggalVerifikasi": "2026-03-06",
-      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si"
+      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKepalaOPD": false,
+      "tanggalTTDBaByOpd": null
     },
     {
       "id": "6",
@@ -105,7 +109,9 @@
       "isVerified": true,
       "nomorBA": "BA/BIRO/002/II/2026",
       "tanggalVerifikasi": "2026-02-16",
-      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si"
+      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKepalaOPD": false,
+      "tanggalTTDBaByOpd": null
     }
   ],
   "opdListEvaluasi": [
@@ -117,16 +123,16 @@
   "baseSopByOpd": {
     "Dinas Pendidikan": [
       { "id": "sop1", "nama": "SOP Penerimaan Siswa Baru", "nomor": "SOP-DISDIK-001/2026", "status": "Berlaku" },
-      { "id": "sop2", "nama": "SOP Ujian Sekolah", "nomor": "SOP-DISDIK-005/2026", "status": "Terverifikasi dari Biro Organisasi" },
+      { "id": "sop2", "nama": "SOP Ujian Sekolah", "nomor": "SOP-DISDIK-005/2026", "status": "Diverifikasi Biro Organisasi" },
       { "id": "sop3", "nama": "SOP Kelulusan", "nomor": "SOP-DISDIK-010/2026", "status": "Berlaku" },
       { "id": "1", "nama": "SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027", "nomor": "SOP/DISDIK/PLY/2026/001", "status": "Berlaku" },
       { "id": "2", "nama": "SOP Pelaksanaan Ujian Akhir Sekolah", "nomor": "SOP/DISDIK/PLY/2026/005", "status": "Siap Dievaluasi" },
-      { "id": "3", "nama": "SOP Pengelolaan Data Kepegawaian Guru", "nomor": "SOP/DISDIK/ADM/2026/003", "status": "Dievaluasi Tim Evaluasi" },
+      { "id": "3", "nama": "SOP Pengelolaan Data Kepegawaian Guru", "nomor": "SOP/DISDIK/ADM/2026/003", "status": "Sedang Dievaluasi" },
       { "id": "4", "nama": "SOP Revisi Dokumen Kurikulum", "nomor": "SOP/DISDIK/ADM/2026/004", "status": "Revisi dari Tim Evaluasi" }
     ],
     "Dinas Kesehatan": [
       { "id": "sop4", "nama": "SOP Pelayanan Kesehatan Dasar", "nomor": "SOP-DINKES-012/2026", "status": "Berlaku" },
-      { "id": "sop5", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026", "status": "Terverifikasi dari Biro Organisasi" }
+      { "id": "sop5", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026", "status": "Diverifikasi Biro Organisasi" }
     ],
     "Dinas Perizinan Terpadu": [
       { "id": "sop6", "nama": "SOP Perizinan Usaha", "nomor": "SOP-DPMPTSP-005/2026", "status": "Diajukan Evaluasi" }
@@ -136,7 +142,7 @@
     ]
   },
   "minSopPerOpd": 5,
-  "statusPool": ["Berlaku", "Siap Dievaluasi", "Diajukan Evaluasi", "Dievaluasi Tim Evaluasi", "Revisi dari Tim Evaluasi", "Terverifikasi dari Biro Organisasi"],
+  "statusPool": ["Berlaku", "Siap Dievaluasi", "Diajukan Evaluasi", "Sedang Dievaluasi", "Revisi dari Tim Evaluasi", "Diverifikasi Biro Organisasi", "Siap Diverifikasi", "Dicabut"],
   "timMonevOptions": [
     { "id": "tm1", "nama": "Dra. Siti Aminah, M.Si" },
     { "id": "tm2", "nama": "Dr. Bambang Suryanto" },

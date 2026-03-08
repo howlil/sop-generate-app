@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist, PersistStorage } from 'zustand/middleware'
-import { ROLE_NIPS as SEED_ROLE_NIPS, ROLE_DISPLAY_NAMES, ROLE_USER_NAMES, KEPALA_OPD_OPD_ID } from '@/lib/seed/user-seed'
 import { ROLES, ROLE_LABELS, type RoleKey } from '@/lib/constants/roles'
 
 export { ROLES } from '@/lib/constants/roles'
@@ -88,30 +87,12 @@ export function getRoleLabel(role: RoleKey): string {
   return ROLE_LABELS[role] ?? role
 }
 
-export function getRoleNip(role: RoleKey): string {
-  return SEED_ROLE_NIPS[role] ?? '-'
-}
-
-export function getRoleDisplayName(role: RoleKey): string {
-  return ROLE_DISPLAY_NAMES[role] ?? getRoleLabel(role)
-}
-
-/** Nama orang (user) untuk role, dipakai di evaluator/penandatangan. */
-export function getRoleUserName(role: RoleKey): string {
-  return ROLE_USER_NAMES[role] ?? getRoleDisplayName(role)
-}
-
 export function isBiroOrganisasi(): boolean {
   return getRole() === ROLES.BIRO_ORGANISASI
 }
 
 export function isKepalaOPD(): boolean {
   return getRole() === ROLES.KEPALA_OPD
-}
-
-/** OPD id yang dipantau oleh Kepala OPD saat ini. Dipakai untuk halaman Pantau SOP. */
-export function getKepalaOPDOpdId(): string {
-  return KEPALA_OPD_OPD_ID
 }
 
 export function isTimEvaluasi(): boolean {

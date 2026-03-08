@@ -5,11 +5,12 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getInitialOpdList, getInitialKepalaList } from '@/lib/data/opd'
+import { hasRelasiData, canDeleteKepala } from '@/lib/domain/manajemen-opd'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useToast } from '@/hooks/useUI'
-import { useFilteredList } from '@/hooks/useFilteredList'
 import { useManajemenOPDState } from '@/hooks/useManajemenOPDState'
+import { useManajemenOPDData } from '@/hooks/useManajemenOPDData'
 import { generateId } from '@/utils/generate-id'
 import { OPDTab } from './manajemen-opd/OPDTab'
 import { KepalaOPDTab } from './manajemen-opd/KepalaOPDTab'
@@ -53,50 +54,20 @@ export function ManajemenOPD() {
     setPindahDialogPerson,
   } = kepalaState
 
-  const getKepalaAktif = (opdId: string) => kepalaList.find((k) => k.opdId === opdId && k.isActive)
-  const getKepalaByOPD = (opdId: string) => kepalaList.filter((k) => k.opdId === opdId)
-  const hasRelasiData = (opd: OPD) => opd.totalSOP > 0
-  const canDeleteKepala = (k: KepalaOPD) => k.totalSOP === 0
-
-  const { filteredList: filteredOPD } = useFilteredList(opdList, {
-    searchKeys: [(opd) => `${opd.name} ${getKepalaAktif(opd.id)?.name ?? ''}`],
-    controlledSearch: [searchQuery, setSearchQuery],
+  const {
+    getKepalaAktif,
+    getKepalaByOPD,
+    filteredOPD,
+    filteredPersons,
+    getRiwayatForUser,
+  } = useManajemenOPDData({
+    opdList,
+    kepalaList,
+    searchQuery,
+    setSearchQuery,
+    searchUserQuery,
+    setSearchUserQuery,
   })
-
-  const uniqueUsers = Array.from(
-    new Map(
-      kepalaList.map((k) => [k.name.trim() + '|' + (k.email ?? ''), { name: k.name, email: k.email ?? '' }])
-    ).values()
-  )
-  const personsWithActive = uniqueUsers.map((u) => {
-    const first = kepalaList.find((k) => k.name === u.name && (k.email ?? '') === u.email)
-    const active = kepalaList.find((k) => k.name === u.name && (k.email ?? '') === u.email && k.isActive)
-    return {
-      name: u.name,
-      email: u.email,
-      phone: first?.phone ?? '',
-      nip: first?.nip ?? '',
-      activeAssignment: active
-        ? { ...active, opdName: opdList.find((o) => o.id === active.opdId)?.name ?? active.opdId }
-        : undefined,
-    }
-  })
-
-  const { filteredList: filteredPersons } = useFilteredList(personsWithActive, {
-    searchKeys: [
-      'name',
-      'email',
-      (p) => p.nip ?? '',
-      (p) => p.activeAssignment?.opdName ?? '',
-    ],
-    controlledSearch: [searchUserQuery, setSearchUserQuery],
-  })
-
-  const getRiwayatForUser = (name: string, email: string) =>
-    kepalaList
-      .filter((k) => k.name === name && (k.email ?? '') === email)
-      .map((k) => ({ ...k, opdName: opdList.find((o) => o.id === k.opdId)?.name ?? k.opdId }))
-      .sort((a, b) => ((b.endedAt ?? '') < (a.endedAt ?? '') ? 1 : -1))
 
   const handleDelete = (id: string) => {
     const opd = opdList.find((o) => o.id === id)
@@ -320,7 +291,7 @@ export function ManajemenOPD() {
               }}
             >
               <UserCheck className="w-3.5 h-3.5" />
-              Tambah Kepala OPD
+              Tambah OPD
             </Button>
           )}
         </SearchToolbar>
@@ -334,7 +305,7 @@ export function ManajemenOPD() {
           </TabsTrigger>
           <TabsTrigger value="penugasan" className="text-xs gap-1.5">
             <Users className="w-3.5 h-3.5" />
-            Kepala OPD
+            OPD
           </TabsTrigger>
         </TabsList>
 
