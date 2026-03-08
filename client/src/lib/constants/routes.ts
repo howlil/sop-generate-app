@@ -13,6 +13,9 @@ export const ROUTES = {
   KEPALA_OPD: {
     ROOT: '/kepala-opd',
     TTD: '/kepala-opd/ttd-elektronik',
+    PANTAU_SOP: '/kepala-opd/pantau-sop',
+    /** Detail SOP (dengan tombol Mengesahkan/TTE bila status Terverifikasi Biro). */
+    DETAIL_SOP: '/kepala-opd/detail-sop/$id',
   },
 
   BIRO_ORGANISASI: {
@@ -22,15 +25,20 @@ export const ROUTES = {
     TIM_EVALUASI: '/biro-organisasi/manajemen-tim-evaluasi',
     EVALUASI_SOP: '/biro-organisasi/manajemen-evaluasi-sop',
     DETAIL_EVALUASI: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id',
+    /** Detail dokumen SOP (view only). Jika status Terverifikasi Biro, Kepala OPD dapat tanda tangan di halaman ini. */
+    DETAIL_SOP: '/biro-organisasi/detail-sop/$id',
     TTD: '/biro-organisasi/ttd-elektronik',
   },
 
   TIM_PENYUSUN: {
     ROOT: '/tim-penyusun',
-    SOP_SAYA: '/tim-penyusun/sop-saya',
+    /** Manajemen SOP: daftar (tabel) + detail (edit/lihat). Tim Penyusun buat SOP sendiri & request ke Biro. */
+    MANAJEMEN_SOP: '/tim-penyusun/manajemen-sop',
+    /** Kelola Pelaksana SOP (master data untuk kolom pelaksana di edit SOP). */
     PELAKSANA_SOP: '/tim-penyusun/pelaksana-sop',
-    PERATURAN: '/tim-penyusun/manajemen-peraturan',
+    SOP_SAYA: '/tim-penyusun/sop-saya',
     DAFTAR_SOP: '/tim-penyusun/daftar-sop',
+    PERATURAN: '/tim-penyusun/manajemen-peraturan',
     DETAIL_SOP: '/tim-penyusun/detail-sop/$id',
     INITIATE_PROYEK: '/tim-penyusun/initiate-proyek',
     TTD: '/tim-penyusun/ttd-elektronik',

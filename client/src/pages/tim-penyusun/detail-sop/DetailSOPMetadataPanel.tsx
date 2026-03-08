@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { SOPHeaderSection } from './SOPHeaderSection'
-import { LawBasisDialog, RelatedPosDialog } from './MetadataDialogs'
+import { LawBasisDialog, RelatedPosDialog, PelaksanaDialog } from './MetadataDialogs'
 import type { Peraturan } from '@/lib/types/peraturan'
 import type { SOPDetailMetadata } from '@/lib/types/sop'
 import { getRelatedPosOptions } from '@/lib/data/sop-detail'
@@ -10,6 +10,10 @@ export interface DetailSOPMetadataPanelProps {
   onMetadataChange: <K extends keyof SOPDetailMetadata>(field: K, value: SOPDetailMetadata[K]) => void
   implementers: { id: string; name: string }[]
   onImplementersChange: React.Dispatch<React.SetStateAction<{ id: string; name: string }[]>>
+  /** Jika true, daftar pelaksana dari master (Kelola Pelaksana SOP) — editable: tambah dari dropdown, hapus */
+  implementersFromMaster?: boolean
+  /** Opsi pelaksana dari master (untuk dropdown Tambah) */
+  masterPelaksanaOptions?: { id: string; name: string }[]
   peraturanList: Peraturan[]
 }
 
@@ -18,10 +22,13 @@ export function DetailSOPMetadataPanel({
   onMetadataChange,
   implementers,
   onImplementersChange,
+  implementersFromMaster,
+  masterPelaksanaOptions,
   peraturanList,
 }: DetailSOPMetadataPanelProps) {
   const [isLawBasisOpen, setIsLawBasisOpen] = useState(false)
   const [isRelatedPosOpen, setIsRelatedPosOpen] = useState(false)
+  const [isPelaksanaDialogOpen, setIsPelaksanaDialogOpen] = useState(false)
   const relatedPosOptions = getRelatedPosOptions()
 
   return (
@@ -32,8 +39,10 @@ export function DetailSOPMetadataPanel({
           onMetadataChange={onMetadataChange}
           implementers={implementers}
           onImplementersChange={onImplementersChange}
+          implementersFromMaster={implementersFromMaster}
           onOpenLawBasisDialog={() => setIsLawBasisOpen(true)}
           onOpenRelatedPosDialog={() => setIsRelatedPosOpen(true)}
+          onOpenPelaksanaDialog={() => setIsPelaksanaDialogOpen(true)}
         />
       </div>
 
@@ -52,6 +61,16 @@ export function DetailSOPMetadataPanel({
         existingRelatedSop={metadata.relatedSop ?? []}
         onAdd={(newItems) => onMetadataChange('relatedSop', newItems)}
       />
+
+      {implementersFromMaster && masterPelaksanaOptions && (
+        <PelaksanaDialog
+          open={isPelaksanaDialogOpen}
+          onOpenChange={setIsPelaksanaDialogOpen}
+          options={masterPelaksanaOptions}
+          existingImplementers={implementers}
+          onAdd={(fullList) => onImplementersChange(fullList)}
+        />
+      )}
     </>
   )
 }

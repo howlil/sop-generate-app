@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { formatDateIdLong } from '@/utils/format-date'
 
 export interface VersionHistoryItem {
@@ -47,34 +48,54 @@ export function VersionHistoryPanel({
   const formatDate = (date: string) => formatDateIdLong(date)
   const isViewing = viewingVersion != null && setViewingVersion != null
 
-  const cardContent = (version: VersionHistoryItem, index: number) => (
+  const cardContent = (version: VersionHistoryItem) => (
     <>
-      <div className="flex items-start justify-between mb-2">
-        <p className="text-xs font-semibold text-gray-900">Versi {version.version}</p>
-        <p className="text-xs text-gray-500">{formatDate(version.date)}</p>
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-wrap min-w-0">
+          <Badge variant="secondary" className="text-xs font-medium shrink-0 bg-blue-100 text-blue-700 border-0">
+            v{version.version}
+          </Badge>
+          {version.revisionType && (
+            <span className="text-[11px] text-gray-500 capitalize">{version.revisionType}</span>
+          )}
+        </div>
+        <time className="text-xs text-gray-500 shrink-0" dateTime={version.date}>
+          {formatDate(version.date)}
+        </time>
       </div>
-      <p className="text-xs text-gray-700 mb-2">{version.changes}</p>
-      <p className="text-xs text-gray-600">Author: {version.author}</p>
-      {setViewingVersion && version.snapshot != null && (
-        <p className="text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-100">
-          Klik untuk bandingkan dengan versi saat ini
+      <p className="text-xs text-gray-700 leading-relaxed mb-2 line-clamp-2">{version.changes}</p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-gray-600 truncate" title={version.author}>
+          <span className="text-gray-500 font-medium">Oleh:</span> {version.author}
         </p>
-      )}
+        {setViewingVersion && version.snapshot != null && (
+          <span className="text-[11px] text-blue-600 font-medium shrink-0">
+            Bandingkan
+          </span>
+        )}
+      </div>
     </>
   )
 
+  const cardBaseClass = 'rounded-lg border p-4 transition-colors'
+  const cardSelectedClass = 'bg-blue-50 border-blue-300 ring-1 ring-blue-200'
+  const cardDefaultClass = 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50/50'
+  const cardClickableClass = setViewingVersion ? 'cursor-pointer' : ''
+
   return (
-    <div className={`p-3 space-y-3 ${className ?? ''}`}>
-      {summary != null && <p className="text-xs text-gray-600 mb-3">{summary}</p>}
+    <div className={`p-4 space-y-3 ${className ?? ''}`}>
+      {summary != null && (
+        <p className="text-xs font-medium text-gray-600 mb-2">{summary}</p>
+      )}
       {variant === 'timeline' ? (
-        <>
+        <div className="space-y-0">
           {versions.map((version, index) => (
             <div key={version.id} className="relative pl-6">
               {index < versions.length - 1 && (
-                <div className="absolute left-2 top-6 bottom-0 w-px bg-gray-200" />
+                <div className="absolute left-2 top-8 bottom-0 w-px bg-gray-200" />
               )}
               <div
-                className={`absolute left-0 top-1 w-4 h-4 rounded-full border ${
+                className={`absolute left-0 top-2 w-3 h-3 rounded-full border-2 ${
                   index === 0 ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
                 }`}
               />
@@ -92,20 +113,18 @@ export function VersionHistoryPanel({
                   e.key === 'Enter' &&
                   setViewingVersion(viewingVersion?.id === version.id ? null : version)
                 }
-                className={`rounded-md border p-3 ${
-                  viewingVersion?.id === version.id
-                    ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-200'
-                    : 'bg-gray-50 border-gray-200'
-                } ${setViewingVersion && version.snapshot != null ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+                className={`${cardBaseClass} ${
+                  viewingVersion?.id === version.id ? cardSelectedClass : cardDefaultClass
+                } ${cardClickableClass} mb-3`}
               >
-                {cardContent(version, index)}
+                {cardContent(version)}
               </div>
             </div>
           ))}
-        </>
+        </div>
       ) : (
-        <>
-          {versions.map((version, index) => (
+        <div className="space-y-3">
+          {versions.map((version) => (
             <div
               key={version.id}
               role={setViewingVersion && version.snapshot != null ? 'button' : undefined}
@@ -121,53 +140,51 @@ export function VersionHistoryPanel({
                 e.key === 'Enter' &&
                 setViewingVersion(viewingVersion?.id === version.id ? null : version)
               }
-              className={`rounded-md border p-3 mb-3 ${
-                viewingVersion?.id === version.id
-                  ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-200'
-                  : 'bg-gray-50 border-gray-200'
-              } ${setViewingVersion && version.snapshot != null ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+              className={`${cardBaseClass} ${
+                viewingVersion?.id === version.id ? cardSelectedClass : cardDefaultClass
+              } ${cardClickableClass}`}
             >
-              {cardContent(version, index)}
+              {cardContent(version)}
             </div>
           ))}
-        </>
+        </div>
       )}
 
       {isViewing && viewingVersion && (
-        <>
-          <div className="rounded-md border border-blue-200 bg-blue-50 p-3 mt-3">
+        <div className="space-y-3 mt-4 pt-3 border-t border-gray-200">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="flex items-center justify-between gap-2 mb-2">
               <p className="text-xs font-semibold text-gray-900">
-                Anda melihat: Versi {viewingVersion.version} (hanya lihat, tidak bisa diubah)
+                Melihat: Versi {viewingVersion.version} <span className="text-gray-500 font-normal">(read-only)</span>
               </p>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-xs shrink-0"
+                className="h-7 text-xs shrink-0 text-gray-600 hover:text-gray-900"
                 onClick={() => setViewingVersion(null)}
               >
                 Tutup
               </Button>
             </div>
-            <p className="text-xs text-gray-600">{viewingVersion.changes}</p>
+            <p className="text-xs text-gray-600 leading-relaxed">{viewingVersion.changes}</p>
           </div>
           {versionDiff.length > 0 ? (
-            <div className="rounded-md border border-gray-200 bg-white p-3 mt-2">
-              <p className="text-xs font-semibold text-gray-900 mb-2">
-                Perbedaan: versi saat ini vs Versi {viewingVersion.version}
+            <div className="rounded-lg border border-gray-200 bg-white p-4">
+              <p className="text-xs font-semibold text-gray-900 mb-3">
+                Perbedaan: versi saat ini vs v{viewingVersion.version}
               </p>
-              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {versionDiff.map((d, i) => (
                   <div
                     key={i}
-                    className="text-[11px] border-b border-gray-100 pb-1.5 last:border-0"
+                    className="text-[11px] border-b border-gray-100 pb-2 last:border-0 last:pb-0"
                   >
-                    <p className="font-medium text-gray-700">{d.label}</p>
-                    <p className="text-gray-600">
-                      <span className="text-green-700">Saat ini:</span> {d.current || '(kosong)'}
+                    <p className="font-medium text-gray-700 mb-0.5">{d.label}</p>
+                    <p className="text-gray-600 pl-0.5">
+                      <span className="text-green-700 font-medium">Saat ini:</span> {d.current || '(kosong)'}
                     </p>
-                    <p className="text-gray-600">
-                      <span className="text-amber-700">v{viewingVersion.version}:</span>{' '}
+                    <p className="text-gray-600 pl-0.5">
+                      <span className="text-amber-700 font-medium">v{viewingVersion.version}:</span>{' '}
                       {d.viewed || '(kosong)'}
                     </p>
                   </div>
@@ -175,11 +192,11 @@ export function VersionHistoryPanel({
               </div>
             </div>
           ) : (
-            <p className="text-[11px] text-gray-500 mt-2 px-1">
+            <p className="text-xs text-gray-500 mt-1">
               Tidak ada perbedaan dengan versi saat ini.
             </p>
           )}
-        </>
+        </div>
       )}
     </div>
   )

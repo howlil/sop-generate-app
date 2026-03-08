@@ -7,6 +7,7 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/hooks/useFilteredList'
+import { usePagination } from '@/hooks/usePagination'
 import { useToast } from '@/hooks/useUI'
 import { useManajemenTimPenyusunState } from '@/hooks/useManajemenTimPenyusunState'
 import { generateId } from '@/utils/generate-id'
@@ -93,6 +94,12 @@ export function ManajemenTimPenyusun() {
     return acc
   }, {})
 
+  const opdEntries = Object.entries(groupedByOpd)
+  const pagination = usePagination(opdEntries.length)
+  const entriesToShow = pagination.showPagination
+    ? opdEntries.slice(pagination.startIndex, pagination.endIndex)
+    : opdEntries
+
   return (
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen Tim Penyusun', to: ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN }]}
@@ -131,7 +138,7 @@ export function ManajemenTimPenyusun() {
             </Table.HeadRow>
           </thead>
           <tbody>
-            {Object.entries(groupedByOpd).map(([opdId, tims]) => {
+            {entriesToShow.map(([opdId, tims]) => {
               const opd = opdList.find((o) => o.id === opdId)
               if (!opd) return null
               const isExpanded = expandedOpdIds[opdId] ?? false
@@ -210,6 +217,12 @@ export function ManajemenTimPenyusun() {
             })}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={opdEntries.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="OPD"
+        />
       </Table.Card>
 
       {filteredList.length === 0 && (

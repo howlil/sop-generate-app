@@ -16,6 +16,7 @@ import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { getPenugasanTimEvaluasiList } from '@/lib/data/penugasan-evaluasi'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/hooks/useFilteredList'
+import { usePagination } from '@/hooks/usePagination'
 
 export function PenugasanEvaluasi() {
   const penugasanList = getPenugasanTimEvaluasiList()
@@ -29,6 +30,10 @@ export function PenugasanEvaluasi() {
     searchKeys: ['sop', 'opd'],
     filterKey: 'status',
   })
+  const pagination = usePagination(filteredPenugasan.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredPenugasan.slice(pagination.startIndex, pagination.endIndex)
+    : filteredPenugasan
 
   return (
     <ListPageLayout
@@ -67,7 +72,7 @@ export function PenugasanEvaluasi() {
             </Table.HeadRow>
           </thead>
           <tbody>
-            {filteredPenugasan.map((penugasan) => (
+            {rowsToShow.map((penugasan) => (
               <Table.BodyRow key={penugasan.id}>
                 <Table.Td className="text-gray-700">
                   {formatDateIdLong(penugasan.tanggalPenugasan)}
@@ -102,6 +107,12 @@ export function PenugasanEvaluasi() {
             ))}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={filteredPenugasan.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="penugasan"
+        />
       </Table.Card>
     </ListPageLayout>
   )

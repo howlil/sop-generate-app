@@ -20,7 +20,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('p-3', className)} {...props} />
+  <div ref={ref} className={cn('p-4', className)} {...props} />
 ))
 CardContent.displayName = 'CardContent'
 
@@ -28,7 +28,7 @@ const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('p-3 pb-0', className)} {...props} />
+  <div ref={ref} className={cn('p-4 pb-0', className)} {...props} />
 ))
 CardHeader.displayName = 'CardHeader'
 
@@ -36,7 +36,7 @@ const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('p-3 pt-0', className)} {...props} />
+  <div ref={ref} className={cn('p-4 pt-0', className)} {...props} />
 ))
 CardFooter.displayName = 'CardFooter'
 

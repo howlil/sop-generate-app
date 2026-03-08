@@ -15,6 +15,7 @@ import { getInitialTimEvaluasiList } from '@/lib/data/tim-evaluasi'
 import type { TimMonev } from '@/lib/types/tim'
 import { generateId } from '@/utils/generate-id'
 import { useFilteredList } from '@/hooks/useFilteredList'
+import { usePagination } from '@/hooks/usePagination'
 
 export function ManajemenTimEvaluasi() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -85,6 +86,11 @@ export function ManajemenTimEvaluasi() {
     setIsEditDialogOpen(false)
   }
 
+  const pagination = usePagination(filteredTim.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredTim.slice(pagination.startIndex, pagination.endIndex)
+    : filteredTim
+
   return (
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen Tim Evaluasi' }]}
@@ -132,7 +138,7 @@ export function ManajemenTimEvaluasi() {
                 description="Coba ubah kata kunci atau tambah anggota baru"
               />
             ) : (
-              filteredTim.map((tim) => (
+              rowsToShow.map((tim) => (
               <Table.BodyRow key={tim.id}>
                 <Table.Td>
                   <div className="flex items-center gap-2">
@@ -168,6 +174,12 @@ export function ManajemenTimEvaluasi() {
             )}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={filteredTim.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="anggota"
+        />
       </Table.Card>
 
       <FormDialog

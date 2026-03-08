@@ -1,5 +1,5 @@
 /**
- * Types SOP: status, daftar, prosedur, metadata, template, pelaksana.
+ * Types SOP: status, daftar, prosedur, metadata, template.
  * Alur status: Draft → Sedang Disusun → Selesai → Siap Dievaluasi → (Request) Diajukan Evaluasi
  * → Tim Evaluasi: Sesuai → Dievaluasi Tim Evaluasi | Revisi Biro → Revisi dari Tim Evaluasi
  * → Kepala OPD TTD → Berlaku.
@@ -35,10 +35,6 @@ export {
 
 export type StatusHasilEvaluasi = 'Sesuai' | 'Perlu Perbaikan' | 'Revisi Biro'
 
-export const STATUS_HASIL_EVALUASI_ALL: StatusHasilEvaluasi[] = [
-  'Sesuai', 'Perlu Perbaikan', 'Revisi Biro',
-]
-
 export interface SOPDaftarItem {
   id: string
   nomorSOP: string
@@ -54,6 +50,10 @@ export interface SOPDaftarItem {
   versi: string
   kategori: string
   evaluationCaseId?: string | null
+  /** Id OPD pemilik SOP (untuk filter Kepala OPD memantau SOP OPD-nya). */
+  opdId?: string
+  /** Nama pembuat/penyusun SOP (author). */
+  author?: string
 }
 
 export interface SOPSayaItem {
@@ -64,6 +64,8 @@ export interface SOPSayaItem {
   status: StatusSOP
   terakhirDiubah: string
   komentarCount: number
+  /** Nama pembuat/penyusun SOP (author). */
+  author?: string
 }
 
 export type ProsedurStepType = 'terminator' | 'task' | 'decision'
@@ -93,6 +95,10 @@ export interface SOPDetailMetadata {
   createdDate: string
   revisionDate: string
   effectiveDate: string
+  /** Nama/user yang membuat dokumen SOP */
+  dibuatOleh?: string
+  /** Nama/user yang terakhir mengedit dokumen SOP */
+  dieditOleh?: string
   picName: string
   picNumber: string
   picRole: string
@@ -117,6 +123,7 @@ export interface SOPTemplate {
   versi: string
 }
 
+/** Master data pelaksana SOP (Kelola Pelaksana SOP). Dipakai di edit SOP untuk kolom pelaksana prosedur. */
 export interface PelaksanaSOP {
   id: string
   nama: string

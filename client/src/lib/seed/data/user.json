@@ -1,0 +1,27 @@
+{
+  "roleNips": {
+    "kepala-opd": "197001011990031001",
+    "biro-organisasi": "196512311988021002",
+    "tim-evaluasi": "198003051999031003",
+    "tim-penyusun": "198512152010121004"
+  },
+  "roleDisplayNames": {
+    "kepala-opd": "Kepala OPD",
+    "biro-organisasi": "Biro Organisasi",
+    "tim-evaluasi": "Tim Evaluasi (Evaluator)",
+    "tim-penyusun": "Tim Penyusun"
+  },
+  "roleUserNames": {
+    "kepala-opd": "Dr. Ahmad Pratama",
+    "biro-organisasi": "Dr. H. Muhammad Ridwan, M.Si",
+    "tim-evaluasi": "Dra. Siti Aminah, M.Si",
+    "tim-penyusun": "Ahmad Pratama, S.Sos"
+  },
+  "dashboardDescriptions": {
+    "kepala-opd": "Menandatangani SOP (TTE)",
+    "biro-organisasi": "Manajemen OPD, tim evaluasi, dan evaluasi SOP",
+    "tim-evaluasi": "Evaluasi dan penilaian dokumen SOP",
+    "tim-penyusun": "Penyusunan dan pengajuan SOP"
+  },
+  "kepalaOpdOpdId": "1"
+}

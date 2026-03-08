@@ -11,6 +11,7 @@ import {
 import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
+import { usePagination } from '@/hooks/usePagination'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import type { RiwayatDialogPerson } from '@/hooks/useManajemenOPDState'
@@ -48,6 +49,11 @@ export function RiwayatJabatanDialog({
   setSelectedOPD,
   onClose,
 }: RiwayatJabatanDialogProps) {
+  const pagination = usePagination(riwayatRows.length)
+  const rowsToShow = pagination.showPagination
+    ? riwayatRows.slice(pagination.startIndex, pagination.endIndex)
+    : riwayatRows
+
   return (
     <Dialog
       open={open}
@@ -63,9 +69,10 @@ export function RiwayatJabatanDialog({
             {person ? `${person.name} — ${person.email}` : ''}
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-auto flex-1 min-h-0 border border-gray-200 rounded-md">
+        <div className="overflow-auto flex-1 min-h-0 border border-gray-200 rounded-lg">
           {person && (
-            <Table.Table>
+            <>
+              <Table.Table>
               <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
                 <Table.HeadRow>
                   <Table.Th>OPD</Table.Th>
@@ -75,7 +82,7 @@ export function RiwayatJabatanDialog({
                 </Table.HeadRow>
               </thead>
               <tbody>
-                {riwayatRows.map((r) => (
+                {rowsToShow.map((r) => (
                   <Table.BodyRow key={r.id}>
                     <Table.Td>{r.opdName}</Table.Td>
                     <Table.Td className="text-center">{r.endedAt ? formatDateId(r.endedAt) : '—'}</Table.Td>
@@ -137,6 +144,13 @@ export function RiwayatJabatanDialog({
                 ))}
               </tbody>
             </Table.Table>
+            <Table.Pagination
+                totalItems={riwayatRows.length}
+                currentPage={pagination.page}
+                onPageChange={pagination.setPage}
+                label="jabatan"
+              />
+            </>
           )}
         </div>
         <DialogFooter>

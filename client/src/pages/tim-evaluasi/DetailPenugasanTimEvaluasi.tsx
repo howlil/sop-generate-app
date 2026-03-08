@@ -90,7 +90,7 @@ export function DetailPenugasanTimEvaluasi() {
             collapseButtonIcon={<MessageSquare className="w-5 h-5" />}
           >
             <div className="p-3 space-y-4">
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-xs">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
                 <p className="font-semibold text-blue-900 mb-1">Instruksi Evaluasi:</p>
                 <ul className="list-disc pl-4 space-y-0.5 text-blue-800">
                   <li>Lakukan review SOP secara menyeluruh dan objektif</li>

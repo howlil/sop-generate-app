@@ -12,15 +12,13 @@ import type { VersionSeed, DetailSOPVersionSeed } from '@/lib/types/version'
 import {
   SEED_SOP_DETAIL_METADATA,
   SEED_SOP_DETAIL_PROSEDUR_ROWS,
-  SEED_IMPLEMENTERS,
   SEED_KOMENTAR_LIST,
   getInitialVersions,
   SEED_DETAIL_SOP_VIEW_METADATA,
   SEED_DETAIL_SOP_VERSIONS,
   SEED_RELATED_POS_OPTIONS,
-  SEED_DETAIL_SOP_CURRENT_USER,
-  SEED_DETAIL_SOP_KOMENTAR_INITIAL,
 } from '@/lib/seed/sop-detail-seed'
+import { getPelaksanaList } from '@/lib/data/pelaksana'
 
 /** Metadata detail SOP (tim penyusun) – untuk editor. */
 export function getInitialSopDetailMetadata(): SOPDetailMetadata {
@@ -32,9 +30,9 @@ export function getInitialSopDetailProsedurRows(): ProsedurRow[] {
   return [...SEED_SOP_DETAIL_PROSEDUR_ROWS]
 }
 
-/** Daftar pelaksana (implementers) untuk diagram. */
+/** Daftar pelaksana (implementers) untuk diagram — dari master Pelaksana SOP (CRUD). */
 export function getInitialSopDetailImplementers(): { id: string; name: string }[] {
-  return [...SEED_IMPLEMENTERS]
+  return getPelaksanaList().map((p) => ({ id: p.id, name: p.nama }))
 }
 
 /** Komentar seed untuk editor detail SOP (tim penyusun). */
@@ -60,15 +58,5 @@ export function getSopViewVersions(): DetailSOPVersionSeed[] {
 /** Opsi POS terkait untuk metadata SOP. */
 export function getRelatedPosOptions(): string[] {
   return [...SEED_RELATED_POS_OPTIONS]
-}
-
-/** User saat ini untuk komentar di halaman Detail SOP (kepala OPD). */
-export function getDetailSopCurrentUser() {
-  return { ...SEED_DETAIL_SOP_CURRENT_USER }
-}
-
-/** Komentar awal untuk halaman Detail SOP (kepala OPD). */
-export function getDetailSopKomentarInitial(): KomentarItem[] {
-  return [...SEED_DETAIL_SOP_KOMENTAR_INITIAL]
 }
 

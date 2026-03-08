@@ -13,6 +13,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { getOpdListEvaluasi, getSopByOpd } from '@/lib/data/penugasan-evaluasi'
 import { canSelectSOPForEvaluasi } from '@/lib/types/sop'
 import { useFilteredList } from '@/hooks/useFilteredList'
+import { usePagination } from '@/hooks/usePagination'
 
 export interface OpdEvaluasiItem {
   id: string
@@ -50,6 +51,10 @@ export function DaftarSOPEvaluasi() {
   } = useFilteredList(opdList, {
     searchKeys: ['nama', 'kode'],
   })
+  const pagination = usePagination(filteredList.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredList.slice(pagination.startIndex, pagination.endIndex)
+    : filteredList
 
   return (
     <ListPageLayout
@@ -83,7 +88,7 @@ export function DaftarSOPEvaluasi() {
                 description="Coba ubah kata kunci pencarian."
               />
             ) : (
-              filteredList.map((opd) => (
+              rowsToShow.map((opd) => (
                 <Table.BodyRow key={opd.id}>
                   <Table.Td className="font-medium text-gray-900">{opd.nama}</Table.Td>
                   <Table.Td className="text-center">
@@ -114,6 +119,12 @@ export function DaftarSOPEvaluasi() {
             )}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={filteredList.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="OPD"
+        />
       </Table.Card>
     </ListPageLayout>
   )

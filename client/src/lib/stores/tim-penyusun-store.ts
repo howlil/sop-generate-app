@@ -29,10 +29,6 @@ export function getTimPenyusunList(): TimPenyusun[] {
   return useTimPenyusunStore.getState().list
 }
 
-export function getTimPenyusunByOpdId(opdId: string): TimPenyusun[] {
-  return useTimPenyusunStore.getState().getByOpdId(opdId)
-}
-
 export function setTimPenyusunList(next: TimPenyusun[]) {
   useTimPenyusunStore.getState().setList(next)
 }

@@ -16,7 +16,7 @@ export function SearchToolbar({
   className = '',
 }: SearchToolbarProps) {
   return (
-    <div className={`bg-white rounded-md border border-gray-200 p-3 ${className}`.trim()}>
+    <div className={`bg-white rounded-lg border border-gray-200 p-3 ${className}`.trim()}>
       <div className="flex items-center gap-2 flex-wrap">
         <SearchInput
           placeholder={searchPlaceholder}

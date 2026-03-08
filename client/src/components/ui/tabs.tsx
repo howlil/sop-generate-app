@@ -56,9 +56,10 @@ const TabsTrigger = React.forwardRef<
       type="button"
       role="tab"
       aria-selected={isSelected}
+      data-state={isSelected ? 'active' : 'inactive'}
       className={cn(
         'inline-flex h-7 items-center justify-center whitespace-nowrap rounded-md px-3 text-xs font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
-        isSelected ? 'bg-white text-gray-900 shadow' : 'hover:bg-white/50 hover:text-gray-900',
+        isSelected ? 'bg-blue-50 text-blue-600' : 'hover:bg-white/50 hover:text-gray-900',
         className
       )}
       onClick={() => onValueChange(value)}

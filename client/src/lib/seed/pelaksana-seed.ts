@@ -1,20 +1,8 @@
 /**
- * Seed data untuk halaman Kelola Pelaksana SOP (Tim Penyusun): daftar pelaksana.
+ * Seed data untuk Kelola Pelaksana SOP (Tim Penyusun).
+ * Data dari data/pelaksana.json. Id (impl-1, impl-2, impl-3) dipakai di prosedur SOP.
  */
-
 import type { PelaksanaSOP } from '@/lib/types/sop'
+import pelaksanaJson from './data/pelaksana.json'
 
-export const SEED_PELAKSANA_LIST: PelaksanaSOP[] = [
-  {
-    id: 'pel-1',
-    nama: 'Pelaksana Utama',
-    deskripsi: 'Menangani SOP layanan utama dan administrasi umum.',
-    jumlahPos: 3,
-  },
-  {
-    id: 'pel-2',
-    nama: 'Pelaksana Pendukung',
-    deskripsi: 'Membantu pelaksanaan POS pendukung lintas unit.',
-    jumlahPos: 0,
-  },
-]
+export const SEED_PELAKSANA_LIST: PelaksanaSOP[] = pelaksanaJson as PelaksanaSOP[]

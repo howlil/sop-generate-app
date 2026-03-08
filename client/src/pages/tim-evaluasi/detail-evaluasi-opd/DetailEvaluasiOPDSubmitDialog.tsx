@@ -59,7 +59,7 @@ export function DetailEvaluasiOPDSubmitDialog({
             </InfoCard>
           ) : (
             <>
-              <div className="rounded-md border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto">
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto">
                 <div className="flex items-center gap-2 mb-1.5">
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
                     <input

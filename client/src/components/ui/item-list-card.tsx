@@ -32,11 +32,11 @@ export interface ItemListCardProps<T> {
 }
 
 const DEFAULT_ITEM_CLASS =
-  'w-full justify-start text-left h-auto p-2 rounded-md border text-xs transition-colors flex flex-col items-stretch border-gray-100 hover:bg-gray-50 text-gray-700'
+  'w-full justify-start text-left h-auto p-2 rounded-lg border text-xs transition-colors flex flex-col items-stretch border-gray-100 hover:bg-gray-50 text-gray-700'
 const DEFAULT_SELECTED_CLASS =
   'border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100 hover:text-blue-900'
 const DEFAULT_SINGLE_CLASS =
-  'p-2 rounded-md border border-blue-200 bg-blue-50 text-xs'
+  'p-2 rounded-lg border border-blue-200 bg-blue-50 text-xs'
 
 /**
  * Daftar item dengan tampilan card/button, optional selection.
@@ -50,6 +50,7 @@ export function ItemListCard<T>({
   emptyMessage,
   selectedId = null,
   onSelect,
+  getItemTitle,
   className,
   emptyClassName,
   itemClassName = DEFAULT_ITEM_CLASS,

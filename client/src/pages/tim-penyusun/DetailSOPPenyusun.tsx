@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { Save, Check, History, PenLine, MessageSquare, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,14 +15,13 @@ import {
 } from '@/components/ui/dialog'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
-import type { Peraturan } from '@/lib/types/peraturan'
 import { useToast } from '@/hooks/useUI'
 import { usePeraturan } from '@/hooks/usePeraturan'
+import { usePelaksana } from '@/hooks/usePelaksana'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
-  getInitialSopDetailImplementers,
   getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
 } from '@/lib/data/sop-detail'
@@ -41,12 +40,30 @@ export function DetailSOPPenyusun() {
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
   const { list: peraturanList } = usePeraturan()
+  const { list: pelaksanaList } = usePelaksana()
   const { id } = useParams({ from: '/tim-penyusun/detail-sop/$id' })
   const navigate = useNavigate()
 
   const [metadata, setMetadata] = useState<SOPDetailMetadata>(() => getInitialSopDetailMetadata())
   const [prosedurRows, setProsedurRows] = useState<ProsedurRow[]>(() => getInitialSopDetailProsedurRows())
-  const [implementers, setImplementers] = useState(() => getInitialSopDetailImplementers())
+  const [implementers, setImplementers] = useState<{ id: string; name: string }[]>([])
+  const implementersSeededRef = useRef(false)
+  const masterPelaksanaOptions = useMemo(
+    () => pelaksanaList.map((p) => ({ id: p.id, name: p.nama })),
+    [pelaksanaList]
+  )
+  useEffect(() => {
+    if (implementersSeededRef.current || pelaksanaList.length === 0) return
+    const ids = new Set(prosedurRows.flatMap((r) => Object.keys(r.pelaksana)))
+    if (ids.size === 0) return
+    implementersSeededRef.current = true
+    setImplementers(
+      Array.from(ids).map((id) => {
+        const p = pelaksanaList.find((x) => x.id === id)
+        return { id, name: p?.nama ?? id }
+      })
+    )
+  }, [pelaksanaList, prosedurRows])
   const [diagramVersion, setDiagramVersion] = useState(0)
 
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
@@ -57,7 +74,7 @@ export function DetailSOPPenyusun() {
 
   const { displayList: komentarDisplay, handleResolveComment } = useKomentar({
     initialData: getInitialSopDetailKomentar(),
-    excludeRoles: ['Tim Penyusun'],
+    includeRoles: ['Tim Evaluasi'],
   })
 
   const [versions, _setVersions] = useState<VersionHistoryItem[]>(
@@ -82,12 +99,12 @@ export function DetailSOPPenyusun() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'SOP Saya', to: ROUTES.TIM_PENYUSUN.SOP_SAYA },
+          { label: 'Manajemen SOP', to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP },
           { label: 'Edit SOP' },
         ]}
         title="Edit Dokumen SOP"
         description={metadata.name}
-        backTo={ROUTES.TIM_PENYUSUN.SOP_SAYA}
+        backTo={ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP}
         backSize="icon"
         workspaceClassName="print:hidden"
         header={
@@ -123,8 +140,8 @@ export function DetailSOPPenyusun() {
                   onClick={() => {
                     if (id) {
                       setSopStatusOverride(id, 'Siap Dievaluasi')
-                      showToast('SOP selesai disusun. Status: Siap Dievaluasi. Anda dapat mengajukan evaluasi dari Daftar SOP.')
-                      navigate({ to: ROUTES.TIM_PENYUSUN.SOP_SAYA })
+                      showToast('SOP selesai disusun. Status: Siap Dievaluasi. Anda dapat mengajukan evaluasi dari Manajemen SOP.')
+                      navigate({ to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP })
                     }
                   }}
                 >
@@ -133,8 +150,14 @@ export function DetailSOPPenyusun() {
                 </Button>
               </div>
             </div>
-            <div className="pt-2">
-              <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">v{versions[0]?.version || '1.0'}</Badge>
+            <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+              <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">v{versions[0]?.version || metadata.version || '1.0'}</Badge>
+              {metadata.dibuatOleh && (
+                <span><span className="text-gray-500">Dibuat oleh:</span> {metadata.dibuatOleh}</span>
+              )}
+              {metadata.dieditOleh && (
+                <span><span className="text-gray-500">Diedit oleh:</span> {metadata.dieditOleh}</span>
+              )}
             </div>
           </>
         }
@@ -229,6 +252,8 @@ export function DetailSOPPenyusun() {
                 onMetadataChange={handleMetadataChange}
                 implementers={implementers}
                 onImplementersChange={setImplementers}
+                implementersFromMaster
+                masterPelaksanaOptions={masterPelaksanaOptions}
                 peraturanList={peraturanList}
               />
             )}
@@ -256,7 +281,7 @@ export function DetailSOPPenyusun() {
             {versions.map((version, _index) => (
               <div
                 key={version.id}
-                className="bg-gray-50 rounded-md border border-gray-200 p-3"
+                className="bg-gray-50 rounded-lg border border-gray-200 p-3"
               >
                 <div className="flex items-start justify-between mb-2">
                   <p className="text-xs font-semibold text-gray-900">Versi {version.version}</p>

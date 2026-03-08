@@ -157,7 +157,7 @@ export function EvaluasiSOPPage() {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    className={`p-3 rounded-md border transition-all ${
+                    className={`p-3 rounded-lg border transition-all ${
                       statusEvaluasi === 'Sesuai' ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'
                     }`}
                     onClick={() => setStatusEvaluasi('Sesuai')}
@@ -174,7 +174,7 @@ export function EvaluasiSOPPage() {
                   </button>
                   <button
                     type="button"
-                    className={`p-3 rounded-md border transition-all ${
+                    className={`p-3 rounded-lg border transition-all ${
                       statusEvaluasi === 'Revisi Biro' ? 'border-amber-600 bg-amber-50' : 'border-gray-200 bg-white hover:bg-gray-50'
                     }`}
                     onClick={() => setStatusEvaluasi('Revisi Biro')}

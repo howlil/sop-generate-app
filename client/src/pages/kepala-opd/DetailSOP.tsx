@@ -10,6 +10,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
@@ -25,6 +27,7 @@ import {
   getSopViewMetadata,
   getSopViewVersions,
 } from '@/lib/data/sop-detail'
+import { getLastEvaluatedByInitial } from '@/lib/data/penugasan-evaluasi'
 import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
@@ -34,7 +37,21 @@ import { ROUTES } from '@/lib/constants/routes'
 
 type Version = DetailSOPVersionSeed
 
-export function DetailSOP() {
+export interface DetailSOPProps {
+  /** Breadcrumb (default: Daftar SOP → Detail SOP). */
+  breadcrumb?: { label: string; to?: string }[]
+  /** Back link (default: Daftar SOP). */
+  backTo?: string
+  /** Tampilkan tombol Mengesahkan (TTE) bila SOP status Terverifikasi dari Biro. Default true (Kepala OPD). Set false untuk view-only (Biro). */
+  showSignButton?: boolean
+}
+
+export function DetailSOP(props: DetailSOPProps = {}) {
+  const {
+    breadcrumb,
+    backTo,
+    showSignButton = true,
+  } = props
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const params = useParams({ strict: false })
@@ -79,81 +96,116 @@ export function DetailSOP() {
   /** Kepala OPD hanya menandatangani SOP (TTE). Tanpa tugas Setuju/Tolak atau pemeriksaan. */
   const versions: Version[] = getSopViewVersions() as Version[]
 
+  const effectiveBreadcrumb = breadcrumb ?? [
+    { label: 'Pantau SOP', to: ROUTES.KEPALA_OPD.PANTAU_SOP },
+    { label: 'Detail SOP' },
+  ]
+  const effectiveBackTo = backTo ?? ROUTES.KEPALA_OPD.PANTAU_SOP
+  const canShowSignButton = showSignButton && isSopEligibleForSigning(sopStatus)
+
+  const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
+  const lastEvaluatedByRecord = id ? getLastEvaluatedByInitial()[id] : undefined
+  const evaluatedBy = lastEvaluatedByRecord?.evaluatorName
+
+  const workspaceHeaderToolbar = (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Kiri: detail SOP (info + print + versi + status) */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
+        {createdBy && (
+          <span>
+            <span className="font-medium text-gray-500">Dibuat oleh:</span>{' '}
+            <span className="text-gray-800">{createdBy}</span>
+          </span>
+        )}
+        {evaluatedBy && (
+          <span>
+            <span className="font-medium text-gray-500">Dievaluasi oleh:</span>{' '}
+            <span className="text-gray-800">{evaluatedBy}</span>
+          </span>
+        )}
+        <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
+          Versi {versions[0]?.version || '1.0'}
+        </Badge>
+        <StatusBadge status={sopStatus} domain={STATUS_DOMAIN.SOP} className="text-xs border-0" />
+      </div>
+      {/* Kanan: tombol aksi (Print + Tanda tangan) */}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+          onClick={() => window.print()}
+        >
+          <Printer className="w-3.5 h-3.5" /> Print SOP
+        </Button>
+        {canShowSignButton && (
+          <Button
+            size="sm"
+            className="h-8 text-xs"
+            onClick={tte.openPinDialog}
+            disabled={!tte.canSign}
+            title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Mengesahkan SOP dengan TTE BSRE'}
+          >
+            Tanda tangan
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+
+  const hasProyekInfo = Boolean(
+    penugasanState?.waktuPenugasan ?? penugasanState?.unitTerkait ?? penugasanState?.timPenyusun ?? penugasanState?.deskripsiProyek
+  )
+
   return (
     <>
     <DetailPageLayout
-      breadcrumb={[
-        { label: 'Daftar SOP', to: ROUTES.TIM_PENYUSUN.DAFTAR_SOP },
-        { label: 'Detail SOP' },
-      ]}
+      breadcrumb={effectiveBreadcrumb}
       title="Detail Dokumen SOP"
       description={metadata.name}
-      backTo={ROUTES.TIM_PENYUSUN.DAFTAR_SOP}
+      backTo={effectiveBackTo}
       backSize="icon"
-      actions={
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
-            onClick={() => window.print()}
-          >
-            <Printer className="w-3.5 h-3.5" /> Print SOP
-          </Button>
-          <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
-            Versi {versions[0]?.version || '1.0'}
-          </Badge>
-          <Badge className="bg-green-100 text-green-700 text-xs border-0">{sopStatus}</Badge>
-          {isSopEligibleForSigning(sopStatus) && (
-            <Button
-              size="sm"
-              className="h-8 text-xs"
-              onClick={tte.openPinDialog}
-              disabled={!tte.canSign}
-              title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Mengesahkan SOP dengan TTE BSRE'}
-            >
-              Mengesahkan
-            </Button>
-          )}
-        </div>
-      }
+      actions={null}
       header={
-          (penugasanState?.waktuPenugasan ?? penugasanState?.unitTerkait ?? penugasanState?.timPenyusun ?? penugasanState?.deskripsiProyek) ? (
+        <>
+          {workspaceHeaderToolbar}
+          {hasProyekInfo && (
             <>
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4 mt-3 pt-3 border-t border-gray-200">
                 <h2 className="text-sm font-semibold text-gray-900">Informasi proyek</h2>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-1.5 pt-2">
-                {penugasanState.waktuPenugasan && (
+                {penugasanState?.waktuPenugasan && (
                   <InfoField label="Waktu" icon={<Calendar />}>
                     {penugasanState.waktuPenugasan.includes('-')
                       ? formatDateIdLong(penugasanState.waktuPenugasan + 'T00:00:00')
                       : penugasanState.waktuPenugasan}
                   </InfoField>
                 )}
-                {penugasanState.unitTerkait && (
+                {penugasanState?.unitTerkait && (
                   <InfoField label="Unit" icon={<Building2 />}>
                     {penugasanState.unitTerkait}
                   </InfoField>
                 )}
-                {penugasanState.timPenyusun && (
+                {penugasanState?.timPenyusun && (
                   <InfoField label="Tim" icon={<Users />}>
                     {penugasanState.timPenyusun}
                   </InfoField>
                 )}
-                {penugasanState.terakhirDiperbarui && (
+                {penugasanState?.terakhirDiperbarui && (
                   <InfoField label="Diperbarui" icon={<RefreshCw />}>
                     {penugasanState.terakhirDiperbarui}
                   </InfoField>
                 )}
               </div>
-              {penugasanState.deskripsiProyek && (
+              {penugasanState?.deskripsiProyek && (
                 <p className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-600 leading-relaxed max-w-full" title={penugasanState.deskripsiProyek}>
                   {penugasanState.deskripsiProyek}
                 </p>
               )}
             </>
-          ) : undefined
+          )}
+        </>
       }
       main={
           <div className="flex flex-col h-full p-4">

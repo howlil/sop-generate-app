@@ -39,10 +39,6 @@ export function setPenugasanList(next: Penugasan[]) {
   usePenugasanStore.getState().setList(next)
 }
 
-export function addPenugasan(p: Penugasan) {
-  usePenugasanStore.getState().add(p)
-}
-
 export function updatePenugasan(id: string, patch: Partial<Penugasan>) {
   usePenugasanStore.getState().update(id, patch)
 }

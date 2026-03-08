@@ -14,6 +14,11 @@ export function getInitialSopDaftarList(): SOPDaftarItem[] {
   return [...SEED_SOP_DAFTAR]
 }
 
+/** Daftar SOP untuk satu OPD (Kepala OPD memantau SOP OPD-nya). Filter by opdId. */
+export function getSopDaftarByOpdId(opdId: string): SOPDaftarItem[] {
+  return SEED_SOP_DAFTAR.filter((s) => s.opdId === opdId)
+}
+
 /** Daftar SOP milik Tim Penyusun saat ini. */
 export function getInitialSopSayaList(): SOPSayaItem[] {
   return [...SEED_SOP_SAYA]

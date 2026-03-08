@@ -17,11 +17,11 @@ const VARIANT_MAP: Record<string, string> = {
 
 /**
  * A small info/note card used for contextual information, warnings, and callouts.
- * Replaces the ~15 instances of `<div className="p-3 bg-gray-50 rounded-md border border-gray-200">`.
+ * Replaces the ~15 instances of `<div className="p-3 bg-gray-50 rounded-lg border border-gray-200">`.
  */
 export function InfoCard({ children, variant = 'neutral', className }: InfoCardProps) {
   return (
-    <div className={cn('p-3 rounded-md border text-xs', VARIANT_MAP[variant], className)}>
+    <div className={cn('p-3 rounded-lg border text-xs', VARIANT_MAP[variant], className)}>
       {children}
     </div>
   )

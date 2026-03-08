@@ -12,16 +12,21 @@ interface UseKomentarOptions {
   currentUser?: { user: string; role: string }
   /** Roles to exclude when displaying comments (e.g. 'Tim Penyusun'). */
   excludeRoles?: string[]
+  /** Jika diisi: hanya tampilkan komentar dari role ini (e.g. hanya Tim Evaluasi). Mengabaikan excludeRoles. */
+  includeRoles?: string[]
 }
 
-export function useKomentar({ initialData, currentUser, excludeRoles = [] }: UseKomentarOptions) {
+export function useKomentar({ initialData, currentUser, excludeRoles = [], includeRoles = [] }: UseKomentarOptions) {
   const { showToast } = useToast()
   const [komentarList, setKomentarList] = useState<KomentarItem[]>(initialData)
   const [newComment, setNewComment] = useState('')
 
-  const displayList = excludeRoles.length > 0
-    ? komentarList.filter((k) => !excludeRoles.includes(k.role))
-    : komentarList
+  const displayList =
+    includeRoles.length > 0
+      ? komentarList.filter((k) => includeRoles.includes(k.role))
+      : excludeRoles.length > 0
+        ? komentarList.filter((k) => !excludeRoles.includes(k.role))
+        : komentarList
 
   const openCount = displayList.filter((k) => k.status === 'open').length
   const resolvedCount = displayList.filter((k) => k.status === 'resolved').length

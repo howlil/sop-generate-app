@@ -56,31 +56,3 @@ export const useEvaluationCaseStore = create<EvaluationCaseState>()((set, get) =
     return next[idx]
   },
 }))
-
-export function getEvaluationCases(): EvaluationCase[] {
-  return useEvaluationCaseStore.getState().cases
-}
-
-export function getCaseById(id: string): EvaluationCase | undefined {
-  return useEvaluationCaseStore.getState().getCaseById(id)
-}
-
-export function getActiveCaseForSop(sopId: string): EvaluationCase | undefined {
-  return useEvaluationCaseStore.getState().getActiveCaseForSop(sopId)
-}
-
-export function isSopInActiveCase(sopId: string): boolean {
-  return getActiveCaseForSop(sopId) !== undefined
-}
-
-export function getRiwayatEvaluasiForSop(sopId: string): EvaluationCase[] {
-  return useEvaluationCaseStore.getState().getRiwayatEvaluasiForSop(sopId)
-}
-
-export function addEvaluationCase(payload: Omit<EvaluationCase, 'id' | 'createdAt'>): EvaluationCase {
-  return useEvaluationCaseStore.getState().addCase(payload)
-}
-
-export function updateCaseStatus(id: string, status: EvaluationCaseStatus): EvaluationCase | undefined {
-  return useEvaluationCaseStore.getState().updateCaseStatus(id, status)
-}

@@ -1,31 +1,44 @@
 /**
  * Konfigurasi tampilan badge per domain & status.
  * Dipakai oleh StatusBadge agar komponen UI tetap agnostik; mapping domain/status → style/label di sini.
+ * Untuk domain SOP: daftar status mengacu ke STATUS_SOP_ALL (lib/types/sop) — single source of truth.
  */
 import type { StatusDomain } from '@/lib/constants/status-domains'
+import type { StatusSOP } from '@/lib/types/sop'
+import { STATUS_SOP_ALL } from '@/lib/types/sop'
 
 const DEFAULT_CLASS = 'bg-gray-100 text-gray-700'
 
-/** Kelas warna per status SOP / hasil evaluasi. */
-const sopStatusClasses: Record<string, string> = {
+/** Kelas warna per status SOP. Semua nilai StatusSOP harus punya entry (explicit atau fallback DEFAULT_CLASS). */
+const sopStatusStyleOverrides: Partial<Record<StatusSOP, string>> = {
   Draft: 'bg-gray-100 text-gray-700',
   'Sedang Disusun': 'bg-slate-100 text-slate-700',
-  'Diperiksa Kepala OPD': 'bg-blue-100 text-blue-700',
-  'Revisi dari Kepala OPD': 'bg-amber-100 text-amber-700',
   'Siap Dievaluasi': 'bg-sky-100 text-sky-700',
-  Berlaku: 'bg-emerald-100 text-emerald-700',
   'Diajukan Evaluasi': 'bg-amber-100 text-amber-700',
-  'Sedang Dievaluasi': 'bg-blue-100 text-blue-700',
-  'Selesai Evaluasi': 'bg-emerald-100 text-emerald-700',
   'Dievaluasi Tim Evaluasi': 'bg-violet-100 text-violet-700',
   'Revisi dari Tim Evaluasi': 'bg-orange-100 text-orange-700',
   'Terverifikasi dari Biro Organisasi': 'bg-teal-100 text-teal-700',
   Dicabut: 'bg-red-100 text-red-700',
-  Batal: 'bg-gray-200 text-gray-600',
+}
+
+/** Style untuk status non-SOP yang kadang dipakai di domain sop (e.g. hasil evaluasi). */
+const sopStatusExtraClasses: Record<string, string> = {
+  'Disahkan Kepala OPD': 'bg-emerald-100 text-emerald-700',
+  'Sedang Dievaluasi': 'bg-blue-100 text-blue-700',
+  'Selesai Evaluasi': 'bg-emerald-100 text-emerald-700',
   Sesuai: 'bg-green-100 text-green-700',
   'Perlu Perbaikan': 'bg-amber-100 text-amber-700',
   'Revisi Biro': 'bg-amber-100 text-amber-700',
 }
+
+/** Map final: STATUS_SOP_ALL + overrides. Semua StatusSOP terjamin punya kelas. */
+const sopStatusClasses: Record<string, string> = (() => {
+  const map: Record<string, string> = {}
+  for (const s of STATUS_SOP_ALL) {
+    map[s] = sopStatusStyleOverrides[s] ?? DEFAULT_CLASS
+  }
+  return { ...map, ...sopStatusExtraClasses }
+})()
 
 const penugasanEvaluasiClasses: Record<string, string> = {
   assigned: 'bg-purple-100 text-purple-700',

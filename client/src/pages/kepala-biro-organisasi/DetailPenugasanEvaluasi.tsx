@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
-import { FileText, CheckCircle, Download, List, MessageSquare, Calendar, History } from 'lucide-react'
+import { FileText, CheckCircle, Download, List, MessageSquare, Calendar, History, ExternalLink } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
@@ -170,11 +170,23 @@ export function DetailPenugasanEvaluasi() {
         }
         main={
           <div className="flex flex-col h-full">
-            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 flex items-center justify-between">
+            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 flex items-center justify-between gap-2 flex-wrap">
               <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
-              {displaySop?.status && (
-                <StatusBadge status={displaySop.status} domain={STATUS_DOMAIN.SOP} />
-              )}
+              <div className="flex items-center gap-2">
+                {displaySop?.status && (
+                  <StatusBadge status={displaySop.status} domain={STATUS_DOMAIN.SOP} />
+                )}
+                {displaySop && (
+                  <Link
+                    to={ROUTES.BIRO_ORGANISASI.DETAIL_SOP}
+                    params={{ id: displaySop.id }}
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:underline font-medium"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Lihat detail SOP
+                  </Link>
+                )}
+              </div>
             </div>
             <div className="flex-1 min-h-0 flex flex-col">
               {displaySop ? (

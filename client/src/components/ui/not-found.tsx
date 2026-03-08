@@ -43,14 +43,14 @@ export function NotFoundPage({
             <FileQuestion className="w-12 h-12 text-gray-400" strokeWidth={1.5} />
           </div>
           <span
-            className="absolute -bottom-1 -right-2 text-5xl font-bold tabular-nums text-gray-200 select-none"
+            className="absolute -bottom-1 -right-2 text-5xl font-semibold tabular-nums text-gray-200 select-none"
             aria-hidden
           >
             404
           </span>
         </div>
 
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">{title}</h1>
+        <h1 className="text-lg font-semibold text-gray-900 mb-2">{title}</h1>
         <p className="text-sm text-gray-600 leading-relaxed mb-8 max-w-sm mx-auto">
           {description}
         </p>

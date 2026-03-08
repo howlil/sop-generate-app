@@ -8,6 +8,7 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { usePagination } from '@/hooks/usePagination'
 import type { JenisPeraturan } from '@/lib/types/peraturan'
 
 function getTingkatColor(tingkat: string): string {
@@ -53,6 +54,11 @@ export function JenisPeraturanTab({
   onSaveJenis,
   onDeleteJenis,
 }: JenisPeraturanTabProps) {
+  const pagination = usePagination(filteredJenis.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredJenis.slice(pagination.startIndex, pagination.endIndex)
+    : filteredJenis
+
   return (
     <>
       <Table.Card>
@@ -66,7 +72,7 @@ export function JenisPeraturanTab({
             </Table.HeadRow>
           </thead>
           <tbody>
-            {filteredJenis.map((jenis) => (
+            {rowsToShow.map((jenis) => (
               <Table.BodyRow key={jenis.id}>
                 <Table.Td>
                   <Badge className={`text-xs border-0 ${getTingkatColor(jenis.tingkat)}`}>
@@ -96,9 +102,15 @@ export function JenisPeraturanTab({
             ))}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={filteredJenis.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="jenis"
+        />
       </Table.Card>
       {filteredJenis.length === 0 && (
-        <div className="bg-white rounded-md border border-gray-200 p-8 text-center">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
           <BookOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-600">Tidak ada jenis peraturan ditemukan</p>
         </div>

@@ -14,3 +14,6 @@ export function initPenugasanFromSeed(): void {
     setPenugasanList(SEED_PENUGASAN_INITIAL)
   }
 }
+
+// Seed dummy data saat modul pertama kali di-load agar Daftar Evaluasi SOP langsung terisi
+initPenugasanFromSeed()

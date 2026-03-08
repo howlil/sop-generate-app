@@ -45,7 +45,7 @@ export function PindahJabatanDialog({
     >
       {person && (
         <>
-          <div className="rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-xs">
+          <div className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs">
             <p className="font-medium text-gray-900">{person.name}</p>
             {person.nip && <p className="text-gray-600 font-mono">{person.nip}</p>}
             <p className="text-gray-600">{person.email}</p>

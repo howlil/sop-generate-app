@@ -8,7 +8,3 @@ import { SEED_PENUGASAN_DETAIL_BY_ID } from '@/lib/seed/penugasan-detail-seed'
 export function getPenugasanDetailById(id: string): PenugasanDetailItem | undefined {
   return SEED_PENUGASAN_DETAIL_BY_ID[id]
 }
-
-export function getAllPenugasanDetailIds(): string[] {
-  return Object.keys(SEED_PENUGASAN_DETAIL_BY_ID)
-}

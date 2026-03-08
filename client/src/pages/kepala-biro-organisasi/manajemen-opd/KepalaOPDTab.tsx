@@ -6,6 +6,7 @@ import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
 import { TambahPenugasanKepalaDialog } from './TambahPenugasanKepalaDialog'
 import { PindahJabatanDialog } from './PindahJabatanDialog'
 import { RiwayatJabatanDialog } from './RiwayatJabatanDialog'
+import { usePagination } from '@/hooks/usePagination'
 
 type PersonWithActive = {
   name: string
@@ -96,6 +97,11 @@ export function KepalaOPDTab({
     ? getRiwayatForUser(riwayatDialogPerson.name, riwayatDialogPerson.email)
     : []
 
+  const pagination = usePagination(filteredPersons.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredPersons.slice(pagination.startIndex, pagination.endIndex)
+    : filteredPersons
+
   return (
     <>
       <Table.Card className="w-full">
@@ -110,7 +116,7 @@ export function KepalaOPDTab({
             </Table.HeadRow>
           </thead>
           <tbody>
-            {filteredPersons.map((p) => {
+            {rowsToShow.map((p) => {
               const act = p.activeAssignment
               return (
                 <Table.BodyRow key={`${p.name}|${p.email}`}>
@@ -167,6 +173,12 @@ export function KepalaOPDTab({
             })}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={filteredPersons.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="kepala"
+        />
       </Table.Card>
       {filteredPersons.length === 0 && (
         <div className="p-6 text-center text-gray-500 text-xs">

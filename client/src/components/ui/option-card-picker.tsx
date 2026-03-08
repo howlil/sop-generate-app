@@ -36,7 +36,7 @@ const VARIANT_STYLES: Record<OptionCardVariant, { selected: string; icon: string
 }
 
 const BASE_OPTION_CLASS =
-  'p-3 rounded-md border transition-all border-gray-200 bg-white hover:bg-gray-50 text-left w-full'
+  'p-3 rounded-lg border transition-all border-gray-200 bg-white hover:bg-gray-50 text-left w-full'
 const UNSELECTED_LABEL = 'text-gray-700'
 const UNSELECTED_ICON = 'text-gray-400'
 

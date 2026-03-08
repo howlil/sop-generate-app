@@ -77,22 +77,22 @@ export function InitiateProyekSOP() {
     showToast(
       `Proyek SOP "${formData.judulSOP}" berhasil dibuat. Tim penyusun akan menerima notifikasi untuk mulai menyusun dokumen.`
     )
-    setTimeout(() => navigate({ to: ROUTES.TIM_PENYUSUN.DAFTAR_SOP }), 1500)
+    setTimeout(() => navigate({ to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP }), 1500)
   }
 
   return (
     <div className="space-y-3">
       <PageHeader
         breadcrumb={[
-          { label: 'Daftar SOP', to: ROUTES.TIM_PENYUSUN.DAFTAR_SOP },
+          { label: 'Manajemen SOP', to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP },
           { label: 'Buat SOP Baru' },
         ]}
         title="Buat SOP Baru"
         description="Inisiasi proyek SOP baru (status Draft). Setelah disimpan sebagai draft status menjadi Sedang Disusun; klik Selesai di detail SOP untuk status Siap Dievaluasi."
-        leading={<BackButton to={ROUTES.TIM_PENYUSUN.DAFTAR_SOP} />}
+        leading={<BackButton to={ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP} />}
       />
 
-      <div className="bg-white rounded-md border border-gray-200 p-4">
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="mb-4">
           <h2 className="text-sm font-semibold text-gray-900 mb-1">Informasi Proyek SOP</h2>
           <p className="text-xs text-gray-600">
@@ -168,7 +168,7 @@ export function InitiateProyekSOP() {
           </FormField>
 
           <FormField label="Tim penyusun yang ditugaskan" required>
-            <div className="border border-gray-200 rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+            <div className="border border-gray-200 rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
               {timPenyusunOptions.map((tim) => (
                 <label
                   key={tim.id}
@@ -214,7 +214,7 @@ export function InitiateProyekSOP() {
         </div>
 
         <div className="mt-4 flex justify-end gap-2">
-          <Link to={ROUTES.TIM_PENYUSUN.DAFTAR_SOP}>
+          <Link to={ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP}>
             <Button variant="outline" size="sm" className="h-8 text-xs">
               Batal
             </Button>
@@ -239,7 +239,7 @@ export function InitiateProyekSOP() {
             {sopTemplates.map((template) => (
               <div
                 key={template.id}
-                className={`p-3 border rounded-md cursor-pointer transition-all ${
+                className={`p-3 border rounded-lg cursor-pointer transition-all ${
                   selectedTemplate?.id === template.id
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'

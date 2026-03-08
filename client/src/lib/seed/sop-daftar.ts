@@ -1,191 +1,71 @@
 /**
  * Seed data untuk Daftar SOP dan SOP Saya (Tim Penyusun).
+ * Data mentah dari data/sop-daftar.json (bentuk = response API). Relasi: opdId → opd.json, peraturanId → peraturanDaftar.
  * Siap diganti dengan API later.
  */
 
 import type { SOPDaftarItem, SOPSayaItem } from '@/lib/types/sop'
+import sopDaftarData from './data/sop-daftar.json'
 
 export type { SOPDaftarItem, SOPSayaItem }
 
-const BASE_SOP_DAFTAR: SOPDaftarItem[] = [
-  {
-    id: '1',
-    nomorSOP: 'SOP/DISDIK/PLY/2026/001',
-    judul: 'SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027',
-    deskripsi: 'Tata cara penerimaan siswa baru dan verifikasi berkas pendaftaran.',
-    waktuPenugasan: '2025-12-01',
-    terakhirDiperbarui: '2026-01-15',
-    timPenyusun: 'Tim Penyusun A',
-    unitTerkait: 'Bidang Pendidikan Dasar',
-    peraturan: 'Permendikbud No. 1/2026',
-    peraturanId: 'p1',
-    status: 'Berlaku',
-    versi: '3.0',
-    kategori: 'Pelayanan',
-  },
-  {
-    id: '2',
-    nomorSOP: 'SOP/DISDIK/PLY/2026/005',
-    judul: 'SOP Pelaksanaan Ujian Akhir Sekolah',
-    deskripsi: 'Prosedur pelaksanaan UAS dan pengawasan ujian.',
-    waktuPenugasan: '2025-11-15',
-    terakhirDiperbarui: '2026-02-01',
-    timPenyusun: 'Tim Penyusun A',
-    unitTerkait: 'Bidang Pendidikan Dasar',
-    peraturan: 'Permendikbud No. 1/2026',
-    peraturanId: 'p1',
-    status: 'Terverifikasi dari Biro Organisasi',
-    versi: '2.1',
-    kategori: 'Pelayanan',
-  },
-  {
-    id: '3',
-    nomorSOP: 'SOP/DISDIK/ADM/2026/003',
-    judul: 'SOP Pengelolaan Data Kepegawaian Guru',
-    deskripsi: 'Pengelolaan data guru dan update NUP/NIP.',
-    waktuPenugasan: '2025-12-10',
-    terakhirDiperbarui: '2026-02-05',
-    timPenyusun: 'Tim Penyusun B',
-    unitTerkait: 'Bidang SDM',
-    peraturan: 'Permendikbud No. 5/2025',
-    peraturanId: 'p2',
-    status: 'Dievaluasi Tim Evaluasi',
-    versi: '1.0',
-    kategori: 'Administrasi',
-    evaluationCaseId: 'EV-2026-001',
-  },
-  {
-    id: '4',
-    nomorSOP: 'SOP/DISDIK/PLY/2026/008',
-    judul: 'SOP Pemberian Beasiswa Siswa Berprestasi',
-    deskripsi: 'Syarat dan tata cara pemberian beasiswa bagi siswa berprestasi.',
-    waktuPenugasan: '2025-11-20',
-    terakhirDiperbarui: '2026-01-28',
-    timPenyusun: 'Tim Penyusun C',
-    unitTerkait: 'Bidang Pendidikan Dasar',
-    peraturan: 'Perda No. 3/2025',
-    peraturanId: 'p3',
-    status: 'Revisi dari Tim Evaluasi',
-    versi: '1.2',
-    kategori: 'Pelayanan',
-  },
-  {
-    id: '5',
-    nomorSOP: 'SOP/DISDIK/ADM/2026/011',
-    judul: 'SOP Pelaporan Keuangan Sekolah',
-    deskripsi: 'Alur pelaporan keuangan dan pertanggungjawaban dana BOS.',
-    waktuPenugasan: '2025-12-05',
-    terakhirDiperbarui: '2026-02-10',
-    timPenyusun: 'Tim Penyusun A',
-    unitTerkait: 'Bidang Keuangan',
-    peraturan: 'Permendikbud No. 8/2025',
-    peraturanId: 'p4',
-    status: 'Siap Dievaluasi',
-    versi: '1.0',
-    kategori: 'Administrasi',
-  },
-  {
-    id: '6',
-    nomorSOP: 'SOP/DISDIK/PLY/2026/012',
-    judul: 'SOP Pelayanan Mutasi Siswa Antar Sekolah',
-    deskripsi: 'Prosedur mutasi siswa dan penerbitan surat pindah.',
-    waktuPenugasan: '2026-01-08',
-    terakhirDiperbarui: '2026-02-11',
-    timPenyusun: 'Tim Penyusun B',
-    unitTerkait: 'Bidang Pendidikan Dasar',
-    peraturan: 'Permendikbud No. 1/2026',
-    peraturanId: 'p1',
-    status: 'Draft',
-    versi: '0.5',
-    kategori: 'Pelayanan',
-  },
-  {
-    id: '7',
-    nomorSOP: 'SOP/DISDIK/PLY/2026/013',
-    judul: 'SOP Pengaduan Masyarakat di Bidang Pendidikan',
-    deskripsi: 'Penanganan pengaduan dan respon waktu tanggap.',
-    waktuPenugasan: '2025-11-01',
-    terakhirDiperbarui: '2026-02-08',
-    timPenyusun: 'Tim Penyusun C',
-    unitTerkait: 'Bidang Pelayanan',
-    peraturan: 'Perda No. 3/2025',
-    peraturanId: 'p3',
-    status: 'Siap Dievaluasi',
-    versi: '2.0',
-    kategori: 'Pelayanan',
-  },
-  {
-    id: '8',
-    nomorSOP: 'SOP/DISDIK/ADM/2026/015',
-    judul: 'SOP Monitoring dan Evaluasi Program Pendidikan',
-    deskripsi: 'Monitoring program dan evaluasi capaian indikator.',
-    waktuPenugasan: '2025-12-15',
-    terakhirDiperbarui: '2026-02-09',
-    timPenyusun: 'Tim Penyusun A',
-    unitTerkait: 'Bidang Program',
-    peraturan: 'Permendikbud No. 5/2025',
-    peraturanId: 'p2',
-    status: 'Diajukan Evaluasi',
-    versi: '1.1',
-    kategori: 'Administrasi',
-  },
-]
+interface SopDaftarResponse {
+  opdDisdikId: string
+  sopDaftar: SOPDaftarItem[]
+  peraturanDaftar: { id: string; nama: string }[]
+  sopSaya: SOPSayaItem[]
+  dummyCount: number
+  dummyConfig: {
+    opdIds: string[]
+    statusPool: SOPDaftarItem['status'][]
+    timPenyusunPool: string[]
+    peraturanIds: string[]
+    authorPool?: string[]
+    peraturanNama: Record<string, string>
+  }
+}
 
-// Dummy tambahan agar total ~50 SOP di Daftar SOP
-const DUMMY_SOP_DAFTAR: SOPDaftarItem[] = Array.from({ length: 42 }, (_, index) => {
-  const n = index + 9
+const data = sopDaftarData as SopDaftarResponse
+
+/** Id OPD Dinas Pendidikan (untuk filter Kepala OPD). Relasi ke opd.json id. */
+export const OPD_DISDIK_ID = data.opdDisdikId
+
+const cfg = data.dummyConfig
+const authorPool = cfg.authorPool ?? ['Budi Santoso', 'Ahmad Pratama', 'Dra. Siti Aminah']
+const dummySopDaftar: SOPDaftarItem[] = Array.from({ length: data.dummyCount }, (_, index) => {
+  const n = index + data.sopDaftar.length + 1
   const id = String(n)
   const pad = n.toString().padStart(3, '0')
-  const statusOptions: SOPDaftarItem['status'][] = [
-    'Berlaku',
-    'Siap Dievaluasi',
-    'Diajukan Evaluasi',
-    'Draft',
-    'Revisi dari Tim Evaluasi',
-    'Dievaluasi Tim Evaluasi',
-    'Terverifikasi dari Biro Organisasi',
-  ]
-  const status = statusOptions[index % statusOptions.length]
+  const status = cfg.statusPool[index % cfg.statusPool.length]
   const kategori = index % 2 === 0 ? 'Pelayanan' : 'Administrasi'
-  const timPenyusun = ['Tim Penyusun A', 'Tim Penyusun B', 'Tim Penyusun C'][index % 3]
-  const peraturanId = ['p1', 'p2', 'p3', 'p4'][index % 4]
-  const peraturanMap: Record<string, string> = {
-    p1: 'Permendikbud No. 1/2026',
-    p2: 'Permendikbud No. 5/2025',
-    p3: 'Perda No. 3/2025',
-    p4: 'Permendikbud No. 8/2025',
-  }
-
+  const timPenyusun = cfg.timPenyusunPool[index % cfg.timPenyusunPool.length]
+  const peraturanId = cfg.peraturanIds[index % cfg.peraturanIds.length]
+  const opdId = cfg.opdIds[index % cfg.opdIds.length]
+  const day = ((index % 28) + 1).toString().padStart(2, '0')
   return {
     id,
+    opdId,
     nomorSOP: `SOP/DUMMY/PLY/2026/${pad}`,
     judul: `SOP Dummy ${pad} — Proses Layanan Internal`,
     deskripsi: 'SOP dummy untuk pengujian skala daftar SOP (UI dan performa).',
-    waktuPenugasan: `2026-01-${((index % 28) + 1).toString().padStart(2, '0')}`,
-    terakhirDiperbarui: `2026-02-${((index % 28) + 1).toString().padStart(2, '0')}`,
+    waktuPenugasan: `2026-01-${day}`,
+    terakhirDiperbarui: `2026-02-${day}`,
     timPenyusun,
     unitTerkait: 'Unit Kerja Dummy',
-    peraturan: peraturanMap[peraturanId],
+    peraturan: cfg.peraturanNama[peraturanId],
     peraturanId,
     status,
     versi: `1.${index % 5}`,
     kategori,
+    author: authorPool[index % authorPool.length],
   }
 })
 
-export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [...BASE_SOP_DAFTAR, ...DUMMY_SOP_DAFTAR]
+/** Daftar SOP lengkap (base dari API + dummy untuk skala). Relasi: opdId ke opd.json. */
+export const SEED_SOP_DAFTAR: SOPDaftarItem[] = [...data.sopDaftar, ...dummySopDaftar]
 
-export const SEED_PERATURAN_DAFTAR: { id: string; nama: string }[] = [
-  { id: 'p1', nama: 'Permendikbud No. 1/2026' },
-  { id: 'p2', nama: 'Permendikbud No. 5/2025' },
-  { id: 'p3', nama: 'Perda No. 3/2025' },
-  { id: 'p4', nama: 'Permendikbud No. 8/2025' },
-]
+/** Daftar peraturan untuk filter. Relasi: id dipakai di sopDaftar.peraturanId. */
+export const SEED_PERATURAN_DAFTAR: { id: string; nama: string }[] = data.peraturanDaftar
 
-export const SEED_SOP_SAYA: SOPSayaItem[] = [
-  { id: '1', nomorSOP: 'PRJ-DISDIK-001/2026', judul: 'SOP Penerimaan Siswa Baru 2026', versi: '0.9', status: 'Revisi dari Tim Evaluasi', terakhirDiubah: '2026-01-28', komentarCount: 3 },
-  { id: '2', nomorSOP: 'PRJ-DISDIK-002/2026', judul: 'SOP Pelayanan Perpustakaan Digital', versi: '0.5', status: 'Sedang Disusun', terakhirDiubah: '2026-01-27', komentarCount: 0 },
-  { id: '3', nomorSOP: 'PRJ-DISDIK-003/2025', judul: 'SOP Ujian Akhir Semester', versi: '1.0', status: 'Siap Dievaluasi', terakhirDiubah: '2026-01-20', komentarCount: 0 },
-  { id: '4', nomorSOP: 'PRJ-DISDIK-004/2025', judul: 'SOP Penilaian Kinerja Guru', versi: '1.5', status: 'Revisi dari Kepala OPD', terakhirDiubah: '2025-12-15', komentarCount: 0 },
-  { id: '5', nomorSOP: 'PRJ-DISDIK-005/2025', judul: 'SOP Pengadaan Buku Pelajaran', versi: '2.0', status: 'Berlaku', terakhirDiubah: '2025-11-10', komentarCount: 0 },
-]
+/** SOP Saya (proyek tim penyusun). */
+export const SEED_SOP_SAYA: SOPSayaItem[] = data.sopSaya

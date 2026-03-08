@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/utils/cn'
+import { Pagination } from '@/components/ui/pagination'
 
 /** Wrapper overflow-x-auto; untuk scroll horizontal tabel. */
 const DataTableRoot = React.forwardRef<
@@ -10,14 +11,14 @@ const DataTableRoot = React.forwardRef<
 ))
 DataTableRoot.displayName = 'DataTableRoot'
 
-/** Card + overflow: bg-white rounded-md border border-gray-200 overflow-x-auto. */
+/** Card + overflow: bg-white rounded-lg border border-gray-200 overflow-x-auto. */
 const DataTableCard = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('bg-white rounded-md border border-gray-200 overflow-x-auto', className)}
+    className={cn('bg-white rounded-lg border border-gray-200 overflow-x-auto', className)}
     {...props}
   />
 ))
@@ -98,7 +99,9 @@ export {
   DataTableTd,
 }
 
-/** Compound component untuk pemakaian: Table.Card, Table.Root, Table.Table, dll. */
+export { Pagination } from '@/components/ui/pagination'
+
+/** Compound component untuk pemakaian: Table.Card, Table.Root, Table.Table, Table.Pagination, dll. */
 export const Table = {
   Root: DataTableRoot,
   Card: DataTableCard,
@@ -107,4 +110,5 @@ export const Table = {
   BodyRow: DataTableBodyRow,
   Th: DataTableTh,
   Td: DataTableTd,
+  Pagination,
 }

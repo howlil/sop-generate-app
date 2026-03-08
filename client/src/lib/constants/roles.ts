@@ -21,12 +21,6 @@ export const ROLE_LABELS: Record<RoleKey, string> = {
   [ROLES.TIM_PENYUSUN]: 'Tim Penyusun',
 }
 
-/** Roles that can sign with TTE. */
-export const TTE_ELIGIBLE_ROLES: RoleKey[] = [
-  ROLES.KEPALA_OPD,
-  ROLES.BIRO_ORGANISASI,
-]
-
 /** Roles that appear in komentar panels. */
 export const KOMENTAR_ROLES = [
   ROLE_LABELS[ROLES.KEPALA_OPD],

@@ -32,10 +32,6 @@ export function mergeSopStatus<T extends { id: string; status: StatusSOP }>(list
   })
 }
 
-export function subscribeSopStatus(cb: () => void): () => void {
-  return useSopStatusStore.subscribe(cb)
-}
-
 export function getSopStatusOverride(sopId: string): StatusSOP | undefined {
   return useSopStatusStore.getState().getSopStatusOverride(sopId)
 }

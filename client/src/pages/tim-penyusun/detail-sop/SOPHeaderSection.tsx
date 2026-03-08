@@ -7,11 +7,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { EditableStringList } from '@/components/ui/editable-string-list'
 import type { SOPDetailMetadata } from '@/lib/types/sop'
 
-function toLines(value: string): string[] {
-  return value
-    .split('\n')
-    .map((v) => v.trim())
-    .filter(Boolean)
+/** Memecah teks jadi array baris; baris kosong dipertahankan agar Enter = baris baru. */
+function toLinesKeepEmpty(value: string): string[] {
+  return value.split('\n').map((v) => v.trimEnd())
 }
 
 export interface SOPHeaderSectionProps {
@@ -19,8 +17,11 @@ export interface SOPHeaderSectionProps {
   onMetadataChange: <K extends keyof SOPDetailMetadata>(field: K, value: SOPDetailMetadata[K]) => void
   implementers: { id: string; name: string }[]
   onImplementersChange: React.Dispatch<React.SetStateAction<{ id: string; name: string }[]>>
+  /** Daftar pelaksana dari master — editable via dialog (seperti Dasar hukum) */
+  implementersFromMaster?: boolean
   onOpenLawBasisDialog: () => void
   onOpenRelatedPosDialog: () => void
+  onOpenPelaksanaDialog?: () => void
 }
 
 export function SOPHeaderSection({
@@ -28,13 +29,15 @@ export function SOPHeaderSection({
   onMetadataChange,
   implementers,
   onImplementersChange,
+  implementersFromMaster,
   onOpenLawBasisDialog,
   onOpenRelatedPosDialog,
+  onOpenPelaksanaDialog,
 }: SOPHeaderSectionProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
 
   return (
-    <div className="rounded-md border border-gray-200">
+    <div className="rounded-lg border border-gray-200">
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
         <p className="text-xs font-semibold text-gray-900">Header SOP</p>
         <Button
@@ -70,15 +73,14 @@ export function SOPHeaderSection({
               reader.readAsDataURL(file)
             }}
           />
-          <p className="text-[11px] text-gray-500 mt-1">Disimpan sebagai data URL (mock).</p>
         </FormField>
 
         <FormField label="Nama/Detail lembaga (4 baris)">
           <Textarea
             className="text-xs min-h-[84px]"
             value={(metadata.institutionLines ?? []).join('\n')}
-            onChange={(e) => onMetadataChange('institutionLines', toLines(e.target.value))}
-            placeholder="Baris 1\nBaris 2\nBaris 3\nBaris 4"
+            onChange={(e) => onMetadataChange('institutionLines', toLinesKeepEmpty(e.target.value))}
+            placeholder="Baris 1&#10;Baris 2&#10;Baris 3&#10;Baris 4"
           />
         </FormField>
 
@@ -208,46 +210,85 @@ export function SOPHeaderSection({
         </FormField>
 
         <FormField label="Aktor pelaksana">
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={() =>
-                onImplementersChange((prev) => [
-                  ...prev,
-                  { id: `impl-${prev.length + 1}`, name: `Aktor ${prev.length + 1}` },
-                ])
-              }
-            >
-              Tambah
-            </Button>
-          </div>
-          <div className="space-y-2 mt-1.5">
-            {implementers.map((imp, idx) => (
-              <div key={imp.id} className="flex items-center gap-2">
-                <Input
-                  className="h-9 text-xs flex-1"
-                  value={imp.name}
-                  onChange={(e) => {
-                    const v = e.target.value
-                    onImplementersChange((prev) =>
-                      prev.map((p, i) => (i === idx ? { ...p, name: v } : p))
-                    )
-                  }}
-                />
+          {implementersFromMaster ? (
+            <>
+              <div className="flex justify-end">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="h-9 w-9 p-0 text-gray-500 hover:text-red-600"
-                  onClick={() => onImplementersChange((prev) => prev.filter((_, i) => i !== idx))}
-                  title="Hapus"
+                  className="h-7 text-xs"
+                  onClick={onOpenPelaksanaDialog}
                 >
-                  <X className="w-4 h-4" />
+                  Tambah
                 </Button>
               </div>
-            ))}
-          </div>
+              <div className="space-y-1 mt-1.5">
+                {implementers.length === 0 ? (
+                  <p className="text-xs text-gray-500">Belum ada aktor pelaksana.</p>
+                ) : (
+                  implementers.map((imp, idx) => (
+                    <div key={imp.id} className="flex items-start gap-2">
+                      <p className="text-xs text-gray-700 flex-1">{imp.name}</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-gray-500 hover:text-red-600"
+                        onClick={() =>
+                          onImplementersChange((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        title="Hapus"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() =>
+                    onImplementersChange((prev) => [
+                      ...prev,
+                      { id: `impl-${prev.length + 1}`, name: `Aktor ${prev.length + 1}` },
+                    ])
+                  }
+                >
+                  Tambah
+                </Button>
+              </div>
+              <div className="space-y-2 mt-1.5">
+                {implementers.map((imp, idx) => (
+                  <div key={imp.id} className="flex items-center gap-2">
+                    <Input
+                      className="h-9 text-xs flex-1"
+                      value={imp.name}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        onImplementersChange((prev) =>
+                          prev.map((p, i) => (i === idx ? { ...p, name: v } : p))
+                        )
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-9 w-9 p-0 text-gray-500 hover:text-red-600"
+                      onClick={() => onImplementersChange((prev) => prev.filter((_, i) => i !== idx))}
+                      title="Hapus"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </FormField>
       </div>
     </div>

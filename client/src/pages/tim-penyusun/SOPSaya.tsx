@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Eye, Edit } from 'lucide-react'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Table } from '@/components/ui/data-table'
@@ -15,6 +15,7 @@ import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/hooks/useFilteredList'
+import { usePagination } from '@/hooks/usePagination'
 
 export function SOPSaya() {
   const { mergeSopStatus } = useSopStatus()
@@ -30,6 +31,10 @@ export function SOPSaya() {
     searchKeys: ['judul', 'nomorSOP'],
     filterKey: 'status',
   })
+  const pagination = usePagination(filteredSOP.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredSOP.slice(pagination.startIndex, pagination.endIndex)
+    : filteredSOP
 
   return (
     <ListPageLayout
@@ -54,7 +59,7 @@ export function SOPSaya() {
         </SearchToolbar>
       }
     >
-      <div className="bg-white rounded-md border border-gray-200">
+      <div className="bg-white rounded-lg border border-gray-200">
         <div className="p-3 border-b border-gray-200">
           <h2 className="text-xs font-semibold text-gray-900">Daftar SOP Saya</h2>
         </div>
@@ -70,7 +75,7 @@ export function SOPSaya() {
               </Table.HeadRow>
             </thead>
             <tbody>
-              {filteredSOP.map((sop) => (
+              {rowsToShow.map((sop) => (
                 <Table.BodyRow key={sop.id}>
                   <Table.Td>
                     <div className="flex items-center gap-2">
@@ -114,6 +119,12 @@ export function SOPSaya() {
             </tbody>
           </Table.Table>
         </Table.Root>
+        <Table.Pagination
+          totalItems={filteredSOP.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="SOP"
+        />
       </div>
     </ListPageLayout>
   )

@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { TableFooterSummary } from '@/components/ui/table-footer-summary'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -37,6 +36,7 @@ import { useEvaluasi } from '@/hooks/useEvaluasi'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
+import { usePagination } from '@/hooks/usePagination'
 
 export function DaftarSOP() {
   const { showToast } = useToast()
@@ -54,6 +54,11 @@ export function DaftarSOP() {
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
   const [selectedSopIdsForAjukan, setSelectedSopIdsForAjukan] = useState<Set<string>>(new Set())
+
+  const pagination = usePagination(filteredList.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredList.slice(pagination.startIndex, pagination.endIndex)
+    : filteredList
 
   const peraturanList = getPeraturanDaftarOptions()
 
@@ -197,7 +202,7 @@ export function DaftarSOP() {
       </SearchToolbar>
       }
     >
-      <div className="bg-white rounded-md border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Table.Root>
           <Table.Table>
             <thead>
@@ -219,7 +224,7 @@ export function DaftarSOP() {
                   description="Coba ubah filter atau kata kunci pencarian"
                 />
               ) : (
-                filteredList.map((sop) => (
+                rowsToShow.map((sop) => (
                   <Table.BodyRow key={sop.id}>
                     <Table.Td>
                       <p className="font-medium text-gray-900">{sop.judul}</p>
@@ -257,13 +262,12 @@ export function DaftarSOP() {
           </Table.Table>
         </Table.Root>
 
-        {filteredList.length > 0 && (
-          <TableFooterSummary
-            displayedCount={filteredList.length}
-            totalCount={mergedSopList.length}
-            label="SOP"
-          />
-        )}
+        <Table.Pagination
+          totalItems={filteredList.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="SOP"
+        />
       </div>
 
       <FormDialog
@@ -276,7 +280,7 @@ export function DaftarSOP() {
         confirmDisabled={selectedSopIdsForAjukan.size === 0}
         size="lg"
       >
-        <div className="overflow-y-auto min-h-0 border border-gray-200 rounded-md">
+        <div className="overflow-y-auto min-h-0 border border-gray-200 rounded-lg">
           {eligibleSopsForEvaluasi.length === 0 ? (
             <EmptyState
               icon={<FileText className="w-10 h-10" />}

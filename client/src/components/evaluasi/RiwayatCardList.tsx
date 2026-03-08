@@ -27,7 +27,7 @@ export function RiwayatCardList<T>({
       ) : (
         <div className="space-y-2">
           {items.map((item, i) => (
-            <Card key={i} className="rounded-md">
+            <Card key={i}>
               <CardContent className="p-2.5 text-[11px]">
                 {renderItem(item, i)}
               </CardContent>

@@ -97,10 +97,14 @@ export function SOPPreviewTemplate({
               {!hideDiagramTabs && (
                 <div className="flex justify-center print:hidden">
                   {toolbar ?? (
-                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'flowchart' | 'bpmn')} className="w-full">
-                      <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
-                        <TabsTrigger value="flowchart" className="text-xs">Flowchart</TabsTrigger>
-                        <TabsTrigger value="bpmn" className="text-xs">BPMN</TabsTrigger>
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'flowchart' | 'bpmn')} className="w-full max-w-md mx-auto">
+                      <TabsList className="h-9 w-full grid grid-cols-2 rounded-lg border border-gray-200 bg-gray-50 p-1 shadow-sm">
+                        <TabsTrigger value="flowchart" className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-gray-200">
+                          Flowchart
+                        </TabsTrigger>
+                        <TabsTrigger value="bpmn" className="h-7 text-xs font-medium rounded-md data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-gray-200">
+                          BPMN
+                        </TabsTrigger>
                       </TabsList>
                     </Tabs>
                   )}

@@ -18,6 +18,7 @@ import { Select } from '@/components/ui/select'
 import type { Peraturan } from '@/lib/types/peraturan'
 import type { JenisPeraturan, RiwayatVersiEntry } from '@/lib/types/peraturan'
 import { formatDateIdLong } from '@/utils/format-date'
+import { usePagination } from '@/hooks/usePagination'
 
 export interface PeraturanTableTabProps {
   filteredPeraturan: Peraturan[]
@@ -66,6 +67,11 @@ export function PeraturanTableTab({
   onToggleStatus,
   confirmDisabled,
 }: PeraturanTableTabProps) {
+  const pagination = usePagination(filteredPeraturan.length)
+  const rowsToShow = pagination.showPagination
+    ? filteredPeraturan.slice(pagination.startIndex, pagination.endIndex)
+    : filteredPeraturan
+
   return (
     <>
       <Table.Card>
@@ -80,7 +86,7 @@ export function PeraturanTableTab({
             </Table.HeadRow>
           </thead>
           <tbody>
-            {filteredPeraturan.map((peraturan) => (
+            {rowsToShow.map((peraturan) => (
               <Table.BodyRow key={peraturan.id}>
                 <Table.Td>
                   <Badge variant="outline" className="text-xs">
@@ -152,9 +158,15 @@ export function PeraturanTableTab({
             ))}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={filteredPeraturan.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="peraturan"
+        />
       </Table.Card>
       {filteredPeraturan.length === 0 && (
-        <div className="bg-white rounded-md border border-gray-200 p-8 text-center">
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
           <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-600">Tidak ada peraturan ditemukan</p>
         </div>
@@ -172,7 +184,7 @@ export function PeraturanTableTab({
             </DialogDescription>
           </DialogHeader>
           {selectedPeraturanForRiwayat && (
-            <Table.Root className="border rounded-md">
+            <Table.Root className="border rounded-lg">
               <Table.Table>
                 <thead>
                   <Table.HeadRow>

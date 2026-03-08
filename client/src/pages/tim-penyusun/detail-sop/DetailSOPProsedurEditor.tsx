@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/useUI'
+import { usePagination } from '@/hooks/usePagination'
 import type { ProsedurRow } from '@/lib/types/sop'
 import { DecisionStepDialog } from './DecisionStepDialog'
 
@@ -33,6 +34,11 @@ export function DetailSOPProsedurEditor({
   const [decisionYesId, setDecisionYesId] = useState<string>('')
   const [decisionNoId, setDecisionNoId] = useState<string>('')
 
+  const pagination = usePagination(prosedurRows.length)
+  const rowsToShow = pagination.showPagination
+    ? prosedurRows.slice(pagination.startIndex, pagination.endIndex)
+    : prosedurRows
+
   return (
     <div className="w-full max-w-full">
       <div className="flex flex-wrap items-center justify-between gap-2 print:hidden mb-3">
@@ -41,7 +47,7 @@ export function DetailSOPProsedurEditor({
       <div className="mb-2 flex items-center justify-between">
         <p className="text-[11px] text-gray-500">No akan otomatis mengikuti urutan baris.</p>
       </div>
-      <div className="border border-gray-200 rounded-md overflow-hidden">
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
         <Table.Table>
           <thead className="bg-gray-50 border-b border-gray-200">
             <Table.HeadRow>
@@ -57,9 +63,11 @@ export function DetailSOPProsedurEditor({
             </Table.HeadRow>
           </thead>
           <tbody>
-            {prosedurRows.map((row, idx) => (
+            {rowsToShow.map((row, localIdx) => {
+              const realIdx = pagination.startIndex + localIdx
+              return (
               <Table.BodyRow key={row.id} className="align-top">
-                <Table.Td className="px-1 py-1 text-center align-middle">{idx + 1}</Table.Td>
+                <Table.Td className="px-1 py-1 text-center align-middle">{realIdx + 1}</Table.Td>
                 <Table.Td className="px-1 py-1">
                   <Textarea
                     className="text-xs min-h-[40px] px-1.5 py-1"
@@ -67,7 +75,7 @@ export function DetailSOPProsedurEditor({
                     onChange={(e) =>
                       setProsedurRows((prev) =>
                         prev.map((r, i) =>
-                          i === idx ? { ...r, kegiatan: e.target.value } : r
+                          i === realIdx ? { ...r, kegiatan: e.target.value } : r
                         )
                       )
                     }
@@ -88,12 +96,12 @@ export function DetailSOPProsedurEditor({
                           className="w-full h-8 rounded-md border border-gray-200 px-0.5 text-xs"
                           value={
                             row.type ||
-                            (idx === 0 || idx === prosedurRows.length - 1 ? 'terminator' : 'task')
+                            (realIdx === 0 || realIdx === prosedurRows.length - 1 ? 'terminator' : 'task')
                           }
                           onChange={(e) =>
                             setProsedurRows((prev) =>
                               prev.map((r, i) =>
-                                i === idx ? { ...r, type: e.target.value as ProsedurRow['type'] } : r
+                                i === realIdx ? { ...r, type: e.target.value as ProsedurRow['type'] } : r
                               )
                             )
                           }
@@ -101,9 +109,9 @@ export function DetailSOPProsedurEditor({
                           <option value="task">Task</option>
                           <option value="decision">Decision</option>
                           <option value="terminator">
-                            {idx === 0
+                            {realIdx === 0
                               ? 'Start'
-                              : idx === prosedurRows.length - 1
+                              : realIdx === prosedurRows.length - 1
                                 ? 'End'
                                 : 'Terminator'}
                           </option>
@@ -137,7 +145,7 @@ export function DetailSOPProsedurEditor({
                       })
                       setProsedurRows((prev) =>
                         prev.map((r, i) =>
-                          i === idx ? { ...r, pelaksana: nextPelaksana } : r
+                          i === realIdx ? { ...r, pelaksana: nextPelaksana } : r
                         )
                       )
                     }}
@@ -156,7 +164,7 @@ export function DetailSOPProsedurEditor({
                     onChange={(e) =>
                       setProsedurRows((prev) =>
                         prev.map((r, i) =>
-                          i === idx ? { ...r, mutu_kelengkapan: e.target.value } : r
+                          i === realIdx ? { ...r, mutu_kelengkapan: e.target.value } : r
                         )
                       )
                     }
@@ -191,7 +199,7 @@ export function DetailSOPProsedurEditor({
                       const value = nextAmount ? `${nextAmount} ${label}` : ''
                       setProsedurRows((prev) =>
                         prev.map((r, i) =>
-                          i === idx ? { ...r, mutu_waktu: value } : r
+                          i === realIdx ? { ...r, mutu_waktu: value } : r
                         )
                       )
                     }
@@ -226,7 +234,7 @@ export function DetailSOPProsedurEditor({
                     onChange={(e) =>
                       setProsedurRows((prev) =>
                         prev.map((r, i) =>
-                          i === idx ? { ...r, output: e.target.value } : r
+                          i === realIdx ? { ...r, output: e.target.value } : r
                         )
                       )
                     }
@@ -239,7 +247,7 @@ export function DetailSOPProsedurEditor({
                     onChange={(e) =>
                       setProsedurRows((prev) =>
                         prev.map((r, i) =>
-                          i === idx ? { ...r, keterangan: e.target.value } : r
+                          i === realIdx ? { ...r, keterangan: e.target.value } : r
                         )
                       )
                     }
@@ -261,7 +269,7 @@ export function DetailSOPProsedurEditor({
                       {row.type === 'decision' && (
                         <DropdownMenuItem
                           onClick={() => {
-                            setDecisionStepIndex(idx)
+                            setDecisionStepIndex(realIdx)
                             const yesId = row.id_next_step_if_yes || ''
                             const noId = row.id_next_step_if_no || ''
                             setDecisionYesId(yesId)
@@ -278,8 +286,8 @@ export function DetailSOPProsedurEditor({
                           setProsedurRows((prev) => {
                             const idBase = crypto.randomUUID()
                             const newRow: ProsedurRow = {
-                              id: `${idBase}-${idx + 1}`,
-                              no: idx + 2,
+                              id: `${idBase}-${realIdx + 1}`,
+                              no: realIdx + 2,
                               kegiatan: '',
                               pelaksana: implementers.reduce(
                                 (acc, impl, i2) => ({
@@ -294,7 +302,7 @@ export function DetailSOPProsedurEditor({
                               keterangan: '',
                             }
                             const next = [...prev]
-                            next.splice(idx + 1, 0, newRow)
+                            next.splice(realIdx + 1, 0, newRow)
                             return next.map((r, i2) => ({ ...r, no: i2 + 1 }))
                           })
                         }
@@ -306,7 +314,7 @@ export function DetailSOPProsedurEditor({
                         disabled={prosedurRows.length === 1}
                         onClick={() =>
                           setProsedurRows((prev) =>
-                            prev.filter((_, i) => i !== idx).map((r, i2) => ({
+                            prev.filter((_, i) => i !== realIdx).map((r, i2) => ({
                               ...r,
                               no: i2 + 1,
                             }))
@@ -321,9 +329,16 @@ export function DetailSOPProsedurEditor({
                   </DropdownMenu>
                 </Table.Td>
               </Table.BodyRow>
-            ))}
+            )
+            })}
           </tbody>
         </Table.Table>
+        <Table.Pagination
+          totalItems={prosedurRows.length}
+          currentPage={pagination.page}
+          onPageChange={pagination.setPage}
+          label="langkah"
+        />
       </div>
       <div className="flex justify-between items-center mt-2">
         <Button

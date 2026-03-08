@@ -1,0 +1,5 @@
+[
+  { "id": "impl-1", "nama": "Pemohon", "deskripsi": "Pemohon layanan / warga", "jumlahPos": 0 },
+  { "id": "impl-2", "nama": "Admin", "deskripsi": "Administrator/operator sistem", "jumlahPos": 0 },
+  { "id": "impl-3", "nama": "Pejabat Berwenang", "deskripsi": "Pejabat yang berwenang menandatangani", "jumlahPos": 0 }
+]

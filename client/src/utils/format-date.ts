@@ -35,9 +35,3 @@ export function formatDatetime(value: DateInput): string {
     ? d.toLocaleString(LOCALE_ID, { dateStyle: 'medium', timeStyle: 'short' })
     : '—'
 }
-
-/** Format waktu saja: 14.30 */
-export function formatTime(value: DateInput): string {
-  const d = toDate(value)
-  return d ? d.toLocaleTimeString(LOCALE_ID, { hour: '2-digit', minute: '2-digit' }) : '—'
-}
