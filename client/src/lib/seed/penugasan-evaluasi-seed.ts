@@ -1,7 +1,7 @@
 /**
  * Seed data untuk Manajemen Evaluasi SOP (Biro: batch per OPD, verifikasi BA).
  * Tim Evaluasi: evaluasi dari Daftar SOP Evaluasi.
- * Data mentah dari data/penugasan-evaluasi.json (bentuk = response API). Relasi: opd → opd.json name, timMonev → timMonevOptions.
+ * Data mentah dari data/penugasan-evaluasi.json (bentuk = response API). Relasi: opd → opd.json name, timEvaluasi → timEvaluasiOptions.
  */
 
 import type { Penugasan, PenugasanTimEvaluasiItem } from '@/lib/types/penugasan'
@@ -30,7 +30,7 @@ interface PenugasanEvaluasiResponse {
   baseSopByOpd: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>>
   minSopPerOpd: number
   statusPool: StatusSOP[]
-  timMonevOptions: { id: string; nama: string }[]
+  timEvaluasiOptions: { id: string; nama: string }[]
   penugasanTimEvaluasi: PenugasanTimEvaluasiItem[]
   lastEvaluatedBy: Record<string, { date: string; evaluatorName: string }>
   riwayatEvaluasiSop: Record<string, RiwayatEvaluasiSOPItem[]>
@@ -41,7 +41,7 @@ const data = penugasanEvaluasiData as PenugasanEvaluasiResponse
 
 export const SEED_PENUGASAN_INITIAL: Penugasan[] = data.penugasan
 export const SEED_OPD_LIST_EVALUASI = data.opdListEvaluasi
-export const SEED_TIM_MONEV_OPTIONS = data.timMonevOptions
+export const SEED_TIM_EVALUASI_OPTIONS = data.timEvaluasiOptions
 export const SEED_PENUGASAN_TIM_EVALUASI = data.penugasanTimEvaluasi
 export const SEED_LAST_EVALUATED_BY = data.lastEvaluatedBy
 export const SEED_RIWAYAT_EVALUASI_SOP = data.riwayatEvaluasiSop

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Users, Plus, Edit, Trash2 } from 'lucide-react'
+import { Users, Plus, Edit, Trash2, UserMinus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
@@ -12,18 +12,24 @@ import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
 import { getInitialTimEvaluasiList } from '@/lib/data/tim-evaluasi'
-import type { TimMonev } from '@/lib/types/tim'
+import type { TimEvaluasiAnggota } from '@/lib/types/tim'
 import { generateId } from '@/utils/generate-id'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { formatDateId } from '@/utils/format-date'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
+import { useToast } from '@/hooks/useUI'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
 
 export function ManajemenTimEvaluasi() {
+  const { showToast } = useToast()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [selectedTim, setSelectedTim] = useState<TimMonev | null>(null)
+  const [selectedTim, setSelectedTim] = useState<TimEvaluasiAnggota | null>(null)
   const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
+  const [nonaktifTimId, setNonaktifTimId] = useState<string | null>(null)
 
-  const [timList, setTimList] = useState<TimMonev[]>(() => getInitialTimEvaluasiList())
+  const [timList, setTimList] = useState<TimEvaluasiAnggota[]>(() => getInitialTimEvaluasiList())
   const { filteredList: filteredTim, searchQuery, setSearchQuery } = useFilteredList(timList, {
     searchKeys: ['nama', 'nip', 'jabatan', 'email'],
   })
@@ -40,7 +46,7 @@ export function ManajemenTimEvaluasi() {
     setDeleteTimId(id)
   }
 
-  const openEditDialog = (tim: TimMonev) => {
+  const openEditDialog = (tim: TimEvaluasiAnggota) => {
     setSelectedTim(tim)
     setFormData({
       nama: tim.nama,
@@ -69,6 +75,7 @@ export function ManajemenTimEvaluasi() {
       {
         id: generateId(),
         ...formData,
+        status: 'Aktif',
         jumlahEvaluasi: 0,
       },
     ])
@@ -125,6 +132,7 @@ export function ManajemenTimEvaluasi() {
               <Table.Th>Jabatan</Table.Th>
               <Table.Th>Pangkat</Table.Th>
               <Table.Th>Email</Table.Th>
+              <Table.Th>Status</Table.Th>
               <Table.Th align="center">Aksi</Table.Th>
             </Table.HeadRow>
           </thead>
@@ -132,7 +140,7 @@ export function ManajemenTimEvaluasi() {
             {filteredTim.length === 0 ? (
               <EmptyState
                 asTableRow
-                colSpan={6}
+                colSpan={7}
                 icon={<Users className="w-8 h-8" />}
                 title="Tidak ada anggota tim"
                 description="Coba ubah kata kunci atau tambah anggota baru"
@@ -158,12 +166,32 @@ export function ManajemenTimEvaluasi() {
                   {tim.pangkat ?? '-'}
                 </Table.Td>
                 <Table.Td className="text-gray-600 text-xs">{tim.email}</Table.Td>
+                <Table.Td>
+                  <div className="flex flex-col gap-0.5">
+                    <StatusBadge
+                      status={tim.status ?? 'Aktif'}
+                      domain={STATUS_DOMAIN.TIM_PENYUSUN}
+                    />
+                    {tim.endedAt && (
+                      <span className="text-[10px] text-gray-500">
+                        Selesai: {formatDateId(tim.endedAt)}
+                      </span>
+                    )}
+                  </div>
+                </Table.Td>
                 <Table.Td className="text-center">
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex flex-wrap items-center justify-center gap-1">
                     <IconActionButton icon={Edit} title="Edit" onClick={() => openEditDialog(tim)} />
+                    {(tim.status ?? 'Aktif') === 'Aktif' && (
+                      <IconActionButton
+                        icon={UserMinus}
+                        title="Nonaktifkan"
+                        onClick={() => setNonaktifTimId(tim.id)}
+                      />
+                    )}
                     <IconActionButton
                       icon={Trash2}
-                      title="Hapus"
+                      title="Hapus permanen"
                       destructive
                       onClick={() => handleDelete(tim.id)}
                     />
@@ -294,14 +322,22 @@ export function ManajemenTimEvaluasi() {
       <ConfirmDialog
         open={deleteTimId != null}
         onOpenChange={(open) => !open && setDeleteTimId(null)}
-        title="Hapus anggota tim?"
-        description="Apakah Anda yakin ingin menghapus anggota tim ini? Tindakan ini tidak dapat dibatalkan."
+        title="Hapus permanen anggota tim?"
+        description="Data anggota akan dihapus dari daftar. Data evaluasi/arsip yang pernah mereka kerjakan tetap tersimpan per penugasan. Gunakan Nonaktifkan jika hanya mengakhiri penugasan."
         onConfirm={() => {
           if (deleteTimId) {
             setTimList((prev) => prev.filter((tim) => tim.id !== deleteTimId))
             setDeleteTimId(null)
           }
         }}
+      />
+
+      <ConfirmDialog
+        open={nonaktifTimId != null}
+        onOpenChange={(open) => !open && setNonaktifTimId(null)}
+        title="Nonaktifkan anggota tim evaluasi?"
+        description="Penugasan anggota ini akan diakhiri. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per penugasan. Riwayat tetap tercatat."
+        onConfirm={handleNonaktifkan}
       />
     </ListPageLayout>
   )

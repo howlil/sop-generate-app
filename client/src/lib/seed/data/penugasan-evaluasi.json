@@ -8,7 +8,7 @@
         { "id": "s1", "nama": "SOP Penerimaan Siswa Baru", "nomor": "SOP-DISDIK-001/2026", "status": "Sesuai", "catatan": "Proses berjalan lancar.", "rekomendasi": "Tingkatkan kapasitas server." },
         { "id": "s2", "nama": "SOP Ujian Sekolah", "nomor": "SOP-DISDIK-005/2026", "status": "Sesuai", "catatan": "Prosedur sesuai standar.", "rekomendasi": "Pertahankan standar." }
       ],
-      "timMonev": "Dra. Siti Aminah, M.Si",
+      "timEvaluasi": "Dra. Siti Aminah, M.Si",
       "status": "Terverifikasi",
       "catatan": "Evaluasi rutin Q1 2026",
       "tanggalEvaluasi": "2026-02-05",
@@ -27,7 +27,7 @@
       "sopList": [
         { "id": "s3", "nama": "SOP Perizinan Usaha Mikro", "nomor": "SOP-DPMPTSP-005/2026", "status": "Perlu Perbaikan", "catatan": "Beberapa tahapan tidak konsisten.", "rekomendasi": "Perbaiki dokumentasi." }
       ],
-      "timMonev": "Dr. Bambang Suryanto",
+      "timEvaluasi": "Dr. Bambang Suryanto",
       "status": "Selesai",
       "catatan": "Request dari Dinas Perizinan Terpadu",
       "tanggalEvaluasi": "2026-02-04",
@@ -42,7 +42,7 @@
         { "id": "s5", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026" },
         { "id": "s6", "nama": "SOP Rujukan Pasien", "nomor": "SOP-DINKES-022/2026" }
       ],
-      "timMonev": "Dr. Bambang Suryanto",
+      "timEvaluasi": "Dr. Bambang Suryanto",
       "status": "Sudah Ditugaskan",
       "catatan": "Evaluasi SOP pelayanan kesehatan"
     },
@@ -55,7 +55,7 @@
         { "id": "s5b", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026", "status": "Sesuai", "catatan": "Program sesuai jadwal.", "rekomendasi": "Tingkatkan sosialisasi." },
         { "id": "s6b", "nama": "SOP Rujukan Pasien", "nomor": "SOP-DINKES-022/2026", "status": "Sesuai", "catatan": "Sistem rujukan efektif.", "rekomendasi": "Pertahankan." }
       ],
-      "timMonev": "Ir. Dewi Kusumawati, MT",
+      "timEvaluasi": "Ir. Dewi Kusumawati, MT",
       "status": "Selesai",
       "catatan": "Evaluasi Q1 2026",
       "tanggalEvaluasi": "2026-02-03",
@@ -69,7 +69,7 @@
         { "id": "s7", "nama": "SOP Pengurusan SIM", "nomor": "SOP-DISHUB-001/2026", "status": "Sesuai", "catatan": "Proses sudah sesuai.", "rekomendasi": "Pertahankan." },
         { "id": "s8", "nama": "SOP Uji Berkala Kendaraan", "nomor": "SOP-DISHUB-002/2026", "status": "Sesuai", "catatan": "Dokumentasi lengkap.", "rekomendasi": "-" }
       ],
-      "timMonev": "Dra. Siti Aminah, M.Si",
+      "timEvaluasi": "Dra. Siti Aminah, M.Si",
       "status": "Terverifikasi",
       "catatan": "Evaluasi Maret 2026",
       "tanggalEvaluasi": "2026-03-05",
@@ -87,7 +87,7 @@
       "sopList": [
         { "id": "s9", "nama": "SOP Pengawasan Jalan", "nomor": "SOP-DISPU-010/2026", "status": "Perlu Perbaikan", "catatan": "Lampiran perlu dilengkapi.", "rekomendasi": "Upload format terbaru." }
       ],
-      "timMonev": "Dr. Bambang Suryanto",
+      "timEvaluasi": "Dr. Bambang Suryanto",
       "status": "Selesai",
       "catatan": "Evaluasi Februari 2026",
       "tanggalEvaluasi": "2026-02-20",
@@ -102,7 +102,7 @@
         { "id": "s11", "nama": "SOP Evaluasi Kinerja", "nomor": "SOP-BAPPEDA-002/2026", "status": "Sesuai", "catatan": "Sesuai standar.", "rekomendasi": "-" },
         { "id": "s12", "nama": "SOP Musrenbang", "nomor": "SOP-BAPPEDA-003/2026", "status": "Sesuai", "catatan": "Prosedur jelas.", "rekomendasi": "-" }
       ],
-      "timMonev": "Ir. Dewi Kusumawati, MT",
+      "timEvaluasi": "Ir. Dewi Kusumawati, MT",
       "status": "Terverifikasi",
       "catatan": "Evaluasi Q1 2026",
       "tanggalEvaluasi": "2026-02-15",
@@ -143,7 +143,7 @@
   },
   "minSopPerOpd": 5,
   "statusPool": ["Berlaku", "Siap Dievaluasi", "Diajukan Evaluasi", "Sedang Dievaluasi", "Revisi dari Tim Evaluasi", "Diverifikasi Biro Organisasi", "Siap Diverifikasi", "Dicabut"],
-  "timMonevOptions": [
+  "timEvaluasiOptions": [
     { "id": "tm1", "nama": "Dra. Siti Aminah, M.Si" },
     { "id": "tm2", "nama": "Dr. Bambang Suryanto" },
     { "id": "tm3", "nama": "Ir. Dewi Kusumawati, MT" }

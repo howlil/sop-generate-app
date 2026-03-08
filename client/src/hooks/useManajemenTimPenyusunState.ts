@@ -27,6 +27,9 @@ export function useManajemenTimPenyusunState() {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
   const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
+  const [nonaktifTimId, setNonaktifTimId] = useState<string | null>(null)
+  const [pindahTim, setPindahTim] = useState<TimPenyusun | null>(null)
+  const [opdTujuanId, setOpdTujuanId] = useState<string>('')
   const [formData, setFormData] = useState<TimPenyusunFormState>(initialForm)
   const [createOpdId, setCreateOpdId] = useState<string>('')
   const [expandedOpdIds, setExpandedOpdIds] = useState<Record<string, boolean>>({})
@@ -55,6 +58,12 @@ export function useManajemenTimPenyusunState() {
     setSelectedTim,
     deleteTimId,
     setDeleteTimId,
+    nonaktifTimId,
+    setNonaktifTimId,
+    pindahTim,
+    setPindahTim,
+    opdTujuanId,
+    setOpdTujuanId,
     formData,
     setFormData,
     createOpdId,

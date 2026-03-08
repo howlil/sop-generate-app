@@ -298,8 +298,8 @@ export function BeritaAcaraPage() {
               <div className="pt-2 space-y-2">
                 <span className="text-xs font-medium text-gray-900">{selectedBa.opd}</span>
                 <InfoGrid cols={4}>
-                  {selectedBa.timMonev && (
-                    <InfoField label="Evaluator:">{selectedBa.timMonev}</InfoField>
+                  {selectedBa.timEvaluasi && (
+                    <InfoField label="Evaluator:">{selectedBa.timEvaluasi}</InfoField>
                   )}
                   {selectedBa.tanggalEvaluasi && (
                     <InfoField label="Tgl Evaluasi:" icon={<Calendar />}>
@@ -387,7 +387,7 @@ export function BeritaAcaraPage() {
                     nomorBA={selectedBa.nomorBA}
                     tanggalVerifikasi={selectedBa.tanggalVerifikasi}
                     sopList={sopList.map((s) => ({ nomor: s.nomor, nama: s.nama }))}
-                    evaluator={selectedBa.timMonev}
+                    evaluator={selectedBa.timEvaluasi}
                     namaBiro={selectedBa.namaBiro}
                     tteSignaturePayload={selectedBa.tteSignaturePayload}
                   />

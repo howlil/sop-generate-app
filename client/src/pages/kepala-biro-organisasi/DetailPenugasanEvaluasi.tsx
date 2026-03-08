@@ -134,9 +134,9 @@ export function DetailPenugasanEvaluasi() {
                     {formatDateId(penugasan.tanggalRequest)}
                   </InfoField>
                 )}
-                {penugasan.timMonev && (
+                {penugasan.timEvaluasi && (
                   <InfoField label="Evaluator:">
-                    {penugasan.timMonev}
+                    {penugasan.timEvaluasi}
                   </InfoField>
                 )}
                 {penugasan.tanggalEvaluasi && (
@@ -214,7 +214,7 @@ export function DetailPenugasanEvaluasi() {
                       nomorBA={penugasan.nomorBA}
                       tanggalVerifikasi={penugasan.tanggalVerifikasi}
                       sopList={(penugasan.sopList ?? []).map((s) => ({ nomor: s.nomor, nama: s.nama }))}
-                      evaluator={penugasan.timMonev}
+                      evaluator={penugasan.timEvaluasi}
                       namaBiro={penugasan.namaBiro}
                       tteSignaturePayload={penugasan.tteSignaturePayload}
                     />

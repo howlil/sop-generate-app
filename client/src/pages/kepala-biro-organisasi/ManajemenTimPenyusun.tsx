@@ -1,5 +1,5 @@
 import { useEffect, Fragment } from 'react'
-import { Plus, Edit, Trash2, ChevronRight } from 'lucide-react'
+import { Plus, Edit, Trash2, ChevronRight, UserMinus, ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
@@ -21,6 +21,10 @@ import {
 import type { TimPenyusun } from '@/lib/types/tim'
 import { ROUTES } from '@/lib/constants/routes'
 import { TimPenyusunFormDialog } from './manajemen-tim-penyusun/TimPenyusunFormDialog'
+import { PindahOPDTimPenyusunDialog } from './manajemen-tim-penyusun/PindahOPDTimPenyusunDialog'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { formatDateId } from '@/utils/format-date'
+import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export function ManajemenTimPenyusun() {
   const { showToast } = useToast()
@@ -34,6 +38,12 @@ export function ManajemenTimPenyusun() {
     selectedTim,
     deleteTimId,
     setDeleteTimId,
+    nonaktifTimId,
+    setNonaktifTimId,
+    pindahTim,
+    setPindahTim,
+    opdTujuanId,
+    setOpdTujuanId,
     formData,
     setFormData,
     createOpdId,
@@ -88,6 +98,36 @@ export function ManajemenTimPenyusun() {
     setDeleteTimId(id)
   }
 
+  const today = new Date().toISOString().split('T')[0]
+
+  const handleNonaktifkan = () => {
+    if (!nonaktifTimId) return
+    updateTimPenyusun(nonaktifTimId, { status: 'Nonaktif', endedAt: today })
+    showToast('Tim penyusun berhasil dinonaktifkan. Data SOP yang pernah disusun tetap dapat diakses per OPD.')
+    setNonaktifTimId(null)
+  }
+
+  const handlePindahConfirm = () => {
+    if (!pindahTim || !opdTujuanId) return
+    updateTimPenyusun(pindahTim.id, { status: 'Nonaktif', endedAt: today })
+    addTimPenyusun({
+      ...pindahTim,
+      id: generateId(),
+      opdId: opdTujuanId,
+      status: 'Aktif',
+      tanggalBergabung: today,
+      endedAt: undefined,
+    })
+    showToast('Tim penyusun berhasil dipindah ke OPD baru. Penugasan lama dicatat dengan status nonaktif.')
+    setPindahTim(null)
+    setOpdTujuanId('')
+  }
+
+  const handlePindahClose = () => {
+    setPindahTim(null)
+    setOpdTujuanId('')
+  }
+
   const groupedByOpd = filteredList.reduce<Record<string, TimPenyusun[]>>((acc, tim) => {
     if (!acc[tim.opdId]) acc[tim.opdId] = []
     acc[tim.opdId].push(tim)
@@ -134,6 +174,7 @@ export function ManajemenTimPenyusun() {
               <Table.Th>Jabatan</Table.Th>
               <Table.Th>Email</Table.Th>
               <Table.Th>No. HP</Table.Th>
+              <Table.Th>Status</Table.Th>
               <Table.Th align="center">Aksi</Table.Th>
             </Table.HeadRow>
           </thead>
@@ -150,7 +191,7 @@ export function ManajemenTimPenyusun() {
                       setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
                     }
                   >
-                    <Table.Td colSpan={6}>
+                    <Table.Td colSpan={7}>
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                           <button
@@ -196,15 +237,42 @@ export function ManajemenTimPenyusun() {
                         <Table.Td className="text-gray-600">{tim.email}</Table.Td>
                         <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
                         <Table.Td>
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex flex-col gap-0.5">
+                            <StatusBadge status={tim.status} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
+                            {tim.endedAt && (
+                              <span className="text-[10px] text-gray-500">
+                                Selesai: {formatDateId(tim.endedAt)}
+                              </span>
+                            )}
+                          </div>
+                        </Table.Td>
+                        <Table.Td>
+                          <div className="flex flex-wrap items-center justify-center gap-1">
                             <IconActionButton
                               icon={Edit}
                               title="Edit"
                               onClick={() => openEditDialog(tim)}
                             />
+                            {tim.status === 'Aktif' && (
+                              <>
+                                <IconActionButton
+                                  icon={UserMinus}
+                                  title="Nonaktifkan"
+                                  onClick={() => setNonaktifTimId(tim.id)}
+                                />
+                                <IconActionButton
+                                  icon={ArrowRightLeft}
+                                  title="Pindah OPD"
+                                  onClick={() => {
+                                    setPindahTim(tim)
+                                    setOpdTujuanId(opdList.find((o) => o.id !== tim.opdId)?.id ?? '')
+                                  }}
+                                />
+                              </>
+                            )}
                             <IconActionButton
                               icon={Trash2}
-                              title="Hapus"
+                              title="Hapus permanen"
                               destructive
                               onClick={() => handleDelete(tim.id)}
                             />
@@ -260,8 +328,8 @@ export function ManajemenTimPenyusun() {
       <ConfirmDialog
         open={deleteTimId != null}
         onOpenChange={(open) => !open && setDeleteTimId(null)}
-        title="Hapus tim penyusun?"
-        description="Apakah Anda yakin ingin menghapus tim penyusun ini? Tindakan ini tidak dapat dibatalkan."
+        title="Hapus permanen tim penyusun?"
+        description="Data tim penyusun akan dihapus dari daftar. Data SOP yang pernah disusun tetap tersimpan per OPD (nama author tetap tercatat). Gunakan Nonaktifkan jika hanya mengakhiri penugasan."
         onConfirm={() => {
           if (deleteTimId) {
             removeTimPenyusun(deleteTimId)
@@ -269,6 +337,25 @@ export function ManajemenTimPenyusun() {
             setDeleteTimId(null)
           }
         }}
+      />
+
+      <ConfirmDialog
+        open={nonaktifTimId != null}
+        onOpenChange={(open) => !open && setNonaktifTimId(null)}
+        title="Nonaktifkan tim penyusun?"
+        description="Penugasan tim penyusun ini akan diakhiri. Data SOP yang pernah disusun tetap dapat diakses per OPD. Riwayat tetap tercatat."
+        onConfirm={handleNonaktifkan}
+      />
+
+      <PindahOPDTimPenyusunDialog
+        open={pindahTim != null}
+        onOpenChange={(open) => !open && handlePindahClose()}
+        tim={pindahTim}
+        opdTujuanId={opdTujuanId}
+        setOpdTujuanId={setOpdTujuanId}
+        opdList={opdList}
+        onConfirm={handlePindahConfirm}
+        onClose={handlePindahClose}
       />
     </ListPageLayout>
   )

@@ -11,6 +11,8 @@ interface TimPenyusunState {
   update: (id: string, patch: Partial<TimPenyusun>) => void
   remove: (id: string) => void
   getByOpdId: (opdId: string) => TimPenyusun[]
+  /** Hanya tim penyusun dengan status Aktif (untuk penugasan baru, dropdown, dll.). */
+  getAktifByOpdId: (opdId: string) => TimPenyusun[]
 }
 
 export const useTimPenyusunStore = create<TimPenyusunState>()((set, get) => ({
@@ -23,6 +25,8 @@ export const useTimPenyusunStore = create<TimPenyusunState>()((set, get) => ({
     })),
   remove: (id) => set((s) => ({ list: s.list.filter((t) => t.id !== id) })),
   getByOpdId: (opdId) => get().list.filter((t) => t.opdId === opdId),
+  getAktifByOpdId: (opdId) =>
+    get().list.filter((t) => t.opdId === opdId && t.status === 'Aktif'),
 }))
 
 export function getTimPenyusunList(): TimPenyusun[] {
@@ -47,4 +51,8 @@ export function removeTimPenyusun(id: string) {
 
 export function subscribeTimPenyusun(cb: () => void): () => void {
   return useTimPenyusunStore.subscribe(cb)
+}
+
+export function getTimPenyusunAktifByOpdId(opdId: string): TimPenyusun[] {
+  return useTimPenyusunStore.getState().getAktifByOpdId(opdId)
 }

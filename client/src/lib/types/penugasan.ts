@@ -25,7 +25,7 @@ export interface Penugasan {
   tanggalRequest?: string
   opd: string
   sopList: SOPItem[]
-  timMonev?: string
+  timEvaluasi?: string
   status: StatusEvaluasi
   catatan: string
   evaluationCaseId?: string

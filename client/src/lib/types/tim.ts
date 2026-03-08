@@ -1,5 +1,5 @@
 /**
- * Types tim: Tim Penyusun (Kepala OPD) dan Tim Monev/Evaluasi (Biro Organisasi).
+ * Types tim: Tim Penyusun (Kepala OPD) dan Tim Evaluasi (Biro Organisasi).
  */
 
 import type { ActorProfile } from '@/lib/types/actor'
@@ -11,6 +11,8 @@ export interface TimPenyusun extends ActorProfile {
   /** Nomor HP kontak langsung anggota tim. */
   noHP: string
   status: 'Aktif' | 'Nonaktif'
+  /** Tanggal berakhir penugasan (saat nonaktif atau pindah OPD). Data lama SOP tetap bisa diakses per OPD. */
+  endedAt?: string
   jumlahSOPDisusun: number
   tanggalBergabung: string
 }
@@ -21,7 +23,11 @@ export interface TimPenyusunOption {
   jabatan: string
 }
 
-export interface TimMonev extends ActorProfile {
+export interface TimEvaluasiAnggota extends ActorProfile {
   id: string
+  /** Aktif = masih dalam tim; Nonaktif = penugasan berakhir. Data evaluasi/arsip tetap per penugasan. */
+  status: 'Aktif' | 'Nonaktif'
+  /** Tanggal berakhir penugasan (saat dinonaktifkan). */
+  endedAt?: string
   jumlahEvaluasi: number
 }

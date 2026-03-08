@@ -1,8 +1,8 @@
 /**
  * Seed data untuk Manajemen Tim Evaluasi (Kepala Biro Organisasi).
- * Data dari data/tim-monev.json (bentuk = response API tim-evaluasi atau users).
+ * Data dari data/tim-evaluasi-anggota.json (bentuk = response API tim-evaluasi atau users).
  */
-import type { TimMonev } from '@/lib/types/tim'
-import timMonevJson from './data/tim-monev.json'
+import type { TimEvaluasiAnggota } from '@/lib/types/tim'
+import timEvaluasiAnggotaJson from './data/tim-evaluasi-anggota.json'
 
-export const SEED_TIM_MONEV_LIST: TimMonev[] = timMonevJson as TimMonev[]
+export const SEED_TIM_EVALUASI_ANGGOTA_LIST: TimEvaluasiAnggota[] = timEvaluasiAnggotaJson as TimEvaluasiAnggota[]
