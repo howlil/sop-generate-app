@@ -29,7 +29,7 @@ import { Select } from '@/components/ui/select'
 import { formatDateIdLong } from '@/utils/format-date'
 import type { EvaluationCaseSourceType } from '@/lib/types/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
-import type { StatusSOP } from '@/lib/types/sop'
+import type { StatusSOP, SOPDaftarItem } from '@/lib/types/sop'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
 import { BuatSOPDialog } from '@/components/sop/BuatSOPDialog'
 import { generateId } from '@/utils/generate-id'
@@ -47,7 +47,7 @@ export function DaftarSOP() {
   const { addEvaluationCase, getRiwayatEvaluasiForSop } = useEvaluasi()
   const { setSopStatusOverride } = useSopStatus()
   const filters = useDaftarSOPFilters()
-  const { setSopList, mergedSopList, eligibleSopsForEvaluasi, filteredList } = useDaftarSOPData({
+  const { setSopList, eligibleSopsForEvaluasi, filteredList } = useDaftarSOPData({
     searchQuery: filters.searchQuery,
     filterStatus: filters.filterStatus,
     filterPeraturan: filters.filterPeraturan,

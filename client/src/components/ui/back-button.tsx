@@ -34,7 +34,7 @@ export function BackButton({ to, onClick, children, size, className }: BackButto
       size={iconOnly ? 'icon' : 'sm'}
       className={cn(iconOnly && 'h-8 w-8', className)}
       onClick={onClick}
-      title={iconOnly ? label : undefined}
+      title={iconOnly ? (typeof label === 'string' ? label : defaultLabel) : undefined}
     >
       {content}
     </Button>

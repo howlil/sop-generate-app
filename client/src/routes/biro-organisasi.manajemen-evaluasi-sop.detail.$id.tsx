@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DetailPenugasanEvaluasi } from '@/pages/kepala-biro-organisasi/DetailPenugasanEvaluasi'
+import { DetailVerifikasiBatch } from '@/pages/kepala-biro-organisasi/DetailVerifikasiBatch'
 
 export const Route = createFileRoute(
   '/biro-organisasi/manajemen-evaluasi-sop/detail/$id'
 )({
-  component: DetailPenugasanPage,
+  component: DetailVerifikasiBatchPage,
 })
 
-function DetailPenugasanPage() {
-  return <DetailPenugasanEvaluasi />
+function DetailVerifikasiBatchPage() {
+  return <DetailVerifikasiBatch />
 }

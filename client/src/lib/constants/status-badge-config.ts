@@ -46,7 +46,7 @@ const sopStatusClasses: Record<string, string> = (() => {
   return { ...map, ...sopStatusExtraClasses }
 })()
 
-const penugasanEvaluasiClasses: Record<string, string> = {
+const evaluasiItemClasses: Record<string, string> = {
   assigned: 'bg-purple-100 text-purple-700',
   'in-progress': 'bg-blue-100 text-blue-700',
   completed: 'bg-green-100 text-green-700',
@@ -64,8 +64,8 @@ const timStatusClasses: Record<string, string> = {
   Nonaktif: 'bg-gray-100 text-gray-700',
 }
 
-/** Label tampilan per status (jika berbeda dari nilai status). */
-const penugasanLabels: Record<string, string> = {
+/** Label tampilan per status item evaluasi (jika berbeda dari nilai status). */
+const evaluasiItemLabels: Record<string, string> = {
   assigned: 'Ditugaskan',
   'in-progress': 'Dalam Pelaksanaan',
   completed: 'Selesai (Hasil Evaluasi)',
@@ -82,8 +82,8 @@ export function getStatusBadgeConfig(domain: StatusDomain, status: string): Stat
     case 'sop':
       className = sopStatusClasses[status] ?? DEFAULT_CLASS
       break
-    case 'penugasan-evaluasi':
-      className = penugasanEvaluasiClasses[status] ?? DEFAULT_CLASS
+    case 'evaluasi-item':
+      className = evaluasiItemClasses[status] ?? DEFAULT_CLASS
       break
     case 'evaluasi-biro':
       className = evaluasiBiroClasses[status] ?? DEFAULT_CLASS
@@ -96,8 +96,8 @@ export function getStatusBadgeConfig(domain: StatusDomain, status: string): Stat
   }
 
   let label = status
-  if (domain === 'penugasan-evaluasi' && penugasanLabels[status]) {
-    label = penugasanLabels[status]
+  if (domain === 'evaluasi-item' && evaluasiItemLabels[status]) {
+    label = evaluasiItemLabels[status]
   }
 
   return { label, className }

@@ -1,13 +1,12 @@
 /**
- * Seed data untuk Manajemen Evaluasi SOP (Biro: batch per OPD, verifikasi BA).
- * Tim Evaluasi: evaluasi dari Daftar SOP Evaluasi.
+ * Seed data untuk Verifikasi SOP (Biro: batch per OPD, verifikasi BA).
  * Data mentah dari data/penugasan-evaluasi.json (bentuk = response API). Relasi: opd → opd.json name, timEvaluasi → timEvaluasiOptions.
  */
 
-import type { Penugasan, PenugasanTimEvaluasiItem } from '@/lib/types/penugasan'
+import type { VerifikasiBatch, EvaluasiItem } from '@/lib/types/verifikasi-batch'
 import type { StatusSOP } from '@/lib/types/sop'
 import { SEED_OPD_LIST } from '@/lib/seed/opd-seed'
-import penugasanEvaluasiData from './data/penugasan-evaluasi.json'
+import verifikasiBatchSeedData from './data/penugasan-evaluasi.json'
 
 export type RiwayatEvaluasiSOPItem = {
   date: string
@@ -24,25 +23,25 @@ export type RiwayatEvaluasiOPDItem = {
   sopJudul?: string
 }
 
-interface PenugasanEvaluasiResponse {
-  penugasan: Penugasan[]
+interface VerifikasiBatchSeedResponse {
+  penugasan: VerifikasiBatch[]
   opdListEvaluasi: { id: string; nama: string; kode: string }[]
   baseSopByOpd: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>>
   minSopPerOpd: number
   statusPool: StatusSOP[]
   timEvaluasiOptions: { id: string; nama: string }[]
-  penugasanTimEvaluasi: PenugasanTimEvaluasiItem[]
+  penugasanTimEvaluasi: EvaluasiItem[]
   lastEvaluatedBy: Record<string, { date: string; evaluatorName: string }>
   riwayatEvaluasiSop: Record<string, RiwayatEvaluasiSOPItem[]>
   riwayatEvaluasiOpd: Record<string, RiwayatEvaluasiOPDItem[]>
 }
 
-const data = penugasanEvaluasiData as PenugasanEvaluasiResponse
+const data = verifikasiBatchSeedData as VerifikasiBatchSeedResponse
 
-export const SEED_PENUGASAN_INITIAL: Penugasan[] = data.penugasan
+export const SEED_VERIFIKASI_BATCH_INITIAL: VerifikasiBatch[] = data.penugasan
 export const SEED_OPD_LIST_EVALUASI = data.opdListEvaluasi
 export const SEED_TIM_EVALUASI_OPTIONS = data.timEvaluasiOptions
-export const SEED_PENUGASAN_TIM_EVALUASI = data.penugasanTimEvaluasi
+export const SEED_EVALUASI_ITEM_LIST = data.penugasanTimEvaluasi
 export const SEED_LAST_EVALUATED_BY = data.lastEvaluatedBy
 export const SEED_RIWAYAT_EVALUASI_SOP = data.riwayatEvaluasiSop
 export const SEED_RIWAYAT_EVALUASI_OPD = data.riwayatEvaluasiOpd

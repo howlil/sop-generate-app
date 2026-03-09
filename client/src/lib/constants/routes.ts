@@ -26,6 +26,8 @@ export const ROUTES = {
     TIM_PENYUSUN: '/biro-organisasi/manajemen-tim-penyusun',
     TIM_EVALUASI: '/biro-organisasi/manajemen-tim-evaluasi',
     EVALUASI_SOP: '/biro-organisasi/manajemen-evaluasi-sop',
+    /** Grafik evaluasi tahunan: penilaian per batch (SOP + OPD). */
+    GRAFIK_EVALUASI_TAHUNAN: '/biro-organisasi/grafik-evaluasi-tahunan',
     DETAIL_EVALUASI: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id',
     /** Detail dokumen SOP (view only). Jika status Terverifikasi Biro, Kepala OPD dapat tanda tangan di halaman ini. */
     DETAIL_SOP: '/biro-organisasi/detail-sop/$id',
@@ -48,12 +50,13 @@ export const ROUTES = {
 
   TIM_EVALUASI: {
     ROOT: '/tim-evaluasi',
-    /** Evaluasi SOP: list OPD (tanpa penugasan). */
-    PENUGASAN: '/tim-evaluasi/penugasan',
+    /** Evaluasi SOP: daftar OPD & item evaluasi. */
+    EVALUASI: '/tim-evaluasi/evaluasi',
     /** Detail evaluasi per OPD: list SOP untuk satu OPD. */
-    EVALUASI_OPD: '/tim-evaluasi/penugasan/opd/$opdId',
+    EVALUASI_OPD: '/tim-evaluasi/evaluasi/opd/$opdId',
     EVALUASI_SOP: '/tim-evaluasi/evaluasi/$sopId',
-    PENUGASAN_DETAIL: '/tim-evaluasi/penugasan/detail/$id',
+    /** Detail satu item evaluasi (legacy). */
+    EVALUASI_DETAIL: '/tim-evaluasi/evaluasi/detail/$id',
     PELAKSANAAN: '/tim-evaluasi/pelaksanaan/$id',
   },
 } as const

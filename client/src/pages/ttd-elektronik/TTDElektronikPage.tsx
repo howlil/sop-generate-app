@@ -11,6 +11,7 @@ import { TTEBuatDialog } from './TTEBuatDialog'
 const ROLE_LABEL: Record<TTERole, string> = {
   'kepala-opd': 'OPD',
   'biro-organisasi': 'Biro Organisasi',
+  'tim-penyusun': 'Tim Penyusun',
 }
 
 export interface TTDElektronikPageProps {

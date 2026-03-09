@@ -42,7 +42,7 @@ export function PindahOPDTimPenyusunDialog({
         if (!open) onClose()
       }}
       title="Pindah OPD"
-      description="Pindahkan tim penyusun ini ke OPD lain. Penugasan di OPD saat ini akan berakhir; penugasan baru dimulai di OPD tujuan. Data SOP yang pernah disusun tetap tercatat per OPD."
+      description="Pindahkan tim penyusun ini ke OPD lain. Tugas di OPD saat ini akan berakhir; jabatan baru dimulai di OPD tujuan. Data SOP yang pernah disusun tetap tercatat per OPD."
       confirmLabel="Simpan"
       cancelLabel="Batal"
       onConfirm={onConfirm}

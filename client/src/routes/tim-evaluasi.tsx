@@ -19,11 +19,11 @@ export const Route = createFileRoute('/tim-evaluasi')({
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: ROUTES.TIM_EVALUASI.PENUGASAN, label: 'Evaluasi SOP', icon: ClipboardCheck },
+  { to: ROUTES.TIM_EVALUASI.EVALUASI, label: 'Evaluasi SOP', icon: ClipboardCheck },
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_EVALUASI.PENUGASAN]: ['/tim-evaluasi/penugasan', '/tim-evaluasi/penugasan/opd', '/tim-evaluasi/evaluasi'],
+  [ROUTES.TIM_EVALUASI.EVALUASI]: ['/tim-evaluasi/evaluasi', '/tim-evaluasi/evaluasi/opd', '/tim-evaluasi/evaluasi/detail'],
 })
 
 function TimEvaluasiLayout() {

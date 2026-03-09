@@ -13,7 +13,6 @@ import {
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { Button } from '@/components/ui/button'
-import { BackButton } from '@/components/ui/back-button'
 import { FormField } from '@/components/ui/form-field'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
@@ -27,11 +26,10 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import type { StatusSOP } from '@/lib/types/sop'
 import { getStatusSopAfterEvaluasi } from '@/lib/domain/evaluasi'
-import { usePenugasanDetail } from '@/hooks/usePenugasan'
+import { useVerifikasiBatchDetail } from '@/hooks/useVerifikasiBatch'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { getPenugasanDetailById } from '@/lib/data/penugasan-detail'
+import { getEvaluasiDetailById } from '@/lib/data/evaluasi-detail'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { ROUTES } from '@/lib/constants/routes'
 
@@ -39,11 +37,11 @@ export function PelaksanaanEvaluasi() {
   const { id } = useParams({ from: '/tim-evaluasi/pelaksanaan/$id' })
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const { penugasan: penugasanFromStore, updatePenugasan } = usePenugasanDetail(id)
+  const { batch, updateBatch } = useVerifikasiBatchDetail(id)
   const { setSopStatusOverride, getSopStatusOverride } = useSopStatus()
 
-  const seedDetail = getPenugasanDetailById(id ?? '1')
-  const penugasanInfo = {
+  const seedDetail = getEvaluasiDetailById(id ?? '1')
+  const evaluasiInfo = {
     id: seedDetail?.id ?? id ?? '1',
     kode: seedDetail?.kodePenugasan ?? '-',
     opd: seedDetail?.opd ?? '-',
@@ -53,8 +51,8 @@ export function PelaksanaanEvaluasi() {
   }
 
   // Workflow: saat Tim Evaluasi membuka halaman pelaksanaan evaluasi, SOP yang dievaluasi → Sedang Dievaluasi (jika saat ini Diajukan Evaluasi)
-  const currentSopId = penugasanFromStore?.sopList?.find(
-    (s) => s.nama === penugasanInfo.sop || s.nomor === penugasanInfo.kodeSOP
+  const currentSopId = batch?.sopList?.find(
+    (s) => s.nama === evaluasiInfo.sop || s.nomor === evaluasiInfo.kodeSOP
   )?.id
   useEffect(() => {
     if (currentSopId && getSopStatusOverride(currentSopId) === 'Diajukan Evaluasi') {
@@ -79,11 +77,10 @@ export function PelaksanaanEvaluasi() {
       showToast('Status "Revisi Biro" wajib diisi komentar evaluasi', 'error')
       return
     }
-    const penugasan = penugasanFromStore
-    if (penugasan?.sopList?.length) {
+    if (batch?.sopList?.length) {
       const sopStatusBaru = getStatusSopAfterEvaluasi(statusEvaluasi)
-      const updatedSopList = penugasan.sopList.map((sop) => {
-        const isCurrentSop = sop.nama === penugasanInfo.sop || sop.nomor === penugasanInfo.kodeSOP
+      const updatedSopList = batch.sopList.map((sop) => {
+        const isCurrentSop = sop.nama === evaluasiInfo.sop || sop.nomor === evaluasiInfo.kodeSOP
         if (!isCurrentSop) return sop
         if (sop.id) setSopStatusOverride(sop.id, sopStatusBaru)
         return {
@@ -91,8 +88,8 @@ export function PelaksanaanEvaluasi() {
           status: sopStatusBaru,
           catatan: komentarEvaluasi.trim() || undefined,
         }
-      })
-      updatePenugasan({
+      }) as typeof batch.sopList
+      updateBatch({
         sopList: updatedSopList,
         status: 'Selesai',
         tanggalEvaluasi: new Date().toISOString().split('T')[0],
@@ -101,7 +98,7 @@ export function PelaksanaanEvaluasi() {
     showToast('Hasil evaluasi berhasil dikirim. Status SOP diperbarui.')
     setIsSubmitOpen(false)
     setTimeout(() => {
-      navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN })
+      navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI })
     }, 1500)
   }
 
@@ -111,12 +108,12 @@ export function PelaksanaanEvaluasi() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN },
+          { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI },
           { label: 'Evaluasi SOP' },
         ]}
-        title={penugasanInfo.sop}
-        description={`${penugasanInfo.kodeSOP} • ${penugasanInfo.opd}`}
-        backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
+        title={evaluasiInfo.sop}
+        description={`${evaluasiInfo.kodeSOP} • ${evaluasiInfo.opd}`}
+        backTo={ROUTES.TIM_EVALUASI.EVALUASI}
         backSize="icon"
         header={
           <>
@@ -135,9 +132,9 @@ export function PelaksanaanEvaluasi() {
               </div>
             </div>
             <div className="pt-2 flex flex-wrap items-center gap-3 text-xs">
-              <span className="font-medium text-gray-900">{penugasanInfo.opd}</span>
-              <span className="text-gray-700">{penugasanInfo.sop}</span>
-              <span className="text-gray-500 font-mono">{penugasanInfo.kodeSOP}</span>
+              <span className="font-medium text-gray-900">{evaluasiInfo.opd}</span>
+              <span className="text-gray-700">{evaluasiInfo.sop}</span>
+              <span className="text-gray-500 font-mono">{evaluasiInfo.kodeSOP}</span>
             </div>
           </>
         }
@@ -153,7 +150,7 @@ export function PelaksanaanEvaluasi() {
             collapseButtonIcon={<List className="w-5 h-5" />}
           >
             <SOPListCard
-              items={[{ id: penugasanInfo.id, nama: penugasanInfo.sop, nomor: penugasanInfo.kodeSOP }]}
+              items={[{ id: evaluasiInfo.id, nama: evaluasiInfo.sop, nomor: evaluasiInfo.kodeSOP }]}
             />
           </CollapsibleSidePanel>
         }
@@ -163,7 +160,7 @@ export function PelaksanaanEvaluasi() {
               <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
             </div>
             <div className="flex-1 min-h-0 flex flex-col">
-              <SOPPreviewTemplate name={penugasanInfo.sop} number={penugasanInfo.kodeSOP} />
+              <SOPPreviewTemplate name={evaluasiInfo.sop} number={evaluasiInfo.kodeSOP} />
             </div>
           </div>
         }

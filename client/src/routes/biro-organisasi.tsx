@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { Building2, FileCheck, PenLine, UserPlus, Users } from 'lucide-react'
+import { BarChart3, Building2, FileCheck, PenLine, UserPlus, Users } from 'lucide-react'
 import { isBiroOrganisasi, setRole } from '@/lib/stores/app-store'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
@@ -19,15 +19,17 @@ export const Route = createFileRoute('/biro-organisasi')({
 })
 
 const sidebarItems: SidebarItem[] = [
+  { to: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN, label: 'Grafik Evaluasi Tahunan', icon: BarChart3 },
   { to: ROUTES.BIRO_ORGANISASI.OPD, label: 'Manajemen OPD', icon: Building2 },
   { to: ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN, label: 'Manajemen Tim Penyusun', icon: UserPlus },
   { to: ROUTES.BIRO_ORGANISASI.TIM_EVALUASI, label: 'Manajemen Tim Evaluasi', icon: Users },
-  { to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP, label: 'Manajemen Evaluasi SOP', icon: FileCheck },
+  { to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP, label: 'Verifikasi SOP', icon: FileCheck },
   { to: ROUTES.BIRO_ORGANISASI.TTD, label: 'TTD Elektronik', icon: PenLine },
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
   [ROUTES.BIRO_ORGANISASI.EVALUASI_SOP]: ['/biro-organisasi/manajemen-evaluasi-sop'],
+  [ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN]: ['/biro-organisasi/grafik-evaluasi-tahunan'],
   [ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN]: ['/biro-organisasi/manajemen-tim-penyusun'],
 })
 

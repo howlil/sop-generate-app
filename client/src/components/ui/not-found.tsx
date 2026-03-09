@@ -80,7 +80,7 @@ export function NotFoundPage({
 /* ─── Inline "resource tidak ditemukan" + tombol kembali ─────────────────── */
 
 export interface NotFoundWithBackProps {
-  /** Pesan utama, e.g. "Penugasan tidak ditemukan." */
+  /** Pesan utama, e.g. "Data tidak ditemukan." */
   message?: string
   /** Tombol kembali (pakai Link + Button atau Button onClick dengan navigate) */
   backAction: ReactNode

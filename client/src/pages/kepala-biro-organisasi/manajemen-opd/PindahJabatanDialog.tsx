@@ -36,7 +36,7 @@ export function PindahJabatanDialog({
         if (!open) onClose()
       }}
       title="Pindah jabatan"
-      description="Pindahkan kepala OPD ini ke OPD lain. Jabatan aktif saat ini (jika ada) akan berakhir; penugasan baru dimulai di OPD tujuan."
+      description="Pindahkan kepala OPD ini ke OPD lain. Jabatan aktif saat ini (jika ada) akan berakhir; jabatan baru dimulai di OPD tujuan."
       confirmLabel="Simpan"
       cancelLabel="Batal"
       onConfirm={onConfirm}

@@ -1,8 +1,7 @@
 /**
- * Data layer: penugasan evaluasi (OPD evaluasi, SOP per OPD, riwayat, daftar penugasan tim evaluasi).
- * Semua akses ke penugasan-evaluasi-seed dikonsolidasikan di sini.
+ * Data layer: evaluasi & verifikasi (OPD evaluasi, SOP per OPD, riwayat, daftar item evaluasi).
+ * Semua akses ke verifikasi-batch-seed dikonsolidasikan di sini.
  */
-import type { PenugasanTimEvaluasiItem } from '@/lib/types/penugasan'
 import type { StatusSOP } from '@/lib/types/sop'
 import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
 import {
@@ -10,11 +9,10 @@ import {
   SEED_SOP_BY_OPD,
   SEED_RIWAYAT_EVALUASI_OPD,
   SEED_RIWAYAT_EVALUASI_SOP,
-  SEED_PENUGASAN_TIM_EVALUASI,
   SEED_LAST_EVALUATED_BY,
   type RiwayatEvaluasiSOPItem,
   type RiwayatEvaluasiOPDItem,
-} from '@/lib/seed/penugasan-evaluasi-seed'
+} from '@/lib/seed/verifikasi-batch-seed'
 
 export type EvaluasiRecordMap = Record<string, { date: string; evaluatorName: string }>
 
@@ -34,10 +32,6 @@ export function getRiwayatEvaluasiOpd(): Record<string, RiwayatEvaluasiOPDItem[]
 
 export function getRiwayatEvaluasiSop(): Record<string, RiwayatEvaluasiSOPItem[]> {
   return { ...SEED_RIWAYAT_EVALUASI_SOP }
-}
-
-export function getPenugasanTimEvaluasiList(): PenugasanTimEvaluasiItem[] {
-  return [...SEED_PENUGASAN_TIM_EVALUASI]
 }
 
 /** Data awal "terakhir evaluasi per SOP" (digunakan di DetailEvaluasiOPD). */

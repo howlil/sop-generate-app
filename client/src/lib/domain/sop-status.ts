@@ -4,7 +4,7 @@
  * Workflow: Biro TTD BA → Kepala OPD TTD BA (BA milik OPD) → Kepala OPD TTD tiap SOP (Berlaku).
  */
 import type { StatusSOP } from '@/lib/types/sop'
-import type { Penugasan } from '@/lib/types/penugasan'
+import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
 
 /** Status saat Tim Penyusun boleh mengedit isi SOP (alur: Draft, Sedang Disusun, revisi). Sesuai StatusSOP di lib/types/sop. */
 const EDITABLE_STATUSES: StatusSOP[] = [
@@ -25,16 +25,16 @@ export function isSopEligibleForSigning(status: StatusSOP): boolean {
 }
 
 /**
- * Mencari penugasan (batch) yang berisi SOP ini untuk OPD tertentu.
+ * Mencari batch verifikasi yang berisi SOP ini untuk OPD tertentu.
  * Digunakan untuk cek apakah BA sudah ditandatangani Kepala OPD sebelum boleh TTD per SOP.
  */
-export function getPenugasanContainingSop(
-  penugasanList: Penugasan[],
+export function getVerifikasiBatchContainingSop(
+  batchList: VerifikasiBatch[],
   opdName: string,
   sopId: string,
   nomorSOP?: string
-): Penugasan | undefined {
-  return penugasanList.find(
+): VerifikasiBatch | undefined {
+  return batchList.find(
     (p) =>
       p.opd === opdName &&
       (p.sopList ?? []).some(
@@ -45,22 +45,22 @@ export function getPenugasanContainingSop(
 
 /**
  * Kepala OPD boleh TTD SOP hanya jika: (1) status SOP = Diverifikasi Biro, dan
- * (2) bila SOP masuk dalam suatu Berita Acara (penugasan) untuk OPD tersebut, BA harus sudah ditandatangani Kepala OPD.
+ * (2) bila SOP masuk dalam suatu Berita Acara (batch) untuk OPD tersebut, BA harus sudah ditandatangani Kepala OPD.
  */
 export function canKepalaOpdSignSop(
   status: StatusSOP,
-  penugasanList: Penugasan[],
+  batchList: VerifikasiBatch[],
   opdName: string,
   sopId: string,
   nomorSOP?: string
 ): boolean {
   if (!isSopEligibleForSigning(status)) return false
-  const penugasan = getPenugasanContainingSop(penugasanList, opdName, sopId, nomorSOP)
-  if (!penugasan) return true
-  return penugasan.isSignedByKepalaOPD === true
+  const batch = getVerifikasiBatchContainingSop(batchList, opdName, sopId, nomorSOP)
+  if (!batch) return true
+  return batch.isSignedByKepalaOPD === true
 }
 
-export function canVerifyPenugasan(item: Penugasan): boolean {
+export function canVerifyBatch(item: VerifikasiBatch): boolean {
   return (
     item.status === 'Selesai' &&
     (item.sopList?.length ?? 0) > 0 &&
@@ -71,9 +71,9 @@ export function canVerifyPenugasan(item: Penugasan): boolean {
 /** Status SOP setelah Biro verifikasi Berita Acara (semua SOP di batch dapat status ini). */
 export const STATUS_SOP_AFTER_VERIFIKASI_BIRO: StatusSOP = 'Diverifikasi Biro Organisasi'
 
-/** Daftar id SOP dari batch penugasan (untuk update status setelah verifikasi BA). */
-export function getSopIdsFromPenugasanBatch(penugasan: Penugasan): string[] {
-  return (penugasan.sopList ?? []).map((s) => s.id).filter(Boolean) as string[]
+/** Daftar id SOP dari batch verifikasi (untuk update status setelah verifikasi BA). */
+export function getSopIdsFromVerifikasiBatch(batch: VerifikasiBatch): string[] {
+  return (batch.sopList ?? []).map((s) => s.id).filter(Boolean) as string[]
 }
 
 export function generateBANumber(verifiedCount: number): string {

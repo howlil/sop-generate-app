@@ -118,7 +118,7 @@ export function ManajemenTimPenyusun() {
       tanggalBergabung: today,
       endedAt: undefined,
     })
-    showToast('Tim penyusun berhasil dipindah ke OPD baru. Penugasan lama dicatat dengan status nonaktif.')
+    showToast('Tim penyusun berhasil dipindah ke OPD baru. Tugas lama dicatat dengan status nonaktif.')
     setPindahTim(null)
     setOpdTujuanId('')
   }
@@ -329,7 +329,7 @@ export function ManajemenTimPenyusun() {
         open={deleteTimId != null}
         onOpenChange={(open) => !open && setDeleteTimId(null)}
         title="Hapus permanen tim penyusun?"
-        description="Data tim penyusun akan dihapus dari daftar. Data SOP yang pernah disusun tetap tersimpan per OPD (nama author tetap tercatat). Gunakan Nonaktifkan jika hanya mengakhiri penugasan."
+        description="Data tim penyusun akan dihapus dari daftar. Data SOP yang pernah disusun tetap tersimpan per OPD (nama author tetap tercatat). Gunakan Nonaktifkan jika hanya mengakhiri tugas."
         onConfirm={() => {
           if (deleteTimId) {
             removeTimPenyusun(deleteTimId)
@@ -343,7 +343,7 @@ export function ManajemenTimPenyusun() {
         open={nonaktifTimId != null}
         onOpenChange={(open) => !open && setNonaktifTimId(null)}
         title="Nonaktifkan tim penyusun?"
-        description="Penugasan tim penyusun ini akan diakhiri. Data SOP yang pernah disusun tetap dapat diakses per OPD. Riwayat tetap tercatat."
+        description="Tugas tim penyusun ini akan diakhiri. Data SOP yang pernah disusun tetap dapat diakses per OPD. Riwayat tetap tercatat."
         onConfirm={handleNonaktifkan}
       />
 

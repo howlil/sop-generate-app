@@ -14,6 +14,8 @@ export interface SelectProps
   > {
   value?: string
   onValueChange?: (value: string) => void
+  /** Native change handler (optional, in addition to onValueChange) */
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
   /** Opsi dari array (alternatif dari children <option>) */
   options?: SelectOption[]
   /** Placeholder untuk value kosong (option disabled dengan value "") */

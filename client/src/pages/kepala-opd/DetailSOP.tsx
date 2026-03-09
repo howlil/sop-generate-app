@@ -29,12 +29,12 @@ import {
   getSopViewMetadata,
   getSopViewVersions,
 } from '@/lib/data/sop-detail'
-import { getLastEvaluatedByInitial } from '@/lib/data/penugasan-evaluasi'
+import { getLastEvaluatedByInitial } from '@/lib/data/evaluasi-data'
 import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { usePenugasanList } from '@/hooks/usePenugasan'
+import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/lib/domain/sop-status'
 import { getKepalaOPDOpdId } from '@/lib/data/role-display'
 import { useOpdList } from '@/lib/data/opd'
@@ -59,14 +59,14 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   } = props
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
-  const { list: penugasanList } = usePenugasanList()
+  const { list: batchList } = useVerifikasiBatchList()
   const opdId = getKepalaOPDOpdId()
   const opds = useOpdList()
   const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
   const params = useParams({ strict: false })
   const id = 'id' in params ? params.id : undefined
   const location = useLocation()
-  const penugasanState = location.state as {
+  const detailMetaState = location.state as {
     sopStatus?: StatusSOP
     waktuPenugasan?: string
     unitTerkait?: string
@@ -76,7 +76,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   } | undefined
   const sopStatus: StatusSOP =
     (id ? getSopStatusOverride(id) : undefined) ??
-    penugasanState?.sopStatus ??
+    detailMetaState?.sopStatus ??
     'Draft'
 
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false)
@@ -120,7 +120,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const effectiveBackTo = backTo ?? ROUTES.KEPALA_OPD.PANTAU_SOP
   const canShowSignButton =
     showSignButton &&
-    canKepalaOpdSignSop(sopStatus, penugasanList, opdName, id ?? '', metadata.number)
+    canKepalaOpdSignSop(sopStatus, batchList, opdName, id ?? '', metadata.number)
   const needBaSignFirst =
     showSignButton &&
     isSopEligibleForSigning(sopStatus) &&
@@ -193,7 +193,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   )
 
   const hasProyekInfo = Boolean(
-    penugasanState?.waktuPenugasan ?? penugasanState?.unitTerkait ?? penugasanState?.timPenyusun ?? penugasanState?.deskripsiProyek
+    detailMetaState?.waktuPenugasan ?? detailMetaState?.unitTerkait ?? detailMetaState?.timPenyusun ?? detailMetaState?.deskripsiProyek
   )
 
   return (
@@ -214,32 +214,32 @@ export function DetailSOP(props: DetailSOPProps = {}) {
                 <h2 className="text-sm font-semibold text-gray-900">Informasi SOP</h2>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-1.5 pt-2">
-                {penugasanState?.waktuPenugasan && (
+                {detailMetaState?.waktuPenugasan && (
                   <InfoField label="Waktu pembuatan" icon={<Calendar />}>
-                    {penugasanState.waktuPenugasan.includes('-')
-                      ? formatDateIdLong(penugasanState.waktuPenugasan + 'T00:00:00')
-                      : penugasanState.waktuPenugasan}
+                    {detailMetaState.waktuPenugasan.includes('-')
+                      ? formatDateIdLong(detailMetaState.waktuPenugasan + 'T00:00:00')
+                      : detailMetaState.waktuPenugasan}
                   </InfoField>
                 )}
-                {penugasanState?.unitTerkait && (
+                {detailMetaState?.unitTerkait && (
                   <InfoField label="Unit" icon={<Building2 />}>
-                    {penugasanState.unitTerkait}
+                    {detailMetaState.unitTerkait}
                   </InfoField>
                 )}
-                {penugasanState?.timPenyusun && (
+                {detailMetaState?.timPenyusun && (
                   <InfoField label="Tim" icon={<Users />}>
-                    {penugasanState.timPenyusun}
+                    {detailMetaState.timPenyusun}
                   </InfoField>
                 )}
-                {penugasanState?.terakhirDiperbarui && (
+                {detailMetaState?.terakhirDiperbarui && (
                   <InfoField label="Diperbarui" icon={<RefreshCw />}>
-                    {penugasanState.terakhirDiperbarui}
+                    {detailMetaState.terakhirDiperbarui}
                   </InfoField>
                 )}
               </div>
-              {penugasanState?.deskripsiProyek && (
-                <p className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-600 leading-relaxed max-w-full" title={penugasanState.deskripsiProyek}>
-                  {penugasanState.deskripsiProyek}
+              {detailMetaState?.deskripsiProyek && (
+                <p className="mt-2 pt-2 border-t border-gray-200 text-xs text-gray-600 leading-relaxed max-w-full" title={detailMetaState.deskripsiProyek}>
+                  {detailMetaState.deskripsiProyek}
                 </p>
               )}
             </>

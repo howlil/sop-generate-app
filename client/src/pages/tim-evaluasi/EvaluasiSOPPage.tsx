@@ -1,5 +1,5 @@
 /**
- * Halaman evaluasi SOP oleh Tim Evaluasi (langsung per SOP, tanpa penugasan).
+ * Halaman evaluasi SOP oleh Tim Evaluasi (langsung per SOP, langsung per SOP).
  * Hasil: Sesuai → status SOP "Siap Diverifikasi"; Revisi Biro → "Revisi dari Tim Evaluasi".
  */
 import { useState, useMemo, useEffect } from 'react'
@@ -76,7 +76,7 @@ export function EvaluasiSOPPage() {
     setSopStatusOverride(sopId, newStatus)
     showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
     setIsSubmitOpen(false)
-    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN }), 1500)
+    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
   }
 
   const isFormComplete =
@@ -85,7 +85,7 @@ export function EvaluasiSOPPage() {
   if (!sop) {
     return (
       <div className="space-y-3 p-4">
-        <BackButton to={ROUTES.TIM_EVALUASI.PENUGASAN} />
+        <BackButton to={ROUTES.TIM_EVALUASI.EVALUASI} />
         <p className="text-sm text-gray-600">SOP tidak ditemukan.</p>
       </div>
     )
@@ -95,12 +95,12 @@ export function EvaluasiSOPPage() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN },
+          { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI },
           { label: 'Evaluasi SOP' },
         ]}
         title={sop.judul}
         description={sop.nomorSOP}
-        backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
+        backTo={ROUTES.TIM_EVALUASI.EVALUASI}
         backSize="icon"
         header={
           <>

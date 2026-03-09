@@ -8,7 +8,7 @@ import type { StatusSOP } from '@/lib/types/sop'
 /** Status saat Tim Penyusun boleh mengajukan Request Evaluasi (dari Daftar SOP). */
 export const STATUS_SOP_CAN_REQUEST_EVALUASI: StatusSOP[] = ['Siap Dievaluasi', 'Berlaku']
 
-/** Status SOP yang layak dievaluasi oleh Tim Evaluasi (tanpa penugasan). */
+/** Status SOP yang layak dievaluasi oleh Tim Evaluasi (langsung per SOP). */
 export const STATUS_SOP_CAN_SELECT_FOR_EVALUASI: StatusSOP[] = [
   'Siap Dievaluasi',
   'Berlaku',

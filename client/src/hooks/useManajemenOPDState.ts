@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { KepalaOPD } from '@/lib/types/opd'
 
 export type KepalaFormState = { name: string; nip: string; email: string; phone: string }
-export type PenugasanFormState = { opdId: string; name: string; nip: string; email: string }
+export type FormTambahKepalaState = { opdId: string; name: string; nip: string; email: string }
 export type PindahFormState = { opdId: string }
 export type PindahDialogPerson = { name: string; email: string; phone: string; nip?: string }
 export type RiwayatDialogPerson = { name: string; email: string }
@@ -13,7 +13,7 @@ export type RiwayatDialogPerson = { name: string; email: string }
  */
 export function useManajemenOPDState() {
   const [kepalaFormOpen, setKepalaFormOpen] = useState(false)
-  const [tambahPenugasanOpen, setTambahPenugasanOpen] = useState(false)
+  const [tambahKepalaOpen, setTambahKepalaOpen] = useState(false)
   const [pindahDialogOpen, setPindahDialogOpen] = useState(false)
   const [riwayatDialogOpen, setRiwayatDialogOpen] = useState(false)
   const [editingKepala, setEditingKepala] = useState<KepalaOPD | null>(null)
@@ -23,7 +23,7 @@ export function useManajemenOPDState() {
     email: '',
     phone: '',
   })
-  const [penugasanForm, setPenugasanForm] = useState<PenugasanFormState>({
+  const [formTambahKepala, setFormTambahKepala] = useState<FormTambahKepalaState>({
     opdId: '',
     name: '',
     nip: '',
@@ -36,8 +36,8 @@ export function useManajemenOPDState() {
   return {
     kepalaFormOpen,
     setKepalaFormOpen,
-    tambahPenugasanOpen,
-    setTambahPenugasanOpen,
+    tambahKepalaOpen,
+    setTambahKepalaOpen,
     pindahDialogOpen,
     setPindahDialogOpen,
     riwayatDialogOpen,
@@ -46,8 +46,8 @@ export function useManajemenOPDState() {
     setEditingKepala,
     kepalaForm,
     setKepalaForm,
-    penugasanForm,
-    setPenugasanForm,
+    formTambahKepala,
+    setFormTambahKepala,
     pindahForm,
     setPindahForm,
     riwayatDialogPerson,

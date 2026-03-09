@@ -11,7 +11,7 @@ interface TimPenyusunState {
   update: (id: string, patch: Partial<TimPenyusun>) => void
   remove: (id: string) => void
   getByOpdId: (opdId: string) => TimPenyusun[]
-  /** Hanya tim penyusun dengan status Aktif (untuk penugasan baru, dropdown, dll.). */
+  /** Hanya tim penyusun dengan status Aktif (untuk tugas baru, dropdown, dll.). */
   getAktifByOpdId: (opdId: string) => TimPenyusun[]
 }
 

@@ -5,7 +5,7 @@
 export const STATUS_DOMAIN = {
   SOP: 'sop',
   EVALUASI_BIRO: 'evaluasi-biro',
-  PENUGASAN_EVALUASI: 'penugasan-evaluasi',
+  EVALUASI_ITEM: 'evaluasi-item',
   TIM_PENYUSUN: 'tim-penyusun',
 } as const
 

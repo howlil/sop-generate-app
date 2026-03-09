@@ -1,5 +1,5 @@
 /**
- * Hook derivasi data Manajemen OPD: getter Kepala per OPD, daftar unik person + penugasan aktif, filter OPD/person.
+ * Hook derivasi data Manajemen OPD: getter Kepala per OPD, daftar unik person + jabatan aktif, filter OPD/person.
  * Memindahkan logic derivasi dari ManajemenOPD agar page tetap ringan dan logic bisa dipakai ulang.
  */
 import { useCallback, useMemo } from 'react'

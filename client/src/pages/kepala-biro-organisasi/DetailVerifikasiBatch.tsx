@@ -4,7 +4,7 @@ import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lu
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getOpdListEvaluasi, getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/data/penugasan-evaluasi'
+import { getOpdListEvaluasi, getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { ROUTES } from '@/lib/constants/routes'
@@ -14,17 +14,17 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { useToast } from '@/hooks/useUI'
-import { usePenugasanEvaluasi } from '@/hooks/usePenugasanEvaluasi'
+import { useVerifikasiBatchDetailPage } from '@/hooks/useVerifikasiBatchDetail'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
 
-export function DetailPenugasanEvaluasi() {
+export function DetailVerifikasiBatch() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
-  const { penugasan, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify } = usePenugasanEvaluasi(id)
+  const { batch, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify } = useVerifikasiBatchDetailPage(id)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('sop')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -32,13 +32,13 @@ export function DetailPenugasanEvaluasi() {
 
   const tte = useTTESignature({
     role: 'biro-organisasi',
-    documentId: penugasan ? `batch-evaluasi-${penugasan.id}` : undefined,
+    documentId: batch ? `batch-evaluasi-${batch.id}` : undefined,
   })
 
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
-      documentLabel: penugasan?.opd ?? '',
-      referenceId: penugasan?.id ?? '',
+      documentLabel: batch?.opd ?? '',
+      referenceId: batch?.id ?? '',
     },
     (payload) => {
       handleVerifySuccess(payload)
@@ -46,21 +46,21 @@ export function DetailPenugasanEvaluasi() {
     }
   )
 
-  const sopList = penugasan?.sopList ?? []
+  const sopList = batch?.sopList ?? []
   const firstSopId = sopList[0]?.id ?? null
   const effectiveSopId = selectedSopId ?? firstSopId
   const displaySop = sopList.find((s) => s.id === effectiveSopId)
   const opdListEvaluasi = getOpdListEvaluasi()
   const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
   const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
-  const opdId = penugasan ? opdListEvaluasi.find((o) => o.nama === penugasan.opd)?.id ?? null : null
+  const opdId = batch ? opdListEvaluasi.find((o) => o.nama === batch.opd)?.id ?? null : null
   const riwayatOpd = opdId ? (riwayatEvaluasiOpd[opdId] ?? []) : []
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
 
-  if (!penugasan) {
+  if (!batch) {
     return (
       <NotFoundWithBack
-        message="Penugasan tidak ditemukan."
+        message="Batch verifikasi tidak ditemukan."
         backAction={
           <BackButton to={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}>Kembali</BackButton>
         }
@@ -72,7 +72,7 @@ export function DetailPenugasanEvaluasi() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Manajemen Evaluasi SOP', to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
+          { label: 'Verifikasi SOP', to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
           { label: 'Detail' },
         ]}
         title="Detail Evaluasi SOP"
@@ -95,7 +95,7 @@ export function DetailPenugasanEvaluasi() {
                 >
                   <Printer className="w-3.5 h-3.5" /> Cetak SOP
                 </Button>
-                {penugasan.isVerified && penugasan.nomorBA && (
+                {batch.isVerified && batch.nomorBA && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -125,33 +125,33 @@ export function DetailPenugasanEvaluasi() {
             </div>
             <div className="pt-2 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-gray-900">{penugasan.opd}</span>
-                <StatusBadge status={penugasan.status} domain={STATUS_DOMAIN.EVALUASI_BIRO} className="text-xs h-4 px-1.5 border-0" />
+                <span className="text-xs font-medium text-gray-900">{batch.opd}</span>
+                <StatusBadge status={batch.status} domain={STATUS_DOMAIN.EVALUASI_BIRO} className="text-xs h-4 px-1.5 border-0" />
               </div>
               <InfoGrid cols={4}>
-                {penugasan.tanggalRequest && (
+                {batch.tanggalRequest && (
                   <InfoField label="Tanggal Request:" icon={<Calendar />}>
-                    {formatDateId(penugasan.tanggalRequest)}
+                    {formatDateId(batch.tanggalRequest)}
                   </InfoField>
                 )}
-                {penugasan.timEvaluasi && (
+                {batch.timEvaluasi && (
                   <InfoField label="Evaluator:">
-                    {penugasan.timEvaluasi}
+                    {batch.timEvaluasi}
                   </InfoField>
                 )}
-                {penugasan.tanggalEvaluasi && (
+                {batch.tanggalEvaluasi && (
                   <InfoField label="Tgl Evaluasi:" icon={<Calendar />}>
-                    {formatDateId(penugasan.tanggalEvaluasi)}
+                    {formatDateId(batch.tanggalEvaluasi)}
                   </InfoField>
                 )}
-                {penugasan.tanggalVerifikasi && (
+                {batch.tanggalVerifikasi && (
                   <InfoField label="Tgl Verifikasi:" icon={<Calendar />}>
-                    {formatDateId(penugasan.tanggalVerifikasi)}
+                    {formatDateId(batch.tanggalVerifikasi)}
                   </InfoField>
                 )}
-                {penugasan.nomorBA && (
+                {batch.nomorBA && (
                   <InfoField label="Nomor BA:">
-                    {penugasan.nomorBA}
+                    {batch.nomorBA}
                   </InfoField>
                 )}
               </InfoGrid>
@@ -187,7 +187,7 @@ export function DetailPenugasanEvaluasi() {
               >
                 Preview SOP
               </button>
-              {penugasan.isVerified && penugasan.nomorBA && (
+              {batch.isVerified && batch.nomorBA && (
                 <button
                   type="button"
                   onClick={() => setPreviewMainTab('ba')}
@@ -207,16 +207,16 @@ export function DetailPenugasanEvaluasi() {
                   </div>
                 )
               ) : (
-                penugasan.nomorBA && penugasan.isVerified && (
+                batch.nomorBA && batch.isVerified && (
                   <div className="p-4 overflow-auto scrollbar-hide">
                     <BeritaAcaraTemplate
-                      opd={penugasan.opd}
-                      nomorBA={penugasan.nomorBA}
-                      tanggalVerifikasi={penugasan.tanggalVerifikasi}
-                      sopList={(penugasan.sopList ?? []).map((s) => ({ nomor: s.nomor, nama: s.nama }))}
-                      evaluator={penugasan.timEvaluasi}
-                      namaBiro={penugasan.namaBiro}
-                      tteSignaturePayload={penugasan.tteSignaturePayload}
+                      opd={batch.opd}
+                      nomorBA={batch.nomorBA}
+                      tanggalVerifikasi={batch.tanggalVerifikasi}
+                      sopList={(batch.sopList ?? []).map((s) => ({ nomor: s.nomor, nama: s.nama }))}
+                      evaluator={batch.timEvaluasi}
+                      namaBiro={batch.namaBiro}
+                      tteSignaturePayload={batch.tteSignaturePayload}
                     />
                   </div>
                 )

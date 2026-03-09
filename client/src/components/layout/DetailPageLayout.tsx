@@ -28,7 +28,7 @@ export interface DetailPageLayoutProps {
 
 /**
  * Layout standar halaman detail: PageHeader (dengan BackButton) + DetailWorkspace.
- * Dipakai di DetailSOP, DetailPenugasanEvaluasi, DetailSOPPenyusun, PelaksanaanEvaluasi, dll.
+ * Dipakai di DetailSOP, DetailVerifikasiBatch, DetailSOPPenyusun, PelaksanaanEvaluasi, dll.
  */
 export function DetailPageLayout({
   breadcrumb,

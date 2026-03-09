@@ -20,14 +20,14 @@ import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { usePenugasanList } from '@/hooks/usePenugasan'
+import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { canKepalaOpdSignSop } from '@/lib/domain/sop-status'
 import type { StatusSOP } from '@/lib/types/sop'
 import { getKepalaOPDOpdId } from '@/lib/data/role-display'
 import { useOpdList } from '@/lib/data/opd'
-import { getRiwayatEvaluasiSop } from '@/lib/data/penugasan-evaluasi'
+import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
@@ -39,10 +39,10 @@ export function BeritaAcaraPage() {
   const opdId = getKepalaOPDOpdId()
   const opds = useOpdList()
   const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
-  const { list: penugasanList, updatePenugasan } = usePenugasanList()
+  const { list: batchList, updateBatch } = useVerifikasiBatchList()
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
-  const [signingPenugasanId, setSigningPenugasanId] = useState<string | null>(null)
+  const [signingBatchId, setSigningBatchId] = useState<string | null>(null)
   const [signingSopId, setSigningSopId] = useState<string | null>(null)
   const selectedBaId = searchId ?? null
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
@@ -54,19 +54,19 @@ export function BeritaAcaraPage() {
 
   const baMenungguTTD = useMemo(
     () =>
-      penugasanList.filter(
+      batchList.filter(
         (p) => p.opd === opdName && p.isVerified === true && p.isSignedByKepalaOPD !== true
       ),
-    [penugasanList, opdName]
+    [batchList, opdName]
   )
 
-  /** BA yang dipilih (dari semua penugasan OPD) agar setelah TTD BA tetap bisa tampil & TTD SOP. */
+  /** BA yang dipilih (dari semua batch OPD) agar setelah TTD BA tetap bisa tampil & TTD SOP. */
   const selectedBa = useMemo(
     () =>
       selectedBaId
-        ? penugasanList.find((p) => p.opd === opdName && p.id === selectedBaId) ?? null
+        ? batchList.find((p) => p.opd === opdName && p.id === selectedBaId) ?? null
         : null,
-    [penugasanList, opdName, selectedBaId]
+    [batchList, opdName, selectedBaId]
   )
 
   const sopList = selectedBa?.sopList ?? []
@@ -78,35 +78,35 @@ export function BeritaAcaraPage() {
     setSelectedSopId(null)
   }, [selectedBaId])
 
-  const signingPenugasan = useMemo(
-    () => (signingPenugasanId ? penugasanList.find((p) => p.id === signingPenugasanId) : null),
-    [penugasanList, signingPenugasanId]
+  const signingBatch = useMemo(
+    () => (signingBatchId ? batchList.find((p) => p.id === signingBatchId) : null),
+    [batchList, signingBatchId]
   )
 
   const tte = useTTESignature({
     role: 'kepala-opd',
-    documentId: signingPenugasan ? `berita-acara-${signingPenugasan.id}` : undefined,
+    documentId: signingBatch ? `berita-acara-${signingBatch.id}` : undefined,
   })
 
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
-      documentLabel: `Berita Acara ${signingPenugasan?.nomorBA ?? ''}`,
-      referenceId: signingPenugasan?.nomorBA ?? signingPenugasan?.id ?? '',
+      documentLabel: `Berita Acara ${signingBatch?.nomorBA ?? ''}`,
+      referenceId: signingBatch?.nomorBA ?? signingBatch?.id ?? '',
     },
     () => {
-      if (!signingPenugasanId) return
+      if (!signingBatchId) return
       const today = new Date().toISOString().split('T')[0]
-      updatePenugasan(signingPenugasanId, {
+      updateBatch(signingBatchId, {
         isSignedByKepalaOPD: true,
         tanggalTTDBaByOpd: today,
       })
       showToast('Berita Acara berhasil ditandatangani. Anda dapat mengesahkan masing-masing SOP di bawah.')
-      setSigningPenugasanId(null)
+      setSigningBatchId(null)
     }
   )
 
-  const openSignDialog = (id: string) => setSigningPenugasanId(id)
-  const closeSignDialog = () => setSigningPenugasanId(null)
+  const openSignDialog = (id: string) => setSigningBatchId(id)
+  const closeSignDialog = () => setSigningBatchId(null)
   const openSignSopDialog = (sopId: string) => setSigningSopId(sopId)
   const closeSignSopDialog = () => setSigningSopId(null)
 
@@ -203,7 +203,7 @@ export function BeritaAcaraPage() {
         </ListPageLayout>
 
         <PinVerificationDialog
-          open={signingPenugasanId !== null}
+          open={signingBatchId !== null}
           onOpenChange={(open) => !open && closeSignDialog()}
           title="Tandatangani Berita Acara"
           description="Masukkan PIN TTE BSRE untuk menandatangani Berita Acara. Setelah ini Anda dapat mengesahkan masing-masing SOP di detail Berita Acara (tab Preview SOP) atau di Pantau SOP."
@@ -224,17 +224,17 @@ export function BeritaAcaraPage() {
     !!selectedBa?.isSignedByKepalaOPD &&
     !!displaySop &&
     !!sopStatusForDisplay &&
-    canKepalaOpdSignSop(sopStatusForDisplay, penugasanList, opdName, displaySop.id, displaySop.nomor) &&
+    canKepalaOpdSignSop(sopStatusForDisplay, batchList, opdName, displaySop.id, displaySop.nomor) &&
     tteSop.canSign
   const firstSignableSop = useMemo(
     () =>
       selectedBa?.isSignedByKepalaOPD && tteSop.canSign
         ? sopList.find((s) => {
             const st = (getSopStatusOverride(s.id) ?? s.status) as StatusSOP
-            return canKepalaOpdSignSop(st, penugasanList, opdName, s.id, s.nomor)
+            return canKepalaOpdSignSop(st, batchList, opdName, s.id, s.nomor)
           })
         : null,
-    [selectedBa?.isSignedByKepalaOPD, tteSop.canSign, sopList, penugasanList, opdName, getSopStatusOverride]
+    [selectedBa?.isSignedByKepalaOPD, tteSop.canSign, sopList, batchList, opdName, getSopStatusOverride]
   )
   const hasAnySignableSop = !!firstSignableSop
 
@@ -450,7 +450,7 @@ export function BeritaAcaraPage() {
       />
 
       <PinVerificationDialog
-        open={signingPenugasanId !== null}
+        open={signingBatchId !== null}
         onOpenChange={(open) => !open && closeSignDialog()}
         title="Tandatangani Berita Acara"
         description="Masukkan PIN TTE BSRE untuk menandatangani Berita Acara. Setelah ini Anda dapat mengesahkan masing-masing SOP di bawah."

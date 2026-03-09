@@ -19,7 +19,7 @@ export function ManajemenOPD() {
   const { showToast } = useToast()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchUserQuery, setSearchUserQuery] = useState('')
-  const [activeTab, setActiveTab] = useState<'opd' | 'penugasan'>('opd')
+  const [activeTab, setActiveTab] = useState<'opd' | 'kepala'>('opd')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
@@ -34,8 +34,8 @@ export function ManajemenOPD() {
   const {
     kepalaFormOpen,
     setKepalaFormOpen,
-    tambahPenugasanOpen,
-    setTambahPenugasanOpen,
+    tambahKepalaOpen,
+    setTambahKepalaOpen,
     pindahDialogOpen,
     setPindahDialogOpen,
     riwayatDialogOpen,
@@ -44,8 +44,8 @@ export function ManajemenOPD() {
     setEditingKepala,
     kepalaForm,
     setKepalaForm,
-    penugasanForm,
-    setPenugasanForm,
+    formTambahKepala,
+    setFormTambahKepala,
     pindahForm,
     setPindahForm,
     riwayatDialogPerson,
@@ -132,16 +132,16 @@ export function ManajemenOPD() {
     setKepalaFormOpen(false)
   }
 
-  const savePenugasanKepala = () => {
+  const saveTambahKepala = () => {
     const today = new Date().toISOString().slice(0, 10)
-    if (!penugasanForm.opdId || !penugasanForm.name) return
-    const existingActive = getKepalaAktif(penugasanForm.opdId)
+    if (!formTambahKepala.opdId || !formTambahKepala.name) return
+    const existingActive = getKepalaAktif(formTambahKepala.opdId)
     const newKepala: KepalaOPD = {
       id: generateId('k'),
-      opdId: penugasanForm.opdId,
-      name: penugasanForm.name,
-      nip: penugasanForm.nip,
-      email: penugasanForm.email,
+      opdId: formTambahKepala.opdId,
+      name: formTambahKepala.name,
+      nip: formTambahKepala.nip,
+      email: formTambahKepala.email,
       phone: '',
       isActive: true,
       totalSOP: 0,
@@ -155,8 +155,8 @@ export function ManajemenOPD() {
       }
       return next
     })
-    setTambahPenugasanOpen(false)
-    setPenugasanForm({ opdId: '', name: '', nip: '', email: '' })
+    setTambahKepalaOpen(false)
+    setFormTambahKepala({ opdId: '', name: '', nip: '', email: '' })
   }
 
   const savePindahJabatan = () => {
@@ -258,7 +258,7 @@ export function ManajemenOPD() {
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen OPD' }]}
       title="Manajemen OPD"
-      description="Kelola data organisasi perangkat daerah dan penugasan kepala OPD"
+      description="Kelola data organisasi perangkat daerah dan jabatan kepala OPD"
       toolbar={
         <SearchToolbar
           searchPlaceholder={
@@ -286,8 +286,8 @@ export function ManajemenOPD() {
               size="sm"
               className="h-8 gap-1.5 text-xs shrink-0"
               onClick={() => {
-                setPenugasanForm({ opdId: opdList[0]?.id ?? '', name: '', nip: '', email: '' })
-                setTambahPenugasanOpen(true)
+                setFormTambahKepala({ opdId: opdList[0]?.id ?? '', name: '', nip: '', email: '' })
+                setTambahKepalaOpen(true)
               }}
             >
               <UserCheck className="w-3.5 h-3.5" />
@@ -297,13 +297,13 @@ export function ManajemenOPD() {
         </SearchToolbar>
       }
     >
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'opd' | 'penugasan')} className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'opd' | 'kepala')} className="w-full">
         <TabsList className="grid w-full grid-cols-2 h-9 bg-white border border-gray-200 w-full">
           <TabsTrigger value="opd" className="text-xs gap-1.5">
             <Building2 className="w-3.5 h-3.5" />
             Manajemen OPD
           </TabsTrigger>
-          <TabsTrigger value="penugasan" className="text-xs gap-1.5">
+          <TabsTrigger value="kepala" className="text-xs gap-1.5">
             <Users className="w-3.5 h-3.5" />
             OPD
           </TabsTrigger>
@@ -342,14 +342,14 @@ export function ManajemenOPD() {
           />
         </TabsContent>
 
-        <TabsContent value="penugasan" className="space-y-3 mt-3">
+        <TabsContent value="kepala" className="space-y-3 mt-3">
           <KepalaOPDTab
             opdList={opdList}
             filteredPersons={filteredPersons}
             kepalaFormOpen={kepalaFormOpen}
             setKepalaFormOpen={setKepalaFormOpen}
-            tambahPenugasanOpen={tambahPenugasanOpen}
-            setTambahPenugasanOpen={setTambahPenugasanOpen}
+            tambahKepalaOpen={tambahKepalaOpen}
+            setTambahKepalaOpen={setTambahKepalaOpen}
             pindahDialogOpen={pindahDialogOpen}
             setPindahDialogOpen={setPindahDialogOpen}
             setPindahDialogPerson={setPindahDialogPerson}
@@ -360,8 +360,8 @@ export function ManajemenOPD() {
             editingKepala={editingKepala}
             kepalaForm={kepalaForm}
             setKepalaForm={setKepalaForm}
-            penugasanForm={penugasanForm}
-            setPenugasanForm={setPenugasanForm}
+            formTambahKepala={formTambahKepala}
+            setFormTambahKepala={setFormTambahKepala}
             pindahForm={pindahForm}
             setPindahForm={setPindahForm}
             pindahDialogPerson={pindahDialogPerson}
@@ -372,7 +372,7 @@ export function ManajemenOPD() {
             getRiwayatForUser={getRiwayatForUser}
             canDeleteKepala={canDeleteKepala}
             onSaveKepala={saveKepala}
-            onSavePenugasan={savePenugasanKepala}
+            onSaveTambahKepala={saveTambahKepala}
             onSavePindah={savePindahJabatan}
             onOpenKepalaForm={openKepalaForm}
             onSetKepalaAktif={setKepalaAktif}
@@ -398,10 +398,10 @@ export function ManajemenOPD() {
       <ConfirmDialog
         open={deleteKepalaId != null}
         onOpenChange={(open) => !open && setDeleteKepalaId(null)}
-        title="Hapus riwayat penugasan?"
+        title="Hapus riwayat jabatan?"
         description={
           deleteKepalaId
-            ? `Riwayat penugasan "${kepalaList.find((k) => k.id === deleteKepalaId)?.name ?? ''}" akan dihapus permanen.`
+            ? `Riwayat jabatan "${kepalaList.find((k) => k.id === deleteKepalaId)?.name ?? ''}" akan dihapus permanen.`
             : undefined
         }
         onConfirm={() => {

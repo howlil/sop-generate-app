@@ -10,7 +10,7 @@ function BiroDetailSOPPage() {
   return (
     <DetailSOP
       breadcrumb={[
-        { label: 'Manajemen Evaluasi SOP', to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
+        { label: 'Verifikasi SOP', to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
         { label: 'Detail SOP' },
       ]}
       backTo={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}

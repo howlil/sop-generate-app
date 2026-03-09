@@ -10,21 +10,21 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { ROUTES } from '@/lib/constants/routes'
-import { getPenugasanDetailById } from '@/lib/data/penugasan-detail'
+import { getEvaluasiDetailById } from '@/lib/data/evaluasi-detail'
 import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
-export function DetailPenugasanTimEvaluasi() {
-  const { id } = useParams({ from: '/tim-evaluasi/penugasan/detail/$id' })
-  const penugasan = id ? (getPenugasanDetailById(id) ?? null) : null
+export function DetailEvaluasiItem() {
+  const { id } = useParams({ from: '/tim-evaluasi/evaluasi/detail/$id' })
+  const item = id ? (getEvaluasiDetailById(id) ?? null) : null
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
 
-  if (!penugasan) {
+  if (!item) {
     return (
       <NotFoundWithBack
         message="Data evaluasi tidak ditemukan."
         backAction={
-          <BackButton to={ROUTES.TIM_EVALUASI.PENUGASAN}>Kembali</BackButton>
+          <BackButton to={ROUTES.TIM_EVALUASI.EVALUASI}>Kembali</BackButton>
         }
       />
     )
@@ -33,12 +33,12 @@ export function DetailPenugasanTimEvaluasi() {
   return (
     <DetailPageLayout
       breadcrumb={[
-        { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN },
+        { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI },
         { label: 'Detail' },
       ]}
-      title={penugasan.sop}
-      description={`${penugasan.kodeSOP} • ${penugasan.opd}`}
-      backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
+      title={item.sop}
+      description={`${item.kodeSOP} • ${item.opd}`}
+      backTo={ROUTES.TIM_EVALUASI.EVALUASI}
       backSize="icon"
       header={
           <>
@@ -46,10 +46,10 @@ export function DetailPenugasanTimEvaluasi() {
               <h2 className="text-sm font-semibold text-gray-900">Informasi evaluasi</h2>
             </div>
             <div className="pt-2 flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-gray-900">{penugasan.opd}</span>
-              <StatusBadge status={penugasan.status} domain={STATUS_DOMAIN.PENUGASAN_EVALUASI} className="text-xs h-4 px-1.5 border-0" />
-              <span className="text-xs text-gray-700">{penugasan.sop}</span>
-              <span className="text-[10px] text-gray-500 font-mono">{penugasan.kodeSOP}</span>
+              <span className="text-xs font-medium text-gray-900">{item.opd}</span>
+              <StatusBadge status={item.status} domain={STATUS_DOMAIN.EVALUASI_ITEM} className="text-xs h-4 px-1.5 border-0" />
+              <span className="text-xs text-gray-700">{item.sop}</span>
+              <span className="text-[10px] text-gray-500 font-mono">{item.kodeSOP}</span>
             </div>
           </>
         }
@@ -65,7 +65,7 @@ export function DetailPenugasanTimEvaluasi() {
             collapseButtonIcon={<List className="w-5 h-5" />}
           >
             <SOPListCard
-              items={[{ id: penugasan.id, nama: penugasan.sop, nomor: penugasan.kodeSOP }]}
+              items={[{ id: item.id, nama: item.sop, nomor: item.kodeSOP }]}
             />
           </CollapsibleSidePanel>
         }
@@ -75,7 +75,7 @@ export function DetailPenugasanTimEvaluasi() {
               <h3 className="text-xs font-semibold text-gray-700">Preview SOP</h3>
             </div>
             <div className="flex-1 min-h-0 flex flex-col">
-              <SOPPreviewTemplate name={penugasan.sop} number={penugasan.kodeSOP} />
+              <SOPPreviewTemplate name={item.sop} number={item.kodeSOP} />
             </div>
           </div>
         }
@@ -101,11 +101,11 @@ export function DetailPenugasanTimEvaluasi() {
                 </ul>
               </div>
 
-              {penugasan.status !== 'completed' && (
-                <Link to={ROUTES.TIM_EVALUASI.PELAKSANAAN} params={{ id: penugasan.id }}>
+              {item.status !== 'completed' && (
+                <Link to={ROUTES.TIM_EVALUASI.PELAKSANAAN} params={{ id: item.id }}>
                   <Button size="sm" className="w-full h-9 text-xs gap-1.5">
                     <Play className="w-3.5 h-3.5" />
-                    {penugasan.status === 'assigned' ? 'Mulai Evaluasi' : 'Lanjutkan Evaluasi'}
+                    {item.status === 'assigned' ? 'Mulai Evaluasi' : 'Lanjutkan Evaluasi'}
                   </Button>
                 </Link>
               )}

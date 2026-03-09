@@ -3,31 +3,31 @@ import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import type { OPD } from '@/lib/types/opd'
-import type { PenugasanFormState } from '@/hooks/useManajemenOPDState'
+import type { FormTambahKepalaState } from '@/hooks/useManajemenOPDState'
 
-export interface TambahPenugasanKepalaDialogProps {
+export interface TambahKepalaOPDDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  form: PenugasanFormState
-  setForm: React.Dispatch<React.SetStateAction<PenugasanFormState>>
+  form: FormTambahKepalaState
+  setForm: React.Dispatch<React.SetStateAction<FormTambahKepalaState>>
   opdList: OPD[]
   onConfirm: () => void
 }
 
-export function TambahPenugasanKepalaDialog({
+export function TambahKepalaOPDDialog({
   open,
   onOpenChange,
   form,
   setForm,
   opdList,
   onConfirm,
-}: TambahPenugasanKepalaDialogProps) {
+}: TambahKepalaOPDDialogProps) {
   return (
     <FormDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Tambah OPD"
-      description="Isi data OPD baru dan pilih OPD tujuan."
+      title="Tambah Kepala OPD"
+      description="Pilih OPD dan isi data kepala yang akan ditugaskan."
       confirmLabel="Simpan"
       cancelLabel="Batal"
       onConfirm={onConfirm}

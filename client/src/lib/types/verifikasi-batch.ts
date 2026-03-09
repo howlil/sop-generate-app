@@ -1,5 +1,5 @@
 /**
- * Types penugasan evaluasi.
+ * Types verifikasi SOP (batch per OPD) dan item evaluasi.
  */
 import type { StatusHasilEvaluasi } from '@/lib/types/sop'
 import type { TTESignaturePayload } from '@/lib/types/tte'
@@ -19,7 +19,8 @@ export interface SOPItem {
   rekomendasi?: string
 }
 
-export interface Penugasan {
+/** Satu batch verifikasi evaluasi per OPD (daftar SOP + BA + TTD). */
+export interface VerifikasiBatch {
   id: string
   jenis: 'Inisiasi Biro' | 'Request OPD'
   tanggalRequest?: string
@@ -42,9 +43,10 @@ export interface Penugasan {
 
 export type JenisEvaluasi = 'Evaluasi Rutin' | 'Evaluasi Khusus' | 'Evaluasi Insidental'
 
-export type StatusPenugasanTimEvaluasi = 'assigned' | 'in-progress' | 'completed'
+export type StatusEvaluasiItem = 'assigned' | 'in-progress' | 'completed'
 
-export interface PenugasanTimEvaluasiItem {
+/** Item evaluasi per SOP (legacy / daftar tim evaluasi). */
+export interface EvaluasiItem {
   id: string
   kodePenugasan: string
   opd: string
@@ -52,7 +54,7 @@ export interface PenugasanTimEvaluasiItem {
   kodeSOP: string
   jenis: JenisEvaluasi
   tanggalPenugasan: string
-  status: StatusPenugasanTimEvaluasi
+  status: StatusEvaluasiItem
 }
 
-export type PenugasanDetailItem = PenugasanTimEvaluasiItem
+export type EvaluasiDetailItem = EvaluasiItem

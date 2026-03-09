@@ -51,7 +51,7 @@ export interface OPDTabProps {
 
 export function OPDTab({
   filteredOPD,
-  opdList,
+  opdList: _opdList,
   selectedOPD,
   isCreateDialogOpen,
   setIsCreateDialogOpen,
@@ -261,7 +261,7 @@ export function OPDTab({
           <DialogHeader>
             <DialogTitle className="text-sm">Riwayat OPD — {selectedOPD?.name}</DialogTitle>
             <DialogDescription className="text-xs">
-              Daftar riwayat kepala OPD untuk OPD ini. Hanya untuk melihat; penugasan baru atau perubahan dikelola dari tab Penugasan atau Manajemen OPD.
+              Daftar riwayat kepala OPD untuk OPD ini. Hanya untuk melihat; jabatan baru atau perubahan dikelola dari tab OPD atau Manajemen OPD.
             </DialogDescription>
           </DialogHeader>
           {selectedOPD && (

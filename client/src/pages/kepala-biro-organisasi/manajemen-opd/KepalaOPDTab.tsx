@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
 import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
-import { TambahPenugasanKepalaDialog } from './TambahPenugasanKepalaDialog'
+import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
 import { PindahJabatanDialog } from './PindahJabatanDialog'
 import { RiwayatJabatanDialog } from './RiwayatJabatanDialog'
 import { usePagination } from '@/hooks/usePagination'
@@ -26,8 +26,8 @@ export interface KepalaOPDTabProps {
   // Dialog state (dari useManajemenOPDState atau parent)
   kepalaFormOpen: boolean
   setKepalaFormOpen: (open: boolean) => void
-  tambahPenugasanOpen: boolean
-  setTambahPenugasanOpen: (open: boolean) => void
+  tambahKepalaOpen: boolean
+  setTambahKepalaOpen: (open: boolean) => void
   pindahDialogOpen: boolean
   setPindahDialogOpen: (open: boolean) => void
   setPindahDialogPerson: (p: { name: string; email: string; phone: string; nip?: string } | null) => void
@@ -38,8 +38,8 @@ export interface KepalaOPDTabProps {
   editingKepala: KepalaOPD | null
   kepalaForm: { name: string; nip: string; email: string; phone: string }
   setKepalaForm: React.Dispatch<React.SetStateAction<{ name: string; nip: string; email: string; phone: string }>>
-  penugasanForm: { opdId: string; name: string; nip: string; email: string }
-  setPenugasanForm: React.Dispatch<React.SetStateAction<{ opdId: string; name: string; nip: string; email: string }>>
+  formTambahKepala: { opdId: string; name: string; nip: string; email: string }
+  setFormTambahKepala: React.Dispatch<React.SetStateAction<{ opdId: string; name: string; nip: string; email: string }>>
   pindahForm: { opdId: string }
   setPindahForm: React.Dispatch<React.SetStateAction<{ opdId: string }>>
   pindahDialogPerson: { name: string; email: string; phone: string; nip?: string } | null
@@ -49,7 +49,7 @@ export interface KepalaOPDTabProps {
   getRiwayatForUser: (name: string, email: string) => RiwayatRow[]
   canDeleteKepala: (k: KepalaOPD) => boolean
   onSaveKepala: () => void
-  onSavePenugasan: () => void
+  onSaveTambahKepala: () => void
   onSavePindah: () => void
   onOpenKepalaForm: (kepala?: KepalaOPD) => void
   onSetKepalaAktif: (kepalaId: string) => void
@@ -64,8 +64,8 @@ export function KepalaOPDTab({
   setSelectedOPD,
   kepalaFormOpen,
   setKepalaFormOpen,
-  tambahPenugasanOpen,
-  setTambahPenugasanOpen,
+  tambahKepalaOpen,
+  setTambahKepalaOpen,
   pindahDialogOpen,
   setPindahDialogOpen,
   setPindahDialogPerson,
@@ -76,8 +76,8 @@ export function KepalaOPDTab({
   editingKepala,
   kepalaForm,
   setKepalaForm,
-  penugasanForm,
-  setPenugasanForm,
+  formTambahKepala,
+  setFormTambahKepala,
   pindahForm,
   setPindahForm,
   pindahDialogPerson,
@@ -86,7 +86,7 @@ export function KepalaOPDTab({
   getRiwayatForUser,
   canDeleteKepala,
   onSaveKepala,
-  onSavePenugasan,
+  onSaveTambahKepala,
   onSavePindah,
   onOpenKepalaForm,
   onSetKepalaAktif,
@@ -198,13 +198,13 @@ export function KepalaOPDTab({
         onConfirm={onSaveKepala}
       />
 
-      <TambahPenugasanKepalaDialog
-        open={tambahPenugasanOpen}
-        onOpenChange={setTambahPenugasanOpen}
-        form={penugasanForm}
-        setForm={setPenugasanForm}
+      <TambahKepalaOPDDialog
+        open={tambahKepalaOpen}
+        onOpenChange={setTambahKepalaOpen}
+        form={formTambahKepala}
+        setForm={setFormTambahKepala}
         opdList={opdList}
-        onConfirm={onSavePenugasan}
+        onConfirm={onSaveTambahKepala}
       />
 
       <PindahJabatanDialog

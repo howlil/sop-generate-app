@@ -16,7 +16,7 @@ export interface UseFilteredListOptions<T> {
 /**
  * Hook untuk list + search + filter (opsional).
  * Mengembalikan filteredList dan state searchQuery + setSearchQuery, filterValue + setFilterValue.
- * Dipakai di SOPSaya, DaftarSOPEvaluasi, PenugasanEvaluasi, ManajemenTimEvaluasi, dll.
+ * Dipakai di SOPSaya, DaftarSOPEvaluasi, ManajemenTimEvaluasi, dll.
  */
 export function useFilteredList<T>(
   list: T[],

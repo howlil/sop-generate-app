@@ -29,7 +29,7 @@ import {
   getLastEvaluatedByInitial,
   loadEvaluasiRecordMap,
   type EvaluasiRecordMap,
-} from '@/lib/data/penugasan-evaluasi'
+} from '@/lib/data/evaluasi-data'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { SOPDaftarItem } from '@/lib/types/sop'
 import type { StatusSOP } from '@/lib/types/sop'
@@ -38,7 +38,7 @@ import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvalu
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
 
 export function DetailEvaluasiOPD() {
-  const { opdId } = useParams({ from: '/tim-evaluasi/penugasan/opd/$opdId' })
+  const { opdId } = useParams({ from: '/tim-evaluasi/evaluasi/opd/$opdId' })
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { role, getRoleUserName } = useAppRole()
@@ -253,7 +253,7 @@ export function DetailEvaluasiOPD() {
     }
     showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. Status berubah menjadi Selesai Evaluasi.`)
     setIsSubmitOpen(false)
-    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.PENUGASAN }), 1500)
+    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
   }
 
   const [activeFormTab, setActiveFormTab] = useState<'sop' | 'opd'>('sop')
@@ -265,10 +265,10 @@ export function DetailEvaluasiOPD() {
   if (!opd) {
     return (
       <DetailPageLayout
-        breadcrumb={[{ label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN }]}
+        breadcrumb={[{ label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI }]}
         title="Evaluasi SOP"
         description=""
-        backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
+        backTo={ROUTES.TIM_EVALUASI.EVALUASI}
         main={<p className="p-4 text-sm text-gray-600">OPD tidak ditemukan.</p>}
       />
     )
@@ -291,12 +291,12 @@ export function DetailEvaluasiOPD() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.PENUGASAN },
+          { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI },
           { label: opd.nama },
         ]}
         title={`Evaluasi SOP — ${opd.nama}`}
         description="Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
-        backTo={ROUTES.TIM_EVALUASI.PENUGASAN}
+        backTo={ROUTES.TIM_EVALUASI.EVALUASI}
         backSize="icon"
         header={
           <>

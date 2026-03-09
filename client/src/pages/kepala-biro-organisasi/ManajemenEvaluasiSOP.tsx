@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
-import type { Penugasan } from '@/lib/types/penugasan'
-import { usePenugasanList } from '@/hooks/usePenugasan'
+import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
+import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
 import { useOpdList } from '@/lib/data/opd'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -14,13 +14,13 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ROUTES } from '@/lib/constants/routes'
 
 /** Tanggal terakhir untuk urutan (terbaru dulu). */
-function getSortDate(p: Penugasan): string {
+function getSortDate(p: VerifikasiBatch): string {
   return p.tanggalVerifikasi ?? p.tanggalEvaluasi ?? p.tanggalRequest ?? ''
 }
 
 /** Dianggap "baru" jika tanggal masuk 7 hari terakhir. */
 const HARI_BARU = 7
-function isPenugasanBaru(p: Penugasan): boolean {
+function isBatchBaru(p: VerifikasiBatch): boolean {
   const dateStr = getSortDate(p)
   if (!dateStr) return false
   const date = new Date(dateStr)
@@ -34,29 +34,29 @@ export interface RowOpdEvaluasi {
   opdId: string
   opdNama: string
   opdKode: string
-  penugasanTerbaru: Penugasan | null
+  batchTerbaru: VerifikasiBatch | null
   jumlahSop: number
   isBaru: boolean
 }
 
-/** Satu baris per OPD: gabung semua OPD (dari Manajemen OPD) dengan penugasan evaluasi (jika ada). Match penugasan by nama OPD. */
+/** Satu baris per OPD: gabung semua OPD dengan batch verifikasi (jika ada). Match by nama OPD. */
 function buildRowsOpdEvaluasi(
   allOpds: { id: string; name: string }[],
-  penugasanList: Penugasan[]
+  batchList: VerifikasiBatch[]
 ): RowOpdEvaluasi[] {
   return allOpds.map((opd) => {
-    const penugasansForOpd = penugasanList.filter((p) => p.opd === opd.name)
-    const penugasanTerbaru =
-      penugasansForOpd.length === 0
+    const batchesForOpd = batchList.filter((p) => p.opd === opd.name)
+    const batchTerbaru =
+      batchesForOpd.length === 0
         ? null
-        : penugasansForOpd.sort((a, b) => (getSortDate(b) > getSortDate(a) ? 1 : -1))[0]
-    const jumlahSop = penugasanTerbaru?.sopList?.length ?? 0
-    const isBaru = penugasanTerbaru != null && isPenugasanBaru(penugasanTerbaru)
+        : batchesForOpd.sort((a, b) => (getSortDate(b) > getSortDate(a) ? 1 : -1))[0]
+    const jumlahSop = batchTerbaru?.sopList?.length ?? 0
+    const isBaru = batchTerbaru != null && isBatchBaru(batchTerbaru)
     return {
       opdId: opd.id,
       opdNama: opd.name,
       opdKode: opd.id,
-      penugasanTerbaru,
+      batchTerbaru,
       jumlahSop,
       isBaru,
     }
@@ -66,11 +66,11 @@ function buildRowsOpdEvaluasi(
 export function ManajemenEvaluasiSOP() {
   const navigate = useNavigate()
   const allOpds = useOpdList()
-  const { list: penugasanList } = usePenugasanList()
+  const { list: batchList } = useVerifikasiBatchList()
 
   const rowsByOpd = useMemo(
-    () => buildRowsOpdEvaluasi(allOpds, penugasanList),
-    [allOpds, penugasanList]
+    () => buildRowsOpdEvaluasi(allOpds, batchList),
+    [allOpds, batchList]
   )
 
   const { filteredList, searchQuery, setSearchQuery } = useFilteredList(rowsByOpd, {
@@ -82,13 +82,13 @@ export function ManajemenEvaluasiSOP() {
     return [...filteredList].sort((a, b) => {
       if (a.isBaru && !b.isBaru) return -1
       if (!a.isBaru && b.isBaru) return 1
-      const hasA = a.penugasanTerbaru != null
-      const hasB = b.penugasanTerbaru != null
+      const hasA = a.batchTerbaru != null
+      const hasB = b.batchTerbaru != null
       if (hasA && !hasB) return -1
       if (!hasA && hasB) return 1
       if (hasA && hasB) {
-        const da = getSortDate(a.penugasanTerbaru!)
-        const db = getSortDate(b.penugasanTerbaru!)
+        const da = getSortDate(a.batchTerbaru!)
+        const db = getSortDate(b.batchTerbaru!)
         if (db !== da) return db > da ? 1 : -1
       }
       return a.opdNama.localeCompare(b.opdNama)
@@ -102,14 +102,14 @@ export function ManajemenEvaluasiSOP() {
     ? sortedList.slice(pagination.startIndex, pagination.endIndex)
     : sortedList
 
-  const goToDetail = (penugasan: Penugasan) => {
-    navigate({ to: ROUTES.BIRO_ORGANISASI.DETAIL_EVALUASI, params: { id: penugasan.id } })
+  const goToDetail = (batch: VerifikasiBatch) => {
+    navigate({ to: ROUTES.BIRO_ORGANISASI.DETAIL_EVALUASI, params: { id: batch.id } })
   }
 
   return (
     <ListPageLayout
-      breadcrumb={[{ label: 'Manajemen Evaluasi SOP' }]}
-      title="Manajemen Evaluasi SOP"
+      breadcrumb={[{ label: 'Verifikasi SOP' }]}
+      title="Verifikasi SOP"
       description="Kelola batch evaluasi per OPD untuk verifikasi Berita Acara (1 BA = 1 evaluasi OPD). Tim Evaluasi evaluasi langsung dari Daftar SOP Evaluasi."
       toolbar={
         <SearchToolbar
@@ -126,7 +126,7 @@ export function ManajemenEvaluasiSOP() {
             <Badge
               variant="secondary"
               className="bg-amber-100 text-amber-800 border-0 text-xs font-medium"
-              title="Penugasan dengan tanggal masuk 7 hari terakhir"
+              title="Batch verifikasi dengan tanggal masuk 7 hari terakhir"
             >
               {jumlahBaru} baru
             </Badge>
@@ -157,7 +157,7 @@ export function ManajemenEvaluasiSOP() {
                         <Badge
                           variant="secondary"
                           className="bg-amber-100 text-amber-800 border-0 text-[10px] font-medium shrink-0"
-                          title="Penugasan dengan tanggal masuk 7 hari terakhir"
+                          title="Batch verifikasi dengan tanggal masuk 7 hari terakhir"
                         >
                           Baru
                         </Badge>
@@ -167,11 +167,11 @@ export function ManajemenEvaluasiSOP() {
                   <Table.Td className="text-center text-gray-700">{row.jumlahSop}</Table.Td>
                   <Table.Td>
                     <div className="flex items-center justify-center gap-1">
-                      {row.penugasanTerbaru ? (
+                      {row.batchTerbaru ? (
                         <IconActionButton
                           icon={Eye}
                           title="Detail evaluasi"
-                          onClick={() => goToDetail(row.penugasanTerbaru!)}
+                          onClick={() => goToDetail(row.batchTerbaru!)}
                         />
                       ) : (
                         <span className="text-xs text-gray-500">Belum ada evaluasi</span>

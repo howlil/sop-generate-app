@@ -1,5 +1,4 @@
 import { Edit, Trash2, BookOpen } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'

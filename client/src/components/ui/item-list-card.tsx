@@ -69,7 +69,6 @@ export function ItemListCard<T>({
 
   if (items.length === 1 && !isSelectable) {
     const item = items[0]
-    const key = getKey(item)
     return (
       <div className={cn('p-2', className)}>
         <div className={singleItemClassName}>
