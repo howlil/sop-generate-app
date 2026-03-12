@@ -30,7 +30,6 @@ import { useOpdList } from '@/lib/data/opd'
 import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { Route } from '@/routes/kepala-opd.berita-acara'
 
 export function BeritaAcaraPage() {
@@ -334,7 +333,6 @@ export function BeritaAcaraPage() {
               items={sopList.map((s) => ({ id: s.id, nama: s.nama, nomor: s.nomor, status: s.status }))}
               selectedId={effectiveSopId}
               onSelect={setSelectedSopId}
-              statusDomain={STATUS_DOMAIN.SOP}
             />
           </CollapsibleSidePanel>
         }

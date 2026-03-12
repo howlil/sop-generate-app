@@ -1,9 +1,12 @@
 /**
  * Data layer: Tim Evaluasi.
- * Sumber data = seed (nanti bisa diganti API/store). Page tidak import seed langsung.
+ * Sumber data = JSON (nanti bisa diganti API/store). Page tidak import JSON langsung.
  */
-import { SEED_TIM_EVALUASI_ANGGOTA_LIST } from '@/lib/seed/tim-evaluasi-seed'
 import type { TimEvaluasiAnggota } from '@/lib/types/tim'
+import timEvaluasiAnggotaJson from '../seed/tim-evaluasi-anggota.json'
+
+const SEED_TIM_EVALUASI_ANGGOTA_LIST: TimEvaluasiAnggota[] =
+  timEvaluasiAnggotaJson as TimEvaluasiAnggota[]
 
 /** Data awal daftar Tim Evaluasi (untuk inisialisasi state di page). */
 export function getInitialTimEvaluasiList(): TimEvaluasiAnggota[] {

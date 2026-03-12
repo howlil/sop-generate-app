@@ -16,7 +16,6 @@ import type { TimEvaluasiAnggota } from '@/lib/types/tim'
 import { generateId } from '@/utils/generate-id'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { useToast } from '@/hooks/useUI'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
@@ -180,10 +179,7 @@ export function ManajemenTimEvaluasi() {
                 <Table.Td className="text-gray-600 text-xs">{tim.email}</Table.Td>
                 <Table.Td>
                   <div className="flex flex-col gap-0.5">
-                    <StatusBadge
-                      status={tim.status ?? 'Aktif'}
-                      domain={STATUS_DOMAIN.TIM_PENYUSUN}
-                    />
+                    <StatusBadge status={tim.status ?? 'Aktif'} />
                     {tim.endedAt && (
                       <span className="text-[10px] text-gray-500">
                         Selesai: {formatDateId(tim.endedAt)}

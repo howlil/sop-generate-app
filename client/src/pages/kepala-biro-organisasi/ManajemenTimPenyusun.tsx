@@ -12,19 +12,18 @@ import { useToast } from '@/hooks/useUI'
 import { useManajemenTimPenyusunState } from '@/hooks/useManajemenTimPenyusunState'
 import { generateId } from '@/utils/generate-id'
 import { useOpdList } from '@/lib/data/opd'
+import { useTimPenyusunList } from '@/hooks/useTimPenyusunList'
 import {
-  useTimPenyusunList,
   addTimPenyusun,
   updateTimPenyusun,
   removeTimPenyusun,
-} from '@/lib/data/tim-penyusun'
+} from '@/lib/stores/tim-penyusun-store'
 import type { TimPenyusun } from '@/lib/types/tim'
 import { ROUTES } from '@/lib/constants/routes'
 import { TimPenyusunFormDialog } from './manajemen-tim-penyusun/TimPenyusunFormDialog'
 import { PindahOPDTimPenyusunDialog } from './manajemen-tim-penyusun/PindahOPDTimPenyusunDialog'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export function ManajemenTimPenyusun() {
   const { showToast } = useToast()
@@ -238,7 +237,7 @@ export function ManajemenTimPenyusun() {
                         <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
                         <Table.Td>
                           <div className="flex flex-col gap-0.5">
-                            <StatusBadge status={tim.status} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
+                            <StatusBadge status={tim.status} />
                             {tim.endedAt && (
                               <span className="text-[10px] text-gray-500">
                                 Selesai: {formatDateId(tim.endedAt)}

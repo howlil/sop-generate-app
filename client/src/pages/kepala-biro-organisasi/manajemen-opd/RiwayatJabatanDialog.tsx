@@ -13,7 +13,6 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import type { RiwayatDialogPerson } from '@/hooks/useManajemenOPDState'
 
 type RiwayatRow = KepalaOPD & { opdName: string }
@@ -87,10 +86,7 @@ export function RiwayatJabatanDialog({
                     <Table.Td>{r.opdName}</Table.Td>
                     <Table.Td className="text-center">{r.endedAt ? formatDateId(r.endedAt) : '—'}</Table.Td>
                     <Table.Td className="text-center">
-                      <StatusBadge
-                        status={r.isActive ? 'Aktif' : 'Nonaktif'}
-                        domain={STATUS_DOMAIN.TIM_PENYUSUN}
-                      />
+                      <StatusBadge status={r.isActive ? 'Aktif' : 'Nonaktif'} />
                     </Table.Td>
                     <Table.Td>
                       <div className="flex gap-1 justify-center flex-wrap">

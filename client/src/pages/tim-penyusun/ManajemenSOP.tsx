@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
 import { FormField } from '@/components/ui/form-field'
@@ -254,7 +253,7 @@ export function ManajemenSOP() {
                       <p className="text-gray-700">{formatDateIdLong(sop.terakhirDiperbarui)}</p>
                     </Table.Td>
                     <Table.Td>
-                      <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} />
+                      <StatusBadge status={sop.status} />
                     </Table.Td>
                     <Table.Td>
                       <div className="flex items-center justify-center gap-1">
@@ -361,7 +360,7 @@ export function ManajemenSOP() {
                           <p className="text-xs text-gray-500 mt-0.5">Pembuat: {sop.author}</p>
                         )}
                         <div className="mt-1.5">
-                          <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} />
+                          <StatusBadge status={sop.status} />
                         </div>
                         {riwayat.length > 0 && (
                           <div className="mt-2 p-2 bg-gray-100 rounded border border-gray-200">

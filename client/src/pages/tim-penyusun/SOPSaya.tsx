@@ -12,7 +12,6 @@ import { canEditSop } from '@/lib/domain/sop-status'
 import { getInitialSopSayaList } from '@/lib/data/sop-daftar'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
@@ -88,7 +87,7 @@ export function SOPSaya() {
                     {formatDateIdLong(sop.terakhirDiubah)}
                   </Table.Td>
                   <Table.Td className="text-center">
-                    <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} className="text-xs" />
+                    <StatusBadge status={sop.status} className="text-xs" />
                   </Table.Td>
                   <Table.Td className="text-center">
                     <div className="flex items-center justify-center gap-1">

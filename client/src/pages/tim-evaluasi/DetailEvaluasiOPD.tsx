@@ -2,7 +2,7 @@
  * Workspace evaluasi SOP per OPD.
  * Dari list OPD, klik OPD → langsung ke workspace ini: daftar SOP (kiri), preview (tengah), form evaluasi (kanan).
  */
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { Send, List, Printer } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
@@ -11,11 +11,10 @@ import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { useEvaluasiDraft, getEvaluasiDraft, clearEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
+import { useEvaluasiDraft, getEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
+import { useEvaluasiSubmit } from '@/hooks/useEvaluasiSubmit'
 import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/lib/constants/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
-import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from '@/lib/domain/evaluasi'
 import { STATUS_BUKAN_LIST_EVALUASI } from '@/lib/domain/sop-evaluasi'
 import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
 import { useAppRole } from '@/hooks/useAppRole'
@@ -32,10 +31,11 @@ import {
 } from '@/lib/data/evaluasi-data'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { SOPDaftarItem } from '@/lib/types/sop'
-import type { StatusSOP } from '@/lib/types/sop'
 import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
+
+const POST_SUBMIT_DELAY_MS = 1500
 
 export function DetailEvaluasiOPD() {
   const { opdId } = useParams({ from: '/tim-evaluasi/evaluasi/opd/$opdId' })
@@ -75,7 +75,7 @@ export function DetailEvaluasiOPD() {
         }
       })
       .filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
-  }, [opd, mergedSopList, mergeSopStatus, getSopStatusOverride])
+  }, [opd, mergedSopList, getSopStatusOverride])
 
   const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>(loadEvaluasiRecordMap)
   useEffect(() => {
@@ -137,24 +137,30 @@ export function DetailEvaluasiOPD() {
     }
   }, [sopsFilteredByStatusAndEvaluator, effectiveSopId])
 
-  /** Begitu user memilih SOP "Diajukan Evaluasi" di daftar kiri, set status jadi Sedang Dievaluasi agar konsisten dan popup Kirim bisa baca. */
-  useEffect(() => {
-    if (!effectiveSopId) return
-    const sop = sopsForOpd.find((s) => s.id === effectiveSopId)
-    if (sop?.status === 'Diajukan Evaluasi') {
-      setSopStatusOverride(effectiveSopId, 'Sedang Dievaluasi')
-    }
-  }, [effectiveSopId, sopsForOpd, setSopStatusOverride])
-
   const {
     komentarEvaluasi,
     setKomentarEvaluasi,
     statusEvaluasi,
     setStatusEvaluasi,
   } = useEvaluasiDraft(effectiveSopId ?? undefined)
+
+  /** Ubah status evaluasi dan secara eksplisit tandai SOP sebagai Sedang Dievaluasi saat user mulai mengisi form. */
+  const handleSetStatusEvaluasi = useCallback(
+    (status: 'Sesuai' | 'Revisi Biro' | null) => {
+      setStatusEvaluasi(status)
+      if (status !== null && effectiveSopId) {
+        const sop = sopsForOpd.find((s) => s.id === effectiveSopId)
+        if (sop?.status === 'Diajukan Evaluasi') {
+          setSopStatusOverride(effectiveSopId, 'Sedang Dievaluasi')
+        }
+      }
+    },
+    [setStatusEvaluasi, effectiveSopId, sopsForOpd, setSopStatusOverride]
+  )
+
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
-  /** Id SOP yang dicentang di popup Kirim (hanya list Sedang Dievaluasi). */
-  const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
+  const [activeFormTab, setActiveFormTab] = useState<'sop' | 'opd'>('sop')
+  const [ratingOPD, setRatingOPD] = useState<number | null>(null)
 
   const namaEvaluator = role ? getRoleUserName(role) : 'Evaluator'
   const lastEvaluatedEntry = effectiveSopId ? lastEvaluatedBy[effectiveSopId] : undefined
@@ -200,64 +206,31 @@ export function DetailEvaluasiOPD() {
     return out
   }, [sopsFilteredByStatusAndEvaluator, effectiveSopId, statusEvaluasi, komentarEvaluasi])
 
+  const {
+    submitSelectedIds,
+    setSubmitSelectedIds,
+    isSubmitCheckAll,
+    isSubmitCheckAllIndeterminate,
+    toggleSubmitSelected,
+    setSubmitCheckAll,
+    handleSubmitAll,
+  } = useEvaluasiSubmit({
+    sedangDievaluasiList,
+    namaEvaluator,
+    ratingOPD,
+    opdId: opd?.id,
+    setLastEvaluatedBy,
+    onSuccess: () => {
+      setIsSubmitOpen(false)
+      setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), POST_SUBMIT_DELAY_MS)
+    },
+  })
+
   useEffect(() => {
     if (isSubmitOpen && sedangDievaluasiList.length > 0) {
       setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)))
     }
-  }, [isSubmitOpen, sedangDievaluasiList])
-
-  const toggleSubmitSelected = (id: string) => {
-    setSubmitSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-  const isSubmitCheckAll = sedangDievaluasiList.length > 0 && submitSelectedIds.size === sedangDievaluasiList.length
-  const isSubmitCheckAllIndeterminate =
-    sedangDievaluasiList.length > 0 && submitSelectedIds.size > 0 && submitSelectedIds.size < sedangDievaluasiList.length
-  const setSubmitCheckAll = (checked: boolean) => {
-    if (checked) setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)))
-    else setSubmitSelectedIds(new Set())
-  }
-
-  const handleSubmitAll = () => {
-    const selected = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
-    if (selected.length === 0) {
-      showToast('Pilih minimal satu SOP untuk dikirim.', 'error')
-      return
-    }
-    const toSubmit = selected.filter((item) =>
-      isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
-    )
-    const incomplete = selected.filter(
-      (item) => !isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
-    )
-    if (incomplete.length > 0) {
-      showToast(
-        `Lengkapi komentar untuk SOP dengan hasil Revisi Biro: ${incomplete.map((i) => i.judul).join(', ')}`,
-        'error'
-      )
-      return
-    }
-    const today = new Date().toISOString().slice(0, 10)
-    for (const item of toSubmit) {
-      const newStatus: StatusSOP = getStatusSopAfterEvaluasi(item.statusEvaluasi)
-      setSopStatusOverride(item.id, newStatus)
-      setLastEvaluatedBy((prev) => ({
-        ...prev,
-        [item.id]: { date: today, evaluatorName: namaEvaluator },
-      }))
-      clearEvaluasiDraft(item.id)
-    }
-    showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. Status berubah menjadi Selesai Evaluasi.`)
-    setIsSubmitOpen(false)
-    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
-  }
-
-  const [activeFormTab, setActiveFormTab] = useState<'sop' | 'opd'>('sop')
-  const [ratingOPD, setRatingOPD] = useState<number | null>(null)
+  }, [isSubmitOpen, sedangDievaluasiList, setSubmitSelectedIds])
 
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
   const riwayatOpd = opd?.id ? (riwayatEvaluasiOpd[opd.id] ?? []) : []
@@ -367,7 +340,6 @@ export function DetailEvaluasiOPD() {
                   items={listItems}
                   selectedId={effectiveSopId}
                   onSelect={setSelectedSopId}
-                  statusDomain={STATUS_DOMAIN.SOP}
                   variant="compact"
                 />
               </div>
@@ -400,7 +372,7 @@ export function DetailEvaluasiOPD() {
             effectiveSopId={effectiveSopId}
             lastEvaluatedBy={lastEvaluatedBy}
             statusEvaluasi={statusEvaluasi}
-            setStatusEvaluasi={setStatusEvaluasi}
+            setStatusEvaluasi={handleSetStatusEvaluasi}
             komentarEvaluasi={komentarEvaluasi ?? ''}
             setKomentarEvaluasi={setKomentarEvaluasi}
             riwayatSop={riwayatSop}

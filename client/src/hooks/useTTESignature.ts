@@ -3,7 +3,8 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import type { TTESignaturePayload, TTERole } from '@/lib/types/tte'
-import { getTTEProfile, verifyPin, addTTESignature, getTTESignatures } from '@/lib/tte'
+import { verifyPin } from '@/lib/domain/tte'
+import { getTTEProfile, addTTESignature, getTTESignatures } from '@/lib/data/tte-storage'
 
 interface UseTTESignatureOptions {
   role: TTERole

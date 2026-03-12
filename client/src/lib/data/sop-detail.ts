@@ -1,6 +1,6 @@
 /**
  * Data layer: detail SOP (metadata, prosedur, implementers, versi, komentar).
- * Semua akses seed untuk detail SOP dikonsolidasikan di sini.
+ * Semua akses JSON untuk detail SOP dikonsolidasikan di sini.
  */
 import type {
   ProsedurRow,
@@ -9,16 +9,67 @@ import type {
 } from '@/lib/types/sop'
 import type { KomentarItem } from '@/lib/types/komentar'
 import type { VersionSeed, DetailSOPVersionSeed } from '@/lib/types/version'
-import {
-  SEED_SOP_DETAIL_METADATA,
-  SEED_SOP_DETAIL_PROSEDUR_ROWS,
-  SEED_KOMENTAR_LIST,
-  getInitialVersions,
-  SEED_DETAIL_SOP_VIEW_METADATA,
-  SEED_DETAIL_SOP_VERSIONS,
-  SEED_RELATED_POS_OPTIONS,
-} from '@/lib/seed/sop-detail-seed'
+import sopDetailData from '../seed/sop-detail.json'
 import { getPelaksanaList } from '@/lib/data/pelaksana'
+
+interface SopDetailResponse {
+  metadata: SOPDetailMetadata
+  prosedurRows: ProsedurRow[]
+  implementers: { id: string; name: string }[]
+  komentarList: KomentarItem[]
+  versionList: {
+    id: string
+    version: string
+    revisionType: string
+    date: string
+    author: string
+    changes: string
+  }[]
+  detailViewMetadata: DetailSOPViewMetadata
+  detailVersionList: {
+    id: string
+    version: string
+    date: string
+    author: string
+    changes: string
+    eventLabel?: string
+    revisionType?: string
+  }[]
+  relatedPosOptions: string[]
+}
+
+const data = sopDetailData as SopDetailResponse
+
+const SEED_SOP_DETAIL_METADATA: SOPDetailMetadata = data.metadata
+const SEED_SOP_DETAIL_PROSEDUR_ROWS: ProsedurRow[] = data.prosedurRows
+const SEED_KOMENTAR_LIST: KomentarItem[] = data.komentarList
+
+function getInitialVersions(): VersionSeed[] {
+  return data.versionList.map((v) => ({
+    id: v.id,
+    version: v.version,
+    revisionType: v.revisionType as 'major' | 'minor',
+    date: v.date,
+    author: v.author,
+    changes: v.changes,
+    snapshot: { metadata: SEED_SOP_DETAIL_METADATA, prosedurRows: SEED_SOP_DETAIL_PROSEDUR_ROWS },
+  }))
+}
+
+const SEED_DETAIL_SOP_VIEW_METADATA: DetailSOPViewMetadata = data.detailViewMetadata
+
+const SEED_DETAIL_SOP_VERSIONS: DetailSOPVersionSeed[] = data.detailVersionList.map((v, i) => ({
+  id: v.id,
+  version: v.version,
+  date: v.date,
+  author: v.author,
+  changes: v.changes,
+  eventLabel: v.eventLabel,
+  revisionType: (v.revisionType as 'major' | 'minor') ?? 'minor',
+  snapshot: i === 0 ? { metadata: SEED_DETAIL_SOP_VIEW_METADATA, prosedurRows: SEED_SOP_DETAIL_PROSEDUR_ROWS } : null,
+}))
+
+const SEED_RELATED_POS_OPTIONS: string[] = data.relatedPosOptions
 
 /** Metadata detail SOP (tim penyusun) – untuk editor. */
 export function getInitialSopDetailMetadata(): SOPDetailMetadata {

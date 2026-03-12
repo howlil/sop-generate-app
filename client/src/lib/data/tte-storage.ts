@@ -1,28 +1,26 @@
 /**
- * TTE (Tanda Tangan Elektronik) BSRE — service: PIN, profile, signatures, audit.
+ * Data layer: TTE storage — baca/tulis localStorage untuk profile, signatures, audit log.
+ * URL utilities (getValidasiPengesahanUrl, getTTEVerificationSuccessUrl) juga di sini
+ * karena bergantung pada window.location — bukan pure domain logic.
  */
 import type { TTEProfile, TTESignaturePayload, TTEAuditEntry, TTERole } from '@/lib/types/tte'
 import { TTE_STORAGE_KEYS } from '@/lib/types/tte'
 
-const PIN_SALT = 'tte-bsre-salt-v1'
-
-export function hashPin(pin: string): string {
-  let h = 0
-  const s = PIN_SALT + pin
-  for (let i = 0; i < s.length; i++) {
-    const c = s.charCodeAt(i)
-    h = (h << 5) - h + c
-    h = h & h
-  }
-  return 'pin_' + Math.abs(h).toString(36)
-}
-
-export function verifyPin(pin: string, storedHash: string): boolean {
-  return hashPin(pin) === storedHash
-}
-
 function profileKey(role: TTERole): string {
   return TTE_STORAGE_KEYS.PROFILE_PREFIX + role
+}
+
+function getBaseUrl(): string {
+  if (typeof window !== 'undefined') return window.location.origin
+  return ''
+}
+
+export function getValidasiPengesahanUrl(signatureId: string): string {
+  return `${getBaseUrl()}/validasi/pengesahan/${signatureId}`
+}
+
+export function getTTEVerificationSuccessUrl(token: string): string {
+  return `${getBaseUrl()}/validasi/ttd/berhasil?token=${encodeURIComponent(token)}`
 }
 
 export function getTTEProfile(role: TTERole): TTEProfile | null {
@@ -144,19 +142,4 @@ export function addTTESignature(
 
 export function getTTESignatureById(id: string): TTESignaturePayload | null {
   return getTTESignatures().find((s) => s.id === id) ?? null
-}
-
-export function getValidasiPengesahanBaseUrl(): string {
-  if (typeof window !== 'undefined') return window.location.origin
-  return ''
-}
-
-export function getValidasiPengesahanUrl(signatureId: string): string {
-  const base = getValidasiPengesahanBaseUrl()
-  return `${base}/validasi/pengesahan/${signatureId}`
-}
-
-export function getTTEVerificationSuccessUrl(token: string): string {
-  const base = getValidasiPengesahanBaseUrl()
-  return `${base}/validasi/ttd/berhasil?token=${encodeURIComponent(token)}`
 }

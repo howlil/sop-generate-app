@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import { persist, PersistStorage } from 'zustand/middleware'
-import { ROLES, ROLE_LABELS, type RoleKey } from '@/lib/constants/roles'
-
-export { ROLES } from '@/lib/constants/roles'
+import { ROLES, type RoleKey } from '@/lib/constants/roles'
+import { getRoleLabel as getRoleLabelFromDomain } from '@/lib/domain/role'
 
 export type ToastType = 'success' | 'error'
 
@@ -84,21 +83,5 @@ export function showToast(message: string, type: ToastType = 'success'): void {
 }
 
 export function getRoleLabel(role: RoleKey): string {
-  return ROLE_LABELS[role] ?? role
-}
-
-export function isBiroOrganisasi(): boolean {
-  return getRole() === ROLES.BIRO_ORGANISASI
-}
-
-export function isKepalaOPD(): boolean {
-  return getRole() === ROLES.KEPALA_OPD
-}
-
-export function isTimEvaluasi(): boolean {
-  return getRole() === ROLES.TIM_EVALUASI
-}
-
-export function isTimPenyusun(): boolean {
-  return getRole() === ROLES.TIM_PENYUSUN
+  return getRoleLabelFromDomain(role)
 }

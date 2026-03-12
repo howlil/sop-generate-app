@@ -10,7 +10,6 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
@@ -106,7 +105,7 @@ export function PantauSOP() {
                       <p className="text-gray-700">{formatDateIdLong(sop.terakhirDiperbarui)}</p>
                     </Table.Td>
                     <Table.Td>
-                      <StatusBadge status={sop.status} domain={STATUS_DOMAIN.SOP} />
+                      <StatusBadge status={sop.status} />
                     </Table.Td>
                     <Table.Td>
                       <div className="flex items-center gap-1">

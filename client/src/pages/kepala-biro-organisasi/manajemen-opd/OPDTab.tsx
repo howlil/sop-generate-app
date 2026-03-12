@@ -22,7 +22,6 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
 import type { OPD, KepalaOPD } from '@/lib/types/opd'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 
 export interface OPDTabProps {
   filteredOPD: OPD[]
@@ -235,10 +234,7 @@ export function OPDTab({
                           <span className="block text-gray-500 font-mono text-[10px] mt-0.5 truncate">{k.nip}</span>
                         )}
                       </div>
-                      <StatusBadge
-                        status={k.isActive ? 'Aktif' : 'Nonaktif'}
-                        domain={STATUS_DOMAIN.TIM_PENYUSUN}
-                      />
+                      <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} />
                     </div>
                   ))}
                   {getKepalaByOPD(selectedOPD.id).length === 0 && (
@@ -284,7 +280,7 @@ export function OPDTab({
                             {k.phone && <p className="text-xs text-gray-400 mt-0.5">{k.phone}</p>}
                           </div>
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                            <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} domain={STATUS_DOMAIN.TIM_PENYUSUN} />
+                            <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} />
                             {k.endedAt && (
                               <span className="text-xs text-gray-500">Selesai: {formatDateId(k.endedAt)}</span>
                             )}

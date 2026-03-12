@@ -695,6 +695,7 @@ function FlowchartPage({
                 constraintRect={pelaksanaBounds}
                 routedSegmentsRef={routedSegmentsRef}
                 reservedSidesRef={reservedSidesRef}
+                corridorGraph={corridorGraphRef.current}
               />
             ))}
           </svg>

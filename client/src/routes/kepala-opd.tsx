@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { PenLine, FileText, FileSignature } from 'lucide-react'
-import { isKepalaOPD, setRole } from '@/lib/stores/app-store'
+import { getRole, setRole } from '@/lib/stores/app-store'
+import { isKepalaOPD } from '@/lib/domain/role'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
@@ -10,7 +11,7 @@ export const Route = createFileRoute('/kepala-opd')({
   beforeLoad: () => {
     if (typeof window !== 'undefined') {
       setRole(ROLES.KEPALA_OPD)
-      if (!isKepalaOPD()) {
+      if (!isKepalaOPD(getRole())) {
         throw redirect({ to: ROUTES.HOME, search: { denied: 'kepala-opd' } })
       }
     }

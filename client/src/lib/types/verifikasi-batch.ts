@@ -44,17 +44,3 @@ export interface VerifikasiBatch {
 export type JenisEvaluasi = 'Evaluasi Rutin' | 'Evaluasi Khusus' | 'Evaluasi Insidental'
 
 export type StatusEvaluasiItem = 'assigned' | 'in-progress' | 'completed'
-
-/** Item evaluasi per SOP (legacy / daftar tim evaluasi). */
-export interface EvaluasiItem {
-  id: string
-  kodePenugasan: string
-  opd: string
-  sop: string
-  kodeSOP: string
-  jenis: JenisEvaluasi
-  tanggalPenugasan: string
-  status: StatusEvaluasiItem
-}
-
-export type EvaluasiDetailItem = EvaluasiItem

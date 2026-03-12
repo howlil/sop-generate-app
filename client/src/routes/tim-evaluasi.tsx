@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { ClipboardCheck } from 'lucide-react'
-import { isTimEvaluasi, setRole } from '@/lib/stores/app-store'
+import { getRole, setRole } from '@/lib/stores/app-store'
+import { isTimEvaluasi } from '@/lib/domain/role'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
@@ -10,7 +11,7 @@ export const Route = createFileRoute('/tim-evaluasi')({
   beforeLoad: () => {
     if (typeof window !== 'undefined') {
       setRole(ROLES.TIM_EVALUASI)
-      if (!isTimEvaluasi()) {
+      if (!isTimEvaluasi(getRole())) {
         throw redirect({ to: ROUTES.HOME, search: { denied: 'tim-evaluasi' } })
       }
     }

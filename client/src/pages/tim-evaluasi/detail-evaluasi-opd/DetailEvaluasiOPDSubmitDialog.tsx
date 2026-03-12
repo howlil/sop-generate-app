@@ -8,7 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import { STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
+import { STATUS_HASIL_EVALUASI } from '@/lib/domain/evaluasi'
 
 export interface SedangDievaluasiItem {
   id: string

@@ -3,7 +3,12 @@
  * Konstanta UI (options, storage key) tetap di lib/constants/evaluasi.
  */
 import type { StatusSOP } from '@/lib/types/sop'
-import { STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
+
+/** Map pilihan form evaluasi → status SOP setelah dikirim. Ini adalah business rule. */
+export const STATUS_HASIL_EVALUASI = {
+  Sesuai: 'Siap Diverifikasi',
+  'Revisi Biro': 'Revisi dari Tim Evaluasi',
+} as const satisfies Record<string, StatusSOP>
 
 export type StatusHasilEvaluasiForm = keyof typeof STATUS_HASIL_EVALUASI
 

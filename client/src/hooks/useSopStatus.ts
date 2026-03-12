@@ -19,10 +19,8 @@ export function useSopStatus() {
     [overrides]
   )
 
-  const mergeSopStatus = useCallback(
-    <T extends { id: string; status: StatusSOP }>(list: T[]): T[] => mergeSopStatusFromStore(list),
-    []
-  )
+  const mergeSopStatus = <T extends { id: string; status: StatusSOP }>(list: T[]): T[] =>
+    mergeSopStatusFromStore(list)
 
   return {
     setSopStatusOverride,

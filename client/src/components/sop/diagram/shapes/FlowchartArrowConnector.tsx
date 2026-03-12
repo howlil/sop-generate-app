@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
 import type { ArrowConnectionConfig, ArrowPathPoint, FlowchartConnection } from '../logic/sopDiagramTypes'
-import { routeOrthogonal, scorePath, pathToSegments, type OccupiedSegment } from '../logic/orthogonalRouter'
+import { routeOrthogonal, scorePath, pathToSegments, type OccupiedSegment, type CorridorGraph } from '../logic/orthogonalRouter'
 
 /* ───────────────────────── Public types (re-export for consumers) ─────────────────────────── */
 
@@ -61,6 +61,8 @@ interface FlowchartArrowConnectorProps {
   routedSegmentsRef?: RoutedPathsRef
   /** From scan phase: Map of `${targetShapeId}-${side}` → Set of connectionIds that may use it (e.g. all Tidak to that target). */
   reservedSidesRef?: MutableRefObject<Map<string, Set<string>>>
+  /** Pre-built corridor graph from scan phase for obstacle-aware routing */
+  corridorGraph?: CorridorGraph | null
 }
 
 /* ───────────────────────── Helpers ─────────────────────────── */

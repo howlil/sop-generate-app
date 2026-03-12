@@ -1,5 +1,5 @@
 import { useParams } from '@tanstack/react-router'
-import { getTTESignatureById, getTTEAuditLog } from '@/lib/tte'
+import { getTTESignatureById, getTTEAuditLog } from '@/lib/data/tte-storage'
 import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 import { formatDatetime } from '@/utils/format-date'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'

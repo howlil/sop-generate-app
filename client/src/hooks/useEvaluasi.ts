@@ -4,10 +4,8 @@
  */
 import { useCallback } from 'react'
 import { useEvaluationCaseStore } from '@/lib/stores/evaluasi-store'
-import { validateSopIdsNotInActiveCase, generateNextEvaluationCaseId } from '@/lib/domain/evaluasi-case'
-import type { EvaluationCase, EvaluationCaseStatus } from '@/lib/types/evaluasi'
-
-const ACTIVE_STATUSES: EvaluationCaseStatus[] = ['Draft', 'Assigned', 'In Progress']
+import { validateSopIdsNotInActiveCase, generateNextEvaluationCaseId, ACTIVE_STATUSES } from '@/lib/domain/evaluasi-case'
+import type { EvaluationCase } from '@/lib/types/evaluasi'
 
 export function useEvaluasi() {
   const cases = useEvaluationCaseStore((s) => s.cases)

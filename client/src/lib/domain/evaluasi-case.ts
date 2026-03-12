@@ -4,7 +4,7 @@
  */
 import type { EvaluationCase, EvaluationCaseStatus } from '@/lib/types/evaluasi'
 
-const ACTIVE_STATUSES: EvaluationCaseStatus[] = ['Draft', 'Assigned', 'In Progress']
+export const ACTIVE_STATUSES: EvaluationCaseStatus[] = ['Draft', 'Assigned', 'In Progress']
 
 function isSopInActiveCase(sopId: string, c: EvaluationCase): boolean {
   return ACTIVE_STATUSES.includes(c.status) && c.sopIds.includes(sopId)

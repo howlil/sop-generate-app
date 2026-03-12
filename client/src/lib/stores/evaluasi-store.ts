@@ -4,9 +4,8 @@
  */
 import { create } from 'zustand'
 import type { EvaluationCase, EvaluationCaseStatus } from '@/lib/types/evaluasi'
-import { SEED_EVALUATION_CASES } from '@/lib/seed/evaluasi-seed'
-
-const ACTIVE_STATUSES: EvaluationCaseStatus[] = ['Draft', 'Assigned', 'In Progress']
+import { ACTIVE_STATUSES } from '@/lib/domain/evaluasi-case'
+import { getInitialEvaluationCases } from '@/lib/data/evaluasi-case'
 
 interface EvaluationCaseState {
   cases: EvaluationCase[]
@@ -20,7 +19,7 @@ interface EvaluationCaseState {
 }
 
 export const useEvaluationCaseStore = create<EvaluationCaseState>()((set, get) => ({
-  cases: [...SEED_EVALUATION_CASES],
+  cases: getInitialEvaluationCases(),
   setCases: (next) => set({ cases: [...next] }),
   getCaseById: (id) => get().cases.find((c) => c.id === id),
   getActiveCaseForSop: (sopId) =>

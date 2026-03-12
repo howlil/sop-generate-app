@@ -14,12 +14,13 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { useToast } from '@/hooks/useUI'
-import { useVerifikasiBatchDetailPage } from '@/hooks/useVerifikasiBatchDetail'
+import { useVerifikasiBatchDetailPage } from '@/hooks/useVerifikasiBatchDetailPage'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
+
+const PRINT_DELAY_MS = 150
 
 export function DetailVerifikasiBatch() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
@@ -90,7 +91,7 @@ export function DetailVerifikasiBatch() {
                   className="h-8 text-xs gap-1.5"
                   onClick={() => {
                     setPreviewMainTab('sop')
-                    setTimeout(() => window.print(), 150)
+                    setTimeout(() => window.print(), PRINT_DELAY_MS)
                   }}
                 >
                   <Printer className="w-3.5 h-3.5" /> Cetak SOP
@@ -102,7 +103,7 @@ export function DetailVerifikasiBatch() {
                     className="h-8 text-xs gap-1.5"
                     onClick={() => {
                       setPreviewMainTab('ba')
-                      setTimeout(() => window.print(), 150)
+                      setTimeout(() => window.print(), PRINT_DELAY_MS)
                     }}
                   >
                     <Printer className="w-3.5 h-3.5" /> Cetak Berita Acara
@@ -126,7 +127,7 @@ export function DetailVerifikasiBatch() {
             <div className="pt-2 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-gray-900">{batch.opd}</span>
-                <StatusBadge status={batch.status} domain={STATUS_DOMAIN.EVALUASI_BIRO} className="text-xs h-4 px-1.5 border-0" />
+                <StatusBadge status={batch.status} className="text-xs h-4 px-1.5 border-0" />
               </div>
               <InfoGrid cols={4}>
                 {batch.tanggalRequest && (
@@ -173,7 +174,6 @@ export function DetailVerifikasiBatch() {
               items={sopList.map((s) => ({ id: s.id, nama: s.nama, nomor: s.nomor, status: s.status }))}
               selectedId={effectiveSopId}
               onSelect={setSelectedSopId}
-              statusDomain={STATUS_DOMAIN.SOP}
             />
           </CollapsibleSidePanel>
         }

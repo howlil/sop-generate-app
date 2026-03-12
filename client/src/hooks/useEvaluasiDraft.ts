@@ -45,15 +45,10 @@ export function useEvaluasiDraft(id: string | undefined) {
 
   useEffect(() => {
     if (!id) return
-    const raw = localStorage.getItem(getStorageKey(id))
-    if (!raw) return
-    try {
-      const data = JSON.parse(raw) as Partial<EvaluasiDraftData>
-      if (data.komentarEvaluasi) setKomentarEvaluasi(data.komentarEvaluasi)
-      if (data.statusEvaluasi) setStatusEvaluasi(data.statusEvaluasi)
-    } catch {
-      // ignore corrupt data
-    }
+    const draft = getEvaluasiDraft(id)
+    if (!draft) return
+    setKomentarEvaluasi(draft.komentarEvaluasi)
+    setStatusEvaluasi(draft.statusEvaluasi)
   }, [id])
 
   const saveDraft = useCallback(() => {

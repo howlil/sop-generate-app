@@ -5,8 +5,7 @@
 import { CheckCircle, XCircle } from 'lucide-react'
 import { OptionCardPicker, type OptionCardOption } from '@/components/ui/option-card-picker'
 import { InfoCard } from '@/components/ui/info-card'
-import type { StatusHasilEvaluasiForm } from '@/lib/constants/evaluasi'
-import { STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
+import { STATUS_HASIL_EVALUASI, type StatusHasilEvaluasiForm } from '@/lib/domain/evaluasi'
 
 const OPTIONS: OptionCardOption<StatusHasilEvaluasiForm>[] = [
   {

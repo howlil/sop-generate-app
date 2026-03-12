@@ -3,8 +3,10 @@
  * List untuk CRUD dan untuk dropdown pelaksana di edit SOP.
  */
 import type { PelaksanaSOP } from '@/lib/types/sop'
-import { SEED_PELAKSANA_LIST } from '@/lib/seed/pelaksana-seed'
 import { usePelaksanaStore } from '@/lib/stores/pelaksana-store'
+import pelaksanaJson from '../seed/pelaksana.json'
+
+const SEED_PELAKSANA_LIST: PelaksanaSOP[] = pelaksanaJson as PelaksanaSOP[]
 
 /** Daftar pelaksana: dari store jika sudah diisi, else seed. */
 export function getPelaksanaList(): PelaksanaSOP[] {

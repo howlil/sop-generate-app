@@ -55,8 +55,5 @@ export const ROUTES = {
     /** Detail evaluasi per OPD: list SOP untuk satu OPD. */
     EVALUASI_OPD: '/tim-evaluasi/evaluasi/opd/$opdId',
     EVALUASI_SOP: '/tim-evaluasi/evaluasi/$sopId',
-    /** Detail satu item evaluasi (legacy). */
-    EVALUASI_DETAIL: '/tim-evaluasi/evaluasi/detail/$id',
-    PELAKSANAAN: '/tim-evaluasi/pelaksanaan/$id',
   },
 } as const

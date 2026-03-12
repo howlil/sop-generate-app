@@ -12,7 +12,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { STATUS_DOMAIN } from '@/lib/constants/status-domains'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
@@ -149,7 +148,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         <Badge className="bg-blue-100 text-blue-700 text-xs border-0">
           Versi {versions[0]?.version || '1.0'}
         </Badge>
-        <StatusBadge status={sopStatus} domain={STATUS_DOMAIN.SOP} className="text-xs border-0" />
+        <StatusBadge status={sopStatus} className="text-xs border-0" />
       </div>
       {/* Kanan: tombol aksi (Print + Tanda tangan) */}
       <div className="flex items-center gap-2 flex-shrink-0">

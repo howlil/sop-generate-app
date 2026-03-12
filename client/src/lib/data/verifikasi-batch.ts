@@ -1,19 +1,25 @@
 /**
- * Data layer: verifikasi batch (inisialisasi dari seed).
- * Sumber data = store + seed (fallback). UI pakai hooks/useVerifikasiBatch.
+ * Data layer: verifikasi batch (inisialisasi dari JSON).
+ * Sumber data = store + data/penugasan-evaluasi.json (fallback). UI pakai hooks/useVerifikasiBatch.
  */
 import {
   getVerifikasiBatchList,
   setVerifikasiBatchList,
 } from '@/lib/stores/verifikasi-batch-store'
-import { SEED_VERIFIKASI_BATCH_INITIAL } from '@/lib/seed/verifikasi-batch-seed'
+import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
+import verifikasiBatchSeedData from '../seed/penugasan-evaluasi.json'
 
-/** Inisialisasi list verifikasi batch dari seed bila store masih kosong. */
+interface VerifikasiBatchSeedResponse {
+  penugasan: VerifikasiBatch[]
+}
+
+const verifikasiBatchSeed = verifikasiBatchSeedData as VerifikasiBatchSeedResponse
+const VERIFIKASI_BATCH_INITIAL: VerifikasiBatch[] = verifikasiBatchSeed.penugasan
+
+/** Inisialisasi list verifikasi batch dari JSON bila store masih kosong. */
 export function initVerifikasiBatchFromSeed(): void {
   if (getVerifikasiBatchList().length === 0) {
-    setVerifikasiBatchList(SEED_VERIFIKASI_BATCH_INITIAL)
+    setVerifikasiBatchList(VERIFIKASI_BATCH_INITIAL)
   }
 }
 
-// Seed data saat modul pertama kali di-load agar daftar Verifikasi SOP langsung terisi
-initVerifikasiBatchFromSeed()

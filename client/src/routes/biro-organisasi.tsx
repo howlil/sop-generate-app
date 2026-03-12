@@ -1,6 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { BarChart3, Building2, FileCheck, PenLine, UserPlus, Users } from 'lucide-react'
-import { isBiroOrganisasi, setRole } from '@/lib/stores/app-store'
+import { getRole, setRole } from '@/lib/stores/app-store'
+import { isBiroOrganisasi } from '@/lib/domain/role'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
@@ -10,7 +11,7 @@ export const Route = createFileRoute('/biro-organisasi')({
   beforeLoad: () => {
     if (typeof window !== 'undefined') {
       setRole(ROLES.BIRO_ORGANISASI)
-      if (!isBiroOrganisasi()) {
+      if (!isBiroOrganisasi(getRole())) {
         throw redirect({ to: ROUTES.HOME, search: { denied: 'biro-organisasi' } })
       }
     }

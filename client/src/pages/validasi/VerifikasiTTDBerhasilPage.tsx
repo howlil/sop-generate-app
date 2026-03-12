@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { ROUTES } from '@/lib/constants/routes'
-import { verifyTTEEmail } from '@/lib/tte'
+import { verifyTTEEmail } from '@/lib/data/tte-storage'
 
 const ROLE_LABEL: Record<string, string> = {
   'kepala-opd': 'OPD',

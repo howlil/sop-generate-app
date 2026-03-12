@@ -4,15 +4,7 @@
  */
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import {
-  Save,
-  Send,
-  Printer,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  MessageSquare,
-} from 'lucide-react'
+import { Save, Send, Printer, MessageSquare } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
@@ -28,11 +20,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
+import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_HASIL_EVALUASI } from '@/lib/constants/evaluasi'
-import { getStatusSopAfterEvaluasi } from '@/lib/domain/evaluasi'
+import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/lib/domain/evaluasi'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import { useSopStatus } from '@/hooks/useSopStatus'
 
@@ -63,15 +55,11 @@ export function EvaluasiSOPPage() {
   const { rightCollapsed: rightPanelCollapsed, setRightCollapsed: setRightPanelCollapsed } = useCollapsiblePanels()
 
   const handleSubmit = () => {
-    if (!statusEvaluasi) {
-      showToast('Silakan tetapkan status evaluasi terlebih dahulu', 'error')
+    if (!isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi)) {
+      showToast('Silakan lengkapi status dan komentar evaluasi terlebih dahulu', 'error')
       return
     }
-    if (statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim()) {
-      showToast('Status "Revisi Biro" wajib diisi komentar evaluasi', 'error')
-      return
-    }
-    if (!sopId) return
+    if (!sopId || !statusEvaluasi) return
     const newStatus = getStatusSopAfterEvaluasi(statusEvaluasi)
     setSopStatusOverride(sopId, newStatus)
     showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
@@ -79,8 +67,7 @@ export function EvaluasiSOPPage() {
     setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
   }
 
-  const isFormComplete =
-    statusEvaluasi !== null && (statusEvaluasi !== 'Revisi Biro' || komentarEvaluasi.trim() !== '')
+  const isFormComplete = isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi)
 
   if (!sop) {
     return (
@@ -160,50 +147,11 @@ export function EvaluasiSOPPage() {
             collapseButtonIcon={<MessageSquare className="w-5 h-5" />}
           >
             <div className="p-3 space-y-4">
-              <FormField label="Status Hasil Evaluasi" required>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    className={`p-3 rounded-lg border transition-all ${
-                      statusEvaluasi === 'Sesuai' ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white hover:bg-gray-50'
-                    }`}
-                    onClick={() => setStatusEvaluasi('Sesuai')}
-                  >
-                    <CheckCircle
-                      className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-400'}`}
-                    />
-                    <span
-                      className={`text-xs font-semibold block ${statusEvaluasi === 'Sesuai' ? 'text-green-600' : 'text-gray-700'}`}
-                    >
-                      Sesuai
-                    </span>
-                    <span className="text-[10px] text-gray-500 block mt-0.5">→ {STATUS_HASIL_EVALUASI.Sesuai}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`p-3 rounded-lg border transition-all ${
-                      statusEvaluasi === 'Revisi Biro' ? 'border-amber-600 bg-amber-50' : 'border-gray-200 bg-white hover:bg-gray-50'
-                    }`}
-                    onClick={() => setStatusEvaluasi('Revisi Biro')}
-                  >
-                    <XCircle
-                      className={`w-6 h-6 mx-auto mb-1 ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-400'}`}
-                    />
-                    <span
-                      className={`text-xs font-semibold block ${statusEvaluasi === 'Revisi Biro' ? 'text-amber-600' : 'text-gray-700'}`}
-                    >
-                      Revisi Biro
-                    </span>
-                    <span className="text-[10px] text-gray-500 block mt-0.5">→ Revisi dari Tim Evaluasi</span>
-                  </button>
-                </div>
-                {statusEvaluasi === 'Revisi Biro' && !komentarEvaluasi.trim() && (
-                  <InfoCard variant="warning" className="mt-2 flex items-start gap-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-amber-800">Komentar evaluasi wajib untuk status Revisi Biro.</p>
-                  </InfoCard>
-                )}
-              </FormField>
+              <StatusHasilEvaluasiPicker
+                value={statusEvaluasi}
+                onChange={setStatusEvaluasi}
+                komentarTrim={komentarEvaluasi.trim()}
+              />
 
               <FormField label="Komentar Evaluasi">
                 <Textarea

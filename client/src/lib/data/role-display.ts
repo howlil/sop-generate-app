@@ -1,14 +1,22 @@
 /**
  * Data layer: data tampilan per role (NIP, display name, user name) dan OPD saat ini.
- * Satu titik akses ke user-seed; page/hook tidak impor seed langsung.
+ * Satu titik akses ke data/user.json; page/hook tidak impor JSON langsung.
  */
 import type { RoleKey } from '@/lib/constants/roles'
-import {
-  ROLE_NIPS,
-  ROLE_DISPLAY_NAMES,
-  ROLE_USER_NAMES,
-  KEPALA_OPD_OPD_ID,
-} from '@/lib/seed/user-seed'
+import userData from '../seed/user.json'
+
+const userSeed = userData as {
+  roleNips: Record<string, string>
+  roleDisplayNames: Record<string, string>
+  roleUserNames: Record<string, string>
+  dashboardDescriptions: Record<string, string>
+  kepalaOpdOpdId: string
+}
+
+const ROLE_NIPS: Record<RoleKey, string> = userSeed.roleNips as Record<RoleKey, string>
+const ROLE_DISPLAY_NAMES: Record<RoleKey, string> = userSeed.roleDisplayNames as Record<RoleKey, string>
+const ROLE_USER_NAMES: Record<RoleKey, string> = userSeed.roleUserNames as Record<RoleKey, string>
+const KEPALA_OPD_OPD_ID = userSeed.kepalaOpdOpdId
 
 export function getRoleNip(r: RoleKey): string {
   return ROLE_NIPS[r] ?? '-'

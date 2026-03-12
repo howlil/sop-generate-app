@@ -39,12 +39,10 @@ import { Route as BiroOrganisasiManajemenEvaluasiSopIndexRouteImport } from './r
 import { Route as ValidasiTtdBerhasilRouteImport } from './routes/validasi.ttd.berhasil'
 import { Route as ValidasiPengesahanIdRouteImport } from './routes/validasi.pengesahan.$id'
 import { Route as TimPenyusunDetailSopIdRouteImport } from './routes/tim-penyusun.detail-sop.$id'
-import { Route as TimEvaluasiPelaksanaanIdRouteImport } from './routes/tim-evaluasi.pelaksanaan.$id'
 import { Route as TimEvaluasiEvaluasiSopIdRouteImport } from './routes/tim-evaluasi.evaluasi.$sopId'
 import { Route as KepalaOpdDetailSopIdRouteImport } from './routes/kepala-opd.detail-sop.$id'
 import { Route as BiroOrganisasiDetailSopIdRouteImport } from './routes/biro-organisasi.detail-sop.$id'
 import { Route as TimEvaluasiEvaluasiOpdOpdIdRouteImport } from './routes/tim-evaluasi.evaluasi.opd.$opdId'
-import { Route as TimEvaluasiEvaluasiDetailIdRouteImport } from './routes/tim-evaluasi.evaluasi.detail.$id'
 import { Route as BiroOrganisasiManajemenEvaluasiSopDetailIdRouteImport } from './routes/biro-organisasi.manajemen-evaluasi-sop.detail.$id'
 
 const TimPenyusunRoute = TimPenyusunRouteImport.update({
@@ -207,12 +205,6 @@ const TimPenyusunDetailSopIdRoute = TimPenyusunDetailSopIdRouteImport.update({
   path: '/detail-sop/$id',
   getParentRoute: () => TimPenyusunRoute,
 } as any)
-const TimEvaluasiPelaksanaanIdRoute =
-  TimEvaluasiPelaksanaanIdRouteImport.update({
-    id: '/pelaksanaan/$id',
-    path: '/pelaksanaan/$id',
-    getParentRoute: () => TimEvaluasiRoute,
-  } as any)
 const TimEvaluasiEvaluasiSopIdRoute =
   TimEvaluasiEvaluasiSopIdRouteImport.update({
     id: '/$sopId',
@@ -234,12 +226,6 @@ const TimEvaluasiEvaluasiOpdOpdIdRoute =
   TimEvaluasiEvaluasiOpdOpdIdRouteImport.update({
     id: '/opd/$opdId',
     path: '/opd/$opdId',
-    getParentRoute: () => TimEvaluasiEvaluasiRoute,
-  } as any)
-const TimEvaluasiEvaluasiDetailIdRoute =
-  TimEvaluasiEvaluasiDetailIdRouteImport.update({
-    id: '/detail/$id',
-    path: '/detail/$id',
     getParentRoute: () => TimEvaluasiEvaluasiRoute,
   } as any)
 const BiroOrganisasiManajemenEvaluasiSopDetailIdRoute =
@@ -278,14 +264,12 @@ export interface FileRoutesByFullPath {
   '/biro-organisasi/detail-sop/$id': typeof BiroOrganisasiDetailSopIdRoute
   '/kepala-opd/detail-sop/$id': typeof KepalaOpdDetailSopIdRoute
   '/tim-evaluasi/evaluasi/$sopId': typeof TimEvaluasiEvaluasiSopIdRoute
-  '/tim-evaluasi/pelaksanaan/$id': typeof TimEvaluasiPelaksanaanIdRoute
   '/tim-penyusun/detail-sop/$id': typeof TimPenyusunDetailSopIdRoute
   '/validasi/pengesahan/$id': typeof ValidasiPengesahanIdRoute
   '/validasi/ttd/berhasil': typeof ValidasiTtdBerhasilRoute
   '/biro-organisasi/manajemen-evaluasi-sop/': typeof BiroOrganisasiManajemenEvaluasiSopIndexRoute
   '/tim-evaluasi/evaluasi/': typeof TimEvaluasiEvaluasiIndexRoute
   '/biro-organisasi/manajemen-evaluasi-sop/detail/$id': typeof BiroOrganisasiManajemenEvaluasiSopDetailIdRoute
-  '/tim-evaluasi/evaluasi/detail/$id': typeof TimEvaluasiEvaluasiDetailIdRoute
   '/tim-evaluasi/evaluasi/opd/$opdId': typeof TimEvaluasiEvaluasiOpdOpdIdRoute
 }
 export interface FileRoutesByTo {
@@ -311,14 +295,12 @@ export interface FileRoutesByTo {
   '/biro-organisasi/detail-sop/$id': typeof BiroOrganisasiDetailSopIdRoute
   '/kepala-opd/detail-sop/$id': typeof KepalaOpdDetailSopIdRoute
   '/tim-evaluasi/evaluasi/$sopId': typeof TimEvaluasiEvaluasiSopIdRoute
-  '/tim-evaluasi/pelaksanaan/$id': typeof TimEvaluasiPelaksanaanIdRoute
   '/tim-penyusun/detail-sop/$id': typeof TimPenyusunDetailSopIdRoute
   '/validasi/pengesahan/$id': typeof ValidasiPengesahanIdRoute
   '/validasi/ttd/berhasil': typeof ValidasiTtdBerhasilRoute
   '/biro-organisasi/manajemen-evaluasi-sop': typeof BiroOrganisasiManajemenEvaluasiSopIndexRoute
   '/tim-evaluasi/evaluasi': typeof TimEvaluasiEvaluasiIndexRoute
   '/biro-organisasi/manajemen-evaluasi-sop/detail/$id': typeof BiroOrganisasiManajemenEvaluasiSopDetailIdRoute
-  '/tim-evaluasi/evaluasi/detail/$id': typeof TimEvaluasiEvaluasiDetailIdRoute
   '/tim-evaluasi/evaluasi/opd/$opdId': typeof TimEvaluasiEvaluasiOpdOpdIdRoute
 }
 export interface FileRoutesById {
@@ -351,14 +333,12 @@ export interface FileRoutesById {
   '/biro-organisasi/detail-sop/$id': typeof BiroOrganisasiDetailSopIdRoute
   '/kepala-opd/detail-sop/$id': typeof KepalaOpdDetailSopIdRoute
   '/tim-evaluasi/evaluasi/$sopId': typeof TimEvaluasiEvaluasiSopIdRoute
-  '/tim-evaluasi/pelaksanaan/$id': typeof TimEvaluasiPelaksanaanIdRoute
   '/tim-penyusun/detail-sop/$id': typeof TimPenyusunDetailSopIdRoute
   '/validasi/pengesahan/$id': typeof ValidasiPengesahanIdRoute
   '/validasi/ttd/berhasil': typeof ValidasiTtdBerhasilRoute
   '/biro-organisasi/manajemen-evaluasi-sop/': typeof BiroOrganisasiManajemenEvaluasiSopIndexRoute
   '/tim-evaluasi/evaluasi/': typeof TimEvaluasiEvaluasiIndexRoute
   '/biro-organisasi/manajemen-evaluasi-sop/detail/$id': typeof BiroOrganisasiManajemenEvaluasiSopDetailIdRoute
-  '/tim-evaluasi/evaluasi/detail/$id': typeof TimEvaluasiEvaluasiDetailIdRoute
   '/tim-evaluasi/evaluasi/opd/$opdId': typeof TimEvaluasiEvaluasiOpdOpdIdRoute
 }
 export interface FileRouteTypes {
@@ -392,14 +372,12 @@ export interface FileRouteTypes {
     | '/biro-organisasi/detail-sop/$id'
     | '/kepala-opd/detail-sop/$id'
     | '/tim-evaluasi/evaluasi/$sopId'
-    | '/tim-evaluasi/pelaksanaan/$id'
     | '/tim-penyusun/detail-sop/$id'
     | '/validasi/pengesahan/$id'
     | '/validasi/ttd/berhasil'
     | '/biro-organisasi/manajemen-evaluasi-sop/'
     | '/tim-evaluasi/evaluasi/'
     | '/biro-organisasi/manajemen-evaluasi-sop/detail/$id'
-    | '/tim-evaluasi/evaluasi/detail/$id'
     | '/tim-evaluasi/evaluasi/opd/$opdId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -425,14 +403,12 @@ export interface FileRouteTypes {
     | '/biro-organisasi/detail-sop/$id'
     | '/kepala-opd/detail-sop/$id'
     | '/tim-evaluasi/evaluasi/$sopId'
-    | '/tim-evaluasi/pelaksanaan/$id'
     | '/tim-penyusun/detail-sop/$id'
     | '/validasi/pengesahan/$id'
     | '/validasi/ttd/berhasil'
     | '/biro-organisasi/manajemen-evaluasi-sop'
     | '/tim-evaluasi/evaluasi'
     | '/biro-organisasi/manajemen-evaluasi-sop/detail/$id'
-    | '/tim-evaluasi/evaluasi/detail/$id'
     | '/tim-evaluasi/evaluasi/opd/$opdId'
   id:
     | '__root__'
@@ -464,14 +440,12 @@ export interface FileRouteTypes {
     | '/biro-organisasi/detail-sop/$id'
     | '/kepala-opd/detail-sop/$id'
     | '/tim-evaluasi/evaluasi/$sopId'
-    | '/tim-evaluasi/pelaksanaan/$id'
     | '/tim-penyusun/detail-sop/$id'
     | '/validasi/pengesahan/$id'
     | '/validasi/ttd/berhasil'
     | '/biro-organisasi/manajemen-evaluasi-sop/'
     | '/tim-evaluasi/evaluasi/'
     | '/biro-organisasi/manajemen-evaluasi-sop/detail/$id'
-    | '/tim-evaluasi/evaluasi/detail/$id'
     | '/tim-evaluasi/evaluasi/opd/$opdId'
   fileRoutesById: FileRoutesById
 }
@@ -697,13 +671,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimPenyusunDetailSopIdRouteImport
       parentRoute: typeof TimPenyusunRoute
     }
-    '/tim-evaluasi/pelaksanaan/$id': {
-      id: '/tim-evaluasi/pelaksanaan/$id'
-      path: '/pelaksanaan/$id'
-      fullPath: '/tim-evaluasi/pelaksanaan/$id'
-      preLoaderRoute: typeof TimEvaluasiPelaksanaanIdRouteImport
-      parentRoute: typeof TimEvaluasiRoute
-    }
     '/tim-evaluasi/evaluasi/$sopId': {
       id: '/tim-evaluasi/evaluasi/$sopId'
       path: '/$sopId'
@@ -730,13 +697,6 @@ declare module '@tanstack/react-router' {
       path: '/opd/$opdId'
       fullPath: '/tim-evaluasi/evaluasi/opd/$opdId'
       preLoaderRoute: typeof TimEvaluasiEvaluasiOpdOpdIdRouteImport
-      parentRoute: typeof TimEvaluasiEvaluasiRoute
-    }
-    '/tim-evaluasi/evaluasi/detail/$id': {
-      id: '/tim-evaluasi/evaluasi/detail/$id'
-      path: '/detail/$id'
-      fullPath: '/tim-evaluasi/evaluasi/detail/$id'
-      preLoaderRoute: typeof TimEvaluasiEvaluasiDetailIdRouteImport
       parentRoute: typeof TimEvaluasiEvaluasiRoute
     }
     '/biro-organisasi/manajemen-evaluasi-sop/detail/$id': {
@@ -820,14 +780,12 @@ const KepalaOpdRouteWithChildren = KepalaOpdRoute._addFileChildren(
 interface TimEvaluasiEvaluasiRouteChildren {
   TimEvaluasiEvaluasiSopIdRoute: typeof TimEvaluasiEvaluasiSopIdRoute
   TimEvaluasiEvaluasiIndexRoute: typeof TimEvaluasiEvaluasiIndexRoute
-  TimEvaluasiEvaluasiDetailIdRoute: typeof TimEvaluasiEvaluasiDetailIdRoute
   TimEvaluasiEvaluasiOpdOpdIdRoute: typeof TimEvaluasiEvaluasiOpdOpdIdRoute
 }
 
 const TimEvaluasiEvaluasiRouteChildren: TimEvaluasiEvaluasiRouteChildren = {
   TimEvaluasiEvaluasiSopIdRoute: TimEvaluasiEvaluasiSopIdRoute,
   TimEvaluasiEvaluasiIndexRoute: TimEvaluasiEvaluasiIndexRoute,
-  TimEvaluasiEvaluasiDetailIdRoute: TimEvaluasiEvaluasiDetailIdRoute,
   TimEvaluasiEvaluasiOpdOpdIdRoute: TimEvaluasiEvaluasiOpdOpdIdRoute,
 }
 
@@ -837,13 +795,11 @@ const TimEvaluasiEvaluasiRouteWithChildren =
 interface TimEvaluasiRouteChildren {
   TimEvaluasiEvaluasiRoute: typeof TimEvaluasiEvaluasiRouteWithChildren
   TimEvaluasiIndexRoute: typeof TimEvaluasiIndexRoute
-  TimEvaluasiPelaksanaanIdRoute: typeof TimEvaluasiPelaksanaanIdRoute
 }
 
 const TimEvaluasiRouteChildren: TimEvaluasiRouteChildren = {
   TimEvaluasiEvaluasiRoute: TimEvaluasiEvaluasiRouteWithChildren,
   TimEvaluasiIndexRoute: TimEvaluasiIndexRoute,
-  TimEvaluasiPelaksanaanIdRoute: TimEvaluasiPelaksanaanIdRoute,
 }
 
 const TimEvaluasiRouteWithChildren = TimEvaluasiRoute._addFileChildren(
