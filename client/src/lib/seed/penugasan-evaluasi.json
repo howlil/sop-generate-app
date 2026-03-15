@@ -1,236 +1,324 @@
 {
   "penugasan": [
     {
-      "id": "1",
+      "id": "vb-001",
+      "jenis": "Request OPD",
+      "tanggalRequest": "2026-03-01",
+      "opd": "Dinas Pendidikan",
+      "sopList": [
+        {
+          "id": "sop-004",
+          "nama": "SOP Pemberian Beasiswa Siswa Berprestasi",
+          "nomor": "SOP/DISDIK/PLY/2026/008"
+        }
+      ],
+      "status": "Aktif",
+      "catatan": "Permintaan evaluasi dari Kepala Dinas Pendidikan."
+    },
+    {
+      "id": "vb-002",
       "jenis": "Inisiasi Biro",
       "opd": "Dinas Pendidikan",
       "sopList": [
-        { "id": "s1", "nama": "SOP Penerimaan Siswa Baru", "nomor": "SOP-DISDIK-001/2026", "status": "Sesuai", "catatan": "Proses berjalan lancar.", "rekomendasi": "Tingkatkan kapasitas server." },
-        { "id": "s2", "nama": "SOP Ujian Sekolah", "nomor": "SOP-DISDIK-005/2026", "status": "Sesuai", "catatan": "Prosedur sesuai standar.", "rekomendasi": "Pertahankan standar." }
+        {
+          "id": "sop-005",
+          "nama": "SOP Monitoring dan Evaluasi Program Pendidikan",
+          "nomor": "SOP/DISDIK/ADM/2026/011"
+        }
       ],
+      "status": "Aktif",
+      "catatan": "Evaluasi rutin kuartal 1 2026 Dinas Pendidikan."
+    },
+    {
+      "id": "vb-003",
+      "jenis": "Request OPD",
+      "tanggalRequest": "2026-02-20",
+      "opd": "Dinas Perhubungan",
+      "sopList": [
+        {
+          "id": "sop-012",
+          "nama": "SOP Pengelolaan Terminal Bus Tipe C",
+          "nomor": "SOP/DISHUB/ADM/2026/005"
+        }
+      ],
+      "status": "Aktif",
+      "catatan": "Permintaan evaluasi dari Kepala Dinas Perhubungan."
+    },
+    {
+      "id": "vb-004",
+      "jenis": "Inisiasi Biro",
+      "opd": "Dinas Kesehatan",
+      "sopList": [
+        {
+          "id": "sop-006",
+          "nama": "SOP Pelayanan Kesehatan Ibu dan Anak",
+          "nomor": "SOP/DINKES/PLY/2026/004",
+          "status": "Revisi Biro",
+          "catatan": "Alur rujukan internal belum tertuang dalam prosedur. Perlu ditambahkan di langkah 4-6.",
+          "rekomendasi": "Tambahkan sub-prosedur rujukan ke RS kelas B."
+        },
+        {
+          "id": "sop-007",
+          "nama": "SOP Imunisasi Dasar Lengkap",
+          "nomor": "SOP/DINKES/ADM/2026/007",
+          "status": "Sesuai",
+          "catatan": "Prosedur sudah sesuai standar WHO dan Permenkes.",
+          "rekomendasi": "Pertahankan jadwal sosialisasi rutin."
+        }
+      ],
+      "status": "Selesai",
+      "catatan": "Evaluasi kuartal 1 2026 Dinas Kesehatan batch I.",
+      "tanggalEvaluasi": "2026-03-01",
       "timEvaluasi": "Dra. Siti Aminah, M.Si",
+      "isVerified": false
+    },
+    {
+      "id": "vb-005",
+      "jenis": "Inisiasi Biro",
+      "opd": "Dinas Kesehatan",
+      "sopList": [
+        {
+          "id": "sop-008",
+          "nama": "SOP Rujukan Pasien Ke Fasilitas Kesehatan Lanjutan",
+          "nomor": "SOP/DINKES/PLY/2026/012",
+          "status": "Sesuai",
+          "catatan": "Prosedur rujukan sudah mengacu pada sistem SISRUTE.",
+          "rekomendasi": "Perbarui nomor hotline ambulans di lampiran."
+        }
+      ],
       "status": "Terverifikasi",
-      "catatan": "Evaluasi rutin Q1 2026",
+      "catatan": "Evaluasi kuartal 1 2026 Dinas Kesehatan batch II.",
       "tanggalEvaluasi": "2026-02-05",
+      "timEvaluasi": "Dra. Siti Aminah, M.Si",
       "isVerified": true,
-      "nomorBA": "BA/BIRO/001/II/2026",
-      "tanggalVerifikasi": "2026-02-06",
+      "nomorBA": "BA/BIRO/004/II/2026",
+      "tanggalVerifikasi": "2026-02-10",
       "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKoordinator": false,
       "isSignedByKepalaOPD": false,
       "tanggalTTDBaByOpd": null
     },
     {
-      "id": "2",
-      "jenis": "Request OPD",
-      "tanggalRequest": "2026-02-03",
-      "opd": "Dinas Perizinan Terpadu",
-      "sopList": [
-        { "id": "s3", "nama": "SOP Perizinan Usaha Mikro", "nomor": "SOP-DPMPTSP-005/2026", "status": "Perlu Perbaikan", "catatan": "Beberapa tahapan tidak konsisten.", "rekomendasi": "Perbaiki dokumentasi." }
-      ],
-      "timEvaluasi": "Dr. Bambang Suryanto",
-      "status": "Selesai",
-      "catatan": "Request dari Dinas Perizinan Terpadu",
-      "tanggalEvaluasi": "2026-02-04",
-      "isVerified": false
-    },
-    {
-      "id": "3",
+      "id": "vb-006",
       "jenis": "Inisiasi Biro",
       "opd": "Dinas Kesehatan",
       "sopList": [
-        { "id": "s4", "nama": "SOP Pelayanan Kesehatan Dasar", "nomor": "SOP-DINKES-012/2026" },
-        { "id": "s5", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026" },
-        { "id": "s6", "nama": "SOP Rujukan Pasien", "nomor": "SOP-DINKES-022/2026" }
+        {
+          "id": "sop-009",
+          "nama": "SOP Penanganan Gawat Darurat Puskesmas",
+          "nomor": "SOP/DINKES/PLY/2025/001",
+          "status": "Sesuai",
+          "catatan": "Alur triage sudah sesuai standar START.",
+          "rekomendasi": "Pertahankan; tambah pelatihan BTCLS berkala."
+        }
       ],
-      "timEvaluasi": "Dr. Bambang Suryanto",
-      "status": "Sudah Ditugaskan",
-      "catatan": "Evaluasi SOP pelayanan kesehatan"
+      "status": "Terverifikasi",
+      "catatan": "Evaluasi kuartal 4 2025 Dinas Kesehatan.",
+      "tanggalEvaluasi": "2025-11-10",
+      "timEvaluasi": "Dra. Siti Aminah, M.Si",
+      "isVerified": true,
+      "nomorBA": "BA/BIRO/011/XI/2025",
+      "tanggalVerifikasi": "2025-11-15",
+      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKoordinator": true,
+      "isSignedByKepalaOPD": true,
+      "tanggalTTDBaByOpd": "2025-11-18",
+      "tteSignaturePayload": {
+        "id": "tte-sig-001",
+        "role": "kepala-opd",
+        "nip": "197205201997032001",
+        "namaLengkap": "dr. Sri Hartini, Sp.A.",
+        "signedAt": "2025-11-18T09:42:00.000Z",
+        "documentId": "sop-009",
+        "documentLabel": "SOP Penanganan Gawat Darurat Puskesmas",
+        "referenceId": "vb-006",
+        "documentHash": "sha256:a3f2c1d9e4b7a6f8c2d1e0f9b3a2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1"
+      }
     },
     {
-      "id": "4",
-      "jenis": "Inisiasi Biro",
-      "opd": "Dinas Kesehatan",
-      "sopList": [
-        { "id": "s4b", "nama": "SOP Pelayanan Kesehatan Dasar", "nomor": "SOP-DINKES-012/2026", "status": "Sesuai", "catatan": "Pelayanan berjalan baik.", "rekomendasi": "Pertahankan." },
-        { "id": "s5b", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026", "status": "Sesuai", "catatan": "Program sesuai jadwal.", "rekomendasi": "Tingkatkan sosialisasi." },
-        { "id": "s6b", "nama": "SOP Rujukan Pasien", "nomor": "SOP-DINKES-022/2026", "status": "Sesuai", "catatan": "Sistem rujukan efektif.", "rekomendasi": "Pertahankan." }
-      ],
-      "timEvaluasi": "Ir. Dewi Kusumawati, MT",
-      "status": "Selesai",
-      "catatan": "Evaluasi Q1 2026",
-      "tanggalEvaluasi": "2026-02-03",
-      "isVerified": false
-    },
-    {
-      "id": "5",
+      "id": "vb-007",
       "jenis": "Inisiasi Biro",
       "opd": "Dinas Perhubungan",
       "sopList": [
-        { "id": "s7", "nama": "SOP Pengurusan SIM", "nomor": "SOP-DISHUB-001/2026", "status": "Sesuai", "catatan": "Proses sudah sesuai.", "rekomendasi": "Pertahankan." },
-        { "id": "s8", "nama": "SOP Uji Berkala Kendaraan", "nomor": "SOP-DISHUB-002/2026", "status": "Sesuai", "catatan": "Dokumentasi lengkap.", "rekomendasi": "-" }
+        {
+          "id": "sop-010",
+          "nama": "SOP Pengujian Berkala Kendaraan Bermotor",
+          "nomor": "SOP/DISHUB/PLY/2025/003",
+          "status": "Sesuai",
+          "catatan": "Prosedur pengujian sudah sesuai regulasi DLLAJR.",
+          "rekomendasi": "Tambahkan SOP khusus kendaraan listrik."
+        }
       ],
-      "timEvaluasi": "Dra. Siti Aminah, M.Si",
       "status": "Terverifikasi",
-      "catatan": "Evaluasi Maret 2026",
-      "tanggalEvaluasi": "2026-03-05",
+      "catatan": "Evaluasi kuartal 3 2025 Dinas Perhubungan.",
+      "tanggalEvaluasi": "2025-10-01",
+      "timEvaluasi": "Dr. Bambang Suryanto",
       "isVerified": true,
-      "nomorBA": "BA/BIRO/003/III/2026",
-      "tanggalVerifikasi": "2026-03-06",
+      "nomorBA": "BA/BIRO/009/X/2025",
+      "tanggalVerifikasi": "2025-10-05",
       "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKoordinator": true,
+      "isSignedByKepalaOPD": true,
+      "tanggalTTDBaByOpd": "2025-10-08",
+      "tteSignaturePayload": {
+        "id": "tte-sig-002",
+        "role": "kepala-opd",
+        "nip": "196811221993031003",
+        "namaLengkap": "Drs. Sigit Purnomo, M.T.",
+        "signedAt": "2025-10-08T10:15:00.000Z",
+        "documentId": "sop-010",
+        "documentLabel": "SOP Pengujian Berkala Kendaraan Bermotor",
+        "referenceId": "vb-007",
+        "documentHash": "sha256:b4c3d2e1f0a9b8c7d6e5f4a3b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2"
+      }
+    },
+    {
+      "id": "vb-008",
+      "jenis": "Inisiasi Biro",
+      "opd": "Dinas Sosial",
+      "sopList": [
+        {
+          "id": "sop-013",
+          "nama": "SOP Verifikasi Calon Penerima Bantuan Sosial",
+          "nomor": "SOP/DINSOS/PLY/2026/002",
+          "status": "Sesuai",
+          "catatan": "Prosedur verifikasi sudah mencakup kunjungan rumah dan validasi NIK.",
+          "rekomendasi": "Perkuat dokumentasi foto dan bukti lapangan."
+        }
+      ],
+      "status": "Terverifikasi",
+      "catatan": "Evaluasi kuartal 1 2026 Dinas Sosial.",
+      "tanggalEvaluasi": "2026-02-20",
+      "timEvaluasi": "Dr. Bambang Suryanto",
+      "isVerified": true,
+      "nomorBA": "BA/BIRO/012/II/2026",
+      "tanggalVerifikasi": "2026-02-25",
+      "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKoordinator": false,
       "isSignedByKepalaOPD": false,
       "tanggalTTDBaByOpd": null
     },
     {
-      "id": "6",
+      "id": "vb-009",
       "jenis": "Inisiasi Biro",
-      "opd": "Dinas Pekerjaan Umum",
+      "opd": "Dinas Pendidikan",
       "sopList": [
-        { "id": "s9", "nama": "SOP Pengawasan Jalan", "nomor": "SOP-DISPU-010/2026", "status": "Perlu Perbaikan", "catatan": "Lampiran perlu dilengkapi.", "rekomendasi": "Upload format terbaru." }
+        {
+          "id": "sop-003",
+          "nama": "SOP Pelaporan Keuangan Sekolah Dasar",
+          "nomor": "SOP/DISDIK/ADM/2026/018",
+          "status": "Sesuai",
+          "catatan": "Pelaporan sudah mengacu pada standar akuntansi pemerintah.",
+          "rekomendasi": "Pastikan pelatihan keuangan rutin untuk bendahara sekolah."
+        }
       ],
-      "timEvaluasi": "Dr. Bambang Suryanto",
-      "status": "Selesai",
-      "catatan": "Evaluasi Februari 2026",
-      "tanggalEvaluasi": "2026-02-20",
-      "isVerified": false
-    },
-    {
-      "id": "7",
-      "jenis": "Inisiasi Biro",
-      "opd": "BAPPEDA",
-      "sopList": [
-        { "id": "s10", "nama": "SOP Perencanaan RKPD", "nomor": "SOP-BAPPEDA-001/2026", "status": "Sesuai", "catatan": "Baik.", "rekomendasi": "-" },
-        { "id": "s11", "nama": "SOP Evaluasi Kinerja", "nomor": "SOP-BAPPEDA-002/2026", "status": "Sesuai", "catatan": "Sesuai standar.", "rekomendasi": "-" },
-        { "id": "s12", "nama": "SOP Musrenbang", "nomor": "SOP-BAPPEDA-003/2026", "status": "Sesuai", "catatan": "Prosedur jelas.", "rekomendasi": "-" }
-      ],
-      "timEvaluasi": "Ir. Dewi Kusumawati, MT",
       "status": "Terverifikasi",
-      "catatan": "Evaluasi Q1 2026",
-      "tanggalEvaluasi": "2026-02-15",
+      "catatan": "Evaluasi kuartal 1 2026 Dinas Pendidikan.",
+      "tanggalEvaluasi": "2026-02-12",
+      "timEvaluasi": "Ir. Dewi Kusumawati, M.T.",
       "isVerified": true,
-      "nomorBA": "BA/BIRO/002/II/2026",
-      "tanggalVerifikasi": "2026-02-16",
+      "nomorBA": "BA/BIRO/013/II/2026",
+      "tanggalVerifikasi": "2026-02-18",
       "namaBiro": "Dr. H. Muhammad Ridwan, M.Si",
+      "isSignedByKoordinator": false,
       "isSignedByKepalaOPD": false,
       "tanggalTTDBaByOpd": null
     }
   ],
-  "opdListEvaluasi": [
-    { "id": "opd1", "nama": "Dinas Pendidikan", "kode": "DISDIK" },
-    { "id": "opd2", "nama": "Dinas Kesehatan", "kode": "DINKES" },
-    { "id": "opd3", "nama": "Dinas Perizinan Terpadu", "kode": "DPMPTSP" },
-    { "id": "opd4", "nama": "Dinas Sosial", "kode": "DINSOS" },
-    { "id": "opd5", "nama": "Dinas Perhubungan", "kode": "DISHUB" },
-    { "id": "opd6", "nama": "Dinas Pekerjaan Umum", "kode": "DISPU" },
-    { "id": "opd7", "nama": "Dinas Kependudukan dan Pencatatan Sipil", "kode": "DISDUKCAPIL" },
-    { "id": "opd8", "nama": "Dinas Penanaman Modal dan Pelayanan Terpadu", "kode": "DPMPT" },
-    { "id": "opd9", "nama": "Dinas Koperasi dan UKM", "kode": "DISKOPUKM" },
-    { "id": "opd10", "nama": "Dinas Ketahanan Pangan", "kode": "DKP" },
-    { "id": "opd11", "nama": "Dinas Peternakan dan Kesehatan Hewan", "kode": "DISNAK" },
-    { "id": "opd12", "nama": "Dinas Kelautan dan Perikanan", "kode": "DKP" },
-    { "id": "opd13", "nama": "Dinas Lingkungan Hidup", "kode": "DLH" },
-    { "id": "opd14", "nama": "Dinas Perumahan dan Kawasan Permukiman", "kode": "DISPERKIM" },
-    { "id": "opd15", "nama": "Dinas Kebudayaan", "kode": "DISBUDAYA" },
-    { "id": "opd16", "nama": "Dinas Pariwisata", "kode": "DISPARSENI" },
-    { "id": "opd17", "nama": "Dinas Pemuda dan Olahraga", "kode": "DISPORA" },
-    { "id": "opd18", "nama": "Dinas Pemberdayaan Perempuan dan Perlindungan Anak", "kode": "DP3A" },
-    { "id": "opd19", "nama": "Dinas Kearsipan dan Perpustakaan", "kode": "ARSIP" },
-    { "id": "opd20", "nama": "Dinas Komunikasi dan Informatika", "kode": "DISKOMINFO" },
-    { "id": "opd21", "nama": "Dinas Penelitian dan Pengembangan", "kode": "LITBANG" },
-    { "id": "opd22", "nama": "Dinas Perpustakaan dan Kearsipan", "kode": "DISPUSIP" },
-    { "id": "opd23", "nama": "Dinas Ketenagakerjaan", "kode": "DISNAKER" },
-    { "id": "opd24", "nama": "Dinas Industri dan Perdagangan", "kode": "DISPERIN" },
-    { "id": "opd25", "nama": "Dinas Energi dan Sumber Daya Mineral", "kode": "ESDM" },
-    { "id": "opd26", "nama": "Dinas Kehutanan", "kode": "DISHUT" },
-    { "id": "opd27", "nama": "Dinas Pertanian", "kode": "DISTAN" },
-    { "id": "opd28", "nama": "Dinas Perindustrian", "kode": "DISPERIN" },
-    { "id": "opd29", "nama": "Dinas Perdagangan", "kode": "DISDAG" },
-    { "id": "opd30", "nama": "Dinas Transmigrasi dan Tenaga Kerja", "kode": "DISNAKERTRANS" },
-    { "id": "opd31", "nama": "Dinas Pemberdayaan Masyarakat dan Desa", "kode": "PMD" },
-    { "id": "opd32", "nama": "Dinas Pengendalian Penduduk dan Keluarga Berencana", "kode": "DPPKB" },
-    { "id": "opd33", "nama": "Dinas Kebakaran dan Penyelamatan", "kode": "DAMKAR" },
-    { "id": "opd34", "nama": "Dinas Satuan Polisi Pamong Praja", "kode": "SATPOL PP" },
-    { "id": "opd35", "nama": "Dinas Perpajakan Daerah", "kode": "BAPENDA" },
-    { "id": "opd36", "nama": "Dinas Pendapatan Daerah", "kode": "DISPENDA" },
-    { "id": "opd37", "nama": "Dinas Pengelolaan Keuangan dan Aset Daerah", "kode": "DPKAD" },
-    { "id": "opd38", "nama": "Badan Perencanaan Pembangunan Daerah", "kode": "BAPPEDA" },
-    { "id": "opd39", "nama": "Badan Kepegawaian Daerah", "kode": "BKD" },
-    { "id": "opd40", "nama": "Badan Pengelolaan Keuangan dan Aset Daerah", "kode": "BPKAD" },
-    { "id": "opd41", "nama": "Badan Kesatuan Bangsa dan Politik", "kode": "KESBANGPOL" },
-    { "id": "opd42", "nama": "Badan Penanggulangan Bencana Daerah", "kode": "BPBD" },
-    { "id": "opd43", "nama": "Badan Pengawas Obat dan Makanan", "kode": "BPOM" },
-    { "id": "opd44", "nama": "Kantor Kependudukan dan Pencatatan Sipil", "kode": "KCDUKCAPIL" },
-    { "id": "opd45", "nama": "Kantor Kesyahbandaran dan Otoritas Pelabuhan", "kode": "KSOP" },
-    { "id": "opd46", "nama": "Kantor Wilayah Kementerian Agama", "kode": "KANKEMENAG" },
-    { "id": "opd47", "nama": "Rumah Sakit Umum Daerah", "kode": "RSUD" },
-    { "id": "opd48", "nama": "Dinas Perikanan", "kode": "DISKAN" },
-    { "id": "opd49", "nama": "Dinas Perdagangan dan Perindustrian", "kode": "DISPERINDAG" },
-    { "id": "opd50", "nama": "Dinas Kebudayaan dan Pariwisata", "kode": "DISBUDPAR" },
-    { "id": "opd51", "nama": "Dinas Sumber Daya Air", "kode": "DSDA" },
-    { "id": "opd52", "nama": "Dinas Tata Ruang dan Cipta Karya", "kode": "DISTARU" }
-  ],
-  "baseSopByOpd": {
-    "Dinas Pendidikan": [
-      { "id": "sop1", "nama": "SOP Penerimaan Siswa Baru", "nomor": "SOP-DISDIK-001/2026", "status": "Berlaku" },
-      { "id": "sop2", "nama": "SOP Ujian Sekolah", "nomor": "SOP-DISDIK-005/2026", "status": "Diverifikasi Biro Organisasi" },
-      { "id": "sop3", "nama": "SOP Kelulusan", "nomor": "SOP-DISDIK-010/2026", "status": "Berlaku" },
-      { "id": "1", "nama": "SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027", "nomor": "SOP/DISDIK/PLY/2026/001", "status": "Berlaku" },
-      { "id": "2", "nama": "SOP Pelaksanaan Ujian Akhir Sekolah", "nomor": "SOP/DISDIK/PLY/2026/005", "status": "Siap Dievaluasi" },
-      { "id": "3", "nama": "SOP Pengelolaan Data Kepegawaian Guru", "nomor": "SOP/DISDIK/ADM/2026/003", "status": "Sedang Dievaluasi" },
-      { "id": "4", "nama": "SOP Revisi Dokumen Kurikulum", "nomor": "SOP/DISDIK/ADM/2026/004", "status": "Revisi dari Tim Evaluasi" }
-    ],
-    "Dinas Kesehatan": [
-      { "id": "sop4", "nama": "SOP Pelayanan Kesehatan Dasar", "nomor": "SOP-DINKES-012/2026", "status": "Berlaku" },
-      { "id": "sop5", "nama": "SOP Imunisasi", "nomor": "SOP-DINKES-018/2026", "status": "Diverifikasi Biro Organisasi" }
-    ],
-    "Dinas Perizinan Terpadu": [
-      { "id": "sop6", "nama": "SOP Perizinan Usaha", "nomor": "SOP-DPMPTSP-005/2026", "status": "Diajukan Evaluasi" }
-    ],
-    "Dinas Sosial": [
-      { "id": "sop7", "nama": "SOP Pengadaan Barang", "nomor": "SOP-DINSOS-015/2026", "status": "Siap Dievaluasi" }
-    ]
-  },
   "minSopPerOpd": 5,
-  "statusPool": ["Berlaku", "Siap Dievaluasi", "Diajukan Evaluasi", "Sedang Dievaluasi", "Revisi dari Tim Evaluasi", "Diverifikasi Biro Organisasi", "Siap Diverifikasi", "Dicabut"],
-  "timEvaluasiOptions": [
-    { "id": "tm1", "nama": "Dra. Siti Aminah, M.Si" },
-    { "id": "tm2", "nama": "Dr. Bambang Suryanto" },
-    { "id": "tm3", "nama": "Ir. Dewi Kusumawati, MT" }
-  ],
-  "penugasanTimEvaluasi": [
-    { "id": "1", "kodePenugasan": "TUG-EVL-012/2026", "opd": "Dinas Pendidikan", "sop": "SOP Penerimaan Siswa Baru 2026", "kodeSOP": "SOP/DISDIK/PLY/2026/001", "jenis": "Evaluasi Rutin", "tanggalPenugasan": "2026-01-20", "status": "in-progress" },
-    { "id": "2", "kodePenugasan": "TUG-EVL-013/2026", "opd": "Dinas Kesehatan", "sop": "SOP Pelayanan Puskesmas 24 Jam", "kodeSOP": "SOP/DINKES/PLY/2026/005", "jenis": "Evaluasi Khusus", "tanggalPenugasan": "2026-01-22", "status": "in-progress" },
-    { "id": "3", "kodePenugasan": "TUG-EVL-014/2026", "opd": "Dinas Perhubungan", "sop": "SOP Pengurusan SIM", "kodeSOP": "SOP/DISHUB/ADM/2026/003", "jenis": "Evaluasi Rutin", "tanggalPenugasan": "2026-01-25", "status": "assigned" },
-    { "id": "4", "kodePenugasan": "TUG-EVL-010/2026", "opd": "Dinas Pendidikan", "sop": "SOP Ujian Akhir Semester", "kodeSOP": "SOP/DISDIK/ADM/2025/003", "jenis": "Evaluasi Rutin", "tanggalPenugasan": "2025-12-15", "status": "completed" },
-    { "id": "5", "kodePenugasan": "TUG-EVL-009/2025", "opd": "Dinas Sosial", "sop": "SOP Bantuan Sosial", "kodeSOP": "SOP/DINSOS/PLY/2025/008", "jenis": "Evaluasi Insidental", "tanggalPenugasan": "2025-12-10", "status": "completed" }
-  ],
+  "statusPool": ["Draft", "Sedang Disusun", "Siap Dievaluasi", "Diajukan Evaluasi", "Sedang Dievaluasi", "Revisi dari Tim Evaluasi", "Siap Diverifikasi", "Diverifikasi Biro Organisasi", "Berlaku", "Dicabut"],
   "lastEvaluatedBy": {
-    "sop1": { "date": "2026-02-10", "evaluatorName": "Dra. Siti Aminah, M.Si" },
-    "1": { "date": "2026-02-12", "evaluatorName": "Dra. Siti Aminah, M.Si" },
-    "3": { "date": "2026-02-01", "evaluatorName": "Ir. Dewi Kusumawati, MT" },
-    "4": { "date": "2026-02-08", "evaluatorName": "Dr. Bambang Suryanto" },
-    "sop4": { "date": "2026-02-03", "evaluatorName": "Dra. Siti Aminah, M.Si" },
-    "sop6": { "date": "2026-02-06", "evaluatorName": "Ir. Dewi Kusumawati, MT" }
+    "sop-009": { "date": "2025-11-10", "evaluatorName": "Dra. Siti Aminah, M.Si" },
+    "sop-010": { "date": "2025-10-01", "evaluatorName": "Dr. Bambang Suryanto" },
+    "sop-011": { "date": "2024-06-01", "evaluatorName": "Rudi Hermawan, S.Sos." },
+    "sop-014": { "date": "2025-08-15", "evaluatorName": "Dr. Bambang Suryanto" },
+    "sop-015": { "date": "2025-07-20", "evaluatorName": "Ir. Dewi Kusumawati, M.T." }
   },
   "riwayatEvaluasiSop": {
-    "sop1": [
-      { "date": "2026-02-10", "evaluatorName": "Dra. Siti Aminah, M.Si", "hasil": "Sesuai" },
-      { "date": "2025-11-05", "evaluatorName": "Dr. Bambang Suryanto", "hasil": "Revisi Biro", "komentar": "Lengkapi lampiran format pendaftaran." }
+    "sop-009": [
+      {
+        "date": "2025-11-10",
+        "evaluatorName": "Dra. Siti Aminah, M.Si",
+        "hasil": "Sesuai",
+        "komentar": "Alur triage sudah sesuai standar START. Rekomendasi: tambah pelatihan BTCLS berkala."
+      }
     ],
-    "1": [{ "date": "2026-02-12", "evaluatorName": "Dra. Siti Aminah, M.Si", "hasil": "Sesuai" }],
-    "3": [{ "date": "2026-02-01", "evaluatorName": "Ir. Dewi Kusumawati, MT", "hasil": "Sesuai" }],
-    "4": [{ "date": "2026-02-08", "evaluatorName": "Dr. Bambang Suryanto", "hasil": "Revisi Biro", "komentar": "Lampiran kurikulum perlu disesuaikan dengan SK terbaru." }],
-    "sop4": [{ "date": "2026-02-03", "evaluatorName": "Dra. Siti Aminah, M.Si", "hasil": "Sesuai" }],
-    "sop6": [{ "date": "2026-02-06", "evaluatorName": "Ir. Dewi Kusumawati, MT", "hasil": "Revisi Biro", "komentar": "Sinkronisasi dengan peraturan terbaru." }]
+    "sop-010": [
+      {
+        "date": "2025-10-01",
+        "evaluatorName": "Dr. Bambang Suryanto",
+        "hasil": "Sesuai",
+        "komentar": "Prosedur pengujian sudah sesuai regulasi DLLAJR. Rekomendasi: tambah SOP kendaraan listrik."
+      }
+    ],
+    "sop-011": [
+      {
+        "date": "2024-06-01",
+        "evaluatorName": "Rudi Hermawan, S.Sos.",
+        "hasil": "Sesuai",
+        "komentar": "Sistem percontohan berjalan baik pada saat evaluasi."
+      }
+    ],
+    "sop-014": [
+      {
+        "date": "2025-08-15",
+        "evaluatorName": "Dr. Bambang Suryanto",
+        "hasil": "Sesuai",
+        "komentar": "Data PMKS terverifikasi sesuai standar Kemensos."
+      }
+    ],
+    "sop-015": [
+      {
+        "date": "2025-07-20",
+        "evaluatorName": "Ir. Dewi Kusumawati, M.T.",
+        "hasil": "Sesuai",
+        "komentar": "Prosedur RKPD sudah mengacu Permendagri terbaru."
+      }
+    ]
   },
   "riwayatEvaluasiOpd": {
-    "opd1": [
-      { "date": "2026-02-12", "evaluatorName": "Dra. Siti Aminah, M.Si", "skor": 5, "sopId": "1", "sopJudul": "SOP Penerimaan Siswa Baru Tahun Ajaran 2026/2027" },
-      { "date": "2026-02-08", "evaluatorName": "Dr. Bambang Suryanto", "skor": 4, "sopId": "4", "sopJudul": "SOP Revisi Dokumen Kurikulum" },
-      { "date": "2026-02-01", "evaluatorName": "Ir. Dewi Kusumawati, MT", "skor": 5, "sopId": "3", "sopJudul": "SOP Pengelolaan Data Kepegawaian Guru" },
-      { "date": "2026-02-10", "evaluatorName": "Dra. Siti Aminah, M.Si", "skor": 4, "sopId": "sop1", "sopJudul": "SOP Penerimaan Siswa Baru" }
+    "2": [
+      {
+        "date": "2025-11-15",
+        "evaluatorName": "Dra. Siti Aminah, M.Si",
+        "skor": 95,
+        "sopId": "sop-009",
+        "sopJudul": "SOP Penanganan Gawat Darurat Puskesmas"
+      },
+      {
+        "date": "2026-02-05",
+        "evaluatorName": "Dra. Siti Aminah, M.Si",
+        "skor": 88,
+        "sopId": "sop-008",
+        "sopJudul": "SOP Rujukan Pasien Ke Fasilitas Kesehatan Lanjutan"
+      }
     ],
-    "opd2": [{ "date": "2026-02-03", "evaluatorName": "Dra. Siti Aminah, M.Si", "skor": 4, "sopId": "sop4", "sopJudul": "SOP Pelayanan Kesehatan Dasar" }],
-    "opd3": [{ "date": "2026-02-06", "evaluatorName": "Ir. Dewi Kusumawati, MT", "skor": 3, "sopId": "sop6", "sopJudul": "SOP Perizinan Usaha" }],
-    "opd4": []
+    "3": [
+      {
+        "date": "2025-10-05",
+        "evaluatorName": "Dr. Bambang Suryanto",
+        "skor": 82,
+        "sopId": "sop-010",
+        "sopJudul": "SOP Pengujian Berkala Kendaraan Bermotor"
+      }
+    ],
+    "4": [
+      {
+        "date": "2025-08-20",
+        "evaluatorName": "Dr. Bambang Suryanto",
+        "skor": 79,
+        "sopId": "sop-014",
+        "sopJudul": "SOP Pengelolaan Data PMKS"
+      }
+    ],
+    "5": [
+      {
+        "date": "2025-07-25",
+        "evaluatorName": "Ir. Dewi Kusumawati, M.T.",
+        "skor": 91,
+        "sopId": "sop-015",
+        "sopJudul": "SOP Penyusunan Rencana Kerja Pemerintah Daerah (RKPD)"
+      }
+    ]
   }
 }

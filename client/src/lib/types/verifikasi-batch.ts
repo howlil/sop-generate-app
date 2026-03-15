@@ -5,8 +5,7 @@ import type { StatusHasilEvaluasi } from '@/lib/types/sop'
 import type { TTESignaturePayload } from '@/lib/types/tte'
 
 export type StatusEvaluasi =
-  | 'Belum Ditugaskan'
-  | 'Sudah Ditugaskan'
+  | 'Aktif'
   | 'Selesai'
   | 'Terverifikasi'
 
@@ -26,21 +25,17 @@ export interface VerifikasiBatch {
   tanggalRequest?: string
   opd: string
   sopList: SOPItem[]
-  timEvaluasi?: string
   status: StatusEvaluasi
   catatan: string
-  evaluationCaseId?: string
   tanggalEvaluasi?: string
   isVerified?: boolean
+  /** Nama evaluator / tim evaluasi yang mengerjakan batch ini. */
+  timEvaluasi?: string
   nomorBA?: string
   tanggalVerifikasi?: string
-  /** Setelah Biro TTD BA, Kepala OPD menandatangani BA (milik OPD tersebut). Baru setelah ini Kepala OPD boleh TTD tiap SOP. */
-  isSignedByKepalaOPD?: boolean
-  tanggalTTDBaByOpd?: string
+  /** Setelah Biro TTD BA, Koordinator Tim Penyusun menandatangani BA (milik OPD tersebut). Setelah ini Kepala OPD boleh mengesahkan masing-masing SOP. */
+  isSignedByKoordinator?: boolean
+  tanggalTTDBaByKoordinator?: string
   namaBiro?: string
   tteSignaturePayload?: TTESignaturePayload
 }
-
-export type JenisEvaluasi = 'Evaluasi Rutin' | 'Evaluasi Khusus' | 'Evaluasi Insidental'
-
-export type StatusEvaluasiItem = 'assigned' | 'in-progress' | 'completed'

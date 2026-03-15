@@ -1,6 +1,6 @@
 
 
-/** Alur workflow SOP: Draft → Sedang Disusun → Siap Dievaluasi → Diajukan Evaluasi → Sedang Dievaluasi → (Revisi/Siap Diverifikasi) → Diverifikasi Biro → Berlaku. */
+/** Alur workflow SOP: Draft → Sedang Disusun → Siap Dievaluasi → Diajukan Evaluasi → Sedang Dievaluasi → (Sesuai: Siap Diverifikasi | Revisi Biro: Revisi dari Tim Evaluasi) → Siap Diverifikasi → Diverifikasi Biro Organisasi → Berlaku | Dicabut. */
 export type StatusSOP =
   | 'Draft'
   | 'Sedang Disusun'
@@ -47,23 +47,14 @@ export interface SOPDaftarItem {
   status: StatusSOP
   versi: string
   kategori: string
-  evaluationCaseId?: string | null
   /** Id OPD pemilik SOP (untuk filter Kepala OPD memantau SOP OPD-nya). */
   opdId?: string
   /** Nama pembuat/penyusun SOP (author). */
   author?: string
-}
-
-export interface SOPSayaItem {
-  id: string
-  nomorSOP: string
-  judul: string
-  versi: string
-  status: StatusSOP
-  terakhirDiubah: string
-  komentarCount: number
-  /** Nama pembuat/penyusun SOP (author). */
-  author?: string
+  /** Nama user yang terakhir mengedit SOP. Dipakai untuk akuntabilitas shared editing. */
+  lastEditedBy?: string
+  /** Timestamp ISO terakhir kali SOP diedit. */
+  lastEditedAt?: string
 }
 
 export type ProsedurStepType = 'terminator' | 'task' | 'decision'
@@ -94,9 +85,9 @@ export interface SOPDetailMetadata {
   revisionDate: string
   effectiveDate: string
   /** Nama/user yang membuat dokumen SOP */
-  dibuatOleh?: string
+  dibuatOlehNamaLengkap?: string
   /** Nama/user yang terakhir mengedit dokumen SOP */
-  dieditOleh?: string
+  dieditOlehNamaLengkap?: string
   picName: string
   picNumber: string
   picRole: string
@@ -124,7 +115,12 @@ export interface SOPTemplate {
 /** Master data pelaksana SOP (Kelola Pelaksana SOP). Dipakai di edit SOP untuk kolom pelaksana prosedur. */
 export interface PelaksanaSOP {
   id: string
-  nama: string
+  namaLengkap: string
+  nip: string
+  jabatan: string
+  pangkat: string
+  email: string
+  nohp: string
   deskripsi: string
   jumlahPos: number
 }

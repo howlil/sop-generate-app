@@ -1,6 +1,6 @@
 /**
  * Dialog Buat SOP Baru — form judul, nomor, deskripsi + opsional salin dari template.
- * Dipakai di Manajemen SOP dan Daftar SOP (Kepala OPD).
+ * Dipakai di Manajemen SOP sebagai entry pembuatan SOP yang aktif.
  */
 import { useState, useMemo } from 'react'
 import { FileText, Copy } from 'lucide-react'
@@ -19,7 +19,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/useUI'
-import { getSopTemplates } from '@/lib/data/initiate-proyek'
+import { getSopTemplates } from '@/lib/data/sop-templates'
 import type { SOPTemplate } from '@/lib/types/sop'
 
 export interface BuatSOPSuccessData {
@@ -108,7 +108,7 @@ export function BuatSOPDialog({ open, onOpenChange, onSuccess }: BuatSOPDialogPr
           <DialogHeader>
             <DialogTitle className="text-sm">Buat SOP Baru</DialogTitle>
             <DialogDescription className="text-xs">
-              Isi judul, nomor, dan deskripsi. Setelah disimpan sebagai draft status menjadi Sedang Disusun.
+              Isi judul, nomor, dan deskripsi. SOP baru akan dibuat dengan status Draft.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 pt-1">
