@@ -66,7 +66,7 @@ export function ValidasiPengesahanPage() {
               </InfoField>
               <InfoField label="Referensi" direction="vertical">{signature.referenceId}</InfoField>
               <InfoField label="Ditandatangani oleh" direction="vertical">
-                {signature.nama} (NIP. {signature.nip})
+                {signature.namaLengkap} (NIP. {signature.nip})
               </InfoField>
               <InfoField label="Jabatan" direction="vertical">{roleLabel}</InfoField>
               <InfoField label="Waktu tanda tangan" direction="vertical">
@@ -98,7 +98,7 @@ export function ValidasiPengesahanPage() {
                   <span className="font-medium">
                     {entry.action === 'pengesahan_sop' ? 'Pengesahan SOP' : 'Verifikasi Evaluasi'}
                   </span>
-                  <span className="text-gray-600">{entry.nama} (NIP. {entry.nip})</span>
+                  <span className="text-gray-600">{entry.namaLengkap} (NIP. {entry.nip})</span>
                   <span className="text-gray-500">— {entry.documentLabel}</span>
                 </li>
               ))}

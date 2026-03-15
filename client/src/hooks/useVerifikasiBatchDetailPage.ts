@@ -37,7 +37,7 @@ export function useVerifikasiBatchDetailPage(id: string | undefined): UseVerifik
       isVerified: true,
       nomorBA: batchNumber,
       tanggalVerifikasi: new Date().toISOString().split('T')[0],
-      namaBiro: payload.nama,
+      namaBiro: payload.namaLengkap,
       tteSignaturePayload: payload,
     })
     const sopIds = getSopIdsFromVerifikasiBatch(batch)

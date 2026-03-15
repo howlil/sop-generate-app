@@ -3,7 +3,6 @@
  * Satu OPD dalam satu tahun bisa punya lebih dari satu evaluasi.
  */
 import { getRiwayatEvaluasiOpd } from './evaluasi-data'
-import { getOpdListEvaluasi } from './evaluasi-data'
 
 export interface DataTahunEvaluasi {
   tahun: string
@@ -24,6 +23,18 @@ export interface DetailOpdPerTahun {
 function yearFromDate(dateStr: string | undefined): string | null {
   if (!dateStr || !dateStr.slice(0, 4)) return null
   return dateStr.slice(0, 4)
+}
+
+/**
+ * Konversi skor 0–100 ke skala 1–5 (untuk analitik tahunan).
+ * 0 atau nilai tidak valid dianggap 0 (belum ada skor).
+ */
+function toFiveScale(score100: number | undefined): number {
+  if (typeof score100 !== 'number' || !Number.isFinite(score100) || score100 <= 0) {
+    return 0
+  }
+  const scaled = 1 + (score100 / 100) * 4
+  return Math.round(scaled * 10) / 10
 }
 
 /**
@@ -51,8 +62,9 @@ export function getDataGrafikEvaluasiTahunan(): DataTahunEvaluasi[] {
         ensureYear(tahun)
         byYear[tahun].opd += 1
         byYear[tahun].opdIds.add(opdId)
-        if (typeof item.skor === 'number') {
-          byYear[tahun].totalSkor += item.skor
+        const skor5 = toFiveScale(item.skor)
+        if (skor5 > 0) {
+          byYear[tahun].totalSkor += skor5
           byYear[tahun].countSkor += 1
         }
       }
@@ -78,8 +90,6 @@ export function getDataGrafikEvaluasiTahunan(): DataTahunEvaluasi[] {
  */
 export function getDetailOpdPerTahun(): DetailOpdPerTahun[] {
   const riwayatOpd = getRiwayatEvaluasiOpd()
-  const opdList = getOpdListEvaluasi()
-  const opdById = Object.fromEntries(opdList.map((o) => [o.id, o.nama]))
 
   const byTahunOpd: Record<
     string,
@@ -96,7 +106,8 @@ export function getDetailOpdPerTahun(): DetailOpdPerTahun[] {
         byTahunOpd[tahun][opdId] = { count: 0, totalSkor: 0 }
       }
       byTahunOpd[tahun][opdId].count += 1
-      if (typeof item.skor === 'number') byTahunOpd[tahun][opdId].totalSkor += item.skor
+      const skor5 = toFiveScale(item.skor)
+      if (skor5 > 0) byTahunOpd[tahun][opdId].totalSkor += skor5
     }
   }
 
@@ -111,7 +122,7 @@ export function getDetailOpdPerTahun(): DetailOpdPerTahun[] {
       out.push({
         tahun,
         opdId,
-        opdNama: opdById[opdId] ?? opdId,
+        opdNama: opdId,
         jumlahEvaluasi: d.count,
         rataRataSkor,
       })

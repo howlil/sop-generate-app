@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation } from '@tanstack/react-router'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { AppLogo } from '@/components/layout/AppLogo'
 import { HeaderProfile } from '@/components/layout/HeaderProfile'
@@ -60,8 +61,19 @@ export function RoleLayout({
       <div className="flex-1 flex flex-col min-w-0">
         <PageHeaderProvider>
           <HeaderProfile title={title} subtitle={subtitle} />
-          <main className="flex-1 overflow-auto scrollbar-hide p-6 bg-white">
-            <Outlet />
+          <main className="flex-1 overflow-auto scrollbar-hide p-6 bg-white relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
           </main>
         </PageHeaderProvider>
       </div>

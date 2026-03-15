@@ -5,15 +5,14 @@
  */
 import type { StatusSOP } from '@/lib/types/sop'
 
-/** Status saat Tim Penyusun boleh mengajukan Request Evaluasi (dari Daftar SOP). */
-export const STATUS_SOP_CAN_REQUEST_EVALUASI: StatusSOP[] = ['Siap Dievaluasi', 'Berlaku']
+/** Status saat Koordinator Tim Penyusun boleh mengajukan Request Evaluasi (dari Manajemen SOP). */
+export const STATUS_SOP_CAN_REQUEST_EVALUASI: StatusSOP[] = ['Siap Dievaluasi', 'Revisi dari Tim Evaluasi']
 
 /** Status SOP yang layak dievaluasi oleh Tim Evaluasi (langsung per SOP). */
 export const STATUS_SOP_CAN_SELECT_FOR_EVALUASI: StatusSOP[] = [
-  'Siap Dievaluasi',
-  'Berlaku',
   'Diajukan Evaluasi',
   'Sedang Dievaluasi',
+  'Revisi dari Tim Evaluasi',
 ]
 
 export function canAjukanEvaluasiSOP(status: StatusSOP): boolean {
@@ -24,9 +23,9 @@ export function canSelectSOPForEvaluasi(status: StatusSOP): boolean {
   return STATUS_SOP_CAN_SELECT_FOR_EVALUASI.includes(status)
 }
 
-/** Status SOP yang tidak masuk daftar evaluasi (filter di workspace). */
-export const STATUS_BUKAN_LIST_EVALUASI = 'Sedang Disusun' as const
+/** Status SOP yang tidak masuk daftar evaluasi Tim Evaluasi (tahap penyusunan dan siap diajukan). */
+export const STATUS_BUKAN_LIST_EVALUASI: StatusSOP[] = ['Draft', 'Sedang Disusun', 'Siap Dievaluasi']
 
 export function isSopInEvaluasiList(status: StatusSOP): boolean {
-  return status !== STATUS_BUKAN_LIST_EVALUASI
+  return !(STATUS_BUKAN_LIST_EVALUASI as StatusSOP[]).includes(status)
 }

@@ -1,8 +1,7 @@
 /**
- * Data layer: evaluasi & verifikasi (OPD evaluasi, SOP per OPD, riwayat, daftar item evaluasi).
+ * Data layer: evaluasi & verifikasi (riwayat evaluasi OPD/SOP, terakhir dievaluasi).
  * Semua akses ke data/penugasan-evaluasi.json dikonsolidasikan di sini.
  */
-import type { StatusSOP } from '@/lib/types/sop'
 import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
 import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
 import verifikasiBatchSeedData from '../seed/penugasan-evaluasi.json'
@@ -26,12 +25,8 @@ export type RiwayatEvaluasiOPDItem = {
 
 interface VerifikasiBatchSeedResponse {
   penugasan: VerifikasiBatch[]
-  opdListEvaluasi: { id: string; nama: string; kode: string }[]
-  baseSopByOpd: Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>>
   minSopPerOpd: number
-  statusPool: StatusSOP[]
-  timEvaluasiOptions: { id: string; nama: string }[]
-  penugasanTimEvaluasi: unknown[]
+  statusPool: string[]
   lastEvaluatedBy: Record<string, { date: string; evaluatorName: string }>
   riwayatEvaluasiSop: Record<string, RiwayatEvaluasiSOPItem[]>
   riwayatEvaluasiOpd: Record<string, RiwayatEvaluasiOPDItem[]>
@@ -39,22 +34,26 @@ interface VerifikasiBatchSeedResponse {
 
 const data = verifikasiBatchSeedData as VerifikasiBatchSeedResponse
 
-const OPD_LIST_EVALUASI = data.opdListEvaluasi
-const SOP_BY_OPD = data.baseSopByOpd
+/** Static map from OPD name to riwayat key (OPD id). Maintained alongside seed JSON. */
+const OPD_NAME_TO_ID: Record<string, string> = {
+  'Dinas Pendidikan': '1',
+  'Dinas Kesehatan': '2',
+  'Dinas Perhubungan': '3',
+  'Dinas Sosial': '4',
+  'BAPPEDA': '5',
+}
+
 const RIWAYAT_EVALUASI_OPD = data.riwayatEvaluasiOpd
 const RIWAYAT_EVALUASI_SOP = data.riwayatEvaluasiSop
 const LAST_EVALUATED_BY = data.lastEvaluatedBy
 
-export function getOpdListEvaluasi(): { id: string; nama: string; kode: string }[] {
-  return [...OPD_LIST_EVALUASI]
-}
-
-export function getSopByOpd(): Record<string, Array<{ id: string; nama: string; nomor: string; status: StatusSOP }>> {
-  return { ...SOP_BY_OPD }
-}
-
 export function getRiwayatEvaluasiOpd(): Record<string, RiwayatEvaluasiOPDItem[]> {
   return { ...RIWAYAT_EVALUASI_OPD }
+}
+
+/** Resolve OPD name → riwayat record key (OPD id). Returns null if not found. */
+export function getOpdIdByName(opdNama: string): string | null {
+  return OPD_NAME_TO_ID[opdNama] ?? null
 }
 
 export function getRiwayatEvaluasiSop(): Record<string, RiwayatEvaluasiSOPItem[]> {

@@ -5,6 +5,7 @@
  */
 import type { TTEProfile, TTESignaturePayload, TTEAuditEntry, TTERole } from '@/lib/types/tte'
 import { TTE_STORAGE_KEYS } from '@/lib/types/tte'
+import { hashPin } from '@/lib/domain/tte'
 
 function profileKey(role: TTERole): string {
   return TTE_STORAGE_KEYS.PROFILE_PREFIX + role
@@ -23,14 +24,63 @@ export function getTTEVerificationSuccessUrl(token: string): string {
   return `${getBaseUrl()}/validasi/ttd/berhasil?token=${encodeURIComponent(token)}`
 }
 
+function createDefaultProfile(role: TTERole): TTEProfile {
+  const now = new Date().toISOString()
+  const pinHash = hashPin('12345')
+  const baseByRole: Record<TTERole, { nip: string; namaLengkap: string; email: string; jabatan: string; pangkat: string; nohp: string }> = {
+    'kepala-opd': {
+      nip: '197001011990031001',
+      namaLengkap: 'Dr. Ahmad Pratama',
+      email: 'kepala.opd@demo.go.id',
+      jabatan: 'Kepala Dinas Pendidikan',
+      pangkat: 'Pembina Tk. I (IV/b)',
+      nohp: '081234567890',
+    },
+    'biro-organisasi': {
+      nip: '196512121988032002',
+      namaLengkap: 'Dr. H. Muhammad Ridwan, M.Si',
+      email: 'biro.organisasi@demo.go.id',
+      jabatan: 'Kepala Biro Organisasi',
+      pangkat: 'Pembina Utama Muda (IV/c)',
+      nohp: '081234567891',
+    },
+    'tim-penyusun': {
+      nip: '198504041999032003',
+      namaLengkap: 'Ahmad Pratama, S.Sos',
+      email: 'tim.penyusun@demo.go.id',
+      jabatan: 'Analis Kebijakan Muda',
+      pangkat: 'Penata (III/c)',
+      nohp: '081234567892',
+    },
+  }
+
+  const base = baseByRole[role]
+  const profile: TTEProfile = {
+    nip: base.nip,
+    namaLengkap: base.namaLengkap,
+    email: base.email,
+    jabatan: base.jabatan,
+    pangkat: base.pangkat,
+    nohp: base.nohp,
+    pinHash,
+    emailVerified: true,
+    role,
+    createdAt: now,
+  }
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(profileKey(role), JSON.stringify(profile))
+  }
+  return profile
+}
+
 export function getTTEProfile(role: TTERole): TTEProfile | null {
   if (typeof window === 'undefined') return null
   const raw = localStorage.getItem(profileKey(role))
-  if (!raw) return null
+  if (!raw) return createDefaultProfile(role)
   try {
     return JSON.parse(raw) as TTEProfile
   } catch {
-    return null
+    return createDefaultProfile(role)
   }
 }
 
@@ -100,7 +150,9 @@ function appendAuditEntry(entry: TTEAuditEntry): void {
 export function addTTESignature(
   role: TTERole,
   nip: string,
-  nama: string,
+  namaLengkap: string,
+  jabatan: string,
+  pangkat: string,
   documentId: string,
   documentLabel: string,
   referenceId: string,
@@ -112,7 +164,9 @@ export function addTTESignature(
     id,
     role,
     nip,
-    nama,
+    namaLengkap,
+    jabatan,
+    pangkat,
     signedAt,
     documentId,
     documentLabel,
@@ -130,7 +184,9 @@ export function addTTESignature(
     action,
     role,
     nip,
-    nama,
+    namaLengkap,
+    jabatan,
+    pangkat,
     documentId,
     documentLabel,
     referenceId,

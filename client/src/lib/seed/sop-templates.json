@@ -1,26 +1,42 @@
 [
   {
-    "id": "1",
-    "kode": "SOP/DINKES/PLY/2026/001",
-    "judul": "SOP Pelayanan Kesehatan Masyarakat",
+    "id": "tpl-001",
+    "kode": "SOP/DISDIK/ADM/2026/018",
+    "judul": "SOP Pelaporan Keuangan Sekolah Dasar",
+    "opd": "Dinas Pendidikan",
+    "kategori": "Administrasi",
+    "versi": "1.0"
+  },
+  {
+    "id": "tpl-002",
+    "kode": "SOP/DINKES/PLY/2025/001",
+    "judul": "SOP Penanganan Gawat Darurat Puskesmas",
     "opd": "Dinas Kesehatan",
     "kategori": "Pelayanan",
     "versi": "2.0"
   },
   {
-    "id": "2",
-    "kode": "SOP/DISHUB/PLY/2026/003",
-    "judul": "SOP Penerbitan Izin Trayek",
+    "id": "tpl-003",
+    "kode": "SOP/DISHUB/PLY/2025/003",
+    "judul": "SOP Pengujian Berkala Kendaraan Bermotor",
     "opd": "Dinas Perhubungan",
     "kategori": "Pelayanan",
-    "versi": "1.5"
+    "versi": "1.0"
   },
   {
-    "id": "3",
-    "kode": "SOP/DPUPR/ADM/2026/005",
-    "judul": "SOP Pengadaan Barang dan Jasa",
-    "opd": "Dinas PUPR",
+    "id": "tpl-004",
+    "kode": "SOP/DINSOS/ADM/2025/001",
+    "judul": "SOP Pengelolaan Data PMKS",
+    "opd": "Dinas Sosial",
     "kategori": "Administrasi",
-    "versi": "3.0"
+    "versi": "1.0"
+  },
+  {
+    "id": "tpl-005",
+    "kode": "SOP/BAPPEDA/ADM/2025/001",
+    "judul": "SOP Penyusunan Rencana Kerja Pemerintah Daerah (RKPD)",
+    "opd": "BAPPEDA",
+    "kategori": "Administrasi",
+    "versi": "2.0"
   }
 ]

@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useNavigate } from '@tanstack/react-router'
-import { Save, Check, History, PenLine, MessageSquare, Printer } from 'lucide-react'
+import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
+import { Save, Check, History, PenLine, MessageSquare, Printer, Activity } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
@@ -19,17 +20,21 @@ import { useToast } from '@/hooks/useUI'
 import { usePeraturan } from '@/hooks/usePeraturan'
 import { usePelaksana } from '@/hooks/usePelaksana'
 import { useSopStatus } from '@/hooks/useSopStatus'
+import { useSopMeta } from '@/hooks/useSopMeta'
+import { useAppRole } from '@/hooks/useAppRole'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
 } from '@/lib/data/sop-detail'
-import type { SOPDetailMetadata, ProsedurRow } from '@/lib/types/sop'
+import type { SOPDetailMetadata, ProsedurRow, StatusSOP } from '@/lib/types/sop'
 import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
 import { useKomentar } from '@/hooks/useKomentar'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
+import { RiwayatStatusPanel } from '@/components/sop/RiwayatStatusPanel'
+import { useAuditLog } from '@/hooks/useAuditLog'
 import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
 import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
 import { formatDateIdLong } from '@/utils/format-date'
@@ -38,18 +43,29 @@ import { ROUTES } from '@/lib/constants/routes'
 
 export function DetailSOPPenyusun() {
   const { showToast } = useToast()
-  const { setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverride, getSopStatusOverride } = useSopStatus()
+  const { setSopMeta } = useSopMeta()
+  const { role, getRoleUserName } = useAppRole()
   const { list: peraturanList } = usePeraturan()
   const { list: pelaksanaList } = usePelaksana()
   const { id } = useParams({ from: '/tim-penyusun/detail-sop/$id' })
   const navigate = useNavigate()
+  const location = useLocation()
+  const detailMetaState = location.state as { sopStatus?: StatusSOP } | undefined
 
   const [metadata, setMetadata] = useState<SOPDetailMetadata>(() => getInitialSopDetailMetadata())
   const [prosedurRows, setProsedurRows] = useState<ProsedurRow[]>(() => getInitialSopDetailProsedurRows())
   const [implementers, setImplementers] = useState<{ id: string; name: string }[]>([])
   const implementersSeededRef = useRef(false)
   const masterPelaksanaOptions = useMemo(
-    () => pelaksanaList.map((p) => ({ id: p.id, name: p.nama })),
+    () => pelaksanaList.map((p) => ({ 
+      id: p.id, 
+      name: p.namaLengkap,
+      jabatan: p.jabatan,
+      pangkat: p.pangkat,
+      email: p.email,
+      nohp: p.nohp,
+    })),
     [pelaksanaList]
   )
   useEffect(() => {
@@ -60,7 +76,7 @@ export function DetailSOPPenyusun() {
     setImplementers(
       Array.from(ids).map((id) => {
         const p = pelaksanaList.find((x) => x.id === id)
-        return { id, name: p?.nama ?? id }
+        return { id, name: p?.namaLengkap ?? id }
       })
     )
   }, [pelaksanaList, prosedurRows])
@@ -70,7 +86,9 @@ export function DetailSOPPenyusun() {
   const [isEditingSteps, setIsEditingSteps] = useState(false)
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false)
-  const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'komentar' | 'riwayat'>('edit')
+  const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'komentar' | 'riwayat' | 'aktivitas'>('edit')
+  const { logAction, getEntriesForSop } = useAuditLog()
+  const auditEntries = id ? getEntriesForSop(id) : []
 
   const { displayList: komentarDisplay, handleResolveComment } = useKomentar({
     initialData: getInitialSopDetailKomentar(),
@@ -82,6 +100,10 @@ export function DetailSOPPenyusun() {
   )
 
   const [viewingVersion, setViewingVersion] = useState<VersionHistoryItem | null>(null)
+  const currentSopStatus: StatusSOP =
+    (id ? getSopStatusOverride(id) : undefined) ?? detailMetaState?.sopStatus ?? 'Draft'
+  const isRevisionFlow = currentSopStatus === 'Revisi dari Tim Evaluasi'
+  const primaryActionLabel = isRevisionFlow ? 'Selesaikan revisi' : 'Selesai'
 
   const versionDiffItems = useMemo(
     () => versionDiff.computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot ?? undefined),
@@ -126,7 +148,17 @@ export function DetailSOPPenyusun() {
                   className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
                   onClick={() => {
                     if (id) {
+                      const sebelum = currentSopStatus
                       setSopStatusOverride(id, 'Sedang Disusun')
+                      setSopMeta(id, getRoleUserName(role))
+                      logAction({
+                        sopId: id,
+                        action: 'SIMPAN_DRAFT',
+                        aktorNama: getRoleUserName(role),
+                        aktorRole: 'Tim Penyusun',
+                        statusSebelum: sebelum,
+                        statusSesudah: 'Sedang Disusun',
+                      })
                       showToast('Status diubah menjadi Sedang Disusun')
                     }
                   }}
@@ -139,19 +171,35 @@ export function DetailSOPPenyusun() {
                   className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
                   onClick={() => {
                     if (id) {
-                      setSopStatusOverride(id, 'Siap Dievaluasi')
-                      showToast('SOP selesai disusun. Status: Siap Dievaluasi. Anda dapat mengajukan evaluasi dari Manajemen SOP.')
+                      const sebelum = currentSopStatus
+                      setSopStatusOverride(id, 'Sedang Disusun')
+                      setSopMeta(id, getRoleUserName(role))
+                      logAction({
+                        sopId: id,
+                        action: 'SELESAI_PENYUSUNAN',
+                        aktorNama: getRoleUserName(role),
+                        aktorRole: 'Tim Penyusun',
+                        statusSebelum: sebelum,
+                        statusSesudah: 'Sedang Disusun',
+                        keterangan: isRevisionFlow ? 'Revisi selesai' : undefined,
+                      })
+                      showToast(
+                        isRevisionFlow
+                          ? 'Revisi selesai. Kembali ke Manajemen SOP untuk kirim ulang ke evaluasi.'
+                          : 'SOP selesai disusun. Ajukan ke evaluasi dari Manajemen SOP.'
+                      )
                       navigate({ to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP })
                     }
                   }}
                 >
                   <Check className="w-3.5 h-3.5" />
-                  Selesai
+                  {primaryActionLabel}
                 </Button>
               </div>
             </div>
             <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
               <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">v{versions[0]?.version || metadata.version || '1.0'}</Badge>
+              <StatusBadge status={currentSopStatus} className="text-xs border-0" />
               {metadata.dibuatOleh && (
                 <span><span className="text-gray-500">Dibuat oleh:</span> {metadata.dibuatOleh}</span>
               )}
@@ -159,6 +207,17 @@ export function DetailSOPPenyusun() {
                 <span><span className="text-gray-500">Diedit oleh:</span> {metadata.dieditOleh}</span>
               )}
             </div>
+            {isRevisionFlow && (
+              <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                SOP ini dikembalikan oleh Tim Evaluasi untuk revisi. Setelah perbaikan selesai, klik
+                {' '}
+                <span className="font-semibold">Selesaikan revisi</span>
+                {' '}
+                lalu ajukan ulang dari
+                {' '}
+                <span className="font-semibold">Manajemen SOP</span>.
+              </div>
+            )}
           </>
         }
         main={
@@ -234,10 +293,11 @@ export function DetailSOPPenyusun() {
             tabs={[
               { id: 'edit', label: 'Edit', icon: <PenLine className="w-3.5 h-3.5" /> },
               { id: 'komentar', label: 'Komentar', icon: <MessageSquare className="w-3.5 h-3.5" /> },
-              { id: 'riwayat', label: 'Riwayat', icon: <History className="w-3.5 h-3.5" /> },
+              { id: 'riwayat', label: 'Versi', icon: <History className="w-3.5 h-3.5" /> },
+              { id: 'aktivitas', label: 'Aktivitas', icon: <Activity className="w-3.5 h-3.5" /> },
             ]}
             activeTab={rightPanelTab}
-            onTabChange={(id) => setRightPanelTab(id as 'edit' | 'komentar' | 'riwayat')}
+            onTabChange={(id) => setRightPanelTab(id as 'edit' | 'komentar' | 'riwayat' | 'aktivitas')}
           >
             {rightPanelTab === 'komentar' && (
               <KomentarPanel
@@ -266,6 +326,14 @@ export function DetailSOPPenyusun() {
                 setViewingVersion={setViewingVersion}
                 versionDiff={versionDiffItems}
               />
+            )}
+            {rightPanelTab === 'aktivitas' && (
+              <div className="p-3">
+                <p className="text-xs text-gray-500 mb-3">
+                  Riwayat perubahan status SOP — siapa mengubah, dari status apa ke apa, kapan.
+                </p>
+                <RiwayatStatusPanel entries={auditEntries} />
+              </div>
             )}
           </CollapsibleSidePanel>
         }

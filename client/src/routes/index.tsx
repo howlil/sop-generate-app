@@ -1,12 +1,15 @@
 import { createFileRoute, Link, useSearch } from '@tanstack/react-router'
 import { Building2, UserCircle, ClipboardCheck, Users } from 'lucide-react'
 import { setRole } from '@/lib/stores/app-store'
-import { ROLES } from '@/lib/constants/roles'
+import { isRoleKey, ROLES } from '@/lib/constants/roles'
 import { getRoleLabel } from '@/lib/domain/role'
 import { getDashboardDescriptions } from '@/lib/data/user-dashboard'
 
 export const Route = createFileRoute('/')({
-  validateSearch: (s: Record<string, unknown>) => ({ denied: (s.denied as string) ?? undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({
+    denied: isRoleKey(s.denied) ? s.denied : undefined,
+    redirect: typeof s.redirect === 'string' ? s.redirect : undefined,
+  }),
   component: IndexPage,
 })
 
@@ -19,12 +22,16 @@ const dashboards = [
 
 function IndexPage() {
   const DASHBOARD_DESCRIPTIONS = getDashboardDescriptions()
-  const { denied } = useSearch({ from: '/' })
+  const { denied, redirect } = useSearch({ from: '/' })
+  const deniedRoleLabel = denied ? getRoleLabel(denied) : null
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {denied === 'biro-organisasi' && (
+      {deniedRoleLabel && (
         <div className="bg-red-50 border-b border-red-200 px-6 py-2 text-center">
-          <p className="text-xs text-red-700">Akses ditolak. Hanya Biro Organisasi yang dapat mengakses halaman tersebut. Pilih role Biro Organisasi di bawah lalu masuk.</p>
+          <p className="text-xs text-red-700">
+            Akses ditolak. Halaman tersebut hanya untuk role {deniedRoleLabel}. Pilih role {deniedRoleLabel} di bawah lalu masuk.
+          </p>
+          {redirect && <p className="text-[11px] text-red-600 mt-1">Tujuan awal: {redirect}</p>}
         </div>
       )}
       <header className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between">

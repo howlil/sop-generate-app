@@ -45,7 +45,9 @@ export function useTTESignature({ role, documentId }: UseTTESignatureOptions) {
         const payload = addTTESignature(
           role,
           profile.nip,
-          profile.nama,
+          profile.namaLengkap,
+          profile.jabatan,
+          profile.pangkat,
           documentId,
           params.documentLabel,
           params.referenceId

@@ -5,7 +5,7 @@
 
 import { useState, useMemo } from 'react'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { useEvaluasi } from '@/hooks/useEvaluasi'
+import { useSopMeta } from '@/hooks/useSopMeta'
 import { canAjukanEvaluasiSOP } from '@/lib/domain/sop-evaluasi'
 import type { SOPDaftarItem } from '@/lib/types/sop'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
@@ -13,14 +13,31 @@ import type { DaftarSOPFiltersState } from '@/hooks/useDaftarSOPFilters'
 
 export function useDaftarSOPData(filters: DaftarSOPFiltersState) {
   const { mergeSopStatus } = useSopStatus()
-  const { getActiveCaseForSop } = useEvaluasi()
+  const { mergeSopMeta } = useSopMeta()
   const [sopList, setSopList] = useState<SOPDaftarItem[]>(() => getInitialSopDaftarList())
 
-  const mergedSopList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
+  const mergedSopList = useMemo(
+    () => mergeSopMeta(mergeSopStatus(sopList)),
+    [sopList, mergeSopStatus, mergeSopMeta]
+  )
 
   const eligibleSopsForEvaluasi = useMemo(
-    () => mergedSopList.filter((sop) => canAjukanEvaluasiSOP(sop.status) && !getActiveCaseForSop(sop.id)),
-    [mergedSopList, getActiveCaseForSop]
+    () => mergedSopList.filter((sop) => canAjukanEvaluasiSOP(sop.status)),
+    [mergedSopList]
+  )
+
+  const hasActiveBatch = useMemo(
+    () => mergedSopList.some(
+      (sop) => sop.status === 'Diajukan Evaluasi' || sop.status === 'Sedang Dievaluasi'
+    ),
+    [mergedSopList]
+  )
+
+  const activeBatchCount = useMemo(
+    () => mergedSopList.filter(
+      (sop) => sop.status === 'Diajukan Evaluasi' || sop.status === 'Sedang Dievaluasi'
+    ).length,
+    [mergedSopList]
   )
 
   const filteredList = useMemo(() => {
@@ -47,5 +64,7 @@ export function useDaftarSOPData(filters: DaftarSOPFiltersState) {
     mergedSopList,
     eligibleSopsForEvaluasi,
     filteredList,
+    hasActiveBatch,
+    activeBatchCount,
   }
 }

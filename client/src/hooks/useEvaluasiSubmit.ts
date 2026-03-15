@@ -2,11 +2,12 @@
  * Hook untuk submit hasil evaluasi SOP per OPD.
  * Mengekstrak business logic dari DetailEvaluasiOPD.tsx agar testable dan reusable.
  */
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { isFormEvaluasiSopComplete, getStatusSopAfterEvaluasi } from '@/lib/domain/evaluasi'
 import { clearEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useToast } from '@/hooks/useUI'
 import { useSopStatus } from '@/hooks/useSopStatus'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { StatusSOP } from '@/lib/types/sop'
 import { saveOpdRating, type EvaluasiRecordMap } from '@/lib/data/evaluasi-data'
 
@@ -38,6 +39,10 @@ export function useEvaluasiSubmit({
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
   const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
+  const baseStatusById = useMemo(
+    () => new Map(getInitialSopDaftarList().map((item) => [item.id, item.status] as const)),
+    []
+  )
 
   const isSubmitCheckAll =
     sedangDievaluasiList.length > 0 && submitSelectedIds.size === sedangDievaluasiList.length
@@ -93,7 +98,7 @@ export function useEvaluasiSubmit({
     if (ratingOPD !== null && opdId) {
       saveOpdRating(opdId, { skor: ratingOPD, date: today, evaluatorName: namaEvaluator })
     }
-    showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. Status berubah menjadi Selesai Evaluasi.`)
+    showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. SOP yang direvisi dapat diperbaiki lalu diajukan ulang oleh Tim Penyusun.`)
     onSuccess()
   }, [
     sedangDievaluasiList,
@@ -105,6 +110,7 @@ export function useEvaluasiSubmit({
     ratingOPD,
     opdId,
     onSuccess,
+    baseStatusById,
   ])
 
   return {

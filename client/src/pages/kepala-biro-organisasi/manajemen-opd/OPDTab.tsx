@@ -1,4 +1,4 @@
-import { Building2, Edit, Trash2, Eye, Users, MoreVertical } from 'lucide-react'
+import { Building2, Edit, Trash2, Eye, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { Input } from '@/components/ui/input'
@@ -12,12 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { IconActionButton } from '@/components/ui/icon-action-button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
@@ -99,33 +94,30 @@ export function OPDTab({
                   </div>
                 </Table.Td>
                 <Table.Td className="text-center">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon-sm" className="h-7 w-7 p-0">
-                        <MoreVertical className="w-3.5 h-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="text-xs">
-                      <DropdownMenuItem onClick={() => onOpenDetail(opd)}>
-                        <Eye className="w-3.5 h-3.5 mr-2" />Lihat Detail
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onOpenEdit(opd)}>
-                        <Edit className="w-3.5 h-3.5 mr-2" />Edit OPD
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onOpenRiwayat(opd)}>
-                        <Users className="w-3.5 h-3.5 mr-2" />Riwayat OPD
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onDelete(opd.id)}
-                        className="text-red-600"
-                        disabled={hasRelasiData(opd)}
-                        title={hasRelasiData(opd) ? 'OPD yang sudah mengait SOP tidak dapat dihapus' : undefined}
-                      >
-                        <Trash2 className="w-3.5 h-3.5 mr-2" />
-                        {hasRelasiData(opd) ? 'Hapus (ditolak: ada SOP)' : 'Hapus OPD'}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center justify-center gap-1">
+                    <IconActionButton
+                      icon={Eye}
+                      title="Lihat Detail"
+                      onClick={() => onOpenDetail(opd)}
+                    />
+                    <IconActionButton
+                      icon={Edit}
+                      title="Edit OPD"
+                      onClick={() => onOpenEdit(opd)}
+                    />
+                    <IconActionButton
+                      icon={Users}
+                      title="Riwayat OPD"
+                      onClick={() => onOpenRiwayat(opd)}
+                    />
+                    <IconActionButton
+                      icon={Trash2}
+                      title={hasRelasiData(opd) ? 'Hapus (ditolak: ada SOP)' : 'Hapus OPD'}
+                      destructive
+                      onClick={() => onDelete(opd.id)}
+                      disabled={hasRelasiData(opd)}
+                    />
+                  </div>
                 </Table.Td>
               </Table.BodyRow>
             ))}

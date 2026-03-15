@@ -14,25 +14,22 @@ import {
 } from '@/components/ui/dialog'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
-import { Select } from '@/components/ui/select'
 import type { Peraturan } from '@/lib/types/peraturan'
-import type { JenisPeraturan, RiwayatVersiEntry } from '@/lib/types/peraturan'
+import type { RiwayatVersiEntry } from '@/lib/types/peraturan'
 import { formatDateIdLong } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
 
 export interface PeraturanTableTabProps {
   filteredPeraturan: Peraturan[]
-  jenisList: JenisPeraturan[]
   canEditPeraturan: (p: Peraturan) => boolean
   isPeraturanDialogOpen: boolean
   setIsPeraturanDialogOpen: (open: boolean) => void
   editingPeraturan: Peraturan | null
   peraturanFormData: {
-    jenisPeraturan: string
+    peraturan: string
     nomor: string
     tahun: string
     tentang: string
-    tanggalTerbit: string
   }
   setPeraturanFormData: React.Dispatch<React.SetStateAction<PeraturanTableTabProps['peraturanFormData']>>
   riwayatVersiOpen: boolean
@@ -49,7 +46,6 @@ export interface PeraturanTableTabProps {
 
 export function PeraturanTableTab({
   filteredPeraturan,
-  jenisList,
   canEditPeraturan,
   isPeraturanDialogOpen,
   setIsPeraturanDialogOpen,
@@ -78,7 +74,7 @@ export function PeraturanTableTab({
         <Table.Table>
           <thead>
             <Table.HeadRow>
-              <Table.Th>Jenis</Table.Th>
+              <Table.Th>Peraturan</Table.Th>
               <Table.Th>Nomor</Table.Th>
               <Table.Th>Tentang</Table.Th>
               <Table.Th align="center">Status</Table.Th>
@@ -90,7 +86,7 @@ export function PeraturanTableTab({
               <Table.BodyRow key={peraturan.id}>
                 <Table.Td>
                   <Badge variant="outline" className="text-xs">
-                    {peraturan.jenisPeraturan}
+                    {peraturan.peraturan}
                   </Badge>
                 </Table.Td>
                 <Table.Td className="font-mono text-gray-700">
@@ -179,7 +175,7 @@ export function PeraturanTableTab({
             <DialogTitle className="text-sm">Riwayat versi</DialogTitle>
             <DialogDescription className="text-xs">
               {selectedPeraturanForRiwayat
-                ? `${selectedPeraturanForRiwayat.jenisPeraturan} No. ${selectedPeraturanForRiwayat.nomor}/${selectedPeraturanForRiwayat.tahun} — ${selectedPeraturanForRiwayat.tentang}`
+                ? `${selectedPeraturanForRiwayat.peraturan} No. ${selectedPeraturanForRiwayat.nomor}/${selectedPeraturanForRiwayat.tahun} — ${selectedPeraturanForRiwayat.tentang}`
                 : ''}
             </DialogDescription>
           </DialogHeader>
@@ -246,17 +242,14 @@ export function PeraturanTableTab({
         confirmDisabled={confirmDisabled}
         size="md"
       >
-        <FormField label="Jenis Peraturan" required>
-          <Select
-            value={peraturanFormData.jenisPeraturan}
-            onValueChange={(jenisPeraturan) =>
-              setPeraturanFormData((prev) => ({ ...prev, jenisPeraturan }))
+        <FormField label="Peraturan" required>
+          <Input
+            className="h-9 text-xs"
+            placeholder="Contoh: Permendikbud, Perda, SK Kadis"
+            value={peraturanFormData.peraturan}
+            onChange={(e) =>
+              setPeraturanFormData((prev) => ({ ...prev, peraturan: e.target.value }))
             }
-            placeholder="Pilih Jenis Peraturan"
-            options={jenisList.map((jenis) => ({
-              value: jenis.kode,
-              label: `${jenis.kode} - ${jenis.nama}`,
-            }))}
           />
         </FormField>
         <div className="grid grid-cols-2 gap-3">
@@ -289,19 +282,6 @@ export function PeraturanTableTab({
             value={peraturanFormData.tentang}
             onChange={(e) =>
               setPeraturanFormData((prev) => ({ ...prev, tentang: e.target.value }))
-            }
-          />
-        </FormField>
-        <FormField label="Tanggal Terbit">
-          <Input
-            type="date"
-            className="h-9 text-xs"
-            value={peraturanFormData.tanggalTerbit}
-            onChange={(e) =>
-              setPeraturanFormData((prev) => ({
-                ...prev,
-                tanggalTerbit: e.target.value,
-              }))
             }
           />
         </FormField>

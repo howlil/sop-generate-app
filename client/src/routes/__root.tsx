@@ -4,9 +4,11 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import appCss from '../styles.css?url'
 import { GlobalToast } from '@/components/layout/GlobalToast'
 import { NotFoundPage } from '@/components/ui/not-found'
+import { RouteErrorPage } from '@/components/ui/route-error'
 
 export const Route = createRootRoute({
   notFoundComponent: () => <NotFoundPage />,
+  errorComponent: ({ error, reset }) => <RouteErrorPage error={error} reset={reset} />,
   head: () => ({
     meta: [
       {
@@ -40,17 +42,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <GlobalToast />
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {import.meta.env.DEV && (
+          <TanStackDevtools
+            config={{
+              position: 'bottom-right',
+            }}
+            plugins={[
+              {
+                name: 'Tanstack Router',
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

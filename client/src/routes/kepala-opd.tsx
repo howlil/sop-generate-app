@@ -1,34 +1,24 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { PenLine, FileText, FileSignature } from 'lucide-react'
-import { getRole, setRole } from '@/lib/stores/app-store'
-import { isKepalaOPD } from '@/lib/domain/role'
+import { createFileRoute } from '@tanstack/react-router'
+import { PenLine, FileText } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
+import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
 export const Route = createFileRoute('/kepala-opd')({
-  beforeLoad: () => {
-    if (typeof window !== 'undefined') {
-      setRole(ROLES.KEPALA_OPD)
-      if (!isKepalaOPD(getRole())) {
-        throw redirect({ to: ROUTES.HOME, search: { denied: 'kepala-opd' } })
-      }
-    }
-  },
+  beforeLoad: requireRoleBeforeLoad(ROLES.KEPALA_OPD),
   component: KepalaOPDLayout,
 })
 
 const sidebarItems: SidebarItem[] = [
   { to: ROUTES.KEPALA_OPD.PANTAU_SOP, label: 'Pantau SOP', icon: FileText },
-  { to: ROUTES.KEPALA_OPD.BERITA_ACARA, label: 'Berita Acara', icon: FileSignature },
   { to: ROUTES.KEPALA_OPD.TTD, label: 'TTD Elektronik', icon: PenLine },
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
   [ROUTES.KEPALA_OPD.TTD]: ['/kepala-opd/ttd-elektronik'],
   [ROUTES.KEPALA_OPD.PANTAU_SOP]: ['/kepala-opd/pantau-sop', '/kepala-opd/detail-sop'],
-  [ROUTES.KEPALA_OPD.BERITA_ACARA]: ['/kepala-opd/berita-acara'],
 })
 
 function KepalaOPDLayout() {

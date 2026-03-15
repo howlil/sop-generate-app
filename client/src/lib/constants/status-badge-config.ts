@@ -14,11 +14,11 @@ const DEFAULT_CLASS = 'bg-gray-100 text-gray-700'
 const sopStatusStyleOverrides: Partial<Record<StatusSOP, string>> = {
   Draft: 'bg-gray-100 text-gray-700',
   'Sedang Disusun': 'bg-slate-100 text-slate-700',
-  'Siap Dievaluasi': 'bg-sky-100 text-sky-700',
+  'Siap Dievaluasi': 'bg-blue-100 text-blue-700',
   'Diajukan Evaluasi': 'bg-amber-100 text-amber-700',
   'Sedang Dievaluasi': 'bg-violet-100 text-violet-700',
   'Revisi dari Tim Evaluasi': 'bg-orange-100 text-orange-700',
-  'Siap Diverifikasi': 'bg-teal-100 text-teal-700',
+  'Siap Diverifikasi': 'bg-indigo-100 text-indigo-700',
   'Diverifikasi Biro Organisasi': 'bg-teal-100 text-teal-700',
   Berlaku: 'bg-emerald-100 text-emerald-700',
   Dicabut: 'bg-red-100 text-red-700',

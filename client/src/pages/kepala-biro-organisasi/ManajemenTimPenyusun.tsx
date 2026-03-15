@@ -59,16 +59,16 @@ export function ManajemenTimPenyusun() {
 
   const timList = useTimPenyusunList()
   const { filteredList, searchQuery, setSearchQuery } = useFilteredList(timList, {
-    searchKeys: ['nama', 'nip', 'jabatan'],
+    searchKeys: ['namaLengkap', 'nip', 'jabatan'],
   })
 
   const isFormValid =
-    formData.nama.trim() !== '' &&
+    formData.namaLengkap.trim() !== '' &&
     formData.nip.trim() !== '' &&
     formData.jabatan.trim() !== '' &&
     formData.pangkat.trim() !== '' &&
     formData.email.trim() !== '' &&
-    formData.noHP.trim() !== ''
+    formData.nohp.trim() !== ''
 
   const handleCreate = () => {
     if (!createOpdId) return
@@ -76,6 +76,7 @@ export function ManajemenTimPenyusun() {
       id: generateId(),
       opdId: createOpdId,
       ...formData,
+      roleInternal: formData.roleInternal,
       status: 'Aktif',
       jumlahSOPDisusun: 0,
       tanggalBergabung: new Date().toISOString().split('T')[0],
@@ -227,14 +228,27 @@ export function ManajemenTimPenyusun() {
                     tims.map((tim) => (
                       <Table.BodyRow key={tim.id}>
                         <Table.Td>
-                          <p className="font-medium text-gray-900">{tim.nama}</p>
+                          <div className="flex flex-col gap-0.5">
+                            <p className="font-medium text-gray-900">{tim.namaLengkap}</p>
+                            {tim.roleInternal && (
+                              <span
+                                className={`inline-block w-fit text-[10px] font-medium px-1.5 py-0 rounded-full border ${
+                                  tim.roleInternal === 'Koordinator'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                    : 'bg-gray-50 text-gray-500 border-gray-200'
+                                }`}
+                              >
+                                {tim.roleInternal}
+                              </span>
+                            )}
+                          </div>
                         </Table.Td>
                         <Table.Td className="font-mono text-gray-600 text-[11px]">
                           {tim.nip}
                         </Table.Td>
                         <Table.Td className="text-gray-600">{tim.jabatan}</Table.Td>
                         <Table.Td className="text-gray-600">{tim.email}</Table.Td>
-                        <Table.Td className="text-gray-600">{tim.noHP}</Table.Td>
+                        <Table.Td className="text-gray-600">{tim.nohp}</Table.Td>
                         <Table.Td>
                           <div className="flex flex-col gap-0.5">
                             <StatusBadge status={tim.status} />

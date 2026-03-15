@@ -16,10 +16,11 @@ interface VerifikasiBatchSeedResponse {
 const verifikasiBatchSeed = verifikasiBatchSeedData as VerifikasiBatchSeedResponse
 const VERIFIKASI_BATCH_INITIAL: VerifikasiBatch[] = verifikasiBatchSeed.penugasan
 
-/** Inisialisasi list verifikasi batch dari JSON bila store masih kosong. */
+/** Inisialisasi list verifikasi batch dari JSON.
+ * Untuk keperluan demo/prototipe FE, kita selalu menyamakan state store dengan seed
+ * agar perubahan di penugasan-evaluasi.json langsung tercermin tanpa tergantung localStorage lama.
+ */
 export function initVerifikasiBatchFromSeed(): void {
-  if (getVerifikasiBatchList().length === 0) {
-    setVerifikasiBatchList(VERIFIKASI_BATCH_INITIAL)
-  }
+  setVerifikasiBatchList(VERIFIKASI_BATCH_INITIAL)
 }
 

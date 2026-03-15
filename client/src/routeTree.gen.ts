@@ -24,6 +24,7 @@ import { Route as TimPenyusunManajemenSopRouteImport } from './routes/tim-penyus
 import { Route as TimPenyusunManajemenPeraturanRouteImport } from './routes/tim-penyusun.manajemen-peraturan'
 import { Route as TimPenyusunInitiateProyekRouteImport } from './routes/tim-penyusun.initiate-proyek'
 import { Route as TimPenyusunDaftarSopRouteImport } from './routes/tim-penyusun.daftar-sop'
+import { Route as TimPenyusunBeritaAcaraRouteImport } from './routes/tim-penyusun.berita-acara'
 import { Route as TimEvaluasiEvaluasiRouteImport } from './routes/tim-evaluasi.evaluasi'
 import { Route as KepalaOpdTtdElektronikRouteImport } from './routes/kepala-opd.ttd-elektronik'
 import { Route as KepalaOpdPantauSopRouteImport } from './routes/kepala-opd.pantau-sop'
@@ -120,6 +121,11 @@ const TimPenyusunInitiateProyekRoute =
 const TimPenyusunDaftarSopRoute = TimPenyusunDaftarSopRouteImport.update({
   id: '/daftar-sop',
   path: '/daftar-sop',
+  getParentRoute: () => TimPenyusunRoute,
+} as any)
+const TimPenyusunBeritaAcaraRoute = TimPenyusunBeritaAcaraRouteImport.update({
+  id: '/berita-acara',
+  path: '/berita-acara',
   getParentRoute: () => TimPenyusunRoute,
 } as any)
 const TimEvaluasiEvaluasiRoute = TimEvaluasiEvaluasiRouteImport.update({
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/kepala-opd/pantau-sop': typeof KepalaOpdPantauSopRoute
   '/kepala-opd/ttd-elektronik': typeof KepalaOpdTtdElektronikRoute
   '/tim-evaluasi/evaluasi': typeof TimEvaluasiEvaluasiRouteWithChildren
+  '/tim-penyusun/berita-acara': typeof TimPenyusunBeritaAcaraRoute
   '/tim-penyusun/daftar-sop': typeof TimPenyusunDaftarSopRoute
   '/tim-penyusun/initiate-proyek': typeof TimPenyusunInitiateProyekRoute
   '/tim-penyusun/manajemen-peraturan': typeof TimPenyusunManajemenPeraturanRoute
@@ -282,6 +289,7 @@ export interface FileRoutesByTo {
   '/kepala-opd/berita-acara': typeof KepalaOpdBeritaAcaraRoute
   '/kepala-opd/pantau-sop': typeof KepalaOpdPantauSopRoute
   '/kepala-opd/ttd-elektronik': typeof KepalaOpdTtdElektronikRoute
+  '/tim-penyusun/berita-acara': typeof TimPenyusunBeritaAcaraRoute
   '/tim-penyusun/daftar-sop': typeof TimPenyusunDaftarSopRoute
   '/tim-penyusun/initiate-proyek': typeof TimPenyusunInitiateProyekRoute
   '/tim-penyusun/manajemen-peraturan': typeof TimPenyusunManajemenPeraturanRoute
@@ -320,6 +328,7 @@ export interface FileRoutesById {
   '/kepala-opd/pantau-sop': typeof KepalaOpdPantauSopRoute
   '/kepala-opd/ttd-elektronik': typeof KepalaOpdTtdElektronikRoute
   '/tim-evaluasi/evaluasi': typeof TimEvaluasiEvaluasiRouteWithChildren
+  '/tim-penyusun/berita-acara': typeof TimPenyusunBeritaAcaraRoute
   '/tim-penyusun/daftar-sop': typeof TimPenyusunDaftarSopRoute
   '/tim-penyusun/initiate-proyek': typeof TimPenyusunInitiateProyekRoute
   '/tim-penyusun/manajemen-peraturan': typeof TimPenyusunManajemenPeraturanRoute
@@ -359,6 +368,7 @@ export interface FileRouteTypes {
     | '/kepala-opd/pantau-sop'
     | '/kepala-opd/ttd-elektronik'
     | '/tim-evaluasi/evaluasi'
+    | '/tim-penyusun/berita-acara'
     | '/tim-penyusun/daftar-sop'
     | '/tim-penyusun/initiate-proyek'
     | '/tim-penyusun/manajemen-peraturan'
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/kepala-opd/berita-acara'
     | '/kepala-opd/pantau-sop'
     | '/kepala-opd/ttd-elektronik'
+    | '/tim-penyusun/berita-acara'
     | '/tim-penyusun/daftar-sop'
     | '/tim-penyusun/initiate-proyek'
     | '/tim-penyusun/manajemen-peraturan'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/kepala-opd/pantau-sop'
     | '/kepala-opd/ttd-elektronik'
     | '/tim-evaluasi/evaluasi'
+    | '/tim-penyusun/berita-acara'
     | '/tim-penyusun/daftar-sop'
     | '/tim-penyusun/initiate-proyek'
     | '/tim-penyusun/manajemen-peraturan'
@@ -564,6 +576,13 @@ declare module '@tanstack/react-router' {
       path: '/daftar-sop'
       fullPath: '/tim-penyusun/daftar-sop'
       preLoaderRoute: typeof TimPenyusunDaftarSopRouteImport
+      parentRoute: typeof TimPenyusunRoute
+    }
+    '/tim-penyusun/berita-acara': {
+      id: '/tim-penyusun/berita-acara'
+      path: '/berita-acara'
+      fullPath: '/tim-penyusun/berita-acara'
+      preLoaderRoute: typeof TimPenyusunBeritaAcaraRouteImport
       parentRoute: typeof TimPenyusunRoute
     }
     '/tim-evaluasi/evaluasi': {
@@ -807,6 +826,7 @@ const TimEvaluasiRouteWithChildren = TimEvaluasiRoute._addFileChildren(
 )
 
 interface TimPenyusunRouteChildren {
+  TimPenyusunBeritaAcaraRoute: typeof TimPenyusunBeritaAcaraRoute
   TimPenyusunDaftarSopRoute: typeof TimPenyusunDaftarSopRoute
   TimPenyusunInitiateProyekRoute: typeof TimPenyusunInitiateProyekRoute
   TimPenyusunManajemenPeraturanRoute: typeof TimPenyusunManajemenPeraturanRoute
@@ -818,6 +838,7 @@ interface TimPenyusunRouteChildren {
 }
 
 const TimPenyusunRouteChildren: TimPenyusunRouteChildren = {
+  TimPenyusunBeritaAcaraRoute: TimPenyusunBeritaAcaraRoute,
   TimPenyusunDaftarSopRoute: TimPenyusunDaftarSopRoute,
   TimPenyusunInitiateProyekRoute: TimPenyusunInitiateProyekRoute,
   TimPenyusunManajemenPeraturanRoute: TimPenyusunManajemenPeraturanRoute,

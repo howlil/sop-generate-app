@@ -1,5 +1,57 @@
 [
-  { "id": "impl-1", "nama": "Pemohon", "deskripsi": "Pemohon layanan / warga", "jumlahPos": 0 },
-  { "id": "impl-2", "nama": "Admin", "deskripsi": "Administrator/operator sistem", "jumlahPos": 0 },
-  { "id": "impl-3", "nama": "Pejabat Berwenang", "deskripsi": "Pejabat yang berwenang menandatangani", "jumlahPos": 0 }
+  {
+    "id": "impl-1",
+    "namaLengkap": "Ahmad Fauzi",
+    "nip": "198501152010011001",
+    "jabatan": "Staf Pelayanan",
+    "pangkat": "Penata Muda Tk. I (III/b)",
+    "email": "ahmad.fauzi@example.go.id",
+    "nohp": "081234567890",
+    "deskripsi": "Pemohon layanan / warga / pihak yang mengajukan permohonan",
+    "jumlahPos": 0
+  },
+  {
+    "id": "impl-2",
+    "namaLengkap": "Siti Nurhaliza",
+    "nip": "198703202011012002",
+    "jabatan": "Administrator",
+    "pangkat": "Penata (III/c)",
+    "email": "siti.nurhaliza@example.go.id",
+    "nohp": "081234567891",
+    "deskripsi": "Administrator atau petugas pelayanan yang memproses permohonan",
+    "jumlahPos": 0
+  },
+  {
+    "id": "impl-3",
+    "namaLengkap": "Dr. Budi Santoso, M.Si",
+    "nip": "197505102000031003",
+    "jabatan": "Kepala Bidang",
+    "pangkat": "Pembina Tk. I (IV/b)",
+    "email": "budi.santoso@example.go.id",
+    "nohp": "081234567892",
+    "deskripsi": "Pejabat yang berwenang menandatangani dan menyetujui",
+    "jumlahPos": 0
+  },
+  {
+    "id": "impl-4",
+    "namaLengkap": "Rina Wijaya, S.Kom",
+    "nip": "199007152015042004",
+    "jabatan": "Verifikator",
+    "pangkat": "Penata Muda (III/a)",
+    "email": "rina.wijaya@example.go.id",
+    "nohp": "081234567893",
+    "deskripsi": "Tim yang bertugas memverifikasi kelengkapan dan keabsahan dokumen",
+    "jumlahPos": 0
+  },
+  {
+    "id": "impl-5",
+    "namaLengkap": "Ir. Hendra Gunawan, M.T",
+    "nip": "197802202001121005",
+    "jabatan": "Kepala Seksi",
+    "pangkat": "Pembina (IV/a)",
+    "email": "hendra.gunawan@example.go.id",
+    "nohp": "081234567894",
+    "deskripsi": "Kepala Bidang terkait yang bertanggung jawab atas proses",
+    "jumlahPos": 0
+  }
 ]

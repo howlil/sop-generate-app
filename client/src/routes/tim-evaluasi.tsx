@@ -1,21 +1,13 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { ClipboardCheck } from 'lucide-react'
-import { getRole, setRole } from '@/lib/stores/app-store'
-import { isTimEvaluasi } from '@/lib/domain/role'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
+import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
 export const Route = createFileRoute('/tim-evaluasi')({
-  beforeLoad: () => {
-    if (typeof window !== 'undefined') {
-      setRole(ROLES.TIM_EVALUASI)
-      if (!isTimEvaluasi(getRole())) {
-        throw redirect({ to: ROUTES.HOME, search: { denied: 'tim-evaluasi' } })
-      }
-    }
-  },
+  beforeLoad: requireRoleBeforeLoad(ROLES.TIM_EVALUASI),
   component: TimEvaluasiLayout,
 })
 
@@ -24,7 +16,7 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_EVALUASI.EVALUASI]: ['/tim-evaluasi/evaluasi', '/tim-evaluasi/evaluasi/opd', '/tim-evaluasi/evaluasi/detail'],
+  [ROUTES.TIM_EVALUASI.EVALUASI]: ['/tim-evaluasi/evaluasi', '/tim-evaluasi/evaluasi/opd'],
 })
 
 function TimEvaluasiLayout() {

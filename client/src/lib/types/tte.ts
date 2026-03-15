@@ -6,8 +6,11 @@ export type TTERole = 'kepala-opd' | 'biro-organisasi' | 'tim-penyusun'
 
 export interface TTEProfile {
   nip: string
-  nama: string
+  namaLengkap: string
   email: string
+  jabatan: string
+  pangkat: string
+  nohp: string
   pinHash: string
   emailVerified: boolean
   role: TTERole
@@ -21,7 +24,9 @@ export interface TTEAuditEntry {
   action: 'verifikasi_evaluasi' | 'pengesahan_sop' | 'tanda_hasil_evaluasi'
   role: TTERole
   nip: string
-  nama: string
+  namaLengkap: string
+  jabatan: string
+  pangkat: string
   documentId: string
   documentLabel: string
   referenceId: string
@@ -32,7 +37,9 @@ export interface TTESignaturePayload {
   id: string
   role: TTERole
   nip: string
-  nama: string
+  namaLengkap: string
+  jabatan: string
+  pangkat: string
   signedAt: string
   documentId: string
   documentLabel: string

@@ -40,12 +40,10 @@ export const ROUTES = {
     MANAJEMEN_SOP: '/tim-penyusun/manajemen-sop',
     /** Kelola Pelaksana SOP (master data untuk kolom pelaksana di edit SOP). */
     PELAKSANA_SOP: '/tim-penyusun/pelaksana-sop',
-    SOP_SAYA: '/tim-penyusun/sop-saya',
-    DAFTAR_SOP: '/tim-penyusun/daftar-sop',
     PERATURAN: '/tim-penyusun/manajemen-peraturan',
     DETAIL_SOP: '/tim-penyusun/detail-sop/$id',
-    INITIATE_PROYEK: '/tim-penyusun/initiate-proyek',
-    TTD: '/tim-penyusun/ttd-elektronik',
+    /** Berita Acara: daftar BA yang sudah diverifikasi Biro dan menunggu TTD Koordinator Tim Penyusun. */
+    BERITA_ACARA: '/tim-penyusun/berita-acara',
   },
 
   TIM_EVALUASI: {
@@ -54,6 +52,5 @@ export const ROUTES = {
     EVALUASI: '/tim-evaluasi/evaluasi',
     /** Detail evaluasi per OPD: list SOP untuk satu OPD. */
     EVALUASI_OPD: '/tim-evaluasi/evaluasi/opd/$opdId',
-    EVALUASI_SOP: '/tim-evaluasi/evaluasi/$sopId',
   },
 } as const

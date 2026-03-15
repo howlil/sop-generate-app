@@ -60,8 +60,8 @@ export function TimPenyusunFormDialog({
           <Input
             className="h-9 text-xs"
             placeholder="Contoh: Ahmad Pratama, S.Sos"
-            value={formData.nama}
-            onChange={(e) => setFormData((prev) => ({ ...prev, nama: e.target.value }))}
+            value={formData.namaLengkap}
+            onChange={(e) => setFormData((prev) => ({ ...prev, namaLengkap: e.target.value }))}
           />
         </FormField>
         <FormField label="NIP" required>
@@ -101,8 +101,20 @@ export function TimPenyusunFormDialog({
           <Input
             className="h-9 text-xs"
             placeholder="Contoh: 081234567890"
-            value={formData.noHP}
-            onChange={(e) => setFormData((prev) => ({ ...prev, noHP: e.target.value }))}
+            value={formData.nohp}
+            onChange={(e) => setFormData((prev) => ({ ...prev, nohp: e.target.value }))}
+          />
+        </FormField>
+        <FormField label="Peran Internal Tim">
+          <Select
+            value={formData.roleInternal}
+            onValueChange={(v) =>
+              setFormData((prev) => ({ ...prev, roleInternal: v as 'Koordinator' | 'Anggota' }))
+            }
+            options={[
+              { value: 'Anggota', label: 'Anggota' },
+              { value: 'Koordinator', label: 'Koordinator' },
+            ]}
           />
         </FormField>
       </div>

@@ -4,7 +4,7 @@ import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lu
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getOpdListEvaluasi, getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
+import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop, getOpdIdByName } from '@/lib/data/evaluasi-data'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { ROUTES } from '@/lib/constants/routes'
@@ -51,10 +51,9 @@ export function DetailVerifikasiBatch() {
   const firstSopId = sopList[0]?.id ?? null
   const effectiveSopId = selectedSopId ?? firstSopId
   const displaySop = sopList.find((s) => s.id === effectiveSopId)
-  const opdListEvaluasi = getOpdListEvaluasi()
   const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
   const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
-  const opdId = batch ? opdListEvaluasi.find((o) => o.nama === batch.opd)?.id ?? null : null
+  const opdId = batch ? getOpdIdByName(batch.opd) : null
   const riwayatOpd = opdId ? (riwayatEvaluasiOpd[opdId] ?? []) : []
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
 

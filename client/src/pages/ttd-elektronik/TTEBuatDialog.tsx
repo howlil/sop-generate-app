@@ -39,7 +39,7 @@ export function TTEBuatDialog({
   const profile = useMemo(() => getTTEProfile(role), [role])
   const [step, setStep] = useState<WizardStep>('data-diri')
   const [nip, setNip] = useState(profile?.nip ?? defaultNip)
-  const [nama, setNama] = useState(profile?.nama ?? defaultNama)
+  const [namaLengkap, setNamaLengkap] = useState(profile?.namaLengkap ?? defaultNama)
   const [email, setEmail] = useState(profile?.email ?? '')
   const [pin, setPin] = useState('')
   const [pinConfirm, setPinConfirm] = useState('')
@@ -50,19 +50,19 @@ export function TTEBuatDialog({
     if (open) {
       setStep('data-diri')
       setNip(profile?.nip ?? defaultNip)
-      setNama(profile?.nama ?? defaultNama)
+      setNamaLengkap(profile?.namaLengkap ?? defaultNama)
       setEmail(profile?.email ?? '')
       setPin('')
       setPinConfirm('')
       setError(null)
       setVerificationToken(null)
     }
-  }, [open, profile?.nip, profile?.nama, profile?.email, defaultNip, defaultNama])
+  }, [open, profile?.nip, profile?.namaLengkap, profile?.email, defaultNip, defaultNama])
 
   const handleNextFromDataDiri = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    if (!nip.trim() || !nama.trim()) {
+    if (!nip.trim() || !namaLengkap.trim()) {
       setError('NIP dan Nama wajib diisi.')
       return
     }
@@ -87,8 +87,11 @@ export function TTEBuatDialog({
     const token = 'tte_verify_' + Date.now() + '_' + Math.random().toString(36).slice(2, 12)
     setTTEProfile(role, {
       nip: nip.trim(),
-      nama: nama.trim(),
+      namaLengkap: namaLengkap.trim(),
       email: email.trim(),
+      jabatan: 'Staff',
+      pangkat: 'Penata Muda (III/a)',
+      nohp: '081234567890',
       pinHash: hashPin(pin),
       emailVerified: false,
       role,
@@ -135,11 +138,11 @@ export function TTEBuatDialog({
                   placeholder="Nomor Induk Pegawai"
                 />
               </FormField>
-              <FormField label="Nama">
+              <FormField label="Nama Lengkap">
                 <Input
                   className="h-9 text-xs"
-                  value={nama}
-                  onChange={(e) => setNama(e.target.value)}
+                  value={namaLengkap}
+                  onChange={(e) => setNamaLengkap(e.target.value)}
                   placeholder="Nama lengkap"
                 />
               </FormField>

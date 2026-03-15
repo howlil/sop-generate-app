@@ -1,21 +1,13 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { BookOpen, FileText, UserCog } from 'lucide-react'
-import { getRole, setRole } from '@/lib/stores/app-store'
-import { isTimPenyusun } from '@/lib/domain/role'
+import { createFileRoute } from '@tanstack/react-router'
+import { BookOpen, FileSignature, FileText, UserCog } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
+import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
 export const Route = createFileRoute('/tim-penyusun')({
-  beforeLoad: () => {
-    if (typeof window !== 'undefined') {
-      setRole(ROLES.TIM_PENYUSUN)
-      if (!isTimPenyusun(getRole())) {
-        throw redirect({ to: ROUTES.HOME, search: { denied: 'tim-penyusun' } })
-      }
-    }
-  },
+  beforeLoad: requireRoleBeforeLoad(ROLES.TIM_PENYUSUN),
   component: TimPenyusunLayout,
 })
 
@@ -23,11 +15,13 @@ const sidebarItems: SidebarItem[] = [
   { to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP, label: 'Manajemen SOP', icon: FileText },
   { to: ROUTES.TIM_PENYUSUN.PELAKSANA_SOP, label: 'Kelola Pelaksana SOP', icon: UserCog },
   { to: ROUTES.TIM_PENYUSUN.PERATURAN, label: 'Manajemen Peraturan', icon: BookOpen },
+  { to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, label: 'Berita Acara', icon: FileSignature },
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: ['/tim-penyusun/manajemen-sop', '/tim-penyusun/initiate-proyek', '/tim-penyusun/detail-sop'],
+  [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: ['/tim-penyusun/manajemen-sop', '/tim-penyusun/detail-sop'],
   [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP]: ['/tim-penyusun/pelaksana-sop'],
+  [ROUTES.TIM_PENYUSUN.BERITA_ACARA]: ['/tim-penyusun/berita-acara'],
 })
 
 function TimPenyusunLayout() {

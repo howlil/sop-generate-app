@@ -2,8 +2,8 @@
  * Workspace evaluasi SOP per OPD.
  * Dari list OPD, klik OPD → langsung ke workspace ini: daftar SOP (kiri), preview (tengah), form evaluasi (kanan).
  */
-import { useState, useMemo, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from '@tanstack/react-router'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import { useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { Send, List, Printer } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
@@ -15,18 +15,17 @@ import { useEvaluasiDraft, getEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useEvaluasiSubmit } from '@/hooks/useEvaluasiSubmit'
 import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/lib/constants/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
-import { STATUS_BUKAN_LIST_EVALUASI } from '@/lib/domain/sop-evaluasi'
-import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
+import { isSopInEvaluasiList } from '@/lib/domain/sop-evaluasi'
+import { useCollapsiblePanels } from '@/hooks/useUI'
 import { useAppRole } from '@/hooks/useAppRole'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { formatDateId } from '@/utils/format-date'
 import {
-  getOpdListEvaluasi,
-  getSopByOpd,
   getRiwayatEvaluasiOpd,
   getRiwayatEvaluasiSop,
   getLastEvaluatedByInitial,
   loadEvaluasiRecordMap,
+  getOpdIdByName,
   type EvaluasiRecordMap,
 } from '@/lib/data/evaluasi-data'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
@@ -39,43 +38,35 @@ const POST_SUBMIT_DELAY_MS = 1500
 
 export function DetailEvaluasiOPD() {
   const { opdId } = useParams({ from: '/tim-evaluasi/evaluasi/opd/$opdId' })
+  const { sopId: preferredSopId } = useSearch({ from: '/tim-evaluasi/evaluasi/opd/$opdId' })
   const navigate = useNavigate()
-  const { showToast } = useToast()
   const { role, getRoleUserName } = useAppRole()
-  const { mergeSopStatus, setSopStatusOverride, getSopStatusOverride } = useSopStatus()
-  const opdListEvaluasi = getOpdListEvaluasi()
-  const opd = opdListEvaluasi.find((o) => o.id === opdId)
-  const sopByOpd = getSopByOpd()
+  const { mergeSopStatus, getSopStatusOverride } = useSopStatus()
   const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
   const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
 
   const [sopList] = useState(() => getInitialSopDaftarList() as SOPDaftarItem[])
   const mergedSopList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
 
-  /** SOP OPD ini; status "Sedang Disusun" tidak masuk list evaluasi. */
+  /** All SOPs belonging to this OPD (by opdId), merged with status overrides. */
   const sopsForOpd = useMemo(() => {
-    if (!opd) return []
-    const fromSeed = sopByOpd[opd.nama] ?? []
-    return fromSeed
-      .map((s) => {
-        const fromStore = mergedSopList.find((m) => m.id === s.id)
-        if (fromStore) {
-          return {
-            id: fromStore.id,
-            judul: fromStore.judul,
-            nomorSOP: fromStore.nomorSOP,
-            status: getSopStatusOverride(fromStore.id) ?? fromStore.status,
-          }
-        }
-        return {
-          id: s.id,
-          judul: s.nama,
-          nomorSOP: s.nomor,
-          status: s.status,
-        }
-      })
-      .filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
-  }, [opd, mergedSopList, getSopStatusOverride])
+    return mergedSopList
+      .filter((s) => s.opdId === opdId)
+      .filter((s) => isSopInEvaluasiList(s.status))
+      .map((s) => ({
+        id: s.id,
+        judul: s.judul,
+        nomorSOP: s.nomorSOP,
+        status: getSopStatusOverride(s.id) ?? s.status,
+      }))
+  }, [mergedSopList, opdId, getSopStatusOverride])
+
+  /** OPD name is derived from the first matching SOP's unit or the opdId itself. */
+  const opd = useMemo(() => {
+    const firstSop = mergedSopList.find((s) => s.opdId === opdId)
+    if (!firstSop) return null
+    return { id: opdId, nama: firstSop.unitTerkait ?? opdId }
+  }, [mergedSopList, opdId])
 
   const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>(loadEvaluasiRecordMap)
   useEffect(() => {
@@ -124,9 +115,18 @@ export function DetailEvaluasiOPD() {
   }, [sopsFilteredByStatus, filterEvaluator, lastEvaluatedBy])
 
   const firstSopId = sopsFilteredByStatusAndEvaluator[0]?.id ?? null
-  const [selectedSopId, setSelectedSopId] = useState(null as string | null)
+  const [selectedSopId, setSelectedSopId] = useState<string | null>(preferredSopId ?? null)
+  const preferredSopAppliedRef = useRef(false)
   const effectiveSopId = selectedSopId ?? firstSopId
   const selectedSop = sopsForOpd.find((s) => s.id === effectiveSopId)
+
+  useEffect(() => {
+    if (preferredSopAppliedRef.current) return
+    if (!preferredSopId) return
+    if (!sopsForOpd.some((s) => s.id === preferredSopId)) return
+    setSelectedSopId(preferredSopId)
+    preferredSopAppliedRef.current = true
+  }, [preferredSopId, sopsForOpd])
 
   useEffect(() => {
     const stillInList = sopsFilteredByStatusAndEvaluator.some((s) => s.id === effectiveSopId)
@@ -144,18 +144,12 @@ export function DetailEvaluasiOPD() {
     setStatusEvaluasi,
   } = useEvaluasiDraft(effectiveSopId ?? undefined)
 
-  /** Ubah status evaluasi dan secara eksplisit tandai SOP sebagai Sedang Dievaluasi saat user mulai mengisi form. */
+  /** Ubah status evaluasi. */
   const handleSetStatusEvaluasi = useCallback(
     (status: 'Sesuai' | 'Revisi Biro' | null) => {
       setStatusEvaluasi(status)
-      if (status !== null && effectiveSopId) {
-        const sop = sopsForOpd.find((s) => s.id === effectiveSopId)
-        if (sop?.status === 'Diajukan Evaluasi') {
-          setSopStatusOverride(effectiveSopId, 'Sedang Dievaluasi')
-        }
-      }
     },
-    [setStatusEvaluasi, effectiveSopId, sopsForOpd, setSopStatusOverride]
+    [setStatusEvaluasi]
   )
 
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
@@ -163,6 +157,7 @@ export function DetailEvaluasiOPD() {
   const [ratingOPD, setRatingOPD] = useState<number | null>(null)
 
   const namaEvaluator = role ? getRoleUserName(role) : 'Evaluator'
+
   const lastEvaluatedEntry = effectiveSopId ? lastEvaluatedBy[effectiveSopId] : undefined
   const tanggalTerakhirEvaluasi = lastEvaluatedEntry ? lastEvaluatedEntry.date : null
   /** Evaluator yang terakhir mengevaluasi SOP terpilih (per SOP bisa beda) */
@@ -175,7 +170,7 @@ export function DetailEvaluasiOPD() {
     setRightCollapsed: setRightPanelCollapsed,
   } = useCollapsiblePanels()
 
-  /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil, atau SOP lain yang punya draft. Supaya SOP Diajukan Evaluasi yang sudah diisi form langsung terbaca di popup Kirim. */
+  /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil, atau SOP lain yang punya draft. */
   const sedangDievaluasiList = useMemo(() => {
     const out: Array<{ id: string; judul: string; nomorSOP: string; statusEvaluasi: 'Sesuai' | 'Revisi Biro'; komentarEvaluasi: string }> = []
     for (const s of sopsFilteredByStatusAndEvaluator) {
@@ -232,8 +227,11 @@ export function DetailEvaluasiOPD() {
     }
   }, [isSubmitOpen, sedangDievaluasiList, setSubmitSelectedIds])
 
+  /** Riwayat evaluasi SOP: from seed data. */
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
-  const riwayatOpd = opd?.id ? (riwayatEvaluasiOpd[opd.id] ?? []) : []
+  /** Riwayat evaluasi OPD: look up by OPD name → id mapping. */
+  const riwayatOpdId = opd ? getOpdIdByName(opd.nama) : null
+  const riwayatOpd = riwayatOpdId ? (riwayatEvaluasiOpd[riwayatOpdId] ?? []) : []
 
   if (!opd) {
     return (
@@ -247,7 +245,7 @@ export function DetailEvaluasiOPD() {
     )
   }
 
-  /** Sedang Dievaluasi = SOP terpilih yang punya isian form (draft). Selesai Evaluasi tetap dikunci, tidak berubah. */
+  /** Sedang Dievaluasi = SOP terpilih yang punya isian form (draft). Selesai Evaluasi tetap dikunci. */
   const listItems = sopsFilteredByStatusAndEvaluator.map((s) => {
     const isSelectedWithDraft =
       s.id === effectiveSopId && (statusEvaluasi != null || (komentarEvaluasi?.trim() ?? '') !== '')

@@ -1,7 +1,7 @@
 /**
  * Centralized domain helpers for SOP status checks.
  * Eliminates scattered magic strings across pages.
- * Workflow: Biro TTD BA → Kepala OPD TTD BA (BA milik OPD) → Kepala OPD TTD tiap SOP (Berlaku).
+ * Workflow: Biro TTD BA → Koordinator Tim Penyusun TTD BA → Kepala OPD TTD tiap SOP (Berlaku).
  */
 import type { StatusSOP } from '@/lib/types/sop'
 import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
@@ -10,6 +10,7 @@ import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
 const EDITABLE_STATUSES: StatusSOP[] = [
   'Draft',
   'Sedang Disusun',
+  'Siap Dievaluasi',
   'Revisi dari Tim Evaluasi',
 ]
 
@@ -45,7 +46,7 @@ export function getVerifikasiBatchContainingSop(
 
 /**
  * Kepala OPD boleh TTD SOP hanya jika: (1) status SOP = Diverifikasi Biro, dan
- * (2) bila SOP masuk dalam suatu Berita Acara (batch) untuk OPD tersebut, BA harus sudah ditandatangani Kepala OPD.
+ * (2) bila SOP masuk dalam suatu Berita Acara (batch) untuk OPD tersebut, BA harus sudah ditandatangani Koordinator Tim Penyusun.
  */
 export function canKepalaOpdSignSop(
   status: StatusSOP,
@@ -57,7 +58,7 @@ export function canKepalaOpdSignSop(
   if (!isSopEligibleForSigning(status)) return false
   const batch = getVerifikasiBatchContainingSop(batchList, opdName, sopId, nomorSOP)
   if (!batch) return true
-  return batch.isSignedByKepalaOPD === true
+  return batch.isSignedByKoordinator === true
 }
 
 export function canVerifyBatch(item: VerifikasiBatch): boolean {

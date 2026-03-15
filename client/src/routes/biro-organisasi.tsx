@@ -1,21 +1,13 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { BarChart3, Building2, FileCheck, PenLine, UserPlus, Users } from 'lucide-react'
-import { getRole, setRole } from '@/lib/stores/app-store'
-import { isBiroOrganisasi } from '@/lib/domain/role'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
+import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
 export const Route = createFileRoute('/biro-organisasi')({
-  beforeLoad: () => {
-    if (typeof window !== 'undefined') {
-      setRole(ROLES.BIRO_ORGANISASI)
-      if (!isBiroOrganisasi(getRole())) {
-        throw redirect({ to: ROUTES.HOME, search: { denied: 'biro-organisasi' } })
-      }
-    }
-  },
+  beforeLoad: requireRoleBeforeLoad(ROLES.BIRO_ORGANISASI),
   component: BiroOrganisasiLayout,
 })
 

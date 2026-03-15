@@ -49,7 +49,7 @@ export function LawBasisDialog({
   const handleConfirm = () => {
     const selectedPeraturan = peraturanList.filter((p) => selectedIds.includes(p.id))
     const additional = selectedPeraturan
-      .map((p) => `${p.jenisPeraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`)
+      .map((p) => `${p.peraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`)
       .filter((label) => !existingLawBasis.includes(label))
     onAdd([...existingLawBasis, ...additional])
     handleClose()
@@ -61,7 +61,7 @@ export function LawBasisDialog({
     ? berlakuList.filter(
         (p) =>
           p.tentang.toLowerCase().includes(q) ||
-          p.jenisPeraturan.toLowerCase().includes(q) ||
+          p.peraturan.toLowerCase().includes(q) ||
           `${p.nomor}/${p.tahun}`.includes(q)
       )
     : berlakuList
@@ -73,12 +73,12 @@ export function LawBasisDialog({
         <DialogHeader className="px-4 pt-3 pb-2">
           <DialogTitle className="text-sm">Pilih Dasar Hukum</DialogTitle>
           <DialogDescription className="text-xs text-gray-500 mt-1 leading-snug">
-            Cari peraturan yang akan ditambahkan ke dasar hukum (nama, jenis, atau nomor/tahun).
+            Cari peraturan yang akan ditambahkan ke dasar hukum (tentang, peraturan, atau nomor/tahun).
           </DialogDescription>
         </DialogHeader>
         <div className="px-4 pb-2">
           <SearchInput
-            placeholder="Cari peraturan (nama, jenis, nomor)..."
+            placeholder="Cari peraturan (tentang, peraturan, nomor)..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full max-w-none border border-gray-200 rounded-md bg-gray-50/50 focus-within:bg-white focus-within:border-gray-300 h-8 px-2.5"
@@ -97,7 +97,7 @@ export function LawBasisDialog({
                   </div>
                 ) : (
                   filtered.map((p) => {
-                    const label = `${p.jenisPeraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`
+                    const label = `${p.peraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`
                     const already = existingLawBasis.includes(label)
                     const selected = selectedIds.includes(p.id)
                     const toggle = () => {
@@ -139,7 +139,7 @@ export function LawBasisDialog({
                         </span>
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <p className="text-xs font-medium text-gray-900 leading-snug">
-                            {p.jenisPeraturan} No. {p.nomor}/{p.tahun}
+                            {p.peraturan} No. {p.nomor}/{p.tahun}
                           </p>
                           <p className="text-[11px] text-gray-600 leading-snug line-clamp-2">{p.tentang}</p>
                         </div>

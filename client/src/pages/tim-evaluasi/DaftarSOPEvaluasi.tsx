@@ -2,6 +2,7 @@
  * Evaluasi SOP: daftar OPD. Satu baris = satu OPD.
  * List SOP per OPD ada di halaman detail OPD (Evaluasi per OPD).
  */
+import { useMemo, useState } from 'react'
 import { Building2, Eye } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -10,10 +11,11 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/lib/constants/routes'
-import { getOpdListEvaluasi, getSopByOpd } from '@/lib/data/evaluasi-data'
-import { canSelectSOPForEvaluasi } from '@/lib/domain/sop-evaluasi'
+import { canSelectSOPForEvaluasi, isSopInEvaluasiList } from '@/lib/domain/sop-evaluasi'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
+import { useSopStatus } from '@/hooks/useSopStatus'
 
 export interface OpdEvaluasiItem {
   id: string
@@ -23,27 +25,41 @@ export interface OpdEvaluasiItem {
   jumlahLayakEvaluasi: number
 }
 
-/** Status "Sedang Disusun" tidak masuk list evaluasi. */
-const STATUS_BUKAN_LIST_EVALUASI = 'Sedang Disusun'
+function useOpdEvaluasiList(): OpdEvaluasiItem[] {
+  const { mergeSopStatus } = useSopStatus()
+  const [baseSopList] = useState(() => getInitialSopDaftarList())
+  const mergedSopList = useMemo(() => mergeSopStatus(baseSopList), [baseSopList, mergeSopStatus])
 
-function buildOpdList(): OpdEvaluasiItem[] {
-  const opdList = getOpdListEvaluasi()
-  const sopByOpd = getSopByOpd()
-  return opdList.map((opd) => {
-    const sops = (sopByOpd[opd.nama] ?? []).filter((s) => s.status !== STATUS_BUKAN_LIST_EVALUASI)
-    const jumlahLayakEvaluasi = sops.filter((s) => canSelectSOPForEvaluasi(s.status)).length
-    return {
-      id: opd.id,
-      nama: opd.nama,
-      kode: opd.kode,
-      jumlahSop: sops.length,
-      jumlahLayakEvaluasi,
+  return useMemo(() => {
+    /** Group SOPs by opdId, collecting unique OPD names from opdId. */
+    const opdMap = new Map<string, { sops: typeof mergedSopList }>()
+    for (const sop of mergedSopList) {
+      const opdId = sop.opdId ?? 'unknown'
+      if (!opdMap.has(opdId)) opdMap.set(opdId, { sops: [] })
+      opdMap.get(opdId)!.sops.push(sop)
     }
-  })
+
+    const result: OpdEvaluasiItem[] = []
+    for (const [opdId, { sops }] of opdMap.entries()) {
+      const evaluasiSops = sops.filter((s) => isSopInEvaluasiList(s.status))
+      if (evaluasiSops.length === 0) continue
+      const jumlahLayakEvaluasi = evaluasiSops.filter((s) => canSelectSOPForEvaluasi(s.status)).length
+      // Derive OPD name from sop.unitTerkait or use opdId as fallback
+      const opdNama = sops[0]?.unitTerkait ?? opdId
+      result.push({
+        id: opdId,
+        nama: opdNama,
+        kode: opdId,
+        jumlahSop: evaluasiSops.length,
+        jumlahLayakEvaluasi,
+      })
+    }
+    return result.sort((a, b) => a.nama.localeCompare(b.nama))
+  }, [mergedSopList])
 }
 
 export function DaftarSOPEvaluasi() {
-  const opdList = buildOpdList()
+  const opdList = useOpdEvaluasiList()
   const {
     filteredList,
     searchQuery,

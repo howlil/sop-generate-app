@@ -59,8 +59,11 @@ export function SetupTTEDialog({
 
     setTTEProfile(role, {
       nip: nip.trim(),
-      nama: nama.trim(),
+      namaLengkap: nama.trim(),
       email: email.trim(),
+      jabatan: 'Staff',
+      pangkat: 'Penata Muda (III/a)',
+      nohp: '081234567890',
       pinHash: hashPin(pin),
       emailVerified: true,
       role,

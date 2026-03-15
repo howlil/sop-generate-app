@@ -18,7 +18,14 @@ export interface PelaksanaDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   /** Daftar pelaksana dari master (Kelola Pelaksana SOP) */
-  options: { id: string; name: string }[]
+  options: { 
+    id: string
+    name: string
+    jabatan?: string
+    pangkat?: string
+    email?: string
+    nohp?: string
+  }[]
   existingImplementers: { id: string; name: string }[]
   onAdd: (newItems: { id: string; name: string }[]) => void
 }
@@ -58,7 +65,10 @@ export function PelaksanaDialog({
   const filtered = q
     ? options.filter(
         (p) =>
-          p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)
+          p.name.toLowerCase().includes(q) ||
+          p.id.toLowerCase().includes(q) ||
+          (p.jabatan && p.jabatan.toLowerCase().includes(q)) ||
+          (p.email && p.email.toLowerCase().includes(q))
       )
     : options
 
@@ -134,8 +144,16 @@ export function PelaksanaDialog({
                         </span>
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <p className="text-xs font-medium text-gray-900 leading-snug">{p.name}</p>
-                          {p.id && (
-                            <p className="text-[11px] text-gray-500 font-mono leading-snug">{p.id}</p>
+                          {p.jabatan && (
+                            <p className="text-[11px] text-gray-600 leading-snug">{p.jabatan}</p>
+                          )}
+                          {p.pangkat && (
+                            <p className="text-[11px] text-gray-500 leading-snug">{p.pangkat}</p>
+                          )}
+                          {(p.email || p.id) && (
+                            <p className="text-[11px] text-gray-400 font-mono leading-snug">
+                              {p.email || p.id}
+                            </p>
                           )}
                         </div>
                       </div>

@@ -7,18 +7,21 @@ import { SOP_STATUS_FILTER_OPTIONS } from '@/lib/types/sop'
 import { cn } from '@/utils/cn'
 
 export interface SOPStatusFilterSelectProps {
+  id?: string
   value: string
   onValueChange: (value: string) => void
   className?: string
 }
 
 export function SOPStatusFilterSelect({
+  id,
   value,
   onValueChange,
   className,
 }: SOPStatusFilterSelectProps) {
   return (
     <Select
+      id={id}
       className={cn('h-9 w-full', className)}
       value={value}
       onValueChange={onValueChange}

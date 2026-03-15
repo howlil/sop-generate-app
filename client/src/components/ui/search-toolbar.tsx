@@ -19,6 +19,7 @@ export function SearchToolbar({
     <div className={`bg-white rounded-lg border border-gray-200 p-3 flex items-center gap-2 flex-wrap ${className}`.trim()}>
       <SearchInput
         placeholder={searchPlaceholder}
+        aria-label={searchPlaceholder}
         value={searchValue}
         onChange={onSearchChange}
       />

@@ -8,6 +8,7 @@ import {
   Plus,
   FileText,
   ChevronDown,
+  AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -28,7 +29,6 @@ import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { SearchInput } from '@/components/ui/search-input'
 import { formatDateIdLong } from '@/utils/format-date'
-import type { EvaluationCaseSourceType } from '@/lib/types/evaluasi'
 import { ROUTES } from '@/lib/constants/routes'
 import type { StatusSOP, SOPDaftarItem } from '@/lib/types/sop'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
@@ -37,19 +37,26 @@ import { generateId } from '@/utils/generate-id'
 import { canEditSop } from '@/lib/domain/sop-status'
 import { getPeraturanDaftarOptions } from '@/lib/data/sop-daftar'
 import { useToast } from '@/hooks/useUI'
-import { useEvaluasi } from '@/hooks/useEvaluasi'
 import { useSopStatus } from '@/hooks/useSopStatus'
+import { useAuditLog } from '@/hooks/useAuditLog'
+import { useAppRole } from '@/hooks/useAppRole'
 import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 import { usePagination } from '@/hooks/usePagination'
 
 export function ManajemenSOP() {
+  const filterStatusId = 'filter-status-sop'
+  const filterPeraturanId = 'filter-peraturan-sop'
+  const filterTanggalDariId = 'filter-tanggal-dari-sop'
+  const filterTanggalSampaiId = 'filter-tanggal-sampai-sop'
+  const requestEvaluasiSearchId = 'request-evaluasi-search-sop'
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const { addEvaluationCase, getRiwayatEvaluasiForSop } = useEvaluasi()
   const { setSopStatusOverride } = useSopStatus()
+  const { logAction } = useAuditLog()
+  const { role, getRoleUserName } = useAppRole()
   const filters = useDaftarSOPFilters()
-  const { setSopList, eligibleSopsForEvaluasi, filteredList } = useDaftarSOPData({
+  const { setSopList, eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSOPData({
     searchQuery: filters.searchQuery,
     filterStatus: filters.filterStatus,
     filterPeraturan: filters.filterPeraturan,
@@ -96,26 +103,46 @@ export function ManajemenSOP() {
       return
     }
     const ids = Array.from(selectedSopIdsForAjukan)
-    try {
-      const newCase = addEvaluationCase({
-        source_type: 'OPD_REQUEST' as EvaluationCaseSourceType,
-        source_ref: 'tim-penyusun',
-        status: 'Draft',
-        sopIds: ids,
-      })
-      setSopList((prev) =>
-        prev.map((p) => {
-          if (!ids.includes(p.id)) return p
-          setSopStatusOverride(p.id, 'Diajukan Evaluasi')
-          return { ...p, status: 'Diajukan Evaluasi' as StatusSOP }
+    const aktorNama = role ? getRoleUserName(role) : 'Tim Penyusun'
+    setSopList((prev) =>
+      prev.map((p) => {
+        if (!ids.includes(p.id)) return p
+        setSopStatusOverride(p.id, 'Diajukan Evaluasi')
+        logAction({
+          sopId: p.id,
+          action: 'AJUKAN_EVALUASI',
+          aktorNama,
+          aktorRole: 'Tim Penyusun',
+          statusSebelum: p.status,
+          statusSesudah: 'Diajukan Evaluasi',
         })
+        return { ...p, status: 'Diajukan Evaluasi' as StatusSOP }
+      })
+    )
+    showToast(`${ids.length} SOP berhasil diajukan ke evaluasi`)
+    setIsRequestEvaluasiDialogOpen(false)
+    setSelectedSopIdsForAjukan(new Set())
+  }
+
+  const handleSelesaiMenyusun = (sopId: string) => {
+    const sop = filteredList.find((s) => s.id === sopId)
+    if (!sop) return
+    const aktorNama = role ? getRoleUserName(role) : 'Tim Penyusun'
+    setSopStatusOverride(sopId, 'Siap Dievaluasi')
+    setSopList((prev) =>
+      prev.map((p) =>
+        p.id === sopId ? { ...p, status: 'Siap Dievaluasi' as StatusSOP } : p
       )
-      showToast(`${ids.length} SOP berhasil diajukan untuk evaluasi (${newCase.id})`)
-      setIsRequestEvaluasiDialogOpen(false)
-      setSelectedSopIdsForAjukan(new Set())
-    } catch (e) {
-      showToast(e instanceof Error ? e.message : 'Gagal mengajukan evaluasi', 'error')
-    }
+    )
+    logAction({
+      sopId,
+      action: 'UPDATE_STATUS',
+      aktorNama,
+      aktorRole: 'Tim Penyusun',
+      statusSebelum: sop.status,
+      statusSesudah: 'Siap Dievaluasi',
+    })
+    showToast('SOP dinyatakan selesai menyusun (Siap Dievaluasi)')
   }
 
   return (
@@ -157,14 +184,16 @@ export function ManajemenSOP() {
                     </Button>
                   )}
                 </div>
-                <FormField label="Status">
+                <FormField label="Status" htmlFor={filterStatusId}>
                   <SOPStatusFilterSelect
+                    id={filterStatusId}
                     value={filters.filterStatus}
                     onValueChange={filters.setFilterStatus}
                   />
                 </FormField>
-                <FormField label="Peraturan Dasar">
+                <FormField label="Peraturan Dasar" htmlFor={filterPeraturanId}>
                   <Select
+                    id={filterPeraturanId}
                     value={filters.filterPeraturan}
                     onValueChange={filters.setFilterPeraturan}
                     options={[
@@ -175,16 +204,18 @@ export function ManajemenSOP() {
                 </FormField>
                 <FormField label="Terakhir diperbarui">
                   <div className="grid grid-cols-2 gap-2">
-                    <FormField label="Dari" variant="muted">
+                    <FormField label="Dari" variant="muted" htmlFor={filterTanggalDariId}>
                       <Input
+                        id={filterTanggalDariId}
                         type="date"
                         className="h-9 text-xs"
                         value={filters.filterTanggalDari}
                         onChange={(e) => filters.setFilterTanggalDari(e.target.value)}
                       />
                     </FormField>
-                    <FormField label="Sampai" variant="muted">
+                    <FormField label="Sampai" variant="muted" htmlFor={filterTanggalSampaiId}>
                       <Input
+                        id={filterTanggalSampaiId}
                         type="date"
                         className="h-9 text-xs"
                         value={filters.filterTanggalSampai}
@@ -200,13 +231,17 @@ export function ManajemenSOP() {
             variant="outline"
             size="sm"
             className="h-8 text-xs gap-1.5"
+            disabled={hasActiveBatch}
+            title={hasActiveBatch
+              ? `${activeBatchCount} SOP sedang dalam evaluasi. Tunggu hasil evaluasi sebelum mengajukan batch baru.`
+              : undefined}
             onClick={() => {
               setSelectedSopIdsForAjukan(new Set())
               setIsRequestEvaluasiDialogOpen(true)
             }}
           >
             <Send className="w-3.5 h-3.5" />
-            Request Evaluasi
+            Ajukan / Kirim Ulang Evaluasi
           </Button>
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setIsBuatSOPDialogOpen(true)}>
             <Plus className="w-3.5 h-3.5" />
@@ -215,6 +250,15 @@ export function ManajemenSOP() {
         </SearchToolbar>
       }
     >
+      {hasActiveBatch && (
+        <div className="mx-4 mb-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+          <span>
+            <span className="font-semibold">{activeBatchCount} SOP</span> sedang dalam proses evaluasi.
+            Pengajuan batch baru akan tersedia setelah Tim Evaluasi mengirim hasil.
+          </span>
+        </div>
+      )}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <Table.Root>
           <Table.Table>
@@ -223,6 +267,7 @@ export function ManajemenSOP() {
                 <Table.Th>Judul SOP</Table.Th>
                 <Table.Th>Nomor SOP</Table.Th>
                 <Table.Th>Pembuat</Table.Th>
+                <Table.Th>Terakhir Diubah Oleh</Table.Th>
                 <Table.Th>Terakhir diperbarui</Table.Th>
                 <Table.Th>Status</Table.Th>
                 <Table.Th>Aksi</Table.Th>
@@ -250,6 +295,18 @@ export function ManajemenSOP() {
                       <p className="text-gray-700">{sop.author ?? '—'}</p>
                     </Table.Td>
                     <Table.Td>
+                      {sop.lastEditedBy ? (
+                        <div>
+                          <p className="text-gray-800 text-sm">{sop.lastEditedBy}</p>
+                          {sop.lastEditedAt && (
+                            <p className="text-gray-400 text-xs mt-0.5">{formatDateIdLong(sop.lastEditedAt)}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-gray-400 text-xs">—</p>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
                       <p className="text-gray-700">{formatDateIdLong(sop.terakhirDiperbarui)}</p>
                     </Table.Td>
                     <Table.Td>
@@ -257,6 +314,17 @@ export function ManajemenSOP() {
                     </Table.Td>
                     <Table.Td>
                       <div className="flex items-center justify-center gap-1">
+                        {['Draft', 'Sedang Disusun', 'Revisi dari Tim Evaluasi'].includes(sop.status) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => handleSelesaiMenyusun(sop.id)}
+                            title="Selesai Menyusun"
+                          >
+                            Selesai
+                          </Button>
+                        )}
                         {canEditSop(sop.status) ? (
                           <IconActionButton
                             icon={Edit}
@@ -312,15 +380,17 @@ export function ManajemenSOP() {
           setIsRequestEvaluasiDialogOpen(open)
           if (!open) setRequestEvaluasiSearchQuery('')
         }}
-        title="Request Evaluasi SOP"
-        description="Pilih SOP yang eligible untuk dievaluasi. Bisa memilih beberapa sekaligus. Setelah diajukan, SOP tidak dapat diubah hingga evaluasi selesai."
-        confirmLabel={`Ajukan Evaluasi (${selectedSopIdsForAjukan.size} SOP)`}
+        title="Ajukan / Kirim Ulang Evaluasi SOP"
+        description="Pilih SOP yang siap dikirim ke evaluasi. Setelah diajukan, SOP tidak dapat diubah hingga evaluator mengirim hasil."
+        confirmLabel={`Kirim ke Evaluasi (${selectedSopIdsForAjukan.size} SOP)`}
         onConfirm={confirmAjukanEvaluasiBulk}
         confirmDisabled={selectedSopIdsForAjukan.size === 0}
         size="lg"
       >
         <div className="flex flex-col gap-2">
           <SearchInput
+            id={requestEvaluasiSearchId}
+            aria-label="Cari SOP untuk diajukan ke evaluasi"
             placeholder="Cari judul, nomor SOP, atau pembuat..."
             value={requestEvaluasiSearchQuery}
             onChange={(e) => setRequestEvaluasiSearchQuery(e.target.value)}
@@ -331,8 +401,8 @@ export function ManajemenSOP() {
             {eligibleSopsForEvaluasi.length === 0 ? (
               <EmptyState
                 icon={<FileText className="w-10 h-10" />}
-                title="Tidak ada SOP yang eligible untuk dievaluasi"
-                description="SOP harus berstatus Siap Dievaluasi atau Berlaku dan tidak sedang dalam evaluasi aktif."
+                title="Tidak ada SOP yang siap diajukan"
+                description="SOP harus berstatus Sedang Disusun atau Revisi dari Tim Evaluasi, dan tidak sedang berada dalam evaluasi aktif."
               />
             ) : eligibleSopsFilteredBySearch.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-500">
@@ -341,16 +411,21 @@ export function ManajemenSOP() {
             ) : (
               <ul className="divide-y divide-gray-100">
                 {eligibleSopsFilteredBySearch.map((sop) => {
-                const riwayat = getRiwayatEvaluasiForSop(sop.id)
                 const isSelected = selectedSopIdsForAjukan.has(sop.id)
                 return (
                   <li key={sop.id} className="p-3 hover:bg-gray-50">
                     <div className="flex items-start gap-3">
-                      <label className="flex items-center pt-0.5 cursor-pointer shrink-0">
+                      <label
+                        htmlFor={`ajukan-evaluasi-${sop.id}`}
+                        className="flex items-center pt-0.5 cursor-pointer shrink-0"
+                      >
                         <input
+                          id={`ajukan-evaluasi-${sop.id}`}
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => toggleSopSelectionForAjukan(sop.id)}
+                          aria-label={`Pilih SOP ${sop.judul} untuk diajukan ke evaluasi`}
+                          title={`Pilih SOP ${sop.judul}`}
                           className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                         />
                       </label>
@@ -362,17 +437,10 @@ export function ManajemenSOP() {
                         <div className="mt-1.5">
                           <StatusBadge status={sop.status} />
                         </div>
-                        {riwayat.length > 0 && (
-                          <div className="mt-2 p-2 bg-gray-100 rounded border border-gray-200">
-                            <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-wide mb-1">Riwayat evaluasi</p>
-                            <ul className="text-xs text-gray-700 space-y-0.5">
-                              {riwayat.map((c) => (
-                                <li key={c.id}>
-                                  {c.id} — {c.status} {c.timEvaluator ? `(${c.timEvaluator})` : ''}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                        {sop.status === 'Revisi dari Tim Evaluasi' && (
+                          <p className="mt-1.5 text-[11px] text-amber-700">
+                            SOP ini dikembalikan untuk revisi dan siap dikirim ulang ke evaluasi.
+                          </p>
                         )}
                       </div>
                     </div>

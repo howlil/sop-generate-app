@@ -14,6 +14,10 @@ export const ROLES = {
 
 export type RoleKey = (typeof ROLES)[keyof typeof ROLES]
 
+export function isRoleKey(value: unknown): value is RoleKey {
+  return typeof value === 'string' && Object.values(ROLES).includes(value as RoleKey)
+}
+
 export const ROLE_LABELS: Record<RoleKey, string> = {
   [ROLES.KEPALA_OPD]: 'OPD',
   [ROLES.BIRO_ORGANISASI]: 'Biro Organisasi',

@@ -2,7 +2,7 @@
   "roleNips": {
     "kepala-opd": "197001011990031001",
     "biro-organisasi": "196512311988021002",
-    "tim-evaluasi": "198003051999031003",
+    "tim-evaluasi": "197503152000032001",
     "tim-penyusun": "198512152010121004"
   },
   "roleDisplayNames": {
@@ -23,5 +23,68 @@
     "tim-evaluasi": "Evaluasi dan penilaian dokumen SOP",
     "tim-penyusun": "Penyusunan dan pengajuan SOP"
   },
-  "kepalaOpdOpdId": "1"
+  "kepalaOpdOpdId": "1",
+  "kepalaOpd": [
+    {
+      "id": "kopd-1",
+      "opdId": "1",
+      "name": "Dr. Ahmad Pratama",
+      "nip": "197001011990031001",
+      "email": "ahmad.pratama@disdik.padang.go.id",
+      "phone": "0812-3100-0001",
+      "isActive": true,
+      "totalSOP": 18
+    },
+    {
+      "id": "kopd-1-old",
+      "opdId": "1",
+      "name": "Drs. Hasan Basri, M.M.",
+      "nip": "196501011988031002",
+      "email": "hasan.basri@disdik.padang.go.id",
+      "phone": "0812-3100-0099",
+      "isActive": false,
+      "endedAt": "2025-07-31",
+      "totalSOP": 14
+    },
+    {
+      "id": "kopd-2",
+      "opdId": "2",
+      "name": "dr. Sri Hartini, Sp.A.",
+      "nip": "197205201997032001",
+      "email": "sri.hartini@dinkes.padang.go.id",
+      "phone": "0812-3100-0002",
+      "isActive": true,
+      "totalSOP": 24
+    },
+    {
+      "id": "kopd-3",
+      "opdId": "3",
+      "name": "Drs. Sigit Purnomo, M.T.",
+      "nip": "196811221993031003",
+      "email": "sigit.purnomo@dishub.padang.go.id",
+      "phone": "0812-3100-0003",
+      "isActive": true,
+      "totalSOP": 12
+    },
+    {
+      "id": "kopd-4",
+      "opdId": "4",
+      "name": "Hj. Ratnawati, S.Sos., M.Si.",
+      "nip": "197309101999032002",
+      "email": "ratnawati@dinsos.padang.go.id",
+      "phone": "0812-3100-0004",
+      "isActive": true,
+      "totalSOP": 10
+    },
+    {
+      "id": "kopd-5",
+      "opdId": "5",
+      "name": "Dr. Bambang Irawan, M.AP.",
+      "nip": "197112051995031001",
+      "email": "bambang.irawan@bappeda.padang.go.id",
+      "phone": "0812-3100-0005",
+      "isActive": true,
+      "totalSOP": 8
+    }
+  ]
 }

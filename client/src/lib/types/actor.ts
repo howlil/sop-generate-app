@@ -4,14 +4,11 @@
  */
 
 export interface ActorProfile {
-  nama: string
+  namaLengkap: string
   nip: string
   jabatan: string
-  /**
-   * Pangkat/golongan (opsional untuk kasus yang belum membutuhkan).
-   * Disarankan diisi untuk pejabat struktural.
-   */
-  pangkat?: string
+  pangkat: string
   email: string
+  nohp: string
 }
 

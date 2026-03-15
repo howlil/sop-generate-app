@@ -6,26 +6,15 @@ export type StatusPeraturan = 'Berlaku' | 'Dicabut'
 
 export interface Peraturan {
   id: string
-  jenisPeraturan: string
+  peraturan: string
   nomor: string
   tahun: string
   tentang: string
-  tanggalTerbit: string
   status: StatusPeraturan
   digunakan: number
   fileUrl?: string
   createdBy: string
   version: number
-}
-
-export interface JenisPeraturan {
-  id: string
-  nama: string
-  kode: string
-  deskripsi: string
-  tingkat: 'Pusat' | 'Daerah' | 'Internal'
-  jumlahPeraturan: number
-  createdBy: string
 }
 
 export interface RiwayatVersiEntry {

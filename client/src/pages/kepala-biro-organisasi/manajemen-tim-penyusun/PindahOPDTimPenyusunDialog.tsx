@@ -52,7 +52,7 @@ export function PindahOPDTimPenyusunDialog({
       {tim && (
         <>
           <div className="rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs">
-            <p className="font-medium text-gray-900">{tim.nama}</p>
+            <p className="font-medium text-gray-900">{tim.namaLengkap}</p>
             <p className="text-gray-600 font-mono">{tim.nip}</p>
             <p className="text-gray-600">{tim.email}</p>
             <p className="text-gray-500 mt-1">

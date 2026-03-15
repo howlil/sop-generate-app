@@ -15,7 +15,14 @@ export interface DetailSOPMetadataPanelProps {
   /** Jika true, daftar pelaksana dari master (Kelola Pelaksana SOP) — editable: tambah dari dropdown, hapus */
   implementersFromMaster?: boolean
   /** Opsi pelaksana dari master (untuk dropdown Tambah) */
-  masterPelaksanaOptions?: { id: string; name: string }[]
+  masterPelaksanaOptions?: { 
+    id: string
+    name: string
+    jabatan?: string
+    pangkat?: string
+    email?: string
+    nohp?: string
+  }[]
   peraturanList: Peraturan[]
 }
 

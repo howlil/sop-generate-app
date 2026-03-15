@@ -2,21 +2,23 @@ import { useState } from 'react'
 import type { TimPenyusun } from '@/lib/types/tim'
 
 export type TimPenyusunFormState = {
-  nama: string
+  namaLengkap: string
   nip: string
   jabatan: string
   pangkat: string
   email: string
-  noHP: string
+  nohp: string
+  roleInternal: 'Koordinator' | 'Anggota'
 }
 
 const initialForm: TimPenyusunFormState = {
-  nama: '',
+  namaLengkap: '',
   nip: '',
   jabatan: '',
   pangkat: '',
   email: '',
-  noHP: '',
+  nohp: '',
+  roleInternal: 'Anggota',
 }
 
 /**
@@ -38,12 +40,13 @@ export function useManajemenTimPenyusunState() {
 
   const openEditDialog = (tim: TimPenyusun) => {
     setFormData({
-      nama: tim.nama,
+      namaLengkap: tim.namaLengkap,
       nip: tim.nip,
       jabatan: tim.jabatan,
-      pangkat: tim.pangkat ?? '',
+      pangkat: tim.pangkat,
       email: tim.email,
-      noHP: tim.noHP,
+      nohp: tim.nohp,
+      roleInternal: tim.roleInternal ?? 'Anggota',
     })
     setSelectedTim(tim)
     setIsEditOpen(true)
