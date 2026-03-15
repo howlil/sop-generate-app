@@ -10,7 +10,6 @@ import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
 const EDITABLE_STATUSES: StatusSOP[] = [
   'Draft',
   'Sedang Disusun',
-  'Siap Dievaluasi',
   'Revisi dari Tim Evaluasi',
 ]
 
@@ -56,6 +55,8 @@ export function canKepalaOpdSignSop(
   nomorSOP?: string
 ): boolean {
   if (!isSopEligibleForSigning(status)) return false
+  // Jika OPD tidak dapat diidentifikasi, tolak signing untuk mencegah bypass pemeriksaan BA.
+  if (!opdName) return false
   const batch = getVerifikasiBatchContainingSop(batchList, opdName, sopId, nomorSOP)
   if (!batch) return true
   return batch.isSignedByKoordinator === true

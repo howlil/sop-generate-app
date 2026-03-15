@@ -2,10 +2,7 @@
  * Data layer: verifikasi batch (inisialisasi dari JSON).
  * Sumber data = store + data/penugasan-evaluasi.json (fallback). UI pakai hooks/useVerifikasiBatch.
  */
-import {
-  getVerifikasiBatchList,
-  setVerifikasiBatchList,
-} from '@/lib/stores/verifikasi-batch-store'
+import { setVerifikasiBatchList } from '@/lib/stores/verifikasi-batch-store'
 import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
 import verifikasiBatchSeedData from '../seed/penugasan-evaluasi.json'
 

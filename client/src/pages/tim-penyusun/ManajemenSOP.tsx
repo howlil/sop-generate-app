@@ -136,7 +136,7 @@ export function ManajemenSOP() {
     )
     logAction({
       sopId,
-      action: 'UPDATE_STATUS',
+      action: 'SELESAI_PENYUSUNAN',
       aktorNama,
       aktorRole: 'Tim Penyusun',
       statusSebelum: sop.status,
@@ -231,10 +231,6 @@ export function ManajemenSOP() {
             variant="outline"
             size="sm"
             className="h-8 text-xs gap-1.5"
-            disabled={hasActiveBatch}
-            title={hasActiveBatch
-              ? `${activeBatchCount} SOP sedang dalam evaluasi. Tunggu hasil evaluasi sebelum mengajukan batch baru.`
-              : undefined}
             onClick={() => {
               setSelectedSopIdsForAjukan(new Set())
               setIsRequestEvaluasiDialogOpen(true)
@@ -255,7 +251,7 @@ export function ManajemenSOP() {
           <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           <span>
             <span className="font-semibold">{activeBatchCount} SOP</span> sedang dalam proses evaluasi.
-            Pengajuan batch baru akan tersedia setelah Tim Evaluasi mengirim hasil.
+            SOP tersebut tidak dapat diajukan ulang hingga Tim Evaluasi mengirim hasil.
           </span>
         </div>
       )}
@@ -402,7 +398,7 @@ export function ManajemenSOP() {
               <EmptyState
                 icon={<FileText className="w-10 h-10" />}
                 title="Tidak ada SOP yang siap diajukan"
-                description="SOP harus berstatus Sedang Disusun atau Revisi dari Tim Evaluasi, dan tidak sedang berada dalam evaluasi aktif."
+                description="SOP harus berstatus Siap Dievaluasi atau Revisi dari Tim Evaluasi. SOP yang sedang dalam evaluasi aktif tidak ditampilkan."
               />
             ) : eligibleSopsFilteredBySearch.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-500">

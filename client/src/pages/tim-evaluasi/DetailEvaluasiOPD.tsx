@@ -65,7 +65,7 @@ export function DetailEvaluasiOPD() {
   const opd = useMemo(() => {
     const firstSop = mergedSopList.find((s) => s.opdId === opdId)
     if (!firstSop) return null
-    return { id: opdId, nama: firstSop.unitTerkait ?? opdId }
+    return { id: opdId, nama: firstSop.unitTerkait ?? opdId, kode: opdId }
   }, [mergedSopList, opdId])
 
   const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>(loadEvaluasiRecordMap)

@@ -173,7 +173,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         )}
         {needBaSignFirst && (
           <span className="text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-md">
-            Tandatangani <Link to={ROUTES.KEPALA_OPD.BERITA_ACARA} search={{ id: '' }} className="underline font-medium">Berita Acara</Link> terlebih dahulu untuk mengesahkan SOP.
+            Tandatangani <Link to={ROUTES.KEPALA_OPD.BERITA_ACARA} search={{ id: undefined }} className="underline font-medium">Berita Acara</Link> terlebih dahulu untuk mengesahkan SOP.
           </span>
         )}
         {showSignButton && sopStatus === 'Berlaku' && id && (

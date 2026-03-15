@@ -65,6 +65,12 @@ export function BeritaAcaraKoordinatorPage() {
     setSelectedSopId(null)
   }, [selectedBaId])
 
+  useEffect(() => {
+    if (selectedBaId && selectedBa === null && batchList.length > 0) {
+      navigate({ to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, search: (prev) => ({ ...prev, id: undefined }) })
+    }
+  }, [selectedBaId, selectedBa, batchList.length, navigate])
+
   const signingBatch = useMemo(
     () => (signingBatchId ? batchList.find((p) => p.id === signingBatchId) : null),
     [batchList, signingBatchId]
@@ -178,6 +184,9 @@ export function BeritaAcaraKoordinatorPage() {
       </>
     )
   }
+
+  // ——— Guard: selectedBaId valid tapi BA tidak ditemukan ———
+  if (selectedBaId && selectedBa === null) return null
 
   // ——— Tampilan: detail BA ———
   const riwayatEvaluasiSop = getRiwayatEvaluasiSop()

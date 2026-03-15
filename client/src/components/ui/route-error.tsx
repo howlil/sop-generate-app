@@ -28,7 +28,7 @@ export function RouteErrorPage({ error, reset }: RouteErrorPageProps) {
             Coba Lagi
           </Button>
           <Button asChild variant="outline" className="gap-2">
-            <Link to="/">
+            <Link to="/" search={{ denied: undefined, redirect: undefined }}>
               <Home className="h-4 w-4" />
               Kembali ke Beranda
             </Link>

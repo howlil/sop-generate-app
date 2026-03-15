@@ -2,14 +2,13 @@ import { useState } from 'react'
 import { Eye, Edit } from 'lucide-react'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Table } from '@/components/ui/data-table'
-import { Badge } from '@/components/ui/badge'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
-import type { SOPSayaItem } from '@/lib/types/sop'
+import type { SOPDaftarItem } from '@/lib/types/sop'
 import { canEditSop } from '@/lib/domain/sop-status'
-import { getInitialSopSayaList } from '@/lib/data/sop-daftar'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { ROUTES } from '@/lib/constants/routes'
 import { formatDateIdLong } from '@/utils/format-date'
@@ -18,7 +17,7 @@ import { usePagination } from '@/hooks/usePagination'
 
 export function SOPSaya() {
   const { mergeSopStatus } = useSopStatus()
-  const [sopList] = useState<SOPSayaItem[]>(() => getInitialSopSayaList())
+  const [sopList] = useState<SOPDaftarItem[]>(() => getInitialSopDaftarList())
   const mergedList = mergeSopStatus(sopList)
   const {
     filteredList: filteredSOP,
@@ -75,16 +74,11 @@ export function SOPSaya() {
                   <Table.Td>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">{sop.judul}</span>
-                      {sop.komentarCount > 0 && (
-                        <Badge className="bg-orange-100 text-orange-700 text-xs border-0">
-                          {sop.komentarCount} Komentar
-                        </Badge>
-                      )}
                     </div>
                   </Table.Td>
                   <Table.Td className="font-mono text-gray-700 text-[11px]">{sop.nomorSOP}</Table.Td>
                   <Table.Td className="text-center text-gray-600">
-                    {formatDateIdLong(sop.terakhirDiubah)}
+                    {formatDateIdLong(sop.terakhirDiperbarui)}
                   </Table.Td>
                   <Table.Td className="text-center">
                     <StatusBadge status={sop.status} className="text-xs" />

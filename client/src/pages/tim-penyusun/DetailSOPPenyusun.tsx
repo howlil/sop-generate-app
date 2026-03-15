@@ -147,7 +147,7 @@ export function DetailSOPPenyusun() {
                   variant="outline"
                   className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
                   onClick={() => {
-                    if (id) {
+                    if (id && role) {
                       const sebelum = currentSopStatus
                       setSopStatusOverride(id, 'Sedang Disusun')
                       setSopMeta(id, getRoleUserName(role))
@@ -170,7 +170,7 @@ export function DetailSOPPenyusun() {
                   size="sm"
                   className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
                   onClick={() => {
-                    if (id) {
+                    if (id && role) {
                       const sebelum = currentSopStatus
                       setSopStatusOverride(id, 'Sedang Disusun')
                       setSopMeta(id, getRoleUserName(role))
@@ -200,11 +200,11 @@ export function DetailSOPPenyusun() {
             <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
               <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">v{versions[0]?.version || metadata.version || '1.0'}</Badge>
               <StatusBadge status={currentSopStatus} className="text-xs border-0" />
-              {metadata.dibuatOleh && (
-                <span><span className="text-gray-500">Dibuat oleh:</span> {metadata.dibuatOleh}</span>
+              {metadata.dibuatOlehNamaLengkap && (
+                <span><span className="text-gray-500">Dibuat oleh:</span> {metadata.dibuatOlehNamaLengkap}</span>
               )}
-              {metadata.dieditOleh && (
-                <span><span className="text-gray-500">Diedit oleh:</span> {metadata.dieditOleh}</span>
+              {metadata.dieditOlehNamaLengkap && (
+                <span><span className="text-gray-500">Diedit oleh:</span> {metadata.dieditOlehNamaLengkap}</span>
               )}
             </div>
             {isRevisionFlow && (

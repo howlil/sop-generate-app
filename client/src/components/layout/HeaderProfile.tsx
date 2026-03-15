@@ -29,7 +29,7 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
 
   const handleLogout = () => {
     clearRole()
-    navigate({ to: ROUTES.HOME, search: { denied: '' } })
+    navigate({ to: ROUTES.HOME, search: { denied: undefined, redirect: undefined } })
   }
 
   const roleLabel = role ? getRoleLabel(role) : '-'

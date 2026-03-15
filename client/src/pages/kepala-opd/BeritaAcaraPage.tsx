@@ -70,7 +70,7 @@ export function BeritaAcaraPage() {
    */
   useEffect(() => {
     if (selectedBaId && selectedBa === null && batchList.length > 0) {
-      navigate({ to: ROUTES.KEPALA_OPD.BERITA_ACARA })
+      navigate({ to: ROUTES.KEPALA_OPD.BERITA_ACARA, search: { id: undefined } })
     }
   }, [selectedBaId, selectedBa, batchList.length, navigate])
 
