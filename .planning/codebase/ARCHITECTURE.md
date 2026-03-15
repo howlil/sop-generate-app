@@ -1,53 +1,206 @@
-# Client-Side Architecture - Sistem SOP 2026
+# ARCHITECTURE.md — System Design and Patterns
 
-## 1. Architectural Overview
-The client application is built with **React 19** and **TanStack Start**, following a **Feature-based Layered Architecture**. The codebase is designed for modularity, role-based access control (RBAC), and separation of concerns between business logic, UI, and data management.
+## Overview
 
-## 2. Core Technologies
-- **Framework**: React 19 (TypeScript)
-- **Routing**: TanStack Router (File-based, Type-safe)
-- **State Management**: Zustand (Global/Domain State)
-- **UI Styling**: Tailwind CSS v4
-- **UI Components**: Radix UI (Primitives), Lucide React (Icons)
-- **Build Tool**: Vite
+A monorepo with two independent sub-applications:
+- **Client** — React SPA (frontend prototype with full mock data)
+- **Server** — NestJS REST API (minimal scaffold, not yet domain-integrated)
 
-## 3. Logical Layers
-The application is organized into the following logical layers:
+The client and server are currently **disconnected** — the client operates entirely on static seed data and the server has no domain endpoints. Real API integration is a future milestone.
 
-### A. Presentation Layer
-- **Routes (`src/routes/`)**: Handles URL mapping, route parameters, and role-based layout nesting.
-- **Pages (`src/pages/`)**: High-level page components that compose features, hooks, and layouts.
-- **Components (`src/components/`)**:
-    - `ui/`: Generic UI primitives (Button, Dialog, Label, etc.).
-    - `layout/`: Global and role-specific layout elements (Header, Sidebar, Toast).
-    - `[feature]/`: Domain-specific components (e.g., `sop/`, `evaluasi/`, `tte/`).
+---
 
-### B. Logic & State Layer
-- **Hooks (`src/hooks/`)**: Custom React hooks that bridge the presentation layer with domain logic and state. They handle data fetching, filtering, and local component logic.
-- **Stores (`src/lib/stores/`)**: Zustand stores for managing persistent and global domain state (e.g., `app-store`, `evaluasi-store`, `sop-status-store`).
+## System Architecture
 
-### C. Domain & Service Layer
-- **Domain (`src/lib/domain/`)**: Pure business logic, state machines (for SOP status), and domain models.
-- **API (`src/lib/api/`)**: API configuration and client logic. Supports switching between mock data and real API via environment variables.
-- **Auth (`src/lib/auth/`)**: Authentication-related logic.
+```
+┌─────────────────────────────────────┐
+│           Browser (Client)          │
+│                                     │
+│  TanStack Router (file-based)       │
+│       ↓                             │
+│  Role Layout Guard                  │
+│       ↓                             │
+│  Page Components                    │
+│       ↓                             │
+│  Custom Hooks (feature logic)       │
+│       ↓                             │
+│  Domain Functions (pure)            │
+│       ↓                             │
+│  Data Layer (mock/static JSON)      │
+│       ↓                             │
+│  Zustand Stores (client state)      │
+└─────────────────────────────────────┘
+            (no HTTP calls yet)
+┌─────────────────────────────────────┐
+│           Server (NestJS)           │
+│                                     │
+│  main.ts (bootstrap, CORS, pipes)   │
+│       ↓                             │
+│  AppModule                          │
+│    ├─ ConfigModule (global env)     │
+│    ├─ PrismaModule (DB client)      │
+│    ├─ LoggerModule (Winston)        │
+│    ├─ UsersModule                   │
+│    ├─ PostsModule (scaffold only)   │
+│    └─ HealthModule                  │
+│                                     │
+│  common/                            │
+│    ├─ GlobalExceptionFilter         │
+│    ├─ ResponseInterceptor           │
+│    ├─ PrismaService                 │
+│    └─ LoggerService (Winston)       │
+└─────────────────────────────────────┘
+            ↓
+┌─────────────────────────────────────┐
+│        MySQL (via Prisma)           │
+│   schema: User, Post (scaffold)     │
+└─────────────────────────────────────┘
+```
 
-## 4. Design Patterns
-- **Role-Based Layouts**: Uses TanStack Router's nested routing to apply role-specific layouts (e.g., `biro-organisasi.tsx` serves as a layout for all routes under `/biro-organisasi`).
-- **State Machine Pattern**: Used in `lib/domain/sop-status.ts` to manage the complex lifecycle of SOP documents.
-- **Repository Pattern (Simplified)**: Feature-specific hooks in `src/hooks/` act as a data access layer, abstracting the source of data (mock vs API).
-- **Composition Pattern**: Pages are composed of feature-specific components and shared UI primitives.
+---
 
-## 5. State Management Strategy
-- **Global State**: Managed by specialized Zustand stores for different domains.
-- **URL State**: Managed by TanStack Router (search params, path params) for filters and pagination.
-- **Local State**: Standard React `useState` and `useReducer` for transient UI states.
-- **Server State**: Abstracted through custom hooks, with a configurable mock/API toggle.
+## Client Architecture
 
-## 6. Routing Structure
-TanStack Router's file-based system reflects the application's role-based organization:
-- `/` - Landing / Login
-- `/biro-organisasi/*` - Biro Organisasi (Admin/Evaluator) dashboard and management.
-- `/kepala-opd/*` - Kepala OPD (Approver) workflow.
-- `/tim-penyusun/*` - Tim Penyusun (Creator) workflow.
-- `/tim-evaluasi/*` - Tim Evaluasi workflow.
-- `/validasi/*` - Public validation and signature verification.
+### Pattern: Feature-Layered SPA
+
+The client follows a strict layered architecture:
+
+```
+Routes (TanStack Router file-based)
+    ↓
+Layout Components (role-gated wrappers)
+    ↓
+Page Components (composition root per feature)
+    ↓
+Feature Components (domain-specific UI)
+    ↓
+UI Components (design system primitives)
+    ↓
+Custom Hooks (feature data + state logic)
+    ↓
+Domain Functions (pure business logic)
+    ↓
+Data Layer (static mock data + seed JSON)
+    ↓
+Zustand Stores (persistent client state)
+```
+
+### Role-Based Access Control
+- 4 roles: `KEPALA_OPD`, `BIRO_ORGANISASI`, `TIM_EVALUASI`, `TIM_PENYUSUN`
+- Role stored in `app-store` (Zustand + localStorage persist)
+- `RoleLayout` component checks current role and redirects to `/` if mismatched
+- Role selection happens on the landing page (`/`) — no real auth
+- Route guard is component-level, not router-level
+
+### Routing (TanStack Router v1, file-based)
+- Route files in `src/routes/` follow dot-notation: `role.feature.$param.tsx`
+- `routeTree.gen.ts` is auto-generated by TanStack Router CLI
+- `__root.tsx` defines shell with `GlobalToast` and devtools
+- Layout routes (e.g., `biro-organisasi.tsx`) wrap child routes in role layout
+
+### Data Flow (Current Mock Setup)
+```
+seed/*.json → data/*.ts (transformer) → hooks → page components
+                                          ↓
+                                    domain/*.ts (pure logic)
+                                          ↓
+                                    stores/*.ts (persistent state)
+```
+
+### State Management
+- **Zustand** with `persist` middleware for all persistent state
+- Stores: `app-store` (role), `audit-log-store`, `sop-meta-store`
+- React Query configured but minimally used (no real API calls)
+- Local component state (`useState`) for UI-only state (dialogs, filters)
+
+---
+
+## Server Architecture
+
+### Pattern: NestJS Modular Monolith
+
+```
+src/
+├── app.module.ts          # Root module, imports all feature modules
+├── main.ts               # Bootstrap: CORS, global pipes, filters, interceptors
+├── common/               # Cross-cutting concerns
+│   ├── filters/          # GlobalExceptionFilter
+│   ├── interceptors/     # ResponseInterceptor (response shape normalization)
+│   ├── logger/           # LoggerModule + LoggerService (Winston)
+│   ├── prisma/           # PrismaModule + PrismaService
+│   ├── repositories/     # Base repository pattern (if used)
+│   └── dto/              # Shared DTOs
+└── modules/              # Feature modules
+    ├── users/            # Full CRUD (the only domain module)
+    ├── posts/            # Scaffold only (User/Post from Prisma template)
+    └── health/           # Health check endpoint
+```
+
+### Request Lifecycle
+```
+HTTP Request
+    ↓
+CORS Middleware
+    ↓
+Global Validation Pipe (class-validator)
+    ↓
+Route Guard (none currently)
+    ↓
+Controller
+    ↓
+Service
+    ↓
+PrismaService → MySQL
+    ↓
+ResponseInterceptor (wraps in { data, statusCode, message })
+    ↓ (on error)
+GlobalExceptionFilter (normalizes error shape)
+```
+
+### Response Shape (ResponseInterceptor)
+```json
+{
+  "statusCode": 200,
+  "message": "Success",
+  "data": { ... }
+}
+```
+
+### Error Shape (GlobalExceptionFilter)
+```json
+{
+  "statusCode": 404,
+  "message": "Not Found",
+  "error": "NotFoundException"
+}
+```
+
+---
+
+## Entry Points
+
+### Client
+- `client/src/router.tsx` — TanStack Router instance creation
+- `client/src/routes/__root.tsx` — Root route with shell component
+- `client/src/routes/index.tsx` — Landing page / role selector
+- `client/vite.config.ts` — Vite build config with SSR enabled
+
+### Server
+- `server/src/main.ts` — NestJS bootstrap (port, CORS, global middleware)
+- `server/src/app.module.ts` — Root module composition
+- `server/prisma/schema.prisma` — Database schema (MySQL, Prisma ORM)
+
+---
+
+## Key Abstractions
+
+| Abstraction | Location | Purpose |
+|-------------|----------|---------|
+| `RoleLayout` | `components/layout/RoleLayout.tsx` | Role gate + layout wrapper |
+| `GlobalToast` | `components/layout/GlobalToast.tsx` | App-wide toast notifications |
+| Domain functions | `lib/domain/*.ts` | Pure business logic (status, evaluasi, TTE) |
+| Data transformers | `lib/data/*.ts` | Seed JSON → typed domain objects |
+| Zustand stores | `lib/stores/*.ts` | Persistent client state |
+| `PrismaService` | `server/src/common/prisma/` | Database access singleton |
+| `ResponseInterceptor` | `server/src/common/interceptors/` | Uniform API response shape |
+| `GlobalExceptionFilter` | `server/src/common/filters/` | Uniform error response shape |
