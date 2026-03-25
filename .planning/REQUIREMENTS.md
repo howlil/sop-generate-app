@@ -26,7 +26,7 @@ Sumber: UI prototype client sudah lengkap. Backend dibangun untuk merealisasikan
 - [ ] **AUTH-02**: JWT token mengandung userId, role, dan opdId (untuk filtering data per OPD)
 - [ ] **AUTH-03**: Setiap endpoint terproteksi oleh JWT guard (kecuali `/auth/login` dan `/health`)
 - [ ] **AUTH-04**: Guard role memastikan endpoint hanya dapat diakses role yang sesuai
-- [ ] **AUTH-05**: Admin Biro Organisasi dapat membuat akun user baru dengan role tertentu dan passwornya default
+- [ ] **AUTH-05**: Admin Biro Organisasi dapat membuat akun user baru dengan role tertentu dan password default
 - [ ] **AUTH-06**: User dapat mengubah password sendiri
 
 ---
@@ -100,11 +100,11 @@ Sumber: UI prototype client sudah lengkap. Backend dibangun untuk merealisasikan
 
 ### Evaluasi & Verifikasi
 
-- [ ] **EVL-01**: Biro Organisasi dapat membuat batch evaluasi (VerifikasiBatch) untuk SOP dari OPD — bisa inisiasi Biro atau request OPD
+- [ ] **EVL-01**: Biro Organisasi dapat membuat batch evaluasi (VerifikasiBatch) untuk SOP dari OPD
 - [ ] **EVL-02**: Biro Organisasi dapat menugaskan anggota Tim Evaluasi ke batch evaluasi (status batch → SUDAH_DITUGASKAN; SOP → SEDANG_DIEVALUASI)
 - [ ] **EVL-03**: Tim Evaluasi dapat melihat daftar batch evaluasi yang ditugaskan kepadanya
 - [ ] **EVL-04**: Tim Evaluasi dapat mengisi hasil evaluasi per SOP (SESUAI / REVISI_BIRO)
-- [ ] **EVL-05**: Tim Evaluasi dapat mengirim hasil evaluasi batch (status batch → SELESAI); SOP yang Sesuai → SIAP_DIVERIFIKASI, SOP Revisi Biro → REVISI_DARI_TIM_EVALUASI
+- [ ] **EVL-05**: Tim Evaluasi dapat mengirim hasil evaluasi batch (status batch → SELESAI); SOP Sesuai → SIAP_DIVERIFIKASI, SOP Revisi Biro → REVISI_DARI_TIM_EVALUASI
 - [ ] **EVL-06**: Biro Organisasi dapat melihat batch yang sudah selesai dan siap diverifikasi
 - [ ] **EVL-07**: Response evaluasi menyertakan daftar SOP beserta hasil evaluasi masing-masing
 - [ ] **EVL-08**: Biro Organisasi dapat melihat grafik/rekap evaluasi tahunan per OPD
@@ -142,8 +142,7 @@ Urutan penandatanganan wajib diikuti: **Biro TTD BA → Koordinator Tim Penyusun
 ### Laporan & Ekspor
 - **RPT-01**: Export SOP ke PDF format baku
 - **RPT-02**: Export daftar SOP ke Excel
-- **RPT-03**: export berita acara format pdf
-
+- **RPT-03**: Export Berita Acara format PDF
 
 ---
 
@@ -181,4 +180,4 @@ Urutan penandatanganan wajib diikuti: **Biro TTD BA → Koordinator Tim Penyusun
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 — revised SOP workflow, TTE sequence, EVL per WORKFLOW-SOP.md*
+*Last updated: 2026-03-25 — imported from existing requirements doc*
