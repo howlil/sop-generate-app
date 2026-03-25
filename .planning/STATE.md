@@ -60,10 +60,16 @@ Phase Progress: [>_______] 1/8
 ### Blockers
 - (none)
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Status | Directory |
+|---|-------------|------|--------|--------|-----------|
+| 260325-cns | Fix BPMN dan flowchart path routing - paths berantakan tumpang tindih mengenai sisi shape rendering lambat | 2026-03-25 | 45416a2 | Needs Review | [260325-cns-fix-bpmn-dan-flowchart-path-routing-path](./quick/260325-cns-fix-bpmn-dan-flowchart-path-routing-path/) |
+
 ## Session Continuity
 
-**Last session:** 2026-03-25 -- Executed plan 01-01 (Prisma schema + Posts scaffold removal)
-**Stopped at:** Completed 01-01-PLAN.md
+**Last session:** 2026-03-25 -- Completed quick task 260325-cns: Fix BPMN dan flowchart path routing - paths berantakan tumpang tindih mengenai sisi shape rendering lambat
+**Stopped at:** Quick task complete, manual browser testing needed (BPMN cross-lane gateway arrows, flowchart cascade re-render)
 **Next action:** Execute Plan 01-02 (database migration and Prisma client generation)
 **Context to preserve:** schema.prisma has 18 models and 11 enums, validated with npx prisma validate. DATABASE_URL env var needed for migration in Plan 01-02.
 
