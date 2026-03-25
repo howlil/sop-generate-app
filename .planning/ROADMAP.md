@@ -10,7 +10,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Database & Infrastructure** - Prisma schema with all 18 tables, enums, relations, and clean migration on MariaDB
+- [ ] **Phase 1: Database & Infrastructure** - Prisma schema with all 20 tables, 12 enums, relations, indexes, cascade rules, and clean migration on MariaDB
 - [ ] **Phase 2: Auth & Users** - JWT login, role guards, account management for all 4 roles
 - [ ] **Phase 3: OPD & Peraturan** - CRUD endpoints for OPD and Peraturan reference data
 - [ ] **Phase 4: Tim Penyusun & Tim Evaluasi** - Team membership management with role assignment and OPD binding
@@ -24,18 +24,18 @@
 ## Phase Details
 
 ### Phase 1: Database & Infrastructure
-**Goal**: A running MariaDB database with the complete domain schema that all subsequent modules build on
+**Goal**: A running MariaDB database with the complete domain schema (20 models, 12 enums) that all subsequent modules build on
 **Depends on**: Nothing (foundation)
 **Requirements**: DB-01, DB-02, DB-03, DB-04
 **Success Criteria** (what must be TRUE):
-  1. `prisma migrate dev` runs clean on an empty MariaDB instance and creates all 18 tables
+  1. `prisma migrate dev` runs clean on an empty MariaDB instance and creates all 20 tables
   2. All foreign key relationships are enforced -- inserting a SOP with a nonexistent opdId fails with a constraint error
-  3. All enum fields (StatusSOP, AuditAction, StatusPeraturan, TTERole, etc.) accept only their defined values
+  3. All enum fields (StatusSOP, AuditAction, StatusPeraturan, TTERole, KomentarStatus, etc.) accept only their defined values
   4. `prisma generate` produces a client that can be imported and used in NestJS modules without errors
 **Plans**: 2 plans
 Plans:
-- [x] 01-01-PLAN.md — Remove Posts scaffold + write complete Prisma schema (18 models, 11 enums)
-- [ ] 01-02-PLAN.md — Run migration, generate Prisma client, compile check and enum spec
+- [ ] 01-01-PLAN.md — Modify schema: add ImplementQualification + Komentar models, new fields on VerifikasiBatch/EvaluasiItem/TTESignature, FK indexes, cascade rules, enum updates
+- [ ] 01-02-PLAN.md — Squash migrations, run clean baseline, generate Prisma client, FakerJS seed script, compile check
 
 ### Phase 2: Auth & Users
 **Goal**: Users can securely authenticate and the system enforces role-based access on every endpoint
@@ -123,7 +123,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database & Infrastructure | 1/2 | In Progress | - |
+| 1. Database & Infrastructure | 0/2 | In Progress | - |
 | 2. Auth & Users | 0/? | Not started | - |
 | 3. OPD & Peraturan | 0/? | Not started | - |
 | 4. Tim Penyusun & Tim Evaluasi | 0/? | Not started | - |
