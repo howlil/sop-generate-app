@@ -9,23 +9,384 @@ generator client {
   jsModuleFormat = "cjs"
 }
 
+enum UserRole {
+  BIRO_ORGANISASI
+  TIM_EVALUASI
+  TIM_PENYUSUN
+  KEPALA_OPD
+}
+
+enum StatusSOP {
+  DRAFT
+  SEDANG_DISUSUN
+  SIAP_DIEVALUASI
+  DIAJUKAN_EVALUASI
+  SEDANG_DIEVALUASI
+  REVISI_DARI_TIM_EVALUASI
+  SIAP_DIVERIFIKASI
+  DIVERIFIKASI_BIRO_ORGANISASI
+  BERLAKU
+  DICABUT
+}
+
+enum ProsedurStepType {
+  TERMINATOR
+  TASK
+  DECISION
+}
+
+enum StatusPeraturan {
+  BERLAKU
+  DICABUT
+}
+
+enum TTERole {
+  KEPALA_OPD
+  BIRO_ORGANISASI
+  TIM_PENYUSUN
+}
+
+enum AuditAction {
+  BUAT_SOP
+  SIMPAN_DRAFT
+  SELESAI_PENYUSUNAN
+  AJUKAN_EVALUASI
+  MULAI_EVALUASI
+  KIRIM_HASIL_EVALUASI
+  VERIFIKASI_BATCH
+  TTD_BA_KEPALA_OPD
+  SAHKAN_SOP
+  CABUT_SOP
+  REVISI_DARI_EVALUATOR
+}
+
+enum StatusTim {
+  AKTIF
+  NONAKTIF
+}
+
+enum RoleInternal {
+  KOORDINATOR
+  ANGGOTA
+}
+
+enum StatusEvaluasi {
+  AKTIF
+  SELESAI
+  TERVERIFIKASI
+}
+
+enum JenisBatch {
+  INISIASI_BIRO
+  REQUEST_OPD
+}
+
+enum HasilEvaluasi {
+  SESUAI
+  PERLU_PERBAIKAN
+  REVISI_BIRO
+}
+
+// Table 1: User
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   name      String
   password  String
+  role      UserRole
+  opdId     String?
+  nip       String?
+  jabatan   String?
+  pangkat   String?
+  nohp      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  posts     Post[]
+
+  opd              OPD?               @relation(fields: [opdId], references: [id])
+  timPenyusun      TimPenyusun[]
+  timEvaluasi      TimEvaluasiAnggota[]
+  tteProfile       TTEProfile?
+  tteSignatures    TTESignature[]
+  auditLogs        AuditLog[]
+  sopsCreated      SOP[]              @relation("SOPCreatedBy")
+  sopsEdited       SOP[]              @relation("SOPLastEditedBy")
+  peraturanCreated Peraturan[]
 }
 
-model Post {
+// Table 2: OPD
+model OPD {
   id        String   @id @default(uuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  name      String
+  email     String?
+  phone     String?
+  kode      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  users         User[]
+  sops          SOP[]
+  pelaksana     Pelaksana[]
+  timPenyusun   TimPenyusun[]
+  verifikasiBatch VerifikasiBatch[]
+}
+
+// Table 3: Peraturan
+model Peraturan {
+  id          String          @id @default(uuid())
+  nomor       String
+  tahun       Int
+  tentang     String          @db.Text
+  status      StatusPeraturan @default(BERLAKU)
+  version     Int             @default(1)
+  fileUrl     String?
+  createdById String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  createdBy User? @relation(fields: [createdById], references: [id])
+  sops      SOP[]
+}
+
+// Table 4: SOP (SOPMetadata fields merged into SOP -- 1:1 normalization decision)
+model SOP {
+  id               String    @id @default(uuid())
+  nomorSOP         String?   @unique
+  judul            String
+  status           StatusSOP @default(DRAFT)
+  opdId            String
+  peraturanId      String?
+  versi            Int       @default(1)
+  picName          String?
+  picNumber        String?
+  picRole          String?
+  section          String?
+  warning          String?   @db.Text
+  institutionLines String?   @db.Text
+  createdById      String?
+  lastEditedById   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  opd          OPD        @relation(fields: [opdId], references: [id])
+  peraturan    Peraturan? @relation(fields: [peraturanId], references: [id])
+  createdBy    User?      @relation("SOPCreatedBy", fields: [createdById], references: [id])
+  lastEditedBy User?      @relation("SOPLastEditedBy", fields: [lastEditedById], references: [id])
+
+  lawBasis      LawBasis[]
+  equipment     Equipment[]
+  recordData    RecordData[]
+  prosedurRows  ProsedurRow[]
+  evaluasiItems EvaluasiItem[]
+  auditLogs     AuditLog[]
+
+  relatedSOPs   RelatedSOP[] @relation("SOPRelations")
+  relatedBySOPs RelatedSOP[] @relation("RelatedSOPRelations")
+}
+
+// Table 5: LawBasis
+model LawBasis {
+  id    String @id @default(uuid())
+  sopId String
+  text  String @db.Text
+
+  sop SOP @relation(fields: [sopId], references: [id])
+}
+
+// Table 6: Equipment
+model Equipment {
+  id    String @id @default(uuid())
+  sopId String
+  text  String @db.Text
+
+  sop SOP @relation(fields: [sopId], references: [id])
+}
+
+// Table 7: RecordData
+model RecordData {
+  id    String @id @default(uuid())
+  sopId String
+  text  String @db.Text
+
+  sop SOP @relation(fields: [sopId], references: [id])
+}
+
+// Table 8: RelatedSOP (self-referential M:M join table)
+model RelatedSOP {
+  sopId        String
+  relatedSopId String
+
+  sop        SOP @relation("SOPRelations", fields: [sopId], references: [id])
+  relatedSop SOP @relation("RelatedSOPRelations", fields: [relatedSopId], references: [id])
+
+  @@id([sopId, relatedSopId])
+}
+
+// Table 9: ProsedurRow
+model ProsedurRow {
+  id              String           @id @default(uuid())
+  sopId           String
+  no              Int
+  kegiatan        String           @db.Text
+  type            ProsedurStepType @default(TASK)
+  mutuKelengkapan String?          @db.Text
+  mutuWaktu       String?
+  output          String?          @db.Text
+  keterangan      String?          @db.Text
+  time            Int?
+  timeUnit        String?
+  order           Int
+  nextStepYesId   String?
+  nextStepNoId    String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  sop          SOP           @relation(fields: [sopId], references: [id])
+  nextStepYes  ProsedurRow?  @relation("YesStep", fields: [nextStepYesId], references: [id])
+  nextStepNo   ProsedurRow?  @relation("NoStep", fields: [nextStepNoId], references: [id])
+  prevYesSteps ProsedurRow[] @relation("YesStep")
+  prevNoSteps  ProsedurRow[] @relation("NoStep")
+
+  pelaksana ProsedurRowPelaksana[]
+}
+
+// Table 10: Pelaksana
+model Pelaksana {
+  id          String   @id @default(uuid())
+  namaLengkap String
+  nip         String?
+  jabatan     String?
+  pangkat     String?
+  email       String?
+  nohp        String?
+  deskripsi   String?  @db.Text
+  opdId       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  opd          OPD                   @relation(fields: [opdId], references: [id])
+  prosedurRows ProsedurRowPelaksana[]
+}
+
+// Table 11: ProsedurRowPelaksana (M:M join)
+model ProsedurRowPelaksana {
+  prosedurRowId String
+  pelaksanaId   String
+
+  prosedurRow ProsedurRow @relation(fields: [prosedurRowId], references: [id])
+  pelaksana   Pelaksana   @relation(fields: [pelaksanaId], references: [id])
+
+  @@id([prosedurRowId, pelaksanaId])
+}
+
+// Table 12: TimPenyusun
+model TimPenyusun {
+  id               String       @id @default(uuid())
+  userId           String
+  opdId            String
+  status           StatusTim    @default(AKTIF)
+  roleInternal     RoleInternal @default(ANGGOTA)
+  tanggalBergabung DateTime     @default(now())
+  endedAt          DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  opd  OPD  @relation(fields: [opdId], references: [id])
+}
+
+// Table 13: TimEvaluasiAnggota
+model TimEvaluasiAnggota {
+  id               String    @id @default(uuid())
+  userId           String
+  status           StatusTim @default(AKTIF)
+  tanggalBergabung DateTime  @default(now())
+  endedAt          DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id])
+  verifikasiBatch VerifikasiBatch[]
+}
+
+// Table 14: VerifikasiBatch
+model VerifikasiBatch {
+  id                        String         @id @default(uuid())
+  opdId                     String
+  jenis                     JenisBatch
+  status                    StatusEvaluasi @default(AKTIF)
+  catatan                   String?        @db.Text
+  nomorBA                   String?
+  timEvaluasiId             String?
+  tanggalRequest            DateTime?
+  isSignedByKoordinator     Boolean        @default(false)
+  tanggalTTDBaByKoordinator DateTime?
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+
+  opd           OPD                 @relation(fields: [opdId], references: [id])
+  timEvaluasi   TimEvaluasiAnggota? @relation(fields: [timEvaluasiId], references: [id])
+  evaluasiItems EvaluasiItem[]
+}
+
+// Table 15: EvaluasiItem
+model EvaluasiItem {
+  id          String        @id @default(uuid())
+  batchId     String
+  sopId       String
+  hasil       HasilEvaluasi?
+  catatan     String?       @db.Text
+  rekomendasi String?       @db.Text
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  batch VerifikasiBatch @relation(fields: [batchId], references: [id])
+  sop   SOP             @relation(fields: [sopId], references: [id])
+}
+
+// Table 16: TTEProfile
+model TTEProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  nip               String?
+  jabatan           String?
+  pangkat           String?
+  nohp              String?
+  pinHash           String
+  emailVerified     Boolean  @default(false)
+  role              TTERole
+  verificationToken String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// Table 17: TTESignature
+model TTESignature {
+  id            String   @id @default(uuid())
+  userId        String
+  role          TTERole
+  documentId    String
+  documentLabel String
+  referenceId   String
+  documentHash  String
+  signedAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+// Table 18: AuditLog
+model AuditLog {
+  id            String      @id @default(uuid())
+  sopId         String
+  action        AuditAction
+  aktorId       String
+  aktorRole     UserRole
+  statusSebelum StatusSOP?
+  statusSesudah StatusSOP
+  keterangan    String?     @db.Text
+  createdAt     DateTime    @default(now())
+
+  sop   SOP  @relation(fields: [sopId], references: [id])
+  aktor User @relation(fields: [aktorId], references: [id])
 }
