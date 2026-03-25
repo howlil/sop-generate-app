@@ -103,6 +103,16 @@ export type TTESignature = $Result.DefaultSelection<Prisma.$TTESignaturePayload>
  * 
  */
 export type AuditLog = $Result.DefaultSelection<Prisma.$AuditLogPayload>
+/**
+ * Model ImplementQualification
+ * 
+ */
+export type ImplementQualification = $Result.DefaultSelection<Prisma.$ImplementQualificationPayload>
+/**
+ * Model Komentar
+ * 
+ */
+export type Komentar = $Result.DefaultSelection<Prisma.$KomentarPayload>
 
 /**
  * Enums
@@ -203,8 +213,8 @@ export type StatusEvaluasi = (typeof StatusEvaluasi)[keyof typeof StatusEvaluasi
 
 
 export const JenisBatch: {
-  INISIASI_BIRO: 'INISIASI_BIRO',
-  REQUEST_OPD: 'REQUEST_OPD'
+  TERJADWAL: 'TERJADWAL',
+  MANDIRI: 'MANDIRI'
 };
 
 export type JenisBatch = (typeof JenisBatch)[keyof typeof JenisBatch]
@@ -212,11 +222,18 @@ export type JenisBatch = (typeof JenisBatch)[keyof typeof JenisBatch]
 
 export const HasilEvaluasi: {
   SESUAI: 'SESUAI',
-  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN',
   REVISI_BIRO: 'REVISI_BIRO'
 };
 
 export type HasilEvaluasi = (typeof HasilEvaluasi)[keyof typeof HasilEvaluasi]
+
+
+export const KomentarStatus: {
+  OPEN: 'OPEN',
+  RESOLVED: 'RESOLVED'
+};
+
+export type KomentarStatus = (typeof KomentarStatus)[keyof typeof KomentarStatus]
 
 }
 
@@ -263,6 +280,10 @@ export const JenisBatch: typeof $Enums.JenisBatch
 export type HasilEvaluasi = $Enums.HasilEvaluasi
 
 export const HasilEvaluasi: typeof $Enums.HasilEvaluasi
+
+export type KomentarStatus = $Enums.KomentarStatus
+
+export const KomentarStatus: typeof $Enums.KomentarStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -564,6 +585,26 @@ export class PrismaClient<
     * ```
     */
   get auditLog(): Prisma.AuditLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.implementQualification`: Exposes CRUD operations for the **ImplementQualification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ImplementQualifications
+    * const implementQualifications = await prisma.implementQualification.findMany()
+    * ```
+    */
+  get implementQualification(): Prisma.ImplementQualificationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.komentar`: Exposes CRUD operations for the **Komentar** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Komentars
+    * const komentars = await prisma.komentar.findMany()
+    * ```
+    */
+  get komentar(): Prisma.KomentarDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1015,7 +1056,9 @@ export namespace Prisma {
     EvaluasiItem: 'EvaluasiItem',
     TTEProfile: 'TTEProfile',
     TTESignature: 'TTESignature',
-    AuditLog: 'AuditLog'
+    AuditLog: 'AuditLog',
+    ImplementQualification: 'ImplementQualification',
+    Komentar: 'Komentar'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1031,7 +1074,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "oPD" | "peraturan" | "sOP" | "lawBasis" | "equipment" | "recordData" | "relatedSOP" | "prosedurRow" | "pelaksana" | "prosedurRowPelaksana" | "timPenyusun" | "timEvaluasiAnggota" | "verifikasiBatch" | "evaluasiItem" | "tTEProfile" | "tTESignature" | "auditLog"
+      modelProps: "user" | "oPD" | "peraturan" | "sOP" | "lawBasis" | "equipment" | "recordData" | "relatedSOP" | "prosedurRow" | "pelaksana" | "prosedurRowPelaksana" | "timPenyusun" | "timEvaluasiAnggota" | "verifikasiBatch" | "evaluasiItem" | "tTEProfile" | "tTESignature" | "auditLog" | "implementQualification" | "komentar"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2223,6 +2266,138 @@ export namespace Prisma {
           }
         }
       }
+      ImplementQualification: {
+        payload: Prisma.$ImplementQualificationPayload<ExtArgs>
+        fields: Prisma.ImplementQualificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ImplementQualificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ImplementQualificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>
+          }
+          findFirst: {
+            args: Prisma.ImplementQualificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ImplementQualificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>
+          }
+          findMany: {
+            args: Prisma.ImplementQualificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>[]
+          }
+          create: {
+            args: Prisma.ImplementQualificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>
+          }
+          createMany: {
+            args: Prisma.ImplementQualificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.ImplementQualificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>
+          }
+          update: {
+            args: Prisma.ImplementQualificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.ImplementQualificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ImplementQualificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ImplementQualificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ImplementQualificationPayload>
+          }
+          aggregate: {
+            args: Prisma.ImplementQualificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateImplementQualification>
+          }
+          groupBy: {
+            args: Prisma.ImplementQualificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ImplementQualificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ImplementQualificationCountArgs<ExtArgs>
+            result: $Utils.Optional<ImplementQualificationCountAggregateOutputType> | number
+          }
+        }
+      }
+      Komentar: {
+        payload: Prisma.$KomentarPayload<ExtArgs>
+        fields: Prisma.KomentarFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KomentarFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KomentarFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
+          }
+          findFirst: {
+            args: Prisma.KomentarFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KomentarFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
+          }
+          findMany: {
+            args: Prisma.KomentarFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>[]
+          }
+          create: {
+            args: Prisma.KomentarCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
+          }
+          createMany: {
+            args: Prisma.KomentarCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.KomentarDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
+          }
+          update: {
+            args: Prisma.KomentarUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
+          }
+          deleteMany: {
+            args: Prisma.KomentarDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KomentarUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.KomentarUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
+          }
+          aggregate: {
+            args: Prisma.KomentarAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKomentar>
+          }
+          groupBy: {
+            args: Prisma.KomentarGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KomentarGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KomentarCountArgs<ExtArgs>
+            result: $Utils.Optional<KomentarCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2349,6 +2524,8 @@ export namespace Prisma {
     tTEProfile?: TTEProfileOmit
     tTESignature?: TTESignatureOmit
     auditLog?: AuditLogOmit
+    implementQualification?: ImplementQualificationOmit
+    komentar?: KomentarOmit
   }
 
   /* Types for Logging */
@@ -2437,6 +2614,10 @@ export namespace Prisma {
     sopsEdited: number
     sopsAsPic: number
     peraturanCreated: number
+    batchesVerified: number
+    batchesSigned: number
+    evaluasiItems: number
+    komentars: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2448,6 +2629,10 @@ export namespace Prisma {
     sopsEdited?: boolean | UserCountOutputTypeCountSopsEditedArgs
     sopsAsPic?: boolean | UserCountOutputTypeCountSopsAsPicArgs
     peraturanCreated?: boolean | UserCountOutputTypeCountPeraturanCreatedArgs
+    batchesVerified?: boolean | UserCountOutputTypeCountBatchesVerifiedArgs
+    batchesSigned?: boolean | UserCountOutputTypeCountBatchesSignedArgs
+    evaluasiItems?: boolean | UserCountOutputTypeCountEvaluasiItemsArgs
+    komentars?: boolean | UserCountOutputTypeCountKomentarsArgs
   }
 
   // Custom InputTypes
@@ -2515,6 +2700,34 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountPeraturanCreatedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PeraturanWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBatchesVerifiedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VerifikasiBatchWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBatchesSignedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: VerifikasiBatchWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountEvaluasiItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EvaluasiItemWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountKomentarsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KomentarWhereInput
   }
 
 
@@ -2627,6 +2840,9 @@ export namespace Prisma {
     prosedurRows: number
     evaluasiItems: number
     auditLogs: number
+    implementQualifications: number
+    komentars: number
+    tteSignatures: number
     relatedSOPs: number
     relatedBySOPs: number
   }
@@ -2638,6 +2854,9 @@ export namespace Prisma {
     prosedurRows?: boolean | SOPCountOutputTypeCountProsedurRowsArgs
     evaluasiItems?: boolean | SOPCountOutputTypeCountEvaluasiItemsArgs
     auditLogs?: boolean | SOPCountOutputTypeCountAuditLogsArgs
+    implementQualifications?: boolean | SOPCountOutputTypeCountImplementQualificationsArgs
+    komentars?: boolean | SOPCountOutputTypeCountKomentarsArgs
+    tteSignatures?: boolean | SOPCountOutputTypeCountTteSignaturesArgs
     relatedSOPs?: boolean | SOPCountOutputTypeCountRelatedSOPsArgs
     relatedBySOPs?: boolean | SOPCountOutputTypeCountRelatedBySOPsArgs
   }
@@ -2693,6 +2912,27 @@ export namespace Prisma {
    */
   export type SOPCountOutputTypeCountAuditLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AuditLogWhereInput
+  }
+
+  /**
+   * SOPCountOutputType without action
+   */
+  export type SOPCountOutputTypeCountImplementQualificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ImplementQualificationWhereInput
+  }
+
+  /**
+   * SOPCountOutputType without action
+   */
+  export type SOPCountOutputTypeCountKomentarsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KomentarWhereInput
+  }
+
+  /**
+   * SOPCountOutputType without action
+   */
+  export type SOPCountOutputTypeCountTteSignaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TTESignatureWhereInput
   }
 
   /**
@@ -2791,46 +3031,17 @@ export namespace Prisma {
 
 
   /**
-   * Count Type TimEvaluasiAnggotaCountOutputType
-   */
-
-  export type TimEvaluasiAnggotaCountOutputType = {
-    verifikasiBatch: number
-  }
-
-  export type TimEvaluasiAnggotaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    verifikasiBatch?: boolean | TimEvaluasiAnggotaCountOutputTypeCountVerifikasiBatchArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * TimEvaluasiAnggotaCountOutputType without action
-   */
-  export type TimEvaluasiAnggotaCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TimEvaluasiAnggotaCountOutputType
-     */
-    select?: TimEvaluasiAnggotaCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * TimEvaluasiAnggotaCountOutputType without action
-   */
-  export type TimEvaluasiAnggotaCountOutputTypeCountVerifikasiBatchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: VerifikasiBatchWhereInput
-  }
-
-
-  /**
    * Count Type VerifikasiBatchCountOutputType
    */
 
   export type VerifikasiBatchCountOutputType = {
     evaluasiItems: number
+    tteSignatures: number
   }
 
   export type VerifikasiBatchCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     evaluasiItems?: boolean | VerifikasiBatchCountOutputTypeCountEvaluasiItemsArgs
+    tteSignatures?: boolean | VerifikasiBatchCountOutputTypeCountTteSignaturesArgs
   }
 
   // Custom InputTypes
@@ -2849,6 +3060,13 @@ export namespace Prisma {
    */
   export type VerifikasiBatchCountOutputTypeCountEvaluasiItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EvaluasiItemWhereInput
+  }
+
+  /**
+   * VerifikasiBatchCountOutputType without action
+   */
+  export type VerifikasiBatchCountOutputTypeCountTteSignaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TTESignatureWhereInput
   }
 
 
@@ -3086,6 +3304,10 @@ export namespace Prisma {
     sopsEdited?: boolean | User$sopsEditedArgs<ExtArgs>
     sopsAsPic?: boolean | User$sopsAsPicArgs<ExtArgs>
     peraturanCreated?: boolean | User$peraturanCreatedArgs<ExtArgs>
+    batchesVerified?: boolean | User$batchesVerifiedArgs<ExtArgs>
+    batchesSigned?: boolean | User$batchesSignedArgs<ExtArgs>
+    evaluasiItems?: boolean | User$evaluasiItemsArgs<ExtArgs>
+    komentars?: boolean | User$komentarsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3118,6 +3340,10 @@ export namespace Prisma {
     sopsEdited?: boolean | User$sopsEditedArgs<ExtArgs>
     sopsAsPic?: boolean | User$sopsAsPicArgs<ExtArgs>
     peraturanCreated?: boolean | User$peraturanCreatedArgs<ExtArgs>
+    batchesVerified?: boolean | User$batchesVerifiedArgs<ExtArgs>
+    batchesSigned?: boolean | User$batchesSignedArgs<ExtArgs>
+    evaluasiItems?: boolean | User$evaluasiItemsArgs<ExtArgs>
+    komentars?: boolean | User$komentarsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3134,6 +3360,10 @@ export namespace Prisma {
       sopsEdited: Prisma.$SOPPayload<ExtArgs>[]
       sopsAsPic: Prisma.$SOPPayload<ExtArgs>[]
       peraturanCreated: Prisma.$PeraturanPayload<ExtArgs>[]
+      batchesVerified: Prisma.$VerifikasiBatchPayload<ExtArgs>[]
+      batchesSigned: Prisma.$VerifikasiBatchPayload<ExtArgs>[]
+      evaluasiItems: Prisma.$EvaluasiItemPayload<ExtArgs>[]
+      komentars: Prisma.$KomentarPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3498,6 +3728,10 @@ export namespace Prisma {
     sopsEdited<T extends User$sopsEditedArgs<ExtArgs> = {}>(args?: Subset<T, User$sopsEditedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sopsAsPic<T extends User$sopsAsPicArgs<ExtArgs> = {}>(args?: Subset<T, User$sopsAsPicArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     peraturanCreated<T extends User$peraturanCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$peraturanCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PeraturanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    batchesVerified<T extends User$batchesVerifiedArgs<ExtArgs> = {}>(args?: Subset<T, User$batchesVerifiedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerifikasiBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    batchesSigned<T extends User$batchesSignedArgs<ExtArgs> = {}>(args?: Subset<T, User$batchesSignedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerifikasiBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    evaluasiItems<T extends User$evaluasiItemsArgs<ExtArgs> = {}>(args?: Subset<T, User$evaluasiItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvaluasiItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    komentars<T extends User$komentarsArgs<ExtArgs> = {}>(args?: Subset<T, User$komentarsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4114,6 +4348,102 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PeraturanScalarFieldEnum | PeraturanScalarFieldEnum[]
+  }
+
+  /**
+   * User.batchesVerified
+   */
+  export type User$batchesVerifiedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerifikasiBatch
+     */
+    select?: VerifikasiBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerifikasiBatch
+     */
+    omit?: VerifikasiBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerifikasiBatchInclude<ExtArgs> | null
+    where?: VerifikasiBatchWhereInput
+    orderBy?: VerifikasiBatchOrderByWithRelationInput | VerifikasiBatchOrderByWithRelationInput[]
+    cursor?: VerifikasiBatchWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VerifikasiBatchScalarFieldEnum | VerifikasiBatchScalarFieldEnum[]
+  }
+
+  /**
+   * User.batchesSigned
+   */
+  export type User$batchesSignedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerifikasiBatch
+     */
+    select?: VerifikasiBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerifikasiBatch
+     */
+    omit?: VerifikasiBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerifikasiBatchInclude<ExtArgs> | null
+    where?: VerifikasiBatchWhereInput
+    orderBy?: VerifikasiBatchOrderByWithRelationInput | VerifikasiBatchOrderByWithRelationInput[]
+    cursor?: VerifikasiBatchWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: VerifikasiBatchScalarFieldEnum | VerifikasiBatchScalarFieldEnum[]
+  }
+
+  /**
+   * User.evaluasiItems
+   */
+  export type User$evaluasiItemsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EvaluasiItem
+     */
+    select?: EvaluasiItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EvaluasiItem
+     */
+    omit?: EvaluasiItemOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EvaluasiItemInclude<ExtArgs> | null
+    where?: EvaluasiItemWhereInput
+    orderBy?: EvaluasiItemOrderByWithRelationInput | EvaluasiItemOrderByWithRelationInput[]
+    cursor?: EvaluasiItemWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EvaluasiItemScalarFieldEnum | EvaluasiItemScalarFieldEnum[]
+  }
+
+  /**
+   * User.komentars
+   */
+  export type User$komentarsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    where?: KomentarWhereInput
+    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
+    cursor?: KomentarWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
   }
 
   /**
@@ -6618,6 +6948,9 @@ export namespace Prisma {
     prosedurRows?: boolean | SOP$prosedurRowsArgs<ExtArgs>
     evaluasiItems?: boolean | SOP$evaluasiItemsArgs<ExtArgs>
     auditLogs?: boolean | SOP$auditLogsArgs<ExtArgs>
+    implementQualifications?: boolean | SOP$implementQualificationsArgs<ExtArgs>
+    komentars?: boolean | SOP$komentarsArgs<ExtArgs>
+    tteSignatures?: boolean | SOP$tteSignaturesArgs<ExtArgs>
     relatedSOPs?: boolean | SOP$relatedSOPsArgs<ExtArgs>
     relatedBySOPs?: boolean | SOP$relatedBySOPsArgs<ExtArgs>
     _count?: boolean | SOPCountOutputTypeDefaultArgs<ExtArgs>
@@ -6659,6 +6992,9 @@ export namespace Prisma {
     prosedurRows?: boolean | SOP$prosedurRowsArgs<ExtArgs>
     evaluasiItems?: boolean | SOP$evaluasiItemsArgs<ExtArgs>
     auditLogs?: boolean | SOP$auditLogsArgs<ExtArgs>
+    implementQualifications?: boolean | SOP$implementQualificationsArgs<ExtArgs>
+    komentars?: boolean | SOP$komentarsArgs<ExtArgs>
+    tteSignatures?: boolean | SOP$tteSignaturesArgs<ExtArgs>
     relatedSOPs?: boolean | SOP$relatedSOPsArgs<ExtArgs>
     relatedBySOPs?: boolean | SOP$relatedBySOPsArgs<ExtArgs>
     _count?: boolean | SOPCountOutputTypeDefaultArgs<ExtArgs>
@@ -6678,6 +7014,9 @@ export namespace Prisma {
       prosedurRows: Prisma.$ProsedurRowPayload<ExtArgs>[]
       evaluasiItems: Prisma.$EvaluasiItemPayload<ExtArgs>[]
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+      implementQualifications: Prisma.$ImplementQualificationPayload<ExtArgs>[]
+      komentars: Prisma.$KomentarPayload<ExtArgs>[]
+      tteSignatures: Prisma.$TTESignaturePayload<ExtArgs>[]
       relatedSOPs: Prisma.$RelatedSOPPayload<ExtArgs>[]
       relatedBySOPs: Prisma.$RelatedSOPPayload<ExtArgs>[]
     }
@@ -7051,6 +7390,9 @@ export namespace Prisma {
     prosedurRows<T extends SOP$prosedurRowsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$prosedurRowsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProsedurRowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     evaluasiItems<T extends SOP$evaluasiItemsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$evaluasiItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvaluasiItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     auditLogs<T extends SOP$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    implementQualifications<T extends SOP$implementQualificationsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$implementQualificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    komentars<T extends SOP$komentarsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$komentarsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tteSignatures<T extends SOP$tteSignaturesArgs<ExtArgs> = {}>(args?: Subset<T, SOP$tteSignaturesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TTESignaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     relatedSOPs<T extends SOP$relatedSOPsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$relatedSOPsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RelatedSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     relatedBySOPs<T extends SOP$relatedBySOPsArgs<ExtArgs> = {}>(args?: Subset<T, SOP$relatedBySOPsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RelatedSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -7665,6 +8007,78 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AuditLogScalarFieldEnum | AuditLogScalarFieldEnum[]
+  }
+
+  /**
+   * SOP.implementQualifications
+   */
+  export type SOP$implementQualificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    where?: ImplementQualificationWhereInput
+    orderBy?: ImplementQualificationOrderByWithRelationInput | ImplementQualificationOrderByWithRelationInput[]
+    cursor?: ImplementQualificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ImplementQualificationScalarFieldEnum | ImplementQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * SOP.komentars
+   */
+  export type SOP$komentarsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    where?: KomentarWhereInput
+    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
+    cursor?: KomentarWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
+  }
+
+  /**
+   * SOP.tteSignatures
+   */
+  export type SOP$tteSignaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TTESignature
+     */
+    select?: TTESignatureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TTESignature
+     */
+    omit?: TTESignatureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TTESignatureInclude<ExtArgs> | null
+    where?: TTESignatureWhereInput
+    orderBy?: TTESignatureOrderByWithRelationInput | TTESignatureOrderByWithRelationInput[]
+    cursor?: TTESignatureWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TTESignatureScalarFieldEnum | TTESignatureScalarFieldEnum[]
   }
 
   /**
@@ -15702,8 +16116,6 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    verifikasiBatch?: boolean | TimEvaluasiAnggota$verifikasiBatchArgs<ExtArgs>
-    _count?: boolean | TimEvaluasiAnggotaCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["timEvaluasiAnggota"]>
 
 
@@ -15721,15 +16133,12 @@ export namespace Prisma {
   export type TimEvaluasiAnggotaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "status" | "tanggalBergabung" | "endedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["timEvaluasiAnggota"]>
   export type TimEvaluasiAnggotaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    verifikasiBatch?: boolean | TimEvaluasiAnggota$verifikasiBatchArgs<ExtArgs>
-    _count?: boolean | TimEvaluasiAnggotaCountOutputTypeDefaultArgs<ExtArgs>
   }
 
   export type $TimEvaluasiAnggotaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TimEvaluasiAnggota"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
-      verifikasiBatch: Prisma.$VerifikasiBatchPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16080,7 +16489,6 @@ export namespace Prisma {
   export interface Prisma__TimEvaluasiAnggotaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    verifikasiBatch<T extends TimEvaluasiAnggota$verifikasiBatchArgs<ExtArgs> = {}>(args?: Subset<T, TimEvaluasiAnggota$verifikasiBatchArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$VerifikasiBatchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -16465,30 +16873,6 @@ export namespace Prisma {
   }
 
   /**
-   * TimEvaluasiAnggota.verifikasiBatch
-   */
-  export type TimEvaluasiAnggota$verifikasiBatchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the VerifikasiBatch
-     */
-    select?: VerifikasiBatchSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the VerifikasiBatch
-     */
-    omit?: VerifikasiBatchOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: VerifikasiBatchInclude<ExtArgs> | null
-    where?: VerifikasiBatchWhereInput
-    orderBy?: VerifikasiBatchOrderByWithRelationInput | VerifikasiBatchOrderByWithRelationInput[]
-    cursor?: VerifikasiBatchWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: VerifikasiBatchScalarFieldEnum | VerifikasiBatchScalarFieldEnum[]
-  }
-
-  /**
    * TimEvaluasiAnggota without action
    */
   export type TimEvaluasiAnggotaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -16513,8 +16897,18 @@ export namespace Prisma {
 
   export type AggregateVerifikasiBatch = {
     _count: VerifikasiBatchCountAggregateOutputType | null
+    _avg: VerifikasiBatchAvgAggregateOutputType | null
+    _sum: VerifikasiBatchSumAggregateOutputType | null
     _min: VerifikasiBatchMinAggregateOutputType | null
     _max: VerifikasiBatchMaxAggregateOutputType | null
+  }
+
+  export type VerifikasiBatchAvgAggregateOutputType = {
+    nilaiOPD: number | null
+  }
+
+  export type VerifikasiBatchSumAggregateOutputType = {
+    nilaiOPD: number | null
   }
 
   export type VerifikasiBatchMinAggregateOutputType = {
@@ -16524,8 +16918,11 @@ export namespace Prisma {
     status: $Enums.StatusEvaluasi | null
     catatan: string | null
     nomorBA: string | null
-    timEvaluasiId: string | null
     tanggalRequest: Date | null
+    tanggalEvaluasi: Date | null
+    nilaiOPD: number | null
+    verifiedByUserId: string | null
+    signedByKoordinatorUserId: string | null
     isSignedByKoordinator: boolean | null
     tanggalTTDBaByKoordinator: Date | null
     createdAt: Date | null
@@ -16539,8 +16936,11 @@ export namespace Prisma {
     status: $Enums.StatusEvaluasi | null
     catatan: string | null
     nomorBA: string | null
-    timEvaluasiId: string | null
     tanggalRequest: Date | null
+    tanggalEvaluasi: Date | null
+    nilaiOPD: number | null
+    verifiedByUserId: string | null
+    signedByKoordinatorUserId: string | null
     isSignedByKoordinator: boolean | null
     tanggalTTDBaByKoordinator: Date | null
     createdAt: Date | null
@@ -16554,8 +16954,11 @@ export namespace Prisma {
     status: number
     catatan: number
     nomorBA: number
-    timEvaluasiId: number
     tanggalRequest: number
+    tanggalEvaluasi: number
+    nilaiOPD: number
+    verifiedByUserId: number
+    signedByKoordinatorUserId: number
     isSignedByKoordinator: number
     tanggalTTDBaByKoordinator: number
     createdAt: number
@@ -16564,6 +16967,14 @@ export namespace Prisma {
   }
 
 
+  export type VerifikasiBatchAvgAggregateInputType = {
+    nilaiOPD?: true
+  }
+
+  export type VerifikasiBatchSumAggregateInputType = {
+    nilaiOPD?: true
+  }
+
   export type VerifikasiBatchMinAggregateInputType = {
     id?: true
     opdId?: true
@@ -16571,8 +16982,11 @@ export namespace Prisma {
     status?: true
     catatan?: true
     nomorBA?: true
-    timEvaluasiId?: true
     tanggalRequest?: true
+    tanggalEvaluasi?: true
+    nilaiOPD?: true
+    verifiedByUserId?: true
+    signedByKoordinatorUserId?: true
     isSignedByKoordinator?: true
     tanggalTTDBaByKoordinator?: true
     createdAt?: true
@@ -16586,8 +17000,11 @@ export namespace Prisma {
     status?: true
     catatan?: true
     nomorBA?: true
-    timEvaluasiId?: true
     tanggalRequest?: true
+    tanggalEvaluasi?: true
+    nilaiOPD?: true
+    verifiedByUserId?: true
+    signedByKoordinatorUserId?: true
     isSignedByKoordinator?: true
     tanggalTTDBaByKoordinator?: true
     createdAt?: true
@@ -16601,8 +17018,11 @@ export namespace Prisma {
     status?: true
     catatan?: true
     nomorBA?: true
-    timEvaluasiId?: true
     tanggalRequest?: true
+    tanggalEvaluasi?: true
+    nilaiOPD?: true
+    verifiedByUserId?: true
+    signedByKoordinatorUserId?: true
     isSignedByKoordinator?: true
     tanggalTTDBaByKoordinator?: true
     createdAt?: true
@@ -16648,6 +17068,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: VerifikasiBatchAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: VerifikasiBatchSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: VerifikasiBatchMinAggregateInputType
@@ -16678,6 +17110,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: VerifikasiBatchCountAggregateInputType | true
+    _avg?: VerifikasiBatchAvgAggregateInputType
+    _sum?: VerifikasiBatchSumAggregateInputType
     _min?: VerifikasiBatchMinAggregateInputType
     _max?: VerifikasiBatchMaxAggregateInputType
   }
@@ -16689,13 +17123,18 @@ export namespace Prisma {
     status: $Enums.StatusEvaluasi
     catatan: string | null
     nomorBA: string | null
-    timEvaluasiId: string | null
     tanggalRequest: Date | null
+    tanggalEvaluasi: Date | null
+    nilaiOPD: number | null
+    verifiedByUserId: string | null
+    signedByKoordinatorUserId: string | null
     isSignedByKoordinator: boolean
     tanggalTTDBaByKoordinator: Date | null
     createdAt: Date
     updatedAt: Date
     _count: VerifikasiBatchCountAggregateOutputType | null
+    _avg: VerifikasiBatchAvgAggregateOutputType | null
+    _sum: VerifikasiBatchSumAggregateOutputType | null
     _min: VerifikasiBatchMinAggregateOutputType | null
     _max: VerifikasiBatchMaxAggregateOutputType | null
   }
@@ -16721,15 +17160,20 @@ export namespace Prisma {
     status?: boolean
     catatan?: boolean
     nomorBA?: boolean
-    timEvaluasiId?: boolean
     tanggalRequest?: boolean
+    tanggalEvaluasi?: boolean
+    nilaiOPD?: boolean
+    verifiedByUserId?: boolean
+    signedByKoordinatorUserId?: boolean
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     opd?: boolean | OPDDefaultArgs<ExtArgs>
-    timEvaluasi?: boolean | VerifikasiBatch$timEvaluasiArgs<ExtArgs>
+    verifiedByUser?: boolean | VerifikasiBatch$verifiedByUserArgs<ExtArgs>
+    signedByKoordinatorUser?: boolean | VerifikasiBatch$signedByKoordinatorUserArgs<ExtArgs>
     evaluasiItems?: boolean | VerifikasiBatch$evaluasiItemsArgs<ExtArgs>
+    tteSignatures?: boolean | VerifikasiBatch$tteSignaturesArgs<ExtArgs>
     _count?: boolean | VerifikasiBatchCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["verifikasiBatch"]>
 
@@ -16742,19 +17186,24 @@ export namespace Prisma {
     status?: boolean
     catatan?: boolean
     nomorBA?: boolean
-    timEvaluasiId?: boolean
     tanggalRequest?: boolean
+    tanggalEvaluasi?: boolean
+    nilaiOPD?: boolean
+    verifiedByUserId?: boolean
+    signedByKoordinatorUserId?: boolean
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type VerifikasiBatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "opdId" | "jenis" | "status" | "catatan" | "nomorBA" | "timEvaluasiId" | "tanggalRequest" | "isSignedByKoordinator" | "tanggalTTDBaByKoordinator" | "createdAt" | "updatedAt", ExtArgs["result"]["verifikasiBatch"]>
+  export type VerifikasiBatchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "opdId" | "jenis" | "status" | "catatan" | "nomorBA" | "tanggalRequest" | "tanggalEvaluasi" | "nilaiOPD" | "verifiedByUserId" | "signedByKoordinatorUserId" | "isSignedByKoordinator" | "tanggalTTDBaByKoordinator" | "createdAt" | "updatedAt", ExtArgs["result"]["verifikasiBatch"]>
   export type VerifikasiBatchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     opd?: boolean | OPDDefaultArgs<ExtArgs>
-    timEvaluasi?: boolean | VerifikasiBatch$timEvaluasiArgs<ExtArgs>
+    verifiedByUser?: boolean | VerifikasiBatch$verifiedByUserArgs<ExtArgs>
+    signedByKoordinatorUser?: boolean | VerifikasiBatch$signedByKoordinatorUserArgs<ExtArgs>
     evaluasiItems?: boolean | VerifikasiBatch$evaluasiItemsArgs<ExtArgs>
+    tteSignatures?: boolean | VerifikasiBatch$tteSignaturesArgs<ExtArgs>
     _count?: boolean | VerifikasiBatchCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -16762,8 +17211,10 @@ export namespace Prisma {
     name: "VerifikasiBatch"
     objects: {
       opd: Prisma.$OPDPayload<ExtArgs>
-      timEvaluasi: Prisma.$TimEvaluasiAnggotaPayload<ExtArgs> | null
+      verifiedByUser: Prisma.$UserPayload<ExtArgs> | null
+      signedByKoordinatorUser: Prisma.$UserPayload<ExtArgs> | null
       evaluasiItems: Prisma.$EvaluasiItemPayload<ExtArgs>[]
+      tteSignatures: Prisma.$TTESignaturePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -16772,8 +17223,11 @@ export namespace Prisma {
       status: $Enums.StatusEvaluasi
       catatan: string | null
       nomorBA: string | null
-      timEvaluasiId: string | null
       tanggalRequest: Date | null
+      tanggalEvaluasi: Date | null
+      nilaiOPD: number | null
+      verifiedByUserId: string | null
+      signedByKoordinatorUserId: string | null
       isSignedByKoordinator: boolean
       tanggalTTDBaByKoordinator: Date | null
       createdAt: Date
@@ -17119,8 +17573,10 @@ export namespace Prisma {
   export interface Prisma__VerifikasiBatchClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     opd<T extends OPDDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OPDDefaultArgs<ExtArgs>>): Prisma__OPDClient<$Result.GetResult<Prisma.$OPDPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    timEvaluasi<T extends VerifikasiBatch$timEvaluasiArgs<ExtArgs> = {}>(args?: Subset<T, VerifikasiBatch$timEvaluasiArgs<ExtArgs>>): Prisma__TimEvaluasiAnggotaClient<$Result.GetResult<Prisma.$TimEvaluasiAnggotaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    verifiedByUser<T extends VerifikasiBatch$verifiedByUserArgs<ExtArgs> = {}>(args?: Subset<T, VerifikasiBatch$verifiedByUserArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    signedByKoordinatorUser<T extends VerifikasiBatch$signedByKoordinatorUserArgs<ExtArgs> = {}>(args?: Subset<T, VerifikasiBatch$signedByKoordinatorUserArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     evaluasiItems<T extends VerifikasiBatch$evaluasiItemsArgs<ExtArgs> = {}>(args?: Subset<T, VerifikasiBatch$evaluasiItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EvaluasiItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tteSignatures<T extends VerifikasiBatch$tteSignaturesArgs<ExtArgs> = {}>(args?: Subset<T, VerifikasiBatch$tteSignaturesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TTESignaturePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -17156,8 +17612,11 @@ export namespace Prisma {
     readonly status: FieldRef<"VerifikasiBatch", 'StatusEvaluasi'>
     readonly catatan: FieldRef<"VerifikasiBatch", 'String'>
     readonly nomorBA: FieldRef<"VerifikasiBatch", 'String'>
-    readonly timEvaluasiId: FieldRef<"VerifikasiBatch", 'String'>
     readonly tanggalRequest: FieldRef<"VerifikasiBatch", 'DateTime'>
+    readonly tanggalEvaluasi: FieldRef<"VerifikasiBatch", 'DateTime'>
+    readonly nilaiOPD: FieldRef<"VerifikasiBatch", 'Int'>
+    readonly verifiedByUserId: FieldRef<"VerifikasiBatch", 'String'>
+    readonly signedByKoordinatorUserId: FieldRef<"VerifikasiBatch", 'String'>
     readonly isSignedByKoordinator: FieldRef<"VerifikasiBatch", 'Boolean'>
     readonly tanggalTTDBaByKoordinator: FieldRef<"VerifikasiBatch", 'DateTime'>
     readonly createdAt: FieldRef<"VerifikasiBatch", 'DateTime'>
@@ -17510,22 +17969,41 @@ export namespace Prisma {
   }
 
   /**
-   * VerifikasiBatch.timEvaluasi
+   * VerifikasiBatch.verifiedByUser
    */
-  export type VerifikasiBatch$timEvaluasiArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type VerifikasiBatch$verifiedByUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the TimEvaluasiAnggota
+     * Select specific fields to fetch from the User
      */
-    select?: TimEvaluasiAnggotaSelect<ExtArgs> | null
+    select?: UserSelect<ExtArgs> | null
     /**
-     * Omit specific fields from the TimEvaluasiAnggota
+     * Omit specific fields from the User
      */
-    omit?: TimEvaluasiAnggotaOmit<ExtArgs> | null
+    omit?: UserOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: TimEvaluasiAnggotaInclude<ExtArgs> | null
-    where?: TimEvaluasiAnggotaWhereInput
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * VerifikasiBatch.signedByKoordinatorUser
+   */
+  export type VerifikasiBatch$signedByKoordinatorUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -17550,6 +18028,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: EvaluasiItemScalarFieldEnum | EvaluasiItemScalarFieldEnum[]
+  }
+
+  /**
+   * VerifikasiBatch.tteSignatures
+   */
+  export type VerifikasiBatch$tteSignaturesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TTESignature
+     */
+    select?: TTESignatureSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TTESignature
+     */
+    omit?: TTESignatureOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TTESignatureInclude<ExtArgs> | null
+    where?: TTESignatureWhereInput
+    orderBy?: TTESignatureOrderByWithRelationInput | TTESignatureOrderByWithRelationInput[]
+    cursor?: TTESignatureWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TTESignatureScalarFieldEnum | TTESignatureScalarFieldEnum[]
   }
 
   /**
@@ -17585,6 +18087,7 @@ export namespace Prisma {
     id: string | null
     batchId: string | null
     sopId: string | null
+    evaluatorId: string | null
     hasil: $Enums.HasilEvaluasi | null
     catatan: string | null
     rekomendasi: string | null
@@ -17596,6 +18099,7 @@ export namespace Prisma {
     id: string | null
     batchId: string | null
     sopId: string | null
+    evaluatorId: string | null
     hasil: $Enums.HasilEvaluasi | null
     catatan: string | null
     rekomendasi: string | null
@@ -17607,6 +18111,7 @@ export namespace Prisma {
     id: number
     batchId: number
     sopId: number
+    evaluatorId: number
     hasil: number
     catatan: number
     rekomendasi: number
@@ -17620,6 +18125,7 @@ export namespace Prisma {
     id?: true
     batchId?: true
     sopId?: true
+    evaluatorId?: true
     hasil?: true
     catatan?: true
     rekomendasi?: true
@@ -17631,6 +18137,7 @@ export namespace Prisma {
     id?: true
     batchId?: true
     sopId?: true
+    evaluatorId?: true
     hasil?: true
     catatan?: true
     rekomendasi?: true
@@ -17642,6 +18149,7 @@ export namespace Prisma {
     id?: true
     batchId?: true
     sopId?: true
+    evaluatorId?: true
     hasil?: true
     catatan?: true
     rekomendasi?: true
@@ -17726,6 +18234,7 @@ export namespace Prisma {
     id: string
     batchId: string
     sopId: string
+    evaluatorId: string
     hasil: $Enums.HasilEvaluasi | null
     catatan: string | null
     rekomendasi: string | null
@@ -17754,6 +18263,7 @@ export namespace Prisma {
     id?: boolean
     batchId?: boolean
     sopId?: boolean
+    evaluatorId?: boolean
     hasil?: boolean
     catatan?: boolean
     rekomendasi?: boolean
@@ -17761,6 +18271,7 @@ export namespace Prisma {
     updatedAt?: boolean
     batch?: boolean | VerifikasiBatchDefaultArgs<ExtArgs>
     sop?: boolean | SOPDefaultArgs<ExtArgs>
+    evaluator?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["evaluasiItem"]>
 
 
@@ -17769,6 +18280,7 @@ export namespace Prisma {
     id?: boolean
     batchId?: boolean
     sopId?: boolean
+    evaluatorId?: boolean
     hasil?: boolean
     catatan?: boolean
     rekomendasi?: boolean
@@ -17776,10 +18288,11 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type EvaluasiItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "batchId" | "sopId" | "hasil" | "catatan" | "rekomendasi" | "createdAt" | "updatedAt", ExtArgs["result"]["evaluasiItem"]>
+  export type EvaluasiItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "batchId" | "sopId" | "evaluatorId" | "hasil" | "catatan" | "rekomendasi" | "createdAt" | "updatedAt", ExtArgs["result"]["evaluasiItem"]>
   export type EvaluasiItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     batch?: boolean | VerifikasiBatchDefaultArgs<ExtArgs>
     sop?: boolean | SOPDefaultArgs<ExtArgs>
+    evaluator?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $EvaluasiItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -17787,11 +18300,13 @@ export namespace Prisma {
     objects: {
       batch: Prisma.$VerifikasiBatchPayload<ExtArgs>
       sop: Prisma.$SOPPayload<ExtArgs>
+      evaluator: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       batchId: string
       sopId: string
+      evaluatorId: string
       hasil: $Enums.HasilEvaluasi | null
       catatan: string | null
       rekomendasi: string | null
@@ -18139,6 +18654,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     batch<T extends VerifikasiBatchDefaultArgs<ExtArgs> = {}>(args?: Subset<T, VerifikasiBatchDefaultArgs<ExtArgs>>): Prisma__VerifikasiBatchClient<$Result.GetResult<Prisma.$VerifikasiBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     sop<T extends SOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SOPDefaultArgs<ExtArgs>>): Prisma__SOPClient<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    evaluator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18171,6 +18687,7 @@ export namespace Prisma {
     readonly id: FieldRef<"EvaluasiItem", 'String'>
     readonly batchId: FieldRef<"EvaluasiItem", 'String'>
     readonly sopId: FieldRef<"EvaluasiItem", 'String'>
+    readonly evaluatorId: FieldRef<"EvaluasiItem", 'String'>
     readonly hasil: FieldRef<"EvaluasiItem", 'HasilEvaluasi'>
     readonly catatan: FieldRef<"EvaluasiItem", 'String'>
     readonly rekomendasi: FieldRef<"EvaluasiItem", 'String'>
@@ -19527,6 +20044,8 @@ export namespace Prisma {
     documentLabel: string | null
     referenceId: string | null
     documentHash: string | null
+    sopId: string | null
+    batchId: string | null
     signedAt: Date | null
   }
 
@@ -19538,6 +20057,8 @@ export namespace Prisma {
     documentLabel: string | null
     referenceId: string | null
     documentHash: string | null
+    sopId: string | null
+    batchId: string | null
     signedAt: Date | null
   }
 
@@ -19549,6 +20070,8 @@ export namespace Prisma {
     documentLabel: number
     referenceId: number
     documentHash: number
+    sopId: number
+    batchId: number
     signedAt: number
     _all: number
   }
@@ -19562,6 +20085,8 @@ export namespace Prisma {
     documentLabel?: true
     referenceId?: true
     documentHash?: true
+    sopId?: true
+    batchId?: true
     signedAt?: true
   }
 
@@ -19573,6 +20098,8 @@ export namespace Prisma {
     documentLabel?: true
     referenceId?: true
     documentHash?: true
+    sopId?: true
+    batchId?: true
     signedAt?: true
   }
 
@@ -19584,6 +20111,8 @@ export namespace Prisma {
     documentLabel?: true
     referenceId?: true
     documentHash?: true
+    sopId?: true
+    batchId?: true
     signedAt?: true
     _all?: true
   }
@@ -19668,6 +20197,8 @@ export namespace Prisma {
     documentLabel: string
     referenceId: string
     documentHash: string
+    sopId: string | null
+    batchId: string | null
     signedAt: Date
     _count: TTESignatureCountAggregateOutputType | null
     _min: TTESignatureMinAggregateOutputType | null
@@ -19696,8 +20227,12 @@ export namespace Prisma {
     documentLabel?: boolean
     referenceId?: boolean
     documentHash?: boolean
+    sopId?: boolean
+    batchId?: boolean
     signedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    sop?: boolean | TTESignature$sopArgs<ExtArgs>
+    batch?: boolean | TTESignature$batchArgs<ExtArgs>
   }, ExtArgs["result"]["tTESignature"]>
 
 
@@ -19710,18 +20245,24 @@ export namespace Prisma {
     documentLabel?: boolean
     referenceId?: boolean
     documentHash?: boolean
+    sopId?: boolean
+    batchId?: boolean
     signedAt?: boolean
   }
 
-  export type TTESignatureOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "role" | "documentId" | "documentLabel" | "referenceId" | "documentHash" | "signedAt", ExtArgs["result"]["tTESignature"]>
+  export type TTESignatureOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "role" | "documentId" | "documentLabel" | "referenceId" | "documentHash" | "sopId" | "batchId" | "signedAt", ExtArgs["result"]["tTESignature"]>
   export type TTESignatureInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    sop?: boolean | TTESignature$sopArgs<ExtArgs>
+    batch?: boolean | TTESignature$batchArgs<ExtArgs>
   }
 
   export type $TTESignaturePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "TTESignature"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      sop: Prisma.$SOPPayload<ExtArgs> | null
+      batch: Prisma.$VerifikasiBatchPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -19731,6 +20272,8 @@ export namespace Prisma {
       documentLabel: string
       referenceId: string
       documentHash: string
+      sopId: string | null
+      batchId: string | null
       signedAt: Date
     }, ExtArgs["result"]["tTESignature"]>
     composites: {}
@@ -20073,6 +20616,8 @@ export namespace Prisma {
   export interface Prisma__TTESignatureClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    sop<T extends TTESignature$sopArgs<ExtArgs> = {}>(args?: Subset<T, TTESignature$sopArgs<ExtArgs>>): Prisma__SOPClient<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    batch<T extends TTESignature$batchArgs<ExtArgs> = {}>(args?: Subset<T, TTESignature$batchArgs<ExtArgs>>): Prisma__VerifikasiBatchClient<$Result.GetResult<Prisma.$VerifikasiBatchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20109,6 +20654,8 @@ export namespace Prisma {
     readonly documentLabel: FieldRef<"TTESignature", 'String'>
     readonly referenceId: FieldRef<"TTESignature", 'String'>
     readonly documentHash: FieldRef<"TTESignature", 'String'>
+    readonly sopId: FieldRef<"TTESignature", 'String'>
+    readonly batchId: FieldRef<"TTESignature", 'String'>
     readonly signedAt: FieldRef<"TTESignature", 'DateTime'>
   }
     
@@ -20455,6 +21002,44 @@ export namespace Prisma {
      * Limit how many TTESignatures to delete.
      */
     limit?: number
+  }
+
+  /**
+   * TTESignature.sop
+   */
+  export type TTESignature$sopArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SOP
+     */
+    select?: SOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SOP
+     */
+    omit?: SOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SOPInclude<ExtArgs> | null
+    where?: SOPWhereInput
+  }
+
+  /**
+   * TTESignature.batch
+   */
+  export type TTESignature$batchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the VerifikasiBatch
+     */
+    select?: VerifikasiBatchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the VerifikasiBatch
+     */
+    omit?: VerifikasiBatchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: VerifikasiBatchInclude<ExtArgs> | null
+    where?: VerifikasiBatchWhereInput
   }
 
   /**
@@ -21459,6 +22044,1900 @@ export namespace Prisma {
 
 
   /**
+   * Model ImplementQualification
+   */
+
+  export type AggregateImplementQualification = {
+    _count: ImplementQualificationCountAggregateOutputType | null
+    _min: ImplementQualificationMinAggregateOutputType | null
+    _max: ImplementQualificationMaxAggregateOutputType | null
+  }
+
+  export type ImplementQualificationMinAggregateOutputType = {
+    id: string | null
+    sopId: string | null
+    text: string | null
+  }
+
+  export type ImplementQualificationMaxAggregateOutputType = {
+    id: string | null
+    sopId: string | null
+    text: string | null
+  }
+
+  export type ImplementQualificationCountAggregateOutputType = {
+    id: number
+    sopId: number
+    text: number
+    _all: number
+  }
+
+
+  export type ImplementQualificationMinAggregateInputType = {
+    id?: true
+    sopId?: true
+    text?: true
+  }
+
+  export type ImplementQualificationMaxAggregateInputType = {
+    id?: true
+    sopId?: true
+    text?: true
+  }
+
+  export type ImplementQualificationCountAggregateInputType = {
+    id?: true
+    sopId?: true
+    text?: true
+    _all?: true
+  }
+
+  export type ImplementQualificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ImplementQualification to aggregate.
+     */
+    where?: ImplementQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImplementQualifications to fetch.
+     */
+    orderBy?: ImplementQualificationOrderByWithRelationInput | ImplementQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ImplementQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImplementQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImplementQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ImplementQualifications
+    **/
+    _count?: true | ImplementQualificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ImplementQualificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ImplementQualificationMaxAggregateInputType
+  }
+
+  export type GetImplementQualificationAggregateType<T extends ImplementQualificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateImplementQualification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateImplementQualification[P]>
+      : GetScalarType<T[P], AggregateImplementQualification[P]>
+  }
+
+
+
+
+  export type ImplementQualificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ImplementQualificationWhereInput
+    orderBy?: ImplementQualificationOrderByWithAggregationInput | ImplementQualificationOrderByWithAggregationInput[]
+    by: ImplementQualificationScalarFieldEnum[] | ImplementQualificationScalarFieldEnum
+    having?: ImplementQualificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ImplementQualificationCountAggregateInputType | true
+    _min?: ImplementQualificationMinAggregateInputType
+    _max?: ImplementQualificationMaxAggregateInputType
+  }
+
+  export type ImplementQualificationGroupByOutputType = {
+    id: string
+    sopId: string
+    text: string
+    _count: ImplementQualificationCountAggregateOutputType | null
+    _min: ImplementQualificationMinAggregateOutputType | null
+    _max: ImplementQualificationMaxAggregateOutputType | null
+  }
+
+  type GetImplementQualificationGroupByPayload<T extends ImplementQualificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ImplementQualificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ImplementQualificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ImplementQualificationGroupByOutputType[P]>
+            : GetScalarType<T[P], ImplementQualificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ImplementQualificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sopId?: boolean
+    text?: boolean
+    sop?: boolean | SOPDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["implementQualification"]>
+
+
+
+  export type ImplementQualificationSelectScalar = {
+    id?: boolean
+    sopId?: boolean
+    text?: boolean
+  }
+
+  export type ImplementQualificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sopId" | "text", ExtArgs["result"]["implementQualification"]>
+  export type ImplementQualificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    sop?: boolean | SOPDefaultArgs<ExtArgs>
+  }
+
+  export type $ImplementQualificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ImplementQualification"
+    objects: {
+      sop: Prisma.$SOPPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sopId: string
+      text: string
+    }, ExtArgs["result"]["implementQualification"]>
+    composites: {}
+  }
+
+  type ImplementQualificationGetPayload<S extends boolean | null | undefined | ImplementQualificationDefaultArgs> = $Result.GetResult<Prisma.$ImplementQualificationPayload, S>
+
+  type ImplementQualificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ImplementQualificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ImplementQualificationCountAggregateInputType | true
+    }
+
+  export interface ImplementQualificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ImplementQualification'], meta: { name: 'ImplementQualification' } }
+    /**
+     * Find zero or one ImplementQualification that matches the filter.
+     * @param {ImplementQualificationFindUniqueArgs} args - Arguments to find a ImplementQualification
+     * @example
+     * // Get one ImplementQualification
+     * const implementQualification = await prisma.implementQualification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ImplementQualificationFindUniqueArgs>(args: SelectSubset<T, ImplementQualificationFindUniqueArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ImplementQualification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ImplementQualificationFindUniqueOrThrowArgs} args - Arguments to find a ImplementQualification
+     * @example
+     * // Get one ImplementQualification
+     * const implementQualification = await prisma.implementQualification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ImplementQualificationFindUniqueOrThrowArgs>(args: SelectSubset<T, ImplementQualificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ImplementQualification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationFindFirstArgs} args - Arguments to find a ImplementQualification
+     * @example
+     * // Get one ImplementQualification
+     * const implementQualification = await prisma.implementQualification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ImplementQualificationFindFirstArgs>(args?: SelectSubset<T, ImplementQualificationFindFirstArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ImplementQualification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationFindFirstOrThrowArgs} args - Arguments to find a ImplementQualification
+     * @example
+     * // Get one ImplementQualification
+     * const implementQualification = await prisma.implementQualification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ImplementQualificationFindFirstOrThrowArgs>(args?: SelectSubset<T, ImplementQualificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ImplementQualifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ImplementQualifications
+     * const implementQualifications = await prisma.implementQualification.findMany()
+     * 
+     * // Get first 10 ImplementQualifications
+     * const implementQualifications = await prisma.implementQualification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const implementQualificationWithIdOnly = await prisma.implementQualification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ImplementQualificationFindManyArgs>(args?: SelectSubset<T, ImplementQualificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ImplementQualification.
+     * @param {ImplementQualificationCreateArgs} args - Arguments to create a ImplementQualification.
+     * @example
+     * // Create one ImplementQualification
+     * const ImplementQualification = await prisma.implementQualification.create({
+     *   data: {
+     *     // ... data to create a ImplementQualification
+     *   }
+     * })
+     * 
+     */
+    create<T extends ImplementQualificationCreateArgs>(args: SelectSubset<T, ImplementQualificationCreateArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ImplementQualifications.
+     * @param {ImplementQualificationCreateManyArgs} args - Arguments to create many ImplementQualifications.
+     * @example
+     * // Create many ImplementQualifications
+     * const implementQualification = await prisma.implementQualification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ImplementQualificationCreateManyArgs>(args?: SelectSubset<T, ImplementQualificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a ImplementQualification.
+     * @param {ImplementQualificationDeleteArgs} args - Arguments to delete one ImplementQualification.
+     * @example
+     * // Delete one ImplementQualification
+     * const ImplementQualification = await prisma.implementQualification.delete({
+     *   where: {
+     *     // ... filter to delete one ImplementQualification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ImplementQualificationDeleteArgs>(args: SelectSubset<T, ImplementQualificationDeleteArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ImplementQualification.
+     * @param {ImplementQualificationUpdateArgs} args - Arguments to update one ImplementQualification.
+     * @example
+     * // Update one ImplementQualification
+     * const implementQualification = await prisma.implementQualification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ImplementQualificationUpdateArgs>(args: SelectSubset<T, ImplementQualificationUpdateArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ImplementQualifications.
+     * @param {ImplementQualificationDeleteManyArgs} args - Arguments to filter ImplementQualifications to delete.
+     * @example
+     * // Delete a few ImplementQualifications
+     * const { count } = await prisma.implementQualification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ImplementQualificationDeleteManyArgs>(args?: SelectSubset<T, ImplementQualificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ImplementQualifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ImplementQualifications
+     * const implementQualification = await prisma.implementQualification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ImplementQualificationUpdateManyArgs>(args: SelectSubset<T, ImplementQualificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ImplementQualification.
+     * @param {ImplementQualificationUpsertArgs} args - Arguments to update or create a ImplementQualification.
+     * @example
+     * // Update or create a ImplementQualification
+     * const implementQualification = await prisma.implementQualification.upsert({
+     *   create: {
+     *     // ... data to create a ImplementQualification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ImplementQualification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ImplementQualificationUpsertArgs>(args: SelectSubset<T, ImplementQualificationUpsertArgs<ExtArgs>>): Prisma__ImplementQualificationClient<$Result.GetResult<Prisma.$ImplementQualificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ImplementQualifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationCountArgs} args - Arguments to filter ImplementQualifications to count.
+     * @example
+     * // Count the number of ImplementQualifications
+     * const count = await prisma.implementQualification.count({
+     *   where: {
+     *     // ... the filter for the ImplementQualifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends ImplementQualificationCountArgs>(
+      args?: Subset<T, ImplementQualificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ImplementQualificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ImplementQualification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ImplementQualificationAggregateArgs>(args: Subset<T, ImplementQualificationAggregateArgs>): Prisma.PrismaPromise<GetImplementQualificationAggregateType<T>>
+
+    /**
+     * Group by ImplementQualification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ImplementQualificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ImplementQualificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ImplementQualificationGroupByArgs['orderBy'] }
+        : { orderBy?: ImplementQualificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ImplementQualificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetImplementQualificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ImplementQualification model
+   */
+  readonly fields: ImplementQualificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ImplementQualification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ImplementQualificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    sop<T extends SOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SOPDefaultArgs<ExtArgs>>): Prisma__SOPClient<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ImplementQualification model
+   */
+  interface ImplementQualificationFieldRefs {
+    readonly id: FieldRef<"ImplementQualification", 'String'>
+    readonly sopId: FieldRef<"ImplementQualification", 'String'>
+    readonly text: FieldRef<"ImplementQualification", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ImplementQualification findUnique
+   */
+  export type ImplementQualificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which ImplementQualification to fetch.
+     */
+    where: ImplementQualificationWhereUniqueInput
+  }
+
+  /**
+   * ImplementQualification findUniqueOrThrow
+   */
+  export type ImplementQualificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which ImplementQualification to fetch.
+     */
+    where: ImplementQualificationWhereUniqueInput
+  }
+
+  /**
+   * ImplementQualification findFirst
+   */
+  export type ImplementQualificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which ImplementQualification to fetch.
+     */
+    where?: ImplementQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImplementQualifications to fetch.
+     */
+    orderBy?: ImplementQualificationOrderByWithRelationInput | ImplementQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ImplementQualifications.
+     */
+    cursor?: ImplementQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImplementQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImplementQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ImplementQualifications.
+     */
+    distinct?: ImplementQualificationScalarFieldEnum | ImplementQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * ImplementQualification findFirstOrThrow
+   */
+  export type ImplementQualificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which ImplementQualification to fetch.
+     */
+    where?: ImplementQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImplementQualifications to fetch.
+     */
+    orderBy?: ImplementQualificationOrderByWithRelationInput | ImplementQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ImplementQualifications.
+     */
+    cursor?: ImplementQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImplementQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImplementQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ImplementQualifications.
+     */
+    distinct?: ImplementQualificationScalarFieldEnum | ImplementQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * ImplementQualification findMany
+   */
+  export type ImplementQualificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which ImplementQualifications to fetch.
+     */
+    where?: ImplementQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ImplementQualifications to fetch.
+     */
+    orderBy?: ImplementQualificationOrderByWithRelationInput | ImplementQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ImplementQualifications.
+     */
+    cursor?: ImplementQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ImplementQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ImplementQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ImplementQualifications.
+     */
+    distinct?: ImplementQualificationScalarFieldEnum | ImplementQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * ImplementQualification create
+   */
+  export type ImplementQualificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ImplementQualification.
+     */
+    data: XOR<ImplementQualificationCreateInput, ImplementQualificationUncheckedCreateInput>
+  }
+
+  /**
+   * ImplementQualification createMany
+   */
+  export type ImplementQualificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ImplementQualifications.
+     */
+    data: ImplementQualificationCreateManyInput | ImplementQualificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ImplementQualification update
+   */
+  export type ImplementQualificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ImplementQualification.
+     */
+    data: XOR<ImplementQualificationUpdateInput, ImplementQualificationUncheckedUpdateInput>
+    /**
+     * Choose, which ImplementQualification to update.
+     */
+    where: ImplementQualificationWhereUniqueInput
+  }
+
+  /**
+   * ImplementQualification updateMany
+   */
+  export type ImplementQualificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ImplementQualifications.
+     */
+    data: XOR<ImplementQualificationUpdateManyMutationInput, ImplementQualificationUncheckedUpdateManyInput>
+    /**
+     * Filter which ImplementQualifications to update
+     */
+    where?: ImplementQualificationWhereInput
+    /**
+     * Limit how many ImplementQualifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ImplementQualification upsert
+   */
+  export type ImplementQualificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ImplementQualification to update in case it exists.
+     */
+    where: ImplementQualificationWhereUniqueInput
+    /**
+     * In case the ImplementQualification found by the `where` argument doesn't exist, create a new ImplementQualification with this data.
+     */
+    create: XOR<ImplementQualificationCreateInput, ImplementQualificationUncheckedCreateInput>
+    /**
+     * In case the ImplementQualification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ImplementQualificationUpdateInput, ImplementQualificationUncheckedUpdateInput>
+  }
+
+  /**
+   * ImplementQualification delete
+   */
+  export type ImplementQualificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+    /**
+     * Filter which ImplementQualification to delete.
+     */
+    where: ImplementQualificationWhereUniqueInput
+  }
+
+  /**
+   * ImplementQualification deleteMany
+   */
+  export type ImplementQualificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ImplementQualifications to delete
+     */
+    where?: ImplementQualificationWhereInput
+    /**
+     * Limit how many ImplementQualifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ImplementQualification without action
+   */
+  export type ImplementQualificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ImplementQualification
+     */
+    select?: ImplementQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ImplementQualification
+     */
+    omit?: ImplementQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ImplementQualificationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Komentar
+   */
+
+  export type AggregateKomentar = {
+    _count: KomentarCountAggregateOutputType | null
+    _min: KomentarMinAggregateOutputType | null
+    _max: KomentarMaxAggregateOutputType | null
+  }
+
+  export type KomentarMinAggregateOutputType = {
+    id: string | null
+    sopId: string | null
+    userId: string | null
+    role: string | null
+    isi: string | null
+    bagian: string | null
+    status: $Enums.KomentarStatus | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type KomentarMaxAggregateOutputType = {
+    id: string | null
+    sopId: string | null
+    userId: string | null
+    role: string | null
+    isi: string | null
+    bagian: string | null
+    status: $Enums.KomentarStatus | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type KomentarCountAggregateOutputType = {
+    id: number
+    sopId: number
+    userId: number
+    role: number
+    isi: number
+    bagian: number
+    status: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type KomentarMinAggregateInputType = {
+    id?: true
+    sopId?: true
+    userId?: true
+    role?: true
+    isi?: true
+    bagian?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type KomentarMaxAggregateInputType = {
+    id?: true
+    sopId?: true
+    userId?: true
+    role?: true
+    isi?: true
+    bagian?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type KomentarCountAggregateInputType = {
+    id?: true
+    sopId?: true
+    userId?: true
+    role?: true
+    isi?: true
+    bagian?: true
+    status?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type KomentarAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Komentar to aggregate.
+     */
+    where?: KomentarWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Komentars to fetch.
+     */
+    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KomentarWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Komentars from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Komentars.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Komentars
+    **/
+    _count?: true | KomentarCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KomentarMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KomentarMaxAggregateInputType
+  }
+
+  export type GetKomentarAggregateType<T extends KomentarAggregateArgs> = {
+        [P in keyof T & keyof AggregateKomentar]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKomentar[P]>
+      : GetScalarType<T[P], AggregateKomentar[P]>
+  }
+
+
+
+
+  export type KomentarGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KomentarWhereInput
+    orderBy?: KomentarOrderByWithAggregationInput | KomentarOrderByWithAggregationInput[]
+    by: KomentarScalarFieldEnum[] | KomentarScalarFieldEnum
+    having?: KomentarScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KomentarCountAggregateInputType | true
+    _min?: KomentarMinAggregateInputType
+    _max?: KomentarMaxAggregateInputType
+  }
+
+  export type KomentarGroupByOutputType = {
+    id: string
+    sopId: string
+    userId: string
+    role: string
+    isi: string
+    bagian: string | null
+    status: $Enums.KomentarStatus
+    createdAt: Date
+    updatedAt: Date
+    _count: KomentarCountAggregateOutputType | null
+    _min: KomentarMinAggregateOutputType | null
+    _max: KomentarMaxAggregateOutputType | null
+  }
+
+  type GetKomentarGroupByPayload<T extends KomentarGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KomentarGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KomentarGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KomentarGroupByOutputType[P]>
+            : GetScalarType<T[P], KomentarGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KomentarSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sopId?: boolean
+    userId?: boolean
+    role?: boolean
+    isi?: boolean
+    bagian?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    sop?: boolean | SOPDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["komentar"]>
+
+
+
+  export type KomentarSelectScalar = {
+    id?: boolean
+    sopId?: boolean
+    userId?: boolean
+    role?: boolean
+    isi?: boolean
+    bagian?: boolean
+    status?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type KomentarOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sopId" | "userId" | "role" | "isi" | "bagian" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["komentar"]>
+  export type KomentarInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    sop?: boolean | SOPDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $KomentarPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Komentar"
+    objects: {
+      sop: Prisma.$SOPPayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sopId: string
+      userId: string
+      role: string
+      isi: string
+      bagian: string | null
+      status: $Enums.KomentarStatus
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["komentar"]>
+    composites: {}
+  }
+
+  type KomentarGetPayload<S extends boolean | null | undefined | KomentarDefaultArgs> = $Result.GetResult<Prisma.$KomentarPayload, S>
+
+  type KomentarCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KomentarFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KomentarCountAggregateInputType | true
+    }
+
+  export interface KomentarDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Komentar'], meta: { name: 'Komentar' } }
+    /**
+     * Find zero or one Komentar that matches the filter.
+     * @param {KomentarFindUniqueArgs} args - Arguments to find a Komentar
+     * @example
+     * // Get one Komentar
+     * const komentar = await prisma.komentar.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KomentarFindUniqueArgs>(args: SelectSubset<T, KomentarFindUniqueArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Komentar that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KomentarFindUniqueOrThrowArgs} args - Arguments to find a Komentar
+     * @example
+     * // Get one Komentar
+     * const komentar = await prisma.komentar.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KomentarFindUniqueOrThrowArgs>(args: SelectSubset<T, KomentarFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Komentar that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarFindFirstArgs} args - Arguments to find a Komentar
+     * @example
+     * // Get one Komentar
+     * const komentar = await prisma.komentar.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KomentarFindFirstArgs>(args?: SelectSubset<T, KomentarFindFirstArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Komentar that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarFindFirstOrThrowArgs} args - Arguments to find a Komentar
+     * @example
+     * // Get one Komentar
+     * const komentar = await prisma.komentar.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KomentarFindFirstOrThrowArgs>(args?: SelectSubset<T, KomentarFindFirstOrThrowArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Komentars that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Komentars
+     * const komentars = await prisma.komentar.findMany()
+     * 
+     * // Get first 10 Komentars
+     * const komentars = await prisma.komentar.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const komentarWithIdOnly = await prisma.komentar.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends KomentarFindManyArgs>(args?: SelectSubset<T, KomentarFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Komentar.
+     * @param {KomentarCreateArgs} args - Arguments to create a Komentar.
+     * @example
+     * // Create one Komentar
+     * const Komentar = await prisma.komentar.create({
+     *   data: {
+     *     // ... data to create a Komentar
+     *   }
+     * })
+     * 
+     */
+    create<T extends KomentarCreateArgs>(args: SelectSubset<T, KomentarCreateArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Komentars.
+     * @param {KomentarCreateManyArgs} args - Arguments to create many Komentars.
+     * @example
+     * // Create many Komentars
+     * const komentar = await prisma.komentar.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KomentarCreateManyArgs>(args?: SelectSubset<T, KomentarCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a Komentar.
+     * @param {KomentarDeleteArgs} args - Arguments to delete one Komentar.
+     * @example
+     * // Delete one Komentar
+     * const Komentar = await prisma.komentar.delete({
+     *   where: {
+     *     // ... filter to delete one Komentar
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KomentarDeleteArgs>(args: SelectSubset<T, KomentarDeleteArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Komentar.
+     * @param {KomentarUpdateArgs} args - Arguments to update one Komentar.
+     * @example
+     * // Update one Komentar
+     * const komentar = await prisma.komentar.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KomentarUpdateArgs>(args: SelectSubset<T, KomentarUpdateArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Komentars.
+     * @param {KomentarDeleteManyArgs} args - Arguments to filter Komentars to delete.
+     * @example
+     * // Delete a few Komentars
+     * const { count } = await prisma.komentar.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KomentarDeleteManyArgs>(args?: SelectSubset<T, KomentarDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Komentars.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Komentars
+     * const komentar = await prisma.komentar.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KomentarUpdateManyArgs>(args: SelectSubset<T, KomentarUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Komentar.
+     * @param {KomentarUpsertArgs} args - Arguments to update or create a Komentar.
+     * @example
+     * // Update or create a Komentar
+     * const komentar = await prisma.komentar.upsert({
+     *   create: {
+     *     // ... data to create a Komentar
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Komentar we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KomentarUpsertArgs>(args: SelectSubset<T, KomentarUpsertArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Komentars.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarCountArgs} args - Arguments to filter Komentars to count.
+     * @example
+     * // Count the number of Komentars
+     * const count = await prisma.komentar.count({
+     *   where: {
+     *     // ... the filter for the Komentars we want to count
+     *   }
+     * })
+    **/
+    count<T extends KomentarCountArgs>(
+      args?: Subset<T, KomentarCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KomentarCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Komentar.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KomentarAggregateArgs>(args: Subset<T, KomentarAggregateArgs>): Prisma.PrismaPromise<GetKomentarAggregateType<T>>
+
+    /**
+     * Group by Komentar.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KomentarGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KomentarGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KomentarGroupByArgs['orderBy'] }
+        : { orderBy?: KomentarGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KomentarGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKomentarGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Komentar model
+   */
+  readonly fields: KomentarFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Komentar.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KomentarClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    sop<T extends SOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SOPDefaultArgs<ExtArgs>>): Prisma__SOPClient<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Komentar model
+   */
+  interface KomentarFieldRefs {
+    readonly id: FieldRef<"Komentar", 'String'>
+    readonly sopId: FieldRef<"Komentar", 'String'>
+    readonly userId: FieldRef<"Komentar", 'String'>
+    readonly role: FieldRef<"Komentar", 'String'>
+    readonly isi: FieldRef<"Komentar", 'String'>
+    readonly bagian: FieldRef<"Komentar", 'String'>
+    readonly status: FieldRef<"Komentar", 'KomentarStatus'>
+    readonly createdAt: FieldRef<"Komentar", 'DateTime'>
+    readonly updatedAt: FieldRef<"Komentar", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Komentar findUnique
+   */
+  export type KomentarFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * Filter, which Komentar to fetch.
+     */
+    where: KomentarWhereUniqueInput
+  }
+
+  /**
+   * Komentar findUniqueOrThrow
+   */
+  export type KomentarFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * Filter, which Komentar to fetch.
+     */
+    where: KomentarWhereUniqueInput
+  }
+
+  /**
+   * Komentar findFirst
+   */
+  export type KomentarFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * Filter, which Komentar to fetch.
+     */
+    where?: KomentarWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Komentars to fetch.
+     */
+    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Komentars.
+     */
+    cursor?: KomentarWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Komentars from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Komentars.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Komentars.
+     */
+    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
+  }
+
+  /**
+   * Komentar findFirstOrThrow
+   */
+  export type KomentarFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * Filter, which Komentar to fetch.
+     */
+    where?: KomentarWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Komentars to fetch.
+     */
+    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Komentars.
+     */
+    cursor?: KomentarWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Komentars from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Komentars.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Komentars.
+     */
+    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
+  }
+
+  /**
+   * Komentar findMany
+   */
+  export type KomentarFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * Filter, which Komentars to fetch.
+     */
+    where?: KomentarWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Komentars to fetch.
+     */
+    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Komentars.
+     */
+    cursor?: KomentarWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Komentars from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Komentars.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Komentars.
+     */
+    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
+  }
+
+  /**
+   * Komentar create
+   */
+  export type KomentarCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Komentar.
+     */
+    data: XOR<KomentarCreateInput, KomentarUncheckedCreateInput>
+  }
+
+  /**
+   * Komentar createMany
+   */
+  export type KomentarCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Komentars.
+     */
+    data: KomentarCreateManyInput | KomentarCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Komentar update
+   */
+  export type KomentarUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Komentar.
+     */
+    data: XOR<KomentarUpdateInput, KomentarUncheckedUpdateInput>
+    /**
+     * Choose, which Komentar to update.
+     */
+    where: KomentarWhereUniqueInput
+  }
+
+  /**
+   * Komentar updateMany
+   */
+  export type KomentarUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Komentars.
+     */
+    data: XOR<KomentarUpdateManyMutationInput, KomentarUncheckedUpdateManyInput>
+    /**
+     * Filter which Komentars to update
+     */
+    where?: KomentarWhereInput
+    /**
+     * Limit how many Komentars to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Komentar upsert
+   */
+  export type KomentarUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Komentar to update in case it exists.
+     */
+    where: KomentarWhereUniqueInput
+    /**
+     * In case the Komentar found by the `where` argument doesn't exist, create a new Komentar with this data.
+     */
+    create: XOR<KomentarCreateInput, KomentarUncheckedCreateInput>
+    /**
+     * In case the Komentar was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KomentarUpdateInput, KomentarUncheckedUpdateInput>
+  }
+
+  /**
+   * Komentar delete
+   */
+  export type KomentarDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+    /**
+     * Filter which Komentar to delete.
+     */
+    where: KomentarWhereUniqueInput
+  }
+
+  /**
+   * Komentar deleteMany
+   */
+  export type KomentarDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Komentars to delete
+     */
+    where?: KomentarWhereInput
+    /**
+     * Limit how many Komentars to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Komentar without action
+   */
+  export type KomentarDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Komentar
+     */
+    select?: KomentarSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Komentar
+     */
+    omit?: KomentarOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KomentarInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -21660,8 +24139,11 @@ export namespace Prisma {
     status: 'status',
     catatan: 'catatan',
     nomorBA: 'nomorBA',
-    timEvaluasiId: 'timEvaluasiId',
     tanggalRequest: 'tanggalRequest',
+    tanggalEvaluasi: 'tanggalEvaluasi',
+    nilaiOPD: 'nilaiOPD',
+    verifiedByUserId: 'verifiedByUserId',
+    signedByKoordinatorUserId: 'signedByKoordinatorUserId',
     isSignedByKoordinator: 'isSignedByKoordinator',
     tanggalTTDBaByKoordinator: 'tanggalTTDBaByKoordinator',
     createdAt: 'createdAt',
@@ -21675,6 +24157,7 @@ export namespace Prisma {
     id: 'id',
     batchId: 'batchId',
     sopId: 'sopId',
+    evaluatorId: 'evaluatorId',
     hasil: 'hasil',
     catatan: 'catatan',
     rekomendasi: 'rekomendasi',
@@ -21707,6 +24190,8 @@ export namespace Prisma {
     documentLabel: 'documentLabel',
     referenceId: 'referenceId',
     documentHash: 'documentHash',
+    sopId: 'sopId',
+    batchId: 'batchId',
     signedAt: 'signedAt'
   };
 
@@ -21726,6 +24211,30 @@ export namespace Prisma {
   };
 
   export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+  export const ImplementQualificationScalarFieldEnum: {
+    id: 'id',
+    sopId: 'sopId',
+    text: 'text'
+  };
+
+  export type ImplementQualificationScalarFieldEnum = (typeof ImplementQualificationScalarFieldEnum)[keyof typeof ImplementQualificationScalarFieldEnum]
+
+
+  export const KomentarScalarFieldEnum: {
+    id: 'id',
+    sopId: 'sopId',
+    userId: 'userId',
+    role: 'role',
+    isi: 'isi',
+    bagian: 'bagian',
+    status: 'status',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type KomentarScalarFieldEnum = (typeof KomentarScalarFieldEnum)[keyof typeof KomentarScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -21897,7 +24406,8 @@ export namespace Prisma {
     opdId: 'opdId',
     catatan: 'catatan',
     nomorBA: 'nomorBA',
-    timEvaluasiId: 'timEvaluasiId'
+    verifiedByUserId: 'verifiedByUserId',
+    signedByKoordinatorUserId: 'signedByKoordinatorUserId'
   };
 
   export type VerifikasiBatchOrderByRelevanceFieldEnum = (typeof VerifikasiBatchOrderByRelevanceFieldEnum)[keyof typeof VerifikasiBatchOrderByRelevanceFieldEnum]
@@ -21907,6 +24417,7 @@ export namespace Prisma {
     id: 'id',
     batchId: 'batchId',
     sopId: 'sopId',
+    evaluatorId: 'evaluatorId',
     catatan: 'catatan',
     rekomendasi: 'rekomendasi'
   };
@@ -21930,7 +24441,9 @@ export namespace Prisma {
     documentId: 'documentId',
     documentLabel: 'documentLabel',
     referenceId: 'referenceId',
-    documentHash: 'documentHash'
+    documentHash: 'documentHash',
+    sopId: 'sopId',
+    batchId: 'batchId'
   };
 
   export type TTESignatureOrderByRelevanceFieldEnum = (typeof TTESignatureOrderByRelevanceFieldEnum)[keyof typeof TTESignatureOrderByRelevanceFieldEnum]
@@ -21944,6 +24457,27 @@ export namespace Prisma {
   };
 
   export type AuditLogOrderByRelevanceFieldEnum = (typeof AuditLogOrderByRelevanceFieldEnum)[keyof typeof AuditLogOrderByRelevanceFieldEnum]
+
+
+  export const ImplementQualificationOrderByRelevanceFieldEnum: {
+    id: 'id',
+    sopId: 'sopId',
+    text: 'text'
+  };
+
+  export type ImplementQualificationOrderByRelevanceFieldEnum = (typeof ImplementQualificationOrderByRelevanceFieldEnum)[keyof typeof ImplementQualificationOrderByRelevanceFieldEnum]
+
+
+  export const KomentarOrderByRelevanceFieldEnum: {
+    id: 'id',
+    sopId: 'sopId',
+    userId: 'userId',
+    role: 'role',
+    isi: 'isi',
+    bagian: 'bagian'
+  };
+
+  export type KomentarOrderByRelevanceFieldEnum = (typeof KomentarOrderByRelevanceFieldEnum)[keyof typeof KomentarOrderByRelevanceFieldEnum]
 
 
   /**
@@ -22057,6 +24591,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'KomentarStatus'
+   */
+  export type EnumKomentarStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'KomentarStatus'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -22092,6 +24633,10 @@ export namespace Prisma {
     sopsEdited?: SOPListRelationFilter
     sopsAsPic?: SOPListRelationFilter
     peraturanCreated?: PeraturanListRelationFilter
+    batchesVerified?: VerifikasiBatchListRelationFilter
+    batchesSigned?: VerifikasiBatchListRelationFilter
+    evaluasiItems?: EvaluasiItemListRelationFilter
+    komentars?: KomentarListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -22117,6 +24662,10 @@ export namespace Prisma {
     sopsEdited?: SOPOrderByRelationAggregateInput
     sopsAsPic?: SOPOrderByRelationAggregateInput
     peraturanCreated?: PeraturanOrderByRelationAggregateInput
+    batchesVerified?: VerifikasiBatchOrderByRelationAggregateInput
+    batchesSigned?: VerifikasiBatchOrderByRelationAggregateInput
+    evaluasiItems?: EvaluasiItemOrderByRelationAggregateInput
+    komentars?: KomentarOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
 
@@ -22146,6 +24695,10 @@ export namespace Prisma {
     sopsEdited?: SOPListRelationFilter
     sopsAsPic?: SOPListRelationFilter
     peraturanCreated?: PeraturanListRelationFilter
+    batchesVerified?: VerifikasiBatchListRelationFilter
+    batchesSigned?: VerifikasiBatchListRelationFilter
+    evaluasiItems?: EvaluasiItemListRelationFilter
+    komentars?: KomentarListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -22381,6 +24934,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowListRelationFilter
     evaluasiItems?: EvaluasiItemListRelationFilter
     auditLogs?: AuditLogListRelationFilter
+    implementQualifications?: ImplementQualificationListRelationFilter
+    komentars?: KomentarListRelationFilter
+    tteSignatures?: TTESignatureListRelationFilter
     relatedSOPs?: RelatedSOPListRelationFilter
     relatedBySOPs?: RelatedSOPListRelationFilter
   }
@@ -22415,6 +24971,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowOrderByRelationAggregateInput
     evaluasiItems?: EvaluasiItemOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
+    implementQualifications?: ImplementQualificationOrderByRelationAggregateInput
+    komentars?: KomentarOrderByRelationAggregateInput
+    tteSignatures?: TTESignatureOrderByRelationAggregateInput
     relatedSOPs?: RelatedSOPOrderByRelationAggregateInput
     relatedBySOPs?: RelatedSOPOrderByRelationAggregateInput
     _relevance?: SOPOrderByRelevanceInput
@@ -22453,6 +25012,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowListRelationFilter
     evaluasiItems?: EvaluasiItemListRelationFilter
     auditLogs?: AuditLogListRelationFilter
+    implementQualifications?: ImplementQualificationListRelationFilter
+    komentars?: KomentarListRelationFilter
+    tteSignatures?: TTESignatureListRelationFilter
     relatedSOPs?: RelatedSOPListRelationFilter
     relatedBySOPs?: RelatedSOPListRelationFilter
   }, "id" | "nomorSOP">
@@ -23043,7 +25605,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"TimEvaluasiAnggota"> | Date | string
     updatedAt?: DateTimeFilter<"TimEvaluasiAnggota"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    verifikasiBatch?: VerifikasiBatchListRelationFilter
   }
 
   export type TimEvaluasiAnggotaOrderByWithRelationInput = {
@@ -23055,7 +25616,6 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
-    verifikasiBatch?: VerifikasiBatchOrderByRelationAggregateInput
     _relevance?: TimEvaluasiAnggotaOrderByRelevanceInput
   }
 
@@ -23071,7 +25631,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"TimEvaluasiAnggota"> | Date | string
     updatedAt?: DateTimeFilter<"TimEvaluasiAnggota"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-    verifikasiBatch?: VerifikasiBatchListRelationFilter
   }, "id">
 
   export type TimEvaluasiAnggotaOrderByWithAggregationInput = {
@@ -23110,15 +25669,20 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFilter<"VerifikasiBatch"> | $Enums.StatusEvaluasi
     catatan?: StringNullableFilter<"VerifikasiBatch"> | string | null
     nomorBA?: StringNullableFilter<"VerifikasiBatch"> | string | null
-    timEvaluasiId?: StringNullableFilter<"VerifikasiBatch"> | string | null
     tanggalRequest?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    tanggalEvaluasi?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    nilaiOPD?: IntNullableFilter<"VerifikasiBatch"> | number | null
+    verifiedByUserId?: StringNullableFilter<"VerifikasiBatch"> | string | null
+    signedByKoordinatorUserId?: StringNullableFilter<"VerifikasiBatch"> | string | null
     isSignedByKoordinator?: BoolFilter<"VerifikasiBatch"> | boolean
     tanggalTTDBaByKoordinator?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
     createdAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
     updatedAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
-    timEvaluasi?: XOR<TimEvaluasiAnggotaNullableScalarRelationFilter, TimEvaluasiAnggotaWhereInput> | null
+    verifiedByUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    signedByKoordinatorUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     evaluasiItems?: EvaluasiItemListRelationFilter
+    tteSignatures?: TTESignatureListRelationFilter
   }
 
   export type VerifikasiBatchOrderByWithRelationInput = {
@@ -23128,15 +25692,20 @@ export namespace Prisma {
     status?: SortOrder
     catatan?: SortOrderInput | SortOrder
     nomorBA?: SortOrderInput | SortOrder
-    timEvaluasiId?: SortOrderInput | SortOrder
     tanggalRequest?: SortOrderInput | SortOrder
+    tanggalEvaluasi?: SortOrderInput | SortOrder
+    nilaiOPD?: SortOrderInput | SortOrder
+    verifiedByUserId?: SortOrderInput | SortOrder
+    signedByKoordinatorUserId?: SortOrderInput | SortOrder
     isSignedByKoordinator?: SortOrder
     tanggalTTDBaByKoordinator?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     opd?: OPDOrderByWithRelationInput
-    timEvaluasi?: TimEvaluasiAnggotaOrderByWithRelationInput
+    verifiedByUser?: UserOrderByWithRelationInput
+    signedByKoordinatorUser?: UserOrderByWithRelationInput
     evaluasiItems?: EvaluasiItemOrderByRelationAggregateInput
+    tteSignatures?: TTESignatureOrderByRelationAggregateInput
     _relevance?: VerifikasiBatchOrderByRelevanceInput
   }
 
@@ -23150,15 +25719,20 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFilter<"VerifikasiBatch"> | $Enums.StatusEvaluasi
     catatan?: StringNullableFilter<"VerifikasiBatch"> | string | null
     nomorBA?: StringNullableFilter<"VerifikasiBatch"> | string | null
-    timEvaluasiId?: StringNullableFilter<"VerifikasiBatch"> | string | null
     tanggalRequest?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    tanggalEvaluasi?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    nilaiOPD?: IntNullableFilter<"VerifikasiBatch"> | number | null
+    verifiedByUserId?: StringNullableFilter<"VerifikasiBatch"> | string | null
+    signedByKoordinatorUserId?: StringNullableFilter<"VerifikasiBatch"> | string | null
     isSignedByKoordinator?: BoolFilter<"VerifikasiBatch"> | boolean
     tanggalTTDBaByKoordinator?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
     createdAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
     updatedAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
-    timEvaluasi?: XOR<TimEvaluasiAnggotaNullableScalarRelationFilter, TimEvaluasiAnggotaWhereInput> | null
+    verifiedByUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    signedByKoordinatorUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     evaluasiItems?: EvaluasiItemListRelationFilter
+    tteSignatures?: TTESignatureListRelationFilter
   }, "id">
 
   export type VerifikasiBatchOrderByWithAggregationInput = {
@@ -23168,15 +25742,20 @@ export namespace Prisma {
     status?: SortOrder
     catatan?: SortOrderInput | SortOrder
     nomorBA?: SortOrderInput | SortOrder
-    timEvaluasiId?: SortOrderInput | SortOrder
     tanggalRequest?: SortOrderInput | SortOrder
+    tanggalEvaluasi?: SortOrderInput | SortOrder
+    nilaiOPD?: SortOrderInput | SortOrder
+    verifiedByUserId?: SortOrderInput | SortOrder
+    signedByKoordinatorUserId?: SortOrderInput | SortOrder
     isSignedByKoordinator?: SortOrder
     tanggalTTDBaByKoordinator?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: VerifikasiBatchCountOrderByAggregateInput
+    _avg?: VerifikasiBatchAvgOrderByAggregateInput
     _max?: VerifikasiBatchMaxOrderByAggregateInput
     _min?: VerifikasiBatchMinOrderByAggregateInput
+    _sum?: VerifikasiBatchSumOrderByAggregateInput
   }
 
   export type VerifikasiBatchScalarWhereWithAggregatesInput = {
@@ -23189,8 +25768,11 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiWithAggregatesFilter<"VerifikasiBatch"> | $Enums.StatusEvaluasi
     catatan?: StringNullableWithAggregatesFilter<"VerifikasiBatch"> | string | null
     nomorBA?: StringNullableWithAggregatesFilter<"VerifikasiBatch"> | string | null
-    timEvaluasiId?: StringNullableWithAggregatesFilter<"VerifikasiBatch"> | string | null
     tanggalRequest?: DateTimeNullableWithAggregatesFilter<"VerifikasiBatch"> | Date | string | null
+    tanggalEvaluasi?: DateTimeNullableWithAggregatesFilter<"VerifikasiBatch"> | Date | string | null
+    nilaiOPD?: IntNullableWithAggregatesFilter<"VerifikasiBatch"> | number | null
+    verifiedByUserId?: StringNullableWithAggregatesFilter<"VerifikasiBatch"> | string | null
+    signedByKoordinatorUserId?: StringNullableWithAggregatesFilter<"VerifikasiBatch"> | string | null
     isSignedByKoordinator?: BoolWithAggregatesFilter<"VerifikasiBatch"> | boolean
     tanggalTTDBaByKoordinator?: DateTimeNullableWithAggregatesFilter<"VerifikasiBatch"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"VerifikasiBatch"> | Date | string
@@ -23204,6 +25786,7 @@ export namespace Prisma {
     id?: StringFilter<"EvaluasiItem"> | string
     batchId?: StringFilter<"EvaluasiItem"> | string
     sopId?: StringFilter<"EvaluasiItem"> | string
+    evaluatorId?: StringFilter<"EvaluasiItem"> | string
     hasil?: EnumHasilEvaluasiNullableFilter<"EvaluasiItem"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableFilter<"EvaluasiItem"> | string | null
     rekomendasi?: StringNullableFilter<"EvaluasiItem"> | string | null
@@ -23211,12 +25794,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"EvaluasiItem"> | Date | string
     batch?: XOR<VerifikasiBatchScalarRelationFilter, VerifikasiBatchWhereInput>
     sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
+    evaluator?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type EvaluasiItemOrderByWithRelationInput = {
     id?: SortOrder
     batchId?: SortOrder
     sopId?: SortOrder
+    evaluatorId?: SortOrder
     hasil?: SortOrderInput | SortOrder
     catatan?: SortOrderInput | SortOrder
     rekomendasi?: SortOrderInput | SortOrder
@@ -23224,6 +25809,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     batch?: VerifikasiBatchOrderByWithRelationInput
     sop?: SOPOrderByWithRelationInput
+    evaluator?: UserOrderByWithRelationInput
     _relevance?: EvaluasiItemOrderByRelevanceInput
   }
 
@@ -23234,6 +25820,7 @@ export namespace Prisma {
     NOT?: EvaluasiItemWhereInput | EvaluasiItemWhereInput[]
     batchId?: StringFilter<"EvaluasiItem"> | string
     sopId?: StringFilter<"EvaluasiItem"> | string
+    evaluatorId?: StringFilter<"EvaluasiItem"> | string
     hasil?: EnumHasilEvaluasiNullableFilter<"EvaluasiItem"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableFilter<"EvaluasiItem"> | string | null
     rekomendasi?: StringNullableFilter<"EvaluasiItem"> | string | null
@@ -23241,12 +25828,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"EvaluasiItem"> | Date | string
     batch?: XOR<VerifikasiBatchScalarRelationFilter, VerifikasiBatchWhereInput>
     sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
+    evaluator?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type EvaluasiItemOrderByWithAggregationInput = {
     id?: SortOrder
     batchId?: SortOrder
     sopId?: SortOrder
+    evaluatorId?: SortOrder
     hasil?: SortOrderInput | SortOrder
     catatan?: SortOrderInput | SortOrder
     rekomendasi?: SortOrderInput | SortOrder
@@ -23264,6 +25853,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"EvaluasiItem"> | string
     batchId?: StringWithAggregatesFilter<"EvaluasiItem"> | string
     sopId?: StringWithAggregatesFilter<"EvaluasiItem"> | string
+    evaluatorId?: StringWithAggregatesFilter<"EvaluasiItem"> | string
     hasil?: EnumHasilEvaluasiNullableWithAggregatesFilter<"EvaluasiItem"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableWithAggregatesFilter<"EvaluasiItem"> | string | null
     rekomendasi?: StringNullableWithAggregatesFilter<"EvaluasiItem"> | string | null
@@ -23353,8 +25943,12 @@ export namespace Prisma {
     documentLabel?: StringFilter<"TTESignature"> | string
     referenceId?: StringFilter<"TTESignature"> | string
     documentHash?: StringFilter<"TTESignature"> | string
+    sopId?: StringNullableFilter<"TTESignature"> | string | null
+    batchId?: StringNullableFilter<"TTESignature"> | string | null
     signedAt?: DateTimeFilter<"TTESignature"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sop?: XOR<SOPNullableScalarRelationFilter, SOPWhereInput> | null
+    batch?: XOR<VerifikasiBatchNullableScalarRelationFilter, VerifikasiBatchWhereInput> | null
   }
 
   export type TTESignatureOrderByWithRelationInput = {
@@ -23365,8 +25959,12 @@ export namespace Prisma {
     documentLabel?: SortOrder
     referenceId?: SortOrder
     documentHash?: SortOrder
+    sopId?: SortOrderInput | SortOrder
+    batchId?: SortOrderInput | SortOrder
     signedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    sop?: SOPOrderByWithRelationInput
+    batch?: VerifikasiBatchOrderByWithRelationInput
     _relevance?: TTESignatureOrderByRelevanceInput
   }
 
@@ -23381,8 +25979,12 @@ export namespace Prisma {
     documentLabel?: StringFilter<"TTESignature"> | string
     referenceId?: StringFilter<"TTESignature"> | string
     documentHash?: StringFilter<"TTESignature"> | string
+    sopId?: StringNullableFilter<"TTESignature"> | string | null
+    batchId?: StringNullableFilter<"TTESignature"> | string | null
     signedAt?: DateTimeFilter<"TTESignature"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    sop?: XOR<SOPNullableScalarRelationFilter, SOPWhereInput> | null
+    batch?: XOR<VerifikasiBatchNullableScalarRelationFilter, VerifikasiBatchWhereInput> | null
   }, "id">
 
   export type TTESignatureOrderByWithAggregationInput = {
@@ -23393,6 +25995,8 @@ export namespace Prisma {
     documentLabel?: SortOrder
     referenceId?: SortOrder
     documentHash?: SortOrder
+    sopId?: SortOrderInput | SortOrder
+    batchId?: SortOrderInput | SortOrder
     signedAt?: SortOrder
     _count?: TTESignatureCountOrderByAggregateInput
     _max?: TTESignatureMaxOrderByAggregateInput
@@ -23410,6 +26014,8 @@ export namespace Prisma {
     documentLabel?: StringWithAggregatesFilter<"TTESignature"> | string
     referenceId?: StringWithAggregatesFilter<"TTESignature"> | string
     documentHash?: StringWithAggregatesFilter<"TTESignature"> | string
+    sopId?: StringNullableWithAggregatesFilter<"TTESignature"> | string | null
+    batchId?: StringNullableWithAggregatesFilter<"TTESignature"> | string | null
     signedAt?: DateTimeWithAggregatesFilter<"TTESignature"> | Date | string
   }
 
@@ -23492,6 +26098,131 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"AuditLog"> | Date | string
   }
 
+  export type ImplementQualificationWhereInput = {
+    AND?: ImplementQualificationWhereInput | ImplementQualificationWhereInput[]
+    OR?: ImplementQualificationWhereInput[]
+    NOT?: ImplementQualificationWhereInput | ImplementQualificationWhereInput[]
+    id?: StringFilter<"ImplementQualification"> | string
+    sopId?: StringFilter<"ImplementQualification"> | string
+    text?: StringFilter<"ImplementQualification"> | string
+    sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
+  }
+
+  export type ImplementQualificationOrderByWithRelationInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    text?: SortOrder
+    sop?: SOPOrderByWithRelationInput
+    _relevance?: ImplementQualificationOrderByRelevanceInput
+  }
+
+  export type ImplementQualificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ImplementQualificationWhereInput | ImplementQualificationWhereInput[]
+    OR?: ImplementQualificationWhereInput[]
+    NOT?: ImplementQualificationWhereInput | ImplementQualificationWhereInput[]
+    sopId?: StringFilter<"ImplementQualification"> | string
+    text?: StringFilter<"ImplementQualification"> | string
+    sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
+  }, "id">
+
+  export type ImplementQualificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    text?: SortOrder
+    _count?: ImplementQualificationCountOrderByAggregateInput
+    _max?: ImplementQualificationMaxOrderByAggregateInput
+    _min?: ImplementQualificationMinOrderByAggregateInput
+  }
+
+  export type ImplementQualificationScalarWhereWithAggregatesInput = {
+    AND?: ImplementQualificationScalarWhereWithAggregatesInput | ImplementQualificationScalarWhereWithAggregatesInput[]
+    OR?: ImplementQualificationScalarWhereWithAggregatesInput[]
+    NOT?: ImplementQualificationScalarWhereWithAggregatesInput | ImplementQualificationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ImplementQualification"> | string
+    sopId?: StringWithAggregatesFilter<"ImplementQualification"> | string
+    text?: StringWithAggregatesFilter<"ImplementQualification"> | string
+  }
+
+  export type KomentarWhereInput = {
+    AND?: KomentarWhereInput | KomentarWhereInput[]
+    OR?: KomentarWhereInput[]
+    NOT?: KomentarWhereInput | KomentarWhereInput[]
+    id?: StringFilter<"Komentar"> | string
+    sopId?: StringFilter<"Komentar"> | string
+    userId?: StringFilter<"Komentar"> | string
+    role?: StringFilter<"Komentar"> | string
+    isi?: StringFilter<"Komentar"> | string
+    bagian?: StringNullableFilter<"Komentar"> | string | null
+    status?: EnumKomentarStatusFilter<"Komentar"> | $Enums.KomentarStatus
+    createdAt?: DateTimeFilter<"Komentar"> | Date | string
+    updatedAt?: DateTimeFilter<"Komentar"> | Date | string
+    sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type KomentarOrderByWithRelationInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    userId?: SortOrder
+    role?: SortOrder
+    isi?: SortOrder
+    bagian?: SortOrderInput | SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    sop?: SOPOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+    _relevance?: KomentarOrderByRelevanceInput
+  }
+
+  export type KomentarWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: KomentarWhereInput | KomentarWhereInput[]
+    OR?: KomentarWhereInput[]
+    NOT?: KomentarWhereInput | KomentarWhereInput[]
+    sopId?: StringFilter<"Komentar"> | string
+    userId?: StringFilter<"Komentar"> | string
+    role?: StringFilter<"Komentar"> | string
+    isi?: StringFilter<"Komentar"> | string
+    bagian?: StringNullableFilter<"Komentar"> | string | null
+    status?: EnumKomentarStatusFilter<"Komentar"> | $Enums.KomentarStatus
+    createdAt?: DateTimeFilter<"Komentar"> | Date | string
+    updatedAt?: DateTimeFilter<"Komentar"> | Date | string
+    sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type KomentarOrderByWithAggregationInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    userId?: SortOrder
+    role?: SortOrder
+    isi?: SortOrder
+    bagian?: SortOrderInput | SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: KomentarCountOrderByAggregateInput
+    _max?: KomentarMaxOrderByAggregateInput
+    _min?: KomentarMinOrderByAggregateInput
+  }
+
+  export type KomentarScalarWhereWithAggregatesInput = {
+    AND?: KomentarScalarWhereWithAggregatesInput | KomentarScalarWhereWithAggregatesInput[]
+    OR?: KomentarScalarWhereWithAggregatesInput[]
+    NOT?: KomentarScalarWhereWithAggregatesInput | KomentarScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Komentar"> | string
+    sopId?: StringWithAggregatesFilter<"Komentar"> | string
+    userId?: StringWithAggregatesFilter<"Komentar"> | string
+    role?: StringWithAggregatesFilter<"Komentar"> | string
+    isi?: StringWithAggregatesFilter<"Komentar"> | string
+    bagian?: StringNullableWithAggregatesFilter<"Komentar"> | string | null
+    status?: EnumKomentarStatusWithAggregatesFilter<"Komentar"> | $Enums.KomentarStatus
+    createdAt?: DateTimeWithAggregatesFilter<"Komentar"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Komentar"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     email: string
@@ -23514,6 +26245,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -23538,6 +26273,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -23562,6 +26301,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -23586,6 +26329,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -23841,6 +26588,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -23870,6 +26620,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -23899,6 +26652,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -23928,6 +26684,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -24514,7 +27273,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutTimEvaluasiInput
-    verifikasiBatch?: VerifikasiBatchCreateNestedManyWithoutTimEvaluasiInput
   }
 
   export type TimEvaluasiAnggotaUncheckedCreateInput = {
@@ -24525,7 +27283,6 @@ export namespace Prisma {
     endedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    verifikasiBatch?: VerifikasiBatchUncheckedCreateNestedManyWithoutTimEvaluasiInput
   }
 
   export type TimEvaluasiAnggotaUpdateInput = {
@@ -24536,7 +27293,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTimEvaluasiNestedInput
-    verifikasiBatch?: VerifikasiBatchUpdateManyWithoutTimEvaluasiNestedInput
   }
 
   export type TimEvaluasiAnggotaUncheckedUpdateInput = {
@@ -24547,7 +27303,6 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    verifikasiBatch?: VerifikasiBatchUncheckedUpdateManyWithoutTimEvaluasiNestedInput
   }
 
   export type TimEvaluasiAnggotaCreateManyInput = {
@@ -24586,13 +27341,17 @@ export namespace Prisma {
     catatan?: string | null
     nomorBA?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutVerifikasiBatchInput
-    timEvaluasi?: TimEvaluasiAnggotaCreateNestedOneWithoutVerifikasiBatchInput
+    verifiedByUser?: UserCreateNestedOneWithoutBatchesVerifiedInput
+    signedByKoordinatorUser?: UserCreateNestedOneWithoutBatchesSignedInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutBatchInput
   }
 
   export type VerifikasiBatchUncheckedCreateInput = {
@@ -24602,13 +27361,17 @@ export namespace Prisma {
     status?: $Enums.StatusEvaluasi
     catatan?: string | null
     nomorBA?: string | null
-    timEvaluasiId?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    signedByKoordinatorUserId?: string | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutBatchInput
   }
 
   export type VerifikasiBatchUpdateInput = {
@@ -24618,13 +27381,17 @@ export namespace Prisma {
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutVerifikasiBatchNestedInput
-    timEvaluasi?: TimEvaluasiAnggotaUpdateOneWithoutVerifikasiBatchNestedInput
+    verifiedByUser?: UserUpdateOneWithoutBatchesVerifiedNestedInput
+    signedByKoordinatorUser?: UserUpdateOneWithoutBatchesSignedNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutBatchNestedInput
   }
 
   export type VerifikasiBatchUncheckedUpdateInput = {
@@ -24634,13 +27401,17 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    timEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutBatchNestedInput
   }
 
   export type VerifikasiBatchCreateManyInput = {
@@ -24650,8 +27421,11 @@ export namespace Prisma {
     status?: $Enums.StatusEvaluasi
     catatan?: string | null
     nomorBA?: string | null
-    timEvaluasiId?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    signedByKoordinatorUserId?: string | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
@@ -24665,6 +27439,8 @@ export namespace Prisma {
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24678,8 +27454,11 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    timEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -24695,12 +27474,14 @@ export namespace Prisma {
     updatedAt?: Date | string
     batch: VerifikasiBatchCreateNestedOneWithoutEvaluasiItemsInput
     sop: SOPCreateNestedOneWithoutEvaluasiItemsInput
+    evaluator: UserCreateNestedOneWithoutEvaluasiItemsInput
   }
 
   export type EvaluasiItemUncheckedCreateInput = {
     id?: string
     batchId: string
     sopId: string
+    evaluatorId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
     rekomendasi?: string | null
@@ -24717,12 +27498,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     batch?: VerifikasiBatchUpdateOneRequiredWithoutEvaluasiItemsNestedInput
     sop?: SOPUpdateOneRequiredWithoutEvaluasiItemsNestedInput
+    evaluator?: UserUpdateOneRequiredWithoutEvaluasiItemsNestedInput
   }
 
   export type EvaluasiItemUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     batchId?: StringFieldUpdateOperationsInput | string
     sopId?: StringFieldUpdateOperationsInput | string
+    evaluatorId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24734,6 +27517,7 @@ export namespace Prisma {
     id?: string
     batchId: string
     sopId: string
+    evaluatorId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
     rekomendasi?: string | null
@@ -24754,6 +27538,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     batchId?: StringFieldUpdateOperationsInput | string
     sopId?: StringFieldUpdateOperationsInput | string
+    evaluatorId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24846,6 +27631,8 @@ export namespace Prisma {
     documentHash: string
     signedAt?: Date | string
     user: UserCreateNestedOneWithoutTteSignaturesInput
+    sop?: SOPCreateNestedOneWithoutTteSignaturesInput
+    batch?: VerifikasiBatchCreateNestedOneWithoutTteSignaturesInput
   }
 
   export type TTESignatureUncheckedCreateInput = {
@@ -24856,6 +27643,8 @@ export namespace Prisma {
     documentLabel: string
     referenceId: string
     documentHash: string
+    sopId?: string | null
+    batchId?: string | null
     signedAt?: Date | string
   }
 
@@ -24868,6 +27657,8 @@ export namespace Prisma {
     documentHash?: StringFieldUpdateOperationsInput | string
     signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTteSignaturesNestedInput
+    sop?: SOPUpdateOneWithoutTteSignaturesNestedInput
+    batch?: VerifikasiBatchUpdateOneWithoutTteSignaturesNestedInput
   }
 
   export type TTESignatureUncheckedUpdateInput = {
@@ -24878,6 +27669,8 @@ export namespace Prisma {
     documentLabel?: StringFieldUpdateOperationsInput | string
     referenceId?: StringFieldUpdateOperationsInput | string
     documentHash?: StringFieldUpdateOperationsInput | string
+    sopId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
     signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24889,6 +27682,8 @@ export namespace Prisma {
     documentLabel: string
     referenceId: string
     documentHash: string
+    sopId?: string | null
+    batchId?: string | null
     signedAt?: Date | string
   }
 
@@ -24910,6 +27705,8 @@ export namespace Prisma {
     documentLabel?: StringFieldUpdateOperationsInput | string
     referenceId?: StringFieldUpdateOperationsInput | string
     documentHash?: StringFieldUpdateOperationsInput | string
+    sopId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
     signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -24993,6 +27790,129 @@ export namespace Prisma {
     statusSesudah?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ImplementQualificationCreateInput = {
+    id?: string
+    text: string
+    sop: SOPCreateNestedOneWithoutImplementQualificationsInput
+  }
+
+  export type ImplementQualificationUncheckedCreateInput = {
+    id?: string
+    sopId: string
+    text: string
+  }
+
+  export type ImplementQualificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    sop?: SOPUpdateOneRequiredWithoutImplementQualificationsNestedInput
+  }
+
+  export type ImplementQualificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ImplementQualificationCreateManyInput = {
+    id?: string
+    sopId: string
+    text: string
+  }
+
+  export type ImplementQualificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ImplementQualificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type KomentarCreateInput = {
+    id?: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sop: SOPCreateNestedOneWithoutKomentarsInput
+    user: UserCreateNestedOneWithoutKomentarsInput
+  }
+
+  export type KomentarUncheckedCreateInput = {
+    id?: string
+    sopId: string
+    userId: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KomentarUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sop?: SOPUpdateOneRequiredWithoutKomentarsNestedInput
+    user?: UserUpdateOneRequiredWithoutKomentarsNestedInput
+  }
+
+  export type KomentarUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KomentarCreateManyInput = {
+    id?: string
+    sopId: string
+    userId: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KomentarUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KomentarUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -25089,6 +28009,24 @@ export namespace Prisma {
     none?: PeraturanWhereInput
   }
 
+  export type VerifikasiBatchListRelationFilter = {
+    every?: VerifikasiBatchWhereInput
+    some?: VerifikasiBatchWhereInput
+    none?: VerifikasiBatchWhereInput
+  }
+
+  export type EvaluasiItemListRelationFilter = {
+    every?: EvaluasiItemWhereInput
+    some?: EvaluasiItemWhereInput
+    none?: EvaluasiItemWhereInput
+  }
+
+  export type KomentarListRelationFilter = {
+    every?: KomentarWhereInput
+    some?: KomentarWhereInput
+    none?: KomentarWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -25115,6 +28053,18 @@ export namespace Prisma {
   }
 
   export type PeraturanOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type VerifikasiBatchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type EvaluasiItemOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KomentarOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -25241,21 +28191,11 @@ export namespace Prisma {
     none?: PelaksanaWhereInput
   }
 
-  export type VerifikasiBatchListRelationFilter = {
-    every?: VerifikasiBatchWhereInput
-    some?: VerifikasiBatchWhereInput
-    none?: VerifikasiBatchWhereInput
-  }
-
   export type UserOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type PelaksanaOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type VerifikasiBatchOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -25440,10 +28380,10 @@ export namespace Prisma {
     none?: ProsedurRowWhereInput
   }
 
-  export type EvaluasiItemListRelationFilter = {
-    every?: EvaluasiItemWhereInput
-    some?: EvaluasiItemWhereInput
-    none?: EvaluasiItemWhereInput
+  export type ImplementQualificationListRelationFilter = {
+    every?: ImplementQualificationWhereInput
+    some?: ImplementQualificationWhereInput
+    none?: ImplementQualificationWhereInput
   }
 
   export type RelatedSOPListRelationFilter = {
@@ -25468,7 +28408,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type EvaluasiItemOrderByRelationAggregateInput = {
+  export type ImplementQualificationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -26045,11 +28985,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type TimEvaluasiAnggotaNullableScalarRelationFilter = {
-    is?: TimEvaluasiAnggotaWhereInput | null
-    isNot?: TimEvaluasiAnggotaWhereInput | null
-  }
-
   export type VerifikasiBatchOrderByRelevanceInput = {
     fields: VerifikasiBatchOrderByRelevanceFieldEnum | VerifikasiBatchOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -26063,12 +28998,19 @@ export namespace Prisma {
     status?: SortOrder
     catatan?: SortOrder
     nomorBA?: SortOrder
-    timEvaluasiId?: SortOrder
     tanggalRequest?: SortOrder
+    tanggalEvaluasi?: SortOrder
+    nilaiOPD?: SortOrder
+    verifiedByUserId?: SortOrder
+    signedByKoordinatorUserId?: SortOrder
     isSignedByKoordinator?: SortOrder
     tanggalTTDBaByKoordinator?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type VerifikasiBatchAvgOrderByAggregateInput = {
+    nilaiOPD?: SortOrder
   }
 
   export type VerifikasiBatchMaxOrderByAggregateInput = {
@@ -26078,8 +29020,11 @@ export namespace Prisma {
     status?: SortOrder
     catatan?: SortOrder
     nomorBA?: SortOrder
-    timEvaluasiId?: SortOrder
     tanggalRequest?: SortOrder
+    tanggalEvaluasi?: SortOrder
+    nilaiOPD?: SortOrder
+    verifiedByUserId?: SortOrder
+    signedByKoordinatorUserId?: SortOrder
     isSignedByKoordinator?: SortOrder
     tanggalTTDBaByKoordinator?: SortOrder
     createdAt?: SortOrder
@@ -26093,12 +29038,19 @@ export namespace Prisma {
     status?: SortOrder
     catatan?: SortOrder
     nomorBA?: SortOrder
-    timEvaluasiId?: SortOrder
     tanggalRequest?: SortOrder
+    tanggalEvaluasi?: SortOrder
+    nilaiOPD?: SortOrder
+    verifiedByUserId?: SortOrder
+    signedByKoordinatorUserId?: SortOrder
     isSignedByKoordinator?: SortOrder
     tanggalTTDBaByKoordinator?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type VerifikasiBatchSumOrderByAggregateInput = {
+    nilaiOPD?: SortOrder
   }
 
   export type EnumJenisBatchWithAggregatesFilter<$PrismaModel = never> = {
@@ -26151,6 +29103,7 @@ export namespace Prisma {
     id?: SortOrder
     batchId?: SortOrder
     sopId?: SortOrder
+    evaluatorId?: SortOrder
     hasil?: SortOrder
     catatan?: SortOrder
     rekomendasi?: SortOrder
@@ -26162,6 +29115,7 @@ export namespace Prisma {
     id?: SortOrder
     batchId?: SortOrder
     sopId?: SortOrder
+    evaluatorId?: SortOrder
     hasil?: SortOrder
     catatan?: SortOrder
     rekomendasi?: SortOrder
@@ -26173,6 +29127,7 @@ export namespace Prisma {
     id?: SortOrder
     batchId?: SortOrder
     sopId?: SortOrder
+    evaluatorId?: SortOrder
     hasil?: SortOrder
     catatan?: SortOrder
     rekomendasi?: SortOrder
@@ -26246,6 +29201,16 @@ export namespace Prisma {
     _max?: NestedEnumTTERoleFilter<$PrismaModel>
   }
 
+  export type SOPNullableScalarRelationFilter = {
+    is?: SOPWhereInput | null
+    isNot?: SOPWhereInput | null
+  }
+
+  export type VerifikasiBatchNullableScalarRelationFilter = {
+    is?: VerifikasiBatchWhereInput | null
+    isNot?: VerifikasiBatchWhereInput | null
+  }
+
   export type TTESignatureOrderByRelevanceInput = {
     fields: TTESignatureOrderByRelevanceFieldEnum | TTESignatureOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -26260,6 +29225,8 @@ export namespace Prisma {
     documentLabel?: SortOrder
     referenceId?: SortOrder
     documentHash?: SortOrder
+    sopId?: SortOrder
+    batchId?: SortOrder
     signedAt?: SortOrder
   }
 
@@ -26271,6 +29238,8 @@ export namespace Prisma {
     documentLabel?: SortOrder
     referenceId?: SortOrder
     documentHash?: SortOrder
+    sopId?: SortOrder
+    batchId?: SortOrder
     signedAt?: SortOrder
   }
 
@@ -26282,6 +29251,8 @@ export namespace Prisma {
     documentLabel?: SortOrder
     referenceId?: SortOrder
     documentHash?: SortOrder
+    sopId?: SortOrder
+    batchId?: SortOrder
     signedAt?: SortOrder
   }
 
@@ -26361,6 +29332,89 @@ export namespace Prisma {
     _max?: NestedEnumStatusSOPNullableFilter<$PrismaModel>
   }
 
+  export type ImplementQualificationOrderByRelevanceInput = {
+    fields: ImplementQualificationOrderByRelevanceFieldEnum | ImplementQualificationOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type ImplementQualificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    text?: SortOrder
+  }
+
+  export type ImplementQualificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    text?: SortOrder
+  }
+
+  export type ImplementQualificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    text?: SortOrder
+  }
+
+  export type EnumKomentarStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.KomentarStatus | EnumKomentarStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.KomentarStatus[]
+    notIn?: $Enums.KomentarStatus[]
+    not?: NestedEnumKomentarStatusFilter<$PrismaModel> | $Enums.KomentarStatus
+  }
+
+  export type KomentarOrderByRelevanceInput = {
+    fields: KomentarOrderByRelevanceFieldEnum | KomentarOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type KomentarCountOrderByAggregateInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    userId?: SortOrder
+    role?: SortOrder
+    isi?: SortOrder
+    bagian?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KomentarMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    userId?: SortOrder
+    role?: SortOrder
+    isi?: SortOrder
+    bagian?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KomentarMinOrderByAggregateInput = {
+    id?: SortOrder
+    sopId?: SortOrder
+    userId?: SortOrder
+    role?: SortOrder
+    isi?: SortOrder
+    bagian?: SortOrder
+    status?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumKomentarStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.KomentarStatus | EnumKomentarStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.KomentarStatus[]
+    notIn?: $Enums.KomentarStatus[]
+    not?: NestedEnumKomentarStatusWithAggregatesFilter<$PrismaModel> | $Enums.KomentarStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumKomentarStatusFilter<$PrismaModel>
+    _max?: NestedEnumKomentarStatusFilter<$PrismaModel>
+  }
+
   export type OPDCreateNestedOneWithoutUsersInput = {
     create?: XOR<OPDCreateWithoutUsersInput, OPDUncheckedCreateWithoutUsersInput>
     connectOrCreate?: OPDCreateOrConnectWithoutUsersInput
@@ -26429,6 +29483,34 @@ export namespace Prisma {
     connect?: PeraturanWhereUniqueInput | PeraturanWhereUniqueInput[]
   }
 
+  export type VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput> | VerifikasiBatchCreateWithoutVerifiedByUserInput[] | VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput | VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput[]
+    createMany?: VerifikasiBatchCreateManyVerifiedByUserInputEnvelope
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+  }
+
+  export type VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput> | VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput[] | VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput | VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput[]
+    createMany?: VerifikasiBatchCreateManySignedByKoordinatorUserInputEnvelope
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+  }
+
+  export type EvaluasiItemCreateNestedManyWithoutEvaluatorInput = {
+    create?: XOR<EvaluasiItemCreateWithoutEvaluatorInput, EvaluasiItemUncheckedCreateWithoutEvaluatorInput> | EvaluasiItemCreateWithoutEvaluatorInput[] | EvaluasiItemUncheckedCreateWithoutEvaluatorInput[]
+    connectOrCreate?: EvaluasiItemCreateOrConnectWithoutEvaluatorInput | EvaluasiItemCreateOrConnectWithoutEvaluatorInput[]
+    createMany?: EvaluasiItemCreateManyEvaluatorInputEnvelope
+    connect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+  }
+
+  export type KomentarCreateNestedManyWithoutUserInput = {
+    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
+    createMany?: KomentarCreateManyUserInputEnvelope
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+  }
+
   export type TimPenyusunUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<TimPenyusunCreateWithoutUserInput, TimPenyusunUncheckedCreateWithoutUserInput> | TimPenyusunCreateWithoutUserInput[] | TimPenyusunUncheckedCreateWithoutUserInput[]
     connectOrCreate?: TimPenyusunCreateOrConnectWithoutUserInput | TimPenyusunCreateOrConnectWithoutUserInput[]
@@ -26489,6 +29571,34 @@ export namespace Prisma {
     connectOrCreate?: PeraturanCreateOrConnectWithoutCreatedByInput | PeraturanCreateOrConnectWithoutCreatedByInput[]
     createMany?: PeraturanCreateManyCreatedByInputEnvelope
     connect?: PeraturanWhereUniqueInput | PeraturanWhereUniqueInput[]
+  }
+
+  export type VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput> | VerifikasiBatchCreateWithoutVerifiedByUserInput[] | VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput | VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput[]
+    createMany?: VerifikasiBatchCreateManyVerifiedByUserInputEnvelope
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+  }
+
+  export type VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput> | VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput[] | VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput | VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput[]
+    createMany?: VerifikasiBatchCreateManySignedByKoordinatorUserInputEnvelope
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+  }
+
+  export type EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput = {
+    create?: XOR<EvaluasiItemCreateWithoutEvaluatorInput, EvaluasiItemUncheckedCreateWithoutEvaluatorInput> | EvaluasiItemCreateWithoutEvaluatorInput[] | EvaluasiItemUncheckedCreateWithoutEvaluatorInput[]
+    connectOrCreate?: EvaluasiItemCreateOrConnectWithoutEvaluatorInput | EvaluasiItemCreateOrConnectWithoutEvaluatorInput[]
+    createMany?: EvaluasiItemCreateManyEvaluatorInputEnvelope
+    connect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+  }
+
+  export type KomentarUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
+    createMany?: KomentarCreateManyUserInputEnvelope
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -26639,6 +29749,62 @@ export namespace Prisma {
     deleteMany?: PeraturanScalarWhereInput | PeraturanScalarWhereInput[]
   }
 
+  export type VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput> | VerifikasiBatchCreateWithoutVerifiedByUserInput[] | VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput | VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput[]
+    upsert?: VerifikasiBatchUpsertWithWhereUniqueWithoutVerifiedByUserInput | VerifikasiBatchUpsertWithWhereUniqueWithoutVerifiedByUserInput[]
+    createMany?: VerifikasiBatchCreateManyVerifiedByUserInputEnvelope
+    set?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    disconnect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    delete?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    update?: VerifikasiBatchUpdateWithWhereUniqueWithoutVerifiedByUserInput | VerifikasiBatchUpdateWithWhereUniqueWithoutVerifiedByUserInput[]
+    updateMany?: VerifikasiBatchUpdateManyWithWhereWithoutVerifiedByUserInput | VerifikasiBatchUpdateManyWithWhereWithoutVerifiedByUserInput[]
+    deleteMany?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
+  }
+
+  export type VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput> | VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput[] | VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput | VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput[]
+    upsert?: VerifikasiBatchUpsertWithWhereUniqueWithoutSignedByKoordinatorUserInput | VerifikasiBatchUpsertWithWhereUniqueWithoutSignedByKoordinatorUserInput[]
+    createMany?: VerifikasiBatchCreateManySignedByKoordinatorUserInputEnvelope
+    set?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    disconnect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    delete?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    update?: VerifikasiBatchUpdateWithWhereUniqueWithoutSignedByKoordinatorUserInput | VerifikasiBatchUpdateWithWhereUniqueWithoutSignedByKoordinatorUserInput[]
+    updateMany?: VerifikasiBatchUpdateManyWithWhereWithoutSignedByKoordinatorUserInput | VerifikasiBatchUpdateManyWithWhereWithoutSignedByKoordinatorUserInput[]
+    deleteMany?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
+  }
+
+  export type EvaluasiItemUpdateManyWithoutEvaluatorNestedInput = {
+    create?: XOR<EvaluasiItemCreateWithoutEvaluatorInput, EvaluasiItemUncheckedCreateWithoutEvaluatorInput> | EvaluasiItemCreateWithoutEvaluatorInput[] | EvaluasiItemUncheckedCreateWithoutEvaluatorInput[]
+    connectOrCreate?: EvaluasiItemCreateOrConnectWithoutEvaluatorInput | EvaluasiItemCreateOrConnectWithoutEvaluatorInput[]
+    upsert?: EvaluasiItemUpsertWithWhereUniqueWithoutEvaluatorInput | EvaluasiItemUpsertWithWhereUniqueWithoutEvaluatorInput[]
+    createMany?: EvaluasiItemCreateManyEvaluatorInputEnvelope
+    set?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    disconnect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    delete?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    connect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    update?: EvaluasiItemUpdateWithWhereUniqueWithoutEvaluatorInput | EvaluasiItemUpdateWithWhereUniqueWithoutEvaluatorInput[]
+    updateMany?: EvaluasiItemUpdateManyWithWhereWithoutEvaluatorInput | EvaluasiItemUpdateManyWithWhereWithoutEvaluatorInput[]
+    deleteMany?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
+  }
+
+  export type KomentarUpdateManyWithoutUserNestedInput = {
+    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
+    upsert?: KomentarUpsertWithWhereUniqueWithoutUserInput | KomentarUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: KomentarCreateManyUserInputEnvelope
+    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    update?: KomentarUpdateWithWhereUniqueWithoutUserInput | KomentarUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: KomentarUpdateManyWithWhereWithoutUserInput | KomentarUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
+  }
+
   export type TimPenyusunUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<TimPenyusunCreateWithoutUserInput, TimPenyusunUncheckedCreateWithoutUserInput> | TimPenyusunCreateWithoutUserInput[] | TimPenyusunUncheckedCreateWithoutUserInput[]
     connectOrCreate?: TimPenyusunCreateOrConnectWithoutUserInput | TimPenyusunCreateOrConnectWithoutUserInput[]
@@ -26759,6 +29925,62 @@ export namespace Prisma {
     update?: PeraturanUpdateWithWhereUniqueWithoutCreatedByInput | PeraturanUpdateWithWhereUniqueWithoutCreatedByInput[]
     updateMany?: PeraturanUpdateManyWithWhereWithoutCreatedByInput | PeraturanUpdateManyWithWhereWithoutCreatedByInput[]
     deleteMany?: PeraturanScalarWhereInput | PeraturanScalarWhereInput[]
+  }
+
+  export type VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput> | VerifikasiBatchCreateWithoutVerifiedByUserInput[] | VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput | VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput[]
+    upsert?: VerifikasiBatchUpsertWithWhereUniqueWithoutVerifiedByUserInput | VerifikasiBatchUpsertWithWhereUniqueWithoutVerifiedByUserInput[]
+    createMany?: VerifikasiBatchCreateManyVerifiedByUserInputEnvelope
+    set?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    disconnect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    delete?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    update?: VerifikasiBatchUpdateWithWhereUniqueWithoutVerifiedByUserInput | VerifikasiBatchUpdateWithWhereUniqueWithoutVerifiedByUserInput[]
+    updateMany?: VerifikasiBatchUpdateManyWithWhereWithoutVerifiedByUserInput | VerifikasiBatchUpdateManyWithWhereWithoutVerifiedByUserInput[]
+    deleteMany?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
+  }
+
+  export type VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput> | VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput[] | VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput[]
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput | VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput[]
+    upsert?: VerifikasiBatchUpsertWithWhereUniqueWithoutSignedByKoordinatorUserInput | VerifikasiBatchUpsertWithWhereUniqueWithoutSignedByKoordinatorUserInput[]
+    createMany?: VerifikasiBatchCreateManySignedByKoordinatorUserInputEnvelope
+    set?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    disconnect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    delete?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
+    update?: VerifikasiBatchUpdateWithWhereUniqueWithoutSignedByKoordinatorUserInput | VerifikasiBatchUpdateWithWhereUniqueWithoutSignedByKoordinatorUserInput[]
+    updateMany?: VerifikasiBatchUpdateManyWithWhereWithoutSignedByKoordinatorUserInput | VerifikasiBatchUpdateManyWithWhereWithoutSignedByKoordinatorUserInput[]
+    deleteMany?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
+  }
+
+  export type EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput = {
+    create?: XOR<EvaluasiItemCreateWithoutEvaluatorInput, EvaluasiItemUncheckedCreateWithoutEvaluatorInput> | EvaluasiItemCreateWithoutEvaluatorInput[] | EvaluasiItemUncheckedCreateWithoutEvaluatorInput[]
+    connectOrCreate?: EvaluasiItemCreateOrConnectWithoutEvaluatorInput | EvaluasiItemCreateOrConnectWithoutEvaluatorInput[]
+    upsert?: EvaluasiItemUpsertWithWhereUniqueWithoutEvaluatorInput | EvaluasiItemUpsertWithWhereUniqueWithoutEvaluatorInput[]
+    createMany?: EvaluasiItemCreateManyEvaluatorInputEnvelope
+    set?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    disconnect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    delete?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    connect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+    update?: EvaluasiItemUpdateWithWhereUniqueWithoutEvaluatorInput | EvaluasiItemUpdateWithWhereUniqueWithoutEvaluatorInput[]
+    updateMany?: EvaluasiItemUpdateManyWithWhereWithoutEvaluatorInput | EvaluasiItemUpdateManyWithWhereWithoutEvaluatorInput[]
+    deleteMany?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
+  }
+
+  export type KomentarUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
+    upsert?: KomentarUpsertWithWhereUniqueWithoutUserInput | KomentarUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: KomentarCreateManyUserInputEnvelope
+    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    update?: KomentarUpdateWithWhereUniqueWithoutUserInput | KomentarUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: KomentarUpdateManyWithWhereWithoutUserInput | KomentarUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
   }
 
   export type UserCreateNestedManyWithoutOpdInput = {
@@ -27113,6 +30335,27 @@ export namespace Prisma {
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
   }
 
+  export type ImplementQualificationCreateNestedManyWithoutSopInput = {
+    create?: XOR<ImplementQualificationCreateWithoutSopInput, ImplementQualificationUncheckedCreateWithoutSopInput> | ImplementQualificationCreateWithoutSopInput[] | ImplementQualificationUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: ImplementQualificationCreateOrConnectWithoutSopInput | ImplementQualificationCreateOrConnectWithoutSopInput[]
+    createMany?: ImplementQualificationCreateManySopInputEnvelope
+    connect?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+  }
+
+  export type KomentarCreateNestedManyWithoutSopInput = {
+    create?: XOR<KomentarCreateWithoutSopInput, KomentarUncheckedCreateWithoutSopInput> | KomentarCreateWithoutSopInput[] | KomentarUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutSopInput | KomentarCreateOrConnectWithoutSopInput[]
+    createMany?: KomentarCreateManySopInputEnvelope
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+  }
+
+  export type TTESignatureCreateNestedManyWithoutSopInput = {
+    create?: XOR<TTESignatureCreateWithoutSopInput, TTESignatureUncheckedCreateWithoutSopInput> | TTESignatureCreateWithoutSopInput[] | TTESignatureUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutSopInput | TTESignatureCreateOrConnectWithoutSopInput[]
+    createMany?: TTESignatureCreateManySopInputEnvelope
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+  }
+
   export type RelatedSOPCreateNestedManyWithoutSopInput = {
     create?: XOR<RelatedSOPCreateWithoutSopInput, RelatedSOPUncheckedCreateWithoutSopInput> | RelatedSOPCreateWithoutSopInput[] | RelatedSOPUncheckedCreateWithoutSopInput[]
     connectOrCreate?: RelatedSOPCreateOrConnectWithoutSopInput | RelatedSOPCreateOrConnectWithoutSopInput[]
@@ -27167,6 +30410,27 @@ export namespace Prisma {
     connectOrCreate?: AuditLogCreateOrConnectWithoutSopInput | AuditLogCreateOrConnectWithoutSopInput[]
     createMany?: AuditLogCreateManySopInputEnvelope
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
+  }
+
+  export type ImplementQualificationUncheckedCreateNestedManyWithoutSopInput = {
+    create?: XOR<ImplementQualificationCreateWithoutSopInput, ImplementQualificationUncheckedCreateWithoutSopInput> | ImplementQualificationCreateWithoutSopInput[] | ImplementQualificationUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: ImplementQualificationCreateOrConnectWithoutSopInput | ImplementQualificationCreateOrConnectWithoutSopInput[]
+    createMany?: ImplementQualificationCreateManySopInputEnvelope
+    connect?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+  }
+
+  export type KomentarUncheckedCreateNestedManyWithoutSopInput = {
+    create?: XOR<KomentarCreateWithoutSopInput, KomentarUncheckedCreateWithoutSopInput> | KomentarCreateWithoutSopInput[] | KomentarUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutSopInput | KomentarCreateOrConnectWithoutSopInput[]
+    createMany?: KomentarCreateManySopInputEnvelope
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+  }
+
+  export type TTESignatureUncheckedCreateNestedManyWithoutSopInput = {
+    create?: XOR<TTESignatureCreateWithoutSopInput, TTESignatureUncheckedCreateWithoutSopInput> | TTESignatureCreateWithoutSopInput[] | TTESignatureUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutSopInput | TTESignatureCreateOrConnectWithoutSopInput[]
+    createMany?: TTESignatureCreateManySopInputEnvelope
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
   }
 
   export type RelatedSOPUncheckedCreateNestedManyWithoutSopInput = {
@@ -27319,6 +30583,48 @@ export namespace Prisma {
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
   }
 
+  export type ImplementQualificationUpdateManyWithoutSopNestedInput = {
+    create?: XOR<ImplementQualificationCreateWithoutSopInput, ImplementQualificationUncheckedCreateWithoutSopInput> | ImplementQualificationCreateWithoutSopInput[] | ImplementQualificationUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: ImplementQualificationCreateOrConnectWithoutSopInput | ImplementQualificationCreateOrConnectWithoutSopInput[]
+    upsert?: ImplementQualificationUpsertWithWhereUniqueWithoutSopInput | ImplementQualificationUpsertWithWhereUniqueWithoutSopInput[]
+    createMany?: ImplementQualificationCreateManySopInputEnvelope
+    set?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    disconnect?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    delete?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    connect?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    update?: ImplementQualificationUpdateWithWhereUniqueWithoutSopInput | ImplementQualificationUpdateWithWhereUniqueWithoutSopInput[]
+    updateMany?: ImplementQualificationUpdateManyWithWhereWithoutSopInput | ImplementQualificationUpdateManyWithWhereWithoutSopInput[]
+    deleteMany?: ImplementQualificationScalarWhereInput | ImplementQualificationScalarWhereInput[]
+  }
+
+  export type KomentarUpdateManyWithoutSopNestedInput = {
+    create?: XOR<KomentarCreateWithoutSopInput, KomentarUncheckedCreateWithoutSopInput> | KomentarCreateWithoutSopInput[] | KomentarUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutSopInput | KomentarCreateOrConnectWithoutSopInput[]
+    upsert?: KomentarUpsertWithWhereUniqueWithoutSopInput | KomentarUpsertWithWhereUniqueWithoutSopInput[]
+    createMany?: KomentarCreateManySopInputEnvelope
+    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    update?: KomentarUpdateWithWhereUniqueWithoutSopInput | KomentarUpdateWithWhereUniqueWithoutSopInput[]
+    updateMany?: KomentarUpdateManyWithWhereWithoutSopInput | KomentarUpdateManyWithWhereWithoutSopInput[]
+    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
+  }
+
+  export type TTESignatureUpdateManyWithoutSopNestedInput = {
+    create?: XOR<TTESignatureCreateWithoutSopInput, TTESignatureUncheckedCreateWithoutSopInput> | TTESignatureCreateWithoutSopInput[] | TTESignatureUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutSopInput | TTESignatureCreateOrConnectWithoutSopInput[]
+    upsert?: TTESignatureUpsertWithWhereUniqueWithoutSopInput | TTESignatureUpsertWithWhereUniqueWithoutSopInput[]
+    createMany?: TTESignatureCreateManySopInputEnvelope
+    set?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    disconnect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    delete?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    update?: TTESignatureUpdateWithWhereUniqueWithoutSopInput | TTESignatureUpdateWithWhereUniqueWithoutSopInput[]
+    updateMany?: TTESignatureUpdateManyWithWhereWithoutSopInput | TTESignatureUpdateManyWithWhereWithoutSopInput[]
+    deleteMany?: TTESignatureScalarWhereInput | TTESignatureScalarWhereInput[]
+  }
+
   export type RelatedSOPUpdateManyWithoutSopNestedInput = {
     create?: XOR<RelatedSOPCreateWithoutSopInput, RelatedSOPUncheckedCreateWithoutSopInput> | RelatedSOPCreateWithoutSopInput[] | RelatedSOPUncheckedCreateWithoutSopInput[]
     connectOrCreate?: RelatedSOPCreateOrConnectWithoutSopInput | RelatedSOPCreateOrConnectWithoutSopInput[]
@@ -27429,6 +30735,48 @@ export namespace Prisma {
     update?: AuditLogUpdateWithWhereUniqueWithoutSopInput | AuditLogUpdateWithWhereUniqueWithoutSopInput[]
     updateMany?: AuditLogUpdateManyWithWhereWithoutSopInput | AuditLogUpdateManyWithWhereWithoutSopInput[]
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
+  }
+
+  export type ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput = {
+    create?: XOR<ImplementQualificationCreateWithoutSopInput, ImplementQualificationUncheckedCreateWithoutSopInput> | ImplementQualificationCreateWithoutSopInput[] | ImplementQualificationUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: ImplementQualificationCreateOrConnectWithoutSopInput | ImplementQualificationCreateOrConnectWithoutSopInput[]
+    upsert?: ImplementQualificationUpsertWithWhereUniqueWithoutSopInput | ImplementQualificationUpsertWithWhereUniqueWithoutSopInput[]
+    createMany?: ImplementQualificationCreateManySopInputEnvelope
+    set?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    disconnect?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    delete?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    connect?: ImplementQualificationWhereUniqueInput | ImplementQualificationWhereUniqueInput[]
+    update?: ImplementQualificationUpdateWithWhereUniqueWithoutSopInput | ImplementQualificationUpdateWithWhereUniqueWithoutSopInput[]
+    updateMany?: ImplementQualificationUpdateManyWithWhereWithoutSopInput | ImplementQualificationUpdateManyWithWhereWithoutSopInput[]
+    deleteMany?: ImplementQualificationScalarWhereInput | ImplementQualificationScalarWhereInput[]
+  }
+
+  export type KomentarUncheckedUpdateManyWithoutSopNestedInput = {
+    create?: XOR<KomentarCreateWithoutSopInput, KomentarUncheckedCreateWithoutSopInput> | KomentarCreateWithoutSopInput[] | KomentarUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: KomentarCreateOrConnectWithoutSopInput | KomentarCreateOrConnectWithoutSopInput[]
+    upsert?: KomentarUpsertWithWhereUniqueWithoutSopInput | KomentarUpsertWithWhereUniqueWithoutSopInput[]
+    createMany?: KomentarCreateManySopInputEnvelope
+    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
+    update?: KomentarUpdateWithWhereUniqueWithoutSopInput | KomentarUpdateWithWhereUniqueWithoutSopInput[]
+    updateMany?: KomentarUpdateManyWithWhereWithoutSopInput | KomentarUpdateManyWithWhereWithoutSopInput[]
+    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
+  }
+
+  export type TTESignatureUncheckedUpdateManyWithoutSopNestedInput = {
+    create?: XOR<TTESignatureCreateWithoutSopInput, TTESignatureUncheckedCreateWithoutSopInput> | TTESignatureCreateWithoutSopInput[] | TTESignatureUncheckedCreateWithoutSopInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutSopInput | TTESignatureCreateOrConnectWithoutSopInput[]
+    upsert?: TTESignatureUpsertWithWhereUniqueWithoutSopInput | TTESignatureUpsertWithWhereUniqueWithoutSopInput[]
+    createMany?: TTESignatureCreateManySopInputEnvelope
+    set?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    disconnect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    delete?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    update?: TTESignatureUpdateWithWhereUniqueWithoutSopInput | TTESignatureUpdateWithWhereUniqueWithoutSopInput[]
+    updateMany?: TTESignatureUpdateManyWithWhereWithoutSopInput | TTESignatureUpdateManyWithWhereWithoutSopInput[]
+    deleteMany?: TTESignatureScalarWhereInput | TTESignatureScalarWhereInput[]
   }
 
   export type RelatedSOPUncheckedUpdateManyWithoutSopNestedInput = {
@@ -27843,20 +31191,6 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type VerifikasiBatchCreateNestedManyWithoutTimEvaluasiInput = {
-    create?: XOR<VerifikasiBatchCreateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput> | VerifikasiBatchCreateWithoutTimEvaluasiInput[] | VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput[]
-    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput | VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput[]
-    createMany?: VerifikasiBatchCreateManyTimEvaluasiInputEnvelope
-    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-  }
-
-  export type VerifikasiBatchUncheckedCreateNestedManyWithoutTimEvaluasiInput = {
-    create?: XOR<VerifikasiBatchCreateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput> | VerifikasiBatchCreateWithoutTimEvaluasiInput[] | VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput[]
-    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput | VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput[]
-    createMany?: VerifikasiBatchCreateManyTimEvaluasiInputEnvelope
-    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-  }
-
   export type UserUpdateOneRequiredWithoutTimEvaluasiNestedInput = {
     create?: XOR<UserCreateWithoutTimEvaluasiInput, UserUncheckedCreateWithoutTimEvaluasiInput>
     connectOrCreate?: UserCreateOrConnectWithoutTimEvaluasiInput
@@ -27865,44 +31199,22 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTimEvaluasiInput, UserUpdateWithoutTimEvaluasiInput>, UserUncheckedUpdateWithoutTimEvaluasiInput>
   }
 
-  export type VerifikasiBatchUpdateManyWithoutTimEvaluasiNestedInput = {
-    create?: XOR<VerifikasiBatchCreateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput> | VerifikasiBatchCreateWithoutTimEvaluasiInput[] | VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput[]
-    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput | VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput[]
-    upsert?: VerifikasiBatchUpsertWithWhereUniqueWithoutTimEvaluasiInput | VerifikasiBatchUpsertWithWhereUniqueWithoutTimEvaluasiInput[]
-    createMany?: VerifikasiBatchCreateManyTimEvaluasiInputEnvelope
-    set?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    disconnect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    delete?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    update?: VerifikasiBatchUpdateWithWhereUniqueWithoutTimEvaluasiInput | VerifikasiBatchUpdateWithWhereUniqueWithoutTimEvaluasiInput[]
-    updateMany?: VerifikasiBatchUpdateManyWithWhereWithoutTimEvaluasiInput | VerifikasiBatchUpdateManyWithWhereWithoutTimEvaluasiInput[]
-    deleteMany?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
-  }
-
-  export type VerifikasiBatchUncheckedUpdateManyWithoutTimEvaluasiNestedInput = {
-    create?: XOR<VerifikasiBatchCreateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput> | VerifikasiBatchCreateWithoutTimEvaluasiInput[] | VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput[]
-    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput | VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput[]
-    upsert?: VerifikasiBatchUpsertWithWhereUniqueWithoutTimEvaluasiInput | VerifikasiBatchUpsertWithWhereUniqueWithoutTimEvaluasiInput[]
-    createMany?: VerifikasiBatchCreateManyTimEvaluasiInputEnvelope
-    set?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    disconnect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    delete?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    connect?: VerifikasiBatchWhereUniqueInput | VerifikasiBatchWhereUniqueInput[]
-    update?: VerifikasiBatchUpdateWithWhereUniqueWithoutTimEvaluasiInput | VerifikasiBatchUpdateWithWhereUniqueWithoutTimEvaluasiInput[]
-    updateMany?: VerifikasiBatchUpdateManyWithWhereWithoutTimEvaluasiInput | VerifikasiBatchUpdateManyWithWhereWithoutTimEvaluasiInput[]
-    deleteMany?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
-  }
-
   export type OPDCreateNestedOneWithoutVerifikasiBatchInput = {
     create?: XOR<OPDCreateWithoutVerifikasiBatchInput, OPDUncheckedCreateWithoutVerifikasiBatchInput>
     connectOrCreate?: OPDCreateOrConnectWithoutVerifikasiBatchInput
     connect?: OPDWhereUniqueInput
   }
 
-  export type TimEvaluasiAnggotaCreateNestedOneWithoutVerifikasiBatchInput = {
-    create?: XOR<TimEvaluasiAnggotaCreateWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUncheckedCreateWithoutVerifikasiBatchInput>
-    connectOrCreate?: TimEvaluasiAnggotaCreateOrConnectWithoutVerifikasiBatchInput
-    connect?: TimEvaluasiAnggotaWhereUniqueInput
+  export type UserCreateNestedOneWithoutBatchesVerifiedInput = {
+    create?: XOR<UserCreateWithoutBatchesVerifiedInput, UserUncheckedCreateWithoutBatchesVerifiedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBatchesVerifiedInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutBatchesSignedInput = {
+    create?: XOR<UserCreateWithoutBatchesSignedInput, UserUncheckedCreateWithoutBatchesSignedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBatchesSignedInput
+    connect?: UserWhereUniqueInput
   }
 
   export type EvaluasiItemCreateNestedManyWithoutBatchInput = {
@@ -27912,11 +31224,25 @@ export namespace Prisma {
     connect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
   }
 
+  export type TTESignatureCreateNestedManyWithoutBatchInput = {
+    create?: XOR<TTESignatureCreateWithoutBatchInput, TTESignatureUncheckedCreateWithoutBatchInput> | TTESignatureCreateWithoutBatchInput[] | TTESignatureUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutBatchInput | TTESignatureCreateOrConnectWithoutBatchInput[]
+    createMany?: TTESignatureCreateManyBatchInputEnvelope
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+  }
+
   export type EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput = {
     create?: XOR<EvaluasiItemCreateWithoutBatchInput, EvaluasiItemUncheckedCreateWithoutBatchInput> | EvaluasiItemCreateWithoutBatchInput[] | EvaluasiItemUncheckedCreateWithoutBatchInput[]
     connectOrCreate?: EvaluasiItemCreateOrConnectWithoutBatchInput | EvaluasiItemCreateOrConnectWithoutBatchInput[]
     createMany?: EvaluasiItemCreateManyBatchInputEnvelope
     connect?: EvaluasiItemWhereUniqueInput | EvaluasiItemWhereUniqueInput[]
+  }
+
+  export type TTESignatureUncheckedCreateNestedManyWithoutBatchInput = {
+    create?: XOR<TTESignatureCreateWithoutBatchInput, TTESignatureUncheckedCreateWithoutBatchInput> | TTESignatureCreateWithoutBatchInput[] | TTESignatureUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutBatchInput | TTESignatureCreateOrConnectWithoutBatchInput[]
+    createMany?: TTESignatureCreateManyBatchInputEnvelope
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
   }
 
   export type EnumJenisBatchFieldUpdateOperationsInput = {
@@ -27939,14 +31265,24 @@ export namespace Prisma {
     update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutVerifikasiBatchInput, OPDUpdateWithoutVerifikasiBatchInput>, OPDUncheckedUpdateWithoutVerifikasiBatchInput>
   }
 
-  export type TimEvaluasiAnggotaUpdateOneWithoutVerifikasiBatchNestedInput = {
-    create?: XOR<TimEvaluasiAnggotaCreateWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUncheckedCreateWithoutVerifikasiBatchInput>
-    connectOrCreate?: TimEvaluasiAnggotaCreateOrConnectWithoutVerifikasiBatchInput
-    upsert?: TimEvaluasiAnggotaUpsertWithoutVerifikasiBatchInput
-    disconnect?: TimEvaluasiAnggotaWhereInput | boolean
-    delete?: TimEvaluasiAnggotaWhereInput | boolean
-    connect?: TimEvaluasiAnggotaWhereUniqueInput
-    update?: XOR<XOR<TimEvaluasiAnggotaUpdateToOneWithWhereWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUpdateWithoutVerifikasiBatchInput>, TimEvaluasiAnggotaUncheckedUpdateWithoutVerifikasiBatchInput>
+  export type UserUpdateOneWithoutBatchesVerifiedNestedInput = {
+    create?: XOR<UserCreateWithoutBatchesVerifiedInput, UserUncheckedCreateWithoutBatchesVerifiedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBatchesVerifiedInput
+    upsert?: UserUpsertWithoutBatchesVerifiedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBatchesVerifiedInput, UserUpdateWithoutBatchesVerifiedInput>, UserUncheckedUpdateWithoutBatchesVerifiedInput>
+  }
+
+  export type UserUpdateOneWithoutBatchesSignedNestedInput = {
+    create?: XOR<UserCreateWithoutBatchesSignedInput, UserUncheckedCreateWithoutBatchesSignedInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBatchesSignedInput
+    upsert?: UserUpsertWithoutBatchesSignedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBatchesSignedInput, UserUpdateWithoutBatchesSignedInput>, UserUncheckedUpdateWithoutBatchesSignedInput>
   }
 
   export type EvaluasiItemUpdateManyWithoutBatchNestedInput = {
@@ -27963,6 +31299,20 @@ export namespace Prisma {
     deleteMany?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
   }
 
+  export type TTESignatureUpdateManyWithoutBatchNestedInput = {
+    create?: XOR<TTESignatureCreateWithoutBatchInput, TTESignatureUncheckedCreateWithoutBatchInput> | TTESignatureCreateWithoutBatchInput[] | TTESignatureUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutBatchInput | TTESignatureCreateOrConnectWithoutBatchInput[]
+    upsert?: TTESignatureUpsertWithWhereUniqueWithoutBatchInput | TTESignatureUpsertWithWhereUniqueWithoutBatchInput[]
+    createMany?: TTESignatureCreateManyBatchInputEnvelope
+    set?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    disconnect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    delete?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    update?: TTESignatureUpdateWithWhereUniqueWithoutBatchInput | TTESignatureUpdateWithWhereUniqueWithoutBatchInput[]
+    updateMany?: TTESignatureUpdateManyWithWhereWithoutBatchInput | TTESignatureUpdateManyWithWhereWithoutBatchInput[]
+    deleteMany?: TTESignatureScalarWhereInput | TTESignatureScalarWhereInput[]
+  }
+
   export type EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput = {
     create?: XOR<EvaluasiItemCreateWithoutBatchInput, EvaluasiItemUncheckedCreateWithoutBatchInput> | EvaluasiItemCreateWithoutBatchInput[] | EvaluasiItemUncheckedCreateWithoutBatchInput[]
     connectOrCreate?: EvaluasiItemCreateOrConnectWithoutBatchInput | EvaluasiItemCreateOrConnectWithoutBatchInput[]
@@ -27977,6 +31327,20 @@ export namespace Prisma {
     deleteMany?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
   }
 
+  export type TTESignatureUncheckedUpdateManyWithoutBatchNestedInput = {
+    create?: XOR<TTESignatureCreateWithoutBatchInput, TTESignatureUncheckedCreateWithoutBatchInput> | TTESignatureCreateWithoutBatchInput[] | TTESignatureUncheckedCreateWithoutBatchInput[]
+    connectOrCreate?: TTESignatureCreateOrConnectWithoutBatchInput | TTESignatureCreateOrConnectWithoutBatchInput[]
+    upsert?: TTESignatureUpsertWithWhereUniqueWithoutBatchInput | TTESignatureUpsertWithWhereUniqueWithoutBatchInput[]
+    createMany?: TTESignatureCreateManyBatchInputEnvelope
+    set?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    disconnect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    delete?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    connect?: TTESignatureWhereUniqueInput | TTESignatureWhereUniqueInput[]
+    update?: TTESignatureUpdateWithWhereUniqueWithoutBatchInput | TTESignatureUpdateWithWhereUniqueWithoutBatchInput[]
+    updateMany?: TTESignatureUpdateManyWithWhereWithoutBatchInput | TTESignatureUpdateManyWithWhereWithoutBatchInput[]
+    deleteMany?: TTESignatureScalarWhereInput | TTESignatureScalarWhereInput[]
+  }
+
   export type VerifikasiBatchCreateNestedOneWithoutEvaluasiItemsInput = {
     create?: XOR<VerifikasiBatchCreateWithoutEvaluasiItemsInput, VerifikasiBatchUncheckedCreateWithoutEvaluasiItemsInput>
     connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutEvaluasiItemsInput
@@ -27987,6 +31351,12 @@ export namespace Prisma {
     create?: XOR<SOPCreateWithoutEvaluasiItemsInput, SOPUncheckedCreateWithoutEvaluasiItemsInput>
     connectOrCreate?: SOPCreateOrConnectWithoutEvaluasiItemsInput
     connect?: SOPWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutEvaluasiItemsInput = {
+    create?: XOR<UserCreateWithoutEvaluasiItemsInput, UserUncheckedCreateWithoutEvaluasiItemsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEvaluasiItemsInput
+    connect?: UserWhereUniqueInput
   }
 
   export type NullableEnumHasilEvaluasiFieldUpdateOperationsInput = {
@@ -28007,6 +31377,14 @@ export namespace Prisma {
     upsert?: SOPUpsertWithoutEvaluasiItemsInput
     connect?: SOPWhereUniqueInput
     update?: XOR<XOR<SOPUpdateToOneWithWhereWithoutEvaluasiItemsInput, SOPUpdateWithoutEvaluasiItemsInput>, SOPUncheckedUpdateWithoutEvaluasiItemsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutEvaluasiItemsNestedInput = {
+    create?: XOR<UserCreateWithoutEvaluasiItemsInput, UserUncheckedCreateWithoutEvaluasiItemsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutEvaluasiItemsInput
+    upsert?: UserUpsertWithoutEvaluasiItemsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutEvaluasiItemsInput, UserUpdateWithoutEvaluasiItemsInput>, UserUncheckedUpdateWithoutEvaluasiItemsInput>
   }
 
   export type UserCreateNestedOneWithoutTteProfileInput = {
@@ -28033,12 +31411,44 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type SOPCreateNestedOneWithoutTteSignaturesInput = {
+    create?: XOR<SOPCreateWithoutTteSignaturesInput, SOPUncheckedCreateWithoutTteSignaturesInput>
+    connectOrCreate?: SOPCreateOrConnectWithoutTteSignaturesInput
+    connect?: SOPWhereUniqueInput
+  }
+
+  export type VerifikasiBatchCreateNestedOneWithoutTteSignaturesInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutTteSignaturesInput, VerifikasiBatchUncheckedCreateWithoutTteSignaturesInput>
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutTteSignaturesInput
+    connect?: VerifikasiBatchWhereUniqueInput
+  }
+
   export type UserUpdateOneRequiredWithoutTteSignaturesNestedInput = {
     create?: XOR<UserCreateWithoutTteSignaturesInput, UserUncheckedCreateWithoutTteSignaturesInput>
     connectOrCreate?: UserCreateOrConnectWithoutTteSignaturesInput
     upsert?: UserUpsertWithoutTteSignaturesInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTteSignaturesInput, UserUpdateWithoutTteSignaturesInput>, UserUncheckedUpdateWithoutTteSignaturesInput>
+  }
+
+  export type SOPUpdateOneWithoutTteSignaturesNestedInput = {
+    create?: XOR<SOPCreateWithoutTteSignaturesInput, SOPUncheckedCreateWithoutTteSignaturesInput>
+    connectOrCreate?: SOPCreateOrConnectWithoutTteSignaturesInput
+    upsert?: SOPUpsertWithoutTteSignaturesInput
+    disconnect?: SOPWhereInput | boolean
+    delete?: SOPWhereInput | boolean
+    connect?: SOPWhereUniqueInput
+    update?: XOR<XOR<SOPUpdateToOneWithWhereWithoutTteSignaturesInput, SOPUpdateWithoutTteSignaturesInput>, SOPUncheckedUpdateWithoutTteSignaturesInput>
+  }
+
+  export type VerifikasiBatchUpdateOneWithoutTteSignaturesNestedInput = {
+    create?: XOR<VerifikasiBatchCreateWithoutTteSignaturesInput, VerifikasiBatchUncheckedCreateWithoutTteSignaturesInput>
+    connectOrCreate?: VerifikasiBatchCreateOrConnectWithoutTteSignaturesInput
+    upsert?: VerifikasiBatchUpsertWithoutTteSignaturesInput
+    disconnect?: VerifikasiBatchWhereInput | boolean
+    delete?: VerifikasiBatchWhereInput | boolean
+    connect?: VerifikasiBatchWhereUniqueInput
+    update?: XOR<XOR<VerifikasiBatchUpdateToOneWithWhereWithoutTteSignaturesInput, VerifikasiBatchUpdateWithoutTteSignaturesInput>, VerifikasiBatchUncheckedUpdateWithoutTteSignaturesInput>
   }
 
   export type SOPCreateNestedOneWithoutAuditLogsInput = {
@@ -28075,6 +31485,52 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutAuditLogsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAuditLogsInput, UserUpdateWithoutAuditLogsInput>, UserUncheckedUpdateWithoutAuditLogsInput>
+  }
+
+  export type SOPCreateNestedOneWithoutImplementQualificationsInput = {
+    create?: XOR<SOPCreateWithoutImplementQualificationsInput, SOPUncheckedCreateWithoutImplementQualificationsInput>
+    connectOrCreate?: SOPCreateOrConnectWithoutImplementQualificationsInput
+    connect?: SOPWhereUniqueInput
+  }
+
+  export type SOPUpdateOneRequiredWithoutImplementQualificationsNestedInput = {
+    create?: XOR<SOPCreateWithoutImplementQualificationsInput, SOPUncheckedCreateWithoutImplementQualificationsInput>
+    connectOrCreate?: SOPCreateOrConnectWithoutImplementQualificationsInput
+    upsert?: SOPUpsertWithoutImplementQualificationsInput
+    connect?: SOPWhereUniqueInput
+    update?: XOR<XOR<SOPUpdateToOneWithWhereWithoutImplementQualificationsInput, SOPUpdateWithoutImplementQualificationsInput>, SOPUncheckedUpdateWithoutImplementQualificationsInput>
+  }
+
+  export type SOPCreateNestedOneWithoutKomentarsInput = {
+    create?: XOR<SOPCreateWithoutKomentarsInput, SOPUncheckedCreateWithoutKomentarsInput>
+    connectOrCreate?: SOPCreateOrConnectWithoutKomentarsInput
+    connect?: SOPWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutKomentarsInput = {
+    create?: XOR<UserCreateWithoutKomentarsInput, UserUncheckedCreateWithoutKomentarsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutKomentarsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumKomentarStatusFieldUpdateOperationsInput = {
+    set?: $Enums.KomentarStatus
+  }
+
+  export type SOPUpdateOneRequiredWithoutKomentarsNestedInput = {
+    create?: XOR<SOPCreateWithoutKomentarsInput, SOPUncheckedCreateWithoutKomentarsInput>
+    connectOrCreate?: SOPCreateOrConnectWithoutKomentarsInput
+    upsert?: SOPUpsertWithoutKomentarsInput
+    connect?: SOPWhereUniqueInput
+    update?: XOR<XOR<SOPUpdateToOneWithWhereWithoutKomentarsInput, SOPUpdateWithoutKomentarsInput>, SOPUncheckedUpdateWithoutKomentarsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutKomentarsNestedInput = {
+    create?: XOR<UserCreateWithoutKomentarsInput, UserUncheckedCreateWithoutKomentarsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutKomentarsInput
+    upsert?: UserUpsertWithoutKomentarsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutKomentarsInput, UserUpdateWithoutKomentarsInput>, UserUncheckedUpdateWithoutKomentarsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -28486,6 +31942,23 @@ export namespace Prisma {
     _max?: NestedEnumStatusSOPNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumKomentarStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.KomentarStatus | EnumKomentarStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.KomentarStatus[]
+    notIn?: $Enums.KomentarStatus[]
+    not?: NestedEnumKomentarStatusFilter<$PrismaModel> | $Enums.KomentarStatus
+  }
+
+  export type NestedEnumKomentarStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.KomentarStatus | EnumKomentarStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.KomentarStatus[]
+    notIn?: $Enums.KomentarStatus[]
+    not?: NestedEnumKomentarStatusWithAggregatesFilter<$PrismaModel> | $Enums.KomentarStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumKomentarStatusFilter<$PrismaModel>
+    _max?: NestedEnumKomentarStatusFilter<$PrismaModel>
+  }
+
   export type OPDCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -28558,7 +32031,6 @@ export namespace Prisma {
     endedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    verifikasiBatch?: VerifikasiBatchCreateNestedManyWithoutTimEvaluasiInput
   }
 
   export type TimEvaluasiAnggotaUncheckedCreateWithoutUserInput = {
@@ -28568,7 +32040,6 @@ export namespace Prisma {
     endedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    verifikasiBatch?: VerifikasiBatchUncheckedCreateNestedManyWithoutTimEvaluasiInput
   }
 
   export type TimEvaluasiAnggotaCreateOrConnectWithoutUserInput = {
@@ -28614,6 +32085,8 @@ export namespace Prisma {
     referenceId: string
     documentHash: string
     signedAt?: Date | string
+    sop?: SOPCreateNestedOneWithoutTteSignaturesInput
+    batch?: VerifikasiBatchCreateNestedOneWithoutTteSignaturesInput
   }
 
   export type TTESignatureUncheckedCreateWithoutUserInput = {
@@ -28623,6 +32096,8 @@ export namespace Prisma {
     documentLabel: string
     referenceId: string
     documentHash: string
+    sopId?: string | null
+    batchId?: string | null
     signedAt?: Date | string
   }
 
@@ -28692,6 +32167,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -28720,6 +32198,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -28758,6 +32239,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -28786,6 +32270,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -28824,6 +32311,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -28852,6 +32342,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -28899,6 +32392,166 @@ export namespace Prisma {
 
   export type PeraturanCreateManyCreatedByInputEnvelope = {
     data: PeraturanCreateManyCreatedByInput | PeraturanCreateManyCreatedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VerifikasiBatchCreateWithoutVerifiedByUserInput = {
+    id?: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutVerifikasiBatchInput
+    signedByKoordinatorUser?: UserCreateNestedOneWithoutBatchesSignedInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutBatchInput
+  }
+
+  export type VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput = {
+    id?: string
+    opdId: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    signedByKoordinatorUserId?: string | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutBatchInput
+  }
+
+  export type VerifikasiBatchCreateOrConnectWithoutVerifiedByUserInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    create: XOR<VerifikasiBatchCreateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput>
+  }
+
+  export type VerifikasiBatchCreateManyVerifiedByUserInputEnvelope = {
+    data: VerifikasiBatchCreateManyVerifiedByUserInput | VerifikasiBatchCreateManyVerifiedByUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput = {
+    id?: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutVerifikasiBatchInput
+    verifiedByUser?: UserCreateNestedOneWithoutBatchesVerifiedInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutBatchInput
+  }
+
+  export type VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput = {
+    id?: string
+    opdId: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutBatchInput
+  }
+
+  export type VerifikasiBatchCreateOrConnectWithoutSignedByKoordinatorUserInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    create: XOR<VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput>
+  }
+
+  export type VerifikasiBatchCreateManySignedByKoordinatorUserInputEnvelope = {
+    data: VerifikasiBatchCreateManySignedByKoordinatorUserInput | VerifikasiBatchCreateManySignedByKoordinatorUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EvaluasiItemCreateWithoutEvaluatorInput = {
+    id?: string
+    hasil?: $Enums.HasilEvaluasi | null
+    catatan?: string | null
+    rekomendasi?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    batch: VerifikasiBatchCreateNestedOneWithoutEvaluasiItemsInput
+    sop: SOPCreateNestedOneWithoutEvaluasiItemsInput
+  }
+
+  export type EvaluasiItemUncheckedCreateWithoutEvaluatorInput = {
+    id?: string
+    batchId: string
+    sopId: string
+    hasil?: $Enums.HasilEvaluasi | null
+    catatan?: string | null
+    rekomendasi?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EvaluasiItemCreateOrConnectWithoutEvaluatorInput = {
+    where: EvaluasiItemWhereUniqueInput
+    create: XOR<EvaluasiItemCreateWithoutEvaluatorInput, EvaluasiItemUncheckedCreateWithoutEvaluatorInput>
+  }
+
+  export type EvaluasiItemCreateManyEvaluatorInputEnvelope = {
+    data: EvaluasiItemCreateManyEvaluatorInput | EvaluasiItemCreateManyEvaluatorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type KomentarCreateWithoutUserInput = {
+    id?: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sop: SOPCreateNestedOneWithoutKomentarsInput
+  }
+
+  export type KomentarUncheckedCreateWithoutUserInput = {
+    id?: string
+    sopId: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KomentarCreateOrConnectWithoutUserInput = {
+    where: KomentarWhereUniqueInput
+    create: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput>
+  }
+
+  export type KomentarCreateManyUserInputEnvelope = {
+    data: KomentarCreateManyUserInput | KomentarCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -29059,6 +32712,8 @@ export namespace Prisma {
     documentLabel?: StringFilter<"TTESignature"> | string
     referenceId?: StringFilter<"TTESignature"> | string
     documentHash?: StringFilter<"TTESignature"> | string
+    sopId?: StringNullableFilter<"TTESignature"> | string | null
+    batchId?: StringNullableFilter<"TTESignature"> | string | null
     signedAt?: DateTimeFilter<"TTESignature"> | Date | string
   }
 
@@ -29197,6 +32852,121 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Peraturan"> | Date | string
   }
 
+  export type VerifikasiBatchUpsertWithWhereUniqueWithoutVerifiedByUserInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    update: XOR<VerifikasiBatchUpdateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedUpdateWithoutVerifiedByUserInput>
+    create: XOR<VerifikasiBatchCreateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedCreateWithoutVerifiedByUserInput>
+  }
+
+  export type VerifikasiBatchUpdateWithWhereUniqueWithoutVerifiedByUserInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    data: XOR<VerifikasiBatchUpdateWithoutVerifiedByUserInput, VerifikasiBatchUncheckedUpdateWithoutVerifiedByUserInput>
+  }
+
+  export type VerifikasiBatchUpdateManyWithWhereWithoutVerifiedByUserInput = {
+    where: VerifikasiBatchScalarWhereInput
+    data: XOR<VerifikasiBatchUpdateManyMutationInput, VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserInput>
+  }
+
+  export type VerifikasiBatchScalarWhereInput = {
+    AND?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
+    OR?: VerifikasiBatchScalarWhereInput[]
+    NOT?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
+    id?: StringFilter<"VerifikasiBatch"> | string
+    opdId?: StringFilter<"VerifikasiBatch"> | string
+    jenis?: EnumJenisBatchFilter<"VerifikasiBatch"> | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFilter<"VerifikasiBatch"> | $Enums.StatusEvaluasi
+    catatan?: StringNullableFilter<"VerifikasiBatch"> | string | null
+    nomorBA?: StringNullableFilter<"VerifikasiBatch"> | string | null
+    tanggalRequest?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    tanggalEvaluasi?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    nilaiOPD?: IntNullableFilter<"VerifikasiBatch"> | number | null
+    verifiedByUserId?: StringNullableFilter<"VerifikasiBatch"> | string | null
+    signedByKoordinatorUserId?: StringNullableFilter<"VerifikasiBatch"> | string | null
+    isSignedByKoordinator?: BoolFilter<"VerifikasiBatch"> | boolean
+    tanggalTTDBaByKoordinator?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
+    createdAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
+    updatedAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
+  }
+
+  export type VerifikasiBatchUpsertWithWhereUniqueWithoutSignedByKoordinatorUserInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    update: XOR<VerifikasiBatchUpdateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedUpdateWithoutSignedByKoordinatorUserInput>
+    create: XOR<VerifikasiBatchCreateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedCreateWithoutSignedByKoordinatorUserInput>
+  }
+
+  export type VerifikasiBatchUpdateWithWhereUniqueWithoutSignedByKoordinatorUserInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    data: XOR<VerifikasiBatchUpdateWithoutSignedByKoordinatorUserInput, VerifikasiBatchUncheckedUpdateWithoutSignedByKoordinatorUserInput>
+  }
+
+  export type VerifikasiBatchUpdateManyWithWhereWithoutSignedByKoordinatorUserInput = {
+    where: VerifikasiBatchScalarWhereInput
+    data: XOR<VerifikasiBatchUpdateManyMutationInput, VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserInput>
+  }
+
+  export type EvaluasiItemUpsertWithWhereUniqueWithoutEvaluatorInput = {
+    where: EvaluasiItemWhereUniqueInput
+    update: XOR<EvaluasiItemUpdateWithoutEvaluatorInput, EvaluasiItemUncheckedUpdateWithoutEvaluatorInput>
+    create: XOR<EvaluasiItemCreateWithoutEvaluatorInput, EvaluasiItemUncheckedCreateWithoutEvaluatorInput>
+  }
+
+  export type EvaluasiItemUpdateWithWhereUniqueWithoutEvaluatorInput = {
+    where: EvaluasiItemWhereUniqueInput
+    data: XOR<EvaluasiItemUpdateWithoutEvaluatorInput, EvaluasiItemUncheckedUpdateWithoutEvaluatorInput>
+  }
+
+  export type EvaluasiItemUpdateManyWithWhereWithoutEvaluatorInput = {
+    where: EvaluasiItemScalarWhereInput
+    data: XOR<EvaluasiItemUpdateManyMutationInput, EvaluasiItemUncheckedUpdateManyWithoutEvaluatorInput>
+  }
+
+  export type EvaluasiItemScalarWhereInput = {
+    AND?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
+    OR?: EvaluasiItemScalarWhereInput[]
+    NOT?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
+    id?: StringFilter<"EvaluasiItem"> | string
+    batchId?: StringFilter<"EvaluasiItem"> | string
+    sopId?: StringFilter<"EvaluasiItem"> | string
+    evaluatorId?: StringFilter<"EvaluasiItem"> | string
+    hasil?: EnumHasilEvaluasiNullableFilter<"EvaluasiItem"> | $Enums.HasilEvaluasi | null
+    catatan?: StringNullableFilter<"EvaluasiItem"> | string | null
+    rekomendasi?: StringNullableFilter<"EvaluasiItem"> | string | null
+    createdAt?: DateTimeFilter<"EvaluasiItem"> | Date | string
+    updatedAt?: DateTimeFilter<"EvaluasiItem"> | Date | string
+  }
+
+  export type KomentarUpsertWithWhereUniqueWithoutUserInput = {
+    where: KomentarWhereUniqueInput
+    update: XOR<KomentarUpdateWithoutUserInput, KomentarUncheckedUpdateWithoutUserInput>
+    create: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput>
+  }
+
+  export type KomentarUpdateWithWhereUniqueWithoutUserInput = {
+    where: KomentarWhereUniqueInput
+    data: XOR<KomentarUpdateWithoutUserInput, KomentarUncheckedUpdateWithoutUserInput>
+  }
+
+  export type KomentarUpdateManyWithWhereWithoutUserInput = {
+    where: KomentarScalarWhereInput
+    data: XOR<KomentarUpdateManyMutationInput, KomentarUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type KomentarScalarWhereInput = {
+    AND?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
+    OR?: KomentarScalarWhereInput[]
+    NOT?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
+    id?: StringFilter<"Komentar"> | string
+    sopId?: StringFilter<"Komentar"> | string
+    userId?: StringFilter<"Komentar"> | string
+    role?: StringFilter<"Komentar"> | string
+    isi?: StringFilter<"Komentar"> | string
+    bagian?: StringNullableFilter<"Komentar"> | string | null
+    status?: EnumKomentarStatusFilter<"Komentar"> | $Enums.KomentarStatus
+    createdAt?: DateTimeFilter<"Komentar"> | Date | string
+    updatedAt?: DateTimeFilter<"Komentar"> | Date | string
+  }
+
   export type UserCreateWithoutOpdInput = {
     id?: string
     email: string
@@ -29218,6 +32988,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOpdInput = {
@@ -29241,6 +33015,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOpdInput = {
@@ -29277,6 +33055,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -29305,6 +33086,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -29396,12 +33180,16 @@ export namespace Prisma {
     catatan?: string | null
     nomorBA?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    timEvaluasi?: TimEvaluasiAnggotaCreateNestedOneWithoutVerifikasiBatchInput
+    verifiedByUser?: UserCreateNestedOneWithoutBatchesVerifiedInput
+    signedByKoordinatorUser?: UserCreateNestedOneWithoutBatchesSignedInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutBatchInput
   }
 
   export type VerifikasiBatchUncheckedCreateWithoutOpdInput = {
@@ -29410,13 +33198,17 @@ export namespace Prisma {
     status?: $Enums.StatusEvaluasi
     catatan?: string | null
     nomorBA?: string | null
-    timEvaluasiId?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    signedByKoordinatorUserId?: string | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutBatchInput
   }
 
   export type VerifikasiBatchCreateOrConnectWithoutOpdInput = {
@@ -29544,24 +33336,6 @@ export namespace Prisma {
     data: XOR<VerifikasiBatchUpdateManyMutationInput, VerifikasiBatchUncheckedUpdateManyWithoutOpdInput>
   }
 
-  export type VerifikasiBatchScalarWhereInput = {
-    AND?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
-    OR?: VerifikasiBatchScalarWhereInput[]
-    NOT?: VerifikasiBatchScalarWhereInput | VerifikasiBatchScalarWhereInput[]
-    id?: StringFilter<"VerifikasiBatch"> | string
-    opdId?: StringFilter<"VerifikasiBatch"> | string
-    jenis?: EnumJenisBatchFilter<"VerifikasiBatch"> | $Enums.JenisBatch
-    status?: EnumStatusEvaluasiFilter<"VerifikasiBatch"> | $Enums.StatusEvaluasi
-    catatan?: StringNullableFilter<"VerifikasiBatch"> | string | null
-    nomorBA?: StringNullableFilter<"VerifikasiBatch"> | string | null
-    timEvaluasiId?: StringNullableFilter<"VerifikasiBatch"> | string | null
-    tanggalRequest?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
-    isSignedByKoordinator?: BoolFilter<"VerifikasiBatch"> | boolean
-    tanggalTTDBaByKoordinator?: DateTimeNullableFilter<"VerifikasiBatch"> | Date | string | null
-    createdAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
-    updatedAt?: DateTimeFilter<"VerifikasiBatch"> | Date | string
-  }
-
   export type UserCreateWithoutPeraturanCreatedInput = {
     id?: string
     email: string
@@ -29583,6 +33357,10 @@ export namespace Prisma {
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPeraturanCreatedInput = {
@@ -29606,6 +33384,10 @@ export namespace Prisma {
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPeraturanCreatedInput = {
@@ -29637,6 +33419,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -29665,6 +33450,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -29711,6 +33499,10 @@ export namespace Prisma {
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPeraturanCreatedInput = {
@@ -29734,6 +33526,10 @@ export namespace Prisma {
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type SOPUpsertWithWhereUniqueWithoutPeraturanInput = {
@@ -29837,6 +33633,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSopsCreatedInput = {
@@ -29860,6 +33660,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSopsCreatedInput = {
@@ -29888,6 +33692,10 @@ export namespace Prisma {
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSopsEditedInput = {
@@ -29911,6 +33719,10 @@ export namespace Prisma {
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSopsEditedInput = {
@@ -29939,6 +33751,10 @@ export namespace Prisma {
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSopsAsPicInput = {
@@ -29962,6 +33778,10 @@ export namespace Prisma {
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSopsAsPicInput = {
@@ -30089,11 +33909,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     batch: VerifikasiBatchCreateNestedOneWithoutEvaluasiItemsInput
+    evaluator: UserCreateNestedOneWithoutEvaluasiItemsInput
   }
 
   export type EvaluasiItemUncheckedCreateWithoutSopInput = {
     id?: string
     batchId: string
+    evaluatorId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
     rekomendasi?: string | null
@@ -30140,6 +33962,92 @@ export namespace Prisma {
 
   export type AuditLogCreateManySopInputEnvelope = {
     data: AuditLogCreateManySopInput | AuditLogCreateManySopInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ImplementQualificationCreateWithoutSopInput = {
+    id?: string
+    text: string
+  }
+
+  export type ImplementQualificationUncheckedCreateWithoutSopInput = {
+    id?: string
+    text: string
+  }
+
+  export type ImplementQualificationCreateOrConnectWithoutSopInput = {
+    where: ImplementQualificationWhereUniqueInput
+    create: XOR<ImplementQualificationCreateWithoutSopInput, ImplementQualificationUncheckedCreateWithoutSopInput>
+  }
+
+  export type ImplementQualificationCreateManySopInputEnvelope = {
+    data: ImplementQualificationCreateManySopInput | ImplementQualificationCreateManySopInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type KomentarCreateWithoutSopInput = {
+    id?: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutKomentarsInput
+  }
+
+  export type KomentarUncheckedCreateWithoutSopInput = {
+    id?: string
+    userId: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KomentarCreateOrConnectWithoutSopInput = {
+    where: KomentarWhereUniqueInput
+    create: XOR<KomentarCreateWithoutSopInput, KomentarUncheckedCreateWithoutSopInput>
+  }
+
+  export type KomentarCreateManySopInputEnvelope = {
+    data: KomentarCreateManySopInput | KomentarCreateManySopInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TTESignatureCreateWithoutSopInput = {
+    id?: string
+    role: $Enums.TTERole
+    documentId: string
+    documentLabel: string
+    referenceId: string
+    documentHash: string
+    signedAt?: Date | string
+    user: UserCreateNestedOneWithoutTteSignaturesInput
+    batch?: VerifikasiBatchCreateNestedOneWithoutTteSignaturesInput
+  }
+
+  export type TTESignatureUncheckedCreateWithoutSopInput = {
+    id?: string
+    userId: string
+    role: $Enums.TTERole
+    documentId: string
+    documentLabel: string
+    referenceId: string
+    documentHash: string
+    batchId?: string | null
+    signedAt?: Date | string
+  }
+
+  export type TTESignatureCreateOrConnectWithoutSopInput = {
+    where: TTESignatureWhereUniqueInput
+    create: XOR<TTESignatureCreateWithoutSopInput, TTESignatureUncheckedCreateWithoutSopInput>
+  }
+
+  export type TTESignatureCreateManySopInputEnvelope = {
+    data: TTESignatureCreateManySopInput | TTESignatureCreateManySopInput[]
     skipDuplicates?: boolean
   }
 
@@ -30287,6 +34195,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSopsCreatedInput = {
@@ -30310,6 +34222,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSopsEditedInput = {
@@ -30344,6 +34260,10 @@ export namespace Prisma {
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSopsEditedInput = {
@@ -30367,6 +34287,10 @@ export namespace Prisma {
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUpsertWithoutSopsAsPicInput = {
@@ -30401,6 +34325,10 @@ export namespace Prisma {
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSopsAsPicInput = {
@@ -30424,6 +34352,10 @@ export namespace Prisma {
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LawBasisUpsertWithWhereUniqueWithoutSopInput = {
@@ -30555,20 +34487,6 @@ export namespace Prisma {
     data: XOR<EvaluasiItemUpdateManyMutationInput, EvaluasiItemUncheckedUpdateManyWithoutSopInput>
   }
 
-  export type EvaluasiItemScalarWhereInput = {
-    AND?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
-    OR?: EvaluasiItemScalarWhereInput[]
-    NOT?: EvaluasiItemScalarWhereInput | EvaluasiItemScalarWhereInput[]
-    id?: StringFilter<"EvaluasiItem"> | string
-    batchId?: StringFilter<"EvaluasiItem"> | string
-    sopId?: StringFilter<"EvaluasiItem"> | string
-    hasil?: EnumHasilEvaluasiNullableFilter<"EvaluasiItem"> | $Enums.HasilEvaluasi | null
-    catatan?: StringNullableFilter<"EvaluasiItem"> | string | null
-    rekomendasi?: StringNullableFilter<"EvaluasiItem"> | string | null
-    createdAt?: DateTimeFilter<"EvaluasiItem"> | Date | string
-    updatedAt?: DateTimeFilter<"EvaluasiItem"> | Date | string
-  }
-
   export type AuditLogUpsertWithWhereUniqueWithoutSopInput = {
     where: AuditLogWhereUniqueInput
     update: XOR<AuditLogUpdateWithoutSopInput, AuditLogUncheckedUpdateWithoutSopInput>
@@ -30583,6 +34501,63 @@ export namespace Prisma {
   export type AuditLogUpdateManyWithWhereWithoutSopInput = {
     where: AuditLogScalarWhereInput
     data: XOR<AuditLogUpdateManyMutationInput, AuditLogUncheckedUpdateManyWithoutSopInput>
+  }
+
+  export type ImplementQualificationUpsertWithWhereUniqueWithoutSopInput = {
+    where: ImplementQualificationWhereUniqueInput
+    update: XOR<ImplementQualificationUpdateWithoutSopInput, ImplementQualificationUncheckedUpdateWithoutSopInput>
+    create: XOR<ImplementQualificationCreateWithoutSopInput, ImplementQualificationUncheckedCreateWithoutSopInput>
+  }
+
+  export type ImplementQualificationUpdateWithWhereUniqueWithoutSopInput = {
+    where: ImplementQualificationWhereUniqueInput
+    data: XOR<ImplementQualificationUpdateWithoutSopInput, ImplementQualificationUncheckedUpdateWithoutSopInput>
+  }
+
+  export type ImplementQualificationUpdateManyWithWhereWithoutSopInput = {
+    where: ImplementQualificationScalarWhereInput
+    data: XOR<ImplementQualificationUpdateManyMutationInput, ImplementQualificationUncheckedUpdateManyWithoutSopInput>
+  }
+
+  export type ImplementQualificationScalarWhereInput = {
+    AND?: ImplementQualificationScalarWhereInput | ImplementQualificationScalarWhereInput[]
+    OR?: ImplementQualificationScalarWhereInput[]
+    NOT?: ImplementQualificationScalarWhereInput | ImplementQualificationScalarWhereInput[]
+    id?: StringFilter<"ImplementQualification"> | string
+    sopId?: StringFilter<"ImplementQualification"> | string
+    text?: StringFilter<"ImplementQualification"> | string
+  }
+
+  export type KomentarUpsertWithWhereUniqueWithoutSopInput = {
+    where: KomentarWhereUniqueInput
+    update: XOR<KomentarUpdateWithoutSopInput, KomentarUncheckedUpdateWithoutSopInput>
+    create: XOR<KomentarCreateWithoutSopInput, KomentarUncheckedCreateWithoutSopInput>
+  }
+
+  export type KomentarUpdateWithWhereUniqueWithoutSopInput = {
+    where: KomentarWhereUniqueInput
+    data: XOR<KomentarUpdateWithoutSopInput, KomentarUncheckedUpdateWithoutSopInput>
+  }
+
+  export type KomentarUpdateManyWithWhereWithoutSopInput = {
+    where: KomentarScalarWhereInput
+    data: XOR<KomentarUpdateManyMutationInput, KomentarUncheckedUpdateManyWithoutSopInput>
+  }
+
+  export type TTESignatureUpsertWithWhereUniqueWithoutSopInput = {
+    where: TTESignatureWhereUniqueInput
+    update: XOR<TTESignatureUpdateWithoutSopInput, TTESignatureUncheckedUpdateWithoutSopInput>
+    create: XOR<TTESignatureCreateWithoutSopInput, TTESignatureUncheckedCreateWithoutSopInput>
+  }
+
+  export type TTESignatureUpdateWithWhereUniqueWithoutSopInput = {
+    where: TTESignatureWhereUniqueInput
+    data: XOR<TTESignatureUpdateWithoutSopInput, TTESignatureUncheckedUpdateWithoutSopInput>
+  }
+
+  export type TTESignatureUpdateManyWithWhereWithoutSopInput = {
+    where: TTESignatureScalarWhereInput
+    data: XOR<TTESignatureUpdateManyMutationInput, TTESignatureUncheckedUpdateManyWithoutSopInput>
   }
 
   export type RelatedSOPUpsertWithWhereUniqueWithoutSopInput = {
@@ -30649,6 +34624,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -30677,6 +34655,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -30721,6 +34702,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -30749,6 +34733,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -30777,6 +34764,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -30805,6 +34795,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -30849,6 +34842,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -30877,6 +34873,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -30905,6 +34904,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -30933,6 +34935,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -30977,6 +34982,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -31005,6 +35013,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -31034,6 +35045,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
 
@@ -31062,6 +35076,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
 
@@ -31095,6 +35112,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
   }
 
@@ -31123,6 +35143,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
   }
 
@@ -31167,6 +35190,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
 
@@ -31195,6 +35221,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
 
@@ -31234,6 +35263,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
   }
 
@@ -31262,6 +35294,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
   }
 
@@ -31289,6 +35324,9 @@ export namespace Prisma {
     recordData?: RecordDataCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -31317,6 +35355,9 @@ export namespace Prisma {
     recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -31577,6 +35618,9 @@ export namespace Prisma {
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -31605,6 +35649,9 @@ export namespace Prisma {
     recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -32070,6 +36117,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTimPenyusunInput = {
@@ -32093,6 +36144,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTimPenyusunInput = {
@@ -32165,6 +36220,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTimPenyusunInput = {
@@ -32188,6 +36247,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OPDUpsertWithoutTimPenyusunInput = {
@@ -32250,6 +36313,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTimEvaluasiInput = {
@@ -32273,51 +36340,15 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTimEvaluasiInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutTimEvaluasiInput, UserUncheckedCreateWithoutTimEvaluasiInput>
-  }
-
-  export type VerifikasiBatchCreateWithoutTimEvaluasiInput = {
-    id?: string
-    jenis: $Enums.JenisBatch
-    status?: $Enums.StatusEvaluasi
-    catatan?: string | null
-    nomorBA?: string | null
-    tanggalRequest?: Date | string | null
-    isSignedByKoordinator?: boolean
-    tanggalTTDBaByKoordinator?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    opd: OPDCreateNestedOneWithoutVerifikasiBatchInput
-    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutBatchInput
-  }
-
-  export type VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput = {
-    id?: string
-    opdId: string
-    jenis: $Enums.JenisBatch
-    status?: $Enums.StatusEvaluasi
-    catatan?: string | null
-    nomorBA?: string | null
-    tanggalRequest?: Date | string | null
-    isSignedByKoordinator?: boolean
-    tanggalTTDBaByKoordinator?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput
-  }
-
-  export type VerifikasiBatchCreateOrConnectWithoutTimEvaluasiInput = {
-    where: VerifikasiBatchWhereUniqueInput
-    create: XOR<VerifikasiBatchCreateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput>
-  }
-
-  export type VerifikasiBatchCreateManyTimEvaluasiInputEnvelope = {
-    data: VerifikasiBatchCreateManyTimEvaluasiInput | VerifikasiBatchCreateManyTimEvaluasiInput[]
-    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutTimEvaluasiInput = {
@@ -32352,6 +36383,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTimEvaluasiInput = {
@@ -32375,22 +36410,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
-  }
-
-  export type VerifikasiBatchUpsertWithWhereUniqueWithoutTimEvaluasiInput = {
-    where: VerifikasiBatchWhereUniqueInput
-    update: XOR<VerifikasiBatchUpdateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedUpdateWithoutTimEvaluasiInput>
-    create: XOR<VerifikasiBatchCreateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedCreateWithoutTimEvaluasiInput>
-  }
-
-  export type VerifikasiBatchUpdateWithWhereUniqueWithoutTimEvaluasiInput = {
-    where: VerifikasiBatchWhereUniqueInput
-    data: XOR<VerifikasiBatchUpdateWithoutTimEvaluasiInput, VerifikasiBatchUncheckedUpdateWithoutTimEvaluasiInput>
-  }
-
-  export type VerifikasiBatchUpdateManyWithWhereWithoutTimEvaluasiInput = {
-    where: VerifikasiBatchScalarWhereInput
-    data: XOR<VerifikasiBatchUpdateManyMutationInput, VerifikasiBatchUncheckedUpdateManyWithoutTimEvaluasiInput>
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OPDCreateWithoutVerifikasiBatchInput = {
@@ -32426,29 +36449,122 @@ export namespace Prisma {
     create: XOR<OPDCreateWithoutVerifikasiBatchInput, OPDUncheckedCreateWithoutVerifikasiBatchInput>
   }
 
-  export type TimEvaluasiAnggotaCreateWithoutVerifikasiBatchInput = {
+  export type UserCreateWithoutBatchesVerifiedInput = {
     id?: string
-    status?: $Enums.StatusTim
-    tanggalBergabung?: Date | string
-    endedAt?: Date | string | null
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutTimEvaluasiInput
+    opd?: OPDCreateNestedOneWithoutUsersInput
+    timPenyusun?: TimPenyusunCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
-  export type TimEvaluasiAnggotaUncheckedCreateWithoutVerifikasiBatchInput = {
+  export type UserUncheckedCreateWithoutBatchesVerifiedInput = {
     id?: string
-    userId: string
-    status?: $Enums.StatusTim
-    tanggalBergabung?: Date | string
-    endedAt?: Date | string | null
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    opdId?: string | null
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    timPenyusun?: TimPenyusunUncheckedCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileUncheckedCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
-  export type TimEvaluasiAnggotaCreateOrConnectWithoutVerifikasiBatchInput = {
-    where: TimEvaluasiAnggotaWhereUniqueInput
-    create: XOR<TimEvaluasiAnggotaCreateWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUncheckedCreateWithoutVerifikasiBatchInput>
+  export type UserCreateOrConnectWithoutBatchesVerifiedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutBatchesVerifiedInput, UserUncheckedCreateWithoutBatchesVerifiedInput>
+  }
+
+  export type UserCreateWithoutBatchesSignedInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd?: OPDCreateNestedOneWithoutUsersInput
+    timPenyusun?: TimPenyusunCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutBatchesSignedInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    opdId?: string | null
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    timPenyusun?: TimPenyusunUncheckedCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileUncheckedCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutBatchesSignedInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutBatchesSignedInput, UserUncheckedCreateWithoutBatchesSignedInput>
   }
 
   export type EvaluasiItemCreateWithoutBatchInput = {
@@ -32459,11 +36575,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sop: SOPCreateNestedOneWithoutEvaluasiItemsInput
+    evaluator: UserCreateNestedOneWithoutEvaluasiItemsInput
   }
 
   export type EvaluasiItemUncheckedCreateWithoutBatchInput = {
     id?: string
     sopId: string
+    evaluatorId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
     rekomendasi?: string | null
@@ -32478,6 +36596,40 @@ export namespace Prisma {
 
   export type EvaluasiItemCreateManyBatchInputEnvelope = {
     data: EvaluasiItemCreateManyBatchInput | EvaluasiItemCreateManyBatchInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TTESignatureCreateWithoutBatchInput = {
+    id?: string
+    role: $Enums.TTERole
+    documentId: string
+    documentLabel: string
+    referenceId: string
+    documentHash: string
+    signedAt?: Date | string
+    user: UserCreateNestedOneWithoutTteSignaturesInput
+    sop?: SOPCreateNestedOneWithoutTteSignaturesInput
+  }
+
+  export type TTESignatureUncheckedCreateWithoutBatchInput = {
+    id?: string
+    userId: string
+    role: $Enums.TTERole
+    documentId: string
+    documentLabel: string
+    referenceId: string
+    documentHash: string
+    sopId?: string | null
+    signedAt?: Date | string
+  }
+
+  export type TTESignatureCreateOrConnectWithoutBatchInput = {
+    where: TTESignatureWhereUniqueInput
+    create: XOR<TTESignatureCreateWithoutBatchInput, TTESignatureUncheckedCreateWithoutBatchInput>
+  }
+
+  export type TTESignatureCreateManyBatchInputEnvelope = {
+    data: TTESignatureCreateManyBatchInput | TTESignatureCreateManyBatchInput[]
     skipDuplicates?: boolean
   }
 
@@ -32520,35 +36672,134 @@ export namespace Prisma {
     timPenyusun?: TimPenyusunUncheckedUpdateManyWithoutOpdNestedInput
   }
 
-  export type TimEvaluasiAnggotaUpsertWithoutVerifikasiBatchInput = {
-    update: XOR<TimEvaluasiAnggotaUpdateWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUncheckedUpdateWithoutVerifikasiBatchInput>
-    create: XOR<TimEvaluasiAnggotaCreateWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUncheckedCreateWithoutVerifikasiBatchInput>
-    where?: TimEvaluasiAnggotaWhereInput
+  export type UserUpsertWithoutBatchesVerifiedInput = {
+    update: XOR<UserUpdateWithoutBatchesVerifiedInput, UserUncheckedUpdateWithoutBatchesVerifiedInput>
+    create: XOR<UserCreateWithoutBatchesVerifiedInput, UserUncheckedCreateWithoutBatchesVerifiedInput>
+    where?: UserWhereInput
   }
 
-  export type TimEvaluasiAnggotaUpdateToOneWithWhereWithoutVerifikasiBatchInput = {
-    where?: TimEvaluasiAnggotaWhereInput
-    data: XOR<TimEvaluasiAnggotaUpdateWithoutVerifikasiBatchInput, TimEvaluasiAnggotaUncheckedUpdateWithoutVerifikasiBatchInput>
+  export type UserUpdateToOneWithWhereWithoutBatchesVerifiedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutBatchesVerifiedInput, UserUncheckedUpdateWithoutBatchesVerifiedInput>
   }
 
-  export type TimEvaluasiAnggotaUpdateWithoutVerifikasiBatchInput = {
+  export type UserUpdateWithoutBatchesVerifiedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusTimFieldUpdateOperationsInput | $Enums.StatusTim
-    tanggalBergabung?: DateTimeFieldUpdateOperationsInput | Date | string
-    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutTimEvaluasiNestedInput
+    opd?: OPDUpdateOneWithoutUsersNestedInput
+    timPenyusun?: TimPenyusunUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
-  export type TimEvaluasiAnggotaUncheckedUpdateWithoutVerifikasiBatchInput = {
+  export type UserUncheckedUpdateWithoutBatchesVerifiedInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusTimFieldUpdateOperationsInput | $Enums.StatusTim
-    tanggalBergabung?: DateTimeFieldUpdateOperationsInput | Date | string
-    endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    opdId?: NullableStringFieldUpdateOperationsInput | string | null
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timPenyusun?: TimPenyusunUncheckedUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUncheckedUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutBatchesSignedInput = {
+    update: XOR<UserUpdateWithoutBatchesSignedInput, UserUncheckedUpdateWithoutBatchesSignedInput>
+    create: XOR<UserCreateWithoutBatchesSignedInput, UserUncheckedCreateWithoutBatchesSignedInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutBatchesSignedInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutBatchesSignedInput, UserUncheckedUpdateWithoutBatchesSignedInput>
+  }
+
+  export type UserUpdateWithoutBatchesSignedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneWithoutUsersNestedInput
+    timPenyusun?: TimPenyusunUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutBatchesSignedInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    opdId?: NullableStringFieldUpdateOperationsInput | string | null
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timPenyusun?: TimPenyusunUncheckedUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUncheckedUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type EvaluasiItemUpsertWithWhereUniqueWithoutBatchInput = {
@@ -32567,6 +36818,22 @@ export namespace Prisma {
     data: XOR<EvaluasiItemUpdateManyMutationInput, EvaluasiItemUncheckedUpdateManyWithoutBatchInput>
   }
 
+  export type TTESignatureUpsertWithWhereUniqueWithoutBatchInput = {
+    where: TTESignatureWhereUniqueInput
+    update: XOR<TTESignatureUpdateWithoutBatchInput, TTESignatureUncheckedUpdateWithoutBatchInput>
+    create: XOR<TTESignatureCreateWithoutBatchInput, TTESignatureUncheckedCreateWithoutBatchInput>
+  }
+
+  export type TTESignatureUpdateWithWhereUniqueWithoutBatchInput = {
+    where: TTESignatureWhereUniqueInput
+    data: XOR<TTESignatureUpdateWithoutBatchInput, TTESignatureUncheckedUpdateWithoutBatchInput>
+  }
+
+  export type TTESignatureUpdateManyWithWhereWithoutBatchInput = {
+    where: TTESignatureScalarWhereInput
+    data: XOR<TTESignatureUpdateManyMutationInput, TTESignatureUncheckedUpdateManyWithoutBatchInput>
+  }
+
   export type VerifikasiBatchCreateWithoutEvaluasiItemsInput = {
     id?: string
     jenis: $Enums.JenisBatch
@@ -32574,12 +36841,16 @@ export namespace Prisma {
     catatan?: string | null
     nomorBA?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutVerifikasiBatchInput
-    timEvaluasi?: TimEvaluasiAnggotaCreateNestedOneWithoutVerifikasiBatchInput
+    verifiedByUser?: UserCreateNestedOneWithoutBatchesVerifiedInput
+    signedByKoordinatorUser?: UserCreateNestedOneWithoutBatchesSignedInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutBatchInput
   }
 
   export type VerifikasiBatchUncheckedCreateWithoutEvaluasiItemsInput = {
@@ -32589,12 +36860,16 @@ export namespace Prisma {
     status?: $Enums.StatusEvaluasi
     catatan?: string | null
     nomorBA?: string | null
-    timEvaluasiId?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    signedByKoordinatorUserId?: string | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutBatchInput
   }
 
   export type VerifikasiBatchCreateOrConnectWithoutEvaluasiItemsInput = {
@@ -32626,6 +36901,9 @@ export namespace Prisma {
     recordData?: RecordDataCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -32654,6 +36932,9 @@ export namespace Prisma {
     recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -32661,6 +36942,65 @@ export namespace Prisma {
   export type SOPCreateOrConnectWithoutEvaluasiItemsInput = {
     where: SOPWhereUniqueInput
     create: XOR<SOPCreateWithoutEvaluasiItemsInput, SOPUncheckedCreateWithoutEvaluasiItemsInput>
+  }
+
+  export type UserCreateWithoutEvaluasiItemsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd?: OPDCreateNestedOneWithoutUsersInput
+    timPenyusun?: TimPenyusunCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutEvaluasiItemsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    opdId?: string | null
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    timPenyusun?: TimPenyusunUncheckedCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileUncheckedCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutEvaluasiItemsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutEvaluasiItemsInput, UserUncheckedCreateWithoutEvaluasiItemsInput>
   }
 
   export type VerifikasiBatchUpsertWithoutEvaluasiItemsInput = {
@@ -32681,12 +37021,16 @@ export namespace Prisma {
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutVerifikasiBatchNestedInput
-    timEvaluasi?: TimEvaluasiAnggotaUpdateOneWithoutVerifikasiBatchNestedInput
+    verifiedByUser?: UserUpdateOneWithoutBatchesVerifiedNestedInput
+    signedByKoordinatorUser?: UserUpdateOneWithoutBatchesSignedNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutBatchNestedInput
   }
 
   export type VerifikasiBatchUncheckedUpdateWithoutEvaluasiItemsInput = {
@@ -32696,12 +37040,16 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    timEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutBatchNestedInput
   }
 
   export type SOPUpsertWithoutEvaluasiItemsInput = {
@@ -32739,6 +37087,9 @@ export namespace Prisma {
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -32767,8 +37118,76 @@ export namespace Prisma {
     recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type UserUpsertWithoutEvaluasiItemsInput = {
+    update: XOR<UserUpdateWithoutEvaluasiItemsInput, UserUncheckedUpdateWithoutEvaluasiItemsInput>
+    create: XOR<UserCreateWithoutEvaluasiItemsInput, UserUncheckedCreateWithoutEvaluasiItemsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutEvaluasiItemsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutEvaluasiItemsInput, UserUncheckedUpdateWithoutEvaluasiItemsInput>
+  }
+
+  export type UserUpdateWithoutEvaluasiItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneWithoutUsersNestedInput
+    timPenyusun?: TimPenyusunUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutEvaluasiItemsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    opdId?: NullableStringFieldUpdateOperationsInput | string | null
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timPenyusun?: TimPenyusunUncheckedUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUncheckedUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTteProfileInput = {
@@ -32792,6 +37211,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTteProfileInput = {
@@ -32815,6 +37238,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTteProfileInput = {
@@ -32854,6 +37281,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTteProfileInput = {
@@ -32877,6 +37308,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTteSignaturesInput = {
@@ -32900,6 +37335,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTteSignaturesInput = {
@@ -32923,11 +37362,125 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTteSignaturesInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutTteSignaturesInput, UserUncheckedCreateWithoutTteSignaturesInput>
+  }
+
+  export type SOPCreateWithoutTteSignaturesInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    versi?: number
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutSopsInput
+    peraturan?: PeraturanCreateNestedOneWithoutSopsInput
+    createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
+    lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
+    lawBasis?: LawBasisCreateNestedManyWithoutSopInput
+    equipment?: EquipmentCreateNestedManyWithoutSopInput
+    recordData?: RecordDataCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPUncheckedCreateWithoutTteSignaturesInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    opdId: string
+    peraturanId?: string | null
+    versi?: number
+    picUserId?: string | null
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdById?: string | null
+    lastEditedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lawBasis?: LawBasisUncheckedCreateNestedManyWithoutSopInput
+    equipment?: EquipmentUncheckedCreateNestedManyWithoutSopInput
+    recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPCreateOrConnectWithoutTteSignaturesInput = {
+    where: SOPWhereUniqueInput
+    create: XOR<SOPCreateWithoutTteSignaturesInput, SOPUncheckedCreateWithoutTteSignaturesInput>
+  }
+
+  export type VerifikasiBatchCreateWithoutTteSignaturesInput = {
+    id?: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutVerifikasiBatchInput
+    verifiedByUser?: UserCreateNestedOneWithoutBatchesVerifiedInput
+    signedByKoordinatorUser?: UserCreateNestedOneWithoutBatchesSignedInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutBatchInput
+  }
+
+  export type VerifikasiBatchUncheckedCreateWithoutTteSignaturesInput = {
+    id?: string
+    opdId: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    signedByKoordinatorUserId?: string | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutBatchInput
+  }
+
+  export type VerifikasiBatchCreateOrConnectWithoutTteSignaturesInput = {
+    where: VerifikasiBatchWhereUniqueInput
+    create: XOR<VerifikasiBatchCreateWithoutTteSignaturesInput, VerifikasiBatchUncheckedCreateWithoutTteSignaturesInput>
   }
 
   export type UserUpsertWithoutTteSignaturesInput = {
@@ -32962,6 +37515,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTteSignaturesInput = {
@@ -32985,6 +37542,132 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type SOPUpsertWithoutTteSignaturesInput = {
+    update: XOR<SOPUpdateWithoutTteSignaturesInput, SOPUncheckedUpdateWithoutTteSignaturesInput>
+    create: XOR<SOPCreateWithoutTteSignaturesInput, SOPUncheckedCreateWithoutTteSignaturesInput>
+    where?: SOPWhereInput
+  }
+
+  export type SOPUpdateToOneWithWhereWithoutTteSignaturesInput = {
+    where?: SOPWhereInput
+    data: XOR<SOPUpdateWithoutTteSignaturesInput, SOPUncheckedUpdateWithoutTteSignaturesInput>
+  }
+
+  export type SOPUpdateWithoutTteSignaturesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    versi?: IntFieldUpdateOperationsInput | number
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
+    peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
+    createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
+    lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
+    lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type SOPUncheckedUpdateWithoutTteSignaturesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    opdId?: StringFieldUpdateOperationsInput | string
+    peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
+    versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEditedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lawBasis?: LawBasisUncheckedUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUncheckedUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type VerifikasiBatchUpsertWithoutTteSignaturesInput = {
+    update: XOR<VerifikasiBatchUpdateWithoutTteSignaturesInput, VerifikasiBatchUncheckedUpdateWithoutTteSignaturesInput>
+    create: XOR<VerifikasiBatchCreateWithoutTteSignaturesInput, VerifikasiBatchUncheckedCreateWithoutTteSignaturesInput>
+    where?: VerifikasiBatchWhereInput
+  }
+
+  export type VerifikasiBatchUpdateToOneWithWhereWithoutTteSignaturesInput = {
+    where?: VerifikasiBatchWhereInput
+    data: XOR<VerifikasiBatchUpdateWithoutTteSignaturesInput, VerifikasiBatchUncheckedUpdateWithoutTteSignaturesInput>
+  }
+
+  export type VerifikasiBatchUpdateWithoutTteSignaturesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutVerifikasiBatchNestedInput
+    verifiedByUser?: UserUpdateOneWithoutBatchesVerifiedNestedInput
+    signedByKoordinatorUser?: UserUpdateOneWithoutBatchesSignedNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutBatchNestedInput
+  }
+
+  export type VerifikasiBatchUncheckedUpdateWithoutTteSignaturesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput
   }
 
   export type SOPCreateWithoutAuditLogsInput = {
@@ -33011,6 +37694,9 @@ export namespace Prisma {
     recordData?: RecordDataCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
   }
@@ -33039,6 +37725,9 @@ export namespace Prisma {
     recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
     evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
     relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
     relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
   }
@@ -33069,6 +37758,10 @@ export namespace Prisma {
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -33092,6 +37785,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
     sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -33134,6 +37831,9 @@ export namespace Prisma {
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33162,6 +37862,9 @@ export namespace Prisma {
     recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33198,6 +37901,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -33221,6 +37928,414 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type SOPCreateWithoutImplementQualificationsInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    versi?: number
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutSopsInput
+    peraturan?: PeraturanCreateNestedOneWithoutSopsInput
+    createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
+    lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
+    lawBasis?: LawBasisCreateNestedManyWithoutSopInput
+    equipment?: EquipmentCreateNestedManyWithoutSopInput
+    recordData?: RecordDataCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    komentars?: KomentarCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPUncheckedCreateWithoutImplementQualificationsInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    opdId: string
+    peraturanId?: string | null
+    versi?: number
+    picUserId?: string | null
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdById?: string | null
+    lastEditedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lawBasis?: LawBasisUncheckedCreateNestedManyWithoutSopInput
+    equipment?: EquipmentUncheckedCreateNestedManyWithoutSopInput
+    recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    komentars?: KomentarUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPCreateOrConnectWithoutImplementQualificationsInput = {
+    where: SOPWhereUniqueInput
+    create: XOR<SOPCreateWithoutImplementQualificationsInput, SOPUncheckedCreateWithoutImplementQualificationsInput>
+  }
+
+  export type SOPUpsertWithoutImplementQualificationsInput = {
+    update: XOR<SOPUpdateWithoutImplementQualificationsInput, SOPUncheckedUpdateWithoutImplementQualificationsInput>
+    create: XOR<SOPCreateWithoutImplementQualificationsInput, SOPUncheckedCreateWithoutImplementQualificationsInput>
+    where?: SOPWhereInput
+  }
+
+  export type SOPUpdateToOneWithWhereWithoutImplementQualificationsInput = {
+    where?: SOPWhereInput
+    data: XOR<SOPUpdateWithoutImplementQualificationsInput, SOPUncheckedUpdateWithoutImplementQualificationsInput>
+  }
+
+  export type SOPUpdateWithoutImplementQualificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    versi?: IntFieldUpdateOperationsInput | number
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
+    peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
+    createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
+    lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
+    lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type SOPUncheckedUpdateWithoutImplementQualificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    opdId?: StringFieldUpdateOperationsInput | string
+    peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
+    versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEditedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lawBasis?: LawBasisUncheckedUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUncheckedUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type SOPCreateWithoutKomentarsInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    versi?: number
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutSopsInput
+    peraturan?: PeraturanCreateNestedOneWithoutSopsInput
+    createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
+    lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
+    lawBasis?: LawBasisCreateNestedManyWithoutSopInput
+    equipment?: EquipmentCreateNestedManyWithoutSopInput
+    recordData?: RecordDataCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPUncheckedCreateWithoutKomentarsInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    opdId: string
+    peraturanId?: string | null
+    versi?: number
+    picUserId?: string | null
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdById?: string | null
+    lastEditedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lawBasis?: LawBasisUncheckedCreateNestedManyWithoutSopInput
+    equipment?: EquipmentUncheckedCreateNestedManyWithoutSopInput
+    recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    implementQualifications?: ImplementQualificationUncheckedCreateNestedManyWithoutSopInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPCreateOrConnectWithoutKomentarsInput = {
+    where: SOPWhereUniqueInput
+    create: XOR<SOPCreateWithoutKomentarsInput, SOPUncheckedCreateWithoutKomentarsInput>
+  }
+
+  export type UserCreateWithoutKomentarsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd?: OPDCreateNestedOneWithoutUsersInput
+    timPenyusun?: TimPenyusunCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutEvaluatorInput
+  }
+
+  export type UserUncheckedCreateWithoutKomentarsInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    opdId?: string | null
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    timPenyusun?: TimPenyusunUncheckedCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileUncheckedCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
+    peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+    batchesVerified?: VerifikasiBatchUncheckedCreateNestedManyWithoutVerifiedByUserInput
+    batchesSigned?: VerifikasiBatchUncheckedCreateNestedManyWithoutSignedByKoordinatorUserInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutEvaluatorInput
+  }
+
+  export type UserCreateOrConnectWithoutKomentarsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutKomentarsInput, UserUncheckedCreateWithoutKomentarsInput>
+  }
+
+  export type SOPUpsertWithoutKomentarsInput = {
+    update: XOR<SOPUpdateWithoutKomentarsInput, SOPUncheckedUpdateWithoutKomentarsInput>
+    create: XOR<SOPCreateWithoutKomentarsInput, SOPUncheckedCreateWithoutKomentarsInput>
+    where?: SOPWhereInput
+  }
+
+  export type SOPUpdateToOneWithWhereWithoutKomentarsInput = {
+    where?: SOPWhereInput
+    data: XOR<SOPUpdateWithoutKomentarsInput, SOPUncheckedUpdateWithoutKomentarsInput>
+  }
+
+  export type SOPUpdateWithoutKomentarsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    versi?: IntFieldUpdateOperationsInput | number
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
+    peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
+    createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
+    lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
+    lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type SOPUncheckedUpdateWithoutKomentarsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    opdId?: StringFieldUpdateOperationsInput | string
+    peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
+    versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEditedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lawBasis?: LawBasisUncheckedUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUncheckedUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type UserUpsertWithoutKomentarsInput = {
+    update: XOR<UserUpdateWithoutKomentarsInput, UserUncheckedUpdateWithoutKomentarsInput>
+    create: XOR<UserCreateWithoutKomentarsInput, UserUncheckedCreateWithoutKomentarsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutKomentarsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutKomentarsInput, UserUncheckedUpdateWithoutKomentarsInput>
+  }
+
+  export type UserUpdateWithoutKomentarsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneWithoutUsersNestedInput
+    timPenyusun?: TimPenyusunUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutKomentarsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    opdId?: NullableStringFieldUpdateOperationsInput | string | null
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timPenyusun?: TimPenyusunUncheckedUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUncheckedUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
   }
 
   export type TimPenyusunCreateManyUserInput = {
@@ -33250,6 +38365,8 @@ export namespace Prisma {
     documentLabel: string
     referenceId: string
     documentHash: string
+    sopId?: string | null
+    batchId?: string | null
     signedAt?: Date | string
   }
 
@@ -33336,6 +38453,62 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type VerifikasiBatchCreateManyVerifiedByUserInput = {
+    id?: string
+    opdId: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    signedByKoordinatorUserId?: string | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type VerifikasiBatchCreateManySignedByKoordinatorUserInput = {
+    id?: string
+    opdId: string
+    jenis: $Enums.JenisBatch
+    status?: $Enums.StatusEvaluasi
+    catatan?: string | null
+    nomorBA?: string | null
+    tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    isSignedByKoordinator?: boolean
+    tanggalTTDBaByKoordinator?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EvaluasiItemCreateManyEvaluatorInput = {
+    id?: string
+    batchId: string
+    sopId: string
+    hasil?: $Enums.HasilEvaluasi | null
+    catatan?: string | null
+    rekomendasi?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type KomentarCreateManyUserInput = {
+    id?: string
+    sopId: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type TimPenyusunUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     status?: EnumStatusTimFieldUpdateOperationsInput | $Enums.StatusTim
@@ -33376,7 +38549,6 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    verifikasiBatch?: VerifikasiBatchUpdateManyWithoutTimEvaluasiNestedInput
   }
 
   export type TimEvaluasiAnggotaUncheckedUpdateWithoutUserInput = {
@@ -33386,7 +38558,6 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    verifikasiBatch?: VerifikasiBatchUncheckedUpdateManyWithoutTimEvaluasiNestedInput
   }
 
   export type TimEvaluasiAnggotaUncheckedUpdateManyWithoutUserInput = {
@@ -33406,6 +38577,8 @@ export namespace Prisma {
     referenceId?: StringFieldUpdateOperationsInput | string
     documentHash?: StringFieldUpdateOperationsInput | string
     signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sop?: SOPUpdateOneWithoutTteSignaturesNestedInput
+    batch?: VerifikasiBatchUpdateOneWithoutTteSignaturesNestedInput
   }
 
   export type TTESignatureUncheckedUpdateWithoutUserInput = {
@@ -33415,6 +38588,8 @@ export namespace Prisma {
     documentLabel?: StringFieldUpdateOperationsInput | string
     referenceId?: StringFieldUpdateOperationsInput | string
     documentHash?: StringFieldUpdateOperationsInput | string
+    sopId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
     signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33425,6 +38600,8 @@ export namespace Prisma {
     documentLabel?: StringFieldUpdateOperationsInput | string
     referenceId?: StringFieldUpdateOperationsInput | string
     documentHash?: StringFieldUpdateOperationsInput | string
+    sopId?: NullableStringFieldUpdateOperationsInput | string | null
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
     signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33485,6 +38662,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33513,6 +38693,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33561,6 +38744,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33589,6 +38775,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33637,6 +38826,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33665,6 +38857,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33723,6 +38918,182 @@ export namespace Prisma {
     status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     version?: IntFieldUpdateOperationsInput | number
     fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerifikasiBatchUpdateWithoutVerifiedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutVerifikasiBatchNestedInput
+    signedByKoordinatorUser?: UserUpdateOneWithoutBatchesSignedNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutBatchNestedInput
+  }
+
+  export type VerifikasiBatchUncheckedUpdateWithoutVerifiedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutBatchNestedInput
+  }
+
+  export type VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type VerifikasiBatchUpdateWithoutSignedByKoordinatorUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutVerifikasiBatchNestedInput
+    verifiedByUser?: UserUpdateOneWithoutBatchesVerifiedNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutBatchNestedInput
+  }
+
+  export type VerifikasiBatchUncheckedUpdateWithoutSignedByKoordinatorUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutBatchNestedInput
+  }
+
+  export type VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
+    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
+    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
+    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvaluasiItemUpdateWithoutEvaluatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    batch?: VerifikasiBatchUpdateOneRequiredWithoutEvaluasiItemsNestedInput
+    sop?: SOPUpdateOneRequiredWithoutEvaluasiItemsNestedInput
+  }
+
+  export type EvaluasiItemUncheckedUpdateWithoutEvaluatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EvaluasiItemUncheckedUpdateManyWithoutEvaluatorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    batchId?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
+    catatan?: NullableStringFieldUpdateOperationsInput | string | null
+    rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KomentarUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sop?: SOPUpdateOneRequiredWithoutKomentarsNestedInput
+  }
+
+  export type KomentarUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KomentarUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33791,8 +39162,11 @@ export namespace Prisma {
     status?: $Enums.StatusEvaluasi
     catatan?: string | null
     nomorBA?: string | null
-    timEvaluasiId?: string | null
     tanggalRequest?: Date | string | null
+    tanggalEvaluasi?: Date | string | null
+    nilaiOPD?: number | null
+    verifiedByUserId?: string | null
+    signedByKoordinatorUserId?: string | null
     isSignedByKoordinator?: boolean
     tanggalTTDBaByKoordinator?: Date | string | null
     createdAt?: Date | string
@@ -33820,6 +39194,10 @@ export namespace Prisma {
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOpdInput = {
@@ -33843,6 +39221,10 @@ export namespace Prisma {
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+    batchesVerified?: VerifikasiBatchUncheckedUpdateManyWithoutVerifiedByUserNestedInput
+    batchesSigned?: VerifikasiBatchUncheckedUpdateManyWithoutSignedByKoordinatorUserNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutEvaluatorNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateManyWithoutOpdInput = {
@@ -33883,6 +39265,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -33911,6 +39296,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -34016,12 +39404,16 @@ export namespace Prisma {
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    timEvaluasi?: TimEvaluasiAnggotaUpdateOneWithoutVerifikasiBatchNestedInput
+    verifiedByUser?: UserUpdateOneWithoutBatchesVerifiedNestedInput
+    signedByKoordinatorUser?: UserUpdateOneWithoutBatchesSignedNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutBatchNestedInput
   }
 
   export type VerifikasiBatchUncheckedUpdateWithoutOpdInput = {
@@ -34030,13 +39422,17 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    timEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutBatchNestedInput
   }
 
   export type VerifikasiBatchUncheckedUpdateManyWithoutOpdInput = {
@@ -34045,8 +39441,11 @@ export namespace Prisma {
     status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    timEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEvaluasi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nilaiOPD?: NullableIntFieldUpdateOperationsInput | number | null
+    verifiedByUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedByKoordinatorUserId?: NullableStringFieldUpdateOperationsInput | string | null
     isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
     tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34097,6 +39496,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
   }
@@ -34125,6 +39527,9 @@ export namespace Prisma {
     prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
     evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    implementQualifications?: ImplementQualificationUncheckedUpdateManyWithoutSopNestedInput
+    komentars?: KomentarUncheckedUpdateManyWithoutSopNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutSopNestedInput
     relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
     relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
   }
@@ -34185,6 +39590,7 @@ export namespace Prisma {
   export type EvaluasiItemCreateManySopInput = {
     id?: string
     batchId: string
+    evaluatorId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
     rekomendasi?: string | null
@@ -34201,6 +39607,34 @@ export namespace Prisma {
     statusSesudah: $Enums.StatusSOP
     keterangan?: string | null
     createdAt?: Date | string
+  }
+
+  export type ImplementQualificationCreateManySopInput = {
+    id?: string
+    text: string
+  }
+
+  export type KomentarCreateManySopInput = {
+    id?: string
+    userId: string
+    role: string
+    isi: string
+    bagian?: string | null
+    status?: $Enums.KomentarStatus
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TTESignatureCreateManySopInput = {
+    id?: string
+    userId: string
+    role: $Enums.TTERole
+    documentId: string
+    documentLabel: string
+    referenceId: string
+    documentHash: string
+    batchId?: string | null
+    signedAt?: Date | string
   }
 
   export type RelatedSOPCreateManySopInput = {
@@ -34324,11 +39758,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     batch?: VerifikasiBatchUpdateOneRequiredWithoutEvaluasiItemsNestedInput
+    evaluator?: UserUpdateOneRequiredWithoutEvaluasiItemsNestedInput
   }
 
   export type EvaluasiItemUncheckedUpdateWithoutSopInput = {
     id?: StringFieldUpdateOperationsInput | string
     batchId?: StringFieldUpdateOperationsInput | string
+    evaluatorId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34339,6 +39775,7 @@ export namespace Prisma {
   export type EvaluasiItemUncheckedUpdateManyWithoutSopInput = {
     id?: StringFieldUpdateOperationsInput | string
     batchId?: StringFieldUpdateOperationsInput | string
+    evaluatorId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34377,6 +39814,90 @@ export namespace Prisma {
     statusSesudah?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ImplementQualificationUpdateWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ImplementQualificationUncheckedUpdateWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type ImplementQualificationUncheckedUpdateManyWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type KomentarUpdateWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutKomentarsNestedInput
+  }
+
+  export type KomentarUncheckedUpdateWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KomentarUncheckedUpdateManyWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: StringFieldUpdateOperationsInput | string
+    isi?: StringFieldUpdateOperationsInput | string
+    bagian?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumKomentarStatusFieldUpdateOperationsInput | $Enums.KomentarStatus
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TTESignatureUpdateWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
+    documentId?: StringFieldUpdateOperationsInput | string
+    documentLabel?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    documentHash?: StringFieldUpdateOperationsInput | string
+    signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTteSignaturesNestedInput
+    batch?: VerifikasiBatchUpdateOneWithoutTteSignaturesNestedInput
+  }
+
+  export type TTESignatureUncheckedUpdateWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
+    documentId?: StringFieldUpdateOperationsInput | string
+    documentLabel?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    documentHash?: StringFieldUpdateOperationsInput | string
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TTESignatureUncheckedUpdateManyWithoutSopInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
+    documentId?: StringFieldUpdateOperationsInput | string
+    documentLabel?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    documentHash?: StringFieldUpdateOperationsInput | string
+    batchId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RelatedSOPUpdateWithoutSopInput = {
@@ -34591,72 +40112,27 @@ export namespace Prisma {
     prosedurRowId?: StringFieldUpdateOperationsInput | string
   }
 
-  export type VerifikasiBatchCreateManyTimEvaluasiInput = {
-    id?: string
-    opdId: string
-    jenis: $Enums.JenisBatch
-    status?: $Enums.StatusEvaluasi
-    catatan?: string | null
-    nomorBA?: string | null
-    tanggalRequest?: Date | string | null
-    isSignedByKoordinator?: boolean
-    tanggalTTDBaByKoordinator?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type VerifikasiBatchUpdateWithoutTimEvaluasiInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
-    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
-    catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
-    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    opd?: OPDUpdateOneRequiredWithoutVerifikasiBatchNestedInput
-    evaluasiItems?: EvaluasiItemUpdateManyWithoutBatchNestedInput
-  }
-
-  export type VerifikasiBatchUncheckedUpdateWithoutTimEvaluasiInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    opdId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
-    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
-    catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
-    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutBatchNestedInput
-  }
-
-  export type VerifikasiBatchUncheckedUpdateManyWithoutTimEvaluasiInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    opdId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisBatchFieldUpdateOperationsInput | $Enums.JenisBatch
-    status?: EnumStatusEvaluasiFieldUpdateOperationsInput | $Enums.StatusEvaluasi
-    catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    nomorBA?: NullableStringFieldUpdateOperationsInput | string | null
-    tanggalRequest?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    isSignedByKoordinator?: BoolFieldUpdateOperationsInput | boolean
-    tanggalTTDBaByKoordinator?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type EvaluasiItemCreateManyBatchInput = {
     id?: string
     sopId: string
+    evaluatorId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
     rekomendasi?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type TTESignatureCreateManyBatchInput = {
+    id?: string
+    userId: string
+    role: $Enums.TTERole
+    documentId: string
+    documentLabel: string
+    referenceId: string
+    documentHash: string
+    sopId?: string | null
+    signedAt?: Date | string
   }
 
   export type EvaluasiItemUpdateWithoutBatchInput = {
@@ -34667,11 +40143,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sop?: SOPUpdateOneRequiredWithoutEvaluasiItemsNestedInput
+    evaluator?: UserUpdateOneRequiredWithoutEvaluasiItemsNestedInput
   }
 
   export type EvaluasiItemUncheckedUpdateWithoutBatchInput = {
     id?: StringFieldUpdateOperationsInput | string
     sopId?: StringFieldUpdateOperationsInput | string
+    evaluatorId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34682,11 +40160,48 @@ export namespace Prisma {
   export type EvaluasiItemUncheckedUpdateManyWithoutBatchInput = {
     id?: StringFieldUpdateOperationsInput | string
     sopId?: StringFieldUpdateOperationsInput | string
+    evaluatorId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
     rekomendasi?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TTESignatureUpdateWithoutBatchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
+    documentId?: StringFieldUpdateOperationsInput | string
+    documentLabel?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    documentHash?: StringFieldUpdateOperationsInput | string
+    signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTteSignaturesNestedInput
+    sop?: SOPUpdateOneWithoutTteSignaturesNestedInput
+  }
+
+  export type TTESignatureUncheckedUpdateWithoutBatchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
+    documentId?: StringFieldUpdateOperationsInput | string
+    documentLabel?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    documentHash?: StringFieldUpdateOperationsInput | string
+    sopId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TTESignatureUncheckedUpdateManyWithoutBatchInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
+    documentId?: StringFieldUpdateOperationsInput | string
+    documentLabel?: StringFieldUpdateOperationsInput | string
+    referenceId?: StringFieldUpdateOperationsInput | string
+    documentHash?: StringFieldUpdateOperationsInput | string
+    sopId?: NullableStringFieldUpdateOperationsInput | string | null
+    signedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

@@ -269,8 +269,11 @@ exports.Prisma.VerifikasiBatchScalarFieldEnum = {
   status: 'status',
   catatan: 'catatan',
   nomorBA: 'nomorBA',
-  timEvaluasiId: 'timEvaluasiId',
   tanggalRequest: 'tanggalRequest',
+  tanggalEvaluasi: 'tanggalEvaluasi',
+  nilaiOPD: 'nilaiOPD',
+  verifiedByUserId: 'verifiedByUserId',
+  signedByKoordinatorUserId: 'signedByKoordinatorUserId',
   isSignedByKoordinator: 'isSignedByKoordinator',
   tanggalTTDBaByKoordinator: 'tanggalTTDBaByKoordinator',
   createdAt: 'createdAt',
@@ -281,6 +284,7 @@ exports.Prisma.EvaluasiItemScalarFieldEnum = {
   id: 'id',
   batchId: 'batchId',
   sopId: 'sopId',
+  evaluatorId: 'evaluatorId',
   hasil: 'hasil',
   catatan: 'catatan',
   rekomendasi: 'rekomendasi',
@@ -307,6 +311,8 @@ exports.Prisma.TTESignatureScalarFieldEnum = {
   documentLabel: 'documentLabel',
   referenceId: 'referenceId',
   documentHash: 'documentHash',
+  sopId: 'sopId',
+  batchId: 'batchId',
   signedAt: 'signedAt'
 };
 
@@ -320,6 +326,24 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   statusSesudah: 'statusSesudah',
   keterangan: 'keterangan',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.ImplementQualificationScalarFieldEnum = {
+  id: 'id',
+  sopId: 'sopId',
+  text: 'text'
+};
+
+exports.Prisma.KomentarScalarFieldEnum = {
+  id: 'id',
+  sopId: 'sopId',
+  userId: 'userId',
+  role: 'role',
+  isi: 'isi',
+  bagian: 'bagian',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -446,13 +470,15 @@ exports.Prisma.VerifikasiBatchOrderByRelevanceFieldEnum = {
   opdId: 'opdId',
   catatan: 'catatan',
   nomorBA: 'nomorBA',
-  timEvaluasiId: 'timEvaluasiId'
+  verifiedByUserId: 'verifiedByUserId',
+  signedByKoordinatorUserId: 'signedByKoordinatorUserId'
 };
 
 exports.Prisma.EvaluasiItemOrderByRelevanceFieldEnum = {
   id: 'id',
   batchId: 'batchId',
   sopId: 'sopId',
+  evaluatorId: 'evaluatorId',
   catatan: 'catatan',
   rekomendasi: 'rekomendasi'
 };
@@ -470,7 +496,9 @@ exports.Prisma.TTESignatureOrderByRelevanceFieldEnum = {
   documentId: 'documentId',
   documentLabel: 'documentLabel',
   referenceId: 'referenceId',
-  documentHash: 'documentHash'
+  documentHash: 'documentHash',
+  sopId: 'sopId',
+  batchId: 'batchId'
 };
 
 exports.Prisma.AuditLogOrderByRelevanceFieldEnum = {
@@ -478,6 +506,21 @@ exports.Prisma.AuditLogOrderByRelevanceFieldEnum = {
   sopId: 'sopId',
   aktorId: 'aktorId',
   keterangan: 'keterangan'
+};
+
+exports.Prisma.ImplementQualificationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  sopId: 'sopId',
+  text: 'text'
+};
+
+exports.Prisma.KomentarOrderByRelevanceFieldEnum = {
+  id: 'id',
+  sopId: 'sopId',
+  userId: 'userId',
+  role: 'role',
+  isi: 'isi',
+  bagian: 'bagian'
 };
 exports.UserRole = exports.$Enums.UserRole = {
   BIRO_ORGANISASI: 'BIRO_ORGANISASI',
@@ -521,8 +564,8 @@ exports.RoleInternal = exports.$Enums.RoleInternal = {
 };
 
 exports.JenisBatch = exports.$Enums.JenisBatch = {
-  INISIASI_BIRO: 'INISIASI_BIRO',
-  REQUEST_OPD: 'REQUEST_OPD'
+  TERJADWAL: 'TERJADWAL',
+  MANDIRI: 'MANDIRI'
 };
 
 exports.StatusEvaluasi = exports.$Enums.StatusEvaluasi = {
@@ -533,7 +576,6 @@ exports.StatusEvaluasi = exports.$Enums.StatusEvaluasi = {
 
 exports.HasilEvaluasi = exports.$Enums.HasilEvaluasi = {
   SESUAI: 'SESUAI',
-  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN',
   REVISI_BIRO: 'REVISI_BIRO'
 };
 
@@ -557,6 +599,11 @@ exports.AuditAction = exports.$Enums.AuditAction = {
   REVISI_DARI_EVALUATOR: 'REVISI_DARI_EVALUATOR'
 };
 
+exports.KomentarStatus = exports.$Enums.KomentarStatus = {
+  OPEN: 'OPEN',
+  RESOLVED: 'RESOLVED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   OPD: 'OPD',
@@ -575,7 +622,9 @@ exports.Prisma.ModelName = {
   EvaluasiItem: 'EvaluasiItem',
   TTEProfile: 'TTEProfile',
   TTESignature: 'TTESignature',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  ImplementQualification: 'ImplementQualification',
+  Komentar: 'Komentar'
 };
 
 /**

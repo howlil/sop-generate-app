@@ -14,6 +14,7 @@ CREATE TABLE `User` (
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `User_email_key`(`email`),
+    INDEX `User_opdId_idx`(`opdId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -44,6 +45,7 @@ CREATE TABLE `Peraturan` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `Peraturan_createdById_idx`(`createdById`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -56,6 +58,7 @@ CREATE TABLE `SOP` (
     `opdId` VARCHAR(191) NOT NULL,
     `peraturanId` VARCHAR(191) NULL,
     `versi` INTEGER NOT NULL DEFAULT 1,
+    `picUserId` VARCHAR(191) NULL,
     `picName` VARCHAR(191) NULL,
     `picNumber` VARCHAR(191) NULL,
     `picRole` VARCHAR(191) NULL,
@@ -68,6 +71,11 @@ CREATE TABLE `SOP` (
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `SOP_nomorSOP_key`(`nomorSOP`),
+    INDEX `SOP_opdId_status_idx`(`opdId`, `status`),
+    INDEX `SOP_peraturanId_idx`(`peraturanId`),
+    INDEX `SOP_createdById_idx`(`createdById`),
+    INDEX `SOP_lastEditedById_idx`(`lastEditedById`),
+    INDEX `SOP_picUserId_idx`(`picUserId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -77,6 +85,7 @@ CREATE TABLE `LawBasis` (
     `sopId` VARCHAR(191) NOT NULL,
     `text` TEXT NOT NULL,
 
+    INDEX `LawBasis_sopId_idx`(`sopId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -86,6 +95,7 @@ CREATE TABLE `Equipment` (
     `sopId` VARCHAR(191) NOT NULL,
     `text` TEXT NOT NULL,
 
+    INDEX `Equipment_sopId_idx`(`sopId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -95,6 +105,7 @@ CREATE TABLE `RecordData` (
     `sopId` VARCHAR(191) NOT NULL,
     `text` TEXT NOT NULL,
 
+    INDEX `RecordData_sopId_idx`(`sopId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -125,6 +136,7 @@ CREATE TABLE `ProsedurRow` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `ProsedurRow_sopId_idx`(`sopId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -142,6 +154,7 @@ CREATE TABLE `Pelaksana` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `Pelaksana_opdId_idx`(`opdId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -165,6 +178,8 @@ CREATE TABLE `TimPenyusun` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `TimPenyusun_userId_idx`(`userId`),
+    INDEX `TimPenyusun_opdId_idx`(`opdId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -178,6 +193,7 @@ CREATE TABLE `TimEvaluasiAnggota` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `TimEvaluasiAnggota_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -185,17 +201,23 @@ CREATE TABLE `TimEvaluasiAnggota` (
 CREATE TABLE `VerifikasiBatch` (
     `id` VARCHAR(191) NOT NULL,
     `opdId` VARCHAR(191) NOT NULL,
-    `jenis` ENUM('INISIASI_BIRO', 'REQUEST_OPD') NOT NULL,
+    `jenis` ENUM('TERJADWAL', 'MANDIRI') NOT NULL,
     `status` ENUM('AKTIF', 'SELESAI', 'TERVERIFIKASI') NOT NULL DEFAULT 'AKTIF',
     `catatan` TEXT NULL,
     `nomorBA` VARCHAR(191) NULL,
-    `timEvaluasiId` VARCHAR(191) NULL,
     `tanggalRequest` DATETIME(3) NULL,
+    `tanggalEvaluasi` DATETIME(3) NULL,
+    `nilaiOPD` INTEGER NULL,
+    `verifiedByUserId` VARCHAR(191) NULL,
+    `signedByKoordinatorUserId` VARCHAR(191) NULL,
     `isSignedByKoordinator` BOOLEAN NOT NULL DEFAULT false,
     `tanggalTTDBaByKoordinator` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `VerifikasiBatch_opdId_idx`(`opdId`),
+    INDEX `VerifikasiBatch_verifiedByUserId_idx`(`verifiedByUserId`),
+    INDEX `VerifikasiBatch_signedByKoordinatorUserId_idx`(`signedByKoordinatorUserId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -204,12 +226,16 @@ CREATE TABLE `EvaluasiItem` (
     `id` VARCHAR(191) NOT NULL,
     `batchId` VARCHAR(191) NOT NULL,
     `sopId` VARCHAR(191) NOT NULL,
-    `hasil` ENUM('SESUAI', 'PERLU_PERBAIKAN', 'REVISI_BIRO') NULL,
+    `evaluatorId` VARCHAR(191) NOT NULL,
+    `hasil` ENUM('SESUAI', 'REVISI_BIRO') NULL,
     `catatan` TEXT NULL,
     `rekomendasi` TEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    INDEX `EvaluasiItem_batchId_idx`(`batchId`),
+    INDEX `EvaluasiItem_sopId_idx`(`sopId`),
+    INDEX `EvaluasiItem_evaluatorId_idx`(`evaluatorId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -217,10 +243,6 @@ CREATE TABLE `EvaluasiItem` (
 CREATE TABLE `TTEProfile` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
-    `nip` VARCHAR(191) NULL,
-    `jabatan` VARCHAR(191) NULL,
-    `pangkat` VARCHAR(191) NULL,
-    `nohp` VARCHAR(191) NULL,
     `pinHash` VARCHAR(191) NOT NULL,
     `emailVerified` BOOLEAN NOT NULL DEFAULT false,
     `role` ENUM('KEPALA_OPD', 'BIRO_ORGANISASI', 'TIM_PENYUSUN') NOT NULL,
@@ -241,8 +263,13 @@ CREATE TABLE `TTESignature` (
     `documentLabel` VARCHAR(191) NOT NULL,
     `referenceId` VARCHAR(191) NOT NULL,
     `documentHash` VARCHAR(191) NOT NULL,
+    `sopId` VARCHAR(191) NULL,
+    `batchId` VARCHAR(191) NULL,
     `signedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `TTESignature_userId_idx`(`userId`),
+    INDEX `TTESignature_sopId_idx`(`sopId`),
+    INDEX `TTESignature_batchId_idx`(`batchId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -258,14 +285,43 @@ CREATE TABLE `AuditLog` (
     `keterangan` TEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
+    INDEX `AuditLog_sopId_idx`(`sopId`),
+    INDEX `AuditLog_aktorId_idx`(`aktorId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `ImplementQualification` (
+    `id` VARCHAR(191) NOT NULL,
+    `sopId` VARCHAR(191) NOT NULL,
+    `text` TEXT NOT NULL,
+
+    INDEX `ImplementQualification_sopId_idx`(`sopId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Komentar` (
+    `id` VARCHAR(191) NOT NULL,
+    `sopId` VARCHAR(191) NOT NULL,
+    `userId` VARCHAR(191) NOT NULL,
+    `role` VARCHAR(191) NOT NULL,
+    `isi` TEXT NOT NULL,
+    `bagian` VARCHAR(191) NULL,
+    `status` ENUM('OPEN', 'RESOLVED') NOT NULL DEFAULT 'OPEN',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `Komentar_sopId_idx`(`sopId`),
+    INDEX `Komentar_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `User` ADD CONSTRAINT `User_opdId_fkey` FOREIGN KEY (`opdId`) REFERENCES `OPD`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `User` ADD CONSTRAINT `User_opdId_fkey` FOREIGN KEY (`opdId`) REFERENCES `OPD`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Peraturan` ADD CONSTRAINT `Peraturan_createdById_fkey` FOREIGN KEY (`createdById`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `Peraturan` ADD CONSTRAINT `Peraturan_createdById_fkey` FOREIGN KEY (`createdById`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SOP` ADD CONSTRAINT `SOP_opdId_fkey` FOREIGN KEY (`opdId`) REFERENCES `OPD`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -274,28 +330,31 @@ ALTER TABLE `SOP` ADD CONSTRAINT `SOP_opdId_fkey` FOREIGN KEY (`opdId`) REFERENC
 ALTER TABLE `SOP` ADD CONSTRAINT `SOP_peraturanId_fkey` FOREIGN KEY (`peraturanId`) REFERENCES `Peraturan`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SOP` ADD CONSTRAINT `SOP_createdById_fkey` FOREIGN KEY (`createdById`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `SOP` ADD CONSTRAINT `SOP_createdById_fkey` FOREIGN KEY (`createdById`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `SOP` ADD CONSTRAINT `SOP_lastEditedById_fkey` FOREIGN KEY (`lastEditedById`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `SOP` ADD CONSTRAINT `SOP_lastEditedById_fkey` FOREIGN KEY (`lastEditedById`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `LawBasis` ADD CONSTRAINT `LawBasis_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SOP` ADD CONSTRAINT `SOP_picUserId_fkey` FOREIGN KEY (`picUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Equipment` ADD CONSTRAINT `Equipment_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `LawBasis` ADD CONSTRAINT `LawBasis_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `RecordData` ADD CONSTRAINT `RecordData_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Equipment` ADD CONSTRAINT `Equipment_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `RelatedSOP` ADD CONSTRAINT `RelatedSOP_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `RecordData` ADD CONSTRAINT `RecordData_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `RelatedSOP` ADD CONSTRAINT `RelatedSOP_relatedSopId_fkey` FOREIGN KEY (`relatedSopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `RelatedSOP` ADD CONSTRAINT `RelatedSOP_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ProsedurRow` ADD CONSTRAINT `ProsedurRow_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `RelatedSOP` ADD CONSTRAINT `RelatedSOP_relatedSopId_fkey` FOREIGN KEY (`relatedSopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProsedurRow` ADD CONSTRAINT `ProsedurRow_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ProsedurRow` ADD CONSTRAINT `ProsedurRow_nextStepYesId_fkey` FOREIGN KEY (`nextStepYesId`) REFERENCES `ProsedurRow`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -307,7 +366,7 @@ ALTER TABLE `ProsedurRow` ADD CONSTRAINT `ProsedurRow_nextStepNoId_fkey` FOREIGN
 ALTER TABLE `Pelaksana` ADD CONSTRAINT `Pelaksana_opdId_fkey` FOREIGN KEY (`opdId`) REFERENCES `OPD`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `ProsedurRowPelaksana` ADD CONSTRAINT `ProsedurRowPelaksana_prosedurRowId_fkey` FOREIGN KEY (`prosedurRowId`) REFERENCES `ProsedurRow`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `ProsedurRowPelaksana` ADD CONSTRAINT `ProsedurRowPelaksana_prosedurRowId_fkey` FOREIGN KEY (`prosedurRowId`) REFERENCES `ProsedurRow`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ProsedurRowPelaksana` ADD CONSTRAINT `ProsedurRowPelaksana_pelaksanaId_fkey` FOREIGN KEY (`pelaksanaId`) REFERENCES `Pelaksana`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -325,7 +384,10 @@ ALTER TABLE `TimEvaluasiAnggota` ADD CONSTRAINT `TimEvaluasiAnggota_userId_fkey`
 ALTER TABLE `VerifikasiBatch` ADD CONSTRAINT `VerifikasiBatch_opdId_fkey` FOREIGN KEY (`opdId`) REFERENCES `OPD`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `VerifikasiBatch` ADD CONSTRAINT `VerifikasiBatch_timEvaluasiId_fkey` FOREIGN KEY (`timEvaluasiId`) REFERENCES `TimEvaluasiAnggota`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `VerifikasiBatch` ADD CONSTRAINT `VerifikasiBatch_verifiedByUserId_fkey` FOREIGN KEY (`verifiedByUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `VerifikasiBatch` ADD CONSTRAINT `VerifikasiBatch_signedByKoordinatorUserId_fkey` FOREIGN KEY (`signedByKoordinatorUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `EvaluasiItem` ADD CONSTRAINT `EvaluasiItem_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `VerifikasiBatch`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -334,13 +396,31 @@ ALTER TABLE `EvaluasiItem` ADD CONSTRAINT `EvaluasiItem_batchId_fkey` FOREIGN KE
 ALTER TABLE `EvaluasiItem` ADD CONSTRAINT `EvaluasiItem_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `EvaluasiItem` ADD CONSTRAINT `EvaluasiItem_evaluatorId_fkey` FOREIGN KEY (`evaluatorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `TTEProfile` ADD CONSTRAINT `TTEProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `TTESignature` ADD CONSTRAINT `TTESignature_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `TTESignature` ADD CONSTRAINT `TTESignature_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `TTESignature` ADD CONSTRAINT `TTESignature_batchId_fkey` FOREIGN KEY (`batchId`) REFERENCES `VerifikasiBatch`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `AuditLog` ADD CONSTRAINT `AuditLog_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `AuditLog` ADD CONSTRAINT `AuditLog_aktorId_fkey` FOREIGN KEY (`aktorId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ImplementQualification` ADD CONSTRAINT `ImplementQualification_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Komentar` ADD CONSTRAINT `Komentar_sopId_fkey` FOREIGN KEY (`sopId`) REFERENCES `SOP`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Komentar` ADD CONSTRAINT `Komentar_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
