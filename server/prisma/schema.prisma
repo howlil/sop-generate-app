@@ -116,8 +116,8 @@ model Pengguna {
   sopDiedit        SOP[]                @relation("SOPDieditOleh")
   sopSebagaiPic    SOP[]                @relation("SOPPicPengguna")
   peraturanDibuat  Peraturan[]
-  batchDiverifikasi BatchVerifikasi[]   @relation("BatchDiverifikasiOleh")
-  batchDitandatangani BatchVerifikasi[] @relation("BatchDitandatanganiOlehKoordinator")
+  pengajuanEvaluasiDiverifikasi PengajuanEvaluasi[] @relation("PengajuanDiverifikasiOleh")
+  pengajuanEvaluasiDitandatangani PengajuanEvaluasi[] @relation("PengajuanDitandatanganiOlehKoordinator")
   itemEvaluasi     ItemEvaluasi[]       @relation("EvaluasiEvaluator")
   komentar         Komentar[]
 
@@ -139,7 +139,7 @@ model OPD {
   sop             SOP[]
   pelaksana       Pelaksana[]
   timPenyusun     TimPenyusun[]
-  batchVerifikasi BatchVerifikasi[]
+  pengajuanEvaluasi PengajuanEvaluasi[]
 }
 
 // Tabel 3: Peraturan
@@ -356,8 +356,8 @@ model TimEvaluasiAnggota {
   @@index([userId])
 }
 
-// Tabel 14: BatchVerifikasi
-model BatchVerifikasi {
+// Tabel 14: PengajuanEvaluasi
+model PengajuanEvaluasi {
   id                        String         @id @default(uuid())
   opdId                     String
   jenis                     JenisBatch
@@ -375,21 +375,21 @@ model BatchVerifikasi {
   updatedAt                 DateTime       @updatedAt
 
   opd                     OPD              @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  diverifikasiOlehUser    Pengguna?        @relation("BatchDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [id], onDelete: Restrict)
-  ditandatanganiOlehKoordinatorUser Pengguna? @relation("BatchDitandatanganiOlehKoordinator", fields: [ditandatanganiOlehKoordinatorUserId], references: [id], onDelete: Restrict)
+  diverifikasiOlehUser    Pengguna?        @relation("PengajuanDiverifikasiOleh")
+  ditandatanganiOlehKoordinatorUser Pengguna? @relation("PengajuanDitandatanganiOlehKoordinator")
   itemEvaluasi            ItemEvaluasi[]
   tandaTanganTTE          TandaTanganTTE[]
 
   @@index([opdId])
   @@index([diverifikasiOlehUserId])
   @@index([ditandatanganiOlehKoordinatorUserId])
-  @@map("BatchVerifikasi")
+  @@map("PengajuanEvaluasi")
 }
 
 // Tabel 15: ItemEvaluasi
 model ItemEvaluasi {
   id          String         @id @default(uuid())
-  batchId     String
+  pengajuanEvaluasiId String
   sopId       String
   evaluatorId String
   hasil       HasilEvaluasi?
@@ -398,12 +398,12 @@ model ItemEvaluasi {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  batch     BatchVerifikasi @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  pengajuanEvaluasi PengajuanEvaluasi @relation(fields: [pengajuanEvaluasiId], references: [id], onDelete: Restrict)
   sop       SOP             @relation(fields: [sopId], references: [id], onDelete: Restrict)
   evaluator Pengguna        @relation("EvaluasiEvaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
 
-  @@unique([batchId, sopId, evaluatorId])
-  @@index([batchId])
+  @@unique([pengajuanEvaluasiId, sopId, evaluatorId])
+  @@index([pengajuanEvaluasiId])
   @@index([sopId])
   @@index([evaluatorId])
   @@index([evaluatorId, createdAt])
@@ -436,16 +436,16 @@ model TandaTanganTTE {
   idReferensi   String
   hashDokumen   String
   sopId         String?
-  batchId       String?
+  pengajuanEvaluasiId String?
   ditandatanganiPada DateTime @default(now())
 
   user  Pengguna         @relation(fields: [userId], references: [id], onDelete: Restrict)
   sop   SOP?             @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  batch BatchVerifikasi? @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  pengajuanEvaluasi PengajuanEvaluasi? @relation(fields: [pengajuanEvaluasiId], references: [id], onDelete: Restrict)
 
   @@index([userId])
   @@index([sopId])
-  @@index([batchId])
+  @@index([pengajuanEvaluasiId])
   @@map("TandaTanganTTE")
 }
 
