@@ -43,6 +43,7 @@ import { useAppRole } from '@/hooks/useAppRole'
 import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 import { usePagination } from '@/hooks/usePagination'
+import { canTimPenyusunRunCoordinatorActions } from '@/lib/domain/tim-penyusun-access'
 
 export function ManajemenSOP() {
   const filterStatusId = 'filter-status-sop'
@@ -98,6 +99,10 @@ export function ManajemenSOP() {
   }
 
   const confirmAjukanEvaluasiBulk = () => {
+    if (!canTimPenyusunRunCoordinatorActions(role)) {
+      showToast('Hanya Koordinator Tim Penyusun yang dapat mengajukan evaluasi.', 'error')
+      return
+    }
     if (selectedSopIdsForAjukan.size === 0) {
       showToast('Pilih minimal satu SOP untuk diajukan.', 'error')
       return
@@ -232,6 +237,10 @@ export function ManajemenSOP() {
             size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={() => {
+              if (!canTimPenyusunRunCoordinatorActions(role)) {
+                showToast('Hanya Koordinator Tim Penyusun yang dapat mengajukan evaluasi.', 'error')
+                return
+              }
               setSelectedSopIdsForAjukan(new Set())
               setIsRequestEvaluasiDialogOpen(true)
             }}
@@ -398,7 +407,7 @@ export function ManajemenSOP() {
               <EmptyState
                 icon={<FileText className="w-10 h-10" />}
                 title="Tidak ada SOP yang siap diajukan"
-                description="SOP harus berstatus Siap Dievaluasi atau Revisi dari Tim Evaluasi. SOP yang sedang dalam evaluasi aktif tidak ditampilkan."
+                description="SOP harus berstatus Siap Dievaluasi (setelah Selesai Menyusun dari Draft atau Revisi). SOP yang sedang dalam evaluasi aktif tidak ditampilkan."
               />
             ) : eligibleSopsFilteredBySearch.length === 0 ? (
               <div className="py-8 text-center text-xs text-gray-500">
@@ -433,11 +442,6 @@ export function ManajemenSOP() {
                         <div className="mt-1.5">
                           <StatusBadge status={sop.status} />
                         </div>
-                        {sop.status === 'Revisi dari Tim Evaluasi' && (
-                          <p className="mt-1.5 text-[11px] text-amber-700">
-                            SOP ini dikembalikan untuk revisi dan siap dikirim ulang ke evaluasi.
-                          </p>
-                        )}
                       </div>
                     </div>
                   </li>

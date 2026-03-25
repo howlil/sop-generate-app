@@ -1,8 +1,8 @@
 /**
- * Koordinator Tim Penyusun: Berita Acara.
- * 1. Tampilan awal: tabel daftar Berita Acara yang sudah diverifikasi Biro, menunggu TTD Koordinator.
- * 2. Setelah pilih "Lihat detail": header info, kiri daftar SOP, tengah preview BA, kanan Catatan & Rekomendasi.
- * Koordinator hanya TTD BA — pengesahan masing-masing SOP dilakukan Kepala OPD.
+ * Koordinator Tim Penyusun: Berita Acara (verifikasi).
+ * 1. Daftar BA yang sudah diverifikasi Biro, menunggu langkah verifikasi Koordinator.
+ * 2. Detail: header, daftar SOP, preview BA, catatan evaluasi.
+ * Verifikasi BA hanya Biro + Koordinator; pengesahan SOP hanya Kepala OPD.
  */
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
@@ -27,10 +27,15 @@ import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
 import { Route } from '@/routes/tim-penyusun.berita-acara'
+import { useAppRole } from '@/hooks/useAppRole'
+import { canTimPenyusunRunCoordinatorActions } from '@/lib/domain/tim-penyusun-access'
+import { ROLES } from '@/lib/constants/roles'
+import { pushPipelineNotification } from '@/lib/stores/pipeline-notification-store'
 
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
   const { id: searchId } = Route.useSearch()
+  const { role } = useAppRole()
   const { list: batchList, updateBatch } = useVerifikasiBatchList()
   const { showToast } = useToast()
   const [signingBatchId, setSigningBatchId] = useState<string | null>(null)
@@ -42,7 +47,7 @@ export function BeritaAcaraKoordinatorPage() {
 
   const goToDetail = (baId: string) => navigate({ to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, search: { id: baId } })
 
-  /** BA milik OPD ini yang sudah diverifikasi Biro, belum ditandatangani Koordinator. */
+  /** BA yang sudah diverifikasi Biro, menunggu verifikasi Koordinator (bukan pengesahan Kepala OPD). */
   const baMenungguTTD = useMemo(
     () => batchList.filter((p) => p.isVerified === true && p.isSignedByKoordinator !== true),
     [batchList]
@@ -93,7 +98,14 @@ export function BeritaAcaraKoordinatorPage() {
         isSignedByKoordinator: true,
         tanggalTTDBaByKoordinator: today,
       })
-      showToast('Berita Acara berhasil ditandatangani. Kepala OPD dapat mengesahkan masing-masing SOP.')
+      pushPipelineNotification({
+        title: 'Berita Acara siap pengesahan',
+        body: signingBatch
+          ? `BA ${signingBatch.nomorBA ?? signingBatch.id} — ${signingBatch.opd}: Kepala OPD dapat mengesahkan SOP di menu Berita Acara & pengesahan.`
+          : 'Kepala OPD dapat melanjutkan pengesahan SOP.',
+        targetRole: ROLES.KEPALA_OPD,
+      })
+      showToast('Verifikasi Berita Acara (Koordinator) selesai. Kepala OPD dapat melakukan pengesahan per SOP.')
       setSigningBatchId(null)
     }
   )
@@ -101,19 +113,37 @@ export function BeritaAcaraKoordinatorPage() {
   const openSignDialog = (id: string) => setSigningBatchId(id)
   const closeSignDialog = () => setSigningBatchId(null)
 
+  if (!canTimPenyusunRunCoordinatorActions(role)) {
+    return (
+      <ListPageLayout
+        breadcrumb={[{ label: 'Tanda Tangan BA' }]}
+        title="Tanda Tangan BA"
+        description="Verifikasi BA oleh Koordinator setelah Biro."
+      >
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <EmptyState
+            icon={<FileText />}
+            title="Akses terbatas"
+            description="Halaman ini hanya untuk Koordinator Tim Penyusun. Anggota tim menggunakan Manajemen SOP untuk menyusun dokumen."
+          />
+        </div>
+      </ListPageLayout>
+    )
+  }
+
   // ——— Tampilan: tidak ada BA ———
   if (!selectedBaId && baMenungguTTD.length === 0) {
     return (
       <ListPageLayout
         breadcrumb={[{ label: 'Berita Acara' }]}
         title="Berita Acara"
-        description="Berita Acara OPD Anda yang sudah diverifikasi Biro dan menunggu tanda tangan Koordinator."
+        description="Berita Acara yang sudah diverifikasi Biro dan menunggu verifikasi Koordinator Tim Penyusun."
       >
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <EmptyState
             icon={<FileText />}
-            title="Tidak ada Berita Acara menunggu tanda tangan"
-            description="Semua Berita Acara sudah ditandatangani, atau belum ada BA yang diverifikasi Biro."
+            title="Tidak ada Berita Acara menunggu verifikasi Koordinator"
+            description="Semua BA sudah diverifikasi Koordinator, atau belum ada BA yang diverifikasi Biro."
           />
         </div>
       </ListPageLayout>
@@ -127,7 +157,7 @@ export function BeritaAcaraKoordinatorPage() {
         <ListPageLayout
           breadcrumb={[{ label: 'Berita Acara' }]}
           title="Berita Acara"
-          description="Daftar Berita Acara yang sudah diverifikasi Biro. Klik Lihat detail untuk melihat dokumen BA dan daftar SOP, lalu tandatangani bila siap."
+          description="Daftar BA yang sudah diverifikasi Biro. Koordinator menyelesaikan verifikasi BA di sini; pengesahan SOP hanya oleh Kepala OPD."
         >
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <Table.Root>
@@ -159,7 +189,7 @@ export function BeritaAcaraKoordinatorPage() {
                           />
                           <IconActionButton
                             icon={PenLine}
-                            title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Tandatangani Berita Acara'}
+                            title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Verifikasi Berita Acara (Koordinator)'}
                             onClick={() => openSignDialog(p.id)}
                             disabled={!tte.canSign}
                           />
@@ -176,9 +206,9 @@ export function BeritaAcaraKoordinatorPage() {
         <PinVerificationDialog
           open={signingBatchId !== null}
           onOpenChange={(open) => !open && closeSignDialog()}
-          title="Tandatangani Berita Acara"
-          description="Masukkan PIN TTE BSRE untuk menandatangani Berita Acara. Setelah ini Kepala OPD dapat mengesahkan masing-masing SOP."
-          confirmLabel="Tandatangani"
+          title="Verifikasi Berita Acara (Koordinator)"
+          description="Masukkan PIN TTE untuk verifikasi BA (bukan pengesahan). Pengesahan SOP dilakukan Kepala OPD."
+          confirmLabel="Verifikasi"
           onConfirm={handlePinConfirm}
         />
       </>
@@ -202,8 +232,8 @@ export function BeritaAcaraKoordinatorPage() {
         title={`Detail Berita Acara — ${selectedBa?.nomorBA ?? ''}`}
         description={
           selectedBa?.isSignedByKoordinator
-            ? 'Berita Acara sudah ditandatangani. Kepala OPD akan mengesahkan masing-masing SOP.'
-            : 'Tandatangani Berita Acara untuk meneruskan proses pengesahan SOP kepada Kepala OPD.'
+            ? 'Verifikasi BA oleh Koordinator selesai. Pengesahan SOP oleh Kepala OPD.'
+            : 'Selesaikan verifikasi Berita Acara (Koordinator); pengesahan hanya oleh Kepala OPD.'
         }
         backTo={ROUTES.TIM_PENYUSUN.BERITA_ACARA}
         backSize="icon"
@@ -225,10 +255,10 @@ export function BeritaAcaraKoordinatorPage() {
                     size="sm"
                     className="h-8 text-xs gap-1.5 bg-blue-500 text-white hover:bg-blue-600"
                     disabled={!tte.canSign}
-                    title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Tandatangani Berita Acara'}
+                    title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Verifikasi Berita Acara (Koordinator)'}
                     onClick={() => selectedBa && openSignDialog(selectedBa.id)}
                   >
-                    <PenLine className="w-3.5 h-3.5" /> Tandatangani Berita Acara
+                    <PenLine className="w-3.5 h-3.5" /> Verifikasi BA
                   </Button>
                 )}
               </div>
@@ -377,9 +407,9 @@ export function BeritaAcaraKoordinatorPage() {
       <PinVerificationDialog
         open={signingBatchId !== null}
         onOpenChange={(open) => !open && closeSignDialog()}
-        title="Tandatangani Berita Acara"
-        description="Masukkan PIN TTE BSRE untuk menandatangani Berita Acara. Setelah ini Kepala OPD dapat mengesahkan masing-masing SOP."
-        confirmLabel="Tandatangani"
+        title="Verifikasi Berita Acara (Koordinator)"
+        description="Masukkan PIN TTE untuk verifikasi BA (bukan pengesahan). Pengesahan SOP dilakukan Kepala OPD."
+        confirmLabel="Verifikasi"
         onConfirm={handlePinConfirm}
       />
     </>

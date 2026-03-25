@@ -25,7 +25,8 @@ const PRINT_DELAY_MS = 150
 export function DetailVerifikasiBatch() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
-  const { batch, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify } = useVerifikasiBatchDetailPage(id)
+  const { batch, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify, verifyBlockedReason } =
+    useVerifikasiBatchDetailPage(id)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('sop')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -43,7 +44,7 @@ export function DetailVerifikasiBatch() {
     },
     (payload) => {
       handleVerifySuccess(payload)
-      showToast('Batch evaluasi berhasil diverifikasi dengan TTE BSRE. Berita Acara telah dibuat.')
+      showToast('Verifikasi Berita Acara (Biro) berhasil. Koordinator Tim Penyusun dapat melanjutkan verifikasi BA.')
     }
   )
 
@@ -76,7 +77,7 @@ export function DetailVerifikasiBatch() {
           { label: 'Detail' },
         ]}
         title="Detail Evaluasi SOP"
-        description="Informasi batch evaluasi dan verifikasi (Berita Acara)"
+        description="Verifikasi Berita Acara — langkah Biro Organisasi; Koordinator melanjutkan verifikasi; pengesahan oleh Kepala OPD."
         backTo={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}
         backSize="icon"
         header={
@@ -111,7 +112,7 @@ export function DetailVerifikasiBatch() {
                 {canVerify && (
                   tte.canSign ? (
                     <Button size="sm" className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5" onClick={tte.openPinDialog}>
-                      <CheckCircle className="w-3.5 h-3.5" /> Verifikasi Batch (TTE)
+                      <CheckCircle className="w-3.5 h-3.5" /> Verifikasi BA (Biro)
                     </Button>
                   ) : (
                     <Link to={ROUTES.BIRO_ORGANISASI.TTD}>
@@ -123,6 +124,11 @@ export function DetailVerifikasiBatch() {
                 )}
               </div>
             </div>
+            {verifyBlockedReason && (
+              <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mt-2">
+                {verifyBlockedReason}
+              </p>
+            )}
             <div className="pt-2 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-gray-900">{batch.opd}</span>
@@ -307,8 +313,8 @@ export function DetailVerifikasiBatch() {
       <PinVerificationDialog
         open={tte.pinDialogOpen}
         onOpenChange={tte.setPinDialogOpen}
-        title="Verifikasi PIN TTE"
-        description="Masukkan PIN TTE BSRE untuk memverifikasi batch evaluasi ini."
+        title="Verifikasi Berita Acara (Biro)"
+        description="Masukkan PIN TTE untuk verifikasi BA sebagai Biro Organisasi. Pengesahan SOP oleh Kepala OPD."
         onConfirm={handlePinConfirm}
         confirmLabel="Verifikasi"
       />

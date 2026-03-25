@@ -1,7 +1,5 @@
 /**
- * Kepala OPD: Berita Acara.
- * 1. Tampilan awal: tabel daftar Berita Acara.
- * 2. Setelah pilih "Lihat detail": struktur sama dengan Biro (header info, kiri daftar SOP, tengah preview BA, kanan Catatan & Rekomendasi).
+ * Kepala OPD: Berita Acara — pengesahan SOP setelah verifikasi BA (Biro + Koordinator) selesai.
  */
 import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
@@ -31,6 +29,8 @@ import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
 import { Route } from '@/routes/kepala-opd.berita-acara'
+import { verifyPin } from '@/lib/domain/tte'
+import { getTTEProfile, addTTESignature } from '@/lib/data/tte-storage'
 
 export function BeritaAcaraPage() {
   const navigate = useNavigate()
@@ -42,6 +42,7 @@ export function BeritaAcaraPage() {
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const [signingSopId, setSigningSopId] = useState<string | null>(null)
+  const [signingBulkIds, setSigningBulkIds] = useState<string[] | null>(null)
   const selectedBaId = searchId ?? null
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -83,8 +84,14 @@ export function BeritaAcaraPage() {
     setSelectedSopId(null)
   }, [selectedBaId])
 
-  const openSignSopDialog = (sopId: string) => setSigningSopId(sopId)
-  const closeSignSopDialog = () => setSigningSopId(null)
+  const openSignSopDialog = (sopId: string) => {
+    setSigningBulkIds(null)
+    setSigningSopId(sopId)
+  }
+  const closeSignSopDialog = () => {
+    setSigningSopId(null)
+    setSigningBulkIds(null)
+  }
 
   const tteSop = useTTESignature({
     role: 'kepala-opd',
@@ -92,7 +99,7 @@ export function BeritaAcaraPage() {
   })
   const signingSop =
     signingSopId && displaySop?.id === signingSopId ? displaySop : null
-  const handleSignSopConfirm = tteSop.createPinConfirmHandler(
+  const handleSignSopConfirmSingle = tteSop.createPinConfirmHandler(
     {
       documentLabel: signingSop?.nama ?? 'SOP',
       referenceId: signingSop?.nomor ?? signingSopId ?? '',
@@ -106,6 +113,40 @@ export function BeritaAcaraPage() {
     }
   )
 
+  const signableSopIds = useMemo(() => {
+    return sopList
+      .filter((s) => {
+        const st = (getSopStatusOverride(s.id) ?? s.status) as StatusSOP
+        return canKepalaOpdSignSop(st, batchList, opdName, s.id, s.nomor)
+      })
+      .map((s) => s.id)
+  }, [sopList, batchList, opdName, getSopStatusOverride])
+
+  const handlePinConfirm = (pin: string): boolean => {
+    if (signingBulkIds && signingBulkIds.length > 0) {
+      const profile = getTTEProfile('kepala-opd')
+      if (!profile || !verifyPin(pin, profile.pinHash)) return false
+      for (const id of signingBulkIds) {
+        const sop = sopList.find((x) => x.id === id)
+        addTTESignature(
+          'kepala-opd',
+          profile.nip,
+          profile.namaLengkap,
+          profile.jabatan,
+          profile.pangkat,
+          id,
+          sop?.nama ?? 'SOP',
+          sop?.nomor ?? id
+        )
+        setSopStatusOverride(id, 'Berlaku')
+      }
+      showToast(`${signingBulkIds.length} SOP berhasil disahkan dengan satu PIN TTE.`)
+      setSigningBulkIds(null)
+      return true
+    }
+    return handleSignSopConfirmSingle(pin)
+  }
+
   // ——— Guard: id BA di URL tidak ada dalam daftar BA yang boleh diakses — tunggu redirect ———
   if (selectedBaId && selectedBa === null) {
     return null
@@ -118,13 +159,13 @@ export function BeritaAcaraPage() {
       <ListPageLayout
         breadcrumb={[{ label: 'Berita Acara' }]}
         title="Berita Acara"
-        description="Berita Acara milik OPD Anda yang sudah diverifikasi Biro dan menunggu tanda tangan Anda."
+        description="BA OPD Anda yang sudah selesai diverifikasi (Biro + Koordinator). Pengesahan SOP hanya oleh Anda sebagai Kepala OPD."
       >
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <EmptyState
             icon={<FileText />}
-            title="Tidak ada Berita Acara menunggu tanda tangan"
-            description="Semua Berita Acara OPD Anda sudah ditandatangani, atau belum ada BA yang diverifikasi Biro."
+            title="Tidak ada BA menunggu pengesahan"
+            description="Semua SOP sudah disahkan, atau verifikasi BA (Biro/Koordinator) belum selesai."
           />
         </div>
       </ListPageLayout>
@@ -138,7 +179,7 @@ export function BeritaAcaraPage() {
         <ListPageLayout
           breadcrumb={[{ label: 'Berita Acara' }]}
           title="Berita Acara"
-          description="Daftar Berita Acara yang sudah diverifikasi Biro. Klik Lihat detail untuk melihat dokumen BA dan daftar SOP yang diverifikasi, lalu tandatangani bila siap."
+          description="BA dengan verifikasi lengkap (Biro + Koordinator). Lakukan pengesahan SOP dengan TTE."
         >
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <Table.Root>
@@ -211,7 +252,7 @@ export function BeritaAcaraPage() {
           { label: selectedBa?.nomorBA ?? 'Detail' },
         ]}
         title={`Detail Berita Acara — ${selectedBa?.nomorBA ?? ''}`}
-        description="Pilih SOP di daftar kiri lalu gunakan tombol Mengesahkan SOP untuk mengesahkan masing-masing SOP dengan TTE."
+        description="Pengesahan (Kepala OPD): pilih SOP di kiri, lalu Mengesahkan SOP dengan TTE — setelah verifikasi BA selesai."
         backTo={ROUTES.KEPALA_OPD.BERITA_ACARA}
         backSize="icon"
         header={
@@ -228,18 +269,35 @@ export function BeritaAcaraPage() {
                   <Printer className="w-3.5 h-3.5" /> Cetak Berita Acara
                 </Button>
                 {hasAnySignableSop && firstSignableSop && (
-                  <Button
-                    size="sm"
-                    className="h-8 text-xs gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
-                    title="Mengesahkan SOP (TTE) — pilih SOP di kiri bila perlu"
-                    onClick={() => {
-                      setPreviewMainTab('sop')
-                      if (!displaySop || !canSignSop) setSelectedSopId(firstSignableSop.id)
-                      openSignSopDialog(canSignSop && displaySop ? displaySop.id : firstSignableSop.id)
-                    }}
-                  >
-                    <FileCheck className="w-3.5 h-3.5" /> Mengesahkan SOP
-                  </Button>
+                  <>
+                    {signableSopIds.length > 1 && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="h-8 text-xs gap-1.5 border border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100"
+                        title="Sahkan semua SOP yang memenuhi syarat dengan satu PIN"
+                        onClick={() => {
+                          setSigningSopId(null)
+                          setSigningBulkIds(signableSopIds)
+                          setPreviewMainTab('sop')
+                        }}
+                      >
+                        <FileCheck className="w-3.5 h-3.5" /> Sahkan semua ({signableSopIds.length})
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      className="h-8 text-xs gap-1.5 bg-emerald-600 text-white hover:bg-emerald-700"
+                      title="Mengesahkan SOP (TTE) — pilih SOP di kiri bila perlu"
+                      onClick={() => {
+                        setPreviewMainTab('sop')
+                        if (!displaySop || !canSignSop) setSelectedSopId(firstSignableSop.id)
+                        openSignSopDialog(canSignSop && displaySop ? displaySop.id : firstSignableSop.id)
+                      }}
+                    >
+                      <FileCheck className="w-3.5 h-3.5" /> Mengesahkan SOP
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -398,12 +456,16 @@ export function BeritaAcaraPage() {
       />
 
       <PinVerificationDialog
-        open={signingSopId !== null}
+        open={signingSopId !== null || (signingBulkIds?.length ?? 0) > 0}
         onOpenChange={(open) => !open && closeSignSopDialog()}
-        title="Mengesahkan SOP"
-        description="Masukkan PIN TTE BSRE untuk mengesahkan SOP ini (status menjadi Berlaku)."
+        title={signingBulkIds?.length ? `Mengesahkan ${signingBulkIds.length} SOP` : 'Mengesahkan SOP'}
+        description={
+          signingBulkIds?.length
+            ? `Masukkan PIN TTE sekali untuk mengesahkan ${signingBulkIds.length} SOP sekaligus (status menjadi Berlaku).`
+            : 'Masukkan PIN TTE BSRE untuk mengesahkan SOP ini (status menjadi Berlaku).'
+        }
         confirmLabel="Mengesahkan"
-        onConfirm={handleSignSopConfirm}
+        onConfirm={handlePinConfirm}
       />
     </>
   )

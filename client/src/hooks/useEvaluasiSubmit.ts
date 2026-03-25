@@ -10,6 +10,8 @@ import { useSopStatus } from '@/hooks/useSopStatus'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { StatusSOP } from '@/lib/types/sop'
 import { saveOpdRating, type EvaluasiRecordMap } from '@/lib/data/evaluasi-data'
+import { ROLES } from '@/lib/constants/roles'
+import { pushPipelineNotification } from '@/lib/stores/pipeline-notification-store'
 
 export interface SedangDievaluasiItem {
   id: string
@@ -98,6 +100,15 @@ export function useEvaluasiSubmit({
     if (ratingOPD !== null && opdId) {
       saveOpdRating(opdId, { skor: ratingOPD, date: today, evaluatorName: namaEvaluator })
     }
+    const adaRevisi = toSubmit.some((i) => i.statusEvaluasi === 'Revisi Biro')
+    pushPipelineNotification({
+      title: adaRevisi ? 'Perlu revisi dari Tim Penyusun' : 'Hasil evaluasi tersedia',
+      body:
+        adaRevisi
+          ? `${toSubmit.length} SOP memiliki hasil evaluasi. SOP yang berstatus Revisi wajib diperbaiki lalu diajukan ulang (Selesai Menyusun → Siap Dievaluasi).`
+          : `${toSubmit.length} hasil evaluasi telah dikirim. Tim Penyusun dapat melanjutkan alur verifikasi.`,
+      targetRole: ROLES.TIM_PENYUSUN,
+    })
     showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. SOP yang direvisi dapat diperbaiki lalu diajukan ulang oleh Tim Penyusun.`)
     onSuccess()
   }, [

@@ -12,6 +12,8 @@ export const ROUTES = {
 
   KEPALA_OPD: {
     ROOT: '/kepala-opd',
+    /** Ringkasan pipeline & aksi mendesak (pengesahan, dll.). */
+    DASHBOARD: '/kepala-opd/dashboard',
     TTD: '/kepala-opd/ttd-elektronik',
     PANTAU_SOP: '/kepala-opd/pantau-sop',
     /** Berita Acara (BA) milik OPD: daftar BA yang sudah diverifikasi Biro dan menunggu TTD Kepala OPD. Setelah TTD BA, Kepala OPD boleh mengesahkan tiap SOP. */
@@ -36,6 +38,8 @@ export const ROUTES = {
 
   TIM_PENYUSUN: {
     ROOT: '/tim-penyusun',
+    /** Ringkasan status SOP OPD & tahap pipeline. */
+    DASHBOARD: '/tim-penyusun/dashboard',
     /** Manajemen SOP: daftar (tabel) + detail (edit/lihat). Tim Penyusun buat SOP sendiri & request ke Biro. */
     MANAJEMEN_SOP: '/tim-penyusun/manajemen-sop',
     /** Kelola Pelaksana SOP (master data untuk kolom pelaksana di edit SOP). */

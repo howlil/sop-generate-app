@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { TTESignaturePayload } from '@/lib/types/tte'
 import {
   canVerifyBatch,
@@ -9,6 +9,8 @@ import {
 import { useVerifikasiBatchDetail, useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
+import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
+import { useSopStatusStore } from '@/lib/stores/sop-status-store'
 
 export interface UseVerifikasiBatchDetailResult {
   batch: VerifikasiBatch | null
@@ -17,17 +19,26 @@ export interface UseVerifikasiBatchDetailResult {
   /** Call when TTE pin verification succeeds. Pass payload from createPinConfirmHandler. */
   handleVerifySuccess: (payload: TTESignaturePayload) => void
   canVerify: boolean
+  /** Alasan verifikasi BA ditahan (mis. SOP belum semua Siap Diverifikasi). */
+  verifyBlockedReason: string | null
 }
 
 /**
- * Hook untuk halaman detail Verifikasi SOP (Biro): satu batch + verifikasi Berita Acara.
+ * Hook untuk halaman detail Verifikasi SOP (Biro): satu batch + langkah verifikasi Berita Acara (peran Biro).
  * Saat verifikasi berhasil: batch jadi Terverifikasi + semua SOP di batch status → Diverifikasi Biro Organisasi.
+ * Pengesahan dilakukan hanya oleh Kepala OPD (halaman terpisah).
  */
 export function useVerifikasiBatchDetailPage(id: string | undefined): UseVerifikasiBatchDetailResult {
   const { batch, updateBatch } = useVerifikasiBatchDetail(id)
   const { list: batchList } = useVerifikasiBatchList()
-  const { setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverride, mergeSopStatus } = useSopStatus()
+  const overrides = useSopStatusStore((s) => s.overrides)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
+
+  const mergedSopDaftar = useMemo(
+    () => mergeSopStatus(getInitialSopDaftarList()),
+    [mergeSopStatus, overrides]
+  )
 
   const handleVerifySuccess = (payload: TTESignaturePayload) => {
     if (!batch) return
@@ -46,11 +57,21 @@ export function useVerifikasiBatchDetailPage(id: string | undefined): UseVerifik
     }
   }
 
+  const verifyBlockedReason = useMemo(() => {
+    if (!batch || batch.isVerified || batch.status !== 'Selesai') return null
+    if (canVerifyBatch(batch, mergedSopDaftar)) return null
+    const byId = new Map(mergedSopDaftar.map((r) => [r.id, r.status]))
+    const notReady = (batch.sopList ?? []).filter((s) => byId.get(s.id) !== 'Siap Diverifikasi')
+    if (notReady.length === 0) return null
+    return `Tidak dapat memverifikasi BA: ${notReady.length} SOP belum berstatus "Siap Diverifikasi". Sesuaikan status SOP di alur evaluasi terlebih dahulu.`
+  }, [batch, mergedSopDaftar])
+
   return {
     batch,
     selectedSopId,
     setSelectedSopId,
     handleVerifySuccess,
-    canVerify: batch ? canVerifyBatch(batch) : false,
+    canVerify: batch ? canVerifyBatch(batch, mergedSopDaftar) : false,
+    verifyBlockedReason,
   }
 }
