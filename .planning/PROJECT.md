@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Aplikasi web untuk manajemen Standard Operating Procedure (SOP) lingkup pemerintah daerah. Digunakan oleh Biro Organisasi untuk mengawasi, mengevaluasi, dan mengesahkan SOP dari seluruh OPD (Organisasi Perangkat Daerah) di bawahnya. Sistem mendukung alur kerja lengkap dari penyusunan SOP oleh Tim Penyusun OPD hingga pengesahan elektronik (TTE) oleh Kepala OPD dan Biro Organisasi.
+Sistem informasi berbasis web untuk pengelolaan Standard Operating Procedure (SOP) instansi pemerintah. Tim Penyusun menyusun SOP melalui alur kerja berjenjang, Tim Evaluasi mengevaluasinya, dan Biro Organisasi memverifikasi serta mengesahkannya secara digital menggunakan Tanda Tangan Elektronik (TTE). Sistem ini digunakan oleh empat peran: Tim Penyusun, Kepala OPD, Tim Evaluasi, dan Biro Organisasi.
 
 ## Core Value
 
@@ -12,56 +12,93 @@ Tim Penyusun dapat menyusun SOP sesuai prosedur baku, dan Biro Organisasi dapat 
 
 ### Validated
 
-<!-- Shipped and confirmed valuable. -->
+<!-- Existing client prototype — UI fully implemented for all roles -->
 
-(None yet — milestone v1.0 in progress)
+- ✓ UI prototype lengkap untuk semua 4 role (Tim Penyusun, Kepala OPD, Tim Evaluasi, Biro Organisasi) — existing client
+- ✓ Alur navigasi role-based dengan route guard berbasis Zustand — existing client
+- ✓ Komponen BPMN/flowchart diagram untuk visualisasi prosedur SOP — existing client
+- ✓ Komponen TTE setup, PIN verification, dan signature block — existing client (demo mode)
+- ✓ Komponen Berita Acara dan riwayat status/komentar — existing client
+- ✓ Domain types: SOP, Peraturan, OPD, TTE, Evaluasi, VerifikasiBatch, Pelaksana — existing client
+- ✓ Seed data JSON untuk semua entitas utama — existing client
 
 ### Active
 
-<!-- Current scope: v1.0 Backend Implementation -->
+<!-- Backend v1.0 — building the server layer that the client will consume -->
 
-- [ ] Database schema penuh (18 tabel) sesuai ERD yang disetujui
-- [ ] Autentikasi & otorisasi berbasis role (JWT + 4 role)
-- [ ] CRUD OPD
-- [ ] CRUD Peraturan (dasar hukum SOP)
-- [ ] CRUD SOP dengan transisi status
-- [ ] Manajemen Tim Penyusun & Tim Evaluasi
-- [ ] Manajemen Pelaksana SOP & Prosedur (flowchart)
-- [ ] Evaluasi & Verifikasi Batch SOP
-- [ ] TTE (Tanda Tangan Elektronik)
-- [ ] Audit Log SOP
+**Database & Infrastruktur**
+- [ ] DB-01: Skema Prisma mengimplementasikan seluruh 18 tabel ERD
+- [ ] DB-02: Relasi antar tabel (FK, constraints) benar di schema
+- [ ] DB-03: Enum Prisma untuk semua status field
+- [ ] DB-04: Migration berjalan clean pada MariaDB kosong
+
+**Auth & Users**
+- [ ] AUTH-01–06: Login JWT, role guard, manajemen akun
+
+**OPD & Peraturan**
+- [ ] OPD-01–05: CRUD OPD dengan agregat (totalSOP, sopBerlaku, sopDraft)
+- [ ] PRT-01–05: CRUD Peraturan dengan versioning dan status DICABUT
+
+**SOP Core & Metadata**
+- [ ] SOP-01–17: CRUD SOP, alur status lengkap, nomor otomatis, filter
+
+**Pelaksana & Prosedur**
+- [ ] PLK-01–05: Master pelaksana, CRUD prosedur steps, flowchart branching
+
+**Tim & Evaluasi**
+- [ ] TIM-01–05: Manajemen anggota Tim Penyusun & Tim Evaluasi
+- [ ] EVL-01–08: Batch evaluasi, penugasan, hasil evaluasi, rekap tahunan
+
+**TTE & Berita Acara**
+- [ ] TTE-01–08: Pendaftaran profil TTE, penandatanganan BA, TTD per SOP, audit TTE
+
+**Audit Log**
+- [ ] AUD-01–03: Audit log otomatis per perubahan status SOP
 
 ### Out of Scope
 
-- Real-time notifications — kompleksitas tinggi, belum dibutuhkan
-- Mobile app — web-first
-- PDF export server-side — bisa dilakukan client-side di phase berikutnya
-- Multi-tenant (multi-kota) — v1 fokus satu instansi
+- Real-time chat/komentar — belum dibutuhkan, tambah kompleksitas
+- Mobile app — web-first, mobile phase berikutnya
+- Multi-tenant (multi-kota) — v1.0 fokus satu instansi pemerintah
+- Versioning SOP (branching) — cukup versi integer untuk v1
+- Workflow approval multi-step custom — alur sudah fix sesuai regulasi
+- Export PDF/Excel — deferred ke v2.0
 
 ## Context
 
-- **Client prototype** selesai: seluruh UI dan alur kerja sudah diimplementasi di `client/src/` dengan mock data (seed JSON)
-- **ERD didesain** berdasarkan analisis types, seed data, dan domain logic dari client: 18 tabel, 8 domain
-- **Server scaffold** ada di `server/` (NestJS + Prisma + MariaDB) tapi belum ada domain endpoint
-- Stack server: NestJS 11, Prisma 7, MariaDB, JWT, Winston logging, Swagger docs
-- Stack client: React 19, TanStack Router, Zustand, Tailwind 4, Radix UI
+**Codebase state:** Client UI prototype 100% lengkap dengan data seed JSON. Server adalah NestJS scaffold dengan Users + Posts module sebagai pattern reference — belum ada domain module (SOP, TTE, Evaluasi, dll). Database schema belum didefinisikan untuk domain SOP.
+
+**Tech stack established:**
+- Server: NestJS + Prisma + MariaDB, JWT auth (deps installed, not wired), Winston logging, Swagger
+- Client: React + TanStack Router (file-based) + Zustand + Tailwind + shadcn/ui
+
+**Key concern:** Client menggunakan localStorage + seed JSON saat ini. Backend integration belum ada — client perlu dikoneksikan ke API setelah backend selesai.
+
+**Domain:** Sistem pemerintahan Indonesia. UI dan komentar dalam Bahasa Indonesia. Roles: `biro-organisasi`, `tim-evaluasi`, `tim-penyusun`, `kepala-opd`.
+
+**TTE workflow sequence (wajib berurutan):**
+1. Biro Organisasi TTD Berita Acara → semua SOP dalam batch → `DIVERIFIKASI_BIRO_ORGANISASI`
+2. Koordinator Tim Penyusun TTD Berita Acara (hanya setelah Biro TTD)
+3. Kepala OPD TTD per SOP → SOP → `BERLAKU`
 
 ## Constraints
 
-- **Tech stack**: NestJS + Prisma + MariaDB — sudah dikonfigurasi, tidak boleh diganti
-- **API contract**: Response shape wajib pakai `ResponseInterceptor` (`{ statusCode, message, data }`)
-- **Auth**: JWT Bearer token, secret dari env `JWT_SECRET`
-- **Versioning**: API prefix `/api/v1/`
-- **Client parity**: Endpoint harus cover semua data yang saat ini di-mock di `client/src/lib/seed/`
+- **Tech Stack**: NestJS + Prisma + MariaDB (server), React + TanStack Router (client) — tidak berubah
+- **Scope**: v1.0 = backend implementation only; client UI sudah ada, tinggal integration
+- **Database**: MariaDB — bukan PostgreSQL; Prisma schema harus kompatibel
+- **Auth**: JWT stateless, tidak ada session store — token mengandung userId + role + opdId
+- **SOP numbering**: Format otomatis `SOP/[KODE-OPD]/[TAHUN]/[URUTAN]`
+- **Status flow**: Alur status SOP fix sesuai regulasi — tidak boleh diubah
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Full ERD upfront (18 tabel) | Mencegah schema migration pain saat modul baru ditambah | — Pending |
-| Sprint per modul | Memisahkan concern per domain, mudah di-review & test | — Pending |
-| Client sebagai sumber kebenaran requirement | UI prototype sudah selesai, tidak perlu redefinisi kebutuhan | ✓ Good |
-| Skip penelitian domain | Client sudah merepresentasikan semua requirement | ✓ Good |
+|---|---|---|
+| Client-first, server-follows | UI prototype sudah lengkap sebagai spec backend | — Pending |
+| NestJS Clean Architecture | Pola Controller→Service→Repository sudah ada di scaffold | — Pending |
+| MariaDB (bukan PostgreSQL) | Infrastruktur existing instansi | — Pending |
+| JWT stateless (opdId in token) | Filtering per OPD tanpa DB lookup per request | — Pending |
+| TTE: PIN hash client-side (demo) → server-side | Migrasi dari demo mode (PIN 12345) ke verifikasi server | — Pending |
 
 ---
-*Last updated: 2026-03-15 — Milestone v1.0 started*
+*Last updated: 2026-03-25 after initialization*
