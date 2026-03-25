@@ -11,12 +11,12 @@
 ## Current Position
 
 **Milestone:** v1.0 Backend Implementation
-**Phase:** Not started
-**Plan:** -
-**Status:** Roadmap created, awaiting Phase 1 planning
+**Phase:** 01-database-infrastructure
+**Plan:** 01-01 complete; awaiting 01-02
+**Status:** Phase 1 Plan 1 executed -- Prisma schema written and validated
 
 ```
-Phase Progress: [________] 0/8
+Phase Progress: [>_______] 1/8
 ```
 
 ## Performance Metrics
@@ -24,8 +24,8 @@ Phase Progress: [________] 0/8
 | Metric | Value |
 |--------|-------|
 | Phases completed | 0/8 |
-| Requirements done | 0/66 |
-| Plans executed | 0 |
+| Requirements done | 3/66 |
+| Plans executed | 1 |
 | Bugs found | 0 |
 | Revisions | 0 |
 
@@ -36,12 +36,17 @@ Phase Progress: [________] 0/8
 - SOP Core (Phase 5) is the largest phase (22 requirements) because SOP metadata, pelaksana, and procedure steps are tightly coupled
 - Phase 4 (Tim) and Phase 3 (OPD/Peraturan) both depend on Phase 2 (Auth) but not on each other
 - Phase 8 (Audit Log) depends on Phase 5 but is sequenced last because it cross-cuts all status transitions
+- SOPMetadata fields merged into SOP model (1:1 normalization -- avoids separate table)
+- RelatedSOP uses composite @@id([sopId, relatedSopId]) -- no surrogate UUID for join table
+- ProsedurRow self-FK uses named relations "YesStep"/"NoStep" to resolve Prisma ambiguity
+- Posts module fully removed; Users module kept as auth pattern reference
 
 ### Architecture Notes
 - Server follows Controller -> Service -> Repository -> Prisma pattern (existing scaffold)
-- Users and Posts modules exist as pattern references; Posts module to be removed/replaced
 - JWT stateless auth with opdId in token for per-OPD data filtering
 - Global ValidationPipe, ResponseInterceptor, and ExceptionFilter already configured
+- Prisma schema uses composite PKs (@@id) for M:M join tables (RelatedSOP, ProsedurRowPelaksana)
+- Named @relation decorators required for self-referential models in Prisma
 
 ### Known Concerns
 - Client TTE uses hardcoded PIN '12345' -- must be replaced with server-side PIN verification (Phase 7)
@@ -57,9 +62,11 @@ Phase Progress: [________] 0/8
 
 ## Session Continuity
 
-**Last session:** Initial roadmap creation
-**Next action:** Plan Phase 1 (Database & Infrastructure)
-**Context to preserve:** REQUIREMENTS.md has 66 requirements across 10 categories mapped to 8 phases. Existing server scaffold has Users/Posts modules as patterns. Prisma schema needs to be written from scratch for the SOP domain (18 tables per ERD).
+**Last session:** 2026-03-25 -- Executed plan 01-01 (Prisma schema + Posts scaffold removal)
+**Stopped at:** Completed 01-01-PLAN.md
+**Next action:** Execute Plan 01-02 (database migration and Prisma client generation)
+**Context to preserve:** schema.prisma has 18 models and 11 enums, validated with npx prisma validate. DATABASE_URL env var needed for migration in Plan 01-02.
 
 ---
 *State initialized: 2026-03-25*
+*Last updated: 2026-03-25*

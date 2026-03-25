@@ -13,9 +13,9 @@ Sumber: UI prototype client sudah lengkap. Backend dibangun untuk merealisasikan
 
 ### Database & Infrastruktur
 
-- [ ] **DB-01**: Skema Prisma mengimplementasikan seluruh 18 tabel ERD yang disetujui
-- [ ] **DB-02**: Semua relasi antar tabel (FK, constraints) terdefinisi dengan benar di schema
-- [ ] **DB-03**: Enum Prisma untuk semua status field (StatusSOP, AuditAction, TTERole, dll)
+- [x] **DB-01**: Skema Prisma mengimplementasikan seluruh 18 tabel ERD yang disetujui
+- [x] **DB-02**: Semua relasi antar tabel (FK, constraints) terdefinisi dengan benar di schema
+- [x] **DB-03**: Enum Prisma untuk semua status field (StatusSOP, AuditAction, TTERole, dll)
 - [ ] **DB-04**: Migration Prisma dapat dijalankan clean pada database MariaDB kosong
 
 ---
@@ -162,9 +162,9 @@ Urutan penandatanganan wajib diikuti: **Biro TTD BA → Koordinator Tim Penyusun
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DB-01 | Phase 1: Database & Infrastructure | Pending |
-| DB-02 | Phase 1: Database & Infrastructure | Pending |
-| DB-03 | Phase 1: Database & Infrastructure | Pending |
+| DB-01 | Phase 1: Database & Infrastructure | Complete |
+| DB-02 | Phase 1: Database & Infrastructure | Complete |
+| DB-03 | Phase 1: Database & Infrastructure | Complete |
 | DB-04 | Phase 1: Database & Infrastructure | Pending |
 | AUTH-01 | Phase 2: Auth & Users | Pending |
 | AUTH-02 | Phase 2: Auth & Users | Pending |
