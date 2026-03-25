@@ -1,15 +1,14 @@
-
 datasource db {
   provider = "mysql"
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  output        = "../src/generated/prisma"
+  provider       = "prisma-client-js"
+  output         = "../src/generated/prisma"
   jsModuleFormat = "cjs"
 }
 
-enum UserRole {
+enum PeranPengguna {
   BIRO_ORGANISASI
   TIM_EVALUASI
   TIM_PENYUSUN
@@ -29,7 +28,7 @@ enum StatusSOP {
   DICABUT
 }
 
-enum ProsedurStepType {
+enum JenisLangkahProsedur {
   TERMINATOR
   TASK
   DECISION
@@ -40,13 +39,13 @@ enum StatusPeraturan {
   DICABUT
 }
 
-enum TTERole {
+enum PeranTTE {
   KEPALA_OPD
   BIRO_ORGANISASI
   TIM_PENYUSUN
 }
 
-enum AuditAction {
+enum AksiAudit {
   BUAT_SOP
   SIMPAN_DRAFT
   SELESAI_PENYUSUNAN
@@ -65,7 +64,7 @@ enum StatusTim {
   NONAKTIF
 }
 
-enum RoleInternal {
+enum PeranInternal {
   KOORDINATOR
   ANGGOTA
 }
@@ -83,85 +82,86 @@ enum JenisBatch {
 
 enum HasilEvaluasi {
   SESUAI
+  PERLU_PERBAIKAN
   REVISI_BIRO
 }
 
-enum KomentarStatus {
+enum StatusKomentar {
   OPEN
   RESOLVED
 }
 
-// Table 1: User
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      UserRole
-  opdId     String?
-  nip       String?
-  jabatan   String?
-  pangkat   String?
-  nohp      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Tabel 1: Pengguna
+model Pengguna {
+  id             String         @id @default(uuid())
+  surel          String         @unique
+  nama           String
+  sandi          String
+  peran          PeranPengguna
+  opdId          String?
+  nip            String?
+  jabatan        String?
+  pangkat        String?
+  nohp           String?
+  dibuatPada     DateTime       @default(now())
+  diperbaruiPada DateTime       @updatedAt
 
-  opd              OPD?               @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  opd              OPD?                 @relation(fields: [opdId], references: [id], onDelete: Restrict)
   timPenyusun      TimPenyusun[]
   timEvaluasi      TimEvaluasiAnggota[]
-  tteProfile       TTEProfile?
-  tteSignatures    TTESignature[]
-  auditLogs        AuditLog[]
-  sopsCreated      SOP[]              @relation("SOPCreatedBy")
-  sopsEdited       SOP[]              @relation("SOPLastEditedBy")
-  sopsAsPic        SOP[]              @relation("SOPPicUser")
-  peraturanCreated Peraturan[]
-  batchesVerified  VerifikasiBatch[]  @relation("BatchVerifiedBy")
-  batchesSigned    VerifikasiBatch[]  @relation("BatchSignedByKoordinator")
-  evaluasiItems    EvaluasiItem[]     @relation("EvaluasiEvaluator")
-  komentars        Komentar[]
+  profilTTE        ProfilTTE?
+  tandaTanganTTE   TandaTanganTTE[]
+  logAudit         LogAudit[]
+  sopDibuat        SOP[]                @relation("SOPDibuatOleh")
+  sopDiedit        SOP[]                @relation("SOPDieditOleh")
+  sopSebagaiPic    SOP[]                @relation("SOPPicPengguna")
+  peraturanDibuat  Peraturan[]
+  batchDiverifikasi BatchVerifikasi[]   @relation("BatchDiverifikasiOleh")
+  batchDitandatangani BatchVerifikasi[] @relation("BatchDitandatanganiOlehKoordinator")
+  itemEvaluasi     ItemEvaluasi[]       @relation("EvaluasiEvaluator")
+  komentar         Komentar[]
 
   @@index([opdId])
+  @@map("Pengguna")
 }
 
-// Table 2: OPD
+// Tabel 2: OPD
 model OPD {
-  id        String   @id @default(uuid())
-  name      String
-  email     String?
-  phone     String?
-  kode      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String            @id @default(uuid())
+  nama           String
+  surel          String?
+  telepon        String?
+  kode           String            @unique
+  dibuatPada     DateTime          @default(now())
+  diperbaruiPada DateTime          @updatedAt
 
-  users           User[]
-  sops            SOP[]
+  pengguna        Pengguna[]
+  sop             SOP[]
   pelaksana       Pelaksana[]
   timPenyusun     TimPenyusun[]
-  verifikasiBatch VerifikasiBatch[]
+  batchVerifikasi BatchVerifikasi[]
 }
 
-// Table 3: Peraturan
+// Tabel 3: Peraturan
 model Peraturan {
   id          String          @id @default(uuid())
   nomor       String
   tahun       Int
   tentang     String          @db.Text
   status      StatusPeraturan @default(BERLAKU)
-  version     Int             @default(1)
-  fileUrl     String?
-  createdById String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  versi       Int             @default(1)
+  tautanBerkas String?
+  dibuatOlehId String?
+  dibuatPada  DateTime        @default(now())
+  diperbaruiPada DateTime     @updatedAt
 
-  createdBy User? @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  sops      SOP[]
+  dibuatOleh Pengguna? @relation(fields: [dibuatOlehId], references: [id], onDelete: Restrict)
+  sop      SOP[]
 
-  @@index([createdById])
+  @@index([dibuatOlehId])
 }
 
-// Table 4: SOP (SOPMetadata fields merged into SOP -- 1:1 normalization decision)
-// PIC: prefer picUserId (FK to User) when PIC is a system user; picName/picNumber/picRole for external or legacy snapshot text.
+// Tabel 4: SOP
 model SOP {
   id               String    @id @default(uuid())
   nomorSOP         String?   @unique
@@ -171,213 +171,223 @@ model SOP {
   peraturanId      String?
   versi            Int       @default(1)
   picUserId        String?
-  picName          String?
-  picNumber        String?
-  picRole          String?
-  section          String?
-  warning          String?   @db.Text
-  institutionLines String?   @db.Text
-  createdById      String?
-  lastEditedById   String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  namaPic          String?
+  nomorPic         String?
+  peranPic         String?
+  bagian           String?
+  peringatan       String?   @db.Text
+  barisInstitusi   String?   @db.Text
+  dibuatOlehId     String?
+  terakhirDieditOlehId String?
+  dibuatPada       DateTime  @default(now())
+  diperbaruiPada   DateTime  @updatedAt
 
-  opd          OPD        @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  peraturan    Peraturan? @relation(fields: [peraturanId], references: [id], onDelete: SetNull)
-  createdBy    User?      @relation("SOPCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-  lastEditedBy User?      @relation("SOPLastEditedBy", fields: [lastEditedById], references: [id], onDelete: Restrict)
-  picUser      User?      @relation("SOPPicUser", fields: [picUserId], references: [id], onDelete: Restrict)
+  opd                OPD        @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  peraturan          Peraturan? @relation(fields: [peraturanId], references: [id], onDelete: SetNull)
+  dibuatOleh         Pengguna?  @relation("SOPDibuatOleh", fields: [dibuatOlehId], references: [id], onDelete: Restrict)
+  terakhirDieditOleh Pengguna?  @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [id], onDelete: Restrict)
+  picUser            Pengguna?  @relation("SOPPicPengguna", fields: [picUserId], references: [id], onDelete: Restrict)
 
-  lawBasis                 LawBasis[]
-  equipment                Equipment[]
-  recordData               RecordData[]
-  prosedurRows             ProsedurRow[]
-  evaluasiItems            EvaluasiItem[]
-  auditLogs                AuditLog[]
-  implementQualifications  ImplementQualification[]
-  komentars                Komentar[]
-  tteSignatures            TTESignature[]
+  dasarHukum              DasarHukum[]
+  peralatan               Peralatan[]
+  dataRekaman             DataRekaman[]
+  barisProsedur           BarisProsedur[]
+  itemEvaluasi            ItemEvaluasi[]
+  logAudit                LogAudit[]
+  kualifikasiPelaksanaan  KualifikasiPelaksanaan[]
+  komentar                Komentar[]
+  tandaTanganTTE          TandaTanganTTE[]
 
-  relatedSOPs   RelatedSOP[] @relation("SOPRelations")
-  relatedBySOPs RelatedSOP[] @relation("RelatedSOPRelations")
+  sopTerkait        SopTerkait[] @relation("RelasiSOP")
+  terkaitOlehSOP    SopTerkait[] @relation("RelasiSOPTerkait")
 
   @@index([opdId, status])
   @@index([peraturanId])
-  @@index([createdById])
-  @@index([lastEditedById])
+  @@index([dibuatOlehId])
+  @@index([terakhirDieditOlehId])
   @@index([picUserId])
 }
 
-// Table 5: LawBasis
-model LawBasis {
+// Tabel 5: DasarHukum
+model DasarHukum {
   id    String @id @default(uuid())
   sopId String
-  text  String @db.Text
+  teks  String @db.Text
 
   sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
 
   @@index([sopId])
+  @@map("DasarHukum")
 }
 
-// Table 6: Equipment
-model Equipment {
+// Tabel 6: Peralatan
+model Peralatan {
   id    String @id @default(uuid())
   sopId String
-  text  String @db.Text
+  teks  String @db.Text
 
   sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
 
   @@index([sopId])
+  @@map("Peralatan")
 }
 
-// Table 7: RecordData
-model RecordData {
+// Tabel 7: DataRekaman
+model DataRekaman {
   id    String @id @default(uuid())
   sopId String
-  text  String @db.Text
+  teks  String @db.Text
 
   sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
 
   @@index([sopId])
+  @@map("DataRekaman")
 }
 
-// Table 8: RelatedSOP (self-referential M:M join table)
-model RelatedSOP {
+// Tabel 8: SopTerkait
+model SopTerkait {
   sopId        String
-  relatedSopId String
+  sopTerkaitId String
 
-  sop        SOP @relation("SOPRelations", fields: [sopId], references: [id], onDelete: Cascade)
-  relatedSop SOP @relation("RelatedSOPRelations", fields: [relatedSopId], references: [id], onDelete: Cascade)
+  sop        SOP @relation("RelasiSOP", fields: [sopId], references: [id], onDelete: Cascade)
+  sopTerkait SOP @relation("RelasiSOPTerkait", fields: [sopTerkaitId], references: [id], onDelete: Cascade)
 
-  @@id([sopId, relatedSopId])
+  @@id([sopId, sopTerkaitId])
+  @@index([sopTerkaitId])
+  @@map("SopTerkait")
 }
 
-// Table 9: ProsedurRow
-model ProsedurRow {
+// Tabel 9: BarisProsedur
+model BarisProsedur {
   id              String           @id @default(uuid())
   sopId           String
-  no              Int
+  nomor           Int
   kegiatan        String           @db.Text
-  type            ProsedurStepType @default(TASK)
+  jenis           JenisLangkahProsedur @default(TASK)
   mutuKelengkapan String?          @db.Text
   mutuWaktu       String?
-  output          String?          @db.Text
+  keluaran        String?          @db.Text
   keterangan      String?          @db.Text
-  time            Int?
-  timeUnit        String?
-  order           Int
-  nextStepYesId   String?
-  nextStepNoId    String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  waktu           Int?
+  satuanWaktu     String?
+  urutan          Int
+  langkahSelanjutnyaYaId String?
+  langkahSelanjutnyaTidakId String?
+  dibuatPada      DateTime         @default(now())
+  diperbaruiPada  DateTime         @updatedAt
 
-  sop          SOP           @relation(fields: [sopId], references: [id], onDelete: Cascade)
-  nextStepYes  ProsedurRow?  @relation("YesStep", fields: [nextStepYesId], references: [id], onDelete: SetNull)
-  nextStepNo   ProsedurRow?  @relation("NoStep", fields: [nextStepNoId], references: [id], onDelete: SetNull)
-  prevYesSteps ProsedurRow[] @relation("YesStep")
-  prevNoSteps  ProsedurRow[] @relation("NoStep")
+  sop          SOP             @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  langkahYa  BarisProsedur?    @relation("LangkahYa", fields: [langkahSelanjutnyaYaId], references: [id], onDelete: SetNull)
+  langkahTidak BarisProsedur?  @relation("LangkahTidak", fields: [langkahSelanjutnyaTidakId], references: [id], onDelete: SetNull)
+  langkahSebelumYa BarisProsedur[] @relation("LangkahYa")
+  langkahSebelumTidak BarisProsedur[] @relation("LangkahTidak")
 
-  pelaksana ProsedurRowPelaksana[]
+  pelaksana BarisProsedurPelaksana[]
 
-  @@index([sopId])
+  @@unique([sopId, urutan])
+  @@index([sopId, urutan])
+  @@map("BarisProsedur")
 }
 
-// Table 10: Pelaksana
+// Tabel 10: Pelaksana
 model Pelaksana {
   id          String   @id @default(uuid())
   namaLengkap String
   nip         String?
   jabatan     String?
   pangkat     String?
-  email       String?
+  surel       String?
   nohp        String?
   deskripsi   String?  @db.Text
   opdId       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  dibuatPada  DateTime @default(now())
+  diperbaruiPada DateTime @updatedAt
 
-  opd          OPD                   @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  prosedurRows ProsedurRowPelaksana[]
+  opd          OPD                      @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  barisProsedur BarisProsedurPelaksana[]
 
   @@index([opdId])
 }
 
-// Table 11: ProsedurRowPelaksana (M:M join)
-model ProsedurRowPelaksana {
-  prosedurRowId String
-  pelaksanaId   String
+// Tabel 11: BarisProsedurPelaksana
+model BarisProsedurPelaksana {
+  barisProsedurId String
+  pelaksanaId     String
 
-  prosedurRow ProsedurRow @relation(fields: [prosedurRowId], references: [id], onDelete: Cascade)
-  pelaksana   Pelaksana   @relation(fields: [pelaksanaId], references: [id], onDelete: Restrict)
+  barisProsedur BarisProsedur @relation(fields: [barisProsedurId], references: [id], onDelete: Cascade)
+  pelaksana     Pelaksana     @relation(fields: [pelaksanaId], references: [id], onDelete: Restrict)
 
-  @@id([prosedurRowId, pelaksanaId])
+  @@id([barisProsedurId, pelaksanaId])
+  @@index([pelaksanaId])
+  @@map("BarisProsedurPelaksana")
 }
 
-// Table 12: TimPenyusun
+// Tabel 12: TimPenyusun
 model TimPenyusun {
   id               String       @id @default(uuid())
   userId           String
   opdId            String
   status           StatusTim    @default(AKTIF)
-  roleInternal     RoleInternal @default(ANGGOTA)
+  peranInternal    PeranInternal @default(ANGGOTA)
   tanggalBergabung DateTime     @default(now())
-  endedAt          DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  berakhirPada     DateTime?
+  dibuatPada       DateTime     @default(now())
+  diperbaruiPada   DateTime     @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
-  opd  OPD  @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
+  opd  OPD      @relation(fields: [opdId], references: [id], onDelete: Restrict)
 
   @@index([userId])
   @@index([opdId])
 }
 
-// Table 13: TimEvaluasiAnggota
+// Tabel 13: TimEvaluasiAnggota
 model TimEvaluasiAnggota {
   id               String    @id @default(uuid())
   userId           String
   status           StatusTim @default(AKTIF)
   tanggalBergabung DateTime  @default(now())
-  endedAt          DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  berakhirPada     DateTime?
+  dibuatPada       DateTime  @default(now())
+  diperbaruiPada   DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([userId])
 }
 
-// Table 14: VerifikasiBatch -- verifikasi BA: Biro lalu Koordinator (isSignedByKoordinator); pengesahan SOP hanya Kepala OPD (bukan kolom di sini).
-model VerifikasiBatch {
+// Tabel 14: BatchVerifikasi
+model BatchVerifikasi {
   id                        String         @id @default(uuid())
   opdId                     String
   jenis                     JenisBatch
   status                    StatusEvaluasi @default(AKTIF)
   catatan                   String?        @db.Text
   nomorBA                   String?
-  tanggalRequest            DateTime?
+  tanggalPermintaan         DateTime?
   tanggalEvaluasi           DateTime?
   nilaiOPD                  Int?
-  verifiedByUserId          String?
-  signedByKoordinatorUserId String?
-  isSignedByKoordinator     Boolean        @default(false)
-  tanggalTTDBaByKoordinator DateTime?
-  createdAt                 DateTime       @default(now())
-  updatedAt                 DateTime       @updatedAt
+  diverifikasiOlehUserId    String?
+  ditandatanganiOlehKoordinatorUserId String?
+  sudahDitandatanganiKoordinator Boolean  @default(false)
+  tanggalTTDBaKoordinator   DateTime?
+  dibuatPada                DateTime       @default(now())
+  diperbaruiPada            DateTime       @updatedAt
 
-  opd                     OPD    @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  verifiedByUser          User?  @relation("BatchVerifiedBy", fields: [verifiedByUserId], references: [id], onDelete: Restrict)
-  signedByKoordinatorUser User?  @relation("BatchSignedByKoordinator", fields: [signedByKoordinatorUserId], references: [id], onDelete: Restrict)
-  evaluasiItems           EvaluasiItem[]
-  tteSignatures           TTESignature[]
+  opd                     OPD              @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  diverifikasiOlehUser    Pengguna?        @relation("BatchDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [id], onDelete: Restrict)
+  ditandatanganiOlehKoordinatorUser Pengguna? @relation("BatchDitandatanganiOlehKoordinator", fields: [ditandatanganiOlehKoordinatorUserId], references: [id], onDelete: Restrict)
+  itemEvaluasi            ItemEvaluasi[]
+  tandaTanganTTE          TandaTanganTTE[]
 
   @@index([opdId])
-  @@index([verifiedByUserId])
-  @@index([signedByKoordinatorUserId])
+  @@index([diverifikasiOlehUserId])
+  @@index([ditandatanganiOlehKoordinatorUserId])
+  @@map("BatchVerifikasi")
 }
 
-// Table 15: EvaluasiItem
-model EvaluasiItem {
+// Tabel 15: ItemEvaluasi
+model ItemEvaluasi {
   id          String         @id @default(uuid())
   batchId     String
   sopId       String
@@ -385,99 +395,107 @@ model EvaluasiItem {
   hasil       HasilEvaluasi?
   catatan     String?        @db.Text
   rekomendasi String?        @db.Text
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  dibuatPada  DateTime       @default(now())
+  diperbaruiPada DateTime    @updatedAt
 
-  batch     VerifikasiBatch @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  batch     BatchVerifikasi @relation(fields: [batchId], references: [id], onDelete: Restrict)
   sop       SOP             @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  evaluator User            @relation("EvaluasiEvaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
+  evaluator Pengguna        @relation("EvaluasiEvaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
 
+  @@unique([batchId, sopId, evaluatorId])
   @@index([batchId])
   @@index([sopId])
   @@index([evaluatorId])
+  @@index([evaluatorId, dibuatPada])
+  @@map("EvaluasiItem")
 }
 
-// Table 16: TTEProfile -- identity fields (nip, jabatan, pangkat, nohp) live on User only (3NF single source of truth).
-model TTEProfile {
+// Tabel 16: ProfilTTE
+model ProfilTTE {
   id                String   @id @default(uuid())
   userId            String   @unique
-  pinHash           String
-  emailVerified     Boolean  @default(false)
-  role              TTERole
-  verificationToken String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  hashPin           String
+  surelTerverifikasi Boolean  @default(false)
+  peran             PeranTTE
+  tokenVerifikasi   String?
+  dibuatPada        DateTime @default(now())
+  diperbaruiPada    DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("ProfilTTE")
 }
 
-// Table 17: TTESignature
-model TTESignature {
+// Tabel 17: TandaTanganTTE
+model TandaTanganTTE {
   id            String   @id @default(uuid())
   userId        String
-  role          TTERole
-  documentId    String
-  documentLabel String
-  referenceId   String
-  documentHash  String
+  peran         PeranTTE
+  idDokumen     String
+  labelDokumen  String
+  idReferensi   String
+  hashDokumen   String
   sopId         String?
   batchId       String?
-  signedAt      DateTime @default(now())
+  ditandatanganiPada DateTime @default(now())
 
-  user  User             @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user  Pengguna         @relation(fields: [userId], references: [id], onDelete: Restrict)
   sop   SOP?             @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  batch VerifikasiBatch? @relation(fields: [batchId], references: [id], onDelete: Restrict)
+  batch BatchVerifikasi? @relation(fields: [batchId], references: [id], onDelete: Restrict)
 
   @@index([userId])
   @@index([sopId])
   @@index([batchId])
+  @@map("TandaTanganTTE")
 }
 
-// Table 18: AuditLog
-model AuditLog {
+// Tabel 18: LogAudit
+model LogAudit {
   id            String      @id @default(uuid())
   sopId         String
-  action        AuditAction
+  aksi          AksiAudit
   aktorId       String
-  aktorRole     UserRole
+  peranAktor    PeranPengguna
   statusSebelum StatusSOP?
   statusSesudah StatusSOP
   keterangan    String?     @db.Text
-  createdAt     DateTime    @default(now())
+  dibuatPada    DateTime    @default(now())
 
-  sop   SOP  @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  aktor User @relation(fields: [aktorId], references: [id], onDelete: Restrict)
+  sop   SOP      @relation(fields: [sopId], references: [id], onDelete: Restrict)
+  aktor Pengguna @relation(fields: [aktorId], references: [id], onDelete: Restrict)
 
-  @@index([sopId])
-  @@index([aktorId])
+  @@index([sopId, dibuatPada])
+  @@index([aktorId, dibuatPada])
+  @@map("LogAudit")
 }
 
-// Table 19: ImplementQualification
-model ImplementQualification {
+// Tabel 19: KualifikasiPelaksanaan
+model KualifikasiPelaksanaan {
   id    String @id @default(uuid())
   sopId String
-  text  String @db.Text
+  teks  String @db.Text
 
   sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
 
   @@index([sopId])
+  @@map("KualifikasiPelaksanaan")
 }
 
-// Table 20: Komentar
+// Tabel 20: Komentar
 model Komentar {
   id        String         @id @default(uuid())
   sopId     String
   userId    String
-  role      String
+  peran     String
   isi       String         @db.Text
   bagian    String?
-  status    KomentarStatus @default(OPEN)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  status    StatusKomentar @default(OPEN)
+  dibuatPada DateTime      @default(now())
+  diperbaruiPada DateTime  @updatedAt
 
-  sop  SOP  @relation(fields: [sopId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sop  SOP      @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  @@index([sopId])
+  @@index([sopId, status, dibuatPada])
   @@index([userId])
 }
