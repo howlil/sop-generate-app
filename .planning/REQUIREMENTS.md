@@ -162,22 +162,78 @@ Urutan penandatanganan wajib diikuti: **Biro TTD BA → Koordinator Tim Penyusun
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DB-01 – DB-04 | Phase 1 | Pending |
-| AUTH-01 – AUTH-06 | Phase 2 | Pending |
-| OPD-01 – OPD-05 | Phase 3 | Pending |
-| PRT-01 – PRT-05 | Phase 3 | Pending |
-| TIM-01 – TIM-05 | Phase 4 | Pending |
-| PLK-01 – PLK-05 | Phase 5 | Pending |
-| SOP-01 – SOP-17 | Phase 5 | Pending |
-| EVL-01 – EVL-08 | Phase 6 | Pending |
-| TTE-01 – TTE-08 | Phase 7 | Pending |
-| AUD-01 – AUD-03 | Phase 8 | Pending |
+| DB-01 | Phase 1: Database & Infrastructure | Pending |
+| DB-02 | Phase 1: Database & Infrastructure | Pending |
+| DB-03 | Phase 1: Database & Infrastructure | Pending |
+| DB-04 | Phase 1: Database & Infrastructure | Pending |
+| AUTH-01 | Phase 2: Auth & Users | Pending |
+| AUTH-02 | Phase 2: Auth & Users | Pending |
+| AUTH-03 | Phase 2: Auth & Users | Pending |
+| AUTH-04 | Phase 2: Auth & Users | Pending |
+| AUTH-05 | Phase 2: Auth & Users | Pending |
+| AUTH-06 | Phase 2: Auth & Users | Pending |
+| OPD-01 | Phase 3: OPD & Peraturan | Pending |
+| OPD-02 | Phase 3: OPD & Peraturan | Pending |
+| OPD-03 | Phase 3: OPD & Peraturan | Pending |
+| OPD-04 | Phase 3: OPD & Peraturan | Pending |
+| OPD-05 | Phase 3: OPD & Peraturan | Pending |
+| PRT-01 | Phase 3: OPD & Peraturan | Pending |
+| PRT-02 | Phase 3: OPD & Peraturan | Pending |
+| PRT-03 | Phase 3: OPD & Peraturan | Pending |
+| PRT-04 | Phase 3: OPD & Peraturan | Pending |
+| PRT-05 | Phase 3: OPD & Peraturan | Pending |
+| TIM-01 | Phase 4: Tim Penyusun & Tim Evaluasi | Pending |
+| TIM-02 | Phase 4: Tim Penyusun & Tim Evaluasi | Pending |
+| TIM-03 | Phase 4: Tim Penyusun & Tim Evaluasi | Pending |
+| TIM-04 | Phase 4: Tim Penyusun & Tim Evaluasi | Pending |
+| TIM-05 | Phase 4: Tim Penyusun & Tim Evaluasi | Pending |
+| SOP-01 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-02 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-03 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-04 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-05 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-06 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-07 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-08 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-09 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-10 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-11 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-12 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-13 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-14 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-15 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-16 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| SOP-17 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| PLK-01 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| PLK-02 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| PLK-03 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| PLK-04 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| PLK-05 | Phase 5: SOP Core, Metadata & Pelaksana | Pending |
+| EVL-01 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-02 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-03 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-04 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-05 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-06 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-07 | Phase 6: Evaluasi & Verifikasi | Pending |
+| EVL-08 | Phase 6: Evaluasi & Verifikasi | Pending |
+| TTE-01 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-02 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-03 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-04 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-05 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-06 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-07 | Phase 7: TTE & Berita Acara | Pending |
+| TTE-08 | Phase 7: TTE & Berita Acara | Pending |
+| AUD-01 | Phase 8: Audit Log | Pending |
+| AUD-02 | Phase 8: Audit Log | Pending |
+| AUD-03 | Phase 8: Audit Log | Pending |
 
 **Coverage:**
-- v1.0 requirements: 60 total
-- Mapped to phases: 60
-- Unmapped: 0 ✓
+- v1.0 requirements: 66 total
+- Mapped to phases: 66
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-25 — imported from existing requirements doc*
+*Last updated: 2026-03-25 -- traceability expanded to individual requirements with phase mappings*
