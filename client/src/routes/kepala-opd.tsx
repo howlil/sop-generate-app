@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { PenLine, FileText } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
@@ -17,8 +17,11 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.KEPALA_OPD.TTD]: ['/kepala-opd/ttd-elektronik'],
-  [ROUTES.KEPALA_OPD.PANTAU_SOP]: ['/kepala-opd/pantau-sop', '/kepala-opd/detail-sop'],
+  [ROUTES.KEPALA_OPD.TTD]: [ROUTES.KEPALA_OPD.TTD],
+  [ROUTES.KEPALA_OPD.PANTAU_SOP]: [
+    ROUTES.KEPALA_OPD.PANTAU_SOP,
+    routePathPrefixForMatch(ROUTES.KEPALA_OPD.DETAIL_SOP),
+  ],
 })
 
 function KepalaOPDLayout() {

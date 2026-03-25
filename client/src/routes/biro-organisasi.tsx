@@ -21,9 +21,9 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.BIRO_ORGANISASI.EVALUASI_SOP]: ['/biro-organisasi/manajemen-evaluasi-sop'],
-  [ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN]: ['/biro-organisasi/grafik-evaluasi-tahunan'],
-  [ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN]: ['/biro-organisasi/manajemen-tim-penyusun'],
+  [ROUTES.BIRO_ORGANISASI.EVALUASI_SOP]: [ROUTES.BIRO_ORGANISASI.EVALUASI_SOP],
+  [ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN]: [ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN],
+  [ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN]: [ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN],
 })
 
 function BiroOrganisasiLayout() {

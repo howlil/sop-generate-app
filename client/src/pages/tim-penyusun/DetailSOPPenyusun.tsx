@@ -28,7 +28,12 @@ import {
   getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
 } from '@/lib/data/sop-detail'
-import type { SOPDetailMetadata, ProsedurRow, StatusSOP } from '@/lib/types/sop'
+import {
+  DEFAULT_SOP_STATUS,
+  type SOPDetailMetadata,
+  type ProsedurRow,
+  type StatusSOP,
+} from '@/lib/types/sop'
 import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
 import { useKomentar } from '@/hooks/useKomentar'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'
@@ -101,7 +106,7 @@ export function DetailSOPPenyusun() {
 
   const [viewingVersion, setViewingVersion] = useState<VersionHistoryItem | null>(null)
   const currentSopStatus: StatusSOP =
-    (id ? getSopStatusOverride(id) : undefined) ?? detailMetaState?.sopStatus ?? 'Draft'
+    (id ? getSopStatusOverride(id) : undefined) ?? detailMetaState?.sopStatus ?? DEFAULT_SOP_STATUS
   const isRevisionFlow = currentSopStatus === 'Revisi dari Tim Evaluasi'
   const primaryActionLabel = isRevisionFlow ? 'Selesaikan revisi' : 'Selesai'
 

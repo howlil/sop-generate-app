@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { BookOpen, FileSignature, FileText, UserCog } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
@@ -19,9 +19,12 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: ['/tim-penyusun/manajemen-sop', '/tim-penyusun/detail-sop'],
-  [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP]: ['/tim-penyusun/pelaksana-sop'],
-  [ROUTES.TIM_PENYUSUN.BERITA_ACARA]: ['/tim-penyusun/berita-acara'],
+  [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: [
+    ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
+    routePathPrefixForMatch(ROUTES.TIM_PENYUSUN.DETAIL_SOP),
+  ],
+  [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP]: [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP],
+  [ROUTES.TIM_PENYUSUN.BERITA_ACARA]: [ROUTES.TIM_PENYUSUN.BERITA_ACARA],
 })
 
 function TimPenyusunLayout() {

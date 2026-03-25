@@ -310,7 +310,7 @@ export function ManajemenSOP() {
                     </Table.Td>
                     <Table.Td>
                       <div className="flex items-center justify-center gap-1">
-                        {['Draft', 'Sedang Disusun', 'Revisi dari Tim Evaluasi'].includes(sop.status) && (
+                        {canEditSop(sop.status) && (
                           <Button
                             variant="ghost"
                             size="sm"

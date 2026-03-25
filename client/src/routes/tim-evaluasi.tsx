@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { ClipboardCheck } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
 
@@ -16,7 +16,10 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_EVALUASI.EVALUASI]: ['/tim-evaluasi/evaluasi', '/tim-evaluasi/evaluasi/opd'],
+  [ROUTES.TIM_EVALUASI.EVALUASI]: [
+    ROUTES.TIM_EVALUASI.EVALUASI,
+    routePathPrefixForMatch(ROUTES.TIM_EVALUASI.EVALUASI_OPD),
+  ],
 })
 
 function TimEvaluasiLayout() {

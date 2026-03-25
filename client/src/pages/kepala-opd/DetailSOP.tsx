@@ -21,7 +21,7 @@ import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/useUI'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import type { StatusSOP } from '@/lib/types/sop'
+import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/lib/types/sop'
 import {
   getInitialSopDetailImplementers,
   getInitialSopDetailProsedurRows,
@@ -76,7 +76,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const sopStatus: StatusSOP =
     (id ? getSopStatusOverride(id) : undefined) ??
     detailMetaState?.sopStatus ??
-    'Draft'
+    DEFAULT_SOP_STATUS
 
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')

@@ -1,8 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { ROUTES } from '@/lib/constants/routes'
 
 export const Route = createFileRoute('/tim-penyusun/daftar-sop')({
   beforeLoad: () => {
-    throw redirect({ to: '/tim-penyusun/manajemen-sop' })
+    throw redirect({ to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP })
   },
   component: () => null,
 })

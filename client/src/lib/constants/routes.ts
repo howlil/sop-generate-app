@@ -54,3 +54,11 @@ export const ROUTES = {
     EVALUASI_OPD: '/tim-evaluasi/evaluasi/opd/$opdId',
   },
 } as const
+
+/**
+ * Menghapus segmen dinamis terakhir (`/$param`) agar cocok untuk `pathname.startsWith` di sidebar.
+ * Contoh: `/tim-penyusun/detail-sop/$id` → `/tim-penyusun/detail-sop`
+ */
+export function routePathPrefixForMatch(path: string): string {
+  return path.replace(/\/\$[^/]+$/, '')
+}

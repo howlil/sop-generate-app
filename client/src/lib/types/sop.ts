@@ -13,6 +13,9 @@ export type StatusSOP =
   | 'Berlaku'
   | 'Dicabut'
 
+/** Nilai status default untuk SOP baru / fallback UI (satu sumber kebenaran dengan domain). */
+export const DEFAULT_SOP_STATUS: StatusSOP = 'Draft'
+
 export const STATUS_SOP_ALL: StatusSOP[] = [
   'Draft',
   'Sedang Disusun',
