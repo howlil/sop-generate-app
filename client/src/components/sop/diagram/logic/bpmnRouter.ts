@@ -212,11 +212,10 @@ export function selectBpmnSidePairs(
       return false
     }
 
-    // Untuk gateway sebagai target: semua koneksi harus masuk dari sisi kiri/kanan,
-    // bukan dari atas/bawah, supaya tidak ada entry-point di puncak/bawah diamond
-    // yang menabrak path lain.
+    // Untuk gateway sebagai target: blok top/bottom entry HANYA untuk same-lane.
+    // Cross-lane connections (misalnya dari lane di atas/bawah) perlu top/bottom untuk menghubung.
     const isDecDst = conn.targetType === 'flowchart-decision'
-    if (isDecDst && (e === 'top' || e === 'bottom')) {
+    if (isDecDst && sameLane && (e === 'top' || e === 'bottom')) {
       return false
     }
 
@@ -326,17 +325,22 @@ function pathHitsObstacle(
   fromShape: Rect,
   toShape: Rect,
 ): boolean {
+  // Diamond shapes have connection points at their vertices — use a smaller inset
+  // so that a segment touching the vertex is not incorrectly flagged as interior hit.
+  const isDiamond = (r: Rect) => Math.abs(r.width - r.height) < 20
+  const fromInsetSize = isDiamond(fromShape) ? 2 : SEGMENT_BOUNDARY_INSET
+  const toInsetSize = isDiamond(toShape) ? 2 : SEGMENT_BOUNDARY_INSET
   const fromInset: Rect = {
-    left: fromShape.left + SEGMENT_BOUNDARY_INSET,
-    top: fromShape.top + SEGMENT_BOUNDARY_INSET,
-    width: Math.max(0, fromShape.width - 2 * SEGMENT_BOUNDARY_INSET),
-    height: Math.max(0, fromShape.height - 2 * SEGMENT_BOUNDARY_INSET),
+    left: fromShape.left + fromInsetSize,
+    top: fromShape.top + fromInsetSize,
+    width: Math.max(0, fromShape.width - 2 * fromInsetSize),
+    height: Math.max(0, fromShape.height - 2 * fromInsetSize),
   }
   const toInset: Rect = {
-    left: toShape.left + SEGMENT_BOUNDARY_INSET,
-    top: toShape.top + SEGMENT_BOUNDARY_INSET,
-    width: Math.max(0, toShape.width - 2 * SEGMENT_BOUNDARY_INSET),
-    height: Math.max(0, toShape.height - 2 * SEGMENT_BOUNDARY_INSET),
+    left: toShape.left + toInsetSize,
+    top: toShape.top + toInsetSize,
+    width: Math.max(0, toShape.width - 2 * toInsetSize),
+    height: Math.max(0, toShape.height - 2 * toInsetSize),
   }
   for (let i = 0; i < path.length - 1; i++) {
     const a = path[i], b = path[i + 1]
