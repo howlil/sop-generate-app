@@ -1,135 +1,107 @@
 # Technology Stack
 
-**Analysis Date:** 2026-03-15
+**Analysis Date:** 2026-03-25
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.7.x - Both client (`client/`) and server (`server/`) codebases
-- TSX (React) - All UI components under `client/src/`
+- TypeScript 5.7.x - Both client (`client/tsconfig.json`) and server (`server/tsconfig.json`)
 
 **Secondary:**
-- JSON - Seed/mock data under `client/src/lib/seed/`
+- TSX (React JSX) - All client UI components under `client/src/`
 
 ## Runtime
 
 **Environment:**
-- Node.js v24.13.0 (detected at analysis time)
+- Node.js (no `.nvmrc` pinned; package engines not set)
 
 **Package Manager:**
-- pnpm (both workspaces)
-- Lockfile: `client/pnpm-lock.yaml` and `server/pnpm-lock.yaml` — both present
+- pnpm - Used in both workspaces
+- Lockfiles: `client/pnpm-lock.yaml` and `server/pnpm-lock.yaml` (both present)
 
 ## Frameworks
 
-### Client (`client/`)
+**Server (backend):**
+- NestJS 11.x (`@nestjs/core ^11.0.1`) - REST API framework
+  - `@nestjs/common`, `@nestjs/platform-express` - Core NestJS building blocks
+  - `@nestjs/config ^4.0.3` - `.env` configuration loading
+  - `@nestjs/swagger ^11.2.6` - OpenAPI/Swagger docs at `/docs`
+  - `@nestjs/jwt ^11.0.2` + `@nestjs/passport ^11.0.5` + `passport-jwt ^4.0.1` - JWT auth infrastructure (installed but auth module not yet implemented)
+  - Express (via `@nestjs/platform-express`) - HTTP transport
 
-**Core:**
-- React 19.x - UI rendering (`client/src/`)
-- TanStack Router 1.132.x - File-based routing with type-safe routes (`client/src/routes/`)
-- TanStack Start 1.132.x - SSR/SSG layer wrapping Vite + React Router
-- Zustand 5.x - Client-side state management (`client/src/lib/stores/`)
-- Tailwind CSS 4.x - Utility-first styling (configured via `@tailwindcss/vite` plugin)
-- Radix UI - Headless accessible UI primitives (`@radix-ui/react-*`)
-- Framer Motion 12.x - Animation library
-
-**Build/Dev:**
-- Vite 7.x - Dev server and bundler (`client/vite.config.ts`)
-- `@vitejs/plugin-react` 5.x - React fast-refresh plugin
-- `vite-tsconfig-paths` 6.x - Path alias resolution
-- `@tanstack/router-plugin` - Route tree auto-generation
+**Client (frontend):**
+- React 19.x (`react ^19.2.0`) - UI library
+- TanStack Start (`@tanstack/react-start ^1.132.0`) - Full-stack React framework (SSR-capable)
+- TanStack Router (`@tanstack/react-router ^1.132.0`) - File-based routing
+- Tailwind CSS 4.x (`tailwindcss ^4.1.18`) - Utility-first styling
+- Vite 7.x (`vite ^7.1.7`) - Build tool and dev server
 
 **Testing:**
-- Vitest 3.x - Unit test runner (`client/package.json` script: `vitest run`)
-- `@testing-library/react` 16.x - Component testing utilities
-- jsdom 27.x - Browser simulation for tests
-
-### Server (`server/`)
-
-**Core:**
-- NestJS 11.x - Modular backend framework (`server/src/`)
-- `@nestjs/config` 4.x - Environment configuration (`ConfigModule`)
-- `@nestjs/jwt` 11.x - JWT token support
-- `@nestjs/passport` 11.x - Auth strategy middleware
-- `@nestjs/swagger` 11.x - OpenAPI docs auto-generation (served at `/docs`)
-- Passport + `passport-jwt` - JWT authentication strategy
-
-**ORM / Database:**
-- Prisma 7.x - ORM with generated client (`server/src/generated/prisma/`)
-- `@prisma/adapter-mariadb` 7.x - MariaDB driver adapter for Prisma
-
-**Logging:**
-- Winston 3.x + `nest-winston` 1.10.x - Structured logging with Console and File transports
-
-**Validation:**
-- `class-validator` 0.15.x - DTO validation decorators
-- `class-transformer` 0.5.x - DTO transformation
-
-**Security:**
-- `bcrypt` 6.x - Password hashing in `user.service.ts`
-- `reflect-metadata` 0.2.x - Required by NestJS decorators
+- Server: Jest 30.x (`jest ^30.0.0`) + `ts-jest ^29.2.5` + `supertest ^7.0.0`
+- Client: Vitest 3.x (`vitest ^3.0.5`) + `@testing-library/react ^16.2.0` + jsdom 27.x
 
 **Build/Dev:**
-- NestJS CLI 11.x - Build and scaffold tooling
-- `ts-jest` 29.x - TypeScript transpiler for Jest
-- Prettier 3.x - Code formatting
-- ESLint 9.x + `typescript-eslint` 8.x - Linting
-
-**Testing:**
-- Jest 30.x - Unit and e2e test runner
-- Supertest 7.x - HTTP integration test client
+- `@nestjs/cli ^11.0.0` - NestJS build tooling (`nest build`, `nest start`)
+- Vite (`vite ^7.1.7`) - Client bundler
+- `@tanstack/devtools-vite` - TanStack DevTools integration in dev mode
 
 ## Key Dependencies
 
-**Critical:**
-- `@tanstack/react-router` - All navigation and route protection in client
-- `@prisma/client` + `@prisma/adapter-mariadb` - All database access in server
-- `@nestjs/jwt` + `passport-jwt` - Authentication pipeline in server
-- `zustand` - Global role/toast state persisted to `localStorage` (`client/src/lib/stores/app-store.ts`)
-- `qrcode` 1.5.x - QR code generation for TTE (Tanda Tangan Elektronik) signature blocks (`client/src/components/tte/TTESignatureBlock.tsx`)
+**Critical (server):**
+- `prisma ^7.5.0` + `@prisma/client ^7.5.0` - ORM for database access
+- `@prisma/adapter-mariadb ^7.5.0` - MariaDB/MySQL driver adapter for Prisma
+- `bcrypt ^6.0.0` - Password hashing (10 rounds salt)
+- `class-validator ^0.15.1` + `class-transformer ^0.5.1` - DTO validation via decorators
+- `nest-winston ^1.10.2` + `winston ^3.19.0` - Structured logging (console + file)
+- `rxjs ^7.8.1` - NestJS reactive primitives
 
-**Infrastructure:**
-- `rxjs` 7.x - Required by NestJS internal pipes
-- `framer-motion` - UI animations (dialogs, transitions)
-- `lucide-react` 0.561.x - Icon library
-- `class-variance-authority` + `clsx` + `tailwind-merge` - Utility-based component variants (`client/src/components/ui/`)
+**Critical (client):**
+- `zustand ^5.0.11` - Lightweight global state management (with `persist` middleware to `localStorage`)
+- `@radix-ui/*` - Unstyled accessible UI primitives (accordion, dialog, dropdown-menu, label, slot, switch, alert-dialog)
+- `framer-motion ^12.36.0` - Animation library
+- `lucide-react ^0.561.0` - Icon set
+- `qrcode ^1.5.4` - QR code generation (used in TTE signature blocks)
+- `class-variance-authority ^0.7.1` + `clsx ^2.1.1` + `tailwind-merge ^2.6.0` - CVA/cn utility pattern
 
 ## Configuration
 
-**Environment (Server):**
-- Loaded from `.env` via `@nestjs/config` (`ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' })`)
-- Required variables (see `server/.env.example`):
-  - `DATABASE_HOST`, `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_NAME` — MariaDB connection
-  - `DATABASE_URL` — Full Prisma connection string (`mysql://...`)
-  - `PORT` — Server port (default: 3000)
-  - `NODE_ENV` — `development` | `production`
-  - `JWT_SECRET`, `JWT_EXPIRATION` — JWT signing
-  - `ALLOWED_ORIGINS` — Comma-separated CORS origins for production
+**Environment (server):**
+- Loaded from `.env` via `@nestjs/config` (`ConfigModule.forRoot`)
+- `.env.example` present at `server/.env.example`
+- Required vars: `DATABASE_HOST`, `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_NAME`, `DATABASE_URL`, `PORT`, `NODE_ENV`, `JWT_SECRET`, `JWT_EXPIRATION`, `ALLOWED_ORIGINS`
 
-**Environment (Client):**
-- Vite env vars declared in `client/src/vite-env.d.ts`
-- `VITE_USE_MOCK` — `true`/`1` to use local JSON seed data instead of real API (defaults to `true`)
-- `VITE_API_BASE_URL` — Base URL of NestJS API for non-mock mode
+**Environment (client):**
+- Vite env vars prefixed with `VITE_`
+- `.env.example` present at `client/.env.example`
+- `VITE_USE_MOCK` - switches data layer between mock JSON and real API (`true` by default)
+- `VITE_API_BASE_URL` - backend base URL (empty string default)
+
+**TypeScript (server):**
+- Target `ES2020`, `module: commonjs`, decorators enabled (`emitDecoratorMetadata`, `experimentalDecorators`)
+- `strictNullChecks: true`, `noImplicitAny: false`
+
+**TypeScript (client):**
+- Target `ES2022`, `module: ESNext`, `jsx: react-jsx`
+- Strict mode enabled; path alias `@/*` → `./src/*`
 
 **Build:**
-- Client: `client/vite.config.ts` — path alias `@` → `./src`, plugins: TanStack Start, Tailwind, React, tsconfig-paths, devtools
-- Server: `server/tsconfig.json` — target ES2020, CommonJS modules, decorators enabled, `outDir: ./dist`
-- Prisma: `server/prisma.config.ts` — schema at `prisma/schema.prisma`, migrations at `prisma/migrations/`, URL from `DATABASE_URL`
+- Server: `server/nest-cli.json` defines `sourceRoot: src` and `deleteOutDir: true`; outputs to `dist/`
+- Server: `server/prisma.config.ts` - Prisma config pointing to `prisma/schema.prisma`
+- Client: `client/vite.config.ts` - plugins: TanStack Start, TanStack DevTools, React, TailwindCSS, vite-tsconfig-paths
 
 ## Platform Requirements
 
 **Development:**
-- Node.js 24.x
-- pnpm (both workspaces)
-- MariaDB instance accessible at `DATABASE_HOST:3306`
+- Node.js + pnpm required
+- MariaDB/MySQL database instance (host/user/password/db configurable via `.env`)
+- Server dev command: `nest start --watch` (port 3000 default)
+- Client dev command: `vite dev --port 3000`
 
 **Production:**
-- Server: `node dist/main` (NestJS compiled output)
-- Client: Vite static build (`vite build`) — deployable as static files or via TanStack Start SSR
-- API versioning: URI-based, default version `v1` (`/api/v1/...`)
-- Swagger UI available at `/docs`
-- Health check endpoint at `/health`
+- Server: `node dist/main` (compiled NestJS)
+- Client: `vite build` + `vite preview` or static host
+- No Docker or CI/CD configuration detected in repo root
 
 ---
 
-*Stack analysis: 2026-03-15*
+*Stack analysis: 2026-03-25*

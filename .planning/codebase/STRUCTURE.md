@@ -1,241 +1,158 @@
-# STRUCTURE.md — Directory Layout and Organization
+# Structure
 
 ## Root Layout
-
 ```
 codingan/
-├── client/               # React SPA frontend
-├── server/               # NestJS REST API backend
-├── docs/                 # Project documentation (mostly deleted in v2)
-├── .planning/            # GSD planning artifacts
-│   └── codebase/         # Codebase map documents (this folder)
-└── .git/
+├── client/               # React SPA (TanStack Start/Router)
+├── server/               # NestJS REST API
+├── docs/                 # Project documentation
+├── .planning/            # EZ Agents planning artifacts
+│   └── codebase/         # This codebase map
+└── .agents/              # Agent skills
 ```
 
----
-
-## Client (`client/`)
-
-```
-client/
-├── src/
-│   ├── components/           # Reusable UI and feature components
-│   │   ├── berita-acara/     # Berita acara (meeting minutes) components
-│   │   ├── evaluasi/         # Evaluasi (evaluation) components
-│   │   ├── layout/           # App shell components
-│   │   │   ├── GlobalToast.tsx
-│   │   │   └── RoleLayout.tsx
-│   │   ├── sop/              # SOP-domain components
-│   │   │   ├── BuatSOPDialog.tsx
-│   │   │   ├── RiwayatStatusPanel.tsx
-│   │   │   └── SOPStatusFilterSelect.tsx
-│   │   ├── tte/              # TTE (electronic signature) components
-│   │   │   ├── SetupTTEDialog.tsx
-│   │   │   └── TTESignatureBlock.tsx
-│   │   └── ui/               # Design system primitives
-│   │       ├── button.tsx
-│   │       ├── search-input.tsx
-│   │       ├── search-toolbar.tsx
-│   │       ├── skeleton.tsx
-│   │       ├── route-error.tsx
-│   │       └── ...
-│   │
-│   ├── hooks/                # Custom React hooks (feature data + logic)
-│   │   ├── useAuditLog.ts
-│   │   ├── useDaftarSOPData.ts
-│   │   ├── useEvaluasi.ts
-│   │   ├── useEvaluasiSubmit.ts
-│   │   ├── useManajemenPeraturanState.ts
-│   │   ├── useManajemenTimPenyusunState.ts
-│   │   ├── useSopMeta.ts
-│   │   ├── useSopStatus.ts
-│   │   ├── useTTESignature.ts
-│   │   └── useVerifikasiBatchDetailPage.ts
-│   │
-│   ├── lib/                  # Non-React utilities and domain logic
-│   │   ├── api/              # (Placeholder) Future HTTP client setup
-│   │   ├── auth/             # Auth utilities (minimal/in progress)
-│   │   ├── constants/        # App-wide constants
-│   │   │   ├── roles.ts      # Role enum + type guards
-│   │   │   ├── routes.ts     # Route path constants
-│   │   │   └── status-badge-config.ts
-│   │   ├── data/             # Static data transformers (mock layer)
-│   │   │   ├── evaluasi-tahunan.ts
-│   │   │   ├── peraturan.ts
-│   │   │   ├── role-display.ts
-│   │   │   ├── sop-daftar.ts
-│   │   │   ├── sop-detail.ts
-│   │   │   ├── sop-templates.ts
-│   │   │   └── tte-storage.ts
-│   │   ├── domain/           # Pure business logic functions
-│   │   │   ├── evaluasi.ts
-│   │   │   ├── evaluasi-case.ts
-│   │   │   ├── sop-evaluasi.ts
-│   │   │   ├── sop-status.ts
-│   │   │   └── tte.ts
-│   │   ├── seed/             # Static JSON seed data
-│   │   │   ├── evaluasi-cases.json
-│   │   │   ├── opd.json
-│   │   │   ├── pelaksana.json
-│   │   │   ├── penugasan-evaluasi.json
-│   │   │   ├── peraturan.json
-│   │   │   ├── sop-daftar.json
-│   │   │   ├── sop-detail.json
-│   │   │   ├── sop-templates.json
-│   │   │   ├── tim-evaluasi-anggota.json
-│   │   │   ├── tim-penyusun.json
-│   │   │   └── user.json
-│   │   ├── stores/           # Zustand state stores
-│   │   │   ├── app-store.ts  # Active role state
-│   │   │   ├── audit-log-store.ts
-│   │   │   └── sop-meta-store.ts
-│   │   └── types/            # TypeScript type definitions
-│   │       ├── actor.ts
-│   │       ├── audit.ts
-│   │       ├── peraturan.ts
-│   │       ├── sop.ts
-│   │       ├── tim.ts
-│   │       ├── tte.ts
-│   │       └── verifikasi-batch.ts
-│   │
-│   ├── pages/                # Page components organized by role
-│   │   ├── kepala-biro-organisasi/
-│   │   │   ├── GrafikEvaluasiTahunan.tsx
-│   │   │   ├── ManajemenTimEvaluasi.tsx
-│   │   │   ├── ManajemenTimPenyusun.tsx
-│   │   │   ├── manajemen-opd/
-│   │   │   │   └── OPDTab.tsx
-│   │   │   └── manajemen-tim-penyusun/
-│   │   │       ├── PindahOPDTimPenyusunDialog.tsx
-│   │   │       └── TimPenyusunFormDialog.tsx
-│   │   ├── kepala-opd/
-│   │   │   ├── BeritaAcaraPage.tsx
-│   │   │   ├── DaftarSOP.tsx
-│   │   │   ├── ManajemenPeraturan.tsx
-│   │   │   └── manajemen-peraturan/
-│   │   │       └── PeraturanTableTab.tsx
-│   │   ├── tim-evaluasi/
-│   │   │   ├── DaftarSOPEvaluasi.tsx
-│   │   │   ├── DetailEvaluasiOPD.tsx
-│   │   │   └── detail-evaluasi-opd/
-│   │   │       └── DetailEvaluasiOPDSubmitDialog.tsx
-│   │   ├── tim-penyusun/
-│   │   │   ├── BeritaAcaraPage.tsx
-│   │   │   ├── DetailSOPPenyusun.tsx
-│   │   │   ├── ManajemenSOP.tsx
-│   │   │   ├── PelaksanaSOP.tsx
-│   │   │   └── detail-sop/
-│   │   │       ├── DetailSOPMetadataPanel.tsx
-│   │   │       ├── LawBasisDialog.tsx
-│   │   │       └── PelaksanaDialog.tsx
-│   │   ├── ttd-elektronik/
-│   │   │   └── TTEBuatDialog.tsx
-│   │   └── validasi/
-│   │       └── ValidasiPengesahanPage.tsx
-│   │
-│   ├── routes/               # TanStack Router file-based routes
-│   │   ├── __root.tsx        # Root shell (GlobalToast, devtools)
-│   │   ├── index.tsx         # Landing page / role selector
-│   │   ├── biro-organisasi.tsx      # Layout for biro-organisasi role
-│   │   ├── biro-organisasi.*.tsx    # Child routes for biro-organisasi
-│   │   ├── kepala-opd.tsx           # Layout for kepala-opd role
-│   │   ├── kepala-opd.*.tsx         # Child routes for kepala-opd
-│   │   ├── tim-evaluasi.tsx         # Layout for tim-evaluasi role
-│   │   ├── tim-evaluasi.*.tsx       # Child routes for tim-evaluasi
-│   │   ├── tim-penyusun.tsx         # Layout for tim-penyusun role
-│   │   ├── tim-penyusun.*.tsx       # Child routes for tim-penyusun
-│   │   └── validasi.*.tsx           # Validasi routes
-│   │
-│   ├── routeTree.gen.ts      # Auto-generated by TanStack Router (do not edit)
-│   ├── router.tsx            # Router instance creation
-│   ├── styles.css            # Global CSS (Tailwind imports)
-│   └── vite-env.d.ts
-│
-├── package.json
-├── pnpm-lock.yaml
-├── tsconfig.json
-└── vite.config.ts
-```
-
----
-
-## Server (`server/`)
-
+## Server Structure
 ```
 server/
 ├── src/
-│   ├── app.module.ts         # Root NestJS module
-│   ├── app.controller.ts     # Root controller (minimal)
-│   ├── app.service.ts        # Root service (minimal)
-│   ├── main.ts               # Bootstrap entry point
-│   │
-│   ├── common/               # Shared infrastructure
-│   │   ├── dto/              # Shared DTOs (pagination, etc.)
-│   │   ├── filters/          # GlobalExceptionFilter
-│   │   ├── interceptors/     # ResponseInterceptor
-│   │   ├── logger/           # LoggerModule + LoggerService (Winston)
-│   │   ├── prisma/           # PrismaModule + PrismaService
-│   │   └── repositories/     # Base repository (if used)
-│   │
-│   ├── generated/
-│   │   └── prisma/           # Prisma client (auto-generated, do not edit)
-│   │
-│   └── modules/              # Feature modules
-│       ├── health/           # GET /health endpoint
-│       ├── posts/            # Scaffold CRUD (template artifact)
-│       └── users/            # Full CRUD with tests
-│           ├── users.module.ts
-│           ├── users.controller.ts
-│           ├── users.service.ts
-│           ├── users.service.spec.ts
-│           └── dto/
-│
+│   ├── main.ts                          # Bootstrap (entry point)
+│   ├── app.module.ts                    # Root module
+│   ├── app.controller.ts                # Root health-ish controller
+│   ├── app.service.ts                   # Root service
+│   ├── app.controller.spec.ts           # Root controller test
+│   ├── common/
+│   │   ├── dto/
+│   │   │   ├── api-response.dto.ts      # ApiResponseDto wrapper
+│   │   │   └── pagination.dto.ts        # PaginatedResponseDto
+│   │   ├── filters/
+│   │   │   └── http-exception.filter.ts # GlobalExceptionFilter
+│   │   ├── interceptors/
+│   │   │   └── response.interceptor.ts  # ResponseInterceptor
+│   │   ├── logger/
+│   │   │   ├── logger.module.ts
+│   │   │   └── winston.config.ts        # Winston transports config
+│   │   ├── prisma/
+│   │   │   ├── prisma.module.ts         # Global PrismaModule
+│   │   │   └── prisma.service.ts        # PrismaClient wrapper
+│   │   └── repositories/
+│   │       └── base.repository.ts       # IBaseRepository<T,C,U> interface
+│   ├── generated/prisma/                # Auto-generated Prisma client
+│   └── modules/
+│       ├── health/                      # Health check module
+│       │   ├── controller/health.controller.ts
+│       │   ├── service/health.service.ts
+│       │   └── health.module.ts
+│       ├── posts/                       # Example Posts module (scaffold pattern)
+│       │   ├── controller/post.controller.ts
+│       │   ├── service/post.service.ts
+│       │   ├── repository/
+│       │   │   ├── post.repository.interface.ts
+│       │   │   └── post.repository.ts
+│       │   ├── dto/
+│       │   │   ├── create-post.dto.ts
+│       │   │   └── update-post.dto.ts
+│       │   └── posts.module.ts
+│       └── users/                       # Users module (pattern reference)
+│           ├── controller/
+│           │   ├── user.controller.ts
+│           │   └── user.controller.spec.ts
+│           ├── service/
+│           │   ├── user.service.ts
+│           │   └── user.service.spec.ts
+│           ├── repository/
+│           │   ├── user.repository.interface.ts
+│           │   └── user.repository.ts
+│           ├── dto/
+│           │   ├── create-user.dto.ts
+│           │   └── update-user.dto.ts
+│           └── users.module.ts
 ├── prisma/
-│   └── schema.prisma         # MySQL schema (User, Post — scaffold only)
-│
+│   └── schema.prisma                    # Database schema
+├── prisma.config.ts
 ├── test/
-│   └── app.e2e-spec.ts       # E2E test entry
-│
-├── logs/                     # Winston log files (gitignored)
-├── prisma.config.ts          # Prisma migrate config
-├── .env.example              # Environment variable template
-├── package.json
-├── pnpm-lock.yaml
-└── tsconfig.json
+│   └── app.e2e-spec.ts
+└── package.json
 ```
 
----
+## Client Structure
+```
+client/
+├── src/
+│   ├── components/
+│   │   ├── ui/                          # shadcn/ui base components (30+ files)
+│   │   ├── layout/                      # Page shells
+│   │   │   ├── RoleLayout.tsx           # Sidebar + role nav wrapper
+│   │   │   ├── ListPageLayout.tsx       # Standard list page chrome
+│   │   │   ├── DetailPageLayout.tsx     # Detail page with back button
+│   │   │   └── ...
+│   │   ├── sop/                         # SOP-related components
+│   │   │   ├── diagram/                 # BPMN + flowchart diagram rendering
+│   │   │   │   ├── logic/              # Routing algorithms (bpmnRouter, orthogonalRouter)
+│   │   │   │   └── shapes/             # Shape components
+│   │   │   └── ...
+│   │   ├── tte/                         # TTE (digital signature) components
+│   │   ├── evaluasi/                    # Evaluation components
+│   │   └── berita-acara/               # Berita Acara document component
+│   ├── hooks/                           # Feature hooks (one per concern)
+│   ├── lib/
+│   │   ├── api/                         # API client (config.ts + per-domain files)
+│   │   ├── auth/
+│   │   │   └── role-route-guard.ts      # Client-side role guard
+│   │   ├── constants/
+│   │   │   ├── roles.ts                 # ROLES const + RoleKey type
+│   │   │   ├── routes.ts                # ROUTES path constants
+│   │   │   ├── evaluasi.ts              # Evaluasi constants
+│   │   │   ├── status-badge-config.ts   # Status badge display config
+│   │   │   └── ui.ts                   # UI constants
+│   │   ├── data/                        # Data access (localStorage adapters)
+│   │   ├── domain/                      # Pure business logic functions
+│   │   │   ├── sop.ts, tte.ts, role.ts, opd.ts, ...
+│   │   ├── seed/                        # Static seed JSON files (mock data)
+│   │   │   ├── sop-daftar.json
+│   │   │   ├── sop-detail.json
+│   │   │   ├── user.json
+│   │   │   └── ...
+│   │   ├── stores/                      # Zustand stores
+│   │   │   ├── app-store.ts             # Role + toast (persisted)
+│   │   │   ├── sop-meta-store.ts
+│   │   │   ├── sop-status-store.ts
+│   │   │   ├── peraturan-store.ts
+│   │   │   ├── pelaksana-store.ts
+│   │   │   ├── tim-penyusun-store.ts
+│   │   │   ├── verifikasi-batch-store.ts
+│   │   │   └── audit-log-store.ts
+│   │   └── types/                       # TypeScript interfaces/types
+│   ├── routes/                          # TanStack Router file-based routes
+│   │   ├── __root.tsx                   # Root layout
+│   │   ├── index.tsx                    # Home / role picker
+│   │   ├── tim-penyusun.tsx             # Role layout wrapper
+│   │   ├── tim-penyusun.daftar-sop.tsx  # Route: /tim-penyusun/daftar-sop
+│   │   ├── kepala-opd.tsx
+│   │   ├── kepala-biro-organisasi.tsx
+│   │   ├── tim-evaluasi.tsx
+│   │   └── ...
+│   ├── routeTree.gen.ts                 # Auto-generated — never edit
+│   ├── router.tsx                       # Router instance factory
+│   ├── styles.css                       # Global CSS + Tailwind base
+│   └── utils/                           # Utility functions (cn, formatDate, etc.)
+├── vite.config.ts
+└── package.json
+```
 
-## Naming Conventions by Location
+## Key Naming Conventions
 
-| Location | Convention | Example |
-|----------|------------|---------|
-| `routes/` | dot-separated role.feature.$param | `tim-penyusun.detail-sop.$id.tsx` |
-| `pages/` | PascalCase, organized by role | `ManajemenSOP.tsx` |
-| `components/ui/` | PascalCase, shadcn-style | `button.tsx`, `search-input.tsx` |
-| `components/<domain>/` | PascalCase + domain prefix | `BuatSOPDialog.tsx` |
-| `hooks/` | camelCase with `use` prefix | `useDaftarSOPData.ts` |
-| `lib/domain/` | kebab-case | `sop-status.ts` |
-| `lib/data/` | kebab-case | `sop-daftar.ts` |
-| `lib/stores/` | kebab-case + `-store` suffix | `audit-log-store.ts` |
-| `lib/types/` | kebab-case | `verifikasi-batch.ts` |
-| `lib/seed/` | kebab-case `.json` | `sop-daftar.json` |
-| `server/modules/` | kebab-case directory | `users/`, `health/` |
-| `server/src/common/` | kebab-case directory | `prisma/`, `logger/` |
+### Server
+- Module files: `{domain}.module.ts`
+- Controllers: `{domain}.controller.ts`
+- Services: `{domain}.service.ts`
+- Repositories: `{domain}.repository.ts` + `{domain}.repository.interface.ts`
+- DTOs: `create-{domain}.dto.ts`, `update-{domain}.dto.ts`
+- Tests: `*.spec.ts` (co-located next to source file)
 
----
-
-## Key File Locations
-
-| Purpose | Path |
-|---------|------|
-| Role constants | `client/src/lib/constants/roles.ts` |
-| Route constants | `client/src/lib/constants/routes.ts` |
-| Active role store | `client/src/lib/stores/app-store.ts` |
-| SOP business logic | `client/src/lib/domain/sop-status.ts` |
-| TTE logic + PIN | `client/src/lib/domain/tte.ts` |
-| Seed data | `client/src/lib/seed/*.json` |
-| Database schema | `server/prisma/schema.prisma` |
-| Server entry | `server/src/main.ts` |
-| Root route shell | `client/src/routes/__root.tsx` |
-| Role selector page | `client/src/routes/index.tsx` |
+### Client
+- Routes: `{role}.{page}.tsx` — dot-separated maps to URL path segments
+- Hooks: `use{Feature}.ts` (camelCase)
+- Stores: `{domain}-store.ts`
+- Components: PascalCase `ComponentName.tsx`
+- Types: `{domain}.ts` in `lib/types/`
+- Constants: kebab-case files, SCREAMING_SNAKE_CASE exports
