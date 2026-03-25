@@ -377,6 +377,7 @@ export function FlowchartArrowConnector({
   constraintRect = null,
   routedSegmentsRef,
   reservedSidesRef,
+  corridorGraph,
 }: FlowchartArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
@@ -663,7 +664,10 @@ export function FlowchartArrowConnector({
     idcontainer, connection.id, connection.from, connection.to,
     connection.label, connection.sourceType, connection.targetType,
     manualConfig, manualLabelPosition, obstacles, onPathUpdated, constraintRect,
-    usedSides, routedSegmentsRef, reservedSidesRef,
+    // usedSides DIHAPUS dari dependency — dibaca via usedSidesRef.current (ref), tidak perlu trigger re-run.
+    // Menambah usedSides di sini menyebabkan cascade: tiap connector update usedSides → semua effect re-run.
+    routedSegmentsRef, reservedSidesRef,
+    corridorGraph,  // DITAMBAHKAN — perlu re-route saat corridorGraph tersedia setelah graphReady
   ])
 
   if (!pathData) return null

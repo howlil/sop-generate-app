@@ -189,6 +189,10 @@ export function BpmnArrowConnector({
   routedSegmentsRefRef.current = routedSegmentsRef
 
   useLayoutEffect(() => {
+    // Capture ref value at effect start so cleanup always uses the right instance
+    // even if the routedSegmentsRef prop changes before cleanup is called.
+    const capturedRoutedSegs = routedSegmentsRefRef.current
+
     const container = document.getElementById(idcontainer)
     if (!container) { setPathData(''); setLabelPos(null); return }
 
@@ -269,7 +273,7 @@ export function BpmnArrowConnector({
       usedSidesRef.current,
     )
 
-    const curRoutedSegs = routedSegmentsRefRef.current
+    const curRoutedSegs = capturedRoutedSegs
     const occupied: OccupiedSegment[] = []
     if (curRoutedSegs) {
       for (const [id, segs] of curRoutedSegs.current) {
@@ -351,8 +355,8 @@ export function BpmnArrowConnector({
 
     const finalPath = snapToOrthogonal(bestPath)
 
-    if (curRoutedSegs) {
-      curRoutedSegs.current.set(connection.id, bpmnPathToSegments(finalPath))
+    if (capturedRoutedSegs) {
+      capturedRoutedSegs.current.set(connection.id, bpmnPathToSegments(finalPath))
     }
 
     setPathData(pathToD(finalPath))
@@ -381,7 +385,7 @@ export function BpmnArrowConnector({
     }
 
     return () => {
-      routedSegmentsRefRef.current?.current.delete(connection.id)
+      capturedRoutedSegs?.current.delete(connection.id)
     }
   // Only re-run when the connection identity or manual config changes.
   // Mutable props (usedSides, obstacles, laneLayout, etc.) are read via
