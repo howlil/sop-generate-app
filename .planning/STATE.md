@@ -66,7 +66,7 @@ Phase Progress: [>_______] 1/8
 |---|-------------|------|--------|--------|-----------|
 | server-db-uc | Analisis DB vs use case: `docs/DATABASE-USE-CASE-ALIGNMENT.md` — gap utama: kolom verifikasi Biro di `VerifikasiBatch` | 2026-03-25 | f591238 | Done | — |
 | client-ssot | Client: align routes redirects & sidebar prefixes with `ROUTES`; `DEFAULT_SOP_STATUS`; `canEditSop` for tombol Selesai | 2026-03-25 | e46c614 | Done | — |
-| client-pipeline-ux | Client: notifikasi antar-role (persist), dashboard Tim Penyusun/Kepala OPD, bulk pengesahan, BV3/FL2/FL3 domain, akses koordinator | 2026-03-25 | fb3725d | Done | — |
+| client-pipeline-ux | Client: notifikasi antar-role (persist), bulk pengesahan, BV3/FL2/FL3 domain, akses koordinator (dashboard per-role dihapus; lihat b73b3a4) | 2026-03-25 | fb3725d | Done | — |
 | 260325-cns | Fix BPMN dan flowchart path routing - paths berantakan tumpang tindih mengenai sisi shape rendering lambat | 2026-03-25 | 45416a2 | Needs Review | [260325-cns-fix-bpmn-dan-flowchart-path-routing-path](./quick/260325-cns-fix-bpmn-dan-flowchart-path-routing-path/) |
 
 ## Session Continuity
