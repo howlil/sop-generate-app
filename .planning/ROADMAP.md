@@ -34,7 +34,7 @@
   4. `prisma generate` produces a client that can be imported and used in NestJS modules without errors
 **Plans**: 2 plans
 Plans:
-- [ ] 01-01-PLAN.md — Modify schema: add ImplementQualification + Komentar models, new fields on VerifikasiBatch/EvaluasiItem/TTESignature, FK indexes, cascade rules, enum updates
+- [x] 01-01-PLAN.md — Modify schema: add ImplementQualification + Komentar models, new fields on VerifikasiBatch/EvaluasiItem/TTESignature, FK indexes, cascade rules, enum updates
 - [ ] 01-02-PLAN.md — Squash migrations, run clean baseline, generate Prisma client, FakerJS seed script, compile check
 
 ### Phase 2: Auth & Users
@@ -123,7 +123,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database & Infrastructure | 0/2 | In Progress | - |
+| 1. Database & Infrastructure | 1/2 | In Progress | - |
 | 2. Auth & Users | 0/? | Not started | - |
 | 3. OPD & Peraturan | 0/? | Not started | - |
 | 4. Tim Penyusun & Tim Evaluasi | 0/? | Not started | - |

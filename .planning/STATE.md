@@ -13,7 +13,7 @@
 **Milestone:** v1.0 Backend Implementation
 **Phase:** 01-database-infrastructure
 **Plan:** 01-01 complete; awaiting 01-02
-**Status:** Phase 1 Plan 1 executed -- Prisma schema written and validated
+**Status:** Phase 1 Plan 1 re-executed -- Prisma schema modified with all CONTEXT.md decisions (20 models, 12 enums, indexes, cascade rules)
 
 ```
 Phase Progress: [>_______] 1/8
@@ -44,6 +44,12 @@ Phase Progress: [>_______] 1/8
 - Client navigation/page labels for BA workflow are centralized via `IA` constants to keep terms consistent across roles
 - Tim Penyusun now has explicit TTE route (`/tim-penyusun/ttd-elektronik`) for parity with role-specific TTE setup flow
 - Detail SOP primary completion action sets status to `Siap Dievaluasi` (not `Sedang Disusun`) to align with evaluation request rules
+- Removed timEvaluasiId from VerifikasiBatch -- evaluator open pool, tracking via EvaluasiItem.evaluatorId
+- Removed PERLU_PERBAIKAN from HasilEvaluasi -- workflow only uses SESUAI and REVISI_BIRO
+- Renamed JenisBatch: INISIASI_BIRO -> TERJADWAL, REQUEST_OPD -> MANDIRI
+- ProsedurRow self-FK uses onDelete: SetNull (deleting step nulls reference, no cascade)
+- SOP.peraturan uses onDelete: SetNull (peraturan revocation keeps SOP intact)
+- RelatedSOP both sides use onDelete: Cascade (join row deleted with either SOP)
 
 ### Architecture Notes
 - Server follows Controller -> Service -> Repository -> Prisma pattern (existing scaffold)
@@ -77,11 +83,11 @@ Phase Progress: [>_______] 1/8
 
 ## Session Continuity
 
-**Last session:** 2026-03-25 -- Phase 1 context gathered via /ez:discuss-phase 1
-**Stopped at:** CONTEXT.md created with all schema decisions (cascade, index, seed, evaluasi terjadwal/mandiri, schema gaps)
-**Next action:** /ez:plan-phase 1 — create executable plans incorporating new decisions (schema modifications + seed + migration)
-**Context to preserve:** Schema needs modifications: +verifiedByUserId, +signedByKoordinatorUserId, +tanggalEvaluasi, +nilaiOPD, +evaluatorId, +rekomendasi, +sopId/batchId on TTESignature, +ImplementQualification model, +Komentar model, hapus timEvaluasiId, rename JenisBatch values, add indexes on all FKs + composite SOP(opdId,status), cascade rules, FakerJS seed. Old plan files deleted from worktree — need fresh plans.
+**Last session:** 2026-03-25 -- Executed Plan 01-01 (schema modifications)
+**Stopped at:** Completed 01-01-PLAN.md -- schema modified with all CONTEXT.md decisions
+**Next action:** Execute 01-02-PLAN.md (migration squash, Prisma generate, FakerJS seed)
+**Context to preserve:** Schema now has 20 models, 12 enums, all FK indexes, all cascade/restrict rules. Ready for migration + seed.
 
 ---
 *State initialized: 2026-03-25*
-*Last updated: 2026-03-25*
+*Last updated: 2026-03-25 (01-01 re-executed)*
