@@ -552,8 +552,8 @@ function FlowchartPage({
           <colgroup>
             <col style={{ width: '5%' }} />
             <col style={{ width: `${config.widthKegiatan}%` }} />
-            {implementers.map((impl) => (
-              <col key={impl.id} style={{ width: `${pelaksanaColWidth}%` }} />
+            {implementers.map((impl, index) => (
+              <col key={impl?.id ?? `impl-${index + 1}`} style={{ width: `${pelaksanaColWidth}%` }} />
             ))}
             <col style={{ width: `${config.widthKelengkapan}%` }} />
             <col style={{ width: `${config.widthWaktu}%` }} />
@@ -569,9 +569,9 @@ function FlowchartPage({
               <th rowSpan={2} className="border-2 py-0.5 px-1 border-black">KET</th>
             </tr>
             <tr className="bg-[#D9D9D9]">
-              {implementers.map((impl) => (
-                <th key={impl.id} className="border-2 py-0.5 border-black font-bold text-xs">
-                  {impl.name.toUpperCase()}
+              {implementers.map((impl, index) => (
+                <th key={impl?.id ?? `impl-${index + 1}`} className="border-2 py-0.5 border-black font-bold text-xs">
+                  {String(impl?.name ?? impl?.id ?? '').toUpperCase()}
                 </th>
               ))}
               <th className="border-2 py-0.5 border-black text-xs">KELENGKAPAN</th>
@@ -597,13 +597,13 @@ function FlowchartPage({
                   >
                     {step.name}
                   </td>
-                  {implementers.map((impl) => (
+                  {implementers.map((impl, index) => (
                     <td
-                      key={impl.id}
+                      key={impl?.id ?? `impl-${index + 1}`}
                       className="border-2 border-black p-0 text-center align-middle relative"
-                      data-implementer-id={impl.id}
+                      data-implementer-id={impl?.id ?? `impl-${index + 1}`}
                     >
-                      {step.id_implementer === impl.id && (
+                      {step.id_implementer === impl?.id && (
                         <div className="flex flex-col justify-around items-center px-2 py-5 min-h-[70px] relative z-10">
                           <span
                             id={`sop-step-${step.seq_number}`}

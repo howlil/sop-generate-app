@@ -5,9 +5,11 @@ import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
+import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
 
 export const Route = createFileRoute('/tim-evaluasi')({
   beforeLoad: requireRoleBeforeLoad(ROLES.TIM_EVALUASI),
+  pendingComponent: RouteLoadingSkeleton,
   component: TimEvaluasiLayout,
 })
 

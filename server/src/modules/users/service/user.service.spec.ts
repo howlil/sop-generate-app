@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../service/user.service';
 import { UserRepository } from '../repository/user.repository';
 import { NotFoundException, ConflictException } from '@nestjs/common';
+import { UserRole } from '../../../generated/prisma';
 
 const mockUser = {
   id: '1',
@@ -50,6 +51,7 @@ describe('UserService', () => {
         email: 'test@example.com',
         name: 'Test User',
         password: 'password123',
+        role: UserRole.TIM_PENYUSUN,
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(null);
@@ -67,6 +69,7 @@ describe('UserService', () => {
         email: 'test@example.com',
         name: 'Test User',
         password: 'password123',
+        role: UserRole.TIM_PENYUSUN,
       };
 
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);

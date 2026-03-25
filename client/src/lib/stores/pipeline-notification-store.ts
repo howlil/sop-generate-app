@@ -12,6 +12,9 @@ export interface PipelineNotification {
   body: string
   /** Role yang sebaiknya melihat notifikasi ini */
   targetRole?: RoleKey
+  /** Tautan ke halaman terkait (opsional). */
+  actionTo?: string
+  actionSearch?: Record<string, string | undefined>
   createdAt: string
   read: boolean
 }

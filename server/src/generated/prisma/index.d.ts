@@ -2435,6 +2435,7 @@ export namespace Prisma {
     auditLogs: number
     sopsCreated: number
     sopsEdited: number
+    sopsAsPic: number
     peraturanCreated: number
   }
 
@@ -2445,6 +2446,7 @@ export namespace Prisma {
     auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
     sopsCreated?: boolean | UserCountOutputTypeCountSopsCreatedArgs
     sopsEdited?: boolean | UserCountOutputTypeCountSopsEditedArgs
+    sopsAsPic?: boolean | UserCountOutputTypeCountSopsAsPicArgs
     peraturanCreated?: boolean | UserCountOutputTypeCountPeraturanCreatedArgs
   }
 
@@ -2498,6 +2500,13 @@ export namespace Prisma {
    * UserCountOutputType without action
    */
   export type UserCountOutputTypeCountSopsEditedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SOPWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountSopsAsPicArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SOPWhereInput
   }
 
@@ -3075,6 +3084,7 @@ export namespace Prisma {
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     sopsCreated?: boolean | User$sopsCreatedArgs<ExtArgs>
     sopsEdited?: boolean | User$sopsEditedArgs<ExtArgs>
+    sopsAsPic?: boolean | User$sopsAsPicArgs<ExtArgs>
     peraturanCreated?: boolean | User$peraturanCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -3106,6 +3116,7 @@ export namespace Prisma {
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
     sopsCreated?: boolean | User$sopsCreatedArgs<ExtArgs>
     sopsEdited?: boolean | User$sopsEditedArgs<ExtArgs>
+    sopsAsPic?: boolean | User$sopsAsPicArgs<ExtArgs>
     peraturanCreated?: boolean | User$peraturanCreatedArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -3121,6 +3132,7 @@ export namespace Prisma {
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
       sopsCreated: Prisma.$SOPPayload<ExtArgs>[]
       sopsEdited: Prisma.$SOPPayload<ExtArgs>[]
+      sopsAsPic: Prisma.$SOPPayload<ExtArgs>[]
       peraturanCreated: Prisma.$PeraturanPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -3484,6 +3496,7 @@ export namespace Prisma {
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sopsCreated<T extends User$sopsCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$sopsCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sopsEdited<T extends User$sopsEditedArgs<ExtArgs> = {}>(args?: Subset<T, User$sopsEditedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    sopsAsPic<T extends User$sopsAsPicArgs<ExtArgs> = {}>(args?: Subset<T, User$sopsAsPicArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     peraturanCreated<T extends User$peraturanCreatedArgs<ExtArgs> = {}>(args?: Subset<T, User$peraturanCreatedArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PeraturanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4035,6 +4048,30 @@ export namespace Prisma {
    * User.sopsEdited
    */
   export type User$sopsEditedArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SOP
+     */
+    select?: SOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SOP
+     */
+    omit?: SOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SOPInclude<ExtArgs> | null
+    where?: SOPWhereInput
+    orderBy?: SOPOrderByWithRelationInput | SOPOrderByWithRelationInput[]
+    cursor?: SOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: SOPScalarFieldEnum | SOPScalarFieldEnum[]
+  }
+
+  /**
+   * User.sopsAsPic
+   */
+  export type User$sopsAsPicArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SOP
      */
@@ -6296,6 +6333,7 @@ export namespace Prisma {
     opdId: string | null
     peraturanId: string | null
     versi: number | null
+    picUserId: string | null
     picName: string | null
     picNumber: string | null
     picRole: string | null
@@ -6316,6 +6354,7 @@ export namespace Prisma {
     opdId: string | null
     peraturanId: string | null
     versi: number | null
+    picUserId: string | null
     picName: string | null
     picNumber: string | null
     picRole: string | null
@@ -6336,6 +6375,7 @@ export namespace Prisma {
     opdId: number
     peraturanId: number
     versi: number
+    picUserId: number
     picName: number
     picNumber: number
     picRole: number
@@ -6366,6 +6406,7 @@ export namespace Prisma {
     opdId?: true
     peraturanId?: true
     versi?: true
+    picUserId?: true
     picName?: true
     picNumber?: true
     picRole?: true
@@ -6386,6 +6427,7 @@ export namespace Prisma {
     opdId?: true
     peraturanId?: true
     versi?: true
+    picUserId?: true
     picName?: true
     picNumber?: true
     picRole?: true
@@ -6406,6 +6448,7 @@ export namespace Prisma {
     opdId?: true
     peraturanId?: true
     versi?: true
+    picUserId?: true
     picName?: true
     picNumber?: true
     picRole?: true
@@ -6513,6 +6556,7 @@ export namespace Prisma {
     opdId: string
     peraturanId: string | null
     versi: number
+    picUserId: string | null
     picName: string | null
     picNumber: string | null
     picRole: string | null
@@ -6552,6 +6596,7 @@ export namespace Prisma {
     opdId?: boolean
     peraturanId?: boolean
     versi?: boolean
+    picUserId?: boolean
     picName?: boolean
     picNumber?: boolean
     picRole?: boolean
@@ -6566,6 +6611,7 @@ export namespace Prisma {
     peraturan?: boolean | SOP$peraturanArgs<ExtArgs>
     createdBy?: boolean | SOP$createdByArgs<ExtArgs>
     lastEditedBy?: boolean | SOP$lastEditedByArgs<ExtArgs>
+    picUser?: boolean | SOP$picUserArgs<ExtArgs>
     lawBasis?: boolean | SOP$lawBasisArgs<ExtArgs>
     equipment?: boolean | SOP$equipmentArgs<ExtArgs>
     recordData?: boolean | SOP$recordDataArgs<ExtArgs>
@@ -6587,6 +6633,7 @@ export namespace Prisma {
     opdId?: boolean
     peraturanId?: boolean
     versi?: boolean
+    picUserId?: boolean
     picName?: boolean
     picNumber?: boolean
     picRole?: boolean
@@ -6599,12 +6646,13 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type SOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nomorSOP" | "judul" | "status" | "opdId" | "peraturanId" | "versi" | "picName" | "picNumber" | "picRole" | "section" | "warning" | "institutionLines" | "createdById" | "lastEditedById" | "createdAt" | "updatedAt", ExtArgs["result"]["sOP"]>
+  export type SOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "nomorSOP" | "judul" | "status" | "opdId" | "peraturanId" | "versi" | "picUserId" | "picName" | "picNumber" | "picRole" | "section" | "warning" | "institutionLines" | "createdById" | "lastEditedById" | "createdAt" | "updatedAt", ExtArgs["result"]["sOP"]>
   export type SOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     opd?: boolean | OPDDefaultArgs<ExtArgs>
     peraturan?: boolean | SOP$peraturanArgs<ExtArgs>
     createdBy?: boolean | SOP$createdByArgs<ExtArgs>
     lastEditedBy?: boolean | SOP$lastEditedByArgs<ExtArgs>
+    picUser?: boolean | SOP$picUserArgs<ExtArgs>
     lawBasis?: boolean | SOP$lawBasisArgs<ExtArgs>
     equipment?: boolean | SOP$equipmentArgs<ExtArgs>
     recordData?: boolean | SOP$recordDataArgs<ExtArgs>
@@ -6623,6 +6671,7 @@ export namespace Prisma {
       peraturan: Prisma.$PeraturanPayload<ExtArgs> | null
       createdBy: Prisma.$UserPayload<ExtArgs> | null
       lastEditedBy: Prisma.$UserPayload<ExtArgs> | null
+      picUser: Prisma.$UserPayload<ExtArgs> | null
       lawBasis: Prisma.$LawBasisPayload<ExtArgs>[]
       equipment: Prisma.$EquipmentPayload<ExtArgs>[]
       recordData: Prisma.$RecordDataPayload<ExtArgs>[]
@@ -6640,6 +6689,7 @@ export namespace Prisma {
       opdId: string
       peraturanId: string | null
       versi: number
+      picUserId: string | null
       picName: string | null
       picNumber: string | null
       picRole: string | null
@@ -6994,6 +7044,7 @@ export namespace Prisma {
     peraturan<T extends SOP$peraturanArgs<ExtArgs> = {}>(args?: Subset<T, SOP$peraturanArgs<ExtArgs>>): Prisma__PeraturanClient<$Result.GetResult<Prisma.$PeraturanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     createdBy<T extends SOP$createdByArgs<ExtArgs> = {}>(args?: Subset<T, SOP$createdByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     lastEditedBy<T extends SOP$lastEditedByArgs<ExtArgs> = {}>(args?: Subset<T, SOP$lastEditedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    picUser<T extends SOP$picUserArgs<ExtArgs> = {}>(args?: Subset<T, SOP$picUserArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     lawBasis<T extends SOP$lawBasisArgs<ExtArgs> = {}>(args?: Subset<T, SOP$lawBasisArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LawBasisPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     equipment<T extends SOP$equipmentArgs<ExtArgs> = {}>(args?: Subset<T, SOP$equipmentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EquipmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     recordData<T extends SOP$recordDataArgs<ExtArgs> = {}>(args?: Subset<T, SOP$recordDataArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecordDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7038,6 +7089,7 @@ export namespace Prisma {
     readonly opdId: FieldRef<"SOP", 'String'>
     readonly peraturanId: FieldRef<"SOP", 'String'>
     readonly versi: FieldRef<"SOP", 'Int'>
+    readonly picUserId: FieldRef<"SOP", 'String'>
     readonly picName: FieldRef<"SOP", 'String'>
     readonly picNumber: FieldRef<"SOP", 'String'>
     readonly picRole: FieldRef<"SOP", 'String'>
@@ -7437,6 +7489,25 @@ export namespace Prisma {
    * SOP.lastEditedBy
    */
   export type SOP$lastEditedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * SOP.picUser
+   */
+  export type SOP$picUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the User
      */
@@ -18484,10 +18555,6 @@ export namespace Prisma {
   export type TTEProfileMinAggregateOutputType = {
     id: string | null
     userId: string | null
-    nip: string | null
-    jabatan: string | null
-    pangkat: string | null
-    nohp: string | null
     pinHash: string | null
     emailVerified: boolean | null
     role: $Enums.TTERole | null
@@ -18499,10 +18566,6 @@ export namespace Prisma {
   export type TTEProfileMaxAggregateOutputType = {
     id: string | null
     userId: string | null
-    nip: string | null
-    jabatan: string | null
-    pangkat: string | null
-    nohp: string | null
     pinHash: string | null
     emailVerified: boolean | null
     role: $Enums.TTERole | null
@@ -18514,10 +18577,6 @@ export namespace Prisma {
   export type TTEProfileCountAggregateOutputType = {
     id: number
     userId: number
-    nip: number
-    jabatan: number
-    pangkat: number
-    nohp: number
     pinHash: number
     emailVerified: number
     role: number
@@ -18531,10 +18590,6 @@ export namespace Prisma {
   export type TTEProfileMinAggregateInputType = {
     id?: true
     userId?: true
-    nip?: true
-    jabatan?: true
-    pangkat?: true
-    nohp?: true
     pinHash?: true
     emailVerified?: true
     role?: true
@@ -18546,10 +18601,6 @@ export namespace Prisma {
   export type TTEProfileMaxAggregateInputType = {
     id?: true
     userId?: true
-    nip?: true
-    jabatan?: true
-    pangkat?: true
-    nohp?: true
     pinHash?: true
     emailVerified?: true
     role?: true
@@ -18561,10 +18612,6 @@ export namespace Prisma {
   export type TTEProfileCountAggregateInputType = {
     id?: true
     userId?: true
-    nip?: true
-    jabatan?: true
-    pangkat?: true
-    nohp?: true
     pinHash?: true
     emailVerified?: true
     role?: true
@@ -18649,10 +18696,6 @@ export namespace Prisma {
   export type TTEProfileGroupByOutputType = {
     id: string
     userId: string
-    nip: string | null
-    jabatan: string | null
-    pangkat: string | null
-    nohp: string | null
     pinHash: string
     emailVerified: boolean
     role: $Enums.TTERole
@@ -18681,10 +18724,6 @@ export namespace Prisma {
   export type TTEProfileSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
-    nip?: boolean
-    jabatan?: boolean
-    pangkat?: boolean
-    nohp?: boolean
     pinHash?: boolean
     emailVerified?: boolean
     role?: boolean
@@ -18699,10 +18738,6 @@ export namespace Prisma {
   export type TTEProfileSelectScalar = {
     id?: boolean
     userId?: boolean
-    nip?: boolean
-    jabatan?: boolean
-    pangkat?: boolean
-    nohp?: boolean
     pinHash?: boolean
     emailVerified?: boolean
     role?: boolean
@@ -18711,7 +18746,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type TTEProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "nip" | "jabatan" | "pangkat" | "nohp" | "pinHash" | "emailVerified" | "role" | "verificationToken" | "createdAt" | "updatedAt", ExtArgs["result"]["tTEProfile"]>
+  export type TTEProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "pinHash" | "emailVerified" | "role" | "verificationToken" | "createdAt" | "updatedAt", ExtArgs["result"]["tTEProfile"]>
   export type TTEProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -18724,10 +18759,6 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      nip: string | null
-      jabatan: string | null
-      pangkat: string | null
-      nohp: string | null
       pinHash: string
       emailVerified: boolean
       role: $Enums.TTERole
@@ -19106,10 +19137,6 @@ export namespace Prisma {
   interface TTEProfileFieldRefs {
     readonly id: FieldRef<"TTEProfile", 'String'>
     readonly userId: FieldRef<"TTEProfile", 'String'>
-    readonly nip: FieldRef<"TTEProfile", 'String'>
-    readonly jabatan: FieldRef<"TTEProfile", 'String'>
-    readonly pangkat: FieldRef<"TTEProfile", 'String'>
-    readonly nohp: FieldRef<"TTEProfile", 'String'>
     readonly pinHash: FieldRef<"TTEProfile", 'String'>
     readonly emailVerified: FieldRef<"TTEProfile", 'Boolean'>
     readonly role: FieldRef<"TTEProfile", 'TTERole'>
@@ -21500,6 +21527,7 @@ export namespace Prisma {
     opdId: 'opdId',
     peraturanId: 'peraturanId',
     versi: 'versi',
+    picUserId: 'picUserId',
     picName: 'picName',
     picNumber: 'picNumber',
     picRole: 'picRole',
@@ -21660,10 +21688,6 @@ export namespace Prisma {
   export const TTEProfileScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
-    nip: 'nip',
-    jabatan: 'jabatan',
-    pangkat: 'pangkat',
-    nohp: 'nohp',
     pinHash: 'pinHash',
     emailVerified: 'emailVerified',
     role: 'role',
@@ -21763,6 +21787,7 @@ export namespace Prisma {
     judul: 'judul',
     opdId: 'opdId',
     peraturanId: 'peraturanId',
+    picUserId: 'picUserId',
     picName: 'picName',
     picNumber: 'picNumber',
     picRole: 'picRole',
@@ -21892,10 +21917,6 @@ export namespace Prisma {
   export const TTEProfileOrderByRelevanceFieldEnum: {
     id: 'id',
     userId: 'userId',
-    nip: 'nip',
-    jabatan: 'jabatan',
-    pangkat: 'pangkat',
-    nohp: 'nohp',
     pinHash: 'pinHash',
     verificationToken: 'verificationToken'
   };
@@ -22069,6 +22090,7 @@ export namespace Prisma {
     auditLogs?: AuditLogListRelationFilter
     sopsCreated?: SOPListRelationFilter
     sopsEdited?: SOPListRelationFilter
+    sopsAsPic?: SOPListRelationFilter
     peraturanCreated?: PeraturanListRelationFilter
   }
 
@@ -22093,6 +22115,7 @@ export namespace Prisma {
     auditLogs?: AuditLogOrderByRelationAggregateInput
     sopsCreated?: SOPOrderByRelationAggregateInput
     sopsEdited?: SOPOrderByRelationAggregateInput
+    sopsAsPic?: SOPOrderByRelationAggregateInput
     peraturanCreated?: PeraturanOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
@@ -22121,6 +22144,7 @@ export namespace Prisma {
     auditLogs?: AuditLogListRelationFilter
     sopsCreated?: SOPListRelationFilter
     sopsEdited?: SOPListRelationFilter
+    sopsAsPic?: SOPListRelationFilter
     peraturanCreated?: PeraturanListRelationFilter
   }, "id" | "email">
 
@@ -22335,6 +22359,7 @@ export namespace Prisma {
     opdId?: StringFilter<"SOP"> | string
     peraturanId?: StringNullableFilter<"SOP"> | string | null
     versi?: IntFilter<"SOP"> | number
+    picUserId?: StringNullableFilter<"SOP"> | string | null
     picName?: StringNullableFilter<"SOP"> | string | null
     picNumber?: StringNullableFilter<"SOP"> | string | null
     picRole?: StringNullableFilter<"SOP"> | string | null
@@ -22349,6 +22374,7 @@ export namespace Prisma {
     peraturan?: XOR<PeraturanNullableScalarRelationFilter, PeraturanWhereInput> | null
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     lastEditedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    picUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     lawBasis?: LawBasisListRelationFilter
     equipment?: EquipmentListRelationFilter
     recordData?: RecordDataListRelationFilter
@@ -22367,6 +22393,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrderInput | SortOrder
     versi?: SortOrder
+    picUserId?: SortOrderInput | SortOrder
     picName?: SortOrderInput | SortOrder
     picNumber?: SortOrderInput | SortOrder
     picRole?: SortOrderInput | SortOrder
@@ -22381,6 +22408,7 @@ export namespace Prisma {
     peraturan?: PeraturanOrderByWithRelationInput
     createdBy?: UserOrderByWithRelationInput
     lastEditedBy?: UserOrderByWithRelationInput
+    picUser?: UserOrderByWithRelationInput
     lawBasis?: LawBasisOrderByRelationAggregateInput
     equipment?: EquipmentOrderByRelationAggregateInput
     recordData?: RecordDataOrderByRelationAggregateInput
@@ -22403,6 +22431,7 @@ export namespace Prisma {
     opdId?: StringFilter<"SOP"> | string
     peraturanId?: StringNullableFilter<"SOP"> | string | null
     versi?: IntFilter<"SOP"> | number
+    picUserId?: StringNullableFilter<"SOP"> | string | null
     picName?: StringNullableFilter<"SOP"> | string | null
     picNumber?: StringNullableFilter<"SOP"> | string | null
     picRole?: StringNullableFilter<"SOP"> | string | null
@@ -22417,6 +22446,7 @@ export namespace Prisma {
     peraturan?: XOR<PeraturanNullableScalarRelationFilter, PeraturanWhereInput> | null
     createdBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     lastEditedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+    picUser?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     lawBasis?: LawBasisListRelationFilter
     equipment?: EquipmentListRelationFilter
     recordData?: RecordDataListRelationFilter
@@ -22435,6 +22465,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrderInput | SortOrder
     versi?: SortOrder
+    picUserId?: SortOrderInput | SortOrder
     picName?: SortOrderInput | SortOrder
     picNumber?: SortOrderInput | SortOrder
     picRole?: SortOrderInput | SortOrder
@@ -22463,6 +22494,7 @@ export namespace Prisma {
     opdId?: StringWithAggregatesFilter<"SOP"> | string
     peraturanId?: StringNullableWithAggregatesFilter<"SOP"> | string | null
     versi?: IntWithAggregatesFilter<"SOP"> | number
+    picUserId?: StringNullableWithAggregatesFilter<"SOP"> | string | null
     picName?: StringNullableWithAggregatesFilter<"SOP"> | string | null
     picNumber?: StringNullableWithAggregatesFilter<"SOP"> | string | null
     picRole?: StringNullableWithAggregatesFilter<"SOP"> | string | null
@@ -23245,10 +23277,6 @@ export namespace Prisma {
     NOT?: TTEProfileWhereInput | TTEProfileWhereInput[]
     id?: StringFilter<"TTEProfile"> | string
     userId?: StringFilter<"TTEProfile"> | string
-    nip?: StringNullableFilter<"TTEProfile"> | string | null
-    jabatan?: StringNullableFilter<"TTEProfile"> | string | null
-    pangkat?: StringNullableFilter<"TTEProfile"> | string | null
-    nohp?: StringNullableFilter<"TTEProfile"> | string | null
     pinHash?: StringFilter<"TTEProfile"> | string
     emailVerified?: BoolFilter<"TTEProfile"> | boolean
     role?: EnumTTERoleFilter<"TTEProfile"> | $Enums.TTERole
@@ -23261,10 +23289,6 @@ export namespace Prisma {
   export type TTEProfileOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    nip?: SortOrderInput | SortOrder
-    jabatan?: SortOrderInput | SortOrder
-    pangkat?: SortOrderInput | SortOrder
-    nohp?: SortOrderInput | SortOrder
     pinHash?: SortOrder
     emailVerified?: SortOrder
     role?: SortOrder
@@ -23281,10 +23305,6 @@ export namespace Prisma {
     AND?: TTEProfileWhereInput | TTEProfileWhereInput[]
     OR?: TTEProfileWhereInput[]
     NOT?: TTEProfileWhereInput | TTEProfileWhereInput[]
-    nip?: StringNullableFilter<"TTEProfile"> | string | null
-    jabatan?: StringNullableFilter<"TTEProfile"> | string | null
-    pangkat?: StringNullableFilter<"TTEProfile"> | string | null
-    nohp?: StringNullableFilter<"TTEProfile"> | string | null
     pinHash?: StringFilter<"TTEProfile"> | string
     emailVerified?: BoolFilter<"TTEProfile"> | boolean
     role?: EnumTTERoleFilter<"TTEProfile"> | $Enums.TTERole
@@ -23297,10 +23317,6 @@ export namespace Prisma {
   export type TTEProfileOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    nip?: SortOrderInput | SortOrder
-    jabatan?: SortOrderInput | SortOrder
-    pangkat?: SortOrderInput | SortOrder
-    nohp?: SortOrderInput | SortOrder
     pinHash?: SortOrder
     emailVerified?: SortOrder
     role?: SortOrder
@@ -23318,10 +23334,6 @@ export namespace Prisma {
     NOT?: TTEProfileScalarWhereWithAggregatesInput | TTEProfileScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"TTEProfile"> | string
     userId?: StringWithAggregatesFilter<"TTEProfile"> | string
-    nip?: StringNullableWithAggregatesFilter<"TTEProfile"> | string | null
-    jabatan?: StringNullableWithAggregatesFilter<"TTEProfile"> | string | null
-    pangkat?: StringNullableWithAggregatesFilter<"TTEProfile"> | string | null
-    nohp?: StringNullableWithAggregatesFilter<"TTEProfile"> | string | null
     pinHash?: StringWithAggregatesFilter<"TTEProfile"> | string
     emailVerified?: BoolWithAggregatesFilter<"TTEProfile"> | boolean
     role?: EnumTTERoleWithAggregatesFilter<"TTEProfile"> | $Enums.TTERole
@@ -23500,6 +23512,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -23523,6 +23536,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -23546,6 +23560,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -23569,6 +23584,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -23818,6 +23834,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -23836,6 +23853,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -23874,6 +23892,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -23892,6 +23911,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -23920,6 +23940,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -23956,6 +23977,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -24741,10 +24763,6 @@ export namespace Prisma {
 
   export type TTEProfileCreateInput = {
     id?: string
-    nip?: string | null
-    jabatan?: string | null
-    pangkat?: string | null
-    nohp?: string | null
     pinHash: string
     emailVerified?: boolean
     role: $Enums.TTERole
@@ -24757,10 +24775,6 @@ export namespace Prisma {
   export type TTEProfileUncheckedCreateInput = {
     id?: string
     userId: string
-    nip?: string | null
-    jabatan?: string | null
-    pangkat?: string | null
-    nohp?: string | null
     pinHash: string
     emailVerified?: boolean
     role: $Enums.TTERole
@@ -24771,10 +24785,6 @@ export namespace Prisma {
 
   export type TTEProfileUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    nip?: NullableStringFieldUpdateOperationsInput | string | null
-    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
-    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
-    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     pinHash?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
@@ -24787,10 +24797,6 @@ export namespace Prisma {
   export type TTEProfileUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    nip?: NullableStringFieldUpdateOperationsInput | string | null
-    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
-    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
-    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     pinHash?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
@@ -24802,10 +24808,6 @@ export namespace Prisma {
   export type TTEProfileCreateManyInput = {
     id?: string
     userId: string
-    nip?: string | null
-    jabatan?: string | null
-    pangkat?: string | null
-    nohp?: string | null
     pinHash: string
     emailVerified?: boolean
     role: $Enums.TTERole
@@ -24816,10 +24818,6 @@ export namespace Prisma {
 
   export type TTEProfileUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    nip?: NullableStringFieldUpdateOperationsInput | string | null
-    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
-    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
-    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     pinHash?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
@@ -24831,10 +24829,6 @@ export namespace Prisma {
   export type TTEProfileUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    nip?: NullableStringFieldUpdateOperationsInput | string | null
-    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
-    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
-    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     pinHash?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
@@ -25496,6 +25490,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrder
     versi?: SortOrder
+    picUserId?: SortOrder
     picName?: SortOrder
     picNumber?: SortOrder
     picRole?: SortOrder
@@ -25520,6 +25515,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrder
     versi?: SortOrder
+    picUserId?: SortOrder
     picName?: SortOrder
     picNumber?: SortOrder
     picRole?: SortOrder
@@ -25540,6 +25536,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrder
     versi?: SortOrder
+    picUserId?: SortOrder
     picName?: SortOrder
     picNumber?: SortOrder
     picRole?: SortOrder
@@ -26209,10 +26206,6 @@ export namespace Prisma {
   export type TTEProfileCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    nip?: SortOrder
-    jabatan?: SortOrder
-    pangkat?: SortOrder
-    nohp?: SortOrder
     pinHash?: SortOrder
     emailVerified?: SortOrder
     role?: SortOrder
@@ -26224,10 +26217,6 @@ export namespace Prisma {
   export type TTEProfileMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    nip?: SortOrder
-    jabatan?: SortOrder
-    pangkat?: SortOrder
-    nohp?: SortOrder
     pinHash?: SortOrder
     emailVerified?: SortOrder
     role?: SortOrder
@@ -26239,10 +26228,6 @@ export namespace Prisma {
   export type TTEProfileMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
-    nip?: SortOrder
-    jabatan?: SortOrder
-    pangkat?: SortOrder
-    nohp?: SortOrder
     pinHash?: SortOrder
     emailVerified?: SortOrder
     role?: SortOrder
@@ -26430,6 +26415,13 @@ export namespace Prisma {
     connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
   }
 
+  export type SOPCreateNestedManyWithoutPicUserInput = {
+    create?: XOR<SOPCreateWithoutPicUserInput, SOPUncheckedCreateWithoutPicUserInput> | SOPCreateWithoutPicUserInput[] | SOPUncheckedCreateWithoutPicUserInput[]
+    connectOrCreate?: SOPCreateOrConnectWithoutPicUserInput | SOPCreateOrConnectWithoutPicUserInput[]
+    createMany?: SOPCreateManyPicUserInputEnvelope
+    connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+  }
+
   export type PeraturanCreateNestedManyWithoutCreatedByInput = {
     create?: XOR<PeraturanCreateWithoutCreatedByInput, PeraturanUncheckedCreateWithoutCreatedByInput> | PeraturanCreateWithoutCreatedByInput[] | PeraturanUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: PeraturanCreateOrConnectWithoutCreatedByInput | PeraturanCreateOrConnectWithoutCreatedByInput[]
@@ -26482,6 +26474,13 @@ export namespace Prisma {
     create?: XOR<SOPCreateWithoutLastEditedByInput, SOPUncheckedCreateWithoutLastEditedByInput> | SOPCreateWithoutLastEditedByInput[] | SOPUncheckedCreateWithoutLastEditedByInput[]
     connectOrCreate?: SOPCreateOrConnectWithoutLastEditedByInput | SOPCreateOrConnectWithoutLastEditedByInput[]
     createMany?: SOPCreateManyLastEditedByInputEnvelope
+    connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+  }
+
+  export type SOPUncheckedCreateNestedManyWithoutPicUserInput = {
+    create?: XOR<SOPCreateWithoutPicUserInput, SOPUncheckedCreateWithoutPicUserInput> | SOPCreateWithoutPicUserInput[] | SOPUncheckedCreateWithoutPicUserInput[]
+    connectOrCreate?: SOPCreateOrConnectWithoutPicUserInput | SOPCreateOrConnectWithoutPicUserInput[]
+    createMany?: SOPCreateManyPicUserInputEnvelope
     connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
   }
 
@@ -26612,6 +26611,20 @@ export namespace Prisma {
     deleteMany?: SOPScalarWhereInput | SOPScalarWhereInput[]
   }
 
+  export type SOPUpdateManyWithoutPicUserNestedInput = {
+    create?: XOR<SOPCreateWithoutPicUserInput, SOPUncheckedCreateWithoutPicUserInput> | SOPCreateWithoutPicUserInput[] | SOPUncheckedCreateWithoutPicUserInput[]
+    connectOrCreate?: SOPCreateOrConnectWithoutPicUserInput | SOPCreateOrConnectWithoutPicUserInput[]
+    upsert?: SOPUpsertWithWhereUniqueWithoutPicUserInput | SOPUpsertWithWhereUniqueWithoutPicUserInput[]
+    createMany?: SOPCreateManyPicUserInputEnvelope
+    set?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    disconnect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    delete?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    update?: SOPUpdateWithWhereUniqueWithoutPicUserInput | SOPUpdateWithWhereUniqueWithoutPicUserInput[]
+    updateMany?: SOPUpdateManyWithWhereWithoutPicUserInput | SOPUpdateManyWithWhereWithoutPicUserInput[]
+    deleteMany?: SOPScalarWhereInput | SOPScalarWhereInput[]
+  }
+
   export type PeraturanUpdateManyWithoutCreatedByNestedInput = {
     create?: XOR<PeraturanCreateWithoutCreatedByInput, PeraturanUncheckedCreateWithoutCreatedByInput> | PeraturanCreateWithoutCreatedByInput[] | PeraturanUncheckedCreateWithoutCreatedByInput[]
     connectOrCreate?: PeraturanCreateOrConnectWithoutCreatedByInput | PeraturanCreateOrConnectWithoutCreatedByInput[]
@@ -26717,6 +26730,20 @@ export namespace Prisma {
     connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
     update?: SOPUpdateWithWhereUniqueWithoutLastEditedByInput | SOPUpdateWithWhereUniqueWithoutLastEditedByInput[]
     updateMany?: SOPUpdateManyWithWhereWithoutLastEditedByInput | SOPUpdateManyWithWhereWithoutLastEditedByInput[]
+    deleteMany?: SOPScalarWhereInput | SOPScalarWhereInput[]
+  }
+
+  export type SOPUncheckedUpdateManyWithoutPicUserNestedInput = {
+    create?: XOR<SOPCreateWithoutPicUserInput, SOPUncheckedCreateWithoutPicUserInput> | SOPCreateWithoutPicUserInput[] | SOPUncheckedCreateWithoutPicUserInput[]
+    connectOrCreate?: SOPCreateOrConnectWithoutPicUserInput | SOPCreateOrConnectWithoutPicUserInput[]
+    upsert?: SOPUpsertWithWhereUniqueWithoutPicUserInput | SOPUpsertWithWhereUniqueWithoutPicUserInput[]
+    createMany?: SOPCreateManyPicUserInputEnvelope
+    set?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    disconnect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    delete?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
+    update?: SOPUpdateWithWhereUniqueWithoutPicUserInput | SOPUpdateWithWhereUniqueWithoutPicUserInput[]
+    updateMany?: SOPUpdateManyWithWhereWithoutPicUserInput | SOPUpdateManyWithWhereWithoutPicUserInput[]
     deleteMany?: SOPScalarWhereInput | SOPScalarWhereInput[]
   }
 
@@ -27038,6 +27065,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutSopsAsPicInput = {
+    create?: XOR<UserCreateWithoutSopsAsPicInput, UserUncheckedCreateWithoutSopsAsPicInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSopsAsPicInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type LawBasisCreateNestedManyWithoutSopInput = {
     create?: XOR<LawBasisCreateWithoutSopInput, LawBasisUncheckedCreateWithoutSopInput> | LawBasisCreateWithoutSopInput[] | LawBasisUncheckedCreateWithoutSopInput[]
     connectOrCreate?: LawBasisCreateOrConnectWithoutSopInput | LawBasisCreateOrConnectWithoutSopInput[]
@@ -27190,6 +27223,16 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSopsEditedInput, UserUpdateWithoutSopsEditedInput>, UserUncheckedUpdateWithoutSopsEditedInput>
+  }
+
+  export type UserUpdateOneWithoutSopsAsPicNestedInput = {
+    create?: XOR<UserCreateWithoutSopsAsPicInput, UserUncheckedCreateWithoutSopsAsPicInput>
+    connectOrCreate?: UserCreateOrConnectWithoutSopsAsPicInput
+    upsert?: UserUpsertWithoutSopsAsPicInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutSopsAsPicInput, UserUpdateWithoutSopsAsPicInput>, UserUncheckedUpdateWithoutSopsAsPicInput>
   }
 
   export type LawBasisUpdateManyWithoutSopNestedInput = {
@@ -28540,10 +28583,6 @@ export namespace Prisma {
 
   export type TTEProfileCreateWithoutUserInput = {
     id?: string
-    nip?: string | null
-    jabatan?: string | null
-    pangkat?: string | null
-    nohp?: string | null
     pinHash: string
     emailVerified?: boolean
     role: $Enums.TTERole
@@ -28554,10 +28593,6 @@ export namespace Prisma {
 
   export type TTEProfileUncheckedCreateWithoutUserInput = {
     id?: string
-    nip?: string | null
-    jabatan?: string | null
-    pangkat?: string | null
-    nohp?: string | null
     pinHash: string
     emailVerified?: boolean
     role: $Enums.TTERole
@@ -28650,6 +28685,7 @@ export namespace Prisma {
     opd: OPDCreateNestedOneWithoutSopsInput
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -28668,6 +28704,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -28714,6 +28751,7 @@ export namespace Prisma {
     opd: OPDCreateNestedOneWithoutSopsInput
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -28732,6 +28770,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -28758,6 +28797,72 @@ export namespace Prisma {
 
   export type SOPCreateManyLastEditedByInputEnvelope = {
     data: SOPCreateManyLastEditedByInput | SOPCreateManyLastEditedByInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SOPCreateWithoutPicUserInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    versi?: number
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd: OPDCreateNestedOneWithoutSopsInput
+    peraturan?: PeraturanCreateNestedOneWithoutSopsInput
+    createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
+    lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    lawBasis?: LawBasisCreateNestedManyWithoutSopInput
+    equipment?: EquipmentCreateNestedManyWithoutSopInput
+    recordData?: RecordDataCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPUncheckedCreateWithoutPicUserInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    opdId: string
+    peraturanId?: string | null
+    versi?: number
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdById?: string | null
+    lastEditedById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lawBasis?: LawBasisUncheckedCreateNestedManyWithoutSopInput
+    equipment?: EquipmentUncheckedCreateNestedManyWithoutSopInput
+    recordData?: RecordDataUncheckedCreateNestedManyWithoutSopInput
+    prosedurRows?: ProsedurRowUncheckedCreateNestedManyWithoutSopInput
+    evaluasiItems?: EvaluasiItemUncheckedCreateNestedManyWithoutSopInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutSopInput
+    relatedSOPs?: RelatedSOPUncheckedCreateNestedManyWithoutSopInput
+    relatedBySOPs?: RelatedSOPUncheckedCreateNestedManyWithoutRelatedSopInput
+  }
+
+  export type SOPCreateOrConnectWithoutPicUserInput = {
+    where: SOPWhereUniqueInput
+    create: XOR<SOPCreateWithoutPicUserInput, SOPUncheckedCreateWithoutPicUserInput>
+  }
+
+  export type SOPCreateManyPicUserInputEnvelope = {
+    data: SOPCreateManyPicUserInput | SOPCreateManyPicUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -28909,10 +29014,6 @@ export namespace Prisma {
 
   export type TTEProfileUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    nip?: NullableStringFieldUpdateOperationsInput | string | null
-    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
-    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
-    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     pinHash?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
@@ -28923,10 +29024,6 @@ export namespace Prisma {
 
   export type TTEProfileUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    nip?: NullableStringFieldUpdateOperationsInput | string | null
-    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
-    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
-    nohp?: NullableStringFieldUpdateOperationsInput | string | null
     pinHash?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     role?: EnumTTERoleFieldUpdateOperationsInput | $Enums.TTERole
@@ -29023,6 +29120,7 @@ export namespace Prisma {
     opdId?: StringFilter<"SOP"> | string
     peraturanId?: StringNullableFilter<"SOP"> | string | null
     versi?: IntFilter<"SOP"> | number
+    picUserId?: StringNullableFilter<"SOP"> | string | null
     picName?: StringNullableFilter<"SOP"> | string | null
     picNumber?: StringNullableFilter<"SOP"> | string | null
     picRole?: StringNullableFilter<"SOP"> | string | null
@@ -29049,6 +29147,22 @@ export namespace Prisma {
   export type SOPUpdateManyWithWhereWithoutLastEditedByInput = {
     where: SOPScalarWhereInput
     data: XOR<SOPUpdateManyMutationInput, SOPUncheckedUpdateManyWithoutLastEditedByInput>
+  }
+
+  export type SOPUpsertWithWhereUniqueWithoutPicUserInput = {
+    where: SOPWhereUniqueInput
+    update: XOR<SOPUpdateWithoutPicUserInput, SOPUncheckedUpdateWithoutPicUserInput>
+    create: XOR<SOPCreateWithoutPicUserInput, SOPUncheckedCreateWithoutPicUserInput>
+  }
+
+  export type SOPUpdateWithWhereUniqueWithoutPicUserInput = {
+    where: SOPWhereUniqueInput
+    data: XOR<SOPUpdateWithoutPicUserInput, SOPUncheckedUpdateWithoutPicUserInput>
+  }
+
+  export type SOPUpdateManyWithWhereWithoutPicUserInput = {
+    where: SOPScalarWhereInput
+    data: XOR<SOPUpdateManyMutationInput, SOPUncheckedUpdateManyWithoutPicUserInput>
   }
 
   export type PeraturanUpsertWithWhereUniqueWithoutCreatedByInput = {
@@ -29102,6 +29216,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -29124,6 +29239,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -29154,6 +29270,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -29171,6 +29288,7 @@ export namespace Prisma {
     status?: $Enums.StatusSOP
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -29464,6 +29582,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
   }
 
   export type UserUncheckedCreateWithoutPeraturanCreatedInput = {
@@ -29486,6 +29605,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
   }
 
   export type UserCreateOrConnectWithoutPeraturanCreatedInput = {
@@ -29510,6 +29630,7 @@ export namespace Prisma {
     opd: OPDCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -29527,6 +29648,7 @@ export namespace Prisma {
     status?: $Enums.StatusSOP
     opdId: string
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -29588,6 +29710,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPeraturanCreatedInput = {
@@ -29610,6 +29733,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
   }
 
   export type SOPUpsertWithWhereUniqueWithoutPeraturanInput = {
@@ -29711,6 +29835,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -29733,6 +29858,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -29760,6 +29886,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -29782,12 +29909,64 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
   export type UserCreateOrConnectWithoutSopsEditedInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutSopsEditedInput, UserUncheckedCreateWithoutSopsEditedInput>
+  }
+
+  export type UserCreateWithoutSopsAsPicInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    opd?: OPDCreateNestedOneWithoutUsersInput
+    timPenyusun?: TimPenyusunCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserUncheckedCreateWithoutSopsAsPicInput = {
+    id?: string
+    email: string
+    name: string
+    password: string
+    role: $Enums.UserRole
+    opdId?: string | null
+    nip?: string | null
+    jabatan?: string | null
+    pangkat?: string | null
+    nohp?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    timPenyusun?: TimPenyusunUncheckedCreateNestedManyWithoutUserInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedCreateNestedManyWithoutUserInput
+    tteProfile?: TTEProfileUncheckedCreateNestedOneWithoutUserInput
+    tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
+    sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
+    sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
+  }
+
+  export type UserCreateOrConnectWithoutSopsAsPicInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutSopsAsPicInput, UserUncheckedCreateWithoutSopsAsPicInput>
   }
 
   export type LawBasisCreateWithoutSopInput = {
@@ -30106,6 +30285,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -30128,6 +30308,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -30161,6 +30342,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -30183,6 +30365,64 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
+    peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUpsertWithoutSopsAsPicInput = {
+    update: XOR<UserUpdateWithoutSopsAsPicInput, UserUncheckedUpdateWithoutSopsAsPicInput>
+    create: XOR<UserCreateWithoutSopsAsPicInput, UserUncheckedCreateWithoutSopsAsPicInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutSopsAsPicInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutSopsAsPicInput, UserUncheckedUpdateWithoutSopsAsPicInput>
+  }
+
+  export type UserUpdateWithoutSopsAsPicInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneWithoutUsersNestedInput
+    timPenyusun?: TimPenyusunUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutSopsAsPicInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    opdId?: NullableStringFieldUpdateOperationsInput | string | null
+    nip?: NullableStringFieldUpdateOperationsInput | string | null
+    jabatan?: NullableStringFieldUpdateOperationsInput | string | null
+    pangkat?: NullableStringFieldUpdateOperationsInput | string | null
+    nohp?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timPenyusun?: TimPenyusunUncheckedUpdateManyWithoutUserNestedInput
+    timEvaluasi?: TimEvaluasiAnggotaUncheckedUpdateManyWithoutUserNestedInput
+    tteProfile?: TTEProfileUncheckedUpdateOneWithoutUserNestedInput
+    tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
+    sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
+    sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -30403,6 +30643,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
@@ -30420,6 +30661,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -30473,6 +30715,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
@@ -30490,6 +30733,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30527,6 +30771,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
@@ -30544,6 +30789,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -30597,6 +30843,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
@@ -30614,6 +30861,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30651,6 +30899,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     prosedurRows?: ProsedurRowCreateNestedManyWithoutSopInput
@@ -30668,6 +30917,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -30721,6 +30971,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
@@ -30738,6 +30989,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30775,6 +31027,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -30792,6 +31045,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -30834,6 +31088,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -30851,6 +31106,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -30904,6 +31160,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -30921,6 +31178,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30969,6 +31227,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -30986,6 +31245,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31023,6 +31283,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -31040,6 +31301,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -31309,6 +31571,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -31326,6 +31589,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31804,6 +32068,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -31826,6 +32091,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -31897,6 +32163,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -31919,6 +32186,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -31980,6 +32248,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32002,6 +32271,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32080,6 +32350,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32102,6 +32373,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32348,6 +32620,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -32365,6 +32638,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -32459,6 +32733,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -32476,6 +32751,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32514,6 +32790,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32536,6 +32813,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32574,6 +32852,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32596,6 +32875,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32618,6 +32898,7 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32640,6 +32921,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutAktorInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32678,6 +32960,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32700,6 +32983,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32721,6 +33005,7 @@ export namespace Prisma {
     peraturan?: PeraturanCreateNestedOneWithoutSopsInput
     createdBy?: UserCreateNestedOneWithoutSopsCreatedInput
     lastEditedBy?: UserCreateNestedOneWithoutSopsEditedInput
+    picUser?: UserCreateNestedOneWithoutSopsAsPicInput
     lawBasis?: LawBasisCreateNestedManyWithoutSopInput
     equipment?: EquipmentCreateNestedManyWithoutSopInput
     recordData?: RecordDataCreateNestedManyWithoutSopInput
@@ -32738,6 +33023,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -32781,6 +33067,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureCreateNestedManyWithoutUserInput
     sopsCreated?: SOPCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32803,6 +33090,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUncheckedCreateNestedManyWithoutUserInput
     sopsCreated?: SOPUncheckedCreateNestedManyWithoutCreatedByInput
     sopsEdited?: SOPUncheckedCreateNestedManyWithoutLastEditedByInput
+    sopsAsPic?: SOPUncheckedCreateNestedManyWithoutPicUserInput
     peraturanCreated?: PeraturanUncheckedCreateNestedManyWithoutCreatedByInput
   }
 
@@ -32840,6 +33128,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -32857,6 +33146,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32906,6 +33196,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUpdateManyWithoutUserNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32928,6 +33219,7 @@ export namespace Prisma {
     tteSignatures?: TTESignatureUncheckedUpdateManyWithoutUserNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -32980,6 +33272,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -32999,6 +33292,7 @@ export namespace Prisma {
     opdId: string
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -33006,6 +33300,26 @@ export namespace Prisma {
     warning?: string | null
     institutionLines?: string | null
     createdById?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SOPCreateManyPicUserInput = {
+    id?: string
+    nomorSOP?: string | null
+    judul: string
+    status?: $Enums.StatusSOP
+    opdId: string
+    peraturanId?: string | null
+    versi?: number
+    picName?: string | null
+    picNumber?: string | null
+    picRole?: string | null
+    section?: string | null
+    warning?: string | null
+    institutionLines?: string | null
+    createdById?: string | null
+    lastEditedById?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33164,6 +33478,7 @@ export namespace Prisma {
     opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -33182,6 +33497,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33209,6 +33525,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33237,6 +33554,7 @@ export namespace Prisma {
     opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -33255,6 +33573,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33282,6 +33601,7 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33289,6 +33609,82 @@ export namespace Prisma {
     warning?: NullableStringFieldUpdateOperationsInput | string | null
     institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
     createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SOPUpdateWithoutPicUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    versi?: IntFieldUpdateOperationsInput | number
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
+    peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
+    createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
+    lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type SOPUncheckedUpdateWithoutPicUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    opdId?: StringFieldUpdateOperationsInput | string
+    peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
+    versi?: IntFieldUpdateOperationsInput | number
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEditedById?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lawBasis?: LawBasisUncheckedUpdateManyWithoutSopNestedInput
+    equipment?: EquipmentUncheckedUpdateManyWithoutSopNestedInput
+    recordData?: RecordDataUncheckedUpdateManyWithoutSopNestedInput
+    prosedurRows?: ProsedurRowUncheckedUpdateManyWithoutSopNestedInput
+    evaluasiItems?: EvaluasiItemUncheckedUpdateManyWithoutSopNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutSopNestedInput
+    relatedSOPs?: RelatedSOPUncheckedUpdateManyWithoutSopNestedInput
+    relatedBySOPs?: RelatedSOPUncheckedUpdateManyWithoutRelatedSopNestedInput
+  }
+
+  export type SOPUncheckedUpdateManyWithoutPicUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    nomorSOP?: NullableStringFieldUpdateOperationsInput | string | null
+    judul?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    opdId?: StringFieldUpdateOperationsInput | string
+    peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
+    versi?: IntFieldUpdateOperationsInput | number
+    picName?: NullableStringFieldUpdateOperationsInput | string | null
+    picNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    picRole?: NullableStringFieldUpdateOperationsInput | string | null
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    warning?: NullableStringFieldUpdateOperationsInput | string | null
+    institutionLines?: NullableStringFieldUpdateOperationsInput | string | null
+    createdById?: NullableStringFieldUpdateOperationsInput | string | null
+    lastEditedById?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33352,6 +33748,7 @@ export namespace Prisma {
     status?: $Enums.StatusSOP
     peraturanId?: string | null
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -33421,6 +33818,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -33443,6 +33841,7 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutAktorNestedInput
     sopsCreated?: SOPUncheckedUpdateManyWithoutCreatedByNestedInput
     sopsEdited?: SOPUncheckedUpdateManyWithoutLastEditedByNestedInput
+    sopsAsPic?: SOPUncheckedUpdateManyWithoutPicUserNestedInput
     peraturanCreated?: PeraturanUncheckedUpdateManyWithoutCreatedByNestedInput
   }
 
@@ -33477,6 +33876,7 @@ export namespace Prisma {
     peraturan?: PeraturanUpdateOneWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -33494,6 +33894,7 @@ export namespace Prisma {
     status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33521,6 +33922,7 @@ export namespace Prisma {
     status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
     peraturanId?: NullableStringFieldUpdateOperationsInput | string | null
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33658,6 +34060,7 @@ export namespace Prisma {
     status?: $Enums.StatusSOP
     opdId: string
     versi?: number
+    picUserId?: string | null
     picName?: string | null
     picNumber?: string | null
     picRole?: string | null
@@ -33687,6 +34090,7 @@ export namespace Prisma {
     opd?: OPDUpdateOneRequiredWithoutSopsNestedInput
     createdBy?: UserUpdateOneWithoutSopsCreatedNestedInput
     lastEditedBy?: UserUpdateOneWithoutSopsEditedNestedInput
+    picUser?: UserUpdateOneWithoutSopsAsPicNestedInput
     lawBasis?: LawBasisUpdateManyWithoutSopNestedInput
     equipment?: EquipmentUpdateManyWithoutSopNestedInput
     recordData?: RecordDataUpdateManyWithoutSopNestedInput
@@ -33704,6 +34108,7 @@ export namespace Prisma {
     status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
     opdId?: StringFieldUpdateOperationsInput | string
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null
@@ -33731,6 +34136,7 @@ export namespace Prisma {
     status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
     opdId?: StringFieldUpdateOperationsInput | string
     versi?: IntFieldUpdateOperationsInput | number
+    picUserId?: NullableStringFieldUpdateOperationsInput | string | null
     picName?: NullableStringFieldUpdateOperationsInput | string | null
     picNumber?: NullableStringFieldUpdateOperationsInput | string | null
     picRole?: NullableStringFieldUpdateOperationsInput | string | null

@@ -44,8 +44,10 @@ import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 import { usePagination } from '@/hooks/usePagination'
 import { canTimPenyusunRunCoordinatorActions } from '@/lib/domain/tim-penyusun-access'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 export function ManajemenSOP() {
+  useDocumentTitle('Manajemen SOP — Tim Penyusun')
   const filterStatusId = 'filter-status-sop'
   const filterPeraturanId = 'filter-peraturan-sop'
   const filterTanggalDariId = 'filter-tanggal-dari-sop'
@@ -127,27 +129,6 @@ export function ManajemenSOP() {
     showToast(`${ids.length} SOP berhasil diajukan ke evaluasi`)
     setIsRequestEvaluasiDialogOpen(false)
     setSelectedSopIdsForAjukan(new Set())
-  }
-
-  const handleSelesaiMenyusun = (sopId: string) => {
-    const sop = filteredList.find((s) => s.id === sopId)
-    if (!sop) return
-    const aktorNama = role ? getRoleUserName(role) : 'Tim Penyusun'
-    setSopStatusOverride(sopId, 'Siap Dievaluasi')
-    setSopList((prev) =>
-      prev.map((p) =>
-        p.id === sopId ? { ...p, status: 'Siap Dievaluasi' as StatusSOP } : p
-      )
-    )
-    logAction({
-      sopId,
-      action: 'SELESAI_PENYUSUNAN',
-      aktorNama,
-      aktorRole: 'Tim Penyusun',
-      statusSebelum: sop.status,
-      statusSesudah: 'Siap Dievaluasi',
-    })
-    showToast('SOP dinyatakan selesai menyusun (Siap Dievaluasi)')
   }
 
   return (
@@ -319,17 +300,6 @@ export function ManajemenSOP() {
                     </Table.Td>
                     <Table.Td>
                       <div className="flex items-center justify-center gap-1">
-                        {canEditSop(sop.status) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                            onClick={() => handleSelesaiMenyusun(sop.id)}
-                            title="Selesai Menyusun"
-                          >
-                            Selesai
-                          </Button>
-                        )}
                         {canEditSop(sop.status) ? (
                           <IconActionButton
                             icon={Edit}

@@ -10,7 +10,13 @@ import { useSopStatus } from '@/hooks/useSopStatus'
 import type { StatusSOP } from '@/lib/types/sop'
 import { saveOpdRating, type EvaluasiRecordMap } from '@/lib/data/evaluasi-data'
 import { ROLES } from '@/lib/constants/roles'
+import { ROUTES } from '@/lib/constants/routes'
 import { pushPipelineNotification } from '@/lib/stores/pipeline-notification-store'
+
+export type EvaluasiBatchSubmitError =
+  | { kind: 'none' }
+  | { kind: 'no_selection' }
+  | { kind: 'incomplete'; items: SedangDievaluasiItem[] }
 
 export interface SedangDievaluasiItem {
   id: string
@@ -40,6 +46,7 @@ export function useEvaluasiSubmit({
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
   const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
+  const [batchSubmitError, setBatchSubmitError] = useState<EvaluasiBatchSubmitError>({ kind: 'none' })
 
   const isSubmitCheckAll =
     sedangDievaluasiList.length > 0 && submitSelectedIds.size === sedangDievaluasiList.length
@@ -68,6 +75,7 @@ export function useEvaluasiSubmit({
   const handleSubmitAll = useCallback(() => {
     const selected = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
     if (selected.length === 0) {
+      setBatchSubmitError({ kind: 'no_selection' })
       showToast('Pilih minimal satu SOP untuk dikirim.', 'error')
       return
     }
@@ -75,12 +83,14 @@ export function useEvaluasiSubmit({
       (item) => !isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
     )
     if (incomplete.length > 0) {
+      setBatchSubmitError({ kind: 'incomplete', items: incomplete })
       showToast(
         `Lengkapi komentar untuk SOP dengan hasil Revisi Biro: ${incomplete.map((i) => i.judul).join(', ')}`,
         'error'
       )
       return
     }
+    setBatchSubmitError({ kind: 'none' })
     const toSubmit = selected
     const today = new Date().toISOString().slice(0, 10)
     for (const item of toSubmit) {
@@ -103,6 +113,7 @@ export function useEvaluasiSubmit({
           ? `${toSubmit.length} SOP memiliki hasil evaluasi. SOP yang berstatus Revisi wajib diperbaiki lalu diajukan ulang (Selesai Menyusun → Siap Dievaluasi).`
           : `${toSubmit.length} hasil evaluasi telah dikirim. Tim Penyusun dapat melanjutkan alur verifikasi.`,
       targetRole: ROLES.TIM_PENYUSUN,
+      actionTo: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
     })
     showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. SOP yang direvisi dapat diperbaiki lalu diajukan ulang oleh Tim Penyusun.`)
     onSuccess()
@@ -118,6 +129,10 @@ export function useEvaluasiSubmit({
     onSuccess,
   ])
 
+  const clearBatchSubmitError = useCallback(() => {
+    setBatchSubmitError({ kind: 'none' })
+  }, [])
+
   return {
     submitSelectedIds,
     setSubmitSelectedIds,
@@ -126,5 +141,7 @@ export function useEvaluasiSubmit({
     toggleSubmitSelected,
     setSubmitCheckAll,
     handleSubmitAll,
+    batchSubmitError,
+    clearBatchSubmitError,
   }
 }

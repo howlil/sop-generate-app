@@ -3,6 +3,7 @@ import { UserController } from '../controller/user.controller';
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { UserRole } from '../../../generated/prisma';
 
 const mockUser = {
   id: '1',
@@ -49,6 +50,7 @@ describe('UserController', () => {
         email: 'test@example.com',
         name: 'Test User',
         password: 'password123',
+        role: UserRole.TIM_PENYUSUN,
       };
 
       mockUserService.create.mockResolvedValue(mockUser);

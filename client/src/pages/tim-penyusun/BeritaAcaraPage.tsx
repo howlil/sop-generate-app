@@ -5,7 +5,7 @@
  * Verifikasi BA hanya Biro + Koordinator; pengesahan SOP hanya Kepala OPD.
  */
 import { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { FileText, PenLine, Eye, List, Printer, Calendar, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -31,6 +31,9 @@ import { useAppRole } from '@/hooks/useAppRole'
 import { canTimPenyusunRunCoordinatorActions } from '@/lib/domain/tim-penyusun-access'
 import { ROLES } from '@/lib/constants/roles'
 import { pushPipelineNotification } from '@/lib/stores/pipeline-notification-store'
+import { InfoCard } from '@/components/ui/info-card'
+import { IA } from '@/lib/constants/pipeline-ia'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
@@ -86,6 +89,14 @@ export function BeritaAcaraKoordinatorPage() {
     documentId: signingBatch ? `berita-acara-${signingBatch.id}` : undefined,
   })
 
+  const docTitle = useMemo(() => {
+    if (!canTimPenyusunRunCoordinatorActions(role)) return IA.NAV_TP_BA_KOORDINATOR
+    if (selectedBaId && selectedBa) return `Detail ${IA.BERITA_ACARA} — ${selectedBa.nomorBA ?? ''}`
+    return IA.NAV_TP_BA_KOORDINATOR
+  }, [role, selectedBaId, selectedBa])
+
+  useDocumentTitle(docTitle)
+
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
       documentLabel: `Berita Acara ${signingBatch?.nomorBA ?? ''}`,
@@ -104,6 +115,7 @@ export function BeritaAcaraKoordinatorPage() {
           ? `BA ${signingBatch.nomorBA ?? signingBatch.id} — ${signingBatch.opd}: Kepala OPD dapat mengesahkan SOP di menu Berita Acara & pengesahan.`
           : 'Kepala OPD dapat melanjutkan pengesahan SOP.',
         targetRole: ROLES.KEPALA_OPD,
+        actionTo: ROUTES.KEPALA_OPD.BERITA_ACARA,
       })
       showToast('Verifikasi Berita Acara (Koordinator) selesai. Kepala OPD dapat melakukan pengesahan per SOP.')
       setSigningBatchId(null)
@@ -116,9 +128,9 @@ export function BeritaAcaraKoordinatorPage() {
   if (!canTimPenyusunRunCoordinatorActions(role)) {
     return (
       <ListPageLayout
-        breadcrumb={[{ label: 'Tanda Tangan BA' }]}
-        title="Tanda Tangan BA"
-        description="Verifikasi BA oleh Koordinator setelah Biro."
+        breadcrumb={[{ label: IA.NAV_TP_BA_KOORDINATOR }]}
+        title={IA.NAV_TP_BA_KOORDINATOR}
+        description={`${IA.VERIFIKASI_BA_KOORDINATOR} pada dokumen ${IA.BERITA_ACARA} setelah ${IA.VERIFIKASI_BA_BIRO}.`}
       >
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <EmptyState
@@ -135,9 +147,9 @@ export function BeritaAcaraKoordinatorPage() {
   if (!selectedBaId && baMenungguTTD.length === 0) {
     return (
       <ListPageLayout
-        breadcrumb={[{ label: 'Berita Acara' }]}
-        title="Berita Acara"
-        description="Berita Acara yang sudah diverifikasi Biro dan menunggu verifikasi Koordinator Tim Penyusun."
+        breadcrumb={[{ label: IA.NAV_TP_BA_KOORDINATOR }]}
+        title={IA.NAV_TP_BA_KOORDINATOR}
+        description={`Belum ada dokumen ${IA.BERITA_ACARA} yang menunggu ${IA.VERIFIKASI_BA_KOORDINATOR}.`}
       >
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <EmptyState
@@ -155,10 +167,21 @@ export function BeritaAcaraKoordinatorPage() {
     return (
       <>
         <ListPageLayout
-          breadcrumb={[{ label: 'Berita Acara' }]}
-          title="Berita Acara"
-          description="Daftar BA yang sudah diverifikasi Biro. Koordinator menyelesaikan verifikasi BA di sini; pengesahan SOP hanya oleh Kepala OPD."
+          breadcrumb={[{ label: IA.NAV_TP_BA_KOORDINATOR }]}
+          title={IA.NAV_TP_BA_KOORDINATOR}
+          description={`Daftar dokumen ${IA.BERITA_ACARA} setelah ${IA.VERIFIKASI_BA_BIRO}. ${IA.PENGESAHAN_SOP} oleh Kepala OPD di menu terpisah.`}
         >
+          {baMenungguTTD.length > 0 && !tte.canSign && (
+            <InfoCard variant="info" className="mb-3">
+              <p className="text-blue-900">
+                <strong>TTE belum siap.</strong> Untuk {IA.VERIFIKASI_BA_KOORDINATOR} Anda perlu profil TTE aktif.{' '}
+                <Link to={ROUTES.TIM_PENYUSUN.TTD} className="font-medium underline">
+                  Buka TTD Elektronik
+                </Link>
+                .
+              </p>
+            </InfoCard>
+          )}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <Table.Root>
               <Table.Table>
@@ -226,14 +249,14 @@ export function BeritaAcaraKoordinatorPage() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Berita Acara', to: ROUTES.TIM_PENYUSUN.BERITA_ACARA },
+          { label: IA.NAV_TP_BA_KOORDINATOR, to: ROUTES.TIM_PENYUSUN.BERITA_ACARA },
           { label: selectedBa?.nomorBA ?? 'Detail' },
         ]}
-        title={`Detail Berita Acara — ${selectedBa?.nomorBA ?? ''}`}
+        title={`Detail ${IA.BERITA_ACARA} — ${selectedBa?.nomorBA ?? ''}`}
         description={
           selectedBa?.isSignedByKoordinator
-            ? 'Verifikasi BA oleh Koordinator selesai. Pengesahan SOP oleh Kepala OPD.'
-            : 'Selesaikan verifikasi Berita Acara (Koordinator); pengesahan hanya oleh Kepala OPD.'
+            ? `${IA.VERIFIKASI_BA_KOORDINATOR} selesai. ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`
+            : `Lanjutkan ${IA.VERIFIKASI_BA_KOORDINATOR} pada dokumen ${IA.BERITA_ACARA}; ${IA.PENGESAHAN_SOP} hanya oleh Kepala OPD.`
         }
         backTo={ROUTES.TIM_PENYUSUN.BERITA_ACARA}
         backSize="icon"
@@ -293,7 +316,7 @@ export function BeritaAcaraKoordinatorPage() {
             side="left"
             collapsed={leftPanelCollapsed}
             onCollapsedChange={setLeftPanelCollapsed}
-            widthExpanded="w-[min(240px,20%)] min-w-[180px]"
+            widthExpanded="w-full"
             title="Daftar SOP"
             subtitle={`${sopList.length} dokumen`}
             collapseButtonLabel="Daftar"
@@ -360,7 +383,7 @@ export function BeritaAcaraKoordinatorPage() {
             side="right"
             collapsed={rightPanelCollapsed}
             onCollapsedChange={setRightPanelCollapsed}
-            widthExpanded="w-[min(320px,33%)] min-w-[220px]"
+            widthExpanded="w-full"
             title="Catatan & Rekomendasi"
             subtitle={effectiveSopId ? 'Riwayat evaluasi SOP' : undefined}
             collapseButtonLabel="Catatan"

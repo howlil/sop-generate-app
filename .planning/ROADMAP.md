@@ -96,13 +96,13 @@ Plans:
 **Plans**: TBD
 
 ### Phase 7: TTE & Berita Acara
-**Goal**: The sequential digital signing workflow is complete -- Biro signs BA, then Koordinator signs BA, then Kepala OPD endorses individual SOPs to BERLAKU
+**Goal**: Sequential TTE workflow — **verifikasi** Berita Acara (Biro Organisasi, then Koordinator Tim Penyusun), then **pengesahan** by Kepala OPD only (endorse SOPs to BERLAKU in BA context)
 **Depends on**: Phase 6
 **Requirements**: TTE-01, TTE-02, TTE-03, TTE-04, TTE-05, TTE-06, TTE-07, TTE-08
 **Success Criteria** (what must be TRUE):
   1. A user can register their TTE profile (NIP, jabatan, pangkat, PIN) and verify their email before signing
-  2. Biro Organisasi can sign a Berita Acara using PIN verification, and all SOPs in the batch automatically become DIVERIFIKASI_BIRO_ORGANISASI
-  3. Koordinator Tim Penyusun can sign the BA only after Biro has signed; Kepala OPD can then endorse individual SOPs (status becomes BERLAKU) -- signing order is enforced
+  2. Biro Organisasi can **verifikasi** Berita Acara (TTE) as the first verification step; all SOPs in the batch become DIVERIFIKASI_BIRO_ORGANISASI
+  3. Koordinator Tim Penyusun can complete **verifikasi** BA only after Biro; **pengesahan** (endorsement to BERLAKU) is only for Kepala OPD — order is enforced
   4. Every signature is persisted as a TTESignature record with a document hash
   5. A user can view their own TTE signing history (audit trail)
 **Plans**: TBD

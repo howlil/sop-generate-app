@@ -177,7 +177,7 @@ export function DetailSOPPenyusun() {
                   onClick={() => {
                     if (id && role) {
                       const sebelum = currentSopStatus
-                      setSopStatusOverride(id, 'Sedang Disusun')
+                      setSopStatusOverride(id, 'Siap Dievaluasi')
                       setSopMeta(id, getRoleUserName(role))
                       logAction({
                         sopId: id,
@@ -185,7 +185,7 @@ export function DetailSOPPenyusun() {
                         aktorNama: getRoleUserName(role),
                         aktorRole: 'Tim Penyusun',
                         statusSebelum: sebelum,
-                        statusSesudah: 'Sedang Disusun',
+                        statusSesudah: 'Siap Dievaluasi',
                         keterangan: isRevisionFlow ? 'Revisi selesai' : undefined,
                       })
                       showToast(
@@ -294,7 +294,7 @@ export function DetailSOPPenyusun() {
             collapsed={isEditPanelCollapsed}
             onCollapsedChange={setIsEditPanelCollapsed}
             widthCollapsed="w-10"
-            widthExpanded="w-[min(380px,30%)] min-w-[280px]"
+            widthExpanded="w-full"
             tabs={[
               { id: 'edit', label: 'Edit', icon: <PenLine className="w-3.5 h-3.5" /> },
               { id: 'komentar', label: 'Komentar', icon: <MessageSquare className="w-3.5 h-3.5" /> },

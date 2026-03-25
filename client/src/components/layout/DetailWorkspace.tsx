@@ -38,12 +38,20 @@ export function DetailWorkspace({
           {header}
         </div>
       )}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {leftPanel}
-        <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200 overflow-hidden">
+      <div className="flex flex-1 min-h-0 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        {leftPanel != null && (
+          <div className="border-b border-gray-200 lg:border-b-0 lg:border-r lg:max-w-[min(280px,40vw)] shrink-0 max-h-[min(50vh,360px)] lg:max-h-none overflow-auto">
+            {leftPanel}
+          </div>
+        )}
+        <div className="flex-1 flex flex-col min-w-0 min-h-[40vh] border-gray-200 overflow-hidden lg:border-r">
           {main}
         </div>
-        {rightPanel}
+        {rightPanel != null && (
+          <div className="border-t border-gray-200 lg:border-t-0 lg:border-l lg:max-w-[min(360px,45vw)] shrink-0 max-h-[min(55vh,480px)] lg:max-h-none overflow-auto">
+            {rightPanel}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -80,7 +80,7 @@ function getStepDimensions(
 }
 
 function capitalizeWords(s: string): string {
-  return s.replace(/\b\w/g, (c) => c.toUpperCase())
+  return (s ?? '').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 export interface SOPDiagramBpmnProps {

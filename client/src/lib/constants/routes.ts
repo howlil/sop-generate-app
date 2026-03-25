@@ -44,6 +44,8 @@ export const ROUTES = {
     DETAIL_SOP: '/tim-penyusun/detail-sop/$id',
     /** Berita Acara: daftar BA yang sudah diverifikasi Biro dan menunggu TTD Koordinator Tim Penyusun. */
     BERITA_ACARA: '/tim-penyusun/berita-acara',
+    /** Profil & PIN TTE untuk Koordinator Tim Penyusun (sama stack dengan halaman TTD role lain). */
+    TTD: '/tim-penyusun/ttd-elektronik',
   },
 
   TIM_EVALUASI: {

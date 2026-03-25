@@ -109,6 +109,7 @@ model User {
   auditLogs        AuditLog[]
   sopsCreated      SOP[]                @relation("SOPCreatedBy")
   sopsEdited       SOP[]                @relation("SOPLastEditedBy")
+  sopsAsPic        SOP[]                @relation("SOPPicUser")
   peraturanCreated Peraturan[]
 }
 
@@ -147,6 +148,7 @@ model Peraturan {
 }
 
 // Table 4: SOP (SOPMetadata fields merged into SOP -- 1:1 normalization decision)
+// PIC: prefer picUserId (FK to User) when PIC is a system user; picName/picNumber/picRole for external or legacy snapshot text.
 model SOP {
   id               String    @id @default(uuid())
   nomorSOP         String?   @unique
@@ -155,6 +157,7 @@ model SOP {
   opdId            String
   peraturanId      String?
   versi            Int       @default(1)
+  picUserId        String?
   picName          String?
   picNumber        String?
   picRole          String?
@@ -170,6 +173,7 @@ model SOP {
   peraturan    Peraturan? @relation(fields: [peraturanId], references: [id])
   createdBy    User?      @relation("SOPCreatedBy", fields: [createdById], references: [id])
   lastEditedBy User?      @relation("SOPLastEditedBy", fields: [lastEditedById], references: [id])
+  picUser      User?      @relation("SOPPicUser", fields: [picUserId], references: [id])
 
   lawBasis      LawBasis[]
   equipment     Equipment[]
@@ -342,14 +346,10 @@ model EvaluasiItem {
   sop   SOP             @relation(fields: [sopId], references: [id])
 }
 
-// Table 16: TTEProfile
+// Table 16: TTEProfile — identity fields (nip, jabatan, pangkat, nohp) live on User only (3NF single source of truth).
 model TTEProfile {
   id                String   @id @default(uuid())
   userId            String   @unique
-  nip               String?
-  jabatan           String?
-  pangkat           String?
-  nohp              String?
   pinHash           String
   emailVerified     Boolean  @default(false)
   role              TTERole

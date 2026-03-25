@@ -141,7 +141,7 @@ export function EvaluasiSOPPage() {
             side="right"
             collapsed={rightPanelCollapsed}
             onCollapsedChange={setRightPanelCollapsed}
-            widthExpanded="w-[min(380px,33%)] min-w-[280px]"
+            widthExpanded="w-full"
             title="Form Evaluasi"
             collapseButtonLabel="Form"
             collapseButtonIcon={<MessageSquare className="w-5 h-5" />}

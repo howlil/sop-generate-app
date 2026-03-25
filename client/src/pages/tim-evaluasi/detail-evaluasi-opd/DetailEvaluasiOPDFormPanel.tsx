@@ -48,7 +48,7 @@ export function DetailEvaluasiOPDFormPanel({
       side="right"
       collapsed={collapsed}
       onCollapsedChange={onCollapsedChange}
-      widthExpanded="w-[min(380px,33%)] min-w-[280px]"
+      widthExpanded="w-full"
       tabs={[
         { id: 'sop', label: 'Evaluasi SOP', icon: <FileText className="w-3.5 h-3.5" /> },
         { id: 'opd', label: 'Evaluasi OPD', icon: <Building2 className="w-3.5 h-3.5" /> },

@@ -33,6 +33,7 @@ import type { SOPDaftarItem } from '@/lib/types/sop'
 import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 const POST_SUBMIT_DELAY_MS = 1500
 
@@ -209,6 +210,8 @@ export function DetailEvaluasiOPD() {
     toggleSubmitSelected,
     setSubmitCheckAll,
     handleSubmitAll,
+    batchSubmitError,
+    clearBatchSubmitError,
   } = useEvaluasiSubmit({
     sedangDievaluasiList,
     namaEvaluator,
@@ -226,6 +229,8 @@ export function DetailEvaluasiOPD() {
       setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)))
     }
   }, [isSubmitOpen, sedangDievaluasiList, setSubmitSelectedIds])
+
+  useDocumentTitle(opd ? `Evaluasi SOP — ${opd.nama}` : undefined)
 
   /** Riwayat evaluasi SOP: from seed data. */
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
@@ -260,6 +265,26 @@ export function DetailEvaluasiOPD() {
 
   return (
     <>
+      {sedangDievaluasiList.length > 0 && (
+        <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50/95 px-3 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-blue-950">
+          <span>
+            <strong>{sedangDievaluasiList.length} SOP</strong> siap dikirim — gunakan{' '}
+            <strong>Kirim Hasil Evaluasi</strong> untuk memilih dan mengirim hasil ke Tim Penyusun.
+          </span>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 shrink-0 border-blue-300 text-blue-900"
+            onClick={() => {
+              clearBatchSubmitError()
+              setIsSubmitOpen(true)
+            }}
+          >
+            Buka dialog kirim
+          </Button>
+        </div>
+      )}
       <DetailPageLayout
         breadcrumb={[
           { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI },
@@ -285,7 +310,10 @@ export function DetailEvaluasiOPD() {
                 <Button
                   size="sm"
                   className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
-                  onClick={() => setIsSubmitOpen(true)}
+                  onClick={() => {
+                    clearBatchSubmitError()
+                    setIsSubmitOpen(true)
+                  }}
                 >
                   <Send className="w-3.5 h-3.5" /> Kirim Hasil Evaluasi
                 </Button>
@@ -308,7 +336,7 @@ export function DetailEvaluasiOPD() {
             side="left"
             collapsed={leftPanelCollapsed}
             onCollapsedChange={setLeftPanelCollapsed}
-            widthExpanded="w-[min(240px,20%)] min-w-[180px]"
+            widthExpanded="w-full"
             title="Daftar SOP"
             subtitle={`${listItems.length} dokumen`}
             collapseButtonLabel="Daftar"
@@ -383,7 +411,10 @@ export function DetailEvaluasiOPD() {
 
       <DetailEvaluasiOPDSubmitDialog
         open={isSubmitOpen}
-        onOpenChange={setIsSubmitOpen}
+        onOpenChange={(open) => {
+          setIsSubmitOpen(open)
+          if (!open) clearBatchSubmitError()
+        }}
         sedangDievaluasiList={sedangDievaluasiList}
         submitSelectedIds={submitSelectedIds}
         toggleSubmitSelected={toggleSubmitSelected}
@@ -391,6 +422,7 @@ export function DetailEvaluasiOPD() {
         isSubmitCheckAllIndeterminate={isSubmitCheckAllIndeterminate}
         setSubmitCheckAll={setSubmitCheckAll}
         onConfirm={handleSubmitAll}
+        batchSubmitError={batchSubmitError}
       />
     </>
   )

@@ -166,6 +166,7 @@ exports.Prisma.SOPScalarFieldEnum = {
   opdId: 'opdId',
   peraturanId: 'peraturanId',
   versi: 'versi',
+  picUserId: 'picUserId',
   picName: 'picName',
   picNumber: 'picNumber',
   picRole: 'picRole',
@@ -290,10 +291,6 @@ exports.Prisma.EvaluasiItemScalarFieldEnum = {
 exports.Prisma.TTEProfileScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  nip: 'nip',
-  jabatan: 'jabatan',
-  pangkat: 'pangkat',
-  nohp: 'nohp',
   pinHash: 'pinHash',
   emailVerified: 'emailVerified',
   role: 'role',
@@ -369,6 +366,7 @@ exports.Prisma.SOPOrderByRelevanceFieldEnum = {
   judul: 'judul',
   opdId: 'opdId',
   peraturanId: 'peraturanId',
+  picUserId: 'picUserId',
   picName: 'picName',
   picNumber: 'picNumber',
   picRole: 'picRole',
@@ -462,10 +460,6 @@ exports.Prisma.EvaluasiItemOrderByRelevanceFieldEnum = {
 exports.Prisma.TTEProfileOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
-  nip: 'nip',
-  jabatan: 'jabatan',
-  pangkat: 'pangkat',
-  nohp: 'nohp',
   pinHash: 'pinHash',
   verificationToken: 'verificationToken'
 };

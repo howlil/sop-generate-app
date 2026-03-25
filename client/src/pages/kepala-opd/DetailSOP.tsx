@@ -263,7 +263,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
             collapsed={isRightPanelCollapsed}
             onCollapsedChange={setIsRightPanelCollapsed}
             widthCollapsed="w-10 min-w-[2.5rem]"
-            widthExpanded="w-[min(320px,28%)] min-w-[220px]"
+            widthExpanded="w-full"
             collapseButtonLabel="Riwayat"
             collapseButtonIcon={<History className="w-4 h-4 text-gray-500" />}
             tabs={[{ id: 'riwayat', label: 'Riwayat', icon: <History className="w-3.5 h-3.5" /> }]}

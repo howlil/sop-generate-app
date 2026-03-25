@@ -83,7 +83,10 @@ export function getInitialSopDetailProsedurRows(): ProsedurRow[] {
 
 /** Daftar pelaksana (implementers) untuk diagram — dari master Pelaksana SOP (CRUD). */
 export function getInitialSopDetailImplementers(): { id: string; name: string }[] {
-  return getPelaksanaList().map((p) => ({ id: p.id, name: p.namaLengkap }))
+  return getPelaksanaList().map((p) => ({
+    id: p.id,
+    name: p.namaLengkap?.trim() || p.id,
+  }))
 }
 
 /** Komentar seed untuk editor detail SOP (tim penyusun). */

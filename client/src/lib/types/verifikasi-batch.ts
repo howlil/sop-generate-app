@@ -18,7 +18,11 @@ export interface SOPItem {
   rekomendasi?: string
 }
 
-/** Satu batch verifikasi evaluasi per OPD (daftar SOP + BA + TTD). */
+/**
+ * Satu batch verifikasi evaluasi per OPD (daftar SOP + BA + TTE).
+ * Verifikasi Berita Acara: (1) Biro — `isVerified` + `tanggalVerifikasi`, (2) Koordinator — `isSignedByKoordinator` + `tanggalTTDBaByKoordinator`.
+ * Pengesahan (SOP berlaku) hanya Kepala OPD — bukan kolom di batch ini.
+ */
 export interface VerifikasiBatch {
   id: string
   jenis: 'Inisiasi Biro' | 'Request OPD'
@@ -28,12 +32,14 @@ export interface VerifikasiBatch {
   status: StatusEvaluasi
   catatan: string
   tanggalEvaluasi?: string
+  /** Langkah verifikasi BA oleh Biro Organisasi (TTE). */
   isVerified?: boolean
   /** Nama evaluator / tim evaluasi yang mengerjakan batch ini. */
   timEvaluasi?: string
   nomorBA?: string
+  /** Tanggal verifikasi BA oleh Biro. */
   tanggalVerifikasi?: string
-  /** Setelah Biro TTD BA, Koordinator Tim Penyusun menandatangani BA (milik OPD tersebut). Setelah ini Kepala OPD boleh mengesahkan masing-masing SOP. */
+  /** Langkah verifikasi BA oleh Koordinator Tim Penyusun (setelah Biro). Setelah ini Kepala OPD boleh pengesahan per SOP. */
   isSignedByKoordinator?: boolean
   tanggalTTDBaByKoordinator?: string
   namaBiro?: string

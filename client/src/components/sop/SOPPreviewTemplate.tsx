@@ -67,9 +67,19 @@ export function SOPPreviewTemplate({
   const activeTab = controlledActiveTab ?? internalActiveTab
   const setActiveTab = onActiveTabChange ?? setInternalActiveTab
 
+  // Defensive normalization: persisted/legacy data may contain empty implementer names.
+  const safeImplementers = useMemo(
+    () =>
+      (implementers ?? []).map((impl, index) => ({
+        id: impl?.id ?? `impl-${index + 1}`,
+        name: (impl?.name ?? impl?.id ?? `Pelaksana ${index + 1}`).toString(),
+      })),
+    [implementers]
+  )
+
   const diagramSteps = useMemo(
-    () => rowsToSteps(prosedurRows, implementers),
-    [prosedurRows, implementers]
+    () => rowsToSteps(prosedurRows, safeImplementers),
+    [prosedurRows, safeImplementers]
   )
 
   const metadata: SOPHeaderInfoProps = {
@@ -116,14 +126,14 @@ export function SOPPreviewTemplate({
                   <SOPDiagramFlowchart
                     rows={prosedurRows}
                     steps={diagramSteps}
-                    implementers={implementers}
+                    implementers={safeImplementers}
                     pathLayoutSeed={pathLayoutSeed}
                   />
                 ) : (
                   <SOPDiagramBpmn
                     name={metadata.name}
                     steps={diagramSteps}
-                    implementers={implementers}
+                    implementers={safeImplementers}
                     pathLayoutSeed={pathLayoutSeed}
                   />
                 )}

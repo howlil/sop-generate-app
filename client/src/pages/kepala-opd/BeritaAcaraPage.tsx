@@ -2,7 +2,7 @@
  * Kepala OPD: Berita Acara — pengesahan SOP setelah verifikasi BA (Biro + Koordinator) selesai.
  */
 import { useMemo, useState, useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { FileText, Eye, List, Printer, Calendar, MessageSquare, FileCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -28,7 +28,10 @@ import { useOpdList } from '@/lib/data/opd'
 import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/lib/constants/routes'
+import { IA } from '@/lib/constants/pipeline-ia'
 import { Route } from '@/routes/kepala-opd.berita-acara'
+import { InfoCard } from '@/components/ui/info-card'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 import { verifyPin } from '@/lib/domain/tte'
 import { getTTEProfile, addTTESignature } from '@/lib/data/tte-storage'
 
@@ -122,6 +125,24 @@ export function BeritaAcaraPage() {
       .map((s) => s.id)
   }, [sopList, batchList, opdName, getSopStatusOverride])
 
+  const firstSignableSop = useMemo(
+    () =>
+      tteSop.canSign
+        ? sopList.find((s) => {
+            const st = (getSopStatusOverride(s.id) ?? s.status) as StatusSOP
+            return canKepalaOpdSignSop(st, batchList, opdName, s.id, s.nomor)
+          })
+        : null,
+    [tteSop.canSign, sopList, batchList, opdName, getSopStatusOverride]
+  )
+
+  const docTitle = useMemo(() => {
+    if (selectedBaId && selectedBa) return `Detail ${IA.BERITA_ACARA} — ${selectedBa.nomorBA ?? ''}`
+    return IA.NAV_KO_BA_PENGESAHAN
+  }, [selectedBaId, selectedBa])
+
+  useDocumentTitle(docTitle)
+
   const handlePinConfirm = (pin: string): boolean => {
     if (signingBulkIds && signingBulkIds.length > 0) {
       const profile = getTTEProfile('kepala-opd')
@@ -157,9 +178,9 @@ export function BeritaAcaraPage() {
   if (!selectedBaId && baMenungguTTD.length === 0) {
     return (
       <ListPageLayout
-        breadcrumb={[{ label: 'Berita Acara' }]}
-        title="Berita Acara"
-        description="BA OPD Anda yang sudah selesai diverifikasi (Biro + Koordinator). Pengesahan SOP hanya oleh Anda sebagai Kepala OPD."
+        breadcrumb={[{ label: IA.NAV_KO_BA_PENGESAHAN }]}
+        title={IA.NAV_KO_BA_PENGESAHAN}
+        description={`Dokumen ${IA.BERITA_ACARA} OPD Anda setelah ${IA.VERIFIKASI_BA_BIRO} dan ${IA.VERIFIKASI_BA_KOORDINATOR}. ${IA.PENGESAHAN_SOP} oleh Anda.`}
       >
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <EmptyState
@@ -177,10 +198,20 @@ export function BeritaAcaraPage() {
     return (
       <>
         <ListPageLayout
-          breadcrumb={[{ label: 'Berita Acara' }]}
-          title="Berita Acara"
-          description="BA dengan verifikasi lengkap (Biro + Koordinator). Lakukan pengesahan SOP dengan TTE."
+          breadcrumb={[{ label: IA.NAV_KO_BA_PENGESAHAN }]}
+          title={IA.NAV_KO_BA_PENGESAHAN}
+          description={`Daftar dokumen ${IA.BERITA_ACARA} dengan verifikasi lengkap. ${IA.PENGESAHAN_SOP} memakai TTE setelah profil siap.`}
         >
+          {baMenungguTTD.length > 0 && !tteSop.canSign && (
+            <InfoCard variant="info" className="mb-3">
+              <p className="text-blue-900">
+                <strong>TTE belum siap.</strong> Untuk {IA.PENGESAHAN_SOP} Anda perlu profil TTE aktif (email terverifikasi dan PIN).{' '}
+                <Link to={ROUTES.KEPALA_OPD.TTD} className="font-medium underline">
+                  Buka TTD Elektronik
+                </Link>
+              </p>
+            </InfoCard>
+          )}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <Table.Root>
               <Table.Table>
@@ -232,31 +263,31 @@ export function BeritaAcaraPage() {
     !!sopStatusForDisplay &&
     canKepalaOpdSignSop(sopStatusForDisplay, batchList, opdName, displaySop.id, displaySop.nomor) &&
     tteSop.canSign
-  const firstSignableSop = useMemo(
-    () =>
-      tteSop.canSign
-        ? sopList.find((s) => {
-            const st = (getSopStatusOverride(s.id) ?? s.status) as StatusSOP
-            return canKepalaOpdSignSop(st, batchList, opdName, s.id, s.nomor)
-          })
-        : null,
-    [tteSop.canSign, sopList, batchList, opdName, getSopStatusOverride]
-  )
   const hasAnySignableSop = !!firstSignableSop
 
   return (
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Berita Acara', to: ROUTES.KEPALA_OPD.BERITA_ACARA },
+          { label: IA.NAV_KO_BA_PENGESAHAN, to: ROUTES.KEPALA_OPD.BERITA_ACARA },
           { label: selectedBa?.nomorBA ?? 'Detail' },
         ]}
-        title={`Detail Berita Acara — ${selectedBa?.nomorBA ?? ''}`}
-        description="Pengesahan (Kepala OPD): pilih SOP di kiri, lalu Mengesahkan SOP dengan TTE — setelah verifikasi BA selesai."
+        title={`Detail ${IA.BERITA_ACARA} — ${selectedBa?.nomorBA ?? ''}`}
+        description={`${IA.PENGESAHAN_SOP}: pilih SOP di kiri, lalu tanda tangani dengan TTE — setelah ${IA.VERIFIKASI_BA_KOORDINATOR} selesai.`}
         backTo={ROUTES.KEPALA_OPD.BERITA_ACARA}
         backSize="icon"
         header={
           <>
+            {!tteSop.canSign && sopList.length > 0 && (
+              <InfoCard variant="info" className="mb-3">
+                <p className="text-blue-900">
+                  <strong>TTE belum siap.</strong> {IA.PENGESAHAN_SOP} membutuhkan profil TTE.{' '}
+                  <Link to={ROUTES.KEPALA_OPD.TTD} className="font-medium underline">
+                    Atur TTD Elektronik
+                  </Link>
+                </p>
+              </InfoCard>
+            )}
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
               <div className="flex items-center gap-2 flex-wrap">
@@ -331,7 +362,7 @@ export function BeritaAcaraPage() {
             side="left"
             collapsed={leftPanelCollapsed}
             onCollapsedChange={setLeftPanelCollapsed}
-            widthExpanded="w-[min(240px,20%)] min-w-[180px]"
+            widthExpanded="w-full"
             title="Daftar SOP"
             subtitle={`${sopList.length} dokumen`}
             collapseButtonLabel="Daftar"
@@ -411,7 +442,7 @@ export function BeritaAcaraPage() {
             side="right"
             collapsed={rightPanelCollapsed}
             onCollapsedChange={setRightPanelCollapsed}
-            widthExpanded="w-[min(320px,33%)] min-w-[220px]"
+            widthExpanded="w-full"
             title="Catatan & Rekomendasi"
             subtitle={effectiveSopId ? 'Riwayat evaluasi SOP' : undefined}
             collapseButtonLabel="Catatan"

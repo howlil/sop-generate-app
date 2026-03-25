@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, CircleUserRound, LogOut } from 'lucide-react'
 import { ROUTES } from '@/lib/constants/routes'
 import { Button } from '@/components/ui/button'
@@ -122,6 +122,16 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
                       )}
                     </div>
                     <span className="text-[11px] text-gray-500 leading-snug">{n.body}</span>
+                    {n.actionTo && (
+                      <Link
+                        to={n.actionTo}
+                        search={n.actionSearch}
+                        className="text-[11px] font-medium text-blue-600 hover:underline pt-0.5"
+                        onClick={() => markRead(n.id)}
+                      >
+                        Buka halaman terkait →
+                      </Link>
+                    )}
                     <span className="text-[10px] text-gray-400">
                       {new Date(n.createdAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}
                     </span>

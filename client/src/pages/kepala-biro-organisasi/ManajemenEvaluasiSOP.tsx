@@ -12,6 +12,8 @@ import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ROUTES } from '@/lib/constants/routes'
+import { IA } from '@/lib/constants/pipeline-ia'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 /** Tanggal terakhir untuk urutan (terbaru dulu). */
 function getSortDate(p: VerifikasiBatch): string {
@@ -64,6 +66,7 @@ function buildRowsOpdEvaluasi(
 }
 
 export function ManajemenEvaluasiSOP() {
+  useDocumentTitle(`${IA.NAV_BIRO_BATCH_BA} — Biro`)
   const navigate = useNavigate()
   const allOpds = useOpdList()
   const { list: batchList } = useVerifikasiBatchList()
@@ -108,9 +111,9 @@ export function ManajemenEvaluasiSOP() {
 
   return (
     <ListPageLayout
-      breadcrumb={[{ label: 'Verifikasi SOP' }]}
-      title="Verifikasi SOP"
-      description="Kelola batch evaluasi per OPD untuk verifikasi Berita Acara (1 BA = 1 evaluasi OPD). Tim Evaluasi evaluasi langsung dari Daftar SOP Evaluasi."
+      breadcrumb={[{ label: IA.NAV_BIRO_BATCH_BA }]}
+      title={IA.NAV_BIRO_BATCH_BA}
+      description={`${IA.BATCH_EVALUASI_OPD} per OPD. Buka detail untuk ${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}.`}
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari OPD atau SOP..."

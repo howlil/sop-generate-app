@@ -76,10 +76,11 @@ Tim Penyusun dapat menyusun SOP sesuai prosedur baku, dan Biro Organisasi dapat 
 
 **Domain:** Sistem pemerintahan Indonesia. UI dan komentar dalam Bahasa Indonesia. Roles: `biro-organisasi`, `tim-evaluasi`, `tim-penyusun`, `kepala-opd`.
 
-**TTE workflow sequence (wajib berurutan):**
-1. Biro Organisasi TTD Berita Acara → semua SOP dalam batch → `DIVERIFIKASI_BIRO_ORGANISASI`
-2. Koordinator Tim Penyusun TTD Berita Acara (hanya setelah Biro TTD)
-3. Kepala OPD TTD per SOP → SOP → `BERLAKU`
+**Berita Acara — verifikasi vs pengesahan (wajib membedakan istilah):**
+- **Verifikasi Berita Acara** hanya dilakukan oleh **Biro Organisasi** dan **Koordinator Tim Penyusun** (berurutan: Biro dulu, lalu Koordinator pada BA OPD yang sama). Biro memverifikasi batch → SOP dalam batch → `DIVERIFIKASI_BIRO_ORGANISASI`; Koordinator menyelesaikan langkah verifikasi BA berikutnya.
+- **Pengesahan Berita Acara** (dan pengesahan SOP menjadi berlaku dalam konteks BA) hanya **Kepala OPD** — bukan peran verifikasi di atas.
+
+**Urutan teknis setelah evaluasi selesai:** (1) verifikasi BA oleh Biro → (2) verifikasi BA oleh Koordinator → (3) pengesahan oleh Kepala OPD (per SOP → `BERLAKU` sesuai implementasi).
 
 ## Constraints
 
@@ -100,5 +101,17 @@ Tim Penyusun dapat menyusun SOP sesuai prosedur baku, dan Biro Organisasi dapat 
 | JWT stateless (opdId in token) | Filtering per OPD tanpa DB lookup per request | — Pending |
 | TTE: PIN hash client-side (demo) → server-side | Migrasi dari demo mode (PIN 12345) ke verifikasi server | — Pending |
 
+## Database normalization (3NF)
+
+Skema Prisma mengikuti normalisasi hingga 3NF: nilai berulang dipisah ke tabel anak/join; kunci komposit hanya pada tabel M:N murni. Bagian berikut mendokumentasikan **denormalisasi disengaja** atau pola yang disengaja agar perilaku bisnis/audit jelas.
+
+| Area | Keputusan | Alasan |
+|------|-----------|--------|
+| **AuditLog.aktorRole**, **TTESignature.role** | Disimpan di baris log/signature | Snapshot peran pada saat kejadian; tidak bergantung pada mutasi `User` kemudian. |
+| **SOP PIC** | `picUserId` (FK opsional ke `User`) + `picName` / `picNumber` / `picRole` opsional | Bila PIC adalah pengguna sistem, gunakan FK (3NF terhadap `User`). Bila PIC eksternal atau snapshot teks saja, isi kolom teks; tidak wajib mengisi keduanya. |
+| **TTEProfile** | Hanya field khusus TTE (`pinHash`, `TTERole`, token verifikasi, dll.) | `nip`, `jabatan`, `pangkat`, `nohp` tidak diduplikasi; single source of truth di `User` (join lewat `userId`). |
+| **institutionLines** (Text) | Satu kolom multi-baris | Tetap 1NF pada level penyimpanan; pemecahan ke tabel baris hanya jika domain memerlukan entitas terpisah per baris. |
+| **BA: verifikasi vs pengesahan** | Verifikasi = Biro + Koordinator; pengesahan = Kepala OPD saja | Memenuhi pemisahan peran; UI/API memakai istilah konsisten. |
+
 ---
-*Last updated: 2026-03-25 after initialization*
+*Last updated: 2026-03-25 — BA workflow (verifikasi / pengesahan) clarified*

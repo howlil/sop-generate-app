@@ -19,6 +19,9 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
+import { InfoCard } from '@/components/ui/info-card'
+import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { IA } from '@/lib/constants/pipeline-ia'
 
 const PRINT_DELAY_MS = 150
 
@@ -58,6 +61,8 @@ export function DetailVerifikasiBatch() {
   const riwayatOpd = opdId ? (riwayatEvaluasiOpd[opdId] ?? []) : []
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
 
+  useDocumentTitle(batch ? `${IA.BATCH_EVALUASI_OPD} — ${batch.opd}` : undefined)
+
   if (!batch) {
     return (
       <NotFoundWithBack
@@ -73,11 +78,11 @@ export function DetailVerifikasiBatch() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: 'Verifikasi SOP', to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
-          { label: 'Detail' },
+          { label: IA.NAV_BIRO_BATCH_BA, to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
+          { label: batch.opd },
         ]}
-        title="Detail Evaluasi SOP"
-        description="Verifikasi Berita Acara — langkah Biro Organisasi; Koordinator melanjutkan verifikasi; pengesahan oleh Kepala OPD."
+        title={`${IA.BATCH_EVALUASI_OPD} — ${batch.opd}`}
+        description={`${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}. Setelah ini: Koordinator → ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`}
         backTo={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}
         backSize="icon"
         header={
@@ -129,6 +134,18 @@ export function DetailVerifikasiBatch() {
                 {verifyBlockedReason}
               </p>
             )}
+            {canVerify && !tte.canSign && (
+              <InfoCard variant="info" className="mt-2">
+                <p className="text-blue-900">
+                  <strong>TTE belum siap.</strong> Anda perlu profil TTE Biro yang aktif sebelum{' '}
+                  <strong>{IA.VERIFIKASI_BA_BIRO}</strong> pada {IA.BERITA_ACARA}.{' '}
+                  <Link to={ROUTES.BIRO_ORGANISASI.TTD} className="font-medium underline">
+                    Buka TTD Elektronik
+                  </Link>{' '}
+                  untuk mengatur sertifikat/PIN.
+                </p>
+              </InfoCard>
+            )}
             <div className="pt-2 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-medium text-gray-900">{batch.opd}</span>
@@ -169,7 +186,7 @@ export function DetailVerifikasiBatch() {
             side="left"
             collapsed={leftPanelCollapsed}
             onCollapsedChange={setLeftPanelCollapsed}
-            widthExpanded="w-[min(240px,20%)] min-w-[180px]"
+            widthExpanded="w-full"
             title="Daftar SOP"
             subtitle={`${sopList.length} dokumen`}
             collapseButtonLabel="Daftar"
@@ -234,7 +251,7 @@ export function DetailVerifikasiBatch() {
             side="right"
             collapsed={rightPanelCollapsed}
             onCollapsedChange={setRightPanelCollapsed}
-            widthExpanded="w-[min(320px,33%)] min-w-[220px]"
+            widthExpanded="w-full"
             tabs={[
               { id: 'catatan', label: 'Catatan & Rekomendasi', icon: <MessageSquare className="w-3.5 h-3.5" /> },
               { id: 'riwayat', label: 'Riwayat Penilaian OPD', icon: <History className="w-3.5 h-3.5" /> },

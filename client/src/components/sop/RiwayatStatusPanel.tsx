@@ -15,8 +15,8 @@ const ACTION_LABEL: Record<string, string> = {
   MULAI_EVALUASI: 'Mulai evaluasi',
   KIRIM_HASIL_EVALUASI: 'Mengirim hasil evaluasi',
   REVISI_DARI_EVALUATOR: 'Dikembalikan untuk revisi',
-  VERIFIKASI_BATCH: 'Verifikasi batch Biro',
-  TTD_BA_KEPALA_OPD: 'TTD Berita Acara',
+  VERIFIKASI_BATCH: 'Verifikasi Berita Acara (Biro)',
+  TTD_BA_KEPALA_OPD: 'Pengesahan / TTD (Kepala OPD)',
   SAHKAN_SOP: 'Mengesahkan SOP',
   CABUT_SOP: 'Mencabut SOP',
 }

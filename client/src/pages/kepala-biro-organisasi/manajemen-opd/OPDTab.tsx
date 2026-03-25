@@ -78,8 +78,8 @@ export function OPDTab({
         <Table.Table>
           <thead>
             <Table.HeadRow>
-              <Table.Th>Nama OPD</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
+              <Table.Th className="w-full">Nama OPD</Table.Th>
+              <Table.Th className="w-0 whitespace-nowrap text-right">Aksi</Table.Th>
             </Table.HeadRow>
           </thead>
           <tbody>
@@ -93,8 +93,8 @@ export function OPDTab({
                     <p className="font-medium text-gray-900">{opd.name}</p>
                   </div>
                 </Table.Td>
-                <Table.Td className="text-center">
-                  <div className="flex items-center justify-center gap-1">
+                <Table.Td className="text-right whitespace-nowrap">
+                  <div className="flex items-center justify-end gap-1">
                     <IconActionButton
                       icon={Eye}
                       title="Lihat Detail"
