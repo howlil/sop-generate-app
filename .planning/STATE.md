@@ -64,7 +64,7 @@ Phase Progress: [>_______] 1/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
-| client-ssot | Client: align routes redirects & sidebar prefixes with `ROUTES`; `DEFAULT_SOP_STATUS`; `canEditSop` for tombol Selesai | 2026-03-25 | (pending) | Done | — |
+| client-ssot | Client: align routes redirects & sidebar prefixes with `ROUTES`; `DEFAULT_SOP_STATUS`; `canEditSop` for tombol Selesai | 2026-03-25 | e46c614 | Done | — |
 | 260325-cns | Fix BPMN dan flowchart path routing - paths berantakan tumpang tindih mengenai sisi shape rendering lambat | 2026-03-25 | 45416a2 | Needs Review | [260325-cns-fix-bpmn-dan-flowchart-path-routing-path](./quick/260325-cns-fix-bpmn-dan-flowchart-path-routing-path/) |
 
 ## Session Continuity
