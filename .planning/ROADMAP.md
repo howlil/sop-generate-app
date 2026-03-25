@@ -32,7 +32,10 @@
   2. All foreign key relationships are enforced -- inserting a SOP with a nonexistent opdId fails with a constraint error
   3. All enum fields (StatusSOP, AuditAction, StatusPeraturan, TTERole, etc.) accept only their defined values
   4. `prisma generate` produces a client that can be imported and used in NestJS modules without errors
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 01-01-PLAN.md — Remove Posts scaffold + write complete Prisma schema (18 models, 11 enums)
+- [ ] 01-02-PLAN.md — Run migration, generate Prisma client, compile check and enum spec
 
 ### Phase 2: Auth & Users
 **Goal**: Users can securely authenticate and the system enforces role-based access on every endpoint
@@ -120,7 +123,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database & Infrastructure | 0/? | Not started | - |
+| 1. Database & Infrastructure | 0/2 | Planned | - |
 | 2. Auth & Users | 0/? | Not started | - |
 | 3. OPD & Peraturan | 0/? | Not started | - |
 | 4. Tim Penyusun & Tim Evaluasi | 0/? | Not started | - |
