@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { PenLine, FileText, LayoutDashboard, FileCheck } from 'lucide-react'
+import { PenLine, FileText, FileCheck } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
@@ -12,14 +12,12 @@ export const Route = createFileRoute('/kepala-opd')({
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: ROUTES.KEPALA_OPD.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
   { to: ROUTES.KEPALA_OPD.PANTAU_SOP, label: 'Pantau SOP', icon: FileText },
   { to: ROUTES.KEPALA_OPD.BERITA_ACARA, label: 'Berita Acara & pengesahan', icon: FileCheck },
   { to: ROUTES.KEPALA_OPD.TTD, label: 'TTD Elektronik', icon: PenLine },
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.KEPALA_OPD.DASHBOARD]: [ROUTES.KEPALA_OPD.DASHBOARD],
   [ROUTES.KEPALA_OPD.TTD]: [ROUTES.KEPALA_OPD.TTD],
   [ROUTES.KEPALA_OPD.BERITA_ACARA]: [ROUTES.KEPALA_OPD.BERITA_ACARA],
   [ROUTES.KEPALA_OPD.PANTAU_SOP]: [

@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { BookOpen, FileSignature, FileText, LayoutDashboard, UserCog } from 'lucide-react'
+import { BookOpen, FileSignature, FileText, UserCog } from 'lucide-react'
 import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
@@ -12,7 +12,6 @@ export const Route = createFileRoute('/tim-penyusun')({
 })
 
 const sidebarItems: SidebarItem[] = [
-  { to: ROUTES.TIM_PENYUSUN.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
   { to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP, label: 'Manajemen SOP', icon: FileText },
   { to: ROUTES.TIM_PENYUSUN.PELAKSANA_SOP, label: 'Kelola Pelaksana SOP', icon: UserCog },
   { to: ROUTES.TIM_PENYUSUN.PERATURAN, label: 'Manajemen Peraturan', icon: BookOpen },
@@ -20,7 +19,6 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_PENYUSUN.DASHBOARD]: [ROUTES.TIM_PENYUSUN.DASHBOARD],
   [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: [
     ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
     routePathPrefixForMatch(ROUTES.TIM_PENYUSUN.DETAIL_SOP),
