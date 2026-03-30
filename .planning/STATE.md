@@ -1,5 +1,14 @@
 # State: Sistem Informasi SOP Biro Organisasi
 
+## Product Discovery
+
+**Status:** Complete — 2026-03-31
+**Artifacts:** `.planning/product/` (PERSONAS, PROBLEM, METRICS, PRIORITIZATION, MVP-PLAN, REQUIREMENTS)
+**North Star:** SOP mencapai status BERLAKU per bulan (target ≥15/bulan pada bulan ke-3 go-live)
+**MVP Type:** Functional MVP — backend NestJS + integrasi ke client UI prototype
+
+---
+
 ## Project Reference
 
 **Core Value:** Tim Penyusun dapat menyusun SOP sesuai prosedur baku, dan Biro Organisasi dapat mengevaluasi serta mengesahkan SOP secara digital dengan jejak audit yang lengkap.
