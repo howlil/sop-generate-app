@@ -8,10 +8,11 @@ generator client {
   jsModuleFormat = "cjs"
 }
 
-enum UserRole {
+enum PeranPengguna {
   BIRO_ORGANISASI
   TIM_EVALUASI
   TIM_PENYUSUN
+  KOORDINATOR_TIM_PENYUSUN
   KEPALA_OPD
 }
 
@@ -28,10 +29,32 @@ enum StatusSOP {
   DICABUT
 }
 
-enum ProsedurStepType {
+enum JenisLangkahProsedur {
   TERMINATOR
   TASK
   DECISION
+}
+
+// Unit durasi waktu pada langkah prosedur (dipakai UI sebagai singkatan: m/h/d/w/mo/y).
+enum SatuanWaktu {
+  m
+  h
+  d
+  w
+  mo
+  y
+}
+
+enum JenisDiagramSOP {
+  FLOWCHART
+  BPMN
+}
+
+/// Membedakan beberapa edge dari node yang sama ke node lain (mis. cabang Ya/Tidak).
+enum CabangDiagramEdge {
+  DEFAULT
+  YA
+  TIDAK
 }
 
 enum StatusPeraturan {
@@ -39,24 +62,26 @@ enum StatusPeraturan {
   DICABUT
 }
 
-enum TTERole {
+enum PeranTTE {
   KEPALA_OPD
   BIRO_ORGANISASI
-  TIM_PENYUSUN
+  KOORDINATOR_TIM_PENYUSUN
 }
 
-enum AuditAction {
+enum AksiAudit {
   BUAT_SOP
   SIMPAN_DRAFT
   SELESAI_PENYUSUNAN
   AJUKAN_EVALUASI
   MULAI_EVALUASI
+  KIRIM_KOMENTAR_EVALUASI
   KIRIM_HASIL_EVALUASI
-  VERIFIKASI_BATCH
-  TTD_BA_KEPALA_OPD
+  VERIFIKASI_PENGAJUAN_EVALUASI
+  TTD_BA_KOORDINATOR_TIM_PENYUSUN
   SAHKAN_SOP
   CABUT_SOP
   REVISI_DARI_EVALUATOR
+  SALIN_ISI_DARI_SOP
 }
 
 enum StatusTim {
@@ -64,419 +89,577 @@ enum StatusTim {
   NONAKTIF
 }
 
-enum RoleInternal {
-  KOORDINATOR
-  ANGGOTA
-}
-
-enum StatusEvaluasi {
-  AKTIF
-  SELESAI
-  TERVERIFIKASI
-}
-
-enum JenisBatch {
+enum JenisPengajuanEvaluasi {
   TERJADWAL
   MANDIRI
 }
 
-enum HasilEvaluasi {
-  SESUAI
-  REVISI_BIRO
+/// Status eksplisit lifecycle evaluasi — menggantikan inferensi dari beberapa nullable field.
+enum StatusPengajuanEvaluasi {
+  MENUNGGU_EVALUASI
+  SEDANG_DIEVALUASI
+  SELESAI_DIEVALUASI
+  DIVERIFIKASI_BIRO
+  DITANDATANGANI_KOORDINATOR
+  SELESAI
 }
 
-enum KomentarStatus {
+enum HasilEvaluasi {
+  SESUAI
+  TIDAK_SESUAI
+}
+
+enum StatusKomentar {
   OPEN
   RESOLVED
 }
 
-// Table 1: User
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      UserRole
+/// Menggantikan 4 tabel lampiran teks yang strukturnya identik (Peringatan, KualifikasiPelaksanaan,
+/// Peralatan, PencatatanPendataan). Jenis membedakan kategori konten.
+enum JenisLampiran {
+  PERINGATAN
+  KUALIFIKASI_PELAKSANAAN
+  PERALATAN
+  PENCATATAN_PENDATAAN
+}
+
+// ================= Master Data =================
+// Tabel 1: Pengguna
+// 
+// Constraint unik per OPD + role (via generated columns + unique index):
+// - Hanya 1 pengguna per OPD yang bisa ber-peran KEPALA_OPD
+// - Hanya 1 pengguna per OPD yang bisa ber-peran KOORDINATOR_TIM_PENYUSUN
+// - Role lain (BIRO_ORGANISASI, TIM_EVALUASI, TIM_PENYUSUN) tidak terpengaruh
+// Lihat migration: 20260331000000_add_unique_constraint_kepala_opd_dan_koordinator
+model Pengguna {
+  id        String        @id @default(uuid())
+  email     String        @unique
+  nama      String
+  kataSandi String
+  peran     PeranPengguna
   opdId     String?
-  nip       String?
-  jabatan   String?
-  pangkat   String?
-  nohp      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  nip       String
+  jabatan   String
+  pangkat   String
+  nohp      String
+  deletedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
-  opd              OPD?                 @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  timPenyusun      TimPenyusun[]
-  timEvaluasi      TimEvaluasiAnggota[]
-  tteProfile       TTEProfile?
-  tteSignatures    TTESignature[]
-  auditLogs        AuditLog[]
-  sopsCreated      SOP[]                @relation("SOPCreatedBy")
-  sopsEdited       SOP[]                @relation("SOPLastEditedBy")
-  sopsAsPic        SOP[]                @relation("SOPPicUser")
-  peraturanCreated Peraturan[]
-  batchesVerified  VerifikasiBatch[]    @relation("BatchVerifiedBy")
-  batchesSigned    VerifikasiBatch[]    @relation("BatchSignedByKoordinator")
-  evaluasiItems    EvaluasiItem[]       @relation("EvaluasiEvaluator")
-  komentars        Komentar[]
+  // Generated columns untuk unique constraint per OPD + role (di-set via migration)
+  // Hanya terisi jika peran = KEPALA_OPD / KOORDINATOR_TIM_PENYUSUN
+  kepalaOpdKey   String? @db.VarChar(191)
+  koordinatorKey String? @db.VarChar(191)
 
+  opd                             OPD?                 @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  keanggotaanTimPenyusun          AnggotaTimPenyusun[]
+  keanggotaanTimEvaluasi          AnggotaTimEvaluasi[]
+  kredensialTTE                   KredensialTTE?
+  tandaTangan                     RiwayatTandaTangan[]
+  logAudit                        LogAudit[]
+  detailSopDibuat                 DetailSOP[]          @relation("SOPDibuatOleh")
+  detailSopDiedit                 DetailSOP[]          @relation("SOPDieditOleh")
+  pengajuanEvaluasiDiverifikasi   PengajuanEvaluasi[]  @relation("PengajuanDiverifikasiOleh")
+  pengajuanEvaluasiDitandatangani PengajuanEvaluasi[]  @relation("PengajuanDitandatanganiOlehKoordinator")
+  tugasEvaluasi                   DetailEvaluasiSOP[]  @relation("EvaluasiEvaluator")
+  komentar                        Komentar[]
+
+  @@unique([opdId, kepalaOpdKey])
+  @@unique([opdId, koordinatorKey])
   @@index([opdId])
+  @@index([deletedAt])
+  @@map("Pengguna")
 }
 
-// Table 2: OPD
+// Tabel 2: OPD
 model OPD {
-  id        String   @id @default(uuid())
-  name      String
-  email     String?
-  phone     String?
-  kode      String   @unique
+  id        String    @id @default(uuid())
+  nama      String
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  pengguna           Pengguna[]
+  sop                SOP[]
+  pelaksana          Pelaksana[]
+  anggotaTimPenyusun AnggotaTimPenyusun[]
+  pengajuanEvaluasi  PengajuanEvaluasi[]
+}
+
+// Tabel 3: Peraturan
+model Peraturan {
+  id            String          @id @default(uuid())
+  namaPeraturan String
+  nomor         String
+  tahun         Int
+  tentang       String
+  status        StatusPeraturan @default(BERLAKU)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  dasarHukum DasarHukum[]
+
+  @@map("Peraturan")
+}
+
+// ================= Domain: Dokumen SOP (Header & Versi) =================
+// Tabel 4: SOP (header - identitas konsep)
+model SOP {
+  id    String @id @default(uuid())
+  opdId String
+  judul String
+
+  detailSops DetailSOP[]
+
+  opd       OPD      @relation(fields: [opdId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users           User[]
-  sops            SOP[]
-  pelaksana       Pelaksana[]
-  timPenyusun     TimPenyusun[]
-  verifikasiBatch VerifikasiBatch[]
+  @@index([opdId])
 }
 
-// Table 3: Peraturan
-model Peraturan {
-  id          String          @id @default(uuid())
-  nomor       String
-  tahun       Int
-  tentang     String          @db.Text
-  status      StatusPeraturan @default(BERLAKU)
-  version     Int             @default(1)
-  fileUrl     String?
-  createdById String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+// Tabel 4b: DetailSOP (versioned document)
+model DetailSOP {
+  id    String @id @default(uuid())
+  sopId String
 
-  createdBy User? @relation(fields: [createdById], references: [id], onDelete: Restrict)
-  sops      SOP[]
+  /// Versi `DetailSOP` yang menjadi sumber salinan isi (langkah, lampiran teks, sop terkait, diagram).
+  /// Null jika dokumen tidak berasal dari operasi salin. `onDelete: SetNull` jika sumber dihapus.
+  /// Pelaksana (`DetailSOPPelaksana` / `LangkahSOP.pelaksanaId`) tidak ikut FK ini — atur di layanan salin.
+  salinDariDetailSopId   String?
+  salinDariDetailSop     DetailSOP?  @relation("DetailSOPSalinan", fields: [salinDariDetailSopId], references: [id], onDelete: SetNull)
+  disalinKeDariSumberIni DetailSOP[] @relation("DetailSOPSalinan")
 
-  @@index([createdById])
-}
-
-// Table 4: SOP (SOPMetadata fields merged into SOP -- 1:1 normalization decision)
-// PIC: prefer picUserId (FK to User) when PIC is a system user; picName/picNumber/picRole for external or legacy snapshot text.
-model SOP {
-  id               String    @id @default(uuid())
-  nomorSOP         String?   @unique
-  judul            String
+  // metadata versi/detail
   status           StatusSOP @default(DRAFT)
-  opdId            String
-  peraturanId      String?
   versi            Int       @default(1)
-  picUserId        String?
-  picName          String?
-  picNumber        String?
-  picRole          String?
-  section          String?
-  warning          String?   @db.Text
-  institutionLines String?   @db.Text
-  createdById      String?
-  lastEditedById   String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  nomorSOP         String    @unique
+  tanggalPembuatan DateTime  @default(now())
+  tanggalRevisi    DateTime?
+  tanggalEfektif   DateTime?
+  logoInstansi     String
+  namaLembaga      String    @db.Text
 
-  opd          OPD        @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  peraturan    Peraturan? @relation(fields: [peraturanId], references: [id], onDelete: SetNull)
-  createdBy    User?      @relation("SOPCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
-  lastEditedBy User?      @relation("SOPLastEditedBy", fields: [lastEditedById], references: [id], onDelete: Restrict)
-  picUser      User?      @relation("SOPPicUser", fields: [picUserId], references: [id], onDelete: Restrict)
+  dibuatOlehId         String?
+  terakhirDieditOlehId String?
 
-  lawBasis                LawBasis[]
-  equipment               Equipment[]
-  recordData              RecordData[]
-  prosedurRows            ProsedurRow[]
-  evaluasiItems           EvaluasiItem[]
-  auditLogs               AuditLog[]
-  implementQualifications ImplementQualification[]
-  komentars               Komentar[]
-  tteSignatures           TTESignature[]
+  // component relations
+  tandaTanganSop RiwayatTandaTangan[]
+  lampiran       LampiranTeks[]
+  dasarHukum     DasarHukum[]
 
-  relatedSOPs   RelatedSOP[] @relation("SOPRelations")
-  relatedBySOPs RelatedSOP[] @relation("RelatedSOPRelations")
+  langkahSOP    LangkahSOP[]
+  diagramLayout DiagramLayout[]
+  swimlanes     DetailSOPPelaksana[]
 
-  @@index([opdId, status])
+  // SOP terkait (mengacu ke versi/detail SOP)
+  relasiSopKeluar SopTerkait[] @relation("RelasiSOP")
+  relasiSopMasuk  SopTerkait[] @relation("RelasiSOPTerkait")
+
+  // audit/flow relations
+  hasilEvaluasi DetailEvaluasiSOP[]
+  logAudit      LogAudit[]
+  komentar      Komentar[]
+
+  // relations
+  sop                SOP       @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  dibuatOleh         Pengguna? @relation("SOPDibuatOleh", fields: [dibuatOlehId], references: [id], onDelete: Restrict)
+  terakhirDieditOleh Pengguna? @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sopId, versi])
+  @@index([sopId, status])
+  @@index([status])
+  @@index([salinDariDetailSopId])
+  @@index([dibuatOlehId])
+  @@index([terakhirDieditOlehId])
+}
+
+// Tabel 4c: LampiranTeks — menggantikan Peringatan, KualifikasiPelaksanaan, Peralatan, PencatatanPendataan.
+// Keempat tabel tersebut identik secara struktur (id, sopDetailId, teks) sehingga digabung
+// dengan diskriminator `jenis`. Kurangi jumlah tabel, sederhanakan deep-copy, dan mudahkan migrasi.
+model LampiranTeks {
+  id          String        @id @default(uuid())
+  sopDetailId String
+  jenis       JenisLampiran
+  teks        String        @db.Text
+
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+
+  @@index([sopDetailId, jenis])
+  @@map("LampiranTeks")
+}
+
+// Tabel 5: DasarHukum
+model DasarHukum {
+  sopDetailId String
+  peraturanId String
+
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+  peraturan Peraturan @relation(fields: [peraturanId], references: [id], onDelete: Restrict)
+
+  @@id([sopDetailId, peraturanId])
   @@index([peraturanId])
-  @@index([createdById])
-  @@index([lastEditedById])
-  @@index([picUserId])
+  @@map("DasarHukum")
 }
 
-// Table 5: LawBasis
-model LawBasis {
-  id    String @id @default(uuid())
-  sopId String
-  text  String @db.Text
+// Tabel 8: SopTerkait
+model SopTerkait {
+  sopDetailId        String
+  sopTerkaitDetailId String
 
-  sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  sop        DetailSOP @relation("RelasiSOP", fields: [sopDetailId], references: [id], onDelete: Cascade)
+  sopTerkait DetailSOP @relation("RelasiSOPTerkait", fields: [sopTerkaitDetailId], references: [id], onDelete: Cascade)
 
-  @@index([sopId])
+  @@id([sopDetailId, sopTerkaitDetailId])
+  @@index([sopTerkaitDetailId])
+  @@map("SopTerkait")
 }
 
-// Table 6: Equipment
-model Equipment {
-  id    String @id @default(uuid())
-  sopId String
-  text  String @db.Text
+// Tabel 9: LangkahSOP (sebelumnya: BarisProsedur)
+model LangkahSOP {
+  id          String               @id @default(uuid())
+  sopDetailId String
+  kegiatan    String               @db.Text
+  jenis       JenisLangkahProsedur @default(TASK)
+  urutan      Int
 
-  sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  // mutu baku
+  kelengkapan String
+  keluaran    String
+  waktu       Int
+  satuanWaktu SatuanWaktu
 
-  @@index([sopId])
+  keterangan String @db.Text
+
+  // 1 langkah = 1 pelaksana (WAJIB - termasuk START/END)
+  pelaksanaId String
+
+  // hanya DECISION yang boleh punya kedua cabang terisi; TASK/TERMINATOR maksimal satu
+  langkahSelanjutnyaYaId    String?
+  langkahSelanjutnyaTidakId String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  sopDetail           DetailSOP    @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+  langkahYa           LangkahSOP?  @relation("LangkahYa", fields: [langkahSelanjutnyaYaId], references: [id], onDelete: SetNull)
+  langkahTidak        LangkahSOP?  @relation("LangkahTidak", fields: [langkahSelanjutnyaTidakId], references: [id], onDelete: SetNull)
+  langkahSebelumYa    LangkahSOP[] @relation("LangkahYa")
+  langkahSebelumTidak LangkahSOP[] @relation("LangkahTidak")
+
+  pelaksana           Pelaksana?            @relation(fields: [pelaksanaId], references: [id], onDelete: Restrict)
+  diagramNodePosition DiagramNodePosition[]
+  diagramEdgeKeluar   DiagramEdge[]         @relation("DiagramEdgeDari")
+  diagramEdgeMasuk    DiagramEdge[]         @relation("DiagramEdgeKe")
+
+  @@unique([sopDetailId, urutan])
+  @@index([sopDetailId, urutan])
+  @@index([pelaksanaId])
+  @@map("LangkahSOP")
 }
 
-// Table 7: RecordData
-model RecordData {
-  id    String @id @default(uuid())
-  sopId String
-  text  String @db.Text
+// ================= Domain: Diagram Layout SOP (persisted, relational) =================
+// Satu "paket" layout per DetailSOP + jenis diagram + versiLayout.
+// Ikut bundle salinan isi dari SOP lain: deep-copy `DiagramLayout` + `nodeOverrides` + `edgeOverrides` + `DiagramEdgePoint`
+// setelah `LangkahSOP` disalin dan ID langkah di-map ke ID baru (edge merujuk langkah).
+// Hybrid: child `nodeOverrides` & `edgeOverrides` hanya berisi delta manual; kosong = full auto di aplikasi.
+// Ukuran halaman diagram: **A4 landscape** (297×210 mm) adalah konvensi produk — tidak disimpan di DB;
+// pakai konstanta di UI/server + CSS print. Koordinat node dalam px; skala ke mm di renderer.
+model DiagramLayout {
+  id          String          @id @default(uuid())
+  sopDetailId String
+  jenis       JenisDiagramSOP
+  versiLayout Int             @default(1)
+  // Auto-layout parameter (untuk "Perbaiki diagram" & konsistensi render/print)
+  layoutSeed  Int             @default(0)
 
-  sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  /// Parameter tabel/kolom, style render, dan ukuran swimlane disimpan sebagai JSON delta.
+  /// Null berarti pakai default aplikasi. Hindari ALTER TABLE untuk setiap parameter baru.
+  /// Contoh isi: { "kegiatanWidth": 200, "flowchartArrow": "curved", "nominalBasicPageSteps": 10 }
+  layoutConfig Json?
 
-  @@index([sopId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+
+  nodeOverrides DiagramNodePosition[]
+  edgeOverrides DiagramEdge[]
+
+  // memungkinkan menyimpan beberapa snapshot layout per versi SOP + jenis diagram
+  @@unique([sopDetailId, jenis, versiLayout])
+  @@index([sopDetailId])
+  @@map("DiagramLayout")
 }
 
-// Table 8: RelatedSOP (self-referential M:M join table)
-model RelatedSOP {
-  sopId        String
-  relatedSopId String
+// Delta posisi node: baris hanya dibuat jika user memindahkan node dari hasil auto-layout.
+model DiagramNodePosition {
+  diagramLayoutId String
+  langkahSopId    String
 
-  sop        SOP @relation("SOPRelations", fields: [sopId], references: [id], onDelete: Cascade)
-  relatedSop SOP @relation("RelatedSOPRelations", fields: [relatedSopId], references: [id], onDelete: Cascade)
+  // koordinat layout (mis. px). Page dipakai untuk pagination diagram.
+  page      Int      @default(1)
+  x         Int
+  y         Int
+  updatedAt DateTime @updatedAt
 
-  @@id([sopId, relatedSopId])
+  diagramLayout DiagramLayout @relation(fields: [diagramLayoutId], references: [id], onDelete: Cascade)
+  langkahSOP    LangkahSOP    @relation(fields: [langkahSopId], references: [id], onDelete: Cascade)
+
+  @@id([diagramLayoutId, langkahSopId])
+  @@index([langkahSopId])
+  @@map("DiagramNodePosition")
 }
 
-// Table 9: ProsedurRow
-model ProsedurRow {
-  id              String           @id @default(uuid())
-  sopId           String
-  no              Int
-  kegiatan        String           @db.Text
-  type            ProsedurStepType @default(TASK)
-  mutuKelengkapan String?          @db.Text
-  mutuWaktu       String?
-  output          String?          @db.Text
-  keterangan      String?          @db.Text
-  time            Int?
-  timeUnit        String?
-  order           Int
-  nextStepYesId   String?
-  nextStepNoId    String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+// Delta routing edge: baris hanya dibuat jika user mengubah jalur panah; tanpa baris = auto-route.
+model DiagramEdge {
+  id              String @id @default(uuid())
+  diagramLayoutId String
+  dariLangkahId   String
+  keLangkahId     String
 
-  sop          SOP           @relation(fields: [sopId], references: [id], onDelete: Cascade)
-  nextStepYes  ProsedurRow?  @relation("YesStep", fields: [nextStepYesId], references: [id], onDelete: SetNull)
-  nextStepNo   ProsedurRow?  @relation("NoStep", fields: [nextStepNoId], references: [id], onDelete: SetNull)
-  prevYesSteps ProsedurRow[] @relation("YesStep")
-  prevNoSteps  ProsedurRow[] @relation("NoStep")
+  /// Membedakan edge ganda (mis. decision Ya vs Tidak) tanpa mengandalkan NULL di unique.
+  cabang    CabangDiagramEdge @default(DEFAULT)
+  // Teks label tampilan (opsional; BPMN / kustom)
+  labelTeks String?
+  labelX    Int?
+  labelY    Int?
 
-  pelaksana ProsedurRowPelaksana[]
+  diagramLayout DiagramLayout @relation(fields: [diagramLayoutId], references: [id], onDelete: Cascade)
+  dariLangkah   LangkahSOP    @relation("DiagramEdgeDari", fields: [dariLangkahId], references: [id], onDelete: Cascade)
+  keLangkah     LangkahSOP    @relation("DiagramEdgeKe", fields: [keLangkahId], references: [id], onDelete: Cascade)
 
-  @@index([sopId])
+  points DiagramEdgePoint[]
+
+  @@unique([diagramLayoutId, dariLangkahId, keLangkahId, cabang])
+  @@index([diagramLayoutId])
+  @@index([dariLangkahId])
+  @@index([keLangkahId])
+  @@map("DiagramEdge")
 }
 
-// Table 10: Pelaksana
+// Titik polyline untuk route/arrow; urut berdasarkan `urutan`.
+model DiagramEdgePoint {
+  diagramEdgeId String
+  urutan        Int
+  x             Int
+  y             Int
+
+  diagramEdge DiagramEdge @relation(fields: [diagramEdgeId], references: [id], onDelete: Cascade)
+
+  @@id([diagramEdgeId, urutan])
+  @@map("DiagramEdgePoint")
+}
+
+// Tabel 10: Pelaksana
 model Pelaksana {
-  id          String   @id @default(uuid())
-  namaLengkap String
-  nip         String?
-  jabatan     String?
-  pangkat     String?
-  email       String?
-  nohp        String?
-  deskripsi   String?  @db.Text
-  opdId       String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(uuid())
+  opdId         String
+  namaPelaksana String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  opd          OPD                    @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  prosedurRows ProsedurRowPelaksana[]
+  opd        OPD                  @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  langkahSOP LangkahSOP[]
+  sopDetails DetailSOPPelaksana[]
 
   @@index([opdId])
 }
 
-// Table 11: ProsedurRowPelaksana (M:M join)
-model ProsedurRowPelaksana {
-  prosedurRowId String
-  pelaksanaId   String
+// Master list pelaksana per versi SOP (untuk kolom vertikal/swimlane)
+model DetailSOPPelaksana {
+  sopDetailId String
+  pelaksanaId String
+  urutan      Int    @default(0)
 
-  prosedurRow ProsedurRow @relation(fields: [prosedurRowId], references: [id], onDelete: Cascade)
-  pelaksana   Pelaksana   @relation(fields: [pelaksanaId], references: [id], onDelete: Restrict)
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+  pelaksana Pelaksana @relation(fields: [pelaksanaId], references: [id], onDelete: Restrict)
 
-  @@id([prosedurRowId, pelaksanaId])
+  @@id([sopDetailId, pelaksanaId])
+  @@index([pelaksanaId])
+  @@map("DetailSOPPelaksana")
 }
 
-// Table 12: TimPenyusun
-model TimPenyusun {
-  id               String       @id @default(uuid())
-  userId           String
-  opdId            String
-  status           StatusTim    @default(AKTIF)
-  roleInternal     RoleInternal @default(ANGGOTA)
-  tanggalBergabung DateTime     @default(now())
-  endedAt          DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
-  opd  OPD  @relation(fields: [opdId], references: [id], onDelete: Restrict)
-
-  @@index([userId])
-  @@index([opdId])
-}
-
-// Table 13: TimEvaluasiAnggota
-model TimEvaluasiAnggota {
+// ================= Domain: Workflow & Penugasan =================
+// Tabel 12: AnggotaTimPenyusun
+model AnggotaTimPenyusun {
   id               String    @id @default(uuid())
   userId           String
+  opdId            String
   status           StatusTim @default(AKTIF)
   tanggalBergabung DateTime  @default(now())
-  endedAt          DateTime?
+  berakhirPada     DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
+  opd  OPD      @relation(fields: [opdId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, opdId])
+  @@index([userId])
+  @@index([opdId])
+  @@map("TimPenyusun")
+}
+
+// Tabel 13: AnggotaTimEvaluasi
+model AnggotaTimEvaluasi {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  status           StatusTim @default(AKTIF)
+  tanggalBergabung DateTime  @default(now())
+  berakhirPada     DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([userId])
+  @@map("TimEvaluasiAnggota")
 }
 
-// Table 14: VerifikasiBatch -- verifikasi BA: Biro lalu Koordinator (isSignedByKoordinator); pengesahan SOP hanya Kepala OPD (bukan kolom di sini).
-model VerifikasiBatch {
-  id                        String         @id @default(uuid())
-  opdId                     String
-  jenis                     JenisBatch
-  status                    StatusEvaluasi @default(AKTIF)
-  catatan                   String?        @db.Text
-  nomorBA                   String?
-  tanggalRequest            DateTime?
-  tanggalEvaluasi           DateTime?
-  nilaiOPD                  Int?
-  verifiedByUserId          String?
-  signedByKoordinatorUserId String?
-  isSignedByKoordinator     Boolean        @default(false)
-  tanggalTTDBaByKoordinator DateTime?
-  createdAt                 DateTime       @default(now())
-  updatedAt                 DateTime       @updatedAt
+// Tabel 14: PengajuanEvaluasi
+model PengajuanEvaluasi {
+  id                                  String                  @id @default(uuid())
+  opdId                               String
+  jenis                               JenisPengajuanEvaluasi
+  status                              StatusPengajuanEvaluasi @default(MENUNGGU_EVALUASI)
+  catatan                             String?                 @db.Text
+  nomorBA                             String?
+  tanggalPermintaan                   DateTime?
+  tanggalEvaluasi                     DateTime?
+  nilaiOPD                            Int?
+  diverifikasiOlehUserId              String?
+  ditandatanganiOlehKoordinatorUserId String?
+  sudahDitandatanganiKoordinator      Boolean                 @default(false)
+  tanggalTTDBaKoordinator             DateTime?
+  /// Versi untuk optimistic locking — increment di setiap update status.
+  /// Service: UPDATE ... SET status = ?, version = version + 1 WHERE id = ? AND version = ?
+  version                             Int                     @default(0)
+  createdAt                           DateTime                @default(now())
+  updatedAt                           DateTime                @updatedAt
 
-  opd                     OPD            @relation(fields: [opdId], references: [id], onDelete: Restrict)
-  verifiedByUser          User?          @relation("BatchVerifiedBy", fields: [verifiedByUserId], references: [id], onDelete: Restrict)
-  signedByKoordinatorUser User?          @relation("BatchSignedByKoordinator", fields: [signedByKoordinatorUserId], references: [id], onDelete: Restrict)
-  evaluasiItems           EvaluasiItem[]
-  tteSignatures           TTESignature[]
+  opd                               OPD                  @relation(fields: [opdId], references: [id], onDelete: Restrict)
+  diverifikasiOlehUser              Pengguna?            @relation("PengajuanDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [id], onDelete: Restrict, map: "PengajuanEvaluasi__diverifikasiOlehUser_fkey")
+  ditandatanganiOlehKoordinatorUser Pengguna?            @relation("PengajuanDitandatanganiOlehKoordinator", fields: [ditandatanganiOlehKoordinatorUserId], references: [id], onDelete: Restrict, map: "PengajuanEvaluasi__ditandatanganiOlehKoordinatorUser_fkey")
+  detailEvaluasi                    DetailEvaluasiSOP[]
+  tandaTanganBa                     RiwayatTandaTangan[]
 
   @@index([opdId])
-  @@index([verifiedByUserId])
-  @@index([signedByKoordinatorUserId])
+  @@index([status])
+  @@index([jenis])
+  @@index([diverifikasiOlehUserId])
+  @@index([ditandatanganiOlehKoordinatorUserId])
+  @@map("PengajuanEvaluasi")
 }
 
-// Table 15: EvaluasiItem
-model EvaluasiItem {
+// Tabel 15: DetailEvaluasiSOP
+model DetailEvaluasiSOP {
+  id                  String         @id @default(uuid())
+  pengajuanEvaluasiId String
+  sopDetailId         String
+  evaluatorId         String
+  hasil               HasilEvaluasi?
+  catatan             String?        @db.Text
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  pengajuanEvaluasi PengajuanEvaluasi @relation(fields: [pengajuanEvaluasiId], references: [id], onDelete: Restrict)
+  sopDetail         DetailSOP         @relation(fields: [sopDetailId], references: [id], onDelete: Restrict)
+  evaluator         Pengguna          @relation("EvaluasiEvaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
+
+  @@unique([pengajuanEvaluasiId, sopDetailId, evaluatorId])
+  @@index([pengajuanEvaluasiId])
+  @@index([sopDetailId])
+  @@index([evaluatorId])
+  @@index([evaluatorId, createdAt])
+  @@map("EvaluasiItem")
+}
+
+// ================= Domain: TTE (Tanda Tangan Elektronik) =================
+// Tabel 16: KredensialTTE — kredensial/setup awal untuk bisa TTE
+model KredensialTTE {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  hashPin            String
+  emailTerverifikasi Boolean   @default(false)
+  peran              PeranTTE
+  tokenVerifikasi    String?
+  tokenExpiry        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user Pengguna @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("ProfilTTE")
+}
+
+// Tabel 17: RiwayatTandaTangan — log/history setiap kali TTE dilakukan
+// Invariant: tepat satu dari sopDetailId / pengajuanEvaluasiId harus diisi (XOR).
+// Enforce di service layer; tambahkan CHECK constraint via raw migration di MySQL 8.0.16+:
+//   ALTER TABLE TandaTanganTTE ADD CONSTRAINT chk_tte_xor
+//     CHECK ((sopDetailId IS NULL) != (pengajuanEvaluasiId IS NULL));
+model RiwayatTandaTangan {
+  id                  String   @id @default(uuid())
+  userId              String
+  peran               PeranTTE
+  nomorDokumen        String
+  jenisDokumen        String
+  judulDokumen        String
+  hashDokumen         String
+  sopDetailId         String?
+  pengajuanEvaluasiId String?
+  ditandatanganiPada  DateTime @default(now())
+
+  user              Pengguna           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  sopDetail         DetailSOP?         @relation(fields: [sopDetailId], references: [id], onDelete: Restrict)
+  pengajuanEvaluasi PengajuanEvaluasi? @relation(fields: [pengajuanEvaluasiId], references: [id], onDelete: Restrict)
+
+  @@unique([sopDetailId, peran])
+  @@unique([pengajuanEvaluasiId, peran])
+  @@index([userId])
+  @@index([sopDetailId])
+  @@index([pengajuanEvaluasiId])
+  @@index([hashDokumen])
+  @@map("TandaTanganTTE")
+}
+
+// ================= Domain: Audit & Kolaborasi =================
+// Tabel 18: LogAudit
+model LogAudit {
+  id            String        @id @default(uuid())
+  sopDetailId   String
+  aksi          AksiAudit
+  aktorId       String
+  peranAktor    PeranPengguna
+  statusSebelum StatusSOP?
+  statusSesudah StatusSOP
+  keterangan    String?       @db.Text
+  createdAt     DateTime      @default(now())
+
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+  aktor     Pengguna  @relation(fields: [aktorId], references: [id], onDelete: Restrict)
+
+  @@index([sopDetailId, createdAt])
+  @@index([aktorId, createdAt])
+  @@map("LogAudit")
+}
+
+// Tabel 20: Komentar
+model Komentar {
   id          String         @id @default(uuid())
-  batchId     String
-  sopId       String
-  evaluatorId String
-  hasil       HasilEvaluasi?
-  catatan     String?        @db.Text
-  rekomendasi String?        @db.Text
+  sopDetailId String
+  userId      String
+  isi         String         @db.Text
+  /// Bagian/langkah SOP yang dikomentari (opsional; mis. "LangkahSOP:uuid" atau nama seksi).
+  status      StatusKomentar @default(OPEN)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  batch     VerifikasiBatch @relation(fields: [batchId], references: [id], onDelete: Restrict)
-  sop       SOP             @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  evaluator User            @relation("EvaluasiEvaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+  user      Pengguna  @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  @@index([batchId])
-  @@index([sopId])
-  @@index([evaluatorId])
-}
-
-// Table 16: TTEProfile -- identity fields (nip, jabatan, pangkat, nohp) live on User only (3NF single source of truth).
-model TTEProfile {
-  id                String   @id @default(uuid())
-  userId            String   @unique
-  pinHash           String
-  emailVerified     Boolean  @default(false)
-  role              TTERole
-  verificationToken String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
-}
-
-// Table 17: TTESignature
-model TTESignature {
-  id            String   @id @default(uuid())
-  userId        String
-  role          TTERole
-  documentId    String
-  documentLabel String
-  referenceId   String
-  documentHash  String
-  sopId         String?
-  batchId       String?
-  signedAt      DateTime @default(now())
-
-  user  User             @relation(fields: [userId], references: [id], onDelete: Restrict)
-  sop   SOP?             @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  batch VerifikasiBatch? @relation(fields: [batchId], references: [id], onDelete: Restrict)
-
-  @@index([userId])
-  @@index([sopId])
-  @@index([batchId])
-}
-
-// Table 18: AuditLog
-model AuditLog {
-  id            String      @id @default(uuid())
-  sopId         String
-  action        AuditAction
-  aktorId       String
-  aktorRole     UserRole
-  statusSebelum StatusSOP?
-  statusSesudah StatusSOP
-  keterangan    String?     @db.Text
-  createdAt     DateTime    @default(now())
-
-  sop   SOP  @relation(fields: [sopId], references: [id], onDelete: Restrict)
-  aktor User @relation(fields: [aktorId], references: [id], onDelete: Restrict)
-
-  @@index([sopId])
-  @@index([aktorId])
-}
-
-// Table 19: ImplementQualification
-model ImplementQualification {
-  id    String @id @default(uuid())
-  sopId String
-  text  String @db.Text
-
-  sop SOP @relation(fields: [sopId], references: [id], onDelete: Cascade)
-
-  @@index([sopId])
-}
-
-// Table 20: Komentar
-model Komentar {
-  id        String         @id @default(uuid())
-  sopId     String
-  userId    String
-  role      String
-  isi       String         @db.Text
-  bagian    String?
-  status    KomentarStatus @default(OPEN)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  sop  SOP  @relation(fields: [sopId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
-
-  @@index([sopId])
+  @@index([sopDetailId, status, createdAt])
   @@index([userId])
 }

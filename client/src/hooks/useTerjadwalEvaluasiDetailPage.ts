@@ -8,7 +8,7 @@ import {
 } from '@/lib/domain/sop-status'
 import { useVerifikasiBatchDetail, useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
+import type { VerifikasiBatch } from '@/lib/types/terjadwal-evaluasi'
 import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import { useSopStatusStore } from '@/lib/stores/sop-status-store'
 
@@ -24,8 +24,8 @@ export interface UseVerifikasiBatchDetailResult {
 }
 
 /**
- * Hook untuk halaman detail Verifikasi SOP (Biro): satu batch + langkah verifikasi Berita Acara (peran Biro).
- * Saat verifikasi berhasil: batch jadi Terverifikasi + semua SOP di batch status → Diverifikasi Biro Organisasi.
+ * Hook untuk halaman detail Verifikasi SOP (Biro): satu terjadwal + langkah verifikasi Berita Acara (peran Biro).
+ * Saat verifikasi berhasil: terjadwal jadi Terverifikasi + semua SOP di terjadwal status → Diverifikasi Biro Organisasi.
  * Pengesahan dilakukan hanya oleh Kepala OPD (halaman terpisah).
  */
 export function useVerifikasiBatchDetailPage(id: string | undefined): UseVerifikasiBatchDetailResult {

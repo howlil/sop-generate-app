@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
-import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
-import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
+import type { PengajuanEvaluasi } from '@/lib/types/pengajuan-evaluasi'
+import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
 import { useOpdList } from '@/lib/data/opd'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -16,13 +16,13 @@ import { IA } from '@/lib/constants/pipeline-ia'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 /** Tanggal terakhir untuk urutan (terbaru dulu). */
-function getSortDate(p: VerifikasiBatch): string {
-  return p.tanggalVerifikasi ?? p.tanggalEvaluasi ?? p.tanggalRequest ?? ''
+function getSortDate(p: PengajuanEvaluasi): string {
+  return p.createdAt
 }
 
 /** Dianggap "baru" jika tanggal masuk 7 hari terakhir. */
 const HARI_BARU = 7
-function isBatchBaru(p: VerifikasiBatch): boolean {
+function isBatchBaru(p: PengajuanEvaluasi): boolean {
   const dateStr = getSortDate(p)
   if (!dateStr) return false
   const date = new Date(dateStr)
@@ -36,22 +36,22 @@ export interface RowOpdEvaluasi {
   opdId: string
   opdNama: string
   opdKode: string
-  batchTerbaru: VerifikasiBatch | null
+  batchTerbaru: PengajuanEvaluasi | null
   jumlahSop: number
   isBaru: boolean
 }
 
-/** Satu baris per OPD: gabung semua OPD dengan batch verifikasi (jika ada). Match by nama OPD. */
+/** Satu baris per OPD: gabung semua OPD dengan pengajuan evaluasi (jika ada). Match by opdId. */
 function buildRowsOpdEvaluasi(
   allOpds: { id: string; name: string }[],
-  batchList: VerifikasiBatch[]
+  pengajuanList: PengajuanEvaluasi[]
 ): RowOpdEvaluasi[] {
   return allOpds.map((opd) => {
-    const batchesForOpd = batchList.filter((p) => p.opd === opd.name)
+    const pengajuansForOpd = pengajuanList.filter((p) => p.opdId === opd.id)
     const batchTerbaru =
-      batchesForOpd.length === 0
+      pengajuansForOpd.length === 0
         ? null
-        : batchesForOpd.sort((a, b) => (getSortDate(b) > getSortDate(a) ? 1 : -1))[0]
+        : pengajuansForOpd.sort((a, b) => (getSortDate(b) > getSortDate(a) ? 1 : -1))[0]
     const jumlahSop = batchTerbaru?.sopList?.length ?? 0
     const isBaru = batchTerbaru != null && isBatchBaru(batchTerbaru)
     return {
@@ -66,10 +66,10 @@ function buildRowsOpdEvaluasi(
 }
 
 export function ManajemenEvaluasiSOP() {
-  useDocumentTitle(`${IA.NAV_BIRO_BATCH_BA} — Biro`)
+  useDocumentTitle(`${IA.NAV_BIRO_EVALUASI_TERJADWAL} — Biro`)
   const navigate = useNavigate()
   const allOpds = useOpdList()
-  const { list: batchList } = useVerifikasiBatchList()
+  const { list: batchList } = usePengajuanEvaluasiList()
 
   const rowsByOpd = useMemo(
     () => buildRowsOpdEvaluasi(allOpds, batchList),
@@ -129,7 +129,7 @@ export function ManajemenEvaluasiSOP() {
             <Badge
               variant="secondary"
               className="bg-amber-100 text-amber-800 border-0 text-xs font-medium"
-              title="Batch verifikasi dengan tanggal masuk 7 hari terakhir"
+              title="Terjadwal verifikasi dengan tanggal masuk 7 hari terakhir"
             >
               {jumlahBaru} baru
             </Badge>
@@ -160,7 +160,7 @@ export function ManajemenEvaluasiSOP() {
                         <Badge
                           variant="secondary"
                           className="bg-amber-100 text-amber-800 border-0 text-[10px] font-medium shrink-0"
-                          title="Batch verifikasi dengan tanggal masuk 7 hari terakhir"
+                          title="Terjadwal verifikasi dengan tanggal masuk 7 hari terakhir"
                         >
                           Baru
                         </Badge>

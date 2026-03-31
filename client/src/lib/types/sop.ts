@@ -1,32 +1,34 @@
-
-
-/** Alur workflow SOP: Draft → Sedang Disusun → Siap Dievaluasi → Diajukan Evaluasi → Sedang Dievaluasi → (Sesuai: Siap Diverifikasi | Revisi Biro: Revisi dari Tim Evaluasi) → Siap Diverifikasi → Diverifikasi Biro Organisasi → Berlaku | Dicabut. */
+/** 
+ * Status lifecycle DetailSOP per ERD-DESKRIPSI.md
+ * Status lifecycle: DRAFT → SEDANG_DISUSUN → SIAP_DIEVALUASI → DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI → REVISI_DARI_TIM_EVALUASI → SIAP_DIVERIFIKASI → DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU / DICABUT
+ * BERLAKU dan DICABUT adalah terminal — tidak bisa diubah statusnya kecuali BERLAKU → DICABUT
+ */
 export type StatusSOP =
-  | 'Draft'
-  | 'Sedang Disusun'
-  | 'Siap Dievaluasi'
-  | 'Diajukan Evaluasi'
-  | 'Sedang Dievaluasi'
-  | 'Revisi dari Tim Evaluasi'
-  | 'Siap Diverifikasi'
-  | 'Diverifikasi Biro Organisasi'
-  | 'Berlaku'
-  | 'Dicabut'
+  | 'DRAFT'
+  | 'SEDANG_DISUSUN'
+  | 'SIAP_DIEVALUASI'
+  | 'DIAJUKAN_EVALUASI'
+  | 'SEDANG_DIEVALUASI'
+  | 'REVISI_DARI_TIM_EVALUASI'
+  | 'SIAP_DIVERIFIKASI'
+  | 'DIVERIFIKASI_BIRO_ORGANISASI'
+  | 'BERLAKU'
+  | 'DICABUT'
 
 /** Nilai status default untuk SOP baru / fallback UI (satu sumber kebenaran dengan domain). */
-export const DEFAULT_SOP_STATUS: StatusSOP = 'Draft'
+export const DEFAULT_SOP_STATUS: StatusSOP = 'DRAFT'
 
 export const STATUS_SOP_ALL: StatusSOP[] = [
-  'Draft',
-  'Sedang Disusun',
-  'Siap Dievaluasi',
-  'Diajukan Evaluasi',
-  'Sedang Dievaluasi',
-  'Revisi dari Tim Evaluasi',
-  'Siap Diverifikasi',
-  'Diverifikasi Biro Organisasi',
-  'Berlaku',
-  'Dicabut',
+  'DRAFT',
+  'SEDANG_DISUSUN',
+  'SIAP_DIEVALUASI',
+  'DIAJUKAN_EVALUASI',
+  'SEDANG_DIEVALUASI',
+  'REVISI_DARI_TIM_EVALUASI',
+  'SIAP_DIVERIFIKASI',
+  'DIVERIFIKASI_BIRO_ORGANISASI',
+  'BERLAKU',
+  'DICABUT',
 ]
 
 export const SOP_STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
@@ -34,7 +36,8 @@ export const SOP_STATUS_FILTER_OPTIONS: { value: string; label: string }[] = [
   ...STATUS_SOP_ALL.map((s) => ({ value: s, label: s })),
 ]
 
-export type StatusHasilEvaluasi = 'Sesuai' | 'Perlu Perbaikan' | 'Revisi Biro'
+/** Hasil evaluasi per ERD: SESUAI / TIDAK_SESUAI */
+export type StatusHasilEvaluasi = 'SESUAI' | 'TIDAK_SESUAI'
 
 export interface SOPDaftarItem {
   id: string

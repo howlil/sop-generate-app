@@ -210,8 +210,8 @@ export function DetailEvaluasiOPD() {
     toggleSubmitSelected,
     setSubmitCheckAll,
     handleSubmitAll,
-    batchSubmitError,
-    clearBatchSubmitError,
+    terjadwalSubmitError,
+    clearTerjadwalSubmitError,
   } = useEvaluasiSubmit({
     sedangDievaluasiList,
     namaEvaluator,
@@ -277,7 +277,7 @@ export function DetailEvaluasiOPD() {
             variant="outline"
             className="h-8 shrink-0 border-blue-300 text-blue-900"
             onClick={() => {
-              clearBatchSubmitError()
+              clearTerjadwalSubmitError()
               setIsSubmitOpen(true)
             }}
           >
@@ -311,7 +311,7 @@ export function DetailEvaluasiOPD() {
                   size="sm"
                   className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
                   onClick={() => {
-                    clearBatchSubmitError()
+                    clearTerjadwalSubmitError()
                     setIsSubmitOpen(true)
                   }}
                 >
@@ -413,7 +413,7 @@ export function DetailEvaluasiOPD() {
         open={isSubmitOpen}
         onOpenChange={(open) => {
           setIsSubmitOpen(open)
-          if (!open) clearBatchSubmitError()
+          if (!open) clearTerjadwalSubmitError()
         }}
         sedangDievaluasiList={sedangDievaluasiList}
         submitSelectedIds={submitSelectedIds}
@@ -422,7 +422,7 @@ export function DetailEvaluasiOPD() {
         isSubmitCheckAllIndeterminate={isSubmitCheckAllIndeterminate}
         setSubmitCheckAll={setSubmitCheckAll}
         onConfirm={handleSubmitAll}
-        batchSubmitError={batchSubmitError}
+        terjadwalSubmitError={terjadwalSubmitError}
       />
     </>
   )

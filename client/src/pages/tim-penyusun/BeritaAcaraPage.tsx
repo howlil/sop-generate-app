@@ -21,7 +21,7 @@ import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
+import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
 import { useToast } from '@/hooks/useUI'
 import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
@@ -39,9 +39,9 @@ export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
   const { id: searchId } = Route.useSearch()
   const { role } = useAppRole()
-  const { list: batchList, updateBatch } = useVerifikasiBatchList()
+  const { list: pengajuanList, updatePengajuan } = usePengajuanEvaluasiList()
   const { showToast } = useToast()
-  const [signingBatchId, setSigningBatchId] = useState<string | null>(null)
+  const [signingTerjadwalId, setSigningTerjadwalId] = useState<string | null>(null)
   const selectedBaId = searchId ?? null
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -52,16 +52,16 @@ export function BeritaAcaraKoordinatorPage() {
 
   /** BA yang sudah diverifikasi Biro, menunggu verifikasi Koordinator (bukan pengesahan Kepala OPD). */
   const baMenungguTTD = useMemo(
-    () => batchList.filter((p) => p.isVerified === true && p.isSignedByKoordinator !== true),
-    [batchList]
+    () => pengajuanList.filter((p) => p.status === 'DIVERIFIKASI_BIRO'),
+    [pengajuanList]
   )
 
   const selectedBa = useMemo(
     () =>
       selectedBaId
-        ? batchList.find((p) => p.id === selectedBaId) ?? null
+        ? pengajuanList.find((p) => p.id === selectedBaId) ?? null
         : null,
-    [batchList, selectedBaId]
+    [pengajuanList, selectedBaId]
   )
 
   const sopList = selectedBa?.sopList ?? []
@@ -74,19 +74,19 @@ export function BeritaAcaraKoordinatorPage() {
   }, [selectedBaId])
 
   useEffect(() => {
-    if (selectedBaId && selectedBa === null && batchList.length > 0) {
+    if (selectedBaId && selectedBa === null && pengajuanList.length > 0) {
       navigate({ to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, search: (prev) => ({ ...prev, id: undefined }) })
     }
-  }, [selectedBaId, selectedBa, batchList.length, navigate])
+  }, [selectedBaId, selectedBa, pengajuanList.length, navigate])
 
-  const signingBatch = useMemo(
-    () => (signingBatchId ? batchList.find((p) => p.id === signingBatchId) : null),
-    [batchList, signingBatchId]
+  const signingTerjadwal = useMemo(
+    () => (signingTerjadwalId ? pengajuanList.find((p) => p.id === signingTerjadwalId) : null),
+    [pengajuanList, signingTerjadwalId]
   )
 
   const tte = useTTESignature({
     role: 'tim-penyusun',
-    documentId: signingBatch ? `berita-acara-${signingBatch.id}` : undefined,
+    documentId: signingTerjadwal ? `berita-acara-${signingTerjadwal.id}` : undefined,
   })
 
   const docTitle = useMemo(() => {
@@ -99,31 +99,31 @@ export function BeritaAcaraKoordinatorPage() {
 
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
-      documentLabel: `Berita Acara ${signingBatch?.nomorBA ?? ''}`,
-      referenceId: signingBatch?.nomorBA ?? signingBatch?.id ?? '',
+      documentLabel: `Berita Acara ${signingTerjadwal?.nomorBA ?? ''}`,
+      referenceId: signingTerjadwal?.nomorBA ?? signingTerjadwal?.id ?? '',
     },
     () => {
-      if (!signingBatchId) return
+      if (!signingTerjadwalId) return
       const today = new Date().toISOString().split('T')[0]
-      updateBatch(signingBatchId, {
-        isSignedByKoordinator: true,
-        tanggalTTDBaByKoordinator: today,
+      updatePengajuan(signingTerjadwalId, {
+        status: 'DITANDATANGANI_KOORDINATOR',
+        ditandatanganiOlehKoordinatorUserId: 'current-user-id',
       })
       pushPipelineNotification({
         title: 'Berita Acara siap pengesahan',
-        body: signingBatch
-          ? `BA ${signingBatch.nomorBA ?? signingBatch.id} — ${signingBatch.opd}: Kepala OPD dapat mengesahkan SOP di menu Berita Acara & pengesahan.`
+        body: signingTerjadwal
+          ? `BA ${signingTerjadwal.nomorBA ?? signingTerjadwal.id} — ${signingTerjadwal.opd}: Kepala OPD dapat mengesahkan SOP di menu Berita Acara & pengesahan.`
           : 'Kepala OPD dapat melanjutkan pengesahan SOP.',
         targetRole: ROLES.KEPALA_OPD,
         actionTo: ROUTES.KEPALA_OPD.BERITA_ACARA,
       })
       showToast('Verifikasi Berita Acara (Koordinator) selesai. Kepala OPD dapat melakukan pengesahan per SOP.')
-      setSigningBatchId(null)
+      setSigningTerjadwalId(null)
     }
   )
 
-  const openSignDialog = (id: string) => setSigningBatchId(id)
-  const closeSignDialog = () => setSigningBatchId(null)
+  const openSignDialog = (id: string) => setSigningTerjadwalId(id)
+  const closeSignDialog = () => setSigningTerjadwalId(null)
 
   if (!canTimPenyusunRunCoordinatorActions(role)) {
     return (
@@ -227,7 +227,7 @@ export function BeritaAcaraKoordinatorPage() {
         </ListPageLayout>
 
         <PinVerificationDialog
-          open={signingBatchId !== null}
+          open={signingTerjadwalId !== null}
           onOpenChange={(open) => !open && closeSignDialog()}
           title="Verifikasi Berita Acara (Koordinator)"
           description="Masukkan PIN TTE untuk verifikasi BA (bukan pengesahan). Pengesahan SOP dilakukan Kepala OPD."
@@ -428,7 +428,7 @@ export function BeritaAcaraKoordinatorPage() {
       />
 
       <PinVerificationDialog
-        open={signingBatchId !== null}
+        open={signingTerjadwalId !== null}
         onOpenChange={(open) => !open && closeSignDialog()}
         title="Verifikasi Berita Acara (Koordinator)"
         description="Masukkan PIN TTE untuk verifikasi BA (bukan pengesahan). Pengesahan SOP dilakukan Kepala OPD."

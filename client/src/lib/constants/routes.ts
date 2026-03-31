@@ -26,7 +26,7 @@ export const ROUTES = {
     TIM_PENYUSUN: '/biro-organisasi/manajemen-tim-penyusun',
     TIM_EVALUASI: '/biro-organisasi/manajemen-tim-evaluasi',
     EVALUASI_SOP: '/biro-organisasi/manajemen-evaluasi-sop',
-    /** Grafik evaluasi tahunan: penilaian per batch (SOP + OPD). */
+    /** Grafik evaluasi tahunan: penilaian per terjadwal (SOP + OPD). */
     GRAFIK_EVALUASI_TAHUNAN: '/biro-organisasi/grafik-evaluasi-tahunan',
     DETAIL_EVALUASI: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id',
     /** Detail dokumen SOP (view only). Jika status Terverifikasi Biro, Kepala OPD dapat tanda tangan di halaman ini. */

@@ -13,6 +13,7 @@ import { ROLES } from '@/lib/constants/roles'
 import { ROUTES } from '@/lib/constants/routes'
 import { pushPipelineNotification } from '@/lib/stores/pipeline-notification-store'
 
+/** Error saat mengirim hasil evaluasi terjadwal. */
 export type EvaluasiBatchSubmitError =
   | { kind: 'none' }
   | { kind: 'no_selection' }
@@ -46,7 +47,7 @@ export function useEvaluasiSubmit({
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
   const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
-  const [batchSubmitError, setBatchSubmitError] = useState<EvaluasiBatchSubmitError>({ kind: 'none' })
+  const [terjadwalSubmitError, setTerjadwalSubmitError] = useState<EvaluasiBatchSubmitError>({ kind: 'none' })
 
   const isSubmitCheckAll =
     sedangDievaluasiList.length > 0 && submitSelectedIds.size === sedangDievaluasiList.length
@@ -75,7 +76,7 @@ export function useEvaluasiSubmit({
   const handleSubmitAll = useCallback(() => {
     const selected = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
     if (selected.length === 0) {
-      setBatchSubmitError({ kind: 'no_selection' })
+      setTerjadwalSubmitError({ kind: 'no_selection' })
       showToast('Pilih minimal satu SOP untuk dikirim.', 'error')
       return
     }
@@ -83,14 +84,14 @@ export function useEvaluasiSubmit({
       (item) => !isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
     )
     if (incomplete.length > 0) {
-      setBatchSubmitError({ kind: 'incomplete', items: incomplete })
+      setTerjadwalSubmitError({ kind: 'incomplete', items: incomplete })
       showToast(
         `Lengkapi komentar untuk SOP dengan hasil Revisi Biro: ${incomplete.map((i) => i.judul).join(', ')}`,
         'error'
       )
       return
     }
-    setBatchSubmitError({ kind: 'none' })
+    setTerjadwalSubmitError({ kind: 'none' })
     const toSubmit = selected
     const today = new Date().toISOString().slice(0, 10)
     for (const item of toSubmit) {
@@ -129,8 +130,8 @@ export function useEvaluasiSubmit({
     onSuccess,
   ])
 
-  const clearBatchSubmitError = useCallback(() => {
-    setBatchSubmitError({ kind: 'none' })
+  const clearTerjadwalSubmitError = useCallback(() => {
+    setTerjadwalSubmitError({ kind: 'none' })
   }, [])
 
   return {
@@ -141,7 +142,7 @@ export function useEvaluasiSubmit({
     toggleSubmitSelected,
     setSubmitCheckAll,
     handleSubmitAll,
-    batchSubmitError,
-    clearBatchSubmitError,
+    terjadwalSubmitError,
+    clearTerjadwalSubmitError,
   }
 }

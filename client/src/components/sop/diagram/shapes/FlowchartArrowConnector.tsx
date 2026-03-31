@@ -45,6 +45,48 @@ type BoundsRect = { left: number; top: number; right: number; bottom: number }
  */
 export type RoutedPathsRef = MutableRefObject<Map<string, OccupiedSegment[]>>
 
+/* ───────────────────────── OPTIMIZATION #3: Path Cache ─────────────────────────── */
+
+/** Cache untuk hasil routing agar tidak perlu route ulang jika data tidak berubah */
+interface CachedPath {
+  path: { x: number; y: number }[]
+  sSide: Side
+  eSide: Side
+  score: number
+  fromPosHash: string
+  toPosHash: string
+}
+
+const pathCache = new Map<string, CachedPath>()
+
+/** Generate cache key berdasarkan connection dan posisi */
+function makeCacheKey(
+  conn: FlowchartConnection,
+  fromPos: ElemPos,
+  toPos: ElemPos,
+  obstacles: ArrowObstacle[]
+): string {
+  // Hash posisi untuk deteksi perubahan
+  const fromHash = `${fromPos.left}-${fromPos.top}-${fromPos.width}-${fromPos.height}`
+  const toHash = `${toPos.left}-${toPos.top}-${toPos.width}-${toPos.height}`
+  return `${conn.id}|${fromHash}|${toHash}|${obstacles.length}`
+}
+
+/** Clear cache untuk connection tertentu */
+export function clearPathCache(connectionId?: string): void {
+  if (connectionId) {
+    // Clear specific connection
+    for (const key of pathCache.keys()) {
+      if (key.startsWith(`${connectionId}|`)) {
+        pathCache.delete(key)
+      }
+    }
+  } else {
+    // Clear all
+    pathCache.clear()
+  }
+}
+
 /* ───────────────────────── Props ─────────────────────────── */
 
 interface FlowchartArrowConnectorProps {
@@ -424,6 +466,43 @@ export function FlowchartArrowConnector({
     const toPos = getElementPosition(connection.to, container)
     if (!fromPos || !toPos) { setPathData(''); setLabelPos(null); return }
 
+    // OPTIMIZATION #3: Check cache first before routing
+    const cacheKey = makeCacheKey(connection, fromPos, toPos, obstacles)
+    const cached = pathCache.get(cacheKey)
+    
+    if (cached) {
+      // Use cached path - no need to re-route
+      setPathData(pathToD(cached.path))
+      
+      if (connection.label) {
+        const lp = manualLabelPosition ?? getFixedDistancePoint(
+          cached.path[0],
+          cached.path[cached.path.length - 1] ?? cached.path[0],
+          30,
+          19
+        )
+        setLabelPos(lp)
+        
+        if (onPathUpdated && !emittedRef.current) {
+          onPathUpdated({
+            connectionId: connection.id,
+            from: connection.from,
+            to: connection.to,
+            sSide: cached.sSide,
+            eSide: cached.eSide,
+            startPoint: { ...cached.path[0] },
+            endPoint: { ...cached.path[cached.path.length - 1] },
+            bendPoints: cached.path.slice(1, -1).map(p => ({ ...p })),
+            label: connection.label,
+            labelPosition: lp,
+          })
+          emittedRef.current = true
+        }
+      }
+      
+      return
+    }
+
     const isOpcConnection =
       connection.sourceType === 'flowchart-opc' || connection.targetType === 'flowchart-opc'
     const HEADER_OBSTACLE_PREFIX = 'sop-page-'
@@ -620,6 +699,16 @@ export function FlowchartArrowConnector({
 
     // Path terstruktur: buang titik koliner (redundan) agar path lebih rapi dan kurang ruwet
     bestPath = simplifyPathCollinear(bestPath)
+
+    // OPTIMIZATION #3: Save to cache after successful routing
+    pathCache.set(cacheKey, {
+      path: bestPath,
+      sSide: bestSides[0],
+      eSide: bestSides[1],
+      score: bestScore,
+      fromPosHash: `${fromPos.left}-${fromPos.top}-${fromPos.width}-${fromPos.height}`,
+      toPosHash: `${toPos.left}-${toPos.top}-${toPos.width}-${toPos.height}`,
+    })
 
     // Register this arrow's segments for other arrows to avoid
     if (routedSegmentsRef) {

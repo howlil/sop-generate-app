@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
-import { UserRole } from '../../../generated/prisma';
+import { PeranPengguna } from '../../../generated/prisma';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'john@example.com' })
@@ -11,41 +11,41 @@ export class CreateUserDto {
   @ApiProperty({ example: 'John Doe' })
   @IsString()
   @IsNotEmpty()
-  name: string;
+  nama: string;
 
   @ApiProperty({ example: 'password123' })
   @IsString()
   @IsNotEmpty()
   @MinLength(6)
-  password: string;
+  kataSandi: string;
 
-  @ApiProperty({ enum: UserRole, example: UserRole.TIM_PENYUSUN })
-  @IsEnum(UserRole)
+  @ApiProperty({ enum: PeranPengguna, example: PeranPengguna.TIM_PENYUSUN })
+  @IsEnum(PeranPengguna)
   @IsNotEmpty()
-  role: UserRole;
+  peran: PeranPengguna;
 
-  @ApiPropertyOptional({ example: 'uuid-of-opd' })
+  @ApiProperty({ example: 'uuid-of-opd' })
   @IsString()
-  @IsOptional()
-  opdId?: string;
+  @IsNotEmpty()
+  opdId: string;
 
   @ApiPropertyOptional({ example: '199001012020011001' })
   @IsString()
   @IsOptional()
-  nip?: string;
+  nip: string;
 
   @ApiPropertyOptional({ example: 'Kepala Subbagian' })
   @IsString()
   @IsOptional()
-  jabatan?: string;
+  jabatan: string;
 
   @ApiPropertyOptional({ example: 'Penata Muda' })
   @IsString()
   @IsOptional()
-  pangkat?: string;
+  pangkat: string;
 
   @ApiPropertyOptional({ example: '08123456789' })
   @IsString()
   @IsOptional()
-  nohp?: string;
+  nohp: string;
 }

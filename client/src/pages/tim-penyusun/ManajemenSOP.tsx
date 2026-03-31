@@ -240,7 +240,7 @@ export function ManajemenSOP() {
         <div className="mx-4 mb-3 flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
           <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           <span>
-            <span className="font-semibold">{activeBatchCount} SOP</span> sedang dalam proses evaluasi.
+            <span className="font-semibold">{activeBatchCount} SOP</span> sedang dalam evaluasi terjadwal.
             SOP tersebut tidak dapat diajukan ulang hingga Tim Evaluasi mengirim hasil.
           </span>
         </div>

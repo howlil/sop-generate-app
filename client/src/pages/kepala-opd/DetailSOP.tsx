@@ -33,7 +33,7 @@ import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
+import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/lib/domain/sop-status'
 import { getKepalaOPDOpdId } from '@/lib/data/role-display'
 import { useOpdList } from '@/lib/data/opd'
@@ -58,7 +58,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   } = props
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
-  const { list: batchList } = useVerifikasiBatchList()
+  const { list: pengajuanList } = usePengajuanEvaluasiList()
   const opdId = getKepalaOPDOpdId()
   const opds = useOpdList()
   const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
@@ -119,7 +119,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const effectiveBackTo = backTo ?? ROUTES.KEPALA_OPD.PANTAU_SOP
   const canShowSignButton =
     showSignButton &&
-    canKepalaOpdSignSop(sopStatus, batchList, opdName, id ?? '', metadata.number)
+    canKepalaOpdSignSop(sopStatus, pengajuanList, opdId, id ?? '')
   const needBaSignFirst =
     showSignButton &&
     isSopEligibleForSigning(sopStatus) &&

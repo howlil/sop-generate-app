@@ -82,6 +82,11 @@ Tim Penyusun dapat menyusun SOP sesuai prosedur baku, dan Biro Organisasi dapat 
 
 **Urutan teknis setelah evaluasi selesai:** (1) verifikasi BA oleh Biro → (2) verifikasi BA oleh Koordinator → (3) pengesahan oleh Kepala OPD (per SOP → `BERLAKU` sesuai implementasi).
 
+**Konvensi UI client terbaru (sinkronisasi lintas role):**
+- Istilah navigasi/halaman terkait BA dan pengesahan ditarik dari konstanta `IA` agar satu istilah dipakai konsisten.
+- Route TTE tersedia per role termasuk Tim Penyusun (`/tim-penyusun/ttd-elektronik`) untuk setup sebelum tanda tangan.
+- Aksi penyelesaian dokumen SOP oleh Tim Penyusun diarahkan ke status `Siap Dievaluasi`; pengajuan ulang tetap dilakukan dari halaman Manajemen SOP.
+
 ## Constraints
 
 - **Tech Stack**: NestJS + Prisma + MariaDB (server), React + TanStack Router (client) — tidak berubah
@@ -100,6 +105,8 @@ Tim Penyusun dapat menyusun SOP sesuai prosedur baku, dan Biro Organisasi dapat 
 | MariaDB (bukan PostgreSQL) | Infrastruktur existing instansi | — Pending |
 | JWT stateless (opdId in token) | Filtering per OPD tanpa DB lookup per request | — Pending |
 | TTE: PIN hash client-side (demo) → server-side | Migrasi dari demo mode (PIN 12345) ke verifikasi server | — Pending |
+| IA labels as client SSOT | Hindari nama langkah berbeda antar sidebar/judul/breadcrumb | Implemented in client |
+| Detail workspace panel standardization | Kurangi inkonsistensi lebar panel lintas role dan saat collapse | Implemented in client |
 
 ## Database normalization (3NF)
 

@@ -120,227 +120,249 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.UserScalarFieldEnum = {
+exports.Prisma.PenggunaScalarFieldEnum = {
   id: 'id',
   email: 'email',
-  name: 'name',
-  password: 'password',
-  role: 'role',
+  nama: 'nama',
+  kataSandi: 'kataSandi',
+  peran: 'peran',
   opdId: 'opdId',
   nip: 'nip',
   jabatan: 'jabatan',
   pangkat: 'pangkat',
   nohp: 'nohp',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  kepalaOpdKey: 'kepalaOpdKey',
+  koordinatorKey: 'koordinatorKey'
 };
 
 exports.Prisma.OPDScalarFieldEnum = {
   id: 'id',
-  name: 'name',
-  email: 'email',
-  phone: 'phone',
-  kode: 'kode',
+  nama: 'nama',
+  deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
 exports.Prisma.PeraturanScalarFieldEnum = {
   id: 'id',
+  namaPeraturan: 'namaPeraturan',
   nomor: 'nomor',
   tahun: 'tahun',
   tentang: 'tentang',
   status: 'status',
-  version: 'version',
-  fileUrl: 'fileUrl',
-  createdById: 'createdById',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SOPScalarFieldEnum = {
   id: 'id',
-  nomorSOP: 'nomorSOP',
-  judul: 'judul',
-  status: 'status',
   opdId: 'opdId',
-  peraturanId: 'peraturanId',
+  judul: 'judul',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DetailSOPScalarFieldEnum = {
+  id: 'id',
+  sopId: 'sopId',
+  salinDariDetailSopId: 'salinDariDetailSopId',
+  status: 'status',
   versi: 'versi',
-  picUserId: 'picUserId',
-  picName: 'picName',
-  picNumber: 'picNumber',
-  picRole: 'picRole',
-  section: 'section',
-  warning: 'warning',
-  institutionLines: 'institutionLines',
-  createdById: 'createdById',
-  lastEditedById: 'lastEditedById',
+  nomorSOP: 'nomorSOP',
+  tanggalPembuatan: 'tanggalPembuatan',
+  tanggalRevisi: 'tanggalRevisi',
+  tanggalEfektif: 'tanggalEfektif',
+  logoInstansi: 'logoInstansi',
+  namaLembaga: 'namaLembaga',
+  dibuatOlehId: 'dibuatOlehId',
+  terakhirDieditOlehId: 'terakhirDieditOlehId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.LawBasisScalarFieldEnum = {
+exports.Prisma.LampiranTeksScalarFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
-  text: 'text'
+  sopDetailId: 'sopDetailId',
+  jenis: 'jenis',
+  teks: 'teks'
 };
 
-exports.Prisma.EquipmentScalarFieldEnum = {
-  id: 'id',
-  sopId: 'sopId',
-  text: 'text'
+exports.Prisma.DasarHukumScalarFieldEnum = {
+  sopDetailId: 'sopDetailId',
+  peraturanId: 'peraturanId'
 };
 
-exports.Prisma.RecordDataScalarFieldEnum = {
-  id: 'id',
-  sopId: 'sopId',
-  text: 'text'
+exports.Prisma.SopTerkaitScalarFieldEnum = {
+  sopDetailId: 'sopDetailId',
+  sopTerkaitDetailId: 'sopTerkaitDetailId'
 };
 
-exports.Prisma.RelatedSOPScalarFieldEnum = {
-  sopId: 'sopId',
-  relatedSopId: 'relatedSopId'
-};
-
-exports.Prisma.ProsedurRowScalarFieldEnum = {
+exports.Prisma.LangkahSOPScalarFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
-  no: 'no',
+  sopDetailId: 'sopDetailId',
   kegiatan: 'kegiatan',
-  type: 'type',
-  mutuKelengkapan: 'mutuKelengkapan',
-  mutuWaktu: 'mutuWaktu',
-  output: 'output',
+  jenis: 'jenis',
+  urutan: 'urutan',
+  kelengkapan: 'kelengkapan',
+  keluaran: 'keluaran',
+  waktu: 'waktu',
+  satuanWaktu: 'satuanWaktu',
   keterangan: 'keterangan',
-  time: 'time',
-  timeUnit: 'timeUnit',
-  order: 'order',
-  nextStepYesId: 'nextStepYesId',
-  nextStepNoId: 'nextStepNoId',
+  pelaksanaId: 'pelaksanaId',
+  langkahSelanjutnyaYaId: 'langkahSelanjutnyaYaId',
+  langkahSelanjutnyaTidakId: 'langkahSelanjutnyaTidakId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DiagramLayoutScalarFieldEnum = {
+  id: 'id',
+  sopDetailId: 'sopDetailId',
+  jenis: 'jenis',
+  versiLayout: 'versiLayout',
+  layoutSeed: 'layoutSeed',
+  layoutConfig: 'layoutConfig',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DiagramNodePositionScalarFieldEnum = {
+  diagramLayoutId: 'diagramLayoutId',
+  langkahSopId: 'langkahSopId',
+  page: 'page',
+  x: 'x',
+  y: 'y',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DiagramEdgeScalarFieldEnum = {
+  id: 'id',
+  diagramLayoutId: 'diagramLayoutId',
+  dariLangkahId: 'dariLangkahId',
+  keLangkahId: 'keLangkahId',
+  cabang: 'cabang',
+  labelTeks: 'labelTeks',
+  labelX: 'labelX',
+  labelY: 'labelY'
+};
+
+exports.Prisma.DiagramEdgePointScalarFieldEnum = {
+  diagramEdgeId: 'diagramEdgeId',
+  urutan: 'urutan',
+  x: 'x',
+  y: 'y'
 };
 
 exports.Prisma.PelaksanaScalarFieldEnum = {
   id: 'id',
-  namaLengkap: 'namaLengkap',
-  nip: 'nip',
-  jabatan: 'jabatan',
-  pangkat: 'pangkat',
-  email: 'email',
-  nohp: 'nohp',
-  deskripsi: 'deskripsi',
   opdId: 'opdId',
+  namaPelaksana: 'namaPelaksana',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ProsedurRowPelaksanaScalarFieldEnum = {
-  prosedurRowId: 'prosedurRowId',
-  pelaksanaId: 'pelaksanaId'
+exports.Prisma.DetailSOPPelaksanaScalarFieldEnum = {
+  sopDetailId: 'sopDetailId',
+  pelaksanaId: 'pelaksanaId',
+  urutan: 'urutan'
 };
 
-exports.Prisma.TimPenyusunScalarFieldEnum = {
+exports.Prisma.AnggotaTimPenyusunScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   opdId: 'opdId',
   status: 'status',
-  roleInternal: 'roleInternal',
   tanggalBergabung: 'tanggalBergabung',
-  endedAt: 'endedAt',
+  berakhirPada: 'berakhirPada',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.TimEvaluasiAnggotaScalarFieldEnum = {
+exports.Prisma.AnggotaTimEvaluasiScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   status: 'status',
   tanggalBergabung: 'tanggalBergabung',
-  endedAt: 'endedAt',
+  berakhirPada: 'berakhirPada',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.VerifikasiBatchScalarFieldEnum = {
+exports.Prisma.PengajuanEvaluasiScalarFieldEnum = {
   id: 'id',
   opdId: 'opdId',
   jenis: 'jenis',
   status: 'status',
   catatan: 'catatan',
   nomorBA: 'nomorBA',
-  tanggalRequest: 'tanggalRequest',
+  tanggalPermintaan: 'tanggalPermintaan',
   tanggalEvaluasi: 'tanggalEvaluasi',
   nilaiOPD: 'nilaiOPD',
-  verifiedByUserId: 'verifiedByUserId',
-  signedByKoordinatorUserId: 'signedByKoordinatorUserId',
-  isSignedByKoordinator: 'isSignedByKoordinator',
-  tanggalTTDBaByKoordinator: 'tanggalTTDBaByKoordinator',
+  diverifikasiOlehUserId: 'diverifikasiOlehUserId',
+  ditandatanganiOlehKoordinatorUserId: 'ditandatanganiOlehKoordinatorUserId',
+  sudahDitandatanganiKoordinator: 'sudahDitandatanganiKoordinator',
+  tanggalTTDBaKoordinator: 'tanggalTTDBaKoordinator',
+  version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.EvaluasiItemScalarFieldEnum = {
+exports.Prisma.DetailEvaluasiSOPScalarFieldEnum = {
   id: 'id',
-  batchId: 'batchId',
-  sopId: 'sopId',
+  pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+  sopDetailId: 'sopDetailId',
   evaluatorId: 'evaluatorId',
   hasil: 'hasil',
   catatan: 'catatan',
-  rekomendasi: 'rekomendasi',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.TTEProfileScalarFieldEnum = {
+exports.Prisma.KredensialTTEScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  pinHash: 'pinHash',
-  emailVerified: 'emailVerified',
-  role: 'role',
-  verificationToken: 'verificationToken',
+  hashPin: 'hashPin',
+  emailTerverifikasi: 'emailTerverifikasi',
+  peran: 'peran',
+  tokenVerifikasi: 'tokenVerifikasi',
+  tokenExpiry: 'tokenExpiry',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.TTESignatureScalarFieldEnum = {
+exports.Prisma.RiwayatTandaTanganScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  role: 'role',
-  documentId: 'documentId',
-  documentLabel: 'documentLabel',
-  referenceId: 'referenceId',
-  documentHash: 'documentHash',
-  sopId: 'sopId',
-  batchId: 'batchId',
-  signedAt: 'signedAt'
+  peran: 'peran',
+  nomorDokumen: 'nomorDokumen',
+  jenisDokumen: 'jenisDokumen',
+  judulDokumen: 'judulDokumen',
+  hashDokumen: 'hashDokumen',
+  sopDetailId: 'sopDetailId',
+  pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+  ditandatanganiPada: 'ditandatanganiPada'
 };
 
-exports.Prisma.AuditLogScalarFieldEnum = {
+exports.Prisma.LogAuditScalarFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
-  action: 'action',
+  sopDetailId: 'sopDetailId',
+  aksi: 'aksi',
   aktorId: 'aktorId',
-  aktorRole: 'aktorRole',
+  peranAktor: 'peranAktor',
   statusSebelum: 'statusSebelum',
   statusSesudah: 'statusSesudah',
   keterangan: 'keterangan',
   createdAt: 'createdAt'
 };
 
-exports.Prisma.ImplementQualificationScalarFieldEnum = {
-  id: 'id',
-  sopId: 'sopId',
-  text: 'text'
-};
-
 exports.Prisma.KomentarScalarFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
+  sopDetailId: 'sopDetailId',
   userId: 'userId',
-  role: 'role',
   isi: 'isi',
-  bagian: 'bagian',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -351,181 +373,195 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
 
-exports.Prisma.UserOrderByRelevanceFieldEnum = {
+exports.Prisma.PenggunaOrderByRelevanceFieldEnum = {
   id: 'id',
   email: 'email',
-  name: 'name',
-  password: 'password',
+  nama: 'nama',
+  kataSandi: 'kataSandi',
   opdId: 'opdId',
   nip: 'nip',
   jabatan: 'jabatan',
   pangkat: 'pangkat',
-  nohp: 'nohp'
+  nohp: 'nohp',
+  kepalaOpdKey: 'kepalaOpdKey',
+  koordinatorKey: 'koordinatorKey'
 };
 
 exports.Prisma.OPDOrderByRelevanceFieldEnum = {
   id: 'id',
-  name: 'name',
-  email: 'email',
-  phone: 'phone',
-  kode: 'kode'
+  nama: 'nama'
 };
 
 exports.Prisma.PeraturanOrderByRelevanceFieldEnum = {
   id: 'id',
+  namaPeraturan: 'namaPeraturan',
   nomor: 'nomor',
-  tentang: 'tentang',
-  fileUrl: 'fileUrl',
-  createdById: 'createdById'
+  tentang: 'tentang'
 };
 
 exports.Prisma.SOPOrderByRelevanceFieldEnum = {
   id: 'id',
-  nomorSOP: 'nomorSOP',
-  judul: 'judul',
   opdId: 'opdId',
-  peraturanId: 'peraturanId',
-  picUserId: 'picUserId',
-  picName: 'picName',
-  picNumber: 'picNumber',
-  picRole: 'picRole',
-  section: 'section',
-  warning: 'warning',
-  institutionLines: 'institutionLines',
-  createdById: 'createdById',
-  lastEditedById: 'lastEditedById'
+  judul: 'judul'
 };
 
-exports.Prisma.LawBasisOrderByRelevanceFieldEnum = {
+exports.Prisma.DetailSOPOrderByRelevanceFieldEnum = {
   id: 'id',
   sopId: 'sopId',
-  text: 'text'
+  salinDariDetailSopId: 'salinDariDetailSopId',
+  nomorSOP: 'nomorSOP',
+  logoInstansi: 'logoInstansi',
+  namaLembaga: 'namaLembaga',
+  dibuatOlehId: 'dibuatOlehId',
+  terakhirDieditOlehId: 'terakhirDieditOlehId'
 };
 
-exports.Prisma.EquipmentOrderByRelevanceFieldEnum = {
+exports.Prisma.LampiranTeksOrderByRelevanceFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
-  text: 'text'
+  sopDetailId: 'sopDetailId',
+  teks: 'teks'
 };
 
-exports.Prisma.RecordDataOrderByRelevanceFieldEnum = {
+exports.Prisma.DasarHukumOrderByRelevanceFieldEnum = {
+  sopDetailId: 'sopDetailId',
+  peraturanId: 'peraturanId'
+};
+
+exports.Prisma.SopTerkaitOrderByRelevanceFieldEnum = {
+  sopDetailId: 'sopDetailId',
+  sopTerkaitDetailId: 'sopTerkaitDetailId'
+};
+
+exports.Prisma.LangkahSOPOrderByRelevanceFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
-  text: 'text'
-};
-
-exports.Prisma.RelatedSOPOrderByRelevanceFieldEnum = {
-  sopId: 'sopId',
-  relatedSopId: 'relatedSopId'
-};
-
-exports.Prisma.ProsedurRowOrderByRelevanceFieldEnum = {
-  id: 'id',
-  sopId: 'sopId',
+  sopDetailId: 'sopDetailId',
   kegiatan: 'kegiatan',
-  mutuKelengkapan: 'mutuKelengkapan',
-  mutuWaktu: 'mutuWaktu',
-  output: 'output',
+  kelengkapan: 'kelengkapan',
+  keluaran: 'keluaran',
   keterangan: 'keterangan',
-  timeUnit: 'timeUnit',
-  nextStepYesId: 'nextStepYesId',
-  nextStepNoId: 'nextStepNoId'
+  pelaksanaId: 'pelaksanaId',
+  langkahSelanjutnyaYaId: 'langkahSelanjutnyaYaId',
+  langkahSelanjutnyaTidakId: 'langkahSelanjutnyaTidakId'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.DiagramLayoutOrderByRelevanceFieldEnum = {
+  id: 'id',
+  sopDetailId: 'sopDetailId'
+};
+
+exports.Prisma.DiagramNodePositionOrderByRelevanceFieldEnum = {
+  diagramLayoutId: 'diagramLayoutId',
+  langkahSopId: 'langkahSopId'
+};
+
+exports.Prisma.DiagramEdgeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  diagramLayoutId: 'diagramLayoutId',
+  dariLangkahId: 'dariLangkahId',
+  keLangkahId: 'keLangkahId',
+  labelTeks: 'labelTeks'
+};
+
+exports.Prisma.DiagramEdgePointOrderByRelevanceFieldEnum = {
+  diagramEdgeId: 'diagramEdgeId'
 };
 
 exports.Prisma.PelaksanaOrderByRelevanceFieldEnum = {
   id: 'id',
-  namaLengkap: 'namaLengkap',
-  nip: 'nip',
-  jabatan: 'jabatan',
-  pangkat: 'pangkat',
-  email: 'email',
-  nohp: 'nohp',
-  deskripsi: 'deskripsi',
-  opdId: 'opdId'
+  opdId: 'opdId',
+  namaPelaksana: 'namaPelaksana'
 };
 
-exports.Prisma.ProsedurRowPelaksanaOrderByRelevanceFieldEnum = {
-  prosedurRowId: 'prosedurRowId',
+exports.Prisma.DetailSOPPelaksanaOrderByRelevanceFieldEnum = {
+  sopDetailId: 'sopDetailId',
   pelaksanaId: 'pelaksanaId'
 };
 
-exports.Prisma.TimPenyusunOrderByRelevanceFieldEnum = {
+exports.Prisma.AnggotaTimPenyusunOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
   opdId: 'opdId'
 };
 
-exports.Prisma.TimEvaluasiAnggotaOrderByRelevanceFieldEnum = {
+exports.Prisma.AnggotaTimEvaluasiOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId'
 };
 
-exports.Prisma.VerifikasiBatchOrderByRelevanceFieldEnum = {
+exports.Prisma.PengajuanEvaluasiOrderByRelevanceFieldEnum = {
   id: 'id',
   opdId: 'opdId',
   catatan: 'catatan',
   nomorBA: 'nomorBA',
-  verifiedByUserId: 'verifiedByUserId',
-  signedByKoordinatorUserId: 'signedByKoordinatorUserId'
+  diverifikasiOlehUserId: 'diverifikasiOlehUserId',
+  ditandatanganiOlehKoordinatorUserId: 'ditandatanganiOlehKoordinatorUserId'
 };
 
-exports.Prisma.EvaluasiItemOrderByRelevanceFieldEnum = {
+exports.Prisma.DetailEvaluasiSOPOrderByRelevanceFieldEnum = {
   id: 'id',
-  batchId: 'batchId',
-  sopId: 'sopId',
+  pengajuanEvaluasiId: 'pengajuanEvaluasiId',
+  sopDetailId: 'sopDetailId',
   evaluatorId: 'evaluatorId',
-  catatan: 'catatan',
-  rekomendasi: 'rekomendasi'
+  catatan: 'catatan'
 };
 
-exports.Prisma.TTEProfileOrderByRelevanceFieldEnum = {
+exports.Prisma.KredensialTTEOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
-  pinHash: 'pinHash',
-  verificationToken: 'verificationToken'
+  hashPin: 'hashPin',
+  tokenVerifikasi: 'tokenVerifikasi'
 };
 
-exports.Prisma.TTESignatureOrderByRelevanceFieldEnum = {
+exports.Prisma.RiwayatTandaTanganOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
-  documentId: 'documentId',
-  documentLabel: 'documentLabel',
-  referenceId: 'referenceId',
-  documentHash: 'documentHash',
-  sopId: 'sopId',
-  batchId: 'batchId'
+  nomorDokumen: 'nomorDokumen',
+  jenisDokumen: 'jenisDokumen',
+  judulDokumen: 'judulDokumen',
+  hashDokumen: 'hashDokumen',
+  sopDetailId: 'sopDetailId',
+  pengajuanEvaluasiId: 'pengajuanEvaluasiId'
 };
 
-exports.Prisma.AuditLogOrderByRelevanceFieldEnum = {
+exports.Prisma.LogAuditOrderByRelevanceFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
+  sopDetailId: 'sopDetailId',
   aktorId: 'aktorId',
   keterangan: 'keterangan'
 };
 
-exports.Prisma.ImplementQualificationOrderByRelevanceFieldEnum = {
-  id: 'id',
-  sopId: 'sopId',
-  text: 'text'
-};
-
 exports.Prisma.KomentarOrderByRelevanceFieldEnum = {
   id: 'id',
-  sopId: 'sopId',
+  sopDetailId: 'sopDetailId',
   userId: 'userId',
-  role: 'role',
-  isi: 'isi',
-  bagian: 'bagian'
+  isi: 'isi'
 };
-exports.UserRole = exports.$Enums.UserRole = {
+exports.PeranPengguna = exports.$Enums.PeranPengguna = {
   BIRO_ORGANISASI: 'BIRO_ORGANISASI',
   TIM_EVALUASI: 'TIM_EVALUASI',
   TIM_PENYUSUN: 'TIM_PENYUSUN',
+  KOORDINATOR_TIM_PENYUSUN: 'KOORDINATOR_TIM_PENYUSUN',
   KEPALA_OPD: 'KEPALA_OPD'
 };
 
@@ -547,10 +583,37 @@ exports.StatusSOP = exports.$Enums.StatusSOP = {
   DICABUT: 'DICABUT'
 };
 
-exports.ProsedurStepType = exports.$Enums.ProsedurStepType = {
+exports.JenisLampiran = exports.$Enums.JenisLampiran = {
+  PERINGATAN: 'PERINGATAN',
+  KUALIFIKASI_PELAKSANAAN: 'KUALIFIKASI_PELAKSANAAN',
+  PERALATAN: 'PERALATAN',
+  PENCATATAN_PENDATAAN: 'PENCATATAN_PENDATAAN'
+};
+
+exports.JenisLangkahProsedur = exports.$Enums.JenisLangkahProsedur = {
   TERMINATOR: 'TERMINATOR',
   TASK: 'TASK',
   DECISION: 'DECISION'
+};
+
+exports.SatuanWaktu = exports.$Enums.SatuanWaktu = {
+  m: 'm',
+  h: 'h',
+  d: 'd',
+  w: 'w',
+  mo: 'mo',
+  y: 'y'
+};
+
+exports.JenisDiagramSOP = exports.$Enums.JenisDiagramSOP = {
+  FLOWCHART: 'FLOWCHART',
+  BPMN: 'BPMN'
+};
+
+exports.CabangDiagramEdge = exports.$Enums.CabangDiagramEdge = {
+  DEFAULT: 'DEFAULT',
+  YA: 'YA',
+  TIDAK: 'TIDAK'
 };
 
 exports.StatusTim = exports.$Enums.StatusTim = {
@@ -558,72 +621,75 @@ exports.StatusTim = exports.$Enums.StatusTim = {
   NONAKTIF: 'NONAKTIF'
 };
 
-exports.RoleInternal = exports.$Enums.RoleInternal = {
-  KOORDINATOR: 'KOORDINATOR',
-  ANGGOTA: 'ANGGOTA'
-};
-
-exports.JenisBatch = exports.$Enums.JenisBatch = {
+exports.JenisPengajuanEvaluasi = exports.$Enums.JenisPengajuanEvaluasi = {
   TERJADWAL: 'TERJADWAL',
   MANDIRI: 'MANDIRI'
 };
 
-exports.StatusEvaluasi = exports.$Enums.StatusEvaluasi = {
-  AKTIF: 'AKTIF',
-  SELESAI: 'SELESAI',
-  TERVERIFIKASI: 'TERVERIFIKASI'
+exports.StatusPengajuanEvaluasi = exports.$Enums.StatusPengajuanEvaluasi = {
+  MENUNGGU_EVALUASI: 'MENUNGGU_EVALUASI',
+  SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
+  SELESAI_DIEVALUASI: 'SELESAI_DIEVALUASI',
+  DIVERIFIKASI_BIRO: 'DIVERIFIKASI_BIRO',
+  DITANDATANGANI_KOORDINATOR: 'DITANDATANGANI_KOORDINATOR',
+  SELESAI: 'SELESAI'
 };
 
 exports.HasilEvaluasi = exports.$Enums.HasilEvaluasi = {
   SESUAI: 'SESUAI',
-  REVISI_BIRO: 'REVISI_BIRO'
+  TIDAK_SESUAI: 'TIDAK_SESUAI'
 };
 
-exports.TTERole = exports.$Enums.TTERole = {
+exports.PeranTTE = exports.$Enums.PeranTTE = {
   KEPALA_OPD: 'KEPALA_OPD',
   BIRO_ORGANISASI: 'BIRO_ORGANISASI',
-  TIM_PENYUSUN: 'TIM_PENYUSUN'
+  KOORDINATOR_TIM_PENYUSUN: 'KOORDINATOR_TIM_PENYUSUN'
 };
 
-exports.AuditAction = exports.$Enums.AuditAction = {
+exports.AksiAudit = exports.$Enums.AksiAudit = {
   BUAT_SOP: 'BUAT_SOP',
   SIMPAN_DRAFT: 'SIMPAN_DRAFT',
   SELESAI_PENYUSUNAN: 'SELESAI_PENYUSUNAN',
   AJUKAN_EVALUASI: 'AJUKAN_EVALUASI',
   MULAI_EVALUASI: 'MULAI_EVALUASI',
+  KIRIM_KOMENTAR_EVALUASI: 'KIRIM_KOMENTAR_EVALUASI',
   KIRIM_HASIL_EVALUASI: 'KIRIM_HASIL_EVALUASI',
-  VERIFIKASI_BATCH: 'VERIFIKASI_BATCH',
-  TTD_BA_KEPALA_OPD: 'TTD_BA_KEPALA_OPD',
+  VERIFIKASI_PENGAJUAN_EVALUASI: 'VERIFIKASI_PENGAJUAN_EVALUASI',
+  TTD_BA_KOORDINATOR_TIM_PENYUSUN: 'TTD_BA_KOORDINATOR_TIM_PENYUSUN',
   SAHKAN_SOP: 'SAHKAN_SOP',
   CABUT_SOP: 'CABUT_SOP',
-  REVISI_DARI_EVALUATOR: 'REVISI_DARI_EVALUATOR'
+  REVISI_DARI_EVALUATOR: 'REVISI_DARI_EVALUATOR',
+  SALIN_ISI_DARI_SOP: 'SALIN_ISI_DARI_SOP'
 };
 
-exports.KomentarStatus = exports.$Enums.KomentarStatus = {
+exports.StatusKomentar = exports.$Enums.StatusKomentar = {
   OPEN: 'OPEN',
   RESOLVED: 'RESOLVED'
 };
 
 exports.Prisma.ModelName = {
-  User: 'User',
+  Pengguna: 'Pengguna',
   OPD: 'OPD',
   Peraturan: 'Peraturan',
   SOP: 'SOP',
-  LawBasis: 'LawBasis',
-  Equipment: 'Equipment',
-  RecordData: 'RecordData',
-  RelatedSOP: 'RelatedSOP',
-  ProsedurRow: 'ProsedurRow',
+  DetailSOP: 'DetailSOP',
+  LampiranTeks: 'LampiranTeks',
+  DasarHukum: 'DasarHukum',
+  SopTerkait: 'SopTerkait',
+  LangkahSOP: 'LangkahSOP',
+  DiagramLayout: 'DiagramLayout',
+  DiagramNodePosition: 'DiagramNodePosition',
+  DiagramEdge: 'DiagramEdge',
+  DiagramEdgePoint: 'DiagramEdgePoint',
   Pelaksana: 'Pelaksana',
-  ProsedurRowPelaksana: 'ProsedurRowPelaksana',
-  TimPenyusun: 'TimPenyusun',
-  TimEvaluasiAnggota: 'TimEvaluasiAnggota',
-  VerifikasiBatch: 'VerifikasiBatch',
-  EvaluasiItem: 'EvaluasiItem',
-  TTEProfile: 'TTEProfile',
-  TTESignature: 'TTESignature',
-  AuditLog: 'AuditLog',
-  ImplementQualification: 'ImplementQualification',
+  DetailSOPPelaksana: 'DetailSOPPelaksana',
+  AnggotaTimPenyusun: 'AnggotaTimPenyusun',
+  AnggotaTimEvaluasi: 'AnggotaTimEvaluasi',
+  PengajuanEvaluasi: 'PengajuanEvaluasi',
+  DetailEvaluasiSOP: 'DetailEvaluasiSOP',
+  KredensialTTE: 'KredensialTTE',
+  RiwayatTandaTangan: 'RiwayatTandaTangan',
+  LogAudit: 'LogAudit',
   Komentar: 'Komentar'
 };
 

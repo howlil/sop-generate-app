@@ -61,7 +61,11 @@ await expect(service.create(dto)).rejects.toThrow(ConflictException);
 - jsdom environment expected
 
 ### Test Files
-**Zero client test files exist** — no `*.test.ts` or `*.spec.ts` in `client/src/`.
+Client test baseline now exists:
+
+| File | Type | What it tests |
+|---|---|---|
+| `client/src/lib/domain/sop-evaluasi.test.ts` | Unit (Vitest) | Rule domain evaluasi SOP (`canAjukanEvaluasiSOP`, `canSelectSOPForEvaluasi`, `isSopInEvaluasiList`) |
 
 ### What Should Be Tested (but isn't)
 - Complex routing algorithms in `src/components/sop/diagram/logic/`:
@@ -71,6 +75,8 @@ await expect(service.create(dto)).rejects.toThrow(ConflictException);
 - Zustand store logic (create/update/delete in each store)
 - Domain pure functions in `src/lib/domain/` (TTE pin hash/verify, role, SOP status transitions)
 - Route guard `requireRoleBeforeLoad`
+- Hooks with branch logic (`useEvaluasiSubmit`, `useTTESignature`)
+- Responsive layout behavior in detail pages (`DetailWorkspace` + `CollapsibleSidePanel`)
 
 ## Running Tests
 
@@ -86,7 +92,7 @@ npm run test:e2e      # E2E tests
 ### Client
 ```bash
 cd client
-npm run test          # Vitest (no tests exist yet — will pass vacuously)
+npm run test          # Vitest
 ```
 
 ## Mocking Philosophy (Server)

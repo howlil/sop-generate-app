@@ -18,7 +18,7 @@ import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { useVerifikasiBatchList } from '@/hooks/useVerifikasiBatch'
+import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { canKepalaOpdSignSop } from '@/lib/domain/sop-status'
@@ -41,7 +41,7 @@ export function BeritaAcaraPage() {
   const opdId = getKepalaOPDOpdId()
   const opds = useOpdList()
   const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
-  const { list: batchList } = useVerifikasiBatchList()
+  const { list: pengajuanList } = usePengajuanEvaluasiList()
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const [signingSopId, setSigningSopId] = useState<string | null>(null)
@@ -55,8 +55,8 @@ export function BeritaAcaraPage() {
   const goToDetail = (baId: string) => navigate({ to: ROUTES.KEPALA_OPD.BERITA_ACARA, search: { id: baId } })
 
   const baMenungguTTD = useMemo(
-    () => batchList.filter((p) => p.isVerified === true && p.isSignedByKoordinator === true),
-    [batchList]
+    () => pengajuanList.filter((p) => p.status === 'DIVERIFIKASI_BIRO'),
+    [pengajuanList]
   )
 
   /** BA yang dipilih — hanya dari daftar BA yang boleh diakses (baMenungguTTD). */
@@ -70,13 +70,13 @@ export function BeritaAcaraPage() {
 
   /**
    * Redirect ke list jika URL berisi id BA yang tidak ada dalam baMenungguTTD.
-   * Hanya redirect setelah batchList selesai dimuat (batchList.length > 0 atau setelah init).
+   * Hanya redirect setelah pengajuanList selesai dimuat (pengajuanList.length > 0 atau setelah init).
    */
   useEffect(() => {
-    if (selectedBaId && selectedBa === null && batchList.length > 0) {
+    if (selectedBaId && selectedBa === null && pengajuanList.length > 0) {
       navigate({ to: ROUTES.KEPALA_OPD.BERITA_ACARA, search: { id: undefined } })
     }
-  }, [selectedBaId, selectedBa, batchList.length, navigate])
+  }, [selectedBaId, selectedBa, pengajuanList.length, navigate])
 
   const sopList = selectedBa?.sopList ?? []
   const firstSopId = sopList[0]?.id ?? null

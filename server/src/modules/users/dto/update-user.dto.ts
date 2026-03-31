@@ -10,11 +10,11 @@ export class UpdateUserDto {
   @ApiProperty({ example: 'John Doe', required: false })
   @IsString()
   @IsOptional()
-  name?: string;
+  nama?: string;
 
   @ApiProperty({ example: 'password123', required: false })
   @IsString()
   @IsOptional()
   @MinLength(6)
-  password?: string;
+  kataSandi?: string;
 }

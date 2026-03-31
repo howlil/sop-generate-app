@@ -29,8 +29,8 @@ export interface DetailEvaluasiOPDSubmitDialogProps {
   isSubmitCheckAllIndeterminate: boolean
   setSubmitCheckAll: (checked: boolean) => void
   onConfirm: () => void
-  /** Error validasi batch terakhir (ditampilkan di dalam dialog, bukan hanya toast). */
-  batchSubmitError?: EvaluasiBatchSubmitError
+  /** Error validasi terjadwal terakhir (ditampilkan di dalam dialog, bukan hanya toast). */
+  terjadwalSubmitError?: EvaluasiBatchSubmitError
 }
 
 export function DetailEvaluasiOPDSubmitDialog({
@@ -43,7 +43,7 @@ export function DetailEvaluasiOPDSubmitDialog({
   isSubmitCheckAllIndeterminate,
   setSubmitCheckAll,
   onConfirm,
-  batchSubmitError = { kind: 'none' },
+  terjadwalSubmitError = { kind: 'none' },
 }: DetailEvaluasiOPDSubmitDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,16 +52,16 @@ export function DetailEvaluasiOPDSubmitDialog({
           <DialogTitle className="text-sm">Kirim Hasil Evaluasi</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          {batchSubmitError.kind === 'no_selection' && (
+          {terjadwalSubmitError.kind === 'no_selection' && (
             <InfoCard variant="warning" className="border-red-200 bg-red-50 text-red-900">
               <p className="font-medium">Pilih minimal satu SOP di daftar centang.</p>
             </InfoCard>
           )}
-          {batchSubmitError.kind === 'incomplete' && batchSubmitError.items.length > 0 && (
+          {terjadwalSubmitError.kind === 'incomplete' && terjadwalSubmitError.items.length > 0 && (
             <InfoCard variant="warning" className="border-red-200 bg-red-50 text-red-900">
               <p className="font-medium mb-1.5">Lengkapi komentar untuk hasil Revisi Biro:</p>
               <ul className="list-disc pl-4 space-y-0.5">
-                {batchSubmitError.items.map((row) => (
+                {terjadwalSubmitError.items.map((row) => (
                   <li key={row.id}>
                     <span className="font-medium">{row.judul}</span>{' '}
                     <span className="text-red-800/90">({row.nomorSOP})</span>

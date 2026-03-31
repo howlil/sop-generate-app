@@ -1,5 +1,6 @@
 /**
- * Hook akses verifikasi batch — satu titik akses untuk UI.
+ * Hook akses terjadwal evaluasi — satu titik akses untuk UI.
+ * "VerifikasiBatch" tetap dipakai sebagai nama type, tapi UI menyebutnya "Terjadwal Evaluasi".
  */
 import { useState, useEffect, useCallback } from 'react'
 import {
@@ -7,9 +8,9 @@ import {
   getVerifikasiBatchList,
   subscribeVerifikasiBatch,
   updateVerifikasiBatch as updateVerifikasiBatchStore,
-} from '@/lib/stores/verifikasi-batch-store'
-import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
-import { initVerifikasiBatchFromSeed } from '@/lib/data/verifikasi-batch'
+} from '@/lib/stores/terjadwal-evaluasi-store'
+import type { VerifikasiBatch } from '@/lib/types/terjadwal-evaluasi'
+import { initTerjadwalEvaluasiFromSeed } from '@/lib/data/terjadwal-evaluasi-data'
 
 export function useVerifikasiBatchDetail(id: string | undefined) {
   const [batch, setBatch] = useState<VerifikasiBatch | null>(() =>

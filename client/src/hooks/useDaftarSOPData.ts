@@ -26,6 +26,7 @@ export function useDaftarSOPData(filters: DaftarSOPFiltersState) {
     [mergedSopList]
   )
 
+  /** True jika ada SOP dalam terjadwal evaluasi aktif (status: Diajukan Evaluasi / Sedang Dievaluasi). */
   const hasActiveBatch = useMemo(
     () => mergedSopList.some(
       (sop) => sop.status === 'Diajukan Evaluasi' || sop.status === 'Sedang Dievaluasi'
@@ -33,6 +34,7 @@ export function useDaftarSOPData(filters: DaftarSOPFiltersState) {
     [mergedSopList]
   )
 
+  /** Jumlah SOP dalam terjadwal evaluasi aktif (status: Diajukan Evaluasi / Sedang Dievaluasi). */
   const activeBatchCount = useMemo(
     () => mergedSopList.filter(
       (sop) => sop.status === 'Diajukan Evaluasi' || sop.status === 'Sedang Dievaluasi'

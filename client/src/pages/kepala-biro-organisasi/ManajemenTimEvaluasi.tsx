@@ -78,7 +78,7 @@ export function ManajemenTimEvaluasi() {
         tim.id === nonaktifTimId ? { ...tim, status: 'Nonaktif', endedAt: today } : tim
       )
     )
-    showToast('Anggota tim evaluasi berhasil dinonaktifkan. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per batch verifikasi.')
+    showToast('Anggota tim evaluasi berhasil dinonaktifkan. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per terjadwal verifikasi.')
     setNonaktifTimId(null)
   }
 
@@ -351,7 +351,7 @@ export function ManajemenTimEvaluasi() {
         open={deleteTimId != null}
         onOpenChange={(open) => !open && setDeleteTimId(null)}
         title="Hapus permanen anggota tim?"
-        description="Data anggota akan dihapus dari daftar. Data evaluasi/arsip yang pernah mereka kerjakan tetap tersimpan per batch verifikasi. Gunakan Nonaktifkan jika hanya mengakhiri tugas."
+        description="Data anggota akan dihapus dari daftar. Data evaluasi/arsip yang pernah mereka kerjakan tetap tersimpan per terjadwal verifikasi. Gunakan Nonaktifkan jika hanya mengakhiri tugas."
         onConfirm={() => {
           if (deleteTimId) {
             setTimList((prev) => prev.filter((tim) => tim.id !== deleteTimId))
@@ -364,7 +364,7 @@ export function ManajemenTimEvaluasi() {
         open={nonaktifTimId != null}
         onOpenChange={(open) => !open && setNonaktifTimId(null)}
         title="Nonaktifkan anggota tim evaluasi?"
-        description="Tugas anggota ini akan diakhiri. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per batch verifikasi. Riwayat tetap tercatat."
+        description="Tugas anggota ini akan diakhiri. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per terjadwal verifikasi. Riwayat tetap tercatat."
         onConfirm={handleNonaktifkan}
       />
     </ListPageLayout>

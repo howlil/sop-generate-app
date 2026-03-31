@@ -14,7 +14,7 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { useToast } from '@/hooks/useUI'
-import { useVerifikasiBatchDetailPage } from '@/hooks/useVerifikasiBatchDetailPage'
+import { usePengajuanEvaluasiDetailPage } from '@/hooks/usePengajuanEvaluasiDetailPage'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
@@ -25,11 +25,11 @@ import { IA } from '@/lib/constants/pipeline-ia'
 
 const PRINT_DELAY_MS = 150
 
-export function DetailVerifikasiBatch() {
+export function DetailPengajuanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
-  const { batch, selectedSopId, setSelectedSopId, handleVerifySuccess, canVerify, verifyBlockedReason } =
-    useVerifikasiBatchDetailPage(id)
+  const { pengajuan, updatePengajuan: setSelectedSopId, handleVerify, canVerify } =
+    usePengajuanEvaluasiDetailPage(id)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('sop')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -37,16 +37,16 @@ export function DetailVerifikasiBatch() {
 
   const tte = useTTESignature({
     role: 'biro-organisasi',
-    documentId: batch ? `batch-evaluasi-${batch.id}` : undefined,
+    documentId: pengajuan ? `pengajuan-evaluasi-${pengajuan.id}` : undefined,
   })
 
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
-      documentLabel: batch?.opd ?? '',
-      referenceId: batch?.id ?? '',
+      documentLabel: pengajuan?.opdNama ?? '',
+      referenceId: pengajuan?.id ?? '',
     },
     (payload) => {
-      handleVerifySuccess(payload)
+      handleVerify()
       showToast('Verifikasi Berita Acara (Biro) berhasil. Koordinator Tim Penyusun dapat melanjutkan verifikasi BA.')
     }
   )
@@ -61,12 +61,12 @@ export function DetailVerifikasiBatch() {
   const riwayatOpd = opdId ? (riwayatEvaluasiOpd[opdId] ?? []) : []
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
 
-  useDocumentTitle(batch ? `${IA.BATCH_EVALUASI_OPD} — ${batch.opd}` : undefined)
+  useDocumentTitle(batch ? `${IA.TERJADWAL_EVALUASI_OPD} — ${batch.opd}` : undefined)
 
   if (!batch) {
     return (
       <NotFoundWithBack
-        message="Batch verifikasi tidak ditemukan."
+        message="Terjadwal verifikasi tidak ditemukan."
         backAction={
           <BackButton to={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}>Kembali</BackButton>
         }
@@ -78,10 +78,10 @@ export function DetailVerifikasiBatch() {
     <>
       <DetailPageLayout
         breadcrumb={[
-          { label: IA.NAV_BIRO_BATCH_BA, to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
+          { label: IA.NAV_BIRO_EVALUASI_TERJADWAL, to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
           { label: batch.opd },
         ]}
-        title={`${IA.BATCH_EVALUASI_OPD} — ${batch.opd}`}
+        title={`${IA.TERJADWAL_EVALUASI_OPD} — ${batch.opd}`}
         description={`${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}. Setelah ini: Koordinator → ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`}
         backTo={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}
         backSize="icon"

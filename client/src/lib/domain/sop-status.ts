@@ -1,22 +1,60 @@
 /**
- * Centralized domain helpers for SOP status checks.
- * Eliminates scattered magic strings across pages.
- * Berita Acara: verifikasi = Biro Organisasi lalu Koordinator Tim Penyusun; pengesahan = hanya Kepala OPD (mengesahkan SOP → Berlaku).
+ * Centralized helpers for SOP status checks per ERD-DESKRIPSI.md and SCHEMA-CONSTRAINTS.md
+ * 
+ * Status Transition Guard per SCHEMA-CONSTRAINTS.md:
+ * DRAFT → SEDANG_DISUSUN
+ * SEDANG_DISUSUN → SIAP_DIEVALUASI
+ * SIAP_DIEVALUASI → DIAJUKAN_EVALUASI
+ * DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI
+ * SEDANG_DIEVALUASI → REVISI_DARI_TIM_EVALUASI | SIAP_DIVERIFIKASI
+ * REVISI_DARI_TIM_EVALUASI → SEDANG_DISUSUN
+ * SIAP_DIVERIFIKASI → DIVERIFIKASI_BIRO_ORGANISASI
+ * DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU
+ * BERLAKU → DICABUT
+ * 
+ * BERLAKU dan DICABUT adalah terminal — tidak bisa diubah statusnya kecuali BERLAKU → DICABUT
  */
 import type { StatusSOP } from '@/lib/types/sop'
-import type { VerifikasiBatch } from '@/lib/types/verifikasi-batch'
+import type { PengajuanEvaluasi } from '@/lib/types/pengajuan-evaluasi'
 
-const SIAP_DIVERIFIKASI: StatusSOP = 'Siap Diverifikasi'
+/** Transisi status yang valid per SCHEMA-CONSTRAINTS.md */
+export const VALID_TRANSITIONS: Record<StatusSOP, StatusSOP[]> = {
+  DRAFT: ['SEDANG_DISUSUN'],
+  SEDANG_DISUSUN: ['SIAP_DIEVALUASI'],
+  SIAP_DIEVALUASI: ['DIAJUKAN_EVALUASI'],
+  DIAJUKAN_EVALUASI: ['SEDANG_DIEVALUASI'],
+  SEDANG_DIEVALUASI: ['REVISI_DARI_TIM_EVALUASI', 'SIAP_DIVERIFIKASI'],
+  REVISI_DARI_TIM_EVALUASI: ['SEDANG_DISUSUN'],
+  SIAP_DIVERIFIKASI: ['DIVERIFIKASI_BIRO_ORGANISASI'],
+  DIVERIFIKASI_BIRO_ORGANISASI: ['BERLAKU'],
+  BERLAKU: ['DICABUT'],
+  DICABUT: [],
+}
 
-/** Status saat Tim Penyusun boleh mengedit isi SOP (alur: Draft, Sedang Disusun, revisi). Sesuai StatusSOP di lib/types/sop. */
+/** Validasi transisi status — throw error jika tidak valid */
+export function assertValidTransition(current: StatusSOP, next: StatusSOP): void {
+  if (!VALID_TRANSITIONS[current].includes(next)) {
+    throw new Error(`Transisi status tidak valid: ${current} → ${next}`)
+  }
+}
+
+/** Cek apakah transisi status valid */
+export function isValidTransition(current: StatusSOP, next: StatusSOP): boolean {
+  return VALID_TRANSITIONS[current].includes(next)
+}
+
+/** Status saat Tim Penyusun boleh mengedit isi SOP (alur: Draft, Sedang Disusun, revisi). */
 const EDITABLE_STATUSES: StatusSOP[] = [
-  'Draft',
-  'Sedang Disusun',
-  'Revisi dari Tim Evaluasi',
+  'DRAFT',
+  'SEDANG_DISUSUN',
+  'REVISI_DARI_TIM_EVALUASI',
 ]
 
 /** Status saat Kepala OPD boleh mengesahkan SOP (setelah verifikasi BA selesai: Biro + Koordinator). */
-const SIGNABLE_STATUSES: StatusSOP[] = ['Diverifikasi Biro Organisasi']
+const SIGNABLE_STATUSES: StatusSOP[] = ['DIVERIFIKASI_BIRO_ORGANISASI']
+
+/** Status terminal — tidak bisa diubah kecuali BERLAKU → DICABUT */
+const TERMINAL_STATUSES: StatusSOP[] = ['BERLAKU', 'DICABUT']
 
 export function canEditSop(status: StatusSOP): boolean {
   return EDITABLE_STATUSES.includes(status)
@@ -26,72 +64,75 @@ export function isSopEligibleForSigning(status: StatusSOP): boolean {
   return SIGNABLE_STATUSES.includes(status)
 }
 
+export function isTerminalStatus(status: StatusSOP): boolean {
+  return TERMINAL_STATUSES.includes(status)
+}
+
 /**
- * Mencari batch verifikasi yang berisi SOP ini untuk OPD tertentu.
+ * Mencari Pengajuan Evaluasi yang berisi SOP ini untuk OPD tertentu.
  * Digunakan untuk cek apakah BA sudah selesai diverifikasi (Biro + Koordinator) sebelum Kepala OPD mengesahkan SOP.
  */
-export function getVerifikasiBatchContainingSop(
-  batchList: VerifikasiBatch[],
-  opdName: string,
-  sopId: string,
-  nomorSOP?: string
-): VerifikasiBatch | undefined {
-  return batchList.find(
+export function getPengajuanEvaluasiContainingSop(
+  pengajuanList: PengajuanEvaluasi[],
+  opdId: string,
+  sopDetailId: string,
+): PengajuanEvaluasi | undefined {
+  return pengajuanList.find(
     (p) =>
-      p.opd === opdName &&
+      p.opdId === opdId &&
       (p.sopList ?? []).some(
-        (s) => s.id === sopId || (nomorSOP && s.nomor === nomorSOP)
+        (s) => s.sopDetailId === sopDetailId
       )
   )
 }
 
 /**
- * Kepala OPD boleh mengesahkan SOP hanya jika: (1) status SOP = Diverifikasi Biro, dan
- * (2) bila SOP masuk batch BA untuk OPD tersebut, verifikasi BA oleh Koordinator harus sudah selesai.
+ * Kepala OPD boleh mengesahkan SOP hanya jika:
+ * (1) status SOP = DIVERIFIKASI_BIRO_ORGANISASI
+ * (2) bila SOP masuk Pengajuan Evaluasi untuk OPD tersebut, verifikasi BA oleh Koordinator harus sudah selesai.
  */
 export function canKepalaOpdSignSop(
   status: StatusSOP,
-  batchList: VerifikasiBatch[],
-  opdName: string,
-  sopId: string,
-  nomorSOP?: string
+  pengajuanList: PengajuanEvaluasi[],
+  opdId: string,
+  sopDetailId: string,
 ): boolean {
   if (!isSopEligibleForSigning(status)) return false
   // Jika OPD tidak dapat diidentifikasi, tolak signing untuk mencegah bypass pemeriksaan BA.
-  if (!opdName) return false
-  const batch = getVerifikasiBatchContainingSop(batchList, opdName, sopId, nomorSOP)
-  /** SOP harus masuk alur BA; tanpa batch, pengesahan ditolak (mencegah bypass). */
-  if (!batch) return false
-  return batch.isSignedByKoordinator === true
+  if (!opdId) return false
+  const pengajuan = getPengajuanEvaluasiContainingSop(pengajuanList, opdId, sopDetailId)
+  /** SOP harus masuk alur BA; tanpa pengajuan, pengesahan ditolak (mencegah bypass). */
+  if (!pengajuan) return false
+  return pengajuan.ditandatanganiOlehKoordinatorUserId !== undefined
 }
 
 /**
- * Biro boleh verifikasi BA hanya jika batch selesai, berisi SOP, belum diverifikasi,
- * dan **semua** SOP di batch berstatus Siap Diverifikasi (sesuai status gabungan di daftar SOP).
+ * Biro boleh verifikasi BA hanya jika pengajuan selesai, berisi SOP, belum diverifikasi,
+ * dan **semua** SOP di pengajuan berstatus SIAP_DIVERIFIKASI.
  */
 export function canVerifyBatch(
-  item: VerifikasiBatch,
+  item: PengajuanEvaluasi,
   mergedSopRows: { id: string; status: StatusSOP }[]
 ): boolean {
   const byId = new Map(mergedSopRows.map((r) => [r.id, r.status]))
   const sops = item.sopList ?? []
   const allSiap =
     sops.length > 0 &&
-    sops.every((s) => byId.get(s.id) === SIAP_DIVERIFIKASI)
+    sops.every((s) => byId.get(s.sopDetailId) === 'SIAP_DIVERIFIKASI')
   return (
-    item.status === 'Selesai' &&
+    item.status === 'SELESAI_DIEVALUASI' &&
     sops.length > 0 &&
     allSiap &&
-    !item.isVerified
+    item.ditandatanganiOlehKoordinatorUserId === undefined
   )
 }
 
-/** Status SOP setelah Biro menyelesaikan verifikasi Berita Acara (semua SOP di batch dapat status ini). */
-export const STATUS_SOP_AFTER_VERIFIKASI_BIRO: StatusSOP = 'Diverifikasi Biro Organisasi'
+/** Status SOP setelah Biro menyelesaikan verifikasi Berita Acara (semua SOP di pengajuan dapat status ini). */
+export const STATUS_SOP_AFTER_VERIFIKASI_BIRO: StatusSOP = 'DIVERIFIKASI_BIRO_ORGANISASI'
 
-/** Daftar id SOP dari batch verifikasi (untuk update status setelah verifikasi BA). */
-export function getSopIdsFromVerifikasiBatch(batch: VerifikasiBatch): string[] {
-  return (batch.sopList ?? []).map((s) => s.id).filter(Boolean) as string[]
+/** Daftar sopDetailId SOP dari pengajuan evaluasi (untuk update status setelah verifikasi BA). */
+export function getSopDetailIdsFromPengajuanEvaluasi(pengajuan: PengajuanEvaluasi): string[] {
+  return (pengajuan.sopList ?? []).map((s) => s.sopDetailId).filter(Boolean) as string[]
 }
 
 export function generateBANumber(verifiedCount: number): string {

@@ -9,14 +9,15 @@ import type { AuditLogEntry } from '@/lib/types/audit'
 
 const ACTION_LABEL: Record<string, string> = {
   BUAT_SOP: 'Membuat SOP',
+  SALIN_ISI_DARI_SOP: 'Menyalin isi dari SOP lain',
   SIMPAN_DRAFT: 'Simpan sebagai draft',
   SELESAI_PENYUSUNAN: 'Selesai penyusunan',
   AJUKAN_EVALUASI: 'Mengajukan ke evaluasi',
   MULAI_EVALUASI: 'Mulai evaluasi',
   KIRIM_HASIL_EVALUASI: 'Mengirim hasil evaluasi',
   REVISI_DARI_EVALUATOR: 'Dikembalikan untuk revisi',
-  VERIFIKASI_BATCH: 'Verifikasi Berita Acara (Biro)',
-  TTD_BA_KEPALA_OPD: 'Pengesahan / TTD (Kepala OPD)',
+  VERIFIKASI_PENGAJUAN_EVALUASI: 'Verifikasi pengajuan evaluasi (Biro)',
+  TTD_BA_KOORDINATOR_TIM_PENYUSUN: 'Tanda tangan Berita Acara (Koordinator Tim Penyusun)',
   SAHKAN_SOP: 'Mengesahkan SOP',
   CABUT_SOP: 'Mencabut SOP',
 }

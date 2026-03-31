@@ -65,6 +65,20 @@ function sopAreaId(pageIndex: number) {
   return `main-sop-area-${pageIndex}`
 }
 
+/* ───────────────────────── Optimizations ─────────────────────────── */
+
+/** Debounce utility untuk limit resize re-measure */
+function debounce<T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: NodeJS.Timeout
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => fn(...args), delay)
+  }
+}
+
 /* ───────────────────────── Component ─────────────────────────── */
 
 export function SOPDiagramFlowchart({
@@ -299,13 +313,16 @@ export function SOPDiagramFlowchart({
 
   useEffect(() => {
     const observers: ResizeObserver[] = []
+    // OPTIMIZATION #2: Debounce resize events to avoid excessive re-measures
+    const debouncedMeasure = debounce(() => {
+      setBoundsVersion((v) => v + 1)
+      requestAnimationFrame(() => measurePelaksanaBounds())
+    }, 150)
+    
     for (let pi = 0; pi < allPages.length; pi++) {
       const container = document.getElementById(sopAreaId(pi))
       if (!container) continue
-      const ro = new ResizeObserver(() => {
-        setBoundsVersion((v) => v + 1)
-        requestAnimationFrame(() => measurePelaksanaBounds())
-      })
+      const ro = new ResizeObserver(debouncedMeasure)
       ro.observe(container)
       observers.push(ro)
     }
@@ -512,20 +529,34 @@ function FlowchartPage({
   const corridorGraphRef = useRef<CorridorGraph | null>(null)
   const [graphReady, setGraphReady] = useState(false)
 
+  // OPTIMIZATION #1: Cache corridor graph per page, rebuild only when structure changes
+  const corridorGraphsRef = useRef<Map<number, CorridorGraph>>(new Map())
+  
   useEffect(() => {
     if (!arrowsReady) return
     const container = document.getElementById(areaId)
     if (!container) return
 
     const frame = requestAnimationFrame(() => {
-      const cells = scanCorridorCells(container)
-      if (cells.length > 0) {
-        corridorGraphRef.current = buildCorridorGraph(cells)
+      // Check if we have a cached graph for this page
+      let graph = corridorGraphsRef.current.get(pageIndex)
+      
+      if (!graph) {
+        // Build new graph and cache it
+        const cells = scanCorridorCells(container)
+        if (cells.length > 0) {
+          graph = buildCorridorGraph(cells)
+          corridorGraphsRef.current.set(pageIndex, graph)
+        }
+      }
+      
+      if (graph) {
+        corridorGraphRef.current = graph
       }
       setGraphReady(true)
     })
     return () => cancelAnimationFrame(frame)
-  }, [arrowsReady, areaId, pageSteps.length, implementers.length])
+  }, [arrowsReady, areaId, pageSteps.length, implementers.length, pageIndex])
 
   return (
     <div
