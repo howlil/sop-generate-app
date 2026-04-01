@@ -41,5 +41,11 @@ export default defineConfig({
         },
       },
     },
+    // Fix for JSX in tests
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
   },
 });
