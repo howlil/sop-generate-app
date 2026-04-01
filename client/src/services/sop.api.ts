@@ -80,31 +80,31 @@ export const sopApi = {
   deleteDetail: (id: string) =>
     apiClient.delete(`/detail-sop/${id}`),
 
-  // ================= LangkahSOP =================
+  // ================= LangkahSOP (Nested under DetailSOP) =================
 
   /**
    * Get all langkah SOP for a DetailSOP
    */
   findLangkah: (sopDetailId: string) =>
-    apiClient.get<LangkahSOP[]>(`/langkah-sop?sopDetailId=${sopDetailId}`),
+    apiClient.get<LangkahSOP[]>(`/detail-sop/${sopDetailId}/langkah`),
 
   /**
    * PLK-02: Create langkah SOP
    */
-  createLangkah: (payload: CreateLangkahSOPDto) =>
-    apiClient.post<LangkahSOP>('/langkah-sop', payload),
+  createLangkah: (sopDetailId: string, payload: CreateLangkahSOPDto) =>
+    apiClient.post<LangkahSOP>(`/detail-sop/${sopDetailId}/langkah`, payload),
 
   /**
    * PLK-02: Update langkah SOP
    */
-  updateLangkah: (id: string, payload: UpdateLangkahSOPDto) =>
-    apiClient.patch<LangkahSOP>(`/langkah-sop/${id}`, payload),
+  updateLangkah: (sopDetailId: string, id: string, payload: UpdateLangkahSOPDto) =>
+    apiClient.patch<LangkahSOP>(`/detail-sop/${sopDetailId}/langkah/${id}`, payload),
 
   /**
    * PLK-02: Delete langkah SOP
    */
-  deleteLangkah: (id: string) =>
-    apiClient.delete(`/langkah-sop/${id}`),
+  deleteLangkah: (sopDetailId: string, id: string) =>
+    apiClient.delete(`/detail-sop/${sopDetailId}/langkah/${id}`),
 
   // ================= Pelaksana =================
 
@@ -133,6 +133,12 @@ export const sopApi = {
     apiClient.delete(`/pelaksana/${id}`),
 
   // ================= DetailSOPPelaksana (Swimlane) =================
+
+  /**
+   * Get swimlane (pelaksana list) for a DetailSOP
+   */
+  getSwimlane: (sopDetailId: string) =>
+    apiClient.get<DetailSOPPelaksana[]>(`/pelaksana/${sopDetailId}/swimlane`),
 
   /**
    * Add pelaksana to DetailSOP (swimlane)

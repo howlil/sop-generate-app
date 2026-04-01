@@ -64,7 +64,7 @@ export function useMintTokenVerifikasi() {
  */
 export function useKonfirmasiEmail() {
   return useMutation({
-    mutationFn: (payload: VerifikasiEmailDto) => tteApi.konfirmasiEmail(payload),
+    mutationFn: (token: string) => tteApi.konfirmasiEmail(token),
     onSuccess: () => {
       showToast('Email berhasil diverifikasi', 'success')
     },
@@ -91,7 +91,8 @@ export function useTandaTanganiBA() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: TandaTanganiBaDto) => tteApi.tandaTanganiBA(payload),
+    mutationFn: ({ pengajuanId, payload }: { pengajuanId: string; payload: TandaTanganiBaDto }) =>
+      tteApi.tandaTanganiBA(pengajuanId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
       showToast('Berita Acara berhasil ditandatangani', 'success')
@@ -109,7 +110,8 @@ export function useKoordinatorTandaTanganiBA() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: TandaTanganiBaDto) => tteApi.koordinatorTandaTanganiBA(payload),
+    mutationFn: ({ pengajuanId, payload }: { pengajuanId: string; payload: TandaTanganiBaDto }) =>
+      tteApi.koordinatorTandaTanganiBA(pengajuanId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
       showToast('Berita Acara berhasil ditandatangani', 'success')
@@ -127,7 +129,8 @@ export function useTandaTanganiSOP() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (payload: TandaTanganiSopDto) => tteApi.tandaTanganiSOP(payload),
+    mutationFn: ({ sopDetailId, payload }: { sopDetailId: string; payload: TandaTanganiSopDto }) =>
+      tteApi.tandaTanganiSOP(sopDetailId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sop })
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })

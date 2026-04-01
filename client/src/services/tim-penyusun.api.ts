@@ -33,7 +33,7 @@ export const timPenyusunApi = {
    * TIM-02: Deactivate anggota (status → NONAKTIF)
    */
   nonaktifkan: (id: string) =>
-    apiClient.patch<AnggotaTimPenyusun>(`/tim-penyusun/${id}/nonaktif`),
+    apiClient.patch<AnggotaTimPenyusun>(`/tim-penyusun/${id}/nonaktifkan`),
 
   /**
    * TIM-03: Transfer anggota to different OPD

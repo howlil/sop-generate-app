@@ -30,13 +30,13 @@ export const tteApi = {
    * TTE-02: Request email verification token
    */
   mintTokenVerifikasi: () =>
-    apiClient.post<{ token: string }>('/tte/verifikasi-email/mint'),
+    apiClient.post<{ token: string }>('/tte/profil/verifikasi-email'),
 
   /**
-   * TTE-02: Confirm email with token
+   * TTE-02: Confirm email with token (GET with query param)
    */
-  konfirmasiEmail: (payload: VerifikasiEmailDto) =>
-    apiClient.post<{ message: string }>('/tte/verifikasi-email/konfirmasi', payload),
+  konfirmasiEmail: (token: string) =>
+    apiClient.get<{ message: string }>(`/tte/profil/verifikasi-email?token=${token}`),
 
   /**
    * TTE-13: Get own signing history
@@ -48,22 +48,22 @@ export const tteApi = {
    * TTE-05: Sign Berita Acara (Biro Organisasi only)
    * After signing: status → DIVERIFIKASI_BIRO, all SOP → DIVERIFIKASI_BIRO_ORGANISASI
    */
-  tandaTanganiBA: (payload: TandaTanganiBaDto) =>
-    apiClient.post<RiwayatTandaTangan>('/tte/tanda-tangani-ba', payload),
+  tandaTanganiBA: (pengajuanId: string, payload: TandaTanganiBaDto) =>
+    apiClient.post<RiwayatTandaTangan>(`/tte/tanda-tangani/ba/${pengajuanId}`, payload),
 
   /**
    * TTE-06: Sign Berita Acara (Koordinator Tim Penyusun only)
    * Only after Biro has signed
    * After signing: status → DITANDATANGANI_KOORDINATOR
    */
-  koordinatorTandaTanganiBA: (payload: TandaTanganiBaDto) =>
-    apiClient.post<RiwayatTandaTangan>('/tte/koordinator-tanda-tangani-ba', payload),
+  koordinatorTandaTanganiBA: (pengajuanId: string, payload: TandaTanganiBaDto) =>
+    apiClient.post<RiwayatTandaTangan>(`/tte/tanda-tangani/ba/${pengajuanId}`, payload),
 
   /**
    * TTE-07: Sign SOP (Kepala OPD only)
    * Only after Koordinator has signed BA
    * After signing: SOP → BERLAKU
    */
-  tandaTanganiSOP: (payload: TandaTanganiSopDto) =>
-    apiClient.post<RiwayatTandaTangan>('/tte/tanda-tangani-sop', payload),
+  tandaTanganiSOP: (sopDetailId: string, payload: TandaTanganiSopDto) =>
+    apiClient.post<RiwayatTandaTangan>(`/tte/tanda-tangani/sop/${sopDetailId}`, payload),
 }

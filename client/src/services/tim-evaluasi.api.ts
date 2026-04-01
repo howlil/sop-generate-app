@@ -36,5 +36,5 @@ export const timEvaluasiApi = {
    * TIM-04: Deactivate anggota (status → NONAKTIF)
    */
   nonaktifkan: (id: string) =>
-    apiClient.patch<AnggotaTimEvaluasi>(`/tim-evaluasi/${id}/nonaktif`),
+    apiClient.patch<AnggotaTimEvaluasi>(`/tim-evaluasi/${id}/nonaktifkan`),
 }

@@ -71,7 +71,7 @@ export const peraturanApi = {
    * PRT-04: Revoke peraturan (status → DICABUT)
    */
   revoke: (id: string) =>
-    apiClient.patch<PeraturanResponse>(`/peraturan/${id}/revoke`),
+    apiClient.patch<PeraturanResponse>(`/peraturan/${id}/cabut`),
 
   /**
    * PRT-09: Delete peraturan

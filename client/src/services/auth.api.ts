@@ -40,6 +40,12 @@ export const authApi = {
     apiClient.post<LoginResponse>('/login', payload),
 
   /**
+   * AUTH: Refresh access token
+   */
+  refresh: () =>
+    apiClient.post<{ accessToken: string; refreshToken: string }>('/refresh'),
+
+  /**
    * AUTH-06: Change password for logged-in user
    */
   changePassword: (payload: ChangePasswordRequest) =>
