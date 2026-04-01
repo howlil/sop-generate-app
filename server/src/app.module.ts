@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { UsersModule } from './modules/users/users.module';
 import { HealthModule } from './modules/health/health.module';
@@ -25,6 +26,14 @@ import { WinstonLoggerConfig } from './common/logger/winston.config';
 
     // Use WinstonModule directly instead of LoggerModule wrapper
     WinstonModule.forRoot(WinstonLoggerConfig),
+
+    // Rate Limiting - protect against brute force attacks
+    ThrottlerModule.forRoot([
+      {
+        ttl: 3600000, // 1 hour
+        limit: 10, // 10 requests per hour
+      },
+    ]),
 
     PrismaModule,
     AuthModule,

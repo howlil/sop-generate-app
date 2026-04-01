@@ -12,6 +12,14 @@ async function bootstrap() {
   const logger = WinstonModule.createLogger(WinstonLoggerConfig);
   const app = await NestFactory.create(AppModule, { logger });
 
+  // Error boundaries - unhandled exceptions
+  process.on('uncaughtException', (err) => {
+    logger.error('Uncaught Exception:', err);
+  });
+  process.on('unhandledRejection', (reason) => {
+    logger.error('Unhandled Rejection:', reason);
+  });
+
   app.setGlobalPrefix('api');
 
   // API Versioning
@@ -43,10 +51,17 @@ async function bootstrap() {
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // CORS Configuration
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
   app.enableCors({
     origin: process.env.NODE_ENV === 'production'
-      ? process.env.ALLOWED_ORIGINS?.split(',') || 'https://domain-kamu.com'
-      : '*',
+      ? (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error('CORS policy violation'));
+          }
+        }
+      : true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

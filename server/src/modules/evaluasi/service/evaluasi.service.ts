@@ -16,6 +16,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
+import { EvaluasiMessages, interpolate } from '../../../common/messages';
 
 type JwtUser = { id: string; peran: PeranPengguna; opdId: string | null };
 
@@ -42,7 +43,7 @@ export class EvaluasiService {
   // EVL-08
   async findById(id: string) {
     const result = await this.repo.findById(id);
-    if (!result) throw new NotFoundException('PengajuanEvaluasi tidak ditemukan');
+    if (!result) throw new NotFoundException(EvaluasiMessages.EVALUASI_NOT_FOUND);
     return result;
   }
 
@@ -55,7 +56,7 @@ export class EvaluasiService {
     );
     if (existing) {
       throw new ConflictException(
-        `OPD ini sudah memiliki pengajuan evaluasi ${dto.jenis} yang aktif (id: ${existing.id})`,
+        `${EvaluasiMessages.EVALUASI_ALREADY_EXISTS} (id: ${existing.id})`,
       );
     }
 
@@ -63,7 +64,7 @@ export class EvaluasiService {
     const details = await this.repo.findSopDetails(dto.sopDetailIds);
 
     if (details.length !== dto.sopDetailIds.length) {
-      throw new BadRequestException('Beberapa sopDetailId tidak ditemukan');
+      throw new BadRequestException(EvaluasiMessages.SOP_DETAIL_NOT_FOUND);
     }
 
     const wrongOpd = details.filter((d) => d.sop.opdId !== dto.opdId);
@@ -94,11 +95,11 @@ export class EvaluasiService {
   ) {
     const pengajuan = await this.repo.findById(id);
     if (!pengajuan)
-      throw new NotFoundException('PengajuanEvaluasi tidak ditemukan');
+      throw new NotFoundException(EvaluasiMessages.EVALUASI_NOT_FOUND);
 
     if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
       throw new BadRequestException(
-        `Tidak dapat mengisi nilai — status pengajuan: ${pengajuan.status}`,
+        interpolate(EvaluasiMessages.INVALID_STATUS, { status: pengajuan.status }),
       );
     }
 
@@ -109,32 +110,30 @@ export class EvaluasiService {
   async selesai(id: string, dto: SelesaiEvaluasiDto, userId: string) {
     const pengajuan = await this.repo.findById(id);
     if (!pengajuan)
-      throw new NotFoundException('PengajuanEvaluasi tidak ditemukan');
+      throw new NotFoundException(EvaluasiMessages.EVALUASI_NOT_FOUND);
 
     if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
       throw new BadRequestException(
-        `Tidak dapat diselesaikan — status pengajuan: ${pengajuan.status}`,
+        interpolate(EvaluasiMessages.INVALID_STATUS, { status: pengajuan.status }),
       );
     }
 
     const allFilled = await this.repo.allNilaiIsi(id);
     if (!allFilled) {
-      throw new BadRequestException(
-        'Semua DetailSOP harus sudah dinilai sebelum evaluasi dapat diselesaikan',
-      );
+      throw new BadRequestException(EvaluasiMessages.ALL_SOP_MUST_BE_EVALUATED);
     }
 
     // EVL-07: nilaiOPD constraint [P1-B]
     if (pengajuan.jenis === JenisPengajuanEvaluasi.TERJADWAL) {
       if (dto.nilaiOPD == null) {
         throw new BadRequestException(
-          'Evaluasi TERJADWAL wajib mengisi nilaiOPD sebelum diselesaikan',
+          EvaluasiMessages.EVALUASI_TERJADWAL_REQUIRES_NILAI_OPD,
         );
       }
     } else {
       if (dto.nilaiOPD != null) {
         throw new BadRequestException(
-          'Evaluasi MANDIRI tidak boleh memiliki nilaiOPD',
+          EvaluasiMessages.EVALUASI_MANDIRI_CANNOT_HAVE_NILAI_OPD,
         );
       }
     }

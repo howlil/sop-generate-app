@@ -182,6 +182,25 @@ export const PeraturanMessages = {
   PERATURAN_ALREADY_REVOKED: 'Peraturan sudah berstatus DICABUT',
 } as const;
 
+// ==================== EVALUASI MESSAGES ====================
+export const EvaluasiMessages = {
+  // Success
+  EVALUASI_CREATED: 'Pengajuan evaluasi berhasil dibuat',
+  EVALUASI_UPDATED: 'Pengajuan evaluasi berhasil diperbarui',
+  EVALUASI_FOUND: 'Data pengajuan evaluasi ditemukan',
+  NILAI_ADDED: 'Nilai evaluasi berhasil ditambahkan',
+  EVALUASI_SELESAI: 'Evaluasi berhasil diselesaikan',
+
+  // Error
+  EVALUASI_NOT_FOUND: 'Pengajuan evaluasi tidak ditemukan',
+  EVALUASI_ALREADY_EXISTS: 'OPD ini sudah memiliki pengajuan evaluasi aktif',
+  SOP_DETAIL_NOT_FOUND: 'Detail SOP tidak ditemukan',
+  INVALID_STATUS: 'Tidak dapat melakukan aksi — status pengajuan: {status}',
+  ALL_SOP_MUST_BE_EVALUATED: 'Semua DetailSOP harus sudah dinilai sebelum evaluasi dapat diselesaikan',
+  EVALUASI_TERJADWAL_REQUIRES_NILAI_OPD: 'Evaluasi TERJADWAL wajib mengisi nilaiOPD sebelum diselesaikan',
+  EVALUASI_MANDIRI_CANNOT_HAVE_NILAI_OPD: 'Evaluasi MANDIRI tidak boleh memiliki nilaiOPD',
+} as const;
+
 // ==================== HEALTH MESSAGES ====================
 export const HealthMessages = {
   // Success
