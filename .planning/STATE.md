@@ -97,10 +97,11 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260402-code-review | Code review lengkap dengan .skills/code-review.md framework — score 7.5/10, temuan: no tests, console in production, missing query invalidation | 2026-04-02 | — | Done | client/ |
 | 20260401-frontend-audit | Frontend audit lengkap dengan frontend-codereview.md framework — temuan: 45 files broken imports, security issue localStorage tokens, no route loaders | 2026-04-01 | — | Done | client/ |
-| 20260401-cleanup-legacy | Hapus deprecated code di client (24 files, ~800 LOC) — lib/data/, lib/domain/, deprecated hooks, unused components | 2026-04-01 | — | Done | client/src/ |
-| 20260401-api-integration | Implementasi semua API server di client (89/89 requirements) — services, hooks, types lengkap | 2026-04-01 | — | Done | client/src/ |
-| 20260401-docs-cleanup | Hapus dokumentasi tidak penting di client/server (15 files) — README redundant, migration guides, cleanup reports | 2026-04-01 | — | Done | client/, server/ |
+| 20260401-cleanup-legacy | Hapus deprecated code di client (24 files, ~800 LOC) — lib/data/, lib/domain/, deprecated hooks, unused components | 2026-04-01 | b641d39 | Done | client/src/ |
+| 20260401-api-integration | Implementasi semua API server di client (89/89 requirements) — services, hooks, types lengkap | 2026-04-01 | b641d39 | Done | client/src/ |
+| 20260401-docs-cleanup | Hapus dokumentasi tidak penting di client/server (15 files) — README redundant, migration guides, cleanup reports | 2026-04-01 | b641d39 | Done | client/, server/ |
 | server-db-uc | Analisis DB vs use case: `docs/DATABASE-USE-CASE-ALIGNMENT.md` — gap utama: kolom verifikasi Biro di VerifikasiBatch | 2026-03-25 | f591238 | Done | — |
 | client-ssot | Client: align routes redirects & sidebar prefixes dengan `ROUTES`; `DEFAULT_SOP_STATUS`; `canEditSop` untuk tombol Selesai | 2026-03-25 | e46c614 | Done | — |
 | client-pipeline-ux | Client: notifikasi antar-role (persist), bulk pengesahan, BV3/FL2/FL3 domain, akses koordinator (dashboard per-role dihapus; lihat b73b3a4) | 2026-03-25 | fb3725d | Done | — |
