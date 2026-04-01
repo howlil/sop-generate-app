@@ -31,7 +31,7 @@ import { WinstonLoggerConfig } from './common/logger/winston.config';
     ThrottlerModule.forRoot([
       {
         ttl: 3600000, // 1 hour
-        limit: 10, // 10 requests per hour
+        limit: 100, // 10 requests per hour
       },
     ]),
 

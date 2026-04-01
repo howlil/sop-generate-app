@@ -97,6 +97,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260402-testing-117-passing | ✅ 117 tests passing (100%) — Domain (30), Utils (48), Stores (27), Services (11). Coverage: Branches 64%, Functions 61%. All tests passing! | 2026-04-02 | — | Done | client/ |
 | 20260402-testing-92-passing | ✅ 92 tests passing (100%) — Domain (30), Utils (24), Stores (27), Services (11). Coverage: Branches 65%, Functions 62%. Vitest + Testing Library + MSW setup complete | 2026-04-02 | — | Done | client/ |
 | 20260402-role-guard-fix | Fix role guard security gap — add auth guard, fix redirect logic, global auth check in root route, cleanup import paths | 2026-04-02 | bc7ba23 | Done | client/ |
 | 20260402-server-tests-phase1 | Server testing Phase 1 — 61 tests passing (Auth, SOP, Users, OPD), 13.39% coverage, infrastructure complete | 2026-04-02 | 50be2ce | Done | server/ |
