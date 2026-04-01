@@ -59,10 +59,10 @@
   --color-status-inactive: #99a1af;
   --color-row-border: #f3f4f6;
   /* Typography — Arimo from Figma */
-  --font-heading: 14px;
-  --font-heading-line: 20px;
-  --font-body: 12px;
-  --font-body-line: 16px;
+  --font-heading: 16px;
+  --font-heading-line: 24px;
+  --font-body: 14px;
+  --font-body-line: 20px;
   --font-weight-bold: 700;
   --font-weight-regular: 400;
 }

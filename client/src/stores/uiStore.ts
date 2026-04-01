@@ -24,25 +24,25 @@ interface UIState {
 export const useUIStore = create<UIState>((set) => ({
   toasts: [],
   sidebarOpen: true,
-  
+
   addToast: (message, type = 'info') => {
     const id = Math.random().toString(36).slice(2)
     set((state) => ({ toasts: [...state.toasts, { message, type, id }] }))
-    
-    // Auto-dismiss after 3 seconds
+
+    // Auto-dismiss after 5 seconds (increased for accessibility)
     setTimeout(() => {
       set((state) => ({
         toasts: state.toasts.filter((t) => t.id !== id)
       }))
-    }, 3000)
+    }, 5000)
   },
-  
+
   removeToast: (id) => {
     set((state) => ({
       toasts: state.toasts.filter((t) => t.id !== id)
     }))
   },
-  
+
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
 }))
 

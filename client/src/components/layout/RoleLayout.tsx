@@ -34,6 +34,14 @@ export function RoleLayout({
 
   return (
     <div className="flex h-[100dvh] flex-col md:flex-row md:h-screen">
+      {/* Skip to main content link for keyboard accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:bg-blue-500 focus:text-white focus:rounded-md focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       {/* Nav berlabel untuk layar sempit — menghindari hanya ikon tanpa teks */}
       <nav
         className="md:hidden flex shrink-0 items-stretch gap-0 border-b border-gray-200 bg-white px-2 py-2"
@@ -91,7 +99,7 @@ export function RoleLayout({
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <PageHeaderProvider>
           <HeaderProfile title={title} subtitle={subtitle} />
-          <main className="flex-1 overflow-auto scrollbar-hide p-3 sm:p-4 md:p-6 bg-white relative">
+          <main id="main-content" className="flex-1 overflow-auto scrollbar-hide p-3 sm:p-4 md:p-6 bg-white relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pathname}

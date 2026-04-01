@@ -70,6 +70,7 @@ const DataTableTh = React.forwardRef<
 >(({ className, align = 'left', ...props }, ref) => (
   <th
     ref={ref}
+    scope="col"
     className={cn(
       'py-2.5 px-3 font-medium text-gray-700',
       align === 'center' ? 'text-center' : 'text-left',

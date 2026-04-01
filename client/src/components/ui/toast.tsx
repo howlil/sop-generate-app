@@ -6,6 +6,8 @@ interface ToastProps {
   message: string
   type?: ToastType
   className?: string
+  /** Role for aria-live region. Use 'status' for polite, 'alert' for assertive */
+  role?: 'status' | 'alert'
 }
 
 const typeClasses: Record<ToastType, string> = {
@@ -14,11 +16,13 @@ const typeClasses: Record<ToastType, string> = {
   info: 'bg-blue-50 border-blue-200 text-blue-800',
 }
 
-export function Toast({ message, type = 'success', className }: ToastProps) {
+export function Toast({ message, type = 'success', className, role = 'status' }: ToastProps) {
   return (
     <div
+      role={role}
+      aria-live={role === 'alert' ? 'assertive' : 'polite'}
       className={cn(
-        'rounded-md border px-4 py-2 text-xs flex items-center gap-2',
+        'rounded-md border px-4 py-2 text-sm flex items-center gap-2',
         typeClasses[type],
         className
       )}

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Toast } from '@/components/ui/toast'
 import { useToast } from '@/hooks/useUI'
 
-const AUTO_CLOSE_MS = 4000
+const AUTO_CLOSE_MS = 5000
 
 export function GlobalToast() {
   const { toast, clearToast } = useToast()
@@ -24,7 +24,11 @@ export function GlobalToast() {
             exit={{ opacity: 0, y: 10, scale: 0.95, transition: { duration: 0.2 } }}
             className="pointer-events-auto"
           >
-            <Toast message={toast.message} type={toast.type === 'error' ? 'error' : 'success'} />
+            <Toast
+              message={toast.message}
+              type={toast.type === 'error' ? 'error' : 'success'}
+              role={toast.type === 'error' ? 'alert' : 'status'}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -19,15 +19,24 @@ export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
+    setEmailError('')
+    setPasswordError('')
     setIsLoading(true)
 
-    if (!email || !password) {
-      setError('Email dan password wajib diisi')
+    // Validate individual fields
+    if (!email) {
+      setEmailError('Email wajib diisi')
+      setIsLoading(false)
+      return
+    }
+
+    if (!password) {
+      setPasswordError('Password wajib diisi')
       setIsLoading(false)
       return
     }
@@ -55,87 +64,97 @@ export function LoginForm() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          
+
           {/* Email Field */}
           <div className="space-y-1.5">
-            <label htmlFor="email" className="text-xs font-medium text-gray-700">
+            <label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden />
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@instansi.go.id"
-                className="w-full h-9 pl-9 pr-3 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full h-11 pl-9 pr-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
                 autoComplete="email"
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? 'email-error' : undefined}
               />
             </div>
+            {emailError && (
+              <p id="email-error" className="text-sm text-red-600 flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-red-600 rounded-full" aria-hidden />
+                {emailError}
+              </p>
+            )}
           </div>
 
           {/* Password Field */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-xs font-medium text-gray-700">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Password
               </label>
-              <a href="#lupa-password" className="text-xs text-blue-600 hover:underline">
+              <a href="#lupa-password" className="text-sm text-blue-600 hover:underline">
                 Lupa Password?
               </a>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden />
               <input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full h-9 pl-9 pr-9 text-xs border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full h-11 pl-9 pr-9 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
                 disabled={isLoading}
                 autoComplete="current-password"
+                aria-invalid={!!passwordError}
+                aria-describedby={passwordError ? 'password-error' : undefined}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
                 disabled={isLoading}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
-                  <EyeOff className="w-3.5 h-3.5" />
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <Eye className="w-3.5 h-3.5" />
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
+            {passwordError && (
+              <p id="password-error" className="text-sm text-red-600 flex items-center gap-1.5">
+                <span className="w-1 h-1 bg-red-600 rounded-full" aria-hidden />
+                {passwordError}
+              </p>
+            )}
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="p-2 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-xs text-red-700">{error}</p>
-            </div>
-          )}
 
           {/* Submit Button */}
           <Button
             type="submit"
             variant="default"
-            className="w-full h-8 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium transition-all"
+            className="w-full h-11 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-all"
             disabled={isLoading}
           >
             {isLoading ? (
-              <span className="flex items-center gap-1.5">
-                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Memproses...
               </span>
             ) : (
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2">
                 Masuk ke Sistem
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4" />
               </span>
             )}
           </Button>
@@ -146,7 +165,7 @@ export function LoginForm() {
         <div className="space-y-3 pt-2">
           {/* Info Box */}
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-            <p className="text-xs text-blue-700 leading-relaxed">
+            <p className="text-sm text-blue-700 leading-relaxed">
               Belum punya akun? Hubungi admin Biro Organisasi untuk pembuatan akun baru.
             </p>
           </div>
@@ -157,22 +176,22 @@ export function LoginForm() {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center">
-              <span className="px-3 bg-white text-gray-400 text-xs">atau</span>
+              <span className="px-3 bg-white text-gray-400 text-sm">atau</span>
             </div>
           </div>
 
           {/* Back to Home */}
           <a
             href="/"
-            className="flex items-center justify-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors"
+            className="flex items-center justify-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
             <span>←</span>
             <span>Kembali ke Beranda</span>
           </a>
 
           {/* System Status */}
-          <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-400">
-            <span className="w-1 h-1 bg-green-500 rounded-full" />
+          <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
             <span>Sistem Online</span>
             <span className="mx-0.5">•</span>
             <span>v1.2</span>
