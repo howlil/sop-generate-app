@@ -97,7 +97,8 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
-| 20260402-test-strategy | Test strategy lengkap menggunakan .skills/qa.md framework — target 150 tests, 80% coverage, 9 days implementation plan | 2026-04-02 | — | Done | client/ |
+| 20260402-phase1-tests | Implementasi Phase 1 test foundation — 54 tests passing, setup Vitest + Testing Library + MSW, domain logic tests complete | 2026-04-02 | — | Done | client/ |
+| 20260402-test-strategy | Test strategy lengkap menggunakan .skills/qa.md framework — target 150 tests, 80% coverage, 9 days implementation plan | 2026-04-02 | 21a3bc0 | Done | client/ |
 | 20260402-code-review | Code review lengkap dengan .skills/code-review.md framework — score 7.5/10, temuan: no tests (0%), console in production, missing query invalidation | 2026-04-02 | 3631970 | Done | client/ |
 | 20260402-security-fixes | Fix critical security vulnerabilities: JWT_SECRET required, rate limiting (10 req/hr), error boundaries, CORS hardening, consistent error messages | 2026-04-02 | 45f5aa0 | Done | server/ |
 | 20260401-frontend-audit | Frontend audit lengkap dengan frontend-codereview.md framework — temuan: 45 files broken imports, security issue localStorage tokens, no route loaders | 2026-04-01 | — | Done | client/ |

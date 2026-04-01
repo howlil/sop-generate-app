@@ -57,25 +57,30 @@ Fix critical security vulnerabilities identified in code review before productio
 
 ## Acceptance Criteria
 
-- [ ] JWT_SECRET required - app fails to start without it
-- [ ] Rate limiting active (10 requests/hour on /login)
-- [ ] Input sanitization configured
-- [ ] All error messages use centralized constants
-- [ ] Unhandled exception handlers installed
-- [ ] All changes committed atomically
-- [ ] STATE.md updated
+- [x] JWT_SECRET required - app fails to start without it
+- [x] Rate limiting active (10 requests/hour on /login)
+- [x] Input sanitization configured (via ValidationPipe whitelist)
+- [x] All error messages use centralized constants
+- [x] Unhandled exception handlers installed
+- [x] All changes committed atomically
+- [x] STATE.md updated
 
-## Risks & Mitigations
+**Completed:** 2026-04-02  
+**Commits:** 
+- `45f5aa0` fix: critical security vulnerabilities from code review
+- `01ab9cb` docs: update STATE.md with security fixes completion
+- `e946fa3` docs: add security fixes summary document
 
-| Risk | Mitigation |
-|------|------------|
-| Breaking change: JWT_SECRET required | Update .env.example, document in PR |
-| Rate limiting may affect testing | Configure higher limits for test env |
-| Sanitization may break valid input | Test with real data before deploy |
+---
 
 ## Decisions
 
-_None yet - will be filled during execution_
+1. **Rate limiting configuration:** Set to 10 requests/hour globally. Can be adjusted per-endpoint if needed.
+2. **CORS validation:** Using callback function for strict origin validation in production.
+3. **Error message format:** Keeping Indonesian language for all user-facing messages.
+4. **TypeScript type fix:** Used `StringValue` type from 'ms' package for JWT expiration.
 
 ---
-*Quick task created: 2026-04-02*
+
+*Quick task created: 2026-04-02*  
+*Quick task completed: 2026-04-02*
