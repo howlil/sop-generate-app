@@ -20,10 +20,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     include: ['src/**/__tests__/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules', 'dist', '.tanstack', 'src/routes'],
+    exclude: ['node_modules', 'dist', '.tanstack', 'src/routes', 'coverage'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/',
         'src/__tests__/',
@@ -31,6 +32,12 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.config.*',
         '**/mocks/**',
+        '**/*.test.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
+        'coverage/',
+        'dist/',
+        '**/*.gen.ts',  // Exclude generated files
+        '**/generated/**',  // Exclude generated folders
       ],
       thresholds: {
         global: {

@@ -3,6 +3,8 @@
 **Date:** 2026-04-02
 **Source:** UX Audit Report (`docs/UX-AUDIT-REPORT.md`)
 **Priority:** Critical + High
+**Status:** ✅ COMPLETE
+**Commit:** ca8e15b
 
 ## Objectives
 
@@ -38,20 +40,20 @@ Fix accessibility and UX issues that block production readiness:
 
 ## Acceptance Criteria
 
-- [ ] All buttons ≥ 44px height
-- [ ] All icon buttons ≥ 44px × 44px
-- [ ] All inputs ≥ 44px height
-- [ ] Error messages linked to inputs with aria-describedby
-- [ ] Color contrast ≥ 4.5:1 for body text
-- [ ] Base font size ≥ 14px
-- [ ] Skip-to-main-content link present and functional
-- [ ] Toast notifications use aria-live
-- [ ] Table headers have scope="col"
-- [ ] Decorative icons have aria-hidden
+- [x] All buttons ≥ 44px height
+- [x] All icon buttons ≥ 44px × 44px
+- [x] All inputs ≥ 44px height
+- [x] Error messages linked to inputs with aria-describedby
+- [x] Color contrast ≥ 4.5:1 for body text
+- [x] Base font size ≥ 14px
+- [x] Skip-to-main-content link present and functional
+- [x] Toast notifications use aria-live
+- [x] Table headers have scope="col"
+- [x] Decorative icons have aria-hidden
 
 ## Definition of Done
 
-- [ ] All changes committed atomically
-- [ ] STATE.md updated
-- [ ] No TypeScript errors
-- [ ] No breaking changes to existing functionality
+- [x] All changes committed atomically
+- [x] STATE.md updated
+- [ ] No TypeScript errors (blocked by pre-existing missing file)
+- [x] No breaking changes to existing functionality
