@@ -4,7 +4,7 @@ import { ROLES } from '@/lib/constants/roles'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
 import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
-import { requireRoleBeforeLoad } from '@/lib/auth/role-route-guard'
+import { requireRoleBeforeLoad } from '@/utils/role-route-guard'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
 import { IA } from '@/lib/constants/pipeline-ia'
 

@@ -1,5 +1,6 @@
 /**
  * Role-based route guard
+ * Checks authentication first, then validates role match
  */
 
 import { redirect } from '@tanstack/react-router'
@@ -11,9 +12,18 @@ type BeforeLoadLocation = { href: string }
 
 export function requireRoleBeforeLoad(requiredRole: RoleKey) {
   return ({ location }: { location: BeforeLoadLocation }) => {
-    const activeRole = getRole()?.peran as RoleKey | undefined
+    const user = getRole()
 
-    if (activeRole !== requiredRole) {
+    // [P0] First check if user is authenticated
+    if (!user) {
+      throw redirect({
+        to: '/auth/login',
+        search: { redirect: location.href },
+      })
+    }
+
+    // Then check role
+    if (user.peran !== requiredRole) {
       throw redirect({
         to: ROUTES.HOME,
         search: {
