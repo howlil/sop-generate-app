@@ -22,7 +22,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         ExtractJwt.fromAuthHeaderAsBearerToken(),
         (req: Request) => {
           // Fallback: extract JWT from HttpOnly cookie
-          return req.cookies?.['access_token'] || null;
+          // Parse cookie manually from Cookie header
+          const cookieHeader = req.headers.cookie;
+          if (!cookieHeader) {
+            return null;
+          }
+          
+          const cookies = cookieHeader
+            .split(';')
+            .map(c => c.trim().split('='))
+            .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
+          
+          return cookies['access_token'] || null;
         },
       ]),
       ignoreExpiration: false,

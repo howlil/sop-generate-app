@@ -1,0 +1,19 @@
+
+> client@ test C:\Users\howlil\Documents\tugas-akhir\codingan\client
+> vitest run "--" "--coverage"
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Users/howlil/Documents/tugas-akhir/codingan/client[39m
+
+ [32m✓[39m src/utils/__tests__/date-format.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m src/stores/__tests__/uiStore.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m src/lib/domain/__tests__/sop-access.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/stores/__tests__/authStore.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/utils/__tests__/version-diff.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/services/__tests__/api.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 233[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m92 passed[39m[22m[90m (92)[39m
+[2m   Start at [22m 02:35:30
+[2m   Duration [22m 4.17s[2m (transform 606ms, setup 5.81s, collect 627ms, tests 378ms, environment 11.72s, prepare 2.36s)[22m
+

@@ -14,8 +14,8 @@ import { Response, Request } from 'express';
 import { AuthService } from '../service/auth.service';
 import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
-import { Public, CurrentUser } from '../../../../common/decorators';
-import { JwtAuthGuard } from '../../../../common/guards/jwt-auth.guard';
+import { Public, CurrentUser } from '../../../common/decorators';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('')
@@ -61,8 +61,18 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const refreshToken = request.cookies?.['refresh_token'];
+    // Parse cookie manually from Cookie header
+    const cookieHeader = request.headers.cookie;
+    let refreshToken: string | undefined;
     
+    if (cookieHeader) {
+      const cookies = cookieHeader
+        .split(';')
+        .map(c => c.trim().split('='))
+        .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
+      refreshToken = cookies['refresh_token'];
+    }
+
     if (!refreshToken) {
       response.clearCookie('access_token');
       response.clearCookie('refresh_token');

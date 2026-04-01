@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # ===========================================
+  # DATABASE - MySQL 8
+  # ===========================================
+  db:
+    image: mysql:8.0
+    container_name: sop-biro-organisasi-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-sop_db}
+      MYSQL_USER: ${DB_USER:-sop_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sop_password}
+      TZ: Asia/Jakarta
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./server/prisma:/docker-entrypoint-initdb.d/prisma-init
+    networks:
+      - sop-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ===========================================
+  # SERVER - NestJS Backend
+  # ===========================================
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sop-biro-organisasi-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3000
+      DATABASE_URL: mysql://${DB_USER:-sop_user}:${DB_PASSWORD:-sop_password}@db:3306/${DB_NAME:-sop_db}?connection_limit=10
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      TZ: Asia/Jakarta
+    ports:
+      - "${SERVER_PORT:-3001}:3000"
+    volumes:
+      # Mount source code untuk hot reload
+      - ./server:/app
+      # Node_modules di dalam container jangan ter-override
+      - /app/node_modules
+      # Prisma studio binary
+      - /app/.prisma
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sop-network
+    command: >
+      sh -c "pnpm prisma migrate dev && pnpm start:dev --host 0.0.0.0"
+
+  # ===========================================
+  # CLIENT - React + Vite Frontend
+  # ===========================================
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sop-biro-organisasi-client
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3001/api}
+      VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3001}
+      TZ: Asia/Jakarta
+    ports:
+      - "${CLIENT_PORT:-3000}:3000"
+    volumes:
+      # Mount source code untuk hot reload
+      - ./client:/app
+      # Node_modules di dalam container jangan ter-override
+      - /app/node_modules
+      # Vite cache
+      - /app/node_modules/.vite
+    depends_on:
+      - server
+    networks:
+      - sop-network
+    # Vite HMR butuh polling di Docker
+    command: >
+      sh -c "pnpm dev --host 0.0.0.0 --port 3000"
+
+networks:
+  sop-network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local

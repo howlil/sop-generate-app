@@ -8,3 +8,12 @@ diagram
 
 .qwen/
 gha-creds-*.json
+
+# Docker
+.env
+!DOCKER.md
+
+# Scripts
+docker-dev.sh
+docker-dev.ps1
+Makefile
