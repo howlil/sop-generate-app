@@ -97,6 +97,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260402-testing-92-passing | ✅ 92 tests passing (100%) — Domain (30), Utils (24), Stores (27), Services (11). Coverage: Branches 65%, Functions 62%. Vitest + Testing Library + MSW setup complete | 2026-04-02 | — | Done | client/ |
 | 20260402-role-guard-fix | Fix role guard security gap — add auth guard, fix redirect logic, global auth check in root route, cleanup import paths | 2026-04-02 | bc7ba23 | Done | client/ |
 | 20260402-server-tests-phase1 | Server testing Phase 1 — 61 tests passing (Auth, SOP, Users, OPD), 13.39% coverage, infrastructure complete | 2026-04-02 | 50be2ce | Done | server/ |
 | 20260402-ux-improvements | UX accessibility improvements — critical + high priority fixes from UX audit: touch targets (44px), error associations (aria-describedby), color contrast (4.5:1), font sizes (14px), skip-to-main link, aria-live regions, table accessibility | 2026-04-02 | — | Done | client/ |

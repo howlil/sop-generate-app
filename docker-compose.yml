@@ -11,8 +11,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${DB_NAME:-sop_db}
-      MYSQL_USER: ${DB_USER:-sop_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-sop_password}
       TZ: Asia/Jakarta
     ports:
       - "${DB_PORT:-3306}:3306"
@@ -40,7 +38,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
-      DATABASE_URL: mysql://${DB_USER:-sop_user}:${DB_PASSWORD:-sop_password}@db:3306/${DB_NAME:-sop_db}?connection_limit=10
+      DATABASE_URL: mysql://root:${DB_ROOT_PASSWORD:-rootpassword}@db:3306/${DB_NAME:-sop_db}?connection_limit=10
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-15m}
       JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-7d}
