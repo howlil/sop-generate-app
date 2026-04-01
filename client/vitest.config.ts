@@ -41,11 +41,16 @@ export default defineConfig({
         },
       },
     },
-    // Fix for JSX in tests
+    // Fix for React 19
     poolOptions: {
       threads: {
         singleThread: true,
       },
     },
+    // Disable deprecation warnings for now
+    clearMocks: true,
+  },
+  esbuild: {
+    target: 'es2020',
   },
 });

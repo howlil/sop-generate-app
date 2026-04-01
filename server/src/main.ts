@@ -7,6 +7,7 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const logger = WinstonModule.createLogger(WinstonLoggerConfig);
@@ -19,6 +20,9 @@ async function bootstrap() {
   process.on('unhandledRejection', (reason) => {
     logger.error('Unhandled Rejection:', reason);
   });
+
+  // Cookie Parser - untuk membaca HttpOnly cookies
+  app.use(cookieParser());
 
   app.setGlobalPrefix('api');
 

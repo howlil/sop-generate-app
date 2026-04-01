@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { server } from './mocks/server';
+import { act } from 'react';
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -32,3 +33,6 @@ afterEach(() => {
 
 // Close server after all tests
 afterAll(() => server.close());
+
+// Export act for tests
+export { act };

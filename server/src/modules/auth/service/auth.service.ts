@@ -40,11 +40,16 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_EXPIRATION', '1d') as any,
+      expiresIn: this.configService.get<string>('JWT_EXPIRATION', '15m') as any,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d') as any,
     });
 
     return {
       accessToken,
+      refreshToken,
       tokenType: 'Bearer',
       user: {
         id: user.id,
@@ -73,5 +78,51 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.kataSandiBaru, 10);
     await this.userRepository.update(userId, { kataSandi: hashedPassword });
+  }
+
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verify(refreshToken);
+      
+      const user = await this.userRepository.findByIdWithPassword(payload.sub);
+      
+      if (!user || user.deletedAt) {
+        throw new UnauthorizedException(AuthMessages.USER_NOT_FOUND);
+      }
+
+      const newPayload = {
+        sub: user.id,
+        email: user.email,
+        peran: user.peran,
+        opdId: user.opdId,
+      };
+
+      const newAccessToken = this.jwtService.sign(newPayload, {
+        expiresIn: this.configService.get<string>('JWT_EXPIRATION', '15m') as any,
+      });
+
+      const newRefreshToken = this.jwtService.sign(newPayload, {
+        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d') as any,
+      });
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException(AuthMessages.TOKEN_INVALID);
+    }
+  }
+
+  getCookieOptions() {
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+    
+    return {
+      httpOnly: true,
+      secure: isProduction, // HTTPS only in production
+      sameSite: 'strict' as const,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/',
+    };
   }
 }
