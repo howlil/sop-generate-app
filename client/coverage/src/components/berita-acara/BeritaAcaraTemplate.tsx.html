@@ -1,0 +1,469 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/components/berita-acara/BeritaAcaraTemplate.tsx</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/berita-acara</a> BeritaAcaraTemplate.tsx</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/82</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/82</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a>
+<a name='L87'></a><a href='#L87'>87</a>
+<a name='L88'></a><a href='#L88'>88</a>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
+ * Template Berita Acara resmi (format Pemerintah Provinsi Sumatera Barat).
+ * Layout: kop surat, judul, isi (paragraf + poin), penutup, blok tanda tangan.
+ */
+<span class="cstat-no" title="statement not covered" >import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'</span>
+<span class="cstat-no" title="statement not covered" >import { formatTempatTanggal } from '@/utils/format-date'</span>
+import type { TTESignaturePayload } from '@/lib/types/tte'
+&nbsp;
+export interface BeritaAcaraTemplateProps {
+  /** Nama OPD (e.g. "Dinas Koperasi dan UKM") */
+  opd: string
+  /** Nomor Berita Acara */
+  nomorBA?: string
+  /** Tanggal verifikasi (untuk "Padang, Bulan Tahun") */
+  tanggalVerifikasi?: string
+  /** Daftar SOP */
+  sopList: Array&lt;{ nomor: string; nama: string }&gt;
+  /** Nama Tim Evaluator */
+  evaluator?: string
+  /** Nama pejabat Biro Organisasi */
+  namaBiro?: string
+  /** TTE Biro (jika sudah TTD) */
+  tteSignaturePayload?: TTESignaturePayload
+  /** Nama OPD / pejabat OPD (kolom kiri TTD, opsional) */
+  namaKepalaOPD?: string
+  /** Tampilkan dalam mode cetak (margin, font) */
+  forPrint?: boolean
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >export function BeritaAcaraTemplate({</span>
+<span class="cstat-no" title="statement not covered" >  opd,</span>
+<span class="cstat-no" title="statement not covered" >  nomorBA,</span>
+<span class="cstat-no" title="statement not covered" >  tanggalVerifikasi,</span>
+<span class="cstat-no" title="statement not covered" >  sopList: _sopList,</span>
+<span class="cstat-no" title="statement not covered" >  evaluator: _evaluator,</span>
+<span class="cstat-no" title="statement not covered" >  namaBiro,</span>
+<span class="cstat-no" title="statement not covered" >  tteSignaturePayload,</span>
+<span class="cstat-no" title="statement not covered" >  namaKepalaOPD,</span>
+<span class="cstat-no" title="statement not covered" >  forPrint = false,</span>
+<span class="cstat-no" title="statement not covered" >}: BeritaAcaraTemplateProps) {</span>
+<span class="cstat-no" title="statement not covered" >  const dateLine = formatTempatTanggal(tanggalVerifikasi ?? new Date().toISOString().slice(0, 10))</span>
+<span class="cstat-no" title="statement not covered" >  const wrapperClass = forPrint ? 'bg-white text-black p-8 max-w-[210mm] mx-auto font-serif text-[11pt]' : 'bg-white text-gray-900 p-6 rounded-lg border border-gray-200 font-serif text-sm'</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return (</span>
+<span class="cstat-no" title="statement not covered" >    &lt;article className={wrapperClass}&gt;</span>
+      {/* Kop */}
+<span class="cstat-no" title="statement not covered" >      &lt;header className="border-b-2 border-black pb-3 mb-6"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;div className="flex items-start gap-4"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="w-16 h-20 flex-shrink-0 border-2 border-gray-700 flex items-center justify-center text-[8px] font-bold text-center leading-tight px-0.5"&gt;</span>
+            SUMATERA BARAT
+<span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="flex-1 text-center"&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;p className="text-base font-bold uppercase leading-tight"&gt;Pemerintah Provinsi Sumatera Barat&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;p className="text-sm font-bold uppercase leading-tight mt-0.5"&gt;Sekretariat Daerah&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;p className="text-[10pt] mt-1 text-gray-700"&gt;</span>
+              Jalan Jenderal Sudirman No. 51 Telp. 31401-31402-34425 Padang
+<span class="cstat-no" title="statement not covered" >            &lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;p className="text-[10pt] text-gray-600"&gt;http://www.sumbarprov.go.id&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/header&gt;</span>
+&nbsp;
+      {/* Judul */}
+<span class="cstat-no" title="statement not covered" >      &lt;div className="text-center mb-6"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;h1 className="text-base font-bold uppercase mb-2"&gt;Berita Acara&lt;/h1&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;h2 className="text-sm font-bold uppercase leading-snug mb-1"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          Pelaksanaan Verifikasi dan Evaluasi Standar Operasional Prosedur (SOP) pada {opd} Provinsi Sumatera Barat</span>
+<span class="cstat-no" title="statement not covered" >        &lt;/h2&gt;</span>
+<span class="cstat-no" title="statement not covered" >        {nomorBA &amp;&amp; &lt;p className="text-xs mt-1"&gt;Nomor: {nomorBA}&lt;/p&gt;}</span>
+<span class="cstat-no" title="statement not covered" >        &lt;p className="text-xs mt-2"&gt;Bertempat di Ruang Rapat Biro Organisasi Lt. III Escape Building&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
+&nbsp;
+      {/* Isi */}
+<span class="cstat-no" title="statement not covered" >      &lt;div className="text-justify leading-relaxed space-y-3 mb-6"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;p&gt;</span>
+          Dalam rangka pelaksanaan kegiatan Evaluasi Standar Operasional Prosedur (SOP) pada Perangkat Daerah, UPTD, dan Unit Layanan di lingkungan Pemerintah Provinsi Sumatera Barat, Biro Organisasi telah melaksanakan verifikasi dan evaluasi SOP pada sejumlah perangkat daerah.
+<span class="cstat-no" title="statement not covered" >        &lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;p&gt;</span>
+          Pelaksanaan evaluasi ini dilakukan oleh Tim Verifikasi dan Evaluasi berdasarkan Keputusan Gubernur Sumatera Barat Nomor 065-277-2025 tentang Pembentukan Tim Evaluasi Penyusunan dan Penerapan Standar Operasional Prosedur pada Organisasi Perangkat Daerah di Lingkungan Pemerintah Provinsi Sumatera Barat.
+<span class="cstat-no" title="statement not covered" >        &lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;p&gt;</span>
+          Proses verifikasi dan pemberian saran perbaikan dilaksanakan mengacu pada Pedoman Evaluasi Dokumen SOP sebagaimana diatur dalam Peraturan Menteri Pendayagunaan Aparatur Negara dan Reformasi Birokrasi Nomor 35 Tahun 2012 tentang Pedoman Penyusunan Standar Operasional Prosedur Administrasi Pemerintahan, dengan ketentuan sebagai berikut:
+<span class="cstat-no" title="statement not covered" >        &lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;ol className="list-decimal list-inside pl-2 space-y-1 text-justify"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Mampu mendorong peningkatan kinerja Organisasi dan ASN;&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Mudah dipahami oleh ASN selaku pelaksana;&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Mudah untuk dilaksanakan dalam pekerjaan;&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Semua orang dapat menjalankan perannya masing-masing sesuai uraian tugas;&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Mampu mengatasi masalah permasalahan yang berkaitan dengan proses;&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Mampu menjawab peningkatan kinerja organisasi;&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;li&gt;Sinergi yang maksimal antara semua pelaksana sehingga tidak ada uraian tugas yang tumpang tindih antara satu dengan yang lainnya.&lt;/li&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;/ol&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;p&gt;</span>
+          Demikian Berita Acara Pelaksanaan Verifikasi dan Evaluasi Standar Operasional Prosedur (SOP) di Lingkup Pemerintah Provinsi Sumatera Barat ini dibuat, untuk dipergunakan sebagaimana mestinya.
+<span class="cstat-no" title="statement not covered" >        &lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
+&nbsp;
+      {/* Tempat, tanggal */}
+<span class="cstat-no" title="statement not covered" >      &lt;div className="text-right mb-12"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;p className="text-sm"&gt;{dateLine}&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
+&nbsp;
+      {/* Blok tanda tangan */}
+<span class="cstat-no" title="statement not covered" >      &lt;div className="grid grid-cols-2 gap-8"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;div className="border border-gray-800 p-4 text-center"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;p className="text-xs font-bold uppercase mb-8"&gt;{opd}&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;div className="h-16 mb-2" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;p className="text-sm font-bold"&gt;{namaKepalaOPD ?? '—'}&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >        &lt;div className="border border-gray-800 p-4 text-center"&gt;</span>
+<span class="cstat-no" title="statement not covered" >          &lt;p className="text-xs font-bold uppercase mb-8"&gt;Biro Organisasi&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >          {tteSignaturePayload ? (</span>
+<span class="cstat-no" title="statement not covered" >            &lt;TTESignatureBlock</span>
+<span class="cstat-no" title="statement not covered" >              payload={tteSignaturePayload}</span>
+<span class="cstat-no" title="statement not covered" >              roleLabel="Biro Organisasi"</span>
+<span class="cstat-no" title="statement not covered" >              qrSize={64}</span>
+<span class="cstat-no" title="statement not covered" >            /&gt;</span>
+          ) : (
+<span class="cstat-no" title="statement not covered" >            &lt;&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;div className="h-16 mb-2" /&gt;</span>
+<span class="cstat-no" title="statement not covered" >              &lt;p className="text-sm font-bold"&gt;{namaBiro ?? '—'}&lt;/p&gt;</span>
+<span class="cstat-no" title="statement not covered" >            &lt;/&gt;</span>
+          )}
+<span class="cstat-no" title="statement not covered" >        &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;/article&gt;</span>
+  )
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-04-01T20:18:47.105Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    
