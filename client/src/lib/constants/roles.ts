@@ -1,35 +1,8 @@
 /**
- * Global role constants — single source of truth for role keys and labels.
- *
- * ROLES       → kebab-case identifiers used in routing, stores, and auth
- * ROLE_LABELS → human-readable labels (Bahasa Indonesia) for UI display
+ * Stubs for backward compatibility
+ * TODO: Migrate to new structure
  */
 
-export const ROLES = {
-  KEPALA_OPD: 'kepala-opd',
-  BIRO_ORGANISASI: 'biro-organisasi',
-  TIM_EVALUASI: 'tim-evaluasi',
-  TIM_PENYUSUN: 'tim-penyusun',
-} as const
-
-export type RoleKey = (typeof ROLES)[keyof typeof ROLES]
-
-export function isRoleKey(value: unknown): value is RoleKey {
-  return typeof value === 'string' && Object.values(ROLES).includes(value as RoleKey)
-}
-
-export const ROLE_LABELS: Record<RoleKey, string> = {
-  [ROLES.KEPALA_OPD]: 'OPD',
-  [ROLES.BIRO_ORGANISASI]: 'Biro Organisasi',
-  [ROLES.TIM_EVALUASI]: 'Tim Evaluasi',
-  [ROLES.TIM_PENYUSUN]: 'Tim Penyusun',
-}
-
-/** Roles that appear in komentar panels. */
-export const KOMENTAR_ROLES = [
-  ROLE_LABELS[ROLES.KEPALA_OPD],
-  ROLE_LABELS[ROLES.TIM_EVALUASI],
-  ROLE_LABELS[ROLES.TIM_PENYUSUN],
-] as const
-
-export type KomentarRoleLabel = (typeof KOMENTAR_ROLES)[number]
+// Re-export from new locations
+export { ROLES, ROLE_LABELS } from '@/utils/constants'
+export type { RoleKey } from '@/utils/constants'

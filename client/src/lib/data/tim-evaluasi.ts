@@ -1,14 +1,26 @@
 /**
- * Data layer: Tim Evaluasi.
- * Sumber data = JSON (nanti bisa diganti API/store). Page tidak import JSON langsung.
+ * Legacy Tim Evaluasi data - deprecated
+ * Tim Evaluasi data is now handled by backend API
+ * This file is for backward compatibility only
  */
-import type { TimEvaluasiAnggota } from '@/lib/types/tim'
-import timEvaluasiAnggotaJson from '../seed/tim-evaluasi-anggota.json'
 
-const SEED_TIM_EVALUASI_ANGGOTA_LIST: TimEvaluasiAnggota[] =
-  timEvaluasiAnggotaJson as TimEvaluasiAnggota[]
+export interface TimEvaluasi {
+  id: string
+  userId: string
+  nama: string
+  nip: string
+  status: 'AKTIF' | 'NONAKTIF'
+  createdAt: string
+  updatedAt: string
+}
 
-/** Data awal daftar Tim Evaluasi (untuk inisialisasi state di page). */
-export function getInitialTimEvaluasiList(): TimEvaluasiAnggota[] {
-  return [...SEED_TIM_EVALUASI_ANGGOTA_LIST]
+/** Mock Tim Evaluasi data for development */
+const MOCK_DATA: TimEvaluasi[] = []
+
+/**
+ * Get initial Tim Evaluasi list
+ * @deprecated Use useTimEvaluasi hook instead
+ */
+export function getInitialTimEvaluasiList(): TimEvaluasi[] {
+  return MOCK_DATA
 }

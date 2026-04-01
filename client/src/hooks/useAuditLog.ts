@@ -1,33 +1,55 @@
-import { useCallback } from 'react'
-import { useAuditLogStore, addAuditEntry } from '@/lib/stores/audit-log-store'
-import type { AuditAction } from '@/lib/types/audit'
-import type { StatusSOP } from '@/lib/types/sop'
+import { useState, useCallback, useMemo } from 'react'
 
+export interface AuditLogEntry {
+  id: string
+  sopId: string
+  action: string
+  userId: string
+  userName: string
+  timestamp: string
+  details?: string
+}
+
+const STORAGE_KEY = 'audit_log'
+
+/**
+ * Hook to manage audit log
+ * @deprecated Use API instead
+ */
 export function useAuditLog() {
-  const entries = useAuditLogStore((s) => s.entries)
+  const [entries, setEntries] = useState<AuditLogEntry[]>([])
 
   const logAction = useCallback(
-    (params: {
-      sopId: string
-      action: AuditAction
-      aktorNama: string
-      aktorRole: string
-      statusSebelum?: StatusSOP
-      statusSesudah: StatusSOP
-      keterangan?: string
-    }) => {
-      addAuditEntry(params)
+    (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
+      const newEntry: AuditLogEntry = {
+        ...entry,
+        id: `audit-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+      }
+      setEntries((prev) => [...prev, newEntry])
+      console.log('Audit log:', newEntry)
     },
     []
   )
 
   const getEntriesForSop = useCallback(
-    (sopId: string) =>
-      entries
-        .filter((e) => e.sopId === sopId)
-        .sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
+    (sopId: string): AuditLogEntry[] => {
+      return entries.filter((e) => e.sopId === sopId)
+    },
     [entries]
   )
 
-  return { logAction, getEntriesForSop }
+  const clearEntries = useCallback(() => {
+    setEntries([])
+  }, [])
+
+  return useMemo(
+    () => ({
+      entries,
+      logAction,
+      getEntriesForSop,
+      clearEntries,
+    }),
+    [entries, logAction, getEntriesForSop, clearEntries]
+  )
 }

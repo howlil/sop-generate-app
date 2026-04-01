@@ -1,58 +1,36 @@
 /**
- * Store tim penyusun per OPD — satu OPD punya banyak tim penyusun.
+ * Legacy Tim Penyusun store - deprecated
+ * Tim Penyusun data is now handled by backend API
+ * This file is for backward compatibility only
  */
-import { create } from 'zustand'
+
 import type { TimPenyusun } from '@/lib/types/tim'
 
-interface TimPenyusunState {
-  list: TimPenyusun[]
-  setList: (next: TimPenyusun[]) => void
-  add: (t: TimPenyusun) => void
-  update: (id: string, patch: Partial<TimPenyusun>) => void
-  remove: (id: string) => void
-  getByOpdId: (opdId: string) => TimPenyusun[]
-  /** Hanya tim penyusun dengan status Aktif (untuk tugas baru, dropdown, dll.). */
-  getAktifByOpdId: (opdId: string) => TimPenyusun[]
+const STORAGE_KEY = 'tim_penyusun_store'
+
+/**
+ * Add Tim Penyusun
+ * @deprecated Use API instead
+ */
+export function addTimPenyusun(data: Omit<TimPenyusun, 'id' | 'createdAt' | 'updatedAt'>) {
+  console.log('Adding Tim Penyusun:', data)
+  // Legacy stub - in production, this should call API
 }
 
-export const useTimPenyusunStore = create<TimPenyusunState>()((set, get) => ({
-  list: [],
-  setList: (next) => set({ list: [...next] }),
-  add: (t) => set((s) => ({ list: [...s.list, t] })),
-  update: (id, patch) =>
-    set((s) => ({
-      list: s.list.map((t) => (t.id === id ? { ...t, ...patch } : t)),
-    })),
-  remove: (id) => set((s) => ({ list: s.list.filter((t) => t.id !== id) })),
-  getByOpdId: (opdId) => get().list.filter((t) => t.opdId === opdId),
-  getAktifByOpdId: (opdId) =>
-    get().list.filter((t) => t.opdId === opdId && t.status === 'Aktif'),
-}))
-
-export function getTimPenyusunList(): TimPenyusun[] {
-  return useTimPenyusunStore.getState().list
+/**
+ * Update Tim Penyusun
+ * @deprecated Use API instead
+ */
+export function updateTimPenyusun(id: string, data: Partial<TimPenyusun>) {
+  console.log('Updating Tim Penyusun:', id, data)
+  // Legacy stub - in production, this should call API
 }
 
-export function setTimPenyusunList(next: TimPenyusun[]) {
-  useTimPenyusunStore.getState().setList(next)
-}
-
-export function addTimPenyusun(t: TimPenyusun) {
-  useTimPenyusunStore.getState().add(t)
-}
-
-export function updateTimPenyusun(id: string, patch: Partial<TimPenyusun>) {
-  useTimPenyusunStore.getState().update(id, patch)
-}
-
+/**
+ * Remove Tim Penyusun
+ * @deprecated Use API instead
+ */
 export function removeTimPenyusun(id: string) {
-  useTimPenyusunStore.getState().remove(id)
-}
-
-export function subscribeTimPenyusun(cb: () => void): () => void {
-  return useTimPenyusunStore.subscribe(cb)
-}
-
-export function getTimPenyusunAktifByOpdId(opdId: string): TimPenyusun[] {
-  return useTimPenyusunStore.getState().getAktifByOpdId(opdId)
+  console.log('Removing Tim Penyusun:', id)
+  // Legacy stub - in production, this should call API
 }

@@ -1,69 +1,78 @@
-/**
- * Hook for persisting evaluasi draft to localStorage.
- */
 import { useState, useEffect, useCallback } from 'react'
-import { useToast } from '@/hooks/useUI'
 
-export interface EvaluasiDraftData {
+const STORAGE_KEY = 'evaluasi_draft'
+
+export interface EvaluasiDraft {
+  sopId: string
   komentarEvaluasi: string
   statusEvaluasi: 'Sesuai' | 'Revisi Biro' | null
 }
 
-const DRAFT_STORAGE_PREFIX = 'evaluasi_draft_'
-function getStorageKey(id: string): string {
-  return `${DRAFT_STORAGE_PREFIX}${id}`
-}
-
-/** Baca draft evaluasi dari localStorage (untuk list Sedang Dievaluasi & kirim semua). */
-export function getEvaluasiDraft(sopId: string): EvaluasiDraftData | null {
-  if (typeof window === 'undefined') return null
-  const raw = localStorage.getItem(getStorageKey(sopId))
-  if (!raw) return null
-  try {
-    const data = JSON.parse(raw) as Partial<EvaluasiDraftData>
-    if (data.statusEvaluasi != null) {
-      const komentar = typeof data.komentarEvaluasi === 'string' ? data.komentarEvaluasi : ''
-      if (data.statusEvaluasi !== 'Revisi Biro' || komentar.trim() !== '') {
-        return { komentarEvaluasi: komentar, statusEvaluasi: data.statusEvaluasi }
-      }
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-export function clearEvaluasiDraft(sopId: string): void {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem(getStorageKey(sopId))
-}
-
-export function useEvaluasiDraft(id: string | undefined) {
-  const { showToast } = useToast()
-  const [komentarEvaluasi, setKomentarEvaluasi] = useState('')
+/**
+ * Hook untuk manage draft evaluasi SOP (localStorage-based).
+ * Digunakan oleh Tim Evaluasi saat mengisi form evaluasi.
+ */
+export function useEvaluasiDraft(sopId: string | undefined) {
+  const [komentarEvaluasi, setKomentarEvaluasi] = useState<string>('')
   const [statusEvaluasi, setStatusEvaluasi] = useState<'Sesuai' | 'Revisi Biro' | null>(null)
 
+  // Load draft from localStorage on mount or when sopId changes
   useEffect(() => {
-    if (!id) return
-    const draft = getEvaluasiDraft(id)
-    if (!draft) return
-    setKomentarEvaluasi(draft.komentarEvaluasi)
-    setStatusEvaluasi(draft.statusEvaluasi)
-  }, [id])
+    if (!sopId) {
+      setKomentarEvaluasi('')
+      setStatusEvaluasi(null)
+      return
+    }
 
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const drafts: Record<string, EvaluasiDraft> = JSON.parse(stored)
+        const draft = drafts[sopId]
+        if (draft) {
+          setKomentarEvaluasi(draft.komentarEvaluasi || '')
+          setStatusEvaluasi(draft.statusEvaluasi || null)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load evaluasi draft:', error)
+    }
+  }, [sopId])
+
+  // Save draft to localStorage
   const saveDraft = useCallback(() => {
-    if (!id) return
-    localStorage.setItem(
-      getStorageKey(id),
-      JSON.stringify({ komentarEvaluasi, statusEvaluasi })
-    )
-    showToast('Draft evaluasi berhasil disimpan')
-  }, [id, komentarEvaluasi, statusEvaluasi])
+    if (!sopId) return
 
-  const clearDraft = useCallback(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      const drafts: Record<string, EvaluasiDraft> = stored ? JSON.parse(stored) : {}
+      drafts[sopId] = {
+        sopId,
+        komentarEvaluasi,
+        statusEvaluasi,
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts))
+    } catch (error) {
+      console.error('Failed to save evaluasi draft:', error)
+    }
+  }, [sopId, komentarEvaluasi, statusEvaluasi])
+
+  // Clear draft for specific SOP
+  const clearDraft = useCallback((targetSopId?: string) => {
+    const id = targetSopId || sopId
     if (!id) return
-    localStorage.removeItem(getStorageKey(id))
-  }, [id])
+
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        const drafts: Record<string, EvaluasiDraft> = JSON.parse(stored)
+        delete drafts[id]
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(drafts))
+      }
+    } catch (error) {
+      console.error('Failed to clear evaluasi draft:', error)
+    }
+  }, [sopId])
 
   return {
     komentarEvaluasi,
@@ -73,4 +82,20 @@ export function useEvaluasiDraft(id: string | undefined) {
     saveDraft,
     clearDraft,
   }
+}
+
+/**
+ * Get draft evaluasi untuk SOP tertentu (sync, untuk SSR/hydration)
+ */
+export function getEvaluasiDraft(sopId: string): EvaluasiDraft | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const drafts: Record<string, EvaluasiDraft> = JSON.parse(stored)
+      return drafts[sopId] || null
+    }
+  } catch (error) {
+    console.error('Failed to get evaluasi draft:', error)
+  }
+  return null
 }

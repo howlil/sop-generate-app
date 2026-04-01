@@ -1,0 +1,20 @@
+/**
+ * Constants
+ */
+
+export const LOCALE_ID = 'id-ID'
+
+export const STATUS_SOP_ALL = [
+  'DRAFT',
+  'SEDANG_DISUSUN',
+  'SIAP_DIEVALUASI',
+  'DIAJUKAN_EVALUASI',
+  'SEDANG_DIEVALUASI',
+  'REVISI_DARI_TIM_EVALUASI',
+  'SIAP_DIVERIFIKASI',
+  'DIVERIFIKASI_BIRO_ORGANISASI',
+  'BERLAKU',
+  'DICABUT',
+] as const
+
+export const DEFAULT_PAGE_SIZE = 10

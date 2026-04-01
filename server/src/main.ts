@@ -1,13 +1,12 @@
-// src/main.ts
-
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
-import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 
 async function bootstrap() {
   const logger = WinstonModule.createLogger(WinstonLoggerConfig);
@@ -21,15 +20,26 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
+  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
-  app.useGlobalInterceptors(new ResponseInterceptor());
+  // Global Guards
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(
+    new JwtAuthGuard(reflector),
+    new RolesGuard(reflector),
+  );
+
+  // Global Exception Filter
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   // CORS Configuration
@@ -45,10 +55,13 @@ async function bootstrap() {
 
   // Swagger setup
   const config = new DocumentBuilder()
-    .setTitle('API Documentation')
-    .setDescription('Clean Architecture NestJS API')
+    .setTitle('SOP Biro Organisasi API')
+    .setDescription('API untuk Sistem Manajemen SOP Biro Organisasi')
     .setVersion('1.0')
     .addBearerAuth()
+    .addTag('Auth', 'Authentication endpoints')
+    .addTag('Users', 'User management')
+    .addTag('Health', 'Health check')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
@@ -61,6 +74,7 @@ async function bootstrap() {
   logger.log(`🚀 Server running on http://localhost:${port}/api`);
   logger.log(`📚 Swagger docs: http://localhost:${port}/docs`);
   logger.log(`💚 Health check: http://localhost:${port}/health`);
+  logger.log(`🔐 Auth endpoint: http://localhost:${port}/api/v1/login`);
 }
 
 bootstrap();

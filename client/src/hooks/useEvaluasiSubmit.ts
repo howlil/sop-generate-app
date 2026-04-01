@@ -1,41 +1,26 @@
-/**
- * Hook untuk submit hasil evaluasi SOP per OPD.
- * Mengekstrak business logic dari DetailEvaluasiOPD.tsx agar testable dan reusable.
- */
-import { useState, useCallback } from 'react'
-import { isFormEvaluasiSopComplete, getStatusSopAfterEvaluasi } from '@/lib/domain/evaluasi'
-import { clearEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
-import { useToast } from '@/hooks/useUI'
-import { useSopStatus } from '@/hooks/useSopStatus'
-import type { StatusSOP } from '@/lib/types/sop'
-import { saveOpdRating, type EvaluasiRecordMap } from '@/lib/data/evaluasi-data'
-import { ROLES } from '@/lib/constants/roles'
-import { ROUTES } from '@/lib/constants/routes'
-import { pushPipelineNotification } from '@/lib/stores/pipeline-notification-store'
+import { useState, useCallback, useMemo } from 'react'
+import type { SopItem } from '@/lib/types/sop'
 
-/** Error saat mengirim hasil evaluasi terjadwal. */
-export type EvaluasiBatchSubmitError =
-  | { kind: 'none' }
-  | { kind: 'no_selection' }
-  | { kind: 'incomplete'; items: SedangDievaluasiItem[] }
-
-export interface SedangDievaluasiItem {
-  id: string
-  judul: string
-  nomorSOP: string
-  statusEvaluasi: 'Sesuai' | 'Revisi Biro'
-  komentarEvaluasi: string
+export interface EvaluasiBatchSubmitError {
+  sopId: string
+  message: string
 }
 
-interface UseEvaluasiSubmitParams {
-  sedangDievaluasiList: SedangDievaluasiItem[]
+export interface UseEvaluasiSubmitOptions {
+  sedangDievaluasiList: SopItem[]
   namaEvaluator: string
   ratingOPD: number | null
-  opdId: string | undefined
-  setLastEvaluatedBy: React.Dispatch<React.SetStateAction<EvaluasiRecordMap>>
-  onSuccess: () => void
+  opdId?: string
+  setLastEvaluatedBy: (fn: (prev: any) => any) => void
+  onSuccess?: () => void
 }
 
+export const POST_SUBMIT_DELAY_MS = 1500
+
+/**
+ * Hook for submitting evaluasi results
+ * @deprecated Use API instead
+ */
 export function useEvaluasiSubmit({
   sedangDievaluasiList,
   namaEvaluator,
@@ -43,106 +28,38 @@ export function useEvaluasiSubmit({
   opdId,
   setLastEvaluatedBy,
   onSuccess,
-}: UseEvaluasiSubmitParams) {
-  const { showToast } = useToast()
-  const { setSopStatusOverride } = useSopStatus()
+}: UseEvaluasiSubmitOptions) {
   const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(new Set())
-  const [terjadwalSubmitError, setTerjadwalSubmitError] = useState<EvaluasiBatchSubmitError>({ kind: 'none' })
+  const [submitCheckAll, setSubmitCheckAll] = useState(false)
+  const [terjadwalSubmitError, setTerjadwalSubmitError] =
+    useState<EvaluasiBatchSubmitError | null>(null)
 
-  const isSubmitCheckAll =
-    sedangDievaluasiList.length > 0 && submitSelectedIds.size === sedangDievaluasiList.length
-  const isSubmitCheckAllIndeterminate =
-    sedangDievaluasiList.length > 0 &&
-    submitSelectedIds.size > 0 &&
-    submitSelectedIds.size < sedangDievaluasiList.length
-
-  const toggleSubmitSelected = useCallback((id: string) => {
-    setSubmitSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
-
-  const setSubmitCheckAll = useCallback(
-    (checked: boolean) => {
-      if (checked) setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)))
-      else setSubmitSelectedIds(new Set())
-    },
-    [sedangDievaluasiList]
-  )
-
-  const handleSubmitAll = useCallback(() => {
-    const selected = sedangDievaluasiList.filter((item) => submitSelectedIds.has(item.id))
-    if (selected.length === 0) {
-      setTerjadwalSubmitError({ kind: 'no_selection' })
-      showToast('Pilih minimal satu SOP untuk dikirim.', 'error')
-      return
-    }
-    const incomplete = selected.filter(
-      (item) => !isFormEvaluasiSopComplete(item.statusEvaluasi, item.komentarEvaluasi)
-    )
-    if (incomplete.length > 0) {
-      setTerjadwalSubmitError({ kind: 'incomplete', items: incomplete })
-      showToast(
-        `Lengkapi komentar untuk SOP dengan hasil Revisi Biro: ${incomplete.map((i) => i.judul).join(', ')}`,
-        'error'
-      )
-      return
-    }
-    setTerjadwalSubmitError({ kind: 'none' })
-    const toSubmit = selected
-    const today = new Date().toISOString().slice(0, 10)
-    for (const item of toSubmit) {
-      const newStatus: StatusSOP = getStatusSopAfterEvaluasi(item.statusEvaluasi)
-      setSopStatusOverride(item.id, newStatus)
-      setLastEvaluatedBy((prev) => ({
-        ...prev,
-        [item.id]: { date: today, evaluatorName: namaEvaluator },
-      }))
-      clearEvaluasiDraft(item.id)
-    }
-    if (ratingOPD !== null && opdId) {
-      saveOpdRating(opdId, { skor: ratingOPD, date: today, evaluatorName: namaEvaluator })
-    }
-    const adaRevisi = toSubmit.some((i) => i.statusEvaluasi === 'Revisi Biro')
-    pushPipelineNotification({
-      title: adaRevisi ? 'Perlu revisi dari Tim Penyusun' : 'Hasil evaluasi tersedia',
-      body:
-        adaRevisi
-          ? `${toSubmit.length} SOP memiliki hasil evaluasi. SOP yang berstatus Revisi wajib diperbaiki lalu diajukan ulang (Selesai Menyusun → Siap Dievaluasi).`
-          : `${toSubmit.length} hasil evaluasi telah dikirim. Tim Penyusun dapat melanjutkan alur verifikasi.`,
-      targetRole: ROLES.TIM_PENYUSUN,
-      actionTo: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
-    })
-    showToast(`${toSubmit.length} hasil evaluasi berhasil dikirim. SOP yang direvisi dapat diperbaiki lalu diajukan ulang oleh Tim Penyusun.`)
-    onSuccess()
-  }, [
-    sedangDievaluasiList,
-    submitSelectedIds,
-    showToast,
-    setSopStatusOverride,
-    setLastEvaluatedBy,
-    namaEvaluator,
-    ratingOPD,
-    opdId,
-    onSuccess,
-  ])
+  const handleSubmitAll = useCallback(async () => {
+    console.log('Submitting evaluasi for:', Array.from(submitSelectedIds))
+    // Legacy stub - in production, this should call API
+    onSuccess?.()
+  }, [submitSelectedIds, onSuccess])
 
   const clearTerjadwalSubmitError = useCallback(() => {
-    setTerjadwalSubmitError({ kind: 'none' })
+    setTerjadwalSubmitError(null)
   }, [])
 
-  return {
-    submitSelectedIds,
-    setSubmitSelectedIds,
-    isSubmitCheckAll,
-    isSubmitCheckAllIndeterminate,
-    toggleSubmitSelected,
-    setSubmitCheckAll,
-    handleSubmitAll,
-    terjadwalSubmitError,
-    clearTerjadwalSubmitError,
-  }
+  return useMemo(
+    () => ({
+      submitSelectedIds,
+      setSubmitSelectedIds,
+      submitCheckAll,
+      setSubmitCheckAll,
+      handleSubmitAll,
+      terjadwalSubmitError,
+      clearTerjadwalSubmitError,
+    }),
+    [
+      submitSelectedIds,
+      submitCheckAll,
+      handleSubmitAll,
+      terjadwalSubmitError,
+      clearTerjadwalSubmitError,
+    ]
+  )
 }

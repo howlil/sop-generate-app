@@ -1,67 +1,58 @@
-/**
- * Hook untuk halaman detail Pengajuan Evaluasi (Biro): satu pengajuan + langkah verifikasi Berita Acara (peran Biro).
- * Per ERD-DESKRIPSI.md: PengajuanEvaluasi menggantikan konsep "VerifikasiBatch"
- * 
- * Saat verifikasi berhasil:
- * - pengajuan status → DIVERIFIKASI_BIRO
- * - semua SOP di pengajuan status → DIVERIFIKASI_BIRO_ORGANISASI
- */
-import { useCallback, useMemo } from 'react'
-import {
-  getSopDetailIdsFromPengajuanEvaluasi,
-  STATUS_SOP_AFTER_VERIFIKASI_BIRO,
-} from '@/lib/domain/sop-status'
-import { usePengajuanEvaluasiDetail, usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { PengajuanEvaluasi } from '@/lib/types/pengajuan-evaluasi'
-import type { StatusSOP } from '@/lib/types/sop'
-import { useSopStatusStore } from '@/lib/stores/sop-status-store'
 
-export interface UsePengajuanEvaluasiDetailResult {
-  pengajuan: PengajuanEvaluasi | null
-  updatePengajuan: (patch: Partial<PengajuanEvaluasi>) => void
-  mergedSopRows: { id: string; status: StatusSOP }[]
-  handleVerify: () => Promise<void>
-  isVerified: boolean
-  canVerify: boolean
-}
+const STORAGE_KEY = 'pengajuan_evaluasi_detail'
 
-export function usePengajuanEvaluasiDetailPage(id: string | undefined): UsePengajuanEvaluasiDetailResult {
-  const { pengajuan, updatePengajuan } = usePengajuanEvaluasiDetail(id)
-  const { list: pengajuanList } = usePengajuanEvaluasiList()
-  const { setSopStatusOverride } = useSopStatusStore()
+/**
+ * Mock data for development
+ */
+const MOCK_DATA: Record<string, PengajuanEvaluasi> = {}
 
-  const mergedSopRows = useMemo(() => {
-    if (!pengajuan) return []
-    return (pengajuan.sopList ?? []).map((sop) => ({
-      id: sop.sopDetailId,
-      status: sop.hasil === 'SESUAI' ? 'SIAP_DIVERIFIKASI' : 'REVISI_DARI_TIM_EVALUASI',
-    }))
-  }, [pengajuan])
+/**
+ * Hook to manage pengajuan evaluasi detail
+ * @deprecated Use API instead
+ */
+export function usePengajuanEvaluasiDetailPage(id: string) {
+  const [detail, setDetail] = useState<PengajuanEvaluasi | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
-  const handleVerify = useCallback(async () => {
-    if (!pengajuan) return
-    const sopIds = getSopDetailIdsFromPengajuanEvaluasi(pengajuan)
-    
-    updatePengajuan({
-      status: 'DIVERIFIKASI_BIRO',
-      diverifikasiOlehId: 'current-user-id', // TODO: get from auth
-    })
+  const loadDetail = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      setDetail(MOCK_DATA[id] || null)
+    } catch (err) {
+      setError(err as Error)
+    } finally {
+      setLoading(false)
+    }
+  }, [id])
 
-    sopIds.forEach((id) => {
-      setSopStatusOverride(id, STATUS_SOP_AFTER_VERIFIKASI_BIRO)
-    })
-  }, [pengajuan, updatePengajuan, setSopStatusOverride])
+  useEffect(() => {
+    loadDetail()
+  }, [loadDetail])
 
-  const isVerified = pengajuan?.status === 'DIVERIFIKASI_BIRO' || pengajuan?.status === 'DITANDATANGANI_KOORDINATOR' || pengajuan?.status === 'SELESAI'
-  
-  const canVerify = pengajuan?.status === 'SELESAI_DIEVALUASI' && !isVerified
+  const approve = useCallback(async () => {
+    console.log('Approving pengajuan evaluasi:', id)
+    // Legacy stub - in production, this should call API
+  }, [id])
 
-  return {
-    pengajuan,
-    updatePengajuan,
-    mergedSopRows,
-    handleVerify,
-    isVerified,
-    canVerify,
-  }
+  const reject = useCallback(async (reason: string) => {
+    console.log('Rejecting pengajuan evaluasi:', id, reason)
+    // Legacy stub - in production, this should call API
+  }, [id])
+
+  return useMemo(
+    () => ({
+      detail,
+      loading,
+      error,
+      loadDetail,
+      approve,
+      reject,
+    }),
+    [detail, loading, error, loadDetail, approve, reject]
+  )
 }

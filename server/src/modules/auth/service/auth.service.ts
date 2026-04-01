@@ -1,0 +1,77 @@
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
+import { UserRepository } from '../../users/repository/user.repository';
+import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
+import { AuthResponseDto } from '../dto/auth-response.dto';
+import { AuthMessages } from '../../../common/messages';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  async login(dto: LoginDto): Promise<AuthResponseDto> {
+    const user = await this.userRepository.findByEmailWithPassword(dto.email);
+
+    if (!user) {
+      throw new UnauthorizedException(AuthMessages.INVALID_EMAIL_OR_PASSWORD);
+    }
+
+    if (user.deletedAt) {
+      throw new UnauthorizedException(AuthMessages.ACCOUNT_DEACTIVATED);
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.kataSandi, user.kataSandi);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(AuthMessages.INVALID_EMAIL_OR_PASSWORD);
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      peran: user.peran,
+      opdId: user.opdId,
+    };
+
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: this.configService.get<string>('JWT_EXPIRATION', '1d') as any,
+    });
+
+    return {
+      accessToken,
+      tokenType: 'Bearer',
+      user: {
+        id: user.id,
+        email: user.email,
+        nama: user.nama,
+        peran: user.peran,
+        opdId: user.opdId,
+        nip: user.nip,
+        jabatan: user.jabatan,
+      },
+    };
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.userRepository.findByIdWithPassword(userId);
+
+    if (!user) {
+      throw new UnauthorizedException(AuthMessages.USER_NOT_FOUND);
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.kataSandiLama, user.kataSandi);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(AuthMessages.INVALID_OLD_PASSWORD);
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.kataSandiBaru, 10);
+    await this.userRepository.update(userId, { kataSandi: hashedPassword });
+  }
+}

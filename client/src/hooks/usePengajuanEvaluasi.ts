@@ -1,46 +1,54 @@
-/**
- * Hook akses Pengajuan Evaluasi — satu titik akses untuk UI.
- * Per ERD-DESKRIPSI.md: PengajuanEvaluasi menggantikan konsep "VerifikasiBatch" / "Terjadwal Evaluasi"
- */
-import { useState, useEffect, useCallback } from 'react'
-import {
-  getPengajuanEvaluasiById,
-  getPengajuanEvaluasiList,
-  subscribePengajuanEvaluasi,
-  updatePengajuanEvaluasi as updatePengajuanEvaluasiStore,
-} from '@/lib/stores/pengajuan-evaluasi-store'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import type { PengajuanEvaluasi } from '@/lib/types/pengajuan-evaluasi'
 
-export function usePengajuanEvaluasiDetail(id: string | undefined) {
-  const [pengajuan, setPengajuan] = useState<PengajuanEvaluasi | null>(() =>
-    id ? getPengajuanEvaluasiById(id) ?? null : null
-  )
+const STORAGE_KEY = 'pengajuan_evaluasi'
+
+/**
+ * Mock data for development
+ */
+const MOCK_DATA: PengajuanEvaluasi[] = []
+
+/**
+ * Hook to manage pengajuan evaluasi list
+ * @deprecated Use API instead
+ */
+export function usePengajuanEvaluasiList() {
+  const [list, setList] = useState<PengajuanEvaluasi[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const loadPengajuanEvaluasi = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      setList(MOCK_DATA)
+    } catch (err) {
+      setError(err as Error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    if (!id) return
-    const unsub = subscribePengajuanEvaluasi(() => setPengajuan(getPengajuanEvaluasiById(id) ?? null))
-    return unsub
-  }, [id])
+    loadPengajuanEvaluasi()
+  }, [loadPengajuanEvaluasi])
 
-  const updatePengajuan = useCallback((patch: Partial<PengajuanEvaluasi>) => {
-    if (!pengajuan) return
-    updatePengajuanEvaluasiStore(pengajuan.id, patch)
-  }, [pengajuan])
-
-  return { pengajuan, updatePengajuan }
+  return useMemo(
+    () => ({
+      list,
+      loading,
+      error,
+      loadPengajuanEvaluasi,
+    }),
+    [list, loading, error, loadPengajuanEvaluasi]
+  )
 }
 
-export function usePengajuanEvaluasiList() {
-  const [list, setList] = useState<PengajuanEvaluasi[]>(() => getPengajuanEvaluasiList())
-
-  useEffect(() => {
-    const unsub = subscribePengajuanEvaluasi(() => setList(getPengajuanEvaluasiList()))
-    return unsub
-  }, [])
-
-  const updatePengajuan = useCallback((id: string, patch: Partial<PengajuanEvaluasi>) => {
-    updatePengajuanEvaluasiStore(id, patch)
-  }, [])
-
-  return { list, updatePengajuan }
+/**
+ * Get pengajuan evaluasi by SOP ID
+ * @deprecated Use API instead
+ */
+export function getPengajuanEvaluasiBySopId(sopId: string): PengajuanEvaluasi | null {
+  return MOCK_DATA.find((p) => p.sopId === sopId) || null
 }

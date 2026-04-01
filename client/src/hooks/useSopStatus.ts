@@ -1,32 +1,102 @@
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import type { SopItem } from '@/lib/types/sop'
+
+const STORAGE_KEY = 'sop_status_overrides'
+
+export interface SopStatusOverride {
+  [sopId: string]: string
+}
+
 /**
- * Hook akses override status SOP — satu titik akses untuk UI.
- * Menggantikan import langsung dari sop-status-store.
+ * Hook to manage SOP status overrides (localStorage-based)
+ * Used for workflow simulation before backend integration
  */
-import { useCallback } from 'react'
-import { useSopStatusStore } from '@/lib/stores/sop-status-store'
-import { mergeSopStatus as mergeSopStatusFromStore, setSopStatusOverride as setOverride } from '@/lib/stores/sop-status-store'
-import type { StatusSOP } from '@/lib/types/sop'
-
 export function useSopStatus() {
-  const overrides = useSopStatusStore((s) => s.overrides)
+  const [overrides, setOverrides] = useState<SopStatusOverride>({})
 
-  const setSopStatusOverride = useCallback((sopId: string, status: StatusSOP) => {
-    setOverride(sopId, status)
+  // Load overrides from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        setOverrides(JSON.parse(stored))
+      }
+    } catch (error) {
+      console.error('Failed to load SOP status overrides:', error)
+    }
   }, [])
 
+  // Save override to localStorage
+  const setSopStatusOverride = useCallback((sopId: string, status: string) => {
+    setOverrides((prev) => {
+      const updated = { ...prev, [sopId]: status }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+      } catch (error) {
+        console.error('Failed to save SOP status override:', error)
+      }
+      return updated
+    })
+  }, [])
+
+  // Get override for specific SOP
   const getSopStatusOverride = useCallback(
-    (sopId: string): StatusSOP | undefined => overrides[sopId],
+    (sopId: string): string | undefined => {
+      return overrides[sopId]
+    },
     [overrides]
   )
 
+  // Merge SOP list with status overrides
   const mergeSopStatus = useCallback(
-    <T extends { id: string; status: StatusSOP }>(list: T[]): T[] => mergeSopStatusFromStore(list),
-    []
+    (sopList: SopItem[]): SopItem[] => {
+      return sopList.map((sop) => ({
+        ...sop,
+        status: overrides[sop.id] || sop.status,
+      }))
+    },
+    [overrides]
   )
 
-  return {
-    setSopStatusOverride,
-    getSopStatusOverride,
-    mergeSopStatus,
-  }
+  // Clear override for specific SOP
+  const clearSopStatusOverride = useCallback((sopId: string) => {
+    setOverrides((prev) => {
+      const { [sopId]: _, ...rest } = prev
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rest))
+      } catch (error) {
+        console.error('Failed to clear SOP status override:', error)
+      }
+      return rest
+    })
+  }, [])
+
+  // Clear all overrides
+  const clearAllOverrides = useCallback(() => {
+    setOverrides({})
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (error) {
+      console.error('Failed to clear all SOP status overrides:', error)
+    }
+  }, [])
+
+  return useMemo(
+    () => ({
+      overrides,
+      setSopStatusOverride,
+      getSopStatusOverride,
+      mergeSopStatus,
+      clearSopStatusOverride,
+      clearAllOverrides,
+    }),
+    [
+      overrides,
+      setSopStatusOverride,
+      getSopStatusOverride,
+      mergeSopStatus,
+      clearSopStatusOverride,
+      clearAllOverrides,
+    ]
+  )
 }

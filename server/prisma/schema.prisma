@@ -25,7 +25,10 @@ enum StatusSOP {
   REVISI_DARI_TIM_EVALUASI
   SIAP_DIVERIFIKASI
   DIVERIFIKASI_BIRO_ORGANISASI
+  /// Versi aktif yang sah — hanya 1 versi BERLAKU per SOP (enforce via trigger, lihat SCHEMA-CONSTRAINTS.md)
   BERLAKU
+  /// Versi lama yang digantikan versi baru. Set otomatis saat versi baru menjadi BERLAKU.
+  DIGANTIKAN
   DICABUT
 }
 
@@ -57,6 +60,12 @@ enum CabangDiagramEdge {
   TIDAK
 }
 
+// Style connector/panah pada diagram SOP.
+enum GayaPanah {
+  STRAIGHT    // garis lurus diagonal (default)
+  ORTHOGONAL  // L-shape / elbow, hanya belok 90°
+}
+
 enum StatusPeraturan {
   BERLAKU
   DICABUT
@@ -68,18 +77,15 @@ enum PeranTTE {
   KOORDINATOR_TIM_PENYUSUN
 }
 
-enum AksiAudit {
-  BUAT_SOP
-  SIMPAN_DRAFT
-  SELESAI_PENYUSUNAN
-  AJUKAN_EVALUASI
-  MULAI_EVALUASI
-  VERIFIKASI_PENGAJUAN_EVALUASI
-  TTD_BA_KOORDINATOR_TIM_PENYUSUN
-  SAHKAN_SOP
-  CABUT_SOP
-  REVISI_DARI_EVALUATOR
-  SALIN_ISI_DARI_SOP
+/// Bagian dokumen SOP yang diedit — dipakai LogEditSOP untuk mencatat kolaborasi Tim Penyusun.
+enum BagianSOP {
+  METADATA       // field header: judul, nomorSOP, tanggalRevisi, logo, namaLembaga, lebarKolom*
+  LANGKAH_SOP    // CRUD pada LangkahSOP
+  LAMPIRAN_TEKS  // CRUD pada LampiranTeks (Peringatan / KualifikasiPelaksanaan / Peralatan / PencatatanPendataan)
+  DASAR_HUKUM    // CRUD pada DasarHukum (tambah/hapus Peraturan dari SOP)
+  PELAKSANA      // CRUD pada DetailSOPPelaksana (swimlane)
+  DIAGRAM        // perubahan DiagramLayout / DiagramNodePosition / DiagramEdge
+  SOP_TERKAIT    // CRUD pada SopTerkait
 }
 
 enum StatusTim {
@@ -132,7 +138,7 @@ model Pengguna {
   kataSandi String
   peran     PeranPengguna
   opdId     String?
-  nip       String
+  nip       String    @unique
   jabatan   String
   pangkat   String
   nohp      String
@@ -145,7 +151,7 @@ model Pengguna {
   keanggotaanTimEvaluasi          AnggotaTimEvaluasi[]
   kredensialTTE                   KredensialTTE?
   tandaTangan                     RiwayatTandaTangan[]
-  logAudit                        LogAudit[]
+  logEditSop                      LogEditSOP[]
   detailSopDibuat                 DetailSOP[]          @relation("SOPDibuatOleh")
   detailSopDiedit                 DetailSOP[]          @relation("SOPDieditOleh")
   pengajuanEvaluasiDiverifikasi   PengajuanEvaluasi[]  @relation("PengajuanDiverifikasiOleh")
@@ -174,11 +180,15 @@ model OPD {
   pelaksana            Pelaksana[]
   anggotaTimPenyusun   AnggotaTimPenyusun[]
   pengajuanEvaluasi    PengajuanEvaluasi[]
+  peraturan            Peraturan[]
 }
 
 // Tabel 3: Peraturan
+// Milik OPD — dibuat dan dikelola oleh Tim Penyusun OPD yang bersangkutan.
+// Akses dibatasi per OPD: Tim Penyusun hanya bisa melihat/mengedit Peraturan milik OPD-nya sendiri.
 model Peraturan {
   id            String          @id @default(uuid())
+  opdId         String
   namaPeraturan String
   nomor         String
   tahun         Int
@@ -187,8 +197,12 @@ model Peraturan {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
+  opd        OPD        @relation(fields: [opdId], references: [id], onDelete: Restrict)
   dasarHukum DasarHukum[]
 
+  // nomor + tahun unik per OPD (bukan global — OPD berbeda boleh punya nomor peraturan sama)
+  @@unique([opdId, nomor, tahun])
+  @@index([opdId])
   @@map("Peraturan")
 }
 
@@ -256,7 +270,7 @@ model DetailSOP {
 
   // audit/flow relations
   nilaiEvaluasi  NilaiEvaluasi[]
-  logAudit       LogAudit[]
+  logEditSop     LogEditSOP[]
   komentar       Komentar[]
 
   // relations
@@ -304,6 +318,9 @@ model DasarHukum {
 }
 
 // Tabel 8: SopTerkait
+// Constraint: sopDetailId != sopTerkaitDetailId (tidak boleh self-reference) — enforce di service layer.
+// Constraint: tidak boleh ada (A→B) DAN (B→A) bersamaan — enforce di service layer.
+// Lihat SCHEMA-CONSTRAINTS.md section [P2-E].
 model SopTerkait {
   sopDetailId        String
   sopTerkaitDetailId String
@@ -335,7 +352,8 @@ model LangkahSOP {
   // 1 langkah = 1 pelaksana (WAJIB - termasuk START/END)
   pelaksanaId String
 
-  // hanya DECISION yang boleh punya kedua cabang terisi; TASK/TERMINATOR maksimal satu
+  // hanya DECISION yang boleh punya kedua cabang terisi; TASK hanya boleh satu; TERMINATOR tidak boleh ada.
+  // Enforce via CHECK constraint di MySQL — lihat SCHEMA-CONSTRAINTS.md section [P2-A].
   langkahSelanjutnyaYaId    String?
   langkahSelanjutnyaTidakId String?
   createdAt                 DateTime @default(now())
@@ -370,13 +388,23 @@ model DiagramLayout {
   sopDetailId String
   jenis       JenisDiagramSOP
   versiLayout Int             @default(1)
-  // Auto-layout parameter (untuk "Perbaiki diagram" & konsistensi render/print)
+
+  // Auto-layout seed — dipakai engine layout untuk konsistensi render ulang.
+  // Increment saat user klik "Perbaiki Diagram" agar engine hasilkan layout baru.
   layoutSeed  Int             @default(0)
 
-  /// Parameter tabel/kolom, style render, dan ukuran swimlane disimpan sebagai JSON delta.
-  /// Null berarti pakai default aplikasi. Hindari ALTER TABLE untuk setiap parameter baru.
-  /// Contoh isi: { "kegiatanWidth": 200, "flowchartArrow": "curved", "nominalBasicPageSteps": 10 }
-  layoutConfig Json?
+  // --- Rendering config (menggantikan layoutConfig Json) ---
+
+  // Style connector/panah antar node. Null = pakai default aplikasi (CURVED).
+  gayaPanah         GayaPanah?
+
+  // Jumlah langkah nominal per halaman cetak A4 landscape.
+  // Dipakai untuk pagination diagram saat print/export PDF. Null = hitung otomatis.
+  langkahPerHalaman Int?       @default(10)
+
+  // Lebar area kolom "Kegiatan" dalam diagram (px). Null = auto-fit dari panjang teks terpanjang.
+  // Berbeda dari DetailSOP.lebarKolomKegiatan yang berlaku untuk format tabel cetak.
+  lebarAreaKegiatan Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -393,6 +421,10 @@ model DiagramLayout {
 }
 
 // Delta posisi node: baris hanya dibuat jika user memindahkan node dari hasil auto-layout.
+// [P0-A] onDelete untuk langkahSOP sengaja dibuat Restrict (bukan Cascade) untuk menghindari
+// multi-path cascade deadlock dengan DiagramLayout→DiagramNodePosition cascade.
+// Service layer WAJIB menghapus DiagramEdge + DiagramNodePosition via DiagramLayout sebelum
+// menghapus LangkahSOP atau DetailSOP. Lihat SCHEMA-CONSTRAINTS.md section [P0-A].
 model DiagramNodePosition {
   diagramLayoutId String
   langkahSopId    String
@@ -404,7 +436,7 @@ model DiagramNodePosition {
   updatedAt DateTime @updatedAt
 
   diagramLayout DiagramLayout @relation(fields: [diagramLayoutId], references: [id], onDelete: Cascade)
-  langkahSOP    LangkahSOP    @relation(fields: [langkahSopId], references: [id], onDelete: Cascade)
+  langkahSOP    LangkahSOP    @relation(fields: [langkahSopId], references: [id], onDelete: Restrict)
 
   @@id([diagramLayoutId, langkahSopId])
   @@index([langkahSopId])
@@ -412,6 +444,11 @@ model DiagramNodePosition {
 }
 
 // Delta routing edge: baris hanya dibuat jika user mengubah jalur panah; tanpa baris = auto-route.
+// [P0-A] dariLangkah dan keLangkah sengaja Restrict (bukan Cascade) untuk menghindari multi-path
+// cascade deadlock — satu DiagramEdge punya 3 jalur cascade (diagramLayout, dariLangkah, keLangkah)
+// yang berpotensi mengunci baris yang sama dari arah berbeda. Primary delete path adalah via
+// DiagramLayout (Cascade). Service layer WAJIB hapus DiagramEdge sebelum hapus LangkahSOP.
+// Lihat SCHEMA-CONSTRAINTS.md section [P0-A].
 model DiagramEdge {
   id              String @id @default(uuid())
   diagramLayoutId String
@@ -426,8 +463,8 @@ model DiagramEdge {
   labelY    Int?
 
   diagramLayout DiagramLayout @relation(fields: [diagramLayoutId], references: [id], onDelete: Cascade)
-  dariLangkah   LangkahSOP    @relation("DiagramEdgeDari", fields: [dariLangkahId], references: [id], onDelete: Cascade)
-  keLangkah     LangkahSOP    @relation("DiagramEdgeKe", fields: [keLangkahId], references: [id], onDelete: Cascade)
+  dariLangkah   LangkahSOP    @relation("DiagramEdgeDari", fields: [dariLangkahId], references: [id], onDelete: Restrict)
+  keLangkah     LangkahSOP    @relation("DiagramEdgeKe", fields: [keLangkahId], references: [id], onDelete: Restrict)
 
   points DiagramEdgePoint[]
 
@@ -482,6 +519,9 @@ model DetailSOPPelaksana {
 
 // ================= Domain: Workflow & Penugasan =================
 // Tabel 12: AnggotaTimPenyusun
+// [P1-F] Invariant: (status = AKTIF) ↔ (berakhirPada IS NULL). Enforce di service layer.
+// Saat nonaktifkan anggota: SET status = NONAKTIF, berakhirPada = NOW() dalam satu UPDATE.
+// Lihat SCHEMA-CONSTRAINTS.md section [P1-F].
 model AnggotaTimPenyusun {
   id               String    @id @default(uuid())
   userId           String
@@ -503,6 +543,8 @@ model AnggotaTimPenyusun {
 }
 
 // Tabel 13: AnggotaTimEvaluasi
+// [P1-F] Invariant: (status = AKTIF) ↔ (berakhirPada IS NULL). Enforce di service layer.
+// Sama dengan AnggotaTimPenyusun — lihat SCHEMA-CONSTRAINTS.md section [P1-F].
 model AnggotaTimEvaluasi {
   id               String    @id @default(uuid())
   userId           String    @unique
@@ -656,24 +698,27 @@ model RiwayatTandaTangan {
 }
 
 // ================= Domain: Audit & Kolaborasi =================
-// Tabel 18: LogAudit
-model LogAudit {
-  id            String        @id @default(uuid())
-  sopDetailId   String
-  aksi          AksiAudit
-  aktorId       String
-  peranAktor    PeranPengguna
-  statusSebelum StatusSOP?
-  statusSesudah StatusSOP
-  keterangan    String?       @db.Text
-  createdAt     DateTime      @default(now())
+// Tabel 18: LogEditSOP — audit trail kolaborasi Tim Penyusun pada konten SOP.
+// Immutable: tidak ada updatedAt. Setiap aksi tulis = baris baru.
+// Catatan: kalau DetailSOP dihapus, log-nya ikut hilang (Cascade) — berbeda dari LogAudit lama
+// yang Restrict. Di sini log adalah riwayat kolaborasi, bukan dokumen legal.
+model LogEditSOP {
+  id          String    @id @default(uuid())
+  sopDetailId String
+  userId      String
+  bagian      BagianSOP
+  // ID entitas spesifik yang diubah (opsional), mis. LangkahSOP.id atau LampiranTeks.id
+  entityId    String?
+  keterangan  String?   @db.Text
+  createdAt   DateTime  @default(now())
 
-  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Restrict)
-  aktor     Pengguna  @relation(fields: [aktorId], references: [id], onDelete: Restrict)
+  sopDetail DetailSOP @relation(fields: [sopDetailId], references: [id], onDelete: Cascade)
+  user      Pengguna  @relation(fields: [userId], references: [id], onDelete: Restrict)
 
   @@index([sopDetailId, createdAt])
-  @@index([aktorId, createdAt])
-  @@map("LogAudit")
+  @@index([sopDetailId, bagian])
+  @@index([userId, createdAt])
+  @@map("LogEditSOP")
 }
 
 // Tabel 20: Komentar

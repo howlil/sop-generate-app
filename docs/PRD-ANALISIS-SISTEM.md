@@ -8,7 +8,9 @@ Sistem ini digunakan oleh empat aktor utama: Tim Penyusun (berada di bawah OPD m
 
 Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan transparansi dalam penyusunan SOP antar unit kerja. Tanpa sistem ini, proses evaluasi dan verifikasi SOP memerlukan koordinasi manual yang rentan terhadap kehilangan jejak audit, ketidakkonsistenan status dokumen, dan kesulitan dalam memantau progres penyusunan SOP secara keseluruhan. Ruang lingkup sistem mencakup manajemen data master (OPD, Peraturan, Tim), penyusunan SOP dengan prosedur BPMN, evaluasi terjadwal SOP, penandatanganan elektronik Berita Acara, dan audit trail lengkap untuk setiap perubahan status SOP.
 
-**Catatan:** Dokumen tunggal kebenaran (single source of truth) untuk schema database adalah `docs/ERD-DESKRIPSI.md` dan `docs/SCHEMA-CONSTRAINTS.md`.
+**Catatan:** Dokumen tunggal kebenaran (single source of truth) untuk schema database adalah:
+- `docs/ERD-DESKRIPSI.md` — Deskripsi entitas dan relasi
+- `docs/SCHEMA-CONSTRAINTS.md` — Constraint bisnis di luar Prisma
 
 ---
 
@@ -25,7 +27,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **[INFERRED FROM CODE]** — Kepala OPD tidak memiliki halaman manajemen tim atau OPD, hanya pantauan dan pengesahan SOP, menunjukkan peran yang lebih pasif dalam operasional sistem.
 
-**[CONSTRAINT FROM ERD]** — Setiap OPD hanya boleh memiliki 1 pengguna dengan peran `KEPALA_OPD` dan 1 pengguna dengan peran `KOORDINATOR_TIM_PENYUSUN` secara aktif. Constraint ini di-enforce di service layer dengan `SELECT FOR UPDATE` (lihat `docs/SCHEMA-CONSTRAINTS.md`).
+**[CONSTRAINT FROM ERD]** — Setiap OPD hanya boleh memiliki 1 pengguna dengan peran `KEPALA_OPD` dan 1 pengguna dengan peran `KOORDINATOR_TIM_PENYUSUN` secara aktif. Constraint ini di-enforce di service layer dengan `SELECT FOR UPDATE` (lihat `docs/SCHEMA-CONSTRAINTS.md` [P2-D]).
 
 ---
 
@@ -73,11 +75,11 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 - Jika pengajuan evaluasi dibatalkan: Biro Organisasi dapat menonaktifkan pengajuan dan SOP kembali ke status sebelumnya
 - Jika Tim Evaluasi meminta klarifikasi: Tim Evaluasi dapat menambahkan catatan evaluasi yang terlihat oleh Tim Penyusun
 
-**Kondisi awal:** Terdapat SOP dengan status "Diajukan Evaluasi" dari Tim Penyusun.
+**Kondisi awal:** Terdapat SOP dengan status "DIAJUKAN_EVALUASI" dari Tim Penyusun.
 
-**Kondisi akhir:** Pengajuan Evaluasi berstatus "Selesai Dievaluasi" dengan semua SOP memiliki hasil evaluasi (Sesuai/Perlu Perbaikan).
+**Kondisi akhir:** Pengajuan Evaluasi berstatus "SELESAI_DIEVALUASI" dengan semua SOP memiliki hasil evaluasi (SESUAI/TIDAK_SESUAI).
 
-**[CONSTRAINT FROM SCHEMA]** Evaluasi MANDIRI tidak memiliki nilaiOPD, hanya evaluasi TERJADWAL yang memiliki nilai agregat OPD
+**[CONSTRAINT FROM SCHEMA]** Evaluasi MANDIRI tidak memiliki nilaiOPD, hanya evaluasi TERJADWAL yang memiliki nilai agregat OPD. Constraint ini di-enforce di service layer (lihat `docs/SCHEMA-CONSTRAINTS.md` [P1-B]).
 
 ---
 
@@ -99,12 +101,12 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 - Jika PIN salah: Sistem menolak penandatanganan dan mencatat kegagalan audit
 - Jika user belum verifikasi email: Sistem meminta verifikasi email sebelum dapat TTD
 
-**Kondisi awal:** Pengajuan Evaluasi berstatus "Selesai Dievaluasi" dengan semua SOP telah dinilai Tim Evaluasi.
+**Kondisi awal:** Pengajuan Evaluasi berstatus "SELESAI_DIEVALUASI" dengan semua SOP telah dinilai Tim Evaluasi.
 
 **Kondisi akhir:** Berita Acara bertanda tangan lengkap (Biro + Koordinator) di tabel RiwayatTandaTangan dan SOP siap pengesahan.
 
-**[CONSTRAINT FROM SCHEMA]** 1 Pengajuan Evaluasi bisa punya 2 RiwayatTandaTangan (KOORDINATOR_TIM_PENYUSUN + BIRO_ORGANISASI untuk Berita Acara)
-**[CONSTRAINT FROM SCHEMA]** BA hanya bisa ditandatangani setelah: Status = DIVERIFIKASI_BIRO, semua NilaiEvaluasi sudah diisi, dan belum pernah TTE
+**[CONSTRAINT FROM ERD]** 1 Pengajuan Evaluasi bisa punya 2 RiwayatTandaTangan (KOORDINATOR_TIM_PENYUSUN + BIRO_ORGANISASI untuk Berita Acara).
+**[CONSTRAINT FROM SCHEMA]** BA hanya bisa ditandatangani setelah: Status = DIVERIFIKASI_BIRO, semua NilaiEvaluasi sudah diisi, dan belum pernah TTE (lihat `docs/SCHEMA-CONSTRAINTS.md`).
 
 ---
 
@@ -114,10 +116,10 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Alur proses normal (happy path):**
 1. Kepala OPD mengakses halaman Pantau SOP dan melihat daftar SOP milik OPD-nya
-2. Kepala OPD membuka detail SOP yang berstatus "Diverifikasi Biro Organisasi"
+2. Kepala OPD membuka detail SOP yang berstatus "DIVERIFIKASI_BIRO_ORGANISASI"
 3. Sistem memverifikasi bahwa BA terkait telah ditandatangani oleh Koordinator dan Biro
 4. Kepala OPD klik "Sahkan SOP" dan masukkan PIN TTE
-5. Sistem memverifikasi PIN dan mengubah status SOP menjadi "Berlaku"
+5. Sistem memverifikasi PIN dan mengubah status SOP menjadi "BERLAKU"
 6. Sistem mencatat RiwayatTandaTangan untuk peran KEPALA_OPD dengan sopDetailId
 7. Sistem mencatat audit log pengesahan dengan timestamp dan identitas Kepala OPD
 8. SOP kini resmi berlaku dan dapat diakses sebagai dokumen referensi
@@ -126,14 +128,14 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 - Jika SOP tidak masuk BA: Sistem menolak pengesahan dengan pesan "SOP harus masuk Berita Acara terlebih dahulu"
 - Jika BA belum ditandatangani Koordinator: Sistem menolak pengesahan dengan pesan "BA harus ditandatangani Koordinator terlebih dahulu"
 
-**Kondisi awal:** SOP berstatus "Diverifikasi Biro Organisasi" dan BA terkait telah ditandatangani oleh Biro dan Koordinator.
+**Kondisi awal:** SOP berstatus "DIVERIFIKASI_BIRO_ORGANISASI" dan BA terkait telah ditandatangani oleh Biro dan Koordinator.
 
-**Kondisi akhir:** SOP berstatus "Berlaku" dan menjadi dokumen resmi OPD.
+**Kondisi akhir:** SOP berstatus "BERLAKU" dan menjadi dokumen resmi OPD.
 
 **Gap analisis:**
-- **[GAP DETECTED]** Tidak ada fitur pencabutan SOP yang telah berlaku (meskipun type `StatusSOP` memiliki status "Dicabut")
-- **[CONSTRAINT FROM SCHEMA]** 1 SOP = maksimal 1 TTE di RiwayatTandaTangan (hanya KEPALA_OPD)
-- **[CONSTRAINT FROM SCHEMA]** Status transisi valid: DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT (terminal)
+- **[GAP DETECTED]** Tidak ada fitur pencabutan SOP yang telah berlaku (meskipun type `StatusSOP` memiliki status "DICABUT")
+- **[CONSTRAINT FROM ERD]** 1 SOP = maksimal 1 TTE di RiwayatTandaTangan (hanya KEPALA_OPD) (lihat `docs/ERD-DESKRIPSI.md`)
+- **[CONSTRAINT FROM SCHEMA]** Status transisi valid: DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT (terminal). BERLAKU dan DICABUT adalah terminal — tidak bisa diubah statusnya kecuali BERLAKU → DICABUT (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-D])
 
 ---
 
@@ -156,8 +158,8 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Kondisi akhir:** Data master terupdate dan konsisten di seluruh sistem.
 
-**[CONSTRAINT FROM ERD]** Peraturan tidak memiliki tracking siapa yang input (data entry tidak perlu audit trail)
-**[CONSTRAINT FROM ERD]** OPD, Pengguna mendukung soft-delete (deletedAt)
+**[CONSTRAINT FROM ERD]** Peraturan tidak memiliki tracking siapa yang input (data entry tidak perlu audit trail).
+**[CONSTRAINT FROM ERD]** OPD, Pengguna mendukung soft-delete (`deletedAt`). Saat soft-delete, pastikan tidak ada pengajuan evaluasi aktif (lihat `docs/SCHEMA-CONSTRAINTS.md` [P1-G]).
 
 ---
 
@@ -190,8 +192,8 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[INFERRED FROM CODE]` — Validasi duplikasi nomor SOP tidak ditemukan di implementasi client, hanya asumsi requirement
-- `[CONSTRAINT FROM ERD]` — SOP tidak bisa dihapus kalau sudah ada DetailSOP yang memiliki RiwayatTandaTangan atau NilaiEvaluasi
-- `[CONSTRAINT FROM ERD]` — 1 SOP bisa punya banyak DetailSOP (versi dokumen), Cascade delete
+- `[CONSTRAINT FROM ERD]` — SOP tidak bisa dihapus kalau semua DetailSOP sudah ada relasi `TandaTanganTTE` atau `NilaiEvaluasi` (Restrict)
+- `[CONSTRAINT FROM ERD]` — 1 SOP bisa punya banyak DetailSOP (versi dokumen), Cascade delete (lihat `docs/ERD-DESKRIPSI.md`)
 
 ---
 
@@ -212,7 +214,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 2. Sistem menampilkan dialog dengan form metadata (institution, PIC, section, warning, dll.)
 3. Tim Penyusun mengisi form dan klik "Simpan"
 4. Sistem memvalidasi input (field wajib terisi)
-5. Sistem menyimpan metadata dan mencatat audit log "SIMPAN_DRAFT" di LogAudit
+5. Sistem menyimpan metadata dan mencatat audit log "SIMPAN_DRAFT" di LogEditSOP dengan bagian METADATA
 6. Sistem menampilkan notifikasi sukses
 
 **Alur Eksepsi:**
@@ -220,8 +222,9 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[INFERRED FROM CODE]` — Fungsi `canEditSop` menentukan status yang mengizinkan editing
-- `[CONSTRAINT FROM ERD]` — DetailSOP adalah entitas yang menyimpan versi dokumen, bukan SOP
+- `[CONSTRAINT FROM ERD]` — DetailSOP adalah entitas yang menyimpan versi dokumen, bukan SOP (lihat `docs/ERD-DESKRIPSI.md`)
 - `[CONSTRAINT FROM ERD]` — 1 DetailSOP bisa punya banyak LampiranTeks, DasarHukum, LangkahSOP, DiagramLayout
+- `[CONSTRAINT FROM ERD]` — LogEditSOP mencatat audit trail kolaborasi Tim Penyusun dengan field `bagian` (enum BagianSOP)
 
 ---
 
@@ -243,16 +246,17 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 3. Tim Penyusun tambah langkah baru dengan mengisi: nomor, kegiatan, pelaksana, mutu_kelengkapan, mutu_waktu, output, keterangan
 4. Untuk langkah type "decision", Tim Penyusun menentukan next step untuk yes/no
 5. Tim Penyusun simpan perubahan
-6. Sistem menyimpan prosedur (LangkahSOP) dan mencatat audit log "SIMPAN_DRAFT"
+6. Sistem menyimpan prosedur (LangkahSOP) dan mencatat audit log "SIMPAN_DRAFT" di LogEditSOP dengan bagian LANGKAH_SOP
 
 **Alur Eksepsi:**
 - Langkah decision tanpa next step: Sistem menampilkan pesan error
 
 **Catatan Analisis:**
 - `[INFERRED FROM CODE]` — Editor prosedur mendukung type "terminator", "task", "decision" dengan flowchart branching
-- `[CONSTRAINT FROM ERD]` — 1 LangkahSOP terhubung ke 1 Pelaksana (wajib, termasuk START/END)
+- `[CONSTRAINT FROM ERD]` — 1 LangkahSOP terhubung ke 1 Pelaksana (wajib, termasuk START/END). Pelaksana wajib terdaftar di swimlane `DetailSOPPelaksana` (lihat `docs/ERD-DESKRIPSI.md` [P1-C])
 - `[CONSTRAINT FROM ERD]` — 1 DetailSOP punya banyak Swimlanes (DetailSOPPelaksana) untuk daftar pelaksana di diagram
-- `[CONSTRAINT FROM ERD]` — DiagramLayout, DiagramNodePosition, DiagramEdge menyimpan delta posisi manual dari auto-layout
+- `[CONSTRAINT FROM ERD]` — DiagramLayout, DiagramEdge, DiagramNodePosition menyimpan delta posisi manual dari auto-layout
+- `[CONSTRAINT FROM SCHEMA]` — Service layer wajib hapus DiagramEdge + DiagramNodePosition sebelum DetailSOP di-delete (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-A])
 
 ---
 
@@ -275,7 +279,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 4. Sistem memverifikasi bahwa user adalah Koordinator
 5. Sistem membuat atau update PengajuanEvaluasi dengan SOP terpilih
 6. Sistem mengubah status SOP terpilih menjadi "DIAJUKAN_EVALUASI"
-7. Sistem mencatat audit log "AJUKAN_EVALUASI" di LogAudit
+7. Sistem mencatat audit log "AJUKAN_EVALUASI" di LogEditSOP
 8. Sistem menampilkan notifikasi sukses
 
 **Alur Eksepsi:**
@@ -284,8 +288,8 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[GAP DETECTED]` — Tidak ada validasi bahwa SOP yang dipilih belum masuk pengajuan evaluasi lain
-- `[CONSTRAINT FROM SCHEMA]` — Maks 1 pengajuan aktif per OPD per jenis (TERJADWAL/MANDIRI), di-enforce dengan SELECT FOR UPDATE
-- `[CONSTRAINT FROM SCHEMA]` — Status transisi valid: SIAP_DIEVALUASI → DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI
+- `[CONSTRAINT FROM SCHEMA]` — Maks 1 pengajuan aktif per OPD per jenis (TERJADWAL/MANDIRI), di-enforce dengan SELECT FOR UPDATE (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-C])
+- `[CONSTRAINT FROM SCHEMA]` — Status transisi valid: SIAP_DIEVALUASI → DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI (lihat `docs/SCHEMA-CONSTRAINTS.md`)
 
 ---
 
@@ -296,7 +300,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 | ID | UC-05 |
 | Nama | Evaluasi SOP |
 | Aktor | Tim Evaluasi |
-| Deskripsi | Tim Evaluasi menilai kualitas SOP yang ditugaskan dan mengisi hasil evaluasi (Sesuai/Perlu Perbaikan) |
+| Deskripsi | Tim Evaluasi menilai kualitas SOP yang ditugaskan dan mengisi hasil evaluasi (SESUAI/TIDAK_SESUAI) |
 | Kondisi Awal | Pengajuan Evaluasi berstatus "SEDANG_DIEVALUASI" dan SOP ditugaskan ke Tim Evaluasi |
 | Kondisi Akhir | SOP memiliki NilaiEvaluasi dan catatan dari Tim Evaluasi |
 | Trigger | Tim Evaluasi membuka detail SOP dari daftar evaluasi |
@@ -304,7 +308,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 **Alur Normal:**
 1. Tim Evaluasi membuka halaman Evaluasi SOP dan memilih SOP yang akan dinilai
 2. Sistem menampilkan detail SOP (metadata, prosedur, law basis)
-3. Tim Evaluasi mengisi form hasil evaluasi: pilih "Sesuai" atau "Perlu Perbaikan", isi catatan, isi rekomendasi
+3. Tim Evaluasi mengisi form hasil evaluasi: pilih "SESUAI" atau "TIDAK_SESUAI", isi catatan, isi rekomendasi
 4. Tim Evaluasi simpan hasil evaluasi
 5. Sistem menyimpan hasil evaluasi ke NilaiEvaluasi dalam pengajuan evaluasi
 6. Sistem mencatat audit log "MULAI_EVALUASI" atau update NilaiEvaluasi
@@ -313,7 +317,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 - Pengajuan belum dimulai: Sistem menampilkan pesan "Evaluasi belum dimulai"
 
 **Catatan Analisis:**
-- `[CONSTRAINT FROM ERD]` — NilaiEvaluasi hasil: SESUAI / TIDAK_SESUAI (bukan "Sesuai/Perlu Perbaikan")
+- `[CONSTRAINT FROM ERD]` — NilaiEvaluasi hasil: SESUAI / TIDAK_SESUAI (bukan "Sesuai/Perlu Perbaikan") (lihat `docs/ERD-DESKRIPSI.md`)
 - `[CONSTRAINT FROM ERD]` — 1 NilaiEvaluasi punya version untuk optimistic locking, mencegah lost update saat 2 evaluator ubah nilai bersamaan
 - `[CONSTRAINT FROM ERD]` — Tidak ada penugasan spesifik — semua evaluator bisa melihat semua SOP OPD dan mengisi nilainya
 - `[CONSTRAINT FROM ERD]` — LogNilaiEvaluasi mencatat audit trail perubahan nilai (immutable)
@@ -340,7 +344,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 5. Sistem mencatat RiwayatTandaTangan dengan timestamp dan document hash
 6. Untuk Biro: sistem set status pengajuan → "DIVERIFIKASI_BIRO" dan SOP → "DIVERIFIKASI_BIRO_ORGANISASI"
 7. Untuk Koordinator: sistem set status pengajuan → "DITANDATANGANI_KOORDINATOR"
-8. Sistem mencatat audit log "TTD_BA_KOORDINATOR_TIM_PENYUSUN" di LogAudit
+8. Sistem mencatat audit log "TTD_BA_KOORDINATOR_TIM_PENYUSUN" di LogEditSOP
 9. Sistem menampilkan notifikasi sukses
 
 **Alur Eksepsi:**
@@ -349,9 +353,9 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 - BA sudah ditandatangani: Sistem menampilkan pesan "BA sudah ditandatangani"
 
 **Catatan Analisis:**
-- `[CONSTRAINT FROM ERD]` — 1 PengajuanEvaluasi bisa punya 2 RiwayatTandaTangan (KOORDINATOR_TIM_PENYUSUN + BIRO_ORGANISASI)
+- `[CONSTRAINT FROM ERD]` — 1 PengajuanEvaluasi bisa punya 2 RiwayatTandaTangan (KOORDINATOR_TIM_PENYUSUN + BIRO_ORGANISASI) (lihat `docs/ERD-DESKRIPSI.md`)
 - `[CONSTRAINT FROM SCHEMA]` — BA hanya bisa ditandatangani setelah: Status = DIVERIFIKASI_BIRO, semua NilaiEvaluasi sudah diisi, dan belum pernah TTE
-- `[CONSTRAINT FROM ERD]` — XOR constraint: RiwayatTandaTangan harus tepat satu dari sopDetailId atau pengajuanEvaluasiId
+- `[CONSTRAINT FROM ERD]` — XOR constraint: RiwayatTandaTangan harus tepat satu dari sopDetailId atau pengajuanEvaluasiId (lihat `docs/ERD-DESKRIPSI.md` [P1-A])
 
 ---
 
@@ -376,7 +380,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 6. Sistem memverifikasi PIN
 7. Sistem mengubah status SOP menjadi "BERLAKU"
 8. Sistem mencatat RiwayatTandaTangan untuk peran KEPALA_OPD dengan sopDetailId
-9. Sistem mencatat audit log "SAHKAN_SOP" di LogAudit
+9. Sistem mencatat audit log "SAHKAN_SOP" di LogEditSOP
 10. Sistem menampilkan notifikasi sukses
 
 **Alur Eksepsi:**
@@ -385,9 +389,9 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[INFERRED FROM CODE]` — Fungsi `canKepalaOpdSignSop` memvalidasi eligibility pengesahan
-- `[CONSTRAINT FROM ERD]` — 1 SOP = maksimal 1 TTE di RiwayatTandaTangan (hanya KEPALA_OPD)
+- `[CONSTRAINT FROM ERD]` — 1 SOP = maksimal 1 TTE di RiwayatTandaTangan (hanya KEPALA_OPD) (lihat `docs/ERD-DESKRIPSI.md`)
 - `[CONSTRAINT FROM SCHEMA]` — Status transisi valid: DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT (terminal)
-- `[CONSTRAINT FROM SCHEMA]` — BERLAKU dan DICABUT adalah terminal — tidak bisa diubah statusnya kecuali BERLAKU → DICABUT
+- `[CONSTRAINT FROM SCHEMA]` — BERLAKU dan DICABUT adalah terminal — tidak bisa diubah statusnya kecuali BERLAKU → DICABUT (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-D])
 
 ---
 
@@ -417,7 +421,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[GAP DETECTED]` — Tidak ada validasi kode OPD duplikat di client
-- `[CONSTRAINT FROM ERD]` — OPD mendukung soft-delete (deletedAt)
+- `[CONSTRAINT FROM ERD]` — OPD mendukung soft-delete (`deletedAt`) (lihat `docs/ERD-DESKRIPSI.md`)
 - `[CONSTRAINT FROM ERD]` — 1 OPD bisa punya banyak Pengguna, SOP, Pelaksana, AnggotaTimPenyusun, PengajuanEvaluasi (Restrict delete)
 
 ---
@@ -448,8 +452,9 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[GAP DETECTED]` — Tidak ada validasi NIP duplikat di client
-- `[CONSTRAINT FROM ERD]` — Unique: [userId, opdId] — 1 pengguna hanya bisa tercatat 1 kali per OPD
+- `[CONSTRAINT FROM ERD]` — Unique: [userId, opdId] — 1 pengguna hanya bisa tercatat 1 kali per OPD (lihat `docs/ERD-DESKRIPSI.md`)
 - `[CONSTRAINT FROM ERD]` — Status: AKTIF / NONAKTIF; berakhirPada opsional (null = masih aktif)
+- `[CONSTRAINT FROM SCHEMA]` — Invariant: (status = AKTIF) ↔ (berakhirPada IS NULL) — selalu update keduanya bersamaan (lihat `docs/SCHEMA-CONSTRAINTS.md` [P1-F])
 
 ---
 
@@ -463,13 +468,13 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 | Deskripsi | Biro Organisasi membuat pengajuan evaluasi dengan memilih SOP dari satu atau lebih OPD |
 | Kondisi Awal | Terdapat SOP dengan status "DIAJUKAN_EVALUASI" |
 | Kondisi Akhir | PengajuanEvaluasi tercipta dengan status "SEDANG_DIEVALUASI" |
-| Trigger | Biro Organisasi klik "Buat Batch Evaluasi" |
+| Trigger | Biro Organisasi klik "Buat Pengajuan Evaluasi" |
 
 **Alur Normal:**
 1. Biro Organisasi membuka halaman Terjadwal Evaluasi & BA
 2. Sistem menampilkan daftar OPD dengan SOP yang siap dievaluasi
 3. Biro Organisasi pilih SOP untuk dimasukkan pengajuan
-4. Biro Organisasi klik "Buat Batch"
+4. Biro Organisasi klik "Buat Pengajuan"
 5. Sistem membuat PengajuanEvaluasi dengan SOP terpilih
 6. Sistem mengubah status SOP menjadi "SEDANG_DIEVALUASI"
 7. Sistem menampilkan notifikasi sukses
@@ -479,9 +484,10 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 **Catatan Analisis:**
 - `[CONSTRAINT FROM ERD]` — PengajuanEvaluasi adalah entitas yang menggantikan konsep "batch" atau "terjadwal"
-- `[CONSTRAINT FROM ERD]` — Jenis: TERJADWAL / MANDIRI; TERJADWAL punya nilaiOPD, MANDIRI harus null
+- `[CONSTRAINT FROM ERD]` — Jenis: TERJADWAL / MANDIRI; TERJADWAL punya nilaiOPD, MANDIRI harus NULL (lihat `docs/ERD-DESKRIPSI.md` [P1-B])
 - `[CONSTRAINT FROM ERD]` — Status lifecycle: MENUNGGU_EVALUASI → SEDANG_DIEVALUASI → SELESAI_DIEVALUASI → DIVERIFIKASI_BIRO → DITANDATANGANI_KOORDINATOR → SELESAI
-- `[CONSTRAINT FROM SCHEMA]` — Optimistic locking via field version untuk mencegah race condition
+- `[CONSTRAINT FROM SCHEMA]` — Optimistic locking via field version untuk mencegah race condition (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-E])
+- `[CONSTRAINT FROM SCHEMA]` — Maks 1 pengajuan aktif per OPD per jenis, di-enforce dengan SELECT FOR UPDATE (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-C])
 
 ---
 
@@ -574,15 +580,16 @@ UC10 ..> UC05 : <<include>>
 | F-26 | Sistem harus dapat menambah, mengupdate, dan mencabut Peraturan | Tinggi | UC-12 |
 | F-27 | Sistem harus dapat menampilkan grafik evaluasi tahunan per OPD | Sedang | UC-14 |
 | F-28 | Sistem harus dapat menampilkan dashboard role-based dengan navigasi sesuai akses | Tinggi | UC-14 |
-| F-29 | Sistem harus dapat mencatat audit log untuk setiap perubahan status SOP di LogAudit | Tinggi | Semua UC |
+| F-29 | Sistem harus dapat mencatat audit log untuk setiap perubahan status SOP di LogEditSOP | Tinggi | Semua UC |
 | F-30 | Sistem harus dapat menampilkan riwayat status dan komentar SOP | Sedang | UC-14 |
 | F-31 | Sistem harus dapat memfilter SOP berdasarkan status, OPD, dan tanggal | Sedang | UC-14 |
 | F-32 | Sistem harus dapat menampilkan notifikasi toast untuk setiap aksi sukses/error | Sedang | Semua UC |
 | F-33 | Sistem harus dapat setup profil TTE (NIP, nama, jabatan, PIN) di KredensialTTE | Tinggi | UC-13 |
 | F-34 | Sistem harus dapat memverifikasi email user sebelum dapat TTD | Tinggi | UC-13 |
 | F-35 | Sistem harus dapat menyimpan document hash untuk setiap TTD TTE | Tinggi | UC-06, UC-07 |
+| F-36 | Sistem harus dapat menerapkan optimistic locking pada NilaiEvaluasi untuk mencegah lost update | Tinggi | UC-05 |
 
-**[GAP DETECTED: F-36]** Sistem harus dapat menerapkan optimistic locking pada NilaiEvaluasi untuk mencegah lost update — sudah ada di schema (version field) tapi belum diimplementasi di client.
+**[CONSTRAINT FROM ERD]** LogEditSOP adalah audit trail kolaborasi Tim Penyusun dengan field `bagian` (METADATA, LANGKAH_SOP, LAMPIRAN_TEKS, DASAR_HUKUM, PELAKSANA, DIAGRAM, SOP_TERKAIT). LogAudit tidak ada di schema ERD — yang ada adalah LogEditSOP dan LogNilaiEvaluasi (lihat `docs/ERD-DESKRIPSI.md`).
 
 ---
 
@@ -601,8 +608,8 @@ UC10 ..> UC05 : <<include>>
 | NF-09 | Usabilitas | Sistem harus menampilkan empty state saat data tidak ditemukan | Komponen `EmptyState` di semua halaman list |
 | NF-10 | Usabilitas | Sistem harus menampilkan status badge dengan warna berbeda per status | Komponen `StatusBadge` dengan variant warna |
 | NF-11 | Usabilitas | Sistem harus menerapkan responsive layout untuk mobile/tablet | Tailwind CSS dengan breakpoint sm, md, lg |
-| NF-12 | Keandalan | Sistem harus mencatat audit log untuk setiap perubahan status SOP di LogAudit | Type `AuditLogEntry` dan hook `useAuditLog` |
-| NF-13 | Keandalan | Sistem harus menyimpan jejak audit dengan timestamp ISO 8601 | Field `timestamp: string` di AuditLogEntry |
+| NF-12 | Keandalan | Sistem harus mencatat audit log untuk setiap perubahan SOP di LogEditSOP | Type `LogEditSOP` dengan field `bagian` dan `entityId` |
+| NF-13 | Keandalan | Sistem harus menyimpan jejak audit dengan timestamp ISO 8601 | Field `createdAt: string` di LogEditSOP |
 | NF-14 | Keandalan | Sistem harus menampilkan error boundary saat terjadi crash di route | `errorComponent` di root route |
 | NF-15 | Maintainabilitas | Sistem harus memiliki halaman admin untuk mengelola data master | Halaman Manajemen OPD, Tim, Peraturan |
 | NF-16 | Maintainabilitas | Sistem harus dapat melacak lastEditedBy dan lastEditedAt DetailSOP | Field di `SOPDaftarItem` |
@@ -611,8 +618,8 @@ UC10 ..> UC05 : <<include>>
 | NF-19 | Keamanan | Sistem harus mencegah pengesahan SOP jika BA belum lengkap | Fungsi `canKepalaOpdSignSop` sebagai guard |
 | NF-20 | Keandalan | Sistem harus menyimpan document hash untuk setiap TTD TTE di RiwayatTandaTangan | Field `documentHash` di `TTESignaturePayload` |
 | NF-21 | Keandalan | Sistem harus menerapkan optimistic locking untuk NilaiEvaluasi | Field `version` di NilaiEvaluasi untuk mencegah lost update |
-| NF-22 | Keamanan | Sistem harus membatasi 1 KEPALA_OPD dan 1 KOORDINATOR_TIM_PENYUSUN per OPD | Constraint di-enforce dengan SELECT FOR UPDATE (SCHEMA-CONSTRAINTS.md) |
-| NF-23 | Keamanan | Sistem harus membatasi 1 pengajuan aktif per OPD per jenis | Constraint di-enforce dengan SELECT FOR UPDATE (SCHEMA-CONSTRAINTS.md) |
+| NF-22 | Keamanan | Sistem harus membatasi 1 KEPALA_OPD dan 1 KOORDINATOR_TIM_PENYUSUN per OPD | Constraint di-enforce dengan SELECT FOR UPDATE (`docs/SCHEMA-CONSTRAINTS.md` [P2-D]) |
+| NF-23 | Keamanan | Sistem harus membatasi 1 pengajuan aktif per OPD per jenis | Constraint di-enforce dengan SELECT FOR UPDATE (`docs/SCHEMA-CONSTRAINTS.md` [P0-C]) |
 | NF-24 | Keandalan | Sistem harus mendukung soft-delete untuk OPD dan Pengguna | Field `deletedAt` dengan middleware filter |
 | NF-25 | Keandalan | Sistem harus mencegah transisi status SOP yang tidak valid | Trigger database + service layer guard (VALID_TRANSITIONS) |
 
@@ -624,15 +631,15 @@ UC10 ..> UC05 : <<include>>
 
 **Kategori:** Fungsional
 
-**Deskripsi:** Type `StatusSOP` memiliki status "Dicabut", dan LogAudit memiliki aksi `CABUT_SOP`, tetapi tidak ada use case atau fungsi di client untuk mencabut SOP yang telah berlaku.
+**Deskripsi:** Type `StatusSOP` memiliki status "DICABUT", dan LogEditSOP memiliki bagian untuk tracking perubahan, tetapi tidak ada use case atau fungsi di client untuk mencabut SOP yang telah berlaku.
 
 **Dampak:** SOP yang sudah tidak relevan atau mengandung kesalahan tidak dapat dicabut secara formal di sistem.
 
-**Rekomendasi:** Tambahkan use case "Cabut SOP" dengan aktor Kepala OPD atau Biro Organisasi. SOP yang dicabut tetap tersimpan sebagai arsip dengan status "Dicabut" dan catatan alasan pencabutan.
+**Rekomendasi:** Tambahkan use case "Cabut SOP" dengan aktor Kepala OPD atau Biro Organisasi. SOP yang dicabut tetap tersimpan sebagai arsip dengan status "DICABUT" dan catatan alasan pencabutan.
 
 **Prioritas:** Sedang
 
-**Dasar dari ERD:** Status lifecycle DetailSOP mencakup `DICABUT` sebagai status terminal, dan LogAudit mencatat aksi `CABUT_SOP`.
+**Dasar dari ERD:** Status lifecycle DetailSOP mencakup `DICABUT` sebagai status terminal, dan transisi BERLAKU → DICABUT adalah valid (lihat `docs/ERD-DESKRIPSI.md` dan `docs/SCHEMA-CONSTRAINTS.md` [P0-D]).
 
 ---
 
@@ -648,7 +655,7 @@ UC10 ..> UC05 : <<include>>
 
 **Prioritas:** Sedang
 
-**Dasar dari SCHEMA-CONSTRAINTS:** Constraint "Double Submit PengajuanEvaluasi" membatasi maks 1 pengajuan aktif per OPD per jenis, di-enforce dengan SELECT FOR UPDATE.
+**Dasar dari SCHEMA:** Constraint "Double Submit PengajuanEvaluasi" membatasi maks 1 pengajuan aktif per OPD per jenis, di-enforce dengan SELECT FOR UPDATE (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-C]).
 
 ---
 
@@ -668,18 +675,21 @@ UC10 ..> UC05 : <<include>>
 Dokumen Analisis Sistem ini mendokumentasikan hasil reverse-engineering dari kode frontend Sistem Informasi SOP Biro Organisasi. Sistem telah mengimplementasikan alur kerja inti dengan baik, termasuk role-based access control, workflow status SOP, evaluasi batch, TTD elektronik, dan audit trail.
 
 **Catatan Penting:** Dokumen ini telah diselaraskan dengan single source of truth schema database:
-- `docs/ERD-DESKRIPSI.md` — Deskripsi entitas dan relasi
-- `docs/SCHEMA-CONSTRAINTS.md` — Constraint bisnis di luar Prisma
+- `docs/ERD-DESKRIPSI.md` — Deskripsi entitas dan relasi (legenda delete behavior, constraint FK)
+- `docs/SCHEMA-CONSTRAINTS.md` — Constraint bisnis di luar Prisma (optimistic locking, unique constraint, invariant)
 
 Hanya gap yang terdokumentasi di ERD atau SCHEMA-CONSTRAINTS yang dimasukkan dalam analisis ini. Gap-gap lain (notifikasi, export, preview BA, reset PIN, admin role, deadline/SLA) tidak dimasukkan karena tidak ada dalam schema database.
 
-Perubahan utama dari penyelarasan:
-1. Terminologi: "VerifikasiBatch" → "PengajuanEvaluasi", "terjadwal" → "pengajuan"
-2. Status menggunakan format uppercase konsisten: DRAFT, SIAP_DIEVALUASI, BERLAKU, dll.
+**Perubahan utama dari penyelarasan:**
+1. Terminologi: "VerifikasiBatch" → "PengajuanEvaluasi", "terjadwal" → "pengajuan", "Batch Evaluasi" → "Pengajuan Evaluasi"
+2. Status menggunakan format uppercase konsisten: DRAFT, SIAP_DIEVALUASI, BERLAKU, DICABUT, dll.
 3. TTE disimpan di tabel RiwayatTandaTangan (bukan field isVerified/isSignedByKoordinator)
 4. DetailSOP adalah entitas versi dokumen, bukan SOP
-5. Constraint optimistic locking pada NilaiEvaluasi via field version
-6. Constraint 1 Kepala OPD + 1 Koordinator per OPD di-enforce di service layer
+5. Constraint optimistic locking pada NilaiEvaluasi via field version ([P0-E])
+6. Constraint 1 Kepala OPD + 1 Koordinator per OPD di-enforce di service layer ([P2-D])
+7. LogAudit → LogEditSOP (audit trail kolaborasi Tim Penyusun dengan field `bagian`)
+8. Hasil evaluasi: "Sesuai/Perlu Perbaikan" → "SESUAI/TIDAK_SESUAI"
+9. Penambahan constraint references: [P0-A], [P0-B], [P0-C], [P0-D], [P0-E], [P1-A], [P1-B], [P1-C], [P1-D], [P1-E], [P1-F], [P1-G], [P2-A], [P2-B], [P2-C], [P2-D], [P2-E], [P2-F], [P2-H], [P3-A], [P3-B]
 
 Dokumen ini siap digunakan sebagai dasar untuk:
 1. Pengembangan backend API (Phase 2+)
@@ -692,4 +702,4 @@ Dokumen ini siap digunakan sebagai dasar untuk:
 **Disusun oleh:** Principal System Analyst
 **Tanggal:** 31 Maret 2026
 **Revisi:** 1 April 2026 (diselaraskan dengan ERD & Schema Constraints)
-**Versi Dokumen:** 1.2
+**Versi Dokumen:** 1.3

@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, Link } from '@tanstack/react-router'
 import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop, getOpdIdByName } from '@/lib/data/evaluasi-data'
+import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { ROUTES } from '@/lib/constants/routes'
@@ -28,12 +28,19 @@ const PRINT_DELAY_MS = 150
 export function DetailPengajuanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
-  const { pengajuan, updatePengajuan: setSelectedSopId, handleVerify, canVerify } =
-    usePengajuanEvaluasiDetailPage(id)
+  const { 
+    pengajuan, 
+    updatePengajuan, 
+    mergedSopRows, 
+    handleVerify, 
+    isVerified, 
+    canVerify 
+  } = usePengajuanEvaluasiDetailPage(id)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('sop')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState<'catatan' | 'riwayat'>('catatan')
+  const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
 
   const tte = useTTESignature({
     role: 'biro-organisasi',
@@ -45,28 +52,28 @@ export function DetailPengajuanEvaluasi() {
       documentLabel: pengajuan?.opdNama ?? '',
       referenceId: pengajuan?.id ?? '',
     },
-    (payload) => {
+    () => {
       handleVerify()
       showToast('Verifikasi Berita Acara (Biro) berhasil. Koordinator Tim Penyusun dapat melanjutkan verifikasi BA.')
     }
   )
 
-  const sopList = batch?.sopList ?? []
-  const firstSopId = sopList[0]?.id ?? null
-  const effectiveSopId = selectedSopId ?? firstSopId
-  const displaySop = sopList.find((s) => s.id === effectiveSopId)
+  const sopList = pengajuan?.sopList ?? []
+  const firstSopDetailId = sopList[0]?.sopDetailId ?? null
+  const effectiveSopDetailId = selectedSopId ?? firstSopDetailId
+  const displaySop = sopList.find((s) => s.sopDetailId === effectiveSopDetailId)
+  
   const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
   const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
-  const opdId = batch ? getOpdIdByName(batch.opd) : null
-  const riwayatOpd = opdId ? (riwayatEvaluasiOpd[opdId] ?? []) : []
-  const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
+  const riwayatOpd = pengajuan ? (riwayatEvaluasiOpd[pengajuan.opdId] ?? []) : []
+  const riwayatSop = effectiveSopDetailId ? (riwayatEvaluasiSop[effectiveSopDetailId] ?? []) : []
 
-  useDocumentTitle(batch ? `${IA.TERJADWAL_EVALUASI_OPD} — ${batch.opd}` : undefined)
+  useDocumentTitle(pengajuan ? `${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}` : undefined)
 
-  if (!batch) {
+  if (!pengajuan) {
     return (
       <NotFoundWithBack
-        message="Terjadwal verifikasi tidak ditemukan."
+        message="Pengajuan evaluasi tidak ditemukan."
         backAction={
           <BackButton to={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}>Kembali</BackButton>
         }
@@ -79,9 +86,9 @@ export function DetailPengajuanEvaluasi() {
       <DetailPageLayout
         breadcrumb={[
           { label: IA.NAV_BIRO_EVALUASI_TERJADWAL, to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
-          { label: batch.opd },
+          { label: pengajuan.opdNama },
         ]}
-        title={`${IA.TERJADWAL_EVALUASI_OPD} — ${batch.opd}`}
+        title={`${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}`}
         description={`${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}. Setelah ini: Koordinator → ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`}
         backTo={ROUTES.BIRO_ORGANISASI.EVALUASI_SOP}
         backSize="icon"
@@ -98,242 +105,143 @@ export function DetailPengajuanEvaluasi() {
                     setPreviewMainTab('sop')
                     setTimeout(() => window.print(), PRINT_DELAY_MS)
                   }}
+                  disabled={pengajuan.status !== 'SELESAI_DIEVALUASI'}
                 >
-                  <Printer className="w-3.5 h-3.5" /> Cetak SOP
+                  <Printer className="w-3.5 h-3.5" />
+                  Cetak BA
                 </Button>
-                {batch.isVerified && batch.nomorBA && (
+                {canVerify && (
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    onClick={() => {
-                      setPreviewMainTab('ba')
-                      setTimeout(() => window.print(), PRINT_DELAY_MS)
-                    }}
+                    onClick={() => tte.openDialog()}
                   >
-                    <Printer className="w-3.5 h-3.5" /> Cetak Berita Acara
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Verifikasi BA
                   </Button>
                 )}
-                {canVerify && (
-                  tte.canSign ? (
-                    <Button size="sm" className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5" onClick={tte.openPinDialog}>
-                      <CheckCircle className="w-3.5 h-3.5" /> Verifikasi BA (Biro)
-                    </Button>
-                  ) : (
-                    <Link to={ROUTES.BIRO_ORGANISASI.TTD}>
-                      <Button variant="outline" size="sm" className="h-8 px-3 rounded-md border-gray-200 hover:bg-gray-50 text-xs gap-1.5">
-                        <CheckCircle className="w-3.5 h-3.5" /> Buat TTD dulu
-                      </Button>
-                    </Link>
-                  )
-                )}
               </div>
             </div>
-            {verifyBlockedReason && (
-              <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mt-2">
-                {verifyBlockedReason}
-              </p>
+
+            <InfoGrid>
+              <InfoField label="OPD" value={pengajuan.opdNama} />
+              <InfoField label="Jenis" value={pengajuan.jenis} />
+              <InfoField 
+                label="Status" 
+                value={
+                  <StatusBadge status={pengajuan.status} />
+                }
+              />
+              <InfoField 
+                label="Tanggal Evaluasi" 
+                value={pengajuan.tanggalEvaluasi ? formatDateId(pengajuan.tanggalEvaluasi) : '-'}
+              />
+              {pengajuan.nilaiOPD && (
+                <InfoField label="Nilai OPD" value={pengajuan.nilaiOPD.toString()} />
+              )}
+            </InfoGrid>
+
+            {isVerified && (
+              <InfoCard
+                variant="success"
+                icon={CheckCircle}
+                title="Berita Acara telah diverifikasi"
+                description="Koordinator Tim Penyusun dapat melanjutkan verifikasi. Setelah itu, Kepala OPD dapat mengesahkan SOP."
+              />
             )}
-            {canVerify && !tte.canSign && (
-              <InfoCard variant="info" className="mt-2">
-                <p className="text-blue-900">
-                  <strong>TTE belum siap.</strong> Anda perlu profil TTE Biro yang aktif sebelum{' '}
-                  <strong>{IA.VERIFIKASI_BA_BIRO}</strong> pada {IA.BERITA_ACARA}.{' '}
-                  <Link to={ROUTES.BIRO_ORGANISASI.TTD} className="font-medium underline">
-                    Buka TTD Elektronik
-                  </Link>{' '}
-                  untuk mengatur sertifikat/PIN.
-                </p>
-              </InfoCard>
-            )}
-            <div className="pt-2 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-gray-900">{batch.opd}</span>
-                <StatusBadge status={batch.status} className="text-xs h-4 px-1.5 border-0" />
-              </div>
-              <InfoGrid cols={4}>
-                {batch.tanggalRequest && (
-                  <InfoField label="Tanggal Request:" icon={<Calendar />}>
-                    {formatDateId(batch.tanggalRequest)}
-                  </InfoField>
-                )}
-                {batch.timEvaluasi && (
-                  <InfoField label="Evaluator:">
-                    {batch.timEvaluasi}
-                  </InfoField>
-                )}
-                {batch.tanggalEvaluasi && (
-                  <InfoField label="Tgl Evaluasi:" icon={<Calendar />}>
-                    {formatDateId(batch.tanggalEvaluasi)}
-                  </InfoField>
-                )}
-                {batch.tanggalVerifikasi && (
-                  <InfoField label="Tgl Verifikasi:" icon={<Calendar />}>
-                    {formatDateId(batch.tanggalVerifikasi)}
-                  </InfoField>
-                )}
-                {batch.nomorBA && (
-                  <InfoField label="Nomor BA:">
-                    {batch.nomorBA}
-                  </InfoField>
-                )}
-              </InfoGrid>
-            </div>
           </>
         }
         leftPanel={
           <CollapsibleSidePanel
-            side="left"
-            collapsed={leftPanelCollapsed}
-            onCollapsedChange={setLeftPanelCollapsed}
-            widthExpanded="w-full"
             title="Daftar SOP"
-            subtitle={`${sopList.length} dokumen`}
-            collapseButtonLabel="Daftar"
-            collapseButtonIcon={<List className="w-5 h-5" />}
+            icon={List}
+            collapsed={leftPanelCollapsed}
+            onToggleCollapse={() => setLeftPanelCollapsed((s) => !s)}
           >
-            <SOPListCard
-              items={sopList.map((s) => ({ id: s.id, nama: s.nama, nomor: s.nomor, status: s.status }))}
-              selectedId={effectiveSopId}
-              onSelect={setSelectedSopId}
-            />
+            <div className="space-y-2">
+              {sopList.map((sop) => (
+                <SOPListCard
+                  key={sop.sopDetailId}
+                  id={sop.sopDetailId}
+                  nomor={sop.nomor}
+                  nama={sop.nama}
+                  status={sop.hasil === 'SESUAI' ? 'SIAP_DIVERIFIKASI' : 'REVISI_DARI_TIM_EVALUASI'}
+                  isSelected={sop.sopDetailId === effectiveSopDetailId}
+                  onClick={() => setSelectedSopId(sop.sopDetailId)}
+                />
+              ))}
+            </div>
           </CollapsibleSidePanel>
-        }
-        main={
-          <div className="flex flex-col h-full">
-            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPreviewMainTab('sop')}
-                className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${previewMainTab === 'sop' ? 'bg-white border border-gray-200 text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                Preview SOP
-              </button>
-              {batch.isVerified && batch.nomorBA && (
-                <button
-                  type="button"
-                  onClick={() => setPreviewMainTab('ba')}
-                  className={`text-xs font-semibold px-2 py-1 rounded transition-colors ${previewMainTab === 'ba' ? 'bg-white border border-gray-200 text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  Berita Acara
-                </button>
-              )}
-            </div>
-            <div className="flex-1 min-h-0 flex flex-col overflow-auto scrollbar-hide">
-              {previewMainTab === 'sop' ? (
-                displaySop ? (
-                  <SOPPreviewTemplate name={displaySop.nama} number={displaySop.nomor} />
-                ) : (
-                  <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
-                    Pilih SOP di daftar kiri
-                  </div>
-                )
-              ) : (
-                batch.nomorBA && batch.isVerified && (
-                  <div className="p-4 overflow-auto scrollbar-hide">
-                    <BeritaAcaraTemplate
-                      opd={batch.opd}
-                      nomorBA={batch.nomorBA}
-                      tanggalVerifikasi={batch.tanggalVerifikasi}
-                      sopList={(batch.sopList ?? []).map((s) => ({ nomor: s.nomor, nama: s.nama }))}
-                      evaluator={batch.timEvaluasi}
-                      namaBiro={batch.namaBiro}
-                      tteSignaturePayload={batch.tteSignaturePayload}
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          </div>
         }
         rightPanel={
           <CollapsibleSidePanel
-            side="right"
+            title="Catatan & Riwayat"
+            icon={rightPanelTab === 'catatan' ? MessageSquare : History}
             collapsed={rightPanelCollapsed}
-            onCollapsedChange={setRightPanelCollapsed}
-            widthExpanded="w-full"
-            tabs={[
-              { id: 'catatan', label: 'Catatan & Rekomendasi', icon: <MessageSquare className="w-3.5 h-3.5" /> },
-              { id: 'riwayat', label: 'Riwayat Penilaian OPD', icon: <History className="w-3.5 h-3.5" /> },
-            ]}
-            activeTab={rightPanelTab}
-            onTabChange={(id) => setRightPanelTab(id as 'catatan' | 'riwayat')}
-            collapseButtonLabel="Catatan"
-            collapseButtonIcon={<MessageSquare className="w-5 h-5" />}
+            onToggleCollapse={() => setRightPanelCollapsed((s) => !s)}
+            header={
+              <div className="flex items-center gap-1">
+                <button
+                  className={`px-2 py-1 text-xs font-medium rounded ${
+                    rightPanelTab === 'catatan'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  onClick={() => setRightPanelTab('catatan')}
+                >
+                  Catatan
+                </button>
+                <button
+                  className={`px-2 py-1 text-xs font-medium rounded ${
+                    rightPanelTab === 'riwayat'
+                      ? 'bg-gray-900 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                  onClick={() => setRightPanelTab('riwayat')}
+                >
+                  Riwayat
+                </button>
+              </div>
+            }
           >
-            <div className="p-3 space-y-4">
-              {rightPanelTab === 'catatan' && (
-                <>
-                  {!effectiveSopId ? (
-                    <p className="text-xs text-gray-500">
-                      Pilih SOP di daftar kiri untuk melihat riwayat hasil evaluasi.
-                    </p>
-                  ) : (
-                    <RiwayatCardList
-                      title="Riwayat hasil evaluasi SOP ini"
-                      emptyMessage="Belum ada riwayat evaluasi SOP ini."
-                      items={riwayatSop}
-                      renderItem={(r) => (
-                        <>
-                          <div className="flex flex-wrap items-baseline gap-x-1.5">
-                            <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
-                            <span className="text-gray-500">—</span>
-                            <span className="text-gray-600">{r.evaluatorName}</span>
-                            <span
-                              className={
-                                r.hasil === 'Sesuai'
-                                  ? 'text-green-600 font-medium'
-                                  : 'text-amber-600 font-medium'
-                              }
-                            >
-                              · {r.hasil}
-                            </span>
-                          </div>
-                          {r.komentar && (
-                            <p className="text-gray-600 mt-1 leading-snug">
-                              {r.komentar}
-                            </p>
-                          )}
-                        </>
-                      )}
-                    />
-                  )}
-                </>
-              )}
-              {rightPanelTab === 'riwayat' && (
+            {rightPanelTab === 'catatan' ? (
+              <div className="space-y-2 text-sm text-gray-600">
+                {pengajuan.catatan ? (
+                  <p className="whitespace-pre-wrap">{pengajuan.catatan}</p>
+                ) : (
+                  <p className="text-gray-400 italic">Tidak ada catatan</p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
                 <RiwayatCardList
-                  title="Riwayat penilaian OPD"
-                  emptyMessage="Belum ada riwayat penilaian OPD."
-                  items={riwayatOpd}
-                  renderItem={(r) => (
-                    <>
-                      <div className="flex flex-wrap items-baseline gap-x-1.5">
-                        <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
-                        <span className="text-gray-500">—</span>
-                        <span className="text-gray-600">{r.evaluatorName}</span>
-                        <span className="text-blue-600 font-medium">Skor {r.skor}/5</span>
-                      </div>
-                      {r.sopJudul && (
-                        <p className="text-gray-600 mt-1 leading-snug truncate" title={r.sopJudul}>
-                          SOP: {r.sopJudul}
-                        </p>
-                      )}
-                    </>
-                  )}
+                  riwayatOpd={riwayatOpd}
+                  riwayatSop={riwayatSop}
+                  emptyMessage="Belum ada riwayat evaluasi"
                 />
-              )}
-            </div>
+              </div>
+            )}
           </CollapsibleSidePanel>
         }
-      />
+      >
+        {previewMainTab === 'sop' && displaySop && (
+          <SOPPreviewTemplate
+            sopDetailId={displaySop.sopDetailId}
+            initialTab="prosedur"
+          />
+        )}
+
+        {previewMainTab === 'ba' && pengajuan && (
+          <BeritaAcaraTemplate pengajuan={pengajuan} />
+        )}
+      </DetailPageLayout>
 
       <PinVerificationDialog
-        open={tte.pinDialogOpen}
-        onOpenChange={tte.setPinDialogOpen}
-        title="Verifikasi Berita Acara (Biro)"
-        description="Masukkan PIN TTE untuk verifikasi BA sebagai Biro Organisasi. Pengesahan SOP oleh Kepala OPD."
-        onConfirm={handlePinConfirm}
-        confirmLabel="Verifikasi"
+        open={tte.isDialogOpen}
+        onOpenChange={tte.setIsDialogOpen}
+        role="biro-organisasi"
+        onPinConfirm={handlePinConfirm}
       />
     </>
   )

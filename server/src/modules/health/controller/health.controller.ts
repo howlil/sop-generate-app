@@ -1,32 +1,46 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { HealthService } from '../service/health.service';
+import { PrismaService } from '../../../common/prisma/prisma.service';
+import { Public } from '../../../common/decorators';
 
-@ApiTags('health')
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(private readonly healthService: HealthService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
+  @Public()
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   @ApiResponse({ status: 503, description: 'Service is unhealthy' })
   async check() {
-    const health = await this.healthService.check();
-    return health;
-  }
+    const startTime = Date.now();
+    let dbStatus: 'connected' | 'disconnected' = 'disconnected';
+    let dbResponseTime: number | undefined;
 
-  @Get('ready')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Readiness check endpoint' })
-  @ApiResponse({ status: 200, description: 'Service is ready' })
-  @ApiResponse({ status: 503, description: 'Service is not ready' })
-  async ready() {
-    const isReady = await this.healthService.isReady();
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      dbStatus = 'connected';
+      dbResponseTime = Date.now() - startTime;
+    } catch (error) {
+      dbStatus = 'disconnected';
+    }
+
+    const memoryUsage = process.memoryUsage();
+
     return {
-      status: isReady ? 'ready' : 'not_ready',
+      status: dbStatus === 'connected' ? 'ok' : 'error',
+      uptime: process.uptime(),
       timestamp: new Date(),
+      database: {
+        status: dbStatus,
+        responseTime: dbResponseTime,
+      },
+      memory: {
+        rss: `${Math.round(memoryUsage.rss / 1024 / 1024)}MB`,
+        heapUsed: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
+      },
     };
   }
 }

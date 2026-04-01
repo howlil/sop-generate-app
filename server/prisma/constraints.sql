@@ -1,0 +1,14 @@
+-- Phase 1: CHECK Constraints
+-- Apply after baseline migration with: npx prisma db execute --file prisma/constraints.sql
+--
+-- IMPORTANT: MySQL does not allow CHECK constraints on columns used in foreign keys.
+-- All constraints below that reference FK columns must be enforced at service layer.
+--
+-- Constraints enforced at service layer:
+-- [P1-A] XOR constraint for TandaTanganTTE (sopDetailId XOR pengajuanEvaluasiId)
+-- [P2-A] TERMINATOR/TASK/DECISION branching rules (langkahSelanjutnyaYaId/TidakId are FKs)
+--
+-- See: docs/SCHEMA-CONSTRAINTS.md for implementation details
+
+-- No database-level CHECK constraints applied due to MySQL FK limitations
+-- All business constraints are enforced in the service layer

@@ -3,134 +3,264 @@
 **Milestone:** v1.0 Backend Implementation
 **Phases:** 8
 **Granularity:** Standard
-**Total Requirements:** 66
-**Coverage:** 66/66 mapped
+**Total Requirements:** 89
+**Coverage:** 89/89 mapped
+**Last Updated:** 2026-04-01 (aligned with ERD-DESKRIPSI.md dan PRD-ANALISIS-SISTEM.md v1.3)
+
+---
+
+## Single Source of Truth
+
+Dokumen referensi yang wajib dirujuk:
+- `docs/ERD-DESKRIPSI.md` — Deskripsi entitas dan relasi (legenda delete behavior, constraint FK)
+- `docs/SCHEMA-CONSTRAINTS.md` — Constraint bisnis di luar Prisma (optimistic locking, unique constraint, invariant)
+- `docs/PRD-ANALISIS-SISTEM.md` — Spesifikasi use case dan requirements fungsional/non-fungsional
 
 ---
 
 ## Phases
 
-- [ ] **Phase 1: Database & Infrastructure** - Prisma schema with all 20 tables, 12 enums, relations, indexes, cascade rules, and clean migration on MariaDB
-- [ ] **Phase 2: Auth & Users** - JWT login, role guards, account management for all 4 roles
-- [ ] **Phase 3: OPD & Peraturan** - CRUD endpoints for OPD and Peraturan reference data
-- [ ] **Phase 4: Tim Penyusun & Tim Evaluasi** - Team membership management with role assignment and OPD binding
-- [ ] **Phase 5: SOP Core, Metadata & Pelaksana** - Full SOP lifecycle, metadata, prosedur steps, and pelaksana management
-- [ ] **Phase 6: Evaluasi & Verifikasi** - Batch evaluation workflow from creation through assignment to completion
-- [ ] **Phase 7: TTE & Berita Acara** - Digital signature profiles, sequential BA signing, and SOP endorsement
-- [ ] **Phase 8: Audit Log** - Automatic status change logging and audit trail queries
+- [ ] **Phase 1: Database & Infrastructure** - Prisma schema dengan 20 model, 12+ enum, relasi, index, cascade rules, migration clean di MariaDB
+- [ ] **Phase 2: Auth & Users** - JWT login, role guards, akun manajemen untuk 4 role, constraint 1 KEPALA_OPD + 1 KOORDINATOR per OPD
+- [ ] **Phase 3: OPD & Peraturan** - CRUD endpoint untuk OPD (soft-delete) dan Peraturan (versioning, status BERLAKU/DICABUT)
+- [ ] **Phase 4: Tim Penyusun & Tim Evaluasi** - Manajemen keanggotaan dengan invariant AKTIF ↔ berakhirPada, role assignment, OPD binding
+- [ ] **Phase 5: SOP Core, Metadata & Pelaksana** - Full SOP lifecycle (DRAFT → BERLAKU → DICABUT), metadata, prosedur steps, pelaksana, swimlane
+- [ ] **Phase 6: Evaluasi & Verifikasi** - PengajuanEvaluasi workflow (TERJADWAL/MANDIRI), open pool evaluator, hasil evaluasi (SESUAI/TIDAK_SESUAI), optimistic locking
+- [ ] **Phase 7: TTE & Berita Acara** - KredensialTTE, RiwayatTandaTangan (XOR constraint), sequential TTE: Biro → Koordinator → Kepala OPD
+- [ ] **Phase 8: Audit Log** - LogEditSOP otomatis per perubahan SOP (bagian: METADATA/LANGKAH_SOP/LAMPIRAN_TEKS/DASAR_HUKUM/PELAKSANA/DIAGRAM/SOP_TERKAIT)
 
 ---
 
 ## Phase Details
 
 ### Phase 1: Database & Infrastructure
-**Goal**: A running MariaDB database with the complete domain schema (20 models, 12 enums) that all subsequent modules build on
+**Goal**: Database MariaDB berjalan dengan skema domain lengkap (20 model, 12+ enum) yang menjadi fondasi semua modul berikutnya
+
 **Depends on**: Nothing (foundation)
-**Requirements**: DB-01, DB-02, DB-03, DB-04
+
+**Requirements**: DB-01, DB-02, DB-03, DB-04, DB-05
+
 **Success Criteria** (what must be TRUE):
-  1. `prisma migrate dev` runs clean on an empty MariaDB instance and creates all 20 tables
-  2. All foreign key relationships are enforced -- inserting a SOP with a nonexistent opdId fails with a constraint error
-  3. All enum fields (StatusSOP, AuditAction, StatusPeraturan, TTERole, KomentarStatus, etc.) accept only their defined values
-  4. `prisma generate` produces a client that can be imported and used in NestJS modules without errors
-**Plans**: 2 plans
-Plans:
-- [x] 01-01-PLAN.md — Modify schema: add ImplementQualification + Komentar models, new fields on VerifikasiBatch/EvaluasiItem/TTESignature, FK indexes, cascade rules, enum updates
-- [ ] 01-02-PLAN.md — Squash migrations, run clean baseline, generate Prisma client, FakerJS seed script, compile check
+  1. `prisma migrate dev` runs clean pada empty MariaDB instance dan membuat semua 20 tabel
+  2. Semua foreign key relationships enforced — inserting SOP dengan opdId yang tidak ada fail dengan constraint error
+  3. Semua enum fields (StatusSOP, HasilEvaluasi, StatusPengajuanEvaluasi, PeranTTE, BagianSOP, dll) hanya accept defined values
+  4. `prisma generate` produces client yang bisa di-import dan digunakan di NestJS modules tanpa errors
+  5. Delete behavior (Cascade/Restrict/SetNull) sesuai ERD — test dengan insert parent-child lalu delete parent
+  6. Index strategy terpasang untuk FK dan query pattern umum (per opdId, per status, per userId)
+
+**Plans**:
+- [x] 01-01-PLAN.md — Modify schema: add ImplementQualification + Komentar models, new fields on VerifikasiBatch/EvaluasiItem/TTESignature, FK indexes, cascade rules, enum updates *(outdated — perlu rebase ke ERD terbaru)*
+- [x] 01-02-PLAN.md — Baseline migration dengan 20 model ERD terbaru, triggers installed ✅ **EXECUTION COMPLETE**
+- [x] Phase 1 Complete — Database ready for Phase 2
+
+---
 
 ### Phase 2: Auth & Users
-**Goal**: Users can securely authenticate and the system enforces role-based access on every endpoint
+**Goal**: User dapat authenticate securely dan sistem enforce role-based access pada setiap endpoint dengan constraint 1 KEPALA_OPD + 1 KOORDINATOR per OPD
+
 **Depends on**: Phase 1
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06
+
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05, AUTH-06, AUTH-07, AUTH-08
+
 **Success Criteria** (what must be TRUE):
-  1. A user can POST to `/auth/login` with email/password and receive a JWT containing userId, role, and opdId
-  2. Calling any protected endpoint without a valid JWT returns 401 Unauthorized
-  3. A tim-penyusun user calling a biro-organisasi-only endpoint returns 403 Forbidden
-  4. Biro Organisasi can create a new user account via API and the new user can immediately log in
-  5. A logged-in user can change their own password, and the old password no longer works
+  1. User dapat POST `/auth/login` dengan email/password dan receive JWT containing userId, role, dan opdId
+  2. Calling any protected endpoint tanpa valid JWT returns 401 Unauthorized
+  3. Tim Penyusun user calling biro-organisasi-only endpoint returns 403 Forbidden
+  4. Biro Organisasi dapat create new user account via API dan user baru dapat immediately log in
+  5. Logged-in user dapat change their own password, dan old password no longer works
+  6. Constraint 1 KEPALA_OPD aktif per OPD enforced — mencoba create KEPALA_OPD kedua di OPD sama fail dengan conflict error
+  7. Constraint 1 KOORDINATOR_TIM_PENYUSUN aktif per OPD enforced — mencoba create koordinator kedua fail
+  8. Service layer menggunakan SELECT FOR UPDATE untuk enforce constraint [P2-D]
+
 **Plans**: TBD
+
+---
 
 ### Phase 3: OPD & Peraturan
-**Goal**: Reference data for OPD and Peraturan is manageable through the API, enabling SOP creation in later phases
+**Goal**: Reference data untuk OPD dan Peraturan manageable via API, enabling SOP creation di phases berikutnya dengan soft-delete dan versioning support
+
 **Depends on**: Phase 2
-**Requirements**: OPD-01, OPD-02, OPD-03, OPD-04, OPD-05, PRT-01, PRT-02, PRT-03, PRT-04, PRT-05
+
+**Requirements**: OPD-01, OPD-02, OPD-03, OPD-04, OPD-05, OPD-06, OPD-07, PRT-01, PRT-02, PRT-03, PRT-04, PRT-05, PRT-06, PRT-07, PRT-08, PRT-09
+
 **Success Criteria** (what must be TRUE):
-  1. Biro Organisasi can create, list, and update OPD; response includes aggregates (totalSOP, sopBerlaku, sopDraft)
-  2. A Kepala OPD or Tim Penyusun user can only see their own OPD data (filtered by opdId from JWT)
-  3. Biro Organisasi can create a Peraturan, update it (version auto-increments), and revoke it (status becomes DICABUT)
-  4. Peraturan list response includes `digunakan` count showing how many SOPs reference each peraturan
+  1. Biro Organisasi dapat create, list, update OPD; response includes aggregates (totalSOP, sopBerlaku, sopDraft)
+  2. Kepala OPD atau Tim Penyusun user hanya dapat see their own OPD data (filtered by opdId dari JWT)
+  3. Biro Organisasi dapat soft-delete OPD (deletedAt) dengan validasi tidak ada pengajuan evaluasi aktif
+  4. Biro Organisasi dapat create Peraturan (status BERLAKU), update (version auto-increment), revoke (status → DICABUT)
+  5. Peraturan list response includes `digunakan` count showing how many DetailSOP reference each peraturan
+  6. Constraint scope OPD enforced — Tim Penyusun hanya bisa lihat/perbaiki Peraturan milik OPD-nya sendiri
+  7. Constraint Peraturan DICABUT tidak bisa dijadikan DasarHukum untuk SOP baru — enforce di service layer
+  8. Unique constraint [opdId, nomor, tahun] enforced — duplicate fail
+  9. Peraturan tidak bisa dihapus kalau masih dipakai sebagai DasarHukum (Restrict delete)
+
 **Plans**: TBD
+
+---
 
 ### Phase 4: Tim Penyusun & Tim Evaluasi
-**Goal**: Biro Organisasi can manage team membership so that users are properly assigned to OPDs and evaluation roles
+**Goal**: Biro Organisasi dapat manage team membership sehingga users properly assigned ke OPDs dan evaluation roles dengan invariant AKTIF ↔ berakhirPada
+
 **Depends on**: Phase 2
-**Requirements**: TIM-01, TIM-02, TIM-03, TIM-04, TIM-05
+
+**Requirements**: TIM-01, TIM-02, TIM-03, TIM-04, TIM-05, TIM-06, TIM-07, TIM-08, TIM-09
+
 **Success Criteria** (what must be TRUE):
-  1. Biro Organisasi can add a user as Tim Penyusun member to a specific OPD
-  2. Biro Organisasi can deactivate a Tim Penyusun member (status NONAKTIF, endedAt recorded) and transfer them to another OPD
-  3. Biro Organisasi can add and deactivate Tim Evaluasi members
-  4. Tim Penyusun member list includes `jumlahSOPDisusun` per member
+  1. Biro Organisasi dapat add user sebagai AnggotaTimPenyusun ke specific OPD dengan role internal (Koordinator/Anggota)
+  2. Biro Organisasi dapat deactivate AnggotaTimPenyusun (status → NONAKTIF, berakhirPada recorded) dan transfer ke OPD lain
+  3. Biro Organisasi dapat add dan deactivate AnggotaTimEvaluasi (global, tidak terikat OPD)
+  4. AnggotaTimPenyusun list includes `jumlahSOPDisusun` per member
+  5. Constraint unique [userId, opdId] enforced — 1 user hanya bisa tercatat 1 kali per OPD
+  6. Constraint unique userId pada AnggotaTimEvaluasi enforced — 1 user hanya bisa jadi 1 anggota tim evaluasi
+  7. Invariant (status = AKTIF) ↔ (berakhirPada IS NULL) — selalu update keduanya bersamaan
+  8. User tidak bisa dihapus kalau masih tercatat di AnggotaTimPenyusun atau AnggotaTimEvaluasi (Restrict)
+
 **Plans**: TBD
+
+---
 
 ### Phase 5: SOP Core, Metadata & Pelaksana
-**Goal**: Tim Penyusun can create and fully compose SOPs through the complete status workflow up to SIAP_DIEVALUASI, with all metadata and procedure steps
+**Goal**: Tim Penyusun dapat create dan fully compose DetailSOP (versi dokumen) melalui complete status workflow hingga SIAP_DIEVALUASI, dengan semua metadata, prosedur steps, dan pelaksana
+
 **Depends on**: Phase 3, Phase 4
-**Requirements**: SOP-01, SOP-02, SOP-03, SOP-04, SOP-05, SOP-06, SOP-07, SOP-08, SOP-09, SOP-10, SOP-11, SOP-12, SOP-13, SOP-14, SOP-15, SOP-16, SOP-17, PLK-01, PLK-02, PLK-03, PLK-04, PLK-05
+
+**Requirements**: SOP-01 s.d. SOP-24, PLK-01 s.d. PLK-08
+
 **Success Criteria** (what must be TRUE):
-  1. Tim Penyusun can create a new SOP (status DRAFT) and it receives an auto-generated number in format `SOP/[KODE-OPD]/[TAHUN]/[URUTAN]`
-  2. Tim Penyusun can edit SOP metadata, law basis, related SOPs, and procedure steps while in DRAFT/SEDANG_DISUSUN/REVISI_DARI_TIM_EVALUASI status
-  3. SOP status transitions follow the full regulated flow: DRAFT -> SEDANG_DISUSUN -> SIAP_DIEVALUASI -> DIAJUKAN_EVALUASI -> SEDANG_DIEVALUASI -> SIAP_DIVERIFIKASI or REVISI_DARI_TIM_EVALUASI -> DIVERIFIKASI_BIRO_ORGANISASI -> BERLAKU
-  4. Procedure steps support multi-pelaksana assignment and DECISION-type branching (next_step_yes/next_step_no), and step order can be rearranged
-  5. Each role sees only the SOPs they should: Tim Penyusun sees own OPD, Kepala OPD sees own OPD, Tim Evaluasi sees evaluation-stage SOPs, Biro sees all; filtering by status and OPD works
+  1. Tim Penyusun dapat create new SOP (status DRAFT) dengan auto-generated number format `SOP/[KODE-OPD]/[TAHUN]/[URUTAN]`
+  2. Tim Penyusun dapat edit DetailSOP metadata, law basis (DasarHukum), related SOPs (SopTerkait), dan procedure steps (LangkahSOP) while in DRAFT/SEDANG_DISUSUN/REVISI_DARI_TIM_EVALUASI status
+  3. DetailSOP status transitions follow full regulated flow: DRAFT → SEDANG_DISUSUN → SIAP_DIEVALUASI → DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI → REVISI_DARI_TIM_EVALUASI → SIAP_DIVERIFIKASI → DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT/DIGANTIKAN
+  4. Constraint hanya 1 DetailSOP berstatus BERLAKU per SOP — enforce via trigger + service layer
+  5. BERLAKU dan DICABUT adalah terminal — tidak bisa diubah kecuali BERLAKU → DICABUT
+  6. Procedure steps support multi-pelaksana assignment (via DetailSOPPelaksana/swimlane) dan DECISION-type branching (langkahSelanjutnyaYaId/langkahSelanjutnyaTidakId), step order dapat rearrange
+  7. Constraint setiap LangkahSOP (termasuk START/END) harus punya pelaksana yang terdaftar di DetailSOPPelaksana
+  8. Service layer wajib hapus DiagramEdge + DiagramNodePosition sebelum hapus LangkahSOP (avoid multi-path cascade deadlock)
+  9. SopTerkait constraint — tidak boleh relasi dengan diri sendiri, tidak boleh duplikat bidirectional (A→B jika B→A sudah ada)
+  10. DasarHukum constraint — Peraturan hanya boleh dipakai untuk SOP dari OPD yang sama
+  11. Each role sees only the SOPs they should: Tim Penyusun sees own OPD, Kepala OPD sees own OPD, Tim Evaluasi sees evaluation-stage SOPs, Biro sees all; filtering by status dan OPD works
+  12. SOP tidak bisa dihapus kalau semua DetailSOP sudah ada RiwayatTandaTangan atau NilaiEvaluasi (Restrict)
+
 **Plans**: TBD
 
-### Phase 6: Evaluasi & Verifikasi
-**Goal**: The evaluation batch workflow is operational -- Biro creates batches, assigns evaluators, and Tim Evaluasi submits results that move SOPs forward
+---
+
+### Phase 6: Evaluasi & Verifikasi (PengajuanEvaluasi)
+**Goal**: PengajuanEvaluasi workflow operational — Biro creates pengajuan (TERJADWAL/MANDIRI), open pool evaluator fills results, optimistic locking prevents lost update
+
 **Depends on**: Phase 5
-**Requirements**: EVL-01, EVL-02, EVL-03, EVL-04, EVL-05, EVL-06, EVL-07, EVL-08
+
+**Requirements**: EVL-01 s.d. EVL-13
+
 **Success Criteria** (what must be TRUE):
-  1. Biro Organisasi can create a VerifikasiBatch for SOPs from an OPD and assign a Tim Evaluasi member (batch status becomes SUDAH_DITUGASKAN, SOPs become SEDANG_DIEVALUASI)
-  2. Tim Evaluasi can see their assigned batches and fill in evaluation results (SESUAI or REVISI_BIRO) per SOP
-  3. When Tim Evaluasi submits batch results: batch status becomes SELESAI; SESUAI SOPs move to SIAP_DIVERIFIKASI; REVISI_BIRO SOPs move to REVISI_DARI_TIM_EVALUASI
-  4. Biro Organisasi can view completed batches ready for verification, with each SOP's evaluation result
-  5. Biro Organisasi can view annual evaluation summary/recap per OPD
+  1. Biro Organisasi dapat create PengajuanEvaluasi untuk DetailSOP dari satu atau lebih OPD (jenis: TERJADWAL / MANDIRI)
+  2. Constraint maks 1 pengajuan aktif per OPD per jenis enforced via SELECT FOR UPDATE + tabel sentinel KunciPengajuanEvaluasi
+  3. Sistem mengubah status DetailSOP menjadi SEDANG_DIEVALUASI saat masuk pengajuan aktif
+  4. Tim Evaluasi dapat see their assigned evaluations (evaluator open pool — semua evaluator bisa lihat semua SOP OPD)
+  5. Tim Evaluasi dapat fill hasil evaluasi per DetailSOP (SESUAI / TIDAK_SESUAI) dengan catatan opsional
+  6. Tim Evaluasi dapat submit evaluation results (status pengajuan → SELESAI_DIEVALUASI)
+  7. Constraint TERJADWAL wajib isi nilaiOPD saat SELESAI; MANDIRI harus NULL nilaiOPD
+  8. Response evaluasi includes daftar DetailSOP beserta hasil evaluasi masing-masing
+  9. Biro Organisasi dapat view annual evaluation summary/recap per OPD
+  10. Optimistic locking pada NilaiEvaluasi via field version enforced — concurrent update fail dengan version mismatch error
+  11. LogNilaiEvaluasi mencatat immutable audit trail setiap perubahan nilai (hasilSebelum, hasilSesudah, catatanSebelum, catatanSesudah)
+  12. Constraint unique [pengajuanEvaluasiId, sopDetailId] enforced — 1 SOP hanya punya 1 nilai per pengajuan
+  13. Constraint scope — DetailSOP harus dari OPD yang sama dengan PengajuanEvaluasi
+
 **Plans**: TBD
+
+---
 
 ### Phase 7: TTE & Berita Acara
-**Goal**: Sequential TTE workflow — **verifikasi** Berita Acara (Biro Organisasi, then Koordinator Tim Penyusun), then **pengesahan** by Kepala OPD only (endorse SOPs to BERLAKU in BA context)
+**Goal**: Sequential TTE workflow — **verifikasi** Berita Acara (Biro Organisasi, lalu Koordinator Tim Penyusun), kemudian **pengesahan** SOP oleh Kepala OPD (menjadi BERLAKU) dengan XOR constraint RiwayatTandaTangan
+
 **Depends on**: Phase 6
-**Requirements**: TTE-01, TTE-02, TTE-03, TTE-04, TTE-05, TTE-06, TTE-07, TTE-08
+
+**Requirements**: TTE-01 s.d. TTE-13
+
 **Success Criteria** (what must be TRUE):
-  1. A user can register their TTE profile (NIP, jabatan, pangkat, PIN) and verify their email before signing
-  2. Biro Organisasi can **verifikasi** Berita Acara (TTE) as the first verification step; all SOPs in the batch become DIVERIFIKASI_BIRO_ORGANISASI
-  3. Koordinator Tim Penyusun can complete **verifikasi** BA only after Biro; **pengesahan** (endorsement to BERLAKU) is only for Kepala OPD — order is enforced
-  4. Every signature is persisted as a TTESignature record with a document hash
-  5. A user can view their own TTE signing history (audit trail)
+  1. User dapat register KredensialTTE (NIP, jabatan, pangkat, PIN) — 1:1 dengan Pengguna
+  2. User dapat verify email TTE sebelum signing
+  3. Constraint peran TTE harus kompatibel dengan Pengguna.peran (KEPALA_OPD, BIRO_ORGANISASI, KOORDINATOR_TIM_PENYUSUN saja) — TIM_EVALUASI dan TIM_PENYUSUN tidak boleh punya KredensialTTE
+  4. Biro Organisasi dapat **verifikasi** Berita Acara (TTE) sebagai langkah pertama; status pengajuan → DIVERIFIKASI_BIRO, semua SOP → DIVERIFIKASI_BIRO_ORGANISASI
+  5. Koordinator Tim Penyusun dapat complete **verifikasi** BA hanya setelah Biro TTD; status pengajuan → DITANDATANGANI_KOORDINATOR
+  6. Setelah Koordinator TTD BA, Kepala OPD dapat **mengesahkan** masing-masing SOP (TTD per DetailSOP); SOP → BERLAKU
+  7. Constraint XOR RiwayatTandaTangan enforced — tepat satu dari sopDetailId atau pengajuanEvaluasiId harus diisi (tidak boleh keduanya, tidak boleh kosong)
+  8. Constraint 1 SOP = maksimal 1 TTE di RiwayatTandaTangan (hanya KEPALA_OPD) enforced
+  9. Constraint 1 PengajuanEvaluasi bisa punya 2 RiwayatTandaTangan (KOORDINATOR_TIM_PENYUSUN + BIRO_ORGANISASI untuk BA) enforced
+  10. Constraint BA hanya bisa ditandatangani setelah: Status = DIVERIFIKASI_BIRO, semua NilaiEvaluasi sudah diisi, belum pernah TTE — enforce di service layer
+  11. Setiap signature persisted sebagai RiwayatTandaTangan dengan document hash dan timestamp ISO 8601
+  12. User dapat view their own TTE signing history (audit trail)
+
 **Plans**: TBD
 
-### Phase 8: Audit Log
-**Goal**: Every SOP status change is automatically tracked and queryable for accountability
-**Depends on**: Phase 5 (SOP status transitions must exist)
-**Requirements**: AUD-01, AUD-02, AUD-03
+---
+
+### Phase 8: Audit Log (LogEditSOP)
+**Goal**: Setiap perubahan DetailSOP automatically tracked via LogEditSOP dengan bagian discriminator (METADATA/LANGKAH_SOP/LAMPIRAN_TEKS/DASAR_HUKUM/PELAKSANA/DIAGRAM/SOP_TERKAIT) dan queryable untuk accountability
+
+**Depends on**: Phase 5 (SOP status transitions harus exist)
+
+**Requirements**: AUD-01, AUD-02, AUD-03, AUD-04, AUD-05, AUD-06
+
 **Success Criteria** (what must be TRUE):
-  1. When a SOP changes status (via any endpoint), an audit log entry is automatically created with actor, action, previous status, and new status
-  2. Any user can view the complete status history of a specific SOP
-  3. Biro Organisasi can query audit logs across all SOPs (with filtering)
+  1. Ketika DetailSOP berubah status atau konten, LogEditSOP entry otomatis created dengan actor, bagian, entityId, keterangan, createdAt
+  2. Bagian yang tercatat: METADATA, LANGKAH_SOP, LAMPIRAN_TEKS, DASAR_HUKUM, PELAKSANA, DIAGRAM, SOP_TERKAIT
+  3. Any user dapat view complete status history dan kolaborasi Tim Penyusun dari DetailSOP tertentu
+  4. Biro Organisasi dapat query LogEditSOP across all DetailSOP (dengan filtering)
+  5. LogEditSOP immutable — tidak ada updatedAt, hanya createdAt; setiap aksi = baris baru
+  6. Komentar tidak masuk LogEditSOP — Komentar tabel adalah audit trail-nya sendiri (userId + createdAt + isi)
+
 **Plans**: TBD
 
 ---
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Database & Infrastructure | 1/2 | In Progress | - |
-| 2. Auth & Users | 0/? | Not started | - |
-| 3. OPD & Peraturan | 0/? | Not started | - |
-| 4. Tim Penyusun & Tim Evaluasi | 0/? | Not started | - |
-| 5. SOP Core, Metadata & Pelaksana | 0/? | Not started | - |
-| 6. Evaluasi & Verifikasi | 0/? | Not started | - |
-| 7. TTE & Berita Acara | 0/? | Not started | - |
-| 8. Audit Log | 0/? | Not started | - |
+| Phase | Plans Complete | Requirements | Status | Completed |
+|-------|----------------|--------------|--------|-----------|
+| 1. Database & Infrastructure | 1/2 (outdated) | DB-01 s.d. DB-05 (5) | In Progress | - |
+| 2. Auth & Users | 0/? | AUTH-01 s.d. AUTH-08 (8) | Not started | - |
+| 3. OPD & Peraturan | 0/? | OPD-01 s.d. OPD-07 (7), PRT-01 s.d. PRT-09 (9) | Not started | - |
+| 4. Tim Penyusun & Tim Evaluasi | 0/? | TIM-01 s.d. TIM-09 (9) | Not started | - |
+| 5. SOP Core, Metadata & Pelaksana | 0/? | SOP-01 s.d. SOP-24 (24), PLK-01 s.d. PLK-08 (8) | Not started | - |
+| 6. Evaluasi & Verifikasi | 0/? | EVL-01 s.d. EVL-13 (13) | Not started | - |
+| 7. TTE & Berita Acara | 0/? | TTE-01 s.d. TTE-13 (13) | Not started | - |
+| 8. Audit Log | 0/? | AUD-01 s.d. AUD-06 (6) | Not started | - |
+
+**Total Requirements:** 89
+**Phase Progress:** [>_______] 0/8 phases complete
+**Requirements Done:** 0/89
+
+---
+
+## Constraint References
+
+Dokumen ini merujuk constraint berikut dari `docs/SCHEMA-CONSTRAINTS.md`:
+
+| Code | Description | Phase |
+|------|-------------|-------|
+| [P0-A] | Service layer wajib hapus DiagramEdge + DiagramNodePosition sebelum DetailSOP di-delete | Phase 5 |
+| [P0-B] | Hanya boleh ada 1 DetailSOP berstatus BERLAKU per SOP (trigger + service layer) | Phase 5 |
+| [P0-C] | Maks 1 pengajuan aktif per OPD per jenis (SELECT FOR UPDATE + KunciPengajuanEvaluasi) | Phase 6 |
+| [P0-D] | Status transisi valid: BERLAKU dan DICABUT adalah terminal | Phase 5 |
+| [P0-E] | Optimistic locking pada NilaiEvaluasi via field version | Phase 6 |
+| [P1-A] | XOR constraint: RiwayatTandaTangan harus tepat satu dari sopDetailId atau pengajuanEvaluasiId | Phase 7 |
+| [P1-B] | TERJADWAL wajib isi nilaiOPD saat SELESAI; MANDIRI harus NULL | Phase 6 |
+| [P1-C] | Pelaksana wajib terdaftar di DetailSOPPelaksana (swimlane) | Phase 5 |
+| [P1-D] | Peran TTE harus kompatibel dengan Pengguna.peran | Phase 7 |
+| [P1-E] | Scope constraint: DetailSOP harus dari OPD yang sama dengan PengajuanEvaluasi | Phase 6 |
+| [P1-F] | Invariant: (status = AKTIF) ↔ (berakhirPada IS NULL) untuk keanggotaan tim | Phase 4 |
+| [P1-G] | Soft-delete OPD/Pengguna: pastikan tidak ada pengajuan evaluasi aktif | Phase 3, 4 |
+| [P2-A] | Jenis langkah: TERMINATOR/TASK/DECISION dengan aturan cabang | Phase 5 |
+| [P2-B] | (reserved) | - |
+| [P2-C] | Field temporal PengajuanEvaluasi hanya diisi pada status yang sesuai | Phase 6 |
+| [P2-D] | 1 KEPALA_OPD + 1 KOORDINATOR_TIM_PENYUSUN per OPD (SELECT FOR UPDATE) | Phase 2 |
+| [P2-E] | SopTerkait: tidak boleh relasi dengan diri sendiri, tidak boleh duplikat bidirectional | Phase 5 |
+| [P2-F] | Peraturan DICABUT tidak boleh dijadikan DasarHukum; scope OPD yang sama | Phase 3, 5 |
+| [P2-H] | Scope akses Peraturan: Tim Penyusun hanya bisa lihat Peraturan OPD-nya | Phase 3 |
+| [P3-A] | Self-referential FK LangkahSOP dapat menciptakan siklus — deteksi di service layer | Phase 5 |
+| [P3-B] | Salin DetailSOP: service layer wajib hasilkan nomorSOP baru | Phase 5 |
 
 ---
 *Roadmap created: 2026-03-25*
+*Last updated: 2026-04-01 — Aligned with ERD-DESKRIPSI.md dan PRD-ANALISIS-SISTEM.md v1.3*

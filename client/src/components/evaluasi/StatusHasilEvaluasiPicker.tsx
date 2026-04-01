@@ -1,6 +1,7 @@
 /**
- * Picker status hasil evaluasi: Sesuai | Revisi Biro.
+ * Picker status hasil evaluasi: SESUAI | TIDAK_SESUAI.
  * Memakai OptionCardPicker generik; opsi dan teks dari konstanta evaluasi.
+ * Per ERD: Hasil evaluasi adalah SESUAI / TIDAK_SESUAI
  */
 import { CheckCircle, XCircle } from 'lucide-react'
 import { OptionCardPicker, type OptionCardOption } from '@/components/ui/option-card-picker'
@@ -9,16 +10,16 @@ import { STATUS_HASIL_EVALUASI, type StatusHasilEvaluasiForm } from '@/lib/domai
 
 const OPTIONS: OptionCardOption<StatusHasilEvaluasiForm>[] = [
   {
-    value: 'Sesuai',
+    value: 'SESUAI',
     label: 'Sesuai',
-    description: `→ ${STATUS_HASIL_EVALUASI.Sesuai}`,
+    description: `→ ${STATUS_HASIL_EVALUASI.SESUAI}`,
     icon: <CheckCircle className="w-6 h-6" />,
     variant: 'success',
   },
   {
-    value: 'Revisi Biro',
-    label: 'Revisi Biro',
-    description: `→ ${STATUS_HASIL_EVALUASI['Revisi Biro']}`,
+    value: 'TIDAK_SESUAI',
+    label: 'Perlu Perbaikan',
+    description: `→ ${STATUS_HASIL_EVALUASI.TIDAK_SESUAI}`,
     icon: <XCircle className="w-6 h-6" />,
     variant: 'warning',
   },
@@ -41,12 +42,12 @@ export function StatusHasilEvaluasiPicker({
         options={OPTIONS}
         value={value}
         onChange={onChange}
-        label="Status Hasil Evaluasi"
+        label="Hasil Evaluasi"
         required
       />
-      {value === 'Revisi Biro' && !komentarTrim && (
+      {value === 'TIDAK_SESUAI' && !komentarTrim && (
         <InfoCard variant="warning" className="mt-2 flex items-start gap-2">
-          <p className="text-[10px] text-amber-800">Komentar evaluasi wajib untuk status Revisi Biro.</p>
+          <p className="text-[10px] text-amber-800">Catatan wajib diisi jika hasil Perlu Perbaikan.</p>
         </InfoCard>
       )}
     </>

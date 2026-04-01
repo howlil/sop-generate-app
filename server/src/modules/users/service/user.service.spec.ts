@@ -13,13 +13,15 @@ const mockUser = {
 };
 
 const mockUserRepository = {
-  findByEmail: jest.fn(),
+  findByEmailWithPassword: jest.fn(),
   create: jest.fn(),
   findAll: jest.fn(),
   findById: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
   count: jest.fn(),
+  findActiveRoleInOpd: jest.fn(),
+  hasActiveMembership: jest.fn(),
 };
 
 describe('UserService', () => {
@@ -49,30 +51,40 @@ describe('UserService', () => {
     it('should create a new user', async () => {
       const createUserDto = {
         email: 'test@example.com',
-        name: 'Test User',
-        password: 'password123',
-        role: PeranPengguna.TIM_PENYUSUN,
+        nama: 'Test User',
+        kataSandi: 'password123',
+        peran: PeranPengguna.TIM_PENYUSUN,
+        opdId: 'opd-1',
+        nip: '199001012020011001',
+        jabatan: 'Kepala Subbagian',
+        pangkat: 'Penata Muda',
+        nohp: '08123456789',
       };
 
-      mockUserRepository.findByEmail.mockResolvedValue(null);
+      mockUserRepository.findByEmailWithPassword.mockResolvedValue(null);
       mockUserRepository.create.mockResolvedValue(mockUser);
 
       const result = await service.create(createUserDto);
 
       expect(result).toEqual(mockUser);
-      expect(repository.findByEmail).toHaveBeenCalledWith(createUserDto.email);
+      expect(repository.findByEmailWithPassword).toHaveBeenCalledWith(createUserDto.email);
       expect(repository.create).toHaveBeenCalled();
     });
 
     it('should throw ConflictException if email already exists', async () => {
       const createUserDto = {
         email: 'test@example.com',
-        name: 'Test User',
-        password: 'password123',
-        role: PeranPengguna.TIM_PENYUSUN,
+        nama: 'Test User',
+        kataSandi: 'password123',
+        peran: PeranPengguna.TIM_PENYUSUN,
+        opdId: 'opd-1',
+        nip: '199001012020011001',
+        jabatan: 'Kepala Subbagian',
+        pangkat: 'Penata Muda',
+        nohp: '08123456789',
       };
 
-      mockUserRepository.findByEmail.mockResolvedValue(mockUser);
+      mockUserRepository.findByEmailWithPassword.mockResolvedValue(mockUser);
 
       await expect(service.create(createUserDto)).rejects.toThrow(
         ConflictException,

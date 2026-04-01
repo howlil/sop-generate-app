@@ -18,6 +18,8 @@
     "@radix-ui/react-switch": "^1.2.6",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "^0.7.0",
+    "@tanstack/react-query": "^5.96.1",
+    "@tanstack/react-query-devtools": "^5.96.1",
     "@tanstack/react-router": "^1.132.0",
     "@tanstack/react-router-devtools": "^1.132.0",
     "@tanstack/react-router-ssr-query": "^1.131.7",

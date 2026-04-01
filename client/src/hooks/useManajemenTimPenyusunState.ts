@@ -1,79 +1,58 @@
-import { useState } from 'react'
-import type { TimPenyusun } from '@/lib/types/tim'
-
-export type TimPenyusunFormState = {
-  namaLengkap: string
-  nip: string
-  jabatan: string
-  pangkat: string
-  email: string
-  nohp: string
-  roleInternal: 'Koordinator' | 'Anggota'
-}
-
-const initialForm: TimPenyusunFormState = {
-  namaLengkap: '',
-  nip: '',
-  jabatan: '',
-  pangkat: '',
-  email: '',
-  nohp: '',
-  roleInternal: 'Anggota',
-}
+import { useState, useCallback, useMemo } from 'react'
+import type { TimPenyusun } from './useTimPenyusunList'
 
 /**
- * State untuk halaman Manajemen Tim Penyusun: dialog open, form, selected tim, delete confirm, expand OPD.
+ * Hook to manage Tim Penyusun state (dialog, form, delete confirm)
+ * @deprecated Use API instead
  */
 export function useManajemenTimPenyusunState() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
-  const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
-  const [nonaktifTimId, setNonaktifTimId] = useState<string | null>(null)
-  const [pindahTim, setPindahTim] = useState<TimPenyusun | null>(null)
-  const [opdTujuanId, setOpdTujuanId] = useState<string>('')
-  const [formData, setFormData] = useState<TimPenyusunFormState>(initialForm)
-  const [createOpdId, setCreateOpdId] = useState<string>('')
-  const [expandedOpdIds, setExpandedOpdIds] = useState<Record<string, boolean>>({})
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<TimPenyusun | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
-  const resetForm = () => setFormData(initialForm)
+  const handleOpenDialog = useCallback((item?: TimPenyusun) => {
+    setEditingItem(item ?? null)
+    setDialogOpen(true)
+  }, [])
 
-  const openEditDialog = (tim: TimPenyusun) => {
-    setFormData({
-      namaLengkap: tim.namaLengkap,
-      nip: tim.nip,
-      jabatan: tim.jabatan,
-      pangkat: tim.pangkat,
-      email: tim.email,
-      nohp: tim.nohp,
-      roleInternal: tim.roleInternal ?? 'Anggota',
-    })
-    setSelectedTim(tim)
-    setIsEditOpen(true)
-  }
+  const handleCloseDialog = useCallback(() => {
+    setDialogOpen(false)
+    setEditingItem(null)
+  }, [])
 
-  return {
-    isCreateOpen,
-    setIsCreateOpen,
-    isEditOpen,
-    setIsEditOpen,
-    selectedTim,
-    setSelectedTim,
-    deleteTimId,
-    setDeleteTimId,
-    nonaktifTimId,
-    setNonaktifTimId,
-    pindahTim,
-    setPindahTim,
-    opdTujuanId,
-    setOpdTujuanId,
-    formData,
-    setFormData,
-    createOpdId,
-    setCreateOpdId,
-    expandedOpdIds,
-    setExpandedOpdIds,
-    resetForm,
-    openEditDialog,
-  }
+  const handleDelete = useCallback((id: string) => {
+    setDeleteConfirm(id)
+  }, [])
+
+  const handleCloseDeleteConfirm = useCallback(() => {
+    setDeleteConfirm(null)
+  }, [])
+
+  return useMemo(
+    () => ({
+      dialogOpen,
+      setDialogOpen,
+      editingItem,
+      setEditingItem,
+      deleteConfirm,
+      setDeleteConfirm,
+      searchQuery,
+      setSearchQuery,
+      handleOpenDialog,
+      handleCloseDialog,
+      handleDelete,
+      handleCloseDeleteConfirm,
+    }),
+    [
+      dialogOpen,
+      editingItem,
+      deleteConfirm,
+      searchQuery,
+      handleOpenDialog,
+      handleCloseDialog,
+      handleDelete,
+      handleCloseDeleteConfirm,
+    ]
+  )
 }

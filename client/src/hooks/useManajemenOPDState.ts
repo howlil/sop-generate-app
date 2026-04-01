@@ -1,58 +1,84 @@
-import { useState } from 'react'
-import type { KepalaOPD } from '@/lib/types/opd'
-
-export type KepalaFormState = { name: string; nip: string; email: string; phone: string }
-export type FormTambahKepalaState = { opdId: string; name: string; nip: string; email: string }
-export type PindahFormState = { opdId: string }
-export type PindahDialogPerson = { name: string; email: string; phone: string; nip?: string }
-export type RiwayatDialogPerson = { name: string; email: string }
+import { useState, useCallback, useMemo } from 'react'
+import type { OPD, KepalaOPD } from '@/lib/data/opd'
 
 /**
- * State untuk tab Kepala OPD di Manajemen OPD: dialog open + form values.
- * Logic simpan/ubah (saveKepala, savePenugasan, dll.) tetap di page yang punya kepalaList/setKepalaList.
+ * Hook to manage Manajemen OPD state (dialogs, forms, delete confirms)
+ * @deprecated Use API instead
  */
 export function useManajemenOPDState() {
-  const [kepalaFormOpen, setKepalaFormOpen] = useState(false)
-  const [tambahKepalaOpen, setTambahKepalaOpen] = useState(false)
-  const [pindahDialogOpen, setPindahDialogOpen] = useState(false)
-  const [riwayatDialogOpen, setRiwayatDialogOpen] = useState(false)
-  const [editingKepala, setEditingKepala] = useState<KepalaOPD | null>(null)
-  const [kepalaForm, setKepalaForm] = useState<KepalaFormState>({
-    name: '',
-    nip: '',
-    email: '',
-    phone: '',
-  })
-  const [formTambahKepala, setFormTambahKepala] = useState<FormTambahKepalaState>({
-    opdId: '',
-    name: '',
-    nip: '',
-    email: '',
-  })
-  const [pindahForm, setPindahForm] = useState<PindahFormState>({ opdId: '' })
-  const [riwayatDialogPerson, setRiwayatDialogPerson] = useState<RiwayatDialogPerson | null>(null)
-  const [pindahDialogPerson, setPindahDialogPerson] = useState<PindahDialogPerson | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<OPD | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchUserQuery, setSearchUserQuery] = useState('')
+  const [riwayatOpen, setRiwayatOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<string | null>(null)
 
-  return {
-    kepalaFormOpen,
-    setKepalaFormOpen,
-    tambahKepalaOpen,
-    setTambahKepalaOpen,
-    pindahDialogOpen,
-    setPindahDialogOpen,
-    riwayatDialogOpen,
-    setRiwayatDialogOpen,
-    editingKepala,
-    setEditingKepala,
-    kepalaForm,
-    setKepalaForm,
-    formTambahKepala,
-    setFormTambahKepala,
-    pindahForm,
-    setPindahForm,
-    riwayatDialogPerson,
-    setRiwayatDialogPerson,
-    pindahDialogPerson,
-    setPindahDialogPerson,
-  }
+  const handleOpenDialog = useCallback((item?: OPD) => {
+    setEditingItem(item ?? null)
+    setDialogOpen(true)
+  }, [])
+
+  const handleCloseDialog = useCallback(() => {
+    setDialogOpen(false)
+    setEditingItem(null)
+  }, [])
+
+  const handleDelete = useCallback((id: string) => {
+    setDeleteConfirm(id)
+  }, [])
+
+  const handleCloseDeleteConfirm = useCallback(() => {
+    setDeleteConfirm(null)
+  }, [])
+
+  const handleOpenRiwayat = useCallback((userId: string) => {
+    setSelectedUser(userId)
+    setRiwayatOpen(true)
+  }, [])
+
+  const handleCloseRiwayat = useCallback(() => {
+    setRiwayatOpen(false)
+    setSelectedUser(null)
+  }, [])
+
+  return useMemo(
+    () => ({
+      dialogOpen,
+      setDialogOpen,
+      editingItem,
+      setEditingItem,
+      deleteConfirm,
+      setDeleteConfirm,
+      searchQuery,
+      setSearchQuery,
+      searchUserQuery,
+      setSearchUserQuery,
+      riwayatOpen,
+      setRiwayatOpen,
+      selectedUser,
+      setSelectedUser,
+      handleOpenDialog,
+      handleCloseDialog,
+      handleDelete,
+      handleCloseDeleteConfirm,
+      handleOpenRiwayat,
+      handleCloseRiwayat,
+    }),
+    [
+      dialogOpen,
+      editingItem,
+      deleteConfirm,
+      searchQuery,
+      searchUserQuery,
+      riwayatOpen,
+      selectedUser,
+      handleOpenDialog,
+      handleCloseDialog,
+      handleDelete,
+      handleCloseDeleteConfirm,
+      handleOpenRiwayat,
+      handleCloseRiwayat,
+    ]
+  )
 }

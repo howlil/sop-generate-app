@@ -1,28 +1,44 @@
 /**
- * Domain: aturan bisnis evaluasi (form hasil, mapping status, validasi).
- * Konstanta UI (options, storage key) tetap di lib/constants/evaluasi.
+ * Evaluasi domain logic
  */
-import type { StatusSOP } from '@/lib/types/sop'
 
-/** Map pilihan form evaluasi → status SOP setelah dikirim. Ini adalah business rule. */
+/** Status hasil evaluasi yang tersedia */
 export const STATUS_HASIL_EVALUASI = {
-  Sesuai: 'Siap Diverifikasi',
-  'Revisi Biro': 'Revisi dari Tim Evaluasi',
-} as const satisfies Record<string, StatusSOP>
+  SESUAI: 'Sesuai',
+  REVISI_BIRO: 'Revisi Biro',
+} as const
 
-export type StatusHasilEvaluasiForm = keyof typeof STATUS_HASIL_EVALUASI
+export type StatusHasilEvaluasi =
+  | typeof STATUS_HASIL_EVALUASI.SESUAI
+  | typeof STATUS_HASIL_EVALUASI.REVISI_BIRO
 
-/** Map pilihan form (Sesuai / Revisi Biro) → status SOP setelah dikirim. */
-export function getStatusSopAfterEvaluasi(hasil: StatusHasilEvaluasiForm): StatusSOP {
-  return STATUS_HASIL_EVALUASI[hasil]
+export interface StatusHasilEvaluasiForm {
+  status: StatusHasilEvaluasi | null
+  komentar: string
 }
 
-/** Form evaluasi SOP dianggap lengkap: status terpilih, dan jika Revisi Biro wajib ada komentar. */
+/**
+ * Check if evaluasi form is complete
+ */
 export function isFormEvaluasiSopComplete(
-  statusEvaluasi: StatusHasilEvaluasiForm | null,
-  komentarEvaluasi: string
+  status: StatusHasilEvaluasi | null,
+  komentar: string
 ): boolean {
-  if (statusEvaluasi === null) return false
-  if (statusEvaluasi === 'Revisi Biro') return (komentarEvaluasi?.trim() ?? '') !== ''
-  return true
+  return !!status && komentar.trim().length > 0
+}
+
+/**
+ * Get new SOP status after evaluasi based on hasil evaluasi
+ */
+export function getStatusSopAfterEvaluasi(
+  status: StatusHasilEvaluasi
+): string {
+  switch (status) {
+    case STATUS_HASIL_EVALUASI.SESUAI:
+      return 'Siap Diverifikasi'
+    case STATUS_HASIL_EVALUASI.REVISI_BIRO:
+      return 'Revisi dari Tim Evaluasi'
+    default:
+      return 'Sedang Dievaluasi'
+  }
 }

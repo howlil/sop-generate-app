@@ -9,6 +9,12 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+interface ExceptionResponse {
+  statusCode: number;
+  message: string | string[];
+  error?: string;
+}
+
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalExceptionFilter.name);
@@ -18,27 +24,26 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = exception instanceof HttpException 
+      ? exception.getStatus() 
+      : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const exceptionResponse = exception instanceof HttpException 
+      ? exception.getResponse() 
+      : null;
+
     let message = 'Terjadi kesalahan pada server';
-    let errors: any = null;
+    let errors: string[] | null = null;
 
-    if (exception instanceof HttpException) {
-      status = exception.getStatus();
-      const exceptionResponse = exception.getResponse();
-
-      if (typeof exceptionResponse === 'string') {
-        message = exceptionResponse;
-      } else if (typeof exceptionResponse === 'object') {
-        const res = exceptionResponse as any;
-        message = res.message ?? message;
-        if (Array.isArray(res.message)) {
-          errors = res.message;
-          message = 'Validasi gagal';
-        }
-      }
+    if (typeof exceptionResponse === 'string') {
+      message = exceptionResponse;
+    } else if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+      const res = exceptionResponse as ExceptionResponse;
+      message = Array.isArray(res.message) ? 'Validasi gagal' : (res.message ?? message);
+      errors = Array.isArray(res.message) ? res.message : null;
     } else if (exception instanceof Error) {
       message = exception.message;
-      this.logger.error(exception.message, exception.stack);
+      this.logger.error(`Error: ${exception.message}`, exception.stack);
     }
 
     response.status(status).json({

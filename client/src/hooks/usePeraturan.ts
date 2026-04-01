@@ -1,35 +1,87 @@
 /**
- * Hook akses peraturan — satu titik akses untuk UI.
- * Menggantikan import langsung dari peraturan-store.
+ * usePeraturan hook dengan TanStack Query
+ * Server state di-handle oleh React Query, UI state di component
  */
-import { usePeraturanStore } from '@/lib/stores/peraturan-store'
-import type { Peraturan } from '@/lib/types/peraturan'
 
-export function usePeraturan() {
-  const list = usePeraturanStore((s) => s.list)
-  const setList = usePeraturanStore((s) => s.setList)
-  const add = usePeraturanStore((s) => s.add)
-  const update = usePeraturanStore((s) => s.update)
-  const remove = usePeraturanStore((s) => s.remove)
-  const getById = usePeraturanStore((s) => s.getById)
-  const setDicabut = usePeraturanStore((s) => s.setDicabut)
-  const cabut = usePeraturanStore((s) => s.cabut)
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { peraturanApi } from '@/services/peraturan.api'
+import { queryKeys } from '@/services/queryKeys'
+import { showToast } from '@/stores/uiStore'
+import type { CreatePeraturanRequest, UpdatePeraturanRequest } from '@/types/peraturan'
 
-  const initPeraturanList = (seed: Peraturan[]) => {
-    if (list.length === 0) setList([...seed])
-  }
+export function usePeraturan(opdId?: string) {
+  const queryClient = useQueryClient()
 
-  const getPeraturanDicabut = () => list.filter((p) => p.status === 'Dicabut')
+  // Query: Fetch all peraturan
+  const {
+    data: list = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: queryKeys.peraturanList(opdId),
+    queryFn: () => peraturanApi.findAll(opdId),
+  })
+
+  // Mutation: Create
+  const createMutation = useMutation({
+    mutationFn: (payload: CreatePeraturanRequest) => peraturanApi.create(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.peraturan })
+      showToast('Peraturan berhasil ditambahkan', 'success')
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Gagal menambahkan peraturan', 'error')
+    },
+  })
+
+  // Mutation: Update
+  const updateMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdatePeraturanRequest }) =>
+      peraturanApi.update(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.peraturan })
+      showToast('Peraturan berhasil diperbarui', 'success')
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Gagal memperbarui peraturan', 'error')
+    },
+  })
+
+  // Mutation: Revoke
+  const revokeMutation = useMutation({
+    mutationFn: (id: string) => peraturanApi.revoke(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.peraturan })
+      showToast('Peraturan berhasil dicabut', 'success')
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Gagal mencabut peraturan', 'error')
+    },
+  })
+
+  // Mutation: Delete
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => peraturanApi.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.peraturan })
+      showToast('Peraturan berhasil dihapus', 'success')
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Gagal menghapus peraturan', 'error')
+    },
+  })
 
   return {
     list,
-    initPeraturanList,
-    addPeraturan: add,
-    updatePeraturan: update,
-    removePeraturan: remove,
-    getPeraturanById: getById,
-    setPeraturanDicabut: setDicabut,
-    cabutPeraturan: cabut,
-    getPeraturanDicabut,
+    isLoading,
+    error,
+    create: createMutation.mutateAsync,
+    update: updateMutation.mutateAsync,
+    revoke: revokeMutation.mutateAsync,
+    delete: deleteMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isRevoking: revokeMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   }
 }

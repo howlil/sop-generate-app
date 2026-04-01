@@ -1,27 +1,77 @@
-/**
- * Hook akses pelaksana SOP — dipakai di Kelola Pelaksana SOP (CRUD) dan di edit SOP.
- */
-import { useEffect } from 'react'
-import { usePelaksanaStore } from '@/lib/stores/pelaksana-store'
-import { getInitialPelaksanaList } from '@/lib/data/pelaksana'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
-export function usePelaksana() {
-  const list = usePelaksanaStore((s) => s.list)
-  const setList = usePelaksanaStore((s) => s.setList)
-  const add = usePelaksanaStore((s) => s.add)
-  const update = usePelaksanaStore((s) => s.update)
-  const remove = usePelaksanaStore((s) => s.remove)
-  const getById = usePelaksanaStore((s) => s.getById)
+export interface Pelaksana {
+  id: string
+  namaPelaksana: string
+  opdId: string
+}
+
+const STORAGE_KEY = 'pelaksana'
+
+/**
+ * Mock data for development
+ */
+const MOCK_DATA: Pelaksana[] = []
+
+/**
+ * Hook to manage pelaksana list
+ * @deprecated Use API instead
+ */
+export function usePelaksana(opdId?: string) {
+  const [list, setList] = useState<Pelaksana[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const loadPelaksana = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      setList(MOCK_DATA)
+    } catch (err) {
+      setError(err as Error)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    if (list.length === 0) setList(getInitialPelaksanaList())
-  }, [list.length, setList])
+    loadPelaksana()
+  }, [loadPelaksana])
 
-  return {
-    list,
-    addPelaksana: add,
-    updatePelaksana: update,
-    removePelaksana: remove,
-    getPelaksanaById: getById,
-  }
+  const addPelaksana = useCallback(async (data: Omit<Pelaksana, 'id'>) => {
+    console.log('Adding pelaksana:', data)
+    // Legacy stub - in production, this should call API
+  }, [])
+
+  const updatePelaksana = useCallback(async (id: string, data: Partial<Pelaksana>) => {
+    console.log('Updating pelaksana:', id, data)
+    // Legacy stub - in production, this should call API
+  }, [])
+
+  const deletePelaksana = useCallback(async (id: string) => {
+    console.log('Deleting pelaksana:', id)
+    // Legacy stub - in production, this should call API
+  }, [])
+
+  return useMemo(
+    () => ({
+      list,
+      loading,
+      error,
+      loadPelaksana,
+      addPelaksana,
+      updatePelaksana,
+      deletePelaksana,
+    }),
+    [
+      list,
+      loading,
+      error,
+      loadPelaksana,
+      addPelaksana,
+      updatePelaksana,
+      deletePelaksana,
+    ]
+  )
 }

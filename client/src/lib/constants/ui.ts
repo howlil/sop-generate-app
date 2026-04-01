@@ -1,5 +1,5 @@
 /**
- * Shared UI constants — locale, common labels.
+ * Stubs for backward compatibility
  */
 
-export const LOCALE_ID = 'id-ID' as const
+export { LOCALE_ID } from '@/utils/constants'

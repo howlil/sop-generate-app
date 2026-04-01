@@ -8,6 +8,12 @@ export type UserWithoutPassword = {
   id: string;
   email: string;
   nama: string;
+  peran: string;
+  opdId: string | null;
+  nip: string;
+  jabatan: string;
+  pangkat: string;
+  nohp: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -20,10 +26,17 @@ export class UserRepository implements IUserRepository {
     return this.prisma.pengguna.findMany({
       skip,
       take,
+      where: { deletedAt: null },
       select: {
         id: true,
         email: true,
         nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -32,31 +45,43 @@ export class UserRepository implements IUserRepository {
 
   async findById(id: string): Promise<UserWithoutPassword | null> {
     return this.prisma.pengguna.findUnique({
-      where: { id },
+      where: { id, deletedAt: null },
       select: {
         id: true,
         email: true,
         nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
         createdAt: true,
         updatedAt: true,
       },
     });
   }
 
-  async create(data: CreateUserDto): Promise<UserWithoutPassword> {
+  async create(data: any): Promise<UserWithoutPassword> {
     return this.prisma.pengguna.create({
       data,
       select: {
         id: true,
         email: true,
         nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
         createdAt: true,
         updatedAt: true,
       },
     });
   }
 
-  async update(id: string, data: UpdateUserDto): Promise<UserWithoutPassword> {
+  async update(id: string, data: any): Promise<UserWithoutPassword> {
     return this.prisma.pengguna.update({
       where: { id },
       data,
@@ -64,6 +89,12 @@ export class UserRepository implements IUserRepository {
         id: true,
         email: true,
         nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -71,27 +102,120 @@ export class UserRepository implements IUserRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.pengguna.delete({
+    await this.prisma.pengguna.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
   }
 
   async count(): Promise<number> {
-    return this.prisma.pengguna.count();
+    return this.prisma.pengguna.count({ where: { deletedAt: null } });
   }
 
   async findByEmail(
+    email: string
+  ): Promise<UserWithoutPassword | null> {
+    return this.prisma.pengguna.findUnique({
+      where: { email, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  async findByEmailWithPassword(
     email: string
   ): Promise<{
     kataSandi: string;
     id: string;
     email: string;
     nama: string;
+    peran: string;
+    opdId: string | null;
+    nip: string;
+    jabatan: string;
+    pangkat: string;
+    nohp: string;
+    deletedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
   } | null> {
     return this.prisma.pengguna.findUnique({
       where: { email },
+    });
+  }
+
+  async findByIdWithPassword(id: string): Promise<{
+    kataSandi: string;
+    id: string;
+    email: string;
+    nama: string;
+    peran: string;
+    opdId: string | null;
+    nip: string;
+    jabatan: string;
+    pangkat: string;
+    nohp: string;
+    deletedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null> {
+    return this.prisma.pengguna.findUnique({
+      where: { id, deletedAt: null },
+    });
+  }
+
+  async findActiveRoleInOpd(
+    peran: string,
+    opdId: string,
+  ): Promise<{ id: string } | null> {
+    return this.prisma.pengguna.findFirst({
+      where: { peran: peran as any, opdId, deletedAt: null },
+      select: { id: true },
+    });
+  }
+
+  async hasActiveMembership(userId: string): Promise<boolean> {
+    const [penyusun, evaluasi] = await Promise.all([
+      this.prisma.anggotaTimPenyusun.findFirst({
+        where: { userId, status: 'AKTIF' },
+        select: { id: true },
+      }),
+      this.prisma.anggotaTimEvaluasi.findFirst({
+        where: { userId, status: 'AKTIF' },
+        select: { id: true },
+      }),
+    ]);
+
+    return penyusun !== null || evaluasi !== null;
+  }
+
+  async findByNip(nip: string): Promise<UserWithoutPassword | null> {
+    return this.prisma.pengguna.findFirst({
+      where: { nip, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 }

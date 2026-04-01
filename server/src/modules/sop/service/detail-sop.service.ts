@@ -1,0 +1,131 @@
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
+import { DetailSopRepository } from '../repository/detail-sop.repository';
+import { UpdateMetadataDto, UpdateStatusDto } from '../dto/detail-sop.dto';
+import { PeranPengguna, StatusSOP } from '../../../generated/prisma';
+import { DetailSopMessages, GenericMessages, interpolate } from '../../../common/messages';
+
+type JwtUser = { id: string; peran: PeranPengguna; opdId: string | null };
+
+// SOP-14: valid status transitions
+const VALID_TRANSITIONS: Record<string, StatusSOP[]> = {
+  [StatusSOP.DRAFT]: [StatusSOP.SEDANG_DISUSUN],
+  [StatusSOP.SEDANG_DISUSUN]: [StatusSOP.SIAP_DIEVALUASI],
+  [StatusSOP.REVISI_DARI_TIM_EVALUASI]: [StatusSOP.SEDANG_DISUSUN],
+  [StatusSOP.SIAP_DIEVALUASI]: [StatusSOP.DIAJUKAN_EVALUASI],
+  // Below are used by Phase 6 & 7 — defined here for completeness
+  [StatusSOP.DIAJUKAN_EVALUASI]: [StatusSOP.SEDANG_DIEVALUASI],
+  [StatusSOP.SEDANG_DIEVALUASI]: [
+    StatusSOP.SIAP_DIVERIFIKASI,
+    StatusSOP.REVISI_DARI_TIM_EVALUASI,
+  ],
+  [StatusSOP.SIAP_DIVERIFIKASI]: [StatusSOP.DIVERIFIKASI_BIRO_ORGANISASI],
+  [StatusSOP.DIVERIFIKASI_BIRO_ORGANISASI]: [StatusSOP.BERLAKU],
+  [StatusSOP.BERLAKU]: [StatusSOP.DICABUT],
+  [StatusSOP.DIGANTIKAN]: [],
+  [StatusSOP.DICABUT]: [],
+};
+
+// Role allowed to perform each forward transition
+const TRANSITION_ROLES: Partial<Record<StatusSOP, PeranPengguna[]>> = {
+  [StatusSOP.SEDANG_DISUSUN]: [PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN],
+  [StatusSOP.SIAP_DIEVALUASI]: [PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN],
+  [StatusSOP.DIAJUKAN_EVALUASI]: [PeranPengguna.KOORDINATOR_TIM_PENYUSUN],
+};
+
+const EDITABLE_STATUSES = new Set<StatusSOP>([
+  StatusSOP.DRAFT,
+  StatusSOP.SEDANG_DISUSUN,
+  StatusSOP.REVISI_DARI_TIM_EVALUASI,
+]);
+
+@Injectable()
+export class DetailSopService {
+  constructor(private readonly repo: DetailSopRepository) {}
+
+  async findAll(user: JwtUser, sopId?: string, opdId?: string, status?: StatusSOP) {
+    const effectiveOpdId =
+      user.peran !== PeranPengguna.BIRO_ORGANISASI &&
+      user.peran !== PeranPengguna.TIM_EVALUASI
+        ? user.opdId ?? undefined
+        : opdId;
+
+    return this.repo.findAll({
+      sopId,
+      opdId: effectiveOpdId,
+      status,
+    });
+  }
+
+  async findById(id: string, user: JwtUser) {
+    const detail = await this.repo.findById(id);
+    if (!detail) throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
+
+    if (
+      user.peran !== PeranPengguna.BIRO_ORGANISASI &&
+      user.peran !== PeranPengguna.TIM_EVALUASI &&
+      (detail as any).sop?.opdId !== user.opdId
+    ) {
+      throw new ForbiddenException(GenericMessages.FORBIDDEN);
+    }
+    return detail;
+  }
+
+  async updateMetadata(id: string, dto: UpdateMetadataDto, user: JwtUser) {
+    const detail = await this.repo.findById(id);
+    if (!detail) throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
+
+    if (!EDITABLE_STATUSES.has(detail.status)) {
+      throw new BadRequestException(
+        `Detail SOP berstatus ${detail.status} tidak dapat diedit`,
+      );
+    }
+
+    return this.repo.updateMetadata(id, dto, user.id);
+  }
+
+  async updateStatus(id: string, dto: UpdateStatusDto, user: JwtUser) {
+    const detail = await this.repo.findById(id);
+    if (!detail) throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
+
+    // SOP-15: terminal statuses
+    if (
+      detail.status === StatusSOP.DICABUT ||
+      detail.status === StatusSOP.DIGANTIKAN
+    ) {
+      throw new BadRequestException(
+        interpolate(DetailSopMessages.CANNOT_UPDATE_TERMINAL_STATUS, { status: detail.status })
+      );
+    }
+
+    const allowed = VALID_TRANSITIONS[detail.status] ?? [];
+    if (!allowed.includes(dto.status)) {
+      throw new BadRequestException(
+        `Transisi ${detail.status} → ${dto.status} tidak valid`,
+      );
+    }
+
+    // Check role permission for the target status
+    const allowedRoles = TRANSITION_ROLES[dto.status];
+    if (allowedRoles && !allowedRoles.includes(user.peran)) {
+      throw new ForbiddenException(
+        `Peran ${user.peran} tidak memiliki izin untuk transisi ke ${dto.status}`,
+      );
+    }
+
+    // SOP-13 / [P0-B]: cannot have two BERLAKU for same SOP
+    if (dto.status === StatusSOP.BERLAKU) {
+      const berlakuCount = await this.repo.countBerlakuBySopId((detail as any).sopId);
+      if (berlakuCount > 0) {
+        throw new ConflictException(DetailSopMessages.EVALUATION_EXISTS);
+      }
+    }
+
+    return this.repo.updateStatus(id, dto.status, user.id);
+  }
+}

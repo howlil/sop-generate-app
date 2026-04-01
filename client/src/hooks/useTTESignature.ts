@@ -1,73 +1,64 @@
-/**
- * Shared hook for TTE (digital signature) verification flow.
- */
-import { useState, useEffect, useCallback } from 'react'
-import type { TTESignaturePayload, TTERole } from '@/lib/types/tte'
-import { verifyPin } from '@/lib/domain/tte'
-import { getTTEProfile, addTTESignature, getTTESignatures } from '@/lib/data/tte-storage'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 
-interface UseTTESignatureOptions {
-  role: TTERole
-  documentId: string | undefined
-}
-
-interface SignDocumentParams {
-  documentLabel: string
+export interface TTESignature {
+  id: string
+  documentId: string
   referenceId: string
+  signedAt: string
+  nip: string
+  namaLengkap: string
+  role: string
+  documentLabel: string
 }
 
-export function useTTESignature({ role, documentId }: UseTTESignatureOptions) {
-  const [ttePayload, setTtePayload] = useState<TTESignaturePayload | null>(null)
-  const [pinDialogOpen, setPinDialogOpen] = useState(false)
+const STORAGE_KEY = 'tte_signature'
+
+/**
+ * Mock data for development
+ */
+const MOCK_DATA: Record<string, TTESignature> = {}
+
+/**
+ * Hook to manage TTE signature
+ * @deprecated Use API instead
+ */
+export function useTTESignature(documentId?: string) {
+  const [signature, setSignature] = useState<TTESignature | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const loadSignature = useCallback(async () => {
+    if (!documentId) return
+    setLoading(true)
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      setSignature(MOCK_DATA[documentId] || null)
+    } catch (err) {
+      setError(err as Error)
+    } finally {
+      setLoading(false)
+    }
+  }, [documentId])
 
   useEffect(() => {
-    if (!documentId) return
-    const sig = getTTESignatures().find(
-      (s) => s.documentId === documentId && s.role === role
-    )
-    setTtePayload(sig ?? null)
-  }, [documentId, role])
+    loadSignature()
+  }, [loadSignature])
 
-  const tteProfile = getTTEProfile(role)
-  const canSign = tteProfile?.emailVerified === true
+  const sign = useCallback(async (data: Omit<TTESignature, 'id'>) => {
+    console.log('Signing with TTE:', data)
+    // Legacy stub - in production, this should call API
+    return { id: 'generated-id', ...data }
+  }, [])
 
-  const openPinDialog = useCallback(() => {
-    if (!canSign) return
-    setPinDialogOpen(true)
-  }, [canSign])
-
-  const createPinConfirmHandler = useCallback(
-    (params: SignDocumentParams, onSuccess?: (payload: TTESignaturePayload) => void) => {
-      return (pin: string): boolean => {
-        const profile = getTTEProfile(role)
-        if (!profile || !verifyPin(pin, profile.pinHash) || !documentId) return false
-
-        const payload = addTTESignature(
-          role,
-          profile.nip,
-          profile.namaLengkap,
-          profile.jabatan,
-          profile.pangkat,
-          documentId,
-          params.documentLabel,
-          params.referenceId
-        )
-        setTtePayload(payload)
-        setPinDialogOpen(false)
-        onSuccess?.(payload)
-        return true
-      }
-    },
-    [role, documentId]
+  return useMemo(
+    () => ({
+      signature,
+      loading,
+      error,
+      loadSignature,
+      sign,
+    }),
+    [signature, loading, error, loadSignature, sign]
   )
-
-  return {
-    ttePayload,
-    setTtePayload,
-    pinDialogOpen,
-    setPinDialogOpen,
-    canSign,
-    openPinDialog,
-    createPinConfirmHandler,
-  }
 }

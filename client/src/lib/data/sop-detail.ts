@@ -1,116 +1,79 @@
 /**
- * Data layer: detail SOP (metadata, prosedur, implementers, versi, komentar).
- * Semua akses JSON untuk detail SOP dikonsolidasikan di sini.
+ * Legacy SOP Detail data - deprecated
+ * SOP detail is now handled by backend API
+ * This file is for backward compatibility only
  */
-import type {
-  ProsedurRow,
-  SOPDetailMetadata,
-  DetailSOPViewMetadata,
-} from '@/lib/types/sop'
-import type { KomentarItem } from '@/lib/types/komentar'
-import type { VersionSeed, DetailSOPVersionSeed } from '@/lib/types/version'
-import sopDetailData from '../seed/sop-detail.json'
-import { getPelaksanaList } from '@/lib/data/pelaksana'
 
-interface SopDetailResponse {
-  metadata: SOPDetailMetadata
-  prosedurRows: ProsedurRow[]
-  implementers: { id: string; name: string }[]
-  komentarList: KomentarItem[]
-  versionList: {
-    id: string
-    version: string
-    revisionType: string
-    date: string
-    author: string
-    changes: string
-  }[]
-  detailViewMetadata: DetailSOPViewMetadata
-  detailVersionList: {
-    id: string
-    version: string
-    date: string
-    author: string
-    changes: string
-    eventLabel?: string
-    revisionType?: string
-  }[]
-  relatedPosOptions: string[]
+import type { SopDetail, Sop, LangkahSop, Pelaksana, LampiranTeks } from '@/types/sop'
+
+/**
+ * Get SOP detail by ID
+ * @deprecated Use API instead
+ */
+export function getSopDetailById(id: string): SopDetail | null {
+  console.warn('getSopDetailById is deprecated - use API instead')
+  return null
 }
 
-const data = sopDetailData as SopDetailResponse
-
-const SEED_SOP_DETAIL_METADATA: SOPDetailMetadata = data.metadata
-const SEED_SOP_DETAIL_PROSEDUR_ROWS: ProsedurRow[] = data.prosedurRows
-const SEED_KOMENTAR_LIST: KomentarItem[] = data.komentarList
-
-function getInitialVersions(): VersionSeed[] {
-  return data.versionList.map((v) => ({
-    id: v.id,
-    version: v.version,
-    revisionType: v.revisionType as 'major' | 'minor',
-    date: v.date,
-    author: v.author,
-    changes: v.changes,
-    snapshot: { metadata: SEED_SOP_DETAIL_METADATA, prosedurRows: SEED_SOP_DETAIL_PROSEDUR_ROWS },
-  }))
+/**
+ * Get SOP by ID
+ * @deprecated Use API instead
+ */
+export function getSopById(id: string): Sop | null {
+  console.warn('getSopById is deprecated - use API instead')
+  return null
 }
 
-const SEED_DETAIL_SOP_VIEW_METADATA: DetailSOPViewMetadata = data.detailViewMetadata
-
-const SEED_DETAIL_SOP_VERSIONS: DetailSOPVersionSeed[] = data.detailVersionList.map((v, i) => ({
-  id: v.id,
-  version: v.version,
-  date: v.date,
-  author: v.author,
-  changes: v.changes,
-  eventLabel: v.eventLabel,
-  revisionType: (v.revisionType as 'major' | 'minor') ?? 'minor',
-  snapshot: i === 0 ? { metadata: SEED_DETAIL_SOP_VIEW_METADATA, prosedurRows: SEED_SOP_DETAIL_PROSEDUR_ROWS } : null,
-}))
-
-const SEED_RELATED_POS_OPTIONS: string[] = data.relatedPosOptions
-
-/** Metadata detail SOP (tim penyusun) – untuk editor. */
-export function getInitialSopDetailMetadata(): SOPDetailMetadata {
-  return { ...SEED_SOP_DETAIL_METADATA }
+/**
+ * Get langkah SOP by detail ID
+ * @deprecated Use API instead
+ */
+export function getLangkahByDetailId(detailId: string): LangkahSop[] {
+  console.warn('getLangkahByDetailId is deprecated - use API instead')
+  return []
 }
 
-/** Baris prosedur detail SOP – untuk diagram / editor. */
-export function getInitialSopDetailProsedurRows(): ProsedurRow[] {
-  return [...SEED_SOP_DETAIL_PROSEDUR_ROWS]
+/**
+ * Get pelaksana by OPD ID
+ * @deprecated Use API instead
+ */
+export function getPelaksanaByOpdId(opdId: string): Pelaksana[] {
+  console.warn('getPelaksanaByOpdId is deprecated - use API instead')
+  return []
 }
 
-/** Daftar pelaksana (implementers) untuk diagram — dari master Pelaksana SOP (CRUD). */
-export function getInitialSopDetailImplementers(): { id: string; name: string }[] {
-  return getPelaksanaList().map((p) => ({
-    id: p.id,
-    name: p.namaLengkap?.trim() || p.id,
-  }))
+/**
+ * Get lampiran teks by detail ID
+ * @deprecated Use API instead
+ */
+export function getLampiranTeksByDetailId(detailId: string): LampiranTeks[] {
+  console.warn('getLampiranTeksByDetailId is deprecated - use API instead')
+  return []
 }
 
-/** Komentar seed untuk editor detail SOP (tim penyusun). */
-export function getInitialSopDetailKomentar(): KomentarItem[] {
-  return [...SEED_KOMENTAR_LIST]
+/**
+ * Get related SOP options
+ * @deprecated Use API instead
+ */
+export function getRelatedSopOptions(): { value: string; label: string }[] {
+  console.warn('getRelatedSopOptions is deprecated - use API instead')
+  return []
 }
 
-/** Riwayat versi untuk editor detail SOP (tim penyusun). */
-export function getInitialSopDetailVersions(): VersionSeed[] {
-  return getInitialVersions()
+/**
+ * Get related Peraturan options
+ * @deprecated Use usePeraturan hook instead
+ */
+export function getRelatedPeraturanOptions(): { value: string; label: string }[] {
+  console.warn('getRelatedPeraturanOptions is deprecated - use API instead')
+  return []
 }
 
-/** Metadata view detail SOP (kepala OPD). */
-export function getSopViewMetadata(): DetailSOPViewMetadata {
-  return { ...SEED_DETAIL_SOP_VIEW_METADATA }
+/**
+ * Get related POS options
+ * @deprecated Use API instead
+ */
+export function getRelatedPosOptions(): { value: string; label: string }[] {
+  console.warn('getRelatedPosOptions is deprecated - use API instead')
+  return []
 }
-
-/** Riwayat versi view detail SOP (kepala OPD). */
-export function getSopViewVersions(): DetailSOPVersionSeed[] {
-  return [...SEED_DETAIL_SOP_VERSIONS]
-}
-
-/** Opsi POS terkait untuk metadata SOP. */
-export function getRelatedPosOptions(): string[] {
-  return [...SEED_RELATED_POS_OPTIONS]
-}
-

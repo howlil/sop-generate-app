@@ -1,62 +1,49 @@
+/**
+ * useFilteredList hook
+ * Filter list by search query and optional filter
+ */
+
 import { useMemo, useState } from 'react'
 
-export interface UseFilteredListOptions<T> {
-  /** Keys (path) untuk pencarian teks, e.g. ['judul', 'nomorSOP'] atau getter (item) => string */
-  searchKeys: (keyof T | ((item: T) => string))[]
-  /** Key untuk filter nilai (e.g. status). Jika tidak dipakai, filterValue diabaikan. */
-  filterKey?: keyof T
-  /** Nilai filter (e.g. 'all' atau nilai enum). 'all' = tampilkan semua. */
-  filterValue?: string
-  /** Predikat tambahan (e.g. hanya item yang eligible). Opsional. */
-  predicate?: (item: T) => boolean
-  /** Jika disediakan, pakai search dari parent (satu search untuk banyak list). */
-  controlledSearch?: [string, (value: string) => void]
-}
-
-/**
- * Hook untuk list + search + filter (opsional).
- * Mengembalikan filteredList dan state searchQuery + setSearchQuery, filterValue + setFilterValue.
- * Dipakai di SOPSaya, DaftarSOPEvaluasi, ManajemenTimEvaluasi, dll.
- */
-export function useFilteredList<T>(
+export function useFilteredList<T extends Record<string, unknown>>(
   list: T[],
-  options: UseFilteredListOptions<T>
-): {
-  filteredList: T[]
-  searchQuery: string
-  setSearchQuery: (value: string) => void
-  filterValue: string
-  setFilterValue: (value: string) => void
-} {
-  const { searchKeys, filterKey, predicate, controlledSearch } = options
+  options: {
+    searchKeys: (keyof T)[]
+    controlledSearch?: [string, (value: string) => void]
+    filterKey?: keyof T
+    filterValue?: string
+  }
+) {
+  const { searchKeys, controlledSearch, filterKey, filterValue } = options
   const [internalSearch, setInternalSearch] = useState('')
   const [searchQuery, setSearchQuery] = controlledSearch ?? [internalSearch, setInternalSearch]
-  const [filterValue, setFilterValue] = useState<string>(options.filterValue ?? 'all')
 
   const filteredList = useMemo(() => {
     let result = list
-    if (predicate) result = result.filter(predicate)
+
     const q = searchQuery.trim().toLowerCase()
     if (q) {
       result = result.filter((item) => {
         const searchable = searchKeys
-          .map((k) => (typeof k === 'function' ? k(item) : String((item as Record<string, unknown>)[k as string] ?? '')))
+          .map((k) => String(item[k] ?? ''))
           .join(' ')
           .toLowerCase()
         return searchable.includes(q)
       })
     }
-    if (filterKey != null && filterValue !== 'all') {
-      result = result.filter((item) => (item as Record<string, unknown>)[filterKey as string] === filterValue)
+
+    if (filterKey != null && filterValue && filterValue !== 'all') {
+      result = result.filter((item) => item[filterKey] === filterValue)
     }
+
     return result
-  }, [list, predicate, searchKeys, searchQuery, filterKey, filterValue])
+  }, [list, searchKeys, searchQuery, filterKey, filterValue])
 
   return {
     filteredList,
     searchQuery,
     setSearchQuery,
-    filterValue,
-    setFilterValue,
+    filterValue: filterValue || 'all',
+    setFilterValue: () => {}, // Placeholder, not used when controlled
   }
 }

@@ -8,7 +8,7 @@ import { PeranPengguna } from '../../../generated/prisma';
 const mockUser = {
   id: '1',
   email: 'test@example.com',
-  name: 'Test User',
+  nama: 'Test User',
   createdAt: new Date(),
   updatedAt: new Date(),
 };
@@ -48,16 +48,27 @@ describe('UserController', () => {
     it('should create a new user', async () => {
       const createUserDto: CreateUserDto = {
         email: 'test@example.com',
-        name: 'Test User',
-        password: 'password123',
-        role: PeranPengguna.TIM_PENYUSUN,
+        nama: 'Test User',
+        kataSandi: 'password123',
+        peran: PeranPengguna.TIM_PENYUSUN,
+        opdId: 'opd-1',
+        nip: '199001012020011001',
+        jabatan: 'Kepala Subbagian',
+        pangkat: 'Penata Muda',
+        nohp: '08123456789',
       };
 
       mockUserService.create.mockResolvedValue(mockUser);
 
       const result = await controller.create(createUserDto);
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        id: mockUser.id,
+        email: mockUser.email,
+        nama: mockUser.nama,
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
+      });
       expect(service.create).toHaveBeenCalledWith(createUserDto);
     });
   });

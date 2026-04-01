@@ -1,14 +1,19 @@
 /**
- * Konstanta UI untuk modul evaluasi SOP (Tim Evaluasi, workspace per OPD).
- * Business mapping (STATUS_HASIL_EVALUASI) ada di lib/domain/evaluasi.
+ * Evaluasi constants
  */
 
-export const EVALUASI_STORAGE_KEY = 'evaluasi_last_by'
+export const EVALUASI_STORAGE_KEY = 'evaluasi_data'
 
-/** Opsi filter status di workspace evaluasi (tampilan: Diajukan / Sedang / Selesai). */
 export const EVALUASI_DISPLAY_STATUS_OPTIONS = [
   { value: 'all', label: 'Semua Status' },
-  { value: 'Diajukan Evaluasi', label: 'Diajukan Evaluasi' },
   { value: 'Sedang Dievaluasi', label: 'Sedang Dievaluasi' },
-  { value: 'Selesai Evaluasi', label: 'Selesai Evaluasi' },
+  { value: 'Siap Diverifikasi', label: 'Siap Diverifikasi' },
+  { value: 'Revisi dari Tim Evaluasi', label: 'Revisi dari Tim Evaluasi' },
 ] as const
+
+export const EVALUASI_FORM_TABS = {
+  SOP: 'sop',
+  OPD: 'opd',
+} as const
+
+export const POST_SUBMIT_DELAY_MS = 1500
