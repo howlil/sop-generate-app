@@ -105,3 +105,20 @@ export const SOP_STATUS_FILTER_OPTIONS = [
   { value: 'Berlaku', label: 'Berlaku' },
   { value: 'Dicabut', label: 'Dicabut' },
 ] as const
+
+export const DEFAULT_SOP_STATUS = 'Draft'
+
+export interface SOPDetailMetadata {
+  judul?: string
+  nomor?: string
+  tahun?: number
+  tentang?: string
+  opdId?: string
+}
+
+export interface VersionHistoryItem {
+  version: string
+  date: string
+  author: string
+  changes: string
+}

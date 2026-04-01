@@ -20,19 +20,21 @@ import { useCollapsiblePanels } from '@/hooks/useUI'
 import { useAppRole } from '@/hooks/useAppRole'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { formatDateId } from '@/utils/format-date'
-import {
-  getRiwayatEvaluasiOpd,
-  getRiwayatEvaluasiSop,
-  getLastEvaluatedByInitial,
-  loadEvaluasiRecordMap,
-  getOpdIdByName,
-  type EvaluasiRecordMap,
-} from '@/lib/data/evaluasi-data'
-import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
 import type { SOPDaftarItem } from '@/lib/types/sop'
-import { EVALUASI_STORAGE_KEY } from '@/lib/constants/evaluasi'
+import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
+
+// Stubs for legacy functions - will be replaced by API calls
+const getRiwayatEvaluasiOpd = () => ([])
+const getRiwayatEvaluasiSop = () => ([])
+const getLastEvaluatedByInitial = () => ({})
+const loadEvaluasiRecordMap = () => ({})
+const getOpdIdByName = () => null
+const getInitialSopDaftarList = () => []
+
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
+import type { StatusHasilEvaluasi } from '@/lib/domain/evaluasi'
+import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 const POST_SUBMIT_DELAY_MS = 1500
@@ -147,7 +149,7 @@ export function DetailEvaluasiOPD() {
 
   /** Ubah status evaluasi. */
   const handleSetStatusEvaluasi = useCallback(
-    (status: 'Sesuai' | 'Revisi Biro' | null) => {
+    (status: StatusHasilEvaluasi | null) => {
       setStatusEvaluasi(status)
     },
     [setStatusEvaluasi]
@@ -173,7 +175,7 @@ export function DetailEvaluasiOPD() {
 
   /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil, atau SOP lain yang punya draft. */
   const sedangDievaluasiList = useMemo(() => {
-    const out: Array<{ id: string; judul: string; nomorSOP: string; statusEvaluasi: 'Sesuai' | 'Revisi Biro'; komentarEvaluasi: string }> = []
+    const out: Array<{ id: string; judul: string; nomorSOP: string; statusEvaluasi: StatusHasilEvaluasi; komentarEvaluasi: string }> = []
     for (const s of sopsFilteredByStatusAndEvaluator) {
       if (s.displayStatus === 'Selesai Evaluasi') continue
       if (s.id === effectiveSopId) {

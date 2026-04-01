@@ -1,6 +1,6 @@
 /**
  * Halaman evaluasi SOP oleh Tim Evaluasi (langsung per SOP, langsung per SOP).
- * Hasil: Sesuai → status SOP "Siap Diverifikasi"; Revisi Biro → "Revisi dari Tim Evaluasi".
+ * Hasil: Sesuai → status SOP "Siap Diverifikasi"; Perlu Perbaikan → "Revisi dari Tim Evaluasi".
  */
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
@@ -156,7 +156,7 @@ export function EvaluasiSOPPage() {
               <FormField label="Komentar Evaluasi">
                 <Textarea
                   className="text-xs min-h-[80px]"
-                  placeholder="Komentar evaluasi (wajib jika Revisi Biro)..."
+                  placeholder="Komentar evaluasi (wajib jika Perlu Perbaikan)..."
                   value={komentarEvaluasi}
                   onChange={(e) => setKomentarEvaluasi(e.target.value)}
                 />

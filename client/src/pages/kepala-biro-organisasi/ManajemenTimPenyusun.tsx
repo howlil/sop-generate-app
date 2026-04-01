@@ -11,8 +11,8 @@ import { usePagination } from '@/hooks/usePagination'
 import { useToast } from '@/hooks/useUI'
 import { useManajemenTimPenyusunState } from '@/hooks/useManajemenTimPenyusunState'
 import { generateId } from '@/utils/generate-id'
-import { useOpdList } from '@/lib/data/opd'
-import { useTimPenyusunList } from '@/hooks/useTimPenyusunList'
+import { useOpd } from '@/hooks/useOpd'
+import { useTimPenyusun } from '@/hooks/useTimPenyusun'
 import {
   addTimPenyusun,
   updateTimPenyusun,

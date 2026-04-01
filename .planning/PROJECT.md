@@ -35,38 +35,40 @@ Tim Penyusun dapat menyusun SOP sesuai prosedur baku dengan diagram flowchart/BP
 - ✓ Domain types: SOP, DetailSOP, Peraturan, OPD, TTE, PengajuanEvaluasi, NilaiEvaluasi, Pelaksana
 - ✓ Seed data JSON untuk semua entitas utama
 
-### Active (Backend v1.0)
+### ✅ Complete (Backend v1.0 — All 89 Requirements Implemented)
 
-**Database & Infrastruktur**
-- [ ] DB-01: Skema Prisma mengimplementasikan seluruh 20 tabel ERD (OPD, Pengguna, SOP, DetailSOP, Peraturan, LangkahSOP, DiagramLayout, DiagramNodePosition, DiagramEdge, DiagramEdgePoint, Pelaksana, DetailSOPPelaksana, AnggotaTimPenyusun, AnggotaTimEvaluasi, PengajuanEvaluasi, NilaiEvaluasi, LogNilaiEvaluasi, KredensialTTE, RiwayatTandaTangan, LogEditSOP)
-- [ ] DB-02: Relasi antar tabel (FK, constraints) benar di schema dengan delete behavior yang tepat (Cascade/Restrict/SetNull)
-- [ ] DB-03: Enum Prisma untuk semua status field (StatusSOP, StatusPeraturan, StatusKeanggotaan, HasilEvaluasi, JenisPengajuanEvaluasi, StatusPengajuanEvaluasi, PeranTTE, BagianSOP, GayaPanah, StatusKomentar)
-- [ ] DB-04: Migration berjalan clean pada MariaDB kosong
+**Database & Infrastruktur** ✅
+- [x] DB-01: Skema Prisma mengimplementasikan seluruh 20 tabel ERD
+- [x] DB-02: Relasi antar tabel (FK, constraints) benar dengan delete behavior yang tepat
+- [x] DB-03: Enum Prisma untuk semua status field
+- [x] DB-04: Migration berjalan clean pada MariaDB kosong
+- [x] DB-05: Indexing strategy untuk FK dan query pattern umum
 
-**Auth & Users**
-- [ ] AUTH-01–06: Login JWT, role guard, manajemen akun dengan constraint 1 KEPALA_OPD + 1 KOORDINATOR_TIM_PENYUSUN per OPD
+**Auth & Users** ✅
+- [x] AUTH-01–06: Login JWT, role guard, manajemen akun
+- [x] AUTH-07–08: Constraint 1 KEPALA_OPD + 1 KOORDINATOR_TIM_PENYUSUN per OPD
 
-**OPD & Peraturan**
-- [ ] OPD-01–05: CRUD OPD dengan agregat (totalSOP, sopBerlaku, sopDraft), soft-delete support
-- [ ] PRT-01–05: CRUD Peraturan dengan versioning, status BERLAKU/DICABUT, constraint digunakan sebagai DasarHukum
+**OPD & Peraturan** ✅
+- [x] OPD-01–07: CRUD OPD dengan agregat, soft-delete support
+- [x] PRT-01–09: CRUD Peraturan dengan versioning, status BERLAKU/DICABUT
 
-**SOP Core & Metadata**
-- [ ] SOP-01–17: CRUD SOP + DetailSOP (versi dokumen), alur status lengkap (DRAFT → SEDANG_DISUSUN → SIAP_DIEVALUASI → DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI → REVISI_DARI_TIM_EVALUASI → SIAP_DIVERIFIKASI → DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT/DIGANTIKAN)
-- [ ] SOP-18: Constraint hanya 1 DetailSOP berstatus BERLAKU per SOP (trigger + service layer)
+**SOP Core & Metadata** ✅
+- [x] SOP-01–17: CRUD SOP + DetailSOP, alur status lengkap
+- [x] SOP-18–24: Metadata, dasar hukum, SOP terkait, lampiran teks
 
-**Pelaksana & Prosedur**
-- [ ] PLK-01–05: Master pelaksana, CRUD prosedur steps (LangkahSOP) dengan type TERMINATOR/TASK/DECISION, flowchart branching, constraint pelaksana wajib terdaftar di DetailSOPPelaksana (swimlane)
+**Pelaksana & Prosedur** ✅
+- [x] PLK-01–08: Master pelaksana, CRUD prosedur steps, flowchart branching
 
-**Tim & Evaluasi**
-- [ ] TIM-01–05: Manajemen AnggotaTimPenyusun (AKTIF/NONAKTIF dengan invariant berakhirPada) & AnggotaTimEvaluasi
-- [ ] EVL-01–08: PengajuanEvaluasi (TERJADWAL/MANDIRI), penugasan evaluator open pool, hasil evaluasi (SESUAI/TIDAK_SESUAI), LogNilaiEvaluasi (audit trail), rekap tahunan
+**Tim & Evaluasi** ✅
+- [x] TIM-01–09: Manajemen AnggotaTimPenyusun & AnggotaTimEvaluasi
+- [x] EVL-01–13: PengajuanEvaluasi, hasil evaluasi, optimistic locking
 
-**TTE & Berita Acara**
-- [ ] TTE-01–08: KredensialTTE (1:1 dengan Pengguna), RiwayatTandaTangan (XOR constraint: sopDetailId XOR pengajuanEvaluasiId), urutan TTE: Biro → Koordinator → Kepala OPD
-- [ ] TTE-09: Constraint BA hanya bisa TTD setelah status DIVERIFIKASI_BIRO + semua NilaiEvaluasi terisi
+**TTE & Berita Acara** ✅
+- [x] TTE-01–08: KredensialTTE, RiwayatTandaTangan, urutan TTE
+- [x] TTE-09–13: Constraint BA, signing history
 
-**Audit Log**
-- [ ] AUD-01–03: LogEditSOP otomatis per perubahan SOP (bagian: METADATA/LANGKAH_SOP/LAMPIRAN_TEKS/DASAR_HUKUM/PELAKSANA/DIAGRAM/SOP_TERKAIT)
+**Audit Log** ✅
+- [x] AUD-01–06: LogEditSOP otomatis per perubahan SOP
 
 ### Out of Scope
 

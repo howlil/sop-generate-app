@@ -104,14 +104,7 @@ export class UserService {
       throw new NotFoundException(UserMessages.USER_NOT_FOUND);
     }
 
-    // [P1-G] Block soft-delete if user still has active team memberships
-    const hasActiveMembership = await this.userRepository.hasActiveMembership(id);
-    if (hasActiveMembership) {
-      throw new ConflictException(
-        'Pengguna tidak dapat dihapus karena masih terdaftar sebagai anggota tim aktif',
-      );
-    }
-
+    // [P1-G]: repository.delete() deactivates active team memberships atomically before soft-delete
     await this.userRepository.delete(id);
   }
 

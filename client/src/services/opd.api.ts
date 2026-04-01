@@ -1,21 +1,68 @@
 /**
- * OPD API service
+ * OPD API service - Complete implementation
+ * Matches server: OpdController
  */
 
 import { apiClient } from './api'
-import type { Opd, CreateOpdRequest, UpdateOpdRequest } from '../types/opd'
+
+export interface OpdResponse {
+  id: string
+  nama: string
+  deletedAt?: string
+  createdAt: string
+  updatedAt: string
+  _count?: {
+    pengguna: number
+    sop: number
+    pelaksana: number
+    anggotaTimPenyusun: number
+    pengajuanEvaluasi: number
+    peraturan: number
+  }
+  totalSOP?: number
+  sopBerlaku?: number
+  sopDraft?: number
+}
+
+export interface CreateOpdDto {
+  nama: string
+}
+
+export interface UpdateOpdDto {
+  nama: string
+}
 
 export const opdApi = {
-  findAll: () => apiClient.get<Opd[]>('/opd'),
+  /**
+   * OPD-01/OPD-05: Get all OPD
+   * BIRO_ORGANISASI: see all OPD
+   * Other roles: see only their own OPD
+   */
+  findAll: () =>
+    apiClient.get<OpdResponse[]>('/opd'),
 
-  findById: (id: string) => apiClient.get<Opd>(`/opd/${id}`),
+  /**
+   * OPD-05: Get OPD by ID
+   */
+  findById: (id: string) =>
+    apiClient.get<OpdResponse>(`/opd/${id}`),
 
-  create: (payload: CreateOpdRequest) => 
-    apiClient.post<Opd>('/opd', payload),
+  /**
+   * OPD-02: Create new OPD (Biro Organisasi only)
+   */
+  create: (payload: CreateOpdDto) =>
+    apiClient.post<OpdResponse>('/opd', payload),
 
-  update: (id: string, payload: UpdateOpdRequest) => 
-    apiClient.patch<Opd>(`/opd/${id}`, payload),
+  /**
+   * OPD-03: Update OPD (Biro Organisasi only)
+   */
+  update: (id: string, payload: UpdateOpdDto) =>
+    apiClient.patch<OpdResponse>(`/opd/${id}`, payload),
 
-  delete: (id: string) => 
+  /**
+   * OPD-04: Soft-delete OPD (Biro Organisasi only)
+   * Validates no active pengajuan evaluasi
+   */
+  delete: (id: string) =>
     apiClient.delete(`/opd/${id}`),
 }

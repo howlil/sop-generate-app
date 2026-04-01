@@ -9,6 +9,9 @@ import { OpdModule } from './modules/opd/opd.module';
 import { PeraturanModule } from './modules/peraturan/peraturan.module';
 import { TimModule } from './modules/tim/tim.module';
 import { SopModule } from './modules/sop/sop.module';
+import { EvaluasiModule } from './modules/evaluasi/evaluasi.module';
+import { TteModule } from './modules/tte/tte.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { envSchema, validateEnv } from './config/env.validation';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 
@@ -31,6 +34,9 @@ import { WinstonLoggerConfig } from './common/logger/winston.config';
     PeraturanModule,
     TimModule,
     SopModule,
+    EvaluasiModule,
+    TteModule,
+    AuditModule,
   ],
 })
 export class AppModule {}

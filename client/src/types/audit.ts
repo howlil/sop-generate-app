@@ -1,15 +1,47 @@
 /**
- * Audit types - stub
+ * Audit Log types matching server schema
  */
 
-export interface AuditEntry {
+export type BagianSOP =
+  | 'METADATA'
+  | 'LANGKAH_SOP'
+  | 'LAMPIRAN_TEKS'
+  | 'DASAR_HUKUM'
+  | 'PELAKSANA'
+  | 'DIAGRAM'
+  | 'SOP_TERKAIT'
+
+export interface LogEditSOP {
   id: string
-  sopId: string
-  action: string
-  aktorNama: string
-  aktorRole: string
-  timestamp: string
-  statusSebelum?: string
-  statusSesudah: string
+  sopDetailId: string
+  userId: string
+  bagian: BagianSOP
+  entityId?: string
   keterangan?: string
+  aktorRole: string
+  createdAt: string
+  
+  // Relations
+  user?: {
+    id: string
+    nama: string
+    email: string
+  }
+  sopDetail?: {
+    id: string
+    nomorSOP: string
+    judul: string
+  }
+}
+
+export interface CreateLogEditSOPDto {
+  sopDetailId: string
+  bagian: BagianSOP
+  entityId?: string
+  keterangan?: string
+}
+
+export interface LogEditSOPResponse {
+  data: LogEditSOP[]
+  total: number
 }

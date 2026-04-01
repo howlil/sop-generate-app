@@ -1,22 +1,27 @@
 /**
- * Peraturan types
+ * Peraturan types - matching server schema
  */
 
-export type StatusPeraturan = 'Berlaku' | 'Dicabut'
+export type StatusPeraturan = 'BERLAKU' | 'DICABUT'
 
-export interface Peraturan {
+export interface PeraturanResponse {
   id: string
-  peraturan: string
+  opdId: string
+  namaPeraturan: string
   nomor: string
-  tahun: string
+  tahun: number
   tentang: string
   status: StatusPeraturan
-  digunakan: number
-  createdBy: string
-  version: number
+  createdAt: string
+  updatedAt: string
+  opd?: {
+    id: string
+    nama: string
+  }
+  digunakan?: number
 }
 
-export interface CreatePeraturanRequest {
+export interface CreatePeraturanDto {
   opdId: string
   namaPeraturan: string
   nomor: string
@@ -24,9 +29,14 @@ export interface CreatePeraturanRequest {
   tentang: string
 }
 
-export interface UpdatePeraturanRequest {
+export interface UpdatePeraturanDto {
   namaPeraturan?: string
   nomor?: string
   tahun?: number
   tentang?: string
 }
+
+// Legacy aliases for backward compatibility
+export type Peraturan = PeraturanResponse
+export type CreatePeraturanRequest = CreatePeraturanDto
+export type UpdatePeraturanRequest = UpdatePeraturanDto

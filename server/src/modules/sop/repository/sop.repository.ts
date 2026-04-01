@@ -89,7 +89,29 @@ export class SopRepository {
   }
 
   async delete(id: string) {
-    await this.prisma.sOP.delete({ where: { id } });
+    // [P0-A]: explicit delete ordering to prevent multi-path cascade deadlock
+    // DiagramEdge has onDelete:Restrict from LangkahSOP — must clear before cascade
+    await this.prisma.$transaction(async (tx) => {
+      const detailSops = await tx.detailSOP.findMany({
+        where: { sopId: id },
+        select: { id: true },
+      });
+      const detailSopIds = detailSops.map((d) => d.id);
+
+      if (detailSopIds.length > 0) {
+        await tx.diagramEdgePoint.deleteMany({
+          where: { diagramEdge: { diagramLayout: { sopDetailId: { in: detailSopIds } } } },
+        });
+        await tx.diagramEdge.deleteMany({
+          where: { diagramLayout: { sopDetailId: { in: detailSopIds } } },
+        });
+        await tx.diagramNodePosition.deleteMany({
+          where: { diagramLayout: { sopDetailId: { in: detailSopIds } } },
+        });
+      }
+
+      await tx.sOP.delete({ where: { id } });
+    });
   }
 
   async hasSignaturesOrEvaluations(id: string): Promise<boolean> {

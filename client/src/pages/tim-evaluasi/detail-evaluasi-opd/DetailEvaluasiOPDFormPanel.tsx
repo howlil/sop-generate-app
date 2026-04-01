@@ -7,6 +7,7 @@ import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEval
 import { SkorRatingPicker } from '@/components/evaluasi/SkorRatingPicker'
 import { formatDateId } from '@/utils/format-date'
 import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/lib/data/evaluasi-data'
+import type { StatusHasilEvaluasi } from '@/lib/domain/evaluasi'
 
 export interface DetailEvaluasiOPDFormPanelProps {
   opd: { id: string; nama: string; kode: string } | null
@@ -16,8 +17,8 @@ export interface DetailEvaluasiOPDFormPanelProps {
   onTabChange: (id: 'sop' | 'opd') => void
   effectiveSopId: string | null
   lastEvaluatedBy: Record<string, { date: string; evaluatorName: string }>
-  statusEvaluasi: 'Sesuai' | 'Revisi Biro' | null
-  setStatusEvaluasi: (v: 'Sesuai' | 'Revisi Biro') => void
+  statusEvaluasi: StatusHasilEvaluasi | null
+  setStatusEvaluasi: (v: StatusHasilEvaluasi) => void
   komentarEvaluasi: string
   setKomentarEvaluasi: (v: string) => void
   riwayatSop: RiwayatEvaluasiSOPItem[]
@@ -75,7 +76,7 @@ export function DetailEvaluasiOPDFormPanel({
                     <FormField label="Komentar Evaluasi">
                       <Textarea
                         className="text-xs min-h-[80px]"
-                        placeholder="Komentar evaluasi (wajib jika Revisi Biro)..."
+                        placeholder="Komentar evaluasi (wajib jika Perlu Perbaikan)..."
                         value={komentarEvaluasi}
                         onChange={(e) => setKomentarEvaluasi(e.target.value)}
                       />

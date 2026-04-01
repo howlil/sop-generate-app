@@ -102,9 +102,20 @@ export class UserRepository implements IUserRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.pengguna.update({
-      where: { id },
-      data: { deletedAt: new Date() },
+    // [P1-G]: deactivate all active team memberships before soft-deleting
+    await this.prisma.$transaction(async (tx) => {
+      await tx.anggotaTimPenyusun.updateMany({
+        where: { userId: id, status: 'AKTIF' },
+        data: { status: 'NONAKTIF', berakhirPada: new Date() },
+      });
+      await tx.anggotaTimEvaluasi.updateMany({
+        where: { userId: id, status: 'AKTIF' },
+        data: { status: 'NONAKTIF', berakhirPada: new Date() },
+      });
+      await tx.pengguna.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
     });
   }
 
@@ -151,7 +162,7 @@ export class UserRepository implements IUserRepository {
     updatedAt: Date;
   } | null> {
     return this.prisma.pengguna.findUnique({
-      where: { email },
+      where: { email, deletedAt: null },
     });
   }
 

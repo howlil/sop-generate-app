@@ -4,16 +4,17 @@ import { Button } from '@/components/ui/button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getInitialOpdList, getInitialKepalaList } from '@/lib/data/opd'
-import { hasRelasiData, canDeleteKepala } from '@/lib/domain/manajemen-opd'
-import type { OPD, KepalaOPD } from '@/lib/types/opd'
+import type { OpdResponse } from '@/types/opd'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useToast } from '@/hooks/useUI'
-import { useManajemenOPDState } from '@/hooks/useManajemenOPDState'
-import { useManajemenOPDData } from '@/hooks/useManajemenOPDData'
+import { useOpd } from '@/hooks/useOpd'
 import { generateId } from '@/utils/generate-id'
 import { OPDTab } from './manajemen-opd/OPDTab'
 import { KepalaOPDTab } from './manajemen-opd/KepalaOPDTab'
+
+// Legacy type aliases for backward compatibility
+export type OPD = OpdResponse
+export type KepalaOPD = any // TODO: Remove and use proper user type
 
 export function ManajemenOPD() {
   const { showToast } = useToast()
@@ -24,50 +25,37 @@ export function ManajemenOPD() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [selectedOPD, setSelectedOPD] = useState<OPD | null>(null)
-  const [opdList, setOpdList] = useState<OPD[]>(() => getInitialOpdList())
-  const [kepalaList, setKepalaList] = useState<KepalaOPD[]>(() => getInitialKepalaList())
+  const { list: opdList, create, update, delete: deleteOpd } = useOpd()
+  const [kepalaList, setKepalaList] = useState<KepalaOPD[]>([])
   const [deleteOpdId, setDeleteOpdId] = useState<string | null>(null)
   const [deleteKepalaId, setDeleteKepalaId] = useState<string | null>(null)
   const [formData, setFormData] = useState({ name: '' })
   const [riwayatKepalaOpen, setRiwayatKepalaOpen] = useState(false)
-  const kepalaState = useManajemenOPDState()
-  const {
-    kepalaFormOpen,
-    setKepalaFormOpen,
-    tambahKepalaOpen,
-    setTambahKepalaOpen,
-    pindahDialogOpen,
-    setPindahDialogOpen,
-    riwayatDialogOpen,
-    setRiwayatDialogOpen,
-    editingKepala,
-    setEditingKepala,
-    kepalaForm,
-    setKepalaForm,
-    formTambahKepala,
-    setFormTambahKepala,
-    pindahForm,
-    setPindahForm,
-    riwayatDialogPerson,
-    setRiwayatDialogPerson,
-    pindahDialogPerson,
-    setPindahDialogPerson,
-  } = kepalaState
+  
+  // Local state management (replacing useManajemenOPDState)
+  const [kepalaFormOpen, setKepalaFormOpen] = useState(false)
+  const [tambahKepalaOpen, setTambahKepalaOpen] = useState(false)
+  const [pindahDialogOpen, setPindahDialogOpen] = useState(false)
+  const [riwayatDialogOpen, setRiwayatDialogOpen] = useState(false)
+  const [editingKepala, setEditingKepala] = useState<any>(null)
+  const [kepalaForm, setKepalaForm] = useState<any>({})
+  const [formTambahKepala, setFormTambahKepala] = useState<any>({})
+  const [pindahForm, setPindahForm] = useState<any>({})
+  const [riwayatDialogPerson, setRiwayatDialogPerson] = useState<any>(null)
+  const [pindahDialogPerson, setPindahDialogPerson] = useState<any>(null)
 
-  const {
-    getKepalaAktif,
-    getKepalaByOPD,
-    filteredOPD,
-    filteredPersons,
-    getRiwayatForUser,
-  } = useManajemenOPDData({
-    opdList,
-    kepalaList,
-    searchQuery,
-    setSearchQuery,
-    searchUserQuery,
-    setSearchUserQuery,
-  })
+  // Simple filtering (replacing useManajemenOPDData)
+  const filteredOPD = opdList.filter((opd) =>
+    opd.nama.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  
+  const filteredPersons = kepalaList.filter((kepala: any) =>
+    kepala.nama.toLowerCase().includes(searchUserQuery.toLowerCase())
+  )
+
+  const getKepalaAktif = () => kepalaList.filter((k: any) => !k.deletedAt)
+  const getKepalaByOPD = (opdId: string) => kepalaList.filter((k: any) => k.opdId === opdId && !k.deletedAt)
+  const getRiwayatForUser = (userId: string) => kepalaList.filter((k: any) => k.userId === userId)
 
   const handleDelete = (id: string) => {
     const opd = opdList.find((o) => o.id === id)

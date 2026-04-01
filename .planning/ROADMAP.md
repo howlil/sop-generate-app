@@ -20,14 +20,14 @@ Dokumen referensi yang wajib dirujuk:
 
 ## Phases
 
-- [ ] **Phase 1: Database & Infrastructure** - Prisma schema dengan 20 model, 12+ enum, relasi, index, cascade rules, migration clean di MariaDB
-- [ ] **Phase 2: Auth & Users** - JWT login, role guards, akun manajemen untuk 4 role, constraint 1 KEPALA_OPD + 1 KOORDINATOR per OPD
-- [ ] **Phase 3: OPD & Peraturan** - CRUD endpoint untuk OPD (soft-delete) dan Peraturan (versioning, status BERLAKU/DICABUT)
-- [ ] **Phase 4: Tim Penyusun & Tim Evaluasi** - Manajemen keanggotaan dengan invariant AKTIF ↔ berakhirPada, role assignment, OPD binding
-- [ ] **Phase 5: SOP Core, Metadata & Pelaksana** - Full SOP lifecycle (DRAFT → BERLAKU → DICABUT), metadata, prosedur steps, pelaksana, swimlane
-- [ ] **Phase 6: Evaluasi & Verifikasi** - PengajuanEvaluasi workflow (TERJADWAL/MANDIRI), open pool evaluator, hasil evaluasi (SESUAI/TIDAK_SESUAI), optimistic locking
-- [ ] **Phase 7: TTE & Berita Acara** - KredensialTTE, RiwayatTandaTangan (XOR constraint), sequential TTE: Biro → Koordinator → Kepala OPD
-- [ ] **Phase 8: Audit Log** - LogEditSOP otomatis per perubahan SOP (bagian: METADATA/LANGKAH_SOP/LAMPIRAN_TEKS/DASAR_HUKUM/PELAKSANA/DIAGRAM/SOP_TERKAIT)
+- [x] **Phase 1: Database & Infrastructure** - Prisma schema dengan 20 model, 12+ enum, relasi, index, cascade rules, migration clean di MariaDB
+- [x] **Phase 2: Auth & Users** - JWT login, role guards, akun manajemen untuk 4 role, constraint 1 KEPALA_OPD + 1 KOORDINATOR per OPD
+- [x] **Phase 3: OPD & Peraturan** - CRUD endpoint untuk OPD (soft-delete) dan Peraturan (versioning, status BERLAKU/DICABUT)
+- [x] **Phase 4: Tim Penyusun & Tim Evaluasi** - Manajemen keanggotaan dengan invariant AKTIF ↔ berakhirPada, role assignment, OPD binding
+- [x] **Phase 5: SOP Core, Metadata & Pelaksana** - Full SOP lifecycle (DRAFT → BERLAKU → DICABUT), metadata, prosedur steps, pelaksana, swimlane
+- [x] **Phase 6: Evaluasi & Verifikasi** - PengajuanEvaluasi workflow (TERJADWAL/MANDIRI), open pool evaluator, hasil evaluasi (SESUAI/TIDAK_SESUAI), optimistic locking
+- [x] **Phase 7: TTE & Berita Acara** - KredensialTTE, RiwayatTandaTangan (XOR constraint), sequential TTE: Biro → Koordinator → Kepala OPD
+- [x] **Phase 8: Audit Log** - LogEditSOP otomatis per perubahan SOP (bagian: METADATA/LANGKAH_SOP/LAMPIRAN_TEKS/DASAR_HUKUM/PELAKSANA/DIAGRAM/SOP_TERKAIT)
 
 ---
 
@@ -218,18 +218,18 @@ Dokumen referensi yang wajib dirujuk:
 
 | Phase | Plans Complete | Requirements | Status | Completed |
 |-------|----------------|--------------|--------|-----------|
-| 1. Database & Infrastructure | 1/2 (outdated) | DB-01 s.d. DB-05 (5) | In Progress | - |
-| 2. Auth & Users | 0/? | AUTH-01 s.d. AUTH-08 (8) | Not started | - |
-| 3. OPD & Peraturan | 0/? | OPD-01 s.d. OPD-07 (7), PRT-01 s.d. PRT-09 (9) | Not started | - |
-| 4. Tim Penyusun & Tim Evaluasi | 0/? | TIM-01 s.d. TIM-09 (9) | Not started | - |
-| 5. SOP Core, Metadata & Pelaksana | 0/? | SOP-01 s.d. SOP-24 (24), PLK-01 s.d. PLK-08 (8) | Not started | - |
-| 6. Evaluasi & Verifikasi | 0/? | EVL-01 s.d. EVL-13 (13) | Not started | - |
-| 7. TTE & Berita Acara | 0/? | TTE-01 s.d. TTE-13 (13) | Not started | - |
-| 8. Audit Log | 0/? | AUD-01 s.d. AUD-06 (6) | Not started | - |
+| 1. Database & Infrastructure | 2/2 | DB-01 s.d. DB-05 (5) | ✅ Complete | All schema, migration, triggers |
+| 2. Auth & Users | Complete | AUTH-01 s.d. AUTH-08 (8) | ✅ Complete | JWT, guards, constraints |
+| 3. OPD & Peraturan | Complete | OPD-01 s.d. OPD-07 (7), PRT-01 s.d. PRT-09 (9) | ✅ Complete | CRUD, soft-delete, versioning |
+| 4. Tim Penyusun & Tim Evaluasi | Complete | TIM-01 s.d. TIM-09 (9) | ✅ Complete | Membership, invariant |
+| 5. SOP Core, Metadata & Pelaksana | Complete | SOP-01 s.d. SOP-24 (24), PLK-01 s.d. PLK-08 (8) | ✅ Complete | Lifecycle, metadata, steps |
+| 6. Evaluasi & Verifikasi | Complete | EVL-01 s.d. EVL-13 (13) | ✅ Complete | Workflow, optimistic locking |
+| 7. TTE & Berita Acara | Complete | TTE-01 s.d. TTE-13 (13) | ✅ Complete | Sequential TTE, XOR constraint |
+| 8. Audit Log | Complete | AUD-01 s.d. AUD-06 (6) | ✅ Complete | Auto-logging, immutable |
 
 **Total Requirements:** 89
-**Phase Progress:** [>_______] 0/8 phases complete
-**Requirements Done:** 0/89
+**Phase Progress:** [========] 8/8 phases complete
+**Requirements Done:** 89/89 (100%)
 
 ---
 
@@ -264,3 +264,4 @@ Dokumen ini merujuk constraint berikut dari `docs/SCHEMA-CONSTRAINTS.md`:
 ---
 *Roadmap created: 2026-03-25*
 *Last updated: 2026-04-01 — Aligned with ERD-DESKRIPSI.md dan PRD-ANALISIS-SISTEM.md v1.3*
+*Backend implementation status: 2026-04-01 — All 8 phases complete, 89/89 requirements implemented*

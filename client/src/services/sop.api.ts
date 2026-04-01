@@ -1,24 +1,212 @@
 /**
- * SOP API service
+ * SOP API service - Complete implementation
+ * Matches server: SopController, DetailSopController, LangkahSopController, PelaksanaController
  */
 
 import { apiClient } from './api'
-import type { Sop, SopDetail, CreateSopRequest } from '../types/sop'
+import type {
+  Sop,
+  SopDetail,
+  CreateSopRequest,
+  UpdateMetadataDto,
+  UpdateStatusDto,
+  LangkahSOP,
+  CreateLangkahSOPDto,
+  UpdateLangkahSOPDto,
+  Pelaksana,
+  CreatePelaksanaDto,
+  DetailSOPPelaksana,
+  CreateDetailSOPPelaksanaDto,
+  LampiranTeks,
+  CreateLampiranTeksDto,
+  DasarHukum,
+  CreateDasarHukumDto,
+  SopTerkait,
+  CreateSopTerkaitDto,
+  LogEditSOP,
+} from '../types/sop'
 
 export const sopApi = {
+  // ================= SOP (Header) =================
+  
   findAll: (params?: { opdId?: string; status?: string }) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : ''
     return apiClient.get<Sop[]>(`/sop${query}`)
   },
 
-  findById: (id: string) => apiClient.get<SopDetail>(`/sop/${id}`),
+  findById: (id: string) =>
+    apiClient.get<Sop>(`/sop/${id}`),
 
-  create: (payload: CreateSopRequest) => 
+  create: (payload: CreateSopRequest) =>
     apiClient.post<Sop>('/sop', payload),
 
-  update: (id: string, judul: string) => 
+  update: (id: string, judul: string) =>
     apiClient.patch<Sop>(`/sop/${id}`, { judul }),
 
-  delete: (id: string) => 
+  delete: (id: string) =>
     apiClient.delete(`/sop/${id}`),
+
+  // ================= DetailSOP =================
+
+  /**
+   * Get all DetailSOP with filtering
+   */
+  findDetailAll: (params?: { sopId?: string; opdId?: string; status?: string }) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : ''
+    return apiClient.get<SopDetail[]>(`/detail-sop${query}`)
+  },
+
+  /**
+   * Get DetailSOP by ID
+   */
+  findDetailById: (id: string) =>
+    apiClient.get<SopDetail>(`/detail-sop/${id}`),
+
+  /**
+   * SOP-02: Update metadata DetailSOP
+   */
+  updateMetadata: (id: string, payload: UpdateMetadataDto) =>
+    apiClient.patch<SopDetail>(`/detail-sop/${id}/metadata`, payload),
+
+  /**
+   * SOP-03/06/07/08: Update status DetailSOP
+   */
+  updateStatus: (id: string, payload: UpdateStatusDto) =>
+    apiClient.patch<SopDetail>(`/detail-sop/${id}/status`, payload),
+
+  /**
+   * Delete DetailSOP
+   */
+  deleteDetail: (id: string) =>
+    apiClient.delete(`/detail-sop/${id}`),
+
+  // ================= LangkahSOP =================
+
+  /**
+   * Get all langkah SOP for a DetailSOP
+   */
+  findLangkah: (sopDetailId: string) =>
+    apiClient.get<LangkahSOP[]>(`/langkah-sop?sopDetailId=${sopDetailId}`),
+
+  /**
+   * PLK-02: Create langkah SOP
+   */
+  createLangkah: (payload: CreateLangkahSOPDto) =>
+    apiClient.post<LangkahSOP>('/langkah-sop', payload),
+
+  /**
+   * PLK-02: Update langkah SOP
+   */
+  updateLangkah: (id: string, payload: UpdateLangkahSOPDto) =>
+    apiClient.patch<LangkahSOP>(`/langkah-sop/${id}`, payload),
+
+  /**
+   * PLK-02: Delete langkah SOP
+   */
+  deleteLangkah: (id: string) =>
+    apiClient.delete(`/langkah-sop/${id}`),
+
+  // ================= Pelaksana =================
+
+  /**
+   * Get all pelaksana for an OPD
+   */
+  findPelaksana: (opdId: string) =>
+    apiClient.get<Pelaksana[]>(`/pelaksana?opdId=${opdId}`),
+
+  /**
+   * PLK-01: Create pelaksana
+   */
+  createPelaksana: (payload: CreatePelaksanaDto) =>
+    apiClient.post<Pelaksana>('/pelaksana', payload),
+
+  /**
+   * PLK-01: Update pelaksana
+   */
+  updatePelaksana: (id: string, namaPelaksana: string) =>
+    apiClient.patch<Pelaksana>(`/pelaksana/${id}`, { namaPelaksana }),
+
+  /**
+   * PLK-01: Delete pelaksana
+   */
+  deletePelaksana: (id: string) =>
+    apiClient.delete(`/pelaksana/${id}`),
+
+  // ================= DetailSOPPelaksana (Swimlane) =================
+
+  /**
+   * Add pelaksana to DetailSOP (swimlane)
+   */
+  addSwimlane: (sopDetailId: string, payload: CreateDetailSOPPelaksanaDto) =>
+    apiClient.post<DetailSOPPelaksana>(`/detail-sop/${sopDetailId}/pelaksana`, payload),
+
+  /**
+   * Remove pelaksana from DetailSOP
+   */
+  removeSwimlane: (sopDetailId: string, pelaksanaId: string) =>
+    apiClient.delete(`/detail-sop/${sopDetailId}/pelaksana/${pelaksanaId}`),
+
+  // ================= LampiranTeks =================
+
+  /**
+   * Get lampiran for DetailSOP
+   */
+  findLampiran: (sopDetailId: string, jenis?: string) => {
+    const query = jenis ? `?jenis=${jenis}` : ''
+    return apiClient.get<LampiranTeks[]>(`/detail-sop/${sopDetailId}/lampiran${query}`)
+  },
+
+  /**
+   * SOP-24: Create lampiran teks
+   */
+  createLampiran: (sopDetailId: string, payload: CreateLampiranTeksDto) =>
+    apiClient.post<LampiranTeks>(`/detail-sop/${sopDetailId}/lampiran`, payload),
+
+  /**
+   * SOP-24: Update lampiran teks
+   */
+  updateLampiran: (id: string, teks: string) =>
+    apiClient.patch<LampiranTeks>(`/lampiran/${id}`, { teks }),
+
+  /**
+   * SOP-24: Delete lampiran teks
+   */
+  deleteLampiran: (id: string) =>
+    apiClient.delete(`/lampiran/${id}`),
+
+  // ================= DasarHukum =================
+
+  /**
+   * Add dasar hukum to DetailSOP
+   */
+  addDasarHukum: (sopDetailId: string, payload: CreateDasarHukumDto) =>
+    apiClient.post<DasarHukum>(`/detail-sop/${sopDetailId}/dasar-hukum`, payload),
+
+  /**
+   * Remove dasar hukum from DetailSOP
+   */
+  removeDasarHukum: (sopDetailId: string, peraturanId: string) =>
+    apiClient.delete(`/detail-sop/${sopDetailId}/dasar-hukum/${peraturanId}`),
+
+  // ================= SopTerkait =================
+
+  /**
+   * Add SOP terkait
+   */
+  addSopTerkait: (sopDetailId: string, payload: CreateSopTerkaitDto) =>
+    apiClient.post<SopTerkait>(`/detail-sop/${sopDetailId}/sop-terkait`, payload),
+
+  /**
+   * Remove SOP terkait
+   */
+  removeSopTerkait: (sopDetailId: string, sopTerkaitDetailId: string) =>
+    apiClient.delete(`/detail-sop/${sopDetailId}/sop-terkait/${sopTerkaitDetailId}`),
+
+  // ================= LogEditSOP =================
+
+  /**
+   * AUD-03: Get edit history for DetailSOP
+   */
+  getEditHistory: (sopDetailId: string) =>
+    apiClient.get<LogEditSOP[]>(`/detail-sop/${sopDetailId}/logs`),
 }

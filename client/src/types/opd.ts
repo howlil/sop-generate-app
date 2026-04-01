@@ -1,37 +1,35 @@
 /**
- * OPD types
+ * OPD types - matching server schema
  */
 
-export interface Opd {
+export interface OpdResponse {
   id: string
   nama: string
-  alamat: string
-  kodePos?: string
-  telepon?: string
-  email?: string
-  website?: string
-  logoUrl?: string
-  deletedAt?: string | null
+  deletedAt?: string
   createdAt: string
   updatedAt: string
+  _count?: {
+    pengguna: number
+    sop: number
+    pelaksana: number
+    anggotaTimPenyusun: number
+    pengajuanEvaluasi: number
+    peraturan: number
+  }
+  totalSOP?: number
+  sopBerlaku?: number
+  sopDraft?: number
 }
 
-export interface CreateOpdRequest {
+export interface CreateOpdDto {
   nama: string
-  alamat: string
-  kodePos?: string
-  telepon?: string
-  email?: string
-  website?: string
-  logoUrl?: string
 }
 
-export interface UpdateOpdRequest {
-  nama?: string
-  alamat?: string
-  kodePos?: string
-  telepon?: string
-  email?: string
-  website?: string
-  logoUrl?: string
+export interface UpdateOpdDto {
+  nama: string
 }
+
+// Legacy aliases for backward compatibility
+export type Opd = OpdResponse
+export type CreateOpdRequest = CreateOpdDto
+export type UpdateOpdRequest = UpdateOpdDto
