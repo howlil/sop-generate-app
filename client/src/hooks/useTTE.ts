@@ -15,56 +15,6 @@ import type {
 
 const TTE_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
-// ==================== TTE Domain Logic (DEPRECATED - Use server-side verification) ====================
-/**
- * @deprecated Use server-side PIN hashing instead
- */
-export function hashPin(pin: string): string {
-  return btoa(pin)
-}
-
-/**
- * @deprecated Use server-side PIN verification instead
- */
-export function verifyPin(pin: string, pinHash: string): boolean {
-  return hashPin(pin) === pinHash
-}
-
-/**
- * @deprecated Use server-side storage instead
- */
-export function getTTEProfile(_role: string): null {
-  return null
-}
-
-/**
- * @deprecated Use server-side storage instead
- */
-export function setTTEProfile(_role: string, _profile: any): void {
-  // no-op
-}
-
-/**
- * @deprecated Use server-side storage instead
- */
-export function addTTESignature(_id: string, _signature: any): void {
-  // no-op
-}
-
-/**
- * @deprecated Use server-side validation instead
- */
-export function getValidasiPengesahanUrl(_id: string): string {
-  return '#'
-}
-
-/**
- * @deprecated Use server-side validation instead
- */
-export function getTTEVerificationSuccessUrl(): string {
-  return '#'
-}
-
 export function useTTEProfil() {
   return useQuery({
     queryKey: queryKeys.tteProfil,

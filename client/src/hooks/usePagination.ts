@@ -10,7 +10,7 @@ const DEFAULT_PAGE_SIZE = 10
 export function usePagination(totalItems: number, pageSize: number = DEFAULT_PAGE_SIZE) {
   const [page, setPage] = useState(1)
 
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
+  const totalPages = totalItems === 0 ? 1 : Math.ceil(totalItems / pageSize)
   const safePage = Math.min(Math.max(1, page), totalPages)
   const startIndex = (safePage - 1) * pageSize
   const endIndex = Math.min(startIndex + pageSize, totalItems)

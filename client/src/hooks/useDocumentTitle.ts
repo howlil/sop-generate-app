@@ -14,8 +14,7 @@ export function useDocumentTitle(pageTitle: string | undefined) {
       return
     }
     document.title = `${pageTitle.trim()} · ${BASE}`
-    return () => {
-      document.title = BASE
-    }
+    // No cleanup on unmount - prevents unnecessary resets when navigating
+    // Title will be updated by next route's useDocumentTitle hook
   }, [pageTitle])
 }

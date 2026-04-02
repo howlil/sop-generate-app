@@ -175,7 +175,7 @@ export function DetailEvaluasiOPD() {
 
   /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil, atau SOP lain yang punya draft. */
   const sedangDievaluasiList = useMemo(() => {
-    const out: Array<{ id: string; judul: string; nomorSOP: string; statusEvaluasi: StatusHasilEvaluasi; komentarEvaluasi: string }> = []
+    const out: Array<{ id: string; judul: string; nomorSOP: string; hasil: StatusHasilEvaluasi; komentarEvaluasi: string }> = []
     for (const s of sopsFilteredByStatusAndEvaluator) {
       if (s.displayStatus === 'Selesai Evaluasi') continue
       if (s.id === effectiveSopId) {
@@ -184,7 +184,7 @@ export function DetailEvaluasiOPD() {
             id: s.id,
             judul: s.judul,
             nomorSOP: s.nomorSOP,
-            statusEvaluasi,
+            hasil: statusEvaluasi,
             komentarEvaluasi: komentarEvaluasi?.trim() ?? '',
           })
         }
@@ -196,7 +196,7 @@ export function DetailEvaluasiOPD() {
           id: s.id,
           judul: s.judul,
           nomorSOP: s.nomorSOP,
-          statusEvaluasi: draft.statusEvaluasi,
+          hasil: draft.statusEvaluasi,
           komentarEvaluasi: draft.komentarEvaluasi ?? '',
         })
       }

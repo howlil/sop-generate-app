@@ -16,7 +16,11 @@ export function useFilteredList<T extends Record<string, unknown>>(
 ) {
   const { searchKeys, controlledSearch, filterKey, filterValue } = options
   const [internalSearch, setInternalSearch] = useState('')
+  const [internalFilterValue, setInternalFilterValue] = useState<string>('all')
   const [searchQuery, setSearchQuery] = controlledSearch ?? [internalSearch, setInternalSearch]
+  
+  const effectiveFilterValue = filterValue ?? internalFilterValue
+  const setFilterValue = filterValue !== undefined ? () => {} : setInternalFilterValue
 
   const filteredList = useMemo(() => {
     let result = list
@@ -32,18 +36,18 @@ export function useFilteredList<T extends Record<string, unknown>>(
       })
     }
 
-    if (filterKey != null && filterValue && filterValue !== 'all') {
-      result = result.filter((item) => item[filterKey] === filterValue)
+    if (filterKey != null && effectiveFilterValue && effectiveFilterValue !== 'all') {
+      result = result.filter((item) => item[filterKey] === effectiveFilterValue)
     }
 
     return result
-  }, [list, searchKeys, searchQuery, filterKey, filterValue])
+  }, [list, searchKeys, searchQuery, filterKey, effectiveFilterValue])
 
   return {
     filteredList,
     searchQuery,
     setSearchQuery,
-    filterValue: filterValue || 'all',
-    setFilterValue: () => {}, // Placeholder, not used when controlled
+    filterValue: effectiveFilterValue || 'all',
+    setFilterValue,
   }
 }

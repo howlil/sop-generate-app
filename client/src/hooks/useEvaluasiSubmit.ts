@@ -7,18 +7,18 @@
 import { useState, useCallback, useMemo } from 'react'
 import { evaluasiApi } from '@/services/evaluasi.api'
 import { useToast } from './useUI'
-import type { StatusHasilEvaluasi } from '@/hooks/useEvaluasi'
+import type { HasilEvaluasi } from '@/types/evaluasi'
 
 export interface EvaluasiBatchSubmitError {
   sopId: string
   message: string
 }
 
-interface EvaluasiSubmitItem {
+export interface EvaluasiSubmitItem {
   id: string
   judul: string
   nomorSOP: string
-  statusEvaluasi: StatusHasilEvaluasi
+  hasil: HasilEvaluasi
   komentarEvaluasi: string
 }
 
@@ -83,7 +83,7 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
         // Submit each SOP evaluation via API
         for (const item of selected) {
           await evaluasiApi.isiNilai(pengajuanId, item.id, {
-            hasil: item.statusEvaluasi as any,
+            hasil: item.hasil,
             catatan: item.komentarEvaluasi || undefined,
             version: 0,
           })
