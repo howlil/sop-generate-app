@@ -24,16 +24,13 @@ import { useAppRole } from '@/hooks/useAppRole'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
-  getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
 } from '@/hooks/useDetailSop'
 import { DEFAULT_SOP_STATUS, type SOPDetailMetadata, type ProsedurRow, type StatusSOP } from '@/components/sop/types'
 import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
-import { useKomentar } from '@/hooks/useKomentar'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'
 import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
 import { RiwayatStatusPanel } from '@/components/sop/RiwayatStatusPanel'
-import { useAuditLog } from '@/hooks/useAuditLog'
 import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
 import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
 import { formatDateIdLong } from '@/utils/format-date'
@@ -81,13 +78,12 @@ export function DetailSOPPenyusun() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false)
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'komentar' | 'riwayat' | 'aktivitas'>('edit')
-  const { logAction, getEntriesForSop } = useAuditLog()
-  const auditEntries = id ? getEntriesForSop(id) : []
+  const auditEntries: any[] = []
 
-  const { displayList: komentarDisplay, handleResolveComment } = useKomentar({
-    initialData: getInitialSopDetailKomentar(),
-    includeRoles: ['Tim Evaluasi'],
-  })
+  const [komentarDisplay, setKomentarDisplay] = useState<any[]>([])
+  const handleResolveComment = (_komentarId: string) => {
+    setKomentarDisplay((prev) => prev.map((k) => (k.id === _komentarId ? { ...k, resolved: true } : k)))
+  }
 
   const [versions, _setVersions] = useState<VersionHistoryItem[]>(
     () => getInitialSopDetailVersions() as VersionHistoryItem[]
@@ -142,17 +138,7 @@ export function DetailSOPPenyusun() {
                   className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
                   onClick={() => {
                     if (id && role) {
-                      const sebelum = currentSopStatus
                       setSopStatusOverride(id, 'Sedang Disusun')
-                      setSopMeta(id, getRoleUserName(role))
-                      logAction({
-                        sopId: id,
-                        action: 'SIMPAN_DRAFT',
-                        aktorNama: getRoleUserName(role),
-                        aktorRole: 'Tim Penyusun',
-                        statusSebelum: sebelum,
-                        statusSesudah: 'Sedang Disusun',
-                      })
                       showToast('Status diubah menjadi Sedang Disusun')
                     }
                   }}
@@ -165,18 +151,7 @@ export function DetailSOPPenyusun() {
                   className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
                   onClick={() => {
                     if (id && role) {
-                      const sebelum = currentSopStatus
                       setSopStatusOverride(id, 'Siap Dievaluasi')
-                      setSopMeta(id, getRoleUserName(role))
-                      logAction({
-                        sopId: id,
-                        action: 'SELESAI_PENYUSUNAN',
-                        aktorNama: getRoleUserName(role),
-                        aktorRole: 'Tim Penyusun',
-                        statusSebelum: sebelum,
-                        statusSesudah: 'Siap Dievaluasi',
-                        keterangan: isRevisionFlow ? 'Revisi selesai' : undefined,
-                      })
                       showToast(
                         isRevisionFlow
                           ? 'Revisi selesai. Kembali ke Manajemen SOP untuk kirim ulang ke evaluasi.'

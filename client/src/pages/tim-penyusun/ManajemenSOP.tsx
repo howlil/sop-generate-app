@@ -56,7 +56,6 @@ export function ManajemenSOP() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
-  const { logAction } = useAuditLog()
   const { role, getRoleUserName } = useAppRole()
   const filters = useDaftarSOPFilters()
   const { setSopList, eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSOPData({
@@ -110,19 +109,10 @@ export function ManajemenSOP() {
       return
     }
     const ids = Array.from(selectedSopIdsForAjukan)
-    const aktorNama = role ? getRoleUserName(role) : 'Tim Penyusun'
     setSopList((prev) =>
       prev.map((p) => {
         if (!ids.includes(p.id)) return p
         setSopStatusOverride(p.id, 'Diajukan Evaluasi')
-        logAction({
-          sopId: p.id,
-          action: 'AJUKAN_EVALUASI',
-          aktorNama,
-          aktorRole: 'Tim Penyusun',
-          statusSebelum: p.status,
-          statusSesudah: 'Diajukan Evaluasi',
-        })
         return { ...p, status: 'Diajukan Evaluasi' as StatusSOP }
       })
     )

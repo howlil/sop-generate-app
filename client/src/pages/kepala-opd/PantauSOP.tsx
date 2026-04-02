@@ -18,7 +18,7 @@ import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { useFilteredList } from '@/hooks/useFilteredList'
+import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/hooks/usePagination'
 import { useOpd } from '@/hooks/useOpd'
 

@@ -16,7 +16,7 @@ import type { TimEvaluasiAnggota } from '@/types/tim'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
 import { useToast } from '@/hooks/useUI'
-import { useFilteredList } from '@/hooks/useFilteredList'
+import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/hooks/usePagination'
 
 export function ManajemenTimEvaluasi() {

@@ -6,7 +6,7 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { Peraturan } from '@/types/peraturan'
 import { useToast } from '@/hooks/useUI'
-import { useFilteredList } from '@/hooks/useFilteredList'
+import { useFilteredList } from '@/utils/use-filtered-list'
 import { useManajemenPeraturanState } from '@/hooks/useManajemenPeraturanState'
 import { usePeraturan } from '@/hooks/usePeraturan'
 import {

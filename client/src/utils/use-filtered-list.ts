@@ -18,7 +18,7 @@ export function useFilteredList<T extends Record<string, unknown>>(
   const [internalSearch, setInternalSearch] = useState('')
   const [internalFilterValue, setInternalFilterValue] = useState<string>('all')
   const [searchQuery, setSearchQuery] = controlledSearch ?? [internalSearch, setInternalSearch]
-  
+
   const effectiveFilterValue = filterValue ?? internalFilterValue
   const setFilterValue = filterValue !== undefined ? () => {} : setInternalFilterValue
 

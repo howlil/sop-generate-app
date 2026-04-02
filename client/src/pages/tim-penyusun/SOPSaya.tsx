@@ -11,7 +11,7 @@ import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { ROUTES } from '@/utils/constants'
 import { formatDateIdLong } from '@/utils/format-date'
-import { useFilteredList } from '@/hooks/useFilteredList'
+import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/hooks/usePagination'
 
 export function SOPSaya() {

@@ -14,7 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import type { PelaksanaSOP } from '@/hooks/usePelaksana'
 import { usePelaksana } from '@/hooks/usePelaksana'
 import { useToast } from '@/hooks/useUI'
-import { useFilteredList } from '@/hooks/useFilteredList'
+import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/hooks/usePagination'
 
 export function PelaksanaSOP() {

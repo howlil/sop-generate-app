@@ -1,12 +1,10 @@
 /**
  * Role-based utilities
- * Consolidated role display and route guard functions
  */
 
 import { redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/authStore'
-import { CONSTANTS, routePathPrefixForMatch, type RoleKey } from '@/utils/constants'
-const { ROUTES } = CONSTANTS
+import { ROUTES, type RoleKey } from '@/utils/constants'
 
 /**
  * Get OPD ID for Kepala OPD role
