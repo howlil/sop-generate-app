@@ -5,8 +5,8 @@
  * - Left (60%): Hero content dengan animated gradient
  * - Right (40%): Login form dengan modern card design
  */
-import { LoginHero } from '@/components/auth/LoginHero'
-import { LoginForm } from '@/components/auth/LoginForm'
+import { LoginHero } from '@/features/auth'
+import { LoginForm } from '@/features/auth'
 
 export function LoginPage() {
   return (
