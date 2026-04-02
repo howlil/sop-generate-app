@@ -97,6 +97,8 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260402-constants-refactor | ✅ Refactor: move constants to utils — `client/src/lib/constants/` → `client/src/utils/constants/`, update 37 files (routes, pages, hooks, components, services) | 2026-04-02 | — | Done | client/ |
+| 20260402-db-audit-fixes | ✅ Database audit fixes — add 6 missing indexes [P1-1], add DetailSOP status transition trigger [P1-2], extend soft delete middleware to all tables [P2-1] | 2026-04-02 | c2fb261 | Done | server/ |
 | 20260402-api-cleanup | ✅ API cleanup & legacy code removal — usePelaksana & useTTESignature replaced with real API hooks, delay.ts deleted, 21 missing data/hook files created, build passing | 2026-04-02 | — | Done | client/ |
 | 20260402-testing-171-passing | ✅ 171 tests passing (100%) — Domain (30), Utils (48), Stores (27), Services (44), Types (15), Query (18). Coverage: Branches 66%, Functions 58%. All tests passing! | 2026-04-02 | — | Done | client/ |
 | 20260402-api-endpoint-fixes | ✅ Fix all API endpoint mismatches — TTE (4 paths), Tim nonaktifkan (2), Peraturan revoke, Langkah SOP nested routes, Swimlane GET endpoint, Auth refresh | 2026-04-02 | — | Done | client/src/services/ |
@@ -144,4 +146,4 @@ Phase Progress: [========] 8/8
 
 ---
 *State initialized: 2026-03-25*
-*Last updated: 2026-04-02 — Server testing Phase 1: 61 tests passing (13.39% coverage), ~370 tests remaining to reach 80% target*
+*Last updated: 2026-04-02 — Database audit fixes complete (indexes, triggers, middleware), constants refactor to utils directory*
