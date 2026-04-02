@@ -7,7 +7,7 @@ import { sopApi } from '@/services/sop.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import { useAuthStore } from '@/stores/authStore'
-import type { Pelaksana } from '@/services/sop.api'
+import type { Pelaksana } from '@/types/sop'
 
 export interface PelaksanaSOP extends Pelaksana {
   namaLengkap: string

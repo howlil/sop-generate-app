@@ -45,3 +45,9 @@ export interface LogEditSOPResponse {
   data: LogEditSOP[]
   total: number
 }
+
+export interface AuditQueryParams {
+  bagian?: BagianSOP
+  skip?: number
+  take?: number
+}

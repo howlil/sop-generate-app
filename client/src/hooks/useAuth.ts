@@ -4,9 +4,11 @@
  */
 
 import { useMutation } from '@tanstack/react-query'
-import { authApi, type LoginRequest } from '@/services/auth.api'
+import { authApi } from '@/services/auth.api'
+import type { LoginRequest } from '@/types/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { showToast } from '@/stores/uiStore'
+import { withMutationToast } from '@/utils/handleApi'
 
 export function useAuth() {
   const { setUser, logout } = useAuthStore()
@@ -30,21 +32,14 @@ export function useAuth() {
       showToast(`Selamat datang, ${response.user.nama}!`, 'success')
     },
     onError: (error: Error) => {
-      const message = error.message || 'Login gagal'
-      showToast(message, 'error')
-      throw error
+      showToast(error.message || 'Login gagal', 'error')
     },
   })
 
   const changePasswordMutation = useMutation({
     mutationFn: ({ kataSandiLama, kataSandiBaru }: { kataSandiLama: string; kataSandiBaru: string }) =>
       authApi.changePassword(kataSandiLama, kataSandiBaru),
-    onSuccess: () => {
-      showToast('Kata sandi berhasil diubah', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal mengubah kata sandi', 'error')
-    },
+    ...withMutationToast('Kata sandi berhasil diubah', 'Gagal mengubah kata sandi'),
   })
 
   return {

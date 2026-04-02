@@ -5,8 +5,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '@/services/users.api'
 import { queryKeys } from '@/services/queryKeys'
-import { showToast } from '@/stores/uiStore'
-import type { CreateUserDto, UpdateUserDto } from '@/services/users.api'
+import { withMutationToast } from '@/utils/handleApi'
+import type { CreateUserDto, UpdateUserDto } from '@/types/users'
 
 const USERS_STALE_TIME = 3 * 60 * 1000 // 3 minutes
 
@@ -25,35 +25,26 @@ export function useUsers(page: number = 1, limit: number = 10) {
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateUserDto) => usersApi.create(payload),
+    ...withMutationToast('User berhasil dibuat', 'Gagal membuat user'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      showToast('User berhasil dibuat', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal membuat user', 'error')
     },
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateUserDto }) =>
       usersApi.update(id, payload),
+    ...withMutationToast('User berhasil diperbarui', 'Gagal memperbarui user'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      showToast('User berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal memperbarui user', 'error')
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => usersApi.delete(id),
+    ...withMutationToast('User berhasil dihapus', 'Gagal menghapus user'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      showToast('User berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menghapus user', 'error')
     },
   })
 

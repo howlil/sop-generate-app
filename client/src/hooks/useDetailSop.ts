@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '@/services/sop.api'
 import { queryKeys } from '@/services/queryKeys'
-import { showToast } from '@/stores/uiStore'
+import { withMutationToast } from '@/utils/handleApi'
 import type {
   UpdateMetadataDto,
   UpdateStatusDto,
@@ -78,11 +78,10 @@ export function useUpdateMetadata() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateMetadataDto }) =>
       sopApi.updateMetadata(id, payload),
+    ...withMutationToast('Metadata SOP berhasil diperbarui', 'Gagal memperbarui metadata'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.detailSop })
-      showToast('Metadata SOP berhasil diperbarui', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui metadata', 'error'),
   })
 }
 
@@ -91,12 +90,11 @@ export function useUpdateStatus() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateStatusDto }) =>
       sopApi.updateStatus(id, payload),
+    ...withMutationToast('Status SOP berhasil diubah', 'Gagal mengubah status'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.detailSop })
       queryClient.invalidateQueries({ queryKey: queryKeys.sop })
-      showToast('Status SOP berhasil diubah', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal mengubah status', 'error'),
   })
 }
 
@@ -114,30 +112,27 @@ export function useLangkahSop(sopDetailId: string) {
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateLangkahSOPDto) => sopApi.createLangkah(sopDetailId, payload),
+    ...withMutationToast('Langkah berhasil ditambahkan', 'Gagal menambah langkah'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.langkahSopByDetail(sopDetailId) })
-      showToast('Langkah berhasil ditambahkan', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah langkah', 'error'),
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateLangkahSOPDto }) =>
       sopApi.updateLangkah(sopDetailId, id, payload),
+    ...withMutationToast('Langkah berhasil diperbarui', 'Gagal memperbarui langkah'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.langkahSopByDetail(sopDetailId) })
-      showToast('Langkah berhasil diperbarui', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui langkah', 'error'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => sopApi.deleteLangkah(sopDetailId, id),
+    ...withMutationToast('Langkah berhasil dihapus', 'Gagal menghapus langkah'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.langkahSopByDetail(sopDetailId) })
-      showToast('Langkah berhasil dihapus', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus langkah', 'error'),
   })
 
   return {
@@ -164,18 +159,18 @@ export function useSwimlane(sopDetailId: string) {
 
   const addMutation = useMutation({
     mutationFn: (payload: CreateDetailSOPPelaksanaDto) => sopApi.addSwimlane(sopDetailId, payload),
+    ...withMutationToast('', 'Gagal menambah pelaksana ke swimlane'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.swimlane(sopDetailId) })
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah pelaksana ke swimlane', 'error'),
   })
 
   const removeMutation = useMutation({
     mutationFn: (pelaksanaId: string) => sopApi.removeSwimlane(sopDetailId, pelaksanaId),
+    ...withMutationToast('', 'Gagal menghapus pelaksana dari swimlane'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.swimlane(sopDetailId) })
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus pelaksana dari swimlane', 'error'),
   })
 
   return {
@@ -200,30 +195,27 @@ export function useLampiran(sopDetailId: string, jenis?: string) {
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateLampiranTeksDto) => sopApi.createLampiran(sopDetailId, payload),
+    ...withMutationToast('Lampiran berhasil ditambahkan', 'Gagal menambah lampiran'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lampiran(sopDetailId) })
-      showToast('Lampiran berhasil ditambahkan', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah lampiran', 'error'),
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ lampiranId, teks }: { lampiranId: string; teks: string }) =>
       sopApi.updateLampiran(sopDetailId, lampiranId, teks),
+    ...withMutationToast('Lampiran berhasil diperbarui', 'Gagal memperbarui lampiran'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lampiran(sopDetailId) })
-      showToast('Lampiran berhasil diperbarui', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui lampiran', 'error'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (lampiranId: string) => sopApi.deleteLampiran(sopDetailId, lampiranId),
+    ...withMutationToast('Lampiran berhasil dihapus', 'Gagal menghapus lampiran'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lampiran(sopDetailId) })
-      showToast('Lampiran berhasil dihapus', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus lampiran', 'error'),
   })
 
   return {
@@ -249,20 +241,18 @@ export function useDasarHukum(sopDetailId: string) {
 
   const addMutation = useMutation({
     mutationFn: (payload: CreateDasarHukumDto) => sopApi.addDasarHukum(sopDetailId, payload),
+    ...withMutationToast('Dasar hukum berhasil ditambahkan', 'Gagal menambah dasar hukum'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dasarHukum(sopDetailId) })
-      showToast('Dasar hukum berhasil ditambahkan', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah dasar hukum', 'error'),
   })
 
   const removeMutation = useMutation({
     mutationFn: (peraturanId: string) => sopApi.removeDasarHukum(sopDetailId, peraturanId),
+    ...withMutationToast('Dasar hukum berhasil dihapus', 'Gagal menghapus dasar hukum'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.dasarHukum(sopDetailId) })
-      showToast('Dasar hukum berhasil dihapus', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus dasar hukum', 'error'),
   })
 
   return {
@@ -287,20 +277,18 @@ export function useSopTerkait(sopDetailId: string) {
 
   const addMutation = useMutation({
     mutationFn: (payload: CreateSopTerkaitDto) => sopApi.addSopTerkait(sopDetailId, payload),
+    ...withMutationToast('SOP terkait berhasil ditambahkan', 'Gagal menambah SOP terkait'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sopTerkait(sopDetailId) })
-      showToast('SOP terkait berhasil ditambahkan', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah SOP terkait', 'error'),
   })
 
   const removeMutation = useMutation({
     mutationFn: (terkaitId: string) => sopApi.removeSopTerkait(sopDetailId, terkaitId),
+    ...withMutationToast('SOP terkait berhasil dihapus', 'Gagal menghapus SOP terkait'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sopTerkait(sopDetailId) })
-      showToast('SOP terkait berhasil dihapus', 'success')
     },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus SOP terkait', 'error'),
   })
 
   return {
