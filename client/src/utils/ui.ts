@@ -1,5 +1,6 @@
 /**
  * UI utilities and hooks
+ * Single source of truth for UI state management
  */
 
 import { useState, useCallback } from 'react'
@@ -8,6 +9,18 @@ import type { ToastType } from '@/stores/uiStore'
 
 /**
  * Hook untuk toast notifications
+ * 
+ * @example
+ * const { showToast } = useToast()
+ * showToast('Berhasil!', 'success')
+ * 
+ * @example
+ * // In mutation callbacks
+ * const mutation = useMutation({
+ *   mutationFn: createSop,
+ *   onSuccess: () => showToast('SOP berhasil dibuat', 'success'),
+ *   onError: (error) => showToast(error.message, 'error'),
+ * })
  */
 export function useToast() {
   const { toasts, addToast, removeToast } = useUIStore()
@@ -28,6 +41,9 @@ export function useToast() {
 
 /**
  * State panel kiri/kanan collapsible
+ * 
+ * @example
+ * const { leftCollapsed, setLeftCollapsed } = useCollapsiblePanels()
  */
 export function useCollapsiblePanels(initialLeft = false, initialRight = false) {
   const [leftCollapsed, setLeftCollapsed] = useState(initialLeft)

@@ -1,52 +1,96 @@
 /**
- * Centralized API error handling with toast notifications
- * Best practice: Handle success/error messages at the hook level, not API layer
+ * @deprecated API toast handling utilities
+ * 
+ * This file is deprecated. Handle toast notifications directly in your feature hooks
+ * using useToast() from @/utils/ui.
+ * 
+ * ## Migration Guide
+ * 
+ * ### Before (withToast wrapper):
+ * ```typescript
+ * import { withToast } from '@/utils/handleApi'
+ * 
+ * const createSop = async (data) => {
+ *   return withToast(() => apiClient.post('/sop', data), { 
+ *     successMsg: 'SOP berhasil dibuat' 
+ *   })
+ * }
+ * ```
+ * 
+ * ### After (direct toast in hook):
+ * ```typescript
+ * import { useToast } from '@/utils/ui'
+ * import { apiClient } from '@/utils/api-client'
+ * 
+ * export function useCreateSop() {
+ *   const { showToast } = useToast()
+ *   
+ *   return useMutation({
+ *     mutationFn: (data) => apiClient.post('/sop', data),
+ *     onSuccess: () => showToast('SOP berhasil dibuat', 'success'),
+ *     onError: (error) => showToast(error.message, 'error'),
+ *   })
+ * }
+ * ```
+ * 
+ * ### Before (withMutationToast):
+ * ```typescript
+ * import { withMutationToast } from '@/utils/handleApi'
+ * 
+ * useMutation({
+ *   mutationFn: createSop,
+ *   ...withMutationToast('SOP berhasil dibuat', 'Gagal membuat SOP')
+ * })
+ * ```
+ * 
+ * ### After (inline callbacks):
+ * ```typescript
+ * import { useToast } from '@/utils/ui'
+ * 
+ * const { showToast } = useToast()
+ * 
+ * useMutation({
+ *   mutationFn: createSop,
+ *   onSuccess: () => showToast('SOP berhasil dibuat', 'success'),
+ *   onError: (error) => showToast(error.message, 'error'),
+ * })
+ * ```
+ * 
+ * ## Why Deprecate?
+ * 
+ * 1. **Mixed Concerns**: handleApi.ts bridges API and UI layers, creating tight coupling
+ * 2. **Inconsistent Patterns**: Three different ways to show toasts (wrapper, callbacks, manual)
+ * 3. **Direct Store Access**: Uses showToast from store instead of useToast hook
+ * 4. **Harder to Test**: Wrapper functions add indirection
+ * 
+ * ## Benefits of New Pattern
+ * 
+ * 1. **Clear Separation**: API layer (api-client) and UI layer (useToast) are separate
+ * 2. **Consistent**: One way to show toasts - use useToast() hook
+ * 3. **Testable**: Hooks are easier to test than wrappers
+ * 4. **Flexible**: Can customize toast behavior per use case
  */
 
 import { showToast } from '@/stores/uiStore'
 import type { ToastType } from '@/stores/uiStore'
 
 interface ApiHandlerOptions {
-  /** Success message to show toast (optional - skip if no toast needed) */
   successMsg?: string
-  /** Error message override (optional - uses API error message by default) */
   errorMsg?: string
-  /** Toast type for success (default: 'success') */
   successType?: ToastType
-  /** Whether to show error toast (default: true) */
   showErrorToast?: boolean
-  /** Whether to show success toast (default: true if successMsg provided) */
   showSuccessToast?: boolean
 }
 
 /**
- * Wraps an async API call with automatic error handling and optional toast notifications
- * 
- * @example
- * // Basic usage with success toast
- * const createSop = async (data) => {
- *   return withToast(() => api.post('/sop', data), { successMsg: 'SOP berhasil dibuat' })
- * }
- * 
- * @example
- * // Custom error message
- * const deleteSop = async (id) => {
- *   return withToast(() => api.delete(`/sop/${id}`), { 
- *     successMsg: 'SOP dihapus',
- *     errorMsg: 'Gagal menghapus SOP'
- *   })
- * }
- * 
- * @example
- * // No toast (handle manually)
- * const checkStatus = async () => {
- *   return withToast(() => api.get('/status'), { showErrorToast: false })
- * }
+ * @deprecated Use useToast() from @/utils/ui in your hooks instead
  */
 export async function withToast<T>(
   fn: () => Promise<T>,
   options: ApiHandlerOptions = {}
 ): Promise<T> {
+  console.warn('withToast is deprecated. Use useToast() hook in your feature hooks instead.')
+  
   const {
     successMsg,
     errorMsg,
@@ -57,19 +101,17 @@ export async function withToast<T>(
 
   try {
     const result = await fn()
-    
+
     if (showSuccessToast && successMsg) {
       showToast(successMsg, successType)
     }
-    
+
     return result
   } catch (error) {
-    // Skip error toast if disabled
     if (!showErrorToast) {
       throw error
     }
 
-    // Use custom error message or fall back to API error message
     const message = errorMsg || (error instanceof Error ? error.message : 'Terjadi kesalahan')
     showToast(message, 'error')
     throw error
@@ -77,14 +119,7 @@ export async function withToast<T>(
 }
 
 /**
- * Specialized handler for mutations with TanStack Query
- * Provides onSuccess and onError callbacks ready to use
- * 
- * @example
- * const createMutation = useMutation({
- *   mutationFn: (data) => api.post('/sop', data),
- *   ...withMutationToast('SOP berhasil dibuat', 'Gagal membuat SOP')
- * })
+ * @deprecated Use inline callbacks in useMutation with useToast() hook
  */
 export function withMutationToast(
   successMsg: string,
@@ -95,6 +130,8 @@ export function withMutationToast(
     invalidateQueries?: { queryKey: unknown }
   }
 ) {
+  console.warn('withMutationToast is deprecated. Use inline callbacks with useToast() instead.')
+  
   return {
     onSuccess: () => {
       showToast(successMsg, 'success')
