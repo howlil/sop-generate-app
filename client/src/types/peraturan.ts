@@ -2,7 +2,7 @@
  * Peraturan types - matching server schema
  */
 
-export type StatusPeraturan = 'BERLAKU' | 'DICABUT'
+import type { StatusPeraturan } from './common'
 
 export interface PeraturanResponse {
   id: string

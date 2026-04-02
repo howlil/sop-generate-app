@@ -1,36 +1,10 @@
 /**
- * OPD API service - Complete implementation
+ * OPD API service
  * Matches server: OpdController
  */
 
 import { apiClient } from './api'
-
-export interface OpdResponse {
-  id: string
-  nama: string
-  deletedAt?: string
-  createdAt: string
-  updatedAt: string
-  _count?: {
-    pengguna: number
-    sop: number
-    pelaksana: number
-    anggotaTimPenyusun: number
-    pengajuanEvaluasi: number
-    peraturan: number
-  }
-  totalSOP?: number
-  sopBerlaku?: number
-  sopDraft?: number
-}
-
-export interface CreateOpdDto {
-  nama: string
-}
-
-export interface UpdateOpdDto {
-  nama: string
-}
+import type { OpdResponse, CreateOpdDto, UpdateOpdDto } from '@/types/opd'
 
 export const opdApi = {
   /**

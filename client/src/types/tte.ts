@@ -2,7 +2,7 @@
  * TTE (Tanda Tangan Elektronik) types matching server schema
  */
 
-export type PeranTTE = 'KEPALA_OPD' | 'BIRO_ORGANISASI' | 'KOORDINATOR_TIM_PENYUSUN'
+import type { PeranTTE } from './common'
 
 export interface KredensialTTE {
   id: string

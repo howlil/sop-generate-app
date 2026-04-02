@@ -2,12 +2,7 @@
  * Complete SOP types matching server schema
  */
 
-import type { StatusSOP } from './common'
-
-export type JenisLangkahProsedur = 'TERMINATOR' | 'TASK' | 'DECISION'
-export type SatuanWaktu = 'm' | 'h' | 'd' | 'w' | 'mo' | 'y'
-export type JenisLampiran = 'PERINGATAN' | 'KUALIFIKASI_PELAKSANAAN' | 'PERALATAN' | 'PENCATATAN_PENDATAAN'
-export type BagianSOP = 'METADATA' | 'LANGKAH_SOP' | 'LAMPIRAN_TEKS' | 'DASAR_HUKUM' | 'PELAKSANA' | 'DIAGRAM' | 'SOP_TERKAIT'
+import type { StatusSOP, JenisLangkahProsedur, SatuanWaktu, JenisLampiran, BagianSOP } from './common'
 
 export interface Sop {
   id: string

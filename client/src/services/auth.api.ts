@@ -1,32 +1,11 @@
 /**
- * Auth API service - Complete implementation
+ * Auth API service
  * Matches server: AuthController
  * Note: Authentication tokens are stored in HttpOnly cookies (backend-managed)
  */
 
 import { apiClient } from './api'
-import { useAuthStore } from '@/stores/authStore'
-
-export interface LoginRequest {
-  email: string
-  kataSandi: string
-}
-
-export interface LoginResponse {
-  accessToken: string
-  tokenType: string
-  user: {
-    id: string
-    email: string
-    nama: string
-    peran: string
-    opdId: string | null
-    nip: string
-    jabatan: string
-    pangkat: string
-    nohp: string
-  }
-}
+import type { LoginRequest, LoginResponse } from '@/types/auth'
 
 export const authApi = {
   /**
@@ -58,11 +37,6 @@ export const authApi = {
     } catch {
       // Continue with local cleanup even if server call fails
     }
-    useAuthStore.getState().setUser(null)
+    // Note: Token cleanup is handled by backend (HttpOnly cookies)
   },
-
-  /**
-   * @deprecated Token is now in HttpOnly cookie, not in store
-   */
-  getToken: () => null,
 }

@@ -2,9 +2,7 @@
  * Evaluasi types matching server schema
  */
 
-import type { StatusHasilEvaluasi } from './common'
-
-export type JenisPengajuanEvaluasi = 'TERJADWAL' | 'MANDIRI'
+import type { StatusHasilEvaluasi, JenisPengajuanEvaluasi } from './common'
 
 export type StatusPengajuanEvaluasi =
   | 'MENUNGGU_EVALUASI'

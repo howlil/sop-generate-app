@@ -1,43 +1,11 @@
 /**
- * Peraturan API service - Complete implementation
+ * Peraturan API service
  * Matches server: PeraturanController
  */
 
 import { apiClient } from './api'
-
-export type StatusPeraturan = 'BERLAKU' | 'DICABUT'
-
-export interface PeraturanResponse {
-  id: string
-  opdId: string
-  namaPeraturan: string
-  nomor: string
-  tahun: number
-  tentang: string
-  status: StatusPeraturan
-  createdAt: string
-  updatedAt: string
-  opd?: {
-    id: string
-    nama: string
-  }
-  digunakan?: number
-}
-
-export interface CreatePeraturanDto {
-  opdId: string
-  namaPeraturan: string
-  nomor: string
-  tahun: number
-  tentang: string
-}
-
-export interface UpdatePeraturanDto {
-  namaPeraturan?: string
-  nomor?: string
-  tahun?: number
-  tentang?: string
-}
+import type { PeraturanResponse, CreatePeraturanDto, UpdatePeraturanDto } from '@/types/peraturan'
+import type { StatusPeraturan } from '@/types/common'
 
 export const peraturanApi = {
   /**
