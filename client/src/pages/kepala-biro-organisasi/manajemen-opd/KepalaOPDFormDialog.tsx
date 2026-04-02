@@ -1,9 +1,9 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import type { KepalaOPD } from '@/lib/types/opd'
+import type { KepalaOPD } from '@/types/opd'
 import type { KepalaFormState } from '@/hooks/useManajemenOPDState'
-import type { OPD } from '@/lib/types/opd'
+import type { OPD } from '@/types/opd'
 
 export interface KepalaOPDFormDialogProps {
   open: boolean

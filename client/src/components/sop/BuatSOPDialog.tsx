@@ -19,7 +19,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/useUI'
-import { getSopTemplates } from '@/lib/domain/sop-templates'
 import type { SOPTemplate } from '@/types/sop'
 
 export interface BuatSOPSuccessData {
@@ -46,7 +45,7 @@ export function BuatSOPDialog({ open, onOpenChange, onSuccess }: BuatSOPDialogPr
   })
 
   const { showToast } = useToast()
-  const sopTemplates = getSopTemplates()
+  const sopTemplates: SOPTemplate[] = []
   const q = templateSearchQuery.trim().toLowerCase()
   const filteredTemplates = useMemo(
     () =>

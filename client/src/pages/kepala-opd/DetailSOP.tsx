@@ -21,20 +21,20 @@ import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/useUI'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/lib/types/sop'
+import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/types/sop'
 import {
   getInitialSopDetailImplementers,
   getInitialSopDetailProsedurRows,
   getSopViewMetadata,
   getSopViewVersions,
-} from '@/lib/domain/sop-detail'
-import { getLastEvaluatedByInitial } from '@/lib/domain/evaluasi-data'
-import type { DetailSOPVersionSeed } from '@/lib/types/version'
+} from '@/hooks/useDetailSop'
+import { getLastEvaluatedByInitial } from '@/hooks/useEvaluasi'
+import type { DetailSOPVersionSeed } from '@/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
-import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/lib/domain/sop-status'
+import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/hooks/useSop'
 import { getKepalaOPDOpdId } from '@/utils/role-display'
 import { useOpd } from '@/hooks/useOpd'
 import { ROUTES } from '@/utils/constants/routes'

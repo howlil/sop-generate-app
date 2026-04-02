@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import type { TTERole } from '@/types/tte'
-import { hashPin } from '@/lib/domain'
-import { setTTEProfile } from '@/lib/domain/tte-storage'
+import { hashPin } from '@/hooks/useTTE'
+import { setTTEProfile } from '@/hooks/useTTE'
 
 export interface SetupTTEDialogProps {
   open: boolean

@@ -1,7 +1,7 @@
 import { Edit, History, ArrowRightCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import type { OPD, KepalaOPD } from '@/lib/types/opd'
+import type { OPD, KepalaOPD } from '@/types/opd'
 import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
 import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
 import { PindahJabatanDialog } from './PindahJabatanDialog'

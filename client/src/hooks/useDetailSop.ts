@@ -16,9 +16,55 @@ import type {
   CreateDasarHukumDto,
   CreateSopTerkaitDto,
   CreateDetailSOPPelaksanaDto,
+  SOPDetailMetadata,
+  ProsedurRow,
+  PelaksanaRow,
+  KomentarItem,
+  VersionHistoryItem,
 } from '@/types/sop'
 
 const DETAIL_SOP_STALE_TIME = 2 * 60 * 1000 // 2 minutes
+
+// ================= Stub Functions (for backward compatibility) =================
+export function getInitialSopDetailMetadata(): SOPDetailMetadata {
+  return {
+    id: '',
+    nomorSOP: '',
+    nama: '',
+    lembaga: '',
+    logoUrl: '',
+    tanggalEfektif: '',
+    tanggalRevisi: '',
+  }
+}
+
+export function getInitialSopDetailProsedurRows(): ProsedurRow[] {
+  return []
+}
+
+export function getInitialSopDetailImplementers(): PelaksanaRow[] {
+  return []
+}
+
+export function getInitialSopDetailKomentar(): KomentarItem[] {
+  return []
+}
+
+export function getInitialSopDetailVersions(): VersionHistoryItem[] {
+  return []
+}
+
+export function getSopViewMetadata(): Record<string, never> {
+  return {}
+}
+
+export function getSopViewVersions(): never[] {
+  return []
+}
+
+export function getRelatedPosOptions(): never[] {
+  return []
+}
 
 // ================= DetailSOP =================
 

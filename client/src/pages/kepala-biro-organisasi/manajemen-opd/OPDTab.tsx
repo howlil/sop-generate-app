@@ -16,7 +16,7 @@ import { IconActionButton } from '@/components/ui/icon-action-button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
-import type { OPD, KepalaOPD } from '@/lib/types/opd'
+import type { OPD, KepalaOPD } from '@/types/opd'
 
 export interface OPDTabProps {
   filteredOPD: OPD[]

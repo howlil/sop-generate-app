@@ -1,5 +1,5 @@
 import { Input } from '@/components/ui/input'
-import type { TTESignaturePayload } from '@/lib/types/tte'
+import type { TTESignaturePayload } from '@/types/tte'
 import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 
 export interface SOPHeaderInfoProps {

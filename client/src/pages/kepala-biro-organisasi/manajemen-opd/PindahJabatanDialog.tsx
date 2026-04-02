@@ -1,8 +1,8 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
-import type { OPD } from '@/lib/types/opd'
-import type { KepalaOPD } from '@/lib/types/opd'
+import type { OPD } from '@/types/opd'
+import type { KepalaOPD } from '@/types/opd'
 import type { PindahFormState, PindahDialogPerson } from '@/hooks/useManajemenOPDState'
 
 export interface PindahJabatanDialogProps {

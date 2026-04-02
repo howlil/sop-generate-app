@@ -3,7 +3,7 @@ import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import type { TimPenyusunFormState } from '@/hooks/useManajemenTimPenyusunState'
-import type { OPD } from '@/lib/types/opd'
+import type { OPD } from '@/types/opd'
 
 export type TimPenyusunFormDialogMode = 'create' | 'edit'
 

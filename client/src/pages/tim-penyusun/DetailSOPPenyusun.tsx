@@ -27,13 +27,13 @@ import {
   getInitialSopDetailProsedurRows,
   getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
-} from '@/lib/domain/sop-detail'
+} from '@/hooks/useDetailSop'
 import {
   DEFAULT_SOP_STATUS,
   type SOPDetailMetadata,
   type ProsedurRow,
   type StatusSOP,
-} from '@/lib/types/sop'
+} from '@/types/sop'
 import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
 import { useKomentar } from '@/hooks/useKomentar'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'

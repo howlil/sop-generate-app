@@ -24,7 +24,7 @@ import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEval
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
 import { ROUTES } from '@/utils/constants/routes'
-import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/lib/domain/evaluasi'
+import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/hooks/useEvaluasi'
 import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 

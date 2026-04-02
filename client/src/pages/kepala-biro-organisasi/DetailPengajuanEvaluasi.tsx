@@ -4,7 +4,7 @@ import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lu
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/domain/evaluasi-data'
+import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/hooks/useEvaluasi'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { ROUTES } from '@/utils/constants/routes'

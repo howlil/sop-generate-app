@@ -14,7 +14,6 @@ import {
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
 import { useAppRole } from '@/hooks/useAppRole'
-import { usePipelineNotificationStore } from '@/lib/stores/pipeline-notification-store'
 
 interface HeaderProfileProps {
   /** Judul header fallback (jika tidak ada page header dari konteks) */

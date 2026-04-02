@@ -6,9 +6,42 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '@/services/sop.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
-import type { CreateSopRequest } from '@/types/sop'
+import type { StatusSOP, CreateSopRequest } from '@/types/sop'
 
 const SOP_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+
+// ==================== SOP Domain Logic ====================
+export function canEditSop(status: StatusSOP): boolean {
+  return status === 'DRAFT' || status === 'REVISI_DARI_TIM_EVALUASI'
+}
+
+export function canKepalaOpdSignSop(
+  status: StatusSOP,
+  batchList: any[],
+  opdName: string,
+  sopId: string,
+  sopNomor: string
+): boolean {
+  return status === 'DITANDATANGANI_KOORDINATOR'
+}
+
+export function isSopEligibleForSigning(sop: any, batchList: any[]): boolean {
+  return sop.status === 'DITANDATANGANI_KOORDINATOR'
+}
+
+// ==================== Tim Penyusun Access ====================
+export function canTimPenyusunRunCoordinatorActions(role: string): boolean {
+  return role === 'KOORDINATOR_TIM_PENYUSUN'
+}
+
+// ==================== SOP Evaluasi ====================
+export function isSopInEvaluasiList(sopId: string, evaluasiList: any[]): boolean {
+  return evaluasiList.some((e) => e.sopId === sopId)
+}
+
+export function canSelectSOPForEvaluasi(sop: any, evaluasiList: any[]): boolean {
+  return !isSopInEvaluasiList(sop.id, evaluasiList)
+}
 
 export function useSop(params?: { opdId?: string; status?: string }) {
   const queryClient = useQueryClient()

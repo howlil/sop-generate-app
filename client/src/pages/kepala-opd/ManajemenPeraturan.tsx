@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import type { Peraturan } from '@/lib/types/peraturan'
+import type { Peraturan } from '@/types/peraturan'
 import { useToast } from '@/hooks/useUI'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { useManajemenPeraturanState } from '@/hooks/useManajemenPeraturanState'
@@ -14,8 +14,8 @@ import {
   getRiwayatVersiPeraturanInitial,
   getManajemenPeraturanOpdId,
   getOpdNamesForPeraturan,
-} from '@/lib/domain/peraturan'
-import type { RiwayatVersiEntry } from '@/lib/types/peraturan'
+} from '@/hooks/usePeraturan'
+import type { RiwayatVersiEntry } from '@/types/peraturan'
 import { useState } from 'react'
 import { generateId } from '@/utils/generate-id'
 import { PeraturanTableTab } from './manajemen-peraturan/PeraturanTableTab'

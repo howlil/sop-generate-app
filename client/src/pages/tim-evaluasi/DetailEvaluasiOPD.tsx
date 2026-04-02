@@ -15,12 +15,12 @@ import { useEvaluasiDraft, getEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useEvaluasiSubmit } from '@/hooks/useEvaluasiSubmit'
 import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/utils/constants/evaluasi'
 import { ROUTES } from '@/utils/constants/ui'
-import { isSopInEvaluasiList } from '@/lib/domain'
+import { isSopInEvaluasiList } from '@/hooks/useSop'
 import { useCollapsiblePanels } from '@/hooks/useUI'
 import { useAppRole } from '@/hooks/useAppRole'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { formatDateId } from '@/utils/format-date'
-import type { SOPDaftarItem } from '@/lib/types/sop'
+import type { SOPDaftarItem } from '@/types/sop'
 import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
 
 // Stubs for legacy functions - will be replaced by API calls
@@ -33,7 +33,7 @@ const getInitialSopDaftarList = () => []
 
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
-import type { StatusHasilEvaluasi } from '@/lib/domain/evaluasi'
+import type { StatusHasilEvaluasi } from '@/hooks/useEvaluasi'
 import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 

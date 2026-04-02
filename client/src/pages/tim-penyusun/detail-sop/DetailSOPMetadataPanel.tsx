@@ -3,9 +3,9 @@ import { SOPHeaderSection } from './SOPHeaderSection'
 import { LawBasisDialog } from './LawBasisDialog'
 import { RelatedPosDialog } from './RelatedPosDialog'
 import { PelaksanaDialog } from './PelaksanaDialog'
-import type { Peraturan } from '@/lib/types/peraturan'
-import type { SOPDetailMetadata } from '@/lib/types/sop'
-import { getRelatedPosOptions } from '@/lib/domain/sop-detail'
+import type { Peraturan } from '@/types/peraturan'
+import type { SOPDetailMetadata } from '@/types/sop'
+import { getRelatedPosOptions } from '@/hooks/useDetailSop'
 
 export interface DetailSOPMetadataPanelProps {
   metadata: SOPDetailMetadata

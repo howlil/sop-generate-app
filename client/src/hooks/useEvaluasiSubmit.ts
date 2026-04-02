@@ -7,7 +7,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { evaluasiApi } from '@/services/evaluasi.api'
 import { useToast } from './useUI'
-import type { StatusHasilEvaluasi } from '@/lib/domain/evaluasi'
+import type { StatusHasilEvaluasi } from '@/hooks/useEvaluasi'
 
 export interface EvaluasiBatchSubmitError {
   sopId: string

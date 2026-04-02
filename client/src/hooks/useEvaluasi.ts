@@ -15,6 +15,73 @@ import type {
 
 const EVALUASI_STALE_TIME = 3 * 60 * 1000 // 3 minutes
 
+// ==================== Evaluasi Domain Logic ====================
+export const STATUS_HASIL_EVALUASI = {
+  SESUAI: 'SESUAI',
+  TIDAK_SESUAI: 'TIDAK_SESUAI',
+} as const
+
+export type StatusHasilEvaluasi = typeof STATUS_HASIL_EVALUASI[keyof typeof STATUS_HASIL_EVALUASI]
+
+export interface StatusHasilEvaluasiForm {
+  hasil: StatusHasilEvaluasi
+  catatan: string
+}
+
+export function getStatusSopAfterEvaluasi(hasil: StatusHasilEvaluasi): string {
+  if (hasil === 'SESUAI') {
+    return 'SIAP_DIVERIFIKASI'
+  }
+  return 'REVISI_DARI_TIM_EVALUASI'
+}
+
+export function isFormEvaluasiSopComplete(form: StatusHasilEvaluasiForm): boolean {
+  return !!form.hasil && form.hasil !== ''
+}
+
+// ==================== Stub Functions (for backward compatibility) ====================
+export interface RiwayatEvaluasiSOPItem {
+  sopId: string
+  judul: string
+  tanggal: string
+  hasil: string
+}
+
+export interface RiwayatEvaluasiOPDItem {
+  opdId: string
+  opdNama: string
+  tanggal: string
+  hasil: string
+}
+
+export function getRiwayatEvaluasiSop(): RiwayatEvaluasiSOPItem[] {
+  return []
+}
+
+export function getRiwayatEvaluasiOpd(): RiwayatEvaluasiOPDItem[] {
+  return []
+}
+
+export function getLastEvaluatedByInitial(): Record<string, { evaluatorName: string; date: string }> {
+  return {}
+}
+
+export interface DetailOpdPerTahun {
+  opdId: string
+  opdNama: string
+  tahun: number
+  jumlahSop: number
+  skor: number
+}
+
+export function getDataGrafikEvaluasiTahunan(_tahun: number): DetailOpdPerTahun[] {
+  return []
+}
+
+export function getDetailOpdPerTahun(_tahun: number, _opdId: string): DetailOpdPerTahun | null {
+  return null
+}
+
 export function useEvaluasi(params?: { opdId?: string; status?: string; jenis?: string }) {
   const queryClient = useQueryClient()
 

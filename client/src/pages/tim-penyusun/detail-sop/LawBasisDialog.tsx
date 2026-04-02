@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import type { Peraturan } from '@/lib/types/peraturan'
+import type { Peraturan } from '@/types/peraturan'
 
 export interface LawBasisDialogProps {
   open: boolean
