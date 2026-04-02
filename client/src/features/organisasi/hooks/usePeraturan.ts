@@ -3,10 +3,10 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { peraturanApi } from '@/services/peraturan.api'
+import { peraturanApi } from '@/features/organisasi'
 import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
-import type { CreatePeraturanRequest, UpdatePeraturanRequest } from '@/types/peraturan'
+import type { CreatePeraturanRequest, UpdatePeraturanRequest } from '@/features/organisasi'
 
 const PERATURAN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
