@@ -7,8 +7,8 @@
  */
 
 import { useMemo } from 'react'
-import { useSop } from '@/hooks/sop/useSop'
-import type { SOPDaftarItem } from '@/components/sop/types'
+import { useSop, useSopStatus } from '@/features/sop'
+import type { SOPDaftarItem } from '@/features/sop'
 
 interface UseDaftarSOPDataParams {
   searchQuery: string
