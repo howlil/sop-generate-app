@@ -6,6 +6,7 @@
  */
 import { useMemo, useState, useEffect } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FileText, PenLine, Eye, List, Printer, Calendar, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -21,9 +22,12 @@ import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
+import { evaluasiApi } from '@/services/evaluasi.api'
+import { apiClient } from '@/services/api'
+import { queryKeys } from '@/services/queryKeys'
+import type { PengajuanEvaluasi } from '@/types/evaluasi'
 import { useToast } from '@/hooks/useUI'
-import { getRiwayatEvaluasiSop } from '@/lib/domain/evaluasi-data'
+import { getRiwayatEvaluasiSop } from '@/hooks/useEvaluasi'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants/ui'
 import { Route } from '@/routes/tim-penyusun.berita-acara'
@@ -36,9 +40,9 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { id: searchId } = Route.useSearch()
   const { role } = useAppRole()
-  const { list: pengajuanList, updatePengajuan } = usePengajuanEvaluasiList()
   const { showToast } = useToast()
   const [signingTerjadwalId, setSigningTerjadwalId] = useState<string | null>(null)
   const selectedBaId = searchId ?? null
@@ -46,6 +50,26 @@ export function BeritaAcaraKoordinatorPage() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('ba')
+
+  const { data: pengajuanList = [] } = useQuery({
+    queryKey: queryKeys.evaluasiList(),
+    queryFn: () => evaluasiApi.findAll(),
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  })
+
+  const updatePengajuanMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: { status: string; ditandatanganiOlehKoordinatorUserId: string } }) => {
+      // Note: This needs a proper API endpoint - using direct patch for now
+      return apiClient.patch<PengajuanEvaluasi>(`/evaluasi/${id}`, payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiList() })
+    },
+  })
+
+  const updatePengajuan = (id: string, payload: { status: string; ditandatanganiOlehKoordinatorUserId: string }) => {
+    updatePengajuanMutation.mutate({ id, payload })
+  }
 
   const goToDetail = (baId: string) => navigate({ to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, search: { id: baId } })
 

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useParams, useLocation, Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import {
   History,
   Calendar,
@@ -21,7 +22,7 @@ import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/hooks/useUI'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/types/sop'
+import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/components/sop/types'
 import {
   getInitialSopDetailImplementers,
   getInitialSopDetailProsedurRows,
@@ -29,11 +30,12 @@ import {
   getSopViewVersions,
 } from '@/hooks/useDetailSop'
 import { getLastEvaluatedByInitial } from '@/hooks/useEvaluasi'
-import type { DetailSOPVersionSeed } from '@/types/version'
+import type { DetailSOPVersionSeed } from '@/components/sop/types'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
+import { evaluasiApi } from '@/services/evaluasi.api'
+import { queryKeys } from '@/services/queryKeys'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/hooks/useSop'
 import { getKepalaOPDOpdId } from '@/utils/role-display'
 import { useOpd } from '@/hooks/useOpd'
@@ -58,7 +60,11 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   } = props
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
-  const { list: pengajuanList } = usePengajuanEvaluasiList()
+  const { data: pengajuanList = [] } = useQuery({
+    queryKey: queryKeys.evaluasiList(),
+    queryFn: () => evaluasiApi.findAll(),
+    staleTime: 3 * 60 * 1000, // 3 minutes
+  })
   const opdId = getKepalaOPDOpdId()
   const { list: opds } = useOpd()
   const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''
