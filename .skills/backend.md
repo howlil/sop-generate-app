@@ -901,6 +901,98 @@ export class CreateSopDto {
 // Delete: validators/sop.validator.ts (duplicate, class-validator handles it)
 ```
 
+#### 0b. Over-Engineering Detection
+Deteksi solusi yang lebih kompleks dari yang dibutuhkan:
+
+**Indicators:**
+- Service > 400 lines dengan logic yang bisa lebih simple
+- Function dengan > 5 parameters (pertimbangkan object parameter)
+- Unnecessary abstraction (interface untuk single implementation)
+- Premature optimization (custom caching sebelum ada performance issue)
+- Pattern overuse (Factory, Strategy, dll tanpa kebutuhan nyata)
+- Unnecessary layer (wrapper service tanpa value add)
+- Configuration complexity (elaborate config system untuk simple feature)
+
+**Fix:** Apply YAGNI dan KISS principles - start simple, refactor when needed.
+
+**Example - Unnecessary Interface:**
+```typescript
+// ❌ WRONG: Interface untuk single implementation
+export interface ISopService {
+  create(dto: CreateSopDto): Promise&lt;SOP&gt;;
+  findOne(id: string): Promise&lt;SOP&gt;;
+}
+
+@Injectable()
+export class SopService implements ISopService {
+  async create(dto: CreateSopDto): Promise&lt;SOP&gt; { ... }
+  async findOne(id: string): Promise&lt;SOP&gt; { ... }
+}
+
+// ✅ CORRECT: Direct class
+@Injectable()
+export class SopService {
+  async create(dto: CreateSopDto): Promise&lt;SOP&gt; { ... }
+  async findOne(id: string): Promise&lt;SOP&gt; { ... }
+}
+```
+
+**Example - Premature Optimization:**
+```typescript
+// ❌ WRONG: Custom caching sebelum ada performance issue
+@Injectable()
+export class SopService {
+  private cache = new Map&lt;string, SOP&gt;();
+  
+  async findOne(id: string): Promise&lt;SOP&gt; {
+    if (this.cache.has(id)) return this.cache.get(id)!;
+    const sop = await this.repo.findOne(id);
+    this.cache.set(id, sop);
+    return sop;
+  }
+}
+
+// ✅ CORRECT: Let TanStack Query / Redis handle caching
+@Injectable()
+export class SopService {
+  async findOne(id: string): Promise&lt;SOP&gt; {
+    return this.repo.findOne(id);
+  }
+}
+```
+
+**Example - Unnecessary Layer:**
+```typescript
+// ❌ WRONG: Wrapper service tanpa value add
+@Injectable()
+export class SopWrapperService {
+  constructor(
+    private sopService: SopService,
+    private sopValidator: SopValidator,
+  ) {}
+  
+  async createSop(dto: CreateSopDto): Promise&lt;SopResponseDto&gt; {
+    this.sopValidator.validate(dto);
+    const sop = await this.sopService.create(dto);
+    return this.toResponse(sop);
+  }
+}
+
+// ✅ CORRECT: Direct service usage
+@Injectable()
+export class SopService {
+  constructor(
+    private repo: SopRepository,
+    private validator: SopValidator,
+  ) {}
+  
+  async create(dto: CreateSopDto): Promise&lt;SOP&gt; {
+    this.validator.validate(dto);
+    return this.repo.save(new SOP(dto));
+  }
+}
+```
+
 #### 1. Directed Code Detection
 Deteksi kode yang hanya satu arah (tidak ada timbal-balik):
 - **API Endpoint**: Hanya POST tanpa GET untuk retrieve

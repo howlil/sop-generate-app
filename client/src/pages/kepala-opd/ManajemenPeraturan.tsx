@@ -8,7 +8,7 @@ import type { Peraturan } from '@/types/peraturan'
 import { useToast } from '@/utils/ui'
 import { useFilteredList } from '@/utils/use-filtered-list'
 import { useManajemenPeraturanState } from '@/utils/state/manajemen-peraturan'
-import { usePeraturan } from '@/hooks/usePeraturan'
+import { usePeraturan } from '@/hooks/organisasi/usePeraturan'
 import {
   getInitialPeraturanListAsync,
   getRiwayatVersiPeraturanInitial,

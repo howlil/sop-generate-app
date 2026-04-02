@@ -1093,7 +1093,56 @@ function SopCard({ sop, onEdit, onDelete }: { sop: SOP; onEdit: () => void; onDe
 }
 ```
 
-#### 2. Unused Code Detection
+#### 0b. Over-Engineering Detection
+Deteksi solusi yang lebih kompleks dari yang dibutuhkan:
+
+**Indicators:**
+- Component > 300 lines dengan logic yang bisa lebih simple
+- Function dengan > 5 parameters (pertimbangkan object parameter)
+- Nested HOCs yang berlebihan
+- Unnecessary abstraction (wrapper component tanpa value add)
+- Premature optimization (useMemo/useCallback tanpa need)
+- Pattern overuse (render props, compound components tanpa kebutuhan)
+
+**Fix:** Apply YAGNI dan KISS principles - start simple, refactor when needed.
+
+**Example - Unnecessary Abstraction:**
+```typescript
+// ❌ WRONG: Wrapper component tanpa value add
+const BaseCard = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`card ${className}`}>{children}</div>
+);
+
+const SopCard = ({ sop }: { sop: SOP }) => (
+  <BaseCard className="sop-card">
+    <h3>{sop.judul}</h3>
+  </BaseCard>
+);
+
+// ✅ CORRECT: Direct component
+const SopCard = ({ sop }: { sop: SOP }) => (
+  <div className="card sop-card">
+    <h3>{sop.judul}</h3>
+  </div>
+);
+```
+
+**Example - Premature Optimization:**
+```typescript
+// ❌ WRONG: Unnecessary memoization
+const SopCard = React.memo(({ sop, onEdit }: { sop: SOP; onEdit: () => void }) => {
+  const memoizedSop = useMemo(() => sop, [sop]);
+  const memoizedOnEdit = useCallback(() => onEdit(), [onEdit]);
+  return <div onClick={memoizedOnEdit}><h3>{memoizedSop.judul}</h3></div>;
+});
+
+// ✅ CORRECT: Simple component
+const SopCard = ({ sop, onEdit }: { sop: SOP; onEdit: () => void }) => (
+  <div onClick={onEdit}><h3>{sop.judul}</h3></div>
+);
+```
+
+#### 1. Directed Code Detection
 Deteksi exported symbols yang tidak digunakan:
 - Scan seluruh codebase untuk import/reference
 - Check tree-shaking result (bundle analysis)
