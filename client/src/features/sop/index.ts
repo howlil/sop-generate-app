@@ -40,7 +40,7 @@ export { SOP_STATUS_FILTER_OPTIONS } from './types/types'
 export { sopApi } from './services/sop.api'
 
 // Hooks (depend on services and types)
-export { useSop, useSopDetail, canEditSop, canKepalaOpdSignSop, isSopEligibleForSigning } from './hooks/useSop'
+export { useSop, useSopDetail, canEditSop, canKepalaOpdSignSop, isSopEligibleForSigning, canTimPenyusunRunCoordinatorActions, isSopInEvaluasiList, canSelectSOPForEvaluasi } from './hooks/useSop'
 export { useDetailSop, getInitialSopDetailMetadata, getInitialSopDetailProsedurRows, getInitialSopDetailImplementers, getInitialSopDetailVersions } from './hooks/useDetailSop'
 export { useSopStatus } from './hooks/useSopStatus'
 export { usePelaksana } from './hooks/usePelaksana'
