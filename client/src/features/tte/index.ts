@@ -10,6 +10,7 @@ export type {
   VerifyPinRequest,
   RiwayatTandaTangan,
   TandaTanganPayload,
+  TTESignaturePayload,
 } from './types/tte'
 
 export type { PeranTTE } from '@/types/common'
@@ -17,8 +18,8 @@ export type { PeranTTE } from '@/types/common'
 // Services
 export { tteApi } from './services/tte.api'
 
-// Hooks
-export { useTTE } from './hooks/useTTE'
+// Hooks - export all utilities
+export { useTTE, getTTEProfile, getValidasiPengesahanUrl } from './hooks/useTTE'
 
 // Components
 export { PinVerificationDialog } from './components/PinVerificationDialog'
