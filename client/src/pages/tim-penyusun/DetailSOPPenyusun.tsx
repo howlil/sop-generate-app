@@ -1,107 +1,63 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
-import { Save, Check, History, PenLine, MessageSquare, Printer, Activity } from 'lucide-react'
+import { Printer } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
-import { SOPPreviewTemplate, KomentarPanel, VersionHistoryPanel, RiwayatStatusPanel } from '@/features/sop'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { useToast } from '@/utils/ui'
-import { usePeraturan } from '@/features/organisasi'
-import { usePelaksana, useSopStatus } from '@/features/sop'
 import { useAppRole } from '@/features/auth'
-import {
-  getInitialSopDetailMetadata,
-  getInitialSopDetailProsedurRows,
-  getInitialSopDetailVersions,
-} from '@/features/sop'
-import { DEFAULT_SOP_STATUS, type SOPDetailMetadata, type ProsedurRow, type StatusSOP } from '@/features/sop'
-import type { VersionHistoryItem } from '@/features/sop'
-import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
-import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
+import { useSopStatus, type StatusSOP } from '@/features/sop'
 import { formatDateIdLong } from '@/utils/format-date'
-import * as versionDiff from '@/utils/version-diff'
 import { ROUTES } from '@/utils/constants'
+import { useDetailSOPPenyusun } from '@/features/sop/hooks/useDetailSOPPenyusun'
+import { DetailSOPPenyusunHeader } from './detail-sop/DetailSOPPenyusunHeader'
+import { DetailSOPPenyusunMain } from './detail-sop/DetailSOPPenyusunMain'
+import { DetailSOPPenyusunSidePanel } from './detail-sop/DetailSOPPenyusunSidePanel'
 
 export function DetailSOPPenyusun() {
   const { showToast } = useToast()
-  const { setSopStatusOverride, getSopStatusOverride } = useSopStatus()
-  const { role, getRoleUserName } = useAppRole()
-  const { list: peraturanList } = usePeraturan()
-  const { list: pelaksanaList } = usePelaksana()
+  const { role } = useAppRole()
   const { id } = useParams({ from: '/tim-penyusun/detail-sop/$id' })
   const navigate = useNavigate()
   const location = useLocation()
   const detailMetaState = location.state as { sopStatus?: StatusSOP } | undefined
 
-  const [metadata, setMetadata] = useState<SOPDetailMetadata>(() => getInitialSopDetailMetadata())
-  const [prosedurRows, setProsedurRows] = useState<ProsedurRow[]>(() => getInitialSopDetailProsedurRows())
-  const [implementers, setImplementers] = useState<{ id: string; name: string }[]>([])
-  const implementersSeededRef = useRef(false)
-  const masterPelaksanaOptions = useMemo(
-    () => pelaksanaList.map((p) => ({
-      id: p.id,
-      name: p.namaLengkap || p.namaPelaksana,
-    })),
-    [pelaksanaList]
-  )
-  useEffect(() => {
-    if (implementersSeededRef.current || pelaksanaList.length === 0) return
-    const ids = new Set(prosedurRows.flatMap((r) => Object.keys(r.pelaksana)))
-    if (ids.size === 0) return
-    implementersSeededRef.current = true
-    setImplementers(
-      Array.from(ids).map((id) => {
-        const p = pelaksanaList.find((x) => x.id === id)
-        return { id, name: p?.namaLengkap ?? id }
-      })
-    )
-  }, [pelaksanaList, prosedurRows])
-  const [diagramVersion, setDiagramVersion] = useState(0)
+  // Extracted hook - all state and logic
+  const {
+    metadata,
+    setMetadata,
+    prosedurRows,
+    setProsedurRows,
+    implementers,
+    setImplementers,
+    versions,
+    diagramVersion,
+    setDiagramVersion,
+    activeTab,
+    setActiveTab,
+    isEditingSteps,
+    setIsEditingSteps,
+    isHistoryOpen,
+    setIsHistoryOpen,
+    isEditPanelCollapsed,
+    setIsEditPanelCollapsed,
+    rightPanelTab,
+    setRightPanelTab,
+    viewingVersion,
+    setViewingVersion,
+    masterPelaksanaOptions,
+    versionDiffItems,
+    currentSopStatus,
+    isRevisionFlow,
+    primaryActionLabel,
+    handleMetadataChange,
+    handleSaveDraft,
+    handleComplete,
+    handleResolveComment,
+    komentarDisplay,
+  } = useDetailSOPPenyusun(id, detailMetaState?.sopStatus, undefined, navigate, role)
 
-  const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
-  const [isEditingSteps, setIsEditingSteps] = useState(false)
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
-  const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false)
-  const [rightPanelTab, setRightPanelTab] = useState<'edit' | 'komentar' | 'riwayat' | 'aktivitas'>('edit')
-  const auditEntries: any[] = []
-
-  const [komentarDisplay, setKomentarDisplay] = useState<any[]>([])
-  const handleResolveComment = (_komentarId: string) => {
-    setKomentarDisplay((prev) => prev.map((k) => (k.id === _komentarId ? { ...k, resolved: true } : k)))
-  }
-
-  const [versions, _setVersions] = useState<VersionHistoryItem[]>(
-    () => getInitialSopDetailVersions() as VersionHistoryItem[]
-  )
-
-  const [viewingVersion, setViewingVersion] = useState<VersionHistoryItem | null>(null)
-  const currentSopStatus: StatusSOP =
-    (id ? getSopStatusOverride(id) : undefined) ?? detailMetaState?.sopStatus ?? DEFAULT_SOP_STATUS
-  const isRevisionFlow = currentSopStatus === 'Revisi dari Tim Evaluasi'
-  const primaryActionLabel = isRevisionFlow ? 'Selesaikan revisi' : 'Selesai'
-
-  const versionDiffItems = useMemo(
-    () => versionDiff.computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot ?? undefined),
-    [viewingVersion, metadata, prosedurRows]
-  )
-
-  const handleMetadataChange = <K extends keyof SOPDetailMetadata>(
-    field: K,
-    value: SOPDetailMetadata[K]
-  ) => {
-    setMetadata((prev) => ({ ...prev, [field]: value }))
-  }
+  const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
+  const editedBy = metadata.dieditOlehNamaLengkap
 
   return (
     <>
@@ -116,191 +72,51 @@ export function DetailSOPPenyusun() {
         backSize="icon"
         workspaceClassName="print:hidden"
         header={
-          <>
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-sm font-semibold text-gray-900">Dokumen SOP</h2>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
-                  onClick={() => window.print()}
-                >
-                  <Printer className="w-3.5 h-3.5" /> Print SOP
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
-                  onClick={() => {
-                    if (id && role) {
-                      setSopStatusOverride(id, 'Sedang Disusun')
-                      showToast('Status diubah menjadi Sedang Disusun')
-                    }
-                  }}
-                >
-                  <Save className="w-3.5 h-3.5" />
-                  Simpan sebagai draft
-                </Button>
-                <Button
-                  size="sm"
-                  className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
-                  onClick={() => {
-                    if (id && role) {
-                      setSopStatusOverride(id, 'Siap Dievaluasi')
-                      showToast(
-                        isRevisionFlow
-                          ? 'Revisi selesai. Kembali ke Manajemen SOP untuk kirim ulang ke evaluasi.'
-                          : 'SOP selesai disusun. Ajukan ke evaluasi dari Manajemen SOP.'
-                      )
-                      navigate({ to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP })
-                    }
-                  }}
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  {primaryActionLabel}
-                </Button>
-              </div>
-            </div>
-            <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-              <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">v{versions[0]?.version || metadata.version || '1.0'}</Badge>
-              <StatusBadge status={currentSopStatus} className="text-xs border-0" />
-              {metadata.dibuatOlehNamaLengkap && (
-                <span><span className="text-gray-500">Dibuat oleh:</span> {metadata.dibuatOlehNamaLengkap}</span>
-              )}
-              {metadata.dieditOlehNamaLengkap && (
-                <span><span className="text-gray-500">Diedit oleh:</span> {metadata.dieditOlehNamaLengkap}</span>
-              )}
-            </div>
-            {isRevisionFlow && (
-              <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                SOP ini dikembalikan oleh Tim Evaluasi untuk revisi. Setelah perbaikan selesai, klik
-                {' '}
-                <span className="font-semibold">Selesaikan revisi</span>
-                {' '}
-                lalu ajukan ulang dari
-                {' '}
-                <span className="font-semibold">Manajemen SOP</span>.
-              </div>
-            )}
-          </>
+          <DetailSOPPenyusunHeader
+            metadata={metadata}
+            currentSopStatus={currentSopStatus}
+            isRevisionFlow={isRevisionFlow}
+            primaryActionLabel={primaryActionLabel}
+            versions={versions}
+            createdBy={createdBy}
+            editedBy={editedBy}
+            onSaveDraft={() => handleSaveDraft(id, role)}
+            onComplete={() => handleComplete(id, role)}
+            onPrint={() => window.print()}
+          />
         }
         main={
-          <div className="flex flex-col h-full p-4">
-            <SOPPreviewTemplate
-              metadata={metadata}
-              prosedurRows={prosedurRows}
-              implementers={implementers}
-              pathLayoutSeed={diagramVersion}
-              activeTab={activeTab}
-              onActiveTabChange={setActiveTab}
-              toolbar={
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 print:hidden mb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center rounded-lg border border-gray-200 bg-white p-2 sm:p-1.5 shadow-sm gap-2 sm:gap-0 w-full sm:w-auto">
-                    <Tabs
-                      value={activeTab}
-                      onValueChange={(v) => setActiveTab(v as 'flowchart' | 'bpmn')}
-                      className="w-full sm:w-auto"
-                    >
-                      <TabsList className="grid w-full sm:w-auto grid-cols-2 h-8 bg-gray-100/80 p-0.5 gap-0.5 rounded-md border-0">
-                        <TabsTrigger value="flowchart" className="text-xs font-medium h-7 px-4">
-                          Flowchart
-                        </TabsTrigger>
-                        <TabsTrigger value="bpmn" className="text-xs font-medium h-7 px-4">
-                          BPMN
-                        </TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                    <div className="hidden sm:block w-px bg-gray-200 mx-1 min-h-5 self-stretch" aria-hidden />
-                    <div className="flex items-center justify-center sm:justify-end gap-1.5 sm:pr-1 sm:pl-0.5">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs px-3 rounded-md border-gray-200"
-                        onClick={() => setIsEditingSteps((prev) => !prev)}
-                      >
-                        Ubah langkah
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs px-3 rounded-md border-gray-200 hover:bg-gray-50"
-                        disabled={isEditingSteps}
-                        onClick={() => setDiagramVersion((v) => v + 1)}
-                        title="Paksa susun ulang layout diagram"
-                      >
-                        Perbaiki diagram
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              }
-              diagramAlternate={
-                isEditingSteps ? (
-                  <DetailSOPProsedurEditor
-                    prosedurRows={prosedurRows}
-                    setProsedurRows={setProsedurRows}
-                    implementers={implementers}
-                    onDone={() => setIsEditingSteps(false)}
-                  />
-                ) : undefined
-              }
-            />
-          </div>
+          <DetailSOPPenyusunMain
+            metadata={metadata}
+            prosedurRows={prosedurRows}
+            implementers={implementers}
+            activeTab={activeTab}
+            onActiveTabChange={setActiveTab}
+            isEditingSteps={isEditingSteps}
+            setIsEditingSteps={setIsEditingSteps}
+            diagramVersion={diagramVersion}
+            onDiagramVersionChange={() => setDiagramVersion((v) => v + 1)}
+          />
         }
         rightPanel={
-          <CollapsibleSidePanel
-            side="right"
+          <DetailSOPPenyusunSidePanel
             collapsed={isEditPanelCollapsed}
             onCollapsedChange={setIsEditPanelCollapsed}
-            widthCollapsed="w-10"
-            widthExpanded="w-full"
-            tabs={[
-              { id: 'edit', label: 'Edit', icon: <PenLine className="w-3.5 h-3.5" /> },
-              { id: 'komentar', label: 'Komentar', icon: <MessageSquare className="w-3.5 h-3.5" /> },
-              { id: 'riwayat', label: 'Versi', icon: <History className="w-3.5 h-3.5" /> },
-              { id: 'aktivitas', label: 'Aktivitas', icon: <Activity className="w-3.5 h-3.5" /> },
-            ]}
-            activeTab={rightPanelTab}
-            onTabChange={(id) => setRightPanelTab(id as 'edit' | 'komentar' | 'riwayat' | 'aktivitas')}
-          >
-            {rightPanelTab === 'komentar' && (
-              <KomentarPanel
-                comments={komentarDisplay}
-                onResolve={handleResolveComment}
-                avatarVariant="blue"
-              />
-            )}
-            {rightPanelTab === 'edit' && (
-              <DetailSOPMetadataPanel
-                metadata={metadata}
-                onMetadataChange={handleMetadataChange}
-                implementers={implementers}
-                onImplementersChange={setImplementers}
-                implementersFromMaster
-                masterPelaksanaOptions={masterPelaksanaOptions}
-                peraturanList={peraturanList}
-              />
-            )}
-            {rightPanelTab === 'riwayat' && (
-              <VersionHistoryPanel
-                variant="cards"
-                versions={versions}
-                summary={`${versions.length} versi terdokumentasi`}
-                viewingVersion={viewingVersion}
-                setViewingVersion={setViewingVersion}
-                versionDiff={versionDiffItems}
-              />
-            )}
-            {rightPanelTab === 'aktivitas' && (
-              <div className="p-3">
-                <p className="text-xs text-gray-500 mb-3">
-                  Riwayat perubahan status SOP — siapa mengubah, dari status apa ke apa, kapan.
-                </p>
-                <RiwayatStatusPanel entries={auditEntries} />
-              </div>
-            )}
-          </CollapsibleSidePanel>
+            rightPanelTab={rightPanelTab}
+            onTabChange={setRightPanelTab}
+            metadata={metadata}
+            onMetadataChange={handleMetadataChange}
+            implementers={implementers}
+            onImplementersChange={setImplementers}
+            masterPelaksanaOptions={masterPelaksanaOptions}
+            versions={versions}
+            viewingVersion={viewingVersion}
+            setViewingVersion={setViewingVersion}
+            versionDiffItems={versionDiffItems}
+            auditEntries={[]}
+            komentarDisplay={komentarDisplay}
+            onResolveComment={handleResolveComment}
+          />
         }
       />
 
