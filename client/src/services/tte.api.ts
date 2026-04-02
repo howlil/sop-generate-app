@@ -11,7 +11,18 @@ import type {
   VerifikasiEmailDto,
   TandaTanganiBaDto,
   TandaTanganiSopDto,
+  PeranTTE,
 } from '../types/tte'
+
+export type {
+  KredensialTTE,
+  RiwayatTandaTangan,
+  RegisterTteDto,
+  VerifikasiEmailDto,
+  TandaTanganiBaDto,
+  TandaTanganiSopDto,
+  PeranTTE,
+}
 
 export const tteApi = {
   /**

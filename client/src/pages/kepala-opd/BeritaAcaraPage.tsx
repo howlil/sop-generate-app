@@ -22,25 +22,24 @@ import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { canKepalaOpdSignSop } from '@/lib/domain/sop-status'
-import type { StatusSOP } from '@/lib/types/sop'
-import { getKepalaOPDOpdId } from '@/lib/data/role-display'
-import { useOpdList } from '@/lib/data/opd'
-import { getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
+import type { StatusSOP } from '@/types/sop'
+import { getKepalaOPDOpdId } from '@/utils/role-display'
+import { useOpd } from '@/hooks/useOpd'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
-import { ROUTES } from '@/lib/constants/routes'
-import { IA } from '@/lib/constants/pipeline-ia'
+import { ROUTES } from '@/utils/constants/ui'
+import { IA } from '@/utils/constants/pipeline-ia'
 import { Route } from '@/routes/kepala-opd.berita-acara'
 import { InfoCard } from '@/components/ui/info-card'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { verifyPin } from '@/lib/domain/tte'
-import { getTTEProfile, addTTESignature } from '@/lib/data/tte-storage'
+import { verifyPin } from '@/lib/domain'
+import { getTTEProfile, addTTESignature } from '@/lib/domain/tte-storage'
 
 export function BeritaAcaraPage() {
   const navigate = useNavigate()
   const { id: searchId } = Route.useSearch()
   const opdId = getKepalaOPDOpdId()
-  const opds = useOpdList()
-  const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
+  const { list: opds } = useOpd()
+  const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''
   const { list: pengajuanList } = usePengajuanEvaluasiList()
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()

@@ -5,7 +5,7 @@
  */
 import { Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 import { useNavigate } from '@tanstack/react-router'
 
 export function HeroSection() {

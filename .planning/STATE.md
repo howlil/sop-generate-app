@@ -97,6 +97,8 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260402-api-cleanup | ✅ API cleanup & legacy code removal — usePelaksana & useTTESignature replaced with real API hooks, delay.ts deleted, 21 missing data/hook files created, build passing | 2026-04-02 | — | Done | client/ |
+| 20260402-testing-171-passing | ✅ 171 tests passing (100%) — Domain (30), Utils (48), Stores (27), Services (44), Types (15), Query (18). Coverage: Branches 66%, Functions 58%. All tests passing! | 2026-04-02 | — | Done | client/ |
 | 20260402-api-endpoint-fixes | ✅ Fix all API endpoint mismatches — TTE (4 paths), Tim nonaktifkan (2), Peraturan revoke, Langkah SOP nested routes, Swimlane GET endpoint, Auth refresh | 2026-04-02 | — | Done | client/src/services/ |
 | 20260402-ux-critical-fixes | ✅ Critical UX fixes from audit — Login API integration, ErrorBoundary, AppSkeleton loading state, session management, form validation enhancement | 2026-04-02 | — | Done | client/ |
 | 20260402-testing-117-passing | ✅ 117 tests passing (100%) — Domain (30), Utils (48), Stores (27), Services (11). Coverage: Branches 64%, Functions 61%. All tests passing! | 2026-04-02 | — | Done | client/ |

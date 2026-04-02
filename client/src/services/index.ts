@@ -8,7 +8,7 @@ export { apiClient, ApiError } from './api'
 
 // Auth & Users
 export { authApi } from './auth.api'
-export type { LoginRequest, LoginResponse, ChangePasswordRequest } from './auth.api'
+export type { LoginRequest, LoginResponse } from './auth.api'
 
 export { usersApi } from './users.api'
 export type { User, CreateUserDto, UpdateUserDto, PaginatedResponse } from './users.api'
@@ -79,4 +79,4 @@ export { timEvaluasiApi } from './tim-evaluasi.api'
 export type { AnggotaTimEvaluasi, CreateTimEvaluasiDto, UpdateTimEvaluasiDto } from './tim-evaluasi.api'
 
 export { auditApi } from './audit.api'
-export type { LogEditSOP as AuditLog, BagianSOP, AuditQueryParams } from './audit.api'
+export type { LogEditSOP as AuditLog, AuditQueryParams } from './audit.api'

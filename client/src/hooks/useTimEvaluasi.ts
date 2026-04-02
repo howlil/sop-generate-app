@@ -1,5 +1,5 @@
 /**
- * useTimEvaluasi hook dengan TanStack Query
+ * useTimEvaluasi hook - TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,6 +7,8 @@ import { timEvaluasiApi } from '@/services/tim-evaluasi.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type { CreateTimEvaluasiRequest } from '@/types/tim'
+
+const TIM_EVALUASI_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 export function useTimEvaluasi() {
   const queryClient = useQueryClient()
@@ -18,6 +20,7 @@ export function useTimEvaluasi() {
   } = useQuery({
     queryKey: queryKeys.timEvaluasiList(),
     queryFn: () => timEvaluasiApi.findAll(),
+    staleTime: TIM_EVALUASI_STALE_TIME,
   })
 
   const tambahMutation = useMutation({

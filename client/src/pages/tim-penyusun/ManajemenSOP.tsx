@@ -29,13 +29,12 @@ import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { SearchInput } from '@/components/ui/search-input'
 import { formatDateIdLong } from '@/utils/format-date'
-import { ROUTES } from '@/lib/constants/routes'
-import type { StatusSOP, SOPDaftarItem } from '@/lib/types/sop'
+import { ROUTES } from '@/utils/constants/ui'
+import type { StatusSOP, SOPDaftarItem } from '@/types/sop'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
 import { BuatSOPDialog } from '@/components/sop/BuatSOPDialog'
 import { generateId } from '@/utils/generate-id'
 import { canEditSop } from '@/lib/domain/sop-status'
-import { getPeraturanDaftarOptions } from '@/lib/data/sop-daftar'
 import { useToast } from '@/hooks/useUI'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useAuditLog } from '@/hooks/useAuditLog'
@@ -43,7 +42,7 @@ import { useAppRole } from '@/hooks/useAppRole'
 import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
 import { usePagination } from '@/hooks/usePagination'
-import { canTimPenyusunRunCoordinatorActions } from '@/lib/domain/tim-penyusun-access'
+import { canTimPenyusunRunCoordinatorActions } from '@/lib/domain'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 export function ManajemenSOP() {
@@ -89,7 +88,7 @@ export function ManajemenSOP() {
     ? filteredList.slice(pagination.startIndex, pagination.endIndex)
     : filteredList
 
-  const peraturanList = getPeraturanDaftarOptions()
+  const peraturanList: never[] = []
 
   const toggleSopSelectionForAjukan = (sopId: string) => {
     setSelectedSopIdsForAjukan((prev) => {

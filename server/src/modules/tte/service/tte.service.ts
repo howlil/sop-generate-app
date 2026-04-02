@@ -19,6 +19,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
+import { assertTteXor } from '../../../common/validators';
 
 type JwtUser = { id: string; peran: PeranPengguna; opdId: string | null };
 

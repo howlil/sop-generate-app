@@ -1,5 +1,5 @@
 /**
- * useSop hook dengan TanStack Query
+ * useSop hook - TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,6 +7,8 @@ import { sopApi } from '@/services/sop.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type { CreateSopRequest } from '@/types/sop'
+
+const SOP_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 export function useSop(params?: { opdId?: string; status?: string }) {
   const queryClient = useQueryClient()
@@ -18,6 +20,7 @@ export function useSop(params?: { opdId?: string; status?: string }) {
   } = useQuery({
     queryKey: queryKeys.sopList(params),
     queryFn: () => sopApi.findAll(params),
+    staleTime: SOP_STALE_TIME,
   })
 
   const createMutation = useMutation({
@@ -66,13 +69,11 @@ export function useSop(params?: { opdId?: string; status?: string }) {
   }
 }
 
-/**
- * Hook untuk detail SOP
- */
 export function useSopDetail(id: string) {
   return useQuery({
     queryKey: queryKeys.sopById(id),
     queryFn: () => sopApi.findById(id),
     enabled: !!id,
+    staleTime: SOP_STALE_TIME,
   })
 }

@@ -16,7 +16,7 @@ import {
   getDataGrafikEvaluasiTahunan,
   getDetailOpdPerTahun,
   type DetailOpdPerTahun,
-} from '@/lib/data/evaluasi-tahunan'
+} from '@/lib/domain/evaluasi-tahunan'
 
 /* ─── Helpers ─── */
 

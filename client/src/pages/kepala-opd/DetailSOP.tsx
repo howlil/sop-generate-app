@@ -27,17 +27,17 @@ import {
   getInitialSopDetailProsedurRows,
   getSopViewMetadata,
   getSopViewVersions,
-} from '@/lib/data/sop-detail'
-import { getLastEvaluatedByInitial } from '@/lib/data/evaluasi-data'
+} from '@/lib/domain/sop-detail'
+import { getLastEvaluatedByInitial } from '@/lib/domain/evaluasi-data'
 import type { DetailSOPVersionSeed } from '@/lib/types/version'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/useTTESignature'
 import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/lib/domain/sop-status'
-import { getKepalaOPDOpdId } from '@/lib/data/role-display'
-import { useOpdList } from '@/lib/data/opd'
-import { ROUTES } from '@/lib/constants/routes'
+import { getKepalaOPDOpdId } from '@/utils/role-display'
+import { useOpd } from '@/hooks/useOpd'
+import { ROUTES } from '@/utils/constants/routes'
 
 type Version = DetailSOPVersionSeed
 
@@ -60,8 +60,8 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const { list: pengajuanList } = usePengajuanEvaluasiList()
   const opdId = getKepalaOPDOpdId()
-  const opds = useOpdList()
-  const opdName = opds.find((o) => o.id === opdId)?.name ?? ''
+  const { list: opds } = useOpd()
+  const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''
   const params = useParams({ strict: false })
   const id = 'id' in params ? params.id : undefined
   const location = useLocation()

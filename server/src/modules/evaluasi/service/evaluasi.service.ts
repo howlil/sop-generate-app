@@ -48,41 +48,10 @@ export class EvaluasiService {
   }
 
   // EVL-01 + EVL-02 + EVL-03 + EVL-13
+  // [P0-C] Sentinel table handles race condition prevention
   async create(dto: CreatePengajuanEvaluasiDto) {
-    // EVL-02: max 1 active evaluation per OPD per jenis [P0-C]
-    const existing = await this.repo.findActiveByOpdAndJenis(
-      dto.opdId,
-      dto.jenis,
-    );
-    if (existing) {
-      throw new ConflictException(
-        `${EvaluasiMessages.EVALUASI_ALREADY_EXISTS} (id: ${existing.id})`,
-      );
-    }
-
     // EVL-13 + EVL-03: validate DetailSOPs belong to correct OPD and have correct status
-    const details = await this.repo.findSopDetails(dto.sopDetailIds);
-
-    if (details.length !== dto.sopDetailIds.length) {
-      throw new BadRequestException(EvaluasiMessages.SOP_DETAIL_NOT_FOUND);
-    }
-
-    const wrongOpd = details.filter((d) => d.sop.opdId !== dto.opdId);
-    if (wrongOpd.length > 0) {
-      throw new BadRequestException(
-        'Semua DetailSOP harus dari OPD yang sama dengan pengajuan evaluasi',
-      );
-    }
-
-    const wrongStatus = details.filter(
-      (d) => d.status !== StatusSOP.DIAJUKAN_EVALUASI,
-    );
-    if (wrongStatus.length > 0) {
-      throw new BadRequestException(
-        'Semua DetailSOP harus berstatus DIAJUKAN_EVALUASI sebelum dapat dievaluasi',
-      );
-    }
-
+    // Validation now happens in repository after sentinel INSERT
     return this.repo.create(dto);
   }
 

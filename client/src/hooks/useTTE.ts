@@ -1,5 +1,5 @@
 /**
- * useTTE hook dengan TanStack Query
+ * useTTE hook - TanStack Query
  * Matches server: TTEService endpoints
  */
 
@@ -8,27 +8,22 @@ import { tteApi } from '@/services/tte.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type {
-  KredensialTTE,
   RegisterTteDto,
-  VerifikasiEmailDto,
   TandaTanganiBaDto,
   TandaTanganiSopDto,
 } from '@/types/tte'
 
-/**
- * Hook untuk get kredensial TTE user (TTE-01)
- */
+const TTE_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+
 export function useTTEProfil() {
   return useQuery({
     queryKey: queryKeys.tteProfil,
     queryFn: () => tteApi.getProfil(),
-    retry: false, // Don't retry if not found (user may not have kredensial yet)
+    staleTime: TTE_STALE_TIME,
+    retry: false,
   })
 }
 
-/**
- * Hook untuk register kredensial TTE (TTE-01)
- */
 export function useRegisterTTE() {
   const queryClient = useQueryClient()
 
@@ -44,9 +39,6 @@ export function useRegisterTTE() {
   })
 }
 
-/**
- * Hook untuk request token verifikasi email (TTE-02)
- */
 export function useMintTokenVerifikasi() {
   return useMutation({
     mutationFn: () => tteApi.mintTokenVerifikasi(),
@@ -59,9 +51,6 @@ export function useMintTokenVerifikasi() {
   })
 }
 
-/**
- * Hook untuk konfirmasi email dengan token (TTE-02)
- */
 export function useKonfirmasiEmail() {
   return useMutation({
     mutationFn: (token: string) => tteApi.konfirmasiEmail(token),
@@ -74,19 +63,14 @@ export function useKonfirmasiEmail() {
   })
 }
 
-/**
- * Hook untuk get riwayat tanda tangan user (TTE-13)
- */
 export function useRiwayatTandaTangan() {
   return useQuery({
     queryKey: queryKeys.tteRiwayat,
     queryFn: () => tteApi.getSigningHistory(),
+    staleTime: TTE_STALE_TIME,
   })
 }
 
-/**
- * Hook untuk tanda tangan Berita Acara - Biro Organisasi (TTE-05)
- */
 export function useTandaTanganiBA() {
   const queryClient = useQueryClient()
 
@@ -103,9 +87,6 @@ export function useTandaTanganiBA() {
   })
 }
 
-/**
- * Hook untuk tanda tangan Berita Acara - Koordinator (TTE-06)
- */
 export function useKoordinatorTandaTanganiBA() {
   const queryClient = useQueryClient()
 
@@ -122,9 +103,6 @@ export function useKoordinatorTandaTanganiBA() {
   })
 }
 
-/**
- * Hook untuk tanda tangan SOP - Kepala OPD (TTE-07)
- */
 export function useTandaTanganiSOP() {
   const queryClient = useQueryClient()
 

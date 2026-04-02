@@ -1,5 +1,5 @@
 /**
- * useEvaluasi hook dengan TanStack Query
+ * useEvaluasi hook - TanStack Query
  * Matches server: EvaluasiService endpoints
  */
 
@@ -8,11 +8,12 @@ import { evaluasiApi } from '@/services/evaluasi.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type {
-  PengajuanEvaluasi,
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
 } from '@/types/evaluasi'
+
+const EVALUASI_STALE_TIME = 3 * 60 * 1000 // 3 minutes
 
 export function useEvaluasi(params?: { opdId?: string; status?: string; jenis?: string }) {
   const queryClient = useQueryClient()
@@ -24,6 +25,7 @@ export function useEvaluasi(params?: { opdId?: string; status?: string; jenis?: 
   } = useQuery({
     queryKey: queryKeys.evaluasiList(params),
     queryFn: () => evaluasiApi.findAll(params),
+    staleTime: EVALUASI_STALE_TIME,
   })
 
   const createMutation = useMutation({
@@ -46,20 +48,15 @@ export function useEvaluasi(params?: { opdId?: string; status?: string; jenis?: 
   }
 }
 
-/**
- * Hook untuk detail pengajuan evaluasi dengan nilai evaluasi
- */
 export function useEvaluasiDetail(id: string) {
   return useQuery({
     queryKey: queryKeys.evaluasiById(id),
     queryFn: () => evaluasiApi.findById(id),
     enabled: !!id,
+    staleTime: EVALUASI_STALE_TIME,
   })
 }
 
-/**
- * Hook untuk mengisi nilai evaluasi (EVL-05)
- */
 export function useIsiNilaiEvaluasi() {
   const queryClient = useQueryClient()
 
@@ -83,9 +80,6 @@ export function useIsiNilaiEvaluasi() {
   })
 }
 
-/**
- * Hook untuk menyelesaikan evaluasi (EVL-06/07)
- */
 export function useSelesaiEvaluasi() {
   const queryClient = useQueryClient()
 
@@ -107,13 +101,10 @@ export function useSelesaiEvaluasi() {
   })
 }
 
-/**
- * Hook untuk rekap evaluasi tahunan (EVL-09)
- */
 export function useRekapEvaluasi(tahun?: number) {
   return useQuery({
     queryKey: queryKeys.evaluasiRekap(tahun),
     queryFn: () => evaluasiApi.rekap(tahun),
-    enabled: true, // Always enabled for Biro Organisasi
+    staleTime: 10 * 60 * 1000, // 10 minutes for recap data
   })
 }

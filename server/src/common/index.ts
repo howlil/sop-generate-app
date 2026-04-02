@@ -8,3 +8,4 @@ export * from './interceptors';
 export * from './filters';
 export * from './strategy';
 export * from './messages';
+export * from './validators';

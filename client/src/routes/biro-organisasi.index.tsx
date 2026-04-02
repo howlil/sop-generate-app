@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/ui'
 
 export const Route = createFileRoute('/biro-organisasi/')({
   component: BiroOrganisasiIndex,

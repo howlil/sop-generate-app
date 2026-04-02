@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useState } from 'react'
-import { useUIStore, showToast as showAppToast } from '@/stores/uiStore'
+import { useUIStore } from '@/stores/uiStore'
 import type { ToastType } from '@/stores/uiStore'
 
 /** Hook akses toast — satu titik akses untuk UI. */

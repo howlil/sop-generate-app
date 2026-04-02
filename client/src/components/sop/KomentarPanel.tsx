@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { FormField } from '@/components/ui/form-field'
-import type { KomentarItem } from '@/lib/types/komentar'
+import type { KomentarItem } from '@/types/komentar'
 
-export type { KomentarItem } from '@/lib/types/komentar'
+export type { KomentarItem } from '@/types/komentar'
 
 export interface KomentarPanelProps {
   /** Daftar komentar (urutan bebas; filter/sort di pemanggil jika perlu) */

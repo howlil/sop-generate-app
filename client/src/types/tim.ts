@@ -78,3 +78,7 @@ export interface UpdateTimEvaluasiDto {
 // Legacy type aliases for backward compatibility
 export type CreateTimPenyusunRequest = CreateTimPenyusunDto
 export type CreateTimEvaluasiRequest = CreateTimEvaluasiDto
+
+// Additional legacy types
+export type TimPenyusun = AnggotaTimPenyusun
+export type TimEvaluasiAnggota = AnggotaTimEvaluasi

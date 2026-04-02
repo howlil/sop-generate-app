@@ -1,6 +1,6 @@
 /**
  * Login Form - Right panel mengikuti design style guide
- * 
+ *
  * Design: Compact, clean form sesuai design.md
  * - h-9 inputs
  * - h-8 buttons
@@ -11,41 +11,76 @@
 import { useState } from 'react'
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
+import { useAuth } from '@/hooks/useAuth'
+import { showToast } from '@/stores/uiStore'
+
+interface LocationState {
+  redirect?: string
+}
 
 export function LoginForm() {
   const navigate = useNavigate()
+  const { redirect = '/' } = useSearch({ strict: false }) as LocationState
+  const { login, isLoggingIn } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
   const [passwordError, setPasswordError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const validateForm = () => {
     setEmailError('')
     setPasswordError('')
-    setIsLoading(true)
 
-    // Validate individual fields
     if (!email) {
       setEmailError('Email wajib diisi')
-      setIsLoading(false)
-      return
+      return false
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setEmailError('Format email tidak valid')
+      return false
     }
 
     if (!password) {
       setPasswordError('Password wajib diisi')
-      setIsLoading(false)
+      return false
+    }
+
+    if (password.length < 6) {
+      setPasswordError('Password minimal 6 karakter')
+      return false
+    }
+
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!validateForm()) {
       return
     }
 
-    // TODO: Implement actual login
-    setTimeout(() => {
-      setIsLoading(false)
-      navigate({ to: '/dashboard' })
-    }, 1500)
+    try {
+      await login({ email, password })
+      // Redirect setelah login berhasil
+      // useAuth hook sudah handle toast success
+      navigate({ to: redirect || '/dashboard' })
+    } catch (error) {
+      // Error sudah di-handle di useAuth hook dengan toast
+      // Tambahkan error spesifik per field jika ada
+      if (error instanceof Error) {
+        const message = error.message.toLowerCase()
+        if (message.includes('email')) {
+          setEmailError(error.message)
+        } else if (message.includes('password') || message.includes('kata sandi')) {
+          setPasswordError(error.message)
+        }
+      }
+    }
   }
 
   return (
@@ -79,7 +114,7 @@ export function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="nama@instansi.go.id"
                 className="w-full h-11 pl-9 pr-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
+                disabled={isLoggingIn}
                 autoComplete="email"
                 aria-invalid={!!emailError}
                 aria-describedby={emailError ? 'email-error' : undefined}
@@ -112,7 +147,7 @@ export function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full h-11 pl-9 pr-9 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
+                disabled={isLoggingIn}
                 autoComplete="current-password"
                 aria-invalid={!!passwordError}
                 aria-describedby={passwordError ? 'password-error' : undefined}
@@ -121,7 +156,7 @@ export function LoginForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                disabled={isLoading}
+                disabled={isLoggingIn}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
@@ -144,9 +179,9 @@ export function LoginForm() {
             type="submit"
             variant="default"
             className="w-full h-11 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-all"
-            disabled={isLoading}
+            disabled={isLoggingIn}
           >
-            {isLoading ? (
+            {isLoggingIn ? (
               <span className="flex items-center gap-2">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 Memproses...

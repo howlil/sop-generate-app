@@ -1,5 +1,5 @@
 /**
- * useTimPenyusun hook dengan TanStack Query
+ * useTimPenyusun hook - TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,6 +7,8 @@ import { timPenyusunApi } from '@/services/tim-penyusun.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type { CreateTimPenyusunRequest } from '@/types/tim'
+
+const TIM_PENYUSUN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 export function useTimPenyusun(opdId?: string) {
   const queryClient = useQueryClient()
@@ -17,7 +19,8 @@ export function useTimPenyusun(opdId?: string) {
     error,
   } = useQuery({
     queryKey: queryKeys.timPenyusunList(opdId),
-    queryFn: () => timPenyusunApi.findAll(opdId),
+    queryFn: () => timPenyusunApi.findAll(opdId ? { opdId } : undefined),
+    staleTime: TIM_PENYUSUN_STALE_TIME,
   })
 
   const tambahMutation = useMutation({
@@ -44,7 +47,7 @@ export function useTimPenyusun(opdId?: string) {
 
   const pindahMutation = useMutation({
     mutationFn: ({ id, opdId }: { id: string; opdId: string }) =>
-      timPenyusunApi.pindah(id, opdId),
+      timPenyusunApi.pindah(id, { opdId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
       showToast('Anggota Tim Penyusun dipindah', 'success')

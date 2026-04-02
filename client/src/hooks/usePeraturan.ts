@@ -1,6 +1,5 @@
 /**
- * usePeraturan hook dengan TanStack Query
- * Server state di-handle oleh React Query, UI state di component
+ * usePeraturan hook - TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -9,20 +8,21 @@ import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type { CreatePeraturanRequest, UpdatePeraturanRequest } from '@/types/peraturan'
 
+const PERATURAN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+
 export function usePeraturan(opdId?: string) {
   const queryClient = useQueryClient()
 
-  // Query: Fetch all peraturan
   const {
     data: list = [],
     isLoading,
     error,
   } = useQuery({
     queryKey: queryKeys.peraturanList(opdId),
-    queryFn: () => peraturanApi.findAll(opdId),
+    queryFn: () => peraturanApi.findAll(opdId ? { opdId } : undefined),
+    staleTime: PERATURAN_STALE_TIME,
   })
 
-  // Mutation: Create
   const createMutation = useMutation({
     mutationFn: (payload: CreatePeraturanRequest) => peraturanApi.create(payload),
     onSuccess: () => {
@@ -34,7 +34,6 @@ export function usePeraturan(opdId?: string) {
     },
   })
 
-  // Mutation: Update
   const updateMutation = useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: UpdatePeraturanRequest }) =>
       peraturanApi.update(id, payload),
@@ -47,7 +46,6 @@ export function usePeraturan(opdId?: string) {
     },
   })
 
-  // Mutation: Revoke
   const revokeMutation = useMutation({
     mutationFn: (id: string) => peraturanApi.revoke(id),
     onSuccess: () => {
@@ -59,7 +57,6 @@ export function usePeraturan(opdId?: string) {
     },
   })
 
-  // Mutation: Delete
   const deleteMutation = useMutation({
     mutationFn: (id: string) => peraturanApi.delete(id),
     onSuccess: () => {

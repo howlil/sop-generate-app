@@ -4,7 +4,7 @@
  * Usage: import { formatDateId, formatDateIdLong, formatDatetime } from '@/utils/format-date'
  */
 
-import { LOCALE_ID } from '@/lib/constants/ui'
+import { LOCALE_ID } from '@/utils/constants/ui'
 
 type DateInput = string | Date | null | undefined
 

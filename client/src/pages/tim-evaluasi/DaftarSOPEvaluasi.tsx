@@ -2,7 +2,7 @@
  * Evaluasi SOP: daftar OPD. Satu baris = satu OPD.
  * List SOP per OPD ada di halaman detail OPD (Evaluasi per OPD).
  */
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Building2, Eye } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -10,11 +10,11 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
-import { ROUTES } from '@/lib/constants/routes'
-import { canSelectSOPForEvaluasi, isSopInEvaluasiList } from '@/lib/domain/sop-evaluasi'
+import { ROUTES } from '@/utils/constants/ui'
+import { canSelectSOPForEvaluasi, isSopInEvaluasiList } from '@/lib/domain'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
-import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
+import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 
 export interface OpdEvaluasiItem {
@@ -27,8 +27,8 @@ export interface OpdEvaluasiItem {
 
 function useOpdEvaluasiList(): OpdEvaluasiItem[] {
   const { mergeSopStatus } = useSopStatus()
-  const [baseSopList] = useState(() => getInitialSopDaftarList())
-  const mergedSopList = useMemo(() => mergeSopStatus(baseSopList), [baseSopList, mergeSopStatus])
+  const { list: sopListRaw } = useSop()
+  const mergedSopList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
 
   return useMemo(() => {
     /** Group SOPs by opdId, collecting unique OPD names from opdId. */

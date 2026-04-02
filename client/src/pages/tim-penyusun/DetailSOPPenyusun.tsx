@@ -27,7 +27,7 @@ import {
   getInitialSopDetailProsedurRows,
   getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
-} from '@/lib/data/sop-detail'
+} from '@/lib/domain/sop-detail'
 import {
   DEFAULT_SOP_STATUS,
   type SOPDetailMetadata,
@@ -44,7 +44,7 @@ import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
 import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 
 export function DetailSOPPenyusun() {
   const { showToast } = useToast()
@@ -63,13 +63,9 @@ export function DetailSOPPenyusun() {
   const [implementers, setImplementers] = useState<{ id: string; name: string }[]>([])
   const implementersSeededRef = useRef(false)
   const masterPelaksanaOptions = useMemo(
-    () => pelaksanaList.map((p) => ({ 
-      id: p.id, 
-      name: p.namaLengkap,
-      jabatan: p.jabatan,
-      pangkat: p.pangkat,
-      email: p.email,
-      nohp: p.nohp,
+    () => pelaksanaList.map((p) => ({
+      id: p.id,
+      name: p.namaLengkap || p.namaPelaksana,
     })),
     [pelaksanaList]
   )

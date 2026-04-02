@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/ui'
 
 export const Route = createFileRoute('/tim-penyusun/')({
   beforeLoad: () => {

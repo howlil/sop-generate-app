@@ -12,27 +12,27 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateIdLong } from '@/utils/format-date'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 import { getKepalaOPDOpdId } from '@/utils/role-display'
-import { getSopDaftarByOpdId } from '@/lib/data/sop-daftar'
+import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
-import { useOpdList } from '@/lib/data/opd'
+import { useOpd } from '@/hooks/useOpd'
 
 export function PantauSOP() {
   const opdId = getKepalaOPDOpdId()
-  const allOpds = useOpdList()
+  const { list: allOpds } = useOpd()
   const opd = allOpds.find((o) => o.id === opdId)
-  const opdName = opd?.name ?? 'OPD'
+  const opdName = opd?.nama ?? 'OPD'
 
   const [filterStatus, setFilterStatus] = useState('all')
   const [cabutSopId, setCabutSopId] = useState<string | null>(null)
   const { mergeSopStatus, setSopStatusOverride } = useSopStatus()
   const { showToast } = useToast()
-  const sopListRaw = useMemo(() => getSopDaftarByOpdId(opdId), [opdId])
+  const { list: sopListRaw } = useSop({ opdId })
   const mergedList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
 
   const listByStatus = useMemo(

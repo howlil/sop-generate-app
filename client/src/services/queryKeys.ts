@@ -34,6 +34,18 @@ export const queryKeys = {
   pelaksana: ['pelaksana'] as const,
   pelaksanaByOpd: (opdId: string) => ['pelaksana', 'byOpd', opdId] as const,
 
+  // Swimlane
+  swimlane: (sopDetailId: string) => ['swimlane', sopDetailId] as const,
+
+  // Lampiran
+  lampiran: (sopDetailId: string) => ['lampiran', sopDetailId] as const,
+
+  // Dasar Hukum
+  dasarHukum: (sopDetailId: string) => ['dasarHukum', sopDetailId] as const,
+
+  // SOP Terkait
+  sopTerkait: (sopDetailId: string) => ['sopTerkait', sopDetailId] as const,
+
   // OPD
   opd: ['opd'] as const,
   opdList: () => ['opd', 'list'] as const,

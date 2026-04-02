@@ -4,10 +4,19 @@
  */
 
 import { PrismaClient } from '../src/generated/prisma/index.js';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import bcrypt from 'bcrypt';
 
 async function main() {
-  const prisma = new PrismaClient();
+  const adapter = new PrismaMariaDb({
+    host: process.env.DATABASE_HOST || 'localhost',
+    user: process.env.DATABASE_USER || 'root',
+    password: process.env.DATABASE_PASSWORD || '',
+    database: process.env.DATABASE_NAME || 'sop_biro_organisasi',
+    connectionLimit: 10,
+  });
+
+  const prisma = new PrismaClient({ adapter });
 
   console.log('🌱 Starting seed...');
 

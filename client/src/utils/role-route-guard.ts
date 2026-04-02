@@ -4,8 +4,8 @@
  */
 
 import { redirect } from '@tanstack/react-router'
-import { ROUTES } from '@/utils/constants'
-import type { RoleKey } from '@/utils/constants'
+import { ROUTES } from '@/utils/constants/ui'
+import type { RoleKey } from '@/utils/constants/ui'
 import { getRole } from '@/stores/authStore'
 
 type BeforeLoadLocation = { href: string }

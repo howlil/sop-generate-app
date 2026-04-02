@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import {
   JenisPengajuanEvaluasi,
@@ -6,6 +6,11 @@ import {
   HasilEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
+import {
+  assertValidPengajuanTransition,
+  assertValidSopTransition,
+  assertNilaiEvaluasiScope,
+} from '../../../common/validators';
 import {
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
@@ -83,9 +88,49 @@ export class EvaluasiRepository {
     });
   }
 
-  // EVL-01 + EVL-03: create pengajuan + update DetailSOP statuses atomically
+  // EVL-01 + EVL-02 + EVL-03 + EVL-13
+  // [P0-C] Create pengajuan with sentinel table to prevent race condition
   async create(dto: CreatePengajuanEvaluasiDto) {
     return this.prisma.$transaction(async (tx) => {
+      // Validate DetailSOPs first (before inserting sentinel)
+      const details = await this.findSopDetails(dto.sopDetailIds);
+
+      if (details.length !== dto.sopDetailIds.length) {
+        throw new NotFoundException('SOP Detail tidak ditemukan');
+      }
+
+      const wrongOpd = details.filter((d) => d.sop.opdId !== dto.opdId);
+      if (wrongOpd.length > 0) {
+        throw new BadRequestException(
+          'Semua DetailSOP harus dari OPD yang sama dengan pengajuan evaluasi',
+        );
+      }
+
+      const wrongStatus = details.filter(
+        (d) => d.status !== StatusSOP.DIAJUKAN_EVALUASI,
+      );
+      if (wrongStatus.length > 0) {
+        throw new BadRequestException(
+          'Semua DetailSOP harus berstatus DIAJUKAN_EVALUASI sebelum dapat dievaluasi',
+        );
+      }
+
+      // [P0-C] INSERT sentinel first — will fail with unique violation if already exists
+      try {
+        await tx.$executeRaw`
+          INSERT INTO KunciPengajuanEvaluasi (opdId, jenis, pengajuanEvaluasiId)
+          VALUES (${dto.opdId}, ${dto.jenis}, UUID())
+        `;
+      } catch (e: any) {
+        if (e.code === 'P2003' || (e.message as string).includes('Duplicate entry')) {
+          throw new ConflictException(
+            'Sudah ada pengajuan evaluasi aktif untuk OPD ini. Silakan selesaikan pengajuan yang ada terlebih dahulu.',
+          );
+        }
+        throw e;
+      }
+
+      // Create pengajuan evaluation
       const pengajuan = await tx.pengajuanEvaluasi.create({
         data: {
           opdId: dto.opdId,
@@ -106,6 +151,13 @@ export class EvaluasiRepository {
         include: INCLUDE,
       });
 
+      // Update sentinel with actual pengajuanId
+      await tx.$executeRaw`
+        UPDATE KunciPengajuanEvaluasi 
+        SET pengajuanEvaluasiId = ${pengajuan.id}
+        WHERE opdId = ${dto.opdId} AND jenis = ${dto.jenis}
+      `;
+
       // EVL-03: transition all included DetailSOPs to SEDANG_DIEVALUASI
       await tx.detailSOP.updateMany({
         where: { id: { in: dto.sopDetailIds } },
@@ -117,6 +169,7 @@ export class EvaluasiRepository {
   }
 
   // EVL-05 + EVL-10 (optimistic lock) + EVL-11 (audit log)
+  // [P1-E] Validate NilaiEvaluasi scope (same OPD)
   async isiNilai(
     pengajuanId: string,
     sopDetailId: string,
@@ -124,16 +177,31 @@ export class EvaluasiRepository {
     evaluatorId: string,
   ) {
     return this.prisma.$transaction(async (tx) => {
-      // Load current state for audit log
-      const current = await tx.nilaiEvaluasi.findUnique({
-        where: {
-          pengajuanEvaluasiId_sopDetailId: {
-            pengajuanEvaluasiId: pengajuanId,
-            sopDetailId,
+      // Load current state for audit log and scope validation
+      const [current, pengajuan, detailSop] = await Promise.all([
+        tx.nilaiEvaluasi.findUnique({
+          where: {
+            pengajuanEvaluasiId_sopDetailId: {
+              pengajuanEvaluasiId: pengajuanId,
+              sopDetailId,
+            },
           },
-        },
-      });
+        }),
+        tx.pengajuanEvaluasi.findUnique({
+          where: { id: pengajuanId },
+          select: { opdId: true },
+        }),
+        tx.detailSOP.findUnique({
+          where: { id: sopDetailId },
+          select: { sop: { select: { opdId: true } } },
+        }),
+      ]);
+
       if (!current) throw new NotFoundException('NilaiEvaluasi tidak ditemukan');
+      if (!pengajuan || !detailSop) throw new NotFoundException('Data tidak ditemukan');
+
+      // [P1-E] Validate scope - DetailSOP and PengajuanEvaluasi must be same OPD
+      assertNilaiEvaluasiScope(pengajuan.opdId, detailSop.sop.opdId);
 
       // EVL-10: optimistic locking — only update if version matches
       const updated = await tx.nilaiEvaluasi.updateMany({
@@ -189,28 +257,64 @@ export class EvaluasiRepository {
   }
 
   // EVL-06 + EVL-07: finalize evaluation and transition DetailSOP statuses
+  // [P0-C] Delete sentinel when evaluation is completed
+  // [P0-D] Validate status transitions
   async selesai(
     id: string,
     nilaiOPD: number | null | undefined,
     userId: string,
   ) {
     return this.prisma.$transaction(async (tx) => {
+      const pengajuan = await this.findById(id);
+      if (!pengajuan) {
+        throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
+      }
+
+      // [P0-D] Validate status transition
+      assertValidPengajuanTransition(
+        pengajuan.status,
+        StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+        'Selesai Evaluasi',
+      );
+
       const nilaiList = await tx.nilaiEvaluasi.findMany({
         where: { pengajuanEvaluasiId: id },
         select: { sopDetailId: true, hasil: true },
       });
 
       for (const nilai of nilaiList) {
+        // [P0-D] Validate SOP status transition
         const newStatus =
           nilai.hasil === HasilEvaluasi.SESUAI
             ? StatusSOP.SIAP_DIVERIFIKASI
             : StatusSOP.REVISI_DARI_TIM_EVALUASI;
+
+        // Get current DetailSOP status to validate transition
+        const detail = await tx.detailSOP.findUnique({
+          where: { id: nilai.sopDetailId },
+          select: { status: true },
+        });
+
+        if (detail) {
+          assertValidSopTransition(
+            detail.status,
+            newStatus,
+            `Hasil Evaluasi: ${nilai.hasil}`,
+          );
+        }
 
         await tx.detailSOP.update({
           where: { id: nilai.sopDetailId },
           data: { status: newStatus },
         });
       }
+
+      // [P0-C] Delete sentinel when evaluation is completed (SELESAI)
+      // FK CASCADE will also handle this, but explicit delete is clearer
+      await tx.$executeRaw`
+        DELETE FROM KunciPengajuanEvaluasi 
+        WHERE opdId = ${pengajuan.opdId} AND jenis = ${pengajuan.jenis}
+      `;
 
       return tx.pengajuanEvaluasi.update({
         where: { id },

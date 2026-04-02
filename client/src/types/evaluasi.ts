@@ -85,6 +85,7 @@ export interface CreatePengajuanEvaluasiDto {
 export interface IsiNilaiEvaluasiDto {
   hasil: HasilEvaluasi
   catatan?: string
+  version?: number
 }
 
 export interface SelesaiEvaluasiDto {

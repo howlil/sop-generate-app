@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, CircleUserRound, LogOut } from 'lucide-react'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

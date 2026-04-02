@@ -1,18 +1,26 @@
 /**
- * Role display helpers
+ * Role Display Utilities - Consolidated
+ * All role-based display helpers in one place
  */
 
-import { ROLES, ROLE_LABELS, type RoleKey } from '@/utils/constants'
+import { useAuthStore } from '@/stores/authStore'
 
-export function getRoleNip(role: RoleKey): string {
-  // Placeholder - actual NIP from user store
-  return ''
+export function getKepalaOPDOpdId(): string {
+  const user = useAuthStore.getState().user
+  return user?.opdId ?? ''
 }
 
-export function getRoleDisplayName(role: RoleKey): string {
-  return ROLE_LABELS[role] || role
+export function getRoleUserName(_role: string): string {
+  const user = useAuthStore.getState().user
+  return user?.nama ?? ''
 }
 
-export function getRoleUserName(role: RoleKey): string {
-  return ROLE_LABELS[role] || role
+export function getRoleNip(): string {
+  const user = useAuthStore.getState().user
+  return user?.nip ?? ''
+}
+
+export function getRoleDisplayName(): string {
+  const user = useAuthStore.getState().user
+  return user?.nama ?? 'User'
 }

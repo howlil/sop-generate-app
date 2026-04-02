@@ -11,12 +11,11 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import type { PelaksanaSOP } from '@/lib/types/sop'
+import type { PelaksanaSOP } from '@/hooks/usePelaksana'
 import { usePelaksana } from '@/hooks/usePelaksana'
 import { useToast } from '@/hooks/useUI'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
-import { generateId } from '@/utils/generate-id'
 
 export function PelaksanaSOP() {
   const { showToast } = useToast()
@@ -34,28 +33,16 @@ export function PelaksanaSOP() {
 
   const [formData, setFormData] = useState({
     namaLengkap: '',
-    nip: '',
-    jabatan: '',
-    pangkat: '',
-    email: '',
-    nohp: '',
-    deskripsi: '',
   })
 
   const { filteredList, searchQuery, setSearchQuery } = useFilteredList(list, {
-    searchKeys: ['namaLengkap', 'nip', 'jabatan', 'email', 'deskripsi'],
+    searchKeys: ['namaLengkap'],
   })
 
   const openEdit = (p: PelaksanaSOP) => {
     setEditing(p)
     setFormData({
       namaLengkap: p.namaLengkap,
-      nip: p.nip,
-      jabatan: p.jabatan,
-      pangkat: p.pangkat,
-      email: p.email,
-      nohp: p.nohp,
-      deskripsi: p.deskripsi,
     })
     setIsEditDialogOpen(true)
   }
@@ -63,12 +50,6 @@ export function PelaksanaSOP() {
   const resetForm = () => {
     setFormData({
       namaLengkap: '',
-      nip: '',
-      jabatan: '',
-      pangkat: '',
-      email: '',
-      nohp: '',
-      deskripsi: '',
     })
     setEditing(null)
   }
@@ -78,36 +59,8 @@ export function PelaksanaSOP() {
       showToast('Nama lengkap wajib diisi', 'error')
       return
     }
-    if (!formData.nip.trim()) {
-      showToast('NIP wajib diisi', 'error')
-      return
-    }
-    if (!formData.jabatan.trim()) {
-      showToast('Jabatan wajib diisi', 'error')
-      return
-    }
-    if (!formData.pangkat.trim()) {
-      showToast('Pangkat/golongan wajib diisi', 'error')
-      return
-    }
-    if (!formData.email.trim()) {
-      showToast('Email wajib diisi', 'error')
-      return
-    }
-    if (!formData.nohp.trim()) {
-      showToast('Nomor HP wajib diisi', 'error')
-      return
-    }
     addPelaksana({
-      id: `impl-${generateId().slice(0, 8)}`,
       namaLengkap: formData.namaLengkap.trim(),
-      nip: formData.nip.trim(),
-      jabatan: formData.jabatan.trim(),
-      pangkat: formData.pangkat.trim(),
-      email: formData.email.trim(),
-      nohp: formData.nohp.trim(),
-      deskripsi: formData.deskripsi.trim(),
-      jumlahPos: 0,
     })
     showToast('Pelaksana SOP berhasil ditambahkan')
     setIsCreateDialogOpen(false)
@@ -120,35 +73,7 @@ export function PelaksanaSOP() {
       showToast('Nama lengkap wajib diisi', 'error')
       return
     }
-    if (!formData.nip.trim()) {
-      showToast('NIP wajib diisi', 'error')
-      return
-    }
-    if (!formData.jabatan.trim()) {
-      showToast('Jabatan wajib diisi', 'error')
-      return
-    }
-    if (!formData.pangkat.trim()) {
-      showToast('Pangkat/golongan wajib diisi', 'error')
-      return
-    }
-    if (!formData.email.trim()) {
-      showToast('Email wajib diisi', 'error')
-      return
-    }
-    if (!formData.nohp.trim()) {
-      showToast('Nomor HP wajib diisi', 'error')
-      return
-    }
-    updatePelaksana(editing.id, {
-      namaLengkap: formData.namaLengkap.trim(),
-      nip: formData.nip.trim(),
-      jabatan: formData.jabatan.trim(),
-      pangkat: formData.pangkat.trim(),
-      email: formData.email.trim(),
-      nohp: formData.nohp.trim(),
-      deskripsi: formData.deskripsi.trim(),
-    })
+    updatePelaksana(editing.id, formData.namaLengkap.trim())
     showToast('Pelaksana SOP berhasil diperbarui')
     setIsEditDialogOpen(false)
     resetForm()
@@ -202,11 +127,6 @@ export function PelaksanaSOP() {
           <thead>
             <Table.HeadRow>
               <Table.Th>Nama Lengkap</Table.Th>
-              <Table.Th>NIP</Table.Th>
-              <Table.Th>Jabatan</Table.Th>
-              <Table.Th>Pangkat/Golongan</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>No. HP</Table.Th>
               <Table.Th align="center">Jumlah POS</Table.Th>
               <Table.Th align="center">Aksi</Table.Th>
             </Table.HeadRow>
@@ -215,7 +135,7 @@ export function PelaksanaSOP() {
             {filteredList.length === 0 ? (
               <EmptyState
                 asTableRow
-                colSpan={8}
+                colSpan={3}
                 icon={<UserCog className="w-8 h-8" />}
                 title="Belum ada pelaksana"
                 description="Tambah pelaksana agar bisa dipilih di edit SOP (prosedur)"
@@ -231,12 +151,7 @@ export function PelaksanaSOP() {
                       <p className="font-medium text-gray-900">{p.namaLengkap}</p>
                     </div>
                   </Table.Td>
-                  <Table.Td className="text-xs text-gray-600">{p.nip || '-'}</Table.Td>
-                  <Table.Td className="text-xs text-gray-600">{p.jabatan || '-'}</Table.Td>
-                  <Table.Td className="text-xs text-gray-600">{p.pangkat || '-'}</Table.Td>
-                  <Table.Td className="text-xs text-gray-600">{p.email || '-'}</Table.Td>
-                  <Table.Td className="text-xs text-gray-600">{p.nohp || '-'}</Table.Td>
-                  <Table.Td className="text-center text-xs text-gray-500">{p.jumlahPos}</Table.Td>
+                  <Table.Td className="text-center text-xs text-gray-500">{p.jumlahPos ?? 0}</Table.Td>
                   <Table.Td className="text-center">
                     <div className="flex items-center justify-center gap-1">
                       <IconActionButton icon={Edit} title="Edit" onClick={() => openEdit(p)} />
@@ -269,68 +184,17 @@ export function PelaksanaSOP() {
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={handleCreate}
-        confirmDisabled={!formData.namaLengkap.trim() || !formData.nip.trim() || !formData.jabatan.trim() || !formData.pangkat.trim() || !formData.email.trim() || !formData.nohp.trim()}
+        confirmDisabled={!formData.namaLengkap.trim()}
         size="lg"
       >
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Ahmad Fauzi"
-              value={formData.namaLengkap}
-              onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
-            />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: 198501152010011001"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Staf Pelayanan"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat/Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Penata Muda Tk. I (III/b)"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              className="h-9 text-xs"
-              type="email"
-              placeholder="Contoh: ahmad.fauzi@example.go.id"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Nomor HP" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: 081234567890"
-              value={formData.nohp}
-              onChange={(e) => setFormData({ ...formData, nohp: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Deskripsi" className="col-span-2">
-            <Textarea
-              className="text-xs min-h-[72px]"
-              placeholder="Deskripsi singkat peran pelaksana"
-              value={formData.deskripsi}
-              onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
-            />
-          </FormField>
-        </div>
+        <FormField label="Nama Lengkap" required>
+          <Input
+            className="h-9 text-xs"
+            placeholder="Contoh: Ahmad Fauzi"
+            value={formData.namaLengkap}
+            onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
+          />
+        </FormField>
       </FormDialog>
 
       <FormDialog
@@ -341,61 +205,16 @@ export function PelaksanaSOP() {
         confirmLabel="Simpan Perubahan"
         cancelLabel="Batal"
         onConfirm={handleEdit}
-        confirmDisabled={!formData.namaLengkap.trim() || !formData.nip.trim() || !formData.jabatan.trim() || !formData.pangkat.trim() || !formData.email.trim() || !formData.nohp.trim()}
+        confirmDisabled={!formData.namaLengkap.trim()}
         size="lg"
       >
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.namaLengkap}
-              onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
-            />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat/Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              className="h-9 text-xs"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Nomor HP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nohp}
-              onChange={(e) => setFormData({ ...formData, nohp: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Deskripsi" className="col-span-2">
-            <Textarea
-              className="text-xs min-h-[72px]"
-              value={formData.deskripsi}
-              onChange={(e) => setFormData({ ...formData, deskripsi: e.target.value })}
-            />
-          </FormField>
-        </div>
+        <FormField label="Nama Lengkap" required>
+          <Input
+            className="h-9 text-xs"
+            value={formData.namaLengkap}
+            onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
+          />
+        </FormField>
       </FormDialog>
 
       <ConfirmDialog

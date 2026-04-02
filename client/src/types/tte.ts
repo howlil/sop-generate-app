@@ -59,13 +59,15 @@ export interface VerifikasiEmailDto {
 }
 
 export interface TandaTanganiBaDto {
-  pengajuanEvaluasiId: string
   pin: string
+  nomorDokumen: string
+  judulDokumen: string
 }
 
 export interface TandaTanganiSopDto {
-  sopDetailId: string
   pin: string
+  nomorDokumen: string
+  judulDokumen: string
 }
 
 export interface TTEHistory {

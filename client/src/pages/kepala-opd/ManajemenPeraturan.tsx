@@ -14,7 +14,7 @@ import {
   getRiwayatVersiPeraturanInitial,
   getManajemenPeraturanOpdId,
   getOpdNamesForPeraturan,
-} from '@/lib/data/peraturan'
+} from '@/lib/domain/peraturan'
 import type { RiwayatVersiEntry } from '@/lib/types/peraturan'
 import { useState } from 'react'
 import { generateId } from '@/utils/generate-id'

@@ -4,7 +4,7 @@
  */
 import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
 import { formatTempatTanggal } from '@/utils/format-date'
-import type { TTESignaturePayload } from '@/lib/types/tte'
+import type { TTESignaturePayload } from '@/types/tte'
 
 export interface BeritaAcaraTemplateProps {
   /** Nama OPD (e.g. "Dinas Koperasi dan UKM") */

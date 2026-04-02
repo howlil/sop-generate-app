@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
 import { Textarea } from '@/components/ui/textarea'
 import { EditableStringList } from '@/components/ui/editable-string-list'
-import type { SOPDetailMetadata } from '@/lib/types/sop'
+import type { SOPDetailMetadata } from '@/types/sop'
 
 /** Memecah teks jadi array baris; baris kosong dipertahankan agar Enter = baris baru. */
 function toLinesKeepEmpty(value: string): string[] {

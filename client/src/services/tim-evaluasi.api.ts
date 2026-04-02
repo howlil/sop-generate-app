@@ -6,6 +6,8 @@
 import { apiClient } from './api'
 import type { AnggotaTimEvaluasi, CreateTimEvaluasiDto } from '../types/tim'
 
+export type { AnggotaTimEvaluasi, CreateTimEvaluasiDto }
+
 export interface UpdateTimEvaluasiDto {
   status: string
   berakhirPada?: string

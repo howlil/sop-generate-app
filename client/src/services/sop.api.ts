@@ -24,7 +24,39 @@ import type {
   SopTerkait,
   CreateSopTerkaitDto,
   LogEditSOP,
+  StatusSOP,
+  JenisLangkahProsedur,
+  SatuanWaktu,
+  JenisLampiran,
+  BagianSOP,
 } from '../types/sop'
+
+export type {
+  Sop,
+  SopDetail,
+  CreateSopRequest,
+  UpdateMetadataDto,
+  UpdateStatusDto,
+  LangkahSOP,
+  CreateLangkahSOPDto,
+  UpdateLangkahSOPDto,
+  Pelaksana,
+  CreatePelaksanaDto,
+  DetailSOPPelaksana,
+  CreateDetailSOPPelaksanaDto,
+  LampiranTeks,
+  CreateLampiranTeksDto,
+  DasarHukum,
+  CreateDasarHukumDto,
+  SopTerkait,
+  CreateSopTerkaitDto,
+  LogEditSOP,
+  StatusSOP,
+  JenisLangkahProsedur,
+  SatuanWaktu,
+  JenisLampiran,
+  BagianSOP,
+}
 
 export const sopApi = {
   // ================= SOP (Header) =================
@@ -74,12 +106,6 @@ export const sopApi = {
   updateStatus: (id: string, payload: UpdateStatusDto) =>
     apiClient.patch<SopDetail>(`/detail-sop/${id}/status`, payload),
 
-  /**
-   * Delete DetailSOP
-   */
-  deleteDetail: (id: string) =>
-    apiClient.delete(`/detail-sop/${id}`),
-
   // ================= LangkahSOP (Nested under DetailSOP) =================
 
   /**
@@ -115,6 +141,12 @@ export const sopApi = {
     apiClient.get<Pelaksana[]>(`/pelaksana?opdId=${opdId}`),
 
   /**
+   * Get pelaksana by ID
+   */
+  findPelaksanaById: (id: string) =>
+    apiClient.get<Pelaksana>(`/pelaksana/${id}`),
+
+  /**
    * PLK-01: Create pelaksana
    */
   createPelaksana: (payload: CreatePelaksanaDto) =>
@@ -141,16 +173,16 @@ export const sopApi = {
     apiClient.get<DetailSOPPelaksana[]>(`/pelaksana/${sopDetailId}/swimlane`),
 
   /**
-   * Add pelaksana to DetailSOP (swimlane)
+   * Add pelaksana to DetailSOP swimlane — PLK-08
    */
   addSwimlane: (sopDetailId: string, payload: CreateDetailSOPPelaksanaDto) =>
-    apiClient.post<DetailSOPPelaksana>(`/detail-sop/${sopDetailId}/pelaksana`, payload),
+    apiClient.post<DetailSOPPelaksana>(`/pelaksana/${sopDetailId}/swimlane`, payload),
 
   /**
-   * Remove pelaksana from DetailSOP
+   * Remove pelaksana from DetailSOP swimlane
    */
   removeSwimlane: (sopDetailId: string, pelaksanaId: string) =>
-    apiClient.delete(`/detail-sop/${sopDetailId}/pelaksana/${pelaksanaId}`),
+    apiClient.delete(`/pelaksana/${sopDetailId}/swimlane/${pelaksanaId}`),
 
   // ================= LampiranTeks =================
 
@@ -171,16 +203,22 @@ export const sopApi = {
   /**
    * SOP-24: Update lampiran teks
    */
-  updateLampiran: (id: string, teks: string) =>
-    apiClient.patch<LampiranTeks>(`/lampiran/${id}`, { teks }),
+  updateLampiran: (sopDetailId: string, lampiranId: string, teks: string) =>
+    apiClient.patch<LampiranTeks>(`/detail-sop/${sopDetailId}/lampiran/${lampiranId}`, { teks }),
 
   /**
    * SOP-24: Delete lampiran teks
    */
-  deleteLampiran: (id: string) =>
-    apiClient.delete(`/lampiran/${id}`),
+  deleteLampiran: (sopDetailId: string, lampiranId: string) =>
+    apiClient.delete(`/detail-sop/${sopDetailId}/lampiran/${lampiranId}`),
 
   // ================= DasarHukum =================
+
+  /**
+   * SOP-19: Get dasar hukum list for DetailSOP
+   */
+  getDasarHukum: (sopDetailId: string) =>
+    apiClient.get<DasarHukum[]>(`/detail-sop/${sopDetailId}/dasar-hukum`),
 
   /**
    * Add dasar hukum to DetailSOP
@@ -197,6 +235,12 @@ export const sopApi = {
   // ================= SopTerkait =================
 
   /**
+   * SOP-20: Get SOP terkait list for DetailSOP
+   */
+  getSopTerkait: (sopDetailId: string) =>
+    apiClient.get<SopTerkait[]>(`/detail-sop/${sopDetailId}/sop-terkait`),
+
+  /**
    * Add SOP terkait
    */
   addSopTerkait: (sopDetailId: string, payload: CreateSopTerkaitDto) =>
@@ -211,8 +255,8 @@ export const sopApi = {
   // ================= LogEditSOP =================
 
   /**
-   * AUD-03: Get edit history for DetailSOP
+   * AUD-03: Get edit history for DetailSOP (via audit endpoint)
    */
   getEditHistory: (sopDetailId: string) =>
-    apiClient.get<LogEditSOP[]>(`/detail-sop/${sopDetailId}/logs`),
+    apiClient.get<LogEditSOP[]>(`/audit/detail-sop/${sopDetailId}`),
 }

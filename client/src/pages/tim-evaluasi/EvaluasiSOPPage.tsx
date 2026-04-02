@@ -23,9 +23,9 @@ import { InfoCard } from '@/components/ui/info-card'
 import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
 import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/lib/domain/evaluasi'
-import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
+import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 
 export function EvaluasiSOPPage() {
@@ -33,8 +33,8 @@ export function EvaluasiSOPPage() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { mergeSopStatus, setSopStatusOverride } = useSopStatus()
-  const [sopList] = useState(() => getInitialSopDaftarList())
-  const mergedList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
+  const { list: sopListRaw } = useSop()
+  const mergedList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
   const sop = useMemo(() => mergedList.find((s) => s.id === sopId), [mergedList, sopId])
 
   // Workflow: saat Tim Evaluasi membuka halaman evaluasi, status SOP → Sedang Dievaluasi (jika saat ini Diajukan Evaluasi)

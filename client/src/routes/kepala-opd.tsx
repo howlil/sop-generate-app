@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PenLine, FileText, FileCheck } from 'lucide-react'
-import { ROLES } from '@/lib/constants/roles'
+import { ROLES } from '@/utils/constants/ui'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
+import { ROUTES, routePathPrefixForMatch } from '@/utils/constants/ui'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 import { requireRoleBeforeLoad } from '@/utils/role-route-guard'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
-import { IA } from '@/lib/constants/pipeline-ia'
+import { IA } from '@/utils/constants/pipeline-ia'
 
 export const Route = createFileRoute('/kepala-opd')({
   beforeLoad: requireRoleBeforeLoad(ROLES.KEPALA_OPD),

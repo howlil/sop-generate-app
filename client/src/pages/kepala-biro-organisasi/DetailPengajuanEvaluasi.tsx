@@ -4,10 +4,10 @@ import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lu
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/data/evaluasi-data'
+import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/lib/domain/evaluasi-data'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/useTTESignature'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { NotFoundWithBack } from '@/components/ui/not-found'
@@ -21,7 +21,7 @@ import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
 import { InfoCard } from '@/components/ui/info-card'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { IA } from '@/lib/constants/pipeline-ia'
+import { IA } from '@/utils/constants/pipeline-ia'
 
 const PRINT_DELAY_MS = 150
 

@@ -14,8 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
-import type { Peraturan } from '@/lib/types/peraturan'
-import type { RiwayatVersiEntry } from '@/lib/types/peraturan'
+import type { Peraturan, RiwayatVersiEntry } from '@/types/peraturan'
 import { formatDateIdLong } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
 

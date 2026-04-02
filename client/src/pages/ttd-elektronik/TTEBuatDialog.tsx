@@ -10,14 +10,14 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { ROUTES } from '@/lib/constants/routes'
-import type { TTERole } from '@/lib/types/tte'
-import { hashPin } from '@/lib/domain/tte'
+import { ROUTES } from '@/utils/constants/ui'
+import type { TTERole } from '@/types/tte'
+import { hashPin } from '@/lib/domain'
 import {
   getTTEProfile,
   setTTEProfile,
   getTTEVerificationSuccessUrl,
-} from '@/lib/data/tte-storage'
+} from '@/lib/domain/tte-storage'
 
 type WizardStep = 'data-diri' | 'pin' | 'cek-email'
 

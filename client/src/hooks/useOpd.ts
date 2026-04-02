@@ -1,5 +1,5 @@
 /**
- * useOpd hook dengan TanStack Query
+ * useOpd hook - TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,6 +7,8 @@ import { opdApi } from '@/services/opd.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
 import type { CreateOpdRequest, UpdateOpdRequest } from '@/types/opd'
+
+const OPD_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 export function useOpd() {
   const queryClient = useQueryClient()
@@ -18,6 +20,7 @@ export function useOpd() {
   } = useQuery({
     queryKey: queryKeys.opdList(),
     queryFn: () => opdApi.findAll(),
+    staleTime: OPD_STALE_TIME,
   })
 
   const createMutation = useMutation({
@@ -67,13 +70,11 @@ export function useOpd() {
   }
 }
 
-/**
- * Hook untuk detail OPD
- */
 export function useOpdDetail(id: string) {
   return useQuery({
     queryKey: queryKeys.opdById(id),
     queryFn: () => opdApi.findById(id),
     enabled: !!id,
+    staleTime: OPD_STALE_TIME,
   })
 }

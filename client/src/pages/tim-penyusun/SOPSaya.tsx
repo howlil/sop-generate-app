@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo } from 'react'
 import { Eye, Edit } from 'lucide-react'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Table } from '@/components/ui/data-table'
@@ -6,19 +6,18 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
-import type { SOPDaftarItem } from '@/lib/types/sop'
 import { canEditSop } from '@/lib/domain/sop-status'
-import { getInitialSopDaftarList } from '@/lib/data/sop-daftar'
+import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
 
 export function SOPSaya() {
+  const { list: sopListRaw } = useSop()
   const { mergeSopStatus } = useSopStatus()
-  const [sopList] = useState<SOPDaftarItem[]>(() => getInitialSopDaftarList())
-  const mergedList = mergeSopStatus(sopList)
+  const mergedList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
   const {
     filteredList: filteredSOP,
     searchQuery,

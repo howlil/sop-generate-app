@@ -6,6 +6,8 @@
 import { apiClient } from './api'
 import type { AnggotaTimPenyusun, CreateTimPenyusunDto, PindahTimPenyusunDto } from '../types/tim'
 
+export type { AnggotaTimPenyusun, CreateTimPenyusunDto, PindahTimPenyusunDto }
+
 export const timPenyusunApi = {
   /**
    * TIM-01/TIM-05: Get all anggota tim penyusun

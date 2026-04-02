@@ -1,18 +1,15 @@
 /**
- * useUsers hook dengan TanStack Query
- * Matches server: UserService endpoints
+ * useUsers hook - TanStack Query
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { usersApi } from '@/services/users.api'
 import { queryKeys } from '@/services/queryKeys'
 import { showToast } from '@/stores/uiStore'
-import type { User, CreateUserDto, UpdateUserDto } from '@/services/users.api'
+import type { CreateUserDto, UpdateUserDto } from '@/services/users.api'
 
-/**
- * Hook untuk get semua users dengan pagination (AUTH-05)
- * Biro Organisasi only
- */
+const USERS_STALE_TIME = 3 * 60 * 1000 // 3 minutes
+
 export function useUsers(page: number = 1, limit: number = 10) {
   const queryClient = useQueryClient()
 
@@ -23,6 +20,7 @@ export function useUsers(page: number = 1, limit: number = 10) {
   } = useQuery({
     queryKey: queryKeys.usersList(page, limit),
     queryFn: () => usersApi.findAll(page, limit),
+    staleTime: USERS_STALE_TIME,
   })
 
   const createMutation = useMutation({
@@ -72,13 +70,11 @@ export function useUsers(page: number = 1, limit: number = 10) {
   }
 }
 
-/**
- * Hook untuk detail user
- */
 export function useUserDetail(id: string) {
   return useQuery({
     queryKey: queryKeys.user(id),
     queryFn: () => usersApi.findById(id),
     enabled: !!id,
+    staleTime: USERS_STALE_TIME,
   })
 }

@@ -11,7 +11,22 @@ import type {
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
   RekapEvaluasi,
+  JenisPengajuanEvaluasi,
+  StatusPengajuanEvaluasi,
+  HasilEvaluasi,
 } from '../types/evaluasi'
+
+export type {
+  PengajuanEvaluasi,
+  NilaiEvaluasi,
+  CreatePengajuanEvaluasiDto,
+  IsiNilaiEvaluasiDto,
+  SelesaiEvaluasiDto,
+  RekapEvaluasi,
+  JenisPengajuanEvaluasi,
+  StatusPengajuanEvaluasi,
+  HasilEvaluasi,
+}
 
 export const evaluasiApi = {
   /**

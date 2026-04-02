@@ -4,6 +4,7 @@
  */
 
 import { apiClient } from './api'
+import { useAuthStore } from '@/stores/authStore'
 
 export interface LoginRequest {
   email: string
@@ -26,11 +27,6 @@ export interface LoginResponse {
   }
 }
 
-export interface ChangePasswordRequest {
-  kataSandiLama: string
-  kataSandiBaru: string
-}
-
 export const authApi = {
   /**
    * AUTH-01: Login with email and password
@@ -48,35 +44,23 @@ export const authApi = {
   /**
    * AUTH-06: Change password for logged-in user
    */
-  changePassword: (payload: ChangePasswordRequest) =>
-    apiClient.patch<{ message: string }>('/change-password', payload),
+  changePassword: (kataSandiLama: string, kataSandiBaru: string) =>
+    apiClient.patch<{ message: string }>('/change-password', { kataSandiLama, kataSandiBaru }),
 
   /**
-   * Logout (client-side only - clears token)
+   * Logout - calls server to clear HttpOnly cookies, then clears local token
    */
-  logout: () => {
-    apiClient.clearToken()
+  logout: async () => {
+    try {
+      await apiClient.post<{ message: string }>('/logout')
+    } catch {
+      // Continue with local cleanup even if server call fails
+    }
+    useAuthStore.getState().setToken(null)
   },
 
   /**
    * Get current auth token
    */
-  getToken: () => {
-    if (typeof window === 'undefined') return null
-    return localStorage.getItem('biro-organisasi-token')
-  },
-
-  /**
-   * Check if user is authenticated
-   */
-  isAuthenticated: () => {
-    return !!authApi.getToken()
-  },
-
-  /**
-   * Set auth token (used after login)
-   */
-  setToken: (token: string) => {
-    apiClient.setToken(token)
-  },
+  getToken: () => useAuthStore.getState().token,
 }

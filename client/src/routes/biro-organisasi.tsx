@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { BarChart3, Building2, FileCheck, PenLine, UserPlus, Users } from 'lucide-react'
-import { ROLES } from '@/lib/constants/roles'
+import { ROLES } from '@/utils/constants/ui'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES, routePathPrefixForMatch } from '@/lib/constants/routes'
+import { ROUTES, routePathPrefixForMatch } from '@/utils/constants/ui'
 import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
 import { requireRoleBeforeLoad } from '@/utils/role-route-guard'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
-import { IA } from '@/lib/constants/pipeline-ia'
+import { IA } from '@/utils/constants/pipeline-ia'
 
 export const Route = createFileRoute('/biro-organisasi')({
   beforeLoad: requireRoleBeforeLoad(ROLES.BIRO_ORGANISASI),

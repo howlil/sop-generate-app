@@ -25,6 +25,7 @@ export class UserService {
     }
 
     // [P2-D] Enforce: 1 KEPALA_OPD and 1 KOORDINATOR_TIM_PENYUSUN per OPD
+    // Use transaction with SELECT FOR UPDATE to prevent race condition
     if (
       createUserDto.peran === PeranPengguna.KEPALA_OPD ||
       createUserDto.peran === PeranPengguna.KOORDINATOR_TIM_PENYUSUN
@@ -32,15 +33,21 @@ export class UserService {
       if (!createUserDto.opdId) {
         throw new BadRequestException(UserMessages.OPD_REQUIRED);
       }
-      const existing = await this.userRepository.findActiveRoleInOpd(
+
+      // Check NIP uniqueness globally
+      if (createUserDto.nip) {
+        const existingByNip = await this.userRepository.findByNip(createUserDto.nip);
+        if (existingByNip) {
+          throw new ConflictException('NIP sudah terdaftar');
+        }
+      }
+
+      // Transaction with SELECT FOR UPDATE prevents concurrent creation
+      return this.userRepository.createWithRoleLock(
+        { ...createUserDto, kataSandi: await bcrypt.hash(createUserDto.kataSandi, 10) },
         createUserDto.peran,
         createUserDto.opdId,
       );
-      if (existing) {
-        throw new ConflictException(
-          `OPD ini sudah memiliki ${createUserDto.peran} aktif`,
-        );
-      }
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.kataSandi, 10);
@@ -87,6 +94,29 @@ export class UserService {
       );
       if (emailExists && emailExists.id !== id) {
         throw new ConflictException(UserMessages.EMAIL_ALREADY_REGISTERED);
+      }
+    }
+
+    // [P2-D] Enforce role constraint when changing to KEPALA_OPD or KOORDINATOR
+    if (
+      updateUserDto.peran &&
+      (updateUserDto.peran === PeranPengguna.KEPALA_OPD ||
+        updateUserDto.peran === PeranPengguna.KOORDINATOR_TIM_PENYUSUN)
+    ) {
+      if (!updateUserDto.opdId) {
+        throw new BadRequestException(UserMessages.OPD_REQUIRED);
+      }
+
+      // Check if another user already has this role in the OPD
+      const existing = await this.userRepository.findActiveRoleInOpd(
+        updateUserDto.peran,
+        updateUserDto.opdId,
+      );
+
+      if (existing && existing.id !== id) {
+        throw new ConflictException(
+          `OPD ini sudah memiliki ${updateUserDto.peran} aktif`,
+        );
       }
     }
 

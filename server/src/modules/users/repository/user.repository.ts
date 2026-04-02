@@ -190,10 +190,17 @@ export class UserRepository implements IUserRepository {
     peran: string,
     opdId: string,
   ): Promise<{ id: string } | null> {
-    return this.prisma.pengguna.findFirst({
-      where: { peran: peran as any, opdId, deletedAt: null },
-      select: { id: true },
-    });
+    // [P2-D] Use SELECT FOR UPDATE to prevent race condition
+    // This locks the rows during transaction to prevent concurrent inserts
+    const result = await this.prisma.$queryRaw<[{ id: string }]>`
+      SELECT id FROM Pengguna
+      WHERE opdId = ${opdId}
+        AND peran = ${peran}
+        AND deletedAt IS NULL
+      FOR UPDATE
+    `;
+    
+    return result.length > 0 ? result[0] : null;
   }
 
   async hasActiveMembership(userId: string): Promise<boolean> {
@@ -227,6 +234,58 @@ export class UserRepository implements IUserRepository {
         createdAt: true,
         updatedAt: true,
       },
+    });
+  }
+
+  // [P2-D] Create user with role lock transaction to prevent race condition
+  async createWithRoleLock(
+    data: any,
+    peran: string,
+    opdId: string,
+  ): Promise<UserWithoutPassword> {
+    return this.prisma.$transaction(async (tx) => {
+      // [P2-D] SELECT FOR UPDATE to lock rows during check
+      const existing = await tx.$queryRaw<[{ id: string }]>`
+        SELECT id FROM Pengguna
+        WHERE opdId = ${opdId}
+          AND peran = ${peran}
+          AND deletedAt IS NULL
+        FOR UPDATE
+      `;
+
+      if (existing.length > 0) {
+        throw new ConflictException(`OPD ini sudah memiliki ${peran} aktif`);
+      }
+
+      // Also check NIP uniqueness if provided
+      if (data.nip) {
+        const existingByNip = await tx.pengguna.findFirst({
+          where: { nip: data.nip, deletedAt: null },
+          select: { id: true },
+        });
+
+        if (existingByNip) {
+          throw new ConflictException('NIP sudah terdaftar');
+        }
+      }
+
+      // Create the user
+      return tx.pengguna.create({
+        data,
+        select: {
+          id: true,
+          email: true,
+          nama: true,
+          peran: true,
+          opdId: true,
+          nip: true,
+          jabatan: true,
+          pangkat: true,
+          nohp: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
     });
   }
 }

@@ -3,7 +3,7 @@
  * Simple pagination for tables
  */
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 const DEFAULT_PAGE_SIZE = 10
 

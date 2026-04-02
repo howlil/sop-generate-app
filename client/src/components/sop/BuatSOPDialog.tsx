@@ -19,8 +19,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/useUI'
-import { getSopTemplates } from '@/lib/data/sop-templates'
-import type { SOPTemplate } from '@/lib/types/sop'
+import { getSopTemplates } from '@/lib/domain/sop-templates'
+import type { SOPTemplate } from '@/types/sop'
 
 export interface BuatSOPSuccessData {
   judul: string

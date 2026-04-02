@@ -6,6 +6,8 @@
 import { apiClient } from './api'
 import type { LogEditSOP, BagianSOP } from '../types/audit'
 
+export type { LogEditSOP, BagianSOP }
+
 export interface AuditQueryParams {
   bagian?: BagianSOP
   skip?: number
@@ -22,7 +24,7 @@ export const auditApi = {
     params?: { bagian?: BagianSOP; skip?: number; take?: number },
   ) => {
     const query = params ? '?' + new URLSearchParams(params as any).toString() : ''
-    return apiClient.get<LogEditSOP[]>(`/audit/sop/${sopDetailId}${query}`)
+    return apiClient.get<LogEditSOP[]>(`/audit/detail-sop/${sopDetailId}${query}`)
   },
 
   /**

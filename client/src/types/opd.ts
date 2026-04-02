@@ -33,3 +33,17 @@ export interface UpdateOpdDto {
 export type Opd = OpdResponse
 export type CreateOpdRequest = CreateOpdDto
 export type UpdateOpdRequest = UpdateOpdDto
+
+// Additional types for UI
+export interface OPD {
+  id: string
+  name: string
+}
+
+export interface KepalaOPD {
+  id: string
+  name: string
+  nip: string
+  startDate: string
+  endDate?: string
+}

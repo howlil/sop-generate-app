@@ -1,31 +1,29 @@
 /**
  * Hook akses role & helpers — satu titik akses untuk UI.
- * Updated to use new auth store
  */
 import { useAuthStore } from '@/stores/authStore'
-import { ROLES, ROLE_LABELS } from '@/utils/constants'
-import type { RoleKey } from '@/utils/constants'
+import { ROLES, ROLE_LABELS } from '@/utils/constants/ui'
+import type { RoleKey } from '@/utils/constants/ui'
 
 export { ROLES }
 
 export function useAppRole() {
   const user = useAuthStore((s) => s.user)
   const role = user?.peran as RoleKey | undefined
-  const setUser = useAuthStore((s) => s.setUser)
 
   const setRole = (newRole: RoleKey) => {
     if (user) {
-      setUser({ ...user, peran: newRole })
+      useAuthStore.getState().setUser({ ...user, peran: newRole })
     }
   }
 
   const clearRole = () => {
-    setUser(null)
+    useAuthStore.getState().setUser(null)
   }
 
   const getRoleLabel = (r: RoleKey) => ROLE_LABELS[r] ?? r
-  const getRoleNip = (_r: RoleKey) => user?.nip ?? ''
-  const getRoleDisplayName = (_r: RoleKey) => user?.nama ?? ''
+  const getRoleNip = () => user?.nip ?? ''
+  const getRoleDisplayName = () => user?.nama ?? ''
 
   return {
     role,
@@ -38,6 +36,5 @@ export function useAppRole() {
     isKepalaOPD: role === ROLES.KEPALA_OPD,
     isTimEvaluasi: role === ROLES.TIM_EVALUASI,
     isTimPenyusun: role === ROLES.TIM_PENYUSUN,
-    ROLES,
   }
 }

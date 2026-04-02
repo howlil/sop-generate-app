@@ -18,8 +18,8 @@ import {
   updateTimPenyusun,
   removeTimPenyusun,
 } from '@/lib/stores/tim-penyusun-store'
-import type { TimPenyusun } from '@/lib/types/tim'
-import { ROUTES } from '@/lib/constants/routes'
+import type { TimPenyusun } from '@/types/tim'
+import { ROUTES } from '@/utils/constants/routes'
 import { TimPenyusunFormDialog } from './manajemen-tim-penyusun/TimPenyusunFormDialog'
 import { PindahOPDTimPenyusunDialog } from './manajemen-tim-penyusun/PindahOPDTimPenyusunDialog'
 import { StatusBadge } from '@/components/ui/status-badge'

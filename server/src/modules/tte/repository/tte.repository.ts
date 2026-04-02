@@ -7,6 +7,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
+import { assertValidSopTransition } from '../../../common/validators';
 
 @Injectable()
 export class TteRepository {
@@ -176,6 +177,7 @@ export class TteRepository {
   }
 
   // TTE-07: Kepala OPD signs individual DetailSOP → BERLAKU
+  // [P0-D] Validate status transition, [P2-B] Auto-set DIGANTIKAN
   async tandaTanganiSop(
     userId: string,
     sopDetailId: string,
@@ -187,11 +189,20 @@ export class TteRepository {
       .digest('hex');
 
     return this.prisma.$transaction(async (tx) => {
-      // [P2-B]: atomically set any existing BERLAKU version → DIGANTIKAN
+      // Get current DetailSOP status
       const detail = await tx.detailSOP.findUniqueOrThrow({
         where: { id: sopDetailId },
-        select: { sopId: true },
+        select: { sopId: true, status: true },
       });
+
+      // [P0-D] Validate status transition to BERLAKU
+      assertValidSopTransition(
+        detail.status,
+        StatusSOP.BERLAKU,
+        'Pengesahan SOP oleh Kepala OPD',
+      );
+
+      // [P2-B]: atomically set any existing BERLAKU version → DIGANTIKAN
       await tx.detailSOP.updateMany({
         where: {
           sopId: detail.sopId,

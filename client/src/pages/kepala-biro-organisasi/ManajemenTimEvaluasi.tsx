@@ -11,9 +11,8 @@ import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import { getInitialTimEvaluasiList } from '@/lib/data/tim-evaluasi'
-import type { TimEvaluasiAnggota } from '@/lib/types/tim'
-import { generateId } from '@/utils/generate-id'
+import { useTimEvaluasi } from '@/hooks/useTimEvaluasi'
+import type { TimEvaluasiAnggota } from '@/types/tim'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
 import { useToast } from '@/hooks/useUI'
@@ -22,13 +21,13 @@ import { usePagination } from '@/hooks/usePagination'
 
 export function ManajemenTimEvaluasi() {
   const { showToast } = useToast()
+  const { list: timList, tambah, nonaktifkan } = useTimEvaluasi()
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimEvaluasiAnggota | null>(null)
   const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
   const [nonaktifTimId, setNonaktifTimId] = useState<string | null>(null)
 
-  const [timList, setTimList] = useState<TimEvaluasiAnggota[]>(() => getInitialTimEvaluasiList())
   const { filteredList: filteredTim, searchQuery, setSearchQuery } = useFilteredList(timList, {
     searchKeys: ['namaLengkap', 'nip', 'jabatan', 'email'],
   })
@@ -70,29 +69,22 @@ export function ManajemenTimEvaluasi() {
     })
   }
 
-  const handleNonaktifkan = () => {
+  const handleNonaktifkan = async () => {
     if (!nonaktifTimId) return
-    const today = new Date().toISOString().split('T')[0]
-    setTimList((prev) =>
-      prev.map((tim) =>
-        tim.id === nonaktifTimId ? { ...tim, status: 'Nonaktif', endedAt: today } : tim
-      )
-    )
-    showToast('Anggota tim evaluasi berhasil dinonaktifkan. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per terjadwal verifikasi.')
+    await nonaktifkan(nonaktifTimId)
     setNonaktifTimId(null)
   }
 
-  const handleCreateSubmit = () => {
+  const handleCreateSubmit = async () => {
     if (!formData.namaLengkap || !formData.nip) return
-    setTimList((prev) => [
-      ...prev,
-      {
-        id: generateId(),
-        ...formData,
-        status: 'Aktif',
-        jumlahEvaluasi: 0,
-      },
-    ])
+    await tambah({
+      namaLengkap: formData.namaLengkap,
+      nip: formData.nip,
+      jabatan: formData.jabatan,
+      pangkat: formData.pangkat,
+      email: formData.email,
+      nohp: formData.nohp,
+    })
     setIsCreateDialogOpen(false)
     resetForm()
   }

@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { ROUTES } from '@/lib/constants/routes'
+import { ROUTES } from '@/utils/constants/routes'
 
 /**
  * Logo aplikasi Biro Organisasi - tampil di sidebar.

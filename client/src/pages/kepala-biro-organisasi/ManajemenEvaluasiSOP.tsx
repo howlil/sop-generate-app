@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
-import type { PengajuanEvaluasi } from '@/lib/types/pengajuan-evaluasi'
+import type { PengajuanEvaluasi } from '@/types/pengajuan-evaluasi'
 import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
-import { useOpdList } from '@/lib/data/opd'
+import { useOpd } from '@/hooks/useOpd'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { IconActionButton } from '@/components/ui/icon-action-button'
@@ -11,8 +11,8 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import { ROUTES } from '@/lib/constants/routes'
-import { IA } from '@/lib/constants/pipeline-ia'
+import { ROUTES } from '@/utils/constants/routes'
+import { IA } from '@/utils/constants/pipeline-ia'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 /** Tanggal terakhir untuk urutan (terbaru dulu). */
@@ -43,7 +43,7 @@ export interface RowOpdEvaluasi {
 
 /** Satu baris per OPD: gabung semua OPD dengan pengajuan evaluasi (jika ada). Match by opdId. */
 function buildRowsOpdEvaluasi(
-  allOpds: { id: string; name: string }[],
+  allOpds: { id: string; nama: string }[],
   pengajuanList: PengajuanEvaluasi[]
 ): RowOpdEvaluasi[] {
   return allOpds.map((opd) => {
@@ -56,7 +56,7 @@ function buildRowsOpdEvaluasi(
     const isBaru = batchTerbaru != null && isBatchBaru(batchTerbaru)
     return {
       opdId: opd.id,
-      opdNama: opd.name,
+      opdNama: opd.nama,
       opdKode: opd.id,
       batchTerbaru,
       jumlahSop,
@@ -68,7 +68,7 @@ function buildRowsOpdEvaluasi(
 export function ManajemenEvaluasiSOP() {
   useDocumentTitle(`${IA.NAV_BIRO_EVALUASI_TERJADWAL} — Biro`)
   const navigate = useNavigate()
-  const allOpds = useOpdList()
+  const { list: allOpds } = useOpd()
   const { list: batchList } = usePengajuanEvaluasiList()
 
   const rowsByOpd = useMemo(
