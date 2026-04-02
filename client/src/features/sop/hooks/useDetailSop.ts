@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '@/services/sop.api'
+import { sopApi } from '@/features/sop'
 import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
 import type {
@@ -21,7 +21,7 @@ import type {
   PelaksanaRow,
   KomentarItem,
   VersionHistoryItem,
-} from '@/types/sop'
+} from '@/features/sop'
 
 const DETAIL_SOP_STALE_TIME = 2 * 60 * 1000 // 2 minutes
 
