@@ -1,7 +1,6 @@
 /**
- * Format tanggal konsisten untuk tampilan UI (locale Indonesia).
- *
- * Usage: import { formatDateId, formatDateIdLong, formatDatetime, formatTempatTanggal } from '@/utils/format-date'
+ * Format tanggal untuk UI (locale Indonesia)
+ * Usage: import { formatDateId, formatDateIdLong } from '@/utils/format-date'
  */
 
 import { LOCALE_ID } from '@/utils/constants'
@@ -16,8 +15,7 @@ function toDate(value: DateInput): Date | null {
 
 /** Format singkat: 20/02/2026 */
 export function formatDateId(value: DateInput): string {
-  const d = toDate(value)
-  return d ? d.toLocaleDateString(LOCALE_ID) : '—'
+  return toDate(value)?.toLocaleDateString(LOCALE_ID) ?? '—'
 }
 
 /** Format panjang: 20 Feb 2026 */
@@ -28,21 +26,10 @@ export function formatDateIdLong(value: DateInput): string {
     : '—'
 }
 
-/** Format tanggal + waktu: 20 Feb 2026, 14.30 */
-export function formatDatetime(value: DateInput): string {
+/** Format tempat & tanggal: "Padang, 20 Februari 2026" */
+export function formatTempatTanggal(value: DateInput, tempat: string = 'Padang'): string {
   const d = toDate(value)
-  return d
-    ? d.toLocaleString(LOCALE_ID, { dateStyle: 'medium', timeStyle: 'short' })
-    : '—'
-}
-
-const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-
-/** Format untuk surat resmi: "Padang, Agustus 2025" */
-export function formatTempatTanggal(value: DateInput, tempat = 'Padang'): string {
-  const d = toDate(value)
-  if (!d) return tempat
-  const month = BULAN_ID[d.getMonth()]
-  const year = d.getFullYear()
-  return `${tempat}, ${month} ${year}`
+  if (!d) return '—'
+  const formattedDate = d.toLocaleDateString(LOCALE_ID, { day: 'numeric', month: 'long', year: 'numeric' })
+  return `${tempat}, ${formattedDate}`
 }

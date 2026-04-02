@@ -1,6 +1,5 @@
 /**
  * UI utilities and hooks
- * Source of truth for UI state management
  */
 
 import { useState, useCallback } from 'react'
@@ -8,12 +7,10 @@ import { useUIStore } from '@/stores/uiStore'
 import type { ToastType } from '@/stores/uiStore'
 
 /**
- * Hook untuk toast - wrapper untuk useUIStore
- * Returns showToast function dan toast state
+ * Hook untuk toast notifications
  */
 export function useToast() {
   const { toasts, addToast, removeToast } = useUIStore()
-
   const toast = toasts[0] || { message: null, type: 'success' as ToastType, id: '' }
 
   const showToast = useCallback((message: string, type: ToastType = 'success') => {
@@ -26,22 +23,15 @@ export function useToast() {
     }
   }, [toasts, removeToast])
 
-  return {
-    showToast,
-    toast: { message: toast.message, type: toast.type },
-    clearToast,
-  }
+  return { showToast, toast: { message: toast.message, type: toast.type }, clearToast }
 }
 
-/** State panel kiri/kanan collapsible (untuk layout dengan sidebar). */
+/**
+ * State panel kiri/kanan collapsible
+ */
 export function useCollapsiblePanels(initialLeft = false, initialRight = false) {
   const [leftCollapsed, setLeftCollapsed] = useState(initialLeft)
   const [rightCollapsed, setRightCollapsed] = useState(initialRight)
 
-  return {
-    leftCollapsed,
-    setLeftCollapsed,
-    rightCollapsed,
-    setRightCollapsed,
-  }
+  return { leftCollapsed, setLeftCollapsed, rightCollapsed, setRightCollapsed }
 }

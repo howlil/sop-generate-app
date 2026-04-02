@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
@@ -7,11 +7,8 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { Peraturan } from '@/features/organisasi'
 import { useToast } from '@/utils/ui'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { useManajemenPeraturanState } from '@/utils/state/manajemen-peraturan'
 import { usePeraturan, getInitialPeraturanListAsync, getRiwayatVersiPeraturanInitial, getManajemenPeraturanOpdId, getOpdNamesForPeraturan } from '@/features/organisasi'
 import type { RiwayatVersiEntry } from '@/features/organisasi'
-import { useState } from 'react'
-import { generateId } from '@/utils/generate-id'
 import { PeraturanTableTab } from './manajemen-peraturan/PeraturanTableTab'
 
 const CURRENT_OPD_ID = getManajemenPeraturanOpdId()
@@ -32,22 +29,19 @@ export function ManajemenPeraturan() {
     getInitialPeraturanListAsync().then(initPeraturanList)
   }, [initPeraturanList])
 
-  const {
-    searchQuery,
-    setSearchQuery,
-    isPeraturanDialogOpen,
-    setIsPeraturanDialogOpen,
-    editingPeraturan,
-    setEditingPeraturan,
-    peraturanFormData,
-    setPeraturanFormData,
-    riwayatVersiOpen,
-    setRiwayatVersiOpen,
-    selectedPeraturanForRiwayat,
-    setSelectedPeraturanForRiwayat,
-    deleteConfirm,
-    setDeleteConfirm,
-  } = useManajemenPeraturanState()
+  // Inline state (replaced useManajemenPeraturanState)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isPeraturanDialogOpen, setIsPeraturanDialogOpen] = useState(false)
+  const [editingPeraturan, setEditingPeraturan] = useState<Peraturan | null>(null)
+  const [peraturanFormData, setPeraturanFormData] = useState({
+    peraturan: '',
+    nomor: '',
+    tahun: '',
+    tentang: '',
+  })
+  const [riwayatVersiOpen, setRiwayatVersiOpen] = useState(false)
+  const [selectedPeraturanForRiwayat, setSelectedPeraturanForRiwayat] = useState<Peraturan | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string } | null>(null)
 
   const [riwayatVersiPeraturan, setRiwayatVersiPeraturan] = useState<Record<string, RiwayatVersiEntry[]>>(() =>
     getRiwayatVersiPeraturanInitial()

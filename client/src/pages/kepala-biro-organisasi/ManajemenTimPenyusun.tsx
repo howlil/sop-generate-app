@@ -1,4 +1,4 @@
-import { useEffect, Fragment } from 'react'
+import { useEffect, Fragment, useState } from 'react'
 import { Plus, Edit, Trash2, ChevronRight, UserMinus, ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -9,8 +9,6 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/utils/use-pagination'
 import { useToast } from '@/utils/ui'
-import { useManajemenTimPenyusunState } from '@/utils/state/manajemen-tim-penyusun'
-import { generateId } from '@/utils/generate-id'
 import { useOpd } from '@/features/organisasi'
 import { useTimPenyusun } from '@/features/tim'
 import type { TimPenyusun } from '@/features/tim'
@@ -23,30 +21,25 @@ import { formatDateId } from '@/utils/format-date'
 export function ManajemenTimPenyusun() {
   const { showToast } = useToast()
   const opdList = useOpdList()
-  const state = useManajemenTimPenyusunState()
-  const {
-    isCreateOpen,
-    setIsCreateOpen,
-    isEditOpen,
-    setIsEditOpen,
-    selectedTim,
-    deleteTimId,
-    setDeleteTimId,
-    nonaktifTimId,
-    setNonaktifTimId,
-    pindahTim,
-    setPindahTim,
-    opdTujuanId,
-    setOpdTujuanId,
-    formData,
-    setFormData,
-    createOpdId,
-    setCreateOpdId,
-    expandedOpdIds,
-    setExpandedOpdIds,
-    resetForm,
-    openEditDialog,
-  } = state
+  
+  // Inline state (replaced useManajemenTimPenyusunState)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [selectedTim, setSelectedTim] = useState<TimPenyusun | null>(null)
+  const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
+  const [nonaktifTimId, setNonaktifTimId] = useState<string | null>(null)
+  const [pindahTim, setPindahTim] = useState<TimPenyusun | null>(null)
+  const [opdTujuanId, setOpdTujuanId] = useState<string | null>(null)
+  const [createOpdId, setCreateOpdId] = useState<string | undefined>()
+  const [expandedOpdIds, setExpandedOpdIds] = useState<Set<string>>(new Set())
+  const [formData, setFormData] = useState({
+    namaLengkap: '',
+    nip: '',
+    jabatan: '',
+    pangkat: '',
+    email: '',
+    nohp: '',
+  })
 
   useEffect(() => {
     if (opdList.length > 0 && !createOpdId) setCreateOpdId(opdList[0].id)

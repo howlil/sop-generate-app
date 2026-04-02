@@ -33,7 +33,6 @@ import { ROUTES } from '@/utils/constants'
 import type { StatusSOP } from '@/features/sop'
 import type { SOPDaftarItem } from '@/features/sop'
 import { SOPStatusFilterSelect, BuatSOPDialog } from '@/features/sop'
-import { generateId } from '@/utils/generate-id'
 import { canEditSop, canTimPenyusunRunCoordinatorActions, useSop, useSopStatus, useDaftarSOPFilters, useDaftarSOPData } from '@/features/sop'
 import { useToast } from '@/utils/ui'
 import { useAppRole } from '@/features/auth'
@@ -411,7 +410,7 @@ export function ManajemenSOP() {
         open={isBuatSOPDialogOpen}
         onOpenChange={setIsBuatSOPDialogOpen}
         onSuccess={(data) => {
-          const newId = generateId()
+          const newId = crypto.randomUUID()
           const today = new Date().toISOString().split('T')[0]
           // Navigate directly to the new SOP detail page
           // The SOP will be fetched from API and shown in the list after creation
