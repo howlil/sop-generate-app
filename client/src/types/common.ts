@@ -143,16 +143,26 @@ export interface SOPDetailMetadata {
 export interface ProsedurRow {
   id: string
   urutan: number
+  /** Alias for urutan - used in diagram logic */
+  no?: number
   kegiatan: string
   pelaksana: string
   waktu?: number
   satuanWaktu?: string
+  /** Alias for waktu - used in diagram */
+  time?: number
+  /** Alias for satuanWaktu - used in diagram */
+  time_unit?: string
+  /** Alias for kelengkapan - used in diagram */
+  mutu_kelengkapan?: string
   kelengkapan?: string
   keluaran?: string
   type?: 'terminator' | 'task' | 'decision'
   id_next_step_if_yes?: string
   id_next_step_if_no?: string
   pelaksanaIds?: string[]
+  /** For diagram implementer mapping */
+  pelaksana?: Record<string, string>
 }
 
 export interface SopItem {
