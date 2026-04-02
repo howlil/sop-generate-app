@@ -18,7 +18,8 @@ import { SOPPreviewTemplate, KomentarPanel, VersionHistoryPanel, RiwayatStatusPa
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { useToast } from '@/utils/ui'
 import { usePeraturan } from '@/features/organisasi'
-import { usePelaksana, useSopStatus, useAppRole } from '@/features/sop'
+import { usePelaksana, useSopStatus } from '@/features/sop'
+import { useAppRole } from '@/features/auth'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
