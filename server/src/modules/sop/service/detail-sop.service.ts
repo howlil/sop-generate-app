@@ -9,6 +9,7 @@ import { DetailSopRepository } from '../repository/detail-sop.repository';
 import { UpdateMetadataDto, UpdateStatusDto } from '../dto/detail-sop.dto';
 import { PeranPengguna, StatusSOP } from '../../../generated/prisma';
 import { DetailSopMessages, GenericMessages, interpolate } from '../../../common/messages';
+import { PrismaService } from '../../../common/prisma/prisma.service';
 
 type JwtUser = { id: string; peran: PeranPengguna; opdId: string | null };
 
@@ -46,7 +47,10 @@ const EDITABLE_STATUSES = new Set<StatusSOP>([
 
 @Injectable()
 export class DetailSopService {
-  constructor(private readonly repo: DetailSopRepository) {}
+  constructor(
+    private readonly repo: DetailSopRepository,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async findAll(user: JwtUser, sopId?: string, opdId?: string, status?: StatusSOP) {
     const effectiveOpdId =
@@ -119,11 +123,28 @@ export class DetailSopService {
     }
 
     // SOP-13 / [P0-B]: cannot have two BERLAKU for same SOP
+    // Use transaction with SELECT FOR UPDATE to prevent race condition
     if (dto.status === StatusSOP.BERLAKU) {
-      const berlakuCount = await this.repo.countBerlakuBySopId((detail as any).sopId);
-      if (berlakuCount > 0) {
-        throw new ConflictException(DetailSopMessages.EVALUATION_EXISTS);
-      }
+      const sopId = (detail as any).sopId;
+      
+      await this.prisma.$transaction(async (tx) => {
+        // Lock SOP row to prevent concurrent BERLAKU creation
+        await this.repo.lockSopForUpdate(sopId, tx);
+        
+        // Check if another BERLAKU version exists
+        const berlakuCount = await this.repo.countBerlakuBySopId(sopId, tx);
+        if (berlakuCount > 0) {
+          throw new ConflictException(DetailSopMessages.EVALUATION_EXISTS);
+        }
+        
+        // Update status within transaction
+        await this.repo.updateStatus(id, dto.status, user.id);
+      }, {
+        isolationLevel: 'Serializable',
+      });
+      
+      // Return updated detail
+      return this.repo.findById(id);
     }
 
     return this.repo.updateStatus(id, dto.status, user.id);

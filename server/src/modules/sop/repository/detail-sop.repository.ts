@@ -67,9 +67,24 @@ export class DetailSopRepository {
     });
   }
 
-  async countBerlakuBySopId(sopId: string): Promise<number> {
-    return this.prisma.detailSOP.count({
+  /**
+   * Count BERLAKU versions with row-level lock
+   * Uses SELECT FOR UPDATE to prevent race conditions
+   */
+  async countBerlakuBySopId(sopId: string, tx?: any): Promise<number> {
+    const db = tx ?? this.prisma;
+    return db.detailSOP.count({
       where: { sopId, status: StatusSOP.BERLAKU },
     });
+  }
+
+  /**
+   * Lock SOP row for update to prevent concurrent BERLAKU creation
+   */
+  async lockSopForUpdate(sopId: string, tx: any): Promise<void> {
+    // Use raw query for SELECT FOR UPDATE
+    await tx.$queryRaw`
+      SELECT id FROM SOP WHERE id = ${sopId} FOR UPDATE
+    `;
   }
 }
