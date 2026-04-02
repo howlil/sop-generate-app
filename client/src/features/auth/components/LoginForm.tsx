@@ -12,7 +12,7 @@ import { useState } from 'react'
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { useAuth } from '@/hooks/auth/useAuth'
+import { useAuth } from '@/features/auth'
 
 interface LocationState {
   redirect?: string
