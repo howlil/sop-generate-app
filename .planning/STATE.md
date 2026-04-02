@@ -97,6 +97,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260403-utils-cleanup | ✅ Utils directory cleanup — Removed 2 unused utils (generate-id, sidebar-matcher), simplified 4 hooks (format-date, ui, use-filtered-list, use-pagination), removed state/ directory (inline state in pages), deleted 12 dead components (landing, company-profile). Build passing: 4.38s. | 2026-04-03 | — | Done | client/ |
 | 20260403-types-consolidation | ✅ Type consolidation & business logic extraction — Consolidated all duplicate types to `types/common.ts` (single source of truth), updated 7 feature modules to import from central location, added `useRequestEvaluasi` hook to extract business logic from pages. Build passing. References: `.planning/phases/CLIENT_STRUCTURE_ANALYSIS.md` | 2026-04-03 | — | Done | client/ |
 | 20260403-client-structure | ✅ Client structure cleanup — Added README documentation to `features/audit/components/` and `features/organisasi/components/`, verified all feature modules have consistent structure (types, services, hooks, components). Build passing. | 2026-04-03 | — | Done | client/ |
 | 20260403-berlaku-constraint | ✅ Database constraint for single BERLAKU per SOP — Added database triggers (INSERT + UPDATE) to enforce constraint at DB level, updated service layer to use transaction with SELECT FOR UPDATE and Serializable isolation level, preventing race conditions. Migration file created. | 2026-04-03 | — | Done | server/ |
