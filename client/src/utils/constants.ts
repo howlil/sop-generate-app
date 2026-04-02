@@ -4,7 +4,7 @@
  * Note: Types are imported from @/types/common
  */
 
-import type { RoleKey, StatusSOP, StatusHasilEvaluasi, StatusBadgeConfig } from '@/types/common'
+import type { RoleKey, StatusBadgeConfig } from '@/types/common'
 
 // ==================== CONSTANTS ====================
 

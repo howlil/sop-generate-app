@@ -3,11 +3,10 @@
  * Uses shared types from @/types/common
  */
 
-import type { 
-  StatusHasilEvaluasi, 
-  JenisPengajuanEvaluasi, 
+import type {
+  StatusHasilEvaluasi,
+  JenisPengajuanEvaluasi,
   StatusPengajuanEvaluasi,
-  HasilEvaluasi,
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
@@ -16,11 +15,10 @@ import type {
 } from '@/types/common'
 
 // Re-export for backward compatibility
-export type { 
-  StatusHasilEvaluasi, 
-  JenisPengajuanEvaluasi, 
+export type {
+  StatusHasilEvaluasi,
+  JenisPengajuanEvaluasi,
   StatusPengajuanEvaluasi,
-  HasilEvaluasi,
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
@@ -58,7 +56,7 @@ export interface NilaiEvaluasi {
   id: string
   pengajuanEvaluasiId: string
   sopDetailId: string
-  hasil?: HasilEvaluasi
+  hasil?: StatusHasilEvaluasi
   catatan?: string
   version: number
   dinilaiOlehId?: string
@@ -74,8 +72,8 @@ export interface LogNilaiEvaluasi {
   pengajuanEvaluasiId: string
   sopDetailId: string
   evaluatorId: string
-  hasilSebelum?: HasilEvaluasi
-  hasilSesudah?: HasilEvaluasi
+  hasilSebelum?: StatusHasilEvaluasi
+  hasilSesudah?: StatusHasilEvaluasi
   catatanSebelum?: string
   catatanSesudah?: string
   createdAt: string

@@ -11,12 +11,12 @@ import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/utils/use-pagination'
 
-export function SOPSaya() {
+export function SopSaya() {
   const { list: sopListRaw } = useSop()
   const { mergeSopStatus } = useSopStatus()
   const mergedList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
   const {
-    filteredList: filteredSOP,
+    filteredList: filteredSop,
     searchQuery,
     setSearchQuery,
     filterValue: filterStatus,
@@ -25,10 +25,10 @@ export function SOPSaya() {
     searchKeys: ['judul', 'nomorSOP'],
     filterKey: 'status',
   })
-  const pagination = usePagination(filteredSOP.length)
+  const pagination = usePagination(filteredSop.length)
   const rowsToShow = pagination.showPagination
-    ? filteredSOP.slice(pagination.startIndex, pagination.endIndex)
-    : filteredSOP
+    ? filteredSop.slice(pagination.startIndex, pagination.endIndex)
+    : filteredSop
 
   return (
     <ListPageLayout

@@ -28,6 +28,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { SearchInput } from '@/components/ui/search-input'
+import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
 import type { StatusSOP } from '@/features/sop'
@@ -59,6 +60,7 @@ export function ManajemenSOP() {
     filterTanggalSampai: filters.filterTanggalSampai,
     isFilterOpen: filters.isFilterOpen,
   })
+  const { list, isLoading, error } = useSop()
   const { update: updateSop } = useSop()
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
@@ -112,6 +114,65 @@ export function ManajemenSOP() {
     showToast(`${ids.length} SOP berhasil diajukan ke evaluasi`)
     setIsRequestEvaluasiDialogOpen(false)
     setSelectedSopIdsForAjukan(new Set())
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <ListPageLayout
+        breadcrumb={[{ label: 'Manajemen SOP' }]}
+        title="Manajemen SOP"
+        description="Daftar SOP yang Anda kelola."
+      >
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <Table.Root>
+            <Table.Table>
+              <thead>
+                <Table.HeadRow>
+                  <Table.Th>Judul SOP</Table.Th>
+                  <Table.Th>Nomor SOP</Table.Th>
+                  <Table.Th>Pembuat</Table.Th>
+                  <Table.Th>Terakhir Diubah Oleh</Table.Th>
+                  <Table.Th>Terakhir diperbarui</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Aksi</Table.Th>
+                </Table.HeadRow>
+              </thead>
+              <tbody>
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <Table.BodyRow key={i}>
+                    <Table.Td><Skeleton className="h-4 w-48" /></Table.Td>
+                    <Table.Td><Skeleton className="h-3 w-24" /></Table.Td>
+                    <Table.Td><Skeleton className="h-4 w-32" /></Table.Td>
+                    <Table.Td><Skeleton className="h-4 w-40" /></Table.Td>
+                    <Table.Td><Skeleton className="h-4 w-28" /></Table.Td>
+                    <Table.Td><Skeleton className="h-5 w-20" /></Table.Td>
+                    <Table.Td><Skeleton className="h-8 w-16" /></Table.Td>
+                  </Table.BodyRow>
+                ))}
+              </tbody>
+            </Table.Table>
+          </Table.Root>
+        </div>
+      </ListPageLayout>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <ListPageLayout
+        breadcrumb={[{ label: 'Manajemen SOP' }]}
+        title="Manajemen SOP"
+        description="Daftar SOP yang Anda kelola."
+      >
+        <EmptyState
+          icon={<AlertCircle className="w-10 h-10" />}
+          title="Gagal memuat SOP"
+          description="Terjadi kesalahan saat memuat data SOP. Silakan coba lagi."
+        />
+      </ListPageLayout>
+    )
   }
 
   return (

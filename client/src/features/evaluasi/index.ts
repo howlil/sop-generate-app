@@ -20,7 +20,6 @@ export type {
 export type {
   JenisPengajuanEvaluasi,
   StatusPengajuanEvaluasi,
-  HasilEvaluasi,
   StatusHasilEvaluasi,
 } from '@/types/common'
 

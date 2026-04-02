@@ -13,7 +13,6 @@ import type {
   RekapEvaluasi,
   JenisPengajuanEvaluasi,
   StatusPengajuanEvaluasi,
-  HasilEvaluasi,
 } from '@/types/evaluasi'
 
 export const evaluasiApi = {

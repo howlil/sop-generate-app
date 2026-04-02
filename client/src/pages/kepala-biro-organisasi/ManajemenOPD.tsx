@@ -5,6 +5,7 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { OpdResponse } from '@/features/organisasi'
+import type { User } from '@/features/auth'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useToast } from '@/utils/ui'
 import { useOpd } from '@/features/organisasi'
@@ -13,7 +14,7 @@ import { KepalaOPDTab } from './manajemen-opd/KepalaOPDTab'
 
 // Legacy type aliases for backward compatibility
 export type OPD = OpdResponse
-export type KepalaOPD = any // TODO: Remove and use proper user type
+export type KepalaOPD = User
 
 export function ManajemenOPD() {
   const { showToast } = useToast()

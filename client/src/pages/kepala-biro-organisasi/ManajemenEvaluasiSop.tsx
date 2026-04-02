@@ -65,7 +65,7 @@ function buildRowsOpdEvaluasi(
   })
 }
 
-export function ManajemenEvaluasiSOP() {
+export function ManajemenEvaluasiSop() {
   useDocumentTitle(`${IA.NAV_BIRO_EVALUASI_TERJADWAL} — Biro`)
   const navigate = useNavigate()
   const { list: allOpds } = useOpd()

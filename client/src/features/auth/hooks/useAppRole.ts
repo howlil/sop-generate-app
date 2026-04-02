@@ -26,6 +26,7 @@ export function useAppRole() {
 
   const getRoleLabel = (r: RoleKey) => ROLE_LABELS[r] ?? r
   const getRoleNip = () => user?.nip ?? ''
+  const getRoleUserName = () => user?.nama ?? ''
   const getRoleDisplayName = () => user?.nama ?? ''
 
   return {

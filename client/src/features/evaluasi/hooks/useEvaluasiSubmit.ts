@@ -7,7 +7,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import { evaluasiApi } from '@/features/evaluasi'
 import { useToast } from '@/utils/ui'
-import type { HasilEvaluasi } from '@/features/evaluasi'
+import type { StatusHasilEvaluasi } from '@/features/evaluasi'
 
 export interface EvaluasiBatchSubmitError {
   sopId: string
@@ -18,7 +18,7 @@ export interface EvaluasiSubmitItem {
   id: string
   judul: string
   nomorSOP: string
-  hasil: HasilEvaluasi
+  hasil: StatusHasilEvaluasi
   komentarEvaluasi: string
 }
 

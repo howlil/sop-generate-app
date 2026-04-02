@@ -9,9 +9,6 @@ import type {
   SatuanWaktu,
   JenisLampiran,
   BagianSOP,
-  StatusHasilEvaluasi,
-  StatusPengajuanEvaluasi,
-  JenisPengajuanEvaluasi,
 } from '@/types/common'
 import type { NilaiEvaluasi, LogNilaiEvaluasi, PengajuanEvaluasi } from '@/features/evaluasi/types/evaluasi'
 

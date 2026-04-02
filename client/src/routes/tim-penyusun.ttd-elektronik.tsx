@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { TTDElektronikPage } from '@/pages/ttd-elektronik/TTDElektronikPage'
+import { TTDElektronikPage } from '@/pages/ttd-elektronik/TteElektronik'
 import { useAppRole } from '@/features/auth'
 
 export const Route = createFileRoute('/tim-penyusun/ttd-elektronik')({

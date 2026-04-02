@@ -161,8 +161,8 @@ export interface ProsedurRow {
   id_next_step_if_yes?: string
   id_next_step_if_no?: string
   pelaksanaIds?: string[]
-  /** For diagram implementer mapping */
-  pelaksana?: Record<string, string>
+  /** For diagram implementer mapping - renamed to avoid conflict */
+  pelaksanaMapping?: Record<string, string>
 }
 
 export interface SopItem {
@@ -192,9 +192,6 @@ export interface SOPTemplate {
 
 // ==================== EVALUASI UI TYPES ====================
 
-/** Alias for StatusHasilEvaluasi for backward compatibility */
-export type HasilEvaluasi = StatusHasilEvaluasi
-
 export interface CreatePengajuanEvaluasiDto {
   opdId: string
   jenis: JenisPengajuanEvaluasi
@@ -203,7 +200,7 @@ export interface CreatePengajuanEvaluasiDto {
 }
 
 export interface IsiNilaiEvaluasiDto {
-  hasil: HasilEvaluasi
+  hasil: StatusHasilEvaluasi
   catatan?: string
   version?: number
 }

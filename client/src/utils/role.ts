@@ -2,7 +2,7 @@
  * Role-based utilities
  */
 
-import { redirect, type AnyLocation } from '@tanstack/react-router'
+import { redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/utils/constants'
 import type { RoleKey } from '@/types/common'
@@ -13,15 +13,6 @@ import type { RoleKey } from '@/types/common'
 export function getKepalaOPDOpdId(): string {
   const user = useAuthStore.getState().user
   return user?.opdId ?? ''
-}
-
-/**
- * Get user name for role display (legacy, use getRoleDisplayName)
- * @deprecated Use getRoleDisplayName instead
- */
-export function getRoleUserName(_role: string): string {
-  const user = useAuthStore.getState().user
-  return user?.nama ?? ''
 }
 
 /**
@@ -51,7 +42,7 @@ export function getRole(): { peran: RoleKey; opdId?: string | null } | null {
  * Route guard: requires authentication before load
  */
 export function requireAuthBeforeLoad() {
-  return ({ location }: { location: Pick<AnyLocation, 'href'> }) => {
+  return ({ location }: { location: { href: string } }) => {
     const user = getRole()
 
     if (!user) {
@@ -69,7 +60,7 @@ export function requireAuthBeforeLoad() {
  * Route guard: requires specific role before load
  */
 export function requireRoleBeforeLoad(requiredRole: RoleKey) {
-  return ({ location }: { location: Pick<AnyLocation, 'href'> }) => {
+  return ({ location }: { location: { href: string } }) => {
     const user = getRole()
 
     if (!user) {
