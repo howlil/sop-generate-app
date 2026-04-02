@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, CircleUserRound, LogOut } from 'lucide-react'
-import { ROUTES, ROLES } from '@/utils/constants'
+import { ROUTES } from '@/utils/constants'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
-import { useAppRole } from '@/hooks/auth/useAppRole'
+import { useAppRole } from '@/features/auth'
 
 interface HeaderProfileProps {
   /** Judul header fallback (jika tidak ada page header dari konteks) */

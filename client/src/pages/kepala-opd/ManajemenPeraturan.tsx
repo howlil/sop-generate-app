@@ -4,18 +4,12 @@ import { Button } from '@/components/ui/button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import type { Peraturan } from '@/types/peraturan'
+import type { Peraturan } from '@/features/organisasi'
 import { useToast } from '@/utils/ui'
 import { useFilteredList } from '@/utils/use-filtered-list'
 import { useManajemenPeraturanState } from '@/utils/state/manajemen-peraturan'
-import { usePeraturan } from '@/hooks/organisasi/usePeraturan'
-import {
-  getInitialPeraturanListAsync,
-  getRiwayatVersiPeraturanInitial,
-  getManajemenPeraturanOpdId,
-  getOpdNamesForPeraturan,
-} from '@/hooks/organisasi/usePeraturan'
-import type { RiwayatVersiEntry } from '@/types/peraturan'
+import { usePeraturan, getInitialPeraturanListAsync, getRiwayatVersiPeraturanInitial, getManajemenPeraturanOpdId, getOpdNamesForPeraturan } from '@/features/organisasi'
+import type { RiwayatVersiEntry } from '@/features/organisasi'
 import { useState } from 'react'
 import { generateId } from '@/utils/generate-id'
 import { PeraturanTableTab } from './manajemen-peraturan/PeraturanTableTab'

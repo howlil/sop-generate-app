@@ -2,9 +2,9 @@
  * Template Berita Acara resmi (format Pemerintah Provinsi Sumatera Barat).
  * Layout: kop surat, judul, isi (paragraf + poin), penutup, blok tanda tangan.
  */
-import { TTESignatureBlock } from '@/components/tte/TTESignatureBlock'
+import { TTESignatureBlock } from '@/features/tte'
 import { formatTempatTanggal } from '@/utils/format-date'
-import type { TTESignaturePayload } from '@/types/tte'
+import type { TTESignaturePayload } from '@/features/tte'
 
 export interface BeritaAcaraTemplateProps {
   /** Nama OPD (e.g. "Dinas Koperasi dan UKM") */
