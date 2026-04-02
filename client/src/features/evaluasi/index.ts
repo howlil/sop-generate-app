@@ -3,7 +3,7 @@
  * SOP evaluation workflow management
  */
 
-// Types (no dependencies on other features)
+// Types (re-export from central types + feature-specific)
 export type {
   PengajuanEvaluasi,
   CreatePengajuanEvaluasiDto,
@@ -16,6 +16,7 @@ export type {
   StatusHasilEvaluasiForm,
 } from './types/evaluasi'
 
+// Re-export shared types from central location
 export type {
   JenisPengajuanEvaluasi,
   StatusPengajuanEvaluasi,

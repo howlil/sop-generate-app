@@ -3,7 +3,7 @@
  * Standard Operating Procedure lifecycle management
  */
 
-// Types (no dependencies on other features)
+// Types (re-export from central types + feature-specific)
 export type {
   Sop,
   SopDetail,
@@ -24,16 +24,26 @@ export type {
   SopTerkait,
   CreateSopTerkaitDto,
   LogEditSOP,
+  NilaiEvaluasi,
+  LogNilaiEvaluasi,
+  PengajuanEvaluasi,
 } from './types/sop'
 
+// Re-export shared types from central location
 export type {
   StatusSOP,
   JenisLangkahProsedur,
   SatuanWaktu,
   JenisLampiran,
   BagianSOP,
-} from './types/common'
+  SOPDetailMetadata,
+  ProsedurRow,
+  SopItem,
+  SOPDaftarItem,
+  SOPTemplate,
+} from '@/types/common'
 
+// UI constants
 export { SOP_STATUS_FILTER_OPTIONS, DEFAULT_SOP_STATUS } from './types/types'
 
 // Services (only depend on types)
@@ -47,6 +57,7 @@ export { useSopStatus } from './hooks/useSopStatus'
 export { usePelaksana } from './hooks/usePelaksana'
 export { useDaftarSOPFilters } from './hooks/useDaftarSOPFilters'
 export { useDaftarSOPData } from './hooks/useDaftarSOPData'
+export { useRequestEvaluasi } from './hooks/useRequestEvaluasi'
 
 // Business logic helpers
 export { canEditSop, canKepalaOpdSignSop, isSopEligibleForSigning } from './hooks/useSop'

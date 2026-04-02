@@ -1,55 +1,21 @@
 /**
  * SOP UI types for component state
+ * Re-exports from @/types/common for backward compatibility
  */
 
-export interface SOPDetailMetadata {
-  judul?: string
-  nomor?: string
-  tahun?: number
-  tentang?: string
-  opdId?: string
-}
+// Re-export from central types
+export type {
+  SOPDetailMetadata,
+  ProsedurRow,
+  SopItem,
+  SOPDaftarItem,
+  SOPTemplate,
+} from '@/types/common'
 
-export interface ProsedurRow {
-  id: string
-  urutan: number
-  kegiatan: string
-  pelaksana: string
-  waktu?: number
-  satuanWaktu?: string
-  kelengkapan?: string
-  keluaran?: string
-  type?: 'terminator' | 'task' | 'decision'
-  id_next_step_if_yes?: string
-  id_next_step_if_no?: string
-  pelaksanaIds?: string[]
-}
-
-export interface SopItem {
-  id: string
-  judul: string
-  opdId: string
-  status: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface SOPDaftarItem {
-  id: string
-  judul: string
-  opdId: string
-  status: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface SOPTemplate {
-  judul: string
-  opdId: string
-  logoInstansi?: string
-  namaLembaga?: string
-}
-
+/**
+ * SOP status filter options
+ * Note: This is UI-specific constant, not a type definition
+ */
 export const SOP_STATUS_FILTER_OPTIONS = [
   { value: 'all', label: 'Semua Status' },
   { value: 'DRAFT', label: 'DRAFT' },
@@ -66,6 +32,5 @@ export const SOP_STATUS_FILTER_OPTIONS = [
 
 /**
  * Default SOP status for new instances
- * Single source of truth - also exported from utils/constants.ts as part of STATUS_SOP_ALL
  */
 export const DEFAULT_SOP_STATUS = 'DRAFT'

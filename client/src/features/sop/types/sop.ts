@@ -1,8 +1,18 @@
 /**
  * Complete SOP types matching server schema
+ * Note: Uses shared types from @/types/common
  */
 
-import type { StatusSOP, JenisLangkahProsedur, SatuanWaktu, JenisLampiran, BagianSOP } from './common'
+import type { 
+  StatusSOP, 
+  JenisLangkahProsedur, 
+  SatuanWaktu, 
+  JenisLampiran, 
+  BagianSOP,
+  StatusHasilEvaluasi,
+  StatusPengajuanEvaluasi,
+  JenisPengajuanEvaluasi,
+} from '@/types/common'
 
 export interface Sop {
   id: string
@@ -36,7 +46,7 @@ export interface SopDetail {
   terakhirDieditOlehId?: string
   createdAt: string
   updatedAt: string
-  
+
   // Relations
   sop?: Sop
   dibuatOleh?: { id: string; nama: string }
@@ -48,17 +58,80 @@ export interface SopDetail {
   langkahSOP?: LangkahSOP[]
   swimlanes?: DetailSOPPelaksana[]
   nilaiEvaluasi?: NilaiEvaluasi[]
-  logEditSop?: import('./audit').LogEditSOP[]
 }
+
+export interface LampiranTeks {
+  id: string
+  sopDetailId: string
+  judul: string
+  jenis: JenisLampiran
+  isi?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DasarHukum {
+  id: string
+  sopDetailId: string
+  judul: string
+  nomor: string
+  tahun: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SopTerkait {
+  id: string
+  sopDetailId: string
+  sopTerkaitId: string
+  createdAt: string
+  updatedAt: string
+
+  sopDetail?: SopDetail
+  sopTerkait?: SopDetail
+}
+
+export interface LangkahSOP {
+  id: string
+  sopDetailId: string
+  urutan: number
+  kegiatan: string
+  pelaksana: string
+  waktu?: number
+  satuanWaktu?: SatuanWaktu
+  kelengkapan?: string
+  output?: string
+  idNextStepIfYes?: string
+  idNextStepIfNo?: string
+  type: JenisLangkahProsedur
+  createdAt: string
+  updatedAt: string
+}
+
+export interface DetailSOPPelaksana {
+  id: string
+  sopDetailId: string
+  opdId: string
+  urutan: number
+  createdAt: string
+  updatedAt: string
+
+  opd?: { id: string; nama: string }
+  relasiPelaksana?: DetailSOPPelaksana[]
+}
+
+// ==================== DTO TYPES ====================
 
 export interface CreateSopRequest {
   judul: string
   opdId: string
-  logoInstansi: string
-  namaLembaga: string
 }
 
 export interface UpdateMetadataDto {
+  judul?: string
+  nomorSOP?: string
+  tanggalPembuatan?: string
+  tanggalEfective?: string
   logoInstansi?: string
   namaLembaga?: string
   lebarKolomKegiatan?: number
@@ -73,131 +146,146 @@ export interface UpdateStatusDto {
   status: StatusSOP
 }
 
-// Lampiran Teks
-export interface LampiranTeks {
-  id: string
-  sopDetailId: string
-  jenis: JenisLampiran
-  teks: string
-}
-
-export interface CreateLampiranTeksDto {
-  jenis: JenisLampiran
-  teks: string
-}
-
-// Dasar Hukum
-export interface DasarHukum {
-  sopDetailId: string
-  peraturanId: string
-  peraturan?: {
-    id: string
-    namaPeraturan: string
-    nomor: string
-    tahun: number
-    tentang: string
-  }
-}
-
-export interface CreateDasarHukumDto {
-  peraturanId: string
-}
-
-// SOP Terkait
-export interface SopTerkait {
-  sopDetailId: string
-  sopTerkaitDetailId: string
-  sop?: { id: string; judul: string }
-  sopTerkait?: { id: string; judul: string }
-}
-
-export interface CreateSopTerkaitDto {
-  sopTerkaitDetailId: string
-}
-
-// Langkah SOP
-export interface LangkahSOP {
-  id: string
-  sopDetailId: string
-  kegiatan: string
-  jenis: JenisLangkahProsedur
-  urutan: number
-  kelengkapan: string
-  keluaran: string
-  waktu: number
-  satuanWaktu: SatuanWaktu
-  keterangan: string
-  pelaksanaId: string
-  langkahSelanjutnyaYaId?: string
-  langkahSelanjutnyaTidakId?: string
-  createdAt: string
-  updatedAt: string
-  
-  pelaksana?: Pelaksana
-  langkahYa?: LangkahSOP
-  langkahTidak?: LangkahSOP
-}
-
 export interface CreateLangkahSOPDto {
-  kegiatan: string
-  jenis: JenisLangkahProsedur
   urutan: number
-  kelengkapan: string
-  keluaran: string
-  waktu: number
-  satuanWaktu: SatuanWaktu
-  keterangan: string
-  pelaksanaId: string
-  langkahSelanjutnyaYaId?: string
-  langkahSelanjutnyaTidakId?: string
+  kegiatan: string
+  pelaksana: string
+  waktu?: number
+  satuanWaktu?: SatuanWaktu
+  kelengkapan?: string
+  output?: string
+  idNextStepIfYes?: string
+  idNextStepIfNo?: string
+  type: JenisLangkahProsedur
 }
 
 export interface UpdateLangkahSOPDto {
+  urutan?: number
   kegiatan?: string
-  kelengkapan?: string
-  keluaran?: string
+  pelaksana?: string
   waktu?: number
-  keterangan?: string
-  pelaksanaId?: string
-  langkahSelanjutnyaYaId?: string
-  langkahSelanjutnyaTidakId?: string
-}
-
-// Pelaksana
-export interface Pelaksana {
-  id: string
-  opdId: string
-  namaPelaksana: string
-  createdAt: string
-  updatedAt: string
+  satuanWaktu?: SatuanWaktu
+  kelengkapan?: string
+  output?: string
+  idNextStepIfYes?: string
+  idNextStepIfNo?: string
+  type?: JenisLangkahProsedur
 }
 
 export interface CreatePelaksanaDto {
   opdId: string
-  namaPelaksana: string
-}
-
-export interface DetailSOPPelaksana {
-  sopDetailId: string
-  pelaksanaId: string
   urutan: number
-  pelaksana?: Pelaksana
 }
 
 export interface CreateDetailSOPPelaksanaDto {
-  pelaksanaId: string
-  urutan?: number
+  opdId: string
+  urutan: number
 }
 
-// Nilai Evaluasi (for relation)
+export interface CreateLampiranTeksDto {
+  judul: string
+  jenis: JenisLampiran
+  isi?: string
+}
+
+export interface CreateDasarHukumDto {
+  judul: string
+  nomor: string
+  tahun: string
+}
+
+export interface CreateSopTerkaitDto {
+  sopTerkaitId: string
+}
+
+// ==================== EVALUASI TYPES ====================
+
 export interface NilaiEvaluasi {
   id: string
   pengajuanEvaluasiId: string
   sopDetailId: string
-  hasil?: 'SESUAI' | 'TIDAK_SESUAI'
+  hasil?: StatusHasilEvaluasi
   catatan?: string
   version: number
   dinilaiOlehId?: string
   createdAt: string
   updatedAt: string
+
+  sopDetail?: { id: string; nomorSOP: string; status: string }
+  dinilaiOleh?: { id: string; nama: string }
+}
+
+export interface LogNilaiEvaluasi {
+  id: string
+  pengajuanEvaluasiId: string
+  sopDetailId: string
+  evaluatorId: string
+  hasilSebelum?: StatusHasilEvaluasi
+  hasilSesudah?: StatusHasilEvaluasi
+  catatanSebelum?: string
+  catatanSesudah?: string
+  createdAt: string
+
+  evaluator?: { id: string; nama: string }
+}
+
+export interface PengajuanEvaluasi {
+  id: string
+  opdId: string
+  jenis: JenisPengajuanEvaluasi
+  status: StatusPengajuanEvaluasi
+  catatan?: string
+  nomorBA?: string
+  tanggalPermintaan?: string
+  tanggalEvaluasi?: string
+  nilaiOPD?: number
+  diverifikasiOlehUserId?: string
+  ditandatanganiOlehKoordinatorUserId?: string
+  tanggalTTDBaKoordinator?: string
+  diselesaikanOlehId?: string
+  tanggalDiselesaikan?: string
+  version: number
+  createdAt: string
+  updatedAt: string
+
+  opd?: { id: string; nama: string }
+  diverifikasiOlehUser?: { id: string; nama: string }
+  ditandatanganiOlehKoordinatorUser?: { id: string; nama: string }
+  diselesaikanOleh?: { id: string; nama: string }
+  nilaiEvaluasi?: NilaiEvaluasi[]
+}
+
+// ==================== AUDIT TYPES ====================
+
+export interface LogEditSOP {
+  id: string
+  sopDetailId: string
+  userId: string
+  bagian: BagianSOP
+  dataAwal?: Record<string, any>
+  dataAkhir?: Record<string, any>
+  createdAt: string
+
+  user?: { id: string; nama: string }
+}
+
+export interface LogAudit {
+  id: string
+  userId: string
+  action: string
+  entity: string
+  entityId?: string
+  timestamp: string
+  details?: Record<string, any>
+
+  user?: { id: string; nama: string }
+}
+
+export interface AuditFilters {
+  userId?: string
+  entity?: string
+  entityId?: string
+  action?: string
+  fromDate?: string
+  toDate?: string
 }

@@ -1,19 +1,32 @@
 /**
  * Evaluasi types matching server schema
+ * Uses shared types from @/types/common
  */
 
-import type { StatusHasilEvaluasi, JenisPengajuanEvaluasi } from './common'
+import type { 
+  StatusHasilEvaluasi, 
+  JenisPengajuanEvaluasi, 
+  StatusPengajuanEvaluasi,
+  HasilEvaluasi,
+  CreatePengajuanEvaluasiDto,
+  IsiNilaiEvaluasiDto,
+  SelesaiEvaluasiDto,
+  RekapEvaluasi,
+  RekapDetail,
+} from '@/types/common'
 
-export type StatusPengajuanEvaluasi =
-  | 'MENUNGGU_EVALUASI'
-  | 'SEDANG_DIEVALUASI'
-  | 'SELESAI_DIEVALUASI'
-  | 'DIVERIFIKASI_BIRO'
-  | 'DITANDATANGANI_KOORDINATOR'
-  | 'SELESAI'
-
-// Alias for backward compatibility
-export type HasilEvaluasi = StatusHasilEvaluasi
+// Re-export for backward compatibility
+export type { 
+  StatusHasilEvaluasi, 
+  JenisPengajuanEvaluasi, 
+  StatusPengajuanEvaluasi,
+  HasilEvaluasi,
+  CreatePengajuanEvaluasiDto,
+  IsiNilaiEvaluasiDto,
+  SelesaiEvaluasiDto,
+  RekapEvaluasi,
+  RekapDetail,
+}
 
 export interface PengajuanEvaluasi {
   id: string
@@ -68,45 +81,4 @@ export interface LogNilaiEvaluasi {
   createdAt: string
 
   evaluator?: { id: string; nama: string }
-}
-
-export interface CreatePengajuanEvaluasiDto {
-  opdId: string
-  jenis: JenisPengajuanEvaluasi
-  sopDetailIds: string[]
-  catatan?: string
-}
-
-export interface IsiNilaiEvaluasiDto {
-  hasil: HasilEvaluasi
-  catatan?: string
-  version?: number
-}
-
-export interface SelesaiEvaluasiDto {
-  nilaiOPD?: number
-}
-
-export interface RekapEvaluasi {
-  opdId: string
-  opdNama: string
-  tahun: number
-  totalPengajuan: number
-  totalTerjadwal: number
-  totalMandiri: number
-  nilaiRataRata?: number
-  detail: RekapDetail[]
-}
-
-export interface RekapDetail {
-  pengajuanEvaluasiId: string
-  jenis: JenisPengajuanEvaluasi
-  status: StatusPengajuanEvaluasi
-  nilaiOPD?: number
-  tanggalEvaluasi: string
-  detailSopCount: number
-  hasilEvaluasi: {
-    sesuai: number
-    tidakSesuai: number
-  }
 }
