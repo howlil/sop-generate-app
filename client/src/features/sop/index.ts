@@ -23,11 +23,19 @@ export type {
   CreateDasarHukumDto,
   SopTerkait,
   CreateSopTerkaitDto,
-  LogEditSOP,
+} from './types/sop'
+
+// Re-export evaluation types from evaluasi feature
+export type {
   NilaiEvaluasi,
   LogNilaiEvaluasi,
   PengajuanEvaluasi,
-} from './types/sop'
+} from '@/features/evaluasi/types/evaluasi'
+
+// Re-export audit types from audit feature
+export type {
+  LogEditSOP,
+} from '@/features/audit/types/audit'
 
 // Re-export shared types from central location
 export type {

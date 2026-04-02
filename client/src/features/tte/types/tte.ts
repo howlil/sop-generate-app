@@ -2,7 +2,7 @@
  * TTE (Tanda Tangan Elektronik) types matching server schema
  */
 
-import type { PeranTTE } from './common'
+import type { PeranTTE } from '@/types/common'
 
 export interface KredensialTTE {
   id: string

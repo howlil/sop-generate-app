@@ -2,7 +2,7 @@
  * Tim (Tim Penyusun & Tim Evaluasi) types matching server schema
  */
 
-import type { StatusTim, PeranInternalTimPenyusun } from './common'
+import type { StatusTim, PeranInternalTimPenyusun } from '@/types/common'
 
 export interface AnggotaTimPenyusun {
   id: string

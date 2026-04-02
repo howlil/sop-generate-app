@@ -1,6 +1,15 @@
 import * as React from 'react'
 import { cn } from '@/utils/cn'
 
+/**
+ * DetailWorkspaceProps - Props for detail workspace layout
+ * 
+ * Flexible workspace layout with:
+ * - Optional header/toolbar area
+ * - Main content area
+ * - Optional left/right side panels
+ * - Responsive design (mobile → desktop)
+ */
 export interface DetailWorkspaceProps {
   /** Tambahan class untuk root (e.g. print:hidden) */
   className?: string
@@ -15,9 +24,32 @@ export interface DetailWorkspaceProps {
 }
 
 /**
- * Layout workspace untuk halaman detail: header (opsional) + area utama + panel samping.
- * - Dua kolom: main + rightPanel (detail SOP tim penyusun, kepala OPD).
- * - Tiga kolom: leftPanel + main + rightPanel (detail penugasan evaluasi, pelaksanaan evaluasi).
+ * DetailWorkspace - Flexible workspace for detail pages
+ * 
+ * Layout configurations:
+ * - 1 column: main only
+ * - 2 columns: main + rightPanel (SOP detail, Kepala OPD)
+ * - 3 columns: leftPanel + main + rightPanel (Evaluation assignment)
+ * 
+ * Responsive behavior:
+ * - Mobile: Stacked layout with scrollable panels
+ * - Desktop: Side-by-side columns with constrained widths
+ * 
+ * @example
+ * ```tsx
+ * // 2-column layout
+ * <DetailWorkspace
+ *   main={<SOPPreview />}
+ *   rightPanel={<KomentarPanel />}
+ * />
+ * 
+ * // 3-column layout
+ * <DetailWorkspace
+ *   leftPanel={<EvaluatorList />}
+ *   main={<EvaluationForm />}
+ *   rightPanel={<SOPSummary />}
+ * />
+ * ```
  */
 export function DetailWorkspace({
   className,

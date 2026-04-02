@@ -3,16 +3,17 @@
  * Note: Uses shared types from @/types/common
  */
 
-import type { 
-  StatusSOP, 
-  JenisLangkahProsedur, 
-  SatuanWaktu, 
-  JenisLampiran, 
+import type {
+  StatusSOP,
+  JenisLangkahProsedur,
+  SatuanWaktu,
+  JenisLampiran,
   BagianSOP,
   StatusHasilEvaluasi,
   StatusPengajuanEvaluasi,
   JenisPengajuanEvaluasi,
 } from '@/types/common'
+import type { NilaiEvaluasi, LogNilaiEvaluasi, PengajuanEvaluasi } from '@/features/evaluasi/types/evaluasi'
 
 export interface Sop {
   id: string
@@ -196,96 +197,4 @@ export interface CreateDasarHukumDto {
 
 export interface CreateSopTerkaitDto {
   sopTerkaitId: string
-}
-
-// ==================== EVALUASI TYPES ====================
-
-export interface NilaiEvaluasi {
-  id: string
-  pengajuanEvaluasiId: string
-  sopDetailId: string
-  hasil?: StatusHasilEvaluasi
-  catatan?: string
-  version: number
-  dinilaiOlehId?: string
-  createdAt: string
-  updatedAt: string
-
-  sopDetail?: { id: string; nomorSOP: string; status: string }
-  dinilaiOleh?: { id: string; nama: string }
-}
-
-export interface LogNilaiEvaluasi {
-  id: string
-  pengajuanEvaluasiId: string
-  sopDetailId: string
-  evaluatorId: string
-  hasilSebelum?: StatusHasilEvaluasi
-  hasilSesudah?: StatusHasilEvaluasi
-  catatanSebelum?: string
-  catatanSesudah?: string
-  createdAt: string
-
-  evaluator?: { id: string; nama: string }
-}
-
-export interface PengajuanEvaluasi {
-  id: string
-  opdId: string
-  jenis: JenisPengajuanEvaluasi
-  status: StatusPengajuanEvaluasi
-  catatan?: string
-  nomorBA?: string
-  tanggalPermintaan?: string
-  tanggalEvaluasi?: string
-  nilaiOPD?: number
-  diverifikasiOlehUserId?: string
-  ditandatanganiOlehKoordinatorUserId?: string
-  tanggalTTDBaKoordinator?: string
-  diselesaikanOlehId?: string
-  tanggalDiselesaikan?: string
-  version: number
-  createdAt: string
-  updatedAt: string
-
-  opd?: { id: string; nama: string }
-  diverifikasiOlehUser?: { id: string; nama: string }
-  ditandatanganiOlehKoordinatorUser?: { id: string; nama: string }
-  diselesaikanOleh?: { id: string; nama: string }
-  nilaiEvaluasi?: NilaiEvaluasi[]
-}
-
-// ==================== AUDIT TYPES ====================
-
-export interface LogEditSOP {
-  id: string
-  sopDetailId: string
-  userId: string
-  bagian: BagianSOP
-  dataAwal?: Record<string, any>
-  dataAkhir?: Record<string, any>
-  createdAt: string
-
-  user?: { id: string; nama: string }
-}
-
-export interface LogAudit {
-  id: string
-  userId: string
-  action: string
-  entity: string
-  entityId?: string
-  timestamp: string
-  details?: Record<string, any>
-
-  user?: { id: string; nama: string }
-}
-
-export interface AuditFilters {
-  userId?: string
-  entity?: string
-  entityId?: string
-  action?: string
-  fromDate?: string
-  toDate?: string
 }

@@ -1,6 +1,14 @@
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 import { PageHeader } from '@/components/layout/PageHeader'
 
+/**
+ * ListPageLayoutProps - Props for list page layout
+ * 
+ * Standard layout for list pages with:
+ * - Page header (breadcrumb, title, actions)
+ * - Optional toolbar (search, filters)
+ * - Main content (table, cards, etc.)
+ */
 export interface ListPageLayoutProps {
   /** Item breadcrumb. Opsional: null/undefined = tidak tampil breadcrumb. */
   breadcrumb?: BreadcrumbItem[] | null
@@ -20,8 +28,25 @@ export interface ListPageLayoutProps {
 }
 
 /**
- * Layout standar halaman list: PageHeader + optional toolbar + children.
- * Dipakai di SOPSaya, DaftarSOPEvaluasi, DaftarSOP, ManajemenTimEvaluasi, dll.
+ * ListPageLayout - Standard layout for list pages
+ * 
+ * Used in:
+ * - SOPSaya
+ * - DaftarSOPEvaluasi
+ * - DaftarSOP
+ * - ManajemenTimEvaluasi
+ * 
+ * @example
+ * ```tsx
+ * <ListPageLayout
+ *   title="SOP Saya"
+ *   description="Daftar SOP yang Anda susun"
+ *   toolbar={<SearchToolbar />}
+ *   actions={<Button>Buat SOP Baru</Button>}
+ * >
+ *   <SopTable />
+ * </ListPageLayout>
+ * ```
  */
 export function ListPageLayout({
   breadcrumb,

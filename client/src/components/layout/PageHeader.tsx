@@ -2,6 +2,23 @@ import { useEffect } from 'react'
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
 
+/**
+ * PageHeader - Declarative header content setter
+ * 
+ * Sets header content (breadcrumb, title, actions) via PageHeaderContext.
+ * Renders nothing (null) - only updates context for HeaderProfile to display.
+ * 
+ * @example
+ * ```tsx
+ * // In a page component
+ * <PageHeader
+ *   breadcrumb={[{ label: 'Home', to: '/' }, { label: 'SOP Saya' }]}
+ *   title="SOP Saya"
+ *   description="Daftar SOP yang Anda susun"
+ *   actions={<Button>Buat SOP Baru</Button>}
+ * />
+ * ```
+ */
 export interface PageHeaderProps {
   /** Item breadcrumb (urutan: parent → current). Item terakhir = halaman saat ini (boleh tanpa `to`) */
   breadcrumb: BreadcrumbItem[]
@@ -16,7 +33,17 @@ export interface PageHeaderProps {
   className?: string
 }
 
-/** Menyetel konten header ke konteks sehingga ditampilkan di header layout (breadcrumb + leading + title). Tidak me-render apa pun di body. */
+/**
+ * PageHeader component - sets header content via context
+ * 
+ * Usage pattern:
+ * 1. Place <PageHeader> in page component
+ * 2. Content appears in HeaderProfile (via context)
+ * 3. Cleanup on unmount (removes header content)
+ * 
+ * @see PageHeaderContext - Context that stores header content
+ * @see HeaderProfile - Component that displays header content
+ */
 export function PageHeader({
   breadcrumb,
   title,

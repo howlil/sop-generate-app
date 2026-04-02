@@ -2,7 +2,7 @@
  * Peraturan types - matching server schema
  */
 
-import type { StatusPeraturan } from './common'
+import type { StatusPeraturan } from '@/types/common'
 
 export interface PeraturanResponse {
   id: string

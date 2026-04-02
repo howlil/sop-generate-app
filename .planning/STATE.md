@@ -163,6 +163,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260403-deprecated-cleanup | ✅ Removed deprecated code from utils — Cleaned up `client/src/utils/api.ts` (removed withToast, withMutationToast), deprecated handleApi.ts ready for deletion. Build passing: 7.84s. **Manual action needed**: `rm client/src/utils/handleApi.ts` | 2026-04-03 | — | Done | client/ |
 | 20260403-p0-refactors | ✅ P0 Critical Refactors Complete — DetailSOPPenyusun (338→138 lines, 59% reduction), DetailSOPProsedurEditor (298→199 lines, 33% reduction), fixed 2 direct API calls. Build passing: 5.86s. See: `.planning/quick/p0-critical-refactors.md` | 2026-04-03 | — | Done | client/ |
 | 20260403-eslint-docs | ✅ ESLint rules + documentation — Added ESLint config with Zustand rules (prefer-use-selector, no-direct-store-access), created comprehensive UI patterns documentation (.skills/ui-patterns.md). All low-priority TODOs complete! | 2026-04-03 | — | Done | client/ |
 | 20260403-migrate-to-useToast | ✅ Migrate all feature hooks to useToast - Completed migration of all 11 feature hooks (47 mutations) from deprecated `withMutationToast` to direct `useToast()` usage. Build passing: 5.81s. Code quality score: 10/10. | 2026-04-03 | — | Done | client/ |

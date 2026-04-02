@@ -3,6 +3,14 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 
+/**
+ * DetailPageLayoutProps - Props for detail page layout
+ * 
+ * Standard layout for detail pages with:
+ * - Page header with back button
+ * - Workspace with main content + optional side panels
+ * - Responsive 2-column or 3-column layout
+ */
 export interface DetailPageLayoutProps {
   /** Item breadcrumb. Opsional: null/undefined = tidak tampil breadcrumb. */
   breadcrumb?: BreadcrumbItem[] | null
@@ -27,8 +35,27 @@ export interface DetailPageLayoutProps {
 }
 
 /**
- * Layout standar halaman detail: PageHeader (dengan BackButton) + DetailWorkspace.
- * Dipakai di DetailSOP, DetailVerifikasiBatch, DetailSOPPenyusun, PelaksanaanEvaluasi, dll.
+ * DetailPageLayout - Standard layout for detail pages
+ * 
+ * Used in:
+ * - DetailSOP
+ * - DetailVerifikasiBatch
+ * - DetailSOPPenyusun
+ * - PelaksanaanEvaluasi
+ * 
+ * Layout modes:
+ * - 2 columns: main + rightPanel (SOP detail, Kepala OPD view)
+ * - 3 columns: leftPanel + main + rightPanel (Evaluation assignment)
+ * 
+ * @example
+ * ```tsx
+ * <DetailPageLayout
+ *   title="Detail SOP"
+ *   backTo="/sop-saya"
+ *   main={<SOPPreview />}
+ *   rightPanel={<KomentarPanel />}
+ * />
+ * ```
  */
 export function DetailPageLayout({
   breadcrumb,

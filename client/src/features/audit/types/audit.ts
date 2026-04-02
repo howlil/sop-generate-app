@@ -2,14 +2,7 @@
  * Audit Log types matching server schema
  */
 
-export type BagianSOP =
-  | 'METADATA'
-  | 'LANGKAH_SOP'
-  | 'LAMPIRAN_TEKS'
-  | 'DASAR_HUKUM'
-  | 'PELAKSANA'
-  | 'DIAGRAM'
-  | 'SOP_TERKAIT'
+import type { BagianSOP } from '@/types/common'
 
 export interface LogEditSOP {
   id: string

@@ -59,4 +59,19 @@ If issues detected:
 
 ---
 
+## Manual Cleanup Required
+
+**File to Delete**: `client/src/utils/handleApi.ts`
+
+This file contains deprecated code that is no longer used. Delete it manually:
+
+```bash
+cd client
+rm src/utils/handleApi.ts
+```
+
+**Why Manual**: The deprecated functions (`withToast`, `withMutationToast`) have zero usage in the codebase and were already migrated to use `useToast()` hook pattern.
+
+---
+
 *Part of UI Pattern Refactoring Plan (.planning/ui-pattern-refactor-plan.md)*

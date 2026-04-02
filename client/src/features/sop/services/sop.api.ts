@@ -23,13 +23,13 @@ import type {
   CreateDasarHukumDto,
   SopTerkait,
   CreateSopTerkaitDto,
-  LogEditSOP,
   StatusSOP,
   JenisLangkahProsedur,
   SatuanWaktu,
   JenisLampiran,
   BagianSOP,
 } from '../types/sop'
+import type { LogEditSOP } from '@/features/audit/types/audit'
 
 export const sopApi = {
   // ================= SOP (Header) =================

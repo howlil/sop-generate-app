@@ -14,6 +14,20 @@ import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { usePageHeaderContext } from '@/components/layout/PageHeaderContext'
 import { useAppRole } from '@/features/auth'
 
+/**
+ * HeaderProfile - User profile header with breadcrumb navigation
+ * 
+ * Displays:
+ * - Breadcrumb navigation (from PageHeaderContext)
+ * - User profile dropdown (name, role, NIP)
+ * - Logout functionality
+ * 
+ * @example
+ * ```tsx
+ * // Used inside RoleLayout
+ * <HeaderProfile title="Dashboard" subtitle="Tim Penyusun" />
+ * ```
+ */
 interface HeaderProfileProps {
   /** Judul header fallback (jika tidak ada page header dari konteks) */
   title?: string
@@ -21,6 +35,15 @@ interface HeaderProfileProps {
   subtitle?: string
 }
 
+/**
+ * HeaderProfile component
+ * 
+ * Features:
+ * - Displays user profile with role and NIP
+ * - Provides logout functionality
+ * - Shows breadcrumb from PageHeaderContext
+ * - Responsive design (mobile + desktop)
+ */
 export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProfileProps) {
   const navigate = useNavigate()
   const { role, getRoleLabel, getRoleNip, getRoleDisplayName, clearRole } = useAppRole()
