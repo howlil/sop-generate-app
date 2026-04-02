@@ -12,8 +12,8 @@ import {
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { useRekapEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
-import type { RekapEvaluasi } from '@/types/evaluasi'
+import { useRekapEvaluasi } from '@/features/evaluasi'
+import type { RekapEvaluasi } from '@/features/evaluasi'
 import { EmptyState } from '@/components/ui/empty-state'
 
 /* ─── Type Mapping ─── */
