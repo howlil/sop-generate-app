@@ -1,19 +1,20 @@
-import { useState } from 'react'
-import { X, MoreHorizontal, Settings2 } from 'lucide-react'
+import { MoreHorizontal, Settings2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { useToast } from '@/utils/ui'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { usePagination } from '@/utils/use-pagination'
-import type { ProsedurRow } from '@/components/sop/types'
+import { useProsedurEditor } from '@/features/sop/hooks/useProsedurEditor'
+import {
+  KegiatanCell,
+  TypeCell,
+  ImplementerCell,
+  MutuKelengkapanCell,
+  MutuWaktuCell,
+  OutputCell,
+  KeteranganCell,
+} from './ProsedurEditorCells'
 import { DecisionStepDialog } from './DecisionStepDialog'
+import type { ProsedurRow } from '@/components/sop/types'
 
 export interface DetailSOPProsedurEditorProps {
   prosedurRows: ProsedurRow[]
@@ -28,16 +29,33 @@ export function DetailSOPProsedurEditor({
   implementers,
   onDone,
 }: DetailSOPProsedurEditorProps) {
-  const { showToast } = useToast()
-  const [isDecisionDialogOpen, setIsDecisionDialogOpen] = useState(false)
-  const [decisionStepIndex, setDecisionStepIndex] = useState<number | null>(null)
-  const [decisionYesId, setDecisionYesId] = useState<string>('')
-  const [decisionNoId, setDecisionNoId] = useState<string>('')
-
   const pagination = usePagination(prosedurRows.length)
   const rowsToShow = pagination.showPagination
     ? prosedurRows.slice(pagination.startIndex, pagination.endIndex)
     : prosedurRows
+
+  const {
+    // Dialog state
+    isDecisionDialogOpen,
+    setIsDecisionDialogOpen,
+    decisionStepIndex,
+    decisionYesId,
+    decisionNoId,
+    setDecisionYesId,
+    setDecisionNoId,
+    
+    // Row operations
+    handleAddRow,
+    handleDeleteRow,
+    handleTypeChange,
+    handleKegiatanChange,
+    handlePelaksanaChange,
+    handleMutuKelengkapanChange,
+    handleMutuWaktuChange,
+    handleOutputChange,
+    handleKeteranganChange,
+    handleDecisionConfig,
+  } = useProsedurEditor(prosedurRows, setProsedurRows)
 
   return (
     <div className="w-full max-w-full">
@@ -66,270 +84,93 @@ export function DetailSOPProsedurEditor({
             {rowsToShow.map((row, localIdx) => {
               const realIdx = pagination.startIndex + localIdx
               return (
-              <Table.BodyRow key={row.id} className="align-top">
-                <Table.Td className="px-1 py-1 text-center align-middle">{realIdx + 1}</Table.Td>
-                <Table.Td className="px-1 py-1">
-                  <Textarea
-                    className="text-xs min-h-[40px] px-1.5 py-1"
-                    value={row.kegiatan}
-                    onChange={(e) =>
-                      setProsedurRows((prev) =>
-                        prev.map((r, i) =>
-                          i === realIdx ? { ...r, kegiatan: e.target.value } : r
-                        )
-                      )
-                    }
-                  />
-                </Table.Td>
-                <Table.Td className="px-1 py-1">
-                  {(() => {
-                    const yesIndex = row.id_next_step_if_yes
-                      ? prosedurRows.findIndex((r) => r.id === row.id_next_step_if_yes)
-                      : -1
-                    const noIndex = row.id_next_step_if_no
-                      ? prosedurRows.findIndex((r) => r.id === row.id_next_step_if_no)
-                      : -1
-                    const hasDecisionTarget = yesIndex !== -1 || noIndex !== -1
-                    return (
-                      <div className="space-y-1">
-                        <select
-                          className="w-full h-8 rounded-md border border-gray-200 px-0.5 text-xs"
-                          value={
-                            row.type ||
-                            (realIdx === 0 || realIdx === prosedurRows.length - 1 ? 'terminator' : 'task')
-                          }
-                          onChange={(e) =>
-                            setProsedurRows((prev) =>
-                              prev.map((r, i) =>
-                                i === realIdx ? { ...r, type: e.target.value as ProsedurRow['type'] } : r
-                              )
-                            )
-                          }
+                <Table.BodyRow key={row.id} className="align-top">
+                  <Table.Td className="px-1 py-1 text-center align-middle">{realIdx + 1}</Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <KegiatanCell
+                      value={row.kegiatan}
+                      onChange={(value) => handleKegiatanChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <TypeCell
+                      row={row}
+                      index={realIdx}
+                      totalRows={prosedurRows.length}
+                      onTypeChange={(type) => handleTypeChange(realIdx, type)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <ImplementerCell
+                      row={row}
+                      implementers={implementers}
+                      onImplementerChange={(id) => handlePelaksanaChange(realIdx, id, implementers)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <MutuKelengkapanCell
+                      value={row.mutu_kelengkapan}
+                      onChange={(value) => handleMutuKelengkapanChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <MutuWaktuCell
+                      value={row.mutu_waktu}
+                      onChange={(amount, unit) => handleMutuWaktuChange(realIdx, amount, unit)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <OutputCell
+                      value={row.output}
+                      onChange={(value) => handleOutputChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <KeteranganCell
+                      value={row.keterangan}
+                      onChange={(value) => handleKeteranganChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-0.5 py-1 text-center align-middle">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          title="Aksi langkah"
                         >
-                          <option value="task">Task</option>
-                          <option value="decision">Decision</option>
-                          <option value="terminator">
-                            {realIdx === 0
-                              ? 'Start'
-                              : realIdx === prosedurRows.length - 1
-                                ? 'End'
-                                : 'Terminator'}
-                          </option>
-                        </select>
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-[9rem]">
                         {row.type === 'decision' && (
-                          <p className="text-[10px] text-gray-500">
-                            {!hasDecisionTarget
-                              ? 'Belum diatur cabang Ya/Tidak.'
-                              : [yesIndex !== -1 ? `Ya → ${yesIndex + 1}` : null, noIndex !== -1 ? `Tidak → ${noIndex + 1}` : null]
-                                  .filter(Boolean)
-                                  .join(' • ')}
-                          </p>
+                          <DropdownMenuItem
+                            onClick={() => handleDecisionConfig(realIdx, row.id_next_step_if_yes || '', row.id_next_step_if_no || '')}
+                          >
+                            <Settings2 className="w-3 h-3 mr-1.5 text-gray-500" />
+                            <span>Atur cabang decision</span>
+                          </DropdownMenuItem>
                         )}
-                      </div>
-                    )
-                  })()}
-                </Table.Td>
-                <Table.Td className="px-1 py-1">
-                  <select
-                    className="w-full h-8 rounded-md border border-gray-200 px-0.5 text-xs"
-                    value={
-                      Object.keys(row.pelaksana).find((k) => row.pelaksana[k]) ||
-                      implementers[0]?.id ||
-                      ''
-                    }
-                    onChange={(e) => {
-                      const id = e.target.value
-                      const nextPelaksana: Record<string, string> = {}
-                      implementers.forEach((impl) => {
-                        nextPelaksana[impl.id] = impl.id === id ? '√' : ''
-                      })
-                      setProsedurRows((prev) =>
-                        prev.map((r, i) =>
-                          i === realIdx ? { ...r, pelaksana: nextPelaksana } : r
-                        )
-                      )
-                    }}
-                  >
-                    {implementers.map((impl) => (
-                      <option key={impl.id} value={impl.id}>
-                        {impl.name}
-                      </option>
-                    ))}
-                  </select>
-                </Table.Td>
-                <Table.Td className="px-1 py-1">
-                  <Textarea
-                    className="text-xs min-h-[36px] px-1.5 py-1"
-                    value={row.mutu_kelengkapan}
-                    onChange={(e) =>
-                      setProsedurRows((prev) =>
-                        prev.map((r, i) =>
-                          i === realIdx ? { ...r, mutu_kelengkapan: e.target.value } : r
-                        )
-                      )
-                    }
-                  />
-                </Table.Td>
-                <Table.Td className="px-1 py-1">
-                  {(() => {
-                    const match = (row.mutu_waktu || '').match(/^(\d+)\s*(\w+)?/i)
-                    const amount = match ? match[1] : ''
-                    const rawUnit = match && match[2] ? match[2].toLowerCase() : ''
-                    const unitFromLabel = rawUnit.startsWith('menit')
-                      ? 'm'
-                      : rawUnit.startsWith('jam')
-                        ? 'h'
-                        : rawUnit.startsWith('hari')
-                          ? 'd'
-                          : rawUnit.startsWith('minggu')
-                            ? 'w'
-                            : rawUnit.startsWith('bulan')
-                              ? 'mo'
-                              : 'm'
-                    const unit = unitFromLabel
-                    const unitLabelMap: Record<string, string> = {
-                      m: 'Menit',
-                      h: 'Jam',
-                      d: 'Hari',
-                      w: 'Minggu',
-                      mo: 'Bulan',
-                    }
-                    const updateMutuWaktu = (nextAmount: string, nextUnit: string) => {
-                      const label = unitLabelMap[nextUnit] || ''
-                      const value = nextAmount ? `${nextAmount} ${label}` : ''
-                      setProsedurRows((prev) =>
-                        prev.map((r, i) =>
-                          i === realIdx ? { ...r, mutu_waktu: value } : r
-                        )
-                      )
-                    }
-                    return (
-                      <div className="flex items-center gap-0 rounded-md border border-gray-200 [&_input]:rounded-r-none [&_input]:border-r-0 [&_input]:focus-visible:ring-0 [&_input]:focus-visible:ring-offset-0">
-                        <Input
-                          type="number"
-                          min={0}
-                          className="h-8 text-xs w-10 rounded-l-md"
-                          value={amount}
-                          onChange={(e) => updateMutuWaktu(e.target.value, unit)}
-                        />
-                        <select
-                          className="h-8 w-16 min-w-0 rounded-r-md border-0 border-l border-gray-200 bg-transparent pl-1 pr-5 text-xs outline-none focus:ring-0 focus:ring-offset-0"
-                          value={unit}
-                          onChange={(e) => updateMutuWaktu(amount, e.target.value)}
-                        >
-                          <option value="m">Menit</option>
-                          <option value="h">Jam</option>
-                          <option value="d">Hari</option>
-                          <option value="w">Minggu</option>
-                          <option value="mo">Bulan</option>
-                        </select>
-                      </div>
-                    )
-                  })()}
-                </Table.Td>
-                <Table.Td className="px-1 py-1">
-                  <Textarea
-                    className="text-xs min-h-[36px] px-1.5 py-1"
-                    value={row.output}
-                    onChange={(e) =>
-                      setProsedurRows((prev) =>
-                        prev.map((r, i) =>
-                          i === realIdx ? { ...r, output: e.target.value } : r
-                        )
-                      )
-                    }
-                  />
-                </Table.Td>
-                <Table.Td className="px-1 py-1">
-                  <Textarea
-                    className="text-xs min-h-[36px] px-1.5 py-1"
-                    value={row.keterangan}
-                    onChange={(e) =>
-                      setProsedurRows((prev) =>
-                        prev.map((r, i) =>
-                          i === realIdx ? { ...r, keterangan: e.target.value } : r
-                        )
-                      )
-                    }
-                  />
-                </Table.Td>
-                <Table.Td className="px-0.5 py-1 text-center align-middle">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                        title="Aksi langkah"
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[9rem]">
-                      {row.type === 'decision' && (
                         <DropdownMenuItem
-                          onClick={() => {
-                            setDecisionStepIndex(realIdx)
-                            const yesId = row.id_next_step_if_yes || ''
-                            const noId = row.id_next_step_if_no || ''
-                            setDecisionYesId(yesId)
-                            setDecisionNoId(noId === yesId && yesId ? '' : noId)
-                            setIsDecisionDialogOpen(true)
-                          }}
+                          onClick={() => handleAddRow(realIdx, implementers)}
                         >
-                          <Settings2 className="w-3 h-3 mr-1.5 text-gray-500" />
-                          <span>Atur cabang decision</span>
+                          <span className="mr-1.5 text-blue-600">+</span>
+                          <span>Tambah langkah setelah ini</span>
                         </DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem
-                        onClick={() =>
-                          setProsedurRows((prev) => {
-                            const idBase = crypto.randomUUID()
-                            const newRow: ProsedurRow = {
-                              id: `${idBase}-${realIdx + 1}`,
-                              no: realIdx + 2,
-                              kegiatan: '',
-                              pelaksana: implementers.reduce(
-                                (acc, impl, i2) => ({
-                                  ...acc,
-                                  [impl.id]: i2 === 0 ? '√' : '',
-                                }),
-                                {} as Record<string, string>
-                              ),
-                              mutu_kelengkapan: '',
-                              mutu_waktu: '',
-                              output: '',
-                              keterangan: '',
-                            }
-                            const next = [...prev]
-                            next.splice(realIdx + 1, 0, newRow)
-                            return next.map((r, i2) => ({ ...r, no: i2 + 1 }))
-                          })
-                        }
-                      >
-                        <span className="mr-1.5 text-blue-600">+</span>
-                        <span>Tambah langkah setelah ini</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={prosedurRows.length === 1}
-                        onClick={() =>
-                          setProsedurRows((prev) =>
-                            prev.filter((_, i) => i !== realIdx).map((r, i2) => ({
-                              ...r,
-                              no: i2 + 1,
-                            }))
-                          )
-                        }
-                        className="text-red-600 data-[disabled]:text-gray-400"
-                        title="Hapus langkah"
-                      >
-                        <X className="w-3 h-3" />
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </Table.Td>
-              </Table.BodyRow>
-            )
+                        <DropdownMenuItem
+                          disabled={prosedurRows.length === 1}
+                          onClick={() => handleDeleteRow(realIdx)}
+                          className="text-red-600 data-[disabled]:text-gray-400"
+                          title="Hapus langkah"
+                        >
+                          <X className="w-3 h-3" />
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </Table.Td>
+                </Table.BodyRow>
+              )
             })}
           </tbody>
         </Table.Table>
@@ -345,28 +186,7 @@ export function DetailSOPProsedurEditor({
           variant="outline"
           size="sm"
           className="h-8 text-xs"
-          onClick={() =>
-            setProsedurRows((prev) => [
-              ...prev,
-              {
-                id: crypto.randomUUID(),
-                id_step: crypto.randomUUID(),
-                no: prev.length + 1,
-                kegiatan: '',
-                pelaksana: implementers.reduce(
-                  (acc, impl, idx) => ({
-                    ...acc,
-                    [impl.id]: idx === 0 ? '√' : '',
-                  }),
-                  {} as Record<string, string>
-                ),
-                mutu_kelengkapan: '',
-                mutu_waktu: '',
-                output: '',
-                keterangan: '',
-              },
-            ])
-          }
+          onClick={() => handleAddRow(prosedurRows.length, implementers)}
         >
           Tambah langkah
         </Button>
@@ -402,7 +222,6 @@ export function DetailSOPProsedurEditor({
             )
           )
         }}
-        onValidationError={(message) => showToast(message, 'error')}
       />
     </div>
   )

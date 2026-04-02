@@ -1,10 +1,8 @@
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
 import type { PengajuanEvaluasi } from '@/features/evaluasi'
-import { evaluasiApi } from '@/features/evaluasi'
-import { queryKeys } from '@/utils/query-keys'
+import { useEvaluasi } from '@/features/evaluasi'
 import { useOpd } from '@/features/organisasi'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -71,11 +69,7 @@ export function ManajemenEvaluasiSOP() {
   useDocumentTitle(`${IA.NAV_BIRO_EVALUASI_TERJADWAL} — Biro`)
   const navigate = useNavigate()
   const { list: allOpds } = useOpd()
-  const { data: batchList = [] } = useQuery({
-    queryKey: queryKeys.evaluasiList(),
-    queryFn: () => evaluasiApi.findAll(),
-    staleTime: 3 * 60 * 1000, // 3 minutes
-  })
+  const { list: batchList = [] } = useEvaluasi()
 
   const rowsByOpd = useMemo(
     () => buildRowsOpdEvaluasi(allOpds, batchList),

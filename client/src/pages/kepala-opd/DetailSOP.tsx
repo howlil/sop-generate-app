@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react'
 import { useParams, useLocation, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import {
   History,
   Calendar,
@@ -27,12 +26,10 @@ import {
   useDetailSopById,
   useEditHistory,
 } from '@/features/sop'
-import { useEvaluasiDetail } from '@/features/evaluasi'
+import { useEvaluasiDetail, useEvaluasi } from '@/features/evaluasi'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/features/tte'
-import { evaluasiApi } from '@/features/evaluasi'
-import { queryKeys } from '@/utils/query-keys'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/features/sop'
 import { getKepalaOPDOpdId } from '@/utils/role'
 import { useOpd } from '@/features/organisasi'
@@ -57,11 +54,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   } = props
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
-  const { data: pengajuanList = [] } = useQuery({
-    queryKey: queryKeys.evaluasiList(),
-    queryFn: () => evaluasiApi.findAll(),
-    staleTime: 3 * 60 * 1000, // 3 minutes
-  })
+  const { list: pengajuanList = [] } = useEvaluasi()
   const opdId = getKepalaOPDOpdId()
   const { list: opds } = useOpd()
   const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''

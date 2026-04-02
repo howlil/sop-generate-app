@@ -1,6 +1,5 @@
-import { useMemo } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
-import { Bell, CircleUserRound, LogOut } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
+import { CircleUserRound, LogOut } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,18 +27,6 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
   const pageHeader = usePageHeaderContext()
   const headerContent = pageHeader?.headerContent
 
-  // TODO: Implement notification store when pipeline notifications are added
-  const notifications: any[] = []
-  const visibleNotifications = useMemo(
-    () =>
-      notifications.filter((n) => !n.targetRole || (role !== null && n.targetRole === role)),
-    [notifications, role]
-  )
-  const unreadCount = useMemo(
-    () => visibleNotifications.filter((n) => !n.read).length,
-    [visibleNotifications]
-  )
-
   const handleLogout = () => {
     clearRole()
     navigate({ to: ROUTES.HOME, search: { denied: undefined, redirect: undefined } })
@@ -63,75 +50,6 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {headerContent?.actions}
-        {role && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="rounded-full relative text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                aria-label="Notifikasi alur kerja"
-              >
-                <Bell className="w-4 h-4" strokeWidth={1.5} />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-[10px] font-semibold text-white flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 max-h-[min(70vh,420px)] overflow-y-auto">
-              <DropdownMenuLabel className="flex items-center justify-between gap-2">
-                <span>Notifikasi</span>
-                {unreadCount > 0 && (
-                  <span className="text-xs font-normal text-blue-600">
-                    {/* TODO: Implement mark all read when notification store is added */}
-                    Tandai semua dibaca
-                  </span>
-                )}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {visibleNotifications.length === 0 ? (
-                <p className="px-2 py-4 text-xs text-gray-500 text-center">Belum ada notifikasi.</p>
-              ) : (
-                visibleNotifications.slice(0, 20).map((n: any) => (
-                  <DropdownMenuItem
-                    key={n.id}
-                    className="flex flex-col items-start gap-0.5 cursor-default focus:bg-gray-50"
-                    onSelect={(e) => e.preventDefault()}
-                  >
-                    <div className="flex w-full justify-between gap-2">
-                      <span className={`text-xs font-medium ${n.read ? 'text-gray-600' : 'text-gray-900'}`}>
-                        {n.title}
-                      </span>
-                      {!n.read && (
-                        <span className="text-[10px] text-blue-600 shrink-0">
-                          {/* TODO: Implement mark as read when notification store is added */}
-                          dibaca
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-gray-500 leading-snug">{n.body}</span>
-                    {n.actionTo && (
-                      <Link
-                        to={n.actionTo}
-                        search={n.actionSearch}
-                        className="text-[11px] font-medium text-blue-600 hover:underline pt-0.5"
-                      >
-                        {/* TODO: Implement mark as read on click */}
-                        Buka halaman terkait →
-                      </Link>
-                    )}
-                    <span className="text-[10px] text-gray-400">
-                      {new Date(n.createdAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}
-                    </span>
-                  </DropdownMenuItem>
-                ))
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

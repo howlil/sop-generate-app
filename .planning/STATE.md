@@ -162,7 +162,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
-| 20260403-p0-refactors | ✅ P0 Critical Refactors (Phase 1) — Refactored DetailSOPPenyusun.tsx from 338 lines → 138 lines (59% reduction). Created useDetailSOPPenyusun hook (203 lines) + 3 sub-components (Header, Main, SidePanel). Build passing: 4.68s. | 2026-04-03 | — | In Progress | client/ |
+| 20260403-p0-refactors | ✅ P0 Critical Refactors Complete — DetailSOPPenyusun (338→138 lines, 59% reduction), DetailSOPProsedurEditor (298→199 lines, 33% reduction), fixed 2 direct API calls. Build passing: 5.86s. See: `.planning/quick/p0-critical-refactors.md` | 2026-04-03 | — | Done | client/ |
 | 20260403-eslint-docs | ✅ ESLint rules + documentation — Added ESLint config with Zustand rules (prefer-use-selector, no-direct-store-access), created comprehensive UI patterns documentation (.skills/ui-patterns.md). All low-priority TODOs complete! | 2026-04-03 | — | Done | client/ |
 | 20260403-migrate-to-useToast | ✅ Migrate all feature hooks to useToast - Completed migration of all 11 feature hooks (47 mutations) from deprecated `withMutationToast` to direct `useToast()` usage. Build passing: 5.81s. Code quality score: 10/10. | 2026-04-03 | — | Done | client/ |
 | 20260403-utils-cleanup | ✅ Utils directory cleanup — Removed 2 unused utils (generate-id, sidebar-matcher), simplified 4 hooks (format-date, ui, use-filtered-list, use-pagination), removed state/ directory (inline state in pages), deleted 12 dead components (landing, company-profile). Build passing: 4.38s. | 2026-04-03 | — | Done | client/ |
