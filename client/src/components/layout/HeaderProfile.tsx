@@ -85,20 +85,17 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
               <DropdownMenuLabel className="flex items-center justify-between gap-2">
                 <span>Notifikasi</span>
                 {unreadCount > 0 && (
-                  <button
-                    type="button"
-                    className="text-xs font-normal text-blue-600 hover:underline"
-                    onClick={() => markAllRead()}
-                  >
+                  <span className="text-xs font-normal text-blue-600">
+                    {/* TODO: Implement mark all read when notification store is added */}
                     Tandai semua dibaca
-                  </button>
+                  </span>
                 )}
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {visibleNotifications.length === 0 ? (
                 <p className="px-2 py-4 text-xs text-gray-500 text-center">Belum ada notifikasi.</p>
               ) : (
-                visibleNotifications.slice(0, 20).map((n) => (
+                visibleNotifications.slice(0, 20).map((n: any) => (
                   <DropdownMenuItem
                     key={n.id}
                     className="flex flex-col items-start gap-0.5 cursor-default focus:bg-gray-50"
@@ -109,13 +106,10 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
                         {n.title}
                       </span>
                       {!n.read && (
-                        <button
-                          type="button"
-                          className="text-[10px] text-blue-600 shrink-0 hover:underline"
-                          onClick={() => markRead(n.id)}
-                        >
+                        <span className="text-[10px] text-blue-600 shrink-0">
+                          {/* TODO: Implement mark as read when notification store is added */}
                           dibaca
-                        </button>
+                        </span>
                       )}
                     </div>
                     <span className="text-[11px] text-gray-500 leading-snug">{n.body}</span>
@@ -124,8 +118,8 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
                         to={n.actionTo}
                         search={n.actionSearch}
                         className="text-[11px] font-medium text-blue-600 hover:underline pt-0.5"
-                        onClick={() => markRead(n.id)}
                       >
+                        {/* TODO: Implement mark as read on click */}
                         Buka halaman terkait →
                       </Link>
                     )}

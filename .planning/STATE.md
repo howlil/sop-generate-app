@@ -97,6 +97,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260403-eslint-docs | ✅ ESLint rules + documentation — Added ESLint config with Zustand rules (prefer-use-selector, no-direct-store-access), created comprehensive UI patterns documentation (.skills/ui-patterns.md). All low-priority TODOs complete! | 2026-04-03 | — | Done | client/ |
 | 20260403-migrate-to-useToast | ✅ Migrate all feature hooks to useToast - Completed migration of all 11 feature hooks (47 mutations) from deprecated `withMutationToast` to direct `useToast()` usage. Build passing: 5.81s. Code quality score: 10/10. | 2026-04-03 | — | Done | client/ |
 | 20260403-utils-cleanup | ✅ Utils directory cleanup — Removed 2 unused utils (generate-id, sidebar-matcher), simplified 4 hooks (format-date, ui, use-filtered-list, use-pagination), removed state/ directory (inline state in pages), deleted 12 dead components (landing, company-profile). Build passing: 4.38s. | 2026-04-03 | — | Done | client/ |
 | 20260403-types-consolidation | ✅ Type consolidation & business logic extraction — Consolidated all duplicate types to `types/common.ts` (single source of truth), updated 7 feature modules to import from central location, added `useRequestEvaluasi` hook to extract business logic from pages. Build passing. References: `.planning/phases/CLIENT_STRUCTURE_ANALYSIS.md` | 2026-04-03 | — | Done | client/ |
