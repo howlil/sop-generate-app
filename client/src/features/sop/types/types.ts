@@ -64,4 +64,8 @@ export const SOP_STATUS_FILTER_OPTIONS = [
   { value: 'DICABUT', label: 'DICABUT' },
 ] as const
 
+/**
+ * Default SOP status for new instances
+ * Single source of truth - also exported from utils/constants.ts as part of STATUS_SOP_ALL
+ */
 export const DEFAULT_SOP_STATUS = 'DRAFT'

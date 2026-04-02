@@ -30,9 +30,15 @@ export { evaluasiApi } from './services/evaluasi.api'
 export { timEvaluasiApi } from './services/tim-evaluasi.api'
 
 // Hooks (depend on services and types)
-export { useEvaluasi, useRekapEvaluasi, useEvaluasiDetail, usePengajuanEvaluasiDetail, getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from './hooks/useEvaluasi'
-export { useEvaluasiDraft, getEvaluasiDraft } from './hooks/useEvaluasiDraft'
+// Query hooks
+export { useEvaluasi, useRekapEvaluasi } from './hooks/useEvaluasi'
+export { useEvaluasiDetail, usePengajuanEvaluasiDetail } from './hooks/useEvaluasi'
+export { useEvaluasiDraft } from './hooks/useEvaluasiDraft'
 export { useEvaluasiSubmit } from './hooks/useEvaluasiSubmit'
+
+// Business logic helpers
+export { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from './hooks/useEvaluasi'
+export { getEvaluasiDraft } from './hooks/useEvaluasiDraft'
 
 // Components (depend on everything - export selectively)
 export { RiwayatCardList } from './components/RiwayatCardList'
