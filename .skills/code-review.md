@@ -189,6 +189,32 @@ approach:
         **Fix:** Apply YAGNI dan KISS principles - start simple, refactor when needed.
       </rule>
 
+      <rule name="Low Impact Solution Detection">
+        Deteksi code/solusi yang tidak memberikan impact signifikan terhadap core business:
+        1. **Nice-to-have features**: Fitur yang tidak solve problem nyata untuk user
+        2. **Over-polished UI**: Animasi/efek yang tidak improve user experience secara measurable
+        3. **Edge case handling**: Handle edge case yang sangat jarang terjadi (&lt;1% usage)
+        4. **Non-critical optimization**: Optimize feature yang bukan performance bottleneck
+        5. **Feature duplication**: Fitur yang overlap dengan existing feature tanpa value add
+        6. **Internal tool overbuild**: Build complex internal tool padahal simple solution cukup
+        7. **Analytics/Logging overkill**: Track metrics yang tidak digunakan untuk decision making
+        
+        **Questions to Ask:**
+        - Apakah ini solve problem nyata untuk user?
+        - Berapa % user yang akan benefit dari fitur ini?
+        - Apakah ini core business function atau nice-to-have?
+        - Apa impact jika fitur ini tidak ada/delay?
+        - Apakah effort sebanding dengan business value?
+        
+        **Prioritization Framework:**
+        - **P0 (Core Business)**: Fitur yang langsung impact revenue/user experience → Kerjakan sekarang
+        - **P1 (Important)**: Fitur yang improve workflow/productivity → Kerjakan setelah P0
+        - **P2 (Nice-to-have)**: Fitur yang "good to have" → Kerjakan jika ada waktu
+        - **P3 (Low Impact)**: Fitur yang tidak critical → Defer atau skip
+        
+        **Fix:** Focus pada core business function first, defer low impact features.
+      </rule>
+
       <rule name="Directed Code Detection">
         Deteksi kode yang hanya satu arah (tidak ada timbal-balik/interaksi).
         Contoh: Component yang hanya receive props tanpa interaction, API yang hanya POST tanpa GET.
@@ -411,6 +437,126 @@ approach:
       </example>
 
     </over_engineering_examples>
+
+    <low_impact_examples>
+
+      <example name="Nice-to-have Feature">
+        // ❌ LOW IMPACT: Fancy animation untuk button yang tidak improve UX
+        // components/FancyButton.tsx (50 lines of animation logic)
+        export const FancyButton = ({ onClick, children }) => {
+          const [hovered, setHovered] = useState(false);
+          const [ripples, setRipples] = useState([]);
+          
+          // Complex ripple effect calculation
+          // Particle animation on click
+          // Gradient shift on hover
+          // 50 lines later...
+          return &lt;button&gt;{children}&lt;/button&gt;;
+        };
+
+        // ✅ HIGH IMPACT: Simple button dengan proper accessibility
+        // components/Button.tsx
+        export const Button = ({ onClick, children, disabled }) => (
+          &lt;button 
+            onClick={onClick} 
+            disabled={disabled}
+            className="btn-primary"
+            aria-disabled={disabled}
+          &gt;
+            {children}
+          &lt;/button&gt;
+        );
+
+        // Impact: User tidak peduli animation, yang penting button berfungsi
+      </example>
+
+      <example name="Edge Case Over-handling">
+        // ❌ LOW IMPACT: Handle edge case yang sangat jarang terjadi
+        // sop/sop.validator.ts (100 lines validation untuk edge case &lt;1%)
+        export const validateSop = (sop: SOP) => {
+          // Validate untuk leap year edge case
+          // Validate untuk timezone edge case
+          // Validate untuk unicode character edge case
+          // Validate untuk max integer edge case
+          // 90% code untuk handle &lt;1% usage scenarios
+        };
+
+        // ✅ HIGH IMPACT: Focus pada common cases first
+        // sop/sop.validator.ts (20 lines untuk 99% cases)
+        export const validateSop = (sop: SOP) => {
+          // Validate required fields (99% of errors)
+          // Validate format (judul, nomorSop)
+          // Validate status transition (core business logic)
+        };
+
+        // Impact: Better to handle 99% cases well than 100% cases poorly
+      </example>
+
+      <example name="Non-critical Optimization">
+        // ❌ LOW IMPACT: Optimize feature yang bukan bottleneck
+        // components/SopList.tsx (complex virtualization untuk 20 items)
+        export const SopList = ({ sops }) => {
+          // Virtual scrolling implementation
+          // Windowing calculation
+          // Memoized row rendering
+          // Untuk list yang max 20 items
+        };
+
+        // ✅ HIGH IMPACT: Optimize actual bottleneck
+        // components/SopList.tsx
+        export const SopList = ({ sops }) => {
+          // Simple map untuk 20 items (fast enough)
+          return sops.map(sop => &lt;SopCard key={sop.id} sop={sop} /&gt;);
+        };
+
+        // Impact: Optimize API calls, not rendering 20 items
+      </example>
+
+      <example name="Internal Tool Overbuild">
+        // ❌ LOW IMPACT: Complex admin dashboard untuk internal use
+        // admin/AdminDashboard.tsx (500 lines, complex charts, real-time updates)
+        export const AdminDashboard = () => {
+          // Real-time WebSocket connection
+          // D3.js charts dengan custom animations
+          // Drag-and-drop layout customization
+          // Dark mode toggle
+          // Untuk tool yang dipakai 2 orang internal
+        };
+
+        // ✅ HIGH IMPACT: Simple admin table
+        // admin/SopTable.tsx (50 lines, simple table)
+        export const SopTable = () => {
+          // Simple table dengan sort/filter
+          // Export to CSV button
+          // Cukup untuk internal workflow
+        };
+
+        // Impact: Internal tool perlu functional, tidak perlu fancy
+      </example>
+
+      <example name="Analytics Overkill">
+        // ❌ LOW IMPACT: Track semua event tanpa action plan
+        // analytics/tracking.ts (track 50+ events)
+        export const trackEvents = {
+          BUTTON_HOVER: () => track('button_hover', { x, y, timestamp }),
+          SCROLL_POSITION: () => track('scroll', { percentage }),
+          MOUSE_MOVE: () => track('mousemove', { x, y }),
+          // 50+ events yang tidak pernah dianalisis
+        };
+
+        // ✅ HIGH IMPACT: Track metrics yang actionable
+        // analytics/tracking.ts (track 10 meaningful events)
+        export const trackEvents = {
+          SOP_CREATED: (sopId) => track('sop_created', { sopId }),
+          SOP_SUBMITTED: (sopId) => track('sop_submitted', { sopId }),
+          EVALUATION_COMPLETED: (evalId) => track('evaluation_completed', { evalId }),
+          // Events yang digunakan untuk product decisions
+        };
+
+        // Impact: Track less, analyze more
+      </example>
+
+    </low_impact_examples>
 
     <existing_solution_patterns>
 

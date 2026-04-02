@@ -35,10 +35,10 @@ import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/tte/useTTE'
 import { evaluasiApi } from '@/services/evaluasi.api'
-import { queryKeys } from '@/utils/query-keys'
+import { queryKeys } from '@/services/queryKeys'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/hooks/sop/useSop'
-import { getKepalaOPDOpdId } from '@/utils/role-display'
-import { useOpd } from '@/hooks/useOpd'
+import { getKepalaOPDOpdId } from '@/utils/role'
+import { useOpd } from '@/hooks/organisasi/useOpd'
 import { ROUTES } from '@/utils/constants/routes'
 
 type Version = DetailSOPVersionSeed

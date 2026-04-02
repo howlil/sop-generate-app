@@ -42,7 +42,7 @@ import { useAppRole } from '@/hooks/auth/useAppRole'
 import { useDaftarSOPFilters } from '@/hooks/sop/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/sop/useDaftarSOPData'
 import { useDocumentTitle } from '@/utils/use-document-title'
-import { useAuditBySopDetail } from '@/hooks/useAudit'
+import { useAuditBySopDetail } from '@/hooks/audit/useAudit'
 
 export function ManajemenSOP() {
   useDocumentTitle('Manajemen SOP — Tim Penyusun')

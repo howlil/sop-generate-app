@@ -993,6 +993,69 @@ export class SopService {
 }
 ```
 
+#### 0c. Low Impact Solution Detection
+Deteksi code/solusi yang tidak memberikan impact signifikan terhadap core business:
+
+**Indicators:**
+- **Nice-to-have features**: Fitur yang tidak solve problem nyata untuk user
+- **Edge case over-handling**: Handle edge case yang sangat jarang terjadi (&lt;1%)
+- **Non-critical optimization**: Optimize feature yang bukan performance bottleneck
+- **Internal tool overbuild**: Build complex internal tool padahal simple solution cukup
+- **Analytics/Logging overkill**: Track metrics yang tidak digunakan untuk decision making
+- **Feature duplication**: Fitur yang overlap dengan existing feature tanpa value add
+
+**Questions to Ask:**
+- Apakah ini solve problem nyata untuk user?
+- Berapa % user yang akan benefit dari fitur ini?
+- Apakah ini core business function atau nice-to-have?
+- Apa impact jika fitur ini tidak ada/delay?
+- Apakah effort sebanding dengan business value?
+
+**Prioritization:**
+- **P0 (Core Business)**: Fitur yang langsung impact revenue/user experience → Kerjakan sekarang
+- **P1 (Important)**: Fitur yang improve workflow/productivity → Kerjakan setelah P0
+- **P2 (Nice-to-have)**: Fitur yang "good to have" → Kerjakan jika ada waktu
+- **P3 (Low Impact)**: Fitur yang tidak critical → Defer atau skip
+
+**Example - Internal Tool Overbuild:**
+```typescript
+// ❌ LOW IMPACT: Complex admin dashboard untuk internal use
+// admin/AdminDashboard.tsx (500 lines, complex charts, real-time updates)
+export const AdminDashboard = () => {
+  // Real-time WebSocket connection
+  // D3.js charts dengan custom animations
+  // Drag-and-drop layout customization
+  // Dark mode toggle
+  // Untuk tool yang dipakai 2 orang internal
+};
+
+// ✅ HIGH IMPACT: Simple admin table
+// admin/SopTable.tsx (50 lines, simple table)
+export const SopTable = () => {
+  // Simple table dengan sort/filter
+  // Export to CSV button
+  // Cukup untuk internal workflow
+};
+```
+
+**Example - Analytics Overkill:**
+```typescript
+// ❌ LOW IMPACT: Track semua event tanpa action plan
+export const trackEvents = {
+  BUTTON_HOVER: () => track('button_hover', { x, y, timestamp }),
+  SCROLL_POSITION: () => track('scroll', { percentage }),
+  MOUSE_MOVE: () => track('mousemove', { x, y }),
+  // 50+ events yang tidak pernah dianalisis
+};
+
+// ✅ HIGH IMPACT: Track metrics yang actionable
+export const trackEvents = {
+  SOP_CREATED: (sopId) => track('sop_created', { sopId }),
+  SOP_SUBMITTED: (sopId) => track('sop_submitted', { sopId }),
+  EVALUATION_COMPLETED: (evalId) => track('evaluation_completed', { evalId }),
+};
+```
+
 #### 1. Directed Code Detection
 Deteksi kode yang hanya satu arah (tidak ada timbal-balik):
 - **API Endpoint**: Hanya POST tanpa GET untuk retrieve

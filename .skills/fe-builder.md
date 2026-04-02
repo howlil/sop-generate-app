@@ -529,6 +529,64 @@ interface ListProps<T extends { id: string | number }> {
 }
 ```
 
+#### 0c. Low Impact Solution Detection
+Deteksi code/solusi yang tidak memberikan impact signifikan terhadap core business:
+
+**Indicators:**
+- **Nice-to-have features**: Animasi/efek yang tidak improve UX secara measurable
+- **Edge case over-handling**: Handle edge case yang sangat jarang terjadi (&lt;1%)
+- **Non-critical optimization**: Optimize feature yang bukan performance bottleneck
+- **Over-polished UI**: Spend waktu untuk UI yang tidak impact user workflow
+- **Analytics overkill**: Track events yang tidak digunakan untuk decision making
+
+**Questions to Ask:**
+- Apakah ini solve problem nyata untuk user?
+- Berapa % user yang akan benefit dari fitur ini?
+- Apakah ini core business function atau nice-to-have?
+- Apa impact jika fitur ini tidak ada/delay?
+
+**Prioritization:**
+- **P0 (Core)**: Fitur yang langsung impact revenue/UX → Kerjakan sekarang
+- **P1 (Important)**: Fitur yang improve workflow → Kerjakan setelah P0
+- **P2 (Nice-to-have)**: Fitur yang "good to have" → Kerjakan jika ada waktu
+- **P3 (Low Impact)**: Fitur yang tidak critical → Defer atau skip
+
+**Example - Nice-to-have Animation:**
+```typescript
+// ❌ LOW IMPACT: Complex animation untuk button
+const FancyButton = ({ children }) => {
+  const [hovered, setHovered] = useState(false);
+  const [ripples, setRipples] = useState([]);
+  // 50 lines animation logic
+  return <button>{children}</button>;
+};
+
+// ✅ HIGH IMPACT: Simple button dengan accessibility
+const Button = ({ children, disabled }) => (
+  <button disabled={disabled} aria-disabled={disabled}>
+    {children}
+  </button>
+);
+```
+
+**Example - Analytics Overkill:**
+```typescript
+// ❌ LOW IMPACT: Track semua event tanpa action plan
+const trackEvents = {
+  BUTTON_HOVER: () => track('button_hover', { x, y }),
+  SCROLL_POSITION: () => track('scroll', { percentage }),
+  MOUSE_MOVE: () => track('mousemove', { x, y }),
+  // 50+ events yang tidak pernah dianalisis
+};
+
+// ✅ HIGH IMPACT: Track metrics yang actionable
+const trackEvents = {
+  SOP_CREATED: (sopId) => track('sop_created', { sopId }),
+  SOP_SUBMITTED: (sopId) => track('sop_submitted', { sopId }),
+  EVALUATION_COMPLETED: (evalId) => track('evaluation_completed', { evalId }),
+};
+```
+
 #### 1. Directed Code Detection
 Deteksi komponen yang hanya satu arah (tidak ada interaction):
 - **Component**: Hanya menerima props tanpa user interaction
@@ -742,11 +800,23 @@ export type { User } from './user';
 ### Detection Workflow
 
 ```txt
-=== STEP 0: EXISTING SOLUTION CHECK ===
+=== STEP 0a: EXISTING SOLUTION CHECK ===
 - Search codebase untuk similar functionality
 - Check utils/helpers/shared directories
 - List existing hooks/components/utilities
 - Flag potential duplicates
+
+=== STEP 0b: OVER-ENGINEERING CHECK ===
+- Detect unnecessary abstractions
+- Detect premature optimization
+- Detect pattern overuse
+- Detect complex generics
+
+=== STEP 0c: LOW IMPACT CHECK ===
+- Detect nice-to-have features
+- Detect edge case over-handling
+- Detect non-critical optimization
+- Detect analytics overkill
 
 === STEP 1: SCAN EXPORTS ===
 - List all exported symbols dari setiap file
@@ -785,6 +855,16 @@ export type { User } from './user';
 Action: Search before create, reuse/merge/refactor
 Validation: No duplicate functionality
 Test: All usages updated to single source
+
+=== FOR OVER-ENGINEERING ===
+Action: Simplify, remove abstraction, YAGNI
+Validation: Code is simpler, same functionality
+Test: Functionality unchanged
+
+=== FOR LOW IMPACT ===
+Action: Defer/skip, focus on core business
+Validation: Effort aligned with business value
+Test: P0/P1 features completed first
 
 === FOR UNUSED CODE ===
 Action: Remove export atau remove file

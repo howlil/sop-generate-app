@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import { useSop } from '@/hooks/sop/useSop'
-import { useAuditBySopDetail } from '@/hooks/useAudit'
+import { useAuditBySopDetail } from '@/hooks/audit/useAudit'
 import type { SOPDaftarItem } from '@/components/sop/types'
 
 interface UseDaftarSOPDataParams {
