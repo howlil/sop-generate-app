@@ -6,13 +6,13 @@ import { SOPDiagramBpmn } from '@/components/sop/diagram/SOPDiagramBpmn'
 import { rowsToSteps } from '@/components/sop/diagram/logic/sopDiagramTypes'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { TTESignaturePayload } from '@/types/tte'
-import type { ProsedurRow } from '@/components/sop/types'
+import type { TTESignaturePayload } from '@/features/tte'
+import type { ProsedurRow } from '@/features/sop'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailImplementers,
-} from '@/hooks/sop/useDetailSop'
+} from '@/features/sop'
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata()
 const DEFAULT_PROSEDUR_ROWS = getInitialSopDetailProsedurRows()
