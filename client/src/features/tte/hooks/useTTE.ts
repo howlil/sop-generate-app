@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { tteApi } from '@/services/tte.api'
+import { tteApi } from '@/features/tte'
 import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
 import { showToast } from '@/stores/uiStore'
@@ -12,7 +12,7 @@ import type {
   RegisterTteDto,
   TandaTanganiBaDto,
   TandaTanganiSopDto,
-} from '@/types/tte'
+} from '@/features/tte'
 
 const TTE_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
