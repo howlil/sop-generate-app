@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { Save, Send, Printer, MessageSquare } from 'lucide-react'
-import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
+import { SOPPreviewTemplate } from '@/features/sop'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { FormField } from '@/components/ui/form-field'
@@ -20,14 +20,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
-import { useEvaluasiDraft } from '@/hooks/evaluasi/useEvaluasiDraft'
+import { StatusHasilEvaluasiPicker } from '@/features/evaluasi'
+import { useEvaluasiDraft, getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/features/evaluasi'
 import { useToast } from '@/utils/ui'
 import { useCollapsiblePanels } from '@/utils/ui'
 import { ROUTES } from '@/utils/constants'
-import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/hooks/evaluasi/useEvaluasi'
-import { useSop } from '@/hooks/sop/useSop'
-import { useSopStatus } from '@/hooks/sop/useSopStatus'
+import { useSop, useSopStatus } from '@/features/sop'
 
 export function EvaluasiSOPPage() {
   const { sopId } = useParams({ from: '/tim-evaluasi/evaluasi/$sopId' })

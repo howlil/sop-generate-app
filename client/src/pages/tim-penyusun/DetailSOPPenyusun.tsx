@@ -14,23 +14,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
+import { SOPPreviewTemplate, KomentarPanel, VersionHistoryPanel, RiwayatStatusPanel } from '@/features/sop'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { useToast } from '@/utils/ui'
-import { usePeraturan } from '@/hooks/organisasi/usePeraturan'
-import { usePelaksana } from '@/hooks/sop/usePelaksana'
-import { useSopStatus } from '@/hooks/sop/useSopStatus'
-import { useAppRole } from '@/hooks/auth/useAppRole'
+import { usePeraturan } from '@/features/organisasi'
+import { usePelaksana, useSopStatus, useAppRole } from '@/features/sop'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailVersions,
-} from '@/hooks/sop/useDetailSop'
-import { DEFAULT_SOP_STATUS, type SOPDetailMetadata, type ProsedurRow, type StatusSOP } from '@/components/sop/types'
-import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
-import { KomentarPanel } from '@/components/sop/KomentarPanel'
-import { VersionHistoryPanel } from '@/components/sop/VersionHistoryPanel'
-import { RiwayatStatusPanel } from '@/components/sop/RiwayatStatusPanel'
+} from '@/features/sop'
+import { DEFAULT_SOP_STATUS, type SOPDetailMetadata, type ProsedurRow, type StatusSOP } from '@/features/sop'
+import type { VersionHistoryItem } from '@/features/sop'
 import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
 import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
 import { formatDateIdLong } from '@/utils/format-date'
