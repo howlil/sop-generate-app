@@ -41,7 +41,7 @@ export { sopApi } from './services/sop.api'
 
 // Hooks (depend on services and types)
 export { useSop, useSopDetail, canEditSop, canKepalaOpdSignSop, isSopEligibleForSigning, canTimPenyusunRunCoordinatorActions, isSopInEvaluasiList, canSelectSOPForEvaluasi } from './hooks/useSop'
-export { useDetailSop, getInitialSopDetailMetadata, getInitialSopDetailProsedurRows, getInitialSopDetailImplementers, getInitialSopDetailVersions } from './hooks/useDetailSop'
+export { useDetailSop, getInitialSopDetailMetadata, getInitialSopDetailProsedurRows, getInitialSopDetailImplementers, getInitialSopDetailVersions, useDetailSopById, useEditHistory } from './hooks/useDetailSop'
 export { useSopStatus } from './hooks/useSopStatus'
 export { usePelaksana } from './hooks/usePelaksana'
 export { useDaftarSOPFilters } from './hooks/useDaftarSOPFilters'
