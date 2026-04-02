@@ -5,9 +5,9 @@
  */
 
 import { useState, useCallback, useMemo } from 'react'
-import { evaluasiApi } from '@/services/evaluasi.api'
+import { evaluasiApi } from '@/features/evaluasi'
 import { useToast } from '@/utils/ui'
-import type { HasilEvaluasi } from '@/types/evaluasi'
+import type { HasilEvaluasi } from '@/features/evaluasi'
 
 export interface EvaluasiBatchSubmitError {
   sopId: string
