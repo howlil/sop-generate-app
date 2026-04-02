@@ -1,12 +1,12 @@
 /**
- * useDetailSOPPenyusun hook
+ * useDetailSopPenyusun hook
  * Extracted from DetailSOPPenyusun component for better separation of concerns
  */
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useToast } from '@/utils/ui'
 import { usePeraturan } from '@/features/organisasi'
-import { usePelaksana, useSopStatus, type SOPDetailMetadata, type ProsedurRow, type StatusSOP, DEFAULT_SOP_STATUS } from '@/features/sop'
+import { usePelaksana, useSopStatus, type SOPDetailMetadata, type ProsedurRow, type StatusSop, DEFAULT_SOP_STATUS } from '@/features/sop'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
@@ -16,7 +16,7 @@ import {
 import * as versionDiff from '@/utils/version-diff'
 import type { Peraturan } from '@/features/organisasi'
 
-export interface UseDetailSOPPenyusunReturn {
+export interface UseDetailSopPenyusunReturn {
   // State
   metadata: SOPDetailMetadata
   setMetadata: React.Dispatch<React.SetStateAction<SOPDetailMetadata>>
@@ -58,13 +58,13 @@ export interface UseDetailSOPPenyusunReturn {
   handleResolveComment: (komentarId: string) => void
 }
 
-export function useDetailSOPPenyusun(
+export function useDetailSopPenyusun(
   id: string | undefined,
-  sopStatusOverride: StatusSOP | undefined,
+  sopStatusOverride: StatusSop | undefined,
   isRevisionFlowOverride?: boolean,
   navigate?: (opts: any) => void,
   role?: string | null
-): UseDetailSOPPenyusunReturn {
+): UseDetailSopPenyusunReturn {
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const { list: peraturanList } = usePeraturan()

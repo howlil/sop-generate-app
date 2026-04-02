@@ -55,8 +55,8 @@ export { useSop, useSopDetail } from './hooks/useSop'
 export { useDetailSop, useDetailSopById } from './hooks/useDetailSop'
 export { useSopStatus } from './hooks/useSopStatus'
 export { usePelaksana } from './hooks/usePelaksana'
-export { useDaftarSOPFilters } from './hooks/useDaftarSOPFilters'
-export { useDaftarSOPData } from './hooks/useDaftarSOPData'
+export { useDaftarSopFilters } from './hooks/useDaftarSopFilters'
+export { useDaftarSopData } from './hooks/useDaftarSopData'
 export { useRequestEvaluasi } from './hooks/useRequestEvaluasi'
 
 // Business logic helpers

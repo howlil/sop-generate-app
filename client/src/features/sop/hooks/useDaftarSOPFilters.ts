@@ -9,7 +9,7 @@ export interface DaftarSOPFilters {
   statusFilter: string | null
 }
 
-export function useDaftarSOPFilters() {
+export function useDaftarSopFilters() {
   const [filters, setFilters] = useState<DaftarSOPFilters>({
     searchQuery: '',
     statusFilter: null,

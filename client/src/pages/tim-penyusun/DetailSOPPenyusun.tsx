@@ -8,7 +8,7 @@ import { useAppRole } from '@/features/auth'
 import { useSopStatus, type StatusSOP } from '@/features/sop'
 import { formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
-import { useDetailSOPPenyusun } from '@/features/sop/hooks/useDetailSOPPenyusun'
+import { useDetailSopPenyusun } from '@/features/sop/hooks/useDetailSopPenyusun'
 import { DetailSOPPenyusunHeader } from './detail-sop/DetailSOPPenyusunHeader'
 import { DetailSOPPenyusunMain } from './detail-sop/DetailSOPPenyusunMain'
 import { DetailSOPPenyusunSidePanel } from './detail-sop/DetailSOPPenyusunSidePanel'
@@ -54,7 +54,7 @@ export function DetailSOPPenyusun() {
     handleComplete,
     handleResolveComment,
     komentarDisplay,
-  } = useDetailSOPPenyusun(id, detailMetaState?.sopStatus, undefined, navigate, role)
+  } = useDetailSopPenyusun(id, detailMetaState?.sopStatus, undefined, navigate, role)
 
   const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
   const editedBy = metadata.dieditOlehNamaLengkap

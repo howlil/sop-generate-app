@@ -33,7 +33,7 @@ import { ROUTES } from '@/utils/constants'
 import type { StatusSOP } from '@/features/sop'
 import type { SOPDaftarItem } from '@/features/sop'
 import { SOPStatusFilterSelect, BuatSOPDialog } from '@/features/sop'
-import { canEditSop, canTimPenyusunRunCoordinatorActions, useSop, useSopStatus, useDaftarSOPFilters, useDaftarSOPData } from '@/features/sop'
+import { canEditSop, canTimPenyusunRunCoordinatorActions, useSop, useSopStatus, useDaftarSopFilters, useDaftarSopData } from '@/features/sop'
 import { useToast } from '@/utils/ui'
 import { useAppRole } from '@/features/auth'
 import { useDocumentTitle } from '@/utils/use-document-title'
@@ -50,8 +50,8 @@ export function ManajemenSOP() {
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
   const { role, getRoleUserName } = useAppRole()
-  const filters = useDaftarSOPFilters()
-  const { eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSOPData({
+  const filters = useDaftarSopFilters()
+  const { eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSopData({
     searchQuery: filters.searchQuery,
     filterStatus: filters.filterStatus,
     filterPeraturan: filters.filterPeraturan,

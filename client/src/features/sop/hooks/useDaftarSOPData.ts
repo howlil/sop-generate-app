@@ -10,7 +10,7 @@ import { useMemo } from 'react'
 import { useSop, useSopStatus } from '@/features/sop'
 import type { SOPDaftarItem } from '@/features/sop'
 
-interface UseDaftarSOPDataParams {
+interface UseDaftarSopDataParams {
   searchQuery: string
   filterStatus: string | null
   filterPeraturan: string | null
@@ -19,7 +19,7 @@ interface UseDaftarSOPDataParams {
   isFilterOpen: boolean
 }
 
-export function useDaftarSOPData(params: UseDaftarSOPDataParams) {
+export function useDaftarSopData(params: UseDaftarSopDataParams) {
   const { list: sopList = [] } = useSop()
 
   // Filter SOPs eligible for evaluation (DRAFT or REVISI_DARI_TIM_EVALUASI)
