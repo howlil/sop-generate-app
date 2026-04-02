@@ -1,304 +1,1045 @@
-# Architecture Concerns
+# Technical Concerns & Risks
 
-## Single Source of Truth
-
-**Dokumen referensi wajib:**
-- `docs/ERD-DESKRIPSI.md` — Deskripsi entitas dan relasi database
-- `docs/SCHEMA-CONSTRAINTS.md` — Constraint bisnis di luar Prisma
-- `docs/PRD-ANALISIS-SISTEM.md` — Spesifikasi use case dan requirements
-- `.skills/` directory — Skill guidance untuk analysis
-
-## Skills Reference
-
-Architecture analysis menggunakan skill dari `.skills/`:
-
-| Analysis Type | Skill | File |
-|--------------|-------|------|
-| System Architecture Review | System Architect | `.skills/system-arch.md` |
-| Database Audit | Database Engineer | `.skills/database.md` |
-| Fullstack Audit | Fullstack Auditor | `.skills/fullstack-audit.md` |
-| DB-Specific Audit | DB Auditor | `.skills/db-audit.md` |
-
-**Usage:**
-- Untuk system diagram → gunakan `.skills/system-arch.md`
-- Untuk database invariant analysis → gunakan `.skills/database.md`
-- Untuk fullstack consistency check → gunakan `.skills/fullstack-audit.md`
+**Project**: Sistem Informasi SOP Biro Organisasi  
+**Analysis Date**: 2026-04-03  
+**Severity Levels**: 🔴 Critical | 🟠 High | 🟡 Medium | 🟢 Low
 
 ---
 
-## Core Concerns
+## Executive Summary
 
-### CC-01: Data Integrity dan Constraint Enforcement
+| Severity | Count | Action Required |
+|----------|-------|-----------------|
+| 🔴 Critical | 3 | Immediate attention (before production) |
+| 🟠 High | 8 | Address within 1-2 sprints |
+| 🟡 Medium | 12 | Plan for next quarter |
+| 🟢 Low | 6 | Technical debt backlog |
 
-**Stakeholders:** Biro Organisasi, Tim Evaluasi, Kepala OPD
-**Priority:** High
-**Status:** Active
-
-**Summary:** Sistem harus enforce semua constraint dari ERD dan SCHEMA-CONSTRAINTS untuk memastikan data integrity dan konsistensi status SOP.
-
-**Constraints:**
-- [P2-D] 1 KEPALA_OPD + 1 KOORDINATOR_TIM_PENYUSUN per OPD (SELECT FOR UPDATE)
-- [P0-C] Maks 1 pengajuan aktif per OPD per jenis (SELECT FOR UPDATE + tabel sentinel)
-- [P0-B] Hanya 1 DetailSOP berstatus BERLAKU per SOP (trigger + service layer)
-- [P0-E] Optimistic locking pada NilaiEvaluasi (version field)
-- [P1-A] XOR constraint RiwayatTandaTangan (sopDetailId XOR pengajuanEvaluasiId)
-- [P1-F] Invariant AKTIF ↔ berakhirPada NULL untuk keanggotaan tim
-- [P0-D] Status transisi valid (BERLAKU dan DICABUT adalah terminal)
-
-**Enforcement Points:**
-- Service layer: Validation logic, SELECT FOR UPDATE queries
-- Database: FK constraints, CHECK constraints, triggers
-- API: DTO validation, conflict detection
-
-**Risks:**
-- Race condition saat create KEPALA_OPD kedua di OPD sama
-- Lost update pada NilaiEvaluasi saat 2 evaluator edit bersamaan
-- Status SOP invalid (misal: DRAFT → BERLAKU langsung)
-
-**Mitigation:**
-- Transaction isolation level READ COMMITTED
-- Optimistic locking dengan version field check
-- Status transition validation di service layer
+**Overall Risk Assessment**: **MODERATE** - System has solid foundation but requires attention to critical issues before production deployment.
 
 ---
 
-### CC-02: Audit Trail dan Accountability
+## 🔴 Critical Concerns
 
-**Stakeholders:** Biro Organisasi, Auditor
-**Priority:** High
-**Status:** Active
+### C1: React 19 Compatibility Risks
 
-**Summary:** Setiap perubahan SOP harus tercatat di LogEditSOP dengan bagian discriminator (METADATA/LANGKAH_SOP/LAMPIRAN_TEKS/DASAR_HUKUM/PELAKSANA/DIAGRAM/SOP_TERKAIT) untuk accountability dan compliance.
+**Severity**: 🔴 Critical  
+**Location**: `client/package.json`  
+**Impact**: Ecosystem compatibility, stability
 
-**Requirements:**
-- AUD-01 s.d. AUD-06 (LogEditSOP otomatis, immutable, queryable)
-- LogNilaiEvaluasi untuk audit trail perubahan nilai evaluasi
-- RiwayatTandaTangan untuk TTE signatures dengan document hash
+**Issue**:
+```json
+{
+  "react": "^19.2.0",
+  "react-dom": "^19.2.0"
+}
+```
 
-**Implementation:**
-- Automatic logging di service layer setiap CRUD operation
-- Immutable records (no updatedAt, hanya createdAt)
-- Query API untuk riwayat perubahan per DetailSOP
+React 19 is a very recent major release. Potential issues:
+- Third-party library compatibility may be incomplete
+- Undiscovered bugs in production
+- Testing library versions may not be fully optimized
+- Migration from React 18 patterns may cause subtle issues
 
-**Risks:**
-- LogEditSOP tidak tercatat saat error
-- Performa query menurun saat log besar
-- Missing context (aktorRole, entityId)
+**Evidence**:
+- Vitest config has workaround: `singleThread: true // Fix for React 19`
+- Some testing patterns may need adjustment for React 19 behavior changes
 
-**Mitigation:**
-- Transaction wrapping untuk ensure logging
-- Indexing strategy untuk query performance
-- Structured logging dengan field lengkap
+**Recommended Action**:
+```bash
+# Option 1: Downgrade to stable React 18
+pnpm add react@18.3.1 react-dom@18.3.1
 
----
+# Option 2: If staying on React 19, add comprehensive E2E testing
+```
 
-### CC-03: TTE Security dan Non-Repudiation
-
-**Stakeholders:** Semua user (terutama Kepala OPD, Biro Organisasi, Koordinator Tim Penyusun)
-**Priority:** High
-**Status:** Active
-
-**Summary:** Tanda Tangan Elektronik harus secure, non-repudiable, dan enforce urutan penandatanganan: Biro → Koordinator → Kepala OPD.
-
-**Requirements:**
-- TTE-01 s.d. TTE-13 (KredensialTTE, RiwayatTandaTangan, sequential TTE)
-- PIN hash (bcrypt, 10 rounds)
-- Document hash untuk setiap signature
-- Email verification sebelum TTE
-
-**Security Measures:**
-- PIN hash di server (bukan client-side)
-- JWT token dengan expiry pendek (1h)
-- Rate limiting untuk PIN attempts
-- Audit trail untuk failed TTE attempts
-
-**Risks:**
-- PIN hardcoded di client (demo mode)
-- Replay attack pada TTE signature
-- Urutan TTE tidak enforced
-
-**Mitigation:**
-- Phase 7: Ganti PIN hardcoded dengan server-side verification
-- Document hash + timestamp untuk prevent replay
-- Service layer validation untuk enforce urutan
+**Timeline**: Before production deployment
 
 ---
 
-### CC-04: Role-Based Access Control (RBAC)
+### C2: Tailwind CSS v4 Breaking Changes
 
-**Stakeholders:** Semua user
-**Priority:** High
-**Status:** Active
+**Severity**: 🔴 Critical  
+**Location**: `client/package.json`  
+**Impact**: Build stability, CSS output
 
-**Summary:** Akses ke endpoint dan UI harus berdasarkan role (biro-organisasi, tim-penyusun, tim-evaluasi, kepala-opd) dengan filtering per OPD.
+**Issue**:
+```json
+{
+  "tailwindcss": "^4.1.18",
+  "@tailwindcss/vite": "^4.1.18"
+}
+```
 
-**Requirements:**
-- AUTH-01 s.d. AUTH-08 (JWT auth, role guards, constraint per OPD)
-- NF-01, NF-18, NF-19, NF-22, NF-23 (PRD-ANALISIS-SISTEM.md)
+Tailwind CSS v4 introduces breaking changes:
+- New engine (Oxide) with different behavior
+- Changed configuration patterns
+- Potential compatibility issues with existing plugins
+- Migration from v3 requires careful testing
 
-**Implementation:**
-- Server: JWT guard + roles guard di setiap endpoint
-- Client: Route guard berdasarkan role dari Zustand store
-- Data filtering berdasarkan opdId dari JWT token
+**Evidence**:
+- Using `@tailwindcss/vite` plugin (v4 specific)
+- Design system built on v4 may have undiscovered edge cases
 
-**Risks:**
-- Client-side bypass (user edit localStorage role)
-- Missing authorization di endpoint baru
-- opdId tidak ter-filter dengan benar
+**Recommended Action**:
+1. Document all Tailwind v4 specific configurations
+2. Test CSS output thoroughly across browsers
+3. Consider downgrading to v3.4.x for production stability
+4. Add visual regression testing
 
-**Mitigation:**
-- Server-side validation adalah source of truth
-- Global guard untuk semua endpoints
-- Unit tests untuk authorization logic
-
----
-
-### CC-05: SOP Lifecycle Management
-
-**Stakeholders:** Tim Penyusun, Biro Organisasi, Kepala OPD
-**Priority:** High
-**Status:** Active
-
-**Summary:** SOP lifecycle (DRAFT → SEDANG_DISUSUN → SIAP_DIEVALUASI → DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI → REVISI_DARI_TIM_EVALUASI → SIAP_DIVERIFIKASI → DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT/DIGANTIKAN) harus enforced dengan valid transitions saja.
-
-**Requirements:**
-- SOP-01 s.d. SOP-24 (Full lifecycle, metadata, prosedur)
-- PLK-01 s.d. PLK-08 (Prosedur steps, swimlane, branching)
-- [P0-D] Status transisi valid (terminal states)
-
-**Implementation:**
-- Status transition matrix di service layer
-- Validation sebelum setiap status change
-- Trigger database untuk constraint [P0-B] (1 BERLAKU per SOP)
-
-**Risks:**
-- Invalid status transition (misal: DRAFT → BERLAKU)
-- Multiple DetailSOP BERLAKU untuk SOP yang sama
-- Prosedur steps tanpa pelaksana terdaftar
-
-**Mitigation:**
-- VALID_TRANSITIONS const di code
-- Transaction dengan row-level lock
-- FK constraint ke DetailSOPPelaksana
+**Timeline**: Before production deployment
 
 ---
 
-### CC-06: Evaluasi Workflow dan Optimistic Locking
+### C3: Missing Environment Variable Validation
 
-**Stakeholders:** Tim Evaluasi, Biro Organisasi
-**Priority:** High
-**Status:** Active
+**Severity**: 🔴 Critical  
+**Location**: `server/src/config/env.validation.ts`  
+**Impact**: Runtime failures, security
 
-**Summary:** Evaluasi workflow harus support concurrent evaluators dengan optimistic locking untuk prevent lost update pada NilaiEvaluasi.
+**Issue**:
+While Zod validation exists for backend, critical validation gaps remain:
 
-**Requirements:**
-- EVL-01 s.d. EVL-13 (PengajuanEvaluasi, NilaiEvaluasi, LogNilaiEvaluasi)
-- [P0-E] Optimistic locking via version field
-- [P1-B] TERJADWAL wajib nilaiOPD, MANDIRI NULL
+```typescript
+// Current validation may not catch all edge cases
+export const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  DATABASE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(32),
+  // ... potentially missing critical vars
+});
+```
 
-**Implementation:**
-- Version field di NilaiEvaluasi
-- Version check saat update (where clause)
-- LogNilaiEvaluasi untuk immutable audit trail
+**Missing Validations**:
+- Frontend environment variables (VITE_*) have no validation
+- No runtime check for required variables
+- No default value security audit
 
-**Risks:**
-- Lost update saat 2 evaluator edit SOP sama bersamaan
-- Version mismatch tidak ditangani dengan baik
-- LogNilaiEvaluasi tidak tercatat
+**Recommended Action**:
+```typescript
+// Add comprehensive env validation
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']),
+  DATABASE_URL: z.string().url().refine(
+    url => url.includes('mysql://'),
+    'Must be MySQL connection string'
+  ),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_EXPIRATION: z.string().refine(
+    exp => /^\d+[smhd]$/.test(exp),
+    'Must be in format: number + s/m/h/d'
+  ),
+  ALLOWED_ORIGINS: z.string().transform(str => str.split(',')),
+});
 
-**Mitigation:**
-- Optimistic locking pattern di repository
-- Retry logic untuk version conflict
-- Transaction wrapping untuk ensure logging
+// Validate at application startup
+const parsed = envSchema.safeParse(process.env);
+if (!parsed.success) {
+  console.error('Invalid environment variables:', parsed.error);
+  process.exit(1);
+}
+```
 
----
-
-### CC-07: Data Consistency dan Delete Behavior
-
-**Stakeholders:** Biro Organisasi (admin)
-**Priority:** High
-**Status:** Active
-
-**Summary:** Delete behavior (Cascade/Restrict/SetNull) harus sesuai ERD untuk maintain referential integrity dan avoid orphaned records.
-
-**Requirements:**
-- DB-02 (Relasi antar tabel dengan delete behavior benar)
-- ERD-DESKRIPSI.md (Legenda delete behavior)
-
-**Delete Behavior Summary:**
-- **Cascade:** SOP → DetailSOP → (LangkahSOP, DiagramLayout, LampiranTeks, DasarHukum, SopTerkait, LogEditSOP, Komentar)
-- **Restrict:** OPD tidak bisa dihapus kalau masih ada child entities; DetailSOP tidak bisa dihapus kalau sudah ada RiwayatTandaTangan atau NilaiEvaluasi
-- **SetNull:** DetailSOP.salindDariDetailSopId saat sumber dihapus; NilaiEvaluasi.dinilaiOlehId saat evaluator dihapus
-
-**Risks:**
-- Multi-path cascade deadlock (LangkahSOP → DiagramEdge/NodePosition)
-- Orphaned records saat delete parent
-- Accidental delete data penting
-
-**Mitigation:**
-- Service layer delete order: DiagramEdge → DiagramNodePosition → LangkahSOP
-- FK constraints dengan proper delete behavior
-- Soft-delete untuk OPD dan Pengguna (deletedAt field)
+**Timeline**: Before next deployment
 
 ---
 
-### CC-08: Performance dan Scalability
+## 🟠 High Priority Concerns
 
-**Stakeholders:** Semua user
-**Priority:** Medium
-**Status:** Active
+### H1: Insufficient Test Coverage
 
-**Summary:** Sistem harus responsive dengan query optimization, indexing strategy, dan pagination untuk handle large datasets.
+**Severity**: 🟠 High  
+**Location**: `client/`, `server/`  
+**Impact**: Regression risk, code quality
 
-**Requirements:**
-- NF-05, NF-06, NF-07 (Loading state, pagination, lazy loading)
-- DB-05 (Indexing strategy untuk FK dan query pattern)
+**Current State**:
+```json
+// Backend coverage thresholds (package.json)
+"coverageThreshold": {
+  "global": {
+    "branches": 10,
+    "functions": 20,
+    "lines": 20,
+    "statements": 20
+  }
+}
 
-**Implementation:**
-- Index pada opdId, status, userId, createdAt
-- Pagination untuk list endpoints
-- Select projections untuk avoid over-fetching
+// Frontend coverage thresholds (vitest.config.ts)
+thresholds: {
+  global: {
+    branches: 70,  // Good target but may not be enforced
+    functions: 80,
+    lines: 80,
+    statements: 80,
+  },
+}
+```
 
-**Risks:**
-- Query lambat saat data besar
-- N+1 query problem
-- Missing indexes pada FK
+**Issues**:
+- Backend thresholds are extremely low (10-20%)
+- Critical business logic may be untested
+- No E2E testing implemented
+- No integration testing for critical workflows
 
-**Mitigation:**
-- Prisma query optimization (select, include)
-- Index migration script
-- Query profiling dengan Prisma logs
+**Recommended Action**:
+1. Increase backend thresholds to minimum 70%
+2. Add tests for critical paths:
+   - Authentication flow
+   - SOP creation and approval workflow
+   - TTE signing process
+   - Evaluation submission
+3. Implement E2E testing with Playwright
+4. Add CI gate for coverage thresholds
+
+**Timeline**: 2-3 sprints
+
+---
+
+### H2: Accessibility Issues (WCAG Non-Compliance)
+
+**Severity**: 🟠 High  
+**Location**: `client/src/components/`  
+**Impact**: User exclusion, legal compliance
+
+**Source**: UX-AUDIT-REPORT.md findings
+
+**Critical Issues Found**:
+```markdown
+[CRITICAL]
+1. Touch targets too small (32px vs required 44px)
+   - Location: button.tsx (size: default = 'h-8')
+   - Impact: Mobile users cannot reliably tap buttons
+
+2. Missing form error associations
+   - Location: LoginForm.tsx, TTEBuatDialog.tsx
+   - Impact: Screen reader users cannot identify error fields
+```
+
+**High Issues Found**:
+```markdown
+[HIGH]
+1. Color contrast insufficient (gray-400 on white = 3.0:1 ratio)
+2. Small font sizes (12px base, WCAG recommends 14px minimum)
+3. No skip-to-main-content link
+4. Loading states inconsistent
+5. Focus management in dialogs incomplete
+6. Error messages generic (don't specify which field)
+7. No aria-live regions for dynamic content
+8. Table headers lack scope attribute
+```
+
+**Recommended Action**:
+```typescript
+// Immediate fixes (Phase 1)
+// 1. Increase touch targets
+button.tsx: size: default = 'h-11' // was 'h-8'
+
+// 2. Associate error messages
+<input aria-describedby={errors.email ? 'email-error' : undefined} />
+{errors.email && <p id="email-error" role="alert">{errors.email.message}</p>}
+
+// 3. Fix color contrast
+styles.css: --gray-400: #6B7280 // was #9CA3AF
+
+// 4. Increase font size
+styles.css: --font-body: 14px // was 12px
+```
+
+**Timeline**: Before production (accessibility is legal requirement)
 
 ---
 
-## Cross-Cutting Concerns
+### H3: Database Connection Pooling
 
-### CCC-01: Error Handling dan Logging
+**Severity**: 🟠 High  
+**Location**: `docker-compose.yml`, `server/`  
+**Impact**: Performance, scalability
 
-**Summary:** Global exception handling dan structured logging untuk semua errors dengan Winston.
+**Issue**:
+```yaml
+# docker-compose.yml
+environment:
+  DATABASE_URL: mysql://root:password@db:3306/sop_db?connection_limit=10
+```
 
-**Implementation:**
-- GlobalExceptionFilter di NestJS
-- Winston logger dengan file rotation
-- Error codes untuk client-side handling
+**Problems**:
+- Connection limit of 10 may be insufficient under load
+- No connection pool monitoring
+- No retry logic for connection failures
+- Single database instance (no read replicas)
 
-### CCC-02: Validation dan Input Sanitization
+**Recommended Action**:
+```typescript
+// Add connection pool configuration in Prisma
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+  log: ['query', 'info', 'warn', 'error'],
+});
 
-**Summary:** DTO validation dengan class-validator untuk semua inputs.
+// Monitor connection pool
+setInterval(async () => {
+  const stats = await prisma.$queryRaw`SHOW STATUS LIKE 'Threads_connected'`;
+  logger.log(`Active connections: ${stats[0].Value}`);
+}, 60000);
+```
 
-**Implementation:**
-- ValidationPipe global (whitelist, forbidNonWhitelisted, transform)
-- Custom validators untuk constraint bisnis
-- Input sanitization untuk prevent XSS/SQL injection
-
-### CCC-03: Configuration Management
-
-**Summary:** Environment-based configuration dengan `.env` files.
-
-**Implementation:**
-- ConfigModule.forRoot() di NestJS
-- `.env.example` untuk documentation
-- Validation untuk required env vars
+**Timeline**: Before production load testing
 
 ---
-*Last updated: 2026-04-01 — Aligned with ERD-DESKRIPSI.md dan PRD-ANALISIS-SISTEM.md v1.3*
+
+### H4: Rate Limiting Configuration
+
+**Severity**: 🟠 High  
+**Location**: `server/src/app.module.ts`  
+**Impact**: Security, DoS protection
+
+**Current Configuration**:
+```typescript
+const AUTH_THROTTLE_TTL_MS = 60 * 1000; // 1 minute
+const AUTH_THROTTLE_LIMIT = 5; // 5 requests per minute
+
+const GENERAL_THROTTLE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const GENERAL_THROTTLE_LIMIT = 100; // 100 requests per hour
+```
+
+**Issues**:
+- Auth limit (5/min) may be too strict for legitimate users
+- No per-endpoint rate limiting customization
+- No rate limit headers for clients
+- No distributed rate limiting (fails in multi-instance deployment)
+
+**Recommended Action**:
+```typescript
+// Add endpoint-specific rate limits
+@Throttle('strict') // 3/minute for sensitive endpoints
+@Post('login')
+async login(@Body() dto: LoginDto) { ... }
+
+@Throttle('moderate') // 30/minute for search
+@Get('sop/search')
+async search(@Query() query: SearchDto) { ... }
+
+// Add rate limit headers
+app.use((req, res, next) => {
+  res.setHeader('X-RateLimit-Limit', '100');
+  res.setHeader('X-RateLimit-Remaining', '99');
+  res.setHeader('X-RateLimit-Reset', '1625097600');
+  next();
+});
+```
+
+**Timeline**: Before production
+
+---
+
+### H5: Error Handling Inconsistency
+
+**Severity**: 🟠 High  
+**Location**: `client/src/services/`, `server/src/modules/`  
+**Impact**: User experience, debugging
+
+**Issue**:
+Inconsistent error handling patterns across codebase:
+
+```typescript
+// Some services throw structured errors
+throw new NotFoundException('SOP not found');
+
+// Others may throw raw errors
+throw error; // Unstructured
+
+// Frontend error handling varies
+try {
+  await sopService.create(data);
+} catch (error) {
+  // Sometimes handled
+  uiStore.addToast({ type: 'error', title: 'Gagal' });
+  
+  // Sometimes not handled (silent failures)
+}
+```
+
+**Recommended Action**:
+```typescript
+// Standardize error classes
+export class AppError extends Error {
+  constructor(
+    public code: string,
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+// Use consistently
+throw new AppError('SOP_NOT_FOUND', 404, 'SOP tidak ditemukan');
+
+// Global error handler
+api.interceptors.response.use(
+  response => response,
+  error => {
+    const appError = error.response?.data;
+    uiStore.addToast({
+      type: 'error',
+      title: 'Error',
+      description: appError?.message || 'Terjadi kesalahan',
+    });
+    throw error;
+  }
+);
+```
+
+**Timeline**: 1-2 sprints
+
+---
+
+### H6: Logging Security
+
+**Severity**: 🟠 High  
+**Location**: `server/src/common/logger/`  
+**Impact**: Data privacy, compliance
+
+**Issue**:
+Winston logger configuration may log sensitive data:
+
+```typescript
+// Potential logging of sensitive information
+logger.log(`Login attempt for: ${loginDto.email}, password: ${loginDto.password}`);
+// DON'T DO THIS - but easy to accidentally add
+
+// No PII filtering
+logger.log(`User data: ${JSON.stringify(user)}`);
+// May include kataSandi, token, etc.
+```
+
+**Recommended Action**:
+```typescript
+// Add sensitive data filter
+const sensitiveFields = ['password', 'kataSandi', 'token', 'secret', 'apiKey'];
+
+function filterSensitiveData(obj: any): any {
+  const filtered = { ...obj };
+  for (const key of sensitiveFields) {
+    if (key in filtered) {
+      filtered[key] = '[REDACTED]';
+    }
+  }
+  return filtered;
+}
+
+// Use in logger
+logger.log(`User data: ${JSON.stringify(filterSensitiveData(user))}`);
+```
+
+**Timeline**: Before production
+
+---
+
+### H7: Docker Security Configuration
+
+**Severity**: 🟠 High  
+**Location**: `docker-compose.yml`, `Dockerfile`  
+**Impact**: Container security
+
+**Issues**:
+```yaml
+# Running as root (default)
+# No USER directive in Dockerfile
+
+# Exposed ports without firewall rules
+ports:
+  - "3306:3306"  # MySQL directly exposed
+  - "8080:3000"  # Server exposed
+
+# No resource limits
+# No health checks for server/client (only db)
+```
+
+**Recommended Action**:
+```dockerfile
+# Dockerfile - Add non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+USER nestjs
+```
+
+```yaml
+# docker-compose.yml - Add security
+services:
+  server:
+    user: "1001:1001"
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+```
+
+**Timeline**: Before production
+
+---
+
+### H8: Dependency Vulnerabilities
+
+**Severity**: 🟠 High  
+**Location**: `client/package.json`, `server/package.json`  
+**Impact**: Security
+
+**Issue**:
+No automated dependency scanning detected. Need to run:
+
+```bash
+# Check for vulnerabilities
+pnpm audit
+npm audit
+
+# Check for outdated packages
+pnpm outdated
+npm outdated
+```
+
+**Recommended Action**:
+1. Run `pnpm audit` on both client and server
+2. Fix critical/high vulnerabilities immediately
+3. Add automated dependency scanning to CI
+4. Consider using Dependabot or Renovate
+
+**Timeline**: Immediate
+
+---
+
+## 🟡 Medium Priority Concerns
+
+### M1: No WebSocket Implementation
+
+**Severity**: 🟡 Medium  
+**Location**: `.env` (VITE_WS_URL configured)  
+**Impact**: Feature gap
+
+**Issue**:
+```env
+VITE_WS_URL=ws://localhost:8080
+```
+
+WebSocket URL is configured but no implementation found. Missing real-time features:
+- Live SOP status updates
+- Real-time collaboration notifications
+- Instant evaluation assignment alerts
+
+**Recommended Action**:
+- Implement WebSocket gateway in NestJS
+- Add WebSocket client hook in React
+- Use for real-time notifications
+
+**Timeline**: Future enhancement
+
+---
+
+### M2: No Email Service Integration
+
+**Severity**: 🟡 Medium  
+**Location**: `server/`  
+**Impact**: User experience
+
+**Issue**:
+- `emailTerverifikasi` flag exists but no email sending
+- No password reset functionality
+- No notification emails for SOP status changes
+
+**Recommended Action**:
+```typescript
+// Add email service
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT),
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
+
+// Send email on SOP approval
+await transporter.sendMail({
+  from: 'SOP System <noreply@example.com>',
+  to: user.email,
+  subject: 'SOP Disetujui',
+  text: `SOP ${sop.judul} telah disetujui`,
+});
+```
+
+**Timeline**: Before production
+
+---
+
+### M3: No File Storage Strategy
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/modules/sop/`  
+**Impact**: Scalability
+
+**Issue**:
+- Logo stored as base64 string in database
+- No attachment storage implemented
+- No CDN for static assets
+
+**Recommended Action**:
+```typescript
+// Add S3/MinIO integration
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+const s3Client = new S3Client({
+  endpoint: process.env.S3_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+  },
+});
+
+// Upload file
+await s3Client.send(new PutObjectCommand({
+  Bucket: 'sop-attachments',
+  Key: `${sopId}/${filename}`,
+  Body: file.buffer,
+}));
+```
+
+**Timeline**: Before production (if attachments needed)
+
+---
+
+### M4: No CSRF Protection
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/main.ts`  
+**Impact**: Security (mitigated by JWT)
+
+**Current State**:
+```typescript
+app.enableCors({
+  origin: allowedOrigins,
+  credentials: true,
+  // No CSRF tokens
+});
+```
+
+**Why It's Medium (Not High)**:
+- JWT in Authorization header (not cookies) avoids CSRF vulnerability
+- CORS is properly configured
+
+**Recommended Action**:
+- Document CSRF risk assessment
+- Consider adding CSRF tokens if cookie-based auth added in future
+
+**Timeline**: Document now, implement if auth changes
+
+---
+
+### M5: No Request Validation Logging
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/common/filters/`  
+**Impact**: Security monitoring
+
+**Issue**:
+- Validation errors logged but not tracked
+- No alerting for repeated validation failures
+- No IP-based blocking for malicious requests
+
+**Recommended Action**:
+```typescript
+// Add request logging middleware
+@Injectable()
+export class RequestLoggerMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    const { ip, method, originalUrl } = req;
+    const userAgent = req.get('user-agent') || '';
+    
+    logger.log(`${method} ${originalUrl} - IP: ${ip} - UA: ${userAgent}`);
+    next();
+  }
+}
+```
+
+**Timeline**: 1-2 sprints
+
+---
+
+### M6: No API Versioning Strategy
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/main.ts`  
+**Impact**: Future compatibility
+
+**Current State**:
+```typescript
+app.enableVersioning({
+  type: VersioningType.URI,
+  defaultVersion: '1',
+});
+```
+
+**Issue**:
+- Only v1 exists
+- No deprecation strategy documented
+- No versioning for breaking changes
+
+**Recommended Action**:
+- Document API versioning strategy
+- Add sunset headers for deprecated versions
+- Plan v2 for breaking changes
+
+**Timeline**: Document now
+
+---
+
+### M7: No Database Backup Strategy
+
+**Severity**: 🟡 Medium  
+**Location**: `docker-compose.yml`  
+**Impact**: Data loss risk
+
+**Issue**:
+```yaml
+volumes:
+  - db_data:/var/lib/mysql
+```
+
+No automated backup configured.
+
+**Recommended Action**:
+```yaml
+# Add backup service
+services:
+  backup:
+    image: mysql:8.0
+    volumes:
+      - db_data:/var/lib/mysql:ro
+      - ./backups:/backups
+    command: >
+      sh -c '
+        while true; do
+          mysqldump -u root -p$$DB_ROOT_PASSWORD sop_db > /backups/sop_db-$$(date +%Y%m%d).sql
+          sleep 86400
+        done
+      '
+```
+
+**Timeline**: Before production
+
+---
+
+### M8: No Health Check for Server/Client
+
+**Severity**: 🟡 Medium  
+**Location**: `docker-compose.yml`  
+**Impact**: Reliability
+
+**Current State**:
+```yaml
+services:
+  db:
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"]
+  
+  server:
+    # No healthcheck
+  
+  client:
+    # No healthcheck
+```
+
+**Recommended Action**:
+```yaml
+services:
+  server:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  client:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+```
+
+**Timeline**: Before production
+
+---
+
+### M9: No Graceful Shutdown for Client
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/main.ts`  
+**Impact**: Data integrity
+
+**Current State**:
+```typescript
+app.enableShutdownHooks(); // Server only
+```
+
+**Recommended Action**:
+- Document graceful shutdown procedures
+- Add shutdown hooks for cleanup tasks
+- Ensure database connections close properly
+
+**Timeline**: Before production
+
+---
+
+### M10: No Performance Monitoring
+
+**Severity**: 🟡 Medium  
+**Location**: `server/`, `client/`  
+**Impact**: Performance optimization
+
+**Issue**:
+- No APM (Application Performance Monitoring)
+- No query performance tracking
+- No frontend performance metrics
+
+**Recommended Action**:
+```typescript
+// Add performance logging
+@Injectable()
+export class PerformanceInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const now = Date.now();
+    return next.handle().pipe(
+      tap(() => {
+        const duration = Date.now() - now;
+        const req = context.switchToHttp().getRequest();
+        logger.log(`${req.method} ${req.url} - ${duration}ms`);
+      }),
+    );
+  }
+}
+```
+
+**Timeline**: Before production
+
+---
+
+### M11: No Input Sanitization
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/common/pipes/`  
+**Impact**: XSS, injection attacks
+
+**Current State**:
+```typescript
+app.useGlobalPipes(
+  new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }),
+);
+```
+
+**Issue**:
+- Validation exists but no sanitization
+- HTML/JS injection possible in text fields
+
+**Recommended Action**:
+```typescript
+import * as DOMPurify from 'isomorphic-dompurify';
+
+// Add sanitization pipe
+@IsString()
+@Transform(({ value }) => DOMPurify.sanitize(value))
+judul: string;
+```
+
+**Timeline**: Before production
+
+---
+
+### M12: No API Documentation Updates
+
+**Severity**: 🟡 Medium  
+**Location**: `server/src/`  
+**Impact**: Developer experience
+
+**Issue**:
+- Swagger enabled but may be outdated
+- No automated API documentation updates
+- No API changelog
+
+**Recommended Action**:
+```typescript
+// Ensure all endpoints have proper decorators
+@ApiOperation({ summary: 'Create new SOP' })
+@ApiBody({ type: CreateSopDto })
+@ApiBearerAuth()
+@Roles(PeranPengguna.TIM_PENYUSUN)
+@Post()
+create(@Body() dto: CreateSopDto) { ... }
+```
+
+**Timeline**: Ongoing
+
+---
+
+## 🟢 Low Priority Concerns
+
+### L1: Inconsistent Button Gap
+
+**Severity**: 🟢 Low  
+**Location**: `client/src/components/ui/button.tsx`  
+**Impact**: Visual consistency
+
+**Issue**:
+```typescript
+// Some buttons have gap-1.5, others gap-2
+gap: 'gap-1.5' | 'gap-2' // Inconsistent
+```
+
+**Recommended Action**: Standardize to `gap-2`
+
+**Timeline**: Next UI refactor
+
+---
+
+### L2: No Dark Mode Support
+
+**Severity**: 🟢 Low  
+**Location**: `client/src/styles.css`  
+**Impact**: User preference
+
+**Issue**:
+- Design system only supports light theme
+- No `prefers-color-scheme` support
+
+**Timeline**: Future enhancement
+
+---
+
+### L3: Placeholder Text Disappears
+
+**Severity**: 🟢 Low  
+**Location**: Input components  
+**Impact**: UX
+
+**Issue**:
+- Placeholders vanish on focus
+- Users may forget field purpose
+
+**Timeline**: UX improvement backlog
+
+---
+
+### L4: Toast Auto-Dismiss Too Fast
+
+**Severity**: 🟢 Low  
+**Location**: `client/src/stores/uiStore.ts`  
+**Impact**: User awareness
+
+**Issue**:
+```typescript
+// 3 second auto-dismiss may be too quick
+setTimeout(() => removeToast(toast.id), 3000);
+```
+
+**Recommended Action**: Increase to 5 seconds
+
+**Timeline**: Quick fix
+
+---
+
+### L5: No Print Styles for All Pages
+
+**Severity**: 🟢 Low  
+**Location**: `client/src/styles.css`  
+**Impact**: Printing
+
+**Issue**:
+- Only SOP preview has print styles
+- Other pages don't print well
+
+**Timeline**: Future enhancement
+
+---
+
+### L6: Inconsistent Error Message Placement
+
+**Severity**: 🟢 Low  
+**Location**: Dialog components  
+**Impact**: UX consistency
+
+**Issue**:
+- Sometimes inline, sometimes in dialog header
+
+**Timeline**: UI refactor
+
+---
+
+## Risk Mitigation Summary
+
+### Immediate Actions (Before Production)
+1. ✅ Fix React 19 compatibility or downgrade to React 18
+2. ✅ Fix Tailwind CSS v4 issues or downgrade to v3
+3. ✅ Add comprehensive environment variable validation
+4. ✅ Fix accessibility critical issues (touch targets, error associations)
+5. ✅ Implement database backup strategy
+6. ✅ Add health checks for all services
+7. ✅ Run dependency audit and fix vulnerabilities
+
+### Short-Term (1-2 Sprints)
+1. Increase test coverage to 70%+
+2. Fix accessibility high-priority issues
+3. Implement proper error handling patterns
+4. Add logging security filters
+5. Improve Docker security configuration
+6. Add rate limiting customization
+
+### Medium-Term (Next Quarter)
+1. Implement email service integration
+2. Add file storage strategy
+3. Implement performance monitoring
+4. Add input sanitization
+5. Implement WebSocket for real-time features
+6. Add API documentation automation
+
+---
+
+## Technical Debt Tracker
+
+| ID | Concern | Severity | Status | Owner | Due Date |
+|----|---------|----------|--------|-------|----------|
+| C1 | React 19 Compatibility | 🔴 | Open | - | Before prod |
+| C2 | Tailwind CSS v4 Issues | 🔴 | Open | - | Before prod |
+| C3 | Env Validation | 🔴 | Open | - | Before prod |
+| H1 | Test Coverage | 🟠 | Open | - | Sprint 1-2 |
+| H2 | Accessibility | 🟠 | Open | - | Before prod |
+| H3 | Connection Pooling | 🟠 | Open | - | Before prod |
+| H4 | Rate Limiting | 🟠 | Open | - | Before prod |
+| H5 | Error Handling | 🟠 | Open | - | Sprint 1-2 |
+| H6 | Logging Security | 🟠 | Open | - | Before prod |
+| H7 | Docker Security | 🟠 | Open | - | Before prod |
+| H8 | Dependency Audit | 🟠 | Open | - | Immediate |
+
+---
+
+## Conclusion
+
+The codebase demonstrates solid architectural foundations with modern technology choices. However, several critical issues must be addressed before production deployment:
+
+1. **React 19 and Tailwind v4** - Consider downgrading to more stable versions
+2. **Accessibility** - Critical WCAG violations must be fixed
+3. **Security** - Environment validation, logging security, Docker hardening
+4. **Testing** - Increase coverage, especially for critical workflows
+
+With proper attention to these concerns, the system will be production-ready with good maintainability and security posture.

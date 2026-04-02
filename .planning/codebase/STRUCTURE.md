@@ -1,379 +1,545 @@
-# Structure
+# Project Structure
 
-## Root Layout
-```
-codingan/
-├── client/               # React SPA (TanStack Start/Router)
-├── server/               # NestJS REST API
-├── docs/                 # Project documentation (SSOT)
-│   ├── ERD-DESKRIPSI.md
-│   ├── SCHEMA-CONSTRAINTS.md
-│   ├── PRD-ANALISIS-SISTEM.md
-│   └── ...
-├── .skills/              # Skill guidance untuk development
-│   ├── backend.md
-│   ├── database.md
-│   ├── system-arch.md
-│   ├── sytem-analyst.md
-│   ├── system-fe-prd.md
-│   ├── fullstack-audit.md
-│   ├── qa.md
-│   ├── db-audit.md
-│   └── frontend-codereview.md
-├── .planning/            # EZ Agents planning artifacts
-│   ├── PROJECT.md
-│   ├── REQUIREMENTS.md
-│   ├── ROADMAP.md
-│   ├── STATE.md
-│   └── codebase/         # This codebase map
-└── .agents/              # Agent skills
-```
-
-## Single Source of Truth
-
-**Dokumen referensi wajib:**
-- `docs/ERD-DESKRIPSI.md` — Deskripsi entitas dan relasi database
-- `docs/SCHEMA-CONSTRAINTS.md` — Constraint bisnis di luar Prisma
-- `docs/PRD-ANALISIS-SISTEM.md` — Spesifikasi use case dan requirements
-- `.skills/` directory — Skill guidance untuk development dan analysis
-
-## Skills Directory Structure
-
-```
-.skills/
-├── backend.md            # Spec-driven NestJS development
-├── database.md           # Database audit, invariants, consistency
-├── system-arch.md        # System diagrams (BPMN, Use Case, Sequence, Class)
-├── sytem-analyst.md      # PRD generation, use case analysis
-├── system-fe-prd.md      # Frontend to PRD reverse engineering
-├── fullstack-audit.md    # Fullstack codebase audit
-├── qa.md                 # Quality assurance, testing strategy
-├── db-audit.md           # Database-specific audit
-└── frontend-codereview.md # Frontend code review
-```
-
-**Usage Rule:** Setiap task development atau analysis harus merujuk ke skill yang sesuai di `.skills/`.
+**Project**: Sistem Informasi SOP Biro Organisasi  
+**Type**: Monorepo (Client + Server)
 
 ---
 
-## Server Structure
+## 1. Root Directory Structure
+
 ```
-server/
-├── src/
-│   ├── main.ts                          # Bootstrap (entry point)
-│   ├── app.module.ts                    # Root module
-│   ├── app.controller.ts                # Root health controller
-│   ├── app.service.ts                   # Root service
-│   ├── common/
-│   │   ├── dto/
-│   │   │   ├── api-response.dto.ts      # ApiResponseDto wrapper
-│   │   │   └── pagination.dto.ts        # PaginatedResponseDto
-│   │   ├── filters/
-│   │   │   └── http-exception.filter.ts # GlobalExceptionFilter
-│   │   ├── interceptors/
-│   │   │   └── response.interceptor.ts  # ResponseInterceptor
-│   │   ├── logger/
-│   │   │   ├── logger.module.ts
-│   │   │   └── winston.config.ts        # Winston transports config
-│   │   ├── prisma/
-│   │   │   ├── prisma.module.ts         # Global PrismaModule
-│   │   │   └── prisma.service.ts        # PrismaClient wrapper
-│   │   └── repositories/
-│   │       └── base.repository.ts       # IBaseRepository<T,C,U> interface
-│   ├── generated/prisma/                # Auto-generated Prisma client
-│   └── modules/
-│       ├── auth/                        # Auth module (JWT, login, register)
-│       │   ├── controller/
-│       │   │   ├── auth.controller.ts
-│       │   │   └── auth.controller.spec.ts
-│       │   ├── service/
-│       │   │   ├── auth.service.ts
-│       │   │   └── auth.service.spec.ts
-│       │   ├── dto/
-│       │   │   ├── login.dto.ts
-│       │   │   └── register.dto.ts
-│       │   ├── guards/
-│       │   │   ├── jwt-auth.guard.ts
-│       │   │   └── roles.guard.ts
-│       │   ├── strategies/
-│       │   │   └── jwt.strategy.ts
-│       │   └── auth.module.ts
-│       ├── opd/                         # OPD module
-│       │   ├── controller/opd.controller.ts
-│       │   ├── service/opd.service.ts
-│       │   ├── repository/
-│       │   │   ├── opd.repository.interface.ts
-│       │   │   └── opd.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-opd.dto.ts
-│       │   │   └── update-opd.dto.ts
-│       │   └── opd.module.ts
-│       ├── peraturan/                   # Peraturan module
-│       │   ├── controller/peraturan.controller.ts
-│       │   ├── service/peraturan.service.ts
-│       │   ├── repository/peraturan.repository.ts
-│       │   ├── dto/create-peraturan.dto.ts
-│       │   └── peraturan.module.ts
-│       ├── sop/                         # SOP module (Core)
-│       │   ├── controller/sop.controller.ts
-│       │   ├── service/
-│       │   │   ├── sop.service.ts
-│       │   │   └── detail-sop.service.ts
-│       │   ├── repository/
-│       │   │   ├── sop.repository.ts
-│       │   │   └── detail-sop.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-sop.dto.ts
-│       │   │   ├── create-detail-sop.dto.ts
-│       │   │   └── update-detail-sop.dto.ts
-│       │   └── sop.module.ts
-│       ├── langkah-sop/                 # Prosedur module
-│       │   ├── controller/langkah-sop.controller.ts
-│       │   ├── service/langkah-sop.service.ts
-│       │   ├── repository/langkah-sop.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-langkah-sop.dto.ts
-│       │   │   └── update-langkah-sop.dto.ts
-│       │   └── langkah-sop.module.ts
-│       ├── diagram/                     # Diagram module (Layout, Node, Edge)
-│       │   ├── controller/diagram.controller.ts
-│       │   ├── service/
-│       │   │   ├── diagram-layout.service.ts
-│       │   │   ├── diagram-node.service.ts
-│       │   │   └── diagram-edge.service.ts
-│       │   ├── repository/
-│       │   │   ├── diagram-layout.repository.ts
-│       │   │   ├── diagram-node.repository.ts
-│       │   │   └── diagram-edge.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-diagram-layout.dto.ts
-│       │   │   ├── create-diagram-node.dto.ts
-│       │   │   └── create-diagram-edge.dto.ts
-│       │   └── diagram.module.ts
-│       ├── pelaksana/                   # Pelaksana module
-│       │   ├── controller/pelaksana.controller.ts
-│       │   ├── service/pelaksana.service.ts
-│       │   ├── repository/pelaksana.repository.ts
-│       │   ├── dto/create-pelaksana.dto.ts
-│       │   └── pelaksana.module.ts
-│       ├── tim/                         # Tim module (Penyusun + Evaluasi)
-│       │   ├── controller/tim.controller.ts
-│       │   ├── service/
-│       │   │   ├── tim-penyusun.service.ts
-│       │   │   └── tim-evaluasi.service.ts
-│       │   ├── repository/
-│       │   │   ├── tim-penyusun.repository.ts
-│       │   │   └── tim-evaluasi.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-anggota-tim-penyusun.dto.ts
-│       │   │   └── create-anggota-tim-evaluasi.dto.ts
-│       │   └── tim.module.ts
-│       ├── evaluasi/                    # Evaluasi module (PengajuanEvaluasi, NilaiEvaluasi)
-│       │   ├── controller/evaluasi.controller.ts
-│       │   ├── service/
-│       │   │   ├── pengajuan-evaluasi.service.ts
-│       │   │   └── nilai-evaluasi.service.ts
-│       │   ├── repository/
-│       │   │   ├── pengajuan-evaluasi.repository.ts
-│       │   │   └── nilai-evaluasi.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-pengajuan-evaluasi.dto.ts
-│       │   │   └── create-nilai-evaluasi.dto.ts
-│       │   └── evaluasi.module.ts
-│       ├── tte/                         # TTE module (KredensialTTE, RiwayatTandaTangan)
-│       │   ├── controller/tte.controller.ts
-│       │   ├── service/
-│       │   │   ├── kredensial-tte.service.ts
-│       │   │   └── riwayat-tanda-tangan.service.ts
-│       │   ├── repository/
-│       │   │   ├── kredensial-tte.repository.ts
-│       │   │   └── riwayat-tanda-tangan.repository.ts
-│       │   ├── dto/
-│       │   │   ├── create-kredensial-tte.dto.ts
-│       │   │   └── tte-sign.dto.ts
-│       │   └── tte.module.ts
-│       └── audit/                       # Audit module (LogEditSOP, LogNilaiEvaluasi)
-│           ├── controller/audit.controller.ts
-│           ├── service/audit-log.service.ts
-│           ├── repository/audit-log.repository.ts
-│           └── audit.module.ts
-├── prisma/
-│   ├── schema.prisma                    # Database schema (20 models, 12+ enums)
-│   ├── seed.ts                          # Seed script (FakerJS)
-│   └── migrations/                      # Migration files
-├── test/
-│   └── app.e2e-spec.ts
-├── prisma.config.ts
-├── nest-cli.json
-├── tsconfig.json
-├── .env.example
-└── package.json
+codingan/
+├── client/                    # React + Vite frontend
+├── server/                    # NestJS backend
+├── diagram/                   # (Empty - for future diagrams)
+├── docs/                      # Project documentation
+├── .planning/                 # Planning & codebase docs
+│   └── codebase/              # This directory
+├── .skills/                   # Qwen Code skills
+├── .qwen/                     # Qwen Code configuration
+├── docker-compose.yml         # Multi-container orchestration
+├── .env.example               # Environment template
+├── .gitignore                 # Git ignore rules
+└── README.md                  # (If exists)
 ```
 
-## Client Structure
+---
+
+## 2. Client Structure (`/client`)
+
 ```
 client/
 ├── src/
-│   ├── components/
-│   │   ├── ui/                          # shadcn/ui base components (30+ files)
-│   │   ├── layout/                      # Page shells
-│   │   │   ├── RoleLayout.tsx           # Sidebar + role nav wrapper
-│   │   │   ├── ListPageLayout.tsx       # Standard list page chrome
-│   │   │   ├── DetailPageLayout.tsx     # Detail page dengan back button
-│   │   │   └── ...
-│   │   ├── sop/                         # SOP-related components
-│   │   │   ├── diagram/                 # BPMN + flowchart diagram rendering
-│   │   │   │   ├── logic/              # Routing algorithms (bpmnRouter, orthogonalRouter)
-│   │   │   │   └── shapes/             # Shape components
-│   │   │   ├── sop-card.tsx
-│   │   │   ├── sop-metadata-form.tsx
-│   │   │   ├── sop-status-badge.tsx
-│   │   │   └── ...
-│   │   ├── tte/                         # TTE (digital signature) components
-│   │   │   ├── tte-profile-form.tsx
-│   │   │   ├── tte-pin-dialog.tsx
-│   │   │   ├── tte-signature-block.tsx
-│   │   │   └── ...
-│   │   ├── evaluasi/                    # Evaluation components
-│   │   │   ├── evaluasi-form.tsx
-│   │   │   ├── evaluasi-list.tsx
-│   │   │   └── ...
-│   │   ├── berita-acara/               # Berita Acara document component
-│   │   │   ├── berita-acara-document.tsx
-│   │   │   └── berita-acara-preview.tsx
-│   │   └── opd/                        # OPD components
-│   │       ├── opd-list.tsx
-│   │       └── opd-form.tsx
-│   ├── hooks/                           # Feature hooks (one per concern)
-│   │   ├── use-auth.ts
-│   │   ├── use-sop.ts
-│   │   ├── use-detail-sop.ts
-│   │   ├── use-peraturan.ts
-│   │   ├── use-pelaksana.ts
-│   │   ├── use-tim-penyusun.ts
-│   │   ├── use-tim-evaluasi.ts
-│   │   ├── use-pengajuan-evaluasi.ts
-│   │   ├── use-nilai-evaluasi.ts
-│   │   ├── use-tte.ts
-│   │   └── ...
-│   ├── lib/
-│   │   ├── api/                         # API client (config.ts + per-domain files)
-│   │   │   ├── config.ts
-│   │   │   ├── auth.api.ts
-│   │   │   ├── sop.api.ts
-│   │   │   ├── peraturan.api.ts
-│   │   │   ├── evaluasi.api.ts
-│   │   │   └── ...
-│   │   ├── auth/
-│   │   │   └── role-route-guard.ts      # Client-side role guard
-│   │   ├── constants/
-│   │   │   ├── roles.ts                 # ROLES const + RoleKey type
-│   │   │   ├── routes.ts                # ROUTES path constants
-│   │   │   ├── evaluasi.ts              # Evaluasi constants
-│   │   │   ├── status-badge-config.ts   # Status badge display config
-│   │   │   ├── status-sop.ts            # StatusSOP enum display
-│   │   │   └── ui.ts                    # UI constants
-│   │   ├── domain/                      # Pure business logic functions
-│   │   │   ├── sop.ts                   # SOP domain logic
-│   │   │   ├── detail-sop.ts            # DetailSOP domain logic
-│   │   │   ├── tte.ts                   # TTE domain logic
-│   │   │   ├── role.ts                  # Role-based logic
-│   │   │   ├── opd.ts                   # OPD domain logic
-│   │   │   ├── evaluasi.ts              # Evaluasi domain logic
-│   │   │   └── ...
-│   │   ├── stores/                      # Zustand stores
-│   │   │   ├── app-store.ts             # Role + toast (persisted)
-│   │   │   ├── auth-store.ts            # JWT token + user info (persisted)
-│   │   │   ├── sop-store.ts             # SOP data (persisted for demo)
-│   │   │   ├── detail-sop-store.ts
-│   │   │   ├── peraturan-store.ts
-│   │   │   ├── pelaksana-store.ts
-│   │   │   ├── tim-penyusun-store.ts
-│   │   │   ├── tim-evaluasi-store.ts
-│   │   │   ├── pengajuan-evaluasi-store.ts
-│   │   │   ├── nilai-evaluasi-store.ts
-│   │   │   └── tte-store.ts
-│   │   ├── types/                       # TypeScript interfaces/types
-│   │   │   ├── sop.types.ts
-│   │   │   ├── detail-sop.types.ts
-│   │   │   ├── evaluasi.types.ts
-│   │   │   ├── tte.types.ts
-│   │   │   └── ...
-│   │   ├── seed/                        # Static seed JSON files (mock data)
-│   │   │   ├── sop-daftar.json
-│   │   │   ├── sop-detail.json
-│   │   │   ├── user.json
-│   │   │   └── ...
-│   │   └── utils/                       # Utility functions (cn, formatDate, etc.)
-│   ├── routes/                          # TanStack Router file-based routes
-│   │   ├── __root.tsx                   # Root layout
-│   │   ├── index.tsx                    # Home / role picker
-│   │   ├── tim-penyusun.tsx             # Role layout wrapper
-│   │   ├── tim-penyusun.daftar-sop.tsx  # Route: /tim-penyusun/daftar-sop
-│   │   ├── tim-penyusun.detail-sop.tsx
-│   │   ├── tim-penyusun.ttd-elektronik.tsx
-│   │   ├── kepala-opd.tsx
-│   │   ├── kepala-opd.pantau-sop.tsx
-│   │   ├── kepala-opd.detail-sop.tsx
-│   │   ├── kepala-opd.ttd-elektronik.tsx
-│   │   ├── tim-evaluasi.tsx
-│   │   ├── tim-evaluasi.evaluasi-sop.tsx
-│   │   ├── biro-organisasi.tsx
-│   │   ├── biro-organisasi.manajemen-opd.tsx
-│   │   ├── biro-organisasi.manajemen-tim-penyusun.tsx
-│   │   ├── biro-organisasi.manajemen-tim-evaluasi.tsx
-│   │   ├── biro-organisasi.manajemen-peraturan.tsx
-│   │   ├── biro-organisasi.terjadwal-evaluasi.tsx
-│   │   ├── biro-organisasi.ttd-elektronik.tsx
-│   │   └── ...
-│   ├── routeTree.gen.ts                 # Auto-generated — never edit manually
-│   ├── router.tsx                       # Router instance factory
-│   ├── styles.css                       # Global CSS + Tailwind base
-│   └── utils/                           # Utility functions (cn, formatDate, etc.)
-├── vite.config.ts
-├── tsconfig.json
-└── package.json
+│   ├── components/            # React components
+│   │   ├── ui/                # Reusable UI components
+│   │   │   ├── badge.tsx
+│   │   │   ├── breadcrumb.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── data-table.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── form-field.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   ├── pagination.tsx
+│   │   │   ├── search-input.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   ├── status-badge.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   ├── textarea.tsx
+│   │   │   └── toast.tsx
+│   │   ├── auth/              # Authentication components
+│   │   │   └── LoginForm.tsx
+│   │   ├── layout/            # Layout components
+│   │   │   ├── AppLogo.tsx
+│   │   │   ├── HeaderProfile.tsx
+│   │   │   ├── RoleLayout.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   └── TopNav.tsx
+│   │   ├── sop/               # SOP feature components
+│   │   │   ├── SopDetail.tsx
+│   │   │   ├── SopForm.tsx
+│   │   │   ├── SopList.tsx
+│   │   │   ├── LangkahSOPForm.tsx
+│   │   │   ├── DiagramEditor.tsx
+│   │   │   └── SopTerkaitDialog.tsx
+│   │   ├── evaluasi/          # Evaluation feature components
+│   │   │   ├── EvaluasiForm.tsx
+│   │   │   ├── NilaiEvaluasiForm.tsx
+│   │   │   ├── PengajuanEvaluasiList.tsx
+│   │   │   └── BeritaAcaraView.tsx
+│   │   ├── tte/               # Digital signature components
+│   │   │   ├── TTEBuatDialog.tsx
+│   │   │   ├── TTEVerifyDialog.tsx
+│   │   │   └── SetupTTEDialog.tsx
+│   │   ├── company-profile/   # Company profile feature
+│   │   ├── landing/           # Landing page components
+│   │   └── berita-acara/      # Berita Acara feature
+│   ├── hooks/                 # Custom React hooks
+│   │   ├── useAuth.ts
+│   │   ├── useSOP.ts
+│   │   ├── useEvaluasi.ts
+│   │   └── useToast.ts
+│   ├── stores/                # Zustand state stores
+│   │   ├── uiStore.ts         # UI state (toasts, dialogs)
+│   │   └── authStore.ts       # Auth state
+│   ├── services/              # API service layer
+│   │   ├── api.ts             # Axios instance configuration
+│   │   ├── authService.ts
+│   │   ├── sopService.ts
+│   │   ├── evaluasiService.ts
+│   │   └── usersService.ts
+│   ├── types/                 # TypeScript type definitions
+│   │   ├── sop.ts
+│   │   ├── evaluasi.ts
+│   │   ├── users.ts
+│   │   └── api.ts
+│   ├── routes/                # Route configuration (TanStack)
+│   │   ├── __root.tsx         # Root route with layout
+│   │   ├── index.tsx          # Landing page
+│   │   ├── login.tsx          # Login page
+│   │   ├── _auth.tsx          # Auth layout wrapper
+│   │   ├── _public.tsx        # Public layout wrapper
+│   │   └── routeTree.gen.ts   # Auto-generated route tree
+│   ├── pages/                 # Page-level components
+│   │   ├── Dashboard.tsx
+│   │   ├── SOPManagement.tsx
+│   │   ├── EvaluasiManagement.tsx
+│   │   └── UserProfile.tsx
+│   ├── utils/                 # Utility functions
+│   │   ├── cn.ts              # className merger (clsx + twMerge)
+│   │   ├── formatDate.ts
+│   │   ├── formatCurrency.ts
+│   │   └── validators.ts
+│   ├── config/                # Configuration files
+│   │   ├── api.config.ts
+│   │   └── route.config.ts
+│   ├── router.tsx             # Router configuration
+│   ├── styles.css             # Global styles & design tokens
+│   ├── routeTree.gen.ts       # Generated route tree (auto)
+│   └── vite-env.d.ts          # Vite type declarations
+├── public/                    # Static assets
+│   ├── logo.svg
+│   └── favicon.ico
+├── __tests__/                 # Test files
+│   └── setup.ts               # Test setup (vitest)
+├── .cta.json                  # (Configuration file)
+├── .dockerignore              # Docker ignore
+├── .env.example               # Environment template
+├── .gitignore                 # Git ignore
+├── Dockerfile                 # Container build
+├── package.json               # Dependencies & scripts
+├── pnpm-lock.yaml             # Lock file
+├── tsconfig.json              # TypeScript config
+├── vite.config.ts             # Vite bundler config
+└── vitest.config.ts           # Vitest test config
 ```
 
-## Key Naming Conventions
+### Client Directory Purposes
 
-### Server
-- Module files: `{domain}.module.ts`
-- Controllers: `{domain}.controller.ts`
-- Services: `{domain}.service.ts`
-- Repositories: `{domain}.repository.ts` + `{domain}.repository.interface.ts`
-- DTOs: `create-{domain}.dto.ts`, `update-{domain}.dto.ts`
-- Tests: `*.spec.ts` (co-located next to source file)
-- Guards: `{name}.guard.ts`
-- Strategies: `{name}.strategy.ts`
-- Filters: `{name}.filter.ts`
-- Interceptors: `{name}.interceptor.ts`
-
-### Client
-- Routes: `{role}.{page}.tsx` — dot-separated maps to URL path segments
-- Hooks: `use{Feature}.ts` (camelCase)
-- Stores: `{domain}-store.ts`
-- Components: PascalCase `ComponentName.tsx`
-- Types: `{domain}.types.ts` in `lib/types/`
-- Constants: kebab-case files, SCREAMING_SNAKE_CASE exports
-- API: `{domain}.api.ts` in `lib/api/`
-- Domain logic: `{domain}.ts` in `lib/domain/` (pure functions, no side effects)
-
-## Domain Modules Mapping
-
-| Module | ERD Entities | PRD Use Cases |
-|--------|--------------|---------------|
-| Auth | Pengguna, KredensialTTE | UC-13 (Setup TTE) |
-| OPD | OPD | UC-08 |
-| Peraturan | Peraturan | UC-12 |
-| SOP | SOP, DetailSOP | UC-01, UC-02 |
-| LangkahSOP | LangkahSOP | UC-03 |
-| Diagram | DiagramLayout, DiagramNodePosition, DiagramEdge, DiagramEdgePoint | UC-03 |
-| Pelaksana | Pelaksana, DetailSOPPelaksana | UC-03 |
-| Tim | AnggotaTimPenyusun, AnggotaTimEvaluasi | UC-09, UC-11 |
-| Evaluasi | PengajuanEvaluasi, NilaiEvaluasi, LogNilaiEvaluasi | UC-04, UC-05, UC-10 |
-| TTE | KredensialTTE, RiwayatTandaTangan | UC-06, UC-07, UC-13 |
-| Audit | LogEditSOP | Semua UC |
+| Directory | Purpose | Example Files |
+|-----------|---------|---------------|
+| `components/ui/` | Reusable UI atoms | button.tsx, input.tsx, dialog.tsx |
+| `components/auth/` | Authentication UI | LoginForm.tsx |
+| `components/sop/` | SOP feature UI | SopForm.tsx, LangkahSOPForm.tsx |
+| `components/evaluasi/` | Evaluation UI | EvaluasiForm.tsx |
+| `components/layout/` | App shell | Sidebar.tsx, RoleLayout.tsx |
+| `hooks/` | Reusable React hooks | useAuth.ts, useSOP.ts |
+| `stores/` | Zustand state | uiStore.ts (toasts, dialogs) |
+| `services/` | API calls | sopService.ts (axios wrappers) |
+| `types/` | TypeScript types | sop.ts (interfaces) |
+| `routes/` | Route definitions | __root.tsx, login.tsx |
+| `pages/` | Full page components | Dashboard.tsx |
+| `utils/` | Helper functions | cn.ts, formatDate.ts |
+| `config/` | App configuration | api.config.ts |
 
 ---
-*Last updated: 2026-04-01 — Aligned with ERD-DESKRIPSI.md dan PRD-ANALISIS-SISTEM.md v1.3*
+
+## 3. Server Structure (`/server`)
+
+```
+server/
+├── src/
+│   ├── common/                # Shared utilities
+│   │   ├── prisma/            # Prisma service
+│   │   │   ├── prisma.module.ts
+│   │   │   └── prisma.service.ts
+│   │   ├── logger/            # Winston logging
+│   │   │   └── winston.config.ts
+│   │   ├── filters/           # Exception filters
+│   │   │   └── http-exception.filter.ts
+│   │   ├── guards/            # Auth guards
+│   │   │   ├── jwt-auth.guard.ts
+│   │   │   └── roles.guard.ts
+│   │   ├── interceptors/      # Response interceptors
+│   │   ├── decorators/        # Custom decorators
+│   │   │   ├── roles.decorator.ts
+│   │   │   └── user.decorator.ts
+│   │   └── dto/               # Shared DTOs
+│   │       └── pagination.dto.ts
+│   ├── config/                # Configuration
+│   │   └── env.validation.ts  # Zod schema for env vars
+│   ├── modules/               # Feature modules
+│   │   ├── auth/              # Authentication
+│   │   │   ├── auth.module.ts
+│   │   │   ├── controller/
+│   │   │   │   └── auth.controller.ts
+│   │   │   ├── service/
+│   │   │   │   └── auth.service.ts
+│   │   │   └── dto/
+│   │   │       ├── login.dto.ts
+│   │   │       └── register.dto.ts
+│   │   ├── users/             # User management
+│   │   │   ├── users.module.ts
+│   │   │   ├── controller/
+│   │   │   │   └── users.controller.ts
+│   │   │   ├── service/
+│   │   │   │   └── users.service.ts
+│   │   │   └── dto/
+│   │   │       ├── create-user.dto.ts
+│   │   │       └── update-user.dto.ts
+│   │   ├── sop/               # SOP management
+│   │   │   ├── sop.module.ts
+│   │   │   ├── controller/
+│   │   │   │   └── sop.controller.ts
+│   │   │   ├── service/
+│   │   │   │   └── sop.service.ts
+│   │   │   ├── repository/
+│   │   │   │   └── sop.repository.ts
+│   │   │   └── dto/
+│   │   │       ├── create-sop.dto.ts
+│   │   │       ├── update-sop.dto.ts
+│   │   │       └── langkah-sop.dto.ts
+│   │   ├── evaluasi/          # Evaluation workflow
+│   │   │   ├── evaluasi.module.ts
+│   │   │   ├── controller/
+│   │   │   ├── service/
+│   │   │   └── dto/
+│   │   ├── opd/               # Organization management
+│   │   ├── peraturan/         # Regulation management
+│   │   ├── tim/               # Team management
+│   │   ├── tte/               # Digital signature
+│   │   └── audit/             # Audit logging
+│   ├── generated/             # Prisma generated
+│   │   └── prisma/            # Auto-generated types
+│   │       ├── index.ts
+│   │       └── prisma-client.d.ts
+│   ├── app.module.ts          # Root module
+│   └── main.ts                # Application entry
+├── prisma/                    # Prisma schema & migrations
+│   ├── schema.prisma          # Database schema
+│   ├── migrations/            # Migration files
+│   │   └── YYYYMMDDHHMMSS_migration_name/
+│   │       └── migration.sql
+│   └── seed.ts                # Seed data script
+├── test/                      # E2E tests
+│   ├── app.e2e-spec.ts
+│   └── jest-e2e.json
+├── .dockerignore              # Docker ignore
+├── .env.example               # Environment template
+├── .gitignore                 # Git ignore
+├── .prettierrc                # Prettier config
+├── Dockerfile                 # Container build
+├── eslint.config.mjs          # ESLint flat config
+├── nest-cli.json              # NestJS CLI config
+├── package.json               # Dependencies & scripts
+├── pnpm-lock.yaml             # Lock file
+├── prisma.config.ts           # Prisma configuration
+├── tsconfig.build.json        # Build TypeScript config
+└── tsconfig.json              # Development TypeScript config
+```
+
+### Server Module Structure Convention
+
+Each feature module follows this pattern:
+
+```
+modules/{feature}/
+├── {feature}.module.ts        # Module definition with imports/exports
+├── controller/
+│   ├── {feature}.controller.ts    # HTTP request handlers
+│   └── {feature}.controller.spec.ts
+├── service/
+│   ├── {feature}.service.ts       # Business logic
+│   └── {feature}.service.spec.ts
+├── dto/                       # Data Transfer Objects
+│   ├── create-{feature}.dto.ts    # Input validation for create
+│   ├── update-{feature}.dto.ts    # Input validation for update
+│   └── {feature}.dto.ts           # Response type
+└── repository/                # (Optional) Data access layer
+    └── {feature}.repository.ts    # Prisma queries
+```
+
+---
+
+## 4. Documentation Structure (`/docs`)
+
+```
+docs/
+├── design.md                  # Design style guide (Tailwind + Radix)
+├── design-style-guide.md      # Compact modern dashboard design
+├── ERD-DESKRIPSI.md           # Entity Relationship Diagram description
+├── PRD-ANALISIS-SISTEM.md     # Product Requirements Document
+├── SCHEMA-CONSTRAINTS.md      # Database constraints & business rules
+└── UX-AUDIT-REPORT.md         # UX audit findings & recommendations
+```
+
+---
+
+## 5. File Naming Conventions
+
+### TypeScript/React Files
+| Type | Convention | Example |
+|------|------------|---------|
+| Components | PascalCase | `SopForm.tsx`, `LoginForm.tsx` |
+| Services | camelCase + Service suffix | `sopService.ts`, `authService.ts` |
+| Hooks | camelCase with `use` prefix | `useAuth.ts`, `useSOP.ts` |
+| Stores | camelCase + Store suffix | `uiStore.ts`, `authStore.ts` |
+| Types | camelCase or PascalCase | `sop.ts`, `evaluasi.ts` |
+| Utils | camelCase | `cn.ts`, `formatDate.ts` |
+| Config | camelCase + config suffix | `api.config.ts` |
+| Routes | kebab-case or camelCase | `routeTree.gen.ts`, `__root.tsx` |
+
+### NestJS Files
+| Type | Convention | Example |
+|------|------------|---------|
+| Modules | kebab-case + .module.ts | `auth.module.ts`, `sop.module.ts` |
+| Controllers | kebab-case + .controller.ts | `auth.controller.ts` |
+| Services | kebab-case + .service.ts | `auth.service.ts` |
+| DTOs | kebab-case + .dto.ts | `create-user.dto.ts` |
+| Guards | kebab-case + .guard.ts | `jwt-auth.guard.ts` |
+| Filters | kebab-case + .filter.ts | `http-exception.filter.ts` |
+| Decorators | kebab-case + .decorator.ts | `roles.decorator.ts` |
+
+### Test Files
+| Type | Convention | Example |
+|------|------------|---------|
+| Unit tests | `*.spec.ts` | `auth.service.spec.ts` |
+| E2E tests | `*.e2e-spec.ts` | `app.e2e-spec.ts` |
+| Test setup | `setup.ts` | `setup.ts` |
+
+---
+
+## 6. Configuration Files Overview
+
+### Root Level
+| File | Purpose |
+|------|---------|
+| `docker-compose.yml` | Multi-container orchestration (db, server, client) |
+| `.env.example` | Environment variable template |
+| `.gitignore` | Git ignore patterns |
+
+### Client Level
+| File | Purpose |
+|------|---------|
+| `vite.config.ts` | Vite bundler configuration |
+| `vitest.config.ts` | Vitest test runner configuration |
+| `tsconfig.json` | TypeScript compiler options |
+| `package.json` | Dependencies, scripts |
+| `Dockerfile` | Container build instructions |
+
+### Server Level
+| File | Purpose |
+|------|---------|
+| `nest-cli.json` | NestJS CLI configuration |
+| `tsconfig.json` | TypeScript compiler options |
+| `tsconfig.build.json` | Build-specific TypeScript config |
+| `eslint.config.mjs` | ESLint flat configuration |
+| `.prettierrc` | Prettier formatting rules |
+| `prisma.config.ts` | Prisma configuration |
+| `package.json` | Dependencies, scripts, Jest config |
+| `Dockerfile` | Container build instructions |
+
+---
+
+## 7. Build Output Structure
+
+### Client Build (`client/dist/`)
+```
+dist/
+├── assets/              # Bundled assets
+│   ├── index-[hash].js  # Main bundle
+│   ├── index-[hash].css # Styles bundle
+│   └── chunks/          # Code-split chunks
+└── index.html           # Entry HTML
+```
+
+### Server Build (`server/dist/`)
+```
+dist/
+├── common/              # Compiled common utilities
+├── config/              # Compiled configuration
+├── modules/             # Compiled feature modules
+├── app.module.js        # Root module
+├── main.js              # Entry point
+└── *.d.ts               # Type declarations
+```
+
+---
+
+## 8. Generated Files
+
+### Auto-generated (Do Not Edit)
+| File | Generator | Purpose |
+|------|-----------|---------|
+| `client/src/routeTree.gen.ts` | TanStack Router | Route type definitions |
+| `server/src/generated/prisma/` | Prisma | Database client types |
+| `server/prisma/migrations/` | Prisma Migrate | SQL migration files |
+
+### Regenerated on Changes
+- **Route tree**: Regenerated on file save (TanStack Router plugin)
+- **Prisma client**: Regenerated on `pnpm prisma generate`
+- **Migrations**: Generated on `pnpm prisma migrate dev`
+
+---
+
+## 9. Import Path Aliases
+
+### Client (`@/*`)
+```typescript
+// tsconfig.json
+{
+  "paths": {
+    "@/*": ["./src/*"]
+  }
+}
+
+// Usage
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
+import { sopService } from '@/services/sopService'
+```
+
+### Server (baseUrl: `./`)
+```typescript
+// tsconfig.json
+{
+  "baseUrl": "./"
+}
+
+// Usage
+import { PrismaService } from 'common/prisma/prisma.service'
+import { JwtAuthGuard } from 'common/guards/jwt-auth.guard'
+import { CreateSopDto } from 'modules/sop/dto/create-sop.dto'
+```
+
+---
+
+## 10. Volume Mounts (Docker)
+
+### Development Volumes
+```yaml
+# server service
+volumes:
+  - ./server:/app                    # Source code (hot reload)
+  - /app/node_modules                # Container node_modules (prevent override)
+  - server_prisma_generated:/app/prisma/generated  # Prisma client (persistent)
+
+# client service
+volumes:
+  - ./client:/app                    # Source code (hot reload)
+  - /app/node_modules                # Container node_modules
+  - /app/node_modules/.vite          # Vite cache
+```
+
+### Persistent Volumes
+| Volume | Purpose |
+|--------|---------|
+| `db_data` | MySQL database files |
+| `server_prisma_generated` | Prisma generated client |
+
+---
+
+## 11. Key Directories by Function
+
+### Feature Implementation
+When adding a new feature:
+
+**Frontend**:
+1. Add components to `client/src/components/{feature}/`
+2. Add hooks to `client/src/hooks/`
+3. Add services to `client/src/services/`
+4. Add types to `client/src/types/`
+5. Add routes to `client/src/routes/`
+
+**Backend**:
+1. Create module: `server/src/modules/{feature}/`
+2. Add controller: `controller/{feature}.controller.ts`
+3. Add service: `service/{feature}.service.ts`
+4. Add DTOs: `dto/create-{feature}.dto.ts`, `update-{feature}.dto.ts`
+5. Add module to `app.module.ts` imports
+
+### Shared Code
+**Frontend**:
+- Utilities: `client/src/utils/`
+- Config: `client/src/config/`
+- Styles: `client/src/styles.css`
+
+**Backend**:
+- Guards: `server/src/common/guards/`
+- Filters: `server/src/common/filters/`
+- Interceptors: `server/src/common/interceptors/`
+- Decorators: `server/src/common/decorators/`
+
+---
+
+## 12. Test File Organization
+
+### Client Tests
+```
+client/
+└── src/
+    └── __tests__/
+        ├── setup.ts              # Test setup (vitest)
+        ├── components/
+        │   └── Button.test.tsx
+        ├── hooks/
+        │   └── useAuth.test.ts
+        └── services/
+            └── sopService.test.ts
+```
+
+### Server Tests
+```
+server/
+├── src/
+│   └── modules/
+│       └── auth/
+│           └── service/
+│               └── auth.service.spec.ts
+└── test/
+    ├── app.e2e-spec.ts           # E2E tests
+    └── jest-e2e.json             # E2E Jest config
+```
+
+---
+
+## 13. Environment Files
+
+### Development
+```
+.env (client/)
+- VITE_API_URL=http://localhost:8080/api
+- VITE_WS_URL=ws://localhost:8080
+
+.env (server/)
+- NODE_ENV=development
+- DATABASE_URL=mysql://root:password@localhost:3306/sop_db
+- JWT_SECRET=your-secret-key
+- PORT=3001
+```
+
+### Production
+```
+.env (client/)
+- VITE_API_URL=https://api.production.com/api
+- VITE_WS_URL=wss://api.production.com
+
+.env (server/)
+- NODE_ENV=production
+- DATABASE_URL=mysql://user:pass@db-host:3306/sop_db
+- JWT_SECRET=<strong-random-secret>
+- PORT=3000
+```
