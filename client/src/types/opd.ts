@@ -28,22 +28,3 @@ export interface CreateOpdDto {
 export interface UpdateOpdDto {
   nama: string
 }
-
-// Legacy aliases for backward compatibility
-export type Opd = OpdResponse
-export type CreateOpdRequest = CreateOpdDto
-export type UpdateOpdRequest = UpdateOpdDto
-
-// Additional types for UI
-export interface OPD {
-  id: string
-  name: string
-}
-
-export interface KepalaOPD {
-  id: string
-  name: string
-  nip: string
-  startDate: string
-  endDate?: string
-}

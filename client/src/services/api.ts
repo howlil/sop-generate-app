@@ -2,21 +2,7 @@
  * HTTP Client with fetch API
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
-
-function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('biro-organisasi-token')
-}
-
-function getHeaders(): HeadersInit {
-  const headers: HeadersInit = { 'Content-Type': 'application/json' }
-  const token = getAuthToken()
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-  return headers
-}
+import { API_BASE_URL, getAuthToken, getHeaders } from './config'
 
 export class ApiError extends Error {
   status: number

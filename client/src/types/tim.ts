@@ -6,7 +6,6 @@ export type StatusTim = 'AKTIF' | 'NONAKTIF'
 
 export type PeranInternalTimPenyusun = 'Koordinator' | 'Anggota'
 
-// Tim Penyusun
 export interface AnggotaTimPenyusun {
   id: string
   userId: string
@@ -16,8 +15,7 @@ export interface AnggotaTimPenyusun {
   berakhirPada?: string
   createdAt: string
   updatedAt: string
-  
-  // Relations
+
   user?: {
     id: string
     nama: string
@@ -30,8 +28,7 @@ export interface AnggotaTimPenyusun {
     id: string
     nama: string
   }
-  
-  // Computed
+
   jumlahSOPDisusun?: number
   peranInternal?: PeranInternalTimPenyusun
 }
@@ -45,7 +42,6 @@ export interface PindahTimPenyusunDto {
   opdId: string
 }
 
-// Tim Evaluasi
 export interface AnggotaTimEvaluasi {
   id: string
   userId: string
@@ -54,8 +50,7 @@ export interface AnggotaTimEvaluasi {
   berakhirPada?: string
   createdAt: string
   updatedAt: string
-  
-  // Relations
+
   user?: {
     id: string
     nama: string
@@ -74,11 +69,3 @@ export interface UpdateTimEvaluasiDto {
   status: StatusTim
   berakhirPada?: string
 }
-
-// Legacy type aliases for backward compatibility
-export type CreateTimPenyusunRequest = CreateTimPenyusunDto
-export type CreateTimEvaluasiRequest = CreateTimEvaluasiDto
-
-// Additional legacy types
-export type TimPenyusun = AnggotaTimPenyusun
-export type TimEvaluasiAnggota = AnggotaTimEvaluasi

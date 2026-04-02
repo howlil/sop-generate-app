@@ -2,8 +2,12 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import type { OPD } from '@/types/opd'
 import type { FormTambahKepalaState } from '@/hooks/useManajemenOPDState'
+
+interface OPD {
+  id: string
+  name: string
+}
 
 export interface TambahKepalaOPDDialogProps {
   open: boolean

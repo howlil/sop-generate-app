@@ -36,16 +36,4 @@ export interface UpdatePeraturanDto {
   tentang?: string
 }
 
-// Legacy aliases for backward compatibility
 export type Peraturan = PeraturanResponse
-export type CreatePeraturanRequest = CreatePeraturanDto
-export type UpdatePeraturanRequest = UpdatePeraturanDto
-
-// Additional types for UI
-export interface RiwayatVersiEntry {
-  id: string
-  versi: number
-  tanggal: string
-  perubahan: string
-  aktor: string
-}

@@ -17,8 +17,8 @@ import { SOPListCard } from '@/components/sop/SOPListCard'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
-import { useTTESignature } from '@/hooks/useTTESignature'
-import { usePengajuanEvaluasiList } from '@/hooks/usePengajuanEvaluasi'
+import { useTTESignature, verifyPin, getTTEProfile, addTTESignature } from '@/hooks/useTTE'
+import { useEvaluasi } from '@/hooks/useEvaluasi'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { canKepalaOpdSignSop } from '@/hooks/useSop'
@@ -31,8 +31,6 @@ import { IA } from '@/utils/constants/pipeline-ia'
 import { Route } from '@/routes/kepala-opd.berita-acara'
 import { InfoCard } from '@/components/ui/info-card'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { verifyPin } from '@/hooks/useTTE'
-import { getTTEProfile, addTTESignature } from '@/hooks/useTTE'
 
 export function BeritaAcaraPage() {
   const navigate = useNavigate()
@@ -40,7 +38,7 @@ export function BeritaAcaraPage() {
   const opdId = getKepalaOPDOpdId()
   const { list: opds } = useOpd()
   const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''
-  const { list: pengajuanList } = usePengajuanEvaluasiList()
+  const { list: pengajuanList } = useEvaluasi()
   const { showToast } = useToast()
   const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
   const [signingSopId, setSigningSopId] = useState<string | null>(null)

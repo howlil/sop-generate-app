@@ -1,10 +1,10 @@
 /**
  * Format tanggal konsisten untuk tampilan UI (locale Indonesia).
  *
- * Usage: import { formatDateId, formatDateIdLong, formatDatetime } from '@/utils/format-date'
+ * Usage: import { formatDateId, formatDateIdLong, formatDatetime, formatTempatTanggal } from '@/utils/format-date'
  */
 
-import { LOCALE_ID } from '@/utils/constants/ui'
+import { LOCALE_ID } from '@/utils/constants'
 
 type DateInput = string | Date | null | undefined
 

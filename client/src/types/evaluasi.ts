@@ -32,8 +32,7 @@ export interface PengajuanEvaluasi {
   version: number
   createdAt: string
   updatedAt: string
-  
-  // Relations
+
   opd?: { id: string; nama: string }
   diverifikasiOlehUser?: { id: string; nama: string }
   ditandatanganiOlehKoordinatorUser?: { id: string; nama: string }
@@ -51,13 +50,8 @@ export interface NilaiEvaluasi {
   dinilaiOlehId?: string
   createdAt: string
   updatedAt: string
-  
-  // Relations
-  sopDetail?: {
-    id: string
-    nomorSOP: string
-    status: string
-  }
+
+  sopDetail?: { id: string; nomorSOP: string; status: string }
   dinilaiOleh?: { id: string; nama: string }
 }
 
@@ -71,7 +65,7 @@ export interface LogNilaiEvaluasi {
   catatanSebelum?: string
   catatanSesudah?: string
   createdAt: string
-  
+
   evaluator?: { id: string; nama: string }
 }
 

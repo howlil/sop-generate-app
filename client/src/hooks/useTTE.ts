@@ -119,3 +119,95 @@ export function useTandaTanganiSOP() {
     },
   })
 }
+
+// ==================== Role-based Signing (unified) ====================
+interface UseTTESignatureParams {
+  role: 'biro-organisasi' | 'koordinator-tim-penyusun' | 'kepala-opd'
+}
+
+/** Unified signing hook with role-based routing */
+export function useTTESignature(params: UseTTESignatureParams) {
+  const signBAMutation = useMutation({
+    mutationFn: ({ pengajuanId, pin, nomorDokumen, judulDokumen }: { pengajuanId: string } & TandaTanganiBaDto) =>
+      tteApi.tandaTanganiBA(pengajuanId, { pin, nomorDokumen, judulDokumen }),
+    onSuccess: () => showToast('Berita Acara berhasil ditandatangani dengan TTE', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Gagal menandatangani BA', 'error'),
+  })
+
+  const koordinatorSignBAMutation = useMutation({
+    mutationFn: ({ pengajuanId, pin, nomorDokumen, judulDokumen }: { pengajuanId: string } & TandaTanganiBaDto) =>
+      tteApi.koordinatorTandaTanganiBA(pengajuanId, { pin, nomorDokumen, judulDokumen }),
+    onSuccess: () => showToast('Berita Acara berhasil ditandatangani (Koordinator)', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Gagal menandatangani BA', 'error'),
+  })
+
+  const signSOPMutation = useMutation({
+    mutationFn: ({ sopDetailId, pin, nomorDokumen, judulDokumen }: { sopDetailId: string } & TandaTanganiSopDto) =>
+      tteApi.tandaTanganiSOP(sopDetailId, { pin, nomorDokumen, judulDokumen }),
+    onSuccess: () => showToast('SOP berhasil disahkan dengan TTE', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Gagal mengesahkan SOP', 'error'),
+  })
+
+  const sign = async (documentId: string, pin: string, nomorDokumen: string, judulDokumen: string) => {
+    if (params.role === 'biro-organisasi') {
+      return signBAMutation.mutateAsync({ pengajuanId: documentId, pin, nomorDokumen, judulDokumen })
+    }
+    if (params.role === 'koordinator-tim-penyusun') {
+      return koordinatorSignBAMutation.mutateAsync({ pengajuanId: documentId, pin, nomorDokumen, judulDokumen })
+    }
+    if (params.role === 'kepala-opd') {
+      return signSOPMutation.mutateAsync({ sopDetailId: documentId, pin, nomorDokumen, judulDokumen })
+    }
+    throw new Error('Invalid role')
+  }
+
+  const createPinConfirmHandler = (
+    config: { documentLabel: string; referenceId: string },
+    onSuccess?: () => void
+  ) => {
+    return async (pin: string): Promise<boolean> => {
+      try {
+        await sign(config.referenceId, pin, config.documentLabel, config.documentLabel)
+        onSuccess?.()
+        return true
+      } catch (error) {
+        return false
+      }
+    }
+  }
+
+  return {
+    signature: null,
+    loading: signBAMutation.isPending || koordinatorSignBAMutation.isPending || signSOPMutation.isPending,
+    error: signBAMutation.error || koordinatorSignBAMutation.error || signSOPMutation.error,
+    canSign: true,
+    sign,
+    signBA: signBAMutation.mutateAsync,
+    koordinatorSignBA: koordinatorSignBAMutation.mutateAsync,
+    signSOP: signSOPMutation.mutateAsync,
+    createPinConfirmHandler,
+  }
+}
+
+// ==================== Legacy Stubs (for backward compatibility) ====================
+/** @internal Legacy stub - use useTTEProfil instead */
+export function getTTEProfile(_role: string): null {
+  return null
+}
+
+/** @internal Legacy stub - PIN verification is now server-side */
+export function verifyPin(_pin: string, _hash?: string): boolean {
+  return true
+}
+
+/** @internal Legacy stub - signatures are now managed server-side */
+export function addTTESignature(
+  _role: string,
+  _nip: string,
+  _nama: string,
+  _jabatan: string,
+  _pangkat: string,
+  _sopId: string,
+  _sopNama: string,
+  _sopNomor: string
+): void {}

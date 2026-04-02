@@ -64,7 +64,7 @@ export interface SopDetail {
   langkahSOP?: LangkahSOP[]
   swimlanes?: DetailSOPPelaksana[]
   nilaiEvaluasi?: NilaiEvaluasi[]
-  logEditSop?: LogEditSOP[]
+  logEditSop?: import('./audit').LogEditSOP[]
 }
 
 export interface CreateSopRequest {
@@ -205,20 +205,6 @@ export interface CreateDetailSOPPelaksanaDto {
   urutan?: number
 }
 
-// Log Edit SOP
-export interface LogEditSOP {
-  id: string
-  sopDetailId: string
-  userId: string
-  bagian: BagianSOP
-  entityId?: string
-  keterangan?: string
-  aktorRole: string
-  createdAt: string
-  
-  user?: { id: string; nama: string }
-}
-
 // Nilai Evaluasi (for relation)
 export interface NilaiEvaluasi {
   id: string
@@ -230,76 +216,4 @@ export interface NilaiEvaluasi {
   dinilaiOlehId?: string
   createdAt: string
   updatedAt: string
-}
-
-// Legacy types for backward compatibility
-export interface SopItem {
-  id: string
-  judul: string
-  opdId: string
-  status: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface SOPDaftarItem {
-  id: string
-  judul: string
-  opdId: string
-  status: string
-  createdAt: string
-  updatedAt: string
-}
-
-export interface SOPTemplate {
-  judul: string
-  opdId: string
-  logoInstansi?: string
-  namaLembaga?: string
-}
-
-export interface ProsedurRow {
-  id: string
-  urutan: number
-  kegiatan: string
-  pelaksana: string
-  waktu?: number
-  satuanWaktu?: string
-  kelengkapan?: string
-  keluaran?: string
-}
-
-export const SOP_STATUS_FILTER_OPTIONS = [
-  { value: 'all', label: 'Semua Status' },
-  { value: 'Draft', label: 'Draft' },
-  { value: 'Sedang Disusun', label: 'Sedang Disusun' },
-  { value: 'Siap Dievaluasi', label: 'Siap Dievaluasi' },
-  { value: 'Sedang Dievaluasi', label: 'Sedang Dievaluasi' },
-  { value: 'Siap Diverifikasi', label: 'Siap Diverifikasi' },
-  { value: 'Berlaku', label: 'Berlaku' },
-  { value: 'Dicabut', label: 'Dicabut' },
-] as const
-
-export const DEFAULT_SOP_STATUS = 'Draft'
-
-export interface SOPDetailMetadata {
-  judul?: string
-  nomor?: string
-  tahun?: number
-  tentang?: string
-  opdId?: string
-}
-
-export interface VersionHistoryItem {
-  version: string
-  date: string
-  author: string
-  changes: string
-}
-
-export interface DetailSOPVersionSeed {
-  version: number
-  snapshot: any
-  author?: string
-  date?: string
 }

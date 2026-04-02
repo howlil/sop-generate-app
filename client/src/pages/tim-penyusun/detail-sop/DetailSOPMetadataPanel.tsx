@@ -4,7 +4,7 @@ import { LawBasisDialog } from './LawBasisDialog'
 import { RelatedPosDialog } from './RelatedPosDialog'
 import { PelaksanaDialog } from './PelaksanaDialog'
 import type { Peraturan } from '@/types/peraturan'
-import type { SOPDetailMetadata } from '@/types/sop'
+import type { SOPDetailMetadata } from '@/components/sop/types'
 import { getRelatedPosOptions } from '@/hooks/useDetailSop'
 
 export interface DetailSOPMetadataPanelProps {

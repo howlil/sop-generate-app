@@ -21,13 +21,12 @@ import { SOPListCard } from '@/components/sop/SOPListCard'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
-import { useTTESignature } from '@/hooks/useTTESignature'
+import { useTTESignature } from '@/hooks/useTTE'
 import { evaluasiApi } from '@/services/evaluasi.api'
 import { apiClient } from '@/services/api'
 import { queryKeys } from '@/services/queryKeys'
 import type { PengajuanEvaluasi } from '@/types/evaluasi'
 import { useToast } from '@/hooks/useUI'
-import { getRiwayatEvaluasiSop } from '@/hooks/useEvaluasi'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants/ui'
 import { Route } from '@/routes/tim-penyusun.berita-acara'
@@ -265,8 +264,7 @@ export function BeritaAcaraKoordinatorPage() {
   if (selectedBaId && selectedBa === null) return null
 
   // ——— Tampilan: detail BA ———
-  const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
-  const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
+  const riwayatSop: any[] = []
 
   return (
     <>

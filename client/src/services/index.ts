@@ -3,6 +3,9 @@
  * All API services matching server endpoints
  */
 
+// Config
+export * from './config'
+
 // Core
 export { apiClient, ApiError } from './api'
 

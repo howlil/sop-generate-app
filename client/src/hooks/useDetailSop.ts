@@ -25,7 +25,7 @@ import type {
 
 const DETAIL_SOP_STALE_TIME = 2 * 60 * 1000 // 2 minutes
 
-// ================= Stub Functions (for backward compatibility) =================
+// ================= Initial State Helpers =================
 export function getInitialSopDetailMetadata(): SOPDetailMetadata {
   return {
     id: '',
@@ -51,18 +51,6 @@ export function getInitialSopDetailKomentar(): KomentarItem[] {
 }
 
 export function getInitialSopDetailVersions(): VersionHistoryItem[] {
-  return []
-}
-
-export function getSopViewMetadata(): Record<string, never> {
-  return {}
-}
-
-export function getSopViewVersions(): never[] {
-  return []
-}
-
-export function getRelatedPosOptions(): never[] {
   return []
 }
 

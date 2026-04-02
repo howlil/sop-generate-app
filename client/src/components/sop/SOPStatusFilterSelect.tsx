@@ -3,7 +3,7 @@
  * Dipakai di Filter SOP (Manajemen SOP, Daftar SOP, SOP Saya).
  */
 import { Select } from '@/components/ui/select'
-import { SOP_STATUS_FILTER_OPTIONS } from '@/types/sop'
+import { SOP_STATUS_FILTER_OPTIONS } from '@/components/sop/types'
 import { cn } from '@/utils/cn'
 
 export interface SOPStatusFilterSelectProps {

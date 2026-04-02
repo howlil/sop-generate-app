@@ -1,12 +1,20 @@
 import { Edit, History, ArrowRightCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import type { OPD, KepalaOPD } from '@/types/opd'
-import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
-import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
-import { PindahJabatanDialog } from './PindahJabatanDialog'
-import { RiwayatJabatanDialog } from './RiwayatJabatanDialog'
 import { usePagination } from '@/hooks/usePagination'
+
+interface OPD {
+  id: string
+  name: string
+}
+
+interface KepalaOPD {
+  id: string
+  name: string
+  nip: string
+  startDate: string
+  endDate?: string
+}
 
 type PersonWithActive = {
   name: string

@@ -1,12 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { BookOpen, FileSignature, FileText, PenLine, UserCog } from 'lucide-react'
-import { ROLES } from '@/utils/constants/ui'
+import { ROLES } from '@/utils/constants'
 import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES, routePathPrefixForMatch } from '@/utils/constants/ui'
-import { createSidebarActiveMatcher } from '@/utils/sidebar-active'
-import { requireRoleBeforeLoad } from '@/utils/role-route-guard'
+import { ROUTES, routePathPrefixForMatch } from '@/utils/constants'
+import { createSidebarActiveMatcher, requireRoleBeforeLoad } from '@/utils'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
-import { IA } from '@/utils/constants/pipeline-ia'
+import { IA } from '@/utils/constants'
 
 export const Route = createFileRoute('/tim-penyusun')({
   beforeLoad: requireRoleBeforeLoad(ROLES.TIM_PENYUSUN),

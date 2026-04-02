@@ -20,7 +20,6 @@ import { useToast } from '@/hooks/useUI'
 import { usePeraturan } from '@/hooks/usePeraturan'
 import { usePelaksana } from '@/hooks/usePelaksana'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { useSopMeta } from '@/hooks/useSopMeta'
 import { useAppRole } from '@/hooks/useAppRole'
 import {
   getInitialSopDetailMetadata,
@@ -28,12 +27,7 @@ import {
   getInitialSopDetailKomentar,
   getInitialSopDetailVersions,
 } from '@/hooks/useDetailSop'
-import {
-  DEFAULT_SOP_STATUS,
-  type SOPDetailMetadata,
-  type ProsedurRow,
-  type StatusSOP,
-} from '@/types/sop'
+import { DEFAULT_SOP_STATUS, type SOPDetailMetadata, type ProsedurRow, type StatusSOP } from '@/components/sop/types'
 import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
 import { useKomentar } from '@/hooks/useKomentar'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'
@@ -44,12 +38,11 @@ import { DetailSOPMetadataPanel } from './detail-sop/DetailSOPMetadataPanel'
 import { DetailSOPProsedurEditor } from './detail-sop/DetailSOPProsedurEditor'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
-import { ROUTES } from '@/utils/constants/routes'
+import { ROUTES } from '@/utils/constants'
 
 export function DetailSOPPenyusun() {
   const { showToast } = useToast()
   const { setSopStatusOverride, getSopStatusOverride } = useSopStatus()
-  const { setSopMeta } = useSopMeta()
   const { role, getRoleUserName } = useAppRole()
   const { list: peraturanList } = usePeraturan()
   const { list: pelaksanaList } = usePelaksana()

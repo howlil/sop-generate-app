@@ -13,8 +13,8 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/hooks/useFilteredList'
 import { usePagination } from '@/hooks/usePagination'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import { ROUTES } from '@/utils/constants/routes'
-import { IA } from '@/utils/constants/pipeline-ia'
+import { ROUTES } from '@/utils/constants'
+import { IA } from '@/utils/constants'
 import { useDocumentTitle } from '@/hooks/useDocumentTitle'
 
 /** Tanggal terakhir untuk urutan (terbaru dulu). */

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/useUI'
 import { usePagination } from '@/hooks/usePagination'
-import type { ProsedurRow } from '@/types/sop'
+import type { ProsedurRow } from '@/components/sop/types'
 import { DecisionStepDialog } from './DecisionStepDialog'
 
 export interface DetailSOPProsedurEditorProps {

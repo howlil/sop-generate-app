@@ -2,8 +2,10 @@
  * Hook akses role & helpers — satu titik akses untuk UI.
  */
 import { useAuthStore } from '@/stores/authStore'
-import { ROLES, ROLE_LABELS } from '@/utils/constants/ui'
-import type { RoleKey } from '@/utils/constants/ui'
+import { CONSTANTS } from '@/utils/constants'
+import type { RoleKey } from '@/utils/constants'
+
+const { ROLES, ROLE_LABELS } = CONSTANTS
 
 export { ROLES }
 

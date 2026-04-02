@@ -1,7 +1,7 @@
 /**
  * Computes the diff between current SOP metadata/prosedur and a viewed version snapshot.
  */
-import type { ProsedurRow } from '@/types/sop'
+import type { ProsedurRow } from '@/components/sop/types'
 
 export interface VersionDiffItem {
   label: string

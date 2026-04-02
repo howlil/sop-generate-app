@@ -12,8 +12,20 @@ import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
 import { usePagination } from '@/hooks/usePagination'
-import type { OPD, KepalaOPD } from '@/types/opd'
 import type { RiwayatDialogPerson } from '@/hooks/useManajemenOPDState'
+
+interface OPD {
+  id: string
+  name: string
+}
+
+interface KepalaOPD {
+  id: string
+  name: string
+  nip: string
+  startDate: string
+  endDate?: string
+}
 
 type RiwayatRow = KepalaOPD & { opdName: string }
 

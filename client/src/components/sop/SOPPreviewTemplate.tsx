@@ -7,7 +7,7 @@ import { rowsToSteps } from '@/components/sop/diagram/logic/sopDiagramTypes'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { TTESignaturePayload } from '@/types/tte'
-import type { ProsedurRow } from '@/types/sop'
+import type { ProsedurRow } from '@/components/sop/types'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,

@@ -39,49 +39,7 @@ export function isFormEvaluasiSopComplete(form: StatusHasilEvaluasiForm): boolea
   return !!form.hasil && form.hasil !== ''
 }
 
-// ==================== Stub Functions (for backward compatibility) ====================
-export interface RiwayatEvaluasiSOPItem {
-  sopId: string
-  judul: string
-  tanggal: string
-  hasil: string
-}
-
-export interface RiwayatEvaluasiOPDItem {
-  opdId: string
-  opdNama: string
-  tanggal: string
-  hasil: string
-}
-
-export function getRiwayatEvaluasiSop(): RiwayatEvaluasiSOPItem[] {
-  return []
-}
-
-export function getRiwayatEvaluasiOpd(): RiwayatEvaluasiOPDItem[] {
-  return []
-}
-
-export function getLastEvaluatedByInitial(): Record<string, { evaluatorName: string; date: string }> {
-  return {}
-}
-
-export interface DetailOpdPerTahun {
-  opdId: string
-  opdNama: string
-  tahun: number
-  jumlahSop: number
-  skor: number
-}
-
-export function getDataGrafikEvaluasiTahunan(_tahun: number): DetailOpdPerTahun[] {
-  return []
-}
-
-export function getDetailOpdPerTahun(_tahun: number, _opdId: string): DetailOpdPerTahun | null {
-  return null
-}
-
+// ==================== Evaluasi Hooks ====================
 export function useEvaluasi(params?: { opdId?: string; status?: string; jenis?: string }) {
   const queryClient = useQueryClient()
 
@@ -172,6 +130,30 @@ export function useRekapEvaluasi(tahun?: number) {
   return useQuery({
     queryKey: queryKeys.evaluasiRekap(tahun),
     queryFn: () => evaluasiApi.rekap(tahun),
-    staleTime: 10 * 60 * 1000, // 10 minutes for recap data
+    staleTime: 10 * 60 * 1000,
   })
+}
+
+// ==================== Pengajuan Evaluasi ====================
+export function usePengajuanEvaluasiDetail(pengajuanId?: string) {
+  const {
+    data: pengajuan,
+    isLoading: loading,
+  } = useQuery({
+    queryKey: queryKeys.evaluasiById(pengajuanId || ''),
+    queryFn: () => evaluasiApi.findById(pengajuanId || ''),
+    enabled: !!pengajuanId,
+    staleTime: 3 * 60 * 1000,
+  })
+
+  const isVerified = pengajuan?.status === 'DIVERIFIKASI_BIRO'
+  const canVerify = pengajuan?.status === 'SELESAI_DIEVALUASI'
+
+  return {
+    pengajuan: pengajuan || null,
+    mergedSopRows: [],
+    isVerified,
+    canVerify,
+    loading,
+  }
 }

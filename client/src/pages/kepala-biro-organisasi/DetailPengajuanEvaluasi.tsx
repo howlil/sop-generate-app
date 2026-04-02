@@ -4,9 +4,9 @@ import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lu
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { SOPListCard } from '@/components/sop/SOPListCard'
 import { formatDateId } from '@/utils/format-date'
-import { getRiwayatEvaluasiOpd, getRiwayatEvaluasiSop } from '@/hooks/useEvaluasi'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
-import { useTTESignature } from '@/hooks/useTTESignature'
+import { useTTESignature } from '@/hooks/useTTE'
+import { usePengajuanEvaluasiDetail } from '@/hooks/useEvaluasi'
 import { ROUTES } from '@/utils/constants/routes'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
@@ -14,7 +14,6 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { useToast } from '@/hooks/useUI'
-import { usePengajuanEvaluasiDetailPage } from '@/hooks/usePengajuanEvaluasiDetailPage'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
@@ -29,13 +28,13 @@ export function DetailPengajuanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
   const { 
-    pengajuan, 
-    updatePengajuan, 
-    mergedSopRows, 
-    handleVerify, 
-    isVerified, 
-    canVerify 
-  } = usePengajuanEvaluasiDetailPage(id)
+    pengajuan,
+    updatePengajuan,
+    mergedSopRows,
+    handleVerify,
+    isVerified,
+    canVerify
+  } = usePengajuanEvaluasiDetail(id)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('sop')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
@@ -62,11 +61,9 @@ export function DetailPengajuanEvaluasi() {
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId
   const displaySop = sopList.find((s) => s.sopDetailId === effectiveSopDetailId)
-  
-  const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
-  const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
-  const riwayatOpd = pengajuan ? (riwayatEvaluasiOpd[pengajuan.opdId] ?? []) : []
-  const riwayatSop = effectiveSopDetailId ? (riwayatEvaluasiSop[effectiveSopDetailId] ?? []) : []
+
+  const riwayatOpd: any[] = []
+  const riwayatSop: any[] = []
 
   useDocumentTitle(pengajuan ? `${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}` : undefined)
 
