@@ -5,7 +5,7 @@
 
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import type { ProsedurRow } from '@/components/sop/types'
+import type { ProsedurRow } from '@/types/common'
 
 // ==================== Kegiatan Cell ====================
 

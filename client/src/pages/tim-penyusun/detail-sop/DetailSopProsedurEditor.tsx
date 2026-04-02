@@ -14,7 +14,7 @@ import {
   KeteranganCell,
 } from './ProsedurEditorCells'
 import { DecisionStepDialog } from './DecisionStepDialog'
-import type { ProsedurRow } from '@/components/sop/types'
+import type { ProsedurRow } from '@/types/common'
 
 export interface DetailSOPProsedurEditorProps {
   prosedurRows: ProsedurRow[]

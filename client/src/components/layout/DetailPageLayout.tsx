@@ -1,4 +1,4 @@
-import { BackButton } from '@/components/ui/back-button'
+import { BackButton } from '@/components/ui/BackButton'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DetailWorkspace } from '@/components/layout/DetailWorkspace'
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'

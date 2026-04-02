@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import type { ProsedurRow } from '@/components/sop/types'
+import type { ProsedurRow } from '@/types/common'
 
 interface DecisionStepDialogProps {
   open: boolean

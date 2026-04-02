@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import type { SopItem } from '@/components/sop/types'
+import type { SopItem } from '@/types/common'
 
 const STORAGE_KEY = 'sop_status_overrides'
 
