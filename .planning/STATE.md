@@ -91,6 +91,7 @@ Phase Progress: [========] 8/8
 - [x] Delete dead components (landing, company-profile - 12 files)
 - [x] Add ESLint rules for Zustand
 - [x] Create UI patterns documentation (.skills/ui-patterns.md)
+- [x] Standardize naming convention (SOP → Sop) - 3 files renamed
 
 #### 🔵 Server-Side (Backend Track - Separate Work Stream)
 
