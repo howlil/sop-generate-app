@@ -82,12 +82,77 @@ Phase Progress: [========] 8/8
 
 ### Todos
 
-- [ ] Rebase Plan 01-02 sesuai 20 model ERD terbaru
-- [ ] Update schema Prisma dengan 20 model + 12+ enum sesuai docs/ERD-DESKRIPSI.md
-- [ ] Test constraint [P2-D] (1 KEPALA_OPD + 1 KOORDINATOR per OPD) dengan SELECT FOR UPDATE
-- [ ] Test constraint [P0-C] (maks 1 pengajuan aktif per OPD per jenis)
-- [ ] Test optimistic locking [P0-E] pada NilaiEvaluasi
-- [ ] Test XOR constraint [P1-A] pada RiwayatTandaTangan
+#### ✅ Client-Side (ALL COMPLETE - 2026-04-03)
+- [x] Migrate all feature hooks to useToast() - 11 files, 47 mutations
+- [x] Consolidate duplicate types to types/common.ts
+- [x] Remove unused utils (generate-id, sidebar-matcher)
+- [x] Simplify hooks (format-date, ui, use-filtered-list, use-pagination)
+- [x] Remove state/ directory (inline state in pages)
+- [x] Delete dead components (landing, company-profile - 12 files)
+- [x] Add ESLint rules for Zustand
+- [x] Create UI patterns documentation (.skills/ui-patterns.md)
+
+#### 🔵 Server-Side (Backend Track - Separate Work Stream)
+
+**TTE PIN Verification** (Phase 7)
+- [ ] Replace hardcoded PIN '12345' with server-side validation
+  - [ ] Add PIN validation endpoint in TTE service
+  - [ ] Update TTE controller to accept PIN in request body
+  - [ ] Store hashed PIN in database (bcrypt)
+  - [ ] Update client to send PIN via API (not hardcoded)
+  - [ ] Add rate limiting for PIN attempts (security)
+  - **Files:** `server/src/tte/tte.service.ts`, `server/src/tte/tte.controller.ts`
+  - **Priority:** Medium (security concern)
+  - **Estimated:** 4-6 hours
+
+**Repository Interface Typing**
+- [ ] Improve `any` types to proper TypeScript
+  - [ ] Define proper types for all repository interfaces
+  - [ ] Replace `any` with specific DTO types
+  - [ ] Add generic repository base with proper constraints
+  - [ ] Update all repository implementations
+  - **Files:** `server/src/repositories/*.ts`
+  - **Priority:** Low (technical debt)
+  - **Estimated:** 6-8 hours
+
+#### 🟡 Testing Track (Separate Work Stream)
+
+**Client Test Coverage Improvement**
+- [ ] Increase coverage from 58% to 80%+
+  - [ ] Add tests for feature hooks (useSop, useEvaluasi, useTTE, etc.)
+  - [ ] Add tests for Zustand stores (authStore, uiStore)
+  - [ ] Add tests for routing (route guards, loaders)
+  - [ ] Add integration tests for critical flows (login, SOP creation, evaluation)
+  - [ ] Add snapshot tests for UI components
+  - **Files:** `client/src/**/__tests__/*.test.ts`
+  - **Priority:** Medium (quality assurance)
+  - **Estimated:** 2-3 days
+  - **Target Metrics:**
+    - Branches: 66% → 80%+
+    - Functions: 58% → 80%+
+    - Lines: 70% → 80%+
+
+#### 🟢 Planning/Documentation Track (Separate Work Stream)
+
+**Rebase Plan 01-01**
+- [ ] Update according to 20 model ERD (not 18 tables)
+  - [ ] Review docs/ERD-DESKRIPSI.md for 20 models
+  - [ ] Update Plan 01-01-PLAN.md with correct models
+  - [ ] Update migration files to match 20 models
+  - [ ] Update seed data to match 20 models
+  - **Files:** `.planning/phases/01-01-PLAN.md`, `server/prisma/schema.prisma`
+  - **Priority:** High (blocks Phase 1 implementation)
+  - **Estimated:** 2-3 hours
+
+**Rebase Plan 01-02**
+- [ ] Update according to 20 model ERD (not 18 tables)
+  - [ ] Review docs/ERD-DESKRIPSI.md for 20 models
+  - [ ] Update Plan 01-02-PLAN.md with correct models
+  - [ ] Update seed script to match 20 models
+  - [ ] Verify all relationships are correct
+  - **Files:** `.planning/phases/01-02-PLAN.md`, `server/src/database/seed.ts`
+  - **Priority:** High (blocks Phase 1 implementation)
+  - **Estimated:** 2-3 hours
 
 ### Blockers
 
