@@ -37,7 +37,7 @@ const INCLUDE = {
   nilaiEvaluasi: {
     include: {
       sopDetail: {
-        include: { sop: { select: { nomor: true, judul: true } } },
+        include: { sop: { select: { judul: true } } },
       },
       dinilaiOleh: { select: { id: true, nama: true } },
     },
