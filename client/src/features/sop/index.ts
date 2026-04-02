@@ -34,6 +34,8 @@ export type {
   BagianSOP,
 } from './types/common'
 
+export { SOP_STATUS_FILTER_OPTIONS } from './types/types'
+
 // Services (only depend on types)
 export { sopApi } from './services/sop.api'
 
