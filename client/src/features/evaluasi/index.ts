@@ -31,7 +31,7 @@ export { timEvaluasiApi } from './services/tim-evaluasi.api'
 
 // Hooks (depend on services and types)
 export { useEvaluasi, useRekapEvaluasi, useEvaluasiDetail, getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from './hooks/useEvaluasi'
-export { useEvaluasiDraft } from './hooks/useEvaluasiDraft'
+export { useEvaluasiDraft, getEvaluasiDraft } from './hooks/useEvaluasiDraft'
 export { useEvaluasiSubmit } from './hooks/useEvaluasiSubmit'
 
 // Components (depend on everything - export selectively)
