@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
-import type { TTESignaturePayload } from '@/types/tte'
-import { getValidasiPengesahanUrl } from '@/hooks/tte/useTTE'
+import type { TTESignaturePayload } from '@/features/tte'
+import { getValidasiPengesahanUrl } from '@/features/tte'
 import { formatDateIdLong } from '@/utils/format-date'
 
 export interface TTESignatureBlockProps {
