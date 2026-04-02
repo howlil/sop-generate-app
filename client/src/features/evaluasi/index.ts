@@ -30,7 +30,7 @@ export { evaluasiApi } from './services/evaluasi.api'
 export { timEvaluasiApi } from './services/tim-evaluasi.api'
 
 // Hooks (depend on services and types)
-export { useEvaluasi } from './hooks/useEvaluasi'
+export { useEvaluasi, useRekapEvaluasi } from './hooks/useEvaluasi'
 export { useEvaluasiDraft } from './hooks/useEvaluasiDraft'
 export { useEvaluasiSubmit } from './hooks/useEvaluasiSubmit'
 
