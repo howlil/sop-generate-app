@@ -19,7 +19,7 @@ export type { PeranTTE } from '@/types/common'
 export { tteApi } from './services/tte.api'
 
 // Hooks - export all utilities
-export { useTTE, getTTEProfile, setTTEProfile, getValidasiPengesahanUrl, getTTEVerificationSuccessUrl, hashPin } from './hooks/useTTE'
+export { useTTE, useTTESignature, getTTEProfile, setTTEProfile, getValidasiPengesahanUrl, getTTEVerificationSuccessUrl, hashPin } from './hooks/useTTE'
 
 // Components
 export { PinVerificationDialog } from './components/PinVerificationDialog'
