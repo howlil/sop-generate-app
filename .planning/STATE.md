@@ -92,6 +92,7 @@ Phase Progress: [========] 8/8
 - [x] Add ESLint rules for Zustand
 - [x] Create UI patterns documentation (.skills/ui-patterns.md)
 - [x] Standardize naming convention (SOP → Sop) - 3 files renamed
+- [x] Fix UI component file naming (lowercase → PascalCase) - 4 files renamed
 
 #### 🔵 Server-Side (Backend Track - Separate Work Stream)
 
