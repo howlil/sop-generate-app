@@ -1,5 +1,6 @@
 /**
  * useAuth hook with TanStack Query
+ * Note: Token handled via HttpOnly cookies (backend-managed)
  */
 
 import { useMutation } from '@tanstack/react-query'
@@ -8,12 +9,13 @@ import { useAuthStore } from '@/stores/authStore'
 import { showToast } from '@/stores/uiStore'
 
 export function useAuth() {
-  const { setUser, setToken, logout } = useAuthStore()
+  const { setUser, logout } = useAuthStore()
 
   const loginMutation = useMutation({
     mutationFn: (payload: LoginRequest) => authApi.login(payload),
     onSuccess: (response) => {
-      setToken(response.accessToken)
+      // Token is stored in HttpOnly cookie by backend
+      // No need to store token in frontend
 
       setUser({
         id: response.user.id,

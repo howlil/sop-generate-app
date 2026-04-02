@@ -1,6 +1,7 @@
 /**
  * Auth store - Zustand
- * Store untuk auth state (token, user info, role)
+ * Store untuk auth state (user info, role)
+ * Note: Token disimpan di HttpOnly cookie (backend-managed), bukan localStorage
  */
 
 import { create } from 'zustand'
@@ -18,10 +19,8 @@ interface User {
 
 interface AuthState {
   user: User | null
-  token: string | null
   isAuthenticated: boolean
   setUser: (user: User | null) => void
-  setToken: (token: string | null) => void
   logout: () => void
 }
 
@@ -29,23 +28,13 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
-      
+
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      
-      setToken: (token) => {
-        if (token) {
-          localStorage.setItem('biro-organisasi-token', token)
-        } else {
-          localStorage.removeItem('biro-organisasi-token')
-        }
-        set({ token })
-      },
-      
+
       logout: () => {
-        localStorage.removeItem('biro-organisasi-token')
-        set({ user: null, token: null, isAuthenticated: false })
+        set({ user: null, isAuthenticated: false })
+        // Token cookies akan di-clear oleh backend saat logout API call
       },
     }),
     {

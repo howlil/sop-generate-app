@@ -1,6 +1,7 @@
 /**
  * Auth API service - Complete implementation
  * Matches server: AuthController
+ * Note: Authentication tokens are stored in HttpOnly cookies (backend-managed)
  */
 
 import { apiClient } from './api'
@@ -30,13 +31,14 @@ export interface LoginResponse {
 export const authApi = {
   /**
    * AUTH-01: Login with email and password
-   * Returns JWT token with userId, role, and opdId
+   * Backend sets HttpOnly cookies for access_token and refresh_token
    */
   login: (payload: LoginRequest) =>
     apiClient.post<LoginResponse>('/login', payload),
 
   /**
    * AUTH: Refresh access token
+   * Backend rotates cookies automatically
    */
   refresh: () =>
     apiClient.post<{ accessToken: string; refreshToken: string }>('/refresh'),
@@ -48,7 +50,7 @@ export const authApi = {
     apiClient.patch<{ message: string }>('/change-password', { kataSandiLama, kataSandiBaru }),
 
   /**
-   * Logout - calls server to clear HttpOnly cookies, then clears local token
+   * Logout - calls server to clear HttpOnly cookies
    */
   logout: async () => {
     try {
@@ -56,11 +58,11 @@ export const authApi = {
     } catch {
       // Continue with local cleanup even if server call fails
     }
-    useAuthStore.getState().setToken(null)
+    useAuthStore.getState().setUser(null)
   },
 
   /**
-   * Get current auth token
+   * @deprecated Token is now in HttpOnly cookie, not in store
    */
-  getToken: () => useAuthStore.getState().token,
+  getToken: () => null,
 }
