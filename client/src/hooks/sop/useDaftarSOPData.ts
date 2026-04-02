@@ -1,11 +1,13 @@
 /**
  * useDaftarSOPData Hook - SOP List with business logic
  * Handles filtering, batch logic, and evaluation eligibility
+ * 
+ * Note: All state is derived from TanStack Query (single source of truth)
+ * For optimistic updates, use useSop() mutations directly
  */
 
-import { useState, useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { useSop } from '@/hooks/sop/useSop'
-import { useAuditBySopDetail } from '@/hooks/audit/useAudit'
 import type { SOPDaftarItem } from '@/components/sop/types'
 
 interface UseDaftarSOPDataParams {
@@ -19,25 +21,21 @@ interface UseDaftarSOPDataParams {
 
 export function useDaftarSOPData(params: UseDaftarSOPDataParams) {
   const { list: sopList = [] } = useSop()
-  const [localSopList, setLocalSopList] = useState<SOPDaftarItem[]>([])
-
-  // Use local list if set, otherwise use API list
-  const effectiveSopList = localSopList.length > 0 ? localSopList : sopList
 
   // Filter SOPs eligible for evaluation (DRAFT or REVISI_DARI_TIM_EVALUASI)
   const eligibleSopsForEvaluasi = useMemo(() => {
-    return effectiveSopList.filter(
+    return sopList.filter(
       (sop) => sop.status === 'DRAFT' || sop.status === 'REVISI_DARI_TIM_EVALUASI'
     )
-  }, [effectiveSopList])
+  }, [sopList])
 
   // Check for active batch
   const hasActiveBatch = false
   const activeBatchCount = 0
 
-  // Apply filters
+  // Apply filters - all derived state, no local state needed
   const filteredList = useMemo(() => {
-    let result = effectiveSopList
+    let result = sopList
 
     // Search query filter
     if (params.searchQuery) {
@@ -69,21 +67,9 @@ export function useDaftarSOPData(params: UseDaftarSOPDataParams) {
     }
 
     return result
-  }, [effectiveSopList, params])
-
-  const setSopList = useCallback(
-    (updater: SOPDaftarItem[] | ((prev: SOPDaftarItem[]) => SOPDaftarItem[])) => {
-      if (typeof updater === 'function') {
-        setLocalSopList((prev) => updater(prev as SOPDaftarItem[]) as SOPDaftarItem[])
-      } else {
-        setLocalSopList(updater)
-      }
-    },
-    []
-  )
+  }, [sopList, params.searchQuery, params.filterStatus, params.filterPeraturan, params.filterTanggalDari, params.filterTanggalSampai])
 
   return {
-    setSopList,
     eligibleSopsForEvaluasi,
     filteredList,
     hasActiveBatch,

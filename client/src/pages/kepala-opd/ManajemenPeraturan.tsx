@@ -14,10 +14,10 @@ import {
   getRiwayatVersiPeraturanInitial,
   getManajemenPeraturanOpdId,
   getOpdNamesForPeraturan,
-} from '@/hooks/usePeraturan'
+} from '@/hooks/organisasi/usePeraturan'
 import type { RiwayatVersiEntry } from '@/types/peraturan'
 import { useState } from 'react'
-import { generateId } from '@/utils'
+import { generateId } from '@/utils/generate-id'
 import { PeraturanTableTab } from './manajemen-peraturan/PeraturanTableTab'
 
 const CURRENT_OPD_ID = getManajemenPeraturanOpdId()

@@ -26,20 +26,19 @@ import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/components/sop/types'
 import {
   getInitialSopDetailImplementers,
   getInitialSopDetailProsedurRows,
-  getSopViewMetadata,
-  getSopViewVersions,
 } from '@/hooks/sop/useDetailSop'
-import { getLastEvaluatedByInitial } from '@/hooks/evaluasi/useEvaluasi'
+import { useDetailSopById, useEditHistory } from '@/hooks/sop/useDetailSop'
+import { useEvaluasiDetail } from '@/hooks/evaluasi/useEvaluasi'
 import type { DetailSOPVersionSeed } from '@/components/sop/types'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/hooks/tte/useTTE'
 import { evaluasiApi } from '@/services/evaluasi.api'
-import { queryKeys } from '@/services/queryKeys'
+import { queryKeys } from '@/utils/query-keys'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/hooks/sop/useSop'
 import { getKepalaOPDOpdId } from '@/utils/role'
 import { useOpd } from '@/hooks/organisasi/useOpd'
-import { ROUTES } from '@/utils/constants/routes'
+import { ROUTES } from '@/utils/constants'
 
 type Version = DetailSOPVersionSeed
 
@@ -90,8 +89,26 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const [cabutConfirmOpen, setCabutConfirmOpen] = useState(false)
 
   const implementers = getInitialSopDetailImplementers()
-  const metadata = getSopViewMetadata()
   const prosedurRows = getInitialSopDetailProsedurRows()
+
+  // Use real API instead of stubs
+  const { data: sopDetail } = useDetailSopById(id ?? '')
+  const { data: editHistory = [] } = useEditHistory(id ?? '')
+  const { data: pengajuanEvaluasi } = useEvaluasiDetail(pengajuanId ?? '')
+
+  // Transform API data to component format
+  const metadata = useMemo(() => {
+    if (!sopDetail) return { id: '', name: '', number: '', lembaga: '', logoUrl: '', tanggalEfektif: '', tanggalRevisi: '' }
+    return {
+      id: sopDetail.id,
+      name: sopDetail.namaLembaga,
+      number: sopDetail.nomorSOP,
+      lembaga: sopDetail.namaLembaga,
+      logoUrl: sopDetail.logoInstansi,
+      tanggalEfektif: sopDetail.tanggalEfektif ?? '',
+      tanggalRevisi: sopDetail.tanggalRevisi ?? '',
+    }
+  }, [sopDetail])
 
   const versionDiffItems = useMemo(
     () => versionDiff.computeVersionDiff(metadata, prosedurRows, viewingVersion?.snapshot ?? undefined),
@@ -116,7 +133,16 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   }
 
   /** Kepala OPD hanya menandatangani SOP (TTE). Tanpa tugas Setuju/Tolak atau pemeriksaan. */
-  const versions: Version[] = getSopViewVersions() as Version[]
+  const versions: Version[] = useMemo(() => {
+    if (!editHistory || editHistory.length === 0) return []
+    return editHistory.map(log => ({
+      version: log.versiSOP.toString(),
+      author: log.dibuatOleh?.nama ?? 'Unknown',
+      date: log.createdAt,
+      changes: log.perubahan?.join(', ') ?? '',
+      snapshot: undefined, // TODO: load actual snapshot
+    }))
+  }, [editHistory])
 
   const effectiveBreadcrumb = breadcrumb ?? [
     { label: 'Pantau SOP', to: ROUTES.KEPALA_OPD.PANTAU_SOP },
@@ -132,8 +158,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     !canShowSignButton
 
   const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
-  const lastEvaluatedByRecord = id ? getLastEvaluatedByInitial()[id] : undefined
-  const evaluatedBy = lastEvaluatedByRecord?.evaluatorName
+  const evaluatedBy = pengajuanEvaluasi?.diselesaikanOleh?.nama
 
   const workspaceHeaderToolbar = (
     <div className="flex flex-wrap items-center justify-between gap-3">

@@ -3,7 +3,7 @@
  * Matches server: TimPenyusunController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type { AnggotaTimPenyusun, CreateTimPenyusunDto, PindahTimPenyusunDto } from '@/types/tim'
 
 export const timPenyusunApi = {

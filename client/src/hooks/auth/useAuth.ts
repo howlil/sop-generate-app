@@ -1,6 +1,7 @@
 /**
  * useAuth hook with TanStack Query
  * Note: Token handled via HttpOnly cookies (backend-managed)
+ * Uses Zustand selectors for optimal performance.
  */
 
 import { useMutation } from '@tanstack/react-query'
@@ -9,9 +10,12 @@ import type { LoginRequest } from '@/types/auth'
 import { useAuthStore } from '@/stores/authStore'
 import { showToast } from '@/stores/uiStore'
 import { withMutationToast } from '@/utils/handleApi'
+import { shallow } from 'zustand/shallow'
 
 export function useAuth() {
-  const { setUser, logout } = useAuthStore()
+  // Use selectors with shallow comparison for optimal performance
+  const setUser = useAuthStore((state) => state.setUser, shallow)
+  const logout = useAuthStore((state) => state.logout, shallow)
 
   const loginMutation = useMutation({
     mutationFn: (payload: LoginRequest) => authApi.login(payload),

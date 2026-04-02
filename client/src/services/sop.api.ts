@@ -3,7 +3,7 @@
  * Matches server: SopController, DetailSopController, LangkahSopController, PelaksanaController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type {
   Sop,
   SopDetail,

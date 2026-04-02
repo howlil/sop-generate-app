@@ -4,7 +4,7 @@
  * Note: Authentication tokens are stored in HttpOnly cookies (backend-managed)
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type { LoginRequest, LoginResponse } from '@/types/auth'
 
 export const authApi = {

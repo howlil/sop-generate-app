@@ -12,11 +12,19 @@ import {
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import {
-  getDataGrafikEvaluasiTahunan,
-  getDetailOpdPerTahun,
-  type DetailOpdPerTahun,
-} from '@/hooks/evaluasi/useEvaluasi'
+import { useRekapEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
+import type { RekapEvaluasi } from '@/types/evaluasi'
+import { EmptyState } from '@/components/ui/empty-state'
+
+/* ─── Type Mapping ─── */
+/** Adapt RekapEvaluasi to legacy DetailOpdPerTahun interface */
+interface DetailOpdPerTahun {
+  tahun: string
+  opdId: string
+  opdNama: string
+  jumlahEvaluasi: number
+  rataRataSkor: number
+}
 
 /* ─── Helpers ─── */
 
@@ -42,8 +50,40 @@ const INITIAL_SHOW = 15
 /* ─── Component ─── */
 
 export function GrafikEvaluasiTahunan() {
-  const summary = useMemo(() => getDataGrafikEvaluasiTahunan(), [])
-  const detail = useMemo(() => getDetailOpdPerTahun(), [])
+  const [filterTahun, setFilterTahun] = useState<string>('')
+  
+  // Use real API instead of stub
+  const { data: rekapList = [], isLoading } = useRekapEvaluasi()
+  
+  // Transform RekapEvaluasi[] to Summary[] format
+  const summary = useMemo(() => {
+    if (!rekapList || rekapList.length === 0) return []
+    return rekapList.map(rekap => ({
+      tahun: rekap.tahun.toString(),
+      totalOpd: rekap.totalPengajuan,
+      rataRataNilai: rekap.nilaiRataRata ?? 0,
+      totalPengajuan: rekap.totalPengajuan,
+    }))
+  }, [rekapList])
+
+  // Transform RekapEvaluasi[] to DetailOpdPerTahun[] format
+  const detail = useMemo(() => {
+    if (!rekapList || rekapList.length === 0) return []
+    const allDetail: DetailOpdPerTahun[] = []
+    rekapList.forEach(rekap => {
+      rekap.detail.forEach(item => {
+        allDetail.push({
+          tahun: rekap.tahun.toString(),
+          opdId: item.opdId,
+          opdNama: item.opdNama,
+          jumlahEvaluasi: item.totalPengajuan,
+          rataRataSkor: item.nilaiRataRata ?? 0,
+        })
+      })
+    })
+    return allDetail
+  }, [rekapList])
+
   /** Unique OPD list derived from all detail rows across years. */
   const opdList = useMemo(() => {
     const seen = new Map<string, { id: string; nama: string }>()
@@ -53,7 +93,6 @@ export function GrafikEvaluasiTahunan() {
     return Array.from(seen.values())
   }, [detail])
 
-  const [filterTahun, setFilterTahun] = useState<string>('')
   const [searchOPD, setSearchOPD] = useState('')
   const [rankBy, setRankBy] = useState<'skor' | 'evaluasi'>('skor')
   const [showAll, setShowAll] = useState(false)
@@ -152,10 +191,18 @@ export function GrafikEvaluasiTahunan() {
       title="Grafik Evaluasi Tahunan"
       description="Analitik penilaian OPD per tahun. Satu OPD dapat dievaluasi lebih dari sekali dalam setahun."
     >
-      <div className="space-y-4">
-        {summary.length === 0 ? (
-          <EmptyState />
-        ) : (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-sm text-gray-500">Memuat data evaluasi...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {summary.length === 0 ? (
+            <EmptyState />
+          ) : (
           <>
             {/* ── Tahun selector ── */}
             <div className="flex items-center gap-2">
@@ -383,8 +430,9 @@ export function GrafikEvaluasiTahunan() {
             </div>
 
           </>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </ListPageLayout>
   )
 }

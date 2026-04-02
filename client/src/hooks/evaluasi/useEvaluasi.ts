@@ -149,3 +149,47 @@ export function usePengajuanEvaluasiDetail(pengajuanId?: string) {
     loading,
   }
 }
+
+// ==================== Grafik Evaluasi Tahunan (Legacy Stubs) ====================
+/** @internal Legacy stub - implement with real data from useRekapEvaluasi */
+export interface DetailOpdPerTahun {
+  opdId: string
+  opdNama: string
+  nilaiOPD?: number
+  totalPengajuan: number
+  totalSesuai: number
+  totalTidakSesuai: number
+}
+
+/** @internal Legacy stub - implement with real data from useRekapEvaluasi */
+export interface GrafikEvaluasiTahunanData {
+  tahun: number
+  totalOpd: number
+  rataRataNilai: number
+  totalPengajuan: number
+  detailOpd: DetailOpdPerTahun[]
+}
+
+/** @internal Legacy stub - implement with real data from useRekapEvaluasi */
+export function getDataGrafikEvaluasiTahunan(_tahun: number): GrafikEvaluasiTahunanData {
+  // TODO: Implement with real API call to useRekapEvaluasi
+  return {
+    tahun: _tahun,
+    totalOpd: 0,
+    rataRataNilai: 0,
+    totalPengajuan: 0,
+    detailOpd: [],
+  }
+}
+
+/** @internal Legacy stub - implement with real data from useRekapEvaluasi */
+export function getDetailOpdPerTahun(_tahun: number): DetailOpdPerTahun[] {
+  // TODO: Implement with real API call to useRekapEvaluasi
+  return []
+}
+
+/** @internal Legacy stub - implement with real data from API */
+export function getLastEvaluatedByInitial(_sopId: string): string {
+  // TODO: Implement with real API call
+  return ''
+}

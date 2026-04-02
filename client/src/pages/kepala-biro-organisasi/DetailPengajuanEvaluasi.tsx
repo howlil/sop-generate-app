@@ -7,7 +7,7 @@ import { formatDateId } from '@/utils/format-date'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { useTTESignature } from '@/hooks/tte/useTTE'
 import { usePengajuanEvaluasiDetail } from '@/hooks/evaluasi/useEvaluasi'
-import { ROUTES } from '@/utils/constants/routes'
+import { ROUTES } from '@/utils/constants'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { NotFoundWithBack } from '@/components/ui/not-found'
@@ -20,7 +20,7 @@ import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
 import { InfoCard } from '@/components/ui/info-card'
 import { useDocumentTitle } from '@/utils/use-document-title'
-import { IA } from '@/utils/constants/pipeline-ia'
+import { IA } from '@/utils/constants'
 
 const PRINT_DELAY_MS = 150
 

@@ -3,7 +3,7 @@
  * Matches server: AuditController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type { LogEditSOP, BagianSOP, AuditQueryParams } from '@/types/audit'
 
 export const auditApi = {

@@ -57,7 +57,8 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const { setUser } = useAuthStore()
+  // Use selector for setUser action (no subscription, just get the action)
+  const setUser = useAuthStore((state) => state.setUser)
 
   // Check auth persistence on app load - synchronous check to avoid double render
   const user = useAuthStore.getState().user

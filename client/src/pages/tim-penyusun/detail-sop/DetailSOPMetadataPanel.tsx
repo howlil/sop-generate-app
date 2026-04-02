@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { SOPHeaderSection } from './SOPHeaderSection'
 import { LawBasisDialog } from './LawBasisDialog'
 import { RelatedPosDialog } from './RelatedPosDialog'
 import { PelaksanaDialog } from './PelaksanaDialog'
 import type { Peraturan } from '@/types/peraturan'
 import type { SOPDetailMetadata } from '@/components/sop/types'
-import { getRelatedPosOptions } from '@/hooks/sop/useDetailSop'
+import { useSop } from '@/hooks/sop/useSop'
 
 export interface DetailSOPMetadataPanelProps {
   metadata: SOPDetailMetadata
@@ -38,7 +38,13 @@ export function DetailSOPMetadataPanel({
   const [isLawBasisOpen, setIsLawBasisOpen] = useState(false)
   const [isRelatedPosOpen, setIsRelatedPosOpen] = useState(false)
   const [isPelaksanaDialogOpen, setIsPelaksanaDialogOpen] = useState(false)
-  const relatedPosOptions = getRelatedPosOptions()
+  
+  // Use real API instead of stub
+  const { list: sops = [] } = useSop()
+  const relatedPosOptions = useMemo(() => {
+    if (!sops || sops.length === 0) return []
+    return sops.map(sop => ({ value: sop.id, label: sop.judul }))
+  }, [sops])
 
   return (
     <>

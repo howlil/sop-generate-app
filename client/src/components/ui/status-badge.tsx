@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/cn'
-import { getStatusBadgeConfig } from '@/utils/constants/status-badge-config'
+import { getStatusBadgeConfig } from '@/utils/constants'
 
 export interface StatusBadgeProps {
   status: string

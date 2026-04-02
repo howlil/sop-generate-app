@@ -10,10 +10,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { ROUTES } from '@/utils/constants/ui'
+import { ROUTES } from '@/utils/constants'
 import type { TTERole } from '@/types/tte'
-import { hashPin } from '@/hooks/tte/useTTE'
 import {
+  hashPin,
   getTTEProfile,
   setTTEProfile,
   getTTEVerificationSuccessUrl,

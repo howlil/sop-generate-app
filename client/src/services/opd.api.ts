@@ -3,7 +3,7 @@
  * Matches server: OpdController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type { OpdResponse, CreateOpdDto, UpdateOpdDto } from '@/types/opd'
 
 export const opdApi = {

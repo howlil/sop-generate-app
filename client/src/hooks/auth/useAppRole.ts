@@ -1,16 +1,17 @@
 /**
  * Hook akses role & helpers — satu titik akses untuk UI.
+ * Uses Zustand selectors with shallow comparison for optimal performance.
  */
 import { useAuthStore } from '@/stores/authStore'
-import { CONSTANTS } from '@/utils/constants'
-import type { RoleKey } from '@/utils/constants'
-
-const { ROLES, ROLE_LABELS } = CONSTANTS
+import { ROLES, ROLE_LABELS } from '@/utils/constants'
+import { shallow } from 'zustand/shallow'
+import type { RoleKey } from '@/types/common'
 
 export { ROLES }
 
 export function useAppRole() {
-  const user = useAuthStore((s) => s.user)
+  // Use selector with shallow comparison for optimal performance
+  const user = useAuthStore((state) => state.user, shallow)
   const role = user?.peran as RoleKey | undefined
 
   const setRole = (newRole: RoleKey) => {

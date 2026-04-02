@@ -3,7 +3,7 @@
  * Matches server: TimEvaluasiController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type { AnggotaTimEvaluasi, CreateTimEvaluasiDto, UpdateTimEvaluasiDto } from '@/types/tim'
 
 export const timEvaluasiApi = {

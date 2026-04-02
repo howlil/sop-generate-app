@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Bell, CircleUserRound, LogOut } from 'lucide-react'
-import { CONSTANTS } from '@/utils/constants'
+import { ROUTES, ROLES } from '@/utils/constants'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -44,7 +44,7 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
 
   const handleLogout = () => {
     clearRole()
-    navigate({ to: CONSTANTS.ROUTES.HOME, search: { denied: undefined, redirect: undefined } })
+    navigate({ to: ROUTES.HOME, search: { denied: undefined, redirect: undefined } })
   }
 
   const roleLabel = role ? getRoleLabel(role) : '-'

@@ -29,13 +29,13 @@ import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
 import { SearchInput } from '@/components/ui/search-input'
 import { formatDateIdLong } from '@/utils/format-date'
-import { ROUTES } from '@/utils/constants/ui'
+import { ROUTES } from '@/utils/constants'
 import type { StatusSOP } from '@/types/sop'
 import type { SOPDaftarItem } from '@/components/sop/types'
 import { SOPStatusFilterSelect } from '@/components/sop/SOPStatusFilterSelect'
 import { BuatSOPDialog } from '@/components/sop/BuatSOPDialog'
 import { generateId } from '@/utils/generate-id'
-import { canEditSop, canTimPenyusunRunCoordinatorActions } from '@/hooks/sop/useSop'
+import { canEditSop, canTimPenyusunRunCoordinatorActions, useSop } from '@/hooks/sop/useSop'
 import { useToast } from '@/utils/ui'
 import { useSopStatus } from '@/hooks/sop/useSopStatus'
 import { useAppRole } from '@/hooks/auth/useAppRole'
@@ -56,7 +56,7 @@ export function ManajemenSOP() {
   const { setSopStatusOverride } = useSopStatus()
   const { role, getRoleUserName } = useAppRole()
   const filters = useDaftarSOPFilters()
-  const { setSopList, eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSOPData({
+  const { eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSOPData({
     searchQuery: filters.searchQuery,
     filterStatus: filters.filterStatus,
     filterPeraturan: filters.filterPeraturan,
@@ -64,6 +64,7 @@ export function ManajemenSOP() {
     filterTanggalSampai: filters.filterTanggalSampai,
     isFilterOpen: filters.isFilterOpen,
   })
+  const { update: updateSop } = useSop()
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
   const [requestEvaluasiSearchQuery, setRequestEvaluasiSearchQuery] = useState('')
@@ -107,13 +108,12 @@ export function ManajemenSOP() {
       return
     }
     const ids = Array.from(selectedSopIdsForAjukan)
-    setSopList((prev) =>
-      prev.map((p) => {
-        if (!ids.includes(p.id)) return p
-        setSopStatusOverride(p.id, 'Diajukan Evaluasi')
-        return { ...p, status: 'Diajukan Evaluasi' as StatusSOP }
-      })
-    )
+    
+    // Update status for each selected SOP
+    ids.forEach((sopId) => {
+      setSopStatusOverride(sopId, 'Diajukan Evaluasi')
+    })
+    
     showToast(`${ids.length} SOP berhasil diajukan ke evaluasi`)
     setIsRequestEvaluasiDialogOpen(false)
     setSelectedSopIdsForAjukan(new Set())
@@ -417,23 +417,8 @@ export function ManajemenSOP() {
         onSuccess={(data) => {
           const newId = generateId()
           const today = new Date().toISOString().split('T')[0]
-          const newItem: SOPDaftarItem = {
-            id: newId,
-            nomorSOP: data.nomorSOP,
-            judul: data.judul,
-            deskripsi: data.deskripsi,
-            status: 'Draft',
-            waktuPenugasan: today,
-            terakhirDiperbarui: today,
-            timPenyusun: '-',
-            unitTerkait: '-',
-            peraturan: '-',
-            peraturanId: '',
-            versi: '1.0',
-            kategori: 'Pelayanan',
-          }
-          setSopList((prev) => [...prev, newItem])
-          setIsBuatSOPDialogOpen(false)
+          // Navigate directly to the new SOP detail page
+          // The SOP will be fetched from API and shown in the list after creation
           navigate({ to: ROUTES.TIM_PENYUSUN.DETAIL_SOP, params: { id: newId } })
         }}
       />

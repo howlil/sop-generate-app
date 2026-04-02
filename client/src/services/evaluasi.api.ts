@@ -3,7 +3,7 @@
  * Matches server: EvaluasiController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type {
   PengajuanEvaluasi,
   NilaiEvaluasi,

@@ -309,3 +309,22 @@ export function useEditHistory(sopDetailId: string) {
     staleTime: DETAIL_SOP_STALE_TIME,
   })
 }
+
+// ==================== Legacy Helpers ====================
+/** @internal Legacy stub - implement with real SOP list from useSop */
+export function getRelatedPosOptions(_currentSopId: string): Array<{ value: string; label: string }> {
+  // TODO: Implement with real SOP list from useSop hook
+  return []
+}
+
+/** @internal Legacy stub - implement with real data from API */
+export function getSopViewMetadata(_sopId: string) {
+  // TODO: Implement with real API call
+  return { metadata: null, procedures: [], implementers: [] }
+}
+
+/** @internal Legacy stub - implement with real data from API */
+export function getSopViewVersions(_sopId: string) {
+  // TODO: Implement with real API call
+  return []
+}

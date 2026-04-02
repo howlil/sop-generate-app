@@ -3,7 +3,7 @@
  * Matches server: TTEController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type {
   KredensialTTE,
   RiwayatTandaTangan,

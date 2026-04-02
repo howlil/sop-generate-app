@@ -8,7 +8,7 @@ import type { OpdResponse } from '@/types/opd'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useToast } from '@/utils/ui'
 import { useOpd } from '@/hooks/organisasi/useOpd'
-import { generateId } from '@/utils'
+import { generateId } from '@/utils/generate-id'
 import { OPDTab } from './manajemen-opd/OPDTab'
 import { KepalaOPDTab } from './manajemen-opd/KepalaOPDTab'
 

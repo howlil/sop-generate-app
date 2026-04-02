@@ -3,7 +3,7 @@
  * Matches server: UserController
  */
 
-import { apiClient } from './api'
+import { apiClient } from '../utils/api-client'
 import type { User, CreateUserDto, UpdateUserDto, PaginatedResponse } from '@/types/users'
 
 export const usersApi = {

@@ -192,3 +192,36 @@ export function addTTESignature(
   _sopNama: string,
   _sopNomor: string
 ): void {}
+
+/** @internal Legacy stub - use useRegisterTTE mutation instead */
+export function setTTEProfile(
+  _role: string,
+  _profile: {
+    nip: string
+    namaLengkap: string
+    email: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    pinHash: string
+    emailVerified: boolean
+    role: string
+    verificationToken: string
+  }
+): void {}
+
+/** @internal Legacy stub - hash PIN helper (client-side simulation) */
+export function hashPin(pin: string): string {
+  // Simple hash simulation (in production, this should be server-side)
+  return 'hash_' + btoa(pin).slice(0, 20)
+}
+
+/** @internal Legacy stub - get verification URL */
+export function getTTEVerificationSuccessUrl(token: string): string {
+  return `/validasi/ttd-berhasil?token=${token}`
+}
+
+/** @internal Legacy stub - get validation URL for QR code */
+export function getValidasiPengesahanUrl(id: string): string {
+  return `${window.location.origin}/validasi/pengesahan/${id}`
+}
