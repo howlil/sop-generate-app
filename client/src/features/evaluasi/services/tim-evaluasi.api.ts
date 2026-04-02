@@ -3,8 +3,8 @@
  * Matches server: TimEvaluasiController
  */
 
-import { apiClient } from '../utils/api-client'
-import type { AnggotaTimEvaluasi, CreateTimEvaluasiDto, UpdateTimEvaluasiDto } from '@/types/tim'
+import { apiClient } from '@/utils/api-client'
+import type { AnggotaTimEvaluasi, CreateTimEvaluasiDto, UpdateTimEvaluasiDto } from '@/features/tim'
 
 export const timEvaluasiApi = {
   findAll: () =>
