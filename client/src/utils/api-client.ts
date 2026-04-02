@@ -1,5 +1,6 @@
 /**
  * HTTP Client with fetch API
+ * Utility for making API requests
  */
 
 import { API_BASE_URL, getHeaders } from '@/config/api.config'

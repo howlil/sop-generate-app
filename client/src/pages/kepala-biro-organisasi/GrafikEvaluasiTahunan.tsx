@@ -16,7 +16,7 @@ import {
   getDataGrafikEvaluasiTahunan,
   getDetailOpdPerTahun,
   type DetailOpdPerTahun,
-} from '@/hooks/useEvaluasi'
+} from '@/hooks/evaluasi/useEvaluasi'
 
 /* ─── Helpers ─── */
 

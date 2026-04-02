@@ -11,11 +11,11 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/utils/constants/ui'
-import { canSelectSOPForEvaluasi, isSopInEvaluasiList } from '@/hooks/useSop'
+import { canSelectSOPForEvaluasi, isSopInEvaluasiList } from '@/hooks/sop/useSop'
 import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/utils/use-pagination'
-import { useSop } from '@/hooks/useSop'
-import { useSopStatus } from '@/hooks/useSopStatus'
+import { useSop } from '@/hooks/sop/useSop'
+import { useSopStatus } from '@/hooks/sop/useSopStatus'
 
 export interface OpdEvaluasiItem {
   id: string

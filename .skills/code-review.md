@@ -170,6 +170,25 @@ approach:
         Fix: Search codebase untuk similar patterns, consolidate jika ditemukan.
       </rule>
 
+      <rule name="Over-Engineering Detection">
+        Deteksi solusi yang lebih kompleks dari yang dibutuhkan:
+        1. **Abstract tanpa need**: Interface/Abstract class untuk single implementation
+        2. **Pattern overuse**: Design pattern diterapkan tanpa kebutuhan nyata
+        3. **Premature optimization**: Optimize sebelum ada performance issue
+        4. **Generic overkill**: Generic type yang terlalu complex untuk use case sederhana
+        5. **Unnecessary layer**: Extra layer (service, repository, wrapper) tanpa value add
+        6. **Configuration complexity**: Config system yang terlalu elaborate untuk simple case
+        
+        **Indicators:**
+        - File > 500 lines dengan logic yang bisa lebih simple
+        - Function dengan > 5 parameters (pertimbangkan object parameter)
+        - Nested generic types (e.g., `Wrapper<Factory<Builder<T>>>`)
+        - Abstract class dengan single concrete implementation
+        - Pattern digunakan "untuk jaga-jaga" bukan untuk solve problem nyata
+        
+        **Fix:** Apply YAGNI dan KISS principles - start simple, refactor when needed.
+      </rule>
+
       <rule name="Directed Code Detection">
         Deteksi kode yang hanya satu arah (tidak ada timbal-balik/interaksi).
         Contoh: Component yang hanya receive props tanpa interaction, API yang hanya POST tanpa GET.
@@ -212,6 +231,186 @@ approach:
       </rule>
 
     </detection_rules>
+
+    <over_engineering_examples>
+
+      <example name="Unnecessary Abstract/Interface">
+        // ❌ WRONG: Interface untuk single implementation
+        // sop.repository.interface.ts
+        export interface ISopRepository {
+          findOne(id: string): Promise&lt;SOP&gt;;
+          save(sop: SOP): Promise&lt;SOP&gt;;
+        }
+
+        // sop.repository.ts
+        export class SopRepository implements ISopRepository {
+          async findOne(id: string): Promise&lt;SOP&gt; { ... }
+          async save(sop: SOP): Promise&lt;SOP&gt; { ... }
+        }
+
+        // ✅ CORRECT: Direct class, add interface when needed
+        // sop.repository.ts
+        export class SopRepository {
+          async findOne(id: string): Promise&lt;SOP&gt; { ... }
+          async save(sop: SOP): Promise&lt;SOP&gt; { ... }
+        }
+
+        // Add interface ONLY when you have multiple implementations
+      </example>
+
+      <example name="Pattern Overuse">
+        // ❌ WRONG: Factory pattern untuk simple object
+        // sop.factory.ts
+        export class SopFactory {
+          static createSop(data: CreateSopDto): SOP {
+            return new SOP({
+              id: crypto.randomUUID(),
+              ...data,
+              status: 'DRAFT',
+            });
+          }
+        }
+
+        // ✅ CORRECT: Direct constructor/function
+        // sop.entity.ts
+        export class SOP {
+          constructor(data: CreateSopDto) {
+            this.id = crypto.randomUUID();
+            this.judul = data.judul;
+            this.status = 'DRAFT';
+          }
+        }
+
+        // Usage: const sop = new SOP(data);
+      </example>
+
+      <example name="Premature Optimization">
+        // ❌ WRONG: Complex caching sebelum ada performance issue
+        // sop.service.ts
+        export class SopService {
+          private cache = new Map&lt;string, SOP&gt;();
+          private cacheExpiry = new Map&lt;string, number&gt;();
+          private readonly CACHE_TTL = 5 * 60 * 1000;
+
+          async findOne(id: string): Promise&lt;SOP&gt; {
+            const cached = this.cache.get(id);
+            const expiry = this.cacheExpiry.get(id);
+            if (cached &amp;&amp; expiry &amp;&amp; Date.now() &lt; expiry) {
+              return cached;
+            }
+            const sop = await this.repo.findOne(id);
+            this.cache.set(id, sop);
+            this.cacheExpiry.set(id, Date.now() + this.CACHE_TTL);
+            return sop;
+          }
+        }
+
+        // ✅ CORRECT: Use TanStack Query caching (already built-in)
+        // hooks/useSop.ts
+        export const useSop = (id: string) => {
+          return useQuery({
+            queryKey: ['sops', id],
+            queryFn: () => fetchSop(id),
+            staleTime: 5 * 60 * 1000, // Cache built-in
+          });
+        };
+      </example>
+
+      <example name="Generic Overkill">
+        // ❌ WRONG: Nested generics yang terlalu complex
+        // base.repository.ts
+        export abstract class BaseRepository&lt;T, U extends CreateDto&lt;T&gt;, V extends UpdateDto&lt;T&gt;, W extends FilterDto&lt;T&gt;, X extends ResponseDto&lt;T&gt;&gt; {
+          abstract create(dto: U): Promise&lt;X&gt;;
+          abstract update(id: string, dto: V): Promise&lt;X&gt;;
+          abstract findMany(filter: W): Promise&lt;X[]&gt;;
+        }
+
+        // ✅ CORRECT: Simple generic dengan constraints
+        // base.repository.ts
+        export interface BaseEntity {
+          id: string;
+          createdAt: Date;
+          updatedAt: Date;
+        }
+
+        export class BaseRepository&lt;T extends BaseEntity&gt; {
+          async create(data: Partial&lt;T&gt;): Promise&lt;T&gt; { ... }
+          async update(id: string, data: Partial&lt;T&gt;): Promise&lt;T&gt; { ... }
+          async findMany(): Promise&lt;T[]&gt; { ... }
+        }
+      </example>
+
+      <example name="Unnecessary Layer">
+        // ❌ WRONG: Extra wrapper tanpa value add
+        // sop/sop.wrapper.ts
+        export class SopWrapper {
+          constructor(
+            private service: SopService,
+            private validator: SopValidator,
+            private mapper: SopMapper,
+          ) {}
+
+          async createSop(data: CreateSopDto): Promise&lt;SopResponseDto&gt; {
+            this.validator.validate(data);
+            const sop = await this.service.create(data);
+            return this.mapper.toResponse(sop);
+          }
+        }
+
+        // ✅ CORRECT: Direct service usage
+        // sop/sop.service.ts
+        export class SopService {
+          constructor(
+            private repo: SopRepository,
+            private validator: SopValidator,
+          ) {}
+
+          async create(data: CreateSopDto): Promise&lt;SOP&gt; {
+            this.validator.validate(data);
+            return this.repo.save(new SOP(data));
+          }
+        }
+
+        // Controller calls service directly, no wrapper needed
+      </example>
+
+      <example name="Configuration Complexity">
+        // ❌ WRONG: Elaborate config system untuk simple feature
+        // config/sop.config.ts
+        export class SopConfig {
+          private static instance: SopConfig;
+          private config: Record&lt;string, any&gt; = {};
+
+          private constructor() {}
+
+          static getInstance(): SopConfig {
+            if (!SopConfig.instance) {
+              SopConfig.instance = new SopConfig();
+            }
+            return SopConfig.instance;
+          }
+
+          set(key: string, value: any): void {
+            this.config[key] = value;
+          }
+
+          get(key: string): any {
+            return this.config[key];
+          }
+        }
+
+        // ✅ CORRECT: Simple environment variables
+        // config/sop.config.ts
+        export const sopConfig = {
+          maxJudulLength: Number(process.env.SOP_MAX_JUDUL_LENGTH) || 200,
+          defaultStatus: process.env.SOP_DEFAULT_STATUS || 'DRAFT',
+          enableApproval: process.env.SOP_ENABLE_APPROVAL === 'true',
+        } as const;
+
+        // Usage: import { sopConfig } from '@/config/sop.config';
+      </example>
+
+    </over_engineering_examples>
 
     <existing_solution_patterns>
 

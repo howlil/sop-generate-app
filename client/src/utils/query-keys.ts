@@ -19,17 +19,17 @@ export const queryKeys = {
   sop: ['sop'] as const,
   sopList: (params?: { opdId?: string; status?: string }) => ['sop', 'list', params] as const,
   sopById: (id: string) => ['sop', 'byId', id] as const,
-  
+
   // Detail SOP
   detailSop: ['detailSop'] as const,
   detailSopList: (params?: { sopId?: string; opdId?: string; status?: string }) => ['detailSop', 'list', params] as const,
   detailSopById: (id: string) => ['detailSop', 'byId', id] as const,
   detailSopLogs: (id: string) => ['detailSop', 'logs', id] as const,
-  
+
   // Langkah SOP
   langkahSop: ['langkahSop'] as const,
   langkahSopByDetail: (sopDetailId: string) => ['langkahSop', 'byDetail', sopDetailId] as const,
-  
+
   // Pelaksana
   pelaksana: ['pelaksana'] as const,
   pelaksanaByOpd: (opdId: string) => ['pelaksana', 'byOpd', opdId] as const,
@@ -60,18 +60,18 @@ export const queryKeys = {
   timEvaluasi: ['timEvaluasi'] as const,
   timEvaluasiList: () => ['timEvaluasi', 'list'] as const,
   timEvaluasiById: (id: string) => ['timEvaluasi', 'byId', id] as const,
-  
+
   // Evaluasi
   evaluasi: ['evaluasi'] as const,
   evaluasiList: (params?: { opdId?: string; status?: string; jenis?: string }) => ['evaluasi', 'list', params] as const,
   evaluasiById: (id: string) => ['evaluasi', 'byId', id] as const,
   evaluasiRekap: (tahun?: number) => ['evaluasi', 'rekap', tahun] as const,
-  
+
   // TTE
   tte: ['tte'] as const,
   tteProfil: ['tte', 'profil'] as const,
   tteRiwayat: ['tte', 'riwayat'] as const,
-  
+
   // Audit
   audit: ['audit'] as const,
   auditBySopDetail: (sopDetailId: string) => ['audit', 'bySopDetail', sopDetailId] as const,

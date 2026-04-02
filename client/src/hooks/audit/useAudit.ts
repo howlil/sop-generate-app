@@ -5,7 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { auditApi } from '@/services/audit.api'
-import { queryKeys } from '@/services/queryKeys'
+import { queryKeys } from '@/utils/query-keys'
 import type { BagianSOP } from '@/types/audit'
 
 /**

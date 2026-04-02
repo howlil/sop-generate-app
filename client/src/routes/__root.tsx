@@ -11,7 +11,7 @@ import { GlobalToast } from '@/components/layout/GlobalToast'
 import { NotFoundPage } from '@/components/ui/not-found'
 import { RouteErrorPage } from '@/components/ui/route-error'
 import { RouteFocusManager } from '@/components/ui/RouteFocusManager'
-import { queryClient } from '@/services/queryClient'
+import { queryClient } from '@/config/query-client'
 import { getRole, useAuthStore } from '@/stores/authStore'
 
 export const Route = createRootRoute({

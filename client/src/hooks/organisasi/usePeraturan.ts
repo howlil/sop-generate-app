@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { peraturanApi } from '@/services/peraturan.api'
-import { queryKeys } from '@/services/queryKeys'
+import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
 import type { CreatePeraturanRequest, UpdatePeraturanRequest } from '@/types/peraturan'
 

@@ -12,7 +12,7 @@ import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailImplementers,
-} from '@/hooks/useDetailSop'
+} from '@/hooks/sop/useDetailSop'
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata()
 const DEFAULT_PROSEDUR_ROWS = getInitialSopDetailProsedurRows()

@@ -17,15 +17,15 @@ import {
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { useToast } from '@/utils/ui'
-import { usePeraturan } from '@/hooks/usePeraturan'
-import { usePelaksana } from '@/hooks/usePelaksana'
-import { useSopStatus } from '@/hooks/useSopStatus'
+import { usePeraturan } from '@/hooks/organisasi/usePeraturan'
+import { usePelaksana } from '@/hooks/sop/usePelaksana'
+import { useSopStatus } from '@/hooks/sop/useSopStatus'
 import { useAppRole } from '@/hooks/auth/useAppRole'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailVersions,
-} from '@/hooks/useDetailSop'
+} from '@/hooks/sop/useDetailSop'
 import { DEFAULT_SOP_STATUS, type SOPDetailMetadata, type ProsedurRow, type StatusSOP } from '@/components/sop/types'
 import type { VersionHistoryItem } from '@/components/sop/VersionHistoryPanel'
 import { KomentarPanel } from '@/components/sop/KomentarPanel'

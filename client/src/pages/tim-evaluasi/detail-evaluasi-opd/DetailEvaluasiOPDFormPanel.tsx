@@ -6,8 +6,8 @@ import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
 import { SkorRatingPicker } from '@/components/evaluasi/SkorRatingPicker'
 import { formatDateId } from '@/utils/format-date'
-import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/hooks/useEvaluasi'
-import type { StatusHasilEvaluasi } from '@/hooks/useEvaluasi'
+import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/hooks/evaluasi/useEvaluasi'
+import type { StatusHasilEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
 
 export interface DetailEvaluasiOPDFormPanelProps {
   opd: { id: string; nama: string; kode: string } | null

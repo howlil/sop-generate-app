@@ -5,7 +5,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { evaluasiApi } from '@/services/evaluasi.api'
-import { queryKeys } from '@/services/queryKeys'
+import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
 import type {
   CreatePengajuanEvaluasiDto,

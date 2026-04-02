@@ -14,13 +14,13 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
 import { getKepalaOPDOpdId } from '@/utils/role'
-import { useSop } from '@/hooks/useSop'
-import { useSopStatus } from '@/hooks/useSopStatus'
+import { useSop } from '@/hooks/sop/useSop'
+import { useSopStatus } from '@/hooks/sop/useSopStatus'
 import { useToast } from '@/utils/ui'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/utils/use-pagination'
-import { useOpd } from '@/hooks/useOpd'
+import { useOpd } from '@/hooks/organisasi/useOpd'
 
 export function PantauSOP() {
   const opdId = getKepalaOPDOpdId()

@@ -21,22 +21,22 @@ import { InfoField } from '@/components/ui/info-field'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/utils/ui'
-import { useSopStatus } from '@/hooks/useSopStatus'
+import { useSopStatus } from '@/hooks/sop/useSopStatus'
 import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/components/sop/types'
 import {
   getInitialSopDetailImplementers,
   getInitialSopDetailProsedurRows,
   getSopViewMetadata,
   getSopViewVersions,
-} from '@/hooks/useDetailSop'
-import { getLastEvaluatedByInitial } from '@/hooks/useEvaluasi'
+} from '@/hooks/sop/useDetailSop'
+import { getLastEvaluatedByInitial } from '@/hooks/evaluasi/useEvaluasi'
 import type { DetailSOPVersionSeed } from '@/components/sop/types'
 import { formatDateIdLong } from '@/utils/format-date'
 import * as versionDiff from '@/utils/version-diff'
-import { useTTESignature } from '@/hooks/useTTESignature'
+import { useTTESignature } from '@/hooks/tte/useTTE'
 import { evaluasiApi } from '@/services/evaluasi.api'
-import { queryKeys } from '@/services/queryKeys'
-import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/hooks/useSop'
+import { queryKeys } from '@/utils/query-keys'
+import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/hooks/sop/useSop'
 import { getKepalaOPDOpdId } from '@/utils/role-display'
 import { useOpd } from '@/hooks/useOpd'
 import { ROUTES } from '@/utils/constants/routes'

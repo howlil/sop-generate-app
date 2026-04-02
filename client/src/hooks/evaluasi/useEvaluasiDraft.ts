@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
-import type { StatusHasilEvaluasi } from '@/hooks/useEvaluasi'
+import type { StatusHasilEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
 
 interface DraftEntry {
   statusEvaluasi: StatusHasilEvaluasi | null

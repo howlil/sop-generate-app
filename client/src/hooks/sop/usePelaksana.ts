@@ -4,7 +4,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '@/services/sop.api'
-import { queryKeys } from '@/services/queryKeys'
+import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
 import { useAuthStore } from '@/stores/authStore'
 import type { Pelaksana } from '@/types/sop'
