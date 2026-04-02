@@ -16,6 +16,13 @@ export type {
   StatusHasilEvaluasiForm,
 } from './types/evaluasi'
 
+// Type aliases for backward compatibility
+export type RiwayatEvaluasiSOPItem = NilaiEvaluasi
+export type RiwayatEvaluasiOPDItem = PengajuanEvaluasi
+
+// Export useEvaluasiSubmit types
+export type { EvaluasiBatchSubmitError, EvaluasiSubmitItem } from './hooks/useEvaluasiSubmit'
+
 // Re-export shared types from central location
 export type {
   JenisPengajuanEvaluasi,

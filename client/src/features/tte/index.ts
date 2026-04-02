@@ -15,6 +15,9 @@ export type {
 
 export type { PeranTTE } from '@/types/common'
 
+/** Alias for PeranTTE for backward compatibility */
+export type TTERole = PeranTTE
+
 // Services
 export { tteApi } from './services/tte.api'
 

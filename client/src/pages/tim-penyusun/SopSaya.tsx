@@ -8,23 +8,30 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { SOPStatusFilterSelect, canEditSop, useSop, useSopStatus } from '@/features/sop'
 import { ROUTES } from '@/utils/constants'
 import { formatDateIdLong } from '@/utils/format-date'
-import { useFilteredList } from '@/utils/use-filtered-list'
 import { usePagination } from '@/utils/use-pagination'
+import { useState, useMemo } from 'react'
 
 export function SopSaya() {
   const { list: sopListRaw } = useSop()
   const { mergeSopStatus } = useSopStatus()
   const mergedList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
-  const {
-    filteredList: filteredSop,
-    searchQuery,
-    setSearchQuery,
-    filterValue: filterStatus,
-    setFilterValue: setFilterStatus,
-  } = useFilteredList(mergedList, {
-    searchKeys: ['judul', 'nomorSOP'],
-    filterKey: 'status',
-  })
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterStatus, setFilterStatus] = useState<string | null>(null)
+  
+  const filteredSop = useMemo(() => {
+    let result = mergedList
+    if (filterStatus) {
+      result = result.filter((sop: any) => sop.status === filterStatus)
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase()
+      result = result.filter((sop: any) => 
+        sop.judul.toLowerCase().includes(q) || sop.nomorSOP.toLowerCase().includes(q)
+      )
+    }
+    return result
+  }, [mergedList, filterStatus, searchQuery])
+  
   const pagination = usePagination(filteredSop.length)
   const rowsToShow = pagination.showPagination
     ? filteredSop.slice(pagination.startIndex, pagination.endIndex)
@@ -105,7 +112,7 @@ export function SopSaya() {
           </Table.Table>
         </Table.Root>
         <Table.Pagination
-          totalItems={filteredSOP.length}
+          totalItems={filteredSop.length}
           currentPage={pagination.page}
           onPageChange={pagination.setPage}
           label="SOP"

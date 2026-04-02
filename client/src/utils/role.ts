@@ -24,6 +24,14 @@ export function getRoleNip(): string {
 }
 
 /**
+ * Get user name for role display (legacy compatibility)
+ */
+export function getRoleUserName(_role: string): string {
+  const user = useAuthStore.getState().user
+  return user?.nama ?? ''
+}
+
+/**
  * Get user display name
  */
 export function getRoleDisplayName(): string {
@@ -32,10 +40,11 @@ export function getRoleDisplayName(): string {
 }
 
 /**
- * Get current user role
+ * Get current user role (simplified for UI compatibility)
  */
-export function getRole(): { peran: RoleKey; opdId?: string | null } | null {
-  return useAuthStore.getState().user
+export function getRole(): { peran: string; opdId?: string | null } | null {
+  const user = useAuthStore.getState().user
+  return user ? { peran: user.peran, opdId: user.opdId } : null
 }
 
 /**

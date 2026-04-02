@@ -93,3 +93,6 @@ export { VersionHistoryPanel } from './components/VersionHistoryPanel'
 export { SOPDiagramFlowchart } from './components/SOPDiagram/SOPDiagramFlowchart'
 export { SOPDiagramBpmn } from './components/SOPDiagram/SOPDiagramBpmn'
 export { SOPHeaderInfo } from './components/SOPDiagram/SOPHeaderInfo'
+
+// Export component types
+export type { VersionHistoryItem } from './components/VersionHistoryPanel'
