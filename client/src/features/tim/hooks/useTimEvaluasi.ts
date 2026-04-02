@@ -3,10 +3,10 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { timEvaluasiApi } from '@/services/tim-evaluasi.api'
+import { timEvaluasiApi } from '@/features/evaluasi'
 import { queryKeys } from '@/utils/query-keys'
 import { withMutationToast } from '@/utils/handleApi'
-import type { CreateTimEvaluasiRequest } from '@/types/tim'
+import type { CreateTimEvaluasiRequest } from '@/features/tim'
 
 const TIM_EVALUASI_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
