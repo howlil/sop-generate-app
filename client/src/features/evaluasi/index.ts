@@ -13,6 +13,7 @@ export type {
   UpdateNilaiEvaluasiDto,
   LogNilaiEvaluasi,
   BatchListSopItem,
+  StatusHasilEvaluasiForm,
 } from './types/evaluasi'
 
 export type {
@@ -21,6 +22,8 @@ export type {
   HasilEvaluasi,
   StatusHasilEvaluasi,
 } from '@/types/common'
+
+export { STATUS_HASIL_EVALUASI } from './hooks/useEvaluasi'
 
 // Services (only depend on types)
 export { evaluasiApi } from './services/evaluasi.api'
