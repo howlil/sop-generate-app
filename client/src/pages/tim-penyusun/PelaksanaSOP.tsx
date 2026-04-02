@@ -15,7 +15,7 @@ import type { PelaksanaSOP } from '@/hooks/usePelaksana'
 import { usePelaksana } from '@/hooks/usePelaksana'
 import { useToast } from '@/hooks/useUI'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 
 export function PelaksanaSOP() {
   const { showToast } = useToast()

@@ -16,7 +16,7 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import type { Peraturan, RiwayatVersiEntry } from '@/types/peraturan'
 import { formatDateIdLong } from '@/utils/format-date'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 
 export interface PeraturanTableTabProps {
   filteredPeraturan: Peraturan[]

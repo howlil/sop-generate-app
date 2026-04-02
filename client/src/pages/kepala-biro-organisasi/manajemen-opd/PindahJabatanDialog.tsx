@@ -1,7 +1,7 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
-import type { PindahFormState, PindahDialogPerson } from '@/hooks/useManajemenOPDState'
+import type { PindahFormState, PindahDialogPerson } from '@/types/misc'
 
 interface OPD {
   id: string

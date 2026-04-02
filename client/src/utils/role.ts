@@ -4,7 +4,8 @@
 
 import { redirect } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/authStore'
-import { ROUTES, type RoleKey } from '@/utils/constants'
+import { ROUTES } from '@/utils/constants'
+import type { RoleKey } from '@/types/common'
 
 /**
  * Get OPD ID for Kepala OPD role

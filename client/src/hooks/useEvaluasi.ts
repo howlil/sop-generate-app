@@ -21,7 +21,8 @@ export const STATUS_HASIL_EVALUASI = {
   TIDAK_SESUAI: 'TIDAK_SESUAI',
 } as const
 
-export type StatusHasilEvaluasi = typeof STATUS_HASIL_EVALUASI[keyof typeof STATUS_HASIL_EVALUASI]
+// Re-export type from common
+export type { StatusHasilEvaluasi } from '@/types/common'
 
 export interface StatusHasilEvaluasiForm {
   hasil: StatusHasilEvaluasi

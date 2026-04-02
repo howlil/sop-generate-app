@@ -11,11 +11,11 @@ import { Badge } from '@/components/ui/badge'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ROUTES } from '@/utils/constants'
 import { IA } from '@/utils/constants'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useDocumentTitle } from '@/utils/use-document-title'
 
 /** Tanggal terakhir untuk urutan (terbaru dulu). */
 function getSortDate(p: PengajuanEvaluasi): string {

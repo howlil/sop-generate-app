@@ -2,7 +2,7 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import type { KepalaOPD } from './KepalaOPDTab'
-import type { KepalaFormState } from '@/hooks/useManajemenOPDState'
+import type { KepalaFormState } from '@/types/misc'
 
 interface OPD {
   id: string

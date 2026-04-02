@@ -13,7 +13,7 @@ import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/utils/constants/ui'
 import { canSelectSOPForEvaluasi, isSopInEvaluasiList } from '@/hooks/useSop'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 import { useSop } from '@/hooks/useSop'
 import { useSopStatus } from '@/hooks/useSopStatus'
 

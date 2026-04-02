@@ -1,36 +1,10 @@
 /**
  * Application Constants
  * Source of truth for all constants
+ * Note: Types are imported from @/types/common
  */
 
-// ==================== TYPES ====================
-
-export type RoleKey =
-  | 'BIRO_ORGANISASI'
-  | 'TIM_PENYUSUN'
-  | 'KOORDINATOR_TIM_PENYUSUN'
-  | 'KEPALA_OPD'
-  | 'TIM_EVALUASI'
-
-export type StatusSOP =
-  | 'DRAFT'
-  | 'SEDANG_DISUSUN'
-  | 'SIAP_DIEVALUASI'
-  | 'DIAJUKAN_EVALUASI'
-  | 'SEDANG_DIEVALUASI'
-  | 'REVISI_DARI_TIM_EVALUASI'
-  | 'SIAP_DIVERIFIKASI'
-  | 'DIVERIFIKASI_BIRO_ORGANISASI'
-  | 'BERLAKU'
-  | 'DICABUT'
-
-export type StatusHasilEvaluasi = 'SESUAI' | 'TIDAK_SESUAI'
-
-export interface StatusBadgeConfig {
-  label: string
-  color: string
-  bgColor: string
-}
+import type { RoleKey, StatusSOP, StatusHasilEvaluasi, StatusBadgeConfig } from '@/types/common'
 
 // ==================== CONSTANTS ====================
 

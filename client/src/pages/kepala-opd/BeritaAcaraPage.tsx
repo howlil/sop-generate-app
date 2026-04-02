@@ -30,7 +30,7 @@ import { ROUTES } from '@/utils/constants/ui'
 import { IA } from '@/utils/constants/pipeline-ia'
 import { Route } from '@/routes/kepala-opd.berita-acara'
 import { InfoCard } from '@/components/ui/info-card'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useDocumentTitle } from '@/utils/use-document-title'
 
 export function BeritaAcaraPage() {
   const navigate = useNavigate()

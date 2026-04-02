@@ -15,7 +15,7 @@ import { FormField } from '@/components/ui/form-field'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 
 interface OPD {
   id: string

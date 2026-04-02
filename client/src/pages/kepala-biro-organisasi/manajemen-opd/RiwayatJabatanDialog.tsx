@@ -11,8 +11,8 @@ import {
 import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
-import { usePagination } from '@/hooks/usePagination'
-import type { RiwayatDialogPerson } from '@/hooks/useManajemenOPDState'
+import { usePagination } from '@/utils/use-pagination'
+import type { RiwayatDialogPerson } from '@/types/misc'
 
 interface OPD {
   id: string

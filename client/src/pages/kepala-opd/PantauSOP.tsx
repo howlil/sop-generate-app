@@ -19,7 +19,7 @@ import { useSopStatus } from '@/hooks/useSopStatus'
 import { useToast } from '@/hooks/useUI'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 import { useOpd } from '@/hooks/useOpd'
 
 export function PantauSOP() {

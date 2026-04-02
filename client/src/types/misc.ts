@@ -34,3 +34,36 @@ export interface Komentar {
   status: StatusKomentar
   createdAt: string
 }
+
+/**
+ * Manajemen OPD Form Types
+ */
+
+export interface KepalaFormState {
+  name: string
+  nip: string
+  email: string
+  phone: string
+}
+
+export interface FormTambahKepalaState {
+  opdId: string
+  name: string
+  nip: string
+  email: string
+}
+
+export interface PindahFormState {
+  opdId: string
+}
+
+export interface PindahDialogPerson {
+  name: string
+  nip?: string
+  email: string
+}
+
+export interface RiwayatDialogPerson {
+  name: string
+  nip?: string
+}

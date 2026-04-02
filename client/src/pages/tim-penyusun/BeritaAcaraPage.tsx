@@ -35,7 +35,7 @@ import { canTimPenyusunRunCoordinatorActions } from '@/hooks/useSop'
 import { ROLES } from '@/utils/constants/ui'
 import { InfoCard } from '@/components/ui/info-card'
 import { IA } from '@/utils/constants/pipeline-ia'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useDocumentTitle } from '@/utils/use-document-title'
 
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()

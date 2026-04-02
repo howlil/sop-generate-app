@@ -19,7 +19,7 @@ import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
 import { InfoCard } from '@/components/ui/info-card'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useDocumentTitle } from '@/utils/use-document-title'
 import { IA } from '@/utils/constants/pipeline-ia'
 
 const PRINT_DELAY_MS = 150

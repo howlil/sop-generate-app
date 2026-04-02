@@ -2,6 +2,8 @@
  * Evaluasi types matching server schema
  */
 
+import type { StatusHasilEvaluasi } from './common'
+
 export type JenisPengajuanEvaluasi = 'TERJADWAL' | 'MANDIRI'
 
 export type StatusPengajuanEvaluasi =
@@ -12,7 +14,8 @@ export type StatusPengajuanEvaluasi =
   | 'DITANDATANGANI_KOORDINATOR'
   | 'SELESAI'
 
-export type HasilEvaluasi = 'SESUAI' | 'TIDAK_SESUAI'
+// Alias for backward compatibility
+export type HasilEvaluasi = StatusHasilEvaluasi
 
 export interface PengajuanEvaluasi {
   id: string

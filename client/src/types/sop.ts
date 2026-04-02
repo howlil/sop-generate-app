@@ -2,18 +2,7 @@
  * Complete SOP types matching server schema
  */
 
-export type StatusSOP =
-  | 'DRAFT'
-  | 'SEDANG_DISUSUN'
-  | 'SIAP_DIEVALUASI'
-  | 'DIAJUKAN_EVALUASI'
-  | 'SEDANG_DIEVALUASI'
-  | 'REVISI_DARI_TIM_EVALUASI'
-  | 'SIAP_DIVERIFIKASI'
-  | 'DIVERIFIKASI_BIRO_ORGANISASI'
-  | 'BERLAKU'
-  | 'DIGANTIKAN'
-  | 'DICABUT'
+import type { StatusSOP } from './common'
 
 export type JenisLangkahProsedur = 'TERMINATOR' | 'TASK' | 'DECISION'
 export type SatuanWaktu = 'm' | 'h' | 'd' | 'w' | 'mo' | 'y'

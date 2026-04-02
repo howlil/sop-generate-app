@@ -1,7 +1,7 @@
 import { Edit, History, ArrowRightCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 
 interface OPD {
   id: string

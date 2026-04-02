@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useToast } from '@/hooks/useUI'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 import type { ProsedurRow } from '@/components/sop/types'
 import { DecisionStepDialog } from './DecisionStepDialog'
 

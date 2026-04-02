@@ -35,7 +35,7 @@ import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvalu
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
 import type { StatusHasilEvaluasi } from '@/hooks/useEvaluasi'
 import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useDocumentTitle } from '@/utils/use-document-title'
 
 const POST_SUBMIT_DELAY_MS = 1500
 

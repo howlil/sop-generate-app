@@ -2,7 +2,7 @@
  * Tim (Tim Penyusun & Tim Evaluasi) types matching server schema
  */
 
-export type StatusTim = 'AKTIF' | 'NONAKTIF'
+import type { StatusTim } from './common'
 
 export type PeranInternalTimPenyusun = 'Koordinator' | 'Anggota'
 
@@ -68,4 +68,16 @@ export interface CreateTimEvaluasiDto {
 export interface UpdateTimEvaluasiDto {
   status: StatusTim
   berakhirPada?: string
+}
+
+/**
+ * Tim Penyusun Form State (UI only)
+ */
+export interface TimPenyusunFormState {
+  namaLengkap: string
+  nip: string
+  jabatan: string
+  pangkat: string
+  email: string
+  nohp: string
 }

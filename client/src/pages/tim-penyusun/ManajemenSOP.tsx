@@ -41,9 +41,9 @@ import { useSopStatus } from '@/hooks/useSopStatus'
 import { useAppRole } from '@/hooks/useAppRole'
 import { useDaftarSOPFilters } from '@/hooks/useDaftarSOPFilters'
 import { useDaftarSOPData } from '@/hooks/useDaftarSOPData'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 import { canTimPenyusunRunCoordinatorActions } from '@/hooks/useSop'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
+import { useDocumentTitle } from '@/utils/use-document-title'
 import { useAuditBySopDetail } from '@/hooks/useAudit'
 
 export function ManajemenSOP() {

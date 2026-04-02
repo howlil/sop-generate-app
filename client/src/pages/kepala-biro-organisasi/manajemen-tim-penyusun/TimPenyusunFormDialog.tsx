@@ -2,7 +2,7 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import type { TimPenyusunFormState } from '@/hooks/useManajemenTimPenyusunState'
+import type { TimPenyusunFormState } from '@/types/tim'
 
 interface OPD {
   id: string

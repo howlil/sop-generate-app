@@ -12,7 +12,7 @@ import { useSopStatus } from '@/hooks/useSopStatus'
 import { ROUTES } from '@/utils/constants'
 import { formatDateIdLong } from '@/utils/format-date'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 
 export function SOPSaya() {
   const { list: sopListRaw } = useSop()

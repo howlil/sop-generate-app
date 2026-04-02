@@ -17,7 +17,7 @@ import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
 import { useToast } from '@/hooks/useUI'
 import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/hooks/usePagination'
+import { usePagination } from '@/utils/use-pagination'
 
 export function ManajemenTimEvaluasi() {
   const { showToast } = useToast()
