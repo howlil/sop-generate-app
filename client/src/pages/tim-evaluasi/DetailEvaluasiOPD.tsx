@@ -5,23 +5,23 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { Send, List, Printer } from 'lucide-react'
-import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
-import { SOPListCard } from '@/components/sop/SOPListCard'
+import { SOPPreviewTemplate } from '@/features/sop'
+import { SOPListCard } from '@/features/sop'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { useEvaluasiDraft, getEvaluasiDraft } from '@/hooks/evaluasi/useEvaluasiDraft'
-import { useEvaluasiSubmit } from '@/hooks/evaluasi/useEvaluasiSubmit'
+import { useEvaluasiDraft, getEvaluasiDraft } from '@/features/evaluasi'
+import { useEvaluasiSubmit } from '@/features/evaluasi'
 import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/utils/constants'
 import { ROUTES } from '@/utils/constants'
-import { isSopInEvaluasiList } from '@/hooks/sop/useSop'
+import { isSopInEvaluasiList } from '@/features/sop'
 import { useCollapsiblePanels } from '@/utils/ui'
-import { useAppRole } from '@/hooks/auth/useAppRole'
-import { useSopStatus } from '@/hooks/sop/useSopStatus'
+import { useAppRole } from '@/features/auth'
+import { useSopStatus } from '@/features/sop'
 import { formatDateId } from '@/utils/format-date'
-import type { SOPDaftarItem } from '@/types/sop'
-import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
+import type { SOPDaftarItem } from '@/features/sop'
+import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/features/evaluasi'
 
 // Stubs for legacy functions - will be replaced by API calls
 const getRiwayatEvaluasiOpd = () => ([])
@@ -33,8 +33,7 @@ const getInitialSopDaftarList = () => []
 
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
-import type { StatusHasilEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
-import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/types/evaluasi'
+import type { StatusHasilEvaluasi } from '@/features/evaluasi'
 import { useDocumentTitle } from '@/utils/use-document-title'
 
 const POST_SUBMIT_DELAY_MS = 1500

@@ -2,12 +2,10 @@ import { FileText, Building2, MessageSquare } from 'lucide-react'
 import { FormField } from '@/components/ui/form-field'
 import { Textarea } from '@/components/ui/textarea'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { RiwayatCardList } from '@/components/evaluasi/RiwayatCardList'
-import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
-import { SkorRatingPicker } from '@/components/evaluasi/SkorRatingPicker'
+import { RiwayatCardList, StatusHasilEvaluasiPicker, SkorRatingPicker } from '@/features/evaluasi'
 import { formatDateId } from '@/utils/format-date'
-import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/hooks/evaluasi/useEvaluasi'
-import type { StatusHasilEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
+import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/features/evaluasi'
+import type { StatusHasilEvaluasi } from '@/features/evaluasi'
 
 export interface DetailEvaluasiOPDFormPanelProps {
   opd: { id: string; nama: string; kode: string } | null

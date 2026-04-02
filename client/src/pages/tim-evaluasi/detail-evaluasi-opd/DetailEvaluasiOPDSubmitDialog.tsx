@@ -8,8 +8,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
-import { STATUS_HASIL_EVALUASI, type StatusHasilEvaluasi } from '@/hooks/evaluasi/useEvaluasi'
-import type { EvaluasiBatchSubmitError } from '@/hooks/evaluasi/useEvaluasiSubmit'
+import { STATUS_HASIL_EVALUASI, type StatusHasilEvaluasi } from '@/features/evaluasi'
+import type { EvaluasiBatchSubmitError } from '@/features/evaluasi'
 
 export interface SedangDievaluasiItem {
   id: string
