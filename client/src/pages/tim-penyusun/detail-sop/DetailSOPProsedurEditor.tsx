@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useToast } from '@/hooks/useUI'
+import { useToast } from '@/utils/ui'
 import { usePagination } from '@/utils/use-pagination'
 import type { ProsedurRow } from '@/components/sop/types'
 import { DecisionStepDialog } from './DecisionStepDialog'

@@ -2,7 +2,7 @@
  * Role-based utilities
  */
 
-import { redirect } from '@tanstack/react-router'
+import { redirect, type AnyLocation } from '@tanstack/react-router'
 import { useAuthStore } from '@/stores/authStore'
 import { ROUTES } from '@/utils/constants'
 import type { RoleKey } from '@/types/common'
@@ -47,13 +47,11 @@ export function getRole(): { peran: RoleKey; opdId?: string | null } | null {
   return useAuthStore.getState().user
 }
 
-type BeforeLoadLocation = { href: string }
-
 /**
  * Route guard: requires authentication before load
  */
 export function requireAuthBeforeLoad() {
-  return ({ location }: { location: BeforeLoadLocation }) => {
+  return ({ location }: { location: Pick<AnyLocation, 'href'> }) => {
     const user = getRole()
 
     if (!user) {
@@ -71,7 +69,7 @@ export function requireAuthBeforeLoad() {
  * Route guard: requires specific role before load
  */
 export function requireRoleBeforeLoad(requiredRole: RoleKey) {
-  return ({ location }: { location: BeforeLoadLocation }) => {
+  return ({ location }: { location: Pick<AnyLocation, 'href'> }) => {
     const user = getRole()
 
     if (!user) {

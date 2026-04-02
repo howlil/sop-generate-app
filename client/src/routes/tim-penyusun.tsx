@@ -1,12 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { BookOpen, FileSignature, FileText, PenLine, UserCog } from 'lucide-react'
 import { ROLES } from '@/utils/constants'
-import { RoleLayout, type SidebarItem } from '@/components/layout/RoleLayout'
-import { ROUTES, routePathPrefixForMatch } from '@/utils/constants'
-import { createSidebarActiveMatcher } from '@/utils/sidebar-matcher'
+import { RoleLayout } from '@/components/layout/RoleLayout'
 import { requireRoleBeforeLoad } from '@/utils/role'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
-import { IA } from '@/utils/constants'
+import { sidebarConfig, sidebarActiveConfig } from '@/config/sidebar.config'
 
 export const Route = createFileRoute('/tim-penyusun')({
   beforeLoad: requireRoleBeforeLoad(ROLES.TIM_PENYUSUN),
@@ -14,29 +11,11 @@ export const Route = createFileRoute('/tim-penyusun')({
   component: TimPenyusunLayout,
 })
 
-const sidebarItems: SidebarItem[] = [
-  { to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP, label: 'Manajemen SOP', icon: FileText },
-  { to: ROUTES.TIM_PENYUSUN.PELAKSANA_SOP, label: 'Kelola Pelaksana SOP', icon: UserCog },
-  { to: ROUTES.TIM_PENYUSUN.PERATURAN, label: 'Manajemen Peraturan', icon: BookOpen },
-  { to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, label: IA.NAV_TP_BA_KOORDINATOR, icon: FileSignature },
-  { to: ROUTES.TIM_PENYUSUN.TTD, label: 'TTD Elektronik', icon: PenLine },
-]
-
-const isSidebarActive = createSidebarActiveMatcher({
-  [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: [
-    ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
-    routePathPrefixForMatch(ROUTES.TIM_PENYUSUN.DETAIL_SOP),
-  ],
-  [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP]: [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP],
-  [ROUTES.TIM_PENYUSUN.BERITA_ACARA]: [ROUTES.TIM_PENYUSUN.BERITA_ACARA],
-  [ROUTES.TIM_PENYUSUN.TTD]: [ROUTES.TIM_PENYUSUN.TTD],
-})
-
 function TimPenyusunLayout() {
   return (
     <RoleLayout
-      sidebarItems={sidebarItems}
-      isActive={isSidebarActive}
+      sidebarItems={sidebarConfig[ROLES.TIM_PENYUSUN]}
+      isActive={sidebarActiveConfig[ROLES.TIM_PENYUSUN]}
       title="Tim Penyusun"
       subtitle="Penyusunan SOP"
     />

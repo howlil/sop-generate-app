@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { evaluasiApi } from '@/services/evaluasi.api'
 import { queryKeys } from '@/services/queryKeys'
-import { showToast } from '@/stores/uiStore'
+import { withMutationToast } from '@/utils/handleApi'
 import type {
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
@@ -56,12 +56,9 @@ export function useEvaluasi(params?: { opdId?: string; status?: string; jenis?: 
 
   const createMutation = useMutation({
     mutationFn: (payload: CreatePengajuanEvaluasiDto) => evaluasiApi.create(payload),
+    ...withMutationToast('Pengajuan evaluasi berhasil dibuat', 'Gagal membuat pengajuan evaluasi'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
-      showToast('Pengajuan evaluasi berhasil dibuat', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal membuat pengajuan evaluasi', 'error')
     },
   })
 
@@ -96,12 +93,9 @@ export function useIsiNilaiEvaluasi() {
       sopDetailId: string
       payload: IsiNilaiEvaluasiDto
     }) => evaluasiApi.isiNilai(pengajuanEvaluasiId, sopDetailId, payload),
+    ...withMutationToast('Hasil evaluasi berhasil disimpan', 'Gagal menyimpan hasil evaluasi'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
-      showToast('Hasil evaluasi berhasil disimpan', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menyimpan hasil evaluasi', 'error')
     },
   })
 }
@@ -117,12 +111,9 @@ export function useSelesaiEvaluasi() {
       pengajuanEvaluasiId: string
       payload: SelesaiEvaluasiDto
     }) => evaluasiApi.selesai(pengajuanEvaluasiId, payload),
+    ...withMutationToast('Evaluasi berhasil diselesaikan', 'Gagal menyelesaikan evaluasi'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
-      showToast('Evaluasi berhasil diselesaikan', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menyelesaikan evaluasi', 'error')
     },
   })
 }

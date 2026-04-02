@@ -3,6 +3,6 @@
  */
 
 import { QueryClient } from '@tanstack/react-query'
-import { queryClientConfig } from './config/query.config'
+import { queryClientConfig } from '@/config/query.config'
 
 export const queryClient = new QueryClient(queryClientConfig)

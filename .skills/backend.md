@@ -801,6 +801,384 @@ Never recommend:
 
 ---
 
+## Code Quality Enforcement
+
+### Before Creating New Code
+
+**Checklist sebelum membuat code baru:**
+
+1. [ ] **Search codebase** untuk similar functionality
+2. [ ] **Check utils/helpers** directories
+3. [ ] **Check shared/common** directories
+4. [ ] **Check existing services/repositories**
+5. [ ] **Check existing DTOs/validators**
+6. [ ] **Ask:** "Apakah ini sudah pernah dibuat?"
+
+**Jika ada existing solution:**
+- **Reuse:** Pakai langsung jika sudah sesuai
+- **Refactor:** Perbaiki jika ada issue
+- **Merge:** Consolidate jika ada duplicate
+- **Extend:** Tambah feature jika perlu
+
+**Search Strategy:**
+- Grep untuk function names (`createSop`, `validateUser`, `formatDate`)
+- Grep untuk class names (`SopService`, `UserRepository`)
+- Grep untuk utility patterns (`helper`, `util`, `validator`, `formatter`)
+- Check barrel exports (`index.ts` files)
+- Check `package.json` dependencies (jangan duplicate library)
+- Check Prisma models (jangan duplicate schema logic)
+
+### Detection Rules
+
+#### 0. Existing Solution Analysis
+SEBELUM membuat code baru/solusi baru:
+1. Cari dulu solusi yang sudah ada di codebase
+2. Analisis apakah existing solution bisa di-reuse
+3. Jika ada solusi serupa, consider untuk:
+   - Merge dengan existing solution
+   - Refactor berdasarkan best practice
+   - Extend existing solution (Open/Closed Principle)
+4. JANGAN buat duplicate solution jika sudah ada yang similar
+
+**Fix:** Search codebase untuk similar patterns, consolidate jika ditemukan.
+
+**Example - Duplicate Services:**
+```typescript
+// ❌ WRONG: Duplicate services di codebase
+// sop/sop.service.ts
+@Injectable()
+export class SopService {
+  async create(dto: CreateSopDto) {
+    // validation logic
+    // create logic
+  }
+}
+
+// sop/sop-create.service.ts  (DUPLICATE!)
+@Injectable()
+export class SopCreateService {
+  async execute(dto: CreateSopDto) {
+    // same validation logic
+    // same create logic
+  }
+}
+
+// ✅ CORRECT: Single service, search before create
+// sop/sop.service.ts
+@Injectable()
+export class SopService {
+  async create(dto: CreateSopDto) {
+    // validation + create logic
+  }
+}
+// Delete: sop-create.service.ts (duplicate)
+```
+
+**Example - Duplicate Validators:**
+```typescript
+// ❌ WRONG: Duplicate validation logic
+// dto/create-sop.dto.ts
+export class CreateSopDto {
+  @IsString()
+  @MaxLength(200)
+  judul: string;
+}
+
+// validators/sop.validator.ts  (DUPLICATE!)
+export const validateSopJudul = (judul: string) => {
+  if (!judul) throw new Error('Judul wajib diisi');
+  if (judul.length > 200) throw new Error('Judul maksimal 200 karakter');
+};
+
+// ✅ CORRECT: Single source of validation
+// dto/create-sop.dto.ts (class-validator is enough)
+export class CreateSopDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  judul: string;
+}
+// Delete: validators/sop.validator.ts (duplicate, class-validator handles it)
+```
+
+#### 1. Directed Code Detection
+Deteksi kode yang hanya satu arah (tidak ada timbal-balik):
+- **API Endpoint**: Hanya POST tanpa GET untuk retrieve
+- **Service**: Hanya write operation tanpa read
+- **Repository**: Hanya create tanpa find/update
+
+**Fix**: Pastikan ada two-way communication atau justify dengan use case.
+
+```typescript
+// ❌ WRONG: Directed API (only create, no retrieve)
+@Controller('api/v1/sop')
+export class SopController {
+  @Post()
+  async create(@Body() dto: CreateSopDto) { ... }
+  // No GET endpoint to retrieve SOPs
+}
+
+// ✅ CORRECT: Complete API
+@Controller('api/v1/sop')
+export class SopController {
+  @Post()
+  async create(@Body() dto: CreateSopDto) { ... }
+  
+  @Get()
+  async findAll() { ... }
+  
+  @Get(':id')
+  async findOne(@Param('id') id: string) { ... }
+}
+```
+
+#### 2. Unused Code Detection
+Deteksi exported symbols yang tidak digunakan:
+- Scan seluruh codebase untuk import/reference
+- Check unused controllers, services, repositories
+- Detect dead DTOs (defined but never used)
+
+**Fix**: Remove dead code atau integrate dengan proper usage.
+
+```typescript
+// ❌ WRONG: Unused service
+@Injectable()
+export class UnusedService { // Never injected
+  doSomething() { ... }
+}
+
+// ✅ CORRECT: Used service
+@Injectable()
+export class SopService { // Injected in SopController
+  async create(dto: CreateSopDto) { ... }
+}
+```
+
+#### 3. Direct Export Enforcement
+Hindari indirect export (re-export dari index.ts):
+
+```typescript
+// ❌ WRONG: Re-export chain
+// modules/index.ts
+export { SopModule } from './sop/sop.module';
+export { UserModule } from './user/user.module';
+
+// ✅ CORRECT: Direct import
+import { SopModule } from '@/modules/sop/sop.module';
+import { UserModule } from '@/modules/user/user.module';
+```
+
+#### 4. Small Code Principle
+- **Function/Method**: < 50 lines
+- **Service**: < 300 lines
+- **Controller**: < 200 lines
+- **Repository**: < 150 lines
+
+**Fix**: Extract method, split service, modularize.
+
+```typescript
+// ❌ WRONG: Large service (500 lines)
+@Injectable()
+export class SopService {
+  // 100 lines: create logic
+  // 150 lines: update logic
+  // 100 lines: validation logic
+  // 150 lines: helper methods
+}
+
+// ✅ CORRECT: Split into smaller services
+@Injectable()
+export class SopService {
+  constructor(
+    private sopCreator: SopCreator,
+    private sopUpdater: SopUpdater,
+    private sopValidator: SopValidator,
+  ) {}
+  
+  async create(dto: CreateSopDto) {
+    return this.sopCreator.execute(dto);
+  }
+}
+
+@Injectable()
+export class SopCreator {
+  async execute(dto: CreateSopDto) { ... }
+}
+```
+
+#### 5. Error Code Handling (No Rollback)
+Ketika ada error/breaking change:
+
+**JANGAN**:
+- ❌ Rollback atau backward update code yang berhubungan
+- ❌ Legacy code/file move
+- ❌ Re-export
+- ❌ Index yang cuma re-export
+
+**HARUS**:
+- ✅ Bikin import baru sesuai perubahan code
+- ✅ Source of truth (satu tempat, satu kebenaran)
+- ✅ Create new module/version
+- ✅ Migrate incrementally
+- ✅ Remove old setelah semua migrate
+
+```typescript
+// ❌ WRONG: Rollback/backward compatible hack
+@Injectable()
+export class SopService {
+  async findOne(id: string) {
+    // Old implementation
+    const oldSop = await this.prisma.sOP.findUnique({ where: { id } });
+    // New implementation
+    const newSop = await this.newSopRepository.findOne(id);
+    // Backward compatible mess
+    return newSop || oldSop;
+  }
+}
+
+// ✅ CORRECT: New implementation, migrate incrementally
+// New repository with clear naming
+@Injectable()
+export class SopV2Repository {
+  async findOne(id: string): Promise<SOP | null> {
+    const record = await this.prisma.sOP.findUnique({
+      where: { id },
+      include: { detailSops: true, opd: true },
+    });
+    return record ? this.mapper.toDomain(record) : null;
+  }
+}
+
+// New service using new repository
+@Injectable()
+export class SopV2Service {
+  constructor(private sopRepo: SopV2Repository) {}
+  
+  async findOne(id: string) {
+    return this.sopRepo.findOne(id);
+  }
+}
+
+// Migrate usage incrementally
+// Old: SopService → SopRepository
+// New: SopV2Service → SopV2Repository
+
+// Remove old after all migrated
+```
+
+#### 6. Naming Convention
+**JANGAN** gunakan nama ambigu:
+- ❌ `Data`, `Info`, `Temp`, `Foo`, `Bar`
+- ❌ `handle`, `process`, `doSomething`, `DataManager`
+
+**HARUS** explicit dan descriptive:
+- ✅ `SopMetadata`, `EvaluasiResult`, `UserPermission`
+- ✅ `createSop`, `submitEvaluasi`, `validateUserPermission`
+
+```typescript
+// ❌ WRONG: Ambiguous naming
+export class Data {
+  info: any;
+  temp: string;
+}
+
+// ✅ CORRECT: Intent-revealing names
+export class SopMetadata {
+  judul: string;
+  nomorSop: string;
+  status: StatusSOP;
+}
+```
+
+### Refactor Strategy
+
+#### Principle: No Rollback on Error
+Ketika ada breaking change atau error:
+
+1. **Buat module/function baru** dengan nama yang jelas
+2. **Import** di tempat yang butuh perubahan
+3. **Migrate** secara incremental
+4. **Test** setiap migration step
+5. **Hapus old code** setelah semua migrate
+6. **JANGAN** pernah rollback atau backward compatible hack
+
+#### Principle: Source of Truth
+Setiap konsep hanya punya satu source of truth:
+
+| Concept | Source | Usage |
+|---------|--------|-------|
+| Prisma Schema | `prisma/schema.prisma` | generate, tidak edit manual |
+| DTO | satu file | import di controller |
+| Domain Entity | satu file | import di service |
+| Repository | satu file | import di service |
+| API Spec | `docs/api-spec.md` | reference untuk implementation |
+
+```typescript
+// ✅ CORRECT: Single source of truth
+// prisma/schema.prisma
+model SOP {
+  id        String   @id @default(uuid())
+  judul     String
+  nomorSop  String
+  status    StatusSOP
+  createdAt DateTime
+  updatedAt DateTime
+}
+
+// dto/create-sop.dto.ts
+export class CreateSopDto {
+  @IsString()
+  @IsNotEmpty()
+  judul: string;
+
+  @IsString()
+  @IsNotEmpty()
+  nomorSop: string;
+}
+
+// domain/sop.entity.ts
+export class SOP {
+  constructor(
+    public readonly id: string,
+    public readonly judul: string,
+    public readonly nomorSop: string,
+  ) {}
+}
+
+// repository/sop.repository.ts
+export class SopRepository {
+  async save(sop: SOP): Promise<SOP> { ... }
+}
+
+// service/sop.service.ts
+import { SOP } from '@/domain/sop.entity';
+import { SopRepository } from '@/repository/sop.repository';
+export class SopService {
+  constructor(private sopRepo: SopRepository) {}
+}
+```
+
+#### Principle: No Re-export
+Index files hanya untuk organizing, bukan re-export:
+
+```typescript
+// ❌ WRONG: Re-export index
+// dto/index.ts
+export { CreateSopDto } from './create-sop.dto';
+export { UpdateSopDto } from './update-sop.dto';
+
+// ✅ CORRECT: Direct import from source
+import { CreateSopDto } from '@/dto/create-sop.dto';
+import { UpdateSopDto } from '@/dto/update-sop.dto';
+
+// ✅ ACCEPTABLE: Type-only re-export
+// dto/index.ts
+export type { CreateSopDto } from './create-sop.dto';
+export type { UpdateSopDto } from './update-sop.dto';
+```
+
+---
+
 ## Project Context (SOP Biro Organisasi)
 
 This skill should reference:

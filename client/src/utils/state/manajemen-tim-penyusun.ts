@@ -1,6 +1,6 @@
 /**
- * useManajemenTimPenyusunState Hook
  * UI state management for Manajemen Tim Penyusun page
+ * Source of truth for form and dialog state
  */
 
 import { useState } from 'react'

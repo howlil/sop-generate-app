@@ -5,7 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '@/services/sop.api'
 import { queryKeys } from '@/services/queryKeys'
-import { showToast } from '@/stores/uiStore'
+import { withMutationToast } from '@/utils/handleApi'
 import { useAuthStore } from '@/stores/authStore'
 import type { Pelaksana } from '@/types/sop'
 
@@ -35,35 +35,26 @@ export function usePelaksana(opdId?: string) {
       if (!targetOpdId) throw new Error('opdId is required')
       return sopApi.createPelaksana({ opdId: targetOpdId, namaPelaksana: data.namaLengkap })
     },
+    ...withMutationToast('Pelaksana SOP berhasil ditambahkan', 'Gagal menambah pelaksana'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
-      showToast('Pelaksana SOP berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menambah pelaksana', 'error')
     },
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, namaLengkap }: { id: string; namaLengkap: string }) =>
       sopApi.updatePelaksana(id, namaLengkap),
+    ...withMutationToast('Pelaksana SOP berhasil diperbarui', 'Gagal memperbarui pelaksana'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
-      showToast('Pelaksana SOP berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal memperbarui pelaksana', 'error')
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => sopApi.deletePelaksana(id),
+    ...withMutationToast('Pelaksana SOP berhasil dihapus', 'Gagal menghapus pelaksana'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
-      showToast('Pelaksana SOP berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menghapus pelaksana', 'error')
     },
   })
 

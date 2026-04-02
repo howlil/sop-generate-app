@@ -4,7 +4,7 @@ import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
 import type { TTERole } from '@/types/tte'
-import { getTTEProfile } from '@/hooks/useTTE'
+import { getTTEProfile } from '@/hooks/tte/useTTE'
 import { formatDateIdLong } from '@/utils/format-date'
 import { TTEBuatDialog } from './TTEBuatDialog'
 

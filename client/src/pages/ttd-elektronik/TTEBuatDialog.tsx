@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/dialog'
 import { ROUTES } from '@/utils/constants/ui'
 import type { TTERole } from '@/types/tte'
-import { hashPin } from '@/hooks/useTTE'
+import { hashPin } from '@/hooks/tte/useTTE'
 import {
   getTTEProfile,
   setTTEProfile,
   getTTEVerificationSuccessUrl,
-} from '@/hooks/useTTE'
+} from '@/hooks/tte/useTTE'
 
 type WizardStep = 'data-diri' | 'pin' | 'cek-email'
 

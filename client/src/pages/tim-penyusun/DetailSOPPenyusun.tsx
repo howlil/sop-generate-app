@@ -16,11 +16,11 @@ import {
 } from '@/components/ui/dialog'
 import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
-import { useToast } from '@/hooks/useUI'
+import { useToast } from '@/utils/ui'
 import { usePeraturan } from '@/hooks/usePeraturan'
 import { usePelaksana } from '@/hooks/usePelaksana'
 import { useSopStatus } from '@/hooks/useSopStatus'
-import { useAppRole } from '@/hooks/useAppRole'
+import { useAppRole } from '@/hooks/auth/useAppRole'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,

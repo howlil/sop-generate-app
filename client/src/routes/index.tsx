@@ -1,6 +1,21 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { CompanyProfile } from '@/pages/CompanyProfile'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { ROLES } from '@/utils/constants'
+import { ROUTES } from '@/utils/constants'
+import { getRole } from '@/utils/role'
 
 export const Route = createFileRoute('/')({
-  component: CompanyProfile,
+  beforeLoad: () => {
+    const user = getRole()
+    if (!user) {
+      throw redirect({ to: '/auth/login' })
+    }
+    // Redirect to role-specific dashboard
+    const roleDashboards: Record<typeof user.peran, string> = {
+      [ROLES.BIRO_ORGANISASI]: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN,
+      [ROLES.TIM_PENYUSUN]: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
+      [ROLES.KEPALA_OPD]: ROUTES.KEPALA_OPD.PANTAU_SOP,
+      [ROLES.TIM_EVALUASI]: ROUTES.TIM_EVALUASI.EVALUASI_SOP,
+    }
+    throw redirect({ to: roleDashboards[user.peran] })
+  },
 })

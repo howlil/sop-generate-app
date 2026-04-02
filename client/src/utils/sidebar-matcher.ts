@@ -3,8 +3,10 @@
  */
 import type { SidebarItem } from '@/components/layout/RoleLayout'
 
+export type SidebarActiveConfig = Record<string, string[]>
+
 export function createSidebarActiveMatcher(
-  subRoutePrefixes: Record<string, string[]>
+  subRoutePrefixes: SidebarActiveConfig
 ) {
   return (pathname: string, item: SidebarItem): boolean => {
     if (pathname === item.to) return true

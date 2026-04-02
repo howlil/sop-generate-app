@@ -22,11 +22,12 @@ import {
 import { InfoCard } from '@/components/ui/info-card'
 import { StatusHasilEvaluasiPicker } from '@/components/evaluasi/StatusHasilEvaluasiPicker'
 import { useEvaluasiDraft } from '@/hooks/useEvaluasiDraft'
-import { useToast, useCollapsiblePanels } from '@/hooks/useUI'
+import { useToast } from '@/hooks/useEvaluasiSubmit'
+import { useCollapsiblePanels } from '@/utils/ui'
 import { ROUTES } from '@/utils/constants/routes'
 import { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/hooks/useEvaluasi'
-import { useSop } from '@/hooks/useSop'
-import { useSopStatus } from '@/hooks/useSopStatus'
+import { useSop } from '@/hooks/sop/useSop'
+import { useSopStatus } from '@/hooks/sop/useSopStatus'
 
 export function EvaluasiSOPPage() {
   const { sopId } = useParams({ from: '/tim-evaluasi/evaluasi/$sopId' })

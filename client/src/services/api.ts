@@ -2,7 +2,7 @@
  * HTTP Client with fetch API
  */
 
-import { API_BASE_URL, getHeaders } from './config/api.config'
+import { API_BASE_URL, getHeaders } from '@/config/api.config'
 
 export class ApiError extends Error {
   status: number

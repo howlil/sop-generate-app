@@ -1,6 +1,6 @@
 /**
- * useManajemenPeraturanState Hook
- * UI state management for ManajemenPeraturan page
+ * UI state management for Manajemen Peraturan page
+ * Source of truth for form and dialog state
  */
 
 import { useState } from 'react'

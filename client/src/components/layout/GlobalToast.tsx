@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Toast } from '@/components/ui/toast'
-import { useToast } from '@/hooks/useUI'
+import { useToast } from '@/utils/ui'
 
 const AUTO_CLOSE_MS = 5000
 

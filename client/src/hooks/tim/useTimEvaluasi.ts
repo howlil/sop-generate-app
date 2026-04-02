@@ -5,7 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { timEvaluasiApi } from '@/services/tim-evaluasi.api'
 import { queryKeys } from '@/services/queryKeys'
-import { showToast } from '@/stores/uiStore'
+import { withMutationToast } from '@/utils/handleApi'
 import type { CreateTimEvaluasiRequest } from '@/types/tim'
 
 const TIM_EVALUASI_STALE_TIME = 5 * 60 * 1000 // 5 minutes
@@ -25,23 +25,17 @@ export function useTimEvaluasi() {
 
   const tambahMutation = useMutation({
     mutationFn: (payload: CreateTimEvaluasiRequest) => timEvaluasiApi.tambah(payload),
+    ...withMutationToast('Anggota Tim Evaluasi berhasil ditambahkan', 'Gagal menambahkan anggota'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timEvaluasi })
-      showToast('Anggota Tim Evaluasi berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menambahkan anggota', 'error')
     },
   })
 
   const nonaktifkanMutation = useMutation({
     mutationFn: (id: string) => timEvaluasiApi.nonaktifkan(id),
+    ...withMutationToast('Anggota Tim Evaluasi dinonaktifkan', 'Gagal menonaktifkan anggota'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timEvaluasi })
-      showToast('Anggota Tim Evaluasi dinonaktifkan', 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal menonaktifkan anggota', 'error')
     },
   })
 

@@ -5,7 +5,7 @@ import { RelatedPosDialog } from './RelatedPosDialog'
 import { PelaksanaDialog } from './PelaksanaDialog'
 import type { Peraturan } from '@/types/peraturan'
 import type { SOPDetailMetadata } from '@/components/sop/types'
-import { getRelatedPosOptions } from '@/hooks/useDetailSop'
+import { getRelatedPosOptions } from '@/hooks/sop/useDetailSop'
 
 export interface DetailSOPMetadataPanelProps {
   metadata: SOPDetailMetadata

@@ -20,7 +20,7 @@ import { SOPPreviewTemplate } from '@/components/sop/SOPPreviewTemplate'
 import { InfoField } from '@/components/ui/info-field'
 import { PinVerificationDialog } from '@/components/tte/PinVerificationDialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { useToast } from '@/hooks/useUI'
+import { useToast } from '@/utils/ui'
 import { useSopStatus } from '@/hooks/useSopStatus'
 import { DEFAULT_SOP_STATUS, type StatusSOP } from '@/components/sop/types'
 import {
