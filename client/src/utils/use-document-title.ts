@@ -1,5 +1,4 @@
 /**
- * useDocumentTitle hook
  * Set document.title for browser tab
  */
 
