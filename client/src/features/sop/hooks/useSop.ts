@@ -5,7 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '../services/sop.api'
 import { queryKeys } from '@/utils/query-keys'
-import { withMutationToast } from '@/utils/handleApi'
+import { useToast } from '@/utils/ui'
 import type { StatusSOP, CreateSopRequest } from '../types/sop'
 
 const SOP_STALE_TIME = 5 * 60 * 1000 // 5 minutes
@@ -44,6 +44,7 @@ export function canSelectSOPForEvaluasi(sop: any, evaluasiList: any[]): boolean 
 }
 
 export function useSop(params?: { opdId?: string; status?: string }) {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   const {
@@ -58,26 +59,29 @@ export function useSop(params?: { opdId?: string; status?: string }) {
 
   const createMutation = useMutation({
     mutationFn: (payload: CreateSopRequest) => sopApi.create(payload),
-    ...withMutationToast('SOP berhasil dibuat', 'Gagal membuat SOP'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sop })
+      showToast('SOP berhasil dibuat', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal membuat SOP', 'error'),
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, judul }: { id: string; judul: string }) => sopApi.update(id, judul),
-    ...withMutationToast('Judul SOP berhasil diperbarui', 'Gagal memperbarui SOP'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sop })
+      showToast('Judul SOP berhasil diperbarui', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui SOP', 'error'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => sopApi.delete(id),
-    ...withMutationToast('SOP berhasil dihapus', 'Gagal menghapus SOP'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sop })
+      showToast('SOP berhasil dihapus', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menghapus SOP', 'error'),
   })
 
   return {

@@ -5,7 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '@/features/sop'
 import { queryKeys } from '@/utils/query-keys'
-import { withMutationToast } from '@/utils/handleApi'
+import { useToast } from '@/utils/ui'
 import { useAuthStore } from '@/stores/authStore'
 import type { Pelaksana } from '@/features/sop'
 
@@ -14,6 +14,7 @@ export interface PelaksanaSOP extends Pelaksana {
 }
 
 export function usePelaksana(opdId?: string) {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
   const user = useAuthStore((s) => s.user)
   const effectiveOpdId = opdId || user?.opdId
@@ -35,27 +36,30 @@ export function usePelaksana(opdId?: string) {
       if (!targetOpdId) throw new Error('opdId is required')
       return sopApi.createPelaksana({ opdId: targetOpdId, namaPelaksana: data.namaLengkap })
     },
-    ...withMutationToast('Pelaksana SOP berhasil ditambahkan', 'Gagal menambah pelaksana'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
+      showToast('Pelaksana SOP berhasil ditambahkan', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menambah pelaksana', 'error'),
   })
 
   const updateMutation = useMutation({
     mutationFn: ({ id, namaLengkap }: { id: string; namaLengkap: string }) =>
       sopApi.updatePelaksana(id, namaLengkap),
-    ...withMutationToast('Pelaksana SOP berhasil diperbarui', 'Gagal memperbarui pelaksana'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
+      showToast('Pelaksana SOP berhasil diperbarui', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui pelaksana', 'error'),
   })
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => sopApi.deletePelaksana(id),
-    ...withMutationToast('Pelaksana SOP berhasil dihapus', 'Gagal menghapus pelaksana'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
+      showToast('Pelaksana SOP berhasil dihapus', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menghapus pelaksana', 'error'),
   })
 
   return {

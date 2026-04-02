@@ -5,12 +5,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { timPenyusunApi } from '@/features/tim'
 import { queryKeys } from '@/utils/query-keys'
-import { withMutationToast } from '@/utils/handleApi'
+import { useToast } from '@/utils/ui'
 import type { CreateTimPenyusunRequest } from '@/features/tim'
 
 const TIM_PENYUSUN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 export function useTimPenyusun(opdId?: string) {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   const {
@@ -25,27 +26,30 @@ export function useTimPenyusun(opdId?: string) {
 
   const tambahMutation = useMutation({
     mutationFn: (payload: CreateTimPenyusunRequest) => timPenyusunApi.tambah(payload),
-    ...withMutationToast('Anggota Tim Penyusun berhasil ditambahkan', 'Gagal menambahkan anggota'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
+      showToast('Anggota Tim Penyusun berhasil ditambahkan', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menambahkan anggota', 'error'),
   })
 
   const nonaktifkanMutation = useMutation({
     mutationFn: (id: string) => timPenyusunApi.nonaktifkan(id),
-    ...withMutationToast('Anggota Tim Penyusun dinonaktifkan', 'Gagal menonaktifkan anggota'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
+      showToast('Anggota Tim Penyusun dinonaktifkan', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menonaktifkan anggota', 'error'),
   })
 
   const pindahMutation = useMutation({
     mutationFn: ({ id, opdId }: { id: string; opdId: string }) =>
       timPenyusunApi.pindah(id, { opdId }),
-    ...withMutationToast('Anggota Tim Penyusun dipindah', 'Gagal memindah anggota'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
+      showToast('Anggota Tim Penyusun dipindah', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal memindah anggota', 'error'),
   })
 
   return {

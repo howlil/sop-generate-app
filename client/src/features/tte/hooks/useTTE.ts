@@ -6,8 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { tteApi } from '@/features/tte'
 import { queryKeys } from '@/utils/query-keys'
-import { withMutationToast } from '@/utils/handleApi'
-import { showToast } from '@/stores/uiStore'
+import { useToast } from '@/utils/ui'
 import type {
   RegisterTteDto,
   TandaTanganiBaDto,
@@ -26,18 +25,22 @@ export function useTTEProfil() {
 }
 
 export function useRegisterTTE() {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (payload: RegisterTteDto) => tteApi.registerProfil(payload),
-    ...withMutationToast('Kredensial TTE berhasil didaftarkan', 'Gagal mendaftarkan kredensial TTE'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tteProfil })
+      showToast('Kredensial TTE berhasil didaftarkan', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal mendaftarkan kredensial TTE', 'error'),
   })
 }
 
 export function useMintTokenVerifikasi() {
+  const { showToast } = useToast()
+
   return useMutation({
     mutationFn: () => tteApi.mintTokenVerifikasi(),
     onSuccess: (data) => {
@@ -50,9 +53,12 @@ export function useMintTokenVerifikasi() {
 }
 
 export function useKonfirmasiEmail() {
+  const { showToast } = useToast()
+
   return useMutation({
     mutationFn: (token: string) => tteApi.konfirmasiEmail(token),
-    ...withMutationToast('Email berhasil diverifikasi', 'Token tidak valid atau sudah kadaluarsa'),
+    onSuccess: () => showToast('Email berhasil diverifikasi', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Token tidak valid atau sudah kadaluarsa', 'error'),
   })
 }
 
@@ -65,42 +71,48 @@ export function useRiwayatTandaTangan() {
 }
 
 export function useTandaTanganiBA() {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ pengajuanId, payload }: { pengajuanId: string; payload: TandaTanganiBaDto }) =>
       tteApi.tandaTanganiBA(pengajuanId, payload),
-    ...withMutationToast('Berita Acara berhasil ditandatangani', 'Gagal menandatangani Berita Acara'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
+      showToast('Berita Acara berhasil ditandatangani', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menandatangani Berita Acara', 'error'),
   })
 }
 
 export function useKoordinatorTandaTanganiBA() {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ pengajuanId, payload }: { pengajuanId: string; payload: TandaTanganiBaDto }) =>
       tteApi.koordinatorTandaTanganiBA(pengajuanId, payload),
-    ...withMutationToast('Berita Acara berhasil ditandatangani', 'Gagal menandatangani Berita Acara'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
+      showToast('Berita Acara berhasil ditandatangani', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal menandatangani Berita Acara', 'error'),
   })
 }
 
 export function useTandaTanganiSOP() {
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ sopDetailId, payload }: { sopDetailId: string; payload: TandaTanganiSopDto }) =>
       tteApi.tandaTanganiSOP(sopDetailId, payload),
-    ...withMutationToast('SOP berhasil disahkan', 'Gagal mengesahkan SOP'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sop })
       queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
+      showToast('SOP berhasil disahkan', 'success')
     },
+    onError: (error: Error) => showToast(error.message || 'Gagal mengesahkan SOP', 'error'),
   })
 }
 
@@ -111,22 +123,26 @@ interface UseTTESignatureParams {
 
 /** Unified signing hook with role-based routing */
 export function useTTESignature(params: UseTTESignatureParams) {
+  const { showToast } = useToast()
   const signBAMutation = useMutation({
     mutationFn: ({ pengajuanId, pin, nomorDokumen, judulDokumen }: { pengajuanId: string } & TandaTanganiBaDto) =>
       tteApi.tandaTanganiBA(pengajuanId, { pin, nomorDokumen, judulDokumen }),
-    ...withMutationToast('Berita Acara berhasil ditandatangani dengan TTE', 'Gagal menandatangani BA'),
+    onSuccess: () => showToast('Berita Acara berhasil ditandatangani dengan TTE', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Gagal menandatangani BA', 'error'),
   })
 
   const koordinatorSignBAMutation = useMutation({
     mutationFn: ({ pengajuanId, pin, nomorDokumen, judulDokumen }: { pengajuanId: string } & TandaTanganiBaDto) =>
       tteApi.koordinatorTandaTanganiBA(pengajuanId, { pin, nomorDokumen, judulDokumen }),
-    ...withMutationToast('Berita Acara berhasil ditandatangani (Koordinator)', 'Gagal menandatangani BA'),
+    onSuccess: () => showToast('Berita Acara berhasil ditandatangani (Koordinator)', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Gagal menandatangani BA', 'error'),
   })
 
   const signSOPMutation = useMutation({
     mutationFn: ({ sopDetailId, pin, nomorDokumen, judulDokumen }: { sopDetailId: string } & TandaTanganiSopDto) =>
       tteApi.tandaTanganiSOP(sopDetailId, { pin, nomorDokumen, judulDokumen }),
-    ...withMutationToast('SOP berhasil disahkan dengan TTE', 'Gagal mengesahkan SOP'),
+    onSuccess: () => showToast('SOP berhasil disahkan dengan TTE', 'success'),
+    onError: (error: Error) => showToast(error.message || 'Gagal mengesahkan SOP', 'error'),
   })
 
   const sign = async (documentId: string, pin: string, nomorDokumen: string, judulDokumen: string) => {

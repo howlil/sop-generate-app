@@ -28,10 +28,8 @@ export function HeaderProfile({ title: _title, subtitle: _subtitle }: HeaderProf
   const pageHeader = usePageHeaderContext()
   const headerContent = pageHeader?.headerContent
 
-  const notifications = usePipelineNotificationStore((s) => s.items)
-  const markRead = usePipelineNotificationStore((s) => s.markRead)
-  const markAllRead = usePipelineNotificationStore((s) => s.markAllRead)
-
+  // TODO: Implement notification store when pipeline notifications are added
+  const notifications: any[] = []
   const visibleNotifications = useMemo(
     () =>
       notifications.filter((n) => !n.targetRole || (role !== null && n.targetRole === role)),

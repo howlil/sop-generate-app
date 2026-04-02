@@ -1,7 +1,8 @@
 /** Re-export dari domain SOP agar diagram dan seed pakai satu sumber. */
-export type { ProsedurStepType, ProsedurRow } from '@/types/sop'
+export type { ProsedurRow as ProsedurStepType } from '@/features/sop'
+export type { ProsedurRow } from '@/features/sop'
 
-import type { ProsedurRow as ProsedurRowType } from '@/types/sop'
+import type { ProsedurRow as ProsedurRowType } from '@/features/sop'
 
 export interface LayoutConfig {
   widthKegiatan?: number
