@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react'
 import { useToast } from '@/utils/ui'
-import type { ProsedurRow } from '@/components/sop/types'
+import type { ProsedurRow } from '@/types/common'
 
 export interface UseProsedurEditorReturn {
   // Dialog state
