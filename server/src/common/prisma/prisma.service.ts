@@ -21,7 +21,7 @@ export class PrismaService
     // [P2-G] Soft Delete Middleware
     // Automatically filter out soft-deleted records for all soft-delete enabled tables
     // See: docs/SCHEMA-CONSTRAINTS.md#p2-g-soft-delete-filter
-    this.$use(async (params, next) => {
+    (this as any).$use(async (params: any, next: any) => {
       const softDeleteModels = [
         'Pengguna', 'OPD', 'SOP', 'DetailSOP', 'Peraturan',
         'Pelaksana', 'AnggotaTimPenyusun', 'AnggotaTimEvaluasi',

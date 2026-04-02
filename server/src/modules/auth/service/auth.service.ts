@@ -6,6 +6,7 @@ import { UserRepository } from '../../users/repository/user.repository';
 import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { AuthMessages } from '../../../common/messages';
+import { PasswordValidator } from '../../../common/validators/password.validator';
 
 @Injectable()
 export class AuthService {
@@ -75,6 +76,9 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException(AuthMessages.INVALID_OLD_PASSWORD);
     }
+
+    // Validate new password strength
+    PasswordValidator.validate(dto.kataSandiBaru);
 
     const hashedPassword = await bcrypt.hash(dto.kataSandiBaru, 10);
     await this.userRepository.update(userId, { kataSandi: hashedPassword });

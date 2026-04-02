@@ -7,7 +7,7 @@ export const envSchema = z.object({
   DATABASE_USER: z.string().min(1),
   DATABASE_PASSWORD: z.string().min(1),
   DATABASE_NAME: z.string().min(1),
-  DATABASE_URL: z.string().url(),
+  // Note: DATABASE_URL removed for security - use individual env vars above
 
   // Server
   PORT: z.string().transform((val) => parseInt(val, 10)).default('3000'),

@@ -16,6 +16,12 @@ import { AuditModule } from './modules/audit/audit.module';
 import { envSchema, validateEnv } from './config/env.validation';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 
+// Rate limiting configuration
+const AUTH_THROTTLE_TTL_MS = 60 * 1000; // 1 minute
+const AUTH_THROTTLE_LIMIT = 5; // 5 requests per minute for auth endpoints
+const GENERAL_THROTTLE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const GENERAL_THROTTLE_LIMIT = 100; // 100 requests per hour for general API
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,10 +34,17 @@ import { WinstonLoggerConfig } from './common/logger/winston.config';
     WinstonModule.forRoot(WinstonLoggerConfig),
 
     // Rate Limiting - protect against brute force attacks
+    // Separate configs for auth (strict) and general API (relaxed)
     ThrottlerModule.forRoot([
       {
-        ttl: 3600000, // 1 hour
-        limit: 100, // 10 requests per hour
+        name: 'auth',
+        ttl: AUTH_THROTTLE_TTL_MS,
+        limit: AUTH_THROTTLE_LIMIT,
+      },
+      {
+        name: 'general',
+        ttl: GENERAL_THROTTLE_TTL_MS,
+        limit: GENERAL_THROTTLE_LIMIT,
       },
     ]),
 

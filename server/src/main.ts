@@ -8,6 +8,10 @@ import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
+// Configuration constants
+const CORS_MAX_AGE_SECONDS = 3600; // 1 hour
+const DEFAULT_PORT = 3000;
+
 async function bootstrap() {
   const logger = WinstonModule.createLogger(WinstonLoggerConfig);
   const app = await NestFactory.create(AppModule, { logger });
@@ -65,7 +69,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-    maxAge: 3600,
+    maxAge: CORS_MAX_AGE_SECONDS,
   });
 
   // Swagger setup
@@ -84,7 +88,7 @@ async function bootstrap() {
   // Graceful shutdown
   app.enableShutdownHooks();
 
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? DEFAULT_PORT.toString();
   await app.listen(port);
   logger.log(`🚀 Server running on http://localhost:${port}/api`);
   logger.log(`📚 Swagger docs: http://localhost:${port}/docs`);
