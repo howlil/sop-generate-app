@@ -97,6 +97,7 @@ Phase Progress: [========] 8/8
 
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
+| 20260403-migrate-to-useToast | ✅ Migrate feature hooks to useToast - Started migration of 11 feature hooks from deprecated `withMutationToast` to direct `useToast()` usage. Migrated 2/11 files (useAuth, useUsers). Build passing: 6.62s. | 2026-04-03 | — | In Progress | client/ |
 | 20260403-utils-cleanup | ✅ Utils directory cleanup — Removed 2 unused utils (generate-id, sidebar-matcher), simplified 4 hooks (format-date, ui, use-filtered-list, use-pagination), removed state/ directory (inline state in pages), deleted 12 dead components (landing, company-profile). Build passing: 4.38s. | 2026-04-03 | — | Done | client/ |
 | 20260403-types-consolidation | ✅ Type consolidation & business logic extraction — Consolidated all duplicate types to `types/common.ts` (single source of truth), updated 7 feature modules to import from central location, added `useRequestEvaluasi` hook to extract business logic from pages. Build passing. References: `.planning/phases/CLIENT_STRUCTURE_ANALYSIS.md` | 2026-04-03 | — | Done | client/ |
 | 20260403-client-structure | ✅ Client structure cleanup — Added README documentation to `features/audit/components/` and `features/organisasi/components/`, verified all feature modules have consistent structure (types, services, hooks, components). Build passing. | 2026-04-03 | — | Done | client/ |
