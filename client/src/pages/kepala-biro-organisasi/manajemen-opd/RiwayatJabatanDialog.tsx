@@ -11,7 +11,6 @@ import {
 import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
-import { usePagination } from '@/utils/use-pagination'
 import type { RiwayatDialogPerson } from '@/types/misc'
 
 interface OPD {
@@ -25,6 +24,9 @@ interface KepalaOPD {
   nip: string
   startDate: string
   endDate?: string
+  isActive?: boolean
+  opdId?: string
+  endedAt?: string
 }
 
 type RiwayatRow = KepalaOPD & { opdName: string }
@@ -60,11 +62,6 @@ export function RiwayatJabatanDialog({
   setSelectedOPD,
   onClose,
 }: RiwayatJabatanDialogProps) {
-  const pagination = usePagination(riwayatRows.length)
-  const rowsToShow = pagination.showPagination
-    ? riwayatRows.slice(pagination.startIndex, pagination.endIndex)
-    : riwayatRows
-
   return (
     <Dialog
       open={open}
@@ -77,88 +74,85 @@ export function RiwayatJabatanDialog({
         <DialogHeader>
           <DialogTitle className="text-sm">Riwayat jabatan</DialogTitle>
           <DialogDescription className="text-xs">
-            {person ? `${person.name} — ${person.email}` : ''}
+            {person ? `${person.name}${person.nip ? ` — ${person.nip}` : ''}` : ''}
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-auto scrollbar-hide flex-1 min-h-0 border border-gray-200 rounded-lg">
+        <div className="overflow-auto scrollbar-hide flex-1 min-h-0">
           {person && (
-            <>
-              <Table.Table>
-              <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
-                <Table.HeadRow>
-                  <Table.Th>OPD</Table.Th>
-                  <Table.Th align="center">Selesai</Table.Th>
-                  <Table.Th align="center">Status</Table.Th>
-                  <Table.Th align="center">Aksi</Table.Th>
-                </Table.HeadRow>
-              </thead>
-              <tbody>
-                {rowsToShow.map((r) => (
-                  <Table.BodyRow key={r.id}>
-                    <Table.Td>{r.opdName}</Table.Td>
-                    <Table.Td className="text-center">{r.endedAt ? formatDateId(r.endedAt) : '—'}</Table.Td>
-                    <Table.Td className="text-center">
-                      <StatusBadge status={r.isActive ? 'Aktif' : 'Nonaktif'} />
-                    </Table.Td>
-                    <Table.Td>
-                      <div className="flex gap-1 justify-center flex-wrap">
-                        {r.isActive && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 text-xs"
-                            onClick={() => onAkhiriJabatan(r.id)}
-                          >
-                            Akhiri jabatan
-                          </Button>
-                        )}
-                        {!r.isActive &&
-                          getKepalaByOPD(r.opdId).some((k) => k.id !== r.id && k.isActive) && (
+            <Table.Paginated data={riwayatRows} label="jabatan" className="border-0 rounded-none">
+              {(pageData) => (
+                <Table.Table>
+                  <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                    <Table.HeadRow>
+                      <Table.Th>OPD</Table.Th>
+                      <Table.Th align="center">Selesai</Table.Th>
+                      <Table.Th align="center">Status</Table.Th>
+                      <Table.Th align="center">Aksi</Table.Th>
+                    </Table.HeadRow>
+                  </thead>
+                  <tbody>
+                    {pageData.map((r) => (
+                      <Table.BodyRow key={r.id}>
+                        <Table.Td>{r.opdName}</Table.Td>
+                        <Table.Td className="text-center">{r.endedAt ? formatDateId(r.endedAt) : '—'}</Table.Td>
+                        <Table.Td className="text-center">
+                          <StatusBadge status={r.isActive ? 'Aktif' : 'Nonaktif'} />
+                        </Table.Td>
+                        <Table.Td>
+                          <div className="flex gap-1 justify-center flex-wrap">
+                            {r.isActive && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 text-xs"
+                                onClick={() => onAkhiriJabatan(r.id)}
+                              >
+                                Akhiri jabatan
+                              </Button>
+                            )}
+                            {!r.isActive &&
+                              r.opdId &&
+                              getKepalaByOPD(r.opdId).some((k) => k.id !== r.id && k.isActive) && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 text-xs"
+                                  onClick={() => onSetKepalaAktif(r.id)}
+                                >
+                                  Jadikan Aktif
+                                </Button>
+                              )}
                             <Button
                               variant="ghost"
-                              size="sm"
-                              className="h-6 text-xs"
-                              onClick={() => onSetKepalaAktif(r.id)}
+                              size="icon-sm"
+                              className="h-6 w-6 p-0"
+                              title="Ubah"
+                              onClick={() => {
+                                onOpenChange(false)
+                                setSelectedOPD(opdList.find((o) => o.id === r.opdId) ?? null)
+                                onOpenKepalaForm(r)
+                              }}
                             >
-                              Jadikan Aktif
+                              <Edit className="w-3 h-3" />
                             </Button>
-                          )}
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="h-6 w-6 p-0"
-                          title="Ubah"
-                          onClick={() => {
-                            onOpenChange(false)
-                            setSelectedOPD(opdList.find((o) => o.id === r.opdId) ?? null)
-                            onOpenKepalaForm(r)
-                          }}
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="h-6 w-6 p-0 text-red-600"
-                          title="Hapus"
-                          onClick={() => onDeleteKepala(r.id)}
-                          disabled={!canDeleteKepala(r)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </Table.Td>
-                  </Table.BodyRow>
-                ))}
-              </tbody>
-            </Table.Table>
-            <Table.Pagination
-                totalItems={riwayatRows.length}
-                currentPage={pagination.page}
-                onPageChange={pagination.setPage}
-                label="jabatan"
-              />
-            </>
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="h-6 w-6 p-0 text-red-600"
+                              title="Hapus"
+                              onClick={() => onDeleteKepala(r.id)}
+                              disabled={!canDeleteKepala(r)}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </Table.Td>
+                      </Table.BodyRow>
+                    ))}
+                  </tbody>
+                </Table.Table>
+              )}
+            </Table.Paginated>
           )}
         </div>
         <DialogFooter>

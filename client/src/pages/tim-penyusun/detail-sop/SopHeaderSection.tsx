@@ -184,7 +184,7 @@ export function SOPHeaderSection({
 
         <FormField label="Kualifikasi pelaksanaan">
           <EditableStringList
-            items={metadata.implementQualification ?? []}
+            items={Array.isArray(metadata.implementQualification) ? metadata.implementQualification : (metadata.implementQualification ? [metadata.implementQualification] : [])}
             onChange={(next) => onMetadataChange('implementQualification', next)}
             placeholder="Kualifikasi"
             emptyMessage="Belum ada kualifikasi. Klik &quot;Tambah&quot; untuk menambahkan."
@@ -193,7 +193,7 @@ export function SOPHeaderSection({
 
         <FormField label="Peralatan dan perlengkapan">
           <EditableStringList
-            items={metadata.equipment ?? []}
+            items={Array.isArray(metadata.equipment) ? metadata.equipment : (metadata.equipment ? [metadata.equipment] : [])}
             onChange={(next) => onMetadataChange('equipment', next)}
             placeholder="Peralatan"
             emptyMessage="Belum ada peralatan/perlengkapan. Klik &quot;Tambah&quot; untuk menambahkan."
@@ -202,7 +202,7 @@ export function SOPHeaderSection({
 
         <FormField label="Pencatatan dan pendataan">
           <EditableStringList
-            items={metadata.recordData ?? []}
+            items={Array.isArray(metadata.recordData) ? metadata.recordData : (metadata.recordData ? [metadata.recordData] : [])}
             onChange={(next) => onMetadataChange('recordData', next)}
             placeholder="Pencatatan"
             emptyMessage="Belum ada pencatatan/pendataan. Klik &quot;Tambah&quot; untuk menambahkan."

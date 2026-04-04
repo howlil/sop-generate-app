@@ -13,21 +13,26 @@ import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PinVerificationDialog } from '@/features/tte'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
-import { SOPListCard, SOPPreviewTemplate } from '@/features/sop'
+import { SOPListCard } from '@/features/sop'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/features/evaluasi'
-import { useTTESignature } from '@/features/tte'
+import { useTTESignature, type TTESignaturePayload } from '@/features/tte/hooks/useTte'
 import { useEvaluasi } from '@/features/evaluasi'
+import { useToast } from '@/utils/ui'
 import { useSopStatus, canKepalaOpdSignSop } from '@/features/sop'
 import type { StatusSOP } from '@/types/common'
 import { getKepalaOPDOpdId } from '@/utils/role'
-import { useOpd } from '@/features/organisasi'
+import { useOpd } from '@/features/organisasi/hooks/useOpd'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
 import { IA } from '@/utils/constants'
 import { Route } from '@/routes/kepala-opd.berita-acara'
 import { InfoCard } from '@/components/ui/info-card'
 import { useDocumentTitle } from '@/utils/use-document-title'
+
+/** Stub: riwayat evaluasi SOP (no backend endpoint yet). */
+const getRiwayatEvaluasiSop = (): Record<string, { date: string; evaluatorName: string; hasil: string; komentar?: string }[]> => ({})
 
 export function BeritaAcaraPage() {
   const navigate = useNavigate()
@@ -37,7 +42,7 @@ export function BeritaAcaraPage() {
   const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''
   const { list: pengajuanList } = useEvaluasi()
   const { showToast } = useToast()
-  const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverrideAsync } = useSopStatus()
   const [signingSopId, setSigningSopId] = useState<string | null>(null)
   const [signingBulkIds, setSigningBulkIds] = useState<string[] | null>(null)
   const selectedBaId = searchId ?? null
@@ -72,7 +77,12 @@ export function BeritaAcaraPage() {
     }
   }, [selectedBaId, selectedBa, pengajuanList.length, navigate])
 
-  const sopList = selectedBa?.sopList ?? []
+  const sopList = (selectedBa?.sopList ?? []).map((s) => ({
+    id: s.id,
+    nama: s.judul,
+    nomor: s.nomorSOP ?? '',
+    status: s.status ?? '',
+  }))
   const firstSopId = sopList[0]?.id ?? null
   const effectiveSopId = selectedSopId ?? firstSopId
   const displaySop = sopList.find((s) => s.id === effectiveSopId) ?? null
@@ -101,11 +111,15 @@ export function BeritaAcaraPage() {
       documentLabel: signingSop?.nama ?? 'SOP',
       referenceId: signingSop?.nomor ?? signingSopId ?? '',
     },
-    () => {
+    async () => {
       if (signingSopId) {
-        setSopStatusOverride(signingSopId, 'Berlaku')
-        showToast('SOP berhasil disahkan dengan TTE BSRE.')
-        setSigningSopId(null)
+        try {
+          await setSopStatusOverrideAsync({ sopId: signingSopId, status: 'BERLAKU' })
+          showToast('SOP berhasil disahkan dengan TTE BSRE.')
+          setSigningSopId(null)
+        } catch (error) {
+          // Error already shown by mutation
+        }
       }
     }
   )
@@ -113,21 +127,21 @@ export function BeritaAcaraPage() {
   const signableSopIds = useMemo(() => {
     return sopList
       .filter((s) => {
-        const st = (getSopStatusOverride(s.id) ?? s.status) as StatusSOP
-        return canKepalaOpdSignSop(st, batchList, opdName, s.id, s.nomor)
+        const st = s.status as StatusSOP
+        return canKepalaOpdSignSop(st, undefined, opdName, s.id, s.nomor)
       })
       .map((s) => s.id)
-  }, [sopList, batchList, opdName, getSopStatusOverride])
+  }, [sopList, opdName])
 
   const firstSignableSop = useMemo(
     () =>
       tteSop.canSign
         ? sopList.find((s) => {
-            const st = (getSopStatusOverride(s.id) ?? s.status) as StatusSOP
-            return canKepalaOpdSignSop(st, batchList, opdName, s.id, s.nomor)
+            const st = s.status as StatusSOP
+            return canKepalaOpdSignSop(st, undefined, opdName, s.id, s.nomor)
           })
         : null,
-    [tteSop.canSign, sopList, batchList, opdName, getSopStatusOverride]
+    [tteSop.canSign, sopList, opdName]
   )
 
   const docTitle = useMemo(() => {
@@ -137,27 +151,25 @@ export function BeritaAcaraPage() {
 
   useDocumentTitle(docTitle)
 
-  const handlePinConfirm = (pin: string): boolean => {
+  const handlePinConfirm = async (pin: string): Promise<boolean> => {
     if (signingBulkIds && signingBulkIds.length > 0) {
-      const profile = getTTEProfile('kepala-opd')
-      if (!profile || !verifyPin(pin, profile.pinHash)) return false
-      for (const id of signingBulkIds) {
-        const sop = sopList.find((x) => x.id === id)
-        addTTESignature(
-          'kepala-opd',
-          profile.nip,
-          profile.namaLengkap,
-          profile.jabatan,
-          profile.pangkat,
-          id,
-          sop?.nama ?? 'SOP',
-          sop?.nomor ?? id
-        )
-        setSopStatusOverride(id, 'Berlaku')
+      try {
+        for (const id of signingBulkIds) {
+          const sop = sopList.find((x) => x.id === id)
+          await tteSop.signSOP({
+            sopDetailId: id,
+            pin,
+            nomorDokumen: sop?.nomor ?? id,
+            judulDokumen: sop?.nama ?? 'SOP',
+          })
+          await setSopStatusOverrideAsync({ sopId: id, status: 'BERLAKU' })
+        }
+        showToast(`${signingBulkIds.length} SOP berhasil disahkan dengan satu PIN TTE.`)
+        setSigningBulkIds(null)
+        return true
+      } catch {
+        return false
       }
-      showToast(`${signingBulkIds.length} SOP berhasil disahkan dengan satu PIN TTE.`)
-      setSigningBulkIds(null)
-      return true
     }
     return handleSignSopConfirmSingle(pin)
   }
@@ -250,12 +262,12 @@ export function BeritaAcaraPage() {
   const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
   const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
   const sopStatusForDisplay: StatusSOP | undefined = displaySop
-    ? (getSopStatusOverride(displaySop.id) ?? displaySop.status) as StatusSOP
+    ? displaySop.status as StatusSOP
     : undefined
   const canSignSop =
     !!displaySop &&
     !!sopStatusForDisplay &&
-    canKepalaOpdSignSop(sopStatusForDisplay, batchList, opdName, displaySop.id, displaySop.nomor) &&
+    canKepalaOpdSignSop(sopStatusForDisplay, undefined, opdName, displaySop.id, displaySop.nomor) &&
     tteSop.canSign
   const hasAnySignableSop = !!firstSignableSop
 
@@ -328,7 +340,7 @@ export function BeritaAcaraPage() {
             </div>
             {selectedBa && (
               <div className="pt-2 space-y-2">
-                <span className="text-xs font-medium text-gray-900">{selectedBa.opd}</span>
+                <span className="text-xs font-medium text-gray-900">{selectedBa.opd?.nama}</span>
                 <InfoGrid cols={4}>
                   {selectedBa.timEvaluasi && (
                     <InfoField label="Evaluator:">{selectedBa.timEvaluasi}</InfoField>
@@ -414,13 +426,13 @@ export function BeritaAcaraPage() {
               ) : selectedBa ? (
                 <div className="p-4 overflow-auto scrollbar-hide">
                   <BeritaAcaraTemplate
-                    opd={selectedBa.opd}
+                    opd={selectedBa.opd?.nama ?? ''}
                     nomorBA={selectedBa.nomorBA}
                     tanggalVerifikasi={selectedBa.tanggalVerifikasi}
                     sopList={sopList.map((s) => ({ nomor: s.nomor, nama: s.nama }))}
                     evaluator={selectedBa.timEvaluasi}
                     namaBiro={selectedBa.namaBiro}
-                    tteSignaturePayload={selectedBa.tteSignaturePayload}
+                    tteSignaturePayload={selectedBa.tteSignaturePayload as TTESignaturePayload | undefined}
                   />
                 </div>
               ) : (
@@ -452,7 +464,7 @@ export function BeritaAcaraPage() {
                   title="Riwayat hasil evaluasi SOP ini"
                   emptyMessage="Belum ada riwayat evaluasi SOP ini."
                   items={riwayatSop}
-                  renderItem={(r) => (
+                  renderItem={(r: { date: string; evaluatorName: string; hasil: string; komentar?: string }) => (
                     <>
                       <div className="flex flex-wrap items-baseline gap-x-1.5">
                         <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
@@ -482,7 +494,7 @@ export function BeritaAcaraPage() {
 
       <PinVerificationDialog
         open={signingSopId !== null || (signingBulkIds?.length ?? 0) > 0}
-        onOpenChange={(open) => !open && closeSignSopDialog()}
+        onOpenChange={(open: boolean) => !open && closeSignSopDialog()}
         title={signingBulkIds?.length ? `Mengesahkan ${signingBulkIds.length} SOP` : 'Mengesahkan SOP'}
         description={
           signingBulkIds?.length

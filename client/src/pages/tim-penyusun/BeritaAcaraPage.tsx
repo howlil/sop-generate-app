@@ -17,10 +17,11 @@ import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { EmptyState } from '@/components/ui/empty-state'
 import { PinVerificationDialog } from '@/features/tte'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
-import { SOPListCard, SOPPreviewTemplate } from '@/features/sop'
+import { SOPListCard } from '@/features/sop'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/features/evaluasi'
-import { useTTESignature } from '@/features/tte'
+import { useTTESignature, type TTESignaturePayload } from '@/features/tte/hooks/useTte'
 import { useEvaluasi, evaluasiApi } from '@/features/evaluasi'
 import { queryKeys } from '@/utils/query-keys'
 import type { PengajuanEvaluasi } from '@/features/evaluasi'
@@ -29,6 +30,7 @@ import { formatDateId, formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
 import { Route } from '@/routes/tim-penyusun.berita-acara'
 import { useAppRole } from '@/features/auth'
+import { useAuthStore } from '@/stores/authStore'
 import { canTimPenyusunRunCoordinatorActions } from '@/features/sop'
 import { InfoCard } from '@/components/ui/info-card'
 import { IA } from '@/utils/constants'
@@ -38,6 +40,7 @@ export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
   const { id: searchId } = Route.useSearch()
   const { role } = useAppRole()
+  const userId = useAuthStore((state) => state.user?.id)
   const { showToast } = useToast()
   const [signingTerjadwalId, setSigningTerjadwalId] = useState<string | null>(null)
   const selectedBaId = searchId ?? null
@@ -125,7 +128,7 @@ export function BeritaAcaraKoordinatorPage() {
       if (!signingTerjadwalId) return
       updatePengajuan(signingTerjadwalId, {
         status: 'DITANDATANGANI_KOORDINATOR',
-        ditandatanganiOlehKoordinatorUserId: 'current-user-id',
+        ditandatanganiOlehKoordinatorUserId: userId ?? '',
       })
       // pushPipelineNotification({
       //   title: 'Berita Acara siap pengesahan',
@@ -378,13 +381,13 @@ export function BeritaAcaraKoordinatorPage() {
               ) : selectedBa ? (
                 <div className="p-4 overflow-auto scrollbar-hide">
                   <BeritaAcaraTemplate
-                    opd={selectedBa.opd}
+                    opd={selectedBa.opdNama ?? selectedBa.opd?.nama ?? ''}
                     nomorBA={selectedBa.nomorBA}
                     tanggalVerifikasi={selectedBa.tanggalVerifikasi}
                     sopList={sopList.map((s) => ({ nomor: s.nomor, nama: s.nama }))}
                     evaluator={selectedBa.timEvaluasi}
                     namaBiro={selectedBa.namaBiro}
-                    tteSignaturePayload={selectedBa.tteSignaturePayload}
+                    tteSignaturePayload={selectedBa.tteSignaturePayload as TTESignaturePayload | undefined}
                   />
                 </div>
               ) : (

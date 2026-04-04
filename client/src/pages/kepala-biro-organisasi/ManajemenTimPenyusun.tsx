@@ -326,7 +326,7 @@ export function ManajemenTimPenyusun() {
                                 title="Edit"
                                 onClick={() => {
                                   setSelectedTim(tim)
-                                  setFormData({ namaLengkap: tim.namaLengkap, nip: tim.nip, jabatan: tim.jabatan, pangkat: tim.pangkat, email: tim.email, nohp: tim.nohp })
+                                  setFormData({ namaLengkap: tim.namaLengkap, nip: tim.nip, jabatan: tim.jabatan, pangkat: tim.pangkat, email: tim.email, nohp: tim.nohp, kataSandi: '' })
                                   setIsEditOpen(true)
                                 }}
                               />

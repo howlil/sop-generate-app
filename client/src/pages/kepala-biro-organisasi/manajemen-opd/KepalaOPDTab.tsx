@@ -1,7 +1,10 @@
 import { Edit, History, ArrowRightCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { usePagination } from '@/utils/use-pagination'
+import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
+import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
+import { PindahJabatanDialog } from './PindahJabatanDialog'
+import { RiwayatJabatanDialog } from './RiwayatJabatanDialog'
 
 interface OPD {
   id: string
@@ -21,7 +24,7 @@ type PersonWithActive = {
   email: string
   phone: string
   nip: string
-  activeAssignment?: KepalaOPD & { opdName: string }
+  activeAssignment?: KepalaOPD & { opdId: string; opdName: string }
 }
 
 type RiwayatRow = KepalaOPD & { opdName: string }
@@ -105,89 +108,80 @@ export function KepalaOPDTab({
     ? getRiwayatForUser(riwayatDialogPerson.name, riwayatDialogPerson.email)
     : []
 
-  const pagination = usePagination(filteredPersons.length)
-  const rowsToShow = pagination.showPagination
-    ? filteredPersons.slice(pagination.startIndex, pagination.endIndex)
-    : filteredPersons
-
   return (
     <>
-      <Table.Card className="w-full">
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th>Nama Kepala</Table.Th>
-              <Table.Th>NIP</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>Jabatan Aktif</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {rowsToShow.map((p) => {
-              const act = p.activeAssignment
-              return (
-                <Table.BodyRow key={`${p.name}|${p.email}`}>
-                  <Table.Td className="font-medium text-gray-900">{p.name}</Table.Td>
-                  <Table.Td className="text-gray-600 font-mono text-xs">{p.nip || '—'}</Table.Td>
-                  <Table.Td className="text-gray-600">{p.email}</Table.Td>
-                  <Table.Td>{act?.opdName ?? '—'}</Table.Td>
-                  <Table.Td>
-                    <div className="flex gap-1 justify-center">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => {
-                          setRiwayatDialogPerson({ name: p.name, email: p.email })
-                          setRiwayatDialogOpen(true)
-                        }}
-                        title="Riwayat jabatan"
-                      >
-                        <History className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="h-7 w-7 p-0"
-                        title="Pindah jabatan"
-                        onClick={() => {
-                          setPindahDialogPerson({ name: p.name, email: p.email, phone: p.phone, nip: p.nip })
-                          setPindahForm({ opdId: '' })
-                          setPindahDialogOpen(true)
-                        }}
-                      >
-                        <ArrowRightCircle className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="h-7 w-7 p-0"
-                        title="Ubah"
-                        onClick={() => {
-                          if (act) {
-                            setSelectedOPD(opdList.find((o) => o.id === act.opdId) ?? null)
-                            onOpenKepalaForm(act)
-                          }
-                        }}
-                        disabled={!act}
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </Table.Td>
-                </Table.BodyRow>
-              )
-            })}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={filteredPersons.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="kepala"
-        />
-      </Table.Card>
+      <Table.Paginated data={filteredPersons} label="kepala" className="w-full">
+        {(pageData) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th>Nama Kepala</Table.Th>
+                <Table.Th>NIP</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>Jabatan Aktif</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageData.map((p) => {
+                const act = p.activeAssignment
+                return (
+                  <Table.BodyRow key={`${p.name}|${p.email}`}>
+                    <Table.Td className="font-medium text-gray-900">{p.name}</Table.Td>
+                    <Table.Td className="text-gray-600 font-mono text-xs">{p.nip || '—'}</Table.Td>
+                    <Table.Td className="text-gray-600">{p.email}</Table.Td>
+                    <Table.Td>{act?.opdName ?? '—'}</Table.Td>
+                    <Table.Td>
+                      <div className="flex gap-1 justify-center">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            setRiwayatDialogPerson({ name: p.name, email: p.email })
+                            setRiwayatDialogOpen(true)
+                          }}
+                          title="Riwayat jabatan"
+                        >
+                          <History className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="h-7 w-7 p-0"
+                          title="Pindah jabatan"
+                          onClick={() => {
+                            setPindahDialogPerson({ name: p.name, email: p.email, phone: p.phone, nip: p.nip })
+                            setPindahForm({ opdId: '' })
+                            setPindahDialogOpen(true)
+                          }}
+                        >
+                          <ArrowRightCircle className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="h-7 w-7 p-0"
+                          title="Ubah"
+                          onClick={() => {
+                            if (act) {
+                              setSelectedOPD(opdList.find((o) => o.id === act.opdId) ?? null)
+                              onOpenKepalaForm(act)
+                            }
+                          }}
+                          disabled={!act}
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
+                    </Table.Td>
+                  </Table.BodyRow>
+                )
+              })}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
       {filteredPersons.length === 0 && (
         <div className="p-6 text-center text-gray-500 text-xs">
           Belum ada data OPD. Gunakan &quot;Tambah OPD&quot; atau dari tab Manajemen OPD pilih OPD → Riwayat OPD.

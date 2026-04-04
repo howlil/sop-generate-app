@@ -1,10 +1,11 @@
-import { SOPPreviewTemplate } from '@/features/sop'
-import { DetailSOPProsedurEditor } from './DetailSOPProsedurEditor'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
+import { DetailSOPProsedurEditor } from './DetailSopProsedurEditor'
 import type { SOPDetailMetadata, ProsedurRow } from '@/features/sop'
 
 export interface DetailSOPPenyusunMainProps {
   metadata: SOPDetailMetadata
   prosedurRows: ProsedurRow[]
+  setProsedurRows: React.Dispatch<React.SetStateAction<ProsedurRow[]>>
   implementers: { id: string; name: string }[]
   activeTab: 'flowchart' | 'bpmn'
   onActiveTabChange: (tab: 'flowchart' | 'bpmn') => void
@@ -17,6 +18,7 @@ export interface DetailSOPPenyusunMainProps {
 export function DetailSOPPenyusunMain({
   metadata,
   prosedurRows,
+  setProsedurRows,
   implementers,
   activeTab,
   onActiveTabChange,
@@ -28,7 +30,7 @@ export function DetailSOPPenyusunMain({
   return (
     <div className="flex flex-col h-full p-4">
       <SOPPreviewTemplate
-        metadata={metadata}
+        metadata={metadata as any}
         prosedurRows={prosedurRows}
         implementers={implementers}
         pathLayoutSeed={diagramVersion}

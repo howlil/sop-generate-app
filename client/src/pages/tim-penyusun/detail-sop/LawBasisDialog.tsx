@@ -49,19 +49,19 @@ export function LawBasisDialog({
   const handleConfirm = () => {
     const selectedPeraturan = peraturanList.filter((p) => selectedIds.includes(p.id))
     const additional = selectedPeraturan
-      .map((p) => `${p.peraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`)
+      .map((p) => `${p.namaPeraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`)
       .filter((label) => !existingLawBasis.includes(label))
     onAdd([...existingLawBasis, ...additional])
     handleClose()
   }
 
-  const berlakuList = peraturanList.filter((p) => p.status === 'Berlaku')
+  const berlakuList = peraturanList.filter((p) => p.status === 'BERLAKU')
   const q = query.trim().toLowerCase()
   const filtered = q
     ? berlakuList.filter(
         (p) =>
           p.tentang.toLowerCase().includes(q) ||
-          p.peraturan.toLowerCase().includes(q) ||
+          p.namaPeraturan.toLowerCase().includes(q) ||
           `${p.nomor}/${p.tahun}`.includes(q)
       )
     : berlakuList
@@ -97,7 +97,7 @@ export function LawBasisDialog({
                   </div>
                 ) : (
                   filtered.map((p) => {
-                    const label = `${p.peraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`
+                    const label = `${p.namaPeraturan} No. ${p.nomor}/${p.tahun} tentang ${p.tentang}`
                     const already = existingLawBasis.includes(label)
                     const selected = selectedIds.includes(p.id)
                     const toggle = () => {
@@ -139,7 +139,7 @@ export function LawBasisDialog({
                         </span>
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <p className="text-xs font-medium text-gray-900 leading-snug">
-                            {p.peraturan} No. {p.nomor}/{p.tahun}
+                            {p.namaPeraturan} No. {p.nomor}/{p.tahun}
                           </p>
                           <p className="text-[11px] text-gray-600 leading-snug line-clamp-2">{p.tentang}</p>
                         </div>

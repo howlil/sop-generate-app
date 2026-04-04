@@ -43,7 +43,7 @@ export function DetailSOPMetadataPanel({
   const { list: sops = [] } = useSop()
   const relatedPosOptions = useMemo(() => {
     if (!sops || sops.length === 0) return []
-    return sops.map(sop => ({ value: sop.id, label: sop.judul }))
+    return sops.map(sop => sop.judul)
   }, [sops])
 
   return (

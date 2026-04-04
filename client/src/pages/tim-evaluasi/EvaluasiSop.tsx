@@ -2,10 +2,10 @@
  * Halaman evaluasi SOP oleh Tim Evaluasi (langsung per SOP, langsung per SOP).
  * Hasil: Sesuai → status SOP "Siap Diverifikasi"; Perlu Perbaikan → "Revisi dari Tim Evaluasi".
  */
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { Save, Send, Printer, MessageSquare } from 'lucide-react'
-import { SOPPreviewTemplate } from '@/features/sop'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/BackButton'
 import { FormField } from '@/components/ui/form-field'
@@ -25,48 +25,51 @@ import { useEvaluasiDraft, getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete,
 import { useToast } from '@/utils/ui'
 import { useCollapsiblePanels } from '@/utils/ui'
 import { ROUTES } from '@/utils/constants'
-import { useSop, useSopStatus } from '@/features/sop'
+import { useSop } from '@/features/sop'
+import { useSopStatus } from '@/features/sop/hooks/useSopStatus'
+import type { StatusSOP } from '@/types/common'
 
 export function EvaluasiSOPPage() {
   const { sopId } = useParams({ from: '/tim-evaluasi/evaluasi/$sopId' })
   const navigate = useNavigate()
   const { showToast } = useToast()
-  const { mergeSopStatus, setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverride } = useSopStatus()
   const { list: sopListRaw } = useSop()
-  const mergedList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
-  const sop = useMemo(() => mergedList.find((s) => s.id === sopId), [mergedList, sopId])
+  const sop = useMemo(() => sopListRaw?.find((s) => s.id === sopId), [sopListRaw, sopId])
 
-  // Workflow: saat Tim Evaluasi membuka halaman evaluasi, status SOP → Sedang Dievaluasi (jika saat ini Diajukan Evaluasi)
-  useEffect(() => {
-    if (sopId && sop?.status === 'Diajukan Evaluasi') {
-      setSopStatusOverride(sopId, 'Sedang Dievaluasi')
-    }
-  }, [sopId, sop?.status, setSopStatusOverride])
+  // Note: Status change from DIAJUKAN_EVALUASI to SEDANG_DIEVALUASI is now
+  // triggered by explicit user action (banner in UI), not automatically on mount.
+  // This prevents unintended side-effects when page is opened accidentally.
 
   const {
     komentarEvaluasi,
     setKomentarEvaluasi,
     statusEvaluasi,
     setStatusEvaluasi,
-    saveDraft: handleSaveDraft,
-  } = useEvaluasiDraft(sopId)
+    saveDraft,
+    isSaving,
+  } = useEvaluasiDraft(sop?.opdId, sopId)
+  const handleSaveDraft = () => {
+    if (isSaving) return
+    saveDraft()
+  }
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
   const { rightCollapsed: rightPanelCollapsed, setRightCollapsed: setRightPanelCollapsed } = useCollapsiblePanels()
 
   const handleSubmit = () => {
-    if (!isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi)) {
+    if (!isFormEvaluasiSopComplete({ hasil: statusEvaluasi!, catatan: komentarEvaluasi })) {
       showToast('Silakan lengkapi status dan komentar evaluasi terlebih dahulu', 'error')
       return
     }
     if (!sopId || !statusEvaluasi) return
-    const newStatus = getStatusSopAfterEvaluasi(statusEvaluasi)
+    const newStatus = getStatusSopAfterEvaluasi(statusEvaluasi) as StatusSOP
     setSopStatusOverride(sopId, newStatus)
     showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
     setIsSubmitOpen(false)
     setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
   }
 
-  const isFormComplete = isFormEvaluasiSopComplete(statusEvaluasi, komentarEvaluasi)
+  const isFormComplete = isFormEvaluasiSopComplete({ hasil: statusEvaluasi!, catatan: komentarEvaluasi })
 
   if (!sop) {
     return (
@@ -79,6 +82,22 @@ export function EvaluasiSOPPage() {
 
   return (
     <>
+      {sop.status === 'DIAJUKAN_EVALUASI' && (
+        <div className="mx-4 mt-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-blue-900">SOP ini sedang menunggu evaluasi</p>
+            <p className="text-xs text-blue-700 mt-0.5">Mulai evaluasi untuk mengubah status menjadi "Sedang Dievaluasi"</p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs shrink-0 border-blue-300 text-blue-900 hover:bg-blue-100"
+            onClick={() => setSopStatusOverride(sopId, 'SEDANG_DIEVALUASI')}
+          >
+            Mulai Evaluasi
+          </Button>
+        </div>
+      )}
       <DetailPageLayout
         breadcrumb={[
           { label: 'Evaluasi SOP', to: ROUTES.TIM_EVALUASI.EVALUASI },
@@ -171,7 +190,7 @@ export function EvaluasiSOPPage() {
             <DialogTitle className="text-sm">Konfirmasi Kirim Hasil Evaluasi</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <InfoCard variant={statusEvaluasi === 'Sesuai' ? 'success' : 'warning'}>
+            <InfoCard variant={statusEvaluasi === 'SESUAI' ? 'success' : 'warning'}>
               <p className="text-xs mb-1 text-gray-700">Status SOP setelah dikirim:</p>
               <p className="text-sm font-semibold text-gray-900">
                 {statusEvaluasi ? STATUS_HASIL_EVALUASI[statusEvaluasi] : '—'}

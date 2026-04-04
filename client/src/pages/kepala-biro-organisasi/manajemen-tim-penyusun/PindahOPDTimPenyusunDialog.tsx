@@ -6,7 +6,15 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
-import type { TimPenyusun } from '@/types/tim'
+// Local UI type for this dialog
+type TimPenyusun = {
+  id: string
+  namaLengkap: string
+  nip: string
+  email: string
+  opdId: string
+  [key: string]: unknown
+}
 
 interface OPD {
   id: string

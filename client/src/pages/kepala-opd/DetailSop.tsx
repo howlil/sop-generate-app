@@ -14,12 +14,13 @@ import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
-import { VersionHistoryPanel, SOPPreviewTemplate } from '@/features/sop'
+import { VersionHistoryPanel } from '@/features/sop'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
 import { InfoField } from '@/components/ui/info-field'
 import { PinVerificationDialog } from '@/features/tte'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useToast } from '@/utils/ui'
-import { useSopStatus, type StatusSOP, type DetailSOPVersionSeed } from '@/features/sop'
+import { useSopStatus, type StatusSOP, DEFAULT_SOP_STATUS } from '@/features/sop'
 import {
   getInitialSopDetailImplementers,
   getInitialSopDetailProsedurRows,
@@ -32,10 +33,16 @@ import * as versionDiff from '@/utils/version-diff'
 import { useTTESignature } from '@/features/tte'
 import { canKepalaOpdSignSop, isSopEligibleForSigning } from '@/features/sop'
 import { getKepalaOPDOpdId } from '@/utils/role'
-import { useOpd } from '@/features/organisasi'
 import { ROUTES } from '@/utils/constants'
 
-type Version = DetailSOPVersionSeed
+type Version = {
+  id: string
+  version: string
+  author: string
+  date: string
+  changes: string
+  snapshot?: unknown
+}
 
 export interface DetailSOPProps {
   /** Breadcrumb (default: Daftar SOP → Detail SOP). */
@@ -53,11 +60,9 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     showSignButton = true,
   } = props
   const { showToast } = useToast()
-  const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverride } = useSopStatus()
   const { list: pengajuanList = [] } = useEvaluasi()
   const opdId = getKepalaOPDOpdId()
-  const { list: opds } = useOpd()
-  const opdName = opds.find((o) => o.id === opdId)?.nama ?? ''
   const params = useParams({ strict: false })
   const id = 'id' in params ? params.id : undefined
   const location = useLocation()
@@ -69,10 +74,6 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     terakhirDiperbarui?: string
     deskripsiProyek?: string
   } | undefined
-  const sopStatus: StatusSOP =
-    (id ? getSopStatusOverride(id) : undefined) ??
-    detailMetaState?.sopStatus ??
-    DEFAULT_SOP_STATUS
 
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false)
   const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
@@ -85,7 +86,12 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   // Use real API instead of stubs
   const { data: sopDetail } = useDetailSopById(id ?? '')
   const { data: editHistory = [] } = useEditHistory(id ?? '')
-  const { data: pengajuanEvaluasi } = useEvaluasiDetail(pengajuanId ?? '')
+  const { data: pengajuanEvaluasi } = useEvaluasiDetail(id ?? '')
+
+  const sopStatus: StatusSOP =
+    sopDetail?.status ??
+    detailMetaState?.sopStatus ??
+    DEFAULT_SOP_STATUS
 
   // Transform API data to component format
   const metadata = useMemo(() => {
@@ -107,18 +113,20 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   )
 
   const tte = useTTESignature({ role: 'kepala-opd', documentId: id })
+  const [pinDialogOpen, setPinDialogOpen] = useState(false)
+  const openPinDialog = () => setPinDialogOpen(true)
 
   const handlePinConfirm = tte.createPinConfirmHandler(
     { documentLabel: metadata.name, referenceId: metadata.number || id || '' },
     () => {
-      if (id) setSopStatusOverride(id, 'Berlaku')
+      if (id) setSopStatusOverride(id, 'BERLAKU')
       showToast('SOP berhasil disahkan dengan TTE BSRE.')
     }
   )
 
   const handleCabutSop = () => {
     if (id) {
-      setSopStatusOverride(id, 'Dicabut')
+      setSopStatusOverride(id, 'DICABUT')
       showToast('SOP berhasil dicabut.')
     }
   }
@@ -126,12 +134,13 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   /** Kepala OPD hanya menandatangani SOP (TTE). Tanpa tugas Setuju/Tolak atau pemeriksaan. */
   const versions: Version[] = useMemo(() => {
     if (!editHistory || editHistory.length === 0) return []
-    return editHistory.map(log => ({
-      version: log.versiSOP.toString(),
-      author: log.dibuatOleh?.nama ?? 'Unknown',
+    return editHistory.map((log, idx) => ({
+      id: log.id,
+      version: (idx + 1).toString(),
+      author: log.user?.nama ?? 'Unknown',
       date: log.createdAt,
-      changes: log.perubahan?.join(', ') ?? '',
-      snapshot: undefined, // TODO: load actual snapshot
+      changes: log.keterangan ?? '',
+      snapshot: undefined,
     }))
   }, [editHistory])
 
@@ -145,7 +154,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     canKepalaOpdSignSop(sopStatus, pengajuanList, opdId, id ?? '')
   const needBaSignFirst =
     showSignButton &&
-    isSopEligibleForSigning(sopStatus) &&
+    isSopEligibleForSigning(sopStatus, []) &&
     !canShowSignButton
 
   const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
@@ -186,7 +195,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
           <Button
             size="sm"
             className="h-8 text-xs"
-            onClick={tte.openPinDialog}
+            onClick={openPinDialog}
             disabled={!tte.canSign}
             title={!tte.canSign ? 'Setup TTE terlebih dahulu' : 'Mengesahkan SOP dengan TTE BSRE'}
           >
@@ -198,7 +207,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
             Tandatangani <Link to={ROUTES.KEPALA_OPD.BERITA_ACARA} search={{ id: undefined }} className="underline font-medium">Berita Acara</Link> terlebih dahulu untuk mengesahkan SOP.
           </span>
         )}
-        {showSignButton && sopStatus === 'Berlaku' && id && (
+        {showSignButton && sopStatus === 'BERLAKU' && id && (
           <Button
             size="sm"
             variant="outline"
@@ -272,8 +281,8 @@ export function DetailSOP(props: DetailSOPProps = {}) {
             <SOPPreviewTemplate
               metadata={metadata}
               prosedurRows={prosedurRows}
-              implementers={implementers}
-              tteSignaturePayload={tte.ttePayload}
+              implementers={implementers.map((p) => ({ id: p.id, name: p.nama }))}
+              tteSignaturePayload={undefined}
               activeTab={activeTab}
               onActiveTabChange={setActiveTab}
             />
@@ -312,8 +321,8 @@ export function DetailSOP(props: DetailSOPProps = {}) {
       workspaceClassName="print:hidden"
     />
     <PinVerificationDialog
-      open={tte.pinDialogOpen}
-      onOpenChange={tte.setPinDialogOpen}
+      open={pinDialogOpen}
+      onOpenChange={setPinDialogOpen}
       title="Verifikasi PIN TTE"
       description="Masukkan PIN TTE BSRE untuk mengesahkan SOP ini."
       onConfirm={handlePinConfirm}

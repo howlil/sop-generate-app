@@ -13,8 +13,6 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { useRekapEvaluasi } from '@/features/evaluasi'
-import type { RekapEvaluasi } from '@/features/evaluasi'
-import { EmptyState } from '@/components/ui/empty-state'
 
 /* ─── Type Mapping ─── */
 /** Adapt RekapEvaluasi to legacy DetailOpdPerTahun interface */
@@ -74,9 +72,9 @@ export function GrafikEvaluasiTahunan() {
       rekap.detail.forEach(item => {
         allDetail.push({
           tahun: rekap.tahun.toString(),
-          opdId: item.opdId,
-          opdNama: item.opdNama,
-          jumlahEvaluasi: item.totalPengajuan,
+          opdId: item.opdId ?? '',
+          opdNama: item.opdNama ?? '',
+          jumlahEvaluasi: item.totalPengajuan ?? 0,
           rataRataSkor: item.nilaiRataRata ?? 0,
         })
       })
@@ -181,9 +179,9 @@ export function GrafikEvaluasiTahunan() {
     return { totalOPD, evaluated, coveragePct, skorBuckets, topOPD }
   }, [currentYear, detailByTahun, filterTahun, opdList.length])
 
-  const deltaPenilaian = currentYear && prevYear ? delta(currentYear.jumlahPenilaianOpd, prevYear.jumlahPenilaianOpd) : null
-  const deltaOPD = currentYear && prevYear ? delta(currentYear.jumlahOpdTerevaluasi, prevYear.jumlahOpdTerevaluasi) : null
-  const deltaSkor = currentYear && prevYear && prevYear.rataRataSkorOpd > 0 ? delta(currentYear.rataRataSkorOpd, prevYear.rataRataSkorOpd) : null
+  const deltaPenilaian = currentYear && prevYear ? delta(currentYear.totalPengajuan, prevYear.totalPengajuan) : null
+  const deltaOPD = currentYear && prevYear ? delta(currentYear.totalOpd, prevYear.totalOpd) : null
+  const deltaSkor = currentYear && prevYear && prevYear.rataRataNilai > 0 ? delta(currentYear.rataRataNilai, prevYear.rataRataNilai) : null
 
   return (
     <ListPageLayout
@@ -220,7 +218,7 @@ export function GrafikEvaluasiTahunan() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <KPICard
                 label="Total Penilaian"
-                value={currentYear?.jumlahPenilaianOpd ?? 0}
+                value={currentYear?.totalPengajuan ?? 0}
                 suffix="kali"
                 delta={deltaPenilaian}
                 icon={<BarChart3 className="w-4 h-4 text-blue-600" />}
@@ -229,7 +227,7 @@ export function GrafikEvaluasiTahunan() {
               />
               <KPICard
                 label="OPD Dievaluasi"
-                value={currentYear?.jumlahOpdTerevaluasi ?? 0}
+                value={currentYear?.totalOpd ?? 0}
                 suffix={`/ ${opdList.length}`}
                 delta={deltaOPD}
                 icon={<Building2 className="w-4 h-4 text-violet-600" />}
@@ -238,7 +236,7 @@ export function GrafikEvaluasiTahunan() {
               />
               <KPICard
                 label="Rata-rata Skor"
-                value={currentYear?.rataRataSkorOpd ?? 0}
+                value={currentYear?.rataRataNilai ?? 0}
                 isDecimal
                 delta={deltaSkor}
                 icon={<Target className="w-4 h-4 text-emerald-600" />}

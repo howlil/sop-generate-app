@@ -5,20 +5,21 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { Send, List, Printer } from 'lucide-react'
-import { SOPPreviewTemplate } from '@/features/sop'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
 import { SOPListCard } from '@/features/sop'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { useEvaluasiDraft, getEvaluasiDraft, useEvaluasiSopByOpd, useRiwayatEvaluasiSop, useRiwayatEvaluasiOpd } from '@/features/evaluasi'
+import { useEvaluasiDraft, useEvaluasiSopByOpd, useRiwayatEvaluasiSop, useRiwayatEvaluasiOpd } from '@/features/evaluasi'
 import { useEvaluasiSubmit } from '@/features/evaluasi'
 import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/utils/constants'
 import { ROUTES } from '@/utils/constants'
 import { useCollapsiblePanels } from '@/utils/ui'
 import { useAppRole } from '@/features/auth'
 import { formatDateId } from '@/utils/format-date'
-import type { NilaiEvaluasi, PengajuanEvaluasi, StatusHasilEvaluasi } from '@/features/evaluasi'
+import type { NilaiEvaluasi, PengajuanEvaluasi } from '@/features/evaluasi'
+import type { StatusHasilEvaluasi } from '@/types/common'
 import type { RiwayatEvaluasiEntry } from '@/features/evaluasi'
 import type { EvaluasiBatchSubmitError } from '@/features/evaluasi/hooks/useEvaluasiSubmit'
 
@@ -145,7 +146,7 @@ export function DetailEvaluasiOPD() {
     setKomentarEvaluasi,
     statusEvaluasi,
     setStatusEvaluasi,
-  } = useEvaluasiDraft(effectiveSopId ?? undefined)
+  } = useEvaluasiDraft(opdId, effectiveSopId ?? undefined)
 
   /** Ubah status evaluasi. */
   const handleSetStatusEvaluasi = useCallback(
@@ -173,31 +174,18 @@ export function DetailEvaluasiOPD() {
     setRightCollapsed: setRightPanelCollapsed,
   } = useCollapsiblePanels()
 
-  /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil, atau SOP lain yang punya draft. */
+  /** Daftar SOP "Sedang Dievaluasi": SOP terpilih yang sudah isi status hasil. */
   const sedangDievaluasiList = useMemo(() => {
     const out: Array<{ id: string; judul: string; nomorSOP: string; hasil: StatusHasilEvaluasi; komentarEvaluasi: string }> = []
     for (const s of sopsFilteredByStatusAndEvaluator) {
       if (s.displayStatus === 'Selesai Evaluasi') continue
-      if (s.id === effectiveSopId) {
-        if (statusEvaluasi != null) {
-          out.push({
-            id: s.id,
-            judul: s.judul,
-            nomorSOP: s.nomorSOP,
-            hasil: statusEvaluasi,
-            komentarEvaluasi: komentarEvaluasi?.trim() ?? '',
-          })
-        }
-        continue
-      }
-      const draft = getEvaluasiDraft(s.id)
-      if (draft?.statusEvaluasi) {
+      if (s.id === effectiveSopId && statusEvaluasi != null) {
         out.push({
           id: s.id,
           judul: s.judul,
           nomorSOP: s.nomorSOP,
-          hasil: draft.statusEvaluasi,
-          komentarEvaluasi: draft.komentarEvaluasi ?? '',
+          hasil: statusEvaluasi,
+          komentarEvaluasi: komentarEvaluasi?.trim() ?? '',
         })
       }
     }

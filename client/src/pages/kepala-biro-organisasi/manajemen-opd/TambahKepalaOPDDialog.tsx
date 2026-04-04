@@ -41,7 +41,7 @@ export function TambahKepalaOPDDialog({
       <FormField label="OPD" required>
         <Select
           value={form.opdId}
-          onValueChange={(opdId) => setForm((f) => ({ ...f, opdId }))}
+          onValueChange={(opdId) => setForm((f: FormTambahKepalaState) => ({ ...f, opdId }))}
           placeholder="Pilih OPD"
           options={opdList.map((opd) => ({ value: opd.id, label: opd.name }))}
         />
@@ -50,7 +50,7 @@ export function TambahKepalaOPDDialog({
         <Input
           className="h-9 text-xs"
           value={form.name}
-          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          onChange={(e) => setForm((f: FormTambahKepalaState) => ({ ...f, name: e.target.value }))}
           placeholder="Nama lengkap dengan gelar"
         />
       </FormField>
@@ -58,7 +58,7 @@ export function TambahKepalaOPDDialog({
         <Input
           className="h-9 text-xs"
           value={form.nip}
-          onChange={(e) => setForm((f) => ({ ...f, nip: e.target.value }))}
+          onChange={(e) => setForm((f: FormTambahKepalaState) => ({ ...f, nip: e.target.value }))}
           placeholder="Contoh: 197503152000032001"
         />
       </FormField>
@@ -67,7 +67,7 @@ export function TambahKepalaOPDDialog({
           type="email"
           className="h-9 text-xs"
           value={form.email}
-          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          onChange={(e) => setForm((f: FormTambahKepalaState) => ({ ...f, email: e.target.value }))}
           placeholder="email@pemda.go.id"
         />
       </FormField>

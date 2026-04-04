@@ -64,7 +64,7 @@ export function PindahJabatanDialog({
           <FormField label="OPD tujuan" required>
             <Select
               value={form.opdId}
-              onValueChange={(opdId) => setForm((f) => ({ ...f, opdId }))}
+              onValueChange={(opdId) => setForm((f: PindahFormState) => ({ ...f, opdId }))}
               placeholder="Pilih OPD"
               options={opdList
                 .filter((opd) => !getKepalaAktif(opd.id))

@@ -16,7 +16,6 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import type { Peraturan, RiwayatVersiEntry } from '@/features/organisasi'
 import { formatDateIdLong } from '@/utils/format-date'
-import { usePagination } from '@/utils/use-pagination'
 
 export interface PeraturanTableTabProps {
   filteredPeraturan: Peraturan[]
@@ -62,104 +61,95 @@ export function PeraturanTableTab({
   onToggleStatus,
   confirmDisabled,
 }: PeraturanTableTabProps) {
-  const pagination = usePagination(filteredPeraturan.length)
-  const rowsToShow = pagination.showPagination
-    ? filteredPeraturan.slice(pagination.startIndex, pagination.endIndex)
-    : filteredPeraturan
-
   return (
     <>
-      <Table.Card>
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th>Peraturan</Table.Th>
-              <Table.Th>Nomor</Table.Th>
-              <Table.Th>Tentang</Table.Th>
-              <Table.Th align="center">Status</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {rowsToShow.map((peraturan) => (
-              <Table.BodyRow key={peraturan.id}>
-                <Table.Td>
-                  <Badge variant="outline" className="text-xs">
-                    {peraturan.peraturan}
-                  </Badge>
-                </Table.Td>
-                <Table.Td className="font-mono text-gray-700">
-                  No. {peraturan.nomor}/{peraturan.tahun}
-                </Table.Td>
-                <Table.Td className="text-gray-900">{peraturan.tentang}</Table.Td>
-                <Table.Td className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => canEditPeraturan(peraturan) && onToggleStatus(peraturan.id)}
-                    className={!canEditPeraturan(peraturan) ? 'cursor-default' : 'cursor-pointer'}
-                    disabled={!canEditPeraturan(peraturan)}
-                  >
-                    <Badge
-                      className={`text-xs border-0 ${
-                        peraturan.status === 'Berlaku'
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                          : 'bg-red-100 text-red-700 hover:bg-red-200'
-                      } ${!canEditPeraturan(peraturan) ? 'opacity-90' : ''}`}
-                    >
-                      {peraturan.status}
+      <Table.Paginated data={filteredPeraturan} label="peraturan">
+        {(pageData) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th>Peraturan</Table.Th>
+                <Table.Th>Nomor</Table.Th>
+                <Table.Th>Tentang</Table.Th>
+                <Table.Th align="center">Status</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageData.map((peraturan) => (
+                <Table.BodyRow key={peraturan.id}>
+                  <Table.Td>
+                    <Badge variant="outline" className="text-xs">
+                      {peraturan.namaPeraturan}
                     </Badge>
-                  </button>
-                </Table.Td>
-                <Table.Td className="text-center">
-                  <div className="flex items-center justify-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs"
-                      onClick={() => {
-                        setSelectedPeraturanForRiwayat(peraturan)
-                        setRiwayatVersiOpen(true)
-                      }}
-                      title="Riwayat versi & SOP yang mengait"
-                    >
-                      <History className="w-3 h-3" />
-                    </Button>
-                    <IconActionButton
-                      icon={Edit}
-                      title={
-                        !canEditPeraturan(peraturan)
-                          ? 'Hanya peraturan yang Anda buat yang dapat diedit'
-                          : 'Edit'
-                      }
-                      onClick={() => onOpenPeraturanDialog(peraturan)}
+                  </Table.Td>
+                  <Table.Td className="font-mono text-gray-700">
+                    No. {peraturan.nomor}/{peraturan.tahun}
+                  </Table.Td>
+                  <Table.Td className="text-gray-900">{peraturan.tentang}</Table.Td>
+                  <Table.Td className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => canEditPeraturan(peraturan) && onToggleStatus(peraturan.id)}
+                      className={!canEditPeraturan(peraturan) ? 'cursor-default' : 'cursor-pointer'}
                       disabled={!canEditPeraturan(peraturan)}
-                    />
-                    <IconActionButton
-                      icon={Trash2}
-                      title={
-                        !canEditPeraturan(peraturan)
-                          ? 'Hanya peraturan yang Anda buat yang dapat dihapus'
-                          : peraturan.digunakan > 0
-                            ? 'Tidak dapat dihapus: sudah ada SOP yang mengait'
-                            : 'Hapus'
-                      }
-                      destructive
-                      onClick={() => onDeletePeraturan(peraturan.id)}
-                      disabled={!canEditPeraturan(peraturan) || peraturan.digunakan > 0}
-                    />
-                  </div>
-                </Table.Td>
-              </Table.BodyRow>
-            ))}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={filteredPeraturan.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="peraturan"
-        />
-      </Table.Card>
+                    >
+                      <Badge
+                        className={`text-xs border-0 ${
+                          peraturan.status === 'BERLAKU'
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                            : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        } ${!canEditPeraturan(peraturan) ? 'opacity-90' : ''}`}
+                      >
+                        {peraturan.status}
+                      </Badge>
+                    </button>
+                  </Table.Td>
+                  <Table.Td className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedPeraturanForRiwayat(peraturan)
+                          setRiwayatVersiOpen(true)
+                        }}
+                        title="Riwayat versi & SOP yang mengait"
+                      >
+                        <History className="w-3 h-3" />
+                      </Button>
+                      <IconActionButton
+                        icon={Edit}
+                        title={
+                          !canEditPeraturan(peraturan)
+                            ? 'Hanya peraturan yang Anda buat yang dapat diedit'
+                            : 'Edit'
+                        }
+                        onClick={() => onOpenPeraturanDialog(peraturan)}
+                        disabled={!canEditPeraturan(peraturan)}
+                      />
+                      <IconActionButton
+                        icon={Trash2}
+                        title={
+                          !canEditPeraturan(peraturan)
+                            ? 'Hanya peraturan yang Anda buat yang dapat dihapus'
+                            : (peraturan.digunakan ?? 0) > 0
+                              ? 'Tidak dapat dihapus: sudah ada SOP yang mengait'
+                              : 'Hapus'
+                        }
+                        destructive
+                        onClick={() => onDeletePeraturan(peraturan.id)}
+                        disabled={!canEditPeraturan(peraturan) || (peraturan.digunakan ?? 0) > 0}
+                      />
+                    </div>
+                  </Table.Td>
+                </Table.BodyRow>
+              ))}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
       {filteredPeraturan.length === 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
           <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -174,7 +164,7 @@ export function PeraturanTableTab({
             <DialogTitle className="text-sm">Riwayat versi</DialogTitle>
             <DialogDescription className="text-xs">
               {selectedPeraturanForRiwayat
-                ? `${selectedPeraturanForRiwayat.peraturan} No. ${selectedPeraturanForRiwayat.nomor}/${selectedPeraturanForRiwayat.tahun} — ${selectedPeraturanForRiwayat.tentang}`
+                ? `${selectedPeraturanForRiwayat.namaPeraturan} No. ${selectedPeraturanForRiwayat.nomor}/${selectedPeraturanForRiwayat.tahun} — ${selectedPeraturanForRiwayat.tentang}`
                 : ''}
             </DialogDescription>
           </DialogHeader>

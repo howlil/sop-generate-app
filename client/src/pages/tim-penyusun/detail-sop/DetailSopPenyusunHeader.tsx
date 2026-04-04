@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { StatusBadge } from '@/components/ui/status-badge'
 import type { SOPDetailMetadata, StatusSOP } from '@/features/sop'
-import { ROUTES } from '@/utils/constants'
 
 export interface DetailSOPPenyusunHeaderProps {
   metadata: SOPDetailMetadata

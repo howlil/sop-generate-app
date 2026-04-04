@@ -43,7 +43,7 @@ export function DetailEvaluasiOPDSubmitDialog({
   isSubmitCheckAllIndeterminate,
   setSubmitCheckAll,
   onConfirm,
-  terjadwalSubmitError = { kind: 'none' },
+  terjadwalSubmitError = { kind: 'none', items: [] },
 }: DetailEvaluasiOPDSubmitDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -61,7 +61,7 @@ export function DetailEvaluasiOPDSubmitDialog({
             <InfoCard variant="warning" className="border-red-200 bg-red-50 text-red-900">
               <p className="font-medium mb-1.5">Lengkapi komentar untuk hasil Revisi Biro:</p>
               <ul className="list-disc pl-4 space-y-0.5">
-                {terjadwalSubmitError.items.map((row) => (
+                {terjadwalSubmitError.items.map((row: { id: string; judul: string; nomorSOP: string }) => (
                   <li key={row.id}>
                     <span className="font-medium">{row.judul}</span>{' '}
                     <span className="text-red-800/90">({row.nomorSOP})</span>

@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
-import { useParams, Link } from '@tanstack/react-router'
-import { CheckCircle, List, MessageSquare, Calendar, History, Printer } from 'lucide-react'
-import { SOPPreviewTemplate, SOPListCard } from '@/features/sop'
+import { useState } from 'react'
+import { useParams } from '@tanstack/react-router'
+import { CheckCircle, MessageSquare, History, Printer } from 'lucide-react'
+import { SOPPreviewTemplate } from '@/features/sop/components/SOPPreviewTemplate'
+import { SOPListCard } from '@/features/sop'
 import { formatDateId } from '@/utils/format-date'
 import { PinVerificationDialog } from '@/features/tte'
-import { useTTESignature } from '@/features/tte'
+import { useTTESignature } from '@/features/tte/hooks/useTte'
 import { usePengajuanEvaluasiDetail } from '@/features/evaluasi'
 import { ROUTES } from '@/utils/constants'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,6 @@ import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { useToast } from '@/utils/ui'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
-import { RiwayatCardList } from '@/features/evaluasi'
 import { BeritaAcaraTemplate } from '@/components/berita-acara/BeritaAcaraTemplate'
 import { InfoCard } from '@/components/ui/info-card'
 import { useDocumentTitle } from '@/utils/use-document-title'
@@ -26,11 +26,8 @@ const PRINT_DELAY_MS = 150
 export function DetailPengajuanEvaluasi() {
   const { id } = useParams({ from: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id' })
   const { showToast } = useToast()
-  const { 
+  const {
     pengajuan,
-    updatePengajuan,
-    mergedSopRows,
-    handleVerify,
     isVerified,
     canVerify
   } = usePengajuanEvaluasiDetail(id)
@@ -39,6 +36,7 @@ export function DetailPengajuanEvaluasi() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false)
   const [rightPanelTab, setRightPanelTab] = useState<'catatan' | 'riwayat'>('catatan')
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
+  const [tteDialogOpen, setTteDialogOpen] = useState(false)
 
   const tte = useTTESignature({
     role: 'biro-organisasi',
@@ -51,7 +49,6 @@ export function DetailPengajuanEvaluasi() {
       referenceId: pengajuan?.id ?? '',
     },
     () => {
-      handleVerify()
       showToast('Verifikasi Berita Acara (Biro) berhasil. Koordinator Tim Penyusun dapat melanjutkan verifikasi BA.')
     }
   )
@@ -60,9 +57,6 @@ export function DetailPengajuanEvaluasi() {
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId
   const displaySop = sopList.find((s) => s.sopDetailId === effectiveSopDetailId)
-
-  const riwayatOpd: any[] = []
-  const riwayatSop: any[] = []
 
   useDocumentTitle(pengajuan ? `${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}` : undefined)
 
@@ -82,7 +76,7 @@ export function DetailPengajuanEvaluasi() {
       <DetailPageLayout
         breadcrumb={[
           { label: IA.NAV_BIRO_EVALUASI_TERJADWAL, to: ROUTES.BIRO_ORGANISASI.EVALUASI_SOP },
-          { label: pengajuan.opdNama },
+          { label: pengajuan.opdNama ?? '' },
         ]}
         title={`${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}`}
         description={`${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}. Setelah ini: Koordinator → ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`}
@@ -111,7 +105,7 @@ export function DetailPengajuanEvaluasi() {
                     variant="default"
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    onClick={() => tte.openDialog()}
+                    onClick={() => setTteDialogOpen(true)}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     Verifikasi BA
@@ -141,65 +135,47 @@ export function DetailPengajuanEvaluasi() {
             {isVerified && (
               <InfoCard
                 variant="success"
-                icon={CheckCircle}
+                icon={<CheckCircle />}
                 title="Berita Acara telah diverifikasi"
-                description="Koordinator Tim Penyusun dapat melanjutkan verifikasi. Setelah itu, Kepala OPD dapat mengesahkan SOP."
-              />
+              >
+                Koordinator Tim Penyusun dapat melanjutkan verifikasi. Setelah itu, Kepala OPD dapat mengesahkan SOP.
+              </InfoCard>
             )}
           </>
         }
         leftPanel={
           <CollapsibleSidePanel
-            title="Daftar SOP"
-            icon={List}
+            side="left"
             collapsed={leftPanelCollapsed}
-            onToggleCollapse={() => setLeftPanelCollapsed((s) => !s)}
+            onCollapsedChange={setLeftPanelCollapsed}
+            widthExpanded="w-full"
+            title="Daftar SOP"
           >
-            <div className="space-y-2">
-              {sopList.map((sop) => (
-                <SOPListCard
-                  key={sop.sopDetailId}
-                  id={sop.sopDetailId}
-                  nomor={sop.nomor}
-                  nama={sop.nama}
-                  status={sop.hasil === 'SESUAI' ? 'SIAP_DIVERIFIKASI' : 'REVISI_DARI_TIM_EVALUASI'}
-                  isSelected={sop.sopDetailId === effectiveSopDetailId}
-                  onClick={() => setSelectedSopId(sop.sopDetailId)}
-                />
-              ))}
-            </div>
+            <SOPListCard
+              items={sopList.map((sop) => ({
+                id: sop.sopDetailId,
+                nama: sop.nama,
+                nomor: sop.nomor,
+                status: sop.hasil === 'SESUAI' ? 'SIAP_DIVERIFIKASI' : 'REVISI_DARI_TIM_EVALUASI',
+              }))}
+              selectedId={effectiveSopDetailId}
+              onSelect={setSelectedSopId}
+            />
           </CollapsibleSidePanel>
         }
         rightPanel={
           <CollapsibleSidePanel
-            title="Catatan & Riwayat"
-            icon={rightPanelTab === 'catatan' ? MessageSquare : History}
+            side="right"
             collapsed={rightPanelCollapsed}
-            onToggleCollapse={() => setRightPanelCollapsed((s) => !s)}
-            header={
-              <div className="flex items-center gap-1">
-                <button
-                  className={`px-2 py-1 text-xs font-medium rounded ${
-                    rightPanelTab === 'catatan'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  onClick={() => setRightPanelTab('catatan')}
-                >
-                  Catatan
-                </button>
-                <button
-                  className={`px-2 py-1 text-xs font-medium rounded ${
-                    rightPanelTab === 'riwayat'
-                      ? 'bg-gray-900 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  onClick={() => setRightPanelTab('riwayat')}
-                >
-                  Riwayat
-                </button>
-              </div>
-            }
+            onCollapsedChange={setRightPanelCollapsed}
+            widthExpanded="w-full"
+            title="Catatan & Riwayat"
+            tabs={[
+              { id: 'catatan', label: 'Catatan', icon: <MessageSquare className="w-3.5 h-3.5" /> },
+              { id: 'riwayat', label: 'Riwayat', icon: <History className="w-3.5 h-3.5" /> },
+            ]}
+            activeTab={rightPanelTab}
+            onTabChange={(id) => setRightPanelTab(id as 'catatan' | 'riwayat')}
           >
             {rightPanelTab === 'catatan' ? (
               <div className="space-y-2 text-sm text-gray-600">
@@ -211,11 +187,7 @@ export function DetailPengajuanEvaluasi() {
               </div>
             ) : (
               <div className="space-y-3">
-                <RiwayatCardList
-                  riwayatOpd={riwayatOpd}
-                  riwayatSop={riwayatSop}
-                  emptyMessage="Belum ada riwayat evaluasi"
-                />
+                <p className="text-xs text-gray-500">Belum ada riwayat evaluasi</p>
               </div>
             )}
           </CollapsibleSidePanel>
@@ -223,21 +195,28 @@ export function DetailPengajuanEvaluasi() {
       >
         {previewMainTab === 'sop' && displaySop && (
           <SOPPreviewTemplate
-            sopDetailId={displaySop.sopDetailId}
-            initialTab="prosedur"
+            name={displaySop.nama}
+            number={displaySop.nomor}
           />
         )}
 
         {previewMainTab === 'ba' && pengajuan && (
-          <BeritaAcaraTemplate pengajuan={pengajuan} />
+          <BeritaAcaraTemplate
+            opd={pengajuan.opdNama ?? ''}
+            nomorBA={pengajuan.nomorBA}
+            tanggalVerifikasi={pengajuan.tanggalVerifikasi}
+            sopList={(pengajuan.sopList ?? []).map((s) => ({ nomor: s.nomor, nama: s.nama }))}
+            evaluator={pengajuan.timEvaluasi}
+            namaBiro={pengajuan.namaBiro}
+          />
         )}
       </DetailPageLayout>
 
       <PinVerificationDialog
-        open={tte.isDialogOpen}
-        onOpenChange={tte.setIsDialogOpen}
-        role="biro-organisasi"
-        onPinConfirm={handlePinConfirm}
+        open={tteDialogOpen}
+        onOpenChange={setTteDialogOpen}
+        title="Verifikasi Berita Acara"
+        onConfirm={handlePinConfirm}
       />
     </>
   )

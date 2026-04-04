@@ -1,21 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { UserCog, Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import type { PelaksanaSOP } from '@/features/sop'
-import { usePelaksana } from '@/features/sop'
+import type { Pelaksana } from '@/features/sop/types/sop'
+import { usePelaksana } from '@/features/sop/hooks/usePelaksana'
 import { useToast } from '@/utils/ui'
-import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/utils/use-pagination'
 
 export function PelaksanaSOP() {
   const { showToast } = useToast()
@@ -28,21 +25,24 @@ export function PelaksanaSOP() {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [editing, setEditing] = useState<PelaksanaSOP | null>(null)
+  const [editing, setEditing] = useState<Pelaksana | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-
   const [formData, setFormData] = useState({
     namaLengkap: '',
   })
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredList = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return list
+    return list.filter((item) =>
+      String(item.namaLengkap ?? '').toLowerCase().includes(q)
+    )
+  }, [list, searchQuery])
 
-  const { filteredList, searchQuery, setSearchQuery } = useFilteredList(list, {
-    searchKeys: ['namaLengkap'],
-  })
-
-  const openEdit = (p: PelaksanaSOP) => {
+  const openEdit = (p: Pelaksana) => {
     setEditing(p)
     setFormData({
-      namaLengkap: p.namaLengkap,
+      namaLengkap: p.namaLengkap ?? p.namaPelaksana ?? '',
     })
     setIsEditDialogOpen(true)
   }
@@ -73,7 +73,7 @@ export function PelaksanaSOP() {
       showToast('Nama lengkap wajib diisi', 'error')
       return
     }
-    updatePelaksana(editing.id, formData.namaLengkap.trim())
+    updatePelaksana({ id: editing.id, namaLengkap: formData.namaLengkap.trim() })
     showToast('Pelaksana SOP berhasil diperbarui')
     setIsEditDialogOpen(false)
     resetForm()
@@ -82,8 +82,8 @@ export function PelaksanaSOP() {
   const handleDeleteConfirm = () => {
     if (!deleteId) return
     const p = list.find((x) => x.id === deleteId)
-    if (p && p.jumlahPos > 0) {
-      showToast(`Tidak dapat menghapus. Masih dipakai di ${p.jumlahPos} POS/SOP.`, 'error')
+    if (p && (p as any).jumlahPos > 0) {
+      showToast(`Tidak dapat menghapus. Masih dipakai di ${(p as any).jumlahPos} POS/SOP.`, 'error')
       setDeleteId(null)
       return
     }
@@ -91,11 +91,6 @@ export function PelaksanaSOP() {
     showToast('Pelaksana SOP berhasil dihapus')
     setDeleteId(null)
   }
-
-  const pagination = usePagination(filteredList.length)
-  const rowsToShow = pagination.showPagination
-    ? filteredList.slice(pagination.startIndex, pagination.endIndex)
-    : filteredList
 
   return (
     <ListPageLayout
@@ -122,59 +117,55 @@ export function PelaksanaSOP() {
         </SearchToolbar>
       }
     >
-      <Table.Card>
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th>Nama Lengkap</Table.Th>
-              <Table.Th align="center">Jumlah POS</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {filteredList.length === 0 ? (
-              <EmptyState
-                asTableRow
-                colSpan={3}
-                icon={<UserCog className="w-8 h-8" />}
-                title="Belum ada pelaksana"
-                description="Tambah pelaksana agar bisa dipilih di edit SOP (prosedur)"
-              />
-            ) : (
-              rowsToShow.map((p) => (
-                <Table.BodyRow key={p.id}>
-                  <Table.Td>
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-amber-100 rounded-md flex items-center justify-center">
-                        <UserCog className="w-3.5 h-3.5 text-amber-600" />
+      <Table.Paginated data={filteredList} label="pelaksana">
+        {(pageData) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th>Nama Lengkap</Table.Th>
+                <Table.Th align="center">Jumlah POS</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageData.length === 0 ? (
+                <EmptyState
+                  asTableRow
+                  colSpan={3}
+                  icon={<UserCog className="w-8 h-8" />}
+                  title="Belum ada pelaksana"
+                  description="Tambah pelaksana agar bisa dipilih di edit SOP (prosedur)"
+                />
+              ) : (
+                pageData.map((p) => (
+                  <Table.BodyRow key={p.id}>
+                    <Table.Td>
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 bg-amber-100 rounded-md flex items-center justify-center">
+                          <UserCog className="w-3.5 h-3.5 text-amber-600" />
+                        </div>
+                        <p className="font-medium text-gray-900">{p.namaLengkap}</p>
                       </div>
-                      <p className="font-medium text-gray-900">{p.namaLengkap}</p>
-                    </div>
-                  </Table.Td>
-                  <Table.Td className="text-center text-xs text-gray-500">{p.jumlahPos ?? 0}</Table.Td>
-                  <Table.Td className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <IconActionButton icon={Edit} title="Edit" onClick={() => openEdit(p)} />
-                      <IconActionButton
-                        icon={Trash2}
-                        title="Hapus"
-                        destructive
-                        onClick={() => setDeleteId(p.id)}
-                      />
-                    </div>
-                  </Table.Td>
-                </Table.BodyRow>
-              ))
-            )}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={filteredList.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="pelaksana"
-        />
-      </Table.Card>
+                    </Table.Td>
+                    <Table.Td className="text-center text-xs text-gray-500">{(p as any).jumlahPos ?? 0}</Table.Td>
+                    <Table.Td className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <IconActionButton icon={Edit} title="Edit" onClick={() => openEdit(p)} />
+                        <IconActionButton
+                          icon={Trash2}
+                          title="Hapus"
+                          destructive
+                          onClick={() => setDeleteId(p.id)}
+                        />
+                      </div>
+                    </Table.Td>
+                  </Table.BodyRow>
+                ))
+              )}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
 
       <FormDialog
         open={isCreateDialogOpen}

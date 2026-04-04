@@ -94,14 +94,14 @@ export function DetailEvaluasiOPDFormPanel({
                     renderItem={(r) => (
                       <>
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
-                          <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
+                          <span className="font-medium text-gray-700">{formatDateId(r.createdAt)}</span>
                           <span className="text-gray-500">—</span>
-                          <span className="text-gray-600">{r.evaluatorName}</span>
-                          <span className={r.hasil === 'Sesuai' ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'}>
+                          <span className="text-gray-600">{r.dinilaiOleh?.nama ?? '-'}</span>
+                          <span className={r.hasil === 'SESUAI' ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'}>
                             · {r.hasil}
                           </span>
                         </div>
-                        {r.komentar && <p className="text-gray-600 mt-1 leading-snug">{r.komentar}</p>}
+                        {r.catatan && <p className="text-gray-600 mt-1 leading-snug">{r.catatan}</p>}
                       </>
                     )}
                   />
@@ -127,14 +127,16 @@ export function DetailEvaluasiOPDFormPanel({
                     renderItem={(r) => (
                       <>
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
-                          <span className="font-medium text-gray-700">{formatDateId(r.date)}</span>
+                          <span className="font-medium text-gray-700">{formatDateId(r.tanggalEvaluasi ?? r.createdAt)}</span>
                           <span className="text-gray-500">—</span>
-                          <span className="text-gray-600">{r.evaluatorName}</span>
-                          <span className="text-blue-600 font-medium">Skor {r.skor}/5</span>
+                          <span className="text-gray-600">{r.opdNama ?? '-'}</span>
+                          {r.nilaiOPD != null && (
+                            <span className="text-blue-600 font-medium">Skor {r.nilaiOPD}/5</span>
+                          )}
                         </div>
-                        {r.sopJudul && (
-                          <p className="text-gray-600 mt-1 leading-snug truncate" title={r.sopJudul}>
-                            SOP: {r.sopJudul}
+                        {r.catatan && (
+                          <p className="text-gray-600 mt-1 leading-snug truncate" title={r.catatan}>
+                            {r.catatan}
                           </p>
                         )}
                       </>

@@ -1,7 +1,8 @@
+import type React from 'react'
 import { PenLine, MessageSquare, History, Activity } from 'lucide-react'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { KomentarPanel, VersionHistoryPanel, RiwayatStatusPanel } from '@/features/sop'
-import { DetailSOPMetadataPanel } from './DetailSOPMetadataPanel'
+import { DetailSOPMetadataPanel } from './DetailSopMetadataPanel'
 import type { SOPDetailMetadata, VersionHistoryItem } from '@/features/sop'
 import type { Peraturan } from '@/features/organisasi'
 
@@ -58,7 +59,7 @@ export function DetailSOPPenyusunSidePanel({
         { id: 'aktivitas', label: 'Aktivitas', icon: <Activity className="w-3.5 h-3.5" /> },
       ]}
       activeTab={rightPanelTab}
-      onTabChange={onTabChange}
+      onTabChange={onTabChange as (tabId: string) => void}
     >
       {rightPanelTab === 'komentar' && (
         <KomentarPanel
@@ -72,7 +73,7 @@ export function DetailSOPPenyusunSidePanel({
           metadata={metadata}
           onMetadataChange={onMetadataChange}
           implementers={implementers}
-          onImplementersChange={onImplementersChange}
+          onImplementersChange={onImplementersChange as React.Dispatch<React.SetStateAction<{ id: string; name: string }[]>>}
           implementersFromMaster
           masterPelaksanaOptions={masterPelaksanaOptions}
           peraturanList={peraturanList}

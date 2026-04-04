@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Eye } from 'lucide-react'
 import type { PengajuanEvaluasi } from '@/features/evaluasi'
@@ -8,8 +8,6 @@ import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/utils/use-pagination'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ROUTES } from '@/utils/constants'
 import { IA } from '@/utils/constants'
@@ -76,9 +74,14 @@ export function ManajemenEvaluasiSop() {
     [allOpds, batchList]
   )
 
-  const { filteredList, searchQuery, setSearchQuery } = useFilteredList(rowsByOpd, {
-    searchKeys: [(row) => `${row.opdNama} ${row.opdKode}`],
-  })
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredList = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return rowsByOpd
+    return rowsByOpd.filter((row) =>
+      `${row.opdNama} ${row.opdKode}`.toLowerCase().includes(q)
+    )
+  }, [rowsByOpd, searchQuery])
 
   /** Urutkan: (1) evaluasi baru (7 hari terakhir) paling atas, (2) OPD yang punya evaluasi urut tanggal terbaru dulu, (3) OPD tanpa evaluasi urut nama. */
   const sortedList = useMemo(() => {
@@ -98,14 +101,7 @@ export function ManajemenEvaluasiSop() {
     })
   }, [filteredList])
 
-  const jumlahBaru = useMemo(() => sortedList.filter((r) => r.isBaru).length, [sortedList])
-
-  const pagination = usePagination(sortedList.length)
-  const rowsToShow = pagination.showPagination
-    ? sortedList.slice(pagination.startIndex, pagination.endIndex)
-    : sortedList
-
-  const goToDetail = (batch: VerifikasiBatch) => {
+  const goToDetail = (batch: PengajuanEvaluasi) => {
     navigate({ to: ROUTES.BIRO_ORGANISASI.DETAIL_EVALUASI, params: { id: batch.id } })
   }
 
@@ -122,77 +118,61 @@ export function ManajemenEvaluasiSop() {
         />
       }
     >
-      <Table.Card>
-        <div className="p-3 border-b border-gray-200 flex items-center justify-between gap-2 flex-wrap">
-          <h2 className="text-xs font-semibold text-gray-900">Daftar Evaluasi SOP</h2>
-          {jumlahBaru > 0 && (
-            <Badge
-              variant="secondary"
-              className="bg-amber-100 text-amber-800 border-0 text-xs font-medium"
-              title="Terjadwal verifikasi dengan tanggal masuk 7 hari terakhir"
-            >
-              {jumlahBaru} baru
-            </Badge>
-          )}
-        </div>
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th>Nama OPD</Table.Th>
-              <Table.Th align="center">Jumlah SOP</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {sortedList.length === 0 ? (
-              <tr>
-                <Table.Td colSpan={3} className="p-8 text-center text-gray-500">
-                  Tidak ada OPD.
-                </Table.Td>
-              </tr>
-            ) : (
-              rowsToShow.map((row) => (
-                <Table.BodyRow key={row.opdId}>
-                  <Table.Td className="font-medium text-gray-900">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span>{row.opdNama}</span>
-                      {row.isBaru && (
-                        <Badge
-                          variant="secondary"
-                          className="bg-amber-100 text-amber-800 border-0 text-[10px] font-medium shrink-0"
-                          title="Terjadwal verifikasi dengan tanggal masuk 7 hari terakhir"
-                        >
-                          Baru
-                        </Badge>
-                      )}
-                    </div>
+      <Table.Paginated data={sortedList} label="evaluasi">
+        {(pageData) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th>Nama OPD</Table.Th>
+                <Table.Th align="center">Jumlah SOP</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageData.length === 0 ? (
+                <tr>
+                  <Table.Td colSpan={3} className="p-8 text-center text-gray-500">
+                    Tidak ada OPD.
                   </Table.Td>
-                  <Table.Td className="text-center text-gray-700">{row.jumlahSop}</Table.Td>
-                  <Table.Td>
-                    <div className="flex items-center justify-center gap-1">
-                      {row.batchTerbaru ? (
-                        <IconActionButton
-                          icon={Eye}
-                          title="Detail evaluasi"
-                          onClick={() => goToDetail(row.batchTerbaru!)}
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-500">Belum ada evaluasi</span>
-                      )}
-                    </div>
-                  </Table.Td>
-                </Table.BodyRow>
-              ))
-            )}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={sortedList.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="evaluasi"
-        />
-      </Table.Card>
+                </tr>
+              ) : (
+                pageData.map((row) => (
+                  <Table.BodyRow key={row.opdId}>
+                    <Table.Td className="font-medium text-gray-900">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span>{row.opdNama}</span>
+                        {row.isBaru && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-amber-100 text-amber-800 border-0 text-[10px] font-medium shrink-0"
+                            title="Terjadwal verifikasi dengan tanggal masuk 7 hari terakhir"
+                          >
+                            Baru
+                          </Badge>
+                        )}
+                      </div>
+                    </Table.Td>
+                    <Table.Td className="text-center text-gray-700">{row.jumlahSop}</Table.Td>
+                    <Table.Td>
+                      <div className="flex items-center justify-center gap-1">
+                        {row.batchTerbaru ? (
+                          <IconActionButton
+                            icon={Eye}
+                            title="Detail evaluasi"
+                            onClick={() => goToDetail(row.batchTerbaru!)}
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-500">Belum ada evaluasi</span>
+                        )}
+                      </div>
+                    </Table.Td>
+                  </Table.BodyRow>
+                ))
+              )}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
     </ListPageLayout>
   )
 }

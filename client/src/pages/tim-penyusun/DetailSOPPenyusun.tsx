@@ -1,20 +1,17 @@
 import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
-import { Printer } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
-import { useToast } from '@/utils/ui'
 import { useAppRole } from '@/features/auth'
-import { useSopStatus, type StatusSOP } from '@/features/sop'
+import type { StatusSOP } from '@/features/sop'
 import { formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
 import { useDetailSopPenyusun } from '@/features/sop/hooks/useDetailSopPenyusun'
-import { DetailSOPPenyusunHeader } from './detail-sop/DetailSOPPenyusunHeader'
-import { DetailSOPPenyusunMain } from './detail-sop/DetailSOPPenyusunMain'
-import { DetailSOPPenyusunSidePanel } from './detail-sop/DetailSOPPenyusunSidePanel'
+import { DetailSOPPenyusunHeader } from './detail-sop/DetailSopPenyusunHeader'
+import { DetailSOPPenyusunMain } from './detail-sop/DetailSopPenyusunMain'
+import { DetailSOPPenyusunSidePanel } from './detail-sop/DetailSopPenyusunSidePanel'
 
 export function DetailSOPPenyusun() {
-  const { showToast } = useToast()
   const { role } = useAppRole()
   const { id } = useParams({ from: '/tim-penyusun/detail-sop/$id' })
   const navigate = useNavigate()
@@ -24,7 +21,6 @@ export function DetailSOPPenyusun() {
   // Extracted hook - all state and logic
   const {
     metadata,
-    setMetadata,
     prosedurRows,
     setProsedurRows,
     implementers,
@@ -45,6 +41,7 @@ export function DetailSOPPenyusun() {
     viewingVersion,
     setViewingVersion,
     masterPelaksanaOptions,
+    peraturanList,
     versionDiffItems,
     currentSopStatus,
     isRevisionFlow,
@@ -54,10 +51,10 @@ export function DetailSOPPenyusun() {
     handleComplete,
     handleResolveComment,
     komentarDisplay,
-  } = useDetailSopPenyusun(id, detailMetaState?.sopStatus, undefined, navigate, role)
+  } = useDetailSopPenyusun(id, detailMetaState?.sopStatus, undefined, navigate, role ?? null)
 
   const createdBy = versions.length > 0 ? versions[versions.length - 1]?.author : undefined
-  const editedBy = metadata.dieditOlehNamaLengkap
+  const editedBy = undefined // metadata.dieditOlehNamaLengkap not available on SOPDetailMetadata
 
   return (
     <>
@@ -80,8 +77,8 @@ export function DetailSOPPenyusun() {
             versions={versions}
             createdBy={createdBy}
             editedBy={editedBy}
-            onSaveDraft={() => handleSaveDraft(id, role)}
-            onComplete={() => handleComplete(id, role)}
+            onSaveDraft={() => handleSaveDraft(id, role ?? null)}
+            onComplete={() => handleComplete(id, role ?? null, navigate)}
             onPrint={() => window.print()}
           />
         }
@@ -89,6 +86,7 @@ export function DetailSOPPenyusun() {
           <DetailSOPPenyusunMain
             metadata={metadata}
             prosedurRows={prosedurRows}
+            setProsedurRows={setProsedurRows}
             implementers={implementers}
             activeTab={activeTab}
             onActiveTabChange={setActiveTab}
@@ -109,6 +107,7 @@ export function DetailSOPPenyusun() {
             implementers={implementers}
             onImplementersChange={setImplementers}
             masterPelaksanaOptions={masterPelaksanaOptions}
+            peraturanList={peraturanList}
             versions={versions}
             viewingVersion={viewingVersion}
             setViewingVersion={setViewingVersion}

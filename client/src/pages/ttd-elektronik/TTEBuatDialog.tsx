@@ -1,5 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
@@ -10,14 +9,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { ROUTES } from '@/utils/constants'
-import type { TTERole } from '@/features/tte'
-import {
-  hashPin,
-  getTTEProfile,
-  setTTEProfile,
-  getTTEVerificationSuccessUrl,
-} from '@/features/tte'
+import type { TTERole } from '@/features/tte/types/tte'
+import { useTTEProfil, useRegisterTTE, useMintTokenVerifikasi, getTTEVerificationSuccessUrl } from '@/features/tte/hooks/useTte'
+import type { RegisterTteDto } from '@/features/tte/types/tte'
 
 type WizardStep = 'data-diri' | 'pin' | 'cek-email'
 
@@ -32,15 +26,17 @@ export interface TTEBuatDialogProps {
 export function TTEBuatDialog({
   open,
   onOpenChange,
-  role,
+  role: _role,
   defaultNip,
   defaultNama,
 }: TTEBuatDialogProps) {
-  const profile = useMemo(() => getTTEProfile(role), [role])
+  const { data: profile } = useTTEProfil()
+  const registerTTE = useRegisterTTE()
+  const mintToken = useMintTokenVerifikasi()
   const [step, setStep] = useState<WizardStep>('data-diri')
-  const [nip, setNip] = useState(profile?.nip ?? defaultNip)
-  const [namaLengkap, setNamaLengkap] = useState(profile?.namaLengkap ?? defaultNama)
-  const [email, setEmail] = useState(profile?.email ?? '')
+  const [nip, setNip] = useState(profile?.user?.nip ?? defaultNip)
+  const [namaLengkap, setNamaLengkap] = useState(profile?.user?.nama ?? defaultNama)
+  const [email, setEmail] = useState(profile?.user?.email ?? '')
   const [pin, setPin] = useState('')
   const [pinConfirm, setPinConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -49,15 +45,15 @@ export function TTEBuatDialog({
   useEffect(() => {
     if (open) {
       setStep('data-diri')
-      setNip(profile?.nip ?? defaultNip)
-      setNamaLengkap(profile?.namaLengkap ?? defaultNama)
-      setEmail(profile?.email ?? '')
+      setNip(profile?.user?.nip ?? defaultNip)
+      setNamaLengkap(profile?.user?.nama ?? defaultNama)
+      setEmail(profile?.user?.email ?? '')
       setPin('')
       setPinConfirm('')
       setError(null)
       setVerificationToken(null)
     }
-  }, [open, profile?.nip, profile?.namaLengkap, profile?.email, defaultNip, defaultNama])
+  }, [open, profile?.user?.nip, profile?.user?.nama, profile?.user?.email, defaultNip, defaultNama])
 
   const handleNextFromDataDiri = (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,7 +69,7 @@ export function TTEBuatDialog({
     setStep('pin')
   }
 
-  const handleNextFromPin = (e: React.FormEvent) => {
+  const handleNextFromPin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     if (pin.length < 4) {
@@ -84,23 +80,25 @@ export function TTEBuatDialog({
       setError('PIN dan Konfirmasi PIN tidak sama.')
       return
     }
-    const token = 'tte_verify_' + Date.now() + '_' + Math.random().toString(36).slice(2, 12)
-    setTTEProfile(role, {
-      nip: nip.trim(),
-      namaLengkap: namaLengkap.trim(),
-      email: email.trim(),
-      jabatan: 'Staff',
-      pangkat: 'Penata Muda (III/a)',
-      nohp: '081234567890',
-      pinHash: hashPin(pin),
-      emailVerified: false,
-      role,
-      verificationToken: token,
-    })
-    setVerificationToken(token)
-    setPin('')
-    setPinConfirm('')
-    setStep('cek-email')
+    
+    try {
+      const payload: RegisterTteDto = {
+        nip: nip.trim(),
+        jabatan: 'Staff', // TODO: Get from user profile
+        pangkat: 'Penata Muda (III/a)', // TODO: Get from user profile
+        pin,
+      }
+      await registerTTE.mutateAsync(payload)
+      
+      const tokenResult = await mintToken.mutateAsync()
+      setVerificationToken(tokenResult.token)
+      setPin('')
+      setPinConfirm('')
+      setStep('cek-email')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal mendaftarkan TTE'
+      setError(message)
+    }
   }
 
   const handleClose = () => {
@@ -234,14 +232,15 @@ export function TTEBuatDialog({
               email).
             </p>
             <div className="mt-3">
-              <Link
-                to={ROUTES.VALIDASI.TTD_BERHASIL}
-                search={{ token: verificationToken ?? '' }}
+              <a
+                href={verificationUrl}
                 className="text-xs text-blue-600 hover:underline break-all"
                 onClick={handleClose}
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {verificationUrl}
-              </Link>
+              </a>
             </div>
             <DialogFooter className="gap-2 pt-2">
               <Button
@@ -253,7 +252,11 @@ export function TTEBuatDialog({
               >
                 Tutup
               </Button>
-              <Link to={ROUTES.VALIDASI.TTD_BERHASIL} search={{ token: verificationToken ?? '' }}>
+              <a
+                href={verificationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Button
                   type="button"
                   size="sm"
@@ -262,7 +265,7 @@ export function TTEBuatDialog({
                 >
                   Buka halaman verifikasi
                 </Button>
-              </Link>
+              </a>
             </DialogFooter>
           </>
         )}

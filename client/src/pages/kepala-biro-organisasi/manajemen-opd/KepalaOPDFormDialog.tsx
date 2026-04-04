@@ -1,8 +1,15 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import type { KepalaOPD } from './KepalaOPDTab'
 import type { KepalaFormState } from '@/types/misc'
+
+interface KepalaOPD {
+  id: string
+  name: string
+  nip: string
+  startDate: string
+  endDate?: string
+}
 
 interface OPD {
   id: string
@@ -46,7 +53,7 @@ export function KepalaOPDFormDialog({
         <Input
           className="h-9 text-xs"
           value={form.name}
-          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+          onChange={(e) => setForm((f: KepalaFormState) => ({ ...f, name: e.target.value }))}
           placeholder="Nama lengkap dengan gelar"
         />
       </FormField>
@@ -54,7 +61,7 @@ export function KepalaOPDFormDialog({
         <Input
           className="h-9 text-xs"
           value={form.nip}
-          onChange={(e) => setForm((f) => ({ ...f, nip: e.target.value }))}
+          onChange={(e) => setForm((f: KepalaFormState) => ({ ...f, nip: e.target.value }))}
           placeholder="Contoh: 197503152000032001"
         />
       </FormField>
@@ -63,7 +70,7 @@ export function KepalaOPDFormDialog({
           type="email"
           className="h-9 text-xs"
           value={form.email}
-          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+          onChange={(e) => setForm((f: KepalaFormState) => ({ ...f, email: e.target.value }))}
           placeholder="email@pemda.go.id"
         />
       </FormField>
@@ -71,7 +78,7 @@ export function KepalaOPDFormDialog({
         <Input
           className="h-9 text-xs"
           value={form.phone}
-          onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+          onChange={(e) => setForm((f: KepalaFormState) => ({ ...f, phone: e.target.value }))}
           placeholder="0812-xxxx-xxxx"
         />
       </FormField>

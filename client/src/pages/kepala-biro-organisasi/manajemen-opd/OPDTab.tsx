@@ -15,11 +15,16 @@ import { FormField } from '@/components/ui/form-field'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
-import { usePagination } from '@/utils/use-pagination'
 
 interface OPD {
   id: string
   name: string
+  email?: string
+  phone?: string
+  totalSOP?: number
+  sopBerlaku?: number
+  sopDraft?: number
+  createdAt?: string
 }
 
 interface KepalaOPD {
@@ -28,6 +33,11 @@ interface KepalaOPD {
   nip: string
   startDate: string
   endDate?: string
+  isActive?: boolean
+  email?: string
+  phone?: string
+  endedAt?: string
+  totalSOP?: number
 }
 
 export interface OPDTabProps {
@@ -79,69 +89,60 @@ export function OPDTab({
   onConfirmCreate,
   onConfirmEdit,
 }: OPDTabProps) {
-  const pagination = usePagination(filteredOPD.length)
-  const rowsToShow = pagination.showPagination
-    ? filteredOPD.slice(pagination.startIndex, pagination.endIndex)
-    : filteredOPD
-
   return (
     <>
-      <Table.Card className="w-full">
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th className="w-full">Nama OPD</Table.Th>
-              <Table.Th className="w-0 whitespace-nowrap text-right">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {rowsToShow.map((opd) => (
-              <Table.BodyRow key={opd.id}>
-                <Table.Td>
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
-                      <Building2 className="w-3.5 h-3.5 text-blue-600" />
+      <Table.Paginated data={filteredOPD} label="OPD" className="w-full">
+        {(pageData) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th className="w-full">Nama OPD</Table.Th>
+                <Table.Th className="w-0 whitespace-nowrap text-right">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageData.map((opd) => (
+                <Table.BodyRow key={opd.id}>
+                  <Table.Td>
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
+                        <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                      </div>
+                      <p className="font-medium text-gray-900">{opd.name}</p>
                     </div>
-                    <p className="font-medium text-gray-900">{opd.name}</p>
-                  </div>
-                </Table.Td>
-                <Table.Td className="text-right whitespace-nowrap">
-                  <div className="flex items-center justify-end gap-1">
-                    <IconActionButton
-                      icon={Eye}
-                      title="Lihat Detail"
-                      onClick={() => onOpenDetail(opd)}
-                    />
-                    <IconActionButton
-                      icon={Edit}
-                      title="Edit OPD"
-                      onClick={() => onOpenEdit(opd)}
-                    />
-                    <IconActionButton
-                      icon={Users}
-                      title="Riwayat OPD"
-                      onClick={() => onOpenRiwayat(opd)}
-                    />
-                    <IconActionButton
-                      icon={Trash2}
-                      title={hasRelasiData(opd) ? 'Hapus (ditolak: ada SOP)' : 'Hapus OPD'}
-                      destructive
-                      onClick={() => onDelete(opd.id)}
-                      disabled={hasRelasiData(opd)}
-                    />
-                  </div>
-                </Table.Td>
-              </Table.BodyRow>
-            ))}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={filteredOPD.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="OPD"
-        />
-      </Table.Card>
+                  </Table.Td>
+                  <Table.Td className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1">
+                      <IconActionButton
+                        icon={Eye}
+                        title="Lihat Detail"
+                        onClick={() => onOpenDetail(opd)}
+                      />
+                      <IconActionButton
+                        icon={Edit}
+                        title="Edit OPD"
+                        onClick={() => onOpenEdit(opd)}
+                      />
+                      <IconActionButton
+                        icon={Users}
+                        title="Riwayat OPD"
+                        onClick={() => onOpenRiwayat(opd)}
+                      />
+                      <IconActionButton
+                        icon={Trash2}
+                        title={hasRelasiData(opd) ? 'Hapus (ditolak: ada SOP)' : 'Hapus OPD'}
+                        destructive
+                        onClick={() => onDelete(opd.id)}
+                        disabled={hasRelasiData(opd)}
+                      />
+                    </div>
+                  </Table.Td>
+                </Table.BodyRow>
+              ))}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
 
       <FormDialog
         open={isCreateDialogOpen}

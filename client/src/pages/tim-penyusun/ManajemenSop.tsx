@@ -31,14 +31,13 @@ import { SearchInput } from '@/components/ui/search-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatDateIdLong } from '@/utils/format-date'
 import { ROUTES } from '@/utils/constants'
-import type { StatusSOP } from '@/features/sop'
-import type { SOPDaftarItem } from '@/features/sop'
+import type { StatusSOP } from '@/features/sop/types/sop'
 import { SOPStatusFilterSelect, BuatSOPDialog } from '@/features/sop'
-import { canEditSop, canTimPenyusunRunCoordinatorActions, useSop, useSopStatus, useDaftarSopFilters, useDaftarSopData } from '@/features/sop'
+import { canEditSop, canTimPenyusunRunCoordinatorActions, useSop, useDaftarSopFilters, useDaftarSopData } from '@/features/sop'
+import { useSopStatus } from '@/features/sop/hooks/useSopStatus'
 import { useToast } from '@/utils/ui'
 import { useAppRole } from '@/features/auth'
 import { useDocumentTitle } from '@/utils/use-document-title'
-import { useAuditBySopDetail } from '@/features/audit'
 
 export function ManajemenSOP() {
   useDocumentTitle('Manajemen SOP — Tim Penyusun')
@@ -50,7 +49,7 @@ export function ManajemenSOP() {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { setSopStatusOverride } = useSopStatus()
-  const { role, getRoleUserName } = useAppRole()
+  const { role, getRoleUserName: _getRoleUserName } = useAppRole()
   const filters = useDaftarSopFilters()
   const { eligibleSopsForEvaluasi, filteredList, hasActiveBatch, activeBatchCount } = useDaftarSopData({
     searchQuery: filters.searchQuery,
@@ -60,8 +59,8 @@ export function ManajemenSOP() {
     filterTanggalSampai: filters.filterTanggalSampai,
     isFilterOpen: filters.isFilterOpen,
   })
-  const { list, isLoading, error } = useSop()
-  const { update: updateSop } = useSop()
+  const { list: _list, isLoading, error } = useSop()
+  const { update: _updateSop } = useSop()
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] = useState(false)
   const [requestEvaluasiSearchQuery, setRequestEvaluasiSearchQuery] = useState('')
@@ -74,17 +73,12 @@ export function ManajemenSOP() {
     return eligibleSopsForEvaluasi.filter(
       (sop) =>
         sop.judul.toLowerCase().includes(q) ||
-        sop.nomorSOP.toLowerCase().includes(q) ||
+        (sop.nomorSOP ?? '').toLowerCase().includes(q) ||
         (sop.author && sop.author.toLowerCase().includes(q))
     )
   }, [eligibleSopsForEvaluasi, requestEvaluasiSearchQuery])
 
-  const pagination = usePagination(filteredList.length)
-  const rowsToShow = pagination.showPagination
-    ? filteredList.slice(pagination.startIndex, pagination.endIndex)
-    : filteredList
-
-  const peraturanList: never[] = []
+  const peraturanList: Array<{ id: string; nama: string }> = []
 
   const toggleSopSelectionForAjukan = (sopId: string) => {
     setSelectedSopIdsForAjukan((prev) => {
@@ -96,7 +90,7 @@ export function ManajemenSOP() {
   }
 
   const confirmAjukanEvaluasiBulk = () => {
-    if (!canTimPenyusunRunCoordinatorActions(role)) {
+    if (!canTimPenyusunRunCoordinatorActions(role ?? '')) {
       showToast('Hanya Koordinator Tim Penyusun yang dapat mengajukan evaluasi.', 'error')
       return
     }
@@ -108,7 +102,7 @@ export function ManajemenSOP() {
     
     // Update status for each selected SOP
     ids.forEach((sopId) => {
-      setSopStatusOverride(sopId, 'Diajukan Evaluasi')
+      setSopStatusOverride(sopId, 'DIAJUKAN_EVALUASI')
     })
     
     showToast(`${ids.length} SOP berhasil diajukan ke evaluasi`)
@@ -217,14 +211,14 @@ export function ManajemenSOP() {
                 <FormField label="Status" htmlFor={filterStatusId}>
                   <SOPStatusFilterSelect
                     id={filterStatusId}
-                    value={filters.filterStatus}
+                    value={filters.filterStatus ?? 'all'}
                     onValueChange={filters.setFilterStatus}
                   />
                 </FormField>
                 <FormField label="Peraturan Dasar" htmlFor={filterPeraturanId}>
                   <Select
                     id={filterPeraturanId}
-                    value={filters.filterPeraturan}
+                    value={filters.filterPeraturan ?? undefined}
                     onValueChange={filters.setFilterPeraturan}
                     options={[
                       { value: 'all', label: 'Semua Peraturan' },
@@ -239,7 +233,7 @@ export function ManajemenSOP() {
                         id={filterTanggalDariId}
                         type="date"
                         className="h-9 text-xs"
-                        value={filters.filterTanggalDari}
+                        value={filters.filterTanggalDari ?? ''}
                         onChange={(e) => filters.setFilterTanggalDari(e.target.value)}
                       />
                     </FormField>
@@ -248,7 +242,7 @@ export function ManajemenSOP() {
                         id={filterTanggalSampaiId}
                         type="date"
                         className="h-9 text-xs"
-                        value={filters.filterTanggalSampai}
+                        value={filters.filterTanggalSampai ?? ''}
                         onChange={(e) => filters.setFilterTanggalSampai(e.target.value)}
                       />
                     </FormField>
@@ -262,7 +256,7 @@ export function ManajemenSOP() {
             size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={() => {
-              if (!canTimPenyusunRunCoordinatorActions(role)) {
+              if (!canTimPenyusunRunCoordinatorActions(role ?? '')) {
                 showToast('Hanya Koordinator Tim Penyusun yang dapat mengajukan evaluasi.', 'error')
                 return
               }
@@ -289,109 +283,104 @@ export function ManajemenSOP() {
           </span>
         </div>
       )}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <Table.Root>
-          <Table.Table>
-            <thead>
-              <Table.HeadRow>
-                <Table.Th>Judul SOP</Table.Th>
-                <Table.Th>Nomor SOP</Table.Th>
-                <Table.Th>Pembuat</Table.Th>
-                <Table.Th>Terakhir Diubah Oleh</Table.Th>
-                <Table.Th>Terakhir diperbarui</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Aksi</Table.Th>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {filteredList.length === 0 ? (
-                <EmptyState
-                  asTableRow
-                  colSpan={6}
-                  icon={<FileText />}
-                  title="Tidak ada SOP ditemukan"
-                  description="Coba ubah filter atau kata kunci pencarian"
-                />
-              ) : (
-                rowsToShow.map((sop) => (
-                  <Table.BodyRow key={sop.id}>
-                    <Table.Td>
-                      <p className="font-medium text-gray-900">{sop.judul}</p>
-                    </Table.Td>
-                    <Table.Td>
-                      <p className="font-mono text-gray-700 text-[11px]">{sop.nomorSOP}</p>
-                    </Table.Td>
-                    <Table.Td>
-                      <p className="text-gray-700">{sop.author ?? '—'}</p>
-                    </Table.Td>
-                    <Table.Td>
-                      {sop.lastEditedBy ? (
-                        <div>
-                          <p className="text-gray-800 text-sm">{sop.lastEditedBy}</p>
-                          {sop.lastEditedAt && (
-                            <p className="text-gray-400 text-xs mt-0.5">{formatDateIdLong(sop.lastEditedAt)}</p>
+      <Table.Paginated data={filteredList} label="SOP">
+        {(pageData) => (
+          <Table.Root>
+            <Table.Table>
+              <thead>
+                <Table.HeadRow>
+                  <Table.Th>Judul SOP</Table.Th>
+                  <Table.Th>Nomor SOP</Table.Th>
+                  <Table.Th>Pembuat</Table.Th>
+                  <Table.Th>Terakhir Diubah Oleh</Table.Th>
+                  <Table.Th>Terakhir diperbarui</Table.Th>
+                  <Table.Th>Status</Table.Th>
+                  <Table.Th>Aksi</Table.Th>
+                </Table.HeadRow>
+              </thead>
+              <tbody>
+                {pageData.length === 0 ? (
+                  <EmptyState
+                    asTableRow
+                    colSpan={6}
+                    icon={<FileText />}
+                    title="Tidak ada SOP ditemukan"
+                    description="Coba ubah filter atau kata kunci pencarian"
+                  />
+                ) : (
+                  pageData.map((sop) => (
+                    <Table.BodyRow key={sop.id}>
+                      <Table.Td>
+                        <p className="font-medium text-gray-900">{sop.judul}</p>
+                      </Table.Td>
+                      <Table.Td>
+                        <p className="font-mono text-gray-700 text-[11px]">{sop.nomorSOP}</p>
+                      </Table.Td>
+                      <Table.Td>
+                        <p className="text-gray-700">{sop.author ?? '—'}</p>
+                      </Table.Td>
+                      <Table.Td>
+                        {sop.lastEditedBy ? (
+                          <div>
+                            <p className="text-gray-800 text-sm">{sop.lastEditedBy}</p>
+                            {sop.lastEditedAt && (
+                              <p className="text-gray-400 text-xs mt-0.5">{formatDateIdLong(sop.lastEditedAt)}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-gray-400 text-xs">—</p>
+                        )}
+                      </Table.Td>
+                      <Table.Td>
+                        <p className="text-gray-700">{formatDateIdLong(sop.terakhirDiperbarui)}</p>
+                      </Table.Td>
+                      <Table.Td>
+                        <StatusBadge status={sop.status ?? ''} />
+                      </Table.Td>
+                      <Table.Td>
+                        <div className="flex items-center justify-center gap-1">
+                          {canEditSop(sop.status as StatusSOP) ? (
+                            <IconActionButton
+                              icon={Edit}
+                              to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
+                              params={{ id: sop.id }}
+                              state={{
+                                sopStatus: sop.status,
+                                waktuPenugasan: sop.waktuPenugasan,
+                                unitTerkait: sop.unitTerkait,
+                                timPenyusun: sop.timPenyusun,
+                                terakhirDiperbarui: sop.terakhirDiperbarui,
+                                deskripsiProyek: (sop as unknown as Record<string, unknown>).deskripsi as string | undefined,
+                              }}
+                              title="Edit"
+                            />
+                          ) : (
+                            <IconActionButton
+                              icon={Eye}
+                              to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
+                              params={{ id: sop.id }}
+                              state={{
+                                sopStatus: sop.status,
+                                waktuPenugasan: sop.waktuPenugasan,
+                                unitTerkait: sop.unitTerkait,
+                                timPenyusun: sop.timPenyusun,
+                                terakhirDiperbarui: sop.terakhirDiperbarui,
+                                deskripsiProyek: (sop as unknown as Record<string, unknown>).deskripsi as string | undefined,
+                              }}
+                              title="Lihat"
+                              variant="outline"
+                            />
                           )}
                         </div>
-                      ) : (
-                        <p className="text-gray-400 text-xs">—</p>
-                      )}
-                    </Table.Td>
-                    <Table.Td>
-                      <p className="text-gray-700">{formatDateIdLong(sop.terakhirDiperbarui)}</p>
-                    </Table.Td>
-                    <Table.Td>
-                      <StatusBadge status={sop.status} />
-                    </Table.Td>
-                    <Table.Td>
-                      <div className="flex items-center justify-center gap-1">
-                        {canEditSop(sop.status) ? (
-                          <IconActionButton
-                            icon={Edit}
-                            to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
-                            params={{ id: sop.id }}
-                            state={{
-                              sopStatus: sop.status,
-                              waktuPenugasan: sop.waktuPenugasan,
-                              unitTerkait: sop.unitTerkait,
-                              timPenyusun: sop.timPenyusun,
-                              terakhirDiperbarui: sop.terakhirDiperbarui,
-                              deskripsiProyek: sop.deskripsi,
-                            }}
-                            title="Edit"
-                          />
-                        ) : (
-                          <IconActionButton
-                            icon={Eye}
-                            to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
-                            params={{ id: sop.id }}
-                            state={{
-                              sopStatus: sop.status,
-                              waktuPenugasan: sop.waktuPenugasan,
-                              unitTerkait: sop.unitTerkait,
-                              timPenyusun: sop.timPenyusun,
-                              terakhirDiperbarui: sop.terakhirDiperbarui,
-                              deskripsiProyek: sop.deskripsi,
-                            }}
-                            title="Lihat"
-                            variant="outline"
-                          />
-                        )}
-                      </div>
-                    </Table.Td>
-                  </Table.BodyRow>
-                ))
-              )}
-            </tbody>
-          </Table.Table>
-        </Table.Root>
-
-        <Table.Pagination
-          totalItems={filteredList.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="SOP"
-        />
-      </div>
+                      </Table.Td>
+                    </Table.BodyRow>
+                  ))
+                )}
+              </tbody>
+            </Table.Table>
+          </Table.Root>
+        )}
+      </Table.Paginated>
 
       <FormDialog
         open={isRequestEvaluasiDialogOpen}
@@ -454,7 +443,7 @@ export function ManajemenSOP() {
                           <p className="text-xs text-gray-500 mt-0.5">Pembuat: {sop.author}</p>
                         )}
                         <div className="mt-1.5">
-                          <StatusBadge status={sop.status} />
+                          <StatusBadge status={sop.status ?? ''} />
                         </div>
                       </div>
                     </div>
@@ -470,9 +459,8 @@ export function ManajemenSOP() {
       <BuatSOPDialog
         open={isBuatSOPDialogOpen}
         onOpenChange={setIsBuatSOPDialogOpen}
-        onSuccess={(data) => {
+        onSuccess={(_data) => {
           const newId = crypto.randomUUID()
-          const today = new Date().toISOString().split('T')[0]
           // Navigate directly to the new SOP detail page
           // The SOP will be fetched from API and shown in the list after creation
           navigate({ to: ROUTES.TIM_PENYUSUN.DETAIL_SOP, params: { id: newId } })

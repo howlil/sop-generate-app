@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/layout/PageHeader'
-import type { TTERole } from '@/features/tte'
-import { getTTEProfile } from '@/features/tte'
+import type { TTERole } from '@/features/tte/types/tte'
+import { useTTEProfil } from '@/features/tte/hooks/useTte'
 import { formatDateIdLong } from '@/utils/format-date'
 import { TTEBuatDialog } from './TTEBuatDialog'
 
@@ -12,6 +12,7 @@ const ROLE_LABEL: Record<TTERole, string> = {
   'kepala-opd': 'OPD',
   'biro-organisasi': 'Biro Organisasi',
   'tim-penyusun': 'Tim Penyusun',
+  'koordinator-tim-penyusun': 'Koordinator Tim Penyusun',
 }
 
 export interface TTDElektronikPageProps {
@@ -25,17 +26,17 @@ export function TTDElektronikPage({
   defaultNip,
   defaultNama,
 }: TTDElektronikPageProps) {
-  const profile = useMemo(() => getTTEProfile(role), [role])
+  const { data: profile, isLoading } = useTTEProfil()
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const statusLabel = !profile
     ? 'Belum dibuat'
-    : profile.emailVerified
+    : profile.emailTerverifikasi
       ? 'Aktif'
       : 'Menunggu verifikasi email'
   const statusVariant = !profile
     ? 'secondary'
-    : profile.emailVerified
+    : profile.emailTerverifikasi
       ? 'default'
       : 'outline'
 
@@ -74,9 +75,9 @@ export function TTDElektronikPage({
                   </Badge>
                 </Table.Td>
                 <Table.Td className="px-4 py-3 text-gray-600">
-                  {profile?.createdAt
+                  {isLoading ? 'Memuat...' : (profile?.createdAt
                     ? formatDateIdLong(profile.createdAt)
-                    : '—'}
+                    : '—')}
                 </Table.Td>
               </Table.BodyRow>
             </tbody>

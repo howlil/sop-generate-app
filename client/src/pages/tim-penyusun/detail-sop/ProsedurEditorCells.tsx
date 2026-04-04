@@ -81,7 +81,8 @@ export interface ImplementerCellProps {
 }
 
 export function ImplementerCell({ row, implementers, onImplementerChange }: ImplementerCellProps) {
-  const selectedId = Object.keys(row.pelaksana).find((k) => row.pelaksana[k]) || implementers[0]?.id || ''
+  const pelaksanaObj = (typeof row.pelaksana === 'object' && row.pelaksana !== null ? row.pelaksana : {}) as Record<string, boolean>
+  const selectedId = Object.keys(pelaksanaObj).find((k) => pelaksanaObj[k]) || implementers[0]?.id || ''
 
   return (
     <select
@@ -138,14 +139,6 @@ export function MutuWaktuCell({ value, onChange }: MutuWaktuCellProps) {
           : rawUnit.startsWith('bulan')
             ? 'mo'
             : 'm'
-
-  const unitLabelMap: Record<string, string> = {
-    m: 'Menit',
-    h: 'Jam',
-    d: 'Hari',
-    w: 'Minggu',
-    mo: 'Bulan',
-  }
 
   return (
     <div className="flex items-center gap-0 rounded-md border border-gray-200 [&_input]:rounded-r-none [&_input]:border-r-0 [&_input]:focus-visible:ring-0 [&_input]:focus-visible:ring-offset-0">

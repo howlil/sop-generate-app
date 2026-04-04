@@ -2,7 +2,7 @@
  * Evaluasi SOP: daftar OPD. Satu baris = satu OPD.
  * List SOP per OPD ada di halaman detail OPD (Evaluasi per OPD).
  */
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Building2, Eye } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
@@ -11,9 +11,12 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/utils/constants'
-import { canSelectSOPForEvaluasi, isSopInEvaluasiList, useSop, useSopStatus } from '@/features/sop'
-import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/utils/use-pagination'
+import { useSop } from '@/features/sop'
+import type { SopItem } from '@/types/common'
+
+const EVALUASI_STATUSES = ['DIAJUKAN_EVALUASI', 'SEDANG_DIEVALUASI', 'REVISI_DARI_TIM_EVALUASI', 'SIAP_DIVERIFIKASI']
+const isSopInEvaluasiStatus = (status: string) => EVALUASI_STATUSES.includes(status)
+const canSelectSOPForEvaluasiByStatus = (status: string) => status === 'DIAJUKAN_EVALUASI'
 
 export interface OpdEvaluasiItem {
   id: string
@@ -24,9 +27,8 @@ export interface OpdEvaluasiItem {
 }
 
 function useOpdEvaluasiList(): OpdEvaluasiItem[] {
-  const { mergeSopStatus } = useSopStatus()
   const { list: sopListRaw } = useSop()
-  const mergedSopList = useMemo(() => mergeSopStatus(sopListRaw), [sopListRaw, mergeSopStatus])
+  const mergedSopList = sopListRaw as unknown as SopItem[]
 
   return useMemo(() => {
     /** Group SOPs by opdId, collecting unique OPD names from opdId. */
@@ -39,11 +41,11 @@ function useOpdEvaluasiList(): OpdEvaluasiItem[] {
 
     const result: OpdEvaluasiItem[] = []
     for (const [opdId, { sops }] of opdMap.entries()) {
-      const evaluasiSops = sops.filter((s) => isSopInEvaluasiList(s.status))
+      const evaluasiSops = sops.filter((s) => isSopInEvaluasiStatus(s.status))
       if (evaluasiSops.length === 0) continue
-      const jumlahLayakEvaluasi = evaluasiSops.filter((s) => canSelectSOPForEvaluasi(s.status)).length
-      // Derive OPD name from sop.unitTerkait or use opdId as fallback
-      const opdNama = sops[0]?.unitTerkait ?? opdId
+      const jumlahLayakEvaluasi = evaluasiSops.filter((s) => canSelectSOPForEvaluasiByStatus(s.status)).length
+      // Derive OPD name from sop.opdId or use opdId as fallback
+      const opdNama = (sops[0] as any)?.unitTerkait ?? opdId
       result.push({
         id: opdId,
         nama: opdNama,
@@ -58,17 +60,14 @@ function useOpdEvaluasiList(): OpdEvaluasiItem[] {
 
 export function DaftarSOPEvaluasi() {
   const opdList = useOpdEvaluasiList()
-  const {
-    filteredList,
-    searchQuery,
-    setSearchQuery,
-  } = useFilteredList(opdList, {
-    searchKeys: ['nama', 'kode'],
-  })
-  const pagination = usePagination(filteredList.length)
-  const rowsToShow = pagination.showPagination
-    ? filteredList.slice(pagination.startIndex, pagination.endIndex)
-    : filteredList
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredList = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return opdList
+    return opdList.filter((item) =>
+      [item.nama, item.kode].join(' ').toLowerCase().includes(q)
+    )
+  }, [opdList, searchQuery])
 
   return (
     <ListPageLayout
@@ -83,63 +82,59 @@ export function DaftarSOPEvaluasi() {
         />
       }
     >
-      <Table.Card>
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th>Nama OPD</Table.Th>
-              <Table.Th align="center">Jumlah SOP</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {filteredList.length === 0 ? (
-              <EmptyState
-                asTableRow
-                colSpan={3}
-                icon={<Building2 />}
-                title="Tidak ada OPD ditemukan"
-                description="Coba ubah kata kunci pencarian."
-              />
-            ) : (
-              rowsToShow.map((opd) => (
-                <Table.BodyRow key={opd.id}>
-                  <Table.Td className="font-medium text-gray-900">{opd.nama}</Table.Td>
-                  <Table.Td className="text-center">
-                  <div className="flex items-center justify-center gap-2 flex-wrap">
-                    <span className="text-gray-700">{opd.jumlahSop}</span>
-                    {opd.jumlahLayakEvaluasi > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="bg-amber-100 text-amber-800 border-0 text-xs font-medium shrink-0"
-                        title="SOP baru / perlu evaluasi"
-                      >
-                        {opd.jumlahLayakEvaluasi} baru
-                      </Badge>
-                    )}
-                  </div>
-                </Table.Td>
-                  <Table.Td className="text-center">
-                    <IconActionButton
-                      icon={Eye}
-                      to={ROUTES.TIM_EVALUASI.EVALUASI_OPD}
-                      params={{ opdId: opd.id }}
-                      title="Lihat SOP"
-                      variant="outline"
-                    />
-                  </Table.Td>
-                </Table.BodyRow>
-              ))
-            )}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={filteredList.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="OPD"
-        />
-      </Table.Card>
+      <Table.Paginated data={filteredList} label="OPD">
+        {(pageData) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th>Nama OPD</Table.Th>
+                <Table.Th align="center">Jumlah SOP</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageData.length === 0 ? (
+                <EmptyState
+                  asTableRow
+                  colSpan={3}
+                  icon={<Building2 />}
+                  title="Tidak ada OPD ditemukan"
+                  description="Coba ubah kata kunci pencarian."
+                />
+              ) : (
+                pageData.map((opd) => (
+                  <Table.BodyRow key={opd.id}>
+                    <Table.Td className="font-medium text-gray-900">{opd.nama}</Table.Td>
+                    <Table.Td className="text-center">
+                      <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <span className="text-gray-700">{opd.jumlahSop}</span>
+                        {opd.jumlahLayakEvaluasi > 0 && (
+                          <Badge
+                            variant="secondary"
+                            className="bg-amber-100 text-amber-800 border-0 text-xs font-medium shrink-0"
+                            title="SOP baru / perlu evaluasi"
+                          >
+                            {opd.jumlahLayakEvaluasi} baru
+                          </Badge>
+                        )}
+                      </div>
+                    </Table.Td>
+                    <Table.Td className="text-center">
+                      <IconActionButton
+                        icon={Eye}
+                        to={ROUTES.TIM_EVALUASI.DETAIL_EVALUASI_OPD}
+                        params={{ opdId: opd.id }}
+                        title="Lihat SOP"
+                        variant="outline"
+                      />
+                    </Table.Td>
+                  </Table.BodyRow>
+                ))
+              )}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
     </ListPageLayout>
   )
 }
