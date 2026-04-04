@@ -1,87 +1,107 @@
 /**
- * Login Hero - Government Standard Design
+ * Login Hero - SaaS Startup Style
  *
- * Design: Formal, authoritative, professional
- * - Government branding with official colors
- * - Clear value proposition
- * - Trust indicators
+ * Design: Modern SaaS aesthetic
+ * - Mesh gradient background
+ * - Floating cards with animation
+ * - Grid pattern
+ * - Professional & attractive
  */
-import { Shield, FileText, CheckCircle, Users, TrendingUp } from 'lucide-react'
+import {
+  Shield,
+  FileText,
+  CheckCircle,
+  Zap,
+  ArrowUpRight,
+  Layers,
+  BarChart3,
+} from "lucide-react";
 
 export function LoginHero() {
   return (
-    <div className="flex flex-col justify-center h-full text-white">
-      {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
-            <FileText className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-white">Sistem Informasi SOP</p>
-            <p className="text-xs text-blue-200">Biro Organisasi - Pemerintah Daerah</p>
-          </div>
-        </div>
-
-        <h1 className="text-xl font-bold mb-2">
-          Standard Operating Procedure Digital
-        </h1>
-        <p className="text-sm text-blue-100 leading-relaxed max-w-md">
-          Platform resmi untuk pengelolaan SOP secara digital dengan proses terstruktur, transparan, dan teraudit sesuai standar pemerintahan.
-        </p>
+    <div className="flex flex-col justify-center h-full text-white relative">
+      {/* Grid Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)`,
+            backgroundSize: "50px 50px",
+          }}
+        />
       </div>
 
-      {/* Features Section */}
-      <div className="space-y-4 mb-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
-            <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-medium text-white">Pengelolaan Terstruktur</p>
-              <p className="text-xs text-blue-200 mt-0.5">Draft hingga pengesahan</p>
-            </div>
-          </div>
+      {/* Gradient Orbs */}
+      <div className="absolute -top-20 -right-20 w-72 h-72 bg-blue-400/30 rounded-full blur-3xl" />
+      <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-indigo-400/20 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl" />
 
-          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
-            <Shield className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-medium text-white">Verifikasi Berjenjang</p>
-              <p className="text-xs text-blue-200 mt-0.5">Evaluasi multi-level</p>
-            </div>
-          </div>
+      {/* Animated Dots */}
+      <div className="absolute top-20 left-16 w-2 h-2 bg-blue-300/50 rounded-full" />
+      <div className="absolute top-40 right-24 w-1.5 h-1.5 bg-cyan-300/40 rounded-full" />
+      <div className="absolute bottom-32 left-24 w-2 h-2 bg-indigo-300/50 rounded-full" />
+      <div className="absolute top-1/2 right-8 w-1.5 h-1.5 bg-blue-300/30 rounded-full" />
 
-          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
-            <Users className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-medium text-white">Kolaborasi Tim</p>
-              <p className="text-xs text-blue-200 mt-0.5">Multi-role access</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
-            <TrendingUp className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-xs font-medium text-white">Monitoring Real-time</p>
-              <p className="text-xs text-blue-200 mt-0.5">Dashboard interaktif</p>
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="relative z-10">
+        {/* Title */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-4 leading-tight">
+            Kelola SOP
+            <br />
+            <span className="bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">
+              Lebih Efisien
+            </span>
+          </h1>
+          <p className="text-sm text-blue-100/70 leading-relaxed max-w-sm">
+            Platform digital untuk Standard Operating Procedure dengan proses
+            terstruktur dan teraudit.
+          </p>
         </div>
-      </div>
 
-      {/* Trust Indicators */}
-      <div className="pt-6 border-t border-white/10">
-        <div className="flex items-center gap-4 text-xs text-blue-200">
-          <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            <span>Terverifikasi</span>
+        {/* Feature Cards */}
+        <div className="space-y-3 mb-8">
+          <div className="flex items-center gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all group">
+            <div className="w-9 h-9 bg-gradient-to-br from-green-500/20 to-green-600/20 rounded-lg flex items-center justify-center shrink-0 border border-green-400/20">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white/90">
+                Draft hingga pengesahan
+              </p>
+              <p className="text-xs text-blue-200/60">End-to-end workflow</p>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
-          <span className="text-white/30">|</span>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 bg-green-400 rounded-full" />
-            <span>Aman & Terenkripsi</span>
+
+          <div className="flex items-center gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all group">
+            <div className="w-9 h-9 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-lg flex items-center justify-center shrink-0 border border-blue-400/20">
+              <Shield className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white/90">
+                Verifikasi berjenjang
+              </p>
+              <p className="text-xs text-blue-200/60">Multi-level approval</p>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all group">
+            <div className="w-9 h-9 bg-gradient-to-br from-amber-500/20 to-amber-600/20 rounded-lg flex items-center justify-center shrink-0 border border-amber-400/20">
+              <Zap className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-white/90">
+                Dashboard & Pelaporan
+              </p>
+              <p className="text-xs text-blue-200/60"> analytics</p>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
