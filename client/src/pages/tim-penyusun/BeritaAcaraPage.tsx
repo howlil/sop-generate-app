@@ -6,7 +6,7 @@
  */
 import { useMemo, useState, useEffect } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { FileText, PenLine, Eye, List, Printer, Calendar, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -21,8 +21,7 @@ import { SOPListCard, SOPPreviewTemplate } from '@/features/sop'
 import { InfoField, InfoGrid } from '@/components/ui/info-field'
 import { RiwayatCardList } from '@/features/evaluasi'
 import { useTTESignature } from '@/features/tte'
-import { evaluasiApi } from '@/features/evaluasi'
-import { apiClient } from '@/utils/api-client'
+import { useEvaluasi, evaluasiApi } from '@/features/evaluasi'
 import { queryKeys } from '@/utils/query-keys'
 import type { PengajuanEvaluasi } from '@/features/evaluasi'
 import { useToast } from '@/utils/ui'
@@ -31,14 +30,12 @@ import { ROUTES } from '@/utils/constants'
 import { Route } from '@/routes/tim-penyusun.berita-acara'
 import { useAppRole } from '@/features/auth'
 import { canTimPenyusunRunCoordinatorActions } from '@/features/sop'
-import { ROLES } from '@/utils/constants'
 import { InfoCard } from '@/components/ui/info-card'
 import { IA } from '@/utils/constants'
 import { useDocumentTitle } from '@/utils/use-document-title'
 
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
   const { id: searchId } = Route.useSearch()
   const { role } = useAppRole()
   const { showToast } = useToast()
@@ -49,23 +46,24 @@ export function BeritaAcaraKoordinatorPage() {
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('ba')
 
-  const { data: pengajuanList = [] } = useQuery({
-    queryKey: queryKeys.evaluasiList(),
-    queryFn: () => evaluasiApi.findAll(),
-    staleTime: 3 * 60 * 1000, // 3 minutes
-  })
+  // Use useEvaluasi hook instead of direct useQuery
+  const { list: pengajuanList = [] } = useEvaluasi()
 
+  // Mutation for updating pengajuan evaluasi
+  const queryClient = useQueryClient()
   const updatePengajuanMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { status: string; ditandatanganiOlehKoordinatorUserId: string } }) => {
-      // Note: This needs a proper API endpoint - using direct patch for now
-      return apiClient.patch<PengajuanEvaluasi>(`/evaluasi/${id}`, payload)
-    },
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<PengajuanEvaluasi> }) =>
+      evaluasiApi.update(id, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiList() })
+      queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi })
+      showToast('Pengajuan evaluasi berhasil diperbarui', 'success')
+    },
+    onError: (error: Error) => {
+      showToast(error.message || 'Gagal memperbarui pengajuan evaluasi', 'error')
     },
   })
 
-  const updatePengajuan = (id: string, payload: { status: string; ditandatanganiOlehKoordinatorUserId: string }) => {
+  const updatePengajuan = (id: string, payload: Partial<PengajuanEvaluasi>) => {
     updatePengajuanMutation.mutate({ id, payload })
   }
 
@@ -106,12 +104,12 @@ export function BeritaAcaraKoordinatorPage() {
   )
 
   const tte = useTTESignature({
-    role: 'tim-penyusun',
+    role: 'koordinator-tim-penyusun',
     documentId: signingTerjadwal ? `berita-acara-${signingTerjadwal.id}` : undefined,
   })
 
   const docTitle = useMemo(() => {
-    if (!canTimPenyusunRunCoordinatorActions(role)) return IA.NAV_TP_BA_KOORDINATOR
+    if (!canTimPenyusunRunCoordinatorActions(role ?? '')) return IA.NAV_TP_BA_KOORDINATOR
     if (selectedBaId && selectedBa) return `Detail ${IA.BERITA_ACARA} — ${selectedBa.nomorBA ?? ''}`
     return IA.NAV_TP_BA_KOORDINATOR
   }, [role, selectedBaId, selectedBa])
@@ -121,23 +119,22 @@ export function BeritaAcaraKoordinatorPage() {
   const handlePinConfirm = tte.createPinConfirmHandler(
     {
       documentLabel: `Berita Acara ${signingTerjadwal?.nomorBA ?? ''}`,
-      referenceId: signingTerjadwal?.nomorBA ?? signingTerjadwal?.id ?? '',
+      referenceId: signingTerjadwal ? (signingTerjadwal.nomorBA ?? signingTerjadwal.id) : '',
     },
     () => {
       if (!signingTerjadwalId) return
-      const today = new Date().toISOString().split('T')[0]
       updatePengajuan(signingTerjadwalId, {
         status: 'DITANDATANGANI_KOORDINATOR',
         ditandatanganiOlehKoordinatorUserId: 'current-user-id',
       })
-      pushPipelineNotification({
-        title: 'Berita Acara siap pengesahan',
-        body: signingTerjadwal
-          ? `BA ${signingTerjadwal.nomorBA ?? signingTerjadwal.id} — ${signingTerjadwal.opd}: Kepala OPD dapat mengesahkan SOP di menu Berita Acara & pengesahan.`
-          : 'Kepala OPD dapat melanjutkan pengesahan SOP.',
-        targetRole: ROLES.KEPALA_OPD,
-        actionTo: ROUTES.KEPALA_OPD.BERITA_ACARA,
-      })
+      // pushPipelineNotification({
+      //   title: 'Berita Acara siap pengesahan',
+      //   body: signingTerjadwal
+      //     ? `BA ${signingTerjadwal.nomorBA ?? signingTerjadwal.id} — ${signingTerjadwal.opd}: Kepala OPD dapat mengesahkan SOP di menu Berita Acara & pengesahan.`
+      //     : 'Kepala OPD dapat melanjutkan pengesahan SOP.',
+      //   targetRole: ROLES.KEPALA_OPD,
+      //   actionTo: ROUTES.KEPALA_OPD.BERITA_ACARA,
+      // })
       showToast('Verifikasi Berita Acara (Koordinator) selesai. Kepala OPD dapat melakukan pengesahan per SOP.')
       setSigningTerjadwalId(null)
     }
@@ -146,7 +143,7 @@ export function BeritaAcaraKoordinatorPage() {
   const openSignDialog = (id: string) => setSigningTerjadwalId(id)
   const closeSignDialog = () => setSigningTerjadwalId(null)
 
-  if (!canTimPenyusunRunCoordinatorActions(role)) {
+  if (!canTimPenyusunRunCoordinatorActions(role ?? '')) {
     return (
       <ListPageLayout
         breadcrumb={[{ label: IA.NAV_TP_BA_KOORDINATOR }]}
@@ -274,7 +271,7 @@ export function BeritaAcaraKoordinatorPage() {
         ]}
         title={`Detail ${IA.BERITA_ACARA} — ${selectedBa?.nomorBA ?? ''}`}
         description={
-          selectedBa?.isSignedByKoordinator
+          selectedBa?.ditandatanganiOlehKoordinatorUserId
             ? `${IA.VERIFIKASI_BA_KOORDINATOR} selesai. ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`
             : `Lanjutkan ${IA.VERIFIKASI_BA_KOORDINATOR} pada dokumen ${IA.BERITA_ACARA}; ${IA.PENGESAHAN_SOP} hanya oleh Kepala OPD.`
         }
@@ -293,7 +290,7 @@ export function BeritaAcaraKoordinatorPage() {
                 >
                   <Printer className="w-3.5 h-3.5" /> Cetak Berita Acara
                 </Button>
-                {!selectedBa?.isSignedByKoordinator && (
+                {!selectedBa?.ditandatanganiOlehKoordinatorUserId && (
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5 bg-blue-500 text-white hover:bg-blue-600"
@@ -308,7 +305,7 @@ export function BeritaAcaraKoordinatorPage() {
             </div>
             {selectedBa && (
               <div className="pt-2 space-y-2">
-                <span className="text-xs font-medium text-gray-900">{selectedBa.opd}</span>
+                <span className="text-xs font-medium text-gray-900">{selectedBa.opdNama ?? selectedBa.opd?.nama ?? ''}</span>
                 <InfoGrid cols={4}>
                   {selectedBa.timEvaluasi && (
                     <InfoField label="Evaluator:">{selectedBa.timEvaluasi}</InfoField>

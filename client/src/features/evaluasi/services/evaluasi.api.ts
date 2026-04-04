@@ -7,13 +7,13 @@ import { apiClient } from '@/utils/api-client'
 import type {
   PengajuanEvaluasi,
   NilaiEvaluasi,
+} from '../types/evaluasi'
+import type {
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
   RekapEvaluasi,
-  JenisPengajuanEvaluasi,
-  StatusPengajuanEvaluasi,
-} from '@/types/evaluasi'
+} from '@/types/common'
 
 export const evaluasiApi = {
   findAll: (params?: { opdId?: string; status?: string; jenis?: string }) => {
@@ -45,6 +45,9 @@ export const evaluasiApi = {
       `/evaluasi/${pengajuanEvaluasiId}/selesai`,
       payload,
     ),
+
+  update: (id: string, payload: Partial<PengajuanEvaluasi>) =>
+    apiClient.patch<PengajuanEvaluasi>(`/evaluasi/${id}`, payload),
 
   rekap: (tahun?: number) => {
     const query = tahun ? `?tahun=${tahun}` : ''
