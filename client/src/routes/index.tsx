@@ -1,4 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { LandingPage } from '@/pages/LandingPage'
 import { ROLES } from '@/utils/constants'
 import { ROUTES } from '@/utils/constants'
 import { getRole } from '@/utils/role'
@@ -7,9 +8,10 @@ export const Route = createFileRoute('/')({
   beforeLoad: () => {
     const user = getRole()
     if (!user) {
-      throw redirect({ to: '/auth/login' })
+      // Unauthenticated users see landing page
+      return
     }
-    // Redirect to role-specific dashboard
+    // Redirect authenticated users to role-specific dashboard
     const roleDashboards: Record<typeof user.peran, string> = {
       [ROLES.BIRO_ORGANISASI]: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN,
       [ROLES.TIM_PENYUSUN]: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
@@ -18,4 +20,5 @@ export const Route = createFileRoute('/')({
     }
     throw redirect({ to: roleDashboards[user.peran] })
   },
+  component: LandingPage,
 })

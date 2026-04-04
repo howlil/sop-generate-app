@@ -67,7 +67,8 @@ export function LoginForm() {
       await login({ email, password })
       // Redirect setelah login berhasil
       // useAuth hook sudah handle toast success
-      navigate({ to: redirect || '/dashboard' })
+      // '/' akan redirect ke role-specific dashboard via route beforeLoad
+      navigate({ to: redirect || '/' })
     } catch (error) {
       // Error sudah di-handle di useAuth hook dengan toast
       // Tambahkan error spesifik per field jika ada
