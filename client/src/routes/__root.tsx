@@ -62,7 +62,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
   // Check auth persistence on app load - synchronous check to avoid double render
   const user = useAuthStore.getState().user
-  const isLoading = !user
+
+  // Only show loading skeleton for protected routes that need auth
+  // Public routes (/, /auth/login) should render immediately
+  const isPublicRoute = typeof window !== 'undefined' &&
+    (window.location.pathname === '/' || window.location.pathname.startsWith('/auth/'))
+  const isLoading = !user && !isPublicRoute
 
   useEffect(() => {
     if (!user) {
@@ -74,7 +79,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     // Token is in HttpOnly cookie (backend-managed)
   }, [user])
 
-  // Show loading skeleton only for initial auth check
+  // Show loading skeleton only for protected routes waiting for auth
   if (isLoading) {
     return (
       <html lang="id">
