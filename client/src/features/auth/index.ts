@@ -6,7 +6,6 @@
 // Types (no dependencies)
 export type { LoginRequest, LoginResponse, RegisterRequest } from './types/auth'
 export type { User, CreateUserRequest, UpdateUserRequest } from './types/users'
-export { ROLES, ROLE_LABELS, ROLE_DESCRIPTIONS } from './types/auth'
 
 // Services (only depend on types)
 export { authApi } from './services/auth.api'
