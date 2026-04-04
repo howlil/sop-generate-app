@@ -13,12 +13,13 @@ export type {
   UpdateNilaiEvaluasiDto,
   LogNilaiEvaluasi,
   BatchListSopItem,
-  StatusHasilEvaluasiForm,
 } from './types/evaluasi'
 
+export type { StatusHasilEvaluasiForm } from './hooks/useEvaluasi'
+
 // Type aliases for backward compatibility
-export type RiwayatEvaluasiSOPItem = NilaiEvaluasi
-export type RiwayatEvaluasiOPDItem = PengajuanEvaluasi
+export type { NilaiEvaluasi as RiwayatEvaluasiSOPItem } from './types/evaluasi'
+export type { PengajuanEvaluasi as RiwayatEvaluasiOPDItem } from './types/evaluasi'
 
 // Export useEvaluasiSubmit types
 export type { EvaluasiBatchSubmitError, EvaluasiSubmitItem } from './hooks/useEvaluasiSubmit'
@@ -28,6 +29,8 @@ export type {
   JenisPengajuanEvaluasi,
   StatusPengajuanEvaluasi,
   StatusHasilEvaluasi,
+  RekapEvaluasi,
+  RekapDetail,
 } from '@/types/common'
 
 export { STATUS_HASIL_EVALUASI } from './hooks/useEvaluasi'
@@ -40,12 +43,11 @@ export { timEvaluasiApi } from './services/tim-evaluasi.api'
 // Query hooks
 export { useEvaluasi, useRekapEvaluasi } from './hooks/useEvaluasi'
 export { useEvaluasiDetail, usePengajuanEvaluasiDetail } from './hooks/useEvaluasi'
-export { useEvaluasiDraft } from './hooks/useEvaluasiDraft'
+export { useEvaluasiDraft, getEvaluasiDraft } from './hooks/useEvaluasiDraft'
+export type { UseEvaluasiDraftOptions } from './hooks/useEvaluasiDraft'
 export { useEvaluasiSubmit } from './hooks/useEvaluasiSubmit'
-
-// Business logic helpers
-export { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from './hooks/useEvaluasi'
-export { getEvaluasiDraft } from './hooks/useEvaluasiDraft'
+export { useEvaluasiSopByOpd, useRiwayatEvaluasiSop, useRiwayatEvaluasiOpd } from './hooks/useEvaluasiSopByOpd'
+export type { RiwayatEvaluasiEntry } from './hooks/useEvaluasiSopByOpd'
 
 // Components (depend on everything - export selectively)
 export { RiwayatCardList } from './components/RiwayatCardList'

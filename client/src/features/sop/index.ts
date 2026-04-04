@@ -25,6 +25,8 @@ export type {
   CreateSopTerkaitDto,
 } from './types/sop'
 
+export type { KomentarItem } from './types/komentar'
+
 // Re-export evaluation types from evaluasi feature
 export type {
   NilaiEvaluasi,
@@ -47,12 +49,13 @@ export type {
   SOPDetailMetadata,
   ProsedurRow,
   SopItem,
-  SOPDaftarItem,
   SOPTemplate,
+  PelaksanaRow,
+  StatusSop,
 } from '@/types/common'
 
 // UI constants
-export { SOP_STATUS_FILTER_OPTIONS, DEFAULT_SOP_STATUS } from './types/types'
+export { SOP_STATUS_FILTER_OPTIONS, DEFAULT_SOP_STATUS } from './types/sop'
 
 // Services (only depend on types)
 export { sopApi } from './services/sop.api'
@@ -60,7 +63,7 @@ export { sopApi } from './services/sop.api'
 // Hooks (depend on services and types)
 // Query hooks
 export { useSop, useSopDetail } from './hooks/useSop'
-export { useDetailSop, useDetailSopById } from './hooks/useDetailSop'
+export { useDetailSopList as useDetailSop, useDetailSopById } from './hooks/useDetailSop'
 export { useSopStatus } from './hooks/useSopStatus'
 export { usePelaksana } from './hooks/usePelaksana'
 export { useDaftarSopFilters } from './hooks/useDaftarSopFilters'
@@ -71,7 +74,7 @@ export { useRequestEvaluasi } from './hooks/useRequestEvaluasi'
 export { canEditSop, canKepalaOpdSignSop, isSopEligibleForSigning } from './hooks/useSop'
 export { canTimPenyusunRunCoordinatorActions, isSopInEvaluasiList, canSelectSOPForEvaluasi } from './hooks/useSop'
 
-// Initial state helpers
+// Initial state helpers (legitimate - used for form defaults)
 export {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
@@ -80,7 +83,7 @@ export {
 } from './hooks/useDetailSop'
 
 // Edit history
-export { useEditHistory } from './hooks/useDetailSop'
+export { useEditHistory, useSopVersionSnapshot } from './hooks/useDetailSop'
 
 // Components (depend on everything - export selectively)
 export { BuatSOPDialog } from './components/BuatSOPDialog'

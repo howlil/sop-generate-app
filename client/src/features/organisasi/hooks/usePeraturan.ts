@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { peraturanApi } from '@/features/organisasi'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
-import type { CreatePeraturanRequest, UpdatePeraturanRequest } from '@/features/organisasi'
+import type { CreatePeraturanDto as CreatePeraturanRequest, UpdatePeraturanDto as UpdatePeraturanRequest } from '../types/peraturan'
 
 const PERATURAN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
@@ -73,5 +73,31 @@ export function usePeraturan(opdId?: string) {
     isUpdating: updateMutation.isPending,
     isRevoking: revokeMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    // Backward-compatible aliases for legacy UI code
+    initPeraturanList: (_data: unknown[]) => {
+      // No-op: list comes from TanStack Query, not local state
+    },
+    addPeraturan: (payload: CreatePeraturanRequest) =>
+      createMutation.mutateAsync(payload),
+    updatePeraturan: (id: string, payload: UpdatePeraturanRequest) =>
+      updateMutation.mutateAsync({ id, payload }),
+    removePeraturan: (id: string) =>
+      deleteMutation.mutateAsync(id),
+    setPeraturanDicabut: (id: string) =>
+      revokeMutation.mutateAsync(id),
   }
+}
+
+/**
+ * Hook to fetch version history (riwayat versi) for a peraturan.
+ * NOTE: Requires server endpoint GET /peraturan/:id/riwayat
+ * Currently returns empty array until endpoint is implemented.
+ */
+export function usePeraturanRiwayat(_peraturanId: string) {
+  // TODO: Implement when server endpoint exists
+  // const { data, isLoading } = useQuery({
+  //   queryKey: queryKeys.peraturanRiwayat(peraturanId),
+  //   queryFn: () => peraturanApi.findRiwayat(peraturanId),
+  // })
+  return { data: [] as Array<{ version: number; tanggal: string; diubahOleh: string; sopYangMengait: Array<{ id: string; nama: string }> }>, isLoading: false }
 }

@@ -4,17 +4,50 @@ import { Button } from '@/components/ui/button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import type { OpdResponse } from '@/features/organisasi'
-import type { User } from '@/features/auth'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { useToast } from '@/utils/ui'
 import { useOpd } from '@/features/organisasi'
 import { OPDTab } from './manajemen-opd/OPDTab'
 import { KepalaOPDTab } from './manajemen-opd/KepalaOPDTab'
 
-// Legacy type aliases for backward compatibility
-export type OPD = OpdResponse
-export type KepalaOPD = User
+// UI-only types for this page (not server types)
+export interface OPD {
+  id: string
+  name: string
+  email?: string
+  phone?: string
+  totalSOP?: number
+  sopBerlaku?: number
+  sopDraft?: number
+  createdAt?: string
+  _count?: { sop: number; pengguna: number; pengajuanEvaluasi: number }
+}
+
+export interface KepalaOPD {
+  id: string
+  name: string
+  nip?: string
+  email?: string
+  phone?: string
+  opdId?: string
+  isActive?: boolean
+  endedAt?: string
+  totalSOP?: number
+}
+
+// Local utility functions
+function generateId(prefix = 'id'): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
+}
+
+function hasRelasiData(opd: OPD): boolean {
+  if (!opd._count) return false
+  return (opd._count.sop > 0 || opd._count.pengguna > 0 || opd._count.pengajuanEvaluasi > 0)
+}
+
+function canDeleteKepala(kepala: any): boolean {
+  return !kepala.totalSOP || kepala.totalSOP === 0
+}
 
 export function ManajemenOPD() {
   const { showToast } = useToast()
@@ -25,7 +58,17 @@ export function ManajemenOPD() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [selectedOPD, setSelectedOPD] = useState<OPD | null>(null)
-  const { list: opdList, create, update, delete: deleteOpd } = useOpd()
+  const { list: opdResponseList, create, update, delete: deleteOpd } = useOpd()
+  // Transform server OpdResponse (nama) to UI OPD (name)
+  const opdList: OPD[] = opdResponseList.map((o) => ({
+    id: o.id,
+    name: o.nama,
+    totalSOP: o.totalSOP,
+    sopBerlaku: o.sopBerlaku,
+    sopDraft: o.sopDraft,
+    createdAt: o.createdAt,
+    _count: o._count as any,
+  }))
   const [kepalaList, setKepalaList] = useState<KepalaOPD[]>([])
   const [deleteOpdId, setDeleteOpdId] = useState<string | null>(null)
   const [deleteKepalaId, setDeleteKepalaId] = useState<string | null>(null)
@@ -46,16 +89,19 @@ export function ManajemenOPD() {
 
   // Simple filtering (replacing useManajemenOPDData)
   const filteredOPD = opdList.filter((opd) =>
-    opd.nama.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-  
-  const filteredPersons = kepalaList.filter((kepala: any) =>
-    kepala.nama.toLowerCase().includes(searchUserQuery.toLowerCase())
+    opd.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const getKepalaAktif = () => kepalaList.filter((k: any) => !k.deletedAt)
-  const getKepalaByOPD = (opdId: string) => kepalaList.filter((k: any) => k.opdId === opdId && !k.deletedAt)
-  const getRiwayatForUser = (userId: string) => kepalaList.filter((k: any) => k.userId === userId)
+  const filteredPersons = kepalaList.filter((kepala: any) =>
+    (kepala.name ?? '').toLowerCase().includes(searchUserQuery.toLowerCase())
+  )
+
+  const getKepalaAktif = (opdId?: string): KepalaOPD | undefined =>
+    kepalaList.find((k) => (!opdId || k.opdId === opdId) && k.isActive)
+  const getKepalaByOPD = (opdId: string): KepalaOPD[] =>
+    kepalaList.filter((k) => k.opdId === opdId)
+  const getRiwayatForUser = (_name: string, _email: string): KepalaOPD[] =>
+    kepalaList.filter((k) => k.name === _name && k.email === _email)
 
   const handleDelete = (id: string) => {
     const opd = opdList.find((o) => o.id === id)
@@ -107,7 +153,7 @@ export function ManajemenOPD() {
         isActive: true,
         totalSOP: 0,
       }
-      setKepalaList((prev) => {
+      setKepalaList((prev: KepalaOPD[]) => {
         let next = [...prev, newKepala]
         if (existingActive) {
           next = next.map((k) =>
@@ -134,7 +180,7 @@ export function ManajemenOPD() {
       isActive: true,
       totalSOP: 0,
     }
-    setKepalaList((prev) => {
+    setKepalaList((prev: KepalaOPD[]) => {
       let next = [...prev, newKepala]
       if (existingActive) {
         next = next.map((k) =>
@@ -165,7 +211,7 @@ export function ManajemenOPD() {
       isActive: true,
       totalSOP: 0,
     }
-    setKepalaList((prev) => {
+    setKepalaList((prev: KepalaOPD[]) => {
       let next = [...prev, newKepala]
       if (currentActive) {
         next = next.map((k) => (k.id === currentActive.id ? { ...k, isActive: false, endedAt: today } : k))
@@ -204,7 +250,7 @@ export function ManajemenOPD() {
 
   const deleteKepala = (id: string) => {
     const k = kepalaList.find((x) => x.id === id)
-    if (k && k.totalSOP > 0) return
+    if (k && (k.totalSOP ?? 0) > 0) return
     setDeleteKepalaId(id)
   }
 
@@ -213,33 +259,26 @@ export function ManajemenOPD() {
     setKepalaFormOpen(false)
   }
 
-  const onConfirmCreate = () => {
-    if (formData.name) {
-      setOpdList((prev) => [
-        ...prev,
-        {
-          id: generateId(),
-          name: formData.name,
-          email: '',
-          phone: '',
-          totalSOP: 0,
-          sopBerlaku: 0,
-          sopDraft: 0,
-          createdAt: new Date().toISOString().slice(0, 10),
-        },
-      ])
+  const onConfirmCreate = async () => {
+    try {
+      await create({ nama: formData.name })
+      setIsCreateDialogOpen(false)
+      resetForm()
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal menambahkan OPD'
+      showToast(message, 'error')
     }
-    setIsCreateDialogOpen(false)
-    resetForm()
   }
 
-  const onConfirmEdit = () => {
-    if (selectedOPD) {
-      setOpdList((prev) =>
-        prev.map((opd) => (opd.id === selectedOPD.id ? { ...opd, name: formData.name } : opd))
-      )
+  const onConfirmEdit = async () => {
+    if (!selectedOPD) return
+    try {
+      await update({ id: selectedOPD.id, payload: { nama: formData.name } })
+      setIsEditDialogOpen(false)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal memperbarui OPD'
+      showToast(message, 'error')
     }
-    setIsEditDialogOpen(false)
   }
 
   return (
@@ -299,9 +338,9 @@ export function ManajemenOPD() {
 
         <TabsContent value="opd" className="space-y-3 mt-3">
           <OPDTab
-            filteredOPD={filteredOPD}
-            opdList={opdList}
-            selectedOPD={selectedOPD}
+            filteredOPD={filteredOPD as any}
+            opdList={opdList as any}
+            selectedOPD={selectedOPD as any}
             isCreateDialogOpen={isCreateDialogOpen}
             setIsCreateDialogOpen={setIsCreateDialogOpen}
             isEditDialogOpen={isEditDialogOpen}
@@ -312,15 +351,15 @@ export function ManajemenOPD() {
             setRiwayatKepalaOpen={setRiwayatKepalaOpen}
             formData={formData}
             setFormData={setFormData}
-            getKepalaAktif={getKepalaAktif}
-            getKepalaByOPD={getKepalaByOPD}
-            hasRelasiData={hasRelasiData}
-            onOpenDetail={(opd) => {
+            getKepalaAktif={getKepalaAktif as any}
+            getKepalaByOPD={getKepalaByOPD as any}
+            hasRelasiData={hasRelasiData as any}
+            onOpenDetail={(opd: any) => {
               setSelectedOPD(opd)
               setIsDetailDialogOpen(true)
             }}
-            onOpenEdit={openEditDialog}
-            onOpenRiwayat={(opd) => {
+            onOpenEdit={openEditDialog as any}
+            onOpenRiwayat={(opd: any) => {
               setSelectedOPD(opd)
               setRiwayatKepalaOpen(true)
             }}
@@ -332,15 +371,15 @@ export function ManajemenOPD() {
 
         <TabsContent value="kepala" className="space-y-3 mt-3">
           <KepalaOPDTab
-            opdList={opdList}
-            filteredPersons={filteredPersons}
+            opdList={opdList as any}
+            filteredPersons={filteredPersons as any}
             kepalaFormOpen={kepalaFormOpen}
             setKepalaFormOpen={setKepalaFormOpen}
             tambahKepalaOpen={tambahKepalaOpen}
             setTambahKepalaOpen={setTambahKepalaOpen}
             pindahDialogOpen={pindahDialogOpen}
             setPindahDialogOpen={setPindahDialogOpen}
-            setPindahDialogPerson={setPindahDialogPerson}
+            setPindahDialogPerson={setPindahDialogPerson as any}
             riwayatDialogOpen={riwayatDialogOpen}
             setRiwayatDialogOpen={setRiwayatDialogOpen}
             riwayatDialogPerson={riwayatDialogPerson}
@@ -353,16 +392,16 @@ export function ManajemenOPD() {
             pindahForm={pindahForm}
             setPindahForm={setPindahForm}
             pindahDialogPerson={pindahDialogPerson}
-            selectedOPD={selectedOPD}
-            setSelectedOPD={setSelectedOPD}
-            getKepalaAktif={getKepalaAktif}
-            getKepalaByOPD={getKepalaByOPD}
-            getRiwayatForUser={getRiwayatForUser}
-            canDeleteKepala={canDeleteKepala}
+            selectedOPD={selectedOPD as any}
+            setSelectedOPD={setSelectedOPD as any}
+            getKepalaAktif={getKepalaAktif as any}
+            getKepalaByOPD={getKepalaByOPD as any}
+            getRiwayatForUser={getRiwayatForUser as any}
+            canDeleteKepala={canDeleteKepala as any}
             onSaveKepala={saveKepala}
             onSaveTambahKepala={saveTambahKepala}
             onSavePindah={savePindahJabatan}
-            onOpenKepalaForm={openKepalaForm}
+            onOpenKepalaForm={openKepalaForm as any}
             onSetKepalaAktif={setKepalaAktif}
             onAkhiriJabatan={akhiriJabatan}
             onDeleteKepala={deleteKepala}
@@ -375,10 +414,15 @@ export function ManajemenOPD() {
         onOpenChange={(open) => !open && setDeleteOpdId(null)}
         title="Hapus OPD?"
         description="Apakah Anda yakin ingin menghapus OPD ini? Hapus permanen hanya untuk OPD tanpa data."
-        onConfirm={() => {
+        onConfirm={async () => {
           if (deleteOpdId) {
-            setOpdList((prev) => prev.filter((o) => o.id !== deleteOpdId))
-            setDeleteOpdId(null)
+            try {
+              await deleteOpd(deleteOpdId)
+              setDeleteOpdId(null)
+            } catch (error: unknown) {
+              const message = error instanceof Error ? error.message : 'Gagal menghapus OPD'
+              showToast(message, 'error')
+            }
           }
         }}
       />

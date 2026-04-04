@@ -6,6 +6,7 @@
 // Types
 export type {
   OPD,
+  OpdResponse,
   CreateOpdDto,
   UpdateOpdDto,
   OpdWithStats,
@@ -13,11 +14,18 @@ export type {
 
 export type {
   Peraturan,
+  PeraturanResponse,
   CreatePeraturanDto,
   UpdatePeraturanDto,
   RiwayatVersiEntry,
   SopMengait,
 } from './types/peraturan'
+
+// Type aliases for request naming convention
+export type { CreatePeraturanDto as CreatePeraturanRequest } from './types/peraturan'
+export type { UpdatePeraturanDto as UpdatePeraturanRequest } from './types/peraturan'
+export type { CreateOpdDto as CreateOpdRequest } from './types/opd'
+export type { UpdateOpdDto as UpdateOpdRequest } from './types/opd'
 
 export type { StatusPeraturan } from '@/types/common'
 
@@ -27,4 +35,4 @@ export { peraturanApi } from './services/peraturan.api'
 
 // Hooks
 export { useOpd } from './hooks/useOpd'
-export { usePeraturan } from './hooks/usePeraturan'
+export { usePeraturan, usePeraturanRiwayat } from './hooks/usePeraturan'

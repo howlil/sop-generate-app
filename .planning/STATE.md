@@ -165,6 +165,7 @@ Phase Progress: [========] 8/8
 | # | Description | Date | Commit | Status | Directory |
 |---|-------------|------|--------|--------|-----------|
 | 20260403-naming-gap-fixes | ✅ Naming gap fixes — Fixed remaining variable names (filteredSOP → filteredSop), verified no generic variable issues. Build: 6.86s. Consistency: 98%+. | 2026-04-03 | — | Done | client/ |
+| 260404-qtp | ✅ API integration — Replaced stubs in 7 files: ManajemenTimPenyusun (CRUD via API), ManajemenOPD (mutations), DetailEvaluasiOPD (riwayat hooks), EvaluasiSOP (auto-save draft), ManajemenPeraturan (riwayat hook), DetailSOP (snapshot hook). Server endpoints stubbed for riwayat/snapshot. | 2026-04-04 | — | Done | client/ |
 | 20260403-naming-refactor | ✅ Naming convention refactor — Renamed 15 files (SOP → Sop), removed Page suffixes (3 files), updated 7 route imports. Build passing: 6.59s. Consistency: 72% → 95%+. See: `.planning/quick/naming-convention-refactor.md` | 2026-04-03 | — | Done | client/ |
 | 20260403-code-review-p0 | ✅ Code review P0 fixes — Added query retry logic (4xx vs 5xx differentiation), route error boundaries (3 routes), loading states to ManajemenSOP page. Build passing: 9.64s. **Note**: Rollup warnings about re-exports are non-critical chunk ordering issues. | 2026-04-03 | — | Done | client/ |
 | 20260403-deprecated-cleanup | ✅ Removed deprecated code from utils — Cleaned up `client/src/utils/api.ts` (removed withToast, withMutationToast), deprecated handleApi.ts ready for deletion. Build passing: 7.84s. **Manual action needed**: `rm client/src/utils/handleApi.ts` | 2026-04-03 | — | Done | client/ |
@@ -229,4 +230,4 @@ Phase Progress: [========] 8/8
 
 ---
 *State initialized: 2026-03-25*
-*Last updated: 2026-04-02 — Frontend performance optimizations (Zustand selectors), Database audit fixes complete (indexes, triggers, middleware), constants refactor to utils directory*
+*Last updated: 2026-04-04 — API integration quick task: 7 files wired with real API hooks, stubs removed, server endpoints stubbed for riwayat/snapshot*

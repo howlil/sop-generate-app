@@ -331,21 +331,16 @@ export function useEditHistory(sopDetailId: string) {
   })
 }
 
-// ==================== Legacy Helpers ====================
-/** @internal Legacy stub - implement with real SOP list from useSop */
-export function getRelatedPosOptions(_currentSopId: string): Array<{ value: string; label: string }> {
-  // TODO: Implement with real SOP list from useSop hook
-  return []
-}
-
-/** @internal Legacy stub - implement with real data from API */
-export function getSopViewMetadata(_sopId: string) {
-  // TODO: Implement with real API call
-  return { metadata: null, procedures: [], implementers: [] }
-}
-
-/** @internal Legacy stub - implement with real data from API */
-export function getSopViewVersions(_sopId: string) {
-  // TODO: Implement with real API call
-  return []
+/**
+ * Hook to fetch version snapshot data for a specific SOP version.
+ * NOTE: Requires server endpoint GET /detail-sop/:id/versions/:version/snapshot
+ * Currently returns undefined until endpoint is implemented.
+ */
+export function useSopVersionSnapshot(_sopId: string, _version: string) {
+  // TODO: Implement when server endpoint exists
+  // const { data, isLoading } = useQuery({
+  //   queryKey: queryKeys.sopVersionSnapshot(sopId, version),
+  //   queryFn: () => sopApi.getVersionSnapshot(sopId, version),
+  // })
+  return { data: undefined as unknown, isLoading: false }
 }

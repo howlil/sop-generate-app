@@ -1,33 +1,41 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { Peraturan } from '@/features/organisasi'
+import { usePeraturan, useOpd, usePeraturanRiwayat } from '@/features/organisasi'
+import { useAuthStore } from '@/stores/authStore'
 import { useToast } from '@/utils/ui'
-import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePeraturan, getInitialPeraturanListAsync, getRiwayatVersiPeraturanInitial, getManajemenPeraturanOpdId, getOpdNamesForPeraturan } from '@/features/organisasi'
 import type { RiwayatVersiEntry } from '@/features/organisasi'
 import { PeraturanTableTab } from './manajemen-peraturan/PeraturanTableTab'
 
-const CURRENT_OPD_ID = getManajemenPeraturanOpdId()
-const OPD_NAMES = getOpdNamesForPeraturan()
-
 export function ManajemenPeraturan() {
   const { showToast } = useToast()
+  const currentUser = useAuthStore((s) => s.user)
+  const currentOpdId = currentUser?.opdId ?? ''
+
   const {
     list: peraturanList,
-    initPeraturanList,
-    addPeraturan,
-    updatePeraturan,
-    removePeraturan,
-    setPeraturanDicabut,
-  } = usePeraturan()
+    isLoading: isLoadingPeraturan,
+    create,
+    update,
+    delete: deletePeraturan,
+    revoke,
+  } = usePeraturan(currentOpdId || undefined)
 
-  useEffect(() => {
-    getInitialPeraturanListAsync().then(initPeraturanList)
-  }, [initPeraturanList])
+  const { list: opdList } = useOpd()
+
+  // Build OPD names map from fetched data
+  const opdNames = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const opd of opdList) {
+      map[opd.id] = opd.nama
+    }
+    return map
+  }, [opdList])
 
   // Inline state (replaced useManajemenPeraturanState)
   const [searchQuery, setSearchQuery] = useState('')
@@ -43,22 +51,38 @@ export function ManajemenPeraturan() {
   const [selectedPeraturanForRiwayat, setSelectedPeraturanForRiwayat] = useState<Peraturan | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string } | null>(null)
 
-  const [riwayatVersiPeraturan, setRiwayatVersiPeraturan] = useState<Record<string, RiwayatVersiEntry[]>>(() =>
-    getRiwayatVersiPeraturanInitial()
+  // Riwayat data for selected peraturan (hook called at component level)
+  const { data: peraturanRiwayatData = [] } = usePeraturanRiwayat(
+    selectedPeraturanForRiwayat?.id ?? ''
   )
 
-  const { filteredList: filteredPeraturan } = useFilteredList(peraturanList, {
-    searchKeys: ['peraturan', 'nomor', 'tentang'],
-    controlledSearch: [searchQuery, setSearchQuery],
-  })
-
-  const getRiwayatVersi = (peraturanId: string): RiwayatVersiEntry[] => {
-    const list = riwayatVersiPeraturan[peraturanId]
-    if (list) return list
-    const p = peraturanList.find((x) => x.id === peraturanId)
+  const getRiwayatVersi = (_peraturanId: string): RiwayatVersiEntry[] => {
+    // Use data from hook if available
+    if (peraturanRiwayatData.length > 0) {
+      return peraturanRiwayatData.map(d => ({
+        version: d.version,
+        tanggal: d.tanggal,
+        diubahOleh: d.diubahOleh,
+        sopYangMengait: d.sopYangMengait,
+      }))
+    }
+    // Fallback: derive from peraturan data
+    const p = peraturanList.find((x) => x.id === selectedPeraturanForRiwayat?.id)
     if (!p) return []
-    return [{ version: p.version, tanggal: new Date().toISOString().slice(0, 10), diubahOleh: OPD_NAMES[p.createdBy] ?? p.createdBy, sopYangMengait: [] }]
+    return [{ version: 1, tanggal: new Date().toISOString().slice(0, 10), diubahOleh: opdNames[p.opdId] ?? p.opdId, sopYangMengait: [] }]
   }
+
+  const filteredPeraturan = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return peraturanList
+    return peraturanList.filter((item) =>
+      ['namaPeraturan', 'nomor', 'tentang']
+        .map((k) => String(item[k as keyof Peraturan] ?? ''))
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [peraturanList, searchQuery])
 
   const canEditPeraturan = (_p: Peraturan) => true
 
@@ -66,9 +90,9 @@ export function ManajemenPeraturan() {
     if (peraturan) {
       setEditingPeraturan(peraturan)
       setPeraturanFormData({
-        peraturan: peraturan.peraturan,
+        peraturan: peraturan.namaPeraturan,
         nomor: peraturan.nomor,
-        tahun: peraturan.tahun,
+        tahun: String(peraturan.tahun),
         tentang: peraturan.tentang,
       })
     } else {
@@ -78,7 +102,7 @@ export function ManajemenPeraturan() {
     setIsPeraturanDialogOpen(true)
   }
 
-  const handleSavePeraturan = () => {
+  const handleSavePeraturan = async () => {
     if (
       !peraturanFormData.peraturan ||
       !peraturanFormData.nomor ||
@@ -92,37 +116,23 @@ export function ManajemenPeraturan() {
       showToast('Hanya peraturan yang dibuat oleh OPD Anda yang dapat diedit.', 'error')
       return
     }
-    if (editingPeraturan) {
-      const newVersion = editingPeraturan.version + 1
-      updatePeraturan(editingPeraturan.id, { ...peraturanFormData, version: newVersion })
-      setRiwayatVersiPeraturan((prev) => {
-        const existing = prev[editingPeraturan.id] ?? []
-        return {
-          ...prev,
-          [editingPeraturan.id]: [
-            ...existing,
-            {
-              version: newVersion,
-              tanggal: new Date().toISOString().slice(0, 10),
-              diubahOleh: OPD_NAMES[CURRENT_OPD_ID],
-              sopYangMengait: [],
-            },
-          ],
-        }
-      })
-      showToast('Peraturan berhasil diperbarui (versi baru).')
-    } else {
-      addPeraturan({
-        id: generateId(),
-        ...peraturanFormData,
-        status: 'Berlaku',
-        digunakan: 0,
-        createdBy: CURRENT_OPD_ID,
-        version: 1,
-      })
-      showToast('Peraturan berhasil ditambahkan')
+    try {
+      if (editingPeraturan) {
+        await update({ id: editingPeraturan.id, payload: { ...peraturanFormData, tahun: Number(peraturanFormData.tahun) } })
+      } else {
+        await create({
+          opdId: currentOpdId,
+          namaPeraturan: peraturanFormData.peraturan,
+          nomor: peraturanFormData.nomor,
+          tahun: Number(peraturanFormData.tahun),
+          tentang: peraturanFormData.tentang,
+        })
+      }
+      setIsPeraturanDialogOpen(false)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Terjadi kesalahan'
+      showToast(message, 'error')
     }
-    setIsPeraturanDialogOpen(false)
   }
 
   const handleDeletePeraturan = (id: string) => {
@@ -131,23 +141,31 @@ export function ManajemenPeraturan() {
       showToast('Hanya peraturan yang dibuat oleh OPD Anda yang dapat dihapus.', 'error')
       return
     }
-    if (peraturan && peraturan.digunakan > 0) {
+    if (peraturan && peraturan.digunakan && peraturan.digunakan > 0) {
       showToast(`Tidak dapat menghapus. Masih ada ${peraturan.digunakan} SOP yang mengaitkan peraturan ini.`, 'error')
       return
     }
     setDeleteConfirm({ type: 'peraturan', id })
   }
 
-  const doDeletePeraturan = (id: string) => {
-    removePeraturan(id)
-    showToast('Peraturan berhasil dihapus')
+  const doDeletePeraturan = async (id: string) => {
+    try {
+      await deletePeraturan(id)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Terjadi kesalahan'
+      showToast(message, 'error')
+    }
   }
 
-  const toggleStatusPeraturan = (id: string) => {
+  const toggleStatusPeraturan = async (id: string) => {
     const p = peraturanList.find((x) => x.id === id)
     if (p && !canEditPeraturan(p)) return
-    setPeraturanDicabut(id)
-    showToast('Status peraturan berhasil diubah')
+    try {
+      await revoke(id)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Terjadi kesalahan'
+      showToast(message, 'error')
+    }
   }
 
   return (
@@ -172,7 +190,14 @@ export function ManajemenPeraturan() {
         </SearchToolbar>
       }
     >
-      <PeraturanTableTab
+      {isLoadingPeraturan ? (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      ) : (
+        <PeraturanTableTab
         filteredPeraturan={filteredPeraturan}
         canEditPeraturan={canEditPeraturan}
         isPeraturanDialogOpen={isPeraturanDialogOpen}
@@ -196,6 +221,7 @@ export function ManajemenPeraturan() {
           !peraturanFormData.tentang
         }
       />
+      )}
 
       <ConfirmDialog
         open={deleteConfirm != null}

@@ -2,11 +2,21 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import type { TimPenyusunFormState } from '@/types/tim'
 
 interface OPD {
   id: string
   name: string
+}
+
+export interface TimPenyusunFormData {
+  namaLengkap: string
+  nip: string
+  jabatan: string
+  pangkat: string
+  email: string
+  nohp: string
+  kataSandi: string
+  roleInternal?: 'Koordinator' | 'Anggota'
 }
 
 export type TimPenyusunFormDialogMode = 'create' | 'edit'
@@ -15,8 +25,8 @@ export interface TimPenyusunFormDialogProps {
   mode: TimPenyusunFormDialogMode
   open: boolean
   onOpenChange: (open: boolean) => void
-  formData: TimPenyusunFormState
-  setFormData: React.Dispatch<React.SetStateAction<TimPenyusunFormState>>
+  formData: TimPenyusunFormData
+  setFormData: React.Dispatch<React.SetStateAction<TimPenyusunFormData>>
   createOpdId: string
   setCreateOpdId: (id: string) => void
   opdList: OPD[]
@@ -109,6 +119,17 @@ export function TimPenyusunFormDialog({
             onChange={(e) => setFormData((prev) => ({ ...prev, nohp: e.target.value }))}
           />
         </FormField>
+        {isCreate && formData.kataSandi && (
+          <FormField label="Kata Sandi" required>
+            <Input
+              type="password"
+              className="h-9 text-xs"
+              placeholder="Minimal 8 karakter"
+              value={formData.kataSandi}
+              onChange={(e) => setFormData((prev) => ({ ...prev, kataSandi: e.target.value }))}
+            />
+          </FormField>
+        )}
         <FormField label="Peran Internal Tim">
           <Select
             value={formData.roleInternal}

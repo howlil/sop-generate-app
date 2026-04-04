@@ -11,29 +11,33 @@ import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { useEvaluasiDraft, getEvaluasiDraft } from '@/features/evaluasi'
+import { useEvaluasiDraft, getEvaluasiDraft, useEvaluasiSopByOpd, useRiwayatEvaluasiSop, useRiwayatEvaluasiOpd } from '@/features/evaluasi'
 import { useEvaluasiSubmit } from '@/features/evaluasi'
 import { EVALUASI_DISPLAY_STATUS_OPTIONS } from '@/utils/constants'
 import { ROUTES } from '@/utils/constants'
-import { isSopInEvaluasiList } from '@/features/sop'
 import { useCollapsiblePanels } from '@/utils/ui'
 import { useAppRole } from '@/features/auth'
-import { useSopStatus } from '@/features/sop'
 import { formatDateId } from '@/utils/format-date'
-import type { SOPDaftarItem } from '@/features/sop'
-import type { RiwayatEvaluasiSOPItem, RiwayatEvaluasiOPDItem } from '@/features/evaluasi'
+import type { NilaiEvaluasi, PengajuanEvaluasi, StatusHasilEvaluasi } from '@/features/evaluasi'
+import type { RiwayatEvaluasiEntry } from '@/features/evaluasi'
+import type { EvaluasiBatchSubmitError } from '@/features/evaluasi/hooks/useEvaluasiSubmit'
 
-// Stubs for legacy functions - will be replaced by API calls
-const getRiwayatEvaluasiOpd = () => ([])
-const getRiwayatEvaluasiSop = () => ([])
-const getLastEvaluatedByInitial = () => ({})
-const loadEvaluasiRecordMap = () => ({})
-const getOpdIdByName = () => null
-const getInitialSopDaftarList = () => []
+// Legacy data transform helpers (now backed by API hooks)
+function transformRiwayatToLegacy(entries: RiwayatEvaluasiEntry[]): NilaiEvaluasi[] {
+  return entries.map(e => ({
+    id: `${e.tanggal}-${e.evaluator}`,
+    pengajuanEvaluasiId: '',
+    sopDetailId: '',
+    hasil: e.hasil as StatusHasilEvaluasi | undefined,
+    catatan: e.catatan,
+    version: 0,
+    createdAt: e.tanggal,
+    updatedAt: e.tanggal,
+  }))
+}
 
 import { DetailEvaluasiOPDSubmitDialog } from './detail-evaluasi-opd/DetailEvaluasiOPDSubmitDialog'
 import { DetailEvaluasiOPDFormPanel } from './detail-evaluasi-opd/DetailEvaluasiOPDFormPanel'
-import type { StatusHasilEvaluasi } from '@/features/evaluasi'
 import { useDocumentTitle } from '@/utils/use-document-title'
 
 const POST_SUBMIT_DELAY_MS = 1500
@@ -42,43 +46,40 @@ export function DetailEvaluasiOPD() {
   const { opdId } = useParams({ from: '/tim-evaluasi/evaluasi/opd/$opdId' })
   const { sopId: preferredSopId } = useSearch({ from: '/tim-evaluasi/evaluasi/opd/$opdId' })
   const navigate = useNavigate()
-  const { role, getRoleUserName } = useAppRole()
-  const { mergeSopStatus, getSopStatusOverride } = useSopStatus()
-  const riwayatEvaluasiOpd = getRiwayatEvaluasiOpd()
-  const riwayatEvaluasiSop = getRiwayatEvaluasiSop()
+  const { getRoleUserName } = useAppRole()
 
-  const [sopList] = useState(() => getInitialSopDaftarList() as SOPDaftarItem[])
-  const mergedSopList = useMemo(() => mergeSopStatus(sopList), [sopList, mergeSopStatus])
+  // Use real API hooks instead of stubs
+  const { sopList: sopListFromApi } = useEvaluasiSopByOpd(opdId)
+  const { data: riwayatOpdRaw } = useRiwayatEvaluasiOpd(opdId)
+  const riwayatEvaluasiOpd = useMemo(() => transformRiwayatToLegacy(riwayatOpdRaw ?? []), [riwayatOpdRaw])
 
-  /** All SOPs belonging to this OPD (by opdId), merged with status overrides. */
+  const sopList = useMemo(() => sopListFromApi ?? [], [sopListFromApi])
+
+  /** All SOPs belonging to this OPD (by opdId), already filtered by API hook. */
   const sopsForOpd = useMemo(() => {
-    return mergedSopList
-      .filter((s) => s.opdId === opdId)
-      .filter((s) => isSopInEvaluasiList(s.status))
+    return sopList
       .map((s) => ({
         id: s.id,
         judul: s.judul,
         nomorSOP: s.nomorSOP,
-        status: getSopStatusOverride(s.id) ?? s.status,
+        status: s.status,
       }))
-  }, [mergedSopList, opdId, getSopStatusOverride])
+  }, [sopList])
 
   /** OPD name is derived from the first matching SOP's unit or the opdId itself. */
   const opd = useMemo(() => {
-    const firstSop = mergedSopList.find((s) => s.opdId === opdId)
+    const firstSop = sopList[0]
     if (!firstSop) return null
-    return { id: opdId, nama: firstSop.unitTerkait ?? opdId, kode: opdId }
-  }, [mergedSopList, opdId])
+    return { id: opdId, nama: (firstSop as any).unitTerkait ?? opdId, kode: opdId }
+  }, [sopList, opdId])
 
-  const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>(loadEvaluasiRecordMap)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const initial = getLastEvaluatedByInitial()
-    const toPersist = Object.fromEntries(
-      Object.entries(lastEvaluatedBy).filter(([id]) => !(id in initial))
-    )
-    localStorage.setItem(EVALUASI_STORAGE_KEY, JSON.stringify(toPersist))
-  }, [lastEvaluatedBy])
+  // Track evaluated SOPs in local state (auto-save handled by useEvaluasiDraft hook)
+  interface EvaluasiRecord {
+    evaluatorName: string
+    date: string
+  }
+  type EvaluasiRecordMap = Record<string, EvaluasiRecord>
+  const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>({})
 
   /** Di workspace evaluasi: Diajukan Evaluasi (belum dikirim), Selesai Evaluasi (sudah dikirim hasil). */
   const sopsForOpdWithDisplayStatus = useMemo(
@@ -158,7 +159,7 @@ export function DetailEvaluasiOPD() {
   const [activeFormTab, setActiveFormTab] = useState<'sop' | 'opd'>('sop')
   const [ratingOPD, setRatingOPD] = useState<number | null>(null)
 
-  const namaEvaluator = role ? getRoleUserName(role) : 'Evaluator'
+  const namaEvaluator = getRoleUserName()
 
   const lastEvaluatedEntry = effectiveSopId ? lastEvaluatedBy[effectiveSopId] : undefined
   const tanggalTerakhirEvaluasi = lastEvaluatedEntry ? lastEvaluatedEntry.date : null
@@ -233,11 +234,20 @@ export function DetailEvaluasiOPD() {
 
   useDocumentTitle(opd ? `Evaluasi SOP — ${opd.nama}` : undefined)
 
-  /** Riwayat evaluasi SOP: from seed data. */
-  const riwayatSop = effectiveSopId ? (riwayatEvaluasiSop[effectiveSopId] ?? []) : []
-  /** Riwayat evaluasi OPD: look up by OPD name → id mapping. */
-  const riwayatOpdId = opd ? getOpdIdByName(opd.nama) : null
-  const riwayatOpd = riwayatOpdId ? (riwayatEvaluasiOpd[riwayatOpdId] ?? []) : []
+  /** Riwayat evaluasi SOP: use API hook. */
+  const { data: riwayatSopRaw } = useRiwayatEvaluasiSop(effectiveSopId ?? '')
+  const riwayatSop = useMemo(
+    () => effectiveSopId ? transformRiwayatToLegacy(riwayatSopRaw ?? []) : [],
+    [effectiveSopId, riwayatSopRaw]
+  )
+  /** Riwayat evaluasi OPD: from API hook. */
+  const riwayatOpd = useMemo(() => riwayatEvaluasiOpd as unknown as PengajuanEvaluasi[], [riwayatEvaluasiOpd])
+
+  /** Convert string error to EvaluasiBatchSubmitError shape */
+  const submitErrorObj = useMemo((): EvaluasiBatchSubmitError => {
+    if (!terjadwalSubmitError) return { kind: 'none', items: [] }
+    return { kind: 'incomplete', items: [], message: terjadwalSubmitError }
+  }, [terjadwalSubmitError])
 
   if (!opd) {
     return (
@@ -416,14 +426,14 @@ export function DetailEvaluasiOPD() {
           setIsSubmitOpen(open)
           if (!open) clearTerjadwalSubmitError()
         }}
-        sedangDievaluasiList={sedangDievaluasiList}
+        sedangDievaluasiList={sedangDievaluasiList as any}
         submitSelectedIds={submitSelectedIds}
         toggleSubmitSelected={toggleSubmitSelected}
         isSubmitCheckAll={isSubmitCheckAll}
         isSubmitCheckAllIndeterminate={isSubmitCheckAllIndeterminate}
         setSubmitCheckAll={setSubmitCheckAll}
         onConfirm={handleSubmitAll}
-        terjadwalSubmitError={terjadwalSubmitError}
+        terjadwalSubmitError={submitErrorObj}
       />
     </>
   )

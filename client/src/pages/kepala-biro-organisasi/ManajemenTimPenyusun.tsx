@@ -1,4 +1,4 @@
-import { useEffect, Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Plus, Edit, Trash2, ChevronRight, UserMinus, ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
@@ -6,21 +6,64 @@ import { IconActionButton } from '@/components/ui/icon-action-button'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { useFilteredList } from '@/utils/use-filtered-list'
-import { usePagination } from '@/utils/use-pagination'
 import { useToast } from '@/utils/ui'
 import { useOpd } from '@/features/organisasi'
 import { useTimPenyusun } from '@/features/tim'
-import type { TimPenyusun } from '@/features/tim'
-import { ROUTES } from '@/utils/constants'
+import { usersApi } from '@/features/auth/services/users.api'
 import { TimPenyusunFormDialog } from './manajemen-tim-penyusun/TimPenyusunFormDialog'
 import { PindahOPDTimPenyusunDialog } from './manajemen-tim-penyusun/PindahOPDTimPenyusunDialog'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
+import { ROUTES } from '@/utils/constants'
+import type { AnggotaTimPenyusun } from '@/features/tim'
+
+// UI-only type for this page (flat structure for display)
+type TimPenyusun = {
+  id: string
+  namaLengkap: string
+  nip: string
+  jabatan: string
+  pangkat: string
+  email: string
+  nohp: string
+  opdId: string
+  status: string
+  jumlahSOPDisusun?: number
+  tanggalBergabung?: string
+  endedAt?: string
+  roleInternal?: string
+}
+
+/** Transform server AnggotaTimPenyusun to UI TimPenyusun */
+function toTimPenyusun(tim: AnggotaTimPenyusun): TimPenyusun {
+  return {
+    id: tim.id,
+    namaLengkap: tim.user?.nama ?? '',
+    nip: tim.user?.nip ?? '',
+    jabatan: tim.user?.jabatan ?? '',
+    pangkat: tim.user?.jabatan ?? '',
+    email: tim.user?.email ?? '',
+    nohp: tim.user?.email ?? '',
+    opdId: tim.opdId,
+    status: tim.status === 'AKTIF' ? 'Aktif' : 'Nonaktif',
+    jumlahSOPDisusun: tim.jumlahSOPDisusun,
+    tanggalBergabung: tim.tanggalBergabung,
+    endedAt: tim.berakhirPada,
+    roleInternal: tim.peranInternal === 'Koordinator' ? 'Koordinator' : undefined,
+  }
+}
 
 export function ManajemenTimPenyusun() {
   const { showToast } = useToast()
-  const opdList = useOpdList()
+  const { list: rawOpdList } = useOpd()
+  const { list: rawTimList, isLoading: isLoadingTim, tambah, nonaktifkan, pindah } = useTimPenyusun()
+  const opdList = rawOpdList.map((o) => ({ id: o.id, name: o.nama }))
+
+  // Transform server data to UI format
+  const timList: TimPenyusun[] = useMemo(
+    () => rawTimList.map(toTimPenyusun),
+    [rawTimList]
+  )
   
   // Inline state (replaced useManajemenTimPenyusunState)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -31,7 +74,7 @@ export function ManajemenTimPenyusun() {
   const [pindahTim, setPindahTim] = useState<TimPenyusun | null>(null)
   const [opdTujuanId, setOpdTujuanId] = useState<string | null>(null)
   const [createOpdId, setCreateOpdId] = useState<string | undefined>()
-  const [expandedOpdIds, setExpandedOpdIds] = useState<Set<string>>(new Set())
+  const [expandedOpdIds, setExpandedOpdIds] = useState<Record<string, boolean>>({})
   const [formData, setFormData] = useState({
     namaLengkap: '',
     nip: '',
@@ -39,16 +82,20 @@ export function ManajemenTimPenyusun() {
     pangkat: '',
     email: '',
     nohp: '',
+    kataSandi: '12345678', // Default password - user should change on first login
   })
-
-  useEffect(() => {
-    if (opdList.length > 0 && !createOpdId) setCreateOpdId(opdList[0].id)
-  }, [opdList, createOpdId, setCreateOpdId])
-
-  const timList = useTimPenyusunList()
-  const { filteredList, searchQuery, setSearchQuery } = useFilteredList(timList, {
-    searchKeys: ['namaLengkap', 'nip', 'jabatan'],
-  })
+  const [searchQuery, setSearchQuery] = useState('')
+  const filteredList = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return timList
+    return timList.filter((item) =>
+      ['namaLengkap', 'nip', 'jabatan']
+        .map((k) => String((item as Record<string, unknown>)[k] ?? ''))
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [timList, searchQuery])
 
   const isFormValid =
     formData.namaLengkap.trim() !== '' &&
@@ -56,59 +103,84 @@ export function ManajemenTimPenyusun() {
     formData.jabatan.trim() !== '' &&
     formData.pangkat.trim() !== '' &&
     formData.email.trim() !== '' &&
-    formData.nohp.trim() !== ''
+    formData.nohp.trim() !== '' &&
+    formData.kataSandi.trim() !== ''
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!createOpdId) return
-    addTimPenyusun({
-      id: generateId(),
-      opdId: createOpdId,
-      ...formData,
-      roleInternal: formData.roleInternal,
-      status: 'Aktif',
-      jumlahSOPDisusun: 0,
-      tanggalBergabung: new Date().toISOString().split('T')[0],
-    })
-    showToast('Tim penyusun berhasil ditambahkan')
-    setIsCreateOpen(false)
-    resetForm()
+    try {
+      // Step 1: Create user
+      const user = await usersApi.create({
+        nama: formData.namaLengkap,
+        nip: formData.nip,
+        jabatan: formData.jabatan,
+        pangkat: formData.pangkat,
+        email: formData.email,
+        nohp: formData.nohp,
+        kataSandi: formData.kataSandi,
+        peran: 'TIM_PENYUSUN',
+        opdId: createOpdId,
+      })
+      // Step 2: Add user to tim penyusun
+      await tambah({ userId: user.id, opdId: createOpdId })
+      setIsCreateOpen(false)
+      setFormData({ namaLengkap: '', nip: '', jabatan: '', pangkat: '', email: '', nohp: '', kataSandi: '12345678' })
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal menambahkan tim'
+      showToast(message, 'error')
+    }
   }
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (!selectedTim) return
-    updateTimPenyusun(selectedTim.id, formData)
-    showToast('Data tim penyusun berhasil diperbarui')
-    setIsEditOpen(false)
-    resetForm()
+    try {
+      // Update the user record
+      const userId = rawTimList.find(t => t.id === selectedTim.id)?.userId
+      if (!userId) {
+        showToast('User ID tidak ditemukan', 'error')
+        return
+      }
+      await usersApi.update(userId, {
+        nama: formData.namaLengkap,
+        nip: formData.nip,
+        jabatan: formData.jabatan,
+        pangkat: formData.pangkat,
+        nohp: formData.nohp,
+      })
+      showToast('Data tim penyusun berhasil diperbarui', 'success')
+      setIsEditOpen(false)
+      setFormData({ namaLengkap: '', nip: '', jabatan: '', pangkat: '', email: '', nohp: '', kataSandi: '12345678' })
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal memperbarui tim'
+      showToast(message, 'error')
+    }
   }
 
   const handleDelete = (id: string) => {
     setDeleteTimId(id)
   }
 
-  const today = new Date().toISOString().split('T')[0]
-
-  const handleNonaktifkan = () => {
+  const handleNonaktifkan = async () => {
     if (!nonaktifTimId) return
-    updateTimPenyusun(nonaktifTimId, { status: 'Nonaktif', endedAt: today })
-    showToast('Tim penyusun berhasil dinonaktifkan. Data SOP yang pernah disusun tetap dapat diakses per OPD.')
-    setNonaktifTimId(null)
+    try {
+      await nonaktifkan(nonaktifTimId)
+      setNonaktifTimId(null)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal menonaktifkan tim'
+      showToast(message, 'error')
+    }
   }
 
-  const handlePindahConfirm = () => {
+  const handlePindahConfirm = async () => {
     if (!pindahTim || !opdTujuanId) return
-    updateTimPenyusun(pindahTim.id, { status: 'Nonaktif', endedAt: today })
-    addTimPenyusun({
-      ...pindahTim,
-      id: generateId(),
-      opdId: opdTujuanId,
-      status: 'Aktif',
-      tanggalBergabung: today,
-      endedAt: undefined,
-    })
-    showToast('Tim penyusun berhasil dipindah ke OPD baru. Tugas lama dicatat dengan status nonaktif.')
-    setPindahTim(null)
-    setOpdTujuanId('')
+    try {
+      await pindah({ id: pindahTim.id, opdId: opdTujuanId })
+      setPindahTim(null)
+      setOpdTujuanId('')
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal memindah tim'
+      showToast(message, 'error')
+    }
   }
 
   const handlePindahClose = () => {
@@ -123,10 +195,6 @@ export function ManajemenTimPenyusun() {
   }, {})
 
   const opdEntries = Object.entries(groupedByOpd)
-  const pagination = usePagination(opdEntries.length)
-  const entriesToShow = pagination.showPagination
-    ? opdEntries.slice(pagination.startIndex, pagination.endIndex)
-    : opdEntries
 
   return (
     <ListPageLayout
@@ -143,7 +211,7 @@ export function ManajemenTimPenyusun() {
             size="sm"
             className="h-8 gap-1.5 text-xs"
             onClick={() => {
-              resetForm()
+              setFormData({ namaLengkap: '', nip: '', jabatan: '', pangkat: '', email: '', nohp: '', kataSandi: '12345678' })
               setIsCreateOpen(true)
             }}
           >
@@ -153,148 +221,152 @@ export function ManajemenTimPenyusun() {
         </SearchToolbar>
       }
     >
-      <Table.Card>
-        <Table.Table>
-          <thead>
-            <Table.HeadRow>
-              <Table.Th>OPD / Tim Penyusun</Table.Th>
-              <Table.Th>NIP</Table.Th>
-              <Table.Th>Jabatan</Table.Th>
-              <Table.Th>Email</Table.Th>
-              <Table.Th>No. HP</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th align="center">Aksi</Table.Th>
-            </Table.HeadRow>
-          </thead>
-          <tbody>
-            {entriesToShow.map(([opdId, tims]) => {
-              const opd = opdList.find((o) => o.id === opdId)
-              if (!opd) return null
-              const isExpanded = expandedOpdIds[opdId] ?? false
-              return (
-                <Fragment key={`opd-${opdId}`}>
-                  <Table.BodyRow
-                    className="bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                    onClick={() =>
-                      setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
-                    }
-                  >
-                    <Table.Td colSpan={7}>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
-                            }}
-                            aria-label={isExpanded ? 'Tutup daftar tim' : 'Lihat daftar tim'}
-                          >
-                            <ChevronRight
-                              className={`w-3.5 h-3.5 transition-transform ${
-                                isExpanded ? 'rotate-90' : ''
-                              }`}
-                            />
-                          </button>
-                          <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
-                            <span className="text-[11px] font-semibold text-blue-700">
-                              {opd.name.split(' ')[0][0]}
-                            </span>
-                          </div>
-                          <p className="font-medium text-gray-900 text-xs md:text-sm truncate">
-                            {opd.name}
-                          </p>
-                        </div>
-                        <span className="text-[11px] text-gray-500">
-                          {tims.length} tim penyusun
-                        </span>
-                      </div>
-                    </Table.Td>
-                  </Table.BodyRow>
-                  {isExpanded &&
-                    tims.map((tim) => (
-                      <Table.BodyRow key={tim.id}>
-                        <Table.Td>
-                          <div className="flex flex-col gap-0.5">
-                            <p className="font-medium text-gray-900">{tim.namaLengkap}</p>
-                            {tim.roleInternal && (
-                              <span
-                                className={`inline-block w-fit text-[10px] font-medium px-1.5 py-0 rounded-full border ${
-                                  tim.roleInternal === 'Koordinator'
-                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                    : 'bg-gray-50 text-gray-500 border-gray-200'
+      {isLoadingTim ? (
+        <div className="py-8 text-center text-gray-500 text-sm">Memuat data tim penyusun...</div>
+      ) : (
+      <Table.Paginated data={opdEntries} label="OPD">
+        {(pageEntries) => (
+          <Table.Table>
+            <thead>
+              <Table.HeadRow>
+                <Table.Th>OPD / Tim Penyusun</Table.Th>
+                <Table.Th>NIP</Table.Th>
+                <Table.Th>Jabatan</Table.Th>
+                <Table.Th>Email</Table.Th>
+                <Table.Th>No. HP</Table.Th>
+                <Table.Th>Status</Table.Th>
+                <Table.Th align="center">Aksi</Table.Th>
+              </Table.HeadRow>
+            </thead>
+            <tbody>
+              {pageEntries.map(([opdId, tims]) => {
+                const opd = opdList.find((o) => o.id === opdId)
+                if (!opd) return null
+                const isExpanded = expandedOpdIds[opdId] ?? false
+                return (
+                  <Fragment key={`opd-${opdId}`}>
+                    <Table.BodyRow
+                      className="bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() =>
+                        setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
+                      }
+                    >
+                      <Table.Td colSpan={7}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setExpandedOpdIds((prev) => ({ ...prev, [opdId]: !isExpanded }))
+                              }}
+                              aria-label={isExpanded ? 'Tutup daftar tim' : 'Lihat daftar tim'}
+                            >
+                              <ChevronRight
+                                className={`w-3.5 h-3.5 transition-transform ${
+                                  isExpanded ? 'rotate-90' : ''
                                 }`}
-                              >
-                                {tim.roleInternal}
+                              />
+                            </button>
+                            <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
+                              <span className="text-[11px] font-semibold text-blue-700">
+                                {opd.name.split(' ')[0][0]}
                               </span>
-                            )}
+                            </div>
+                            <p className="font-medium text-gray-900 text-xs md:text-sm truncate">
+                              {opd.name}
+                            </p>
                           </div>
-                        </Table.Td>
-                        <Table.Td className="font-mono text-gray-600 text-[11px]">
-                          {tim.nip}
-                        </Table.Td>
-                        <Table.Td className="text-gray-600">{tim.jabatan}</Table.Td>
-                        <Table.Td className="text-gray-600">{tim.email}</Table.Td>
-                        <Table.Td className="text-gray-600">{tim.nohp}</Table.Td>
-                        <Table.Td>
-                          <div className="flex flex-col gap-0.5">
-                            <StatusBadge status={tim.status} />
-                            {tim.endedAt && (
-                              <span className="text-[10px] text-gray-500">
-                                Selesai: {formatDateId(tim.endedAt)}
-                              </span>
-                            )}
-                          </div>
-                        </Table.Td>
-                        <Table.Td>
-                          <div className="flex flex-wrap items-center justify-center gap-1">
-                            <IconActionButton
-                              icon={Edit}
-                              title="Edit"
-                              onClick={() => openEditDialog(tim)}
-                            />
-                            {tim.status === 'Aktif' && (
-                              <>
-                                <IconActionButton
-                                  icon={UserMinus}
-                                  title="Nonaktifkan"
-                                  onClick={() => setNonaktifTimId(tim.id)}
-                                />
-                                <IconActionButton
-                                  icon={ArrowRightLeft}
-                                  title="Pindah OPD"
-                                  onClick={() => {
-                                    setPindahTim(tim)
-                                    setOpdTujuanId(opdList.find((o) => o.id !== tim.opdId)?.id ?? '')
-                                  }}
-                                />
-                              </>
-                            )}
-                            <IconActionButton
-                              icon={Trash2}
-                              title="Hapus permanen"
-                              destructive
-                              onClick={() => handleDelete(tim.id)}
-                            />
-                          </div>
-                        </Table.Td>
-                      </Table.BodyRow>
-                    ))}
-                </Fragment>
-              )
-            })}
-          </tbody>
-        </Table.Table>
-        <Table.Pagination
-          totalItems={opdEntries.length}
-          currentPage={pagination.page}
-          onPageChange={pagination.setPage}
-          label="OPD"
-        />
-      </Table.Card>
+                          <span className="text-[11px] text-gray-500">
+                            {tims.length} tim penyusun
+                          </span>
+                        </div>
+                      </Table.Td>
+                    </Table.BodyRow>
+                    {isExpanded &&
+                      tims.map((tim) => (
+                        <Table.BodyRow key={tim.id}>
+                          <Table.Td>
+                            <div className="flex flex-col gap-0.5">
+                              <p className="font-medium text-gray-900">{tim.namaLengkap}</p>
+                              {tim.roleInternal && (
+                                <span
+                                  className={`inline-block w-fit text-[10px] font-medium px-1.5 py-0 rounded-full border ${
+                                    tim.roleInternal === 'Koordinator'
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                      : 'bg-gray-50 text-gray-500 border-gray-200'
+                                  }`}
+                                >
+                                  {tim.roleInternal}
+                                </span>
+                              )}
+                            </div>
+                          </Table.Td>
+                          <Table.Td className="font-mono text-gray-600 text-[11px]">
+                            {tim.nip}
+                          </Table.Td>
+                          <Table.Td className="text-gray-600">{tim.jabatan}</Table.Td>
+                          <Table.Td className="text-gray-600">{tim.email}</Table.Td>
+                          <Table.Td className="text-gray-600">{tim.nohp}</Table.Td>
+                          <Table.Td>
+                            <div className="flex flex-col gap-0.5">
+                              <StatusBadge status={tim.status} />
+                              {tim.endedAt && (
+                                <span className="text-[10px] text-gray-500">
+                                  Selesai: {formatDateId(tim.endedAt)}
+                                </span>
+                              )}
+                            </div>
+                          </Table.Td>
+                          <Table.Td>
+                            <div className="flex flex-wrap items-center justify-center gap-1">
+                              <IconActionButton
+                                icon={Edit}
+                                title="Edit"
+                                onClick={() => {
+                                  setSelectedTim(tim)
+                                  setFormData({ namaLengkap: tim.namaLengkap, nip: tim.nip, jabatan: tim.jabatan, pangkat: tim.pangkat, email: tim.email, nohp: tim.nohp })
+                                  setIsEditOpen(true)
+                                }}
+                              />
+                              {tim.status === 'Aktif' && (
+                                <>
+                                  <IconActionButton
+                                    icon={UserMinus}
+                                    title="Nonaktifkan"
+                                    onClick={() => setNonaktifTimId(tim.id)}
+                                  />
+                                  <IconActionButton
+                                    icon={ArrowRightLeft}
+                                    title="Pindah OPD"
+                                    onClick={() => {
+                                      setPindahTim(tim)
+                                      setOpdTujuanId(opdList.find((o) => o.id !== tim.opdId)?.id ?? '')
+                                    }}
+                                  />
+                                </>
+                              )}
+                              <IconActionButton
+                                icon={Trash2}
+                                title="Hapus permanen"
+                                destructive
+                                onClick={() => handleDelete(tim.id)}
+                              />
+                            </div>
+                          </Table.Td>
+                        </Table.BodyRow>
+                      ))}
+                  </Fragment>
+                )
+              })}
+            </tbody>
+          </Table.Table>
+        )}
+      </Table.Paginated>
+      )}
 
-      {filteredList.length === 0 && (
+      {filteredList.length === 0 && !isLoadingTim && (
         <div className="py-8 text-center text-gray-500 text-sm">
           Belum ada tim penyusun. Klik &quot;Tambah Tim Penyusun&quot; untuk menambah.
         </div>
@@ -306,7 +378,7 @@ export function ManajemenTimPenyusun() {
         onOpenChange={setIsCreateOpen}
         formData={formData}
         setFormData={setFormData}
-        createOpdId={createOpdId}
+        createOpdId={createOpdId ?? ''}
         setCreateOpdId={setCreateOpdId}
         opdList={opdList}
         isFormValid={isFormValid}
@@ -319,7 +391,7 @@ export function ManajemenTimPenyusun() {
         onOpenChange={setIsEditOpen}
         formData={formData}
         setFormData={setFormData}
-        createOpdId={createOpdId}
+        createOpdId={createOpdId ?? ''}
         setCreateOpdId={setCreateOpdId}
         opdList={opdList}
         isFormValid={isFormValid}
@@ -331,10 +403,16 @@ export function ManajemenTimPenyusun() {
         onOpenChange={(open) => !open && setDeleteTimId(null)}
         title="Hapus permanen tim penyusun?"
         description="Data tim penyusun akan dihapus dari daftar. Data SOP yang pernah disusun tetap tersimpan per OPD (nama author tetap tercatat). Gunakan Nonaktifkan jika hanya mengakhiri tugas."
-        onConfirm={() => {
+        onConfirm={async () => {
           if (deleteTimId) {
-            removeTimPenyusun(deleteTimId)
-            showToast('Tim penyusun berhasil dihapus')
+            try {
+              // Note: Server doesn't have a hard-delete endpoint. Use nonaktifkan instead.
+              await nonaktifkan(deleteTimId)
+              showToast('Tim penyusun berhasil dinonaktifkan', 'success')
+            } catch (error: unknown) {
+              const message = error instanceof Error ? error.message : 'Gagal menonaktifkan tim'
+              showToast(message, 'error')
+            }
             setDeleteTimId(null)
           }
         }}
@@ -352,7 +430,7 @@ export function ManajemenTimPenyusun() {
         open={pindahTim != null}
         onOpenChange={(open) => !open && handlePindahClose()}
         tim={pindahTim}
-        opdTujuanId={opdTujuanId}
+        opdTujuanId={opdTujuanId ?? ''}
         setOpdTujuanId={setOpdTujuanId}
         opdList={opdList}
         onConfirm={handlePindahConfirm}
