@@ -7,16 +7,16 @@ import { rowsToSteps } from './SOPDiagram/logic/sopDiagramTypes'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { TTESignaturePayload } from '@/features/tte'
-import type { ProsedurRow } from '@/features/sop'
+import type { ProsedurRow } from '@/types/common'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailImplementers,
-} from '@/features/sop'
+} from '@/features/sop/hooks/useDetailSop'
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata()
 const DEFAULT_PROSEDUR_ROWS = getInitialSopDetailProsedurRows()
-const DEFAULT_IMPLEMENTERS = getInitialSopDetailImplementers()
+const DEFAULT_IMPLEMENTERS = getInitialSopDetailImplementers().map((p) => ({ id: p.id, name: p.nama }))
 
 export interface SOPPreviewTemplateProps {
   /** Override nama SOP (default: Percobaan) */

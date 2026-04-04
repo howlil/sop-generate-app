@@ -32,10 +32,10 @@ export interface UseProsedurEditorReturn {
 }
 
 export function useProsedurEditor(
-  prosedurRows: ProsedurRow[],
+  _prosedurRows: ProsedurRow[],
   setProsedurRows: React.Dispatch<React.SetStateAction<ProsedurRow[]>>
 ): UseProsedurEditorReturn {
-  const { showToast } = useToast()
+  void useToast()
   
   // Dialog state
   const [isDecisionDialogOpen, setIsDecisionDialogOpen] = useState(false)
@@ -49,9 +49,11 @@ export function useProsedurEditor(
       const idBase = crypto.randomUUID()
       const newRow: ProsedurRow = {
         id: `${idBase}-${index + 1}`,
+        urutan: index + 2,
         no: index + 2,
         kegiatan: '',
-        pelaksana: implementers.reduce(
+        pelaksana: implementers[0]?.id ?? '',
+        pelaksanaMapping: implementers.reduce(
           (acc, impl, i) => ({
             ...acc,
             [impl.id]: i === 0 ? '√' : '',
@@ -98,7 +100,7 @@ export function useProsedurEditor(
         implementers.forEach((impl) => {
           nextPelaksana[impl.id] = impl.id === implementerId ? '√' : ''
         })
-        return { ...r, pelaksana: nextPelaksana }
+        return { ...r, pelaksana: implementerId, pelaksanaMapping: nextPelaksana }
       })
     )
   }, [setProsedurRows])

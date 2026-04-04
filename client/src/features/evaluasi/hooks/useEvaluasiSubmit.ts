@@ -10,8 +10,10 @@ import { useToast } from '@/utils/ui'
 import type { StatusHasilEvaluasi } from '@/features/evaluasi'
 
 export interface EvaluasiBatchSubmitError {
-  sopId: string
-  message: string
+  kind: 'none' | 'no_selection' | 'incomplete'
+  items: { id: string; judul: string; nomorSOP: string }[]
+  sopId?: string
+  message?: string
 }
 
 export interface EvaluasiSubmitItem {

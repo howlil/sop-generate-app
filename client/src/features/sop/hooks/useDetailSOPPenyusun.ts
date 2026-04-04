@@ -6,13 +6,17 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useToast } from '@/utils/ui'
 import { usePeraturan } from '@/features/organisasi'
-import { usePelaksana, useSopStatus, type SOPDetailMetadata, type ProsedurRow, type StatusSop, DEFAULT_SOP_STATUS } from '@/features/sop'
+import { usePelaksana } from '@/features/sop/hooks/usePelaksana'
+import { useSopStatus } from '@/features/sop/hooks/useSopStatus'
+import type { SOPDetailMetadata, ProsedurRow } from '@/types/common'
+import { DEFAULT_SOP_STATUS } from '@/features/sop/types/sop'
+import type { StatusSOP, StatusSop } from '@/types/common'
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailProsedurRows,
   getInitialSopDetailVersions,
-  type VersionHistoryItem,
-} from '@/features/sop'
+} from '@/features/sop/hooks/useDetailSop'
+import type { VersionHistoryItem } from '@/features/sop/components/VersionHistoryPanel'
 import * as versionDiff from '@/utils/version-diff'
 import type { Peraturan } from '@/features/organisasi'
 
@@ -59,14 +63,14 @@ export interface UseDetailSopPenyusunReturn {
 }
 
 export function useDetailSopPenyusun(
-  id: string | undefined,
+  _id: string | undefined,
   sopStatusOverride: StatusSop | undefined,
   isRevisionFlowOverride?: boolean,
-  navigate?: (opts: any) => void,
-  role?: string | null
+  _navigate?: (opts: any) => void,
+  _role?: string | null
 ): UseDetailSopPenyusunReturn {
   const { showToast } = useToast()
-  const { getSopStatusOverride, setSopStatusOverride } = useSopStatus()
+  const { setSopStatusOverride } = useSopStatus()
   const { list: peraturanList } = usePeraturan()
   const { list: pelaksanaList } = usePelaksana()
 
@@ -75,7 +79,7 @@ export function useDetailSopPenyusun(
   const [prosedurRows, setProsedurRows] = useState<ProsedurRow[]>(() => getInitialSopDetailProsedurRows())
   const [implementers, setImplementers] = useState<{ id: string; name: string }[]>([])
   const implementersSeededRef = useRef(false)
-  const [versions, setVersions] = useState<VersionHistoryItem[]>(() => getInitialSopDetailVersions() as VersionHistoryItem[])
+  const [versions] = useState<VersionHistoryItem[]>(() => getInitialSopDetailVersions() as VersionHistoryItem[])
   
   // UI State
   const [diagramVersion, setDiagramVersion] = useState(0)
@@ -101,7 +105,7 @@ export function useDetailSopPenyusun(
   // Seed implementers from prosedurRows
   useEffect(() => {
     if (implementersSeededRef.current || pelaksanaList.length === 0) return
-    const ids = new Set(prosedurRows.flatMap((r) => Object.keys(r.pelaksana)))
+    const ids = new Set(prosedurRows.flatMap((r) => Object.keys(r.pelaksanaMapping ?? {})))
     if (ids.size === 0) return
     implementersSeededRef.current = true
     setImplementers(
@@ -114,9 +118,9 @@ export function useDetailSopPenyusun(
 
   // Current SOP status
   const currentSopStatus: StatusSOP =
-    (id ? getSopStatusOverride(id) : undefined) ?? sopStatusOverride ?? DEFAULT_SOP_STATUS
-  
-  const isRevisionFlow = isRevisionFlowOverride ?? (currentSopStatus === 'Revisi dari Tim Evaluasi')
+    (sopStatusOverride ?? DEFAULT_SOP_STATUS) as StatusSOP
+
+  const isRevisionFlow = isRevisionFlowOverride ?? (currentSopStatus === 'REVISI_DARI_TIM_EVALUASI')
   const primaryActionLabel = isRevisionFlow ? 'Selesaikan revisi' : 'Selesai'
 
   // Version diff computation
@@ -135,14 +139,14 @@ export function useDetailSopPenyusun(
 
   const handleSaveDraft = useCallback((id: string | undefined, role: string | null) => {
     if (id && role) {
-      setSopStatusOverride(id, 'Sedang Disusun')
+      setSopStatusOverride(id, 'SEDANG_DISUSUN')
       showToast('Status diubah menjadi Sedang Disusun')
     }
   }, [setSopStatusOverride, showToast])
 
   const handleComplete = useCallback((id: string | undefined, role: string | null, navigateFn?: (opts: any) => void) => {
     if (id && role) {
-      setSopStatusOverride(id, 'Siap Dievaluasi')
+      setSopStatusOverride(id, 'SIAP_DIEVALUASI')
       showToast(
         isRevisionFlow
           ? 'Revisi selesai. Kembali ke Manajemen SOP untuk kirim ulang ke evaluasi.'
@@ -152,10 +156,11 @@ export function useDetailSopPenyusun(
         navigateFn({ to: '/tim-penyusun/manajemen-sop' })
       }
     }
-  }, [setSopStatusOverride, showToast, isRevisionFlow, navigateFn])
+  }, [setSopStatusOverride, showToast, isRevisionFlow])
 
   const handleResolveComment = useCallback((_komentarId: string) => {
-    setKomentarDisplay((prev) => prev.map((k) => (k.id === _komentarId ? { ...k, resolved: true } : k)))
+    // komentarDisplay is read-only placeholder; resolve is a no-op until backend integration
+    void _komentarId
   }, [])
 
   return {

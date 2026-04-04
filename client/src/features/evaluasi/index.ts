@@ -43,11 +43,16 @@ export { timEvaluasiApi } from './services/tim-evaluasi.api'
 // Query hooks
 export { useEvaluasi, useRekapEvaluasi } from './hooks/useEvaluasi'
 export { useEvaluasiDetail, usePengajuanEvaluasiDetail } from './hooks/useEvaluasi'
-export { useEvaluasiDraft, getEvaluasiDraft } from './hooks/useEvaluasiDraft'
-export type { UseEvaluasiDraftOptions } from './hooks/useEvaluasiDraft'
+export { useEvaluasiDraft } from './hooks/useEvaluasiDraft'
+export type { UseEvaluasiDraftReturn } from './hooks/useEvaluasiDraft'
+export { usePengajuanEvaluasiAktif } from './hooks/usePengajuanEvaluasiAktif'
+export type { UsePengajuanEvaluasiAktifReturn } from './hooks/usePengajuanEvaluasiAktif'
 export { useEvaluasiSubmit } from './hooks/useEvaluasiSubmit'
 export { useEvaluasiSopByOpd, useRiwayatEvaluasiSop, useRiwayatEvaluasiOpd } from './hooks/useEvaluasiSopByOpd'
 export type { RiwayatEvaluasiEntry } from './hooks/useEvaluasiSopByOpd'
+
+// Business logic helpers
+export { getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete } from './hooks/useEvaluasi'
 
 // Components (depend on everything - export selectively)
 export { RiwayatCardList } from './components/RiwayatCardList'

@@ -52,9 +52,9 @@ export function BuatSOPDialog({ open, onOpenChange, onSuccess }: BuatSOPDialogPr
       q
         ? sopTemplates.filter(
             (t) =>
-              t.kode.toLowerCase().includes(q) ||
+              (t.kode ?? '').toLowerCase().includes(q) ||
               t.judul.toLowerCase().includes(q) ||
-              t.opd.toLowerCase().includes(q) ||
+              (t.opd ?? '').toLowerCase().includes(q) ||
               (t.kategori && t.kategori.toLowerCase().includes(q)) ||
               (t.versi && String(t.versi).toLowerCase().includes(q))
           )

@@ -1,14 +1,13 @@
 /**
  * useDaftarSOPData Hook - SOP List with business logic
  * Handles filtering, batch logic, and evaluation eligibility
- * 
+ *
  * Note: All state is derived from TanStack Query (single source of truth)
  * For optimistic updates, use useSop() mutations directly
  */
 
 import { useMemo } from 'react'
-import { useSop, useSopStatus } from '@/features/sop'
-import type { SOPDaftarItem } from '@/features/sop'
+import { useSop } from '@/features/sop/hooks/useSop'
 
 interface UseDaftarSopDataParams {
   searchQuery: string
@@ -43,7 +42,7 @@ export function useDaftarSopData(params: UseDaftarSopDataParams) {
       result = result.filter(
         (sop) =>
           sop.judul.toLowerCase().includes(q) ||
-          sop.nomorSOP.toLowerCase().includes(q) ||
+          (sop.nomorSOP ?? '').toLowerCase().includes(q) ||
           (sop.author && sop.author.toLowerCase().includes(q))
       )
     }
@@ -60,10 +59,10 @@ export function useDaftarSopData(params: UseDaftarSopDataParams) {
 
     // Date range filter
     if (params.filterTanggalDari) {
-      result = result.filter((sop) => sop.tanggal >= params.filterTanggalDari!)
+      result = result.filter((sop) => (sop.tanggal ?? '') >= params.filterTanggalDari!)
     }
     if (params.filterTanggalSampai) {
-      result = result.filter((sop) => sop.tanggal <= params.filterTanggalSampai!)
+      result = result.filter((sop) => (sop.tanggal ?? '') <= params.filterTanggalSampai!)
     }
 
     return result

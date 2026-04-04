@@ -7,7 +7,7 @@ export const Route = createFileRoute('/tim-penyusun/ttd-elektronik')({
     const { getRoleNip, getRoleDisplayName } = useAppRole()
     return (
       <TTDElektronikPage
-        role="tim-penyusun"
+        role="koordinator-tim-penyusun"
         defaultNip={getRoleNip()}
         defaultNama={getRoleDisplayName()}
       />

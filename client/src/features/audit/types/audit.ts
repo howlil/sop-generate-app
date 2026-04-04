@@ -3,6 +3,7 @@
  */
 
 import type { BagianSOP } from '@/types/common'
+export type { BagianSOP }
 
 export interface LogEditSOP {
   id: string

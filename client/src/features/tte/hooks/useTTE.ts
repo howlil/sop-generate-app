@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { tteApi } from '@/features/tte'
+import { tteApi } from '@/features/tte/services/tte.api'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
 import type {
   RegisterTteDto,
   TandaTanganiBaDto,
   TandaTanganiSopDto,
-} from '@/features/tte'
+} from '@/features/tte/types/tte'
 
 const TTE_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
@@ -119,6 +119,7 @@ export function useTandaTanganiSOP() {
 // ==================== Role-based Signing (unified) ====================
 interface UseTTESignatureParams {
   role: 'biro-organisasi' | 'koordinator-tim-penyusun' | 'kepala-opd'
+  documentId?: string
 }
 
 /** Unified signing hook with role-based routing */
@@ -174,7 +175,6 @@ export function useTTESignature(params: UseTTESignatureParams) {
   }
 
   return {
-    signature: null,
     loading: signBAMutation.isPending || koordinatorSignBAMutation.isPending || signSOPMutation.isPending,
     error: signBAMutation.error || koordinatorSignBAMutation.error || signSOPMutation.error,
     canSign: true,
@@ -186,58 +186,13 @@ export function useTTESignature(params: UseTTESignatureParams) {
   }
 }
 
-// ==================== Legacy Stubs (for backward compatibility) ====================
-/** @internal Legacy stub - use useTTEProfil instead */
-export function getTTEProfile(_role: string): null {
-  return null
-}
-
-/** @internal Legacy stub - PIN verification is now server-side */
-export function verifyPin(_pin: string, _hash?: string): boolean {
-  return true
-}
-
-/** @internal Legacy stub - signatures are now managed server-side */
-export function addTTESignature(
-  _role: string,
-  _nip: string,
-  _nama: string,
-  _jabatan: string,
-  _pangkat: string,
-  _sopId: string,
-  _sopNama: string,
-  _sopNomor: string
-): void {}
-
-/** @internal Legacy stub - use useRegisterTTE mutation instead */
-export function setTTEProfile(
-  _role: string,
-  _profile: {
-    nip: string
-    namaLengkap: string
-    email: string
-    jabatan: string
-    pangkat: string
-    nohp: string
-    pinHash: string
-    emailVerified: boolean
-    role: string
-    verificationToken: string
-  }
-): void {}
-
-/** @internal Legacy stub - hash PIN helper (client-side simulation) */
-export function hashPin(pin: string): string {
-  // Simple hash simulation (in production, this should be server-side)
-  return 'hash_' + btoa(pin).slice(0, 20)
-}
-
-/** @internal Legacy stub - get verification URL */
+// ==================== URL Helpers ====================
+/** Get verification success URL with token */
 export function getTTEVerificationSuccessUrl(token: string): string {
   return `/validasi/ttd-berhasil?token=${token}`
 }
 
-/** @internal Legacy stub - get validation URL for QR code */
+/** Get validation URL for QR code */
 export function getValidasiPengesahanUrl(id: string): string {
   return `${window.location.origin}/validasi/pengesahan/${id}`
 }

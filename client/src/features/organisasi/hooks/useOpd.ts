@@ -3,10 +3,13 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { opdApi } from '@/features/organisasi'
+import { opdApi } from '@/features/organisasi/services/opd.api'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
-import type { CreateOpdRequest, UpdateOpdRequest } from '@/features/organisasi'
+import type { CreateOpdDto, UpdateOpdDto } from '@/features/organisasi/types/opd'
+
+type CreateOpdRequest = CreateOpdDto
+type UpdateOpdRequest = UpdateOpdDto
 
 const OPD_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 

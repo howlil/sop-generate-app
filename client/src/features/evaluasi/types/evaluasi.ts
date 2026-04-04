@@ -46,6 +46,18 @@ export interface PengajuanEvaluasi {
   updatedAt: string
 
   opd?: { id: string; nama: string }
+  /** Computed: OPD name shorthand */
+  opdNama?: string
+  /** Computed: verification date */
+  tanggalVerifikasi?: string
+  /** Evaluasi team name */
+  timEvaluasi?: string
+  /** Biro name */
+  namaBiro?: string
+  /** SOP list included in this pengajuan */
+  sopList?: { id: string; sopDetailId: string; judul: string; nomor: string; nama: string; nomorSOP?: string; status?: string; hasil?: StatusHasilEvaluasi }[]
+  /** TTE signature payload */
+  tteSignaturePayload?: unknown
   diverifikasiOlehUser?: { id: string; nama: string }
   ditandatanganiOlehKoordinatorUser?: { id: string; nama: string }
   diselesaikanOleh?: { id: string; nama: string }
@@ -65,6 +77,34 @@ export interface NilaiEvaluasi {
 
   sopDetail?: { id: string; nomorSOP: string; status: string }
   dinilaiOleh?: { id: string; nama: string }
+}
+
+export interface UpdatePengajuanEvaluasiDto {
+  status?: StatusPengajuanEvaluasi
+  catatan?: string
+  nilaiOPD?: number
+}
+
+export interface CreateNilaiEvaluasiDto {
+  pengajuanEvaluasiId: string
+  sopDetailId: string
+  hasil: StatusHasilEvaluasi
+  catatan?: string
+}
+
+export interface UpdateNilaiEvaluasiDto {
+  hasil?: StatusHasilEvaluasi
+  catatan?: string
+  version?: number
+}
+
+export interface BatchListSopItem {
+  id: string
+  sopDetailId: string
+  judul: string
+  nomorSOP: string
+  status: string
+  hasil?: StatusHasilEvaluasi
 }
 
 export interface LogNilaiEvaluasi {

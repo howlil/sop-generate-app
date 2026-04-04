@@ -23,11 +23,6 @@ import type {
   CreateDasarHukumDto,
   SopTerkait,
   CreateSopTerkaitDto,
-  StatusSOP,
-  JenisLangkahProsedur,
-  SatuanWaktu,
-  JenisLampiran,
-  BagianSOP,
 } from '../types/sop'
 import type { LogEditSOP } from '@/features/audit/types/audit'
 

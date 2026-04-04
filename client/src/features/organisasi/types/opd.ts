@@ -21,6 +21,14 @@ export interface OpdResponse {
   sopDraft?: number
 }
 
+export type OPD = OpdResponse
+
+export interface OpdWithStats extends OpdResponse {
+  totalSOP: number
+  sopBerlaku: number
+  sopDraft: number
+}
+
 export interface CreateOpdDto {
   nama: string
 }

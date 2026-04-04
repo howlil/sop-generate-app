@@ -3,7 +3,7 @@ import { ROLES } from '@/utils/constants'
 import { RoleLayout } from '@/components/layout/RoleLayout'
 import { requireRoleBeforeLoad } from '@/utils/role'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
-import { sidebarConfig, sidebarActiveConfig } from '@/config/sidebar.config'
+import { sidebarConfig, sidebarActiveConfig, createIsActiveFromConfig } from '@/config/sidebar.config'
 
 export const Route = createFileRoute('/biro-organisasi')({
   beforeLoad: requireRoleBeforeLoad(ROLES.BIRO_ORGANISASI),
@@ -15,7 +15,7 @@ function BiroOrganisasiLayout() {
   return (
     <RoleLayout
       sidebarItems={sidebarConfig[ROLES.BIRO_ORGANISASI]}
-      isActive={sidebarActiveConfig[ROLES.BIRO_ORGANISASI]}
+      isActive={createIsActiveFromConfig(sidebarActiveConfig[ROLES.BIRO_ORGANISASI])}
       subtitle="Biro Organisasi"
     />
   )

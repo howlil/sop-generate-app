@@ -78,4 +78,22 @@ export interface TimPenyusunFormState {
   pangkat: string
   email: string
   nohp: string
+  roleInternal?: 'Koordinator' | 'Anggota'
+}
+
+/**
+ * Tim Evaluasi Anggota - legacy UI type
+ * Used in ManajemenTimEvaluasi page (flat structure for display)
+ */
+export interface TimEvaluasiAnggotaUI {
+  id: string
+  namaLengkap: string
+  nip: string
+  jabatan: string
+  pangkat: string
+  email: string
+  nohp: string
+  status?: string
+  endedAt?: string
+  [key: string]: unknown
 }

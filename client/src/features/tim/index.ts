@@ -6,11 +6,17 @@
 // Types
 export type {
   AnggotaTimPenyusun,
-  CreateAnggotaTimPenyusun,
-  UpdateAnggotaTimPenyusun,
   AnggotaTimEvaluasi,
-  CreateAnggotaTimEvaluasi,
+  CreateTimEvaluasiDto,
+  UpdateTimEvaluasiDto,
+  CreateTimPenyusunDto,
+  PindahTimPenyusunDto,
+  TimPenyusunFormState,
 } from './types/tim'
+
+// Type aliases for backward compatibility / alternate naming conventions
+export type { AnggotaTimEvaluasi as TimEvaluasiAnggota } from './types/tim'
+export type { CreateTimEvaluasiDto as CreateTimEvaluasiRequest } from './types/tim'
 
 export type { StatusTim } from '@/types/common'
 

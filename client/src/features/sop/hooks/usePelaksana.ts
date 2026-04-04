@@ -3,11 +3,11 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '@/features/sop'
+import { sopApi } from '@/features/sop/services/sop.api'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
 import { useAuthStore } from '@/stores/authStore'
-import type { Pelaksana } from '@/features/sop'
+import type { Pelaksana } from '@/features/sop/types/sop'
 
 export interface PelaksanaSOP extends Pelaksana {
   namaLengkap: string

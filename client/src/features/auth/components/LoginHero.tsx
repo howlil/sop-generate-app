@@ -9,12 +9,9 @@
  */
 import {
   Shield,
-  FileText,
   CheckCircle,
   Zap,
   ArrowUpRight,
-  Layers,
-  BarChart3,
 } from "lucide-react";
 
 export function LoginHero() {

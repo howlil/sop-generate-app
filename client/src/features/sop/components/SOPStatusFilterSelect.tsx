@@ -3,7 +3,7 @@
  * Dipakai di Filter SOP (Manajemen SOP, Daftar SOP, SOP Saya).
  */
 import { Select } from '@/components/ui/select'
-import { SOP_STATUS_FILTER_OPTIONS } from '@/features/sop'
+import { SOP_STATUS_FILTER_OPTIONS } from '@/features/sop/types/sop'
 import { cn } from '@/utils/cn'
 
 export interface SOPStatusFilterSelectProps {
@@ -25,7 +25,7 @@ export function SOPStatusFilterSelect({
       className={cn('h-9 w-full', className)}
       value={value}
       onValueChange={onValueChange}
-      options={SOP_STATUS_FILTER_OPTIONS}
+      options={[...SOP_STATUS_FILTER_OPTIONS]}
     />
   )
 }

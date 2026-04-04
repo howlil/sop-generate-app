@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import type { TTERole } from '@/features/tte/types/tte'
+import type { TTERole } from '@/features/tte'
 import { useTTEProfil, useRegisterTTE, useMintTokenVerifikasi, getTTEVerificationSuccessUrl } from '@/features/tte/hooks/useTte'
 import type { RegisterTteDto } from '@/features/tte/types/tte'
 

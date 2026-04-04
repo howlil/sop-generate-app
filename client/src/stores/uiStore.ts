@@ -51,5 +51,3 @@ export const showToast = (message: string, type: ToastType = 'info') => {
   useUIStore.getState().addToast(message, type)
 }
 
-// Alias for backward compatibility
-export const showAppToast = showToast

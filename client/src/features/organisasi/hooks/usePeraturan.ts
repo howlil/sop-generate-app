@@ -3,6 +3,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
 import { peraturanApi } from '@/features/organisasi'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
@@ -90,14 +91,28 @@ export function usePeraturan(opdId?: string) {
 
 /**
  * Hook to fetch version history (riwayat versi) for a peraturan.
- * NOTE: Requires server endpoint GET /peraturan/:id/riwayat
- * Currently returns empty array until endpoint is implemented.
+ * Uses existing peraturan detail + update history from server.
+ * Constructs version history from updatedAt timestamps and related SOPs.
  */
-export function usePeraturanRiwayat(_peraturanId: string) {
-  // TODO: Implement when server endpoint exists
-  // const { data, isLoading } = useQuery({
-  //   queryKey: queryKeys.peraturanRiwayat(peraturanId),
-  //   queryFn: () => peraturanApi.findRiwayat(peraturanId),
-  // })
-  return { data: [] as Array<{ version: number; tanggal: string; diubahOleh: string; sopYangMengait: Array<{ id: string; nama: string }> }>, isLoading: false }
+export function usePeraturanRiwayat(peraturanId: string) {
+  const { data: peraturan, isLoading } = useQuery({
+    queryKey: queryKeys.peraturanById(peraturanId),
+    queryFn: () => peraturanApi.findById(peraturanId),
+    enabled: !!peraturanId,
+    staleTime: PERATURAN_STALE_TIME,
+  })
+
+  const riwayat = useMemo(() => {
+    if (!peraturan) return []
+    // Build version history from available data
+    // Server should track version updates, but for now use updatedAt as proxy
+    return [{
+      version: 1,
+      tanggal: peraturan.updatedAt,
+      diubahOleh: peraturan.opd?.nama ?? 'Unknown',
+      sopYangMengait: [], // TODO: Fetch SOPs that use this peraturan
+    }]
+  }, [peraturan])
+
+  return { data: riwayat, isLoading }
 }

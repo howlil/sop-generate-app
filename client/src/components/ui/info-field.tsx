@@ -4,8 +4,10 @@ import { cn } from '@/utils/cn'
 export interface InfoFieldProps {
   /** Label (e.g. "Tanggal", "OPD", "Status") */
   label: string
+  /** Value — string or ReactNode. Alias for children. */
+  value?: ReactNode
   /** Value — string or ReactNode (e.g. Badge, StatusBadge) */
-  children: ReactNode
+  children?: ReactNode
   /** Optional icon before the label. */
   icon?: ReactNode
   /** Layout direction. */
@@ -19,11 +21,13 @@ export interface InfoFieldProps {
  */
 export function InfoField({
   label,
+  value,
   children,
   icon,
   direction = 'horizontal',
   className,
 }: InfoFieldProps) {
+  const content = children ?? value
   if (direction === 'vertical') {
     return (
       <div className={cn('min-w-0', className)}>
@@ -31,7 +35,7 @@ export function InfoField({
           {icon && <span className="text-gray-400 shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5">{icon}</span>}
           <span className="text-[11px] text-gray-500 leading-none">{label}</span>
         </div>
-        <div className="text-xs font-medium text-gray-900 mt-0.5 truncate">{children}</div>
+        <div className="text-xs font-medium text-gray-900 mt-0.5 truncate">{content}</div>
       </div>
     )
   }
@@ -40,7 +44,7 @@ export function InfoField({
     <div className={cn('flex items-center gap-1.5 min-w-0 text-xs', className)}>
       {icon && <span className="text-gray-400 shrink-0 [&_svg]:w-3.5 [&_svg]:h-3.5">{icon}</span>}
       <span className="text-gray-500 shrink-0">{label}</span>
-      <span className="font-medium text-gray-900 truncate">{children}</span>
+      <span className="font-medium text-gray-900 truncate">{content}</span>
     </div>
   )
 }

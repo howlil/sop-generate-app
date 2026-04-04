@@ -3,7 +3,11 @@
  * Utility for making API requests
  */
 
-import { API_BASE_URL, getHeaders } from '@/config/api.config'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
+function getHeaders(): HeadersInit {
+  return { 'Content-Type': 'application/json' }
+}
 
 export class ApiError extends Error {
   status: number

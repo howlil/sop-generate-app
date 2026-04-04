@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { timPenyusunApi } from '@/features/tim'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
-import type { CreateTimPenyusunRequest } from '@/features/tim'
+import type { CreateTimPenyusunDto as CreateTimPenyusunRequest } from '@/features/tim'
 
 const TIM_PENYUSUN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 

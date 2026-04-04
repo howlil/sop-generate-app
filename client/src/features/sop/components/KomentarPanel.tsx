@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { FormField } from '@/components/ui/form-field'
-import type { KomentarItem } from '@/types/komentar'
+import type { KomentarItem } from '../types/komentar'
 
-export type { KomentarItem } from '@/types/komentar'
+export type { KomentarItem } from '../types/komentar'
 
 export interface KomentarPanelProps {
   /** Daftar komentar (urutan bebas; filter/sort di pemanggil jika perlu) */
@@ -42,7 +42,7 @@ export function KomentarPanel({
 }: KomentarPanelProps) {
   const sortedComments = useMemo(() => {
     return [...comments].sort((a, b) => {
-      const cmp = (a.timestamp || '').localeCompare(b.timestamp || '', undefined, { numeric: true })
+      const cmp = (a.createdAt || '').localeCompare(b.createdAt || '', undefined, { numeric: true })
       return -cmp
     })
   }, [comments])
@@ -84,7 +84,7 @@ export function KomentarPanel({
             <div
               key={komentar.id}
               className={`p-2.5 rounded-md border text-xs ${
-                komentar.status === 'resolved'
+                komentar.status === 'RESOLVED'
                   ? 'bg-gray-50 border-gray-200'
                   : 'bg-blue-50 border-blue-200'
               }`}
@@ -93,16 +93,15 @@ export function KomentarPanel({
                 <div className="flex items-center gap-1.5">
                   <div className={`w-5 h-5 ${avatarBg} rounded-full flex items-center justify-center`}>
                     <span className="text-xs text-white font-semibold">
-                      {komentar.user.charAt(0)}
+                      {(komentar.userName ?? 'U').charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-900">{komentar.user}</p>
-                    <p className="text-xs text-gray-500">{komentar.role}</p>
+                    <p className="text-xs font-semibold text-gray-900">{komentar.userName ?? 'Unknown'}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  {komentar.status === 'open' ? (
+                  {komentar.status === 'OPEN' ? (
                     <>
                       {onResolve != null && (
                         <Button
@@ -128,7 +127,7 @@ export function KomentarPanel({
               </div>
               <p className="text-xs text-gray-900 mb-2">{komentar.isi}</p>
               <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">{komentar.timestamp}</p>
+                <p className="text-xs text-gray-500">{komentar.createdAt}</p>
               </div>
             </div>
           ))

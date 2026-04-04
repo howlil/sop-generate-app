@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react'
 import * as React from 'react'
 import { cn } from '@/utils/cn'
 import { Pagination } from '@/components/ui/pagination'
@@ -90,6 +91,61 @@ const DataTableTd = React.forwardRef<
 ))
 DataTableTd.displayName = 'DataTableTd'
 
+// ==================== Paginated Table ====================
+
+interface PaginatedTableProps<T> {
+  /** Array data yang akan di-paginate. */
+  data: T[]
+  /** Jumlah item per halaman. Default 10. */
+  pageSize?: number
+  /** Label entitas untuk info pagination, e.g. "SOP". */
+  label?: string
+  /** Render function: terima data halaman saat ini + offset index dari array asal. */
+  children: (pageData: T[], startIndex: number) => React.ReactNode
+  className?: string
+}
+
+function PaginatedTable<T>({
+  data,
+  pageSize = 10,
+  label,
+  children,
+  className,
+}: PaginatedTableProps<T>) {
+  const [page, setPage] = useState(1)
+  const totalPages = data.length === 0 ? 1 : Math.ceil(data.length / pageSize)
+  const safePage = Math.min(Math.max(1, page), totalPages)
+
+  useEffect(() => {
+    if (totalPages > 0 && page > totalPages) setPage(1)
+  }, [totalPages, page])
+
+  const startIndex = (safePage - 1) * pageSize
+  const pageData = useMemo(
+    () => data.slice(startIndex, startIndex + pageSize),
+    [data, startIndex, pageSize]
+  )
+
+  const showPagination = data.length > pageSize
+
+  return (
+    <div className={cn('bg-white rounded-lg border border-gray-200', className)}>
+      {children(pageData, startIndex)}
+      {showPagination && (
+        <Pagination
+          totalItems={data.length}
+          currentPage={safePage}
+          onPageChange={setPage}
+          pageSize={pageSize}
+          label={label}
+        />
+      )}
+    </div>
+  )
+}
+
+// ==================== Exports ====================
+
 export {
   DataTableRoot,
   DataTableCard,
@@ -98,11 +154,12 @@ export {
   DataTableBodyRow,
   DataTableTh,
   DataTableTd,
+  PaginatedTable,
 }
 
 export { Pagination } from '@/components/ui/pagination'
 
-/** Compound component untuk pemakaian: Table.Card, Table.Root, Table.Table, Table.Pagination, dll. */
+/** Compound component untuk pemakaian: Table.Card, Table.Root, Table.Table, Table.Paginated, dll. */
 export const Table = {
   Root: DataTableRoot,
   Card: DataTableCard,
@@ -112,4 +169,5 @@ export const Table = {
   Th: DataTableTh,
   Td: DataTableTd,
   Pagination,
+  Paginated: PaginatedTable,
 }

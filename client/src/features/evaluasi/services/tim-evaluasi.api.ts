@@ -4,7 +4,7 @@
  */
 
 import { apiClient } from '@/utils/api-client'
-import type { AnggotaTimEvaluasi, CreateTimEvaluasiDto, UpdateTimEvaluasiDto } from '@/features/tim'
+import type { AnggotaTimEvaluasi, CreateTimEvaluasiDto } from '@/features/tim'
 
 export const timEvaluasiApi = {
   findAll: () =>

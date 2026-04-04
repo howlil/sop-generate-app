@@ -4,9 +4,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { auditApi } from '@/services/audit.api'
+import { auditApi } from '../services/audit.api'
 import { queryKeys } from '@/utils/query-keys'
-import type { BagianSOP } from '@/types/audit'
+import type { BagianSOP } from '@/types/common'
 
 /**
  * Hook untuk get audit logs per SOP detail (AUD-03)

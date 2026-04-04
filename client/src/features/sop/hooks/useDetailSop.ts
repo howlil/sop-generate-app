@@ -4,7 +4,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '@/features/sop'
+import { sopApi } from '@/features/sop/services/sop.api'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
 import type {
@@ -16,12 +16,14 @@ import type {
   CreateDasarHukumDto,
   CreateSopTerkaitDto,
   CreateDetailSOPPelaksanaDto,
+} from '@/features/sop/types/sop'
+import type {
   SOPDetailMetadata,
   ProsedurRow,
   PelaksanaRow,
-  KomentarItem,
-  VersionHistoryItem,
-} from '@/features/sop'
+} from '@/types/common'
+import type { KomentarItem } from '@/features/sop/types/komentar'
+import type { VersionHistoryItem } from '@/features/sop/components/VersionHistoryPanel'
 
 const DETAIL_SOP_STALE_TIME = 2 * 60 * 1000 // 2 minutes
 
@@ -333,14 +335,10 @@ export function useEditHistory(sopDetailId: string) {
 
 /**
  * Hook to fetch version snapshot data for a specific SOP version.
- * NOTE: Requires server endpoint GET /detail-sop/:id/versions/:version/snapshot
- * Currently returns undefined until endpoint is implemented.
+ * Uses audit log endpoint (GET /audit/detail-sop/:sopDetailId) as data source.
+ * Returns edit history which can be used for version comparison.
  */
-export function useSopVersionSnapshot(_sopId: string, _version: string) {
-  // TODO: Implement when server endpoint exists
-  // const { data, isLoading } = useQuery({
-  //   queryKey: queryKeys.sopVersionSnapshot(sopId, version),
-  //   queryFn: () => sopApi.getVersionSnapshot(sopId, version),
-  // })
-  return { data: undefined as unknown, isLoading: false }
+export function useSopVersionSnapshot(sopId: string, _version: string) {
+  const { data: logs = [], isLoading } = useEditHistory(sopId)
+  return { data: logs as unknown, isLoading }
 }

@@ -1,102 +1,61 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import type { SopItem } from '@/types/common'
+/**
+ * useSopStatus hook - TanStack Query
+ * Replaces localStorage-based status simulation with real API calls
+ */
 
-const STORAGE_KEY = 'sop_status_overrides'
-
-export interface SopStatusOverride {
-  [sopId: string]: string
-}
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { sopApi } from '@/features/sop/services/sop.api'
+import { queryKeys } from '@/utils/query-keys'
+import { useToast } from '@/utils/ui'
+import type { StatusSOP } from '@/types/common'
 
 /**
- * Hook to manage SOP status overrides (localStorage-based)
- * Used for workflow simulation before backend integration
+ * Hook to update SOP status via real API
+ * Replaces previous localStorage-based simulation
  */
 export function useSopStatus() {
-  const [overrides, setOverrides] = useState<SopStatusOverride>({})
+  const { showToast } = useToast()
+  const queryClient = useQueryClient()
 
-  // Load overrides from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        setOverrides(JSON.parse(stored))
-      }
-    } catch (error) {
-      console.error('Failed to load SOP status overrides:', error)
-    }
-  }, [])
-
-  // Save override to localStorage
-  const setSopStatusOverride = useCallback((sopId: string, status: string) => {
-    setOverrides((prev) => {
-      const updated = { ...prev, [sopId]: status }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      } catch (error) {
-        console.error('Failed to save SOP status override:', error)
-      }
-      return updated
-    })
-  }, [])
-
-  // Get override for specific SOP
-  const getSopStatusOverride = useCallback(
-    (sopId: string): string | undefined => {
-      return overrides[sopId]
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ sopId, status }: { sopId: string; status: StatusSOP }) =>
+      sopApi.updateStatus(sopId, { status }),
+    onSuccess: (_data, variables) => {
+      // Invalidate both detail SOP and general SOP queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.detailSop })
+      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
+      showToast(`Status SOP berhasil diubah menjadi ${variables.status}`, 'success')
     },
-    [overrides]
-  )
-
-  // Merge SOP list with status overrides
-  const mergeSopStatus = useCallback(
-    (sopList: SopItem[]): SopItem[] => {
-      return sopList.map((sop) => ({
-        ...sop,
-        status: overrides[sop.id] || sop.status,
-      }))
+    onError: (error: Error) => {
+      showToast(error.message || 'Gagal mengubah status SOP', 'error')
     },
-    [overrides]
-  )
+  })
 
-  // Clear override for specific SOP
-  const clearSopStatusOverride = useCallback((sopId: string) => {
-    setOverrides((prev) => {
-      const { [sopId]: _, ...rest } = prev
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(rest))
-      } catch (error) {
-        console.error('Failed to clear SOP status override:', error)
-      }
-      return rest
-    })
-  }, [])
+  return {
+    /**
+     * Update SOP status via API
+     * @param sopId - SOP Detail ID
+     * @param status - New status (StatusSOP)
+     */
+    setSopStatusOverride: (sopId: string, status: StatusSOP) => {
+      updateStatusMutation.mutate({ sopId, status })
+    },
 
-  // Clear all overrides
-  const clearAllOverrides = useCallback(() => {
-    setOverrides({})
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch (error) {
-      console.error('Failed to clear all SOP status overrides:', error)
-    }
-  }, [])
+    /**
+     * Update SOP status via API (async)
+     * @param sopId - SOP Detail ID
+     * @param status - New status (StatusSOP)
+     */
+    setSopStatusOverrideAsync: updateStatusMutation.mutateAsync,
 
-  return useMemo(
-    () => ({
-      overrides,
-      setSopStatusOverride,
-      getSopStatusOverride,
-      mergeSopStatus,
-      clearSopStatusOverride,
-      clearAllOverrides,
-    }),
-    [
-      overrides,
-      setSopStatusOverride,
-      getSopStatusOverride,
-      mergeSopStatus,
-      clearSopStatusOverride,
-      clearAllOverrides,
-    ]
-  )
+    /**
+     * Check if status update is in progress
+     */
+    isUpdating: updateStatusMutation.isPending,
+
+    /**
+     * Error from last status update attempt
+     */
+    error: updateStatusMutation.error,
+  }
 }

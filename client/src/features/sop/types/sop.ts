@@ -8,9 +8,7 @@ import type {
   JenisLangkahProsedur,
   SatuanWaktu,
   JenisLampiran,
-  BagianSOP,
 } from '@/types/common'
-import type { NilaiEvaluasi, LogNilaiEvaluasi, PengajuanEvaluasi } from '@/features/evaluasi/types/evaluasi'
 
 export interface Sop {
   id: string
@@ -21,6 +19,19 @@ export interface Sop {
   totalVersi?: number
   statusAktif?: StatusSOP
   opd?: { nama: string }
+  // Fields from SopDetail that pages access on the list view
+  nomorSOP?: string
+  status?: StatusSOP | string
+  author?: string
+  versi?: number
+  lastEditedBy?: string
+  lastEditedAt?: string
+  terakhirDiperbarui?: string
+  waktuPenugasan?: string
+  unitTerkait?: string
+  timPenyusun?: string
+  peraturanId?: string
+  tanggal?: string
 }
 
 export interface SopDetail {
@@ -55,7 +66,7 @@ export interface SopDetail {
   relasiSopMasuk?: SopTerkait[]
   langkahSOP?: LangkahSOP[]
   swimlanes?: DetailSOPPelaksana[]
-  nilaiEvaluasi?: NilaiEvaluasi[]
+  nilaiEvaluasi?: { id: string; hasil?: string; catatan?: string }[]
 }
 
 export interface LampiranTeks {
@@ -118,6 +129,15 @@ export interface DetailSOPPelaksana {
   relasiPelaksana?: DetailSOPPelaksana[]
 }
 
+export interface Pelaksana {
+  id: string
+  opdId: string
+  namaPelaksana: string
+  namaLengkap?: string
+  createdAt: string
+  updatedAt: string
+}
+
 // ==================== DTO TYPES ====================
 
 export interface CreateSopRequest {
@@ -172,7 +192,8 @@ export interface UpdateLangkahSOPDto {
 
 export interface CreatePelaksanaDto {
   opdId: string
-  urutan: number
+  namaPelaksana?: string
+  urutan?: number
 }
 
 export interface CreateDetailSOPPelaksanaDto {
@@ -195,3 +216,21 @@ export interface CreateDasarHukumDto {
 export interface CreateSopTerkaitDto {
   sopTerkaitId: string
 }
+
+// ==================== UI CONSTANTS ====================
+
+export const SOP_STATUS_FILTER_OPTIONS = [
+  { value: 'all' as const, label: 'Semua Status' },
+  { value: 'DRAFT' as const, label: 'DRAFT' },
+  { value: 'SEDANG_DISUSUN' as const, label: 'SEDANG_DISUSUN' },
+  { value: 'SIAP_DIEVALUASI' as const, label: 'SIAP_DIEVALUASI' },
+  { value: 'DIAJUKAN_EVALUASI' as const, label: 'DIAJUKAN_EVALUASI' },
+  { value: 'SEDANG_DIEVALUASI' as const, label: 'SEDANG_DIEVALUASI' },
+  { value: 'REVISI_DARI_TIM_EVALUASI' as const, label: 'REVISI_DARI_TIM_EVALUASI' },
+  { value: 'SIAP_DIVERIFIKASI' as const, label: 'SIAP_DIVERIFIKASI' },
+  { value: 'DIVERIFIKASI_BIRO_ORGANISASI' as const, label: 'DIVERIFIKASI_BIRO_ORGANISASI' },
+  { value: 'BERLAKU' as const, label: 'BERLAKU' },
+  { value: 'DICABUT' as const, label: 'DICABUT' },
+] as const
+
+export const DEFAULT_SOP_STATUS = 'DRAFT'

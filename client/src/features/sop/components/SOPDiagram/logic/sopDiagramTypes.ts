@@ -106,14 +106,15 @@ export function rowsToSteps(
   implementers: Implementer[]
 ): SOPStep[] {
   return rows.map((row) => {
-    const implementerId = Object.keys(row.pelaksana).find(
-      (key) => row.pelaksana[key] && row.pelaksana[key] !== ''
+    const mapping = row.pelaksanaMapping ?? {}
+    const implementerId = Object.keys(mapping).find(
+      (key) => mapping[key] && mapping[key] !== ''
     )
     const type =
       row.type ??
       (row.no === 1 || row.no === rows.length ? 'terminator' : 'task')
     return {
-      seq_number: row.no,
+      seq_number: row.no ?? row.urutan,
       name: row.kegiatan,
       type,
       id_implementer: implementerId || implementers[0]?.id,

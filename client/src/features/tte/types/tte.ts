@@ -80,3 +80,11 @@ export interface TTEHistory {
   sopDetailId?: string
   pengajuanEvaluasiId?: string
 }
+
+export interface TTESignaturePayload {
+  id: string
+  nip: string
+  namaLengkap: string
+  jabatan?: string
+  signedAt?: string
+}

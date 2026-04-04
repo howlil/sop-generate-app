@@ -62,7 +62,7 @@ export function LoginForm() {
     }
 
     try {
-      await login({ email, password })
+      await login({ email, kataSandi: password })
       navigate({ to: redirect || '/' })
     } catch (error) {
       if (error instanceof Error) {

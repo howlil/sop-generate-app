@@ -3,7 +3,7 @@ import { ROLES } from '@/utils/constants'
 import { RoleLayout } from '@/components/layout/RoleLayout'
 import { requireRoleBeforeLoad } from '@/utils/role'
 import { RouteLoadingSkeleton } from '@/components/layout/RouteLoadingSkeleton'
-import { sidebarConfig, sidebarActiveConfig } from '@/config/sidebar.config'
+import { sidebarConfig, sidebarActiveConfig, createIsActiveFromConfig } from '@/config/sidebar.config'
 
 export const Route = createFileRoute('/kepala-opd')({
   beforeLoad: requireRoleBeforeLoad(ROLES.KEPALA_OPD),
@@ -15,7 +15,7 @@ function KepalaOPDLayout() {
   return (
     <RoleLayout
       sidebarItems={sidebarConfig[ROLES.KEPALA_OPD]}
-      isActive={sidebarActiveConfig[ROLES.KEPALA_OPD]}
+      isActive={createIsActiveFromConfig(sidebarActiveConfig[ROLES.KEPALA_OPD])}
       title="OPD"
       subtitle="OPD"
     />

@@ -4,8 +4,11 @@
  */
 
 // Types (no dependencies)
-export type { LoginRequest, LoginResponse, RegisterRequest } from './types/auth'
-export type { User, CreateUserRequest, UpdateUserRequest } from './types/users'
+export type { LoginRequest, LoginResponse } from './types/auth'
+export type { User } from './types/users'
+// Type aliases for backward compatibility
+export type { CreateUserDto as CreateUserRequest } from './types/users'
+export type { UpdateUserDto as UpdateUserRequest } from './types/users'
 
 // Services (only depend on types)
 export { authApi } from './services/auth.api'

@@ -33,29 +33,47 @@ export const ROUTES = {
   TIM_PENYUSUN: {
     DASHBOARD: '/tim-penyusun',
     SOP_SAYA: '/tim-penyusun/sop-saya',
+    DAFTAR_SOP: '/tim-penyusun/daftar-sop',
     MANAJEMEN_SOP: '/tim-penyusun/manajemen-sop',
-    PELAKSANA: '/tim-penyusun/pelaksana',
+    PELAKSANA: '/tim-penyusun/pelaksana-sop',
+    PELAKSANA_SOP: '/tim-penyusun/pelaksana-sop',
     BERITA_ACARA: '/tim-penyusun/berita-acara',
+    PERATURAN: '/tim-penyusun/peraturan',
+    TTD: '/tim-penyusun/ttd-elektronik',
+    DETAIL_SOP: '/tim-penyusun/detail-sop/$id',
+    INITIATE_PROYEK: '/tim-penyusun/initiate-proyek',
   },
   KEPALA_OPD: {
     DASHBOARD: '/kepala-opd',
     PANTAU_SOP: '/kepala-opd/pantau-sop',
-    DETAIL_SOP: '/kepala-opd/detail-sop',
-    TTD: '/kepala-opd/ttd',
+    DETAIL_SOP: '/kepala-opd/detail-sop/$id',
+    TTD: '/kepala-opd/ttd-elektronik',
     BERITA_ACARA: '/kepala-opd/berita-acara',
   },
   BIRO_ORGANISASI: {
     DASHBOARD: '/biro-organisasi',
+    GRAFIK_EVALUASI_TAHUNAN: '/biro-organisasi/grafik-evaluasi-tahunan',
+    OPD: '/biro-organisasi/manajemen-opd',
     MANAJEMEN_OPD: '/biro-organisasi/manajemen-opd',
+    TIM_PENYUSUN: '/biro-organisasi/manajemen-tim-penyusun',
     MANAJEMEN_TIM_PENYUSUN: '/biro-organisasi/manajemen-tim-penyusun',
+    TIM_EVALUASI: '/biro-organisasi/manajemen-tim-evaluasi',
     MANAJEMEN_TIM_EVALUASI: '/biro-organisasi/manajemen-tim-evaluasi',
+    EVALUASI_SOP: '/biro-organisasi/manajemen-evaluasi-sop',
     MANAJEMEN_EVALUASI_SOP: '/biro-organisasi/manajemen-evaluasi-sop',
-    TTD: '/biro-organisasi/ttd',
+    TTD: '/biro-organisasi/ttd-elektronik',
+    DETAIL_EVALUASI: '/biro-organisasi/manajemen-evaluasi-sop/detail/$id',
+    DETAIL_SOP: '/biro-organisasi/detail-sop/$id',
   },
   TIM_EVALUASI: {
     DASHBOARD: '/tim-evaluasi',
     EVALUASI: '/tim-evaluasi/evaluasi',
+    EVALUASI_SOP: '/tim-evaluasi/evaluasi',
     DETAIL_EVALUASI: '/tim-evaluasi/evaluasi/opd',
+    DETAIL_EVALUASI_OPD: '/tim-evaluasi/evaluasi/opd',
+  },
+  VALIDASI: {
+    TTD_BERHASIL: '/validasi/ttd-berhasil',
   },
 } as const
 
@@ -95,6 +113,7 @@ export const IA = {
   NAV_BIRO_VERIFIKASI_BA: 'Verifikasi BA',
   NAV_TP_BA_KOORDINATOR: 'Berita Acara Koordinator',
   NAV_KO_BA_PENGESAHAN: 'Berita Acara Pengesahan',
+  NAV_TE_EVALUASI: 'Evaluasi SOP',
   BERITA_ACARA: 'Berita Acara',
   BATCH_EVALUASI_OPD: 'Batch Evaluasi OPD',
   TERJADWAL_EVALUASI_OPD: 'Terjadwal Evaluasi OPD',
@@ -119,23 +138,15 @@ export const STATUS_BADGE_CONFIG = {
 
 // ==================== HELPER FUNCTIONS ====================
 
-export function routePathPrefixForMatch(role: RoleKey): string {
-  switch (role) {
-    case 'TIM_PENYUSUN':
-    case 'KOORDINATOR_TIM_PENYUSUN':
-      return '/tim-penyusun'
-    case 'KEPALA_OPD':
-      return '/kepala-opd'
-    case 'BIRO_ORGANISASI':
-      return '/biro-organisasi'
-    case 'TIM_EVALUASI':
-      return '/tim-evaluasi'
-    default:
-      return '/'
-  }
+/**
+ * Returns the path string as a prefix for sidebar active matching.
+ * Used in sidebar config to mark child routes as active for parent items.
+ */
+export function routePathPrefixForMatch(path: string): string {
+  return path
 }
 
 export function getStatusBadgeConfig(status: string): StatusBadgeConfig {
-  return STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG] 
+  return STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG]
     || STATUS_BADGE_CONFIG['default']
 }

@@ -6,23 +6,30 @@
 // Types
 export type {
   KredensialTTE,
-  CreateKredensialTTE,
-  VerifyPinRequest,
   RiwayatTandaTangan,
-  TandaTanganPayload,
+  RegisterTteDto,
+  TandaTanganiBaDto,
+  TandaTanganiSopDto,
   TTESignaturePayload,
 } from './types/tte'
 
 export type { PeranTTE } from '@/types/common'
 
-/** Alias for PeranTTE for backward compatibility */
-export type TTERole = PeranTTE
+/** UI-facing TTE role type using kebab-case */
+export type TTERole = 'kepala-opd' | 'biro-organisasi' | 'tim-penyusun' | 'koordinator-tim-penyusun'
 
 // Services
 export { tteApi } from './services/tte.api'
 
 // Hooks - export all utilities
-export { useTTE, useTTESignature, getTTEProfile, setTTEProfile, getValidasiPengesahanUrl, getTTEVerificationSuccessUrl, hashPin } from './hooks/useTTE'
+export { 
+  useTTEProfil, 
+  useRegisterTTE, 
+  useMintTokenVerifikasi,
+  useTTESignature, 
+  getValidasiPengesahanUrl, 
+  getTTEVerificationSuccessUrl 
+} from './hooks/useTte'
 
 // Components
 export { PinVerificationDialog } from './components/PinVerificationDialog'

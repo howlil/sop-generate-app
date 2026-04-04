@@ -1,8 +1,7 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { LandingPage } from '@/pages/LandingPage'
-import { ROLES } from '@/utils/constants'
-import { ROUTES } from '@/utils/constants'
-import { getRole } from '@/utils/role'
+import { ROLES, ROUTES } from '@/utils/constants'
+import { getRole } from '@/stores/authStore'
 
 export const Route = createFileRoute('/')({
   beforeLoad: () => {

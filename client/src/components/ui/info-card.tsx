@@ -5,6 +5,10 @@ export interface InfoCardProps {
   children: ReactNode
   /** Color variant for contextual cards (success, warning, neutral). */
   variant?: 'neutral' | 'success' | 'warning' | 'info'
+  /** Optional title heading */
+  title?: string
+  /** Optional icon */
+  icon?: ReactNode
   className?: string
 }
 
@@ -19,9 +23,15 @@ const VARIANT_MAP: Record<string, string> = {
  * A small info/note card used for contextual information, warnings, and callouts.
  * Replaces the ~15 instances of `<div className="p-3 bg-gray-50 rounded-lg border border-gray-200">`.
  */
-export function InfoCard({ children, variant = 'neutral', className }: InfoCardProps) {
+export function InfoCard({ children, variant = 'neutral', title, icon, className }: InfoCardProps) {
   return (
     <div className={cn('p-3 rounded-lg border text-xs', VARIANT_MAP[variant], className)}>
+      {(title || icon) && (
+        <div className="flex items-center gap-1.5 mb-1.5 font-medium">
+          {icon && <span className="shrink-0 [&_svg]:w-4 [&_svg]:h-4">{icon}</span>}
+          {title && <span>{title}</span>}
+        </div>
+      )}
       {children}
     </div>
   )

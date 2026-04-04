@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '../services/sop.api'
-import type { StatusSOP } from '@/types/common'
 import { queryKeys } from '@/utils/query-keys'
 
 /**
@@ -26,7 +25,7 @@ export function useRequestEvaluasi() {
     },
     onSuccess: () => {
       // Invalidate SOP queries to refresh the list
-      queryClient.invalidateQueries({ queryKey: queryKeys.sop.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
     },
   })
 

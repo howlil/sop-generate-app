@@ -5,7 +5,16 @@
 import { Activity } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { EmptyState } from '@/components/ui/empty-state'
-import type { AuditLogEntry } from '@/types/audit'
+export interface AuditLogEntry {
+  id: string
+  action: string
+  timestamp: string
+  aktorNama: string
+  aktorRole: string
+  statusSebelum?: string
+  statusSesudah: string
+  keterangan?: string
+}
 
 const ACTION_LABEL: Record<string, string> = {
   BUAT_SOP: 'Membuat SOP',

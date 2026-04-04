@@ -4,19 +4,17 @@
  */
 import { useAuthStore } from '@/stores/authStore'
 import { ROLES, ROLE_LABELS } from '@/utils/constants'
-import { shallow } from 'zustand/shallow'
 import type { RoleKey } from '@/types/common'
 
 export { ROLES }
 
 export function useAppRole() {
-  // Use selector with shallow comparison for optimal performance
-  const user = useAuthStore((state) => state.user, shallow)
+  const user = useAuthStore((state) => state.user)
   const role = user?.peran as RoleKey | undefined
 
   const setRole = (newRole: RoleKey) => {
     if (user) {
-      useAuthStore.getState().setUser({ ...user, peran: newRole })
+      useAuthStore.getState().setUser({ ...user, peran: newRole as string })
     }
   }
 
@@ -35,6 +33,7 @@ export function useAppRole() {
     clearRole,
     getRoleLabel,
     getRoleNip,
+    getRoleUserName,
     getRoleDisplayName,
     isBiroOrganisasi: role === ROLES.BIRO_ORGANISASI,
     isKepalaOPD: role === ROLES.KEPALA_OPD,

@@ -5,7 +5,6 @@
 
 import { apiClient } from '@/utils/api-client'
 import type { PeraturanResponse, CreatePeraturanDto, UpdatePeraturanDto } from '../types/peraturan'
-import type { StatusPeraturan } from '@/types/common'
 
 export const peraturanApi = {
   /**

@@ -62,11 +62,6 @@ export const useAuthStore = create<AuthState>()(
   )
 )
 
-// Selectors
-export const selectUser = (state: AuthState) => state.user
-export const selectIsAuthenticated = (state: AuthState) => state.isAuthenticated
-export const selectRole = (state: AuthState) => state.user?.peran
-
 // Convenience getter for route guards
 export function getRole() {
   return useAuthStore.getState().user

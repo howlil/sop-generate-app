@@ -1,19 +1,27 @@
 /**
- * useDaftarSOPFilters Hook - Real API Implementation
+ * useDaftarSOPFilters Hook - SOP list filter state
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
 export interface DaftarSOPFilters {
   searchQuery: string
   statusFilter: string | null
+  filterPeraturan: string | null
+  filterTanggalDari: string | null
+  filterTanggalSampai: string | null
 }
 
 export function useDaftarSopFilters() {
   const [filters, setFilters] = useState<DaftarSOPFilters>({
     searchQuery: '',
     statusFilter: null,
+    filterPeraturan: null,
+    filterTanggalDari: null,
+    filterTanggalSampai: null,
   })
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
 
   const setSearchQuery = useCallback((query: string) => {
     setFilters((prev) => ({ ...prev, searchQuery: query }))
@@ -23,17 +31,57 @@ export function useDaftarSopFilters() {
     setFilters((prev) => ({ ...prev, statusFilter: status }))
   }, [])
 
+  const setFilterStatus = setStatusFilter
+
+  const setFilterPeraturan = useCallback((peraturan: string | null) => {
+    setFilters((prev) => ({ ...prev, filterPeraturan: peraturan }))
+  }, [])
+
+  const setFilterTanggalDari = useCallback((tanggal: string | null) => {
+    setFilters((prev) => ({ ...prev, filterTanggalDari: tanggal }))
+  }, [])
+
+  const setFilterTanggalSampai = useCallback((tanggal: string | null) => {
+    setFilters((prev) => ({ ...prev, filterTanggalSampai: tanggal }))
+  }, [])
+
   const clearFilters = useCallback(() => {
     setFilters({
       searchQuery: '',
       statusFilter: null,
+      filterPeraturan: null,
+      filterTanggalDari: null,
+      filterTanggalSampai: null,
     })
   }, [])
 
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (filters.statusFilter) count++
+    if (filters.filterPeraturan) count++
+    if (filters.filterTanggalDari) count++
+    if (filters.filterTanggalSampai) count++
+    return count
+  }, [filters])
+
   return {
     filters,
+    // Direct access aliases for pages that destructure flat
+    searchQuery: filters.searchQuery,
+    filterStatus: filters.statusFilter,
+    filterPeraturan: filters.filterPeraturan,
+    filterTanggalDari: filters.filterTanggalDari,
+    filterTanggalSampai: filters.filterTanggalSampai,
+    isFilterOpen,
+    setIsFilterOpen,
+    activeFilterCount,
+    // Setters
     setSearchQuery,
     setStatusFilter,
+    setFilterStatus,
+    setFilterPeraturan,
+    setFilterTanggalDari,
+    setFilterTanggalSampai,
     clearFilters,
   }
 }

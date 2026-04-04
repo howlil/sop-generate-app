@@ -25,7 +25,9 @@ export interface DetailPageLayoutProps {
   /** Blok header di dalam workspace (info, toolbar) */
   header?: React.ReactNode
   /** Konten utama */
-  main: React.ReactNode
+  main?: React.ReactNode
+  /** Alias for main - used in some pages */
+  children?: React.ReactNode
   /** Panel kiri (opsional) */
   leftPanel?: React.ReactNode
   /** Panel kanan (opsional) */
@@ -66,11 +68,13 @@ export function DetailPageLayout({
   actions,
   header,
   main,
+  children,
   leftPanel,
   rightPanel,
   className,
   workspaceClassName,
 }: DetailPageLayoutProps) {
+  const mainContent = main ?? children
   return (
     <div className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3'}>
       <PageHeader
@@ -90,7 +94,7 @@ export function DetailPageLayout({
         className={workspaceClassName}
         header={header}
         leftPanel={leftPanel}
-        main={main}
+        main={mainContent}
         rightPanel={rightPanel}
       />
     </div>

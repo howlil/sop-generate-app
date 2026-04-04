@@ -6,7 +6,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { sopApi } from '../services/sop.api'
 import { queryKeys } from '@/utils/query-keys'
 import { useToast } from '@/utils/ui'
-import type { StatusSOP, CreateSopRequest } from '../types/sop'
+import type { StatusSOP } from '@/types/common'
+import type { CreateSopRequest } from '../types/sop'
 
 const SOP_STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
@@ -16,16 +17,16 @@ export function canEditSop(status: StatusSOP): boolean {
 }
 
 export function canKepalaOpdSignSop(
-  status: StatusSOP,
-  batchList: any[],
-  opdName: string,
-  sopId: string,
-  sopNomor: string
+  status: string,
+  _batchList?: any[],
+  _opdName?: string,
+  _sopId?: string,
+  _sopNomor?: string
 ): boolean {
   return status === 'DITANDATANGANI_KOORDINATOR'
 }
 
-export function isSopEligibleForSigning(sop: any, batchList: any[]): boolean {
+export function isSopEligibleForSigning(sop: any, _batchList: any[]): boolean {
   return sop.status === 'DITANDATANGANI_KOORDINATOR'
 }
 

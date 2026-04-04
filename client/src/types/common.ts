@@ -47,7 +47,8 @@ export type StatusPengajuanEvaluasi =
 // ==================== SOP TYPES ====================
 
 export type JenisLangkahProsedur = 'TERMINATOR' | 'TASK' | 'DECISION'
-export type LangkahType = JenisLangkahProsedur
+/** Alias used in some hooks */
+export type StatusSop = StatusSOP
 export type SatuanWaktu = 'm' | 'h' | 'd' | 'w' | 'mo' | 'y'
 export type JenisLampiran = 'PERINGATAN' | 'KUALIFIKASI_PELAKSANAAN' | 'PERALATAN' | 'PENCATATAN_PENDATAAN'
 export type BagianSOP = 'METADATA' | 'LANGKAH_SOP' | 'LAMPIRAN_TEKS' | 'DASAR_HUKUM' | 'PELAKSANA' | 'DIAGRAM' | 'SOP_TERKAIT'
@@ -75,7 +76,7 @@ export type DiagramType = 'FLOWCHART' | 'BPMN'
 
 export interface DiagramNode {
   id: string
-  type: LangkahType
+  type: JenisLangkahProsedur
   x: number
   y: number
   label: string
@@ -133,11 +134,31 @@ export interface RiwayatDialogPerson {
 // ==================== SOP UI TYPES ====================
 
 export interface SOPDetailMetadata {
+  id?: string
   judul?: string
   nomor?: string
+  nomorSOP?: string
+  nama?: string
   tahun?: number
   tentang?: string
   opdId?: string
+  lembaga?: string
+  logoUrl?: string
+  tanggalEfektif?: string
+  tanggalRevisi?: string
+  /** Version number */
+  version?: number
+  // English property aliases used in SOPHeaderSection
+  name?: string
+  number?: string
+  institutionLogo?: string
+  institutionLines?: string[]
+  lawBasis?: string[]
+  relatedSop?: string[]
+  warning?: string
+  implementQualification?: string | string[]
+  equipment?: string | string[]
+  recordData?: string | string[]
 }
 
 export interface ProsedurRow {
@@ -156,7 +177,13 @@ export interface ProsedurRow {
   /** Alias for kelengkapan - used in diagram */
   mutu_kelengkapan?: string
   kelengkapan?: string
+  /** Alias for mutu waktu - used in diagram/editor */
+  mutu_waktu?: string
   keluaran?: string
+  /** Alias for keluaran - used in diagram/editor */
+  output?: string
+  /** Keterangan field */
+  keterangan?: string
   type?: 'terminator' | 'task' | 'decision'
   id_next_step_if_yes?: string
   id_next_step_if_no?: string
@@ -170,22 +197,33 @@ export interface SopItem {
   judul: string
   opdId: string
   status: string
+  nomorSOP?: string
+  author?: string
+  peraturanId?: string
+  tanggal?: string
+  terakhirDiperbarui?: string
+  lastEditedBy?: string
+  lastEditedAt?: string
+  versi?: number
   createdAt: string
   updatedAt: string
 }
 
-export interface SOPDaftarItem {
+export interface PelaksanaRow {
   id: string
-  judul: string
-  opdId: string
-  status: string
-  createdAt: string
-  updatedAt: string
+  nama: string
+  opdId?: string
+  urutan?: number
 }
 
 export interface SOPTemplate {
+  id?: string
   judul: string
   opdId: string
+  kode?: string
+  opd?: string
+  kategori?: string
+  versi?: number
   logoInstansi?: string
   namaLembaga?: string
 }
@@ -231,4 +269,9 @@ export interface RekapDetail {
     sesuai: number
     tidakSesuai: number
   }
+  /** Computed fields for grafik */
+  opdId?: string
+  opdNama?: string
+  totalPengajuan?: number
+  nilaiRataRata?: number
 }

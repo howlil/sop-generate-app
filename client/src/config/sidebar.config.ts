@@ -19,7 +19,19 @@ import {
 } from 'lucide-react'
 import { ROUTES, routePathPrefixForMatch } from '@/utils/constants'
 import { IA } from '@/utils/constants'
-import type { SidebarActiveConfig } from '@/utils/sidebar-matcher'
+
+type SidebarActiveConfig = Record<string, string[]>
+
+/**
+ * Convert SidebarActiveConfig (Record) to a function expected by RoleLayout
+ */
+export function createIsActiveFromConfig(config: SidebarActiveConfig) {
+  return (pathname: string, item: SidebarItem): boolean => {
+    const routes = config[item.to as string]
+    if (!routes) return pathname === item.to
+    return routes.some((route) => pathname.startsWith(route.replace('/$id', '')))
+  }
+}
 
 /**
  * Sidebar items per role
@@ -51,6 +63,14 @@ export const sidebarConfig: Record<RoleKey, SidebarItem[]> = {
   TIM_EVALUASI: [
     { to: ROUTES.TIM_EVALUASI.EVALUASI_SOP, label: IA.NAV_TE_EVALUASI, icon: FileCheck },
     { to: ROUTES.TIM_EVALUASI.DETAIL_EVALUASI_OPD, label: 'Detail Evaluasi', icon: FileText },
+  ],
+
+  KOORDINATOR_TIM_PENYUSUN: [
+    { to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP, label: 'Manajemen SOP', icon: FileText },
+    { to: ROUTES.TIM_PENYUSUN.PELAKSANA_SOP, label: 'Kelola Pelaksana SOP', icon: UserCog },
+    { to: ROUTES.TIM_PENYUSUN.PERATURAN, label: 'Manajemen Peraturan', icon: BookOpen },
+    { to: ROUTES.TIM_PENYUSUN.BERITA_ACARA, label: IA.NAV_TP_BA_KOORDINATOR, icon: FileSignature },
+    { to: ROUTES.TIM_PENYUSUN.TTD, label: 'TTD Elektronik', icon: PenLine },
   ],
 }
 
@@ -100,5 +120,15 @@ export const sidebarActiveConfig: Record<RoleKey, SidebarActiveConfig> = {
       routePathPrefixForMatch(ROUTES.TIM_EVALUASI.EVALUASI),
     ],
     [ROUTES.TIM_EVALUASI.DETAIL_EVALUASI_OPD]: [ROUTES.TIM_EVALUASI.DETAIL_EVALUASI_OPD],
+  },
+
+  KOORDINATOR_TIM_PENYUSUN: {
+    [ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP]: [
+      ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
+      routePathPrefixForMatch(ROUTES.TIM_PENYUSUN.DETAIL_SOP),
+    ],
+    [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP]: [ROUTES.TIM_PENYUSUN.PELAKSANA_SOP],
+    [ROUTES.TIM_PENYUSUN.BERITA_ACARA]: [ROUTES.TIM_PENYUSUN.BERITA_ACARA],
+    [ROUTES.TIM_PENYUSUN.TTD]: [ROUTES.TIM_PENYUSUN.TTD],
   },
 }
