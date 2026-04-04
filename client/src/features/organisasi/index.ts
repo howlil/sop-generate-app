@@ -15,6 +15,8 @@ export type {
   Peraturan,
   CreatePeraturanDto,
   UpdatePeraturanDto,
+  RiwayatVersiEntry,
+  SopMengait,
 } from './types/peraturan'
 
 export type { StatusPeraturan } from '@/types/common'

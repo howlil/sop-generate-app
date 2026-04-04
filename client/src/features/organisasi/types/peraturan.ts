@@ -37,3 +37,15 @@ export interface UpdatePeraturanDto {
 }
 
 export type Peraturan = PeraturanResponse
+
+export interface SopMengait {
+  id: string
+  nama: string
+}
+
+export interface RiwayatVersiEntry {
+  version: number
+  tanggal: string
+  diubahOleh: string
+  sopYangMengait: SopMengait[]
+}

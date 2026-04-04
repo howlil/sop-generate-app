@@ -1,67 +1,84 @@
 /**
- * Login Hero - Left panel mengikuti design style guide
- * 
- * Design: Clean, compact, professional - sesuai design.md
- * Tanpa gradient orbs berlebihan atau floating particles
+ * Login Hero - Government Standard Design
+ *
+ * Design: Formal, authoritative, professional
+ * - Government branding with official colors
+ * - Clear value proposition
+ * - Trust indicators
  */
-import { FileText, Shield, Check } from 'lucide-react'
+import { Shield, FileText, CheckCircle, Users, TrendingUp } from 'lucide-react'
 
 export function LoginHero() {
   return (
-    <div className="hidden lg:flex flex-col justify-between p-6 bg-white border-r border-gray-200">
-      
-      {/* Top Section - Logo & Title */}
-      <div className="space-y-4">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-50 rounded-md flex items-center justify-center border border-blue-200">
-            <FileText className="w-5 h-5 text-blue-600" />
+    <div className="flex flex-col justify-center h-full text-white">
+      {/* Header Section */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+            <FileText className="w-6 h-6 text-white" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-900">Biro Organisasi</p>
-            <p className="text-xs text-gray-500">Pemerintah Daerah</p>
+            <p className="text-sm font-semibold text-white">Sistem Informasi SOP</p>
+            <p className="text-xs text-blue-200">Biro Organisasi - Pemerintah Daerah</p>
           </div>
         </div>
 
-        {/* Main Title */}
-        <div className="pt-8">
-          <h1 className="text-sm font-semibold text-gray-900 mb-2">
-            Sistem Informasi SOP
-          </h1>
-          <p className="text-xs text-gray-600 leading-relaxed max-w-xs">
-            Platform digital untuk mengelola Standard Operating Procedure 
-            dengan proses terstruktur, transparan, dan teraudit.
-          </p>
+        <h1 className="text-xl font-bold mb-2">
+          Standard Operating Procedure Digital
+        </h1>
+        <p className="text-sm text-blue-100 leading-relaxed max-w-md">
+          Platform resmi untuk pengelolaan SOP secara digital dengan proses terstruktur, transparan, dan teraudit sesuai standar pemerintahan.
+        </p>
+      </div>
+
+      {/* Features Section */}
+      <div className="space-y-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+            <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Pengelolaan Terstruktur</p>
+              <p className="text-xs text-blue-200 mt-0.5">Draft hingga pengesahan</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+            <Shield className="w-5 h-5 text-blue-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Verifikasi Berjenjang</p>
+              <p className="text-xs text-blue-200 mt-0.5">Evaluasi multi-level</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+            <Users className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Kolaborasi Tim</p>
+              <p className="text-xs text-blue-200 mt-0.5">Multi-role access</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10">
+            <TrendingUp className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-xs font-medium text-white">Monitoring Real-time</p>
+              <p className="text-xs text-blue-200 mt-0.5">Dashboard interaktif</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Bottom Section - Features */}
-      <div className="space-y-3">
-        {/* Feature List */}
-        <div className="space-y-2">
-          <div className="flex items-start gap-2">
-            <Check className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
-            <span className="text-xs text-gray-600">Kelola SOP dari draft hingga pengesahan</span>
+      {/* Trust Indicators */}
+      <div className="pt-6 border-t border-white/10">
+        <div className="flex items-center gap-4 text-xs text-blue-200">
+          <div className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            <span>Terverifikasi</span>
           </div>
-          <div className="flex items-start gap-2">
-            <Check className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
-            <span className="text-xs text-gray-600">Evaluasi dan verifikasi berjenjang</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <Check className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
-            <span className="text-xs text-gray-600">Tanda tangan elektronik terintegrasi</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <Check className="w-3.5 h-3.5 text-green-600 mt-0.5 shrink-0" />
-            <span className="text-xs text-gray-600">Monitoring progres real-time</span>
-          </div>
-        </div>
-
-        {/* System Status */}
-        <div className="pt-4 border-t border-gray-200">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Shield className="w-3.5 h-3.5" />
-            <span>Sistem Terverifikasi</span>
+          <span className="text-white/30">|</span>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 bg-green-400 rounded-full" />
+            <span>Aman & Terenkripsi</span>
           </div>
         </div>
       </div>
