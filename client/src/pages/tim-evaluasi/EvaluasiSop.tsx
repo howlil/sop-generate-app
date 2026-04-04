@@ -21,12 +21,13 @@ import {
 } from '@/components/ui/dialog'
 import { InfoCard } from '@/components/ui/info-card'
 import { StatusHasilEvaluasiPicker } from '@/features/evaluasi'
-import { useEvaluasiDraft, getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI } from '@/features/evaluasi'
+import { useEvaluasiDraft, getStatusSopAfterEvaluasi, isFormEvaluasiSopComplete, STATUS_HASIL_EVALUASI, evaluasiApi } from '@/features/evaluasi'
 import { useToast } from '@/utils/ui'
 import { useCollapsiblePanels } from '@/utils/ui'
 import { ROUTES } from '@/utils/constants'
 import { useSop } from '@/features/sop'
 import { useSopStatus } from '@/features/sop/hooks/useSopStatus'
+import { usePengajuanEvaluasiAktif } from '@/features/evaluasi'
 import type { StatusSOP } from '@/types/common'
 
 export function EvaluasiSOPPage() {
@@ -36,6 +37,9 @@ export function EvaluasiSOPPage() {
   const { setSopStatusOverride } = useSopStatus()
   const { list: sopListRaw } = useSop()
   const sop = useMemo(() => sopListRaw?.find((s) => s.id === sopId), [sopListRaw, sopId])
+
+  // Fetch active pengajuan to get pengajuanId for API calls
+  const { pengajuanId, sopDetailId } = usePengajuanEvaluasiAktif(sop?.opdId)
 
   // Note: Status change from DIAJUKAN_EVALUASI to SEDANG_DIEVALUASI is now
   // triggered by explicit user action (banner in UI), not automatically on mount.
@@ -56,17 +60,34 @@ export function EvaluasiSOPPage() {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false)
   const { rightCollapsed: rightPanelCollapsed, setRightCollapsed: setRightPanelCollapsed } = useCollapsiblePanels()
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isFormEvaluasiSopComplete({ hasil: statusEvaluasi!, catatan: komentarEvaluasi })) {
       showToast('Silakan lengkapi status dan komentar evaluasi terlebih dahulu', 'error')
       return
     }
-    if (!sopId || !statusEvaluasi) return
-    const newStatus = getStatusSopAfterEvaluasi(statusEvaluasi) as StatusSOP
-    setSopStatusOverride(sopId, newStatus)
-    showToast(`Hasil evaluasi berhasil disimpan. Status SOP: ${newStatus}.`)
-    setIsSubmitOpen(false)
-    setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
+    if (!sopId || !statusEvaluasi || !pengajuanId || !sopDetailId) {
+      showToast('Data evaluasi belum tersedia. Silakan tunggu beberapa saat.', 'error')
+      return
+    }
+
+    try {
+      // Step 1: Save evaluation result via isiNilai API
+      await evaluasiApi.isiNilai(pengajuanId, sopDetailId, {
+        hasil: statusEvaluasi,
+        catatan: komentarEvaluasi,
+      })
+
+      // Step 2: Update local status
+      const newStatus = getStatusSopAfterEvaluasi(statusEvaluasi) as StatusSOP
+      setSopStatusOverride(sopId, newStatus)
+
+      showToast(`Hasil evaluasi berhasil dikirim. Status SOP: ${newStatus}.`)
+      setIsSubmitOpen(false)
+      setTimeout(() => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }), 1500)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal mengirim evaluasi'
+      showToast(message, 'error')
+    }
   }
 
   const isFormComplete = isFormEvaluasiSopComplete({ hasil: statusEvaluasi!, catatan: komentarEvaluasi })
