@@ -12,6 +12,19 @@ export type RoleKey =
   | 'KEPALA_OPD'
   | 'TIM_EVALUASI'
 
+export type PermissionKey =
+  | 'view_dashboard'
+  | 'manage_sop'
+  | 'evaluate_sop'
+  | 'verify_sop'
+  | 'approve_sop'
+  | 'manage_users'
+  | 'manage_opd'
+  | 'manage_tim'
+  | 'view_reports'
+  | 'change_password'
+  | 'sign_documents'
+
 export type PeranTTE = 'KEPALA_OPD' | 'BIRO_ORGANISASI' | 'KOORDINATOR_TIM_PENYUSUN'
 
 // ==================== STATUS TYPES ====================

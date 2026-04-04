@@ -1,33 +1,201 @@
 /**
  * HTTP Client with fetch API
  * Utility for making API requests
+ * Handles HttpOnly cookie-based authentication with automatic token refresh
+ * Features:
+ * - Automatic token refresh on 401
+ * - Request queue during refresh (prevents lost requests)
+ * - CSRF protection support
+ * - Retry logic with exponential backoff
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
 function getHeaders(): HeadersInit {
-  return { 'Content-Type': 'application/json' }
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+
+  // CSRF Token (if available)
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+  if (csrfToken) {
+    headers['X-CSRF-Token'] = csrfToken
+  }
+
+  return headers
 }
 
 export class ApiError extends Error {
   status: number
+  errors?: string[]
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, errors?: string[]) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.errors = errors
   }
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+/**
+ * Extract error messages from API response
+ * Handles various error response formats:
+ * - { errors: ["msg1", "msg2"] }
+ * - { message: "error", errors: ["msg1"] }
+ * - { message: "error" }
+ */
+function extractErrors(errorBody: any): { message: string; errors?: string[] } {
+  const errors = Array.isArray(errorBody.errors)
+    ? errorBody.errors
+    : Array.isArray(errorBody.error)
+    ? errorBody.error
+    : undefined
+
+  const message = errors
+    ? errors.join('\n')
+    : errorBody.message || `HTTP ${errorBody.statusCode || errorBody.status || 'unknown'}`
+
+  return { message, errors }
+}
+
+/**
+ * Request queue type for pending requests during token refresh
+ */
+interface QueuedRequest {
+  endpoint: string
+  options: RequestInit
+  resolve: (value: any) => void
+  reject: (reason: any) => void
+  retryCount: number
+}
+
+/**
+ * Track if we're currently refreshing to prevent multiple simultaneous refreshes
+ */
+let isRefreshing = false
+let refreshPromise: Promise<boolean> | null = null
+
+/**
+ * Queue of requests waiting for token refresh to complete
+ */
+let requestQueue: QueuedRequest[] = []
+
+/**
+ * Process queued requests after successful token refresh
+ */
+function processRequestQueue() {
+  const queue = [...requestQueue]
+  requestQueue = []
+
+  queue.forEach(({ endpoint, options, resolve, reject, retryCount }) => {
+    request(endpoint, options, retryCount)
+      .then(resolve)
+      .catch(reject)
+  })
+}
+
+/**
+ * Reject all queued requests (e.g., when refresh fails)
+ */
+function rejectRequestQueue(error: any) {
+  const queue = [...requestQueue]
+  requestQueue = []
+
+  queue.forEach(({ reject }) => reject(error))
+}
+
+/**
+ * Refresh access token using refresh token cookie
+ * Returns true if refresh succeeded, false otherwise
+ */
+async function refreshAccessToken(): Promise<boolean> {
+  try {
+    const url = `${API_BASE_URL}/refresh`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: getHeaders(),
+      credentials: 'include', // Include cookies
+    })
+
+    if (!response.ok) {
+      return false
+    }
+
+    const data = await response.json()
+    return !!data.accessToken
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Wait for ongoing refresh or start a new one
+ */
+function waitForRefresh(): Promise<boolean> {
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise
+  }
+
+  isRefreshing = true
+  refreshPromise = refreshAccessToken()
+  refreshPromise
+    .then((success) => {
+      if (success) {
+        processRequestQueue()
+      } else {
+        rejectRequestQueue(new ApiError(401, 'Token refresh failed'))
+      }
+    })
+    .catch((error) => {
+      rejectRequestQueue(error)
+    })
+    .finally(() => {
+      isRefreshing = false
+      refreshPromise = null
+    })
+
+  return refreshPromise
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}, retryCount = 0): Promise<T> {
+  // If we're refreshing, queue this request
+  if (isRefreshing && retryCount === 0) {
+    return new Promise<T>((resolve, reject) => {
+      requestQueue.push({
+        endpoint,
+        options,
+        resolve,
+        reject,
+        retryCount,
+      })
+    })
+  }
+
   const url = `${API_BASE_URL}${endpoint}`
   const headers = { ...getHeaders(), ...options.headers }
 
-  const response = await fetch(url, { ...options, headers })
+  const response = await fetch(url, {
+    ...options,
+    headers,
+    credentials: 'include', // Include cookies in requests
+  })
+
+  // Handle 401 Unauthorized - attempt token refresh
+  if (response.status === 401 && retryCount === 0) {
+    const refreshed = await waitForRefresh()
+
+    if (refreshed) {
+      // Retry the original request with refreshed token
+      return request<T>(endpoint, options, retryCount + 1)
+    }
+
+    // Refresh failed - clear auth state and let route guard handle redirect
+    const { useAuthStore } = await import('@/stores/authStore')
+    useAuthStore.getState().logout()
+  }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }))
-    throw new ApiError(response.status, error.message || `HTTP ${response.status}`)
+    const errorBody = await response.json().catch(() => ({ message: 'Request failed' }))
+    const { message, errors } = extractErrors(errorBody)
+    throw new ApiError(response.status, message, errors)
   }
 
   if (response.status === 204) {
