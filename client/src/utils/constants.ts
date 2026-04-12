@@ -38,13 +38,17 @@ export const ROLE_LABELS: Record<RoleKey, string> = {
 
 export const ROUTES = {
   HOME: "/",
+  AUTH: {
+    LOGIN: "/auth/login",
+  },
   TIM_PENYUSUN: {
     SOP: "/tim-penyusun/sop",
+    DETAIL_SOP: "/tim-penyusun/sop/$id",
     PELAKSANA: "/tim-penyusun/pelaksana",
     PERATURAN: "/tim-penyusun/peraturan",
     KOORDINATOR_TTE: "/tim-penyusun/koordinator/tte",
     KOORDINATOR_BERITA_ACARA: "/tim-penyusun/koordinator/berita-acara",
-    DETAIL_SOP: "/tim-penyusun/sop/$id",
+    DETAIL_BERITA_ACARA: "/tim-penyusun/koordinator/berita-acara/$id",
   },
   KEPALA_OPD: {
     SOP: "/kepala-opd/sop",
@@ -57,17 +61,17 @@ export const ROUTES = {
     TIM_PENYUSUN: "/biro-organisasi/tim-penyusun",
     TIM_EVALUASI: "/biro-organisasi/tim-evaluasi",
     EVALUASI: "/biro-organisasi/evaluasi",
-    TTE: "/biro-organisasi/tte",
     DETAIL_EVALUASI: "/biro-organisasi/evaluasi/$id",
     DETAIL_SOP: "/biro-organisasi/sop/$id",
+    TTE: "/biro-organisasi/tte",
   },
   TIM_EVALUASI: {
-    DASHBOARD: "/tim-evaluasi",
-    PENILAIAN: "/tim-evaluasi/penilaian",
-    DETAIL_PENILAIAN_OPD: "/tim-evaluasi/penilaian/$opdId",
+    EVALUASI: "/tim-evaluasi/evaluasi",
+    DETAIL_EVALUASI_OPD: "/tim-evaluasi/evaluasi/opd/$opdId",
   },
   VALIDASI: {
     TTD_BERHASIL: "/validasi/ttd-berhasil",
+    PENGESAHAN: "/validasi/pengesahan/$id",
   },
 } as const;
 

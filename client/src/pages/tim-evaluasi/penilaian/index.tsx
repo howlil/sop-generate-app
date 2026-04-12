@@ -132,7 +132,7 @@ export function DaftarSOPEvaluasi() {
                     <Table.Td className="text-center">
                       <IconActionButton
                         icon={Eye}
-                        to={ROUTES.TIM_EVALUASI.DETAIL_PENILAIAN_OPD}
+                        to={ROUTES.TIM_EVALUASI.DETAIL_EVALUASI_OPD}
                         params={{ opdId: opd.id }}
                         title="Lihat SOP"
                         variant="outline"

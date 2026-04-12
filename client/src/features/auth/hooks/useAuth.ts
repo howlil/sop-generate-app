@@ -10,6 +10,7 @@ import type { LoginRequest } from "../types/auth";
 import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
 import { useToast, showErrorMessages } from "@/utils/toast";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { ROUTES } from "@/utils/constants";
 
 export function useAuth() {
   const navigate = useNavigate();
@@ -45,12 +46,12 @@ export function useAuth() {
       // This ensures route guards can read the user state from localStorage
       try {
         await ensureAuthHydrated(1000);
-        navigate({ to: redirect || "/" });
+        navigate({ to: redirect || ROUTES.HOME });
       } catch (error) {
         console.error('[Auth] Error during navigation after login:', error);
         // Fallback: navigate anyway after a short delay
         setTimeout(() => {
-          navigate({ to: redirect || "/" });
+          navigate({ to: redirect || ROUTES.HOME });
         }, 100);
       }
     },

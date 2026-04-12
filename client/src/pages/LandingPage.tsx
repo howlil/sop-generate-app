@@ -10,9 +10,11 @@
  * 6. CTA Banner
  * 7. Footer
  */
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
+import { ROUTES } from '@/utils/constants'
 import logoSvg from '@/assets/logo.svg'
+import heroBg from '@/assets/Kantor_Gubernur_Sumbar_belakang.jpg'
 import {
   FileText,
   Users,
@@ -160,20 +162,33 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 // ==================== PAGE ====================
 
 export function LandingPage() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <div className="min-h-screen bg-white">
       {/* ===== HEADER ===== */}
-      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-md">
+      <header className={cn(
+        'sticky top-0 z-50 transition-all duration-300',
+        scrolled
+          ? 'border-b border-gray-200 bg-white/90 backdrop-blur-md shadow-sm'
+          : 'bg-transparent border-0'
+      )}>
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src={logoSvg} alt="Logo" className="w-9 h-9" />
             <div className="hidden sm:block">
-              <h1 className="text-sm font-semibold text-gray-900 leading-tight">Sistem Informasi SOP</h1>
-              <p className="text-[11px] text-gray-500 leading-tight">Biro Organisasi</p>
+              <h1 className={cn('text-sm font-semibold leading-tight transition-colors', scrolled ? 'text-gray-900' : 'text-white')}>Sistem Informasi SOP</h1>
+              <p className={cn('text-[11px] leading-tight transition-colors', scrolled ? 'text-gray-500' : 'text-blue-200')}>Biro Organisasi</p>
             </div>
           </div>
-          <Link to="/auth/login">
-            <Button variant="default" size="sm" className="h-8 text-xs">
+          <Link to={ROUTES.AUTH.LOGIN}>
+            <Button variant={scrolled ? 'default' : 'outline'} size="sm" className={cn('h-8 text-xs transition-all', scrolled ? '' : 'border-white/40 text-white hover:bg-white/10 hover:text-white bg-transparent')}>
               Masuk
               <ArrowRight className="w-3.5 h-3.5" />
             </Button>
@@ -182,46 +197,48 @@ export function LandingPage() {
       </header>
 
       {/* ===== HERO ===== */}
-      <section className="relative overflow-hidden">
-        {/* Background decoration */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-200/20 rounded-full blur-3xl" />
+      <section
+        className="relative w-full h-screen bg-no-repeat bg-cover bg-center text-sm flex flex-col justify-start pt-32 md:pt-40"
+        style={{ backgroundImage: `url(${heroBg})` }}
+      >
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30" />
 
-        <div className="relative max-w-6xl mx-auto px-4 py-20 md:py-28">
-          <div className="text-center space-y-6 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-full">
-              <Clock className="w-3.5 h-3.5 text-blue-600" />
-              <span className="text-xs font-medium text-blue-700">Platform Digital Terintegrasi</span>
-            </div>
+        <div className="relative flex items-center gap-2 border border-white/30 hover:border-white/50 rounded-full w-max mx-auto px-4 py-2 mt-0 md:mt-0 bg-white/10 backdrop-blur-sm">
+          <Clock className="w-4 h-4 text-white" />
+          <span className="font-medium text-white">Platform Digital Terintegrasi</span>
+          <span className="text-white/60">—</span>
+          <a href="#cara-kerja" className="flex items-center gap-1 font-medium text-white hover:text-blue-100">
+            <span>Pelajari lebih lanjut</span>
+            <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+              <path d="M3.959 9.5h11.083m0 0L9.501 3.958M15.042 9.5l-5.541 5.54" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+        </div>
 
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
-              Kelola SOP Lebih Cepat,{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Transparan, dan Terukur
-              </span>
-            </h2>
+        <h5 className="relative text-4xl md:text-7xl font-medium max-w-[850px] text-center mx-auto mt-8 text-white">
+          Kelola SOP Lebih Cepat, Transparan, dan Terukur
+        </h5>
 
-            <p className="text-gray-600 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-              Dari penyusunan hingga pengesahan — seluruh proses SOP terdigitalisasi dengan jejak audit yang lengkap.
-              Tidak ada lagi dokumen hilang, versi membingungkan, atau proses yang tidak terlacak.
-            </p>
+        <p className="relative text-sm md:text-base mx-auto max-w-2xl text-center mt-6 text-gray-300 max-md:px-2">
+          Dari penyusunan hingga pengesahan — seluruh proses SOP terdigitalisasi dengan jejak audit yang lengkap.
+          Tidak ada lagi dokumen hilang, versi membingungkan, atau proses yang tidak terlacak.
+        </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-              <Link to="/auth/login">
-                <Button variant="default" size="lg" className="w-full sm:w-auto h-11 text-sm">
-                  Mulai Sekarang
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
-              <a href="#cara-kerja" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto h-11 text-sm">
-                  Lihat Cara Kerja
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </a>
-            </div>
-          </div>
+        <div className="relative mx-auto w-full flex items-center justify-center gap-3 mt-4">
+          <Link to={ROUTES.AUTH.LOGIN}>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium transition">
+              Mulai Sekarang
+            </button>
+          </Link>
+          <a href="#cara-kerja">
+            <button className="flex items-center gap-2 border border-white/40 hover:bg-white/10 rounded-full px-6 py-3 text-white">
+              <span>Lihat Cara Kerja</span>
+              <svg width="6" height="8" viewBox="0 0 6 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M1.25.5 4.75 4l-3.5 3.5" stroke="white" strokeOpacity=".6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </a>
         </div>
       </section>
 
@@ -340,7 +357,7 @@ export function LandingPage() {
             Mulai gunakan platform ini untuk menyusun, mengevaluasi, dan mengesahkan SOP secara digital.
             Hubungi admin Biro Organisasi untuk pembuatan akun.
           </p>
-          <Link to="/auth/login">
+          <Link to={ROUTES.AUTH.LOGIN}>
             <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 h-11 text-sm font-medium">
               Masuk ke Sistem
               <ArrowRight className="w-4 h-4" />

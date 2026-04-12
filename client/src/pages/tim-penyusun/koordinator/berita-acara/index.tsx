@@ -5,7 +5,7 @@ import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FileText, Eye, AlertCircle, RefreshCw } from 'lucide-react'
-import type { PengajuanEvaluasi } from '@/features/evaluasi/types/evaluasi'
+import { ROUTES } from '@/utils/constants'
 
 const STATUS_LABEL: Record<string, string> = {
   DIAJUKAN: 'Diajukan',
@@ -163,7 +163,7 @@ export function BeritaAcaraKoordinatorPage() {
                         variant="outline"
                         onClick={() =>
                           navigate({
-                            to: '/tim-penyusun/koordinator/berita-acara/$id',
+                            to: ROUTES.TIM_PENYUSUN.DETAIL_BERITA_ACARA,
                             params: { id: pengajuan.id },
                           })
                         }

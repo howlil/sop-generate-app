@@ -1,6 +1,7 @@
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { ROUTES } from '@/utils/constants'
 
 interface RouteErrorPageProps {
   error: unknown
@@ -28,7 +29,7 @@ export function RouteErrorPage({ error, reset }: RouteErrorPageProps) {
             Coba Lagi
           </Button>
           <Button asChild variant="outline" className="gap-2">
-            <Link to="/" search={{ denied: undefined, redirect: undefined }}>
+            <Link to={ROUTES.HOME} search={{ denied: undefined, redirect: undefined }}>
               <Home className="h-4 w-4" />
               Kembali ke Beranda
             </Link>

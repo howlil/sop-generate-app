@@ -250,7 +250,7 @@ export function DetailEvaluasiOPD() {
     onSuccess: () => {
       setIsSubmitOpen(false);
       setTimeout(
-        () => navigate({ to: ROUTES.TIM_EVALUASI.PENILAIAN }),
+        () => navigate({ to: ROUTES.TIM_EVALUASI.EVALUASI }),
         POST_SUBMIT_DELAY_MS,
       );
     },
@@ -286,11 +286,11 @@ export function DetailEvaluasiOPD() {
     return (
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.TIM_EVALUASI.PENILAIAN },
+          { label: "Evaluasi SOP", to: ROUTES.TIM_EVALUASI.EVALUASI },
         ]}
         title="Evaluasi SOP"
         description=""
-        backTo={ROUTES.TIM_EVALUASI.PENILAIAN}
+        backTo={ROUTES.TIM_EVALUASI.EVALUASI}
         main={<p className="p-4 text-sm text-gray-600">OPD tidak ditemukan.</p>}
       />
     );
@@ -340,12 +340,12 @@ export function DetailEvaluasiOPD() {
       )}
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.TIM_EVALUASI.PENILAIAN },
+          { label: "Evaluasi SOP", to: ROUTES.TIM_EVALUASI.EVALUASI },
           { label: opd.nama },
         ]}
         title={`Evaluasi SOP — ${opd.nama}`}
         description="Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
-        backTo={ROUTES.TIM_EVALUASI.PENILAIAN}
+        backTo={ROUTES.TIM_EVALUASI.EVALUASI}
         backSize="icon"
         header={
           <>

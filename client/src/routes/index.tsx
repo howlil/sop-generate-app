@@ -17,7 +17,7 @@ export const Route = createFileRoute('/')({
       [ROLES.TIM_PENYUSUN]: ROUTES.TIM_PENYUSUN.SOP,
       [ROLES.KOORDINATOR_TIM_PENYUSUN]: ROUTES.TIM_PENYUSUN.SOP,
       [ROLES.KEPALA_OPD]: ROUTES.KEPALA_OPD.SOP,
-      [ROLES.TIM_EVALUASI]: ROUTES.TIM_EVALUASI.PENILAIAN,
+      [ROLES.TIM_EVALUASI]: ROUTES.TIM_EVALUASI.EVALUASI,
     }
     const targetRoute = roleDashboards[userRole]
     if (targetRoute) {
