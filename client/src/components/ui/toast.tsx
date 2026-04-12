@@ -22,12 +22,12 @@ export function Toast({ message, type = 'success', className, role = 'status' }:
       role={role}
       aria-live={role === 'alert' ? 'assertive' : 'polite'}
       className={cn(
-        'rounded-md border px-4 py-2 text-sm flex items-center gap-2',
+        'rounded-md border px-4 py-2 text-sm flex items-start gap-2 max-w-sm w-full',
         typeClasses[type],
         className
       )}
     >
-      {message}
+      <span className="flex-1 break-words whitespace-pre-wrap">{message}</span>
     </div>
   )
 }

@@ -26,7 +26,7 @@ export const useUIStore = create<UIState>((set) => ({
   sidebarOpen: true,
 
   addToast: (message, type = 'info') => {
-    const id = Math.random().toString(36).slice(2)
+    const id = crypto.randomUUID()
     set((state) => ({ toasts: [...state.toasts, { message, type, id }] }))
 
     // Auto-dismiss after 5 seconds (increased for accessibility)
@@ -45,9 +45,4 @@ export const useUIStore = create<UIState>((set) => ({
 
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
 }))
-
-// Convenience function for use outside components
-export const showToast = (message: string, type: ToastType = 'info') => {
-  useUIStore.getState().addToast(message, type)
-}
 

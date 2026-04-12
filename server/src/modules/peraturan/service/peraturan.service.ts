@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
-  BadRequestException,
 } from '@nestjs/common';
 import { PeraturanRepository } from '../repository/peraturan.repository';
 import {
@@ -11,7 +10,7 @@ import {
   UpdatePeraturanDto,
   PeraturanResponseDto,
 } from '../dto/peraturan.dto';
-import { PeranPengguna, StatusPeraturan } from '../../../generated/prisma';
+import { PeranPengguna } from '../../../generated/prisma';
 import { PeraturanMessages, LampiranMessages } from '../../../common/messages';
 
 type JwtUser = {
@@ -80,30 +79,12 @@ export class PeraturanService {
       throw new NotFoundException(PeraturanMessages.PERATURAN_NOT_FOUND);
     }
 
-    if (peraturan.status === StatusPeraturan.DICABUT) {
-      throw new BadRequestException(PeraturanMessages.PERATURAN_DICABUT);
-    }
-
     return this.peraturanRepository.update(id, {
       namaPeraturan: dto.namaPeraturan,
       nomor: dto.nomor,
       tahun: dto.tahun,
       tentang: dto.tentang,
     });
-  }
-
-  async revoke(id: string): Promise<PeraturanResponseDto> {
-    const peraturan = await this.peraturanRepository.findById(id);
-
-    if (!peraturan) {
-      throw new NotFoundException(PeraturanMessages.PERATURAN_NOT_FOUND);
-    }
-
-    if (peraturan.status === StatusPeraturan.DICABUT) {
-      throw new ConflictException(PeraturanMessages.PERATURAN_ALREADY_REVOKED);
-    }
-
-    return this.peraturanRepository.revoke(id);
   }
 
   async delete(id: string): Promise<void> {

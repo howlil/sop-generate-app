@@ -1,8 +1,7 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/utils/cn'
-
-const DEFAULT_PAGE_SIZE = 10
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/utils/cn";
+import { DEFAULT_PAGE_SIZE } from "@/utils/constants";
 
 export interface PaginationProps {
   /** Total jumlah item */

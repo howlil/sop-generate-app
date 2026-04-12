@@ -5,6 +5,7 @@ import {
   StatusPengajuanEvaluasi,
   HasilEvaluasi,
   StatusSOP,
+  Prisma,
 } from '../../../generated/prisma';
 import {
   assertValidPengajuanTransition,
@@ -43,6 +44,14 @@ const INCLUDE = {
     },
   },
   diselesaikanOleh: { select: { id: true, nama: true } },
+  diverifikasiOlehUser: { select: { id: true, nama: true } },
+  ditandatanganiOlehKoordinatorUser: { select: { id: true, nama: true } },
+  logNilaiEvaluasi: {
+    include: {
+      evaluator: { select: { id: true, nama: true } },
+    },
+    orderBy: { createdAt: Prisma.SortOrder.desc },
+  },
 };
 
 @Injectable()
@@ -54,7 +63,7 @@ export class EvaluasiRepository {
     status?: StatusPengajuanEvaluasi;
     jenis?: JenisPengajuanEvaluasi;
   }) {
-    return this.prisma.pengajuanEvaluasi.findMany({
+    const results = await this.prisma.pengajuanEvaluasi.findMany({
       where: {
         ...(filter.opdId && { opdId: filter.opdId }),
         ...(filter.status && { status: filter.status }),
@@ -63,13 +72,76 @@ export class EvaluasiRepository {
       include: INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
+
+    // Transform each result to include sopList and computed fields
+    return results.map((result) => {
+      const typedResult = result as any;
+      const sopList = typedResult.nilaiEvaluasi.map((nilai: any) => ({
+        id: nilai.id,
+        sopDetailId: nilai.sopDetailId,
+        judul: nilai.sopDetail?.sop?.judul ?? '',
+        nomor: nilai.sopDetail?.nomorSOP ?? '',
+        nama: nilai.sopDetail?.sop?.judul ?? '',
+        nomorSOP: nilai.sopDetail?.nomorSOP ?? '',
+        status: nilai.sopDetail?.status ?? '',
+        hasil: nilai.hasil,
+      }));
+
+      return {
+        ...result,
+        sopList,
+        opdNama: typedResult.opd?.nama,
+        tanggalVerifikasi: typedResult.diverifikasiOlehUser ? result.updatedAt.toISOString() : null,
+        namaBiro: typedResult.diverifikasiOlehUser?.nama,
+      };
+    });
   }
 
   async findById(id: string) {
-    return this.prisma.pengajuanEvaluasi.findUnique({
+    const result = await this.prisma.pengajuanEvaluasi.findUnique({
       where: { id },
       include: INCLUDE,
     });
+
+    if (!result) return null;
+
+    const typedResult = result as any;
+
+    // Transform nilaiEvaluasi to sopList format for client compatibility
+    const sopList = typedResult.nilaiEvaluasi.map((nilai: any) => ({
+      id: nilai.id,
+      sopDetailId: nilai.sopDetailId,
+      judul: nilai.sopDetail?.sop?.judul ?? '',
+      nomor: nilai.sopDetail?.nomorSOP ?? '',
+      nama: nilai.sopDetail?.sop?.judul ?? '',
+      nomorSOP: nilai.sopDetail?.nomorSOP ?? '',
+      status: nilai.sopDetail?.status ?? '',
+      hasil: nilai.hasil,
+    }));
+
+    // Transform logNilaiEvaluasi for riwayat display
+    const riwayatEvaluasi = typedResult.logNilaiEvaluasi.map((log: any) => ({
+      id: log.id,
+      sopDetailId: log.sopDetailId,
+      evaluatorId: log.evaluatorId,
+      evaluatorNama: log.evaluator?.nama ?? '',
+      hasilSebelum: log.hasilSebelum,
+      hasilSesudah: log.hasilSesudah,
+      catatanSebelum: log.catatanSebelum,
+      catatanSesudah: log.catatanSesudah,
+      createdAt: log.createdAt.toISOString(),
+    }));
+
+    return {
+      ...result,
+      sopList,
+      riwayatEvaluasi,
+      // Computed fields for client convenience
+      opdNama: typedResult.opd?.nama,
+      // Use updatedAt when diverifikasiOlehUserId is set as verification date
+      tanggalVerifikasi: typedResult.diverifikasiOlehUserId ? result.updatedAt.toISOString() : null,
+      namaBiro: typedResult.diverifikasiOlehUser?.nama,
+    };
   }
 
   // EVL-02: check for existing active evaluation per OPD per jenis
@@ -329,19 +401,22 @@ export class EvaluasiRepository {
     });
   }
 
-  // EVL-09: annual recap per OPD
+  // EVL-09: annual recap per OPD with detailed breakdown
   async rekap(tahun: number) {
     const start = new Date(`${tahun}-01-01`);
     const end = new Date(`${tahun + 1}-01-01`);
 
+    // Get all pengajuan with their nilaiEvaluasi
     const list = await this.prisma.pengajuanEvaluasi.findMany({
       where: { createdAt: { gte: start, lt: end } },
       include: {
         opd: { select: { id: true, nama: true } },
         nilaiEvaluasi: { select: { hasil: true } },
       },
+      orderBy: { createdAt: 'asc' },
     });
 
+    // Aggregate per OPD
     const byOpd = new Map<
       string,
       {
@@ -351,6 +426,19 @@ export class EvaluasiRepository {
         selesai: number;
         sesuai: number;
         tidakSesuai: number;
+        nilaiOPDValues: number[]; // Collect all nilaiOPD for averaging
+        pengajuanDetails: Array<{
+          pengajuanEvaluasiId: string;
+          jenis: string;
+          status: string;
+          nilaiOPD: number | null;
+          tanggalEvaluasi: string | null;
+          detailSopCount: number;
+          hasilEvaluasi: {
+            sesuai: number;
+            tidakSesuai: number;
+          };
+        }>;
       }
     >();
 
@@ -363,17 +451,75 @@ export class EvaluasiRepository {
           selesai: 0,
           sesuai: 0,
           tidakSesuai: 0,
+          nilaiOPDValues: [],
+          pengajuanDetails: [],
         });
       }
       const entry = byOpd.get(p.opdId)!;
       entry.total++;
-      if (DONE_STATUSES.includes(p.status)) entry.selesai++;
+      
+      if (DONE_STATUSES.includes(p.status)) {
+        entry.selesai++;
+      }
+      
+      // Collect nilaiOPD if exists
+      if (p.nilaiOPD != null) {
+        entry.nilaiOPDValues.push(p.nilaiOPD);
+      }
+      
+      // Aggregate hasil evaluasi
       for (const n of p.nilaiEvaluasi) {
         if (n.hasil === HasilEvaluasi.SESUAI) entry.sesuai++;
         if (n.hasil === HasilEvaluasi.TIDAK_SESUAI) entry.tidakSesuai++;
       }
+      
+      // Store detail per pengajuan
+      entry.pengajuanDetails.push({
+        pengajuanEvaluasiId: p.id,
+        jenis: p.jenis,
+        status: p.status,
+        nilaiOPD: p.nilaiOPD,
+        tanggalEvaluasi: p.tanggalEvaluasi?.toISOString() ?? null,
+        detailSopCount: p.nilaiEvaluasi.length,
+        hasilEvaluasi: {
+          sesuai: p.nilaiEvaluasi.filter(n => n.hasil === HasilEvaluasi.SESUAI).length,
+          tidakSesuai: p.nilaiEvaluasi.filter(n => n.hasil === HasilEvaluasi.TIDAK_SESUAI).length,
+        },
+      });
     }
 
-    return { tahun, opd: Array.from(byOpd.values()) };
+    // Calculate rata-rata nilaiOPD per OPD
+    const result = Array.from(byOpd.values()).map(entry => {
+      const nilaiRataRata = entry.nilaiOPDValues.length > 0
+        ? entry.nilaiOPDValues.reduce((sum, val) => sum + val, 0) / entry.nilaiOPDValues.length
+        : null;
+
+      return {
+        opdId: entry.opdId,
+        opdNama: entry.opdNama,
+        total: entry.total,
+        selesai: entry.selesai,
+        sesuai: entry.sesuai,
+        tidakSesuai: entry.tidakSesuai,
+        nilaiRataRata: nilaiRataRata ? Math.round(nilaiRataRata * 100) / 100 : null,
+        pengajuanDetails: entry.pengajuanDetails,
+      };
+    });
+
+    // Calculate overall statistics
+    const totalPengajuan = result.reduce((sum, opd) => sum + opd.total, 0);
+    const totalSelesai = result.reduce((sum, opd) => sum + opd.selesai, 0);
+    const allNilaiOPD = result.flatMap(opd => opd.pengajuanDetails.map(p => p.nilaiOPD)).filter((v): v is number => v != null);
+    const overallNilaiRataRata = allNilaiOPD.length > 0
+      ? Math.round((allNilaiOPD.reduce((sum, val) => sum + val, 0) / allNilaiOPD.length) * 100) / 100
+      : null;
+
+    return {
+      tahun,
+      totalPengajuan,
+      totalSelesai,
+      overallNilaiRataRata,
+      opd: result,
+    };
   }
 }

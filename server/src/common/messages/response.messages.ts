@@ -132,7 +132,6 @@ export const LampiranMessages = {
   DETAIL_SOP_NOT_FOUND: 'Detail SOP tidak ditemukan',
   PERATURAN_EXISTS: 'Peraturan sudah terdaftar sebagai dasar hukum',
   PERATURAN_NOT_FOUND: 'Peraturan tidak ditemukan',
-  PERATURAN_DICABUT: 'Peraturan berstatus DICABUT tidak dapat dijadikan dasar hukum',
   PERATURAN_DIFFERENT_OPD: 'Peraturan harus berasal dari OPD yang sama dengan SOP',
   PERATURAN_AS_DASAR_HUKUM: 'Peraturan tidak dapat dihapus karena masih digunakan sebagai dasar hukum SOP',
   SOP_SELF_REFERENCE: 'SOP tidak boleh terkait dengan dirinya sendiri',
@@ -178,8 +177,6 @@ export const PeraturanMessages = {
   // Error
   PERATURAN_NOT_FOUND: 'Peraturan tidak ditemukan',
   PERATURAN_NAME_EXISTS: 'Nama peraturan sudah terdaftar',
-  PERATURAN_DICABUT: 'Peraturan yang sudah dicabut tidak dapat diubah',
-  PERATURAN_ALREADY_REVOKED: 'Peraturan sudah berstatus DICABUT',
 } as const;
 
 // ==================== EVALUASI MESSAGES ====================

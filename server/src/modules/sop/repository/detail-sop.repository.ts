@@ -7,7 +7,7 @@ const FULL_INCLUDE = {
   lampiran: true,
   dasarHukum: {
     include: {
-      peraturan: { select: { id: true, namaPeraturan: true, nomor: true, tahun: true, status: true } },
+      peraturan: { select: { id: true, namaPeraturan: true, nomor: true, tahun: true } },
     },
   },
   swimlanes: {

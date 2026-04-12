@@ -43,6 +43,47 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  async findAllKepala(
+    skip = 0,
+    take = 100,
+    opdId?: string,
+  ): Promise<UserWithoutPassword[]> {
+    return this.prisma.pengguna.findMany({
+      skip,
+      take,
+      where: {
+        deletedAt: null,
+        peran: 'KEPALA_OPD',
+        ...(opdId ? { opdId } : {}),
+      },
+      select: {
+        id: true,
+        email: true,
+        nama: true,
+        peran: true,
+        opdId: true,
+        nip: true,
+        jabatan: true,
+        pangkat: true,
+        nohp: true,
+        createdAt: true,
+        updatedAt: true,
+        opd: { select: { nama: true } },
+      },
+    }) as Promise<(UserWithoutPassword & { opd: { nama: string } | null })[]>;
+  }
+
+  async findActiveKepalaOpd(opdId: string): Promise<{ id: string } | null> {
+    return this.prisma.pengguna.findFirst({
+      where: {
+        opdId,
+        peran: 'KEPALA_OPD',
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+  }
+
   async findById(id: string): Promise<UserWithoutPassword | null> {
     return this.prisma.pengguna.findUnique({
       where: { id, deletedAt: null },
@@ -237,6 +278,41 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  async addToTimEvaluasi(userId: string): Promise<void> {
+    // Check if already exists to avoid conflict
+    const existing = await this.prisma.anggotaTimEvaluasi.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      await this.prisma.anggotaTimEvaluasi.create({
+        data: {
+          userId,
+          status: 'AKTIF',
+        },
+      });
+    }
+  }
+
+  async addToTimPenyusun(userId: string, opdId: string): Promise<void> {
+    // Check if already exists to avoid conflict
+    const existing = await this.prisma.anggotaTimPenyusun.findUnique({
+      where: { userId_opdId: { userId, opdId } },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      await this.prisma.anggotaTimPenyusun.create({
+        data: {
+          userId,
+          opdId,
+          status: 'AKTIF',
+        },
+      });
+    }
+  }
+
   // [P2-D] Create user with role lock transaction to prevent race condition
   async createWithRoleLock(
     data: any,
@@ -270,7 +346,7 @@ export class UserRepository implements IUserRepository {
       }
 
       // Create the user
-      return tx.pengguna.create({
+      const user = await tx.pengguna.create({
         data,
         select: {
           id: true,
@@ -286,6 +362,27 @@ export class UserRepository implements IUserRepository {
           updatedAt: true,
         },
       });
+
+      // Auto-create membership entry for KOORDINATOR_TIM_PENYUSUN
+      // (KEPALA_OPD doesn't need membership in AnggotaTimPenyusun)
+      if (peran === 'KOORDINATOR_TIM_PENYUSUN') {
+        const existingMembership = await tx.anggotaTimPenyusun.findUnique({
+          where: { userId_opdId: { userId: user.id, opdId } },
+          select: { id: true },
+        });
+
+        if (!existingMembership) {
+          await tx.anggotaTimPenyusun.create({
+            data: {
+              userId: user.id,
+              opdId,
+              status: 'AKTIF',
+            },
+          });
+        }
+      }
+
+      return user;
     });
   }
 }

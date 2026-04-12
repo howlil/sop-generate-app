@@ -2,18 +2,14 @@
  * useTimEvaluasi hook - TanStack Query
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { timEvaluasiApi } from '@/features/evaluasi'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import type { CreateTimEvaluasiRequest } from '@/features/tim'
-
-const TIM_EVALUASI_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+import { useQuery } from "@tanstack/react-query";
+import { timEvaluasiApi } from "@/features/tim/services/tim-evaluasi.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { STALE_TIME } from "@/utils/constants";
+import type { CreateTimEvaluasiDto } from "@/features/tim";
 
 export function useTimEvaluasi() {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const {
     data: list = [],
     isLoading,
@@ -21,26 +17,23 @@ export function useTimEvaluasi() {
   } = useQuery({
     queryKey: queryKeys.timEvaluasiList(),
     queryFn: () => timEvaluasiApi.findAll(),
-    staleTime: TIM_EVALUASI_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 
-  const tambahMutation = useMutation({
-    mutationFn: (payload: CreateTimEvaluasiRequest) => timEvaluasiApi.tambah(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.timEvaluasi })
-      showToast('Anggota Tim Evaluasi berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambahkan anggota', 'error'),
-  })
+  const tambahMutation = useMutationWithToast({
+    mutationFn: (payload: CreateTimEvaluasiDto) =>
+      timEvaluasiApi.tambah(payload),
+    invalidateKeys: [queryKeys.timEvaluasi],
+    successMessage: "Anggota Tim Evaluasi berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambahkan anggota",
+  });
 
-  const nonaktifkanMutation = useMutation({
+  const nonaktifkanMutation = useMutationWithToast({
     mutationFn: (id: string) => timEvaluasiApi.nonaktifkan(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.timEvaluasi })
-      showToast('Anggota Tim Evaluasi dinonaktifkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menonaktifkan anggota', 'error'),
-  })
+    invalidateKeys: [queryKeys.timEvaluasi],
+    successMessage: "Anggota Tim Evaluasi dinonaktifkan",
+    errorMessagePrefix: "Gagal menonaktifkan anggota",
+  });
 
   return {
     list,
@@ -50,5 +43,5 @@ export function useTimEvaluasi() {
     nonaktifkan: nonaktifkanMutation.mutateAsync,
     isAdding: tambahMutation.isPending,
     isNonaktifkan: nonaktifkanMutation.isPending,
-  }
+  };
 }

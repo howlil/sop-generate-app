@@ -21,16 +21,13 @@ interface UseDaftarSopDataParams {
 export function useDaftarSopData(params: UseDaftarSopDataParams) {
   const { list: sopList = [] } = useSop()
 
-  // Filter SOPs eligible for evaluation (DRAFT or REVISI_DARI_TIM_EVALUASI)
+  // Filter SOPs eligible for evaluation (SIAP_DIEVALUASI or REVISI_DARI_TIM_EVALUASI)
+  // DRAFT is NOT eligible - it's still being composed
   const eligibleSopsForEvaluasi = useMemo(() => {
     return sopList.filter(
-      (sop) => sop.status === 'DRAFT' || sop.status === 'REVISI_DARI_TIM_EVALUASI'
+      (sop) => sop.status === 'SIAP_DIEVALUASI' || sop.status === 'REVISI_DARI_TIM_EVALUASI'
     )
   }, [sopList])
-
-  // Check for active batch
-  const hasActiveBatch = false
-  const activeBatchCount = 0
 
   // Apply filters - all derived state, no local state needed
   const filteredList = useMemo(() => {
@@ -71,7 +68,5 @@ export function useDaftarSopData(params: UseDaftarSopDataParams) {
   return {
     eligibleSopsForEvaluasi,
     filteredList,
-    hasActiveBatch,
-    activeBatchCount,
   }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { IPeraturanRepository } from './peraturan.repository.interface';
 import { PeraturanResponseDto } from '../dto/peraturan.dto';
-import { StatusPeraturan } from '../../../generated/prisma';
 
 @Injectable()
 export class PeraturanRepository implements IPeraturanRepository {
@@ -58,16 +57,6 @@ export class PeraturanRepository implements IPeraturanRepository {
     const record = await this.prisma.peraturan.update({
       where: { id },
       data,
-      include: { _count: { select: { dasarHukum: true } } },
-    });
-
-    return this.toDto(record);
-  }
-
-  async revoke(id: string): Promise<PeraturanResponseDto> {
-    const record = await this.prisma.peraturan.update({
-      where: { id },
-      data: { status: StatusPeraturan.DICABUT },
       include: { _count: { select: { dasarHukum: true } } },
     });
 

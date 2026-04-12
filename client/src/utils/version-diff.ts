@@ -61,8 +61,8 @@ export function computeVersionDiff(
     if (String(rCur.kegiatan ?? '') !== String(rView.kegiatan ?? '')) {
       out.push({ label: `${prefix} — Kegiatan`, current: String(rCur.kegiatan ?? ''), viewed: String(rView.kegiatan ?? '') })
     }
-    if (String((rCur as any).mutu_waktu ?? '') !== String((rView as any).mutu_waktu ?? '')) {
-      out.push({ label: `${prefix} — Waktu`, current: String((rCur as any).mutu_waktu ?? ''), viewed: String((rView as any).mutu_waktu ?? '') })
+    if (String(rCur.mutu_waktu ?? '') !== String(rView.mutu_waktu ?? '')) {
+      out.push({ label: `${prefix} — Waktu`, current: String(rCur.mutu_waktu ?? ''), viewed: String(rView.mutu_waktu ?? '') })
     }
   }
 

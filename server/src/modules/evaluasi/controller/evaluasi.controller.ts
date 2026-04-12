@@ -2,12 +2,13 @@ import {
   Controller, Get, Post, Patch,
   Param, Body, Query, HttpCode, HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { EvaluasiService } from '../service/evaluasi.service';
 import {
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
+  RekapEvaluasiResponseDto,
 } from '../dto/evaluasi.dto';
 import { CurrentUser, Roles } from '../../../common/decorators';
 import {
@@ -41,6 +42,11 @@ export class EvaluasiController {
   @Roles(PeranPengguna.BIRO_ORGANISASI)
   @ApiOperation({ summary: 'Rekap evaluasi tahunan per OPD — EVL-09' })
   @ApiQuery({ name: 'tahun', required: false })
+  @ApiResponse({
+    status: 200,
+    description: 'Rekap evaluasi tahunan berhasil',
+    type: RekapEvaluasiResponseDto,
+  })
   rekap(@Query('tahun') tahun?: string) {
     return this.service.rekap(tahun ? parseInt(tahun, 10) : undefined);
   }

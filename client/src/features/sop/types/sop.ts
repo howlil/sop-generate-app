@@ -8,229 +8,232 @@ import type {
   JenisLangkahProsedur,
   SatuanWaktu,
   JenisLampiran,
-} from '@/types/common'
+} from "@/types/common";
 
 export interface Sop {
-  id: string
-  opdId: string
-  judul: string
-  createdAt: string
-  updatedAt: string
-  totalVersi?: number
-  statusAktif?: StatusSOP
-  opd?: { nama: string }
+  id: string;
+  opdId: string;
+  judul: string;
+  createdAt: string;
+  updatedAt: string;
+  totalVersi?: number;
+  statusAktif?: StatusSOP;
+  opd?: { nama: string };
   // Fields from SopDetail that pages access on the list view
-  nomorSOP?: string
-  status?: StatusSOP | string
-  author?: string
-  versi?: number
-  lastEditedBy?: string
-  lastEditedAt?: string
-  terakhirDiperbarui?: string
-  waktuPenugasan?: string
-  unitTerkait?: string
-  timPenyusun?: string
-  peraturanId?: string
-  tanggal?: string
+  nomorSOP?: string;
+  status?: StatusSOP | string;
+  author?: string;
+  versi?: number;
+  lastEditedBy?: string;
+  lastEditedAt?: string;
+  terakhirDiperbarui?: string;
+  peraturanId?: string;
+  tanggal?: string;
+  detailSopId?: string;
 }
 
 export interface SopDetail {
-  id: string
-  sopId: string
-  status: StatusSOP
-  versi: number
-  nomorSOP: string
-  tanggalPembuatan: string
-  tanggalRevisi?: string
-  tanggalEfektif?: string
-  logoInstansi: string
-  namaLembaga: string
-  lebarKolomKegiatan?: number
-  lebarKolomPelaksana?: number
-  lebarKolomKelengkapan?: number
-  lebarKolomWaktu?: number
-  lebarKolomOutput?: number
-  lebarKolomKeterangan?: number
-  dibuatOlehId?: string
-  terakhirDieditOlehId?: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  sopId: string;
+  status: StatusSOP;
+  versi: number;
+  nomorSOP: string;
+  tanggalPembuatan: string;
+  tanggalRevisi?: string;
+  tanggalEfektif?: string;
+  logoInstansi: string;
+  namaLembaga: string;
+  lebarKolomKegiatan?: number;
+  lebarKolomPelaksana?: number;
+  lebarKolomKelengkapan?: number;
+  lebarKolomWaktu?: number;
+  lebarKolomOutput?: number;
+  lebarKolomKeterangan?: number;
+  dibuatOlehId?: string;
+  terakhirDieditOlehId?: string;
+  createdAt: string;
+  updatedAt: string;
 
   // Relations
-  sop?: Sop
-  dibuatOleh?: { id: string; nama: string }
-  terakhirDieditOleh?: { id: string; nama: string }
-  lampiran?: LampiranTeks[]
-  dasarHukum?: DasarHukum[]
-  relasiSopKeluar?: SopTerkait[]
-  relasiSopMasuk?: SopTerkait[]
-  langkahSOP?: LangkahSOP[]
-  swimlanes?: DetailSOPPelaksana[]
-  nilaiEvaluasi?: { id: string; hasil?: string; catatan?: string }[]
+  sop?: Sop;
+  dibuatOleh?: { id: string; nama: string };
+  terakhirDieditOleh?: { id: string; nama: string };
+  lampiran?: LampiranTeks[];
+  dasarHukum?: DasarHukum[];
+  relasiSopKeluar?: SopTerkait[];
+  relasiSopMasuk?: SopTerkait[];
+  langkahSOP?: LangkahSOP[];
+  swimlanes?: DetailSOPPelaksana[];
+  nilaiEvaluasi?: { id: string; hasil?: string; catatan?: string }[];
 }
 
 export interface LampiranTeks {
-  id: string
-  sopDetailId: string
-  judul: string
-  jenis: JenisLampiran
-  isi?: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  sopDetailId: string;
+  judul: string;
+  jenis: JenisLampiran;
+  isi?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DasarHukum {
-  id: string
-  sopDetailId: string
-  judul: string
-  nomor: string
-  tahun: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  sopDetailId: string;
+  judul: string;
+  nomor: string;
+  tahun: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SopTerkait {
-  id: string
-  sopDetailId: string
-  sopTerkaitId: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  sopDetailId: string;
+  sopTerkaitId: string;
+  createdAt: string;
+  updatedAt: string;
 
-  sopDetail?: SopDetail
-  sopTerkait?: SopDetail
+  sopDetail?: SopDetail;
+  sopTerkait?: SopDetail;
 }
 
 export interface LangkahSOP {
-  id: string
-  sopDetailId: string
-  urutan: number
-  kegiatan: string
-  pelaksana: string
-  waktu?: number
-  satuanWaktu?: SatuanWaktu
-  kelengkapan?: string
-  output?: string
-  idNextStepIfYes?: string
-  idNextStepIfNo?: string
-  type: JenisLangkahProsedur
-  createdAt: string
-  updatedAt: string
+  id: string;
+  sopDetailId: string;
+  urutan: number;
+  kegiatan: string;
+  pelaksana: string;
+  waktu?: number;
+  satuanWaktu?: SatuanWaktu;
+  kelengkapan?: string;
+  output?: string;
+  idNextStepIfYes?: string;
+  idNextStepIfNo?: string;
+  type: JenisLangkahProsedur;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DetailSOPPelaksana {
-  id: string
-  sopDetailId: string
-  opdId: string
-  urutan: number
-  createdAt: string
-  updatedAt: string
+  id: string;
+  sopDetailId: string;
+  opdId: string;
+  urutan: number;
+  createdAt: string;
+  updatedAt: string;
 
-  opd?: { id: string; nama: string }
-  relasiPelaksana?: DetailSOPPelaksana[]
+  opd?: { id: string; nama: string };
+  relasiPelaksana?: DetailSOPPelaksana[];
 }
 
 export interface Pelaksana {
-  id: string
-  opdId: string
-  namaPelaksana: string
-  namaLengkap?: string
-  createdAt: string
-  updatedAt: string
+  id: string;
+  opdId: string;
+  namaPelaksana: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ==================== DTO TYPES ====================
 
 export interface CreateSopRequest {
-  judul: string
-  opdId: string
+  judul: string;
+  opdId: string;
 }
 
 export interface UpdateMetadataDto {
-  judul?: string
-  nomorSOP?: string
-  tanggalPembuatan?: string
-  tanggalEfective?: string
-  logoInstansi?: string
-  namaLembaga?: string
-  lebarKolomKegiatan?: number
-  lebarKolomPelaksana?: number
-  lebarKolomKelengkapan?: number
-  lebarKolomWaktu?: number
-  lebarKolomOutput?: number
-  lebarKolomKeterangan?: number
+  judul?: string;
+  nomorSOP?: string;
+  tanggalPembuatan?: string;
+  tanggalEffective?: string;
+  logoInstansi?: string;
+  namaLembaga?: string;
+  lebarKolomKegiatan?: number;
+  lebarKolomPelaksana?: number;
+  lebarKolomKelengkapan?: number;
+  lebarKolomWaktu?: number;
+  lebarKolomOutput?: number;
+  lebarKolomKeterangan?: number;
 }
 
 export interface UpdateStatusDto {
-  status: StatusSOP
+  status: StatusSOP;
 }
 
 export interface CreateLangkahSOPDto {
-  urutan: number
-  kegiatan: string
-  pelaksana: string
-  waktu?: number
-  satuanWaktu?: SatuanWaktu
-  kelengkapan?: string
-  output?: string
-  idNextStepIfYes?: string
-  idNextStepIfNo?: string
-  type: JenisLangkahProsedur
+  urutan: number;
+  kegiatan: string;
+  pelaksana: string;
+  waktu?: number;
+  satuanWaktu?: SatuanWaktu;
+  kelengkapan?: string;
+  output?: string;
+  idNextStepIfYes?: string;
+  idNextStepIfNo?: string;
+  type: JenisLangkahProsedur;
 }
 
 export interface UpdateLangkahSOPDto {
-  urutan?: number
-  kegiatan?: string
-  pelaksana?: string
-  waktu?: number
-  satuanWaktu?: SatuanWaktu
-  kelengkapan?: string
-  output?: string
-  idNextStepIfYes?: string
-  idNextStepIfNo?: string
-  type?: JenisLangkahProsedur
+  urutan?: number;
+  kegiatan?: string;
+  pelaksana?: string;
+  waktu?: number;
+  satuanWaktu?: SatuanWaktu;
+  kelengkapan?: string;
+  output?: string;
+  idNextStepIfYes?: string;
+  idNextStepIfNo?: string;
+  type?: JenisLangkahProsedur;
 }
 
 export interface CreatePelaksanaDto {
-  opdId: string
-  namaPelaksana?: string
-  urutan?: number
+  opdId: string;
+  namaPelaksana?: string;
+  urutan?: number;
 }
 
 export interface CreateDetailSOPPelaksanaDto {
-  opdId: string
-  urutan: number
+  opdId: string;
+  urutan: number;
 }
 
 export interface CreateLampiranTeksDto {
-  judul: string
-  jenis: JenisLampiran
-  isi?: string
+  judul: string;
+  jenis: JenisLampiran;
+  isi?: string;
 }
 
 export interface CreateDasarHukumDto {
-  judul: string
-  nomor: string
-  tahun: string
+  judul: string;
+  nomor: string;
+  tahun: string;
 }
 
 export interface CreateSopTerkaitDto {
-  sopTerkaitId: string
+  sopTerkaitId: string;
 }
 
 // ==================== UI CONSTANTS ====================
 
 export const SOP_STATUS_FILTER_OPTIONS = [
-  { value: 'all' as const, label: 'Semua Status' },
-  { value: 'DRAFT' as const, label: 'DRAFT' },
-  { value: 'SEDANG_DISUSUN' as const, label: 'SEDANG_DISUSUN' },
-  { value: 'SIAP_DIEVALUASI' as const, label: 'SIAP_DIEVALUASI' },
-  { value: 'DIAJUKAN_EVALUASI' as const, label: 'DIAJUKAN_EVALUASI' },
-  { value: 'SEDANG_DIEVALUASI' as const, label: 'SEDANG_DIEVALUASI' },
-  { value: 'REVISI_DARI_TIM_EVALUASI' as const, label: 'REVISI_DARI_TIM_EVALUASI' },
-  { value: 'SIAP_DIVERIFIKASI' as const, label: 'SIAP_DIVERIFIKASI' },
-  { value: 'DIVERIFIKASI_BIRO_ORGANISASI' as const, label: 'DIVERIFIKASI_BIRO_ORGANISASI' },
-  { value: 'BERLAKU' as const, label: 'BERLAKU' },
-  { value: 'DICABUT' as const, label: 'DICABUT' },
-] as const
+  { value: "all" as const, label: "Semua Status" },
+  { value: "DRAFT" as const, label: "DRAFT" },
+  { value: "SEDANG_DISUSUN" as const, label: "SEDANG_DISUSUN" },
+  { value: "SIAP_DIEVALUASI" as const, label: "SIAP_DIEVALUASI" },
+  { value: "DIAJUKAN_EVALUASI" as const, label: "DIAJUKAN_EVALUASI" },
+  { value: "SEDANG_DIEVALUASI" as const, label: "SEDANG_DIEVALUASI" },
+  {
+    value: "REVISI_DARI_TIM_EVALUASI" as const,
+    label: "REVISI_DARI_TIM_EVALUASI",
+  },
+  { value: "SIAP_DIVERIFIKASI" as const, label: "SIAP_DIVERIFIKASI" },
+  {
+    value: "DIVERIFIKASI_BIRO_ORGANISASI" as const,
+    label: "DIVERIFIKASI_BIRO_ORGANISASI",
+  },
+  { value: "BERLAKU" as const, label: "BERLAKU" },
+  { value: "DICABUT" as const, label: "DICABUT" },
+] as const;
 
-export const DEFAULT_SOP_STATUS = 'DRAFT'
+export const DEFAULT_SOP_STATUS = "DRAFT";

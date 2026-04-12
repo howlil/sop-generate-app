@@ -56,6 +56,8 @@ export interface PengajuanEvaluasi {
   namaBiro?: string
   /** SOP list included in this pengajuan */
   sopList?: { id: string; sopDetailId: string; judul: string; nomor: string; nama: string; nomorSOP?: string; status?: string; hasil?: StatusHasilEvaluasi }[]
+  /** Riwayat evaluasi (audit trail) */
+  riwayatEvaluasi?: LogNilaiEvaluasi[]
   /** TTE signature payload */
   tteSignaturePayload?: unknown
   diverifikasiOlehUser?: { id: string; nama: string }

@@ -16,7 +16,7 @@ export function SearchInput({ className, inputClassName, ...props }: SearchInput
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
       <Input
         type="text"
-        className={cn('h-9 pl-9 pr-3 text-xs', inputClassName)}
+        className={cn('pl-9 pr-3 text-sm', inputClassName)}
         aria-label={ariaLabel}
         {...props}
       />

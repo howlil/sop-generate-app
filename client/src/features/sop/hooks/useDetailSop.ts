@@ -3,10 +3,11 @@
  * Covers: DetailSOP CRUD, LangkahSOP, Lampiran, DasarHukum, SopTerkait, Swimlane, EditHistory
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '@/features/sop/services/sop.api'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
+import { useQuery } from "@tanstack/react-query";
+import { sopApi } from "@/features/sop/services/sop.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { STALE_TIME } from "@/utils/constants";
 import type {
   UpdateMetadataDto,
   UpdateStatusDto,
@@ -16,54 +17,43 @@ import type {
   CreateDasarHukumDto,
   CreateSopTerkaitDto,
   CreateDetailSOPPelaksanaDto,
-} from '@/features/sop/types/sop'
+} from "@/features/sop/types/sop";
 import type {
   SOPDetailMetadata,
   ProsedurRow,
   PelaksanaRow,
-} from '@/types/common'
-import type { KomentarItem } from '@/features/sop/types/komentar'
-import type { VersionHistoryItem } from '@/features/sop/components/VersionHistoryPanel'
-
-const DETAIL_SOP_STALE_TIME = 2 * 60 * 1000 // 2 minutes
+} from "@/types/common";
+import type { KomentarItem } from "@/features/sop/types/komentar";
 
 // ================= Initial State Helpers =================
 export function getInitialSopDetailMetadata(): SOPDetailMetadata {
   return {
-    id: '',
-    nomorSOP: '',
-    nama: '',
-    lembaga: '',
-    logoUrl: '',
-    tanggalEfektif: '',
-    tanggalRevisi: '',
-  }
-}
-
-export function getInitialSopDetailProsedurRows(): ProsedurRow[] {
-  return []
+    id: "",
+    nomorSOP: "",
+    nama: "",
+    lembaga: "",
+    logoUrl: "",
+    tanggalEfektif: "",
+    tanggalRevisi: "",
+  };
 }
 
 export function getInitialSopDetailImplementers(): PelaksanaRow[] {
-  return []
-}
-
-export function getInitialSopDetailKomentar(): KomentarItem[] {
-  return []
-}
-
-export function getInitialSopDetailVersions(): VersionHistoryItem[] {
-  return []
+  return [];
 }
 
 // ================= DetailSOP =================
 
-export function useDetailSopList(params?: { sopId?: string; opdId?: string; status?: string }) {
+export function useDetailSopList(params?: {
+  sopId?: string;
+  opdId?: string;
+  status?: string;
+}) {
   return useQuery({
     queryKey: queryKeys.detailSopList(params),
     queryFn: () => sopApi.findDetailAll(params),
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 }
 
 export function useDetailSopById(id: string) {
@@ -71,79 +61,71 @@ export function useDetailSopById(id: string) {
     queryKey: queryKeys.detailSopById(id),
     queryFn: () => sopApi.findDetailById(id),
     enabled: !!id,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 }
 
 export function useUpdateMetadata() {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-  return useMutation({
+  return useMutationWithToast({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateMetadataDto }) =>
       sopApi.updateMetadata(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.detailSop })
-      showToast('Metadata SOP berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui metadata', 'error'),
-  })
+    invalidateKeys: [queryKeys.detailSop],
+    successMessage: "Metadata SOP berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui metadata",
+  });
 }
 
 export function useUpdateStatus() {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-  return useMutation({
+  return useMutationWithToast({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateStatusDto }) =>
       sopApi.updateStatus(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.detailSop })
-      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
-      showToast('Status SOP berhasil diubah', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal mengubah status', 'error'),
-  })
+    invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
+    successMessage: "Status SOP berhasil diubah",
+    errorMessagePrefix: "Gagal mengubah status",
+  });
 }
 
 // ================= LangkahSOP =================
 
 export function useLangkahSop(sopDetailId: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
-  const { data: list = [], isLoading, error } = useQuery({
+  const {
+    data: list = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: queryKeys.langkahSopByDetail(sopDetailId),
     queryFn: () => sopApi.findLangkah(sopDetailId),
     enabled: !!sopDetailId,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateLangkahSOPDto) => sopApi.createLangkah(sopDetailId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.langkahSopByDetail(sopDetailId) })
-      showToast('Langkah berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah langkah', 'error'),
-  })
+  const createMutation = useMutationWithToast({
+    mutationFn: (payload: CreateLangkahSOPDto) =>
+      sopApi.createLangkah(sopDetailId, payload),
+    invalidateKeys: [queryKeys.langkahSopByDetail(sopDetailId)],
+    successMessage: "Langkah berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambah langkah",
+  });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateLangkahSOPDto }) =>
-      sopApi.updateLangkah(sopDetailId, id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.langkahSopByDetail(sopDetailId) })
-      showToast('Langkah berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui langkah', 'error'),
-  })
+  const updateMutation = useMutationWithToast({
+    mutationFn: ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: UpdateLangkahSOPDto;
+    }) => sopApi.updateLangkah(sopDetailId, id, payload),
+    invalidateKeys: [queryKeys.langkahSopByDetail(sopDetailId)],
+    successMessage: "Langkah berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui langkah",
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => sopApi.deleteLangkah(sopDetailId, id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.langkahSopByDetail(sopDetailId) })
-      showToast('Langkah berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus langkah', 'error'),
-  })
+    invalidateKeys: [queryKeys.langkahSopByDetail(sopDetailId)],
+    successMessage: "Langkah berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus langkah",
+  });
 
   return {
     list,
@@ -152,88 +134,76 @@ export function useLangkahSop(sopDetailId: string) {
     create: createMutation.mutateAsync,
     update: updateMutation.mutateAsync,
     delete: deleteMutation.mutateAsync,
-  }
+  };
 }
 
 // ================= Swimlane =================
 
 export function useSwimlane(sopDetailId: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const { data: list = [], isLoading } = useQuery({
     queryKey: queryKeys.swimlane(sopDetailId),
     queryFn: () => sopApi.getSwimlane(sopDetailId),
     enabled: !!sopDetailId,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 
-  const addMutation = useMutation({
-    mutationFn: (payload: CreateDetailSOPPelaksanaDto) => sopApi.addSwimlane(sopDetailId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.swimlane(sopDetailId) })
-      showToast('Pelaksana berhasil ditambahkan ke swimlane', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah pelaksana ke swimlane', 'error'),
-  })
+  const addMutation = useMutationWithToast({
+    mutationFn: (payload: CreateDetailSOPPelaksanaDto) =>
+      sopApi.addSwimlane(sopDetailId, payload),
+    invalidateKeys: [queryKeys.swimlane(sopDetailId)],
+    successMessage: "Pelaksana berhasil ditambahkan ke swimlane",
+    errorMessagePrefix: "Gagal menambah pelaksana ke swimlane",
+  });
 
-  const removeMutation = useMutation({
-    mutationFn: (pelaksanaId: string) => sopApi.removeSwimlane(sopDetailId, pelaksanaId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.swimlane(sopDetailId) })
-      showToast('Pelaksana berhasil dihapus dari swimlane', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus pelaksana dari swimlane', 'error'),
-  })
+  const removeMutation = useMutationWithToast({
+    mutationFn: (pelaksanaId: string) =>
+      sopApi.removeSwimlane(sopDetailId, pelaksanaId),
+    invalidateKeys: [queryKeys.swimlane(sopDetailId)],
+    successMessage: "Pelaksana berhasil dihapus dari swimlane",
+    errorMessagePrefix: "Gagal menghapus pelaksana dari swimlane",
+  });
 
   return {
     list,
     isLoading,
     add: addMutation.mutateAsync,
     remove: removeMutation.mutateAsync,
-  }
+  };
 }
 
 // ================= LampiranTeks =================
 
 export function useLampiran(sopDetailId: string, jenis?: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const { data: list = [], isLoading } = useQuery({
     queryKey: queryKeys.lampiran(sopDetailId),
     queryFn: () => sopApi.findLampiran(sopDetailId, jenis),
     enabled: !!sopDetailId,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateLampiranTeksDto) => sopApi.createLampiran(sopDetailId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lampiran(sopDetailId) })
-      showToast('Lampiran berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah lampiran', 'error'),
-  })
+  const createMutation = useMutationWithToast({
+    mutationFn: (payload: CreateLampiranTeksDto) =>
+      sopApi.createLampiran(sopDetailId, payload),
+    invalidateKeys: [queryKeys.lampiran(sopDetailId)],
+    successMessage: "Lampiran berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambah lampiran",
+  });
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutationWithToast({
     mutationFn: ({ lampiranId, teks }: { lampiranId: string; teks: string }) =>
       sopApi.updateLampiran(sopDetailId, lampiranId, teks),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lampiran(sopDetailId) })
-      showToast('Lampiran berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui lampiran', 'error'),
-  })
+    invalidateKeys: [queryKeys.lampiran(sopDetailId)],
+    successMessage: "Lampiran berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui lampiran",
+  });
 
-  const deleteMutation = useMutation({
-    mutationFn: (lampiranId: string) => sopApi.deleteLampiran(sopDetailId, lampiranId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lampiran(sopDetailId) })
-      showToast('Lampiran berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus lampiran', 'error'),
-  })
+  const deleteMutation = useMutationWithToast({
+    mutationFn: (lampiranId: string) =>
+      sopApi.deleteLampiran(sopDetailId, lampiranId),
+    invalidateKeys: [queryKeys.lampiran(sopDetailId)],
+    successMessage: "Lampiran berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus lampiran",
+  });
 
   return {
     list,
@@ -241,85 +211,75 @@ export function useLampiran(sopDetailId: string, jenis?: string) {
     create: createMutation.mutateAsync,
     update: updateMutation.mutateAsync,
     delete: deleteMutation.mutateAsync,
-  }
+  };
 }
 
 // ================= DasarHukum =================
 
 export function useDasarHukum(sopDetailId: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const { data: list = [], isLoading } = useQuery({
     queryKey: queryKeys.dasarHukum(sopDetailId),
     queryFn: () => sopApi.getDasarHukum(sopDetailId),
     enabled: !!sopDetailId,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 
-  const addMutation = useMutation({
-    mutationFn: (payload: CreateDasarHukumDto) => sopApi.addDasarHukum(sopDetailId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dasarHukum(sopDetailId) })
-      showToast('Dasar hukum berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah dasar hukum', 'error'),
-  })
+  const addMutation = useMutationWithToast({
+    mutationFn: (payload: CreateDasarHukumDto) =>
+      sopApi.addDasarHukum(sopDetailId, payload),
+    invalidateKeys: [queryKeys.dasarHukum(sopDetailId)],
+    successMessage: "Dasar hukum berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambah dasar hukum",
+  });
 
-  const removeMutation = useMutation({
-    mutationFn: (peraturanId: string) => sopApi.removeDasarHukum(sopDetailId, peraturanId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dasarHukum(sopDetailId) })
-      showToast('Dasar hukum berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus dasar hukum', 'error'),
-  })
+  const removeMutation = useMutationWithToast({
+    mutationFn: (peraturanId: string) =>
+      sopApi.removeDasarHukum(sopDetailId, peraturanId),
+    invalidateKeys: [queryKeys.dasarHukum(sopDetailId)],
+    successMessage: "Dasar hukum berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus dasar hukum",
+  });
 
   return {
     list,
     isLoading,
     add: addMutation.mutateAsync,
     remove: removeMutation.mutateAsync,
-  }
+  };
 }
 
 // ================= SopTerkait =================
 
 export function useSopTerkait(sopDetailId: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const { data: list = [], isLoading } = useQuery({
     queryKey: queryKeys.sopTerkait(sopDetailId),
     queryFn: () => sopApi.getSopTerkait(sopDetailId),
     enabled: !!sopDetailId,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.SHORT,
+  });
 
-  const addMutation = useMutation({
-    mutationFn: (payload: CreateSopTerkaitDto) => sopApi.addSopTerkait(sopDetailId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sopTerkait(sopDetailId) })
-      showToast('SOP terkait berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah SOP terkait', 'error'),
-  })
+  const addMutation = useMutationWithToast({
+    mutationFn: (payload: CreateSopTerkaitDto) =>
+      sopApi.addSopTerkait(sopDetailId, payload),
+    invalidateKeys: [queryKeys.sopTerkait(sopDetailId)],
+    successMessage: "SOP terkait berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambah SOP terkait",
+  });
 
-  const removeMutation = useMutation({
-    mutationFn: (terkaitId: string) => sopApi.removeSopTerkait(sopDetailId, terkaitId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sopTerkait(sopDetailId) })
-      showToast('SOP terkait berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus SOP terkait', 'error'),
-  })
+  const removeMutation = useMutationWithToast({
+    mutationFn: (terkaitId: string) =>
+      sopApi.removeSopTerkait(sopDetailId, terkaitId),
+    invalidateKeys: [queryKeys.sopTerkait(sopDetailId)],
+    successMessage: "SOP terkait berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus SOP terkait",
+  });
 
   return {
     list,
     isLoading,
     add: addMutation.mutateAsync,
     remove: removeMutation.mutateAsync,
-  }
+  };
 }
 
 // ================= Edit History =================
@@ -329,16 +289,6 @@ export function useEditHistory(sopDetailId: string) {
     queryKey: queryKeys.detailSopLogs(sopDetailId),
     queryFn: () => sopApi.getEditHistory(sopDetailId),
     enabled: !!sopDetailId,
-    staleTime: DETAIL_SOP_STALE_TIME,
-  })
-}
-
-/**
- * Hook to fetch version snapshot data for a specific SOP version.
- * Uses audit log endpoint (GET /audit/detail-sop/:sopDetailId) as data source.
- * Returns edit history which can be used for version comparison.
- */
-export function useSopVersionSnapshot(sopId: string, _version: string) {
-  const { data: logs = [], isLoading } = useEditHistory(sopId)
-  return { data: logs as unknown, isLoading }
+    staleTime: STALE_TIME.SHORT,
+  });
 }

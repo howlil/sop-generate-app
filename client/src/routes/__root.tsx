@@ -1,99 +1,40 @@
-import { HeadContent, Scripts, createRootRoute, redirect } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import appCss from '../styles.css?url'
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
-import { GlobalToast } from '@/components/layout/GlobalToast'
-import { NotFoundPage } from '@/components/ui/not-found'
-import { RouteErrorPage } from '@/components/ui/route-error'
-import { RouteFocusManager } from '@/components/ui/RouteFocusManager'
-import { queryClient } from '@/config/query-client'
-import { useAuthStore } from '@/stores/authStore'
-import { authApi } from '@/features/auth/services/auth.api'
-
-/**
- * Wait for Zustand persist to hydrate (localStorage read is async)
- */
-function waitForHydration(maxWait = 1000, interval = 50): Promise<void> {
-  return new Promise((resolve) => {
-    let elapsed = 0
-    const check = () => {
-      const state = useAuthStore.getState()
-      // Check if persist has finished (persistState key in localStorage)
-      const hasPersisted = state.user !== null
-      if (hasPersisted || elapsed >= maxWait) {
-        resolve()
-      } else {
-        elapsed += interval
-        setTimeout(check, interval)
-      }
-    }
-    check()
-  })
-}
-
-/**
- * Attempt to refresh token silently
- * Returns true if refresh succeeded
- */
-async function tryRefreshToken(): Promise<boolean> {
-  try {
-    const response = await authApi.refresh()
-    return !!response?.accessToken
-  } catch {
-    return false
-  }
-}
+import {
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  redirect,
+} from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import appCss from "../styles.css?url";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { GlobalToast } from "@/components/layout/GlobalToast";
+import { NotFoundPage } from "@/components/ui/not-found";
+import { RouteErrorPage } from "@/components/ui/route-error";
+import { RouteFocusManager } from "@/components/ui/route-focus-manager";
+import { queryClient } from "@/config/query-client";
+import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    // Skip auth check for public routes
-    const publicRoutes = ['/', '/auth/login']
-    if (publicRoutes.some(route => location.href.startsWith(route))) {
-      return
-    }
+    const isPublic =
+      location.href === "/" || location.href.startsWith("/auth/login");
+    if (isPublic) return;
 
-    // Wait for Zustand persist to hydrate from localStorage
-    // Increased timeout for reliability
-    await waitForHydration(1000)
+    await ensureAuthHydrated();
 
-    const store = useAuthStore.getState()
-    const user = store.user
+    const store = useAuthStore.getState();
 
-    // If user exists in localStorage, verify token is still valid
-    if (user) {
-      const refreshed = await tryRefreshToken()
-      if (!refreshed) {
-        // Token expired, clear auth state and redirect
-        store.logout()
-        throw redirect({
-          to: '/auth/login',
-          search: { redirect: location.href },
-        })
-      }
-      // Token refreshed successfully, allow access
-      return
-    }
-
-    // No user in localStorage - try refresh anyway (edge case)
-    const refreshed = await tryRefreshToken()
-    if (!refreshed) {
-      // No valid token → redirect to login
+    if (!store.user) {
       throw redirect({
-        to: '/auth/login',
+        to: "/auth/login",
         search: { redirect: location.href },
-      })
+      });
     }
-
-    // Token valid but no user in store - redirect to login
-    // (This shouldn't happen normally, but handle it safely)
-    throw redirect({
-      to: '/auth/login',
-      search: { redirect: location.href },
-    })
   },
+  pendingMs: 1000,
   pendingComponent: () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -103,35 +44,37 @@ export const Route = createRootRoute({
     </div>
   ),
   notFoundComponent: () => <NotFoundPage />,
-  errorComponent: ({ error, reset }) => <RouteErrorPage error={error} reset={reset} />,
+  errorComponent: ({ error, reset }) => (
+    <RouteErrorPage error={error} reset={reset} />
+  ),
   head: () => ({
     meta: [
       {
-        charSet: 'utf-8',
+        charSet: "utf-8",
       },
       {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
+        name: "viewport",
+        content: "width=device-width, initial-scale=1",
       },
       {
-        title: 'Sistem Informasi SOP',
+        title: "Sistem Informasi SOP",
       },
       // Security headers
       {
-        'http-equiv': 'X-Content-Type-Options',
-        content: 'nosniff',
+        httpEquiv: "X-Content-Type-Options",
+        content: "nosniff",
       },
     ],
     links: [
       {
-        rel: 'stylesheet',
+        rel: "stylesheet",
         href: appCss,
       },
     ],
   }),
 
   shellComponent: RootDocument,
-})
+});
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   // Auth check and token refresh already handled in beforeLoad
@@ -141,21 +84,34 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ErrorBoundary>
+        <ErrorBoundary
+          fallback={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+              <div className="text-center p-8">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">Terjadi Kesalahan</h1>
+                <p className="text-gray-600 mb-4">Mohon maaf, terjadi kesalahan pada sistem.</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Muat Ulang Halaman
+                </button>
+              </div>
+            </div>
+          }
+        >
           <QueryClientProvider client={queryClient}>
-            <RouteFocusManager>
-              {children}
-            </RouteFocusManager>
+            <RouteFocusManager>{children}</RouteFocusManager>
             <GlobalToast />
             {import.meta.env.DEV && (
               <>
                 <TanStackDevtools
                   config={{
-                    position: 'bottom-right',
+                    position: "bottom-right",
                   }}
                   plugins={[
                     {
-                      name: 'Tanstack Router',
+                      name: "Tanstack Router",
                       render: <TanStackRouterDevtoolsPanel />,
                     },
                   ]}
@@ -168,5 +124,5 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </ErrorBoundary>
       </body>
     </html>
-  )
+  );
 }

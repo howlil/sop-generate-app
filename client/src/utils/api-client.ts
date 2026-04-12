@@ -9,6 +9,20 @@
  * - Retry logic with exponential backoff
  */
 
+/**
+ * Build a query string from a params object, ignoring nullish values.
+ * Replaces repeated URLSearchParams boilerplate across API service files.
+ */
+export function buildQueryString(
+  params: Record<string, unknown> | undefined,
+): string {
+  if (!params) return ''
+  const entries = Object.entries(params)
+    .filter(([, v]) => v != null)
+    .map(([k, v]) => [k, String(v)])
+  return entries.length ? '?' + new URLSearchParams(entries).toString() : ''
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 
 function getHeaders(): HeadersInit {
@@ -42,7 +56,22 @@ export class ApiError extends Error {
  * - { message: "error", errors: ["msg1"] }
  * - { message: "error" }
  */
-function extractErrors(errorBody: any): { message: string; errors?: string[] } {
+/**
+ * Shape of API error response body.
+ * Handles various formats:
+ * - { errors: ["msg1", "msg2"] }
+ * - { message: "error", errors: ["msg1"] }
+ * - { message: "error" }
+ */
+interface ErrorResponseBody {
+  message?: string;
+  errors?: string[];
+  error?: string[];
+  statusCode?: number;
+  status?: number;
+}
+
+function extractErrors(errorBody: ErrorResponseBody): { message: string; errors?: string[] } {
   const errors = Array.isArray(errorBody.errors)
     ? errorBody.errors
     : Array.isArray(errorBody.error)
@@ -59,11 +88,11 @@ function extractErrors(errorBody: any): { message: string; errors?: string[] } {
 /**
  * Request queue type for pending requests during token refresh
  */
-interface QueuedRequest {
+interface QueuedRequest<T = unknown> {
   endpoint: string
   options: RequestInit
-  resolve: (value: any) => void
-  reject: (reason: any) => void
+  resolve: (value: T) => void
+  reject: (reason: unknown) => void
   retryCount: number
 }
 
@@ -76,7 +105,7 @@ let refreshPromise: Promise<boolean> | null = null
 /**
  * Queue of requests waiting for token refresh to complete
  */
-let requestQueue: QueuedRequest[] = []
+let requestQueue: QueuedRequest<unknown>[] = []
 
 /**
  * Process queued requests after successful token refresh
@@ -87,7 +116,7 @@ function processRequestQueue() {
 
   queue.forEach(({ endpoint, options, resolve, reject, retryCount }) => {
     request(endpoint, options, retryCount)
-      .then(resolve)
+      .then((result) => resolve(result as unknown))
       .catch(reject)
   })
 }
@@ -95,7 +124,7 @@ function processRequestQueue() {
 /**
  * Reject all queued requests (e.g., when refresh fails)
  */
-function rejectRequestQueue(error: any) {
+function rejectRequestQueue(error: Error | ApiError) {
   const queue = [...requestQueue]
   requestQueue = []
 
@@ -155,6 +184,8 @@ function waitForRefresh(): Promise<boolean> {
   return refreshPromise
 }
 
+const REQUEST_TIMEOUT = 15000 // 15 seconds
+
 async function request<T>(endpoint: string, options: RequestInit = {}, retryCount = 0): Promise<T> {
   // If we're refreshing, queue this request
   if (isRefreshing && retryCount === 0) {
@@ -162,7 +193,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
       requestQueue.push({
         endpoint,
         options,
-        resolve,
+        resolve: resolve as (value: unknown) => void,
         reject,
         retryCount,
       })
@@ -172,11 +203,35 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
   const url = `${API_BASE_URL}${endpoint}`
   const headers = { ...getHeaders(), ...options.headers }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-    credentials: 'include', // Include cookies in requests
-  })
+  let response: Response
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
+
+  try {
+    if (import.meta.env.DEV) {
+      console.log(`[API Client] ${options.method || 'GET'} ${url}`);
+    }
+    response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include', // Include cookies in requests
+      signal: controller.signal,
+    })
+    if (import.meta.env.DEV) {
+      console.log(`[API Client] Response: ${response.status} ${response.statusText}`);
+    }
+  } catch (networkError: unknown) {
+    if (import.meta.env.DEV) {
+      console.error('[API Client] Network error:', networkError)
+    }
+    const isTimeout = networkError instanceof DOMException && networkError.name === 'AbortError'
+    const message = isTimeout 
+      ? 'Permintaan melebihi batas waktu' 
+      : 'Tidak dapat terhubung ke server'
+    throw new ApiError(0, message)
+  } finally {
+    clearTimeout(timeoutId)
+  }
 
   // Handle 401 Unauthorized - attempt token refresh
   if (response.status === 401 && retryCount === 0) {

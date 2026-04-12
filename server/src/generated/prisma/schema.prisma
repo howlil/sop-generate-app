@@ -58,17 +58,16 @@ model OPD {
 }
 
 model Peraturan {
-  id            String          @id @default(uuid())
+  id            String       @id @default(uuid())
   opdId         String
   namaPeraturan String
   nomor         String
   tahun         Int
   tentang       String
-  status        StatusPeraturan @default(BERLAKU)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   dasarHukum    DasarHukum[]
-  opd           OPD             @relation(fields: [opdId], references: [id])
+  opd           OPD          @relation(fields: [opdId], references: [id])
 
   @@unique([opdId, nomor, tahun])
   @@index([opdId])
@@ -536,11 +535,6 @@ enum CabangDiagramEdge {
 enum GayaPanah {
   STRAIGHT
   ORTHOGONAL
-}
-
-enum StatusPeraturan {
-  BERLAKU
-  DICABUT
 }
 
 enum PeranTTE {

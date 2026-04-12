@@ -8,21 +8,17 @@ export type {
   AnggotaTimPenyusun,
   AnggotaTimEvaluasi,
   CreateTimEvaluasiDto,
-  UpdateTimEvaluasiDto,
   CreateTimPenyusunDto,
   PindahTimPenyusunDto,
   TimPenyusunFormState,
-} from './types/tim'
+} from "./types/tim";
 
-// Type aliases for backward compatibility / alternate naming conventions
-export type { AnggotaTimEvaluasi as TimEvaluasiAnggota } from './types/tim'
-export type { CreateTimEvaluasiDto as CreateTimEvaluasiRequest } from './types/tim'
-
-export type { StatusTim } from '@/types/common'
+export type { StatusTim } from "@/types/common";
 
 // Services
-export { timPenyusunApi } from './services/tim-penyusun.api'
+export { timPenyusunApi } from "./services/tim-penyusun.api";
+export { timEvaluasiApi } from "./services/tim-evaluasi.api";
 
 // Hooks
-export { useTimPenyusun } from './hooks/useTimPenyusun'
-export { useTimEvaluasi } from './hooks/useTimEvaluasi'
+export { useTimPenyusun } from "./hooks/useTimPenyusun";
+export { useTimEvaluasi } from "./hooks/useTimEvaluasi";

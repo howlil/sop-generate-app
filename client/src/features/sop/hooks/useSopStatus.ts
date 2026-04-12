@@ -3,33 +3,24 @@
  * Replaces localStorage-based status simulation with real API calls
  */
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '@/features/sop/services/sop.api'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import type { StatusSOP } from '@/types/common'
+import { sopApi } from "@/features/sop/services/sop.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import type { StatusSOP } from "@/types/common";
 
 /**
  * Hook to update SOP status via real API
  * Replaces previous localStorage-based simulation
  */
 export function useSopStatus() {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
-  const updateStatusMutation = useMutation({
+  const updateStatusMutation = useMutationWithToast({
     mutationFn: ({ sopId, status }: { sopId: string; status: StatusSOP }) =>
       sopApi.updateStatus(sopId, { status }),
-    onSuccess: (_data, variables) => {
-      // Invalidate both detail SOP and general SOP queries
-      queryClient.invalidateQueries({ queryKey: queryKeys.detailSop })
-      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
-      showToast(`Status SOP berhasil diubah menjadi ${variables.status}`, 'success')
-    },
-    onError: (error: Error) => {
-      showToast(error.message || 'Gagal mengubah status SOP', 'error')
-    },
-  })
+    invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
+    successMessage: "Status SOP berhasil diubah",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal mengubah status SOP",
+  });
 
   return {
     /**
@@ -38,7 +29,7 @@ export function useSopStatus() {
      * @param status - New status (StatusSOP)
      */
     setSopStatusOverride: (sopId: string, status: StatusSOP) => {
-      updateStatusMutation.mutate({ sopId, status })
+      updateStatusMutation.mutate({ sopId, status });
     },
 
     /**
@@ -57,5 +48,5 @@ export function useSopStatus() {
      * Error from last status update attempt
      */
     error: updateStatusMutation.error,
-  }
+  };
 }

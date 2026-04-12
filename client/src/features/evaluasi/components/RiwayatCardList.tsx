@@ -2,7 +2,7 @@
  * Daftar riwayat dalam bentuk card (untuk riwayat evaluasi SOP / OPD).
  */
 import { ReactNode } from 'react'
-import { Card, CardContent } from '@/components/ui/Card'
+import { Card, CardContent } from '@/components/ui/card'
 
 export interface RiwayatCardListProps<T> {
   title: string

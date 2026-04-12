@@ -19,13 +19,13 @@ export interface User {
 export interface CreateUserDto {
   email: string
   nama: string
-  kataSandi: string
+  kataSandi?: string
   peran: string
   opdId?: string
-  nip: string
-  jabatan: string
-  pangkat: string
-  nohp: string
+  nip?: string
+  jabatan?: string
+  pangkat?: string
+  nohp?: string
 }
 
 export interface UpdateUserDto {

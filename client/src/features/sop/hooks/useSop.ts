@@ -2,52 +2,33 @@
  * useSop hook - TanStack Query
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '../services/sop.api'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import type { StatusSOP } from '@/types/common'
-import type { CreateSopRequest } from '../types/sop'
-
-const SOP_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+import { useQuery } from "@tanstack/react-query";
+import { sopApi } from "../services/sop.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { STALE_TIME } from "@/utils/constants";
+import type { StatusSOP } from "@/types/common";
+import type { CreateSopRequest } from "../types/sop";
 
 // ==================== SOP Domain Logic ====================
 export function canEditSop(status: StatusSOP): boolean {
-  return status === 'DRAFT' || status === 'REVISI_DARI_TIM_EVALUASI'
+  return status === "DRAFT" || status === "REVISI_DARI_TIM_EVALUASI";
 }
 
-export function canKepalaOpdSignSop(
-  status: string,
-  _batchList?: any[],
-  _opdName?: string,
-  _sopId?: string,
-  _sopNomor?: string
-): boolean {
-  return status === 'DITANDATANGANI_KOORDINATOR'
+export function canKepalaOpdSignSop(status: string): boolean {
+  return status === "DITANDATANGANI_KOORDINATOR";
 }
 
-export function isSopEligibleForSigning(sop: any, _batchList: any[]): boolean {
-  return sop.status === 'DITANDATANGANI_KOORDINATOR'
+export function isSopEligibleForSigning(sop: { status: string }): boolean {
+  return sop.status === "DITANDATANGANI_KOORDINATOR";
 }
 
 // ==================== Tim Penyusun Access ====================
 export function canTimPenyusunRunCoordinatorActions(role: string): boolean {
-  return role === 'KOORDINATOR_TIM_PENYUSUN'
-}
-
-// ==================== SOP Evaluasi ====================
-export function isSopInEvaluasiList(sopId: string, evaluasiList: any[]): boolean {
-  return evaluasiList.some((e) => e.sopId === sopId)
-}
-
-export function canSelectSOPForEvaluasi(sop: any, evaluasiList: any[]): boolean {
-  return !isSopInEvaluasiList(sop.id, evaluasiList)
+  return role === "KOORDINATOR_TIM_PENYUSUN";
 }
 
 export function useSop(params?: { opdId?: string; status?: string }) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const {
     data: list = [],
     isLoading,
@@ -55,35 +36,30 @@ export function useSop(params?: { opdId?: string; status?: string }) {
   } = useQuery({
     queryKey: queryKeys.sopList(params),
     queryFn: () => sopApi.findAll(params),
-    staleTime: SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 
-  const createMutation = useMutation({
+  const createMutation = useMutationWithToast({
     mutationFn: (payload: CreateSopRequest) => sopApi.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
-      showToast('SOP berhasil dibuat', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal membuat SOP', 'error'),
-  })
+    invalidateKeys: [queryKeys.sop],
+    successMessage: "SOP berhasil dibuat",
+    errorMessagePrefix: "Gagal membuat SOP",
+  });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, judul }: { id: string; judul: string }) => sopApi.update(id, judul),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
-      showToast('Judul SOP berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui SOP', 'error'),
-  })
+  const updateMutation = useMutationWithToast({
+    mutationFn: ({ id, judul }: { id: string; judul: string }) =>
+      sopApi.update(id, judul),
+    invalidateKeys: [queryKeys.sop],
+    successMessage: "Judul SOP berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui SOP",
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => sopApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.sop })
-      showToast('SOP berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus SOP', 'error'),
-  })
+    invalidateKeys: [queryKeys.sop],
+    successMessage: "SOP berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus SOP",
+  });
 
   return {
     list,
@@ -95,7 +71,7 @@ export function useSop(params?: { opdId?: string; status?: string }) {
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
-  }
+  };
 }
 
 export function useSopDetail(id: string) {
@@ -103,6 +79,6 @@ export function useSopDetail(id: string) {
     queryKey: queryKeys.sopById(id),
     queryFn: () => sopApi.findById(id),
     enabled: !!id,
-    staleTime: SOP_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 }

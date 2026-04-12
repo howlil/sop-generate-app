@@ -2,72 +2,63 @@
  * usePelaksana Hook - TanStack Query Implementation
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { sopApi } from '@/features/sop/services/sop.api'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import { useAuthStore } from '@/stores/authStore'
-import type { Pelaksana } from '@/features/sop/types/sop'
-
-export interface PelaksanaSOP extends Pelaksana {
-  namaLengkap: string
-}
+import { useQuery } from "@tanstack/react-query";
+import { sopApi } from "@/features/sop/services/sop.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { useAuthStore } from "@/stores/authStore";
+import { STALE_TIME } from "@/utils/constants";
 
 export function usePelaksana(opdId?: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-  const user = useAuthStore((s) => s.user)
-  const effectiveOpdId = opdId || user?.opdId
+  const user = useAuthStore((s) => s.user);
+  const effectiveOpdId = opdId || user?.opdId;
 
   const {
     data: list = [],
-    isLoading: loading,
+    isLoading,
     error,
   } = useQuery({
-    queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || ''),
-    queryFn: () => sopApi.findPelaksana(effectiveOpdId || ''),
+    queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || ""),
+    queryFn: () => sopApi.findPelaksana(effectiveOpdId || ""),
     enabled: !!effectiveOpdId,
-    staleTime: 5 * 60 * 1000,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 
-  const createMutation = useMutation({
-    mutationFn: (data: { namaLengkap: string; opdId?: string }) => {
-      const targetOpdId = data.opdId || effectiveOpdId
-      if (!targetOpdId) throw new Error('opdId is required')
-      return sopApi.createPelaksana({ opdId: targetOpdId, namaPelaksana: data.namaLengkap })
+  const createMutation = useMutationWithToast({
+    mutationFn: (data: { namaPelaksana: string; opdId?: string }) => {
+      const targetOpdId = data.opdId || effectiveOpdId;
+      if (!targetOpdId) throw new Error("opdId is required - Pelaksana harus memiliki OPD");
+      return sopApi.createPelaksana({
+        opdId: targetOpdId,
+        namaPelaksana: data.namaPelaksana,
+      });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
-      showToast('Pelaksana SOP berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambah pelaksana', 'error'),
-  })
+    invalidateKeys: [queryKeys.pelaksanaByOpd(effectiveOpdId || "")],
+    successMessage: "Pelaksana SOP berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambah pelaksana",
+  });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, namaLengkap }: { id: string; namaLengkap: string }) =>
-      sopApi.updatePelaksana(id, namaLengkap),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
-      showToast('Pelaksana SOP berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui pelaksana', 'error'),
-  })
+  const updateMutation = useMutationWithToast({
+    mutationFn: ({ id, namaPelaksana }: { id: string; namaPelaksana: string }) =>
+      sopApi.updatePelaksana(id, namaPelaksana),
+    invalidateKeys: [queryKeys.pelaksanaByOpd(effectiveOpdId || "")],
+    successMessage: "Pelaksana SOP berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui pelaksana",
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => sopApi.deletePelaksana(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pelaksanaByOpd(effectiveOpdId || '') })
-      showToast('Pelaksana SOP berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus pelaksana', 'error'),
-  })
+    invalidateKeys: [queryKeys.pelaksanaByOpd(effectiveOpdId || "")],
+    successMessage: "Pelaksana SOP berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus pelaksana",
+  });
 
   return {
     list,
-    loading,
+    isLoading,
     error,
     addPelaksana: createMutation.mutateAsync,
     updatePelaksana: updateMutation.mutateAsync,
     removePelaksana: deleteMutation.mutateAsync,
-  }
+  };
 }

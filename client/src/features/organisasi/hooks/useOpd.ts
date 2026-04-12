@@ -2,21 +2,17 @@
  * useOpd hook - TanStack Query
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { opdApi } from '@/features/organisasi/services/opd.api'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import type { CreateOpdDto, UpdateOpdDto } from '@/features/organisasi/types/opd'
-
-type CreateOpdRequest = CreateOpdDto
-type UpdateOpdRequest = UpdateOpdDto
-
-const OPD_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+import { useQuery } from "@tanstack/react-query";
+import { opdApi } from "@/features/organisasi/services/opd.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { STALE_TIME } from "@/utils/constants";
+import type {
+  CreateOpdDto,
+  UpdateOpdDto,
+} from "@/features/organisasi/types/opd";
 
 export function useOpd() {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const {
     data: list = [],
     isLoading,
@@ -24,36 +20,30 @@ export function useOpd() {
   } = useQuery({
     queryKey: queryKeys.opdList(),
     queryFn: () => opdApi.findAll(),
-    staleTime: OPD_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 
-  const createMutation = useMutation({
-    mutationFn: (payload: CreateOpdRequest) => opdApi.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.opd })
-      showToast('OPD berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambahkan OPD', 'error'),
-  })
+  const createMutation = useMutationWithToast({
+    mutationFn: (payload: CreateOpdDto) => opdApi.create(payload),
+    invalidateKeys: [queryKeys.opd],
+    successMessage: "OPD berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambahkan OPD",
+  });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: UpdateOpdRequest }) =>
+  const updateMutation = useMutationWithToast({
+    mutationFn: ({ id, payload }: { id: string; payload: UpdateOpdDto }) =>
       opdApi.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.opd })
-      showToast('OPD berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui OPD', 'error'),
-  })
+    invalidateKeys: [queryKeys.opd],
+    successMessage: "OPD berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui OPD",
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => opdApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.opd })
-      showToast('OPD berhasil dinonaktifkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menonaktifkan OPD', 'error'),
-  })
+    invalidateKeys: [queryKeys.opd],
+    successMessage: "OPD berhasil dinonaktifkan",
+    errorMessagePrefix: "Gagal menonaktifkan OPD",
+  });
 
   return {
     list,
@@ -65,7 +55,7 @@ export function useOpd() {
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
-  }
+  };
 }
 
 export function useOpdDetail(id: string) {
@@ -73,6 +63,6 @@ export function useOpdDetail(id: string) {
     queryKey: queryKeys.opdById(id),
     queryFn: () => opdApi.findById(id),
     enabled: !!id,
-    staleTime: OPD_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 }

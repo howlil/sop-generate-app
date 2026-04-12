@@ -27,6 +27,26 @@ export class OpdResponseDto {
   @ApiProperty()
   sopDraft: number;
 
+  @ApiPropertyOptional({
+    description: 'Count of related records',
+    properties: {
+      pengguna: { type: 'number' },
+      sop: { type: 'number' },
+      pelaksana: { type: 'number' },
+      anggotaTimPenyusun: { type: 'number' },
+      pengajuanEvaluasi: { type: 'number' },
+      peraturan: { type: 'number' },
+    },
+  })
+  _count?: {
+    pengguna: number;
+    sop: number;
+    pelaksana: number;
+    anggotaTimPenyusun: number;
+    pengajuanEvaluasi: number;
+    peraturan: number;
+  };
+
   @ApiPropertyOptional()
   deletedAt: Date | null;
 

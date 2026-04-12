@@ -20,21 +20,21 @@ export class CreateUserDto {
   @IsNotEmpty()
   nama: string;
 
-  @ApiProperty({ example: 'password123' })
+  @ApiPropertyOptional({ example: 'password123', description: 'Will be auto-generated if not provided' })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(6)
-  kataSandi: string;
+  kataSandi?: string;
 
   @ApiProperty({ enum: PeranPengguna, example: PeranPengguna.TIM_PENYUSUN })
   @IsEnum(PeranPengguna)
   @IsNotEmpty()
   peran: PeranPengguna;
 
-  @ApiProperty({ example: 'uuid-of-opd' })
+  @ApiPropertyOptional({ example: 'uuid-of-opd' })
   @IsString()
-  @IsNotEmpty()
-  opdId: string;
+  @IsOptional()
+  opdId?: string;
 
   @ApiPropertyOptional({ example: '199001012020011001' })
   @IsString()

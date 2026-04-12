@@ -54,10 +54,6 @@ export interface RegisterTteDto {
   pin: string
 }
 
-export interface VerifikasiEmailDto {
-  token: string
-}
-
 export interface TandaTanganiBaDto {
   pin: string
   nomorDokumen: string
@@ -68,17 +64,6 @@ export interface TandaTanganiSopDto {
   pin: string
   nomorDokumen: string
   judulDokumen: string
-}
-
-export interface TTEHistory {
-  id: string
-  peran: PeranTTE
-  nomorDokumen: string
-  jenisDokumen: string
-  judulDokumen: string
-  ditandatanganiPada: string
-  sopDetailId?: string
-  pengajuanEvaluasiId?: string
 }
 
 export interface TTESignaturePayload {

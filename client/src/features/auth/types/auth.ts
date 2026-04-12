@@ -9,6 +9,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string
+  refreshToken: string
   tokenType: string
   user: {
     id: string
@@ -18,7 +19,5 @@ export interface LoginResponse {
     opdId: string | null
     nip: string
     jabatan: string
-    pangkat: string
-    nohp: string
   }
 }

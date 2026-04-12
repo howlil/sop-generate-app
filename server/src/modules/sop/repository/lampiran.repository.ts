@@ -33,7 +33,7 @@ export class LampiranRepository {
       where: { sopDetailId },
       include: {
         peraturan: {
-          select: { id: true, namaPeraturan: true, nomor: true, tahun: true, status: true, opdId: true },
+          select: { id: true, namaPeraturan: true, nomor: true, tahun: true, tentang: true, opdId: true },
         },
       },
     });

@@ -15,6 +15,8 @@ class UserInfoDto {
   @ApiProperty() email: string;
   @ApiProperty() nip: string;
   @ApiProperty() jabatan: string;
+  @ApiProperty() pangkat: string;
+  @ApiProperty() nohp: string;
 }
 
 export class AnggotaTimEvaluasiResponseDto {

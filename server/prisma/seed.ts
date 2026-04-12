@@ -52,7 +52,7 @@ async function main() {
   });
 
   // Koordinator Tim Penyusun
-  await prisma.pengguna.create({
+  const koordinatorUser = await prisma.pengguna.create({
     data: {
       email: 'koordinator@example.com',
       nama: 'Koordinator Tim Penyusun',
@@ -66,8 +66,17 @@ async function main() {
     },
   });
 
+  // Auto-add to AnggotaTimPenyusun
+  await prisma.anggotaTimPenyusun.create({
+    data: {
+      userId: koordinatorUser.id,
+      opdId: opd1.id,
+      status: 'AKTIF',
+    },
+  });
+
   // Tim Penyusun
-  await prisma.pengguna.create({
+  const penyusunUser = await prisma.pengguna.create({
     data: {
       email: 'penyusun@example.com',
       nama: 'Analis Kebijakan',
@@ -78,6 +87,15 @@ async function main() {
       jabatan: 'Analis Kebijakan',
       pangkat: 'Penata Muda',
       nohp: '081234567892',
+    },
+  });
+
+  // Auto-add to AnggotaTimPenyusun
+  await prisma.anggotaTimPenyusun.create({
+    data: {
+      userId: penyusunUser.id,
+      opdId: opd1.id,
+      status: 'AKTIF',
     },
   });
 
@@ -96,7 +114,7 @@ async function main() {
   });
 
   // Tim Evaluasi
-  await prisma.pengguna.create({
+  const timEvaluasiUser = await prisma.pengguna.create({
     data: {
       email: 'tim.evaluasi@example.com',
       nama: 'Ketua Tim Evaluasi',
@@ -106,6 +124,14 @@ async function main() {
       jabatan: 'Direktur Evaluasi',
       pangkat: 'Pembina Utama',
       nohp: '081234567894',
+    },
+  });
+
+  // Auto-add to TimEvaluasiAnggota
+  await prisma.anggotaTimEvaluasi.create({
+    data: {
+      userId: timEvaluasiUser.id,
+      status: 'AKTIF',
     },
   });
 

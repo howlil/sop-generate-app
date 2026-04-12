@@ -58,14 +58,13 @@ model OPD {
 }
 
 model Peraturan {
-  id            String          @id @default(uuid())
+  id            String   @id @default(uuid())
   opdId         String
   namaPeraturan String
   nomor         String
   tahun         Int
   tentang       String
-  status        StatusPeraturan @default(BERLAKU)
-  createdAt     DateTime        @default(now())
+  createdAt     DateTime @default(now())
   updatedAt     DateTime        @updatedAt
   dasarHukum    DasarHukum[]
   opd           OPD             @relation(fields: [opdId], references: [id])
@@ -538,10 +537,6 @@ enum GayaPanah {
   ORTHOGONAL
 }
 
-enum StatusPeraturan {
-  BERLAKU
-  DICABUT
-}
 
 enum PeranTTE {
   KEPALA_OPD

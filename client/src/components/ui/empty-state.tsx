@@ -2,31 +2,18 @@ import { ReactNode } from 'react'
 import { cn } from '@/utils/cn'
 
 interface EmptyStateProps {
-  /** Icon (e.g. FileText, Inbox). Optional. */
   icon?: ReactNode
-  /** Judul atau kalimat utama */
   title: string
-  /** Deskripsi tambahan (opsional) */
   description?: string
-  /** Tombol atau link aksi (opsional) */
   action?: ReactNode
   className?: string
-  /** Untuk tampilan di dalam tabel: satu sel colspan */
+  /** Render as a table row with colspan */
   asTableRow?: boolean
   colSpan?: number
-  /** Class untuk wrapper icon. */
-  iconClassName?: string
-  /** Class untuk teks judul. */
-  titleClassName?: string
-  /** Class untuk teks deskripsi. */
-  descriptionClassName?: string
-  /** Class untuk wrapper aksi. */
-  actionClassName?: string
 }
 
 /**
- * Tampilan kosong seragam: icon + judul + deskripsi + aksi.
- * Dipakai di list kosong, dialog kosong, atau state "tidak ada data".
+ * Empty state display: icon + title + description + optional action.
  */
 export function EmptyState({
   icon,
@@ -36,10 +23,6 @@ export function EmptyState({
   className,
   asTableRow,
   colSpan = 1,
-  iconClassName,
-  titleClassName,
-  descriptionClassName,
-  actionClassName,
 }: EmptyStateProps) {
   const content = (
     <div
@@ -50,15 +33,15 @@ export function EmptyState({
       )}
     >
       {icon && (
-        <div className={cn('mb-2 text-gray-400 [&_svg]:w-8 [&_svg]:h-8', iconClassName)}>
+        <div className="mb-2 text-gray-400 [&_svg]:w-8 [&_svg]:h-8">
           {icon}
         </div>
       )}
-      <p className={cn('text-sm text-gray-600', titleClassName)}>{title}</p>
+      <p className="text-sm text-gray-600">{title}</p>
       {description && (
-        <p className={cn('text-xs text-gray-400 mt-1 max-w-sm', descriptionClassName)}>{description}</p>
+        <p className="text-xs text-gray-400 mt-1 max-w-sm">{description}</p>
       )}
-      {action && <div className={cn('mt-3', actionClassName)}>{action}</div>}
+      {action && <div className="mt-3">{action}</div>}
     </div>
   )
 
@@ -73,4 +56,28 @@ export function EmptyState({
   }
 
   return content
+}
+
+/**
+ * Empty state rendered as a table row.
+ */
+export function EmptyTableRow({
+  icon,
+  title,
+  description,
+  action,
+  colSpan = 1,
+  className,
+}: Omit<EmptyStateProps, 'asTableRow'>) {
+  return (
+    <EmptyState
+      icon={icon}
+      title={title}
+      description={description}
+      action={action}
+      asTableRow
+      colSpan={colSpan}
+      className={className}
+    />
+  )
 }

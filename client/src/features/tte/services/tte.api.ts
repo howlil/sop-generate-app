@@ -1,3 +1,7 @@
+/**
+ * TTE (Tanda Tangan Elektronik) API service
+ */
+
 import { apiClient } from "@/utils/api-client";
 import type {
   KredensialTTE,
@@ -24,15 +28,6 @@ export const tteApi = {
   getSigningHistory: () => apiClient.get<RiwayatTandaTangan[]>("/tte/riwayat"),
 
   tandaTanganiBA: (pengajuanId: string, payload: TandaTanganiBaDto) =>
-    apiClient.post<RiwayatTandaTangan>(
-      `/tte/tanda-tangani/ba/${pengajuanId}`,
-      payload,
-    ),
-
-  koordinatorTandaTanganiBA: (
-    pengajuanId: string,
-    payload: TandaTanganiBaDto,
-  ) =>
     apiClient.post<RiwayatTandaTangan>(
       `/tte/tanda-tangani/ba/${pengajuanId}`,
       payload,

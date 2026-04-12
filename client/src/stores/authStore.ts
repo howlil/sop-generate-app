@@ -18,28 +18,24 @@
  *   (state) => ({ user: state.user, logout: state.logout }),
  *   shallow
  * )
- *
- * 📝 ESLINT TODO: Add eslint-plugin-zustand with useShallow rule when ESLint is configured for client
  */
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { User } from "@/features/auth/types/users";
 
-interface User {
-  id: string
-  email: string
-  nama: string
-  peran: string
-  opdId: string | null
-  nip: string
-  jabatan: string
-}
+/**
+ * Core user fields used in the auth store.
+ * The full User type (with pangkat, nohp, createdAt, updatedAt) is defined
+ * in @/features/auth/types/users.ts — import that when extra fields are needed.
+ */
+type AuthUser = Pick<User, "id" | "email" | "nama" | "peran" | "opdId" | "nip" | "jabatan">;
 
 interface AuthState {
-  user: User | null
-  isAuthenticated: boolean
-  setUser: (user: User | null) => void
-  logout: () => void
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  setUser: (user: AuthUser | null) => void;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -51,18 +47,76 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user, isAuthenticated: !!user }),
 
       logout: () => {
-        set({ user: null, isAuthenticated: false })
-        // Token cookies akan di-clear oleh backend saat logout API call
+        set({ user: null, isAuthenticated: false });
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({ user: state.user }),
-    }
-  )
-)
+    },
+  ),
+);
 
-// Convenience getter for route guards
-export function getRole() {
-  return useAuthStore.getState().user
+// ==================== Shared Hydration Helper ====================
+
+/**
+ * Ensures Zustand persist middleware has finished hydrating from localStorage.
+ * Reusable across __root.tsx and role.ts to prevent duplication.
+ * Uses a shared promise to avoid multiple concurrent hydration waits.
+ */
+let hydrationPromise: Promise<void> | null = null;
+
+export function ensureAuthHydrated(maxWait = 2000): Promise<void> {
+  // persist middleware is unavailable during SSR (no localStorage)
+  if (typeof window === 'undefined') return Promise.resolve();
+  if (!useAuthStore.persist) return Promise.resolve();
+  if (useAuthStore.persist.hasHydrated()) return Promise.resolve();
+
+  if (!hydrationPromise) {
+    hydrationPromise = new Promise((resolve) => {
+      let resolved = false;
+      
+      const finish = () => {
+        if (!resolved) {
+          resolved = true;
+          hydrationPromise = null;
+          resolve();
+        }
+      };
+
+      const timeout = setTimeout(finish, maxWait);
+      useAuthStore.persist.onFinishHydration(() => {
+        clearTimeout(timeout);
+        finish();
+      });
+    });
+  }
+
+  return hydrationPromise;
+}
+
+/**
+ * Get the current user's role string.
+ * Returns undefined if no user is authenticated.
+ */
+export function getRole(): string | undefined {
+  return useAuthStore.getState().user?.peran;
+}
+
+/**
+ * Route guard: redirect if user doesn't have one of the required roles.
+ * Usage in route file: beforeLoad: requireRoles(['BIRO_ORGANISASI'])
+ */
+export function requireRoles(roles: string[]) {
+  return async () => {
+    // Skip during SSR — no localStorage available
+    if (typeof window === "undefined") return;
+
+    await ensureAuthHydrated();
+    const user = useAuthStore.getState().user;
+    if (!user || !roles.includes(user.peran)) {
+      const { redirect } = await import("@tanstack/react-router");
+      throw redirect({ to: "/" });
+    }
+  };
 }

@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { StatusSOP, StatusPengajuanEvaluasi, JenisPengajuanEvaluasi, StatusPeraturan, JenisLangkahProsedur } from '../../generated/prisma';
+import { StatusSOP, StatusPengajuanEvaluasi, JenisPengajuanEvaluasi, JenisLangkahProsedur } from '../../generated/prisma';
 
 /**
  * [P0-D] Status Transition Guard
@@ -152,17 +152,13 @@ export function assertNilaiEvaluasiScope(
 // [P2-F] Peraturan DasarHukum Validator
 // ============================================
 /**
- * Validate that Peraturan can be used as DasarHukum (not DICABUT, same OPD)
+ * Validate that Peraturan can be used as DasarHukum (same OPD)
  * @throws BadRequestException if constraint is violated
  */
 export function assertPeraturanDasarHukum(
-  peraturanStatus: StatusPeraturan,
   peraturanOpdId: string,
   sopOpdId: string,
 ) {
-  if (peraturanStatus === StatusPeraturan.DICABUT) {
-    throw new BadRequestException('Peraturan yang sudah DICABUT tidak boleh dijadikan DasarHukum');
-  }
   if (peraturanOpdId !== sopOpdId) {
     throw new BadRequestException(
       `Peraturan harus dari OPD yang sama dengan SOP. Peraturan: ${peraturanOpdId}, SOP: ${sopOpdId}`,

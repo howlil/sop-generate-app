@@ -3,7 +3,7 @@
  * Matches server: PeraturanController
  */
 
-import { apiClient } from '@/utils/api-client'
+import { apiClient, buildQueryString } from '@/utils/api-client'
 import type { PeraturanResponse, CreatePeraturanDto, UpdatePeraturanDto } from '../types/peraturan'
 
 export const peraturanApi = {
@@ -11,10 +11,8 @@ export const peraturanApi = {
    * PRT-01: Get all peraturan
    * Filter by OPD for non-BIRO roles
    */
-  findAll: (params?: { opdId?: string }) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : ''
-    return apiClient.get<PeraturanResponse[]>(`/peraturan${query}`)
-  },
+  findAll: (params?: { opdId?: string }) =>
+    apiClient.get<PeraturanResponse[]>(`/peraturan${buildQueryString(params)}`),
 
   /**
    * PRT-06: Get peraturan by ID
@@ -23,22 +21,16 @@ export const peraturanApi = {
     apiClient.get<PeraturanResponse>(`/peraturan/${id}`),
 
   /**
-   * PRT-02: Create new peraturan (Biro Organisasi only)
+   * PRT-02: Create new peraturan (Tim Penyusun / Koordinator Tim Penyusun)
    */
   create: (payload: CreatePeraturanDto) =>
     apiClient.post<PeraturanResponse>('/peraturan', payload),
 
   /**
-   * PRT-03: Update peraturan (auto-increment version)
+   * PRT-03: Update peraturan
    */
   update: (id: string, payload: UpdatePeraturanDto) =>
     apiClient.patch<PeraturanResponse>(`/peraturan/${id}`, payload),
-
-  /**
-   * PRT-04: Revoke peraturan (status → DICABUT)
-   */
-  revoke: (id: string) =>
-    apiClient.patch<PeraturanResponse>(`/peraturan/${id}/cabut`),
 
   /**
    * PRT-09: Delete peraturan

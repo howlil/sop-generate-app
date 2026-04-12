@@ -2,24 +2,20 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+} from "@/components/ui/dialog";
+import { DialogFooterActions } from "@/components/ui/dialog-footer-actions";
 
 export interface ConfirmDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title: string
-  description?: string
-  confirmLabel?: string
-  cancelLabel?: string
-  onConfirm: () => void
-  /** Jika true, tombol konfirmasi pakai variant destructive (merah). Default true untuk konfirmasi hapus. */
-  destructive?: boolean
-  /** Class untuk DialogContent. */
-  className?: string
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  destructive?: boolean;
 }
 
 export function ConfirmDialog({
@@ -27,38 +23,28 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = 'Hapus',
-  cancelLabel = 'Batal',
+  confirmLabel = "Hapus",
+  cancelLabel = "Batal",
   onConfirm,
-  destructive = true,
-  className,
+  destructive = false,
 }: ConfirmDialogProps) {
-  const handleConfirm = () => {
-    onConfirm()
-    onOpenChange(false)
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={className ?? undefined}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description != null && <DialogDescription>{description}</DialogDescription>}
+          {description != null && (
+            <DialogDescription>{description}</DialogDescription>
+          )}
         </DialogHeader>
-        <DialogFooter className="gap-2 pt-3">
-          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => onOpenChange(false)}>
-            {cancelLabel}
-          </Button>
-          <Button
-            variant={destructive ? 'destructive' : 'default'}
-            size="sm"
-            className="h-8 text-xs"
-            onClick={handleConfirm}
-          >
-            {confirmLabel}
-          </Button>
-        </DialogFooter>
+        <DialogFooterActions
+          cancelLabel={cancelLabel}
+          confirmLabel={confirmLabel}
+          onCancel={() => onOpenChange(false)}
+          onConfirm={onConfirm}
+          destructive={destructive}
+        />
       </DialogContent>
     </Dialog>
-  )
+  );
 }

@@ -20,6 +20,8 @@ export interface AnggotaTimPenyusun {
     email: string
     nip: string
     jabatan: string
+    pangkat: string
+    nohp: string
     peran: string
   }
   opd?: {
@@ -55,6 +57,8 @@ export interface AnggotaTimEvaluasi {
     email: string
     nip: string
     jabatan: string
+    pangkat: string
+    nohp: string
     peran: string
   }
 }

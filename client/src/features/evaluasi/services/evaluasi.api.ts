@@ -49,8 +49,67 @@ export const evaluasiApi = {
   update: (id: string, payload: Partial<PengajuanEvaluasi>) =>
     apiClient.patch<PengajuanEvaluasi>(`/evaluasi/${id}`, payload),
 
-  rekap: (tahun?: number) => {
+  rekap: async (tahun?: number) => {
     const query = tahun ? `?tahun=${tahun}` : ''
-    return apiClient.get<RekapEvaluasi[]>(`/evaluasi/rekap${query}`)
+    const response = await apiClient.get<{
+      tahun: number
+      totalPengajuan: number
+      totalSelesai: number
+      overallNilaiRataRata: number | null
+      opd: Array<{
+        opdId: string
+        opdNama: string
+        total: number
+        selesai: number
+        sesuai: number
+        tidakSesuai: number
+        nilaiRataRata: number | null
+        pengajuanDetails: Array<{
+          pengajuanEvaluasiId: string
+          jenis: string
+          status: string
+          nilaiOPD: number | null
+          tanggalEvaluasi: string | null
+          detailSopCount: number
+          hasilEvaluasi: { sesuai: number; tidakSesuai: number }
+        }>
+      }>
+    }>(`/evaluasi/rekap${query}`)
+
+    // Transform server response to RekapEvaluasi[] format
+    if (!response || !response.opd) return []
+
+    return response.opd.map(opd => {
+      // Calculate completion rate
+      const completionRate = opd.total > 0 ? Math.round((opd.selesai / opd.total) * 100) : 0
+
+      // Transform pengajuanDetails to detail format
+      const detail = opd.pengajuanDetails.map(p => ({
+        pengajuanEvaluasiId: p.pengajuanEvaluasiId,
+        jenis: p.jenis,
+        status: p.status,
+        nilaiOPD: p.nilaiOPD,
+        tanggalEvaluasi: p.tanggalEvaluasi ?? '',
+        detailSopCount: p.detailSopCount,
+        hasilEvaluasi: p.hasilEvaluasi,
+        // Computed fields for compatibility
+        opdId: opd.opdId,
+        opdNama: opd.opdNama,
+        totalPengajuan: opd.total,
+        nilaiRataRata: opd.nilaiRataRata ?? undefined,
+      }))
+
+      return {
+        opdId: opd.opdId,
+        opdNama: opd.opdNama,
+        tahun: response.tahun,
+        totalPengajuan: opd.total,
+        totalTerjadwal: opd.pengajuanDetails.filter(p => p.jenis === 'TERJADWAL').length,
+        totalMandiri: opd.pengajuanDetails.filter(p => p.jenis === 'MANDIRI').length,
+        nilaiRataRata: opd.nilaiRataRata ?? undefined,
+        completionRate,
+        detail,
+      }
+    })
   },
 }

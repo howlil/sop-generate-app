@@ -8,6 +8,7 @@ import {
   Res,
   Req,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Response, Request } from 'express';
@@ -16,6 +17,7 @@ import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { Public, CurrentUser } from '../../../common/decorators';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { AuthMessages } from '../../../common/messages';
 
 @ApiTags('Auth')
 @Controller('')
@@ -64,7 +66,7 @@ export class AuthController {
     // Parse cookie manually from Cookie header
     const cookieHeader = request.headers.cookie;
     let refreshToken: string | undefined;
-    
+
     if (cookieHeader) {
       const cookies = cookieHeader
         .split(';')
@@ -76,7 +78,7 @@ export class AuthController {
     if (!refreshToken) {
       response.clearCookie('access_token');
       response.clearCookie('refresh_token');
-      return { accessToken: '', refreshToken: '' };
+      throw new UnauthorizedException(AuthMessages.TOKEN_INVALID);
     }
 
     const tokens = await this.authService.refreshTokens(refreshToken);

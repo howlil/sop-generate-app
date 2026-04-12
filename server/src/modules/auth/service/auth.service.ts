@@ -120,11 +120,11 @@ export class AuthService {
 
   getCookieOptions() {
     const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
-    
+
     return {
       httpOnly: true,
       secure: isProduction, // HTTPS only in production
-      sameSite: 'strict' as const,
+      sameSite: 'lax' as const, // Changed from 'strict' to 'lax' for cross-port development
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
     };

@@ -2,67 +2,65 @@
  * useDaftarSOPFilters Hook - SOP list filter state
  */
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from "react";
 
 export interface DaftarSOPFilters {
-  searchQuery: string
-  statusFilter: string | null
-  filterPeraturan: string | null
-  filterTanggalDari: string | null
-  filterTanggalSampai: string | null
+  searchQuery: string;
+  statusFilter: string | null;
+  filterPeraturan: string | null;
+  filterTanggalDari: string | null;
+  filterTanggalSampai: string | null;
 }
 
 export function useDaftarSopFilters() {
   const [filters, setFilters] = useState<DaftarSOPFilters>({
-    searchQuery: '',
+    searchQuery: "",
     statusFilter: null,
     filterPeraturan: null,
     filterTanggalDari: null,
     filterTanggalSampai: null,
-  })
+  });
 
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const setSearchQuery = useCallback((query: string) => {
-    setFilters((prev) => ({ ...prev, searchQuery: query }))
-  }, [])
+    setFilters((prev) => ({ ...prev, searchQuery: query }));
+  }, []);
 
   const setStatusFilter = useCallback((status: string | null) => {
-    setFilters((prev) => ({ ...prev, statusFilter: status }))
-  }, [])
-
-  const setFilterStatus = setStatusFilter
+    setFilters((prev) => ({ ...prev, statusFilter: status }));
+  }, []);
 
   const setFilterPeraturan = useCallback((peraturan: string | null) => {
-    setFilters((prev) => ({ ...prev, filterPeraturan: peraturan }))
-  }, [])
+    setFilters((prev) => ({ ...prev, filterPeraturan: peraturan }));
+  }, []);
 
   const setFilterTanggalDari = useCallback((tanggal: string | null) => {
-    setFilters((prev) => ({ ...prev, filterTanggalDari: tanggal }))
-  }, [])
+    setFilters((prev) => ({ ...prev, filterTanggalDari: tanggal }));
+  }, []);
 
   const setFilterTanggalSampai = useCallback((tanggal: string | null) => {
-    setFilters((prev) => ({ ...prev, filterTanggalSampai: tanggal }))
-  }, [])
+    setFilters((prev) => ({ ...prev, filterTanggalSampai: tanggal }));
+  }, []);
 
   const clearFilters = useCallback(() => {
     setFilters({
-      searchQuery: '',
+      searchQuery: "",
       statusFilter: null,
       filterPeraturan: null,
       filterTanggalDari: null,
       filterTanggalSampai: null,
-    })
-  }, [])
+    });
+  }, []);
 
   const activeFilterCount = useMemo(() => {
-    let count = 0
-    if (filters.statusFilter) count++
-    if (filters.filterPeraturan) count++
-    if (filters.filterTanggalDari) count++
-    if (filters.filterTanggalSampai) count++
-    return count
-  }, [filters])
+    let count = 0;
+    if (filters.statusFilter) count++;
+    if (filters.filterPeraturan) count++;
+    if (filters.filterTanggalDari) count++;
+    if (filters.filterTanggalSampai) count++;
+    return count;
+  }, [filters]);
 
   return {
     filters,
@@ -78,10 +76,9 @@ export function useDaftarSopFilters() {
     // Setters
     setSearchQuery,
     setStatusFilter,
-    setFilterStatus,
     setFilterPeraturan,
     setFilterTanggalDari,
     setFilterTanggalSampai,
     clearFilters,
-  }
+  };
 }

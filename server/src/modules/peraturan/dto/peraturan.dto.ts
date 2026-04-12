@@ -8,7 +8,6 @@ import {
   MaxLength,
   IsOptional,
 } from 'class-validator';
-import { StatusPeraturan } from '../../../generated/prisma';
 
 export class CreatePeraturanDto {
   @ApiProperty({ example: 'uuid-of-opd' })
@@ -62,9 +61,6 @@ export class PeraturanResponseDto {
 
   @ApiProperty()
   tentang: string;
-
-  @ApiProperty({ enum: StatusPeraturan })
-  status: StatusPeraturan;
 
   @ApiProperty({ description: 'Jumlah DetailSOP yang menggunakan peraturan ini sebagai dasar hukum' })
   digunakan: number;

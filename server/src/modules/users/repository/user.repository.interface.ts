@@ -1,5 +1,6 @@
 export interface IUserRepository {
   findAll(skip?: number, take?: number): Promise<any[]>;
+  findAllKepala(skip: number, take: number, opdId?: string): Promise<any[]>;
   findById(id: string): Promise<any | null>;
   findByIdWithPassword(id: string): Promise<any | null>;
   create(data: any): Promise<any>;
@@ -10,5 +11,8 @@ export interface IUserRepository {
   findByEmailWithPassword(email: string): Promise<any | null>;
   findByNip(nip: string): Promise<any | null>;
   findActiveRoleInOpd(peran: string, opdId: string): Promise<any | null>;
+  findActiveKepalaOpd(opdId: string): Promise<any | null>;
   hasActiveMembership(userId: string): Promise<boolean>;
+  addToTimEvaluasi(userId: string): Promise<void>;
+  addToTimPenyusun(userId: string, opdId: string): Promise<void>;
 }

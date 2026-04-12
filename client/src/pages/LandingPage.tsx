@@ -12,6 +12,7 @@
  */
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import logoSvg from '@/assets/logo.svg'
 import {
   FileText,
   Users,
@@ -165,9 +166,7 @@ export function LandingPage() {
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
+            <img src={logoSvg} alt="Logo" className="w-9 h-9" />
             <div className="hidden sm:block">
               <h1 className="text-sm font-semibold text-gray-900 leading-tight">Sistem Informasi SOP</h1>
               <p className="text-[11px] text-gray-500 leading-tight">Biro Organisasi</p>
@@ -354,9 +353,7 @@ export function LandingPage() {
       <footer className="border-t border-gray-200 bg-white">
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-4 h-4 text-white" />
-            </div>
+            <img src={logoSvg} alt="Logo" className="w-8 h-8" />
             <span className="text-sm text-gray-600">Sistem Informasi SOP — Biro Organisasi</span>
           </div>
           <p className="text-xs text-gray-400">

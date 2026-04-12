@@ -15,7 +15,7 @@ export class OpdRepository implements IOpdRepository {
     createdAt: Date;
     updatedAt: Date;
   }): Promise<OpdResponseDto> {
-    const [totalSOP, sopBerlaku, sopDraft] = await Promise.all([
+    const [totalSOP, sopBerlaku, sopDraft, _count] = await Promise.all([
       this.prisma.sOP.count({ where: { opdId: opd.id } }),
       this.prisma.detailSOP.count({
         where: { sop: { opdId: opd.id }, status: StatusSOP.BERLAKU },
@@ -23,9 +23,31 @@ export class OpdRepository implements IOpdRepository {
       this.prisma.detailSOP.count({
         where: { sop: { opdId: opd.id }, status: StatusSOP.DRAFT },
       }),
+      // Get counts for all related records
+      this.prisma.oPD.findUnique({
+        where: { id: opd.id },
+        select: {
+          _count: {
+            select: {
+              pengguna: true,
+              sop: true,
+              pelaksana: true,
+              anggotaTimPenyusun: true,
+              pengajuanEvaluasi: true,
+              peraturan: true,
+            },
+          },
+        },
+      }),
     ]);
 
-    return { ...opd, totalSOP, sopBerlaku, sopDraft };
+    return {
+      ...opd,
+      totalSOP,
+      sopBerlaku,
+      sopDraft,
+      _count: _count?._count,
+    };
   }
 
   async findAll(): Promise<OpdResponseDto[]> {

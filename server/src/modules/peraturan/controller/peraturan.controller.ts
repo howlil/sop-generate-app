@@ -49,9 +49,9 @@ export class PeraturanController {
   }
 
   @Post()
-  @Roles(PeranPengguna.BIRO_ORGANISASI)
+  @Roles(PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.TIM_PENYUSUN)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Buat peraturan baru (hanya Biro Organisasi)' })
+  @ApiOperation({ summary: 'Buat peraturan baru (Koordinator / Tim Penyusun)' })
   @ApiResponse({ status: 201, type: PeraturanResponseDto })
   @ApiResponse({ status: 409, description: 'Nomor + tahun + OPD sudah ada' })
   create(@Body() dto: CreatePeraturanDto): Promise<PeraturanResponseDto> {
@@ -59,8 +59,8 @@ export class PeraturanController {
   }
 
   @Patch(':id')
-  @Roles(PeranPengguna.BIRO_ORGANISASI)
-  @ApiOperation({ summary: 'Update peraturan (hanya Biro Organisasi)' })
+  @Roles(PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.TIM_PENYUSUN)
+  @ApiOperation({ summary: 'Update peraturan (Koordinator / Tim Penyusun)' })
   @ApiResponse({ status: 200, type: PeraturanResponseDto })
   update(
     @Param('id') id: string,
@@ -69,19 +69,10 @@ export class PeraturanController {
     return this.peraturanService.update(id, dto);
   }
 
-  @Patch(':id/cabut')
-  @Roles(PeranPengguna.BIRO_ORGANISASI)
-  @ApiOperation({ summary: 'Cabut peraturan — ubah status ke DICABUT (hanya Biro Organisasi)' })
-  @ApiResponse({ status: 200, type: PeraturanResponseDto })
-  @ApiResponse({ status: 409, description: 'Peraturan sudah berstatus DICABUT' })
-  revoke(@Param('id') id: string): Promise<PeraturanResponseDto> {
-    return this.peraturanService.revoke(id);
-  }
-
   @Delete(':id')
-  @Roles(PeranPengguna.BIRO_ORGANISASI)
+  @Roles(PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.TIM_PENYUSUN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Hapus peraturan (hanya Biro Organisasi; gagal jika masih dipakai)' })
+  @ApiOperation({ summary: 'Hapus peraturan (Koordinator / Tim Penyusun; gagal jika masih dipakai)' })
   @ApiResponse({ status: 204, description: 'Peraturan berhasil dihapus' })
   @ApiResponse({ status: 409, description: 'Peraturan masih digunakan sebagai dasar hukum' })
   remove(@Param('id') id: string): Promise<void> {

@@ -11,7 +11,6 @@ import {
   AddDasarHukumDto,
   AddSopTerkaitDto,
 } from '../dto/lampiran.dto';
-import { StatusPeraturan } from '../../../generated/prisma';
 import { LampiranMessages, interpolate } from '../../../common/messages';
 
 @Injectable()
@@ -64,11 +63,6 @@ export class LampiranService {
       where: { id: dto.peraturanId },
     });
     if (!peraturan) throw new NotFoundException(LampiranMessages.PERATURAN_NOT_FOUND);
-
-    // PRT-07 / [P2-F]: DICABUT peraturan cannot be DasarHukum
-    if (peraturan.status === StatusPeraturan.DICABUT) {
-      throw new BadRequestException(LampiranMessages.PERATURAN_DICABUT);
-    }
 
     // SOP-23 / [P2-F]: Peraturan must be from same OPD
     if (peraturan.opdId !== (detail as any).sop?.opdId) {

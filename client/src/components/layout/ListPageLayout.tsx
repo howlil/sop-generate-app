@@ -1,5 +1,5 @@
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
-import { PageHeader } from '@/components/layout/PageHeader'
+import { SetPageHeader } from '@/components/layout/PageHeaderProvider'
 
 /**
  * ListPageLayoutProps - Props for list page layout
@@ -60,7 +60,7 @@ export function ListPageLayout({
 }: ListPageLayoutProps) {
   return (
     <div className={className ?? 'space-y-3'}>
-      <PageHeader
+      <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}
         description={description}

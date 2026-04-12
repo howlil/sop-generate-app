@@ -9,6 +9,8 @@ const USER_SELECT = {
   email: true,
   nip: true,
   jabatan: true,
+  pangkat: true,
+  nohp: true,
 } as const;
 
 @Injectable()

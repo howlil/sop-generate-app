@@ -11,26 +11,31 @@ export type {
   TandaTanganiBaDto,
   TandaTanganiSopDto,
   TTESignaturePayload,
-} from './types/tte'
+} from "./types/tte";
 
-export type { PeranTTE } from '@/types/common'
+export type { PeranTTE } from "@/types/common";
 
 /** UI-facing TTE role type using kebab-case */
-export type TTERole = 'kepala-opd' | 'biro-organisasi' | 'tim-penyusun' | 'koordinator-tim-penyusun'
+export type TTERole =
+  | "kepala-opd"
+  | "biro-organisasi"
+  | "koordinator-tim-penyusun";
 
 // Services
-export { tteApi } from './services/tte.api'
+export { tteApi } from "./services/tte.api";
 
 // Hooks - export all utilities
-export { 
-  useTTEProfil, 
-  useRegisterTTE, 
+export {
+  useTTEProfil,
+  useRegisterTTE,
   useMintTokenVerifikasi,
-  useTTESignature, 
-  getValidasiPengesahanUrl, 
-  getTTEVerificationSuccessUrl 
-} from './hooks/useTte'
+  useTandaTanganiBA,
+  useTandaTanganiSOP,
+  createPinConfirmHandler,
+  getValidasiPengesahanUrl,
+  getTTEVerificationSuccessUrl,
+} from "./hooks/useTte";
 
 // Components
-export { PinVerificationDialog } from './components/PinVerificationDialog'
-export { TTESignatureBlock } from './components/TTESignatureBlock'
+export { PinVerificationDialog } from "./components/PinVerificationDialog";
+export { TTESignatureBlock } from "./components/TTESignatureBlock";

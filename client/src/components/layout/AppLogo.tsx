@@ -1,10 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { ROUTES } from '@/utils/constants'
 
-/**
- * Logo aplikasi Biro Organisasi - tampil di sidebar.
- * Sementara pakai inisial "BO" dalam bentuk sederhana.
- */
 export function AppLogo() {
   return (
     <Link

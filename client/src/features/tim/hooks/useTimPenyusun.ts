@@ -2,18 +2,14 @@
  * useTimPenyusun hook - TanStack Query
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { timPenyusunApi } from '@/features/tim'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import type { CreateTimPenyusunDto as CreateTimPenyusunRequest } from '@/features/tim'
-
-const TIM_PENYUSUN_STALE_TIME = 5 * 60 * 1000 // 5 minutes
+import { useQuery } from "@tanstack/react-query";
+import { timPenyusunApi } from "@/features/tim";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { STALE_TIME } from "@/utils/constants";
+import type { CreateTimPenyusunDto as CreateTimPenyusunRequest } from "@/features/tim";
 
 export function useTimPenyusun(opdId?: string) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
   const {
     data: list = [],
     isLoading,
@@ -21,36 +17,31 @@ export function useTimPenyusun(opdId?: string) {
   } = useQuery({
     queryKey: queryKeys.timPenyusunList(opdId),
     queryFn: () => timPenyusunApi.findAll(opdId ? { opdId } : undefined),
-    staleTime: TIM_PENYUSUN_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 
-  const tambahMutation = useMutation({
-    mutationFn: (payload: CreateTimPenyusunRequest) => timPenyusunApi.tambah(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
-      showToast('Anggota Tim Penyusun berhasil ditambahkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menambahkan anggota', 'error'),
-  })
+  const tambahMutation = useMutationWithToast({
+    mutationFn: (payload: CreateTimPenyusunRequest) =>
+      timPenyusunApi.tambah(payload),
+    invalidateKeys: [queryKeys.timPenyusun],
+    successMessage: "Anggota Tim Penyusun berhasil ditambahkan",
+    errorMessagePrefix: "Gagal menambahkan anggota",
+  });
 
-  const nonaktifkanMutation = useMutation({
+  const nonaktifkanMutation = useMutationWithToast({
     mutationFn: (id: string) => timPenyusunApi.nonaktifkan(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
-      showToast('Anggota Tim Penyusun dinonaktifkan', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menonaktifkan anggota', 'error'),
-  })
+    invalidateKeys: [queryKeys.timPenyusun],
+    successMessage: "Anggota Tim Penyusun dinonaktifkan",
+    errorMessagePrefix: "Gagal menonaktifkan anggota",
+  });
 
-  const pindahMutation = useMutation({
+  const pindahMutation = useMutationWithToast({
     mutationFn: ({ id, opdId }: { id: string; opdId: string }) =>
       timPenyusunApi.pindah(id, { opdId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.timPenyusun })
-      showToast('Anggota Tim Penyusun dipindah', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memindah anggota', 'error'),
-  })
+    invalidateKeys: [queryKeys.timPenyusun],
+    successMessage: "Anggota Tim Penyusun dipindah",
+    errorMessagePrefix: "Gagal memindah anggota",
+  });
 
   return {
     list,
@@ -62,5 +53,5 @@ export function useTimPenyusun(opdId?: string) {
     isAdding: tambahMutation.isPending,
     isNonaktifkan: nonaktifkanMutation.isPending,
     isPindah: pindahMutation.isPending,
-  }
+  };
 }

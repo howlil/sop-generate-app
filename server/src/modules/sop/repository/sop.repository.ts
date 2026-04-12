@@ -15,7 +15,7 @@ export class SopRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(filters: { opdId?: string; status?: string }) {
-    return this.prisma.sOP.findMany({
+    const rows = await this.prisma.sOP.findMany({
       where: {
         opdId: filters.opdId,
         detailSops: filters.status
@@ -27,10 +27,41 @@ export class SopRepository {
         detailSops: {
           orderBy: { versi: 'desc' },
           take: 1,
-          select: { status: true, nomorSOP: true, versi: true },
+          select: {
+            id: true,
+            status: true,
+            nomorSOP: true,
+            versi: true,
+            dibuatOleh: { select: { nama: true } },
+            terakhirDieditOleh: { select: { nama: true } },
+            updatedAt: true,
+            tanggalPembuatan: true,
+            dasarHukum: {
+              select: { peraturanId: true },
+              take: 1,
+            },
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
+    });
+
+    // Flatten detailSops[0] fields onto the parent SOP for client compatibility
+    return rows.map((row: any) => {
+      const detail = row.detailSops?.[0];
+      return {
+        ...row,
+        status: detail?.status ?? null,
+        nomorSOP: detail?.nomorSOP ?? null,
+        versi: detail?.versi ?? 0,
+        author: detail?.dibuatOleh?.nama ?? null,
+        lastEditedBy: detail?.terakhirDieditOleh?.nama ?? null,
+        lastEditedAt: detail?.updatedAt?.toISOString() ?? null,
+        terakhirDiperbarui: detail?.updatedAt ? new Date(detail.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null,
+        tanggal: detail?.tanggalPembuatan ? new Date(detail.tanggalPembuatan).toLocaleDateString('id-ID') : null,
+        detailSopId: detail?.id ?? null,
+        peraturanId: detail?.dasarHukum?.[0]?.peraturanId ?? null,
+      };
     });
   }
 

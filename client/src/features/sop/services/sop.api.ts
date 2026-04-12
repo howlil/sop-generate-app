@@ -81,9 +81,6 @@ export const sopApi = {
   findPelaksana: (opdId: string) =>
     apiClient.get<Pelaksana[]>(`/pelaksana?opdId=${opdId}`),
 
-  findPelaksanaById: (id: string) =>
-    apiClient.get<Pelaksana>(`/pelaksana/${id}`),
-
   createPelaksana: (payload: CreatePelaksanaDto) =>
     apiClient.post<Pelaksana>('/pelaksana', payload),
 

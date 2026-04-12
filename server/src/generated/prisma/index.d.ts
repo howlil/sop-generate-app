@@ -212,14 +212,6 @@ export const GayaPanah: {
 export type GayaPanah = (typeof GayaPanah)[keyof typeof GayaPanah]
 
 
-export const StatusPeraturan: {
-  BERLAKU: 'BERLAKU',
-  DICABUT: 'DICABUT'
-};
-
-export type StatusPeraturan = (typeof StatusPeraturan)[keyof typeof StatusPeraturan]
-
-
 export const PeranTTE: {
   KEPALA_OPD: 'KEPALA_OPD',
   BIRO_ORGANISASI: 'BIRO_ORGANISASI',
@@ -324,10 +316,6 @@ export const CabangDiagramEdge: typeof $Enums.CabangDiagramEdge
 export type GayaPanah = $Enums.GayaPanah
 
 export const GayaPanah: typeof $Enums.GayaPanah
-
-export type StatusPeraturan = $Enums.StatusPeraturan
-
-export const StatusPeraturan: typeof $Enums.StatusPeraturan
 
 export type PeranTTE = $Enums.PeranTTE
 
@@ -6133,7 +6121,6 @@ export namespace Prisma {
     nomor: string | null
     tahun: number | null
     tentang: string | null
-    status: $Enums.StatusPeraturan | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6145,7 +6132,6 @@ export namespace Prisma {
     nomor: string | null
     tahun: number | null
     tentang: string | null
-    status: $Enums.StatusPeraturan | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6157,7 +6143,6 @@ export namespace Prisma {
     nomor: number
     tahun: number
     tentang: number
-    status: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6179,7 +6164,6 @@ export namespace Prisma {
     nomor?: true
     tahun?: true
     tentang?: true
-    status?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6191,7 +6175,6 @@ export namespace Prisma {
     nomor?: true
     tahun?: true
     tentang?: true
-    status?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6203,7 +6186,6 @@ export namespace Prisma {
     nomor?: true
     tahun?: true
     tentang?: true
-    status?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -6302,7 +6284,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status: $Enums.StatusPeraturan
     createdAt: Date
     updatedAt: Date
     _count: PeraturanCountAggregateOutputType | null
@@ -6333,7 +6314,6 @@ export namespace Prisma {
     nomor?: boolean
     tahun?: boolean
     tentang?: boolean
-    status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     dasarHukum?: boolean | Peraturan$dasarHukumArgs<ExtArgs>
@@ -6350,12 +6330,11 @@ export namespace Prisma {
     nomor?: boolean
     tahun?: boolean
     tentang?: boolean
-    status?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PeraturanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "opdId" | "namaPeraturan" | "nomor" | "tahun" | "tentang" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["peraturan"]>
+  export type PeraturanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "opdId" | "namaPeraturan" | "nomor" | "tahun" | "tentang" | "createdAt" | "updatedAt", ExtArgs["result"]["peraturan"]>
   export type PeraturanInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     dasarHukum?: boolean | Peraturan$dasarHukumArgs<ExtArgs>
     opd?: boolean | OPDDefaultArgs<ExtArgs>
@@ -6375,7 +6354,6 @@ export namespace Prisma {
       nomor: string
       tahun: number
       tentang: string
-      status: $Enums.StatusPeraturan
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["peraturan"]>
@@ -6755,7 +6733,6 @@ export namespace Prisma {
     readonly nomor: FieldRef<"Peraturan", 'String'>
     readonly tahun: FieldRef<"Peraturan", 'Int'>
     readonly tentang: FieldRef<"Peraturan", 'String'>
-    readonly status: FieldRef<"Peraturan", 'StatusPeraturan'>
     readonly createdAt: FieldRef<"Peraturan", 'DateTime'>
     readonly updatedAt: FieldRef<"Peraturan", 'DateTime'>
   }
@@ -28938,7 +28915,6 @@ export namespace Prisma {
     nomor: 'nomor',
     tahun: 'tahun',
     tentang: 'tentang',
-    status: 'status',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -29536,13 +29512,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'StatusPeraturan'
-   */
-  export type EnumStatusPeraturanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPeraturan'>
-    
-
-
-  /**
    * Reference to a field of type 'StatusSOP'
    */
   export type EnumStatusSOPFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusSOP'>
@@ -29873,7 +29842,6 @@ export namespace Prisma {
     nomor?: StringFilter<"Peraturan"> | string
     tahun?: IntFilter<"Peraturan"> | number
     tentang?: StringFilter<"Peraturan"> | string
-    status?: EnumStatusPeraturanFilter<"Peraturan"> | $Enums.StatusPeraturan
     createdAt?: DateTimeFilter<"Peraturan"> | Date | string
     updatedAt?: DateTimeFilter<"Peraturan"> | Date | string
     dasarHukum?: DasarHukumListRelationFilter
@@ -29887,7 +29855,6 @@ export namespace Prisma {
     nomor?: SortOrder
     tahun?: SortOrder
     tentang?: SortOrder
-    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     dasarHukum?: DasarHukumOrderByRelationAggregateInput
@@ -29906,7 +29873,6 @@ export namespace Prisma {
     nomor?: StringFilter<"Peraturan"> | string
     tahun?: IntFilter<"Peraturan"> | number
     tentang?: StringFilter<"Peraturan"> | string
-    status?: EnumStatusPeraturanFilter<"Peraturan"> | $Enums.StatusPeraturan
     createdAt?: DateTimeFilter<"Peraturan"> | Date | string
     updatedAt?: DateTimeFilter<"Peraturan"> | Date | string
     dasarHukum?: DasarHukumListRelationFilter
@@ -29920,7 +29886,6 @@ export namespace Prisma {
     nomor?: SortOrder
     tahun?: SortOrder
     tentang?: SortOrder
-    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PeraturanCountOrderByAggregateInput
@@ -29940,7 +29905,6 @@ export namespace Prisma {
     nomor?: StringWithAggregatesFilter<"Peraturan"> | string
     tahun?: IntWithAggregatesFilter<"Peraturan"> | number
     tentang?: StringWithAggregatesFilter<"Peraturan"> | string
-    status?: EnumStatusPeraturanWithAggregatesFilter<"Peraturan"> | $Enums.StatusPeraturan
     createdAt?: DateTimeWithAggregatesFilter<"Peraturan"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Peraturan"> | Date | string
   }
@@ -31863,7 +31827,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutPeraturanInput
@@ -31877,7 +31840,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutPeraturanInput
@@ -31889,7 +31851,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutPeraturanNestedInput
@@ -31903,7 +31864,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutPeraturanNestedInput
@@ -31916,7 +31876,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31927,7 +31886,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31939,7 +31897,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33991,13 +33948,6 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type EnumStatusPeraturanFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusPeraturan | EnumStatusPeraturanFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusPeraturan[]
-    notIn?: $Enums.StatusPeraturan[]
-    not?: NestedEnumStatusPeraturanFilter<$PrismaModel> | $Enums.StatusPeraturan
-  }
-
   export type DasarHukumListRelationFilter = {
     every?: DasarHukumWhereInput
     some?: DasarHukumWhereInput
@@ -34032,7 +33982,6 @@ export namespace Prisma {
     nomor?: SortOrder
     tahun?: SortOrder
     tentang?: SortOrder
-    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -34048,7 +33997,6 @@ export namespace Prisma {
     nomor?: SortOrder
     tahun?: SortOrder
     tentang?: SortOrder
-    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -34060,7 +34008,6 @@ export namespace Prisma {
     nomor?: SortOrder
     tahun?: SortOrder
     tentang?: SortOrder
-    status?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -34083,16 +34030,6 @@ export namespace Prisma {
     _sum?: NestedIntFilter<$PrismaModel>
     _min?: NestedIntFilter<$PrismaModel>
     _max?: NestedIntFilter<$PrismaModel>
-  }
-
-  export type EnumStatusPeraturanWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusPeraturan | EnumStatusPeraturanFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusPeraturan[]
-    notIn?: $Enums.StatusPeraturan[]
-    not?: NestedEnumStatusPeraturanWithAggregatesFilter<$PrismaModel> | $Enums.StatusPeraturan
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumStatusPeraturanFilter<$PrismaModel>
-    _max?: NestedEnumStatusPeraturanFilter<$PrismaModel>
   }
 
   export type SOPOrderByRelevanceInput = {
@@ -36351,10 +36288,6 @@ export namespace Prisma {
     divide?: number
   }
 
-  export type EnumStatusPeraturanFieldUpdateOperationsInput = {
-    set?: $Enums.StatusPeraturan
-  }
-
   export type DasarHukumUpdateManyWithoutPeraturanNestedInput = {
     create?: XOR<DasarHukumCreateWithoutPeraturanInput, DasarHukumUncheckedCreateWithoutPeraturanInput> | DasarHukumCreateWithoutPeraturanInput[] | DasarHukumUncheckedCreateWithoutPeraturanInput[]
     connectOrCreate?: DasarHukumCreateOrConnectWithoutPeraturanInput | DasarHukumCreateOrConnectWithoutPeraturanInput[]
@@ -38344,13 +38277,6 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedEnumStatusPeraturanFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusPeraturan | EnumStatusPeraturanFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusPeraturan[]
-    notIn?: $Enums.StatusPeraturan[]
-    not?: NestedEnumStatusPeraturanFilter<$PrismaModel> | $Enums.StatusPeraturan
-  }
-
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -38376,16 +38302,6 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
-  }
-
-  export type NestedEnumStatusPeraturanWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusPeraturan | EnumStatusPeraturanFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusPeraturan[]
-    notIn?: $Enums.StatusPeraturan[]
-    not?: NestedEnumStatusPeraturanWithAggregatesFilter<$PrismaModel> | $Enums.StatusPeraturan
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumStatusPeraturanFilter<$PrismaModel>
-    _max?: NestedEnumStatusPeraturanFilter<$PrismaModel>
   }
 
   export type NestedEnumStatusSOPFilter<$PrismaModel = never> = {
@@ -39818,7 +39734,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutPeraturanInput
@@ -39830,7 +39745,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutPeraturanInput
@@ -40006,7 +39920,6 @@ export namespace Prisma {
     nomor?: StringFilter<"Peraturan"> | string
     tahun?: IntFilter<"Peraturan"> | number
     tentang?: StringFilter<"Peraturan"> | string
-    status?: EnumStatusPeraturanFilter<"Peraturan"> | $Enums.StatusPeraturan
     createdAt?: DateTimeFilter<"Peraturan"> | Date | string
     updatedAt?: DateTimeFilter<"Peraturan"> | Date | string
   }
@@ -41596,7 +41509,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutPeraturanInput
@@ -41609,7 +41521,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41711,7 +41622,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutPeraturanNestedInput
@@ -41724,7 +41634,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -47433,7 +47342,6 @@ export namespace Prisma {
     nomor: string
     tahun: number
     tentang: string
-    status?: $Enums.StatusPeraturan
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -47620,7 +47528,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutPeraturanNestedInput
@@ -47632,7 +47539,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutPeraturanNestedInput
@@ -47644,7 +47550,6 @@ export namespace Prisma {
     nomor?: StringFieldUpdateOperationsInput | string
     tahun?: IntFieldUpdateOperationsInput | number
     tentang?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusPeraturanFieldUpdateOperationsInput | $Enums.StatusPeraturan
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

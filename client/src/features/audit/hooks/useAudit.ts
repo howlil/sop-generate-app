@@ -5,7 +5,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { auditApi } from '../services/audit.api'
-import { queryKeys } from '@/utils/query-keys'
+import { queryKeys } from '@/config/query-keys'
+import { STALE_TIME } from '@/utils/constants'
 import type { BagianSOP } from '@/types/common'
 
 /**
@@ -20,6 +21,7 @@ export function useAuditBySopDetail(
     queryKey: queryKeys.auditBySopDetail(sopDetailId),
     queryFn: () => auditApi.findBySopDetail(sopDetailId, params),
     enabled: !!sopDetailId,
+    staleTime: STALE_TIME.LONG,
   })
 }
 
@@ -31,5 +33,6 @@ export function useAuditAll(params?: { bagian?: BagianSOP; skip?: number; take?:
   return useQuery({
     queryKey: queryKeys.auditAll(params),
     queryFn: () => auditApi.findAll(params),
+    staleTime: STALE_TIME.LONG,
   })
 }

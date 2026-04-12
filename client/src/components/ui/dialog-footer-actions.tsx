@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
-import { cn } from '@/utils/cn'
 
 export interface DialogFooterActionsProps {
   cancelLabel?: string
@@ -8,30 +7,27 @@ export interface DialogFooterActionsProps {
   onCancel: () => void
   onConfirm: () => void
   confirmDisabled?: boolean
-  /** Tambahan class untuk wrapper DialogFooter. */
-  className?: string
-  /** Class untuk tombol Batal. */
-  cancelClassName?: string
-  /** Class untuk tombol Konfirmasi. */
-  confirmClassName?: string
+  /** Use destructive (red) variant for confirm button */
+  destructive?: boolean
 }
 
+/**
+ * Standard cancel/confirm button pair for dialog footers.
+ */
 export function DialogFooterActions({
   cancelLabel = 'Batal',
   confirmLabel,
   onCancel,
   onConfirm,
   confirmDisabled,
-  className,
-  cancelClassName,
-  confirmClassName,
+  destructive,
 }: DialogFooterActionsProps) {
   return (
-    <DialogFooter className={className ?? 'gap-2 pt-3'}>
-      <Button variant="outline" size="sm" className={cn('h-8 text-xs', cancelClassName)} onClick={onCancel}>
+    <DialogFooter className="gap-2 pt-3">
+      <Button variant="outline" size="sm" onClick={onCancel}>
         {cancelLabel}
       </Button>
-      <Button size="sm" className={cn('h-8 text-xs', confirmClassName)} onClick={onConfirm} disabled={confirmDisabled}>
+      <Button size="sm" onClick={onConfirm} disabled={confirmDisabled} variant={destructive ? 'destructive' : 'default'}>
         {confirmLabel}
       </Button>
     </DialogFooter>

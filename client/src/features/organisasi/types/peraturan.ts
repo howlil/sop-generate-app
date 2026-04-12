@@ -2,8 +2,6 @@
  * Peraturan types - matching server schema
  */
 
-import type { StatusPeraturan } from '@/types/common'
-
 export interface PeraturanResponse {
   id: string
   opdId: string
@@ -11,7 +9,6 @@ export interface PeraturanResponse {
   nomor: string
   tahun: number
   tentang: string
-  status: StatusPeraturan
   createdAt: string
   updatedAt: string
   opd?: {

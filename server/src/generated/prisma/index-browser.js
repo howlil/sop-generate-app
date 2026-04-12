@@ -151,7 +151,6 @@ exports.Prisma.PeraturanScalarFieldEnum = {
   nomor: 'nomor',
   tahun: 'tahun',
   tentang: 'tentang',
-  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -576,11 +575,6 @@ exports.PeranPengguna = exports.$Enums.PeranPengguna = {
   TIM_PENYUSUN: 'TIM_PENYUSUN',
   KOORDINATOR_TIM_PENYUSUN: 'KOORDINATOR_TIM_PENYUSUN',
   KEPALA_OPD: 'KEPALA_OPD'
-};
-
-exports.StatusPeraturan = exports.$Enums.StatusPeraturan = {
-  BERLAKU: 'BERLAKU',
-  DICABUT: 'DICABUT'
 };
 
 exports.StatusSOP = exports.$Enums.StatusSOP = {

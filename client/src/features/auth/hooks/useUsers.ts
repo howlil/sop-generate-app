@@ -2,55 +2,41 @@
  * useUsers hook - TanStack Query
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { usersApi } from '../services/users.api'
-import { queryKeys } from '@/utils/query-keys'
-import { useToast } from '@/utils/ui'
-import type { CreateUserDto, UpdateUserDto } from '../types/users'
-
-const USERS_STALE_TIME = 3 * 60 * 1000 // 3 minutes
+import { useQuery } from "@tanstack/react-query";
+import { usersApi } from "../services/users.api";
+import { queryKeys } from "@/config/query-keys";
+import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { STALE_TIME } from "@/utils/constants";
+import type { CreateUserDto, UpdateUserDto } from "../types/users";
 
 export function useUsers(page: number = 1, limit: number = 10) {
-  const { showToast } = useToast()
-  const queryClient = useQueryClient()
-
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.usersList(page, limit),
     queryFn: () => usersApi.findAll(page, limit),
-    staleTime: USERS_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 
-  const createMutation = useMutation({
+  const createMutation = useMutationWithToast({
     mutationFn: (payload: CreateUserDto) => usersApi.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      showToast('User berhasil dibuat', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal membuat user', 'error'),
-  })
+    invalidateKeys: [queryKeys.users],
+    successMessage: "User berhasil dibuat",
+    errorMessagePrefix: "Gagal membuat user",
+  });
 
-  const updateMutation = useMutation({
+  const updateMutation = useMutationWithToast({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateUserDto }) =>
       usersApi.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      showToast('User berhasil diperbarui', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal memperbarui user', 'error'),
-  })
+    invalidateKeys: [queryKeys.users],
+    successMessage: "User berhasil diperbarui",
+    errorMessagePrefix: "Gagal memperbarui user",
+  });
 
-  const deleteMutation = useMutation({
+  const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => usersApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users })
-      showToast('User berhasil dihapus', 'success')
-    },
-    onError: (error: Error) => showToast(error.message || 'Gagal menghapus user', 'error'),
-  })
+    invalidateKeys: [queryKeys.users],
+    successMessage: "User berhasil dihapus",
+    errorMessagePrefix: "Gagal menghapus user",
+  });
 
   return {
     data,
@@ -62,7 +48,7 @@ export function useUsers(page: number = 1, limit: number = 10) {
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
-  }
+  };
 }
 
 export function useUserDetail(id: string) {
@@ -70,6 +56,6 @@ export function useUserDetail(id: string) {
     queryKey: queryKeys.user(id),
     queryFn: () => usersApi.findById(id),
     enabled: !!id,
-    staleTime: USERS_STALE_TIME,
-  })
+    staleTime: STALE_TIME.MEDIUM,
+  });
 }

@@ -10,6 +10,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { PeranPengguna } from '../../../generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { UserMessages } from '../../../common/messages';
+import { generateSecurePassword } from '../../../common/utils/password.util';
 
 @Injectable()
 export class UserService {
@@ -24,12 +25,20 @@ export class UserService {
       throw new ConflictException(UserMessages.EMAIL_EXISTS);
     }
 
+    // Auto-generate password if not provided
+    const password = createUserDto.kataSandi || generateSecurePassword();
+
+    // Auto-add TIM_PENYUSUN users to AnggotaTimPenyusun (must check before KOORDINATOR lock)
+    const isPenyusunRole =
+      createUserDto.peran === PeranPengguna.TIM_PENYUSUN;
+
     // [P2-D] Enforce: 1 KEPALA_OPD and 1 KOORDINATOR_TIM_PENYUSUN per OPD
     // Use transaction with SELECT FOR UPDATE to prevent race condition
-    if (
+    const isRoleLockRequired =
       createUserDto.peran === PeranPengguna.KEPALA_OPD ||
-      createUserDto.peran === PeranPengguna.KOORDINATOR_TIM_PENYUSUN
-    ) {
+      createUserDto.peran === PeranPengguna.KOORDINATOR_TIM_PENYUSUN;
+
+    if (isRoleLockRequired) {
       if (!createUserDto.opdId) {
         throw new BadRequestException(UserMessages.OPD_REQUIRED);
       }
@@ -44,18 +53,30 @@ export class UserService {
 
       // Transaction with SELECT FOR UPDATE prevents concurrent creation
       return this.userRepository.createWithRoleLock(
-        { ...createUserDto, kataSandi: await bcrypt.hash(createUserDto.kataSandi, 10) },
+        { ...createUserDto, kataSandi: await bcrypt.hash(password, 10) },
         createUserDto.peran,
         createUserDto.opdId,
       );
     }
 
-    const hashedPassword = await bcrypt.hash(createUserDto.kataSandi, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    return this.userRepository.create({
+    const user = await this.userRepository.create({
       ...createUserDto,
       kataSandi: hashedPassword,
     });
+
+    // Auto-add TIM_EVALUASI users to TimEvaluasiAnggota table
+    if (createUserDto.peran === PeranPengguna.TIM_EVALUASI) {
+      await this.userRepository.addToTimEvaluasi(user.id);
+    }
+
+    // Auto-add TIM_PENYUSUN users to AnggotaTimPenyusun table
+    if (isPenyusunRole && createUserDto.opdId) {
+      await this.userRepository.addToTimPenyusun(user.id, createUserDto.opdId);
+    }
+
+    return user;
   }
 
   async findAll(page: number, limit: number): Promise<{
