@@ -103,28 +103,31 @@ export interface LangkahSOP {
   sopDetailId: string;
   urutan: number;
   kegiatan: string;
-  pelaksana: string;
-  waktu?: number;
-  satuanWaktu?: SatuanWaktu;
-  kelengkapan?: string;
-  output?: string;
-  idNextStepIfYes?: string;
-  idNextStepIfNo?: string;
-  type: JenisLangkahProsedur;
+  jenis: JenisLangkahProsedur;
+  kelengkapan: string;
+  keluaran: string;
+  waktu: number;
+  satuanWaktu: SatuanWaktu;
+  keterangan: string;
+  pelaksanaId: string;
+  langkahSelanjutnyaYaId?: string | null;
+  langkahSelanjutnyaTidakId?: string | null;
   createdAt: string;
   updatedAt: string;
+
+  // Relation convenience fields
+  pelaksana?: { id: string; namaPelaksana: string };
 }
 
 export interface DetailSOPPelaksana {
   id: string;
   sopDetailId: string;
-  opdId: string;
+  pelaksanaId: string;
   urutan: number;
   createdAt: string;
   updatedAt: string;
 
-  opd?: { id: string; nama: string };
-  relasiPelaksana?: DetailSOPPelaksana[];
+  pelaksana?: { id: string; opdId: string; namaPelaksana: string };
 }
 
 export interface Pelaksana {
@@ -140,15 +143,15 @@ export interface Pelaksana {
 export interface CreateSopRequest {
   judul: string;
   opdId: string;
+  logoInstansi?: string;
+  namaLembaga?: string;
 }
 
 export interface UpdateMetadataDto {
-  judul?: string;
-  nomorSOP?: string;
-  tanggalPembuatan?: string;
-  tanggalEffective?: string;
   logoInstansi?: string;
   namaLembaga?: string;
+  tanggalRevisi?: string;
+  tanggalEfektif?: string;
   lebarKolomKegiatan?: number;
   lebarKolomPelaksana?: number;
   lebarKolomKelengkapan?: number;
@@ -162,40 +165,41 @@ export interface UpdateStatusDto {
 }
 
 export interface CreateLangkahSOPDto {
-  urutan: number;
   kegiatan: string;
-  pelaksana: string;
-  waktu?: number;
-  satuanWaktu?: SatuanWaktu;
-  kelengkapan?: string;
-  output?: string;
-  idNextStepIfYes?: string;
-  idNextStepIfNo?: string;
-  type: JenisLangkahProsedur;
+  jenis?: JenisLangkahProsedur;
+  urutan: number;
+  kelengkapan: string;
+  keluaran: string;
+  waktu: number;
+  satuanWaktu: SatuanWaktu;
+  keterangan?: string;
+  pelaksanaId: string;
+  langkahSelanjutnyaYaId?: string;
+  langkahSelanjutnyaTidakId?: string;
 }
 
 export interface UpdateLangkahSOPDto {
-  urutan?: number;
   kegiatan?: string;
-  pelaksana?: string;
+  jenis?: JenisLangkahProsedur;
+  urutan?: number;
+  kelengkapan?: string;
+  keluaran?: string;
   waktu?: number;
   satuanWaktu?: SatuanWaktu;
-  kelengkapan?: string;
-  output?: string;
-  idNextStepIfYes?: string;
-  idNextStepIfNo?: string;
-  type?: JenisLangkahProsedur;
+  keterangan?: string;
+  pelaksanaId?: string;
+  langkahSelanjutnyaYaId?: string | null;
+  langkahSelanjutnyaTidakId?: string | null;
 }
 
 export interface CreatePelaksanaDto {
   opdId: string;
-  namaPelaksana?: string;
-  urutan?: number;
+  namaPelaksana: string;
 }
 
 export interface CreateDetailSOPPelaksanaDto {
-  opdId: string;
-  urutan: number;
+  pelaksanaId: string;
+  urutan?: number;
 }
 
 export interface CreateLampiranTeksDto {

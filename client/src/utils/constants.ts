@@ -39,7 +39,6 @@ export const ROLE_LABELS: Record<RoleKey, string> = {
 export const ROUTES = {
   HOME: "/",
   TIM_PENYUSUN: {
-    DASHBOARD: "/tim-penyusun",
     SOP: "/tim-penyusun/sop",
     PELAKSANA: "/tim-penyusun/pelaksana",
     PERATURAN: "/tim-penyusun/peraturan",
@@ -48,13 +47,11 @@ export const ROUTES = {
     DETAIL_SOP: "/tim-penyusun/sop/$id",
   },
   KEPALA_OPD: {
-    DASHBOARD: "/kepala-opd",
     SOP: "/kepala-opd/sop",
     DETAIL_SOP: "/kepala-opd/sop/$id",
     TTE: "/kepala-opd/tte",
   },
   BIRO_ORGANISASI: {
-    DASHBOARD: "/biro-organisasi",
     GRAFIK_EVALUASI: "/biro-organisasi/grafik-evaluasi",
     OPD: "/biro-organisasi/opd",
     TIM_PENYUSUN: "/biro-organisasi/tim-penyusun",

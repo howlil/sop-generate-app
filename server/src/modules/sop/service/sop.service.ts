@@ -46,11 +46,14 @@ export class SopService {
   }
 
   async create(dto: CreateSopDto, user: JwtUser) {
+    // Fetch OPD to get default name if namaLembaga not provided
+    const opd = await this.repo.getOpdById(dto.opdId);
+
     return this.repo.create({
       judul: dto.judul,
       opdId: dto.opdId,
-      logoInstansi: dto.logoInstansi,
-      namaLembaga: dto.namaLembaga,
+      logoInstansi: dto.logoInstansi ?? '',
+      namaLembaga: dto.namaLembaga ?? opd.nama,
       dibuatOlehId: user.id,
     });
   }

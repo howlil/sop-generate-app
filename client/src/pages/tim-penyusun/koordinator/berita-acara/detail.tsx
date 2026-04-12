@@ -81,7 +81,7 @@ export function DetailBeritaAcaraPage() {
     <>
       <DetailPageLayout
         breadcrumb={[
-        { label: 'Koordinator Tim Penyusun', to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP },
+        { label: 'Koordinator Tim Penyusun', to: ROUTES.TIM_PENYUSUN.SOP },
         { label: 'Berita Acara', to: ROUTES.TIM_PENYUSUN.KOORDINATOR_BERITA_ACARA },
         { label: pengajuan?.opdNama ?? 'Detail' },
       ]}
@@ -276,7 +276,7 @@ export function DetailBeritaAcaraPage() {
                             size="sm"
                             onClick={() =>
                               navigate({
-                                to: '/tim-penyusun/detail-sop/$id',
+                                to: ROUTES.TIM_PENYUSUN.DETAIL_SOP,
                                 params: { id: sop.sopDetailId },
                               })
                             }

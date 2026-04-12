@@ -3,7 +3,7 @@ import { ROUTES } from '@/utils/constants'
 
 export const Route = createFileRoute('/tim-penyusun/')({
   beforeLoad: () => {
-    throw redirect({ to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP })
+    throw redirect({ to: ROUTES.TIM_PENYUSUN.SOP })
   },
   component: () => null,
 })

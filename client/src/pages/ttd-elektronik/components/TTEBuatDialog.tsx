@@ -18,7 +18,6 @@ import {
 } from "@/features/tte/hooks/useTte";
 import type { RegisterTteDto } from "@/features/tte/types/tte";
 import { showErrorMessages } from "@/utils/toast"
-import { useAuthStore } from "@/stores/authStore";
 
 type WizardStep = "data-diri" | "pin" | "cek-email";
 
@@ -38,7 +37,6 @@ export function TTEBuatDialog({
   defaultNama,
 }: TTEBuatDialogProps) {
   const { data: profile } = useTTEProfil();
-  const userJabatan = useAuthStore((s) => s.user?.jabatan);
   const registerTTE = useRegisterTTE();
   const mintToken = useMintTokenVerifikasi();
   const [step, setStep] = useState<WizardStep>("data-diri");
@@ -102,9 +100,6 @@ export function TTEBuatDialog({
 
     try {
       const payload: RegisterTteDto = {
-        nip: nip.trim(),
-        jabatan: userJabatan ?? "",
-        pangkat: "",
         pin,
       };
       await registerTTE.mutateAsync(payload);

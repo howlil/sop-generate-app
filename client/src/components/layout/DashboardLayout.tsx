@@ -29,39 +29,39 @@ interface SidebarItem {
 const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
   BIRO_ORGANISASI: [
     {
-      to: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN,
-      label: "Grafik Evaluasi Tahunan",
+      to: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI,
+      label: "Grafik Evaluasi",
       icon: BarChart3,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.MANAJEMEN_OPD,
+      to: ROUTES.BIRO_ORGANISASI.OPD,
       label: "Manajemen OPD",
       icon: Building2,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.MANAJEMEN_TIM_PENYUSUN,
+      to: ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN,
       label: "Manajemen Tim Penyusun",
       icon: UserPlus,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.MANAJEMEN_TIM_EVALUASI,
+      to: ROUTES.BIRO_ORGANISASI.TIM_EVALUASI,
       label: "Manajemen Tim Evaluasi",
       icon: Users,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.MANAJEMEN_EVALUASI_SOP,
+      to: ROUTES.BIRO_ORGANISASI.EVALUASI,
       label: "Manajemen Evaluasi SOP",
       icon: FileCheck,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.TTD,
+      to: ROUTES.BIRO_ORGANISASI.TTE,
       label: "TTD Elektronik",
       icon: PenLine,
     },
   ],
   TIM_PENYUSUN: [
     {
-      to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
+      to: ROUTES.TIM_PENYUSUN.SOP,
       label: "Manajemen SOP",
       icon: FileText,
     },
@@ -78,7 +78,7 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
   ],
   KOORDINATOR_TIM_PENYUSUN: [
     {
-      to: ROUTES.TIM_PENYUSUN.MANAJEMEN_SOP,
+      to: ROUTES.TIM_PENYUSUN.SOP,
       label: "Manajemen SOP",
       icon: FileText,
     },
@@ -98,21 +98,21 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
       icon: FileSignature,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.KOORDINATOR_TTD,
+      to: ROUTES.TIM_PENYUSUN.KOORDINATOR_TTE,
       label: "TTD Elektronik",
       icon: PenLine,
     },
   ],
   KEPALA_OPD: [
-    { to: ROUTES.KEPALA_OPD.PANTAU_SOP, label: "Pantau SOP", icon: FileText },
+    { to: ROUTES.KEPALA_OPD.SOP, label: "Pantau SOP", icon: FileText },
     {
-      to: ROUTES.KEPALA_OPD.TTD,
+      to: ROUTES.KEPALA_OPD.TTE,
       label: "TTD Elektronik",
       icon: PenLine,
     },
   ],
   TIM_EVALUASI: [
-    { to: ROUTES.TIM_EVALUASI.EVALUASI, label: "Evaluasi SOP", icon: FileCheck },
+    { to: ROUTES.TIM_EVALUASI.PENILAIAN, label: "Evaluasi SOP", icon: FileCheck },
   ],
 };
 

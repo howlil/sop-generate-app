@@ -48,9 +48,6 @@ export interface RiwayatTandaTangan {
 }
 
 export interface RegisterTteDto {
-  nip: string
-  jabatan: string
-  pangkat: string
   pin: string
 }
 

@@ -3,7 +3,7 @@ import { ROUTES } from '@/utils/constants'
 
 export const Route = createFileRoute('/kepala-opd/')({
   beforeLoad: () => {
-    throw redirect({ to: ROUTES.KEPALA_OPD.PANTAU_SOP })
+    throw redirect({ to: ROUTES.KEPALA_OPD.SOP })
   },
   component: () => null,
 })

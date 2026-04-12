@@ -26,6 +26,7 @@ import type { SOPDetailMetadata, ProsedurRow, StatusSOP } from "@/types/common";
 import type { LogEditSOP } from "@/features/audit/types/audit";
 import { DEFAULT_SOP_STATUS } from "@/features/sop/types/sop";
 import type { Peraturan } from "@/features/organisasi";
+import { ROUTES } from "@/utils/constants";
 
 /** Display item for komentar/comments panel */
 export interface KomentarDisplayItem {
@@ -193,7 +194,7 @@ export function useDetailSopPenyusun(
             : "SOP selesai disusun. Ajukan ke evaluasi dari Manajemen SOP.",
         );
         if (navigateFn) {
-          navigateFn({ to: "/tim-penyusun/manajemen-sop" });
+          navigateFn({ to: ROUTES.TIM_PENYUSUN.SOP });
         }
       }
     },

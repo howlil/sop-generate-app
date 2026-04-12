@@ -6,5 +6,5 @@ export const Route = createFileRoute('/biro-organisasi/')({
 })
 
 function BiroOrganisasiIndex() {
-  return <Navigate to={ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI_TAHUNAN} />
+  return <Navigate to={ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI} />
 }

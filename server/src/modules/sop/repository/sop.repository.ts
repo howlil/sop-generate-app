@@ -14,6 +14,13 @@ function kodeOpd(namaOpd: string): string {
 export class SopRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async getOpdById(opdId: string) {
+    return this.prisma.oPD.findUniqueOrThrow({
+      where: { id: opdId },
+      select: { nama: true },
+    });
+  }
+
   async findAll(filters: { opdId?: string; status?: string }) {
     const rows = await this.prisma.sOP.findMany({
       where: {

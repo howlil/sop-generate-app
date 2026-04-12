@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, MaxLength, IsOptional } from 'class-validator';
 import { StatusSOP } from '../../../generated/prisma';
 
 export class CreateSopDto {
@@ -14,15 +14,15 @@ export class CreateSopDto {
   @IsNotEmpty({ message: 'opdId wajib diisi' })
   opdId: string;
 
-  @ApiProperty({ example: 'https://cdn.example.com/logo.png', description: 'URL logo instansi' })
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/logo.png', description: 'URL logo instansi (opsional, akan menggunakan default jika tidak diisi)' })
   @IsString()
-  @IsNotEmpty({ message: 'logoInstansi wajib diisi' })
-  logoInstansi: string;
+  @IsOptional()
+  logoInstansi?: string;
 
-  @ApiProperty({ example: 'Dinas Pendidikan dan Kebudayaan Kota Contoh' })
+  @ApiPropertyOptional({ example: 'Dinas Pendidikan dan Kebudayaan Kota Contoh', description: 'Nama lembaga (opsional, akan menggunakan nama OPD jika tidak diisi)' })
   @IsString()
-  @IsNotEmpty({ message: 'namaLembaga wajib diisi' })
-  namaLembaga: string;
+  @IsOptional()
+  namaLembaga?: string;
 }
 
 export class SopResponseDto {
