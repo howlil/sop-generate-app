@@ -17,14 +17,10 @@ import type {
   CreateDasarHukumDto,
   CreateSopTerkaitDto,
   CreateDetailSOPPelaksanaDto,
+  SopDetail,
+  LangkahSOP,
 } from "@/features/sop/types/sop";
-import type {
-  SOPDetailMetadata,
-  ProsedurRow,
-  PelaksanaRow,
-} from "@/types/common";
-import type { KomentarItem } from "@/features/sop/types/komentar";
-import type { LangkahSOP, SopDetail } from "@/features/sop/types/sop";
+import type { SOPDetailMetadata, PelaksanaRow } from "@/types/common";
 
 // ================= Transformation Functions =================
 
@@ -68,7 +64,7 @@ export function transformLangkahToProsedurRow(langkah: LangkahSOP): import("@/ty
 /** Transform UI ProsedurRow → API CreateLangkahSOPDto */
 export function transformProsedurRowToCreateLangkah(
   row: import("@/types/common").ProsedurRow,
-  sopDetailId: string,
+  _sopDetailId: string,
 ): import("@/features/sop/types/sop").CreateLangkahSOPDto {
   // Parse waktu from mutu_waktu (e.g. "30 Menit" → { waktu: 30, satuanWaktu: "m" })
   const { waktu, satuanWaktu } = parseMutuWaktu(row.mutu_waktu);

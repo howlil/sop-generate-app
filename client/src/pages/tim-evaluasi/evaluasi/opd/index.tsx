@@ -51,9 +51,9 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 const POST_SUBMIT_DELAY_MS = 1500;
 
 export function DetailEvaluasiOPD() {
-  const { opdId } = useParams({ from: "/tim-evaluasi/penilaian/$opdId" });
+  const { opdId } = useParams({ from: "/tim-evaluasi/evaluasi/opd/$opdId" });
   const { sopId: preferredSopId } = useSearch({
-    from: "/tim-evaluasi/penilaian/$opdId",
+    from: "/tim-evaluasi/evaluasi/opd/$opdId",
   });
   const navigate = useNavigate();
   const { getRoleUserName } = useAppRole();

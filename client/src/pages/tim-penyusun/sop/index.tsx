@@ -42,7 +42,6 @@ import {
   useDaftarSopFilters,
   useDaftarSopData,
 } from "@/features/sop";
-import { useSopStatus } from "@/features/sop/hooks/useSopStatus";
 import { useToast } from "@/utils/toast";
 import { useAppRole } from "@/features/auth";
 import { useDocumentTitle } from "@/hooks/use-document-title";
@@ -56,7 +55,6 @@ export function ManajemenSOP() {
   const requestEvaluasiSearchId = "request-evaluasi-search-sop";
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const { setSopStatusOverride } = useSopStatus();
   const { role } = useAppRole();
   const opdId = useAuthStore((state) => state.user?.opdId ?? "");
   const filters = useDaftarSopFilters();

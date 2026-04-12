@@ -11,6 +11,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "@/utils/toast";
 import { usePeraturan } from "@/features/organisasi";
 import { usePelaksana } from "@/features/sop";
+import { sopApi } from "@/features/sop/services/sop.api";
 import { useDetailSopById, useLangkahSop, useUpdateMetadata, useEditHistory } from "@/features/sop/hooks/useDetailSop";
 import { useSopStatus } from "@/features/sop/hooks/useSopStatus";
 import {
@@ -87,7 +88,7 @@ export function useDetailSopPenyusun(
   _isRevisionFlowOverride?: boolean,
 ): UseDetailSopPenyusunReturn {
   const { showToast } = useToast();
-  const { setSopStatusOverrideAsync, isUpdating } = useSopStatus();
+  const { setSopStatusOverrideAsync } = useSopStatus();
   const { list: peraturanList } = usePeraturan();
   const { list: pelaksanaList } = usePelaksana();
 
@@ -238,7 +239,7 @@ export function useDetailSopPenyusun(
 
       try {
         await persistAllChanges(id);
-        await setSopStatusOverrideAsync(id, "SEDANG_DISUSUN");
+        await setSopStatusOverrideAsync({ sopId: id, status: "SEDANG_DISUSUN" });
         showToast("Draft berhasil disimpan, status diubah menjadi Sedang Disusun");
       } catch (error) {
         console.error("Failed to save draft:", error);
@@ -261,7 +262,7 @@ export function useDetailSopPenyusun(
 
       try {
         await persistAllChanges(id);
-        await setSopStatusOverrideAsync(id, "SIAP_DIEVALUASI");
+        await setSopStatusOverrideAsync({ sopId: id, status: "SIAP_DIEVALUASI" });
         showToast(
           isRevisionFlow
             ? "Revisi selesai. Kembali ke Manajemen SOP untuk kirim ulang ke evaluasi."

@@ -25,7 +25,8 @@ export type {
   CreateSopTerkaitDto,
 } from "./types/sop";
 
-export type { KomentarItem } from "./types/komentar";
+export type { KomentarItem, CommentItem } from "./components/KomentarPanel";
+export type { RiwayatEntry } from "./components/RiwayatStatusPanel";
 
 // Re-export evaluation types from evaluasi feature
 export type {
