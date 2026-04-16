@@ -97,9 +97,7 @@ export interface KepalaFormState {
 
 export interface FormTambahKepalaState {
   opdId: string;
-  name: string;
-  nip: string;
-  email: string;
+  userId: string;
 }
 
 export interface PindahFormState {
@@ -108,12 +106,13 @@ export interface PindahFormState {
 
 export interface PindahDialogPerson {
   name: string;
-  nip?: string;
   email: string;
+  nip?: string;
 }
 
 export interface RiwayatDialogPerson {
   name: string;
+  email: string;
   nip?: string;
 }
 
@@ -260,4 +259,108 @@ export interface RekapDetail {
   opdNama?: string;
   totalPengajuan?: number;
   nilaiRataRata?: number;
+}
+
+// ==================== EVALUASI DOMAIN TYPES ====================
+// These types are shared across multiple features (SOP, Evaluasi, Audit)
+
+export interface PengajuanEvaluasi {
+  id: string;
+  opdId: string;
+  opdNama?: string;
+  jenis: JenisPengajuanEvaluasi;
+  status: StatusPengajuanEvaluasi;
+  catatan?: string;
+  nomorBA?: string;
+  tanggalPermintaan?: string;
+  tanggalEvaluasi?: string;
+  tanggalVerifikasi?: string | null;
+  namaBiro?: string;
+  nilaiOPD?: number;
+  diverifikasiOlehUserId?: string;
+  ditandatanganiOlehKoordinatorUserId?: string;
+  tanggalTTDBaKoordinator?: string;
+  diselesaikanOlehId?: string;
+  // Legacy relation aliases used by some page modules
+  diselesaikanOleh?: {
+    id?: string;
+    nama?: string;
+  };
+  opd?: {
+    id?: string;
+    nama?: string;
+  };
+  timEvaluasi?: string;
+  tteSignaturePayload?: unknown;
+  nilaiEvaluasi?: NilaiEvaluasi[];
+  tanggalDiselesaikan?: string;
+  sopList?: Array<{
+    id: string;
+    sopDetailId: string;
+    judul: string;
+    nomor: string;
+    nama: string;
+    nomorSOP: string;
+    status: string;
+    hasil?: StatusHasilEvaluasi;
+  }>;
+  riwayatEvaluasi?: Array<{
+    id: string;
+    sopDetailId: string;
+    evaluatorId: string;
+    evaluatorNama: string;
+    hasilSebelum?: StatusHasilEvaluasi;
+    hasilSesudah?: StatusHasilEvaluasi;
+    catatanSebelum?: string;
+    catatanSesudah?: string;
+    createdAt: string;
+  }>;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NilaiEvaluasi {
+  id: string;
+  pengajuanEvaluasiId: string;
+  sopDetailId: string;
+  hasil?: StatusHasilEvaluasi;
+  catatan?: string;
+  version: number;
+  dinilaiOlehId?: string;
+  dinilaiOleh?: {
+    id?: string;
+    nama?: string;
+  };
+  sopDetail?: {
+    id?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LogNilaiEvaluasi {
+  id: string;
+  pengajuanEvaluasiId?: string;
+  sopDetailId: string;
+  evaluatorId: string;
+  evaluatorNama?: string;
+  hasilSebelum?: StatusHasilEvaluasi;
+  hasilSesudah?: StatusHasilEvaluasi;
+  catatanSebelum?: string;
+  catatanSesudah?: string;
+  createdAt: string;
+}
+
+// ==================== AUDIT DOMAIN TYPES ====================
+
+export interface LogEditSOP {
+  id: string;
+  sopDetailId: string;
+  userId: string;
+  bagian: BagianSOP;
+  entityId?: string;
+  keterangan?: string;
+  aktorRole: string;
+  createdAt: string;
 }

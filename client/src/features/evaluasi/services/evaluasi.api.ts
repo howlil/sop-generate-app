@@ -12,7 +12,6 @@ import type {
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
   SelesaiEvaluasiDto,
-  RekapEvaluasi,
 } from '@/types/common'
 
 export const evaluasiApi = {

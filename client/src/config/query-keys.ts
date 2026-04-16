@@ -8,7 +8,13 @@ export const queryKeys = {
   auth: ['auth'] as const,
   user: (userId: string) => ['auth', 'user', userId] as const,
   users: ['users'] as const,
-  usersList: (page: number, limit: number) => ['users', 'list', page, limit] as const,
+  usersList: (params?: {
+    page?: number
+    limit?: number
+    opdId?: string
+    peran?: string
+    search?: string
+  }) => ['users', 'list', params] as const,
 
   // Jabatan (Kepala OPD management)
   jabatan: ['jabatan'] as const,
@@ -56,7 +62,7 @@ export const queryKeys = {
 
   // Tim Penyusun
   timPenyusun: ['timPenyusun'] as const,
-  timPenyusunList: (opdId?: string) => ['timPenyusun', 'list', opdId] as const,
+  timPenyusunList: (opdId?: string, page?: number, limit?: number) => ['timPenyusun', 'list', opdId, page, limit] as const,
 
   // Tim Evaluasi
   timEvaluasi: ['timEvaluasi'] as const,

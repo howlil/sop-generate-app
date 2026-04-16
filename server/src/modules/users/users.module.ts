@@ -10,12 +10,7 @@ import { PrismaService } from '../../common/prisma/prisma.service';
 @Module({
   imports: [PrismaModule],
   controllers: [UserController, JabatanController],
-  providers: [
-    UserService,
-    JabatanService,
-    UserRepository,
-    PrismaService,
-  ],
+  providers: [UserService, JabatanService, UserRepository, PrismaService],
   exports: [UserService, JabatanService, UserRepository],
 })
 export class UsersModule {}

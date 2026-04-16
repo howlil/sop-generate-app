@@ -1,7 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import ms, { type StringValue } from 'ms';
 import { UserRepository } from '../../users/repository/user.repository';
 import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
@@ -10,21 +11,59 @@ import { PasswordValidator } from '../../../common/validators/password.validator
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
-  async login(dto: LoginDto): Promise<AuthResponseDto> {
-    const user = await this.userRepository.findByEmailWithPassword(dto.email);
+  private getJwtExpiration(
+    key: 'JWT_EXPIRATION' | 'JWT_REFRESH_EXPIRATION',
+    fallback: StringValue,
+  ): StringValue {
+    return (this.configService.get<string>(key) ?? fallback) as StringValue;
+  }
 
-    if (!user) {
-      throw new UnauthorizedException(AuthMessages.INVALID_EMAIL_OR_PASSWORD);
+  private getJwtExpirationMs(
+    key: 'JWT_EXPIRATION' | 'JWT_REFRESH_EXPIRATION',
+    fallback: StringValue,
+    fallbackMs: number,
+  ): number {
+    const raw = this.getJwtExpiration(key, fallback);
+
+    if (/^\d+$/.test(raw)) {
+      return Number(raw) * 1000;
     }
 
-    if (user.deletedAt) {
-      throw new UnauthorizedException(AuthMessages.ACCOUNT_DEACTIVATED);
+    const parsed = ms(raw);
+    if (typeof parsed !== 'number' || Number.isNaN(parsed)) {
+      this.logger.warn(
+        `Invalid ${key} value "${raw}", fallback to ${fallbackMs}ms`,
+      );
+      return fallbackMs;
+    }
+
+    return parsed;
+  }
+
+  /**
+   * Login user and generate tokens.
+   * Tokens are returned for cookie-setting in controller, but NOT included in the API response body.
+   * Clients receive tokens via HttpOnly cookies only.
+   */
+  async login(dto: LoginDto): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: AuthResponseDto['user'];
+  }> {
+    const user = await this.userRepository.findByEmailWithPassword(dto.email);
+
+    // findByEmailWithPassword already filters deletedAt: null,
+    // so this check handles both non-existent and soft-deleted users.
+    if (!user) {
+      throw new UnauthorizedException(AuthMessages.INVALID_EMAIL_OR_PASSWORD);
     }
 
     const isPasswordValid = await bcrypt.compare(dto.kataSandi, user.kataSandi);
@@ -40,18 +79,19 @@ export class AuthService {
       opdId: user.opdId,
     };
 
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_EXPIRATION', '15m') as any,
-    });
+    const accessTokenOptions: JwtSignOptions = {
+      expiresIn: this.getJwtExpiration('JWT_EXPIRATION', '15m'),
+    };
+    const accessToken = this.jwtService.sign(payload, accessTokenOptions);
 
-    const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d') as any,
-    });
+    const refreshTokenOptions: JwtSignOptions = {
+      expiresIn: this.getJwtExpiration('JWT_REFRESH_EXPIRATION', '7d'),
+    };
+    const refreshToken = this.jwtService.sign(payload, refreshTokenOptions);
 
     return {
       accessToken,
       refreshToken,
-      tokenType: 'Bearer',
       user: {
         id: user.id,
         email: user.email,
@@ -71,7 +111,10 @@ export class AuthService {
       throw new UnauthorizedException(AuthMessages.USER_NOT_FOUND);
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.kataSandiLama, user.kataSandi);
+    const isPasswordValid = await bcrypt.compare(
+      dto.kataSandiLama,
+      user.kataSandi,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException(AuthMessages.INVALID_OLD_PASSWORD);
@@ -87,9 +130,9 @@ export class AuthService {
   async refreshTokens(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken);
-      
+
       const user = await this.userRepository.findByIdWithPassword(payload.sub);
-      
+
       if (!user || user.deletedAt) {
         throw new UnauthorizedException(AuthMessages.USER_NOT_FOUND);
       }
@@ -101,31 +144,66 @@ export class AuthService {
         opdId: user.opdId,
       };
 
-      const newAccessToken = this.jwtService.sign(newPayload, {
-        expiresIn: this.configService.get<string>('JWT_EXPIRATION', '15m') as any,
-      });
+      const accessTokenOptions: JwtSignOptions = {
+        expiresIn: this.getJwtExpiration('JWT_EXPIRATION', '15m'),
+      };
+      const newAccessToken = this.jwtService.sign(
+        newPayload,
+        accessTokenOptions,
+      );
 
-      const newRefreshToken = this.jwtService.sign(newPayload, {
-        expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRATION', '7d') as any,
-      });
+      const refreshTokenOptions: JwtSignOptions = {
+        expiresIn: this.getJwtExpiration('JWT_REFRESH_EXPIRATION', '7d'),
+      };
+      const newRefreshToken = this.jwtService.sign(
+        newPayload,
+        refreshTokenOptions,
+      );
 
       return {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
       };
     } catch (error) {
+      this.logger.warn(
+        `Token refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
       throw new UnauthorizedException(AuthMessages.TOKEN_INVALID);
     }
   }
 
-  getCookieOptions() {
-    const isProduction = this.configService.get<string>('NODE_ENV') === 'production';
+  /**
+   * Cookie options for access token (short-lived: 15 minutes)
+   */
+  getAccessTokenCookieOptions() {
+    const isProduction =
+      this.configService.get<string>('NODE_ENV') === 'production';
 
     return {
       httpOnly: true,
-      secure: isProduction, // HTTPS only in production
-      sameSite: 'lax' as const, // Changed from 'strict' to 'lax' for cross-port development
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: isProduction,
+      sameSite: 'lax' as const,
+      maxAge: this.getJwtExpirationMs('JWT_EXPIRATION', '15m', 15 * 60 * 1000),
+      path: '/',
+    };
+  }
+
+  /**
+   * Cookie options for refresh token (long-lived: 7 days)
+   */
+  getRefreshTokenCookieOptions() {
+    const isProduction =
+      this.configService.get<string>('NODE_ENV') === 'production';
+
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax' as const,
+      maxAge: this.getJwtExpirationMs(
+        'JWT_REFRESH_EXPIRATION',
+        '7d',
+        7 * 24 * 60 * 60 * 1000,
+      ),
       path: '/',
     };
   }

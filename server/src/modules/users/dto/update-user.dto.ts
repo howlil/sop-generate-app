@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEmail, IsOptional, IsString, MinLength, IsEnum } from 'class-validator';
+import {
+  IsEmail,
+  IsOptional,
+  IsString,
+  MinLength,
+  IsEnum,
+} from 'class-validator';
 import { PeranPengguna } from '../../../generated/prisma';
 
 export class UpdateUserDto {
@@ -13,10 +19,10 @@ export class UpdateUserDto {
   @IsOptional()
   nama?: string;
 
-  @ApiPropertyOptional({ example: 'password123' })
+  @ApiPropertyOptional({ example: 'Password123!' })
   @IsString()
   @IsOptional()
-  @MinLength(6)
+  @MinLength(8)
   kataSandi?: string;
 
   @ApiPropertyOptional({ enum: PeranPengguna })

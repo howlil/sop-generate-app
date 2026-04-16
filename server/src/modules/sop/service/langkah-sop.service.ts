@@ -5,7 +5,10 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { LangkahSopRepository } from '../repository/langkah-sop.repository';
-import { CreateLangkahSopDto, UpdateLangkahSopDto } from '../dto/langkah-sop.dto';
+import {
+  CreateLangkahSopDto,
+  UpdateLangkahSopDto,
+} from '../dto/langkah-sop.dto';
 import { JenisLangkahProsedur } from '../../../generated/prisma';
 import { LangkahSopMessages, interpolate } from '../../../common/messages';
 
@@ -20,7 +23,9 @@ export class LangkahSopService {
 
     // PLK-06
     if (jenis === JenisLangkahProsedur.TERMINATOR && (hasYa || hasTidak)) {
-      throw new BadRequestException(LangkahSopMessages.TERMINATOR_CANNOT_HAVE_NEXT);
+      throw new BadRequestException(
+        LangkahSopMessages.TERMINATOR_CANNOT_HAVE_NEXT,
+      );
     }
     if (jenis === JenisLangkahProsedur.TASK && hasTidak) {
       throw new BadRequestException(LangkahSopMessages.TASK_ONLY_YES_BRANCH);
@@ -33,7 +38,8 @@ export class LangkahSopService {
 
   async findById(id: string) {
     const langkah = await this.repo.findById(id);
-    if (!langkah) throw new NotFoundException(LangkahSopMessages.LANGKAH_NOT_FOUND);
+    if (!langkah)
+      throw new NotFoundException(LangkahSopMessages.LANGKAH_NOT_FOUND);
     return langkah;
   }
 
@@ -41,16 +47,26 @@ export class LangkahSopService {
     this.validateJenisCabang(dto);
 
     // PLK-03: pelaksana must be registered in swimlane
-    const inSwimlane = await this.repo.isSwimlaneMember(sopDetailId, dto.pelaksanaId);
+    const inSwimlane = await this.repo.isSwimlaneMember(
+      sopDetailId,
+      dto.pelaksanaId,
+    );
     if (!inSwimlane) {
-      throw new BadRequestException(LangkahSopMessages.PELAKSANA_NOT_IN_SWIMLANE);
+      throw new BadRequestException(
+        LangkahSopMessages.PELAKSANA_NOT_IN_SWIMLANE,
+      );
     }
 
     // PLK-05: urutan must be unique within DetailSOP
-    const urutanConflict = await this.repo.findByUrutanInDetail(sopDetailId, dto.urutan);
+    const urutanConflict = await this.repo.findByUrutanInDetail(
+      sopDetailId,
+      dto.urutan,
+    );
     if (urutanConflict) {
       throw new ConflictException(
-        interpolate(LangkahSopMessages.URUTAN_ALREADY_USED, { urutan: dto.urutan })
+        interpolate(LangkahSopMessages.URUTAN_ALREADY_USED, {
+          urutan: dto.urutan,
+        }),
       );
     }
 
@@ -75,12 +91,14 @@ export class LangkahSopService {
 
     this.validateJenisCabang({
       jenis: dto.jenis ?? existing.jenis,
-      langkahSelanjutnyaYaId: dto.langkahSelanjutnyaYaId !== undefined
-        ? dto.langkahSelanjutnyaYaId ?? undefined
-        : existing.langkahSelanjutnyaYaId ?? undefined,
-      langkahSelanjutnyaTidakId: dto.langkahSelanjutnyaTidakId !== undefined
-        ? dto.langkahSelanjutnyaTidakId ?? undefined
-        : existing.langkahSelanjutnyaTidakId ?? undefined,
+      langkahSelanjutnyaYaId:
+        dto.langkahSelanjutnyaYaId !== undefined
+          ? (dto.langkahSelanjutnyaYaId ?? undefined)
+          : (existing.langkahSelanjutnyaYaId ?? undefined),
+      langkahSelanjutnyaTidakId:
+        dto.langkahSelanjutnyaTidakId !== undefined
+          ? (dto.langkahSelanjutnyaTidakId ?? undefined)
+          : (existing.langkahSelanjutnyaTidakId ?? undefined),
     });
 
     // PLK-03: if pelaksana changes, must still be in swimlane
@@ -90,7 +108,9 @@ export class LangkahSopService {
         dto.pelaksanaId,
       );
       if (!inSwimlane) {
-        throw new BadRequestException(LangkahSopMessages.PELAKSANA_NOT_IN_SWIMLANE);
+        throw new BadRequestException(
+          LangkahSopMessages.PELAKSANA_NOT_IN_SWIMLANE,
+        );
       }
     }
 
@@ -103,7 +123,9 @@ export class LangkahSopService {
       );
       if (conflict) {
         throw new ConflictException(
-          interpolate(LangkahSopMessages.URUTAN_ALREADY_USED, { urutan: dto.urutan })
+          interpolate(LangkahSopMessages.URUTAN_ALREADY_USED, {
+            urutan: dto.urutan,
+          }),
         );
       }
     }

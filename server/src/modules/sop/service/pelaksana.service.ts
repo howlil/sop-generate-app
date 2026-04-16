@@ -4,7 +4,11 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PelaksanaRepository } from '../repository/pelaksana.repository';
-import { CreatePelaksanaDto, UpdatePelaksanaDto, AddSwimlanDto } from '../dto/pelaksana.dto';
+import {
+  CreatePelaksanaDto,
+  UpdatePelaksanaDto,
+  AddSwimlanDto,
+} from '../dto/pelaksana.dto';
 import { PelaksanaMessages } from '../../../common/messages';
 
 @Injectable()
@@ -22,7 +26,10 @@ export class PelaksanaService {
   }
 
   async create(dto: CreatePelaksanaDto) {
-    return this.repo.create({ opdId: dto.opdId, namaPelaksana: dto.namaPelaksana });
+    return this.repo.create({
+      opdId: dto.opdId,
+      namaPelaksana: dto.namaPelaksana,
+    });
   }
 
   async update(id: string, dto: UpdatePelaksanaDto) {
@@ -46,15 +53,25 @@ export class PelaksanaService {
   }
 
   async addToSwimlane(sopDetailId: string, dto: AddSwimlanDto) {
-    const existing = await this.repo.findSwimlaneEntry(sopDetailId, dto.pelaksanaId);
+    const existing = await this.repo.findSwimlaneEntry(
+      sopDetailId,
+      dto.pelaksanaId,
+    );
     if (existing) {
       throw new ConflictException(PelaksanaMessages.PELAKSANA_ALREADY_EXISTS);
     }
-    return this.repo.addToSwimlane(sopDetailId, dto.pelaksanaId, dto.urutan ?? 0);
+    return this.repo.addToSwimlane(
+      sopDetailId,
+      dto.pelaksanaId,
+      dto.urutan ?? 0,
+    );
   }
 
   async removeFromSwimlane(sopDetailId: string, pelaksanaId: string) {
-    const existing = await this.repo.findSwimlaneEntry(sopDetailId, pelaksanaId);
+    const existing = await this.repo.findSwimlaneEntry(
+      sopDetailId,
+      pelaksanaId,
+    );
     if (!existing) {
       throw new NotFoundException(PelaksanaMessages.PELAKSANA_NOT_IN_SWIMLANE);
     }

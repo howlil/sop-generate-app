@@ -8,34 +8,29 @@ import {
 import { DetailSopRepository } from '../repository/detail-sop.repository';
 import { UpdateMetadataDto, UpdateStatusDto } from '../dto/detail-sop.dto';
 import { PeranPengguna, StatusSOP } from '../../../generated/prisma';
-import { DetailSopMessages, GenericMessages, interpolate } from '../../../common/messages';
+import {
+  DetailSopMessages,
+  GenericMessages,
+  interpolate,
+} from '../../../common/messages';
 import { PrismaService } from '../../../common/prisma/prisma.service';
+import {
+  assertValidSopTransition,
+  isSopStatusTerminal,
+} from '../../../common/validators';
 
 type JwtUser = { id: string; peran: PeranPengguna; opdId: string | null };
 
-// SOP-14: valid status transitions
-const VALID_TRANSITIONS: Record<string, StatusSOP[]> = {
-  [StatusSOP.DRAFT]: [StatusSOP.SEDANG_DISUSUN],
-  [StatusSOP.SEDANG_DISUSUN]: [StatusSOP.SIAP_DIEVALUASI],
-  [StatusSOP.REVISI_DARI_TIM_EVALUASI]: [StatusSOP.SEDANG_DISUSUN],
-  [StatusSOP.SIAP_DIEVALUASI]: [StatusSOP.DIAJUKAN_EVALUASI],
-  // Below are used by Phase 6 & 7 — defined here for completeness
-  [StatusSOP.DIAJUKAN_EVALUASI]: [StatusSOP.SEDANG_DIEVALUASI],
-  [StatusSOP.SEDANG_DIEVALUASI]: [
-    StatusSOP.SIAP_DIVERIFIKASI,
-    StatusSOP.REVISI_DARI_TIM_EVALUASI,
-  ],
-  [StatusSOP.SIAP_DIVERIFIKASI]: [StatusSOP.DIVERIFIKASI_BIRO_ORGANISASI],
-  [StatusSOP.DIVERIFIKASI_BIRO_ORGANISASI]: [StatusSOP.BERLAKU],
-  [StatusSOP.BERLAKU]: [StatusSOP.DICABUT],
-  [StatusSOP.DIGANTIKAN]: [],
-  [StatusSOP.DICABUT]: [],
-};
-
 // Role allowed to perform each forward transition
 const TRANSITION_ROLES: Partial<Record<StatusSOP, PeranPengguna[]>> = {
-  [StatusSOP.SEDANG_DISUSUN]: [PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN],
-  [StatusSOP.SIAP_DIEVALUASI]: [PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN],
+  [StatusSOP.SEDANG_DISUSUN]: [
+    PeranPengguna.TIM_PENYUSUN,
+    PeranPengguna.KOORDINATOR_TIM_PENYUSUN,
+  ],
+  [StatusSOP.SIAP_DIEVALUASI]: [
+    PeranPengguna.TIM_PENYUSUN,
+    PeranPengguna.KOORDINATOR_TIM_PENYUSUN,
+  ],
   [StatusSOP.DIAJUKAN_EVALUASI]: [PeranPengguna.KOORDINATOR_TIM_PENYUSUN],
 };
 
@@ -52,11 +47,16 @@ export class DetailSopService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async findAll(user: JwtUser, sopId?: string, opdId?: string, status?: StatusSOP) {
+  async findAll(
+    user: JwtUser,
+    sopId?: string,
+    opdId?: string,
+    status?: StatusSOP,
+  ) {
     const effectiveOpdId =
       user.peran !== PeranPengguna.BIRO_ORGANISASI &&
       user.peran !== PeranPengguna.TIM_EVALUASI
-        ? user.opdId ?? undefined
+        ? (user.opdId ?? undefined)
         : opdId;
 
     return this.repo.findAll({
@@ -68,7 +68,8 @@ export class DetailSopService {
 
   async findById(id: string, user: JwtUser) {
     const detail = await this.repo.findById(id);
-    if (!detail) throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
+    if (!detail)
+      throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
 
     if (
       user.peran !== PeranPengguna.BIRO_ORGANISASI &&
@@ -82,7 +83,8 @@ export class DetailSopService {
 
   async updateMetadata(id: string, dto: UpdateMetadataDto, user: JwtUser) {
     const detail = await this.repo.findById(id);
-    if (!detail) throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
+    if (!detail)
+      throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
 
     if (!EDITABLE_STATUSES.has(detail.status)) {
       throw new BadRequestException(
@@ -95,24 +97,19 @@ export class DetailSopService {
 
   async updateStatus(id: string, dto: UpdateStatusDto, user: JwtUser) {
     const detail = await this.repo.findById(id);
-    if (!detail) throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
+    if (!detail)
+      throw new NotFoundException(DetailSopMessages.DETAIL_SOP_NOT_FOUND);
 
     // SOP-15: terminal statuses
-    if (
-      detail.status === StatusSOP.DICABUT ||
-      detail.status === StatusSOP.DIGANTIKAN
-    ) {
+    if (isSopStatusTerminal(detail.status)) {
       throw new BadRequestException(
-        interpolate(DetailSopMessages.CANNOT_UPDATE_TERMINAL_STATUS, { status: detail.status })
+        interpolate(DetailSopMessages.CANNOT_UPDATE_TERMINAL_STATUS, {
+          status: detail.status,
+        }),
       );
     }
 
-    const allowed = VALID_TRANSITIONS[detail.status] ?? [];
-    if (!allowed.includes(dto.status)) {
-      throw new BadRequestException(
-        `Transisi ${detail.status} → ${dto.status} tidak valid`,
-      );
-    }
+    assertValidSopTransition(detail.status, dto.status);
 
     // Check role permission for the target status
     const allowedRoles = TRANSITION_ROLES[dto.status];
@@ -126,23 +123,26 @@ export class DetailSopService {
     // Use transaction with SELECT FOR UPDATE to prevent race condition
     if (dto.status === StatusSOP.BERLAKU) {
       const sopId = (detail as any).sopId;
-      
-      await this.prisma.$transaction(async (tx) => {
-        // Lock SOP row to prevent concurrent BERLAKU creation
-        await this.repo.lockSopForUpdate(sopId, tx);
-        
-        // Check if another BERLAKU version exists
-        const berlakuCount = await this.repo.countBerlakuBySopId(sopId, tx);
-        if (berlakuCount > 0) {
-          throw new ConflictException(DetailSopMessages.EVALUATION_EXISTS);
-        }
-        
-        // Update status within transaction
-        await this.repo.updateStatus(id, dto.status, user.id);
-      }, {
-        isolationLevel: 'Serializable',
-      });
-      
+
+      await this.prisma.$transaction(
+        async (tx) => {
+          // Lock SOP row to prevent concurrent BERLAKU creation
+          await this.repo.lockSopForUpdate(sopId, tx);
+
+          // Check if another BERLAKU version exists
+          const berlakuCount = await this.repo.countBerlakuBySopId(sopId, tx);
+          if (berlakuCount > 0) {
+            throw new ConflictException(DetailSopMessages.EVALUATION_EXISTS);
+          }
+
+          // Update status within transaction
+          await this.repo.updateStatus(id, dto.status, user.id);
+        },
+        {
+          isolationLevel: 'Serializable',
+        },
+      );
+
       // Return updated detail
       return this.repo.findById(id);
     }

@@ -7,7 +7,9 @@ const FULL_INCLUDE = {
   lampiran: true,
   dasarHukum: {
     include: {
-      peraturan: { select: { id: true, namaPeraturan: true, nomor: true, tahun: true } },
+      peraturan: {
+        select: { id: true, namaPeraturan: true, nomor: true, tahun: true },
+      },
     },
   },
   swimlanes: {
@@ -17,7 +19,9 @@ const FULL_INCLUDE = {
   langkahSOP: { orderBy: { urutan: 'asc' as const } },
   relasiSopKeluar: {
     include: {
-      sopTerkait: { select: { id: true, nomorSOP: true, sop: { select: { judul: true } } } },
+      sopTerkait: {
+        select: { id: true, nomorSOP: true, sop: { select: { judul: true } } },
+      },
     },
   },
   dibuatOleh: { select: { id: true, nama: true } },
@@ -28,7 +32,11 @@ const FULL_INCLUDE = {
 export class DetailSopRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(filters: { sopId?: string; opdId?: string; status?: StatusSOP }) {
+  async findAll(filters: {
+    sopId?: string;
+    opdId?: string;
+    status?: StatusSOP;
+  }) {
     return this.prisma.detailSOP.findMany({
       where: {
         sopId: filters.sopId,
@@ -52,8 +60,12 @@ export class DetailSopRepository {
       where: { id },
       data: {
         ...data,
-        tanggalRevisi: data.tanggalRevisi ? new Date(data.tanggalRevisi) : undefined,
-        tanggalEfektif: data.tanggalEfektif ? new Date(data.tanggalEfektif) : undefined,
+        tanggalRevisi: data.tanggalRevisi
+          ? new Date(data.tanggalRevisi)
+          : undefined,
+        tanggalEfektif: data.tanggalEfektif
+          ? new Date(data.tanggalEfektif)
+          : undefined,
         terakhirDieditOlehId: editorId,
       },
       include: FULL_INCLUDE,

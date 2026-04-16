@@ -3,20 +3,28 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { timPenyusunApi } from "@/features/tim";
+import { timPenyusunApi } from "../services/tim-penyusun.api";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { STALE_TIME } from "@/utils/constants";
-import type { CreateTimPenyusunDto as CreateTimPenyusunRequest } from "@/features/tim";
+import type { CreateTimPenyusunDto as CreateTimPenyusunRequest } from "../types/tim";
 
-export function useTimPenyusun(opdId?: string) {
+export interface UseTimPenyusunParams {
+  opdId?: string
+  page?: number
+  limit?: number
+}
+
+export function useTimPenyusun(params: UseTimPenyusunParams = {}) {
+  const { opdId, page = 1, limit = 20 } = params;
+  
   const {
-    data: list = [],
+    data,
     isLoading,
     error,
   } = useQuery({
-    queryKey: queryKeys.timPenyusunList(opdId),
-    queryFn: () => timPenyusunApi.findAll(opdId ? { opdId } : undefined),
+    queryKey: queryKeys.timPenyusunList(opdId, page, limit),
+    queryFn: () => timPenyusunApi.findAll({ opdId, page, limit }),
     staleTime: STALE_TIME.MEDIUM,
   });
 
@@ -44,7 +52,10 @@ export function useTimPenyusun(opdId?: string) {
   });
 
   return {
-    list,
+    list: data?.data ?? [],
+    total: data?.total ?? 0,
+    page: data?.page ?? 1,
+    limit: data?.limit ?? 20,
     isLoading,
     error,
     tambah: tambahMutation.mutateAsync,

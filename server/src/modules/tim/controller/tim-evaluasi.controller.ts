@@ -8,7 +8,12 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { TimEvaluasiService } from '../service/tim-evaluasi.service';
 import {
   CreateTimEvaluasiDto,
@@ -33,6 +38,7 @@ export class TimEvaluasiController {
   @Get(':id')
   @ApiOperation({ summary: 'Detail anggota Tim Evaluasi' })
   @ApiResponse({ status: 200, type: AnggotaTimEvaluasiResponseDto })
+  @ApiResponse({ status: 404, description: 'Anggota Tim tidak ditemukan' })
   findOne(@Param('id') id: string): Promise<AnggotaTimEvaluasiResponseDto> {
     return this.service.findById(id);
   }
@@ -40,17 +46,29 @@ export class TimEvaluasiController {
   @Post()
   @Roles(PeranPengguna.BIRO_ORGANISASI)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Tambah anggota Tim Evaluasi (hanya Biro Organisasi)' })
+  @ApiOperation({
+    summary: 'Tambah anggota Tim Evaluasi (hanya Biro Organisasi)',
+  })
   @ApiResponse({ status: 201, type: AnggotaTimEvaluasiResponseDto })
-  @ApiResponse({ status: 409, description: 'Pengguna sudah terdaftar sebagai anggota Tim Evaluasi' })
-  tambah(@Body() dto: CreateTimEvaluasiDto): Promise<AnggotaTimEvaluasiResponseDto> {
+  @ApiResponse({ status: 404, description: 'Pengguna tidak ditemukan' })
+  @ApiResponse({
+    status: 409,
+    description: 'Pengguna sudah terdaftar sebagai anggota Tim Evaluasi',
+  })
+  tambah(
+    @Body() dto: CreateTimEvaluasiDto,
+  ): Promise<AnggotaTimEvaluasiResponseDto> {
     return this.service.tambah(dto);
   }
 
   @Patch(':id/nonaktifkan')
   @Roles(PeranPengguna.BIRO_ORGANISASI)
-  @ApiOperation({ summary: 'Nonaktifkan anggota Tim Evaluasi (hanya Biro Organisasi)' })
+  @ApiOperation({
+    summary: 'Nonaktifkan anggota Tim Evaluasi (hanya Biro Organisasi)',
+  })
   @ApiResponse({ status: 200, type: AnggotaTimEvaluasiResponseDto })
+  @ApiResponse({ status: 404, description: 'Anggota Tim tidak ditemukan' })
+  @ApiResponse({ status: 409, description: 'Anggota sudah berstatus NONAKTIF' })
   nonaktifkan(@Param('id') id: string): Promise<AnggotaTimEvaluasiResponseDto> {
     return this.service.nonaktifkan(id);
   }

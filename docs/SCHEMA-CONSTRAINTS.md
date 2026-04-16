@@ -159,15 +159,13 @@ async function berlakukanVersi(detailSopId: string, aktorId: string) {
       data: { status: 'BERLAKU', tanggalEfektif: new Date() },
     })
 
-    // Catat di log audit
-    await tx.logAudit.create({
+    // Catat di LogEditSOP (audit trail)
+    await tx.logEditSOP.create({
       data: {
         sopDetailId: detailSopId,
-        aksi: 'SAHKAN_SOP',
-        aktorId,
-        peranAktor: 'BIRO_ORGANISASI',
-        statusSebelum: detail.status,
-        statusSesudah: 'BERLAKU',
+        userId: aktorId,
+        bagian: 'METADATA',
+        keterangan: 'SOP disahkan menjadi BERLAKU',
       },
     })
   })

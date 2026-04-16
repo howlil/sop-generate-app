@@ -13,7 +13,7 @@ import type { ProsedurRow } from "@/types/common";
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailImplementers,
-} from "@/features/sop/hooks/useDetailSop";
+} from "../hooks/useDetailSop";
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata();
 const DEFAULT_PROSEDUR_ROWS: ProsedurRow[] = [];

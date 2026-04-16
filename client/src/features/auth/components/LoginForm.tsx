@@ -9,7 +9,9 @@
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/features/auth";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "../hooks/useAuth";
 
 export function LoginForm() {
   const { login, isLoggingIn } = useAuth();
@@ -39,8 +41,8 @@ export function LoginForm() {
       return false;
     }
 
-    if (password.length < 6) {
-      setPasswordError("Password minimal 6 karakter");
+    if (password.length < 8) {
+      setPasswordError("Password minimal 8 karakter");
       return false;
     }
 
@@ -88,65 +90,48 @@ export function LoginForm() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Email Field */}
         <div className="space-y-2">
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <Label htmlFor="email" required>
             Email
-          </label>
+          </Label>
           <div className="relative">
             <Mail
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+              className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
               aria-hidden
             />
-            <input
+            <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@instansi.go.id"
-              className="w-full h-11 pl-10 pr-3 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed"
               disabled={isLoggingIn}
               autoComplete="email"
-              aria-invalid={!!emailError}
-              aria-describedby={emailError ? "email-error" : undefined}
+              errorMessage={emailError}
+              className="pl-10"
             />
           </div>
-          {emailError && (
-            <p
-              id="email-error"
-              className="text-sm text-red-600 flex items-center gap-1.5"
-            >
-              <span className="w-1 h-1 bg-red-600 rounded-full" aria-hidden />
-              {emailError}
-            </p>
-          )}
         </div>
 
         {/* Password Field */}
         <div className="space-y-2">
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-slate-700"
-          >
+          <Label htmlFor="password" required>
             Password
-          </label>
+          </Label>
           <div className="relative">
             <Lock
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+              className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
               aria-hidden
             />
-            <input
+            <Input
               id="password"
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Masukkan password"
-              className="w-full h-11 pl-10 pr-10 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all disabled:opacity-50 disabled:bg-slate-50 disabled:cursor-not-allowed"
               disabled={isLoggingIn}
               autoComplete="current-password"
-              aria-invalid={!!passwordError}
-              aria-describedby={passwordError ? "password-error" : undefined}
+              errorMessage={passwordError}
+              className="pl-10 pr-10"
             />
             <button
               type="button"
@@ -164,34 +149,26 @@ export function LoginForm() {
               )}
             </button>
           </div>
-          {passwordError && (
-            <p
-              id="password-error"
-              className="text-sm text-red-600 flex items-center gap-1.5"
-            >
-              <span className="w-1 h-1 bg-red-600 rounded-full" aria-hidden />
-              {passwordError}
-            </p>
-          )}
         </div>
 
         {/* Submit Button */}
         <Button
           type="submit"
           variant="default"
-          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded-lg"
+          size="lg"
+          className="w-full"
           disabled={isLoggingIn}
         >
           {isLoggingIn ? (
-            <span className="flex items-center gap-2">
+            <>
               <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Memproses...
-            </span>
+            </>
           ) : (
-            <span className="flex items-center gap-2">
+            <>
               Masuk
               <ArrowRight className="w-4 h-4" />
-            </span>
+            </>
           )}
         </Button>
       </form>

@@ -30,14 +30,29 @@ export class TimPenyusunRepository {
     return { ...member, jumlahSOPDisusun };
   }
 
-  async findAll(opdId?: string): Promise<AnggotaTimPenyusunResponseDto[]> {
-    const records = await this.prisma.anggotaTimPenyusun.findMany({
-      where: opdId ? { opdId } : undefined,
-      include: { user: { select: USER_SELECT } },
-      orderBy: { tanggalBergabung: 'desc' },
-    });
+  async findAll(
+    opdId?: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{ data: AnggotaTimPenyusunResponseDto[]; total: number }> {
+    const skip = (page - 1) * limit;
 
-    return Promise.all(records.map((r) => this.attachSOPCount(r)));
+    const where = opdId ? { opdId } : undefined;
+
+    const [records, total] = await Promise.all([
+      this.prisma.anggotaTimPenyusun.findMany({
+        where,
+        include: { user: { select: USER_SELECT } },
+        orderBy: { tanggalBergabung: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.anggotaTimPenyusun.count({ where }),
+    ]);
+
+    const data = await Promise.all(records.map((r) => this.attachSOPCount(r)));
+
+    return { data, total };
   }
 
   async findById(id: string): Promise<AnggotaTimPenyusunResponseDto | null> {

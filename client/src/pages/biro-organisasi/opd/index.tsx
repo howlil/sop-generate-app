@@ -5,13 +5,29 @@ import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { useToast } from "@/utils/toast"
+import { showErrorMessages, useToast } from '@/utils/toast'
 import { useOpd } from '@/features/organisasi'
-import { useUsers } from '@/features/auth/hooks/useUsers'
-import { useSetKepalaAktif, useAkhiriJabatan, usePindahJabatan } from '@/features/auth/hooks/useJabatan'
-import type { OPDUI as OPD, KepalaOPDUI as KepalaOPD } from '@/features/organisasi/types/ui'
+import { useRiwayatJabatan, useSetKepalaAktif, useAkhiriJabatan, usePindahJabatan } from '@/features/auth/hooks/useJabatan'
+import type { OPDUI as OPD } from '@/features/organisasi/types/ui'
+import type { FormTambahKepalaState } from '@/types/common'
 import { OPDTab } from './components/OPDTab'
 import { KepalaOPDTab } from './components/KepalaOPDTab'
+import type {
+  KepalaOPDRow as KepalaAssignment,
+  KepalaCandidate,
+  PersonWithActive,
+  PindahDialogPersonState,
+  RiwayatRow,
+} from './components/types'
+
+type KepalaFormState = { name: string; nip: string; email: string; phone: string }
+type RiwayatDialogPersonState = { name: string; email: string; nip?: string }
+type OpdNameLookup = Map<string, string>
+
+const NOT_FOUND_OPD_LABEL = 'OPD tidak ditemukan'
+const EMPTY_KEPALA_FORM: KepalaFormState = { name: '', nip: '', email: '', phone: '' }
+const EMPTY_TAMBAH_KEPALA_FORM: FormTambahKepalaState = { opdId: '', userId: '' }
+const EMPTY_PINDAH_FORM = { opdId: '' }
 
 // Local utility functions
 function hasRelasiData(opd: OPD): boolean {
@@ -19,8 +35,70 @@ function hasRelasiData(opd: OPD): boolean {
   return (opd._count.sop > 0 || opd._count.pengguna > 0 || opd._count.pengajuanEvaluasi > 0)
 }
 
-function canDeleteKepala(kepala: KepalaOPD): boolean {
+function canDeleteKepala(kepala: { totalSOP?: number }): boolean {
   return !kepala.totalSOP || kepala.totalSOP === 0
+}
+
+function getOpdName(opdNameById: OpdNameLookup, opdId?: string): string {
+  if (!opdId) return NOT_FOUND_OPD_LABEL
+  return opdNameById.get(opdId) ?? NOT_FOUND_OPD_LABEL
+}
+
+function buildKepalaCandidates(kepalaList: KepalaAssignment[]): KepalaCandidate[] {
+  return kepalaList.map((k) => ({
+    id: k.id,
+    nama: k.name,
+    email: k.email ?? '',
+    nip: k.nip ?? '',
+  }))
+}
+
+function buildFilteredPersons(
+  kepalaList: KepalaAssignment[],
+  opdNameById: OpdNameLookup,
+  searchUserQuery: string,
+): PersonWithActive[] {
+  return Array.from(
+    new Map(
+      kepalaList.map((k) => [
+        `${k.name}|${k.email}`,
+        {
+          name: k.name,
+          email: k.email ?? '',
+          phone: k.phone ?? '',
+          nip: k.nip ?? '',
+          activeAssignment:
+            k.isActive && k.opdId
+              ? {
+                  id: k.id,
+                  name: k.name,
+                  nip: k.nip ?? '',
+                  startDate: k.startDate,
+                  endDate: k.endDate,
+                  endedAt: k.endedAt,
+                  totalSOP: k.totalSOP,
+                  opdId: k.opdId,
+                  opdName: getOpdName(opdNameById, k.opdId),
+                }
+              : undefined,
+        } satisfies PersonWithActive,
+      ]),
+    ).values(),
+  ).filter((kepala) => kepala.name.toLowerCase().includes(searchUserQuery.toLowerCase()))
+}
+
+function buildRiwayatRows(
+  kepalaList: KepalaAssignment[],
+  opdNameById: OpdNameLookup,
+  name: string,
+  email: string,
+): RiwayatRow[] {
+  return kepalaList
+    .filter((k) => k.name === name && k.email === email)
+    .map((k) => ({
+      ...k,
+      opdName: getOpdName(opdNameById, k.opdId),
+    }))
 }
 
 export function ManajemenOPD() {
@@ -50,23 +128,22 @@ export function ManajemenOPD() {
       : undefined,
   }))
 
-  // Fetch Kepala OPD users from API
-  const { data: usersPage } = useUsers(1, 100)
-  const usersList = usersPage?.data ?? []
-  const kepalaList = usersList
-    .filter((u) => u.peran === 'KEPALA_OPD' || u.jabatan?.toLowerCase().includes('kepala'))
-    .map((u) => ({
+  // Fetch Kepala OPD riwayat jabatan dari API jabatan
+  const { data: riwayatJabatan } = useRiwayatJabatan()
+  const kepalaList: KepalaAssignment[] =
+    riwayatJabatan?.map((u) => ({
       id: u.id,
       name: u.nama,
-      nip: u.nip ?? '',
+      nip: u.nip,
       email: u.email,
-      phone: u.nohp ?? '',
+      phone: u.nohp,
       opdId: u.opdId ?? undefined,
-      isActive: u.peran === 'KEPALA_OPD',
-      // NOTE: Users API does not return SOP counts. When backend adds
-      // a user stats endpoint, fetch and populate this field.
-      totalSOP: 0 as number | undefined,
-    }))
+      isActive: u.isActive,
+      startDate: u.updatedAt,
+      endDate: undefined,
+      endedAt: undefined,
+      totalSOP: u.totalSopDisusun,
+    })) ?? []
 
   const { mutateAsync: setKepalaAktifMutation } = useSetKepalaAktif()
   const { mutateAsync: akhiriJabatanMutation } = useAkhiriJabatan()
@@ -81,28 +158,28 @@ export function ManajemenOPD() {
   const [tambahKepalaOpen, setTambahKepalaOpen] = useState(false)
   const [pindahDialogOpen, setPindahDialogOpen] = useState(false)
   const [riwayatDialogOpen, setRiwayatDialogOpen] = useState(false)
-  const [editingKepala, setEditingKepala] = useState<KepalaOPD | null>(null)
-  const [kepalaForm, setKepalaForm] = useState<{ name: string; nip: string; email: string; phone: string }>({ name: '', nip: '', email: '', phone: '' })
-  const [formTambahKepala, setFormTambahKepala] = useState<{ opdId: string; name: string; nip: string; email: string }>({ opdId: '', name: '', nip: '', email: '' })
-  const [pindahForm, setPindahForm] = useState<{ opdId: string }>({ opdId: '' })
-  const [riwayatDialogPerson, setRiwayatDialogPerson] = useState<{ name: string; email: string } | null>(null)
-  const [pindahDialogPerson, setPindahDialogPerson] = useState<{ name: string; email: string; phone: string; nip?: string } | null>(null)
+  const [editingKepala, setEditingKepala] = useState<KepalaAssignment | null>(null)
+  const [kepalaForm, setKepalaForm] = useState<KepalaFormState>(EMPTY_KEPALA_FORM)
+  const [formTambahKepala, setFormTambahKepala] = useState<FormTambahKepalaState>(EMPTY_TAMBAH_KEPALA_FORM)
+  const [pindahForm, setPindahForm] = useState<{ opdId: string }>(EMPTY_PINDAH_FORM)
+  const [riwayatDialogPerson, setRiwayatDialogPerson] = useState<RiwayatDialogPersonState | null>(null)
+  const [pindahDialogPerson, setPindahDialogPerson] = useState<PindahDialogPersonState | null>(null)
 
   // Simple filtering
+  const opdNameById: OpdNameLookup = new Map(opdList.map((opd) => [opd.id, opd.name]))
   const filteredOPD = opdList.filter((opd) =>
     opd.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const filteredPersons = kepalaList.filter((kepala) =>
-    (kepala.name ?? '').toLowerCase().includes(searchUserQuery.toLowerCase())
-  )
+  const filteredPersons = buildFilteredPersons(kepalaList, opdNameById, searchUserQuery)
+  const kepalaCandidates = buildKepalaCandidates(kepalaList)
 
-  const getKepalaAktif = (opdId?: string): KepalaOPD | undefined =>
+  const getKepalaAktif = (opdId: string): KepalaAssignment | undefined =>
     kepalaList.find((k) => (!opdId || k.opdId === opdId) && k.isActive)
-  const getKepalaByOPD = (opdId: string): KepalaOPD[] =>
+  const getKepalaByOPD = (opdId: string): KepalaAssignment[] =>
     kepalaList.filter((k) => k.opdId === opdId)
-  const getRiwayatForUser = (_name: string, _email: string): KepalaOPD[] =>
-    kepalaList.filter((k) => k.name === _name && k.email === _email)
+  const getRiwayatForUser = (_name: string, _email: string) =>
+    buildRiwayatRows(kepalaList, opdNameById, _name, _email)
 
   const handleDelete = (id: string) => {
     const opd = opdList.find((o) => o.id === id)
@@ -124,87 +201,116 @@ export function ManajemenOPD() {
     setIsEditDialogOpen(true)
   }
 
-  const openKepalaForm = (kepala?: KepalaOPD) => {
+  const openKepalaForm = (kepala?: { id: string; name: string; nip?: string; email?: string; phone?: string }) => {
     if (kepala) {
-      setEditingKepala(kepala)
-      setKepalaForm({ name: kepala.name, nip: kepala.nip ?? '', email: kepala.email, phone: kepala.phone })
+      setEditingKepala({
+        id: kepala.id,
+        name: kepala.name,
+        nip: kepala.nip,
+        email: kepala.email ?? "",
+        phone: kepala.phone ?? "",
+      })
+      setKepalaForm({
+        name: kepala.name,
+        nip: kepala.nip ?? '',
+        email: kepala.email ?? '',
+        phone: kepala.phone ?? '',
+      })
     } else {
       setEditingKepala(null)
-      setKepalaForm({ name: '', nip: '', email: '', phone: '' })
+      setKepalaForm(EMPTY_KEPALA_FORM)
     }
     setKepalaFormOpen(true)
+  }
+
+  const closeTambahKepalaDialog = () => {
+    setTambahKepalaOpen(false)
+    setFormTambahKepala(EMPTY_TAMBAH_KEPALA_FORM)
+  }
+
+  const closePindahDialog = () => {
+    setPindahDialogOpen(false)
+    setPindahDialogPerson(null)
+    setPindahForm(EMPTY_PINDAH_FORM)
+  }
+
+  const runJabatanMutationSafely = async (
+    action: () => Promise<void>,
+    fallbackMessage: string,
+  ) => {
+    try {
+      await action()
+      return true
+    } catch (error: unknown) {
+      showErrorMessages(error, fallbackMessage)
+      return false
+    }
   }
 
   const deleteKepala = (id: string) => setDeleteKepalaId(id)
 
   const doDeleteKepala = async (id: string) => {
-    try {
+    const success = await runJabatanMutationSafely(
       // Use akhiriJabatan to end the tenure, NOT deleteUser which deletes the entire account
-      await akhiriJabatanMutation(id)
+      async () => {
+        await akhiriJabatanMutation(id)
+      },
+      'Gagal mengakhiri jabatan Kepala OPD',
+    )
+    if (success) {
       showToast('Jabatan Kepala OPD berhasil diakhiri', 'success')
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal mengakhiri jabatan Kepala OPD'
-      showToast(message, 'error')
-    } finally {
-      setDeleteKepalaId(null)
     }
+    setDeleteKepalaId(null)
   }
 
   // Real API-based jabatan operations
   const saveKepala = async () => {
     if (!selectedOPD || !kepalaForm.name) return
-    try {
+    const success = await runJabatanMutationSafely(async () => {
       await setKepalaAktifMutation({ userId: editingKepala?.id ?? '', opdId: selectedOPD.id })
+    }, 'Gagal menyimpan Kepala OPD')
+    if (success) {
       setKepalaFormOpen(false)
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal menyimpan Kepala OPD'
-      showToast(message, 'error')
     }
   }
 
   const saveTambahKepala = async () => {
-    if (!formTambahKepala.opdId || !formTambahKepala.name) return
-    try {
-      await setKepalaAktifMutation({ userId: formTambahKepala.userId, opdId: formTambahKepala.opdId })
-      setTambahKepalaOpen(false)
-      setFormTambahKepala({ opdId: '', name: '', nip: '', email: '' })
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal menambah Kepala OPD'
-      showToast(message, 'error')
+    if (!formTambahKepala.opdId || !formTambahKepala.userId) return
+
+    const success = await runJabatanMutationSafely(async () => {
+      await setKepalaAktifMutation({
+        userId: formTambahKepala.userId,
+        opdId: formTambahKepala.opdId,
+      })
+    }, 'Gagal menambah Kepala OPD')
+    if (success) {
+      closeTambahKepalaDialog()
     }
   }
 
   const savePindahJabatan = async () => {
     if (!pindahDialogPerson || !pindahForm.opdId) return
-    try {
+    const success = await runJabatanMutationSafely(async () => {
       await pindahJabatanMutation({ userId: pindahDialogPerson.id, opdId: pindahForm.opdId })
-      setPindahDialogOpen(false)
-      setPindahDialogPerson(null)
-      setPindahForm({ opdId: '' })
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal memindah jabatan'
-      showToast(message, 'error')
+    }, 'Gagal memindah jabatan')
+    if (success) {
+      closePindahDialog()
     }
   }
 
   const setKepalaAktif = async (kepalaId: string) => {
     const k = kepalaList.find((x) => x.id === kepalaId)
     if (!k?.opdId) return
-    try {
-      await setKepalaAktifMutation({ userId: kepalaId, opdId: k.opdId })
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal mengatur Kepala OPD'
-      showToast(message, 'error')
-    }
+    const opdId = k.opdId
+    await runJabatanMutationSafely(async () => {
+      await setKepalaAktifMutation({ userId: kepalaId, opdId })
+    }, 'Gagal mengatur Kepala OPD')
   }
 
   const akhiriJabatan = async (kepalaId: string) => {
-    try {
+    await runJabatanMutationSafely(async () => {
       await akhiriJabatanMutation(kepalaId)
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal mengakhiri jabatan'
-      showToast(message, 'error')
-    }
+    }, 'Gagal mengakhiri jabatan')
   }
 
   const onConfirmCreate = async () => {
@@ -261,7 +367,7 @@ export function ManajemenOPD() {
               size="sm"
               className="h-8 gap-1.5 text-xs shrink-0"
               onClick={() => {
-                setFormTambahKepala({ opdId: opdList[0]?.id ?? '', name: '', nip: '', email: '' })
+                setFormTambahKepala({ ...EMPTY_TAMBAH_KEPALA_FORM, opdId: opdList[0]?.id ?? '' })
                 setTambahKepalaOpen(true)
               }}
             >
@@ -337,6 +443,7 @@ export function ManajemenOPD() {
             setKepalaForm={setKepalaForm}
             formTambahKepala={formTambahKepala}
             setFormTambahKepala={setFormTambahKepala}
+            kepalaCandidates={kepalaCandidates}
             pindahForm={pindahForm}
             setPindahForm={setPindahForm}
             pindahDialogPerson={pindahDialogPerson}

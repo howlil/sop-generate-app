@@ -5,5 +5,9 @@ export const Route = createFileRoute('/tim-penyusun/')({
   beforeLoad: () => {
     throw redirect({ to: ROUTES.TIM_PENYUSUN.SOP })
   },
-  component: () => null,
+  component: RedirectPlaceholder,
 })
+
+function RedirectPlaceholder() {
+  return null
+}

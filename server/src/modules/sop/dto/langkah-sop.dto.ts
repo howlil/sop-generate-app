@@ -11,27 +11,36 @@ import { JenisLangkahProsedur, SatuanWaktu } from '../../../generated/prisma';
 
 export class CreateLangkahSopDto {
   @ApiProperty({ example: 'Terima berkas permohonan' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   kegiatan: string;
 
-  @ApiPropertyOptional({ enum: JenisLangkahProsedur, default: JenisLangkahProsedur.TASK })
-  @IsEnum(JenisLangkahProsedur) @IsOptional()
+  @ApiPropertyOptional({
+    enum: JenisLangkahProsedur,
+    default: JenisLangkahProsedur.TASK,
+  })
+  @IsEnum(JenisLangkahProsedur)
+  @IsOptional()
   jenis?: JenisLangkahProsedur;
 
   @ApiProperty({ example: 1 })
-  @IsInt() @Min(1)
+  @IsInt()
+  @Min(1)
   urutan: number;
 
   @ApiProperty({ example: 'Formulir permohonan' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   kelengkapan: string;
 
   @ApiProperty({ example: 'Berkas diterima' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   keluaran: string;
 
   @ApiProperty({ example: 15 })
-  @IsInt() @Min(1)
+  @IsInt()
+  @Min(1)
   waktu: number;
 
   @ApiProperty({ enum: SatuanWaktu })
@@ -39,34 +48,51 @@ export class CreateLangkahSopDto {
   satuanWaktu: SatuanWaktu;
 
   @ApiPropertyOptional({ example: '' })
-  @IsString() @IsOptional()
+  @IsString()
+  @IsOptional()
   keterangan?: string;
 
-  @ApiProperty({ example: 'uuid-of-pelaksana', description: 'Harus terdaftar di swimlane DetailSOP ini' })
-  @IsString() @IsNotEmpty()
+  @ApiProperty({
+    example: 'uuid-of-pelaksana',
+    description: 'Harus terdaftar di swimlane DetailSOP ini',
+  })
+  @IsString()
+  @IsNotEmpty()
   pelaksanaId: string;
 
   @ApiPropertyOptional({ example: null })
-  @IsString() @IsOptional()
+  @IsString()
+  @IsOptional()
   langkahSelanjutnyaYaId?: string;
 
   @ApiPropertyOptional({ example: null })
-  @IsString() @IsOptional()
+  @IsString()
+  @IsOptional()
   langkahSelanjutnyaTidakId?: string;
 }
 
 export class UpdateLangkahSopDto {
   @ApiPropertyOptional() @IsString() @IsOptional() kegiatan?: string;
-  @ApiPropertyOptional({ enum: JenisLangkahProsedur }) @IsEnum(JenisLangkahProsedur) @IsOptional() jenis?: JenisLangkahProsedur;
+  @ApiPropertyOptional({ enum: JenisLangkahProsedur })
+  @IsEnum(JenisLangkahProsedur)
+  @IsOptional()
+  jenis?: JenisLangkahProsedur;
   @ApiPropertyOptional() @IsInt() @IsOptional() @Min(1) urutan?: number;
   @ApiPropertyOptional() @IsString() @IsOptional() kelengkapan?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() keluaran?: string;
   @ApiPropertyOptional() @IsInt() @IsOptional() @Min(1) waktu?: number;
-  @ApiPropertyOptional({ enum: SatuanWaktu }) @IsEnum(SatuanWaktu) @IsOptional() satuanWaktu?: SatuanWaktu;
+  @ApiPropertyOptional({ enum: SatuanWaktu })
+  @IsEnum(SatuanWaktu)
+  @IsOptional()
+  satuanWaktu?: SatuanWaktu;
   @ApiPropertyOptional() @IsString() @IsOptional() keterangan?: string;
   @ApiPropertyOptional() @IsString() @IsOptional() pelaksanaId?: string;
-  @ApiPropertyOptional() @IsString() @IsOptional() langkahSelanjutnyaYaId?: string | null;
-  @ApiPropertyOptional() @IsString() @IsOptional() langkahSelanjutnyaTidakId?: string | null;
+  @ApiPropertyOptional() @IsString() @IsOptional() langkahSelanjutnyaYaId?:
+    | string
+    | null;
+  @ApiPropertyOptional() @IsString() @IsOptional() langkahSelanjutnyaTidakId?:
+    | string
+    | null;
 }
 
 export class LangkahSopResponseDto {

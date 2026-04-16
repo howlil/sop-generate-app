@@ -1,8 +1,21 @@
 import {
-  Controller, Get, Post, Patch,
-  Param, Body, Query, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { EvaluasiService } from '../service/evaluasi.service';
 import {
   CreatePengajuanEvaluasiDto,
@@ -24,7 +37,9 @@ export class EvaluasiController {
   constructor(private readonly service: EvaluasiService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Daftar PengajuanEvaluasi — EVL-04 (open pool for TIM_EVALUASI)' })
+  @ApiOperation({
+    summary: 'Daftar PengajuanEvaluasi — EVL-04 (open pool for TIM_EVALUASI)',
+  })
   @ApiQuery({ name: 'opdId', required: false })
   @ApiQuery({ name: 'status', required: false, enum: StatusPengajuanEvaluasi })
   @ApiQuery({ name: 'jenis', required: false, enum: JenisPengajuanEvaluasi })
@@ -52,7 +67,9 @@ export class EvaluasiController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Detail PengajuanEvaluasi beserta NilaiEvaluasi — EVL-08' })
+  @ApiOperation({
+    summary: 'Detail PengajuanEvaluasi beserta NilaiEvaluasi — EVL-08',
+  })
   findOne(@Param('id') id: string) {
     return this.service.findById(id);
   }
@@ -60,14 +77,20 @@ export class EvaluasiController {
   @Post()
   @Roles(PeranPengguna.BIRO_ORGANISASI)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Buat PengajuanEvaluasi — EVL-01 (DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI)' })
+  @ApiOperation({
+    summary:
+      'Buat PengajuanEvaluasi — EVL-01 (DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI)',
+  })
   create(@Body() dto: CreatePengajuanEvaluasiDto) {
     return this.service.create(dto);
   }
 
   @Patch(':id/nilai/:sopDetailId')
   @Roles(PeranPengguna.TIM_EVALUASI)
-  @ApiOperation({ summary: 'Isi hasil evaluasi per DetailSOP — EVL-05 (optimistic lock via version)' })
+  @ApiOperation({
+    summary:
+      'Isi hasil evaluasi per DetailSOP — EVL-05 (optimistic lock via version)',
+  })
   isiNilai(
     @Param('id') id: string,
     @Param('sopDetailId') sopDetailId: string,
@@ -79,7 +102,9 @@ export class EvaluasiController {
 
   @Patch(':id/selesai')
   @Roles(PeranPengguna.TIM_EVALUASI)
-  @ApiOperation({ summary: 'Selesaikan evaluasi — EVL-06/07 (nilaiOPD wajib untuk TERJADWAL)' })
+  @ApiOperation({
+    summary: 'Selesaikan evaluasi — EVL-06/07 (nilaiOPD wajib untuk TERJADWAL)',
+  })
   selesai(
     @Param('id') id: string,
     @Body() dto: SelesaiEvaluasiDto,

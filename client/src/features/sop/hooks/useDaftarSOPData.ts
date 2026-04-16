@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react'
-import { useSop } from '@/features/sop/hooks/useSop'
+import { useSop } from './useSop'
 
 interface UseDaftarSopDataParams {
   searchQuery: string

@@ -10,9 +10,12 @@ export interface JabatanUser {
   nip: string
   jabatan: string
   opdId: string | null
+  email: string
+  nohp: string
   peran: string
   isActive: boolean
   updatedAt: string
+  totalSopDisusun: number
 }
 
 export const jabatanApi = {

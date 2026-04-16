@@ -3,7 +3,6 @@ import {
   NotFoundException,
   ConflictException,
   BadRequestException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { TimPenyusunRepository } from '../repository/tim-penyusun.repository';
 import {
@@ -27,14 +26,16 @@ export class TimPenyusunService {
   async findAll(
     user: JwtUser,
     opdId?: string,
-  ): Promise<AnggotaTimPenyusunResponseDto[]> {
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{ data: AnggotaTimPenyusunResponseDto[]; total: number }> {
     // Non-BIRO roles see only their own OPD
     const filterOpdId =
       user.peran === PeranPengguna.BIRO_ORGANISASI
         ? opdId
-        : user.opdId ?? undefined;
+        : (user.opdId ?? undefined);
 
-    return this.repo.findAll(filterOpdId);
+    return this.repo.findAll(filterOpdId, page, limit);
   }
 
   async findById(id: string): Promise<AnggotaTimPenyusunResponseDto> {
@@ -47,13 +48,13 @@ export class TimPenyusunService {
     return member;
   }
 
-  async tambah(dto: CreateTimPenyusunDto): Promise<AnggotaTimPenyusunResponseDto> {
+  async tambah(
+    dto: CreateTimPenyusunDto,
+  ): Promise<AnggotaTimPenyusunResponseDto> {
     // TIM-06: unique [userId, opdId]
     const existing = await this.repo.findByUserAndOpd(dto.userId, dto.opdId);
     if (existing) {
-      throw new ConflictException(
-        'Pengguna sudah terdaftar sebagai anggota di OPD ini',
-      );
+      throw new ConflictException(TimMessages.TIM_MEMBER_ALREADY_EXISTS_IN_OPD);
     }
 
     return this.repo.create({ userId: dto.userId, opdId: dto.opdId });
@@ -84,9 +85,7 @@ export class TimPenyusunService {
     }
 
     if (member.status === StatusTim.NONAKTIF) {
-      throw new BadRequestException(
-        'Anggota yang sudah nonaktif tidak dapat dipindahkan',
-      );
+      throw new BadRequestException(TimMessages.TIM_NONAKTIF_CANNOT_TRANSFER);
     }
 
     if (member.opdId === dto.opdIdBaru) {
@@ -99,9 +98,7 @@ export class TimPenyusunService {
       dto.opdIdBaru,
     );
     if (existingInTarget) {
-      throw new ConflictException(
-        'Pengguna sudah terdaftar sebagai anggota di OPD tujuan',
-      );
+      throw new ConflictException(TimMessages.TIM_MEMBER_ALREADY_EXISTS_IN_TARGET_OPD);
     }
 
     return this.repo.transfer(id, dto.opdIdBaru);

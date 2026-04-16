@@ -53,7 +53,11 @@ export class PelaksanaRepository {
     });
   }
 
-  async addToSwimlane(sopDetailId: string, pelaksanaId: string, urutan: number) {
+  async addToSwimlane(
+    sopDetailId: string,
+    pelaksanaId: string,
+    urutan: number,
+  ) {
     return this.prisma.detailSOPPelaksana.create({
       data: { sopDetailId, pelaksanaId, urutan },
       include: { pelaksana: true },

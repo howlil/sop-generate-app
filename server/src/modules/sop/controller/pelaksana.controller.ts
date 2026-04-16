@@ -1,12 +1,27 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { PelaksanaService } from '../service/pelaksana.service';
 import {
-  CreatePelaksanaDto, UpdatePelaksanaDto,
-  AddSwimlanDto, SwimlanResponseDto,
+  CreatePelaksanaDto,
+  UpdatePelaksanaDto,
+  AddSwimlanDto,
+  SwimlanResponseDto,
 } from '../dto/pelaksana.dto';
 import { Roles } from '../../../common/decorators';
 import { PeranPengguna } from '../../../generated/prisma';
@@ -30,7 +45,11 @@ export class PelaksanaController {
   }
 
   @Post()
-  @Roles(PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.BIRO_ORGANISASI)
+  @Roles(
+    PeranPengguna.TIM_PENYUSUN,
+    PeranPengguna.KOORDINATOR_TIM_PENYUSUN,
+    PeranPengguna.BIRO_ORGANISASI,
+  )
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Buat pelaksana master — PLK-01' })
   create(@Body() dto: CreatePelaksanaDto) {
@@ -38,16 +57,26 @@ export class PelaksanaController {
   }
 
   @Patch(':id')
-  @Roles(PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.BIRO_ORGANISASI)
+  @Roles(
+    PeranPengguna.TIM_PENYUSUN,
+    PeranPengguna.KOORDINATOR_TIM_PENYUSUN,
+    PeranPengguna.BIRO_ORGANISASI,
+  )
   @ApiOperation({ summary: 'Update pelaksana' })
   update(@Param('id') id: string, @Body() dto: UpdatePelaksanaDto) {
     return this.service.update(id, dto);
   }
 
   @Delete(':id')
-  @Roles(PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.BIRO_ORGANISASI)
+  @Roles(
+    PeranPengguna.TIM_PENYUSUN,
+    PeranPengguna.KOORDINATOR_TIM_PENYUSUN,
+    PeranPengguna.BIRO_ORGANISASI,
+  )
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Hapus pelaksana (gagal jika masih digunakan di LangkahSOP)' })
+  @ApiOperation({
+    summary: 'Hapus pelaksana (gagal jika masih digunakan di LangkahSOP)',
+  })
   remove(@Param('id') id: string) {
     return this.service.delete(id);
   }

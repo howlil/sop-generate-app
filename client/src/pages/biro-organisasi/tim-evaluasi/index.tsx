@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Users, Plus, Edit, Trash2, UserMinus } from 'lucide-react'
+import { Users, Plus, Edit, UserMinus, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
@@ -9,25 +9,46 @@ import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
+import { Select } from '@/components/ui/select'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import { useTimEvaluasi } from '@/features/tim'
-import { usersApi } from '@/features/auth/services/users.api'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { useTimEvaluasi, useTimEvaluasiDetail } from '@/features/tim'
 import type { AnggotaTimEvaluasi } from '@/features/tim'
 import type { TimEvaluasiAnggotaUI } from '@/features/tim/types/tim'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
-import { useToast } from "@/utils/toast"
+import { showErrorMessages, useToast } from "@/utils/toast"
+import { useUsers } from '@/features/auth/hooks/useUsers'
 
 export function ManajemenTimEvaluasi() {
   const { showToast } = useToast()
-  const { list: timList, nonaktifkan, tambah } = useTimEvaluasi()
+  const {
+    list: timList,
+    nonaktifkan,
+    tambah,
+    isNonaktifkan: isNonaktifkanLoading,
+  } = useTimEvaluasi()
+  const { data: usersPage, update: updateUser } = useUsers({ page: 1, limit: 200 })
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedTim, setSelectedTim] = useState<TimEvaluasiAnggotaUI | null>(null)
-  const [deleteTimId, setDeleteTimId] = useState<string | null>(null)
   const [nonaktifTimId, setNonaktifTimId] = useState<string | null>(null)
+  const [detailTimId, setDetailTimId] = useState<string | null>(null)
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false)
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState('')
+  const {
+    data: detailData,
+    isLoading: isDetailLoading,
+  } = useTimEvaluasiDetail(detailTimId ?? undefined)
   const filteredTim = useMemo(() => {
     const q = searchQuery.trim().toLowerCase()
     if (!q) return timList
@@ -49,9 +70,18 @@ export function ManajemenTimEvaluasi() {
     nohp: '',
   })
 
-  const handleDelete = (id: string) => {
-    setDeleteTimId(id)
-  }
+  const existingMemberUserIds = useMemo(
+    () => new Set(timList.map((member) => member.userId)),
+    [timList],
+  )
+
+  const eligibleUsers = useMemo(
+    () =>
+      (usersPage?.data ?? []).filter(
+        (user) => !existingMemberUserIds.has(user.id),
+      ),
+    [usersPage, existingMemberUserIds],
+  )
 
   const openEditDialog = (tim: AnggotaTimEvaluasi) => {
     const u = tim.user
@@ -86,6 +116,7 @@ export function ManajemenTimEvaluasi() {
       email: '',
       nohp: '',
     })
+    setSelectedUserId('')
   }
 
   const handleNonaktifkan = async () => {
@@ -95,49 +126,45 @@ export function ManajemenTimEvaluasi() {
   }
 
   const handleCreateSubmit = async () => {
-    if (!formData.namaLengkap || !formData.nip || !formData.email) return
+    if (!selectedUserId) return
     try {
-      // Step 1: Create user with TIM_EVALUASI role
-      const user = await usersApi.create({
-        nama: formData.namaLengkap,
-        nip: formData.nip,
-        jabatan: formData.jabatan,
-        pangkat: formData.pangkat,
-        email: formData.email,
-        nohp: formData.nohp,
-        peran: 'TIM_EVALUASI',
-      })
-      // Step 2: Add user to tim evaluasi
-      await tambah({ userId: user.id })
+      setIsSubmittingCreate(true)
+      await tambah({ userId: selectedUserId })
       setIsCreateDialogOpen(false)
       resetForm()
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal menambahkan anggota'
-      showToast(message, 'error')
+      showErrorMessages(error, 'Gagal menambahkan anggota')
+    } finally {
+      setIsSubmittingCreate(false)
     }
   }
 
   const handleEditSubmit = async () => {
     if (!selectedTim) return
     try {
+      setIsSubmittingEdit(true)
       // Update the user record
       const userId = timList.find(t => t.id === selectedTim.id)?.userId
       if (!userId) {
         showToast('User ID tidak ditemukan', 'error')
         return
       }
-      await usersApi.update(userId, {
-        nama: formData.namaLengkap,
-        nip: formData.nip,
-        jabatan: formData.jabatan,
-        pangkat: formData.pangkat,
-        nohp: formData.nohp,
+      await updateUser({
+        id: userId,
+        payload: {
+          nama: formData.namaLengkap,
+          nip: formData.nip,
+          jabatan: formData.jabatan,
+          pangkat: formData.pangkat,
+          nohp: formData.nohp,
+        },
       })
       setIsEditDialogOpen(false)
       showToast('Data anggota berhasil diperbarui', 'success')
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Gagal memperbarui anggota'
-      showToast(message, 'error')
+      showErrorMessages(error, 'Gagal memperbarui anggota')
+    } finally {
+      setIsSubmittingEdit(false)
     }
   }
 
@@ -157,6 +184,7 @@ export function ManajemenTimEvaluasi() {
             className="h-8 gap-1.5 text-xs"
             onClick={() => {
               resetForm()
+              setSelectedUserId('')
               setIsCreateDialogOpen(true)
             }}
           >
@@ -227,6 +255,11 @@ export function ManajemenTimEvaluasi() {
                     <Table.Td className="text-center">
                       <div className="flex flex-wrap items-center justify-center gap-1">
                         <IconActionButton icon={Edit} title="Edit" onClick={() => openEditDialog(tim)} />
+                        <IconActionButton
+                          icon={Eye}
+                          title="Lihat Detail"
+                          onClick={() => setDetailTimId(tim.id)}
+                        />
                         {(tim.status === 'AKTIF') && (
                           <IconActionButton
                             icon={UserMinus}
@@ -234,12 +267,6 @@ export function ManajemenTimEvaluasi() {
                             onClick={() => setNonaktifTimId(tim.id)}
                           />
                         )}
-                        <IconActionButton
-                          icon={UserMinus}
-                          title="Nonaktifkan"
-                          destructive
-                          onClick={() => handleDelete(tim.id)}
-                        />
                       </div>
                     </Table.Td>
                   </Table.BodyRow>
@@ -254,62 +281,29 @@ export function ManajemenTimEvaluasi() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         title="Tambah Anggota Tim Evaluasi"
-        description="Lengkapi form berikut untuk menambah anggota tim evaluasi"
-        confirmLabel="Simpan"
+        description="Pilih pengguna aktif yang belum terdaftar sebagai anggota Tim Evaluasi."
+        confirmLabel={isSubmittingCreate ? "Menyimpan..." : "Simpan"}
         cancelLabel="Batal"
         onConfirm={handleCreateSubmit}
-        confirmDisabled={!formData.namaLengkap || !formData.nip}
+        confirmDisabled={!selectedUserId || isSubmittingCreate}
         size="md"
       >
         <div className="space-y-3">
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Dr. Ahmad Pratama, M.Si"
-              value={formData.namaLengkap}
-              onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
+          <FormField label="Pilih Pengguna" required>
+            <Select
+              value={selectedUserId}
+              onValueChange={setSelectedUserId}
+              placeholder="Pilih pengguna yang akan ditambahkan"
+              options={eligibleUsers.map((user) => ({
+                value: user.id,
+                label: `${user.nama} • ${user.nip ?? '-'} • ${user.email}`,
+              }))}
             />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="197503152000032001"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan di Instansi" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Analis Kebijakan"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat / Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: IV/a"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              type="email"
-              className="h-9 text-xs"
-              placeholder="email@pemda.go.id"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="No. HP" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="0812..."
-              value={formData.nohp}
-              onChange={(e) => setFormData({ ...formData, nohp: e.target.value })}
-            />
+            {eligibleUsers.length === 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                Tidak ada pengguna eligible. Semua pengguna aktif sudah menjadi anggota Tim Evaluasi.
+              </p>
+            )}
           </FormField>
         </div>
       </FormDialog>
@@ -319,10 +313,10 @@ export function ManajemenTimEvaluasi() {
         onOpenChange={setIsEditDialogOpen}
         title="Edit Anggota Tim Evaluasi"
         description="Perbarui informasi anggota tim"
-        confirmLabel="Simpan Perubahan"
+        confirmLabel={isSubmittingEdit ? "Menyimpan..." : "Simpan Perubahan"}
         cancelLabel="Batal"
         onConfirm={handleEditSubmit}
-        confirmDisabled={!formData.namaLengkap || !formData.nip}
+        confirmDisabled={!formData.namaLengkap || !formData.nip || isSubmittingEdit}
         size="md"
       >
         <div className="space-y-3">
@@ -375,32 +369,62 @@ export function ManajemenTimEvaluasi() {
       </FormDialog>
 
       <ConfirmDialog
-        open={deleteTimId != null}
-        onOpenChange={(open) => !open && setDeleteTimId(null)}
-        title="Nonaktifkan anggota tim?"
-        description="Tugas anggota ini akan diakhiri. Data evaluasi/arsip yang pernah mereka kerjakan tetap tersimpan per terjadwal verifikasi. Gunakan Nonaktifkan jika hanya mengakhiri tugas."
-        onConfirm={async () => {
-          if (deleteTimId) {
-            try {
-              // Use nonaktifkan instead of hard delete to preserve audit trail
-              await nonaktifkan(deleteTimId)
-              showToast('Anggota tim berhasil dinonaktifkan', 'success')
-            } catch (error: unknown) {
-              const message = error instanceof Error ? error.message : 'Gagal menonaktifkan anggota tim'
-              showToast(message, 'error')
-            }
-            setDeleteTimId(null)
-          }
-        }}
-      />
-
-      <ConfirmDialog
         open={nonaktifTimId != null}
         onOpenChange={(open) => !open && setNonaktifTimId(null)}
         title="Nonaktifkan anggota tim evaluasi?"
-        description="Tugas anggota ini akan diakhiri. Data evaluasi/arsip yang pernah mereka kerjakan tetap dapat diakses per terjadwal verifikasi. Riwayat tetap tercatat."
+        description="Tugas anggota tim evaluasi akan diakhiri. Dampak: status anggota menjadi NONAKTIF dan user tidak bisa akses sistem lagi."
         onConfirm={handleNonaktifkan}
+        confirmLabel={isNonaktifkanLoading ? "Menonaktifkan..." : "Nonaktifkan"}
       />
+
+      <Dialog open={detailTimId != null} onOpenChange={(open) => !open && setDetailTimId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detail Anggota Tim Evaluasi</DialogTitle>
+            <DialogDescription>
+              Informasi lengkap anggota Tim Evaluasi.
+            </DialogDescription>
+          </DialogHeader>
+          {isDetailLoading ? (
+            <p className="text-xs text-gray-500">Memuat detail anggota...</p>
+          ) : detailData ? (
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Nama</span>
+                <span className="font-medium text-gray-900 text-right">{detailData.user?.nama ?? '—'}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Email</span>
+                <span className="font-medium text-gray-900 text-right">{detailData.user?.email ?? '—'}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">NIP</span>
+                <span className="font-medium text-gray-900 text-right">{detailData.user?.nip ?? '—'}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Jabatan</span>
+                <span className="font-medium text-gray-900 text-right">{detailData.user?.jabatan ?? '—'}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Status</span>
+                <StatusBadge status={detailData.status} />
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Tanggal Bergabung</span>
+                <span className="font-medium text-gray-900 text-right">{formatDateId(detailData.tanggalBergabung)}</span>
+              </div>
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-500">Berakhir Pada</span>
+                <span className="font-medium text-gray-900 text-right">
+                  {detailData.berakhirPada ? formatDateId(detailData.berakhirPada) : '—'}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500">Detail anggota tidak ditemukan.</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </ListPageLayout>
   )
 }

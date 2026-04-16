@@ -3,7 +3,6 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 import { peraturanApi } from "../services/peraturan.api";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";

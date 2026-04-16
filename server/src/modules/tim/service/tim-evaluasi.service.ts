@@ -29,13 +29,13 @@ export class TimEvaluasiService {
     return member;
   }
 
-  async tambah(dto: CreateTimEvaluasiDto): Promise<AnggotaTimEvaluasiResponseDto> {
+  async tambah(
+    dto: CreateTimEvaluasiDto,
+  ): Promise<AnggotaTimEvaluasiResponseDto> {
     // TIM-07: unique userId on AnggotaTimEvaluasi
     const existing = await this.repo.findByUserId(dto.userId);
     if (existing) {
-      throw new ConflictException(
-        'Pengguna sudah terdaftar sebagai anggota Tim Evaluasi',
-      );
+      throw new ConflictException(TimMessages.TIM_EVALUASI_MEMBER_ALREADY_EXISTS);
     }
 
     return this.repo.create({ userId: dto.userId });

@@ -1,8 +1,20 @@
 import {
-  Controller, Get, Post, Patch,
-  Param, Body, Query, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { TteService } from '../service/tte.service';
 import {
   RegisterTteDto,

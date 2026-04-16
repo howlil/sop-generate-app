@@ -1,18 +1,4 @@
-/**
- * HTTP Client with fetch API
- * Utility for making API requests
- * Handles HttpOnly cookie-based authentication with automatic token refresh
- * Features:
- * - Automatic token refresh on 401
- * - Request queue during refresh (prevents lost requests)
- * - CSRF protection support
- * - Retry logic with exponential backoff
- */
 
-/**
- * Build a query string from a params object, ignoring nullish values.
- * Replaces repeated URLSearchParams boilerplate across API service files.
- */
 export function buildQueryString(
   params: Record<string, unknown> | undefined,
 ): string {
@@ -39,30 +25,19 @@ function getHeaders(): HeadersInit {
 
 export class ApiError extends Error {
   status: number
+  code?: string
   errors?: string[]
 
-  constructor(status: number, message: string, errors?: string[]) {
+  constructor(status: number, message: string, code?: string, errors?: string[]) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.code = code
     this.errors = errors
   }
 }
 
-/**
- * Extract error messages from API response
- * Handles various error response formats:
- * - { errors: ["msg1", "msg2"] }
- * - { message: "error", errors: ["msg1"] }
- * - { message: "error" }
- */
-/**
- * Shape of API error response body.
- * Handles various formats:
- * - { errors: ["msg1", "msg2"] }
- * - { message: "error", errors: ["msg1"] }
- * - { message: "error" }
- */
+
 interface ErrorResponseBody {
   message?: string;
   errors?: string[];
@@ -71,7 +46,7 @@ interface ErrorResponseBody {
   status?: number;
 }
 
-function extractErrors(errorBody: ErrorResponseBody): { message: string; errors?: string[] } {
+function extractErrors(errorBody: ErrorResponseBody): { message: string; errors?: string[]; code?: string } {
   const errors = Array.isArray(errorBody.errors)
     ? errorBody.errors
     : Array.isArray(errorBody.error)
@@ -82,7 +57,10 @@ function extractErrors(errorBody: ErrorResponseBody): { message: string; errors?
     ? errors.join('\n')
     : errorBody.message || `HTTP ${errorBody.statusCode || errorBody.status || 'unknown'}`
 
-  return { message, errors }
+  // Extract error code if present
+  const code = 'code' in errorBody ? errorBody.code as string : undefined
+
+  return { message, errors, code }
 }
 
 /**
@@ -132,8 +110,9 @@ function rejectRequestQueue(error: Error | ApiError) {
 }
 
 /**
- * Refresh access token using refresh token cookie
- * Returns true if refresh succeeded, false otherwise
+ * Refresh access token using refresh token cookie.
+ * Returns true if refresh succeeded, false otherwise.
+ * Tokens are delivered via HttpOnly cookies — no tokens in response body.
  */
 async function refreshAccessToken(): Promise<boolean> {
   try {
@@ -144,12 +123,7 @@ async function refreshAccessToken(): Promise<boolean> {
       credentials: 'include', // Include cookies
     })
 
-    if (!response.ok) {
-      return false
-    }
-
-    const data = await response.json()
-    return !!data.accessToken
+    return response.ok
   } catch {
     return false
   }
@@ -249,8 +223,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({ message: 'Request failed' }))
-    const { message, errors } = extractErrors(errorBody)
-    throw new ApiError(response.status, message, errors)
+    const { message, errors, code } = extractErrors(errorBody)
+    throw new ApiError(response.status, message, code, errors)
   }
 
   if (response.status === 204) {

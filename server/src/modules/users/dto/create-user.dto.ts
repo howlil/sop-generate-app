@@ -20,10 +20,14 @@ export class CreateUserDto {
   @IsNotEmpty()
   nama: string;
 
-  @ApiPropertyOptional({ example: 'password123', description: 'Will be auto-generated if not provided' })
+  @ApiPropertyOptional({
+    example: 'Password123!',
+    description:
+      'Will be auto-generated if not provided. Min 8 chars, uppercase, lowercase, number, special char',
+  })
   @IsString()
   @IsOptional()
-  @MinLength(6)
+  @MinLength(8)
   kataSandi?: string;
 
   @ApiProperty({ enum: PeranPengguna, example: PeranPengguna.TIM_PENYUSUN })

@@ -3,94 +3,37 @@
  * Standard Operating Procedure lifecycle management
  */
 
-// Types (re-export from central types + feature-specific)
-export type {
-  Sop,
-  SopDetail,
-  CreateSopRequest,
-  UpdateMetadataDto,
-  UpdateStatusDto,
-  LangkahSOP,
-  CreateLangkahSOPDto,
-  UpdateLangkahSOPDto,
-  Pelaksana,
-  CreatePelaksanaDto,
-  DetailSOPPelaksana,
-  CreateDetailSOPPelaksanaDto,
-  LampiranTeks,
-  CreateLampiranTeksDto,
-  DasarHukum,
-  CreateDasarHukumDto,
-  SopTerkait,
-  CreateSopTerkaitDto,
-} from "./types/sop";
-
-export type { KomentarItem, CommentItem } from "./components/KomentarPanel";
-export type { RiwayatEntry } from "./components/RiwayatStatusPanel";
-
-// Re-export evaluation types from evaluasi feature
-export type {
-  NilaiEvaluasi,
-  LogNilaiEvaluasi,
-  PengajuanEvaluasi,
-} from "@/features/evaluasi/types/evaluasi";
-
-// Re-export audit types from audit feature
-export type { LogEditSOP } from "@/features/audit/types/audit";
-
-// Re-export shared types from central location
+// Public shared types used by page modules
 export type {
   StatusSOP,
-  JenisLangkahProsedur,
-  SatuanWaktu,
-  JenisLampiran,
-  BagianSOP,
   SOPDetailMetadata,
   ProsedurRow,
-  SopItem,
-  SOPTemplate,
-  PelaksanaRow,
 } from "@/types/common";
 
-// UI constants
+// Public constants
 export { SOP_STATUS_FILTER_OPTIONS, DEFAULT_SOP_STATUS } from "./types/sop";
 
-// Services (only depend on types)
+// Public services
 export { sopApi } from "./services/sop.api";
 
-// Hooks (depend on services and types)
-// Query hooks
+// Public hooks
 export { useSop } from "./hooks/useSop";
 export { useDetailSopList, useDetailSopById } from "./hooks/useDetailSop";
 export { useSopStatus } from "./hooks/useSopStatus";
-export { usePelaksana } from "./hooks/usePelaksana";
 export { useDaftarSopFilters } from "./hooks/useDaftarSopFilters";
 export { useDaftarSopData } from "./hooks/useDaftarSopData";
-export { useSubmitEvaluasiRequest } from "./hooks/useSubmitEvaluasiRequest";
-
-// Business logic helpers
 export {
   canEditSop,
   canKepalaOpdSignSop,
   isSopEligibleForSigning,
 } from "./hooks/useSop";
 export { canTimPenyusunRunCoordinatorActions } from "./hooks/useSop";
-
-// Initial state helpers (legitimate - used for form defaults)
 export {
   getInitialSopDetailMetadata,
   getInitialSopDetailImplementers,
 } from "./hooks/useDetailSop";
-
-// Edit history
-export { useEditHistory } from "./hooks/useDetailSop";
-
-// Components (depend on everything - export selectively)
 export { BuatSOPDialog } from "./components/BuatSOPDialog";
 export { KomentarPanel } from "./components/KomentarPanel";
 export { RiwayatStatusPanel } from "./components/RiwayatStatusPanel";
 export { SOPListCard } from "./components/SOPListCard";
-export { SOPPreviewTemplate } from "./components/SOPPreviewTemplate";
 export { SOPStatusFilterSelect } from "./components/SOPStatusFilterSelect";
-export { SOPDiagramFlowchart } from "./components/SOPDiagram/SOPDiagramFlowchart";
-export { SOPDiagramBpmn } from "./components/SOPDiagram/SOPDiagramBpmn";

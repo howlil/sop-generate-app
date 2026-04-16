@@ -18,10 +18,10 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 | No | Aktor | Deskripsi | Hak Akses |
 |----|-------|-----------|-----------|
-| 1  | Tim Penyusun | Anggota tim yang ditugaskan oleh OPD untuk menyusun dokumen SOP. Setiap Tim Penyusun memiliki peran internal sebagai Koordinator atau Anggota. | Membuat dan mengelola SOP milik OPD-nya, mengisi metadata dan prosedur, mengajukan evaluasi, menandatangani Berita Acara (khusus Koordinator), melihat daftar SOP yang disusun |
+| 1  | Tim Penyusun | Anggota tim yang ditugaskan oleh OPD untuk menyusun dokumen SOP. Setiap Tim Penyusun memiliki peran internal sebagai Koordinator atau Anggota. | Membuat dan mengelola SOP milik OPD-nya, mengisi metadata dan prosedur, mengajukan evaluasi, menandatangani Berita Acara (khusus Koordinator), melihat daftar SOP yang disusun, mengelola Peraturan OPD |
 | 2  | Kepala OPD | Pimpinan unit kerja (Organisasi Perangkat Daerah) yang bertanggung jawab atas SOP yang diterbitkan oleh OPD-nya. | Memantau semua SOP milik OPD-nya, mengesahkan SOP yang telah diverifikasi (status Berlaku), menandatangani SOP secara elektronik |
-| 3  | Tim Evaluasi | Anggota tim yang dibentuk Biro Organisasi untuk mengevaluasi kualitas SOP yang diajukan. | Mengevaluasi SOP yang ditugaskan, mengisi hasil evaluasi (Sesuai/Perlu Perbaikan), mengirim hasil evaluasi ke Biro Organisasi |
-| 4  | Biro Organisasi | Administrator sistem yang mengelola seluruh aspek pemerintahan SOP termasuk OPD, tim, dan proses evaluasi. | Mengelola data OPD, Tim Penyusun, Tim Evaluasi, dan Peraturan; membuat pengajuan evaluasi; menandatangani Berita Acara; memverifikasi hasil evaluasi; melihat grafik evaluasi tahunan |
+| 3  | Tim Evaluasi | Anggota tim yang dibentuk Biro Organisasi untuk mengevaluasi kualitas SOP yang diajukan. | Mengevaluasi SOP yang ditugaskan, mengisi hasil evaluasi (SESUAI/TIDAK_SESUAI), mengirim hasil evaluasi ke Biro Organisasi |
+| 4  | Biro Organisasi | Administrator sistem yang mengelola seluruh aspek pemerintahan SOP termasuk OPD, tim, dan proses evaluasi. | Mengelola data OPD, Tim Penyusun, Tim Evaluasi; membuat pengajuan evaluasi; menandatangani Berita Acara; memverifikasi hasil evaluasi; melihat grafik evaluasi tahunan |
 
 **[INFERRED FROM CODE]** — Role internal "Koordinator" pada Tim Penyusun disimpulkan dari adanya fungsi `canTimPenyusunRunCoordinatorActions` dan `isKoordinatorTimPenyusunForCurrentSession` yang membatasi aksi tertentu hanya untuk koordinator.
 
@@ -133,7 +133,7 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 **Kondisi akhir:** SOP berstatus "BERLAKU" dan menjadi dokumen resmi OPD.
 
 **Gap analisis:**
-- **[GAP DETECTED]** Tidak ada fitur pencabutan SOP yang telah berlaku (meskipun type `StatusSOP` memiliki status "DICABUT")
+- **[IMPLEMENTED]** Fitur pencabutan SOP telah tersedia melalui transisi status `BERLAKU → DICABUT` (manual/administratif). SOP yang dicabut tetap tersimpan sebagai arsip dengan status "DICABUT".
 - **[CONSTRAINT FROM ERD]** 1 SOP = maksimal 1 TTE di RiwayatTandaTangan (hanya KEPALA_OPD) (lihat `docs/ERD-DESKRIPSI.md`)
 - **[CONSTRAINT FROM SCHEMA]** Status transisi valid: DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU → DICABUT (terminal). BERLAKU dan DICABUT adalah terminal — tidak bisa diubah statusnya kecuali BERLAKU → DICABUT (lihat `docs/SCHEMA-CONSTRAINTS.md` [P0-D])
 
@@ -141,23 +141,26 @@ Dalam konteks pelayanan publik, sistem ini menyelesaikan masalah koordinasi dan 
 
 ### 3.3.5 Proses Manajemen Data Master
 
-**Deskripsi proses:** Biro Organisasi mengelola data master sistem termasuk OPD, Peraturan, Tim Penyusun, dan Tim Evaluasi. Data ini menjadi fondasi untuk seluruh operasional sistem.
+**Deskripsi proses:** Biro Organisasi mengelola data master sistem termasuk OPD, Tim Penyusun, dan Tim Evaluasi. Tim Penyusun/Koordinator mengelola Peraturan milik OPD mereka. Data ini menjadi fondasi untuk seluruh operasional sistem.
 
 **Alur proses normal (happy path):**
-1. Biro Organisasi mengakses halaman Manajemen OPD/Tim/Peraturan
-2. Biro Organisasi menambah, mengupdate, atau menonaktifkan data
+1. Biro Organisasi mengakses halaman Manajemen OPD/Tim; Tim Penyusun mengakses Manajemen Peraturan
+2. User menambah, mengupdate, atau menonaktifkan data sesuai akses masing-masing
 3. Sistem memvalidasi input dan menyimpan perubahan
 4. Untuk Tim: sistem mencatat tanggal bergabung dan status aktif/nonaktif
 5. Untuk OPD: sistem menghitung agregat jumlah SOP per OPD
+6. Untuk Peraturan: sistem memastikan tidak ada duplikat dalam satu OPD
 
 **Alur alternatif:**
 - Jika OPD memiliki SOP aktif: Sistem memperingatkan sebelum menonaktifkan OPD
 - Jika Tim Penyusun sedang menyusun SOP: Sistem mengizinkan nonaktifkan dengan catatan berakhirPada
+- Jika Peraturan masih digunakan sebagai DasarHukum: Sistem menolak penghapusan
 
-**Kondisi awal:** Biro Organisasi login dengan role `biro-organisasi`.
+**Kondisi awal:** User login dengan role yang sesuai (Biro untuk OPD/Tim, Tim Penyusun/Koordinator untuk Peraturan).
 
 **Kondisi akhir:** Data master terupdate dan konsisten di seluruh sistem.
 
+**[CONSTRAINT FROM ERD]** Peraturan dikelola oleh Tim Penyusun OPD masing-masing (bukan Biro Organisasi).
 **[CONSTRAINT FROM ERD]** Peraturan tidak memiliki tracking siapa yang input (data entry tidak perlu audit trail).
 **[CONSTRAINT FROM ERD]** OPD, Pengguna mendukung soft-delete (`deletedAt`). Saat soft-delete, pastikan tidak ada pengajuan evaluasi aktif (lihat `docs/SCHEMA-CONSTRAINTS.md` [P1-G]).
 
@@ -627,19 +630,13 @@ UC10 ..> UC05 : <<include>>
 
 ## 3.8 Analisis Gap dan Rekomendasi
 
-### GAP-01: Tidak Ada Fitur Pencabutan SOP
+### GAP-01: ~~Tidak Ada Fitur Pencabutan SOP~~ — SELESAI
 
-**Kategori:** Fungsional
+**Status:** ✅ **SUDAH DIIMPLEMENTASI**
 
-**Deskripsi:** Type `StatusSOP` memiliki status "DICABUT", dan LogEditSOP memiliki bagian untuk tracking perubahan, tetapi tidak ada use case atau fungsi di client untuk mencabut SOP yang telah berlaku.
+**Deskripsi:** Fitur pencabutan SOP telah tersedia melalui transisi status `BERLAKU → DICABUT` yang diimplementasikan di service layer (`detail-sop.service.ts`) dengan validasi status transition guard. SOP yang dicabut tetap tersimpan sebagai arsip dengan status "DICABUT".
 
-**Dampak:** SOP yang sudah tidak relevan atau mengandung kesalahan tidak dapat dicabut secara formal di sistem.
-
-**Rekomendasi:** Tambahkan use case "Cabut SOP" dengan aktor Kepala OPD atau Biro Organisasi. SOP yang dicabut tetap tersimpan sebagai arsip dengan status "DICABUT" dan catatan alasan pencabutan.
-
-**Prioritas:** Sedang
-
-**Dasar dari ERD:** Status lifecycle DetailSOP mencakup `DICABUT` sebagai status terminal, dan transisi BERLAKU → DICABUT adalah valid (lihat `docs/ERD-DESKRIPSI.md` dan `docs/SCHEMA-CONSTRAINTS.md` [P0-D]).
+**Implementasi:** Endpoint `PATCH /detail-sop/:id/status` dengan body `{ "status": "DICABUT" }` dapat digunakan untuk mencabut SOP yang telah berlaku.
 
 ---
 
@@ -661,10 +658,10 @@ UC10 ..> UC05 : <<include>>
 
 ## Ringkasan Gap
 
-| Kategori | Total Gap |
-|----------|-----------|
-| Fungsional | 1 |
-| Keamanan | 1 |
+| Kategori | Total Gap | Resolved |
+|----------|-----------|----------|
+| Fungsional | 1 | ✅ 1 |
+| Keamanan | 1 | ❌ 0 |
 
 **Total Gap Ditemukan: 2** (Kritis: 0, Tinggi: 0, Sedang: 2, Rendah: 0)
 

@@ -39,7 +39,7 @@ export const ROLE_LABELS: Record<RoleKey, string> = {
 export const ROUTES = {
   HOME: "/",
   AUTH: {
-    LOGIN: "/auth/login",
+    LOGIN: "/login",
   },
   TIM_PENYUSUN: {
     SOP: "/tim-penyusun/sop",
@@ -62,12 +62,11 @@ export const ROUTES = {
     TIM_EVALUASI: "/biro-organisasi/tim-evaluasi",
     EVALUASI: "/biro-organisasi/evaluasi",
     DETAIL_EVALUASI: "/biro-organisasi/evaluasi/$id",
-    DETAIL_SOP: "/biro-organisasi/sop/$id",
     TTE: "/biro-organisasi/tte",
   },
   TIM_EVALUASI: {
     EVALUASI: "/tim-evaluasi/evaluasi",
-    DETAIL_EVALUASI_OPD: "/tim-evaluasi/evaluasi/opd/$opdId",
+    DETAIL_EVALUASI_OPD: "/tim-evaluasi/evaluasi/$id",
   },
   VALIDASI: {
     TTD_BERHASIL: "/validasi/ttd-berhasil",

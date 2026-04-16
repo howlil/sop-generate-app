@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import type { ToastType } from "@/stores/uiStore";
+import { getUserFriendlyMessage } from "./error-codes";
 
 export function useToast() {
   // Use selectors to prevent unnecessary re-renders
@@ -41,15 +42,18 @@ export function showErrorMessages(
 ) {
   const { addToast } = useUIStore.getState();
 
-  // Check if it's an ApiError with errors array
+  // Use error code utility to get user-friendly message
+  const message = getUserFriendlyMessage(error) || fallbackMessage;
+  
+  // If we have detailed errors, still show them
   if (error && typeof error === "object" && "errors" in error) {
     const apiError = error as { errors?: string[]; message?: string };
     const errors = apiError.errors;
 
     if (errors && errors.length > 0) {
-      // Join all errors into a single message
+      // Show main error code message followed by detailed errors
       const allErrors = [
-        ...(apiError.message && apiError.message !== "Validasi gagal" ? [apiError.message] : []),
+        message,
         ...errors,
       ].join("\n");
 
@@ -58,7 +62,6 @@ export function showErrorMessages(
     }
   }
 
-  // Fallback to single error message
-  const message = error instanceof Error ? error.message : fallbackMessage;
+  // Fallback to error code message or original message
   addToast(message, "error");
 }

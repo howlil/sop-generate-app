@@ -363,7 +363,7 @@ export function ManajemenSOP() {
                 {pageData.length === 0 ? (
                   <EmptyState
                     asTableRow
-                    colSpan={6}
+                    colSpan={7}
                     icon={<FileText />}
                     title="Tidak ada SOP ditemukan"
                     description="Coba ubah filter atau kata kunci pencarian"
@@ -376,7 +376,7 @@ export function ManajemenSOP() {
                       </Table.Td>
                       <Table.Td>
                         <p className="font-mono text-gray-700 text-[11px]">
-                          {sop.nomorSOP}
+                          {sop.nomorSOP ?? "—"}
                         </p>
                       </Table.Td>
                       <Table.Td>
@@ -400,15 +400,17 @@ export function ManajemenSOP() {
                       </Table.Td>
                       <Table.Td>
                         <p className="text-gray-700">
-                          {formatDateIdLong(sop.terakhirDiperbarui)}
+                          {sop.terakhirDiperbarui
+                            ? formatDateIdLong(sop.terakhirDiperbarui)
+                            : "—"}
                         </p>
                       </Table.Td>
                       <Table.Td>
-                        <StatusBadge status={sop.status ?? ""} />
+                        <StatusBadge status={sop.status ?? "DRAFT"} />
                       </Table.Td>
                       <Table.Td>
                         <div className="flex items-center justify-center gap-1">
-                          {canEditSop(sop.status as StatusSOP) ? (
+                          {sop.status && canEditSop(sop.status as StatusSOP) ? (
                             <IconActionButton
                               icon={Edit}
                               to={ROUTES.TIM_PENYUSUN.DETAIL_SOP}
@@ -508,7 +510,7 @@ export function ManajemenSOP() {
                             </p>
                           )}
                           <div className="mt-1.5">
-                            <StatusBadge status={sop.status ?? ""} />
+                            <StatusBadge status={sop.status ?? "DRAFT"} />
                           </div>
                         </div>
                       </div>

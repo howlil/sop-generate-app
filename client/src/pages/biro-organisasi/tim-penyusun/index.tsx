@@ -2,7 +2,6 @@ import { Fragment, useMemo, useState } from "react";
 import {
   Plus,
   Edit,
-  Trash2,
   ChevronRight,
   UserMinus,
   ArrowRightLeft,
@@ -13,15 +12,18 @@ import { IconActionButton } from "@/components/ui/icon-action-button";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
-import { useToast } from "@/utils/toast";
+import { Pagination } from "@/components/ui/pagination";
+import { showErrorMessages, useToast } from "@/utils/toast";
 import { useOpd } from "@/features/organisasi";
 import { useTimPenyusun } from "@/features/tim";
-import { usersApi } from "@/features/auth/services/users.api";
+import { useUsers } from "@/features/auth/hooks/useUsers";
 import { TimPenyusunFormDialog } from "./components/TimPenyusunFormDialog";
 import { PindahOPDTimPenyusunDialog } from "./components/PindahOPDTimPenyusunDialog";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ROUTES } from "@/utils/constants";
+import { formatDateId } from "@/utils/format-date";
 import type { AnggotaTimPenyusun } from "@/features/tim";
+import type { StatusTim } from "@/types/common";
 
 // UI-only type for this page (flat structure for display)
 type TimPenyusun = {
@@ -33,7 +35,7 @@ type TimPenyusun = {
   email: string;
   nohp: string;
   opdId: string;
-  status: string;
+  status: StatusTim;
   jumlahSOPDisusun?: number;
   tanggalBergabung?: string;
   endedAt?: string;
@@ -51,7 +53,7 @@ function toTimPenyusun(tim: AnggotaTimPenyusun): TimPenyusun {
     email: tim.user?.email ?? "",
     nohp: tim.user?.nohp ?? "",
     opdId: tim.opdId,
-    status: tim.status === "AKTIF" ? "Aktif" : "Nonaktif",
+    status: tim.status, // Keep server enum value as-is (AKTIF/NONAKTIF)
     jumlahSOPDisusun: tim.jumlahSOPDisusun,
     tanggalBergabung: tim.tanggalBergabung,
     endedAt: tim.berakhirPada,
@@ -63,13 +65,21 @@ function toTimPenyusun(tim: AnggotaTimPenyusun): TimPenyusun {
 export function ManajemenTimPenyusun() {
   const { showToast } = useToast();
   const { list: rawOpdList } = useOpd();
+  const [page, setPage] = useState(1);
+  const limit = 20;
+  
   const {
     list: rawTimList,
     isLoading: isLoadingTim,
     tambah,
     nonaktifkan,
     pindah,
-  } = useTimPenyusun();
+    isAdding,
+    isNonaktifkan: isNonaktifkanLoading,
+    total,
+  } = useTimPenyusun({ page, limit });
+  const { create: createUser, update: updateUser } = useUsers({ page: 1, limit: 1 });
+  
   const opdList = rawOpdList.map((o) => ({ id: o.id, name: o.nama }));
 
   // Transform server data to UI format
@@ -99,6 +109,8 @@ export function ManajemenTimPenyusun() {
     nohp: "",
   });
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const filteredList = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return timList;
@@ -122,8 +134,9 @@ export function ManajemenTimPenyusun() {
   const handleCreate = async () => {
     if (!createOpdId) return;
     try {
+      setIsSubmittingCreate(true);
       // Step 1: Create user (server will auto-generate password)
-      const user = await usersApi.create({
+      const user = await createUser({
         nama: formData.namaLengkap,
         nip: formData.nip,
         jabatan: formData.jabatan,
@@ -145,27 +158,31 @@ export function ManajemenTimPenyusun() {
         nohp: "",
       });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Gagal menambahkan tim";
-      showToast(message, "error");
+      showErrorMessages(error, "Gagal menambahkan tim");
+    } finally {
+      setIsSubmittingCreate(false);
     }
   };
 
   const handleEdit = async () => {
     if (!selectedTim) return;
     try {
+      setIsSubmittingEdit(true);
       // Update the user record
       const userId = rawTimList.find((t) => t.id === selectedTim.id)?.userId;
       if (!userId) {
         showToast("User ID tidak ditemukan", "error");
         return;
       }
-      await usersApi.update(userId, {
+      await updateUser({
+        id: userId,
+        payload: {
         nama: formData.namaLengkap,
         nip: formData.nip,
         jabatan: formData.jabatan,
         pangkat: formData.pangkat,
         nohp: formData.nohp,
+        },
       });
       showToast("Data tim penyusun berhasil diperbarui", "success");
       setIsEditOpen(false);
@@ -178,9 +195,9 @@ export function ManajemenTimPenyusun() {
         nohp: "",
       });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Gagal memperbarui tim";
-      showToast(message, "error");
+      showErrorMessages(error, "Gagal memperbarui tim");
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -194,9 +211,7 @@ export function ManajemenTimPenyusun() {
       await nonaktifkan(nonaktifTimId);
       setNonaktifTimId(null);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Gagal menonaktifkan tim";
-      showToast(message, "error");
+      showErrorMessages(error, "Gagal menonaktifkan tim");
     }
   };
 
@@ -207,9 +222,7 @@ export function ManajemenTimPenyusun() {
       setPindahTim(null);
       setOpdTujuanId("");
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Gagal memindah tim";
-      showToast(message, "error");
+      showErrorMessages(error, "Gagal memindah tim");
     }
   };
 
@@ -228,6 +241,10 @@ export function ManajemenTimPenyusun() {
   );
 
   const opdEntries = Object.entries(groupedByOpd);
+  const opdMap = useMemo(
+    () => new Map(opdList.map((opd) => [opd.id, opd.name])),
+    [opdList],
+  );
 
   return (
     <ListPageLayout
@@ -271,24 +288,23 @@ export function ManajemenTimPenyusun() {
           Memuat data tim penyusun...
         </div>
       ) : (
-        <Table.Paginated data={opdEntries} label="OPD">
-          {(pageEntries) => (
-            <Table.Table>
-              <thead>
-                <Table.HeadRow>
-                  <Table.Th>OPD / Tim Penyusun</Table.Th>
-                  <Table.Th>NIP</Table.Th>
-                  <Table.Th>Jabatan</Table.Th>
-                  <Table.Th>Email</Table.Th>
-                  <Table.Th>No. HP</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th align="center">Aksi</Table.Th>
-                </Table.HeadRow>
-              </thead>
-              <tbody>
-                {pageEntries.map(([opdId, tims]) => {
-                  const opd = opdList.find((o) => o.id === opdId);
-                  if (!opd) return null;
+        <>
+        <Table.Table>
+          <thead>
+            <Table.HeadRow>
+              <Table.Th>OPD / Tim Penyusun</Table.Th>
+              <Table.Th>NIP</Table.Th>
+              <Table.Th>Jabatan</Table.Th>
+              <Table.Th>Email</Table.Th>
+              <Table.Th>No. HP</Table.Th>
+              <Table.Th>Status</Table.Th>
+              <Table.Th align="center">Aksi</Table.Th>
+            </Table.HeadRow>
+          </thead>
+          <tbody>
+            {opdEntries.map(([opdId, tims]) => {
+                  const opdName =
+                    opdMap.get(opdId) ?? `OPD ${opdId.slice(0, 8)}`;
                   const isExpanded = expandedOpdIds[opdId] ?? false;
                   return (
                     <Fragment key={`opd-${opdId}`}>
@@ -328,11 +344,11 @@ export function ManajemenTimPenyusun() {
                               </button>
                               <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
                                 <span className="text-[11px] font-semibold text-blue-700">
-                                  {opd.name.split(" ")[0][0]}
+                                  {opdName[0] ?? "O"}
                                 </span>
                               </div>
                               <p className="font-medium text-gray-900 text-xs md:text-sm truncate">
-                                {opd.name}
+                                {opdName}
                               </p>
                             </div>
                             <span className="text-[11px] text-gray-500">
@@ -402,7 +418,7 @@ export function ManajemenTimPenyusun() {
                                     setIsEditOpen(true);
                                   }}
                                 />
-                                {tim.status === "Aktif" && (
+                                {tim.status === "AKTIF" && (
                                   <>
                                     <IconActionButton
                                       icon={UserMinus}
@@ -438,9 +454,21 @@ export function ManajemenTimPenyusun() {
                 })}
               </tbody>
             </Table.Table>
-          )}
-        </Table.Paginated>
-      )}
+            
+            {/* Server-side pagination controls */}
+            {total > limit && (
+              <div className="mt-4 flex justify-center">
+                <Pagination
+                  currentPage={page}
+                  totalItems={total}
+                  pageSize={limit}
+                  label="anggota"
+                  onPageChange={(newPage) => setPage(newPage)}
+                />
+              </div>
+            )}
+          </>
+        )}
 
       {filteredList.length === 0 && !isLoadingTim && (
         <div className="py-8 text-center text-gray-500 text-sm">
@@ -460,6 +488,8 @@ export function ManajemenTimPenyusun() {
         opdList={opdList}
         isFormValid={isFormValid}
         onConfirm={handleCreate}
+        confirmDisabled={isSubmittingCreate || isAdding}
+        confirmLabel={isSubmittingCreate || isAdding ? "Menyimpan..." : "Simpan"}
       />
 
       <TimPenyusunFormDialog
@@ -473,13 +503,15 @@ export function ManajemenTimPenyusun() {
         opdList={opdList}
         isFormValid={isFormValid}
         onConfirm={handleEdit}
+        confirmDisabled={isSubmittingEdit}
+        confirmLabel={isSubmittingEdit ? "Menyimpan..." : "Simpan Perubahan"}
       />
 
       <ConfirmDialog
         open={deleteTimId != null}
         onOpenChange={(open) => !open && setDeleteTimId(null)}
         title="Nonaktifkan tim penyusun?"
-        description="Data tim penyusun akan dihapus dari daftar. Data SOP yang pernah disusun tetap tersimpan per OPD (nama author tetap tercatat). Gunakan Nonaktifkan jika hanya mengakhiri tugas."
+        description="Data tim penyusun akan dinonaktifkan. Dampak: user dinonaktifkan dari semua tim, tidak bisa login lagi, dan riwayat SOP tetap tercatat."
         onConfirm={async () => {
           if (deleteTimId) {
             try {
@@ -487,23 +519,21 @@ export function ManajemenTimPenyusun() {
               await nonaktifkan(deleteTimId);
               showToast("Tim penyusun berhasil dinonaktifkan", "success");
             } catch (error: unknown) {
-              const message =
-                error instanceof Error
-                  ? error.message
-                  : "Gagal menonaktifkan tim";
-              showToast(message, "error");
+              showErrorMessages(error, "Gagal menonaktifkan tim");
             }
             setDeleteTimId(null);
           }
         }}
+        confirmLabel={isNonaktifkanLoading ? "Menonaktifkan..." : "Nonaktifkan"}
       />
 
       <ConfirmDialog
         open={nonaktifTimId != null}
         onOpenChange={(open) => !open && setNonaktifTimId(null)}
         title="Nonaktifkan tim penyusun?"
-        description="Tugas tim penyusun ini akan diakhiri. Data SOP yang pernah disusun tetap dapat diakses per OPD. Riwayat tetap tercatat."
+        description="Tugas tim penyusun ini akan diakhiri. Dampak: status anggota menjadi NONAKTIF dan user tidak bisa akses sistem lagi."
         onConfirm={handleNonaktifkan}
+        confirmLabel={isNonaktifkanLoading ? "Menonaktifkan..." : "Nonaktifkan"}
       />
 
       <PindahOPDTimPenyusunDialog

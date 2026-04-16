@@ -12,7 +12,12 @@ export interface IPeraturanRepository {
   }): Promise<PeraturanResponseDto>;
   update(
     id: string,
-    data: { namaPeraturan?: string; nomor?: string; tahun?: number; tentang?: string },
+    data: {
+      namaPeraturan?: string;
+      nomor?: string;
+      tahun?: number;
+      tentang?: string;
+    },
   ): Promise<PeraturanResponseDto>;
   delete(id: string): Promise<void>;
   isUsedAsDasarHukum(id: string): Promise<boolean>;

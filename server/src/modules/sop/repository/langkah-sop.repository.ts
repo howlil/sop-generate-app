@@ -57,7 +57,11 @@ export class LangkahSopRepository {
     });
   }
 
-  async findByUrutanInDetail(sopDetailId: string, urutan: number, excludeId?: string) {
+  async findByUrutanInDetail(
+    sopDetailId: string,
+    urutan: number,
+    excludeId?: string,
+  ) {
     return this.prisma.langkahSOP.findFirst({
       where: {
         sopDetailId,
@@ -67,7 +71,10 @@ export class LangkahSopRepository {
     });
   }
 
-  async isSwimlaneMember(sopDetailId: string, pelaksanaId: string): Promise<boolean> {
+  async isSwimlaneMember(
+    sopDetailId: string,
+    pelaksanaId: string,
+  ): Promise<boolean> {
     const entry = await this.prisma.detailSOPPelaksana.findUnique({
       where: { sopDetailId_pelaksanaId: { sopDetailId, pelaksanaId } },
     });

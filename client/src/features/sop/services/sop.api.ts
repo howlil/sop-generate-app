@@ -1,7 +1,3 @@
-/**
- * SOP API service
- * Matches server: SopController, DetailSopController, LangkahSopController, PelaksanaController
- */
 
 import { apiClient } from '@/utils/api-client'
 import type {
@@ -61,6 +57,9 @@ export const sopApi = {
 
   updateStatus: (id: string, payload: UpdateStatusDto) =>
     apiClient.patch<SopDetail>(`/detail-sop/${id}/status`, payload),
+
+  cabut: (id: string) =>
+    apiClient.patch<SopDetail>(`/detail-sop/${id}/cabut`, {}),
 
   // ================= LangkahSOP =================
 

@@ -3,7 +3,7 @@
  */
 
 import { useQuery } from "@tanstack/react-query";
-import { sopApi } from "@/features/sop/services/sop.api";
+import { sopApi } from "../services/sop.api";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useAuthStore } from "@/stores/authStore";

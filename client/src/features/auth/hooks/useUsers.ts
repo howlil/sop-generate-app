@@ -7,12 +7,15 @@ import { usersApi } from "../services/users.api";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { STALE_TIME } from "@/utils/constants";
-import type { CreateUserDto, UpdateUserDto } from "../types/users";
+import type { CreateUserDto, UpdateUserDto, UsersQueryParams } from "../types/users";
 
-export function useUsers(page: number = 1, limit: number = 10) {
+export function useUsers(params: UsersQueryParams = {}) {
+  const { page = 1, limit = 10, ...filters } = params;
+  const queryParams = { page, limit, ...filters };
+  
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.usersList(page, limit),
-    queryFn: () => usersApi.findAll(page, limit),
+    queryKey: queryKeys.usersList(queryParams),
+    queryFn: () => usersApi.findAll(queryParams),
     staleTime: STALE_TIME.MEDIUM,
   });
 

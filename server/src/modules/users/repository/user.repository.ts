@@ -3,6 +3,7 @@ import { PrismaService } from '../../../common/prisma/prisma.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { IUserRepository } from './user.repository.interface';
+import { interpolate, UserMessages } from '../../../common/messages';
 
 export type UserWithoutPassword = {
   id: string;
@@ -164,9 +165,7 @@ export class UserRepository implements IUserRepository {
     return this.prisma.pengguna.count({ where: { deletedAt: null } });
   }
 
-  async findByEmail(
-    email: string
-  ): Promise<UserWithoutPassword | null> {
+  async findByEmail(email: string): Promise<UserWithoutPassword | null> {
     return this.prisma.pengguna.findUnique({
       where: { email, deletedAt: null },
       select: {
@@ -185,9 +184,7 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  async findByEmailWithPassword(
-    email: string
-  ): Promise<{
+  async findByEmailWithPassword(email: string): Promise<{
     kataSandi: string;
     id: string;
     email: string;
@@ -240,7 +237,7 @@ export class UserRepository implements IUserRepository {
         AND deletedAt IS NULL
       FOR UPDATE
     `;
-    
+
     return result.length > 0 ? result[0] : null;
   }
 
@@ -330,7 +327,9 @@ export class UserRepository implements IUserRepository {
       `;
 
       if (existing.length > 0) {
-        throw new ConflictException(`OPD ini sudah memiliki ${peran} aktif`);
+        throw new ConflictException(
+          interpolate(UserMessages.OPD_ROLE_ALREADY_EXISTS, { peran }),
+        );
       }
 
       // Also check NIP uniqueness if provided
@@ -341,7 +340,7 @@ export class UserRepository implements IUserRepository {
         });
 
         if (existingByNip) {
-          throw new ConflictException('NIP sudah terdaftar');
+          throw new ConflictException(UserMessages.NIP_EXISTS);
         }
       }
 

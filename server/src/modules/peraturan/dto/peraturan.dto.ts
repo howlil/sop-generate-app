@@ -1,4 +1,9 @@
-import { ApiProperty, ApiPropertyOptional, PartialType, OmitType } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  PartialType,
+  OmitType,
+} from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
@@ -62,7 +67,10 @@ export class PeraturanResponseDto {
   @ApiProperty()
   tentang: string;
 
-  @ApiProperty({ description: 'Jumlah DetailSOP yang menggunakan peraturan ini sebagai dasar hukum' })
+  @ApiProperty({
+    description:
+      'Jumlah DetailSOP yang menggunakan peraturan ini sebagai dasar hukum',
+  })
   digunakan: number;
 
   @ApiProperty()

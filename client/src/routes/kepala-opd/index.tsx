@@ -5,5 +5,9 @@ export const Route = createFileRoute('/kepala-opd/')({
   beforeLoad: () => {
     throw redirect({ to: ROUTES.KEPALA_OPD.SOP })
   },
-  component: () => null,
+  component: RedirectPlaceholder,
 })
+
+function RedirectPlaceholder() {
+  return null
+}

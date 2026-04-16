@@ -10,7 +10,13 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { PeraturanService } from '../service/peraturan.service';
 import {
   CreatePeraturanDto,
@@ -27,8 +33,15 @@ export class PeraturanController {
   constructor(private readonly peraturanService: PeraturanService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Daftar peraturan (BIRO: semua; Tim Penyusun/Kepala OPD: OPD sendiri)' })
-  @ApiQuery({ name: 'opdId', required: false, description: 'Filter by OPD (BIRO only)' })
+  @ApiOperation({
+    summary:
+      'Daftar peraturan (BIRO: semua; Tim Penyusun/Kepala OPD: OPD sendiri)',
+  })
+  @ApiQuery({
+    name: 'opdId',
+    required: false,
+    description: 'Filter by OPD (BIRO only)',
+  })
   @ApiResponse({ status: 200, type: [PeraturanResponseDto] })
   findAll(
     @CurrentUser() user: any,
@@ -72,9 +85,15 @@ export class PeraturanController {
   @Delete(':id')
   @Roles(PeranPengguna.KOORDINATOR_TIM_PENYUSUN, PeranPengguna.TIM_PENYUSUN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Hapus peraturan (Koordinator / Tim Penyusun; gagal jika masih dipakai)' })
+  @ApiOperation({
+    summary:
+      'Hapus peraturan (Koordinator / Tim Penyusun; gagal jika masih dipakai)',
+  })
   @ApiResponse({ status: 204, description: 'Peraturan berhasil dihapus' })
-  @ApiResponse({ status: 409, description: 'Peraturan masih digunakan sebagai dasar hukum' })
+  @ApiResponse({
+    status: 409,
+    description: 'Peraturan masih digunakan sebagai dasar hukum',
+  })
   remove(@Param('id') id: string): Promise<void> {
     return this.peraturanService.delete(id);
   }

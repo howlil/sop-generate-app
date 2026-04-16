@@ -1,37 +1,75 @@
-import { ApiProperty, ApiPropertyOptional, PartialType, OmitType } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsInt, Min } from 'class-validator';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  PartialType,
+  OmitType,
+} from '@nestjs/swagger';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { StatusSOP } from '../../../generated/prisma';
 
 export class UpdateMetadataDto {
   @ApiPropertyOptional()
-  @IsString() @IsOptional() logoInstansi?: string;
+  @IsString()
+  @IsOptional()
+  logoInstansi?: string;
 
   @ApiPropertyOptional()
-  @IsString() @IsOptional() namaLembaga?: string;
+  @IsString()
+  @IsOptional()
+  namaLembaga?: string;
 
   @ApiPropertyOptional()
-  @IsString() @IsOptional() tanggalRevisi?: string;
+  @IsString()
+  @IsOptional()
+  tanggalRevisi?: string;
 
   @ApiPropertyOptional()
-  @IsString() @IsOptional() tanggalEfektif?: string;
+  @IsString()
+  @IsOptional()
+  tanggalEfektif?: string;
 
   @ApiPropertyOptional()
-  @IsInt() @IsOptional() @Min(0) lebarKolomKegiatan?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  lebarKolomKegiatan?: number;
 
   @ApiPropertyOptional()
-  @IsInt() @IsOptional() @Min(0) lebarKolomPelaksana?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  lebarKolomPelaksana?: number;
 
   @ApiPropertyOptional()
-  @IsInt() @IsOptional() @Min(0) lebarKolomKelengkapan?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  lebarKolomKelengkapan?: number;
 
   @ApiPropertyOptional()
-  @IsInt() @IsOptional() @Min(0) lebarKolomWaktu?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  lebarKolomWaktu?: number;
 
   @ApiPropertyOptional()
-  @IsInt() @IsOptional() @Min(0) lebarKolomOutput?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  lebarKolomOutput?: number;
 
   @ApiPropertyOptional()
-  @IsInt() @IsOptional() @Min(0) lebarKolomKeterangan?: number;
+  @IsInt()
+  @IsOptional()
+  @Min(0)
+  lebarKolomKeterangan?: number;
 }
 
 export class UpdateStatusDto {

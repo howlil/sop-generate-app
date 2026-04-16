@@ -12,24 +12,7 @@ import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
 import type { RiwayatDialogPerson } from "@/types/common"
-
-interface OPD {
-  id: string
-  name: string
-}
-
-interface KepalaOPD {
-  id: string
-  name: string
-  nip: string
-  startDate: string
-  endDate?: string
-  isActive?: boolean
-  opdId?: string
-  endedAt?: string
-}
-
-type RiwayatRow = KepalaOPD & { opdName: string }
+import type { OPDOption as OPD, KepalaOPDRow, RiwayatRow } from './types'
 
 export interface RiwayatJabatanDialogProps {
   open: boolean
@@ -39,10 +22,10 @@ export interface RiwayatJabatanDialogProps {
   opdList: OPD[]
   onAkhiriJabatan: (kepalaId: string) => void
   onSetKepalaAktif: (kepalaId: string) => void
-  onOpenKepalaForm: (kepala: KepalaOPD) => void
+  onOpenKepalaForm: (kepala?: KepalaOPDRow) => void
   onDeleteKepala: (id: string) => void
-  canDeleteKepala: (k: KepalaOPD) => boolean
-  getKepalaByOPD: (opdId: string) => KepalaOPD[]
+  canDeleteKepala: (k: KepalaOPDRow) => boolean
+  getKepalaByOPD: (opdId: string) => KepalaOPDRow[]
   setSelectedOPD: (opd: OPD | null) => void
   onClose: () => void
 }
@@ -96,7 +79,7 @@ export function RiwayatJabatanDialog({
                         <Table.Td>{r.opdName}</Table.Td>
                         <Table.Td className="text-center">{r.endedAt ? formatDateId(r.endedAt) : '—'}</Table.Td>
                         <Table.Td className="text-center">
-                          <StatusBadge status={r.isActive ? 'Aktif' : 'Nonaktif'} />
+                          <StatusBadge status={r.isActive ? 'AKTIF' : 'NONAKTIF'} />
                         </Table.Td>
                         <Table.Td>
                           <div className="flex gap-1 justify-center flex-wrap">

@@ -11,7 +11,7 @@ export interface RiwayatEvaluasiTimelineProps {
   className?: string
 }
 
-function HasilBadge({ hasil }: { hasil: string | null }) {
+function HasilBadge({ hasil }: { hasil?: string | null }) {
   if (!hasil) return <span className="text-gray-400 text-xs">Belum dinilai</span>
   if (hasil === "SESUAI") {
     return (
@@ -42,7 +42,7 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {logs.map((log, index) => (
+      {logs.map((log) => (
         <div
           key={log.id}
           className="relative bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2"

@@ -216,7 +216,7 @@ export function OPDTab({
                           <span className="block text-gray-500 font-mono text-[10px] mt-0.5 truncate">{k.nip}</span>
                         )}
                       </div>
-                      <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} />
+                      <StatusBadge status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                     </div>
                   ))}
                   {getKepalaByOPD(selectedOPD.id).length === 0 && (
@@ -262,7 +262,7 @@ export function OPDTab({
                             {k.phone && <p className="text-xs text-gray-400 mt-0.5">{k.phone}</p>}
                           </div>
                           <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                            <StatusBadge status={k.isActive ? 'Aktif' : 'Nonaktif'} />
+                            <StatusBadge status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                             {k.endedAt && (
                               <span className="text-xs text-gray-500">Selesai: {formatDateId(k.endedAt)}</span>
                             )}

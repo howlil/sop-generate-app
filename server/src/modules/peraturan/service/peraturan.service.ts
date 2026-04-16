@@ -23,7 +23,10 @@ type JwtUser = {
 export class PeraturanService {
   constructor(private readonly peraturanRepository: PeraturanRepository) {}
 
-  private resolveOpdFilter(user: JwtUser, requestedOpdId?: string): string | undefined {
+  private resolveOpdFilter(
+    user: JwtUser,
+    requestedOpdId?: string,
+  ): string | undefined {
     // PRT-06: Tim Penyusun (incl. Koordinator) dan Kepala OPD hanya bisa lihat OPD sendiri
     const isOpdScoped =
       user.peran === PeranPengguna.TIM_PENYUSUN ||
@@ -37,7 +40,10 @@ export class PeraturanService {
     return requestedOpdId;
   }
 
-  async findAll(user: JwtUser, opdId?: string): Promise<PeraturanResponseDto[]> {
+  async findAll(
+    user: JwtUser,
+    opdId?: string,
+  ): Promise<PeraturanResponseDto[]> {
     const filter = this.resolveOpdFilter(user, opdId);
     return this.peraturanRepository.findAll(filter);
   }
@@ -56,7 +62,7 @@ export class PeraturanService {
       user.peran === PeranPengguna.KEPALA_OPD;
 
     if (isOpdScoped && peraturan.opdId !== user.opdId) {
-      throw new ForbiddenException('Peraturan ini bukan milik OPD Anda');
+      throw new ForbiddenException(PeraturanMessages.PERATURAN_FORBIDDEN_OPD_SCOPE);
     }
 
     return peraturan;
@@ -72,7 +78,10 @@ export class PeraturanService {
     });
   }
 
-  async update(id: string, dto: UpdatePeraturanDto): Promise<PeraturanResponseDto> {
+  async update(
+    id: string,
+    dto: UpdatePeraturanDto,
+  ): Promise<PeraturanResponseDto> {
     const peraturan = await this.peraturanRepository.findById(id);
 
     if (!peraturan) {

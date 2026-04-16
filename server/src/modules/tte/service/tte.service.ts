@@ -20,6 +20,7 @@ import {
   StatusSOP,
 } from '../../../generated/prisma';
 import { assertTteXor } from '../../../common/validators';
+import { interpolate, TteMessages } from '../../../common/messages';
 
 type JwtUser = { id: string; peran: PeranPengguna; opdId: string | null };
 
@@ -37,7 +38,8 @@ export class TteService {
   // TTE-01: get own KredensialTTE
   async getProfil(userId: string) {
     const kredensial = await this.repo.findKredensial(userId);
-    if (!kredensial) throw new NotFoundException('KredensialTTE belum terdaftar');
+    if (!kredensial)
+      throw new NotFoundException(TteMessages.KREDENSIAL_NOT_FOUND);
     // Exclude hashPin from response
     const { hashPin, tokenVerifikasi, ...safe } = kredensial;
     return safe;
@@ -49,7 +51,7 @@ export class TteService {
     const peranTte = PERAN_TTE_MAP[user.peran];
     if (!peranTte) {
       throw new ForbiddenException(
-        `Peran ${user.peran} tidak diizinkan memiliki KredensialTTE`,
+        interpolate(TteMessages.ROLE_NOT_ELIGIBLE, { peran: user.peran }),
       );
     }
     const result = await this.repo.upsertKredensial(user.id, dto.pin, peranTte);
@@ -60,9 +62,10 @@ export class TteService {
   // TTE-02: request email verification token
   async mintTokenVerifikasi(user: JwtUser) {
     const kredensial = await this.repo.findKredensial(user.id);
-    if (!kredensial) throw new NotFoundException('KredensialTTE belum terdaftar');
+    if (!kredensial)
+      throw new NotFoundException(TteMessages.KREDENSIAL_NOT_FOUND);
     if (kredensial.emailTerverifikasi) {
-      throw new BadRequestException('Email sudah terverifikasi');
+      throw new BadRequestException(TteMessages.EMAIL_ALREADY_VERIFIED);
     }
     const token = await this.repo.generateVerifikasiToken(user.id);
     // In production, send the token via email. Return it here for dev convenience.
@@ -73,9 +76,9 @@ export class TteService {
   async konfirmasiEmail(dto: VerifikasiEmailDto) {
     const result = await this.repo.konfirmasiEmail(dto.token);
     if (!result) {
-      throw new BadRequestException('Token tidak valid atau sudah kadaluarsa');
+      throw new BadRequestException(TteMessages.TOKEN_INVALID_OR_EXPIRED);
     }
-    return { message: 'Email berhasil diverifikasi' };
+    return { message: TteMessages.EMAIL_VERIFIED_SUCCESS };
   }
 
   // TTE-13: get own signing history
@@ -91,30 +94,34 @@ export class TteService {
   ) {
     // Verify KredensialTTE exists and email is verified
     const kredensial = await this.repo.findKredensial(user.id);
-    if (!kredensial) throw new ForbiddenException('KredensialTTE belum terdaftar');
+    if (!kredensial)
+      throw new ForbiddenException(TteMessages.KREDENSIAL_NOT_FOUND);
     if (!kredensial.emailTerverifikasi) {
-      throw new ForbiddenException('Email TTE belum diverifikasi');
+      throw new ForbiddenException(TteMessages.EMAIL_NOT_VERIFIED);
     }
 
     // Verify PIN
     const pinValid = await this.repo.verifyPin(user.id, dto.pin);
-    if (!pinValid) throw new UnauthorizedException('PIN TTE salah');
+    if (!pinValid) throw new UnauthorizedException(TteMessages.PIN_INVALID);
 
     const pengajuan = await this.repo.findPengajuan(pengajuanId);
-    if (!pengajuan) throw new NotFoundException('PengajuanEvaluasi tidak ditemukan');
+    if (!pengajuan)
+      throw new NotFoundException(TteMessages.PENGAJUAN_NOT_FOUND);
 
     if (user.peran === PeranPengguna.BIRO_ORGANISASI) {
       // TTE-05
       if (pengajuan.status !== StatusPengajuanEvaluasi.SELESAI_DIEVALUASI) {
         throw new BadRequestException(
-          `Berita Acara hanya bisa ditandatangani Biro saat status SELESAI_DIEVALUASI — saat ini: ${pengajuan.status}`,
+          interpolate(TteMessages.BA_SIGN_BIRO_INVALID_STATUS, {
+            status: pengajuan.status,
+          }),
         );
       }
       // TTE-11: check all nilai filled
       const allFilled = await this.repo.allNilaiIsiForPengajuan(pengajuanId);
       if (!allFilled) {
         throw new BadRequestException(
-          'Semua NilaiEvaluasi harus sudah diisi sebelum BA dapat ditandatangani',
+          TteMessages.BA_SIGN_REQUIRE_ALL_NILAI,
         );
       }
       // Check not already signed by Biro
@@ -122,7 +129,8 @@ export class TteService {
         pengajuanId,
         PeranTTE.BIRO_ORGANISASI,
       );
-      if (existing) throw new ConflictException('Biro sudah menandatangani BA ini');
+      if (existing)
+        throw new ConflictException(TteMessages.BA_ALREADY_SIGNED_BIRO);
 
       return this.repo.tandaTanganiBaOlehBiro(
         user.id,
@@ -136,18 +144,23 @@ export class TteService {
       // TTE-06: must be DIVERIFIKASI_BIRO and same OPD
       if (pengajuan.status !== StatusPengajuanEvaluasi.DIVERIFIKASI_BIRO) {
         throw new BadRequestException(
-          `Koordinator dapat menandatangani BA hanya setelah Biro — status saat ini: ${pengajuan.status}`,
+          interpolate(TteMessages.BA_SIGN_KOORDINATOR_INVALID_STATUS, {
+            status: pengajuan.status,
+          }),
         );
       }
       if (pengajuan.opdId !== user.opdId) {
-        throw new ForbiddenException('Koordinator hanya dapat menandatangani BA milik OPD-nya');
+        throw new ForbiddenException(
+          TteMessages.BA_SIGN_KOORDINATOR_OPD_SCOPE,
+        );
       }
       // TTE-10: check not already signed by Koordinator
       const existing = await this.repo.findTteBa(
         pengajuanId,
         PeranTTE.KOORDINATOR_TIM_PENYUSUN,
       );
-      if (existing) throw new ConflictException('Koordinator sudah menandatangani BA ini');
+      if (existing)
+        throw new ConflictException(TteMessages.BA_ALREADY_SIGNED_KOORDINATOR);
 
       return this.repo.tandaTanganiBaOlehKoordinator(
         user.id,
@@ -157,7 +170,9 @@ export class TteService {
       );
     }
 
-    throw new ForbiddenException('Peran ini tidak dapat menandatangani Berita Acara');
+    throw new ForbiddenException(
+      TteMessages.BA_SIGN_ROLE_FORBIDDEN,
+    );
   }
 
   // TTE-07: Kepala OPD signs individual DetailSOP → BERLAKU
@@ -167,37 +182,48 @@ export class TteService {
     dto: TandaTanganiSopDto,
   ) {
     if (user.peran !== PeranPengguna.KEPALA_OPD) {
-      throw new ForbiddenException('Hanya Kepala OPD yang dapat mengesahkan SOP');
+      throw new ForbiddenException(
+        TteMessages.SOP_SIGN_ONLY_KEPALA,
+      );
     }
 
     // Verify KredensialTTE
     const kredensial = await this.repo.findKredensial(user.id);
-    if (!kredensial) throw new ForbiddenException('KredensialTTE belum terdaftar');
+    if (!kredensial)
+      throw new ForbiddenException(TteMessages.KREDENSIAL_NOT_FOUND);
     if (!kredensial.emailTerverifikasi) {
-      throw new ForbiddenException('Email TTE belum diverifikasi');
+      throw new ForbiddenException(TteMessages.EMAIL_NOT_VERIFIED);
     }
 
     const pinValid = await this.repo.verifyPin(user.id, dto.pin);
-    if (!pinValid) throw new UnauthorizedException('PIN TTE salah');
+    if (!pinValid) throw new UnauthorizedException(TteMessages.PIN_INVALID);
 
     const detail = await this.repo.findDetailSop(sopDetailId);
-    if (!detail) throw new NotFoundException('DetailSOP tidak ditemukan');
+    if (!detail) throw new NotFoundException(TteMessages.SOP_NOT_FOUND);
 
     // Must be DIVERIFIKASI_BIRO_ORGANISASI
     if (detail.status !== StatusSOP.DIVERIFIKASI_BIRO_ORGANISASI) {
       throw new BadRequestException(
-        `DetailSOP harus berstatus DIVERIFIKASI_BIRO_ORGANISASI — saat ini: ${detail.status}`,
+        interpolate(TteMessages.SOP_SIGN_INVALID_STATUS, {
+          status: detail.status,
+        }),
       );
     }
 
     // Must belong to Kepala's OPD
     if (detail.sop.opdId !== user.opdId) {
-      throw new ForbiddenException('Kepala OPD hanya dapat mengesahkan SOP milik OPD-nya');
+      throw new ForbiddenException(
+        TteMessages.SOP_SIGN_OPD_SCOPE,
+      );
     }
 
     // TTE-09: max 1 TTE per DetailSOP by KEPALA_OPD
-    const existing = await this.repo.findTteSop(sopDetailId, PeranTTE.KEPALA_OPD);
-    if (existing) throw new ConflictException('SOP ini sudah ditandatangani Kepala OPD');
+    const existing = await this.repo.findTteSop(
+      sopDetailId,
+      PeranTTE.KEPALA_OPD,
+    );
+    if (existing)
+      throw new ConflictException(TteMessages.SOP_ALREADY_SIGNED_KEPALA);
 
     return this.repo.tandaTanganiSop(
       user.id,

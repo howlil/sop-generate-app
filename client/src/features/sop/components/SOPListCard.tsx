@@ -48,7 +48,6 @@ export function SOPListCard({
       selectedId={selectedId}
       onSelect={onSelect}
       className={className}
-      getItemTitle={(sop) => sop.nama}
     />
   )
 }

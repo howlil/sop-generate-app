@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import {
   JenisPengajuanEvaluasi,
@@ -12,6 +17,7 @@ import {
   assertValidSopTransition,
   assertNilaiEvaluasiScope,
 } from '../../../common/validators';
+import { EvaluasiMessages, GenericMessages } from '../../../common/messages';
 import {
   CreatePengajuanEvaluasiDto,
   IsiNilaiEvaluasiDto,
@@ -91,7 +97,9 @@ export class EvaluasiRepository {
         ...result,
         sopList,
         opdNama: typedResult.opd?.nama,
-        tanggalVerifikasi: typedResult.diverifikasiOlehUser ? result.updatedAt.toISOString() : null,
+        tanggalVerifikasi: typedResult.diverifikasiOlehUser
+          ? result.updatedAt.toISOString()
+          : null,
         namaBiro: typedResult.diverifikasiOlehUser?.nama,
       };
     });
@@ -139,7 +147,9 @@ export class EvaluasiRepository {
       // Computed fields for client convenience
       opdNama: typedResult.opd?.nama,
       // Use updatedAt when diverifikasiOlehUserId is set as verification date
-      tanggalVerifikasi: typedResult.diverifikasiOlehUserId ? result.updatedAt.toISOString() : null,
+      tanggalVerifikasi: typedResult.diverifikasiOlehUserId
+        ? result.updatedAt.toISOString()
+        : null,
       namaBiro: typedResult.diverifikasiOlehUser?.nama,
     };
   }
@@ -168,14 +178,12 @@ export class EvaluasiRepository {
       const details = await this.findSopDetails(dto.sopDetailIds);
 
       if (details.length !== dto.sopDetailIds.length) {
-        throw new NotFoundException('SOP Detail tidak ditemukan');
+        throw new NotFoundException(EvaluasiMessages.SOP_DETAIL_NOT_FOUND);
       }
 
       const wrongOpd = details.filter((d) => d.sop.opdId !== dto.opdId);
       if (wrongOpd.length > 0) {
-        throw new BadRequestException(
-          'Semua DetailSOP harus dari OPD yang sama dengan pengajuan evaluasi',
-        );
+        throw new BadRequestException(EvaluasiMessages.EVALUASI_SCOPE_MISMATCH);
       }
 
       const wrongStatus = details.filter(
@@ -183,7 +191,7 @@ export class EvaluasiRepository {
       );
       if (wrongStatus.length > 0) {
         throw new BadRequestException(
-          'Semua DetailSOP harus berstatus DIAJUKAN_EVALUASI sebelum dapat dievaluasi',
+          EvaluasiMessages.EVALUASI_REQUIRES_DIAJUKAN_STATUS,
         );
       }
 
@@ -194,9 +202,12 @@ export class EvaluasiRepository {
           VALUES (${dto.opdId}, ${dto.jenis}, UUID())
         `;
       } catch (e: any) {
-        if (e.code === 'P2003' || (e.message as string).includes('Duplicate entry')) {
+        if (
+          e.code === 'P2003' ||
+          (e.message as string).includes('Duplicate entry')
+        ) {
           throw new ConflictException(
-            'Sudah ada pengajuan evaluasi aktif untuk OPD ini. Silakan selesaikan pengajuan yang ada terlebih dahulu.',
+            EvaluasiMessages.EVALUASI_ACTIVE_ALREADY_EXISTS_LONG,
           );
         }
         throw e;
@@ -269,8 +280,10 @@ export class EvaluasiRepository {
         }),
       ]);
 
-      if (!current) throw new NotFoundException('NilaiEvaluasi tidak ditemukan');
-      if (!pengajuan || !detailSop) throw new NotFoundException('Data tidak ditemukan');
+      if (!current)
+        throw new NotFoundException(EvaluasiMessages.NILAI_EVALUASI_NOT_FOUND);
+      if (!pengajuan || !detailSop)
+        throw new NotFoundException(GenericMessages.NOT_FOUND);
 
       // [P1-E] Validate scope - DetailSOP and PengajuanEvaluasi must be same OPD
       assertNilaiEvaluasiScope(pengajuan.opdId, detailSop.sop.opdId);
@@ -292,7 +305,7 @@ export class EvaluasiRepository {
 
       if (updated.count === 0) {
         throw new ConflictException(
-          'Konflik versi — data telah diubah orang lain, silakan refresh',
+          EvaluasiMessages.VERSION_CONFLICT_REFRESH,
         );
       }
 
@@ -339,7 +352,7 @@ export class EvaluasiRepository {
     return this.prisma.$transaction(async (tx) => {
       const pengajuan = await this.findById(id);
       if (!pengajuan) {
-        throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
+        throw new NotFoundException(EvaluasiMessages.EVALUASI_NOT_FOUND);
       }
 
       // [P0-D] Validate status transition
@@ -457,22 +470,22 @@ export class EvaluasiRepository {
       }
       const entry = byOpd.get(p.opdId)!;
       entry.total++;
-      
+
       if (DONE_STATUSES.includes(p.status)) {
         entry.selesai++;
       }
-      
+
       // Collect nilaiOPD if exists
       if (p.nilaiOPD != null) {
         entry.nilaiOPDValues.push(p.nilaiOPD);
       }
-      
+
       // Aggregate hasil evaluasi
       for (const n of p.nilaiEvaluasi) {
         if (n.hasil === HasilEvaluasi.SESUAI) entry.sesuai++;
         if (n.hasil === HasilEvaluasi.TIDAK_SESUAI) entry.tidakSesuai++;
       }
-      
+
       // Store detail per pengajuan
       entry.pengajuanDetails.push({
         pengajuanEvaluasiId: p.id,
@@ -482,17 +495,23 @@ export class EvaluasiRepository {
         tanggalEvaluasi: p.tanggalEvaluasi?.toISOString() ?? null,
         detailSopCount: p.nilaiEvaluasi.length,
         hasilEvaluasi: {
-          sesuai: p.nilaiEvaluasi.filter(n => n.hasil === HasilEvaluasi.SESUAI).length,
-          tidakSesuai: p.nilaiEvaluasi.filter(n => n.hasil === HasilEvaluasi.TIDAK_SESUAI).length,
+          sesuai: p.nilaiEvaluasi.filter(
+            (n) => n.hasil === HasilEvaluasi.SESUAI,
+          ).length,
+          tidakSesuai: p.nilaiEvaluasi.filter(
+            (n) => n.hasil === HasilEvaluasi.TIDAK_SESUAI,
+          ).length,
         },
       });
     }
 
     // Calculate rata-rata nilaiOPD per OPD
-    const result = Array.from(byOpd.values()).map(entry => {
-      const nilaiRataRata = entry.nilaiOPDValues.length > 0
-        ? entry.nilaiOPDValues.reduce((sum, val) => sum + val, 0) / entry.nilaiOPDValues.length
-        : null;
+    const result = Array.from(byOpd.values()).map((entry) => {
+      const nilaiRataRata =
+        entry.nilaiOPDValues.length > 0
+          ? entry.nilaiOPDValues.reduce((sum, val) => sum + val, 0) /
+            entry.nilaiOPDValues.length
+          : null;
 
       return {
         opdId: entry.opdId,
@@ -501,7 +520,9 @@ export class EvaluasiRepository {
         selesai: entry.selesai,
         sesuai: entry.sesuai,
         tidakSesuai: entry.tidakSesuai,
-        nilaiRataRata: nilaiRataRata ? Math.round(nilaiRataRata * 100) / 100 : null,
+        nilaiRataRata: nilaiRataRata
+          ? Math.round(nilaiRataRata * 100) / 100
+          : null,
         pengajuanDetails: entry.pengajuanDetails,
       };
     });
@@ -509,10 +530,17 @@ export class EvaluasiRepository {
     // Calculate overall statistics
     const totalPengajuan = result.reduce((sum, opd) => sum + opd.total, 0);
     const totalSelesai = result.reduce((sum, opd) => sum + opd.selesai, 0);
-    const allNilaiOPD = result.flatMap(opd => opd.pengajuanDetails.map(p => p.nilaiOPD)).filter((v): v is number => v != null);
-    const overallNilaiRataRata = allNilaiOPD.length > 0
-      ? Math.round((allNilaiOPD.reduce((sum, val) => sum + val, 0) / allNilaiOPD.length) * 100) / 100
-      : null;
+    const allNilaiOPD = result
+      .flatMap((opd) => opd.pengajuanDetails.map((p) => p.nilaiOPD))
+      .filter((v): v is number => v != null);
+    const overallNilaiRataRata =
+      allNilaiOPD.length > 0
+        ? Math.round(
+            (allNilaiOPD.reduce((sum, val) => sum + val, 0) /
+              allNilaiOPD.length) *
+              100,
+          ) / 100
+        : null;
 
     return {
       tahun,

@@ -55,6 +55,8 @@ model OPD {
   peraturan          Peraturan[]
   sop                SOP[]
   anggotaTimPenyusun AnggotaTimPenyusun[]
+
+  @@index([nama])
 }
 
 model Peraturan {

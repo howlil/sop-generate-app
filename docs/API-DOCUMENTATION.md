@@ -94,7 +94,7 @@ Setiap endpoint dilindungi dengan decorator `@Roles()` yang membatasi akses berd
 | Auth | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Users | ✗ | ✗ | ✗ | ✗ | ✓ |
 | OPD | Read own | Read own | Read own | ✗ | CRUD |
-| Peraturan | Read own | Read own | Read own | ✗ | CRUD |
+| Peraturan | CRUD own | CRUD own | Read own | ✗ | Read all |
 | Tim Penyusun | Read own | Read own | Read own | ✗ | CRUD |
 | Tim Evaluasi | ✗ | ✗ | ✗ | Read | CRUD |
 | SOP | CRUD own | CRUD own | Read all | ✗ | Read all |
@@ -129,22 +129,24 @@ Production:  https://api.example.com/api/v1
 **Response Format:**
 ```json
 {
-  "data": { /* response data */ },
-  "meta": {
-    "requestId": "uuid",
-    "timestamp": "2026-04-03T10:00:00Z"
-  }
+  "success": true,
+  "message": "Success message",
+  "data": { /* response data */ }
 }
 ```
 
 **Paginated Response:**
 ```json
 {
+  "success": true,
+  "message": "Data retrieved successfully",
   "data": [ /* array of items */ ],
-  "total": 100,
-  "page": 1,
-  "limit": 10,
-  "totalPages": 10
+  "meta": {
+    "total": 100,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 10
+  }
 }
 ```
 
@@ -187,15 +189,18 @@ Login pengguna dan mendapatkan access token + refresh token.
 **Response 200:**
 ```json
 {
+  "success": true,
+  "message": "Login berhasil",
   "data": {
     "user": {
       "id": "uuid",
       "email": "user@example.com",
       "nama": "John Doe",
-      "peran": "TIM_PENYUSUN"
-    },
-    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
+      "peran": "TIM_PENYUSUN",
+      "opdId": "uuid-opd",
+      "nip": "123456789",
+      "jabatan": "Staff"
+    }
   }
 }
 ```
@@ -203,6 +208,8 @@ Login pengguna dan mendapatkan access token + refresh token.
 **Cookies Set:**
 - `access_token` (15 menit)
 - `refresh_token` (7 hari)
+
+> **Note:** Access dan refresh token dikirim melalui HttpOnly cookies. Tidak ada token di response body.
 
 **Response 401:**
 ```json
@@ -575,7 +582,7 @@ Nonaktifkan OPD (hanya Biro Organisasi).
 
 **GET** `/peraturan?opdId=uuid`
 
-Daftar peraturan (BIRO: semua; Tim Penyusun/Kepala OPD: OPD sendiri).
+Daftar peraturan (BIRO: semua dengan optional filter; Tim Penyusun/Kepala OPD: OPD sendiri; Tim Evaluasi: ✗).
 
 **Query Parameters:**
 | Parameter | Type | Description |
@@ -589,10 +596,10 @@ Daftar peraturan (BIRO: semua; Tim Penyusun/Kepala OPD: OPD sendiri).
     {
       "id": "uuid",
       "opdId": "uuid-opd",
-      "nama": "Peraturan Gubernur No. 1 Tahun 2025",
+      "namaPeraturan": "Peraturan Gubernur No. 1 Tahun 2025",
       "nomor": "1",
-      "tahun": "2025",
-      "status": "BERLAKU",
+      "tahun": 2025,
+      "tentang": "Tentang tata cara pelayanan publik",
       "createdAt": "2026-01-01T00:00:00Z"
     }
   ]
@@ -613,10 +620,10 @@ Detail peraturan.
   "data": {
     "id": "uuid",
     "opdId": "uuid-opd",
-    "nama": "Peraturan Gubernur No. 1 Tahun 2025",
+    "namaPeraturan": "Peraturan Gubernur No. 1 Tahun 2025",
     "nomor": "1",
-    "tahun": "2025",
-    "status": "BERLAKU",
+    "tahun": 2025,
+    "tentang": "Tentang tata cara pelayanan publik",
     "createdAt": "2026-01-01T00:00:00Z"
   }
 }
@@ -628,15 +635,16 @@ Detail peraturan.
 
 **POST** `/peraturan`
 
-Buat peraturan baru (hanya Biro Organisasi).
+Buat peraturan baru (Koordinator Tim Penyusun / Tim Penyusun).
 
 **Request Body:**
 ```json
 {
   "opdId": "uuid-opd",
-  "nama": "Peraturan Gubernur No. 2 Tahun 2026",
+  "namaPeraturan": "Peraturan Gubernur No. 2 Tahun 2026",
   "nomor": "2",
-  "tahun": "2026"
+  "tahun": 2026,
+  "tentang": "Tentang tata cara pengadaan barang dan jasa"
 }
 ```
 
@@ -645,10 +653,12 @@ Buat peraturan baru (hanya Biro Organisasi).
 {
   "data": {
     "id": "uuid",
-    "nama": "Peraturan Gubernur No. 2 Tahun 2026",
+    "opdId": "uuid-opd",
+    "namaPeraturan": "Peraturan Gubernur No. 2 Tahun 2026",
     "nomor": "2",
-    "tahun": "2026",
-    "status": "BERLAKU"
+    "tahun": 2026,
+    "tentang": "Tentang tata cara pengadaan barang dan jasa",
+    "createdAt": "2026-04-03T10:00:00Z"
   }
 }
 ```
@@ -669,51 +679,22 @@ Buat peraturan baru (hanya Biro Organisasi).
 
 **PATCH** `/peraturan/:id`
 
-Update peraturan (hanya Biro Organisasi).
+Update peraturan (Koordinator Tim Penyusun / Tim Penyusun).
 
 **Request Body:**
 ```json
 {
-  "nama": "Peraturan Gubernur No. 2A Tahun 2026"
+  "namaPeraturan": "Peraturan Gubernur No. 2A Tahun 2026"
 }
 ```
 
 ---
 
-#### 4.4.5 Revoke Peraturan (Cabut)
-
-**PATCH** `/peraturan/:id/cabut`
-
-Cabut peraturan — ubah status ke DICABUT (hanya Biro Organisasi).
-
-**Response 200:**
-```json
-{
-  "data": {
-    "id": "uuid",
-    "status": "DICABUT",
-    "dicabutAt": "2026-04-03T10:00:00Z"
-  }
-}
-```
-
-**Response 409:**
-```json
-{
-  "error": {
-    "code": "ALREADY_REVOKED",
-    "message": "Peraturan sudah berstatus DICABUT"
-  }
-}
-```
-
----
-
-#### 4.4.6 Delete Peraturan
+#### 4.4.5 Delete Peraturan
 
 **DELETE** `/peraturan/:id`
 
-Hapus peraturan (hanya Biro Organisasi).
+Hapus peraturan (Koordinator Tim Penyusun / Tim Penyusun; gagal jika masih dipakai sebagai DasarHukum).
 
 **Response 204:** No content
 
@@ -1043,7 +1024,12 @@ Update judul SOP.
 
 **DELETE** `/sop/:id`
 
-Hapus SOP (hanya jika belum ada TTE/evaluasi) — SOP-16.
+Hapus SOP (hanya Biro Organisasi) — SOP-16.
+
+**Constraints — SOP HANYA bisa dihapus kalau:**
+- Semua `DetailSOP` belum ada relasi `RiwayatTandaTangan` (belum ditandatangani)
+- Semua `DetailSOP` belum ada relasi `NilaiEvaluasi` (belum dievaluasi)
+- Status masih `DRAFT` atau `SEDANG_DISUSUN` (belum diajukan evaluasi)
 
 **Response 204:** No content
 
@@ -1051,8 +1037,18 @@ Hapus SOP (hanya jika belum ada TTE/evaluasi) — SOP-16.
 ```json
 {
   "error": {
-    "code": "SOP_CANNOT_BE_DELETED",
+    "code": "SOP_HAS_EVALUATION",
     "message": "SOP sudah ditandatangani atau dievaluasi"
+  }
+}
+```
+
+**Response 404:**
+```json
+{
+  "error": {
+    "code": "SOP_NOT_FOUND",
+    "message": "SOP tidak ditemukan"
   }
 }
 ```
@@ -1149,14 +1145,25 @@ Ubah status DetailSOP — SOP-03/04/14/15.
 ```
 
 **Valid Status Transitions:**
-```
-DRAFT → SEDANG_DISUSUN → SIAP_DIEVALUASI → DIAJUKAN_EVALUASI
-→ SEDANG_DIEVALUASI → REVISI_DARI_TIM_EVALUASI → SIAP_DIVERIFIKASI
-→ DIVERIFIKASI_BIRO_ORGANISASI → BERLAKU
 
-BERLAKU → DIGANTIKAN (otomatis saat versi baru berlaku)
-BERLAKU → DICABUT (manual)
-```
+| Dari Status | Ke Status Yang Valid |
+|-------------|---------------------|
+| `DRAFT` | `SEDANG_DISUSUN` |
+| `SEDANG_DISUSUN` | `SIAP_DIEVALUASI` |
+| `SIAP_DIEVALUASI` | `DIAJUKAN_EVALUASI` |
+| `DIAJUKAN_EVALUASI` | `SEDANG_DIEVALUASI` |
+| `SEDANG_DIEVALUASI` | `REVISI_DARI_TIM_EVALUASI`, `SIAP_DIVERIFIKASI` |
+| `REVISI_DARI_TIM_EVALUASI` | `SEDANG_DISUSUN` |
+| `SIAP_DIVERIFIKASI` | `DIVERIFIKASI_BIRO_ORGANISASI` |
+| `DIVERIFIKASI_BIRO_ORGANISASI` | `BERLAKU` |
+| `BERLAKU` | `DIGANTIKAN` (otomatis), `DICABUT` (manual) |
+| `DIGANTIKAN` | *(terminal — tidak bisa diubah)* |
+| `DICABUT` | *(terminal — tidak bisa diubah)* |
+
+**Catatan:**
+- `DIGANTIKAN` diset **otomatis** oleh sistem saat versi baru dari SOP yang sama menjadi `BERLAKU`
+- `DICABUT` adalah keputusan **manual/administratif** oleh Kepala OPD atau Biro Organisasi
+- Keduanya adalah **terminal states** — tidak bisa diubah ke status lain
 
 ---
 
@@ -1770,14 +1777,15 @@ MENUNGGU_EVALUASI → SEDANG_DIEVALUASI → SELESAI_DIEVALUASI
 
 | Resource | TIM_PENYUSUN | KOORDINATOR | KEPALA_OPD | TIM_EVALUASI | BIRO |
 |----------|--------------|-------------|------------|--------------|------|
-| **SOP** | CRUD own | CRUD own + Ajukan Evaluasi | Read all + Sahkan | Read assigned | Read all |
-| **DetailSOP** | CRUD own | CRUD own | Read all | Read assigned | Read all |
-| **Evaluasi** | ✗ | ✗ | ✗ | Isi nilai + Selesai | CRUD |
-| **TTE** | Setup | Setup | Sign SOP | ✗ | Sign BA |
+| **SOP** | CRUD own | CRUD own + Ajukan Evaluasi | Read all + Sahkan | Read all | Read all |
+| **DetailSOP** | CRUD own | CRUD own | Read all | Read all | Read all |
+| **Evaluasi** | ✗ | ✗ | ✗ | Isi nilai + Selesai | CRUD + Rekap |
+| **TTE** | Setup | Setup + Sign BA | Sign SOP | ✗ | Sign BA |
 | **Users** | ✗ | ✗ | ✗ | ✗ | CRUD |
 | **OPD** | Read own | Read own | Read own | ✗ | CRUD |
-| **Peraturan** | Read own | Read own | Read own | ✗ | CRUD |
-| **Tim** | Read own | Read own | Read own | Read | CRUD |
+| **Peraturan** | CRUD own | CRUD own | Read own | ✗ | Read all |
+| **Tim Penyusun** | Read own | Read own | Read own | ✗ | CRUD |
+| **Tim Evaluasi** | ✗ | ✗ | ✗ | Read | CRUD |
 | **Audit** | ✗ | ✗ | ✗ | ✗ | Read all |
 
 ---

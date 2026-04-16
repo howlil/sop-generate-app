@@ -9,6 +9,7 @@ export interface IconActionButtonProps {
   to?: string
   params?: Record<string, string>
   search?: Record<string, string>
+  state?: Record<string, unknown>
   onClick?: () => void
   disabled?: boolean
   destructive?: boolean
@@ -22,6 +23,7 @@ export function IconActionButton({
   to,
   params,
   search,
+  state,
   onClick,
   disabled,
   destructive,
@@ -46,7 +48,7 @@ export function IconActionButton({
   )
 
   if (to) {
-    return <Link to={to} params={params} search={search}>{btn}</Link>
+    return <Link to={to} params={params} search={search} state={state}>{btn}</Link>
   }
   return btn
 }

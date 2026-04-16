@@ -9,7 +9,8 @@ export class CreateLampiranTeksDto {
   jenis: JenisLampiran;
 
   @ApiProperty({ example: 'Berhati-hati saat menangani dokumen rahasia.' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   teks: string;
 }
 
@@ -23,13 +24,15 @@ export class LampiranTeksResponseDto {
 // DasarHukum (junction: sopDetailId + peraturanId)
 export class AddDasarHukumDto {
   @ApiProperty({ example: 'uuid-of-peraturan' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   peraturanId: string;
 }
 
 // SopTerkait (junction: sopDetailId + sopTerkaitDetailId)
 export class AddSopTerkaitDto {
   @ApiProperty({ example: 'uuid-of-detail-sop' })
-  @IsString() @IsNotEmpty()
+  @IsString()
+  @IsNotEmpty()
   sopTerkaitDetailId: string;
 }

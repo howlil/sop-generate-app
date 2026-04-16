@@ -33,7 +33,13 @@ export class AuditRepository {
       where: { ...(bagian && { bagian }) },
       include: {
         user: { select: { id: true, nama: true, peran: true } },
-        sopDetail: { select: { id: true, nomorSOP: true, sop: { select: { judul: true } } } },
+        sopDetail: {
+          select: {
+            id: true,
+            nomorSOP: true,
+            sop: { select: { judul: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
       skip,

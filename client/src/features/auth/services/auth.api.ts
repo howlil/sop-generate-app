@@ -16,11 +16,12 @@ export const authApi = {
     apiClient.post<LoginResponse>('/login', payload),
 
   /**
-   * AUTH: Refresh access token
-   * Backend rotates cookies automatically
+   * AUTH-02: Refresh access token
+   * New tokens are set via HttpOnly cookies automatically.
+   * Returns { success: true } on success.
    */
   refresh: () =>
-    apiClient.post<{ accessToken: string; refreshToken: string }>('/refresh'),
+    apiClient.post<{ success: true }>('/refresh'),
 
   /**
    * AUTH-06: Change password for logged-in user

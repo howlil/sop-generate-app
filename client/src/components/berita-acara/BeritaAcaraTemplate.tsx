@@ -12,7 +12,7 @@ export interface BeritaAcaraTemplateProps {
   /** Nomor Berita Acara */
   nomorBA?: string;
   /** Tanggal verifikasi (untuk "Padang, Bulan Tahun") */
-  tanggalVerifikasi?: string;
+  tanggalVerifikasi?: string | null;
   /** Nama pejabat Biro Organisasi */
   namaBiro?: string;
   /** TTE Biro (jika sudah TTD) */

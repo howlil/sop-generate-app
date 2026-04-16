@@ -15,7 +15,10 @@ export class CreateTimPenyusunDto {
 }
 
 export class PindahTimPenyusunDto {
-  @ApiProperty({ example: 'uuid-of-opd-baru', description: 'OPD tujuan transfer' })
+  @ApiProperty({
+    example: 'uuid-of-opd-baru',
+    description: 'OPD tujuan transfer',
+  })
   @IsString()
   @IsNotEmpty({ message: 'opdIdBaru wajib diisi' })
   opdIdBaru: string;
@@ -38,7 +41,9 @@ export class AnggotaTimPenyusunResponseDto {
   @ApiProperty({ enum: StatusTim }) status: StatusTim;
   @ApiProperty() tanggalBergabung: Date;
   @ApiPropertyOptional() berakhirPada: Date | null;
-  @ApiProperty({ description: 'Jumlah DetailSOP yang dibuat oleh anggota ini di OPD terkait' })
+  @ApiProperty({
+    description: 'Jumlah DetailSOP yang dibuat oleh anggota ini di OPD terkait',
+  })
   jumlahSOPDisusun: number;
   @ApiProperty({ type: UserInfoDto }) user: UserInfoDto;
   @ApiProperty() createdAt: Date;

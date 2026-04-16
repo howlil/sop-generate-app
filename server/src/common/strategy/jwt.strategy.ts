@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthMessages } from '../messages';
+import { getCookieValue } from '../utils/cookie.util';
 import { Request } from 'express';
 
 @Injectable()
@@ -20,21 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
-        (req: Request) => {
-          // Fallback: extract JWT from HttpOnly cookie
-          // Parse cookie manually from Cookie header
-          const cookieHeader = req.headers.cookie;
-          if (!cookieHeader) {
-            return null;
-          }
-          
-          const cookies = cookieHeader
-            .split(';')
-            .map(c => c.trim().split('='))
-            .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
-          
-          return cookies['access_token'] || null;
-        },
+        (req: Request) =>
+          getCookieValue('access_token', req.headers.cookie) ?? null,
       ]),
       ignoreExpiration: false,
       secretOrKey: jwtSecret,
@@ -43,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     const user = await this.prisma.pengguna.findUnique({
-      where: { id: payload.sub },
+      where: { id: payload.sub, deletedAt: null },
       select: {
         id: true,
         email: true,

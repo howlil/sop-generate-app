@@ -8,16 +8,6 @@ export class PasswordValidator {
   private static readonly MIN_LENGTH = 8;
   private static readonly MAX_LENGTH = 100;
 
-  /**
-   * Validate password strength
-   * Requirements:
-   * - Minimum 8 characters
-   * - Maximum 100 characters
-   * - At least one uppercase letter
-   * - At least one lowercase letter
-   * - At least one number
-   * - At least one special character
-   */
   static validate(password: string): void {
     const errors: string[] = [];
 
@@ -46,24 +36,15 @@ export class PasswordValidator {
     }
 
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('Harus mengandung minimal 1 karakter khusus (!@#$%^&*(),.?":{}|<>)');
+      errors.push(
+        'Harus mengandung minimal 1 karakter khusus (!@#$%^&*(),.?":{}|<>)',
+      );
     }
 
     if (errors.length > 0) {
-      throw new BadRequestException(`Kata sandi tidak valid: ${errors.join(', ')}`);
-    }
-  }
-
-  /**
-   * Check if password meets minimum requirements
-   * Returns true if valid, throws exception if invalid
-   */
-  static isValid(password: string): boolean {
-    try {
-      this.validate(password);
-      return true;
-    } catch {
-      return false;
+      throw new BadRequestException(
+        `Kata sandi tidak valid: ${errors.join(', ')}`,
+      );
     }
   }
 }

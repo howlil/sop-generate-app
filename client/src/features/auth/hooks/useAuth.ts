@@ -1,9 +1,3 @@
-/**
- * useAuth hook with TanStack Query
- * Note: Token handled via HttpOnly cookies (backend-managed)
- * Uses Zustand selectors for optimal performance.
- */
-
 import { useMutation } from "@tanstack/react-query";
 import { authApi } from "../services/auth.api";
 import type { LoginRequest } from "../types/auth";
@@ -21,12 +15,8 @@ export function useAuth() {
   const logout = useAuthStore((state) => state.logout);
 
   const loginMutation = useMutation({
-    mutationFn: (payload: LoginRequest) => {
-      console.log('[Auth] Attempting login with:', { email: payload.email });
-      return authApi.login(payload);
-    },
+    mutationFn: (payload: LoginRequest) => authApi.login(payload),
     onSuccess: async (response) => {
-      console.log('[Auth] Login successful:', response.user);
       // Token is stored in HttpOnly cookie by backend
       // No need to store token in frontend
 
@@ -41,14 +31,13 @@ export function useAuth() {
       });
 
       showToast(`Selamat datang, ${response.user.nama}!`, "success");
-      
+
       // Wait for Zustand persist to finish hydration before navigating
       // This ensures route guards can read the user state from localStorage
       try {
         await ensureAuthHydrated(1000);
         navigate({ to: redirect || ROUTES.HOME });
-      } catch (error) {
-        console.error('[Auth] Error during navigation after login:', error);
+      } catch {
         // Fallback: navigate anyway after a short delay
         setTimeout(() => {
           navigate({ to: redirect || ROUTES.HOME });
@@ -56,7 +45,6 @@ export function useAuth() {
       }
     },
     onError: (error: Error) => {
-      console.error('[Auth] Login error:', error);
       showErrorMessages(error, "Login gagal");
     },
   });

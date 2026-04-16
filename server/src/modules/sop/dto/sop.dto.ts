@@ -14,12 +14,20 @@ export class CreateSopDto {
   @IsNotEmpty({ message: 'opdId wajib diisi' })
   opdId: string;
 
-  @ApiPropertyOptional({ example: 'https://cdn.example.com/logo.png', description: 'URL logo instansi (opsional, akan menggunakan default jika tidak diisi)' })
+  @ApiPropertyOptional({
+    example: 'https://cdn.example.com/logo.png',
+    description:
+      'URL logo instansi (opsional, akan menggunakan default jika tidak diisi)',
+  })
   @IsString()
   @IsOptional()
   logoInstansi?: string;
 
-  @ApiPropertyOptional({ example: 'Dinas Pendidikan dan Kebudayaan Kota Contoh', description: 'Nama lembaga (opsional, akan menggunakan nama OPD jika tidak diisi)' })
+  @ApiPropertyOptional({
+    example: 'Dinas Pendidikan dan Kebudayaan Kota Contoh',
+    description:
+      'Nama lembaga (opsional, akan menggunakan nama OPD jika tidak diisi)',
+  })
   @IsString()
   @IsOptional()
   namaLembaga?: string;

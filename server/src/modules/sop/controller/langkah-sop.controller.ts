@@ -1,10 +1,20 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { LangkahSopService } from '../service/langkah-sop.service';
-import { CreateLangkahSopDto, UpdateLangkahSopDto } from '../dto/langkah-sop.dto';
+import {
+  CreateLangkahSopDto,
+  UpdateLangkahSopDto,
+} from '../dto/langkah-sop.dto';
 import { Roles } from '../../../common/decorators';
 import { PeranPengguna } from '../../../generated/prisma';
 
@@ -46,7 +56,10 @@ export class LangkahSopController {
   @Delete(':id')
   @Roles(PeranPengguna.TIM_PENYUSUN, PeranPengguna.KOORDINATOR_TIM_PENYUSUN)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Hapus langkah SOP — PLK-07 (auto-delete DiagramEdge + NodePosition)' })
+  @ApiOperation({
+    summary:
+      'Hapus langkah SOP — PLK-07 (auto-delete DiagramEdge + NodePosition)',
+  })
   remove(@Param('id') id: string) {
     return this.service.delete(id);
   }

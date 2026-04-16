@@ -1,34 +1,33 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+export class UserInfoDto {
+  @ApiProperty({ description: 'User ID (UUID)' })
+  id: string;
+
+  @ApiProperty({ description: 'User email address' })
+  email: string;
+
+  @ApiProperty({ description: 'User full name' })
+  nama: string;
+
+  @ApiProperty({ description: 'User role' })
+  peran: string;
+
+  @ApiProperty({ description: 'OPD ID (nullable)', nullable: true })
+  opdId: string | null;
+
+  @ApiProperty({ description: 'Employee identification number' })
+  nip: string;
+
+  @ApiProperty({ description: 'User position/title' })
+  jabatan: string;
+}
+
 export class AuthResponseDto {
   @ApiProperty({
-    description: 'Access Token JWT',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description:
+      'Authenticated user information. Access and refresh tokens are delivered via HttpOnly cookies.',
+    type: UserInfoDto,
   })
-  accessToken: string;
-
-  @ApiProperty({
-    description: 'Refresh Token',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-  })
-  refreshToken: string;
-
-  @ApiProperty({
-    description: 'Tipe token',
-    example: 'Bearer',
-  })
-  tokenType: string;
-
-  @ApiProperty({
-    description: 'Informasi user',
-  })
-  user: {
-    id: string;
-    email: string;
-    nama: string;
-    peran: string;
-    opdId: string | null;
-    nip: string;
-    jabatan: string;
-  };
+  user: UserInfoDto;
 }

@@ -7,7 +7,7 @@ import { apiClient } from "@/utils/api-client";
 import type {
   AnggotaTimEvaluasi,
   CreateTimEvaluasiDto,
-} from "@/features/tim/types/tim";
+} from "../types/tim";
 
 export const timEvaluasiApi = {
   findAll: () =>

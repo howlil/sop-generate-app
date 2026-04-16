@@ -16,11 +16,12 @@ import { RouteErrorPage } from "@/components/ui/route-error";
 import { RouteFocusManager } from "@/components/ui/route-focus-manager";
 import { queryClient } from "@/config/query-client";
 import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
+import { ROUTES } from "@/utils/constants";
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
     const isPublic =
-      location.href === "/" || location.href.startsWith("/auth/login");
+      location.pathname === ROUTES.HOME || location.pathname.startsWith(ROUTES.AUTH.LOGIN);
     if (isPublic) return;
 
     await ensureAuthHydrated();
@@ -29,7 +30,7 @@ export const Route = createRootRoute({
 
     if (!store.user) {
       throw redirect({
-        to: "/auth/login",
+        to: ROUTES.AUTH.LOGIN,
         search: { redirect: location.href },
       });
     }

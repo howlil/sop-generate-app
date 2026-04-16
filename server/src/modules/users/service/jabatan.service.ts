@@ -1,7 +1,17 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { UserRepository, UserWithoutPassword } from '../repository/user.repository';
+import {
+  UserRepository,
+  UserWithoutPassword,
+} from '../repository/user.repository';
 import { PeranPengguna } from '../../../generated/prisma';
+import type { AuthenticatedUser } from '../../../common/decorators/current-user.decorator';
+import { JabatanMessages } from '../../../common/messages';
 
 export interface RiwayatJabatanEntry {
   id: string;
@@ -12,15 +22,34 @@ export interface RiwayatJabatanEntry {
   opdNama?: string;
   peran: string;
   isActive: boolean;
+  totalSopDisusun: number;
   updatedAt: Date;
 }
 
 @Injectable()
 export class JabatanService {
+  private readonly logger = new Logger(JabatanService.name);
+
   constructor(
     private readonly userRepository: UserRepository,
     private readonly prisma: PrismaService,
   ) {}
+
+  private logJabatanChange(
+    action: 'set-kepala-aktif' | 'akhiri-jabatan' | 'pindah-jabatan',
+    currentUser: AuthenticatedUser,
+    payload: Record<string, unknown>,
+  ) {
+    this.logger.log(
+      JSON.stringify({
+        event: 'jabatan_audit',
+        action,
+        actorUserId: currentUser.id,
+        actorRole: currentUser.peran,
+        ...payload,
+      }),
+    );
+  }
 
   /**
    * Set a user as Kepala OPD for the given OPD.
@@ -29,12 +58,12 @@ export class JabatanService {
   async setKepalaAktif(
     userId: string,
     opdId: string,
-    _currentUser: any,
+    currentUser: AuthenticatedUser,
   ): Promise<UserWithoutPassword> {
     // Verify target user exists
     const targetUser = await this.userRepository.findById(userId);
     if (!targetUser) {
-      throw new NotFoundException('User tidak ditemukan');
+      throw new NotFoundException(JabatanMessages.USER_NOT_FOUND);
     }
 
     // Verify OPD exists
@@ -42,7 +71,7 @@ export class JabatanService {
       where: { id: opdId },
     });
     if (!opd) {
-      throw new NotFoundException('OPD tidak ditemukan');
+      throw new NotFoundException(JabatanMessages.OPD_NOT_FOUND);
     }
 
     // Find current Kepala OPD for this OPD and deactivate
@@ -52,13 +81,27 @@ export class JabatanService {
       await this.userRepository.update(currentKepala.id, {
         peran: PeranPengguna.TIM_PENYUSUN,
       });
+
+      this.logJabatanChange('set-kepala-aktif', currentUser, {
+        targetUserId: userId,
+        opdId,
+        replacedUserId: currentKepala.id,
+      });
     }
 
     // Set target user as Kepala OPD
-    return this.userRepository.update(userId, {
+    const updatedUser = await this.userRepository.update(userId, {
       peran: PeranPengguna.KEPALA_OPD,
       opdId,
     });
+
+    this.logJabatanChange('set-kepala-aktif', currentUser, {
+      targetUserId: userId,
+      opdId,
+      replacedUserId: currentKepala?.id ?? null,
+    });
+
+    return updatedUser;
   }
 
   /**
@@ -66,20 +109,27 @@ export class JabatanService {
    */
   async akhiriJabatan(
     userId: string,
-    _currentUser: any,
+    currentUser: AuthenticatedUser,
   ): Promise<UserWithoutPassword> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundException('User tidak ditemukan');
+      throw new NotFoundException(JabatanMessages.USER_NOT_FOUND);
     }
 
     if (user.peran !== PeranPengguna.KEPALA_OPD) {
-      throw new ConflictException('User bukan Kepala OPD');
+      throw new ConflictException(JabatanMessages.USER_NOT_KEPALA_OPD);
     }
 
-    return this.userRepository.update(userId, {
+    const updatedUser = await this.userRepository.update(userId, {
       peran: PeranPengguna.TIM_PENYUSUN,
     });
+
+    this.logJabatanChange('akhiri-jabatan', currentUser, {
+      targetUserId: userId,
+      opdId: user.opdId ?? null,
+    });
+
+    return updatedUser;
   }
 
   /**
@@ -89,11 +139,11 @@ export class JabatanService {
   async pindahJabatan(
     userId: string,
     newOpdId: string,
-    _currentUser: any,
+    currentUser: AuthenticatedUser,
   ): Promise<UserWithoutPassword> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new NotFoundException('User tidak ditemukan');
+      throw new NotFoundException(JabatanMessages.USER_NOT_FOUND);
     }
 
     // Verify new OPD exists
@@ -101,18 +151,27 @@ export class JabatanService {
       where: { id: newOpdId },
     });
     if (!newOpd) {
-      throw new NotFoundException('OPD tujuan tidak ditemukan');
+      throw new NotFoundException(JabatanMessages.TARGET_OPD_NOT_FOUND);
     }
 
     // Check if new OPD already has a Kepala OPD
-    const existingKepala = await this.userRepository.findActiveKepalaOpd(newOpdId);
+    const existingKepala =
+      await this.userRepository.findActiveKepalaOpd(newOpdId);
     if (existingKepala && existingKepala.id !== userId) {
-      throw new ConflictException('OPD tujuan sudah memiliki Kepala OPD aktif');
+      throw new ConflictException(JabatanMessages.TARGET_OPD_ALREADY_HAS_KEPALA);
     }
 
-    return this.userRepository.update(userId, {
+    const updatedUser = await this.userRepository.update(userId, {
       opdId: newOpdId,
     });
+
+    this.logJabatanChange('pindah-jabatan', currentUser, {
+      targetUserId: userId,
+      fromOpdId: user.opdId ?? null,
+      toOpdId: newOpdId,
+    });
+
+    return updatedUser;
   }
 
   /**
@@ -127,6 +186,11 @@ export class JabatanService {
       },
       include: {
         opd: { select: { nama: true } },
+        _count: {
+          select: {
+            detailSopDibuat: true,
+          },
+        },
       },
     });
 
@@ -139,6 +203,7 @@ export class JabatanService {
       opdNama: u.opd?.nama,
       peran: u.peran,
       isActive: u.peran === 'KEPALA_OPD',
+      totalSopDisusun: u._count?.detailSopDibuat ?? 0,
       updatedAt: u.updatedAt,
     }));
   }

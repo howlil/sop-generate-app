@@ -4,7 +4,10 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
-import { UserRepository, UserWithoutPassword } from '../repository/user.repository';
+import {
+  UserRepository,
+  UserWithoutPassword,
+} from '../repository/user.repository';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { PeranPengguna } from '../../../generated/prisma';
@@ -29,8 +32,7 @@ export class UserService {
     const password = createUserDto.kataSandi || generateSecurePassword();
 
     // Auto-add TIM_PENYUSUN users to AnggotaTimPenyusun (must check before KOORDINATOR lock)
-    const isPenyusunRole =
-      createUserDto.peran === PeranPengguna.TIM_PENYUSUN;
+    const isPenyusunRole = createUserDto.peran === PeranPengguna.TIM_PENYUSUN;
 
     // [P2-D] Enforce: 1 KEPALA_OPD and 1 KOORDINATOR_TIM_PENYUSUN per OPD
     // Use transaction with SELECT FOR UPDATE to prevent race condition
@@ -45,9 +47,11 @@ export class UserService {
 
       // Check NIP uniqueness globally
       if (createUserDto.nip) {
-        const existingByNip = await this.userRepository.findByNip(createUserDto.nip);
+        const existingByNip = await this.userRepository.findByNip(
+          createUserDto.nip,
+        );
         if (existingByNip) {
-          throw new ConflictException('NIP sudah terdaftar');
+          throw new ConflictException(UserMessages.NIP_EXISTS);
         }
       }
 
@@ -79,7 +83,10 @@ export class UserService {
     return user;
   }
 
-  async findAll(page: number, limit: number): Promise<{
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<{
     data: UserWithoutPassword[];
     total: number;
   }> {
@@ -102,7 +109,10 @@ export class UserService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<UserWithoutPassword> {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<UserWithoutPassword> {
     const existingUser = await this.userRepository.findById(id);
 
     if (!existingUser) {
@@ -114,7 +124,7 @@ export class UserService {
         updateUserDto.email,
       );
       if (emailExists && emailExists.id !== id) {
-        throw new ConflictException(UserMessages.EMAIL_ALREADY_REGISTERED);
+        throw new ConflictException(UserMessages.EMAIL_EXISTS);
       }
     }
 
@@ -169,7 +179,10 @@ export class UserService {
     return user;
   }
 
-  async validateUser(email: string, password: string): Promise<UserWithoutPassword | null> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<UserWithoutPassword | null> {
     const user = await this.userRepository.findByEmailWithPassword(email);
 
     if (!user) {

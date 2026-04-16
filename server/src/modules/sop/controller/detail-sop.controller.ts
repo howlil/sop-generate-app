@@ -1,8 +1,21 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Query,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { DetailSopService } from '../service/detail-sop.service';
 import { LampiranService } from '../service/lampiran.service';
 import { UpdateMetadataDto, UpdateStatusDto } from '../dto/detail-sop.dto';
@@ -12,6 +25,8 @@ import {
   AddSopTerkaitDto,
 } from '../dto/lampiran.dto';
 import { CurrentUser } from '../../../common/decorators';
+import type { AuthenticatedUser } from '../../../common/decorators/current-user.decorator';
+import { PeranPengguna } from '../../../generated/prisma';
 import { StatusSOP } from '../../../generated/prisma';
 
 @ApiTags('Detail SOP')
@@ -31,28 +46,42 @@ export class DetailSopController {
   @ApiQuery({ name: 'opdId', required: false })
   @ApiQuery({ name: 'status', required: false, enum: StatusSOP })
   findAll(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
     @Query('sopId') sopId?: string,
     @Query('opdId') opdId?: string,
     @Query('status') status?: StatusSOP,
   ) {
-    return this.detailService.findAll(user, sopId, opdId, status);
+    return this.detailService.findAll(
+      { ...user, peran: user.peran as PeranPengguna },
+      sopId,
+      opdId,
+      status,
+    );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Detail DetailSOP — SOP-22' })
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.detailService.findById(id, user);
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.detailService.findById(id, {
+      ...user,
+      peran: user.peran as PeranPengguna,
+    });
   }
 
   @Patch(':id/metadata')
-  @ApiOperation({ summary: 'Update metadata DetailSOP (SOP-02/18) — hanya saat DRAFT/SEDANG_DISUSUN/REVISI' })
+  @ApiOperation({
+    summary:
+      'Update metadata DetailSOP (SOP-02/18) — hanya saat DRAFT/SEDANG_DISUSUN/REVISI',
+  })
   updateMetadata(
     @Param('id') id: string,
     @Body() dto: UpdateMetadataDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.detailService.updateMetadata(id, dto, user);
+    return this.detailService.updateMetadata(id, dto, {
+      ...user,
+      peran: user.peran as PeranPengguna,
+    });
   }
 
   @Patch(':id/status')
@@ -60,9 +89,24 @@ export class DetailSopController {
   updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateStatusDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.detailService.updateStatus(id, dto, user);
+    return this.detailService.updateStatus(id, dto, {
+      ...user,
+      peran: user.peran as PeranPengguna,
+    });
+  }
+
+  @Patch(':id/cabut')
+  @ApiOperation({
+    summary: 'Cabut DetailSOP — set status DICABUT (Kepala OPD)',
+  })
+  cabut(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    const dto: UpdateStatusDto = { status: StatusSOP.DICABUT };
+    return this.detailService.updateStatus(id, dto, {
+      ...user,
+      peran: user.peran as PeranPengguna,
+    });
   }
 
   // ---- LampiranTeks — SOP-24 ----
@@ -106,7 +150,9 @@ export class DetailSopController {
 
   @Post(':id/dasar-hukum')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Tambah dasar hukum — SOP-19/23 (same OPD, not DICABUT)' })
+  @ApiOperation({
+    summary: 'Tambah dasar hukum — SOP-19/23 (same OPD, not DICABUT)',
+  })
   addDasarHukum(@Param('id') id: string, @Body() dto: AddDasarHukumDto) {
     return this.lampiranService.addDasarHukum(id, dto);
   }
@@ -131,7 +177,10 @@ export class DetailSopController {
 
   @Post(':id/sop-terkait')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Tambah SOP terkait — SOP-20/21 (no self-ref, no bidirectional dup)' })
+  @ApiOperation({
+    summary:
+      'Tambah SOP terkait — SOP-20/21 (no self-ref, no bidirectional dup)',
+  })
   addSopTerkait(@Param('id') id: string, @Body() dto: AddSopTerkaitDto) {
     return this.lampiranService.addSopTerkait(id, dto);
   }

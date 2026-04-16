@@ -3,7 +3,7 @@
  * Replaces localStorage-based status simulation with real API calls
  */
 
-import { sopApi } from "@/features/sop/services/sop.api";
+import { sopApi } from "../services/sop.api";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import type { StatusSOP } from "@/types/common";
@@ -30,6 +30,14 @@ export function useSopStatus() {
      */
     setSopStatusOverride: (sopId: string, status: StatusSOP) => {
       updateStatusMutation.mutate({ sopId, status });
+    },
+
+    /**
+     * Cabut SOP via endpoint khusus (status DICABUT)
+     * @param sopId - SOP Detail ID
+     */
+    cabutSopAsync: (sopId: string) => {
+      return updateStatusMutation.mutateAsync({ sopId, status: 'DICABUT' as StatusSOP });
     },
 
     /**

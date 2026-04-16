@@ -37,7 +37,9 @@ export class TimEvaluasiRepository {
     });
   }
 
-  async create(data: { userId: string }): Promise<AnggotaTimEvaluasiResponseDto> {
+  async create(data: {
+    userId: string;
+  }): Promise<AnggotaTimEvaluasiResponseDto> {
     return this.prisma.anggotaTimEvaluasi.create({
       data: {
         userId: data.userId,

@@ -1,12 +1,17 @@
 import { BadRequestException } from '@nestjs/common';
-import { StatusSOP, StatusPengajuanEvaluasi, JenisPengajuanEvaluasi, JenisLangkahProsedur } from '../../generated/prisma';
+import {
+  StatusSOP,
+  StatusPengajuanEvaluasi,
+  JenisPengajuanEvaluasi,
+  JenisLangkahProsedur,
+} from '../../generated/prisma';
 
 /**
  * [P0-D] Status Transition Guard
- * 
+ *
  * Defines valid status transitions for DetailSOP and PengajuanEvaluasi.
  * Used at service layer to validate state changes before persisting.
- * 
+ *
  * @see docs/SCHEMA-CONSTRAINTS.md#p0-d-status-transition-guard
  */
 
@@ -14,17 +19,17 @@ import { StatusSOP, StatusPengajuanEvaluasi, JenisPengajuanEvaluasi, JenisLangka
 // DetailSOP Status Transitions
 // ============================================
 export const VALID_SOP_TRANSITIONS: Record<StatusSOP, StatusSOP[]> = {
-  DRAFT:                        ['SEDANG_DISUSUN'],
-  SEDANG_DISUSUN:               ['SIAP_DIEVALUASI'],
-  SIAP_DIEVALUASI:              ['DIAJUKAN_EVALUASI'],
-  DIAJUKAN_EVALUASI:            ['SEDANG_DIEVALUASI'],
-  SEDANG_DIEVALUASI:            ['REVISI_DARI_TIM_EVALUASI', 'SIAP_DIVERIFIKASI'],
-  REVISI_DARI_TIM_EVALUASI:     ['SEDANG_DISUSUN'],
-  SIAP_DIVERIFIKASI:            ['DIVERIFIKASI_BIRO_ORGANISASI'],
+  DRAFT: ['SEDANG_DISUSUN'],
+  SEDANG_DISUSUN: ['SIAP_DIEVALUASI'],
+  SIAP_DIEVALUASI: ['DIAJUKAN_EVALUASI'],
+  DIAJUKAN_EVALUASI: ['SEDANG_DIEVALUASI'],
+  SEDANG_DIEVALUASI: ['REVISI_DARI_TIM_EVALUASI', 'SIAP_DIVERIFIKASI'],
+  REVISI_DARI_TIM_EVALUASI: ['SEDANG_DISUSUN'],
+  SIAP_DIVERIFIKASI: ['DIVERIFIKASI_BIRO_ORGANISASI'],
   DIVERIFIKASI_BIRO_ORGANISASI: ['BERLAKU'],
-  BERLAKU:                      ['DIGANTIKAN', 'DICABUT'],
-  DIGANTIKAN:                   [], // terminal
-  DICABUT:                      [], // terminal
+  BERLAKU: ['DIGANTIKAN', 'DICABUT'],
+  DIGANTIKAN: [], // terminal
+  DICABUT: [], // terminal
 };
 
 // Terminal statuses that cannot be changed
@@ -43,7 +48,7 @@ export function assertValidSopTransition(
   if (!allowed || !allowed.includes(next)) {
     throw new BadRequestException(
       `Transisi status SOP tidak valid: ${current} → ${next}${context ? ` (${context})` : ''}. ` +
-      `Transisi yang valid: ${allowed.join(', ') || '(tidak ada - status terminal)'}`,
+        `Transisi yang valid: ${allowed.join(', ') || '(tidak ada - status terminal)'}`,
     );
   }
 }
@@ -58,16 +63,21 @@ export function isSopStatusTerminal(status: StatusSOP): boolean {
 // ============================================
 // PengajuanEvaluasi Status Transitions
 // ============================================
-export const VALID_PENGAJUAN_TRANSITIONS: Record<StatusPengajuanEvaluasi, StatusPengajuanEvaluasi[]> = {
-  MENUNGGU_EVALUASI:      ['SEDANG_DIEVALUASI'],
-  SEDANG_DIEVALUASI:      ['SELESAI_DIEVALUASI'],
-  SELESAI_DIEVALUASI:     ['DIVERIFIKASI_BIRO'],
-  DIVERIFIKASI_BIRO:      ['DITANDATANGANI_KOORDINATOR'],
+export const VALID_PENGAJUAN_TRANSITIONS: Record<
+  StatusPengajuanEvaluasi,
+  StatusPengajuanEvaluasi[]
+> = {
+  MENUNGGU_EVALUASI: ['SEDANG_DIEVALUASI'],
+  SEDANG_DIEVALUASI: ['SELESAI_DIEVALUASI'],
+  SELESAI_DIEVALUASI: ['DIVERIFIKASI_BIRO'],
+  DIVERIFIKASI_BIRO: ['DITANDATANGANI_KOORDINATOR'],
   DITANDATANGANI_KOORDINATOR: ['SELESAI'],
   SELESAI: [], // terminal
 };
 
-export const PENGAJUAN_TERMINAL_STATUSES: StatusPengajuanEvaluasi[] = ['SELESAI'];
+export const PENGAJUAN_TERMINAL_STATUSES: StatusPengajuanEvaluasi[] = [
+  'SELESAI',
+];
 
 /**
  * Validate PengajuanEvaluasi status transition
@@ -82,7 +92,7 @@ export function assertValidPengajuanTransition(
   if (!allowed || !allowed.includes(next)) {
     throw new BadRequestException(
       `Transisi status PengajuanEvaluasi tidak valid: ${current} → ${next}${context ? ` (${context})` : ''}. ` +
-      `Transisi yang valid: ${allowed.join(', ') || '(tidak ada - status terminal)'}`,
+        `Transisi yang valid: ${allowed.join(', ') || '(tidak ada - status terminal)'}`,
     );
   }
 }
@@ -90,7 +100,9 @@ export function assertValidPengajuanTransition(
 /**
  * Check if PengajuanEvaluasi status is terminal
  */
-export function isPengajuanStatusTerminal(status: StatusPengajuanEvaluasi): boolean {
+export function isPengajuanStatusTerminal(
+  status: StatusPengajuanEvaluasi,
+): boolean {
   return PENGAJUAN_TERMINAL_STATUSES.includes(status);
 }
 
@@ -101,7 +113,10 @@ export function isPengajuanStatusTerminal(status: StatusPengajuanEvaluasi): bool
  * Validate TTE XOR constraint: exactly one of sopDetailId or pengajuanEvaluasiId must be set
  * @throws BadRequestException if constraint is violated
  */
-export function assertTteXor(sopDetailId?: string | null, pengajuanEvaluasiId?: string | null) {
+export function assertTteXor(
+  sopDetailId?: string | null,
+  pengajuanEvaluasiId?: string | null,
+) {
   const filled = [sopDetailId, pengajuanEvaluasiId].filter(Boolean).length;
   if (filled !== 1) {
     throw new BadRequestException(
@@ -122,7 +137,9 @@ export function assertNilaiOPDConstraint(
   nilaiOPD: number | null | undefined,
 ) {
   if (jenis === JenisPengajuanEvaluasi.MANDIRI && nilaiOPD != null) {
-    throw new BadRequestException('Evaluasi MANDIRI tidak boleh memiliki nilaiOPD');
+    throw new BadRequestException(
+      'Evaluasi MANDIRI tidak boleh memiliki nilaiOPD',
+    );
   }
   if (jenis === JenisPengajuanEvaluasi.TERJADWAL && nilaiOPD == null) {
     throw new BadRequestException('Evaluasi TERJADWAL wajib memiliki nilaiOPD');
@@ -143,7 +160,7 @@ export function assertNilaiEvaluasiScope(
   if (pengajuanOpdId !== detailSopOpdId) {
     throw new BadRequestException(
       `DetailSOP tidak berasal dari OPD yang sama dengan PengajuanEvaluasi. ` +
-      `Pengajuan: ${pengajuanOpdId}, DetailSOP: ${detailSopOpdId}`,
+        `Pengajuan: ${pengajuanOpdId}, DetailSOP: ${detailSopOpdId}`,
     );
   }
 }
@@ -203,13 +220,13 @@ export function assertLangkahBranching(
 /**
  * Detect circular reference in LangkahSOP flow
  * Uses DFS (Depth-First Search) to detect cycles
- * 
+ *
  * @param langkahId - The ID of the langkah being modified
  * @param nextYaId - The ID of the next step on "Yes" branch
  * @param nextTidakId - The ID of the next step on "No" branch (for DECISION)
  * @param getLangkahFn - Async function to fetch a langkah by ID
  * @returns true if cycle detected, false otherwise
- * 
+ *
  * @example
  * ```typescript
  * const hasCycle = await detectCircularReference(
@@ -218,7 +235,7 @@ export function assertLangkahBranching(
  *   nextTidakId,
  *   async (id) => prisma.langkahSOP.findUnique({ where: { id } })
  * );
- * 
+ *
  * if (hasCycle) {
  *   throw new BadRequestException('Langkah menciptakan siklus/loop');
  * }
@@ -234,14 +251,17 @@ export async function detectCircularReference(
   } | null>,
 ): Promise<boolean> {
   // Check both branches if they create cycles
-  if (nextYaId && await hasCycleDFS(langkahId, nextYaId, getLangkahFn)) {
+  if (nextYaId && (await hasCycleDFS(langkahId, nextYaId, getLangkahFn))) {
     return true;
   }
-  
-  if (nextTidakId && await hasCycleDFS(langkahId, nextTidakId, getLangkahFn)) {
+
+  if (
+    nextTidakId &&
+    (await hasCycleDFS(langkahId, nextTidakId, getLangkahFn))
+  ) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -261,31 +281,45 @@ async function hasCycleDFS(
   if (currentId === startId) {
     return true;
   }
-  
+
   // Already visited this node (but not start) - no cycle on this path
   if (visited.has(currentId)) {
     return false;
   }
-  
+
   visited.add(currentId);
-  
+
   // Get the next langkah
   const langkah = await getLangkahFn(currentId);
   if (!langkah) {
     return false; // End of path
   }
-  
+
   // Check Ya branch
-  if (langkah.langkahSelanjutnyaYaId &&
-      await hasCycleDFS(startId, langkah.langkahSelanjutnyaYaId, getLangkahFn, visited)) {
+  if (
+    langkah.langkahSelanjutnyaYaId &&
+    (await hasCycleDFS(
+      startId,
+      langkah.langkahSelanjutnyaYaId,
+      getLangkahFn,
+      visited,
+    ))
+  ) {
     return true;
   }
-  
+
   // Check Tidak branch
-  if (langkah.langkahSelanjutnyaTidakId &&
-      await hasCycleDFS(startId, langkah.langkahSelanjutnyaTidakId, getLangkahFn, visited)) {
+  if (
+    langkah.langkahSelanjutnyaTidakId &&
+    (await hasCycleDFS(
+      startId,
+      langkah.langkahSelanjutnyaTidakId,
+      getLangkahFn,
+      visited,
+    ))
+  ) {
     return true;
   }
-  
+
   return false;
 }

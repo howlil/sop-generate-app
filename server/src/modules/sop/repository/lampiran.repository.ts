@@ -12,7 +12,11 @@ export class LampiranRepository {
     return this.prisma.lampiranTeks.findMany({ where: { sopDetailId } });
   }
 
-  async createLampiran(sopDetailId: string, jenis: JenisLampiran, teks: string) {
+  async createLampiran(
+    sopDetailId: string,
+    jenis: JenisLampiran,
+    teks: string,
+  ) {
     return this.prisma.lampiranTeks.create({
       data: { sopDetailId, jenis, teks },
     });
@@ -33,7 +37,14 @@ export class LampiranRepository {
       where: { sopDetailId },
       include: {
         peraturan: {
-          select: { id: true, namaPeraturan: true, nomor: true, tahun: true, tentang: true, opdId: true },
+          select: {
+            id: true,
+            namaPeraturan: true,
+            nomor: true,
+            tahun: true,
+            tentang: true,
+            opdId: true,
+          },
         },
       },
     });
@@ -43,7 +54,9 @@ export class LampiranRepository {
     return this.prisma.dasarHukum.create({
       data: { sopDetailId, peraturanId },
       include: {
-        peraturan: { select: { id: true, namaPeraturan: true, nomor: true, tahun: true } },
+        peraturan: {
+          select: { id: true, namaPeraturan: true, nomor: true, tahun: true },
+        },
       },
     });
   }
@@ -54,7 +67,10 @@ export class LampiranRepository {
     });
   }
 
-  async dasarHukumExists(sopDetailId: string, peraturanId: string): Promise<boolean> {
+  async dasarHukumExists(
+    sopDetailId: string,
+    peraturanId: string,
+  ): Promise<boolean> {
     const entry = await this.prisma.dasarHukum.findUnique({
       where: { sopDetailId_peraturanId: { sopDetailId, peraturanId } },
     });
@@ -68,7 +84,11 @@ export class LampiranRepository {
       where: { sopDetailId },
       include: {
         sopTerkait: {
-          select: { id: true, nomorSOP: true, sop: { select: { judul: true } } },
+          select: {
+            id: true,
+            nomorSOP: true,
+            sop: { select: { judul: true } },
+          },
         },
       },
     });
@@ -82,13 +102,20 @@ export class LampiranRepository {
 
   async removeSopTerkait(sopDetailId: string, sopTerkaitDetailId: string) {
     await this.prisma.sopTerkait.delete({
-      where: { sopDetailId_sopTerkaitDetailId: { sopDetailId, sopTerkaitDetailId } },
+      where: {
+        sopDetailId_sopTerkaitDetailId: { sopDetailId, sopTerkaitDetailId },
+      },
     });
   }
 
-  async sopTerkaitExists(sopDetailId: string, sopTerkaitDetailId: string): Promise<boolean> {
+  async sopTerkaitExists(
+    sopDetailId: string,
+    sopTerkaitDetailId: string,
+  ): Promise<boolean> {
     const entry = await this.prisma.sopTerkait.findUnique({
-      where: { sopDetailId_sopTerkaitDetailId: { sopDetailId, sopTerkaitDetailId } },
+      where: {
+        sopDetailId_sopTerkaitDetailId: { sopDetailId, sopTerkaitDetailId },
+      },
     });
     return entry !== null;
   }

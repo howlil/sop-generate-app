@@ -1,5 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { AuditService } from '../service/audit.service';
 import { CurrentUser, Roles } from '../../../common/decorators';
 import { BagianSOP, PeranPengguna } from '../../../generated/prisma';

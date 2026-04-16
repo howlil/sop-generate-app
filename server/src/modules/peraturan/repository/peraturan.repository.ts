@@ -52,7 +52,12 @@ export class PeraturanRepository implements IPeraturanRepository {
 
   async update(
     id: string,
-    data: { namaPeraturan?: string; nomor?: string; tahun?: number; tentang?: string },
+    data: {
+      namaPeraturan?: string;
+      nomor?: string;
+      tahun?: number;
+      tentang?: string;
+    },
   ): Promise<PeraturanResponseDto> {
     const record = await this.prisma.peraturan.update({
       where: { id },

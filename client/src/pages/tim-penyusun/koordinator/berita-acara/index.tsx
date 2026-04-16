@@ -22,7 +22,7 @@ const STATUS_CONFIG: Record<string, { className: string }> = {
   DITANDATANGANI_KOORDINATOR: { className: 'h-4 border-0 bg-green-100 text-green-700' },
 }
 
-function formatDate(dateStr: string | undefined): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '-'
   return new Date(dateStr).toLocaleDateString('id-ID', {
     day: 'numeric',

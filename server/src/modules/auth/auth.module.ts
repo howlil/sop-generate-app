@@ -7,7 +7,6 @@ import { AuthController } from './controller/auth.controller';
 import { JwtStrategy } from '../../common/strategy/jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { PrismaModule } from '../../common/prisma/prisma.module';
-import type { StringValue } from 'ms';
 
 @Module({
   imports: [
@@ -21,12 +20,8 @@ import type { StringValue } from 'ms';
         if (!jwtSecret) {
           throw new Error('JWT_SECRET environment variable is required');
         }
-        const jwtExpiration = configService.get<string>('JWT_EXPIRATION', '1d');
         return {
           secret: jwtSecret,
-          signOptions: {
-            expiresIn: jwtExpiration as StringValue,
-          },
         };
       },
       inject: [ConfigService],

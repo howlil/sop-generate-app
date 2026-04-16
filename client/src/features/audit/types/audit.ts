@@ -1,33 +1,14 @@
 /**
  * Audit Log types matching server schema
+ * Uses shared types from @/types/common
  */
 
-import type { BagianSOP } from '@/types/common'
-export type { BagianSOP }
+import type { BagianSOP, LogEditSOP } from "@/types/common";
 
-export interface LogEditSOP {
-  id: string
-  sopDetailId: string
-  userId: string
-  bagian: BagianSOP
-  entityId?: string
-  keterangan?: string
-  aktorRole: string
-  createdAt: string
-  
-  // Relations
-  user?: {
-    id: string
-    nama: string
-    email: string
-  }
-  sopDetail?: {
-    id: string
-    nomorSOP: string
-    judul: string
-  }
-}
+// Re-export shared types from central location for backward compatibility
+export type { BagianSOP, LogEditSOP };
 
+// Feature-specific interfaces
 export interface CreateLogEditSOPDto {
   sopDetailId: string
   bagian: BagianSOP
@@ -40,7 +21,7 @@ export interface LogEditSOPResponse {
   total: number
 }
 
-export interface AuditQueryParams {
+export interface AuditQueryParams extends Record<string, unknown> {
   bagian?: BagianSOP
   skip?: number
   take?: number

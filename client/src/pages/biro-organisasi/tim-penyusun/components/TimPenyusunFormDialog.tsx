@@ -31,6 +31,8 @@ export interface TimPenyusunFormDialogProps {
   opdList: OPD[]
   isFormValid: boolean
   onConfirm: () => void
+  confirmDisabled?: boolean
+  confirmLabel?: string
 }
 
 export function TimPenyusunFormDialog({
@@ -44,6 +46,8 @@ export function TimPenyusunFormDialog({
   opdList,
   isFormValid,
   onConfirm,
+  confirmDisabled = false,
+  confirmLabel,
 }: TimPenyusunFormDialogProps) {
   const isCreate = mode === 'create'
   return (
@@ -52,10 +56,10 @@ export function TimPenyusunFormDialog({
       onOpenChange={onOpenChange}
       title={isCreate ? 'Tambah Tim Penyusun SOP' : 'Edit Tim Penyusun SOP'}
       description={isCreate ? 'Pilih OPD dan isi data pegawai tim penyusun' : 'Perbarui data tim penyusun SOP'}
-      confirmLabel={isCreate ? 'Simpan' : 'Simpan Perubahan'}
+      confirmLabel={confirmLabel ?? (isCreate ? 'Simpan' : 'Simpan Perubahan')}
       cancelLabel="Batal"
       onConfirm={onConfirm}
-      confirmDisabled={!isFormValid}
+      confirmDisabled={!isFormValid || confirmDisabled}
       size="md"
     >
       <div className="space-y-3">

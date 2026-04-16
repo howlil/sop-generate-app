@@ -64,8 +64,18 @@ export class SopRepository {
         author: detail?.dibuatOleh?.nama ?? null,
         lastEditedBy: detail?.terakhirDieditOleh?.nama ?? null,
         lastEditedAt: detail?.updatedAt?.toISOString() ?? null,
-        terakhirDiperbarui: detail?.updatedAt ? new Date(detail.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null,
-        tanggal: detail?.tanggalPembuatan ? new Date(detail.tanggalPembuatan).toLocaleDateString('id-ID') : null,
+        terakhirDiperbarui: detail?.updatedAt
+          ? new Date(detail.updatedAt).toLocaleDateString('id-ID', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : null,
+        tanggal: detail?.tanggalPembuatan
+          ? new Date(detail.tanggalPembuatan).toLocaleDateString('id-ID')
+          : null,
         detailSopId: detail?.id ?? null,
         peraturanId: detail?.dasarHukum?.[0]?.peraturanId ?? null,
       };
@@ -138,7 +148,11 @@ export class SopRepository {
 
       if (detailSopIds.length > 0) {
         await tx.diagramEdgePoint.deleteMany({
-          where: { diagramEdge: { diagramLayout: { sopDetailId: { in: detailSopIds } } } },
+          where: {
+            diagramEdge: {
+              diagramLayout: { sopDetailId: { in: detailSopIds } },
+            },
+          },
         });
         await tx.diagramEdge.deleteMany({
           where: { diagramLayout: { sopDetailId: { in: detailSopIds } } },
@@ -157,10 +171,7 @@ export class SopRepository {
     const count = await this.prisma.detailSOP.count({
       where: {
         sopId: id,
-        OR: [
-          { tandaTanganSop: { some: {} } },
-          { nilaiEvaluasi: { some: {} } },
-        ],
+        OR: [{ tandaTanganSop: { some: {} } }, { nilaiEvaluasi: { some: {} } }],
       },
     });
     return count > 0;

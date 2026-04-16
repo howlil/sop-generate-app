@@ -7,19 +7,24 @@ import {
   HttpStatus,
   Res,
   Req,
-  UseGuards,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { AuthService } from '../service/auth.service';
 import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { Public, CurrentUser } from '../../../common/decorators';
-import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { AuthMessages } from '../../../common/messages';
+import { getCookieValue } from '../../../common/utils/cookie.util';
 
 @ApiTags('Auth')
+@ApiBearerAuth()
 @Controller('')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -41,56 +46,64 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthResponseDto> {
-    const result = await this.authService.login(dto);
-    const cookieOptions = this.authService.getCookieOptions();
+    const { accessToken, refreshToken, user } =
+      await this.authService.login(dto);
 
-    // Set HttpOnly cookies
-    response.cookie('access_token', result.accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-    response.cookie('refresh_token', result.refreshToken, cookieOptions);
+    // Set HttpOnly cookies with appropriate expiration
+    response.cookie(
+      'access_token',
+      accessToken,
+      this.authService.getAccessTokenCookieOptions(),
+    );
+    response.cookie(
+      'refresh_token',
+      refreshToken,
+      this.authService.getRefreshTokenCookieOptions(),
+    );
 
-    return result;
+    return { user };
   }
 
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ status: 200, description: 'Token berhasil di-refresh' })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Token berhasil di-refresh. New tokens set via HttpOnly cookies.',
+  })
   async refresh(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    // Parse cookie manually from Cookie header
-    const cookieHeader = request.headers.cookie;
-    let refreshToken: string | undefined;
+  ): Promise<{ success: true }> {
+    const refreshTokenValue = getCookieValue(
+      'refresh_token',
+      request.headers.cookie,
+    );
 
-    if (cookieHeader) {
-      const cookies = cookieHeader
-        .split(';')
-        .map(c => c.trim().split('='))
-        .reduce((acc, [key, val]) => ({ ...acc, [key]: val }), {});
-      refreshToken = cookies['refresh_token'];
-    }
-
-    if (!refreshToken) {
+    if (!refreshTokenValue) {
       response.clearCookie('access_token');
       response.clearCookie('refresh_token');
       throw new UnauthorizedException(AuthMessages.TOKEN_INVALID);
     }
 
-    const tokens = await this.authService.refreshTokens(refreshToken);
-    const cookieOptions = this.authService.getCookieOptions();
+    const { accessToken, refreshToken } =
+      await this.authService.refreshTokens(refreshTokenValue);
 
-    response.cookie('access_token', tokens.accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000,
-    });
-    response.cookie('refresh_token', tokens.refreshToken, cookieOptions);
+    // Rotate tokens via HttpOnly cookies only
+    response.cookie(
+      'access_token',
+      accessToken,
+      this.authService.getAccessTokenCookieOptions(),
+    );
+    response.cookie(
+      'refresh_token',
+      refreshToken,
+      this.authService.getRefreshTokenCookieOptions(),
+    );
 
-    return tokens;
+    return { success: true };
   }
 
   @Public()
@@ -107,7 +120,6 @@ export class AuthController {
     return { message: 'Logout berhasil' };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Patch('change-password')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()

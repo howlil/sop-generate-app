@@ -1,6 +1,4 @@
-/**
- * Transform riwayat evaluasi API response to RiwayatCardList format.
- */
+
 export interface RiwayatEvaluasiItem {
   tanggal: string;
   evaluator: string;

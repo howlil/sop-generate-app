@@ -1,7 +1,3 @@
-/**
- * Format tanggal untuk UI (locale Indonesia)
- * Usage: import { formatDateId, formatDateIdLong } from '@/utils/format-date'
- */
 
 import { LOCALE_ID } from '@/utils/constants'
 

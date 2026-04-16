@@ -3,8 +3,8 @@
  * Matches server: UserController
  */
 
-import { apiClient } from '@/utils/api-client'
-import type { User, CreateUserDto, UpdateUserDto, PaginatedResponse } from '../types/users'
+import { apiClient, buildQueryString } from '@/utils/api-client'
+import type { User, CreateUserDto, UpdateUserDto, PaginatedResponse, UsersQueryParams } from '../types/users'
 
 export const usersApi = {
   /**
@@ -16,8 +16,11 @@ export const usersApi = {
   /**
    * Get all users with pagination (Biro Organisasi only)
    */
-  findAll: (page: number = 1, limit: number = 10) =>
-    apiClient.get<PaginatedResponse<User>>(`/users?page=${page}&limit=${limit}`),
+  findAll: (params: UsersQueryParams = {}) => {
+    const { page = 1, limit = 10, ...filters } = params
+    const query = buildQueryString({ page, limit, ...filters })
+    return apiClient.get<PaginatedResponse<User>>(`/users${query}`)
+  },
 
   /**
    * Get user by ID

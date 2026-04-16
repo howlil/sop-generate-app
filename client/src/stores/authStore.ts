@@ -23,6 +23,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { User } from "@/features/auth/types/users";
+import { ROUTES } from "@/utils/constants";
 
 /**
  * Core user fields used in the auth store.
@@ -33,7 +34,6 @@ type AuthUser = Pick<User, "id" | "email" | "nama" | "peran" | "opdId" | "nip" |
 
 interface AuthState {
   user: AuthUser | null;
-  isAuthenticated: boolean;
   setUser: (user: AuthUser | null) => void;
   logout: () => void;
 }
@@ -42,12 +42,11 @@ export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      isAuthenticated: false,
 
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setUser: (user) => set({ user }),
 
       logout: () => {
-        set({ user: null, isAuthenticated: false });
+        set({ user: null });
       },
     }),
     {
@@ -116,7 +115,7 @@ export function requireRoles(roles: string[]) {
     const user = useAuthStore.getState().user;
     if (!user || !roles.includes(user.peran)) {
       const { redirect } = await import("@tanstack/react-router");
-      throw redirect({ to: "/" });
+      throw redirect({ to: ROUTES.HOME });
     }
   };
 }

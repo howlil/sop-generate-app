@@ -46,7 +46,10 @@ export class LampiranService {
 
   async addDasarHukum(sopDetailId: string, dto: AddDasarHukumDto) {
     // Duplicate check
-    const exists = await this.repo.dasarHukumExists(sopDetailId, dto.peraturanId);
+    const exists = await this.repo.dasarHukumExists(
+      sopDetailId,
+      dto.peraturanId,
+    );
     if (exists) {
       throw new ConflictException(LampiranMessages.PERATURAN_EXISTS);
     }
@@ -56,13 +59,15 @@ export class LampiranService {
       where: { id: sopDetailId },
       include: { sop: { select: { opdId: true } } },
     });
-    if (!detail) throw new NotFoundException(LampiranMessages.DETAIL_SOP_NOT_FOUND);
+    if (!detail)
+      throw new NotFoundException(LampiranMessages.DETAIL_SOP_NOT_FOUND);
 
     // Get Peraturan
     const peraturan = await this.prisma.peraturan.findUnique({
       where: { id: dto.peraturanId },
     });
-    if (!peraturan) throw new NotFoundException(LampiranMessages.PERATURAN_NOT_FOUND);
+    if (!peraturan)
+      throw new NotFoundException(LampiranMessages.PERATURAN_NOT_FOUND);
 
     // SOP-23 / [P2-F]: Peraturan must be from same OPD
     if (peraturan.opdId !== (detail as any).sop?.opdId) {
@@ -97,7 +102,10 @@ export class LampiranService {
       throw new ConflictException(LampiranMessages.SOP_BIDIRECTIONAL_DUPLICATE);
     }
 
-    const exists = await this.repo.sopTerkaitExists(sopDetailId, dto.sopTerkaitDetailId);
+    const exists = await this.repo.sopTerkaitExists(
+      sopDetailId,
+      dto.sopTerkaitDetailId,
+    );
     if (exists) {
       throw new ConflictException(LampiranMessages.SOP_RELATIONSHIP_EXISTS);
     }

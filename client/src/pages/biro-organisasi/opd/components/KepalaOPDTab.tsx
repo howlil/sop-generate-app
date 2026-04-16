@@ -5,29 +5,15 @@ import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
 import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
 import { PindahJabatanDialog } from './PindahJabatanDialog'
 import { RiwayatJabatanDialog } from './RiwayatJabatanDialog'
-
-interface OPD {
-  id: string
-  name: string
-}
-
-interface KepalaOPD {
-  id: string
-  name: string
-  nip: string
-  startDate: string
-  endDate?: string
-}
-
-type PersonWithActive = {
-  name: string
-  email: string
-  phone: string
-  nip: string
-  activeAssignment?: KepalaOPD & { opdId: string; opdName: string }
-}
-
-type RiwayatRow = KepalaOPD & { opdName: string }
+import type { FormTambahKepalaState, RiwayatDialogPerson, KepalaFormState } from '@/types/common'
+import type {
+  OPDOption as OPD,
+  KepalaOPDRow,
+  PersonWithActive,
+  KepalaCandidate,
+  PindahDialogPersonState,
+  RiwayatRow,
+} from './types'
 
 export interface KepalaOPDTabProps {
   opdList: OPD[]
@@ -41,28 +27,29 @@ export interface KepalaOPDTabProps {
   setTambahKepalaOpen: (open: boolean) => void
   pindahDialogOpen: boolean
   setPindahDialogOpen: (open: boolean) => void
-  setPindahDialogPerson: (p: { name: string; email: string; phone: string; nip?: string } | null) => void
+  setPindahDialogPerson: (p: PindahDialogPersonState | null) => void
   riwayatDialogOpen: boolean
   setRiwayatDialogOpen: (open: boolean) => void
-  riwayatDialogPerson: { name: string; email: string } | null
-  setRiwayatDialogPerson: (p: { name: string; email: string } | null) => void
-  editingKepala: KepalaOPD | null
-  kepalaForm: { name: string; nip: string; email: string; phone: string }
-  setKepalaForm: React.Dispatch<React.SetStateAction<{ name: string; nip: string; email: string; phone: string }>>
-  formTambahKepala: { opdId: string; name: string; nip: string; email: string }
-  setFormTambahKepala: React.Dispatch<React.SetStateAction<{ opdId: string; name: string; nip: string; email: string }>>
+  riwayatDialogPerson: RiwayatDialogPerson | null
+  setRiwayatDialogPerson: (p: RiwayatDialogPerson | null) => void
+  editingKepala: KepalaOPDRow | null
+  kepalaForm: KepalaFormState
+  setKepalaForm: React.Dispatch<React.SetStateAction<KepalaFormState>>
+  formTambahKepala: FormTambahKepalaState
+  setFormTambahKepala: React.Dispatch<React.SetStateAction<FormTambahKepalaState>>
+  kepalaCandidates: KepalaCandidate[]
   pindahForm: { opdId: string }
   setPindahForm: React.Dispatch<React.SetStateAction<{ opdId: string }>>
-  pindahDialogPerson: { name: string; email: string; phone: string; nip?: string } | null
+  pindahDialogPerson: PindahDialogPersonState | null
   // Helpers & handlers
-  getKepalaAktif: (opdId: string) => KepalaOPD | undefined
-  getKepalaByOPD: (opdId: string) => KepalaOPD[]
+  getKepalaAktif: (opdId: string) => KepalaOPDRow | undefined
+  getKepalaByOPD: (opdId: string) => KepalaOPDRow[]
   getRiwayatForUser: (name: string, email: string) => RiwayatRow[]
-  canDeleteKepala: (k: KepalaOPD) => boolean
+  canDeleteKepala: (k: KepalaOPDRow) => boolean
   onSaveKepala: () => void
   onSaveTambahKepala: () => void
   onSavePindah: () => void
-  onOpenKepalaForm: (kepala?: KepalaOPD) => void
+  onOpenKepalaForm: (kepala?: KepalaOPDRow) => void
   onSetKepalaAktif: (kepalaId: string) => void
   onAkhiriJabatan: (kepalaId: string) => void
   onDeleteKepala: (id: string) => void
@@ -89,6 +76,7 @@ export function KepalaOPDTab({
   setKepalaForm,
   formTambahKepala,
   setFormTambahKepala,
+  kepalaCandidates,
   pindahForm,
   setPindahForm,
   pindahDialogPerson,
@@ -104,9 +92,10 @@ export function KepalaOPDTab({
   onAkhiriJabatan,
   onDeleteKepala,
 }: KepalaOPDTabProps) {
-  const riwayatRows = riwayatDialogPerson
-    ? getRiwayatForUser(riwayatDialogPerson.name, riwayatDialogPerson.email)
-    : []
+  const riwayatRows =
+    riwayatDialogPerson && riwayatDialogPerson.email
+      ? getRiwayatForUser(riwayatDialogPerson.name, riwayatDialogPerson.email)
+      : []
 
   return (
     <>
@@ -151,7 +140,15 @@ export function KepalaOPDTab({
                           className="h-7 w-7 p-0"
                           title="Pindah jabatan"
                           onClick={() => {
-                            setPindahDialogPerson({ name: p.name, email: p.email, phone: p.phone, nip: p.nip })
+                            const assignmentId = act?.id
+                            if (!assignmentId) return
+                            setPindahDialogPerson({
+                              id: assignmentId,
+                              name: p.name,
+                              email: p.email,
+                              phone: p.phone,
+                              nip: p.nip,
+                            })
                             setPindahForm({ opdId: '' })
                             setPindahDialogOpen(true)
                           }}
@@ -191,7 +188,7 @@ export function KepalaOPDTab({
       <KepalaOPDFormDialog
         open={kepalaFormOpen}
         onOpenChange={setKepalaFormOpen}
-        title={editingKepala ? 'Edit OPD' : 'Tambah OPD'}
+        title={editingKepala ? 'Edit Kepala OPD' : 'Tambah Kepala OPD'}
         description={selectedOPD && !editingKepala ? `OPD: ${selectedOPD.name}` : undefined}
         form={kepalaForm}
         setForm={setKepalaForm}
@@ -206,6 +203,7 @@ export function KepalaOPDTab({
         form={formTambahKepala}
         setForm={setFormTambahKepala}
         opdList={opdList}
+        users={kepalaCandidates}
         onConfirm={onSaveTambahKepala}
       />
 

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, MaxLength, IsInt, Min, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  MaxLength,
+  IsInt,
+  Min,
+  IsOptional,
+} from 'class-validator';
 
 export class CreatePelaksanaDto {
   @ApiProperty({ example: 'uuid-of-opd' })
@@ -16,7 +23,9 @@ export class CreatePelaksanaDto {
 
 export class UpdatePelaksanaDto {
   @ApiPropertyOptional()
-  @IsString() @IsOptional() @MaxLength(200)
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
   namaPelaksana?: string;
 }
 
@@ -35,7 +44,9 @@ export class AddSwimlanDto {
   pelaksanaId: string;
 
   @ApiPropertyOptional({ example: 0 })
-  @IsInt() @IsOptional() @Min(0)
+  @IsInt()
+  @IsOptional()
+  @Min(0)
   urutan?: number;
 }
 

@@ -46,10 +46,7 @@ async function bootstrap() {
 
   // Global Guards
   const reflector = app.get(Reflector);
-  app.useGlobalGuards(
-    new JwtAuthGuard(reflector),
-    new RolesGuard(reflector),
-  );
+  app.useGlobalGuards(new JwtAuthGuard(reflector), new RolesGuard(reflector));
 
   // Global Exception Filter
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -57,15 +54,16 @@ async function bootstrap() {
   // CORS Configuration
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production'
-      ? (origin, callback) => {
-          if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            callback(new Error('CORS policy violation'));
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+              callback(null, true);
+            } else {
+              callback(new Error('CORS policy violation'));
+            }
           }
-        }
-      : true,
+        : true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

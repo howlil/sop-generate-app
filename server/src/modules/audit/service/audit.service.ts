@@ -19,9 +19,16 @@ export class AuditService {
   }
 
   // AUD-04: all logs — BIRO_ORGANISASI only
-  async findAll(user: JwtUser, bagian?: BagianSOP, skip?: number, take?: number) {
+  async findAll(
+    user: JwtUser,
+    bagian?: BagianSOP,
+    skip?: number,
+    take?: number,
+  ) {
     if (user.peran !== PeranPengguna.BIRO_ORGANISASI) {
-      throw new ForbiddenException('Hanya Biro Organisasi yang dapat melihat semua log audit');
+      throw new ForbiddenException(
+        'Hanya Biro Organisasi yang dapat melihat semua log audit',
+      );
     }
     return this.repo.findAll(bagian, skip, take);
   }

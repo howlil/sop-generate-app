@@ -43,7 +43,8 @@ export class EvaluasiService {
   // EVL-08
   async findById(id: string) {
     const result = await this.repo.findById(id);
-    if (!result) throw new NotFoundException(EvaluasiMessages.EVALUASI_NOT_FOUND);
+    if (!result)
+      throw new NotFoundException(EvaluasiMessages.EVALUASI_NOT_FOUND);
     return result;
   }
 
@@ -68,7 +69,9 @@ export class EvaluasiService {
 
     if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
       throw new BadRequestException(
-        interpolate(EvaluasiMessages.INVALID_STATUS, { status: pengajuan.status }),
+        interpolate(EvaluasiMessages.INVALID_STATUS, {
+          status: pengajuan.status,
+        }),
       );
     }
 
@@ -83,7 +86,9 @@ export class EvaluasiService {
 
     if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
       throw new BadRequestException(
-        interpolate(EvaluasiMessages.INVALID_STATUS, { status: pengajuan.status }),
+        interpolate(EvaluasiMessages.INVALID_STATUS, {
+          status: pengajuan.status,
+        }),
       );
     }
 

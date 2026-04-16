@@ -5,8 +5,6 @@ import { useUIStore } from "@/stores/uiStore";
 export function GlobalToast() {
   const toasts = useUIStore((state) => state.toasts);
 
-  // Auto-close is handled in uiStore.addToast, no need for duplicate timers here
-  // Just render the toasts - uiStore will auto-remove them after 5 seconds
 
   if (toasts.length === 0) return null;
 

@@ -1,7 +1,4 @@
-/**
- * Kepala OPD: memantau semua SOP yang ada di OPD-nya sendiri.
- * Data difilter menurut opdId Kepala OPD (getKepalaOPDOpdId).
- */
+
 import { useMemo, useState } from "react";
 import { Eye, FileText, Ban } from "lucide-react";
 import { Table } from "@/components/ui/data-table";
@@ -17,7 +14,6 @@ import { useAuthStore } from "@/stores/authStore";
 import { useSop } from "@/features/sop";
 import { useSopStatus } from "@/features/sop/hooks/useSopStatus";
 import type { SopItem } from "@/types/common";
-import { useToast } from "@/utils/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useOpd } from "@/features/organisasi/hooks/useOpd";
 
@@ -29,8 +25,7 @@ export function PantauSOP() {
 
   const [filterStatus, setFilterStatus] = useState("all");
   const [cabutSopId, setCabutSopId] = useState<string | null>(null);
-  const { setSopStatusOverride } = useSopStatus();
-  const { showToast } = useToast();
+  const { cabutSopAsync } = useSopStatus();
   const { list: sopListRaw } = useSop();
   const mergedList = sopListRaw as unknown as SopItem[];
 
@@ -119,7 +114,7 @@ export function PantauSOP() {
                             params={{ id: sop.id }}
                             title="Lihat detail"
                           />
-                          {sop.status === "Berlaku" && (
+                          {sop.status === "BERLAKU" && (
                             <IconActionButton
                               icon={Ban}
                               title="Cabut SOP"
@@ -145,10 +140,12 @@ export function PantauSOP() {
         cancelLabel="Batal"
         destructive
         onConfirm={async () => {
-          if (cabutSopId) {
-            setSopStatusOverride(cabutSopId, "DICABUT");
-            showToast("SOP berhasil dicabut.");
+          if (!cabutSopId) return;
+          try {
+            await cabutSopAsync(cabutSopId);
             setCabutSopId(null);
+          } catch {
+            // toast error sudah ditangani di hook useMutationWithToast
           }
         }}
       />
