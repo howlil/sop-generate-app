@@ -1,12 +1,4 @@
-/**
- * Login Hero - SaaS Startup Style
- *
- * Design: Modern SaaS aesthetic
- * - Mesh gradient background
- * - Floating cards with animation
- * - Grid pattern
- * - Professional & attractive
- */
+
 import {
   Shield,
   CheckCircle,

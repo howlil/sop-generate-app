@@ -91,9 +91,7 @@ model SOP {
 model DetailSOP {
   id                     String               @id @default(uuid())
   sopId                  String
-  /// Versi `DetailSOP` yang menjadi sumber salinan isi (langkah, lampiran teks, sop terkait, diagram).
-  /// Null jika dokumen tidak berasal dari operasi salin. `onDelete: SetNull` jika sumber dihapus.
-  /// Pelaksana (`DetailSOPPelaksana` / `LangkahSOP.pelaksanaId`) tidak ikut FK ini — atur di layanan salin.
+
   salinDariDetailSopId   String?
   status                 StatusSOP            @default(DRAFT)
   versi                  Int                  @default(1)
@@ -464,7 +462,7 @@ model LogEditSOP {
   @@index([sopDetailId, createdAt])
   @@index([sopDetailId, bagian])
   @@index([userId, createdAt])
-  @@map("LogEditSOP")
+  @@map("LogEditSOP") 
 }
 
 model Komentar {
