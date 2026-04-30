@@ -5,7 +5,7 @@ export interface KomentarItem {
   userName?: string;
   isi: string;
   bagian?: string;
-  status: "OPEN" | "RESOLVED";
+  status: "TERBUKA" | "SELESAI";
   createdAt: string;
   updatedAt?: string;
 }

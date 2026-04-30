@@ -14,6 +14,7 @@ interface ExceptionResponse {
   statusCode: number;
   message: string | string[];
   error?: string;
+  code?: string;
 }
 
 const CONFLICT_MESSAGE_CODE_MAP: Record<string, ErrorCode> = {
@@ -58,13 +59,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         ? 'Validasi gagal'
         : (res.message ?? message);
       errors = Array.isArray(res.message) ? res.message : null;
+      if (typeof res.code === 'string' && this.isErrorCode(res.code)) {
+        code = res.code;
+      }
     } else if (exception instanceof Error) {
       message = exception.message;
       this.logger.error(`Error: ${exception.message}`, exception.stack);
     }
 
     // Map error messages to structured error codes
-    code = this.mapErrorCode(message, status);
+    if (code === ErrorCodes.INTERNAL_SERVER_ERROR) {
+      code = this.mapErrorCode(message, status);
+    }
 
     response.status(status).json({
       success: false,
@@ -117,5 +123,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           ? ErrorCodes.INTERNAL_SERVER_ERROR
           : ErrorCodes.CONFLICT;
     }
+  }
+
+  private isErrorCode(code: string): code is ErrorCode {
+    return Object.values(ErrorCodes).includes(code as ErrorCode);
   }
 }

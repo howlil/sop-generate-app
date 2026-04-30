@@ -17,7 +17,7 @@ export class CreateLangkahSopDto {
 
   @ApiPropertyOptional({
     enum: JenisLangkahProsedur,
-    default: JenisLangkahProsedur.TASK,
+    default: JenisLangkahProsedur.KEGIATAN,
   })
   @IsEnum(JenisLangkahProsedur)
   @IsOptional()

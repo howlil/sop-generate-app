@@ -15,13 +15,9 @@ import { PrismaModule } from '../../common/prisma/prisma.module';
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const jwtSecret = configService.get<string>('JWT_SECRET');
-        if (!jwtSecret) {
-          throw new Error('JWT_SECRET environment variable is required');
-        }
+      useFactory: (configService: ConfigService) => {
         return {
-          secret: jwtSecret,
+          secret: configService.getOrThrow<string>('JWT_SECRET'),
         };
       },
       inject: [ConfigService],

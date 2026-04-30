@@ -19,7 +19,7 @@ import {
 import { UserService } from '../service/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { PaginatedResponseDto } from '../../../common/dto';
+import { PaginatedResponseDto } from '../../../common/dto/api-response.dto';
 import { Roles } from '../../../common/decorators';
 import { PeranPengguna } from '../../../generated/prisma';
 

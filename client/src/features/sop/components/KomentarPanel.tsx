@@ -28,7 +28,7 @@ function isKomentarItem(comment: CommentItem): comment is KomentarItem {
 export interface KomentarPanelProps {
   /** Daftar komentar (urutan bebas; filter/sort di pemanggil jika perlu) */
   comments: CommentItem[]
-  /** Jika ada: tampilkan tombol Selesai/Resolve untuk komentar open */
+  /** Jika ada: tampilkan tombol Selesai untuk komentar terbuka */
   onResolve?: (commentId: string) => void
   /** Jika ada: tampilkan form tambah komentar di atas list */
   addForm?: {
@@ -38,7 +38,7 @@ export interface KomentarPanelProps {
     submitLabel?: string
     placeholder?: string
   }
-  /** Teks ringkasan di atas list (e.g. "Dari Kepala OPD & Tim Evaluasi · 2 terbuka · 1 resolved") */
+  /** Teks ringkasan di atas list (mis. "Dari Kepala OPD & Tim Evaluasi · 2 terbuka · 1 selesai") */
   summary?: React.ReactNode
   /** Warna avatar: default orange (kepala OPD style); "blue" untuk tim penyusun panel */
   avatarVariant?: 'orange' | 'blue'
@@ -67,7 +67,7 @@ export function KomentarPanel({
   }, [comments])
 
   const avatarBg = avatarVariant === 'blue' ? 'bg-blue-600' : 'bg-orange-600'
-  const resolveLabel = avatarVariant === 'blue' ? 'Resolve' : 'Selesai'
+  const resolveLabel = 'Selesai'
 
   return (
     <div className={className ?? ''}>
@@ -106,7 +106,7 @@ export function KomentarPanel({
                 <div
                   key={komentar.id}
                   className={`p-2.5 rounded-md border text-xs ${
-                    komentar.status === 'RESOLVED'
+                    komentar.status === 'SELESAI'
                       ? 'bg-gray-50 border-gray-200'
                       : 'bg-blue-50 border-blue-200'
                   }`}
@@ -123,7 +123,7 @@ export function KomentarPanel({
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      {komentar.status === 'OPEN' ? (
+                      {komentar.status === 'TERBUKA' ? (
                         <>
                           {onResolve != null && (
                             <Button
@@ -137,7 +137,7 @@ export function KomentarPanel({
                             </Button>
                           )}
                           <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 border-0">
-                            Open
+                            Terbuka
                           </Badge>
                         </>
                       ) : (

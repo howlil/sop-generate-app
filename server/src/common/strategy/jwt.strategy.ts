@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AuthMessages } from '../messages';
 import { getCookieValue } from '../utils/cookie.util';
 import { Request } from 'express';
+import { AuthenticatedUser, JwtPayload } from './jwt.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,11 +14,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
-    const jwtSecret = configService.get<string>('JWT_SECRET');
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET environment variable is required');
-    }
-
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,11 +21,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
           getCookieValue('access_token', req.headers.cookie) ?? null,
       ]),
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,
+      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     const user = await this.prisma.pengguna.findUnique({
       where: { id: payload.sub, deletedAt: null },
       select: {

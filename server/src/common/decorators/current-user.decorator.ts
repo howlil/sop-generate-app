@@ -4,17 +4,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthMessages } from '../messages';
-import { PeranPengguna } from '../../generated/prisma';
-
-export interface AuthenticatedUser {
-  id: string;
-  email: string;
-  nama: string;
-  peran: PeranPengguna;
-  opdId: string | null;
-  nip: string;
-  jabatan: string;
-}
+import { AuthenticatedUser } from '../strategy/jwt.types';
+export type { AuthenticatedUser } from '../strategy/jwt.types';
 
 export const CurrentUser = createParamDecorator(
   (data: keyof AuthenticatedUser | undefined, ctx: ExecutionContext) => {

@@ -17,17 +17,17 @@ export class LangkahSopService {
   constructor(private readonly repo: LangkahSopRepository) {}
 
   private validateJenisCabang(dto: Partial<CreateLangkahSopDto>) {
-    const jenis = dto.jenis ?? JenisLangkahProsedur.TASK;
+    const jenis = dto.jenis ?? JenisLangkahProsedur.KEGIATAN;
     const hasYa = !!dto.langkahSelanjutnyaYaId;
     const hasTidak = !!dto.langkahSelanjutnyaTidakId;
 
     // PLK-06
-    if (jenis === JenisLangkahProsedur.TERMINATOR && (hasYa || hasTidak)) {
+    if (jenis === JenisLangkahProsedur.AWAL_AKHIR && (hasYa || hasTidak)) {
       throw new BadRequestException(
         LangkahSopMessages.TERMINATOR_CANNOT_HAVE_NEXT,
       );
     }
-    if (jenis === JenisLangkahProsedur.TASK && hasTidak) {
+    if (jenis === JenisLangkahProsedur.KEGIATAN && hasTidak) {
       throw new BadRequestException(LangkahSopMessages.TASK_ONLY_YES_BRANCH);
     }
   }
@@ -73,7 +73,7 @@ export class LangkahSopService {
     return this.repo.create({
       sopDetailId,
       kegiatan: dto.kegiatan,
-      jenis: dto.jenis ?? JenisLangkahProsedur.TASK,
+      jenis: dto.jenis ?? JenisLangkahProsedur.KEGIATAN,
       urutan: dto.urutan,
       kelengkapan: dto.kelengkapan,
       keluaran: dto.keluaran,

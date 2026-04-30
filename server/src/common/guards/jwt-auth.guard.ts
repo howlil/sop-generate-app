@@ -7,6 +7,12 @@ import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthMessages } from '../messages';
+import { AuthenticatedUser } from '../strategy/jwt.types';
+
+type JwtErrorInfo = {
+  name?: string;
+  message?: string;
+};
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -27,7 +33,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest<TUser = AuthenticatedUser>(
+    err: Error | null,
+    user: AuthenticatedUser | undefined,
+    info: JwtErrorInfo | undefined,
+    _context: ExecutionContext,
+    _status?: unknown,
+  ): TUser {
     if (err || !user) {
       throw (
         err ||
@@ -38,6 +50,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         )
       );
     }
-    return user;
+    return user as TUser;
   }
 }

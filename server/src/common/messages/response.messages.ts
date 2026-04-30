@@ -107,8 +107,8 @@ export const LangkahSopMessages = {
   // Error
   LANGKAH_NOT_FOUND: 'Langkah SOP tidak ditemukan',
   TERMINATOR_CANNOT_HAVE_NEXT:
-    'TERMINATOR tidak boleh memiliki langkah selanjutnya',
-  TASK_ONLY_YES_BRANCH: 'TASK hanya boleh memiliki langkahSelanjutnyaYaId',
+    'AWAL_AKHIR tidak boleh memiliki langkah selanjutnya',
+  TASK_ONLY_YES_BRANCH: 'KEGIATAN hanya boleh memiliki langkahSelanjutnyaYaId',
   PELAKSANA_NOT_IN_SWIMLANE:
     'Pelaksana tidak terdaftar di swimlane Detail SOP ini',
   URUTAN_ALREADY_USED: 'Urutan {urutan} sudah digunakan dalam Detail SOP ini',

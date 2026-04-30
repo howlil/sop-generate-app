@@ -11,6 +11,18 @@ import type {
   SOPDetailMetadata,
 } from "@/types/common";
 
+const API_JENIS_TO_ROW_TYPE: Record<JenisLangkahProsedur, ProsedurRow["type"]> = {
+  AWAL_AKHIR: "terminator",
+  KEGIATAN: "task",
+  KEPUTUSAN: "decision",
+};
+
+const ROW_TYPE_TO_API_JENIS: Record<NonNullable<ProsedurRow["type"]>, JenisLangkahProsedur> = {
+  terminator: "AWAL_AKHIR",
+  task: "KEGIATAN",
+  decision: "KEPUTUSAN",
+};
+
 /** Transform API SopDetail -> UI SOPDetailMetadata */
 export function transformSopDetailToMetadata(detail: SopDetail): SOPDetailMetadata {
   return {
@@ -40,7 +52,7 @@ export function transformLangkahToProsedurRow(langkah: LangkahSOP): ProsedurRow 
     mutu_kelengkapan: langkah.kelengkapan,
     keluaran: langkah.keluaran,
     output: langkah.keluaran,
-    type: langkah.jenis?.toLowerCase() as "terminator" | "task" | "decision",
+    type: API_JENIS_TO_ROW_TYPE[langkah.jenis] ?? "task",
     id_next_step_if_yes: langkah.langkahSelanjutnyaYaId ?? undefined,
     id_next_step_if_no: langkah.langkahSelanjutnyaTidakId ?? undefined,
     keterangan: langkah.keterangan ?? "",
@@ -59,7 +71,7 @@ export function transformProsedurRowToCreateLangkah(
     kegiatan: row.kegiatan,
     pelaksanaId: row.pelaksana,
     keluaran: row.keluaran ?? row.output ?? "",
-    jenis: (row.type?.toUpperCase() as JenisLangkahProsedur) ?? "TASK",
+    jenis: row.type ? ROW_TYPE_TO_API_JENIS[row.type] : "KEGIATAN",
     kelengkapan: row.kelengkapan ?? row.mutu_kelengkapan ?? "",
     waktu,
     satuanWaktu: satuanWaktu as SatuanWaktu,
@@ -80,7 +92,7 @@ export function transformProsedurRowToUpdateLangkah(
     kegiatan: row.kegiatan,
     pelaksanaId: row.pelaksana,
     keluaran: row.keluaran ?? row.output,
-    jenis: row.type?.toUpperCase() as JenisLangkahProsedur,
+    jenis: row.type ? ROW_TYPE_TO_API_JENIS[row.type] : undefined,
     kelengkapan: row.kelengkapan ?? row.mutu_kelengkapan,
     waktu,
     satuanWaktu: satuanWaktu as SatuanWaktu,

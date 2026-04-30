@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
-import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import ms, { type StringValue } from 'ms';
@@ -8,6 +8,7 @@ import { LoginDto, ChangePasswordDto } from '../dto/auth.dto';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 import { AuthMessages } from '../../../common/messages';
 import { PasswordValidator } from '../../../common/validators/password.validator';
+import { JwtPayload } from '../../../common/strategy/jwt.types';
 
 @Injectable()
 export class AuthService {
@@ -48,6 +49,43 @@ export class AuthService {
     return parsed;
   }
 
+  private buildJwtPayload(user: {
+    id: string;
+    email: string;
+    peran: string;
+    opdId: string | null;
+  }): JwtPayload {
+    return {
+      sub: user.id,
+      email: user.email,
+      peran: user.peran,
+      opdId: user.opdId,
+    };
+  }
+
+  private generateAuthTokens(payload: JwtPayload): {
+    accessToken: string;
+    refreshToken: string;
+  } {
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: this.getJwtExpiration('JWT_EXPIRATION', '15m'),
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: this.getJwtExpiration('JWT_REFRESH_EXPIRATION', '7d'),
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  private getBaseCookieOptions() {
+    return {
+      httpOnly: true,
+      secure: this.configService.get<string>('NODE_ENV') === 'production',
+      sameSite: 'lax' as const,
+      path: '/',
+    };
+  }
+
   /**
    * Login user and generate tokens.
    * Tokens are returned for cookie-setting in controller, but NOT included in the API response body.
@@ -72,22 +110,8 @@ export class AuthService {
       throw new UnauthorizedException(AuthMessages.INVALID_EMAIL_OR_PASSWORD);
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      peran: user.peran,
-      opdId: user.opdId,
-    };
-
-    const accessTokenOptions: JwtSignOptions = {
-      expiresIn: this.getJwtExpiration('JWT_EXPIRATION', '15m'),
-    };
-    const accessToken = this.jwtService.sign(payload, accessTokenOptions);
-
-    const refreshTokenOptions: JwtSignOptions = {
-      expiresIn: this.getJwtExpiration('JWT_REFRESH_EXPIRATION', '7d'),
-    };
-    const refreshToken = this.jwtService.sign(payload, refreshTokenOptions);
+    const payload = this.buildJwtPayload(user);
+    const { accessToken, refreshToken } = this.generateAuthTokens(payload);
 
     return {
       accessToken,
@@ -137,28 +161,9 @@ export class AuthService {
         throw new UnauthorizedException(AuthMessages.USER_NOT_FOUND);
       }
 
-      const newPayload = {
-        sub: user.id,
-        email: user.email,
-        peran: user.peran,
-        opdId: user.opdId,
-      };
-
-      const accessTokenOptions: JwtSignOptions = {
-        expiresIn: this.getJwtExpiration('JWT_EXPIRATION', '15m'),
-      };
-      const newAccessToken = this.jwtService.sign(
-        newPayload,
-        accessTokenOptions,
-      );
-
-      const refreshTokenOptions: JwtSignOptions = {
-        expiresIn: this.getJwtExpiration('JWT_REFRESH_EXPIRATION', '7d'),
-      };
-      const newRefreshToken = this.jwtService.sign(
-        newPayload,
-        refreshTokenOptions,
-      );
+      const newPayload = this.buildJwtPayload(user);
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        this.generateAuthTokens(newPayload);
 
       return {
         accessToken: newAccessToken,
@@ -176,15 +181,9 @@ export class AuthService {
    * Cookie options for access token (short-lived: 15 minutes)
    */
   getAccessTokenCookieOptions() {
-    const isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
-
     return {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax' as const,
+      ...this.getBaseCookieOptions(),
       maxAge: this.getJwtExpirationMs('JWT_EXPIRATION', '15m', 15 * 60 * 1000),
-      path: '/',
     };
   }
 
@@ -192,19 +191,13 @@ export class AuthService {
    * Cookie options for refresh token (long-lived: 7 days)
    */
   getRefreshTokenCookieOptions() {
-    const isProduction =
-      this.configService.get<string>('NODE_ENV') === 'production';
-
     return {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: 'lax' as const,
+      ...this.getBaseCookieOptions(),
       maxAge: this.getJwtExpirationMs(
         'JWT_REFRESH_EXPIRATION',
         '7d',
         7 * 24 * 60 * 60 * 1000,
       ),
-      path: '/',
     };
   }
 }

@@ -43,7 +43,7 @@ export type StatusHasilEvaluasi = "SESUAI" | "TIDAK_SESUAI";
 
 export type StatusTim = "AKTIF" | "NONAKTIF";
 
-export type StatusKomentar = "OPEN" | "RESOLVED";
+export type StatusKomentar = "TERBUKA" | "SELESAI";
 
 export type StatusPengajuanEvaluasi =
   | "MENUNGGU_EVALUASI"
@@ -55,7 +55,7 @@ export type StatusPengajuanEvaluasi =
 
 // ==================== SOP TYPES ====================
 
-export type JenisLangkahProsedur = "TERMINATOR" | "TASK" | "DECISION";
+export type JenisLangkahProsedur = "AWAL_AKHIR" | "KEGIATAN" | "KEPUTUSAN";
 export type SatuanWaktu = "m" | "h" | "d" | "w" | "mo" | "y";
 export type JenisLampiran =
   | "PERINGATAN"
