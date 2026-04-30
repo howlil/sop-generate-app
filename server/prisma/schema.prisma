@@ -9,7 +9,7 @@ datasource db {
 }
 
 /// =========================
-/// MODUL PENGGUNA & ORGANISASI
+/// MODUL 1 — MASTER & AKSES
 /// =========================
 model Pengguna {
   penggunaId                      String               @id @default(uuid())
@@ -69,7 +69,7 @@ model RiwayatOpdPengguna {
 }
 
 /// =========================
-/// MODUL REGULASI & SOP
+/// MODUL 1 — MASTER & AKSES (REGULASI)
 /// =========================
 model Peraturan {
   peraturanId String         @id @default(uuid())
@@ -95,6 +95,9 @@ model OPDPeraturan {
   @@id([opdId, peraturanId])
 }
 
+/// =========================
+/// MODUL 2 — AUTHORING SOP (INTI)
+/// =========================
 model SOP {
   sopId      String      @id @default(uuid())
   opdId      String
@@ -225,7 +228,34 @@ model DetailSOPPelaksana {
 
 
 /// =========================
-/// MODUL DIAGRAM SOP
+/// MODUL 3 — KOLABORASI SOP
+/// =========================
+
+model LogEditSOP {
+  logEditSopId String    @id @default(uuid())
+  detailSopId  String
+  userId       String
+  keterangan   String?   @db.Text
+  createdAt    DateTime  @default(now())
+  detailSop    DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  user         Pengguna  @relation(fields: [userId], references: [penggunaId])
+}
+
+model Komentar {
+  komentarId  String         @id @default(uuid())
+  detailSopId String
+  userId      String
+  isi         String         @db.Text
+  status      StatusKomentar @default(TERBUKA)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  detailSop   DetailSOP      @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  user        Pengguna       @relation(fields: [userId], references: [penggunaId])
+}
+
+
+/// =========================
+/// MODUL 4 — DIAGRAM SOP
 /// =========================
 model TataLetakDiagram {
   tataLetakDiagramId String              @id @default(uuid())
@@ -286,7 +316,7 @@ model TitikSisiDiagram {
 
 
 /// =========================
-/// MODUL EVALUASI SOP
+/// MODUL 5 — PENGAJUAN & EVALUASI SOP
 /// =========================
 model PengajuanEvaluasi {
   pengajuanEvaluasiId                 String                  @id @default(uuid())
@@ -351,7 +381,7 @@ model LogNilaiEvaluasi {
 }
 
 /// =========================
-/// MODUL TANDA TANGAN ELEKTRONIK (TTE)
+/// MODUL 6 — LEGALISASI & TTE
 /// =========================
 model KredensialTTE {
   kredensialTteId    String    @id @default(uuid())
@@ -368,7 +398,7 @@ model KredensialTTE {
 model DokumenTte {
   dokumenTteId         String             @id @default(uuid())
   nomorDokumen         String
-  jenisDokumen         String
+  jenisDokumen         JenisDokumenTte
   judulDokumen         String
   hashDokumen          String
   versiDokumen         Int                @default(1)
@@ -404,32 +434,6 @@ model RiwayatTandaTangan {
   user                 Pengguna           @relation(fields: [userId], references: [penggunaId])
 
   @@unique([dokumenTteId, peran])
-}
-
-/// =========================
-/// MODUL KOLABORASI SOP
-/// =========================
-
-model LogEditSOP {
-  logEditSopId String    @id @default(uuid())
-  detailSopId  String
-  userId       String
-  keterangan   String?   @db.Text
-  createdAt    DateTime  @default(now())
-  detailSop    DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
-  user         Pengguna  @relation(fields: [userId], references: [penggunaId])
-}
-
-model Komentar {
-  komentarId  String         @id @default(uuid())
-  detailSopId String
-  userId      String
-  isi         String         @db.Text
-  status      StatusKomentar @default(TERBUKA)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  detailSop   DetailSOP      @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
-  user        Pengguna       @relation(fields: [userId], references: [penggunaId])
 }
 
 /// =========================
@@ -508,6 +512,12 @@ enum StatusPengajuanEvaluasi {
 enum HasilEvaluasi {
   SESUAI
   TIDAK_SESUAI
+}
+
+enum JenisDokumenTte {
+  BERITA_ACARA_EVALUASI
+  SOP_BERLAKU
+  LAINNYA
 }
 
 enum StatusKomentar {

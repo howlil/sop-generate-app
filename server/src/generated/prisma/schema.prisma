@@ -1,0 +1,530 @@
+generator client {
+  provider       = "prisma-client-js"
+  output         = "../src/generated/prisma"
+  jsModuleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+/// =========================
+/// MODUL 1 — MASTER & AKSES
+/// =========================
+model Pengguna {
+  penggunaId                      String               @id @default(uuid())
+  email                           String               @unique
+  opdId                           String
+  nama                            String
+  kataSandi                       String
+  peran                           PeranPengguna
+  nip                             String               @unique
+  jabatan                         String
+  pangkat                         String
+  nohp                            String
+  deletedAt                       DateTime?
+  createdAt                       DateTime             @default(now())
+  updatedAt                       DateTime             @updatedAt
+  detailSopDibuat                 DetailSOP[]          @relation("SOPDibuatOleh")
+  detailSopDiedit                 DetailSOP[]          @relation("SOPDieditOleh")
+  komentar                        Komentar[]
+  logEditSop                      LogEditSOP[]
+  logNilaiEvaluasi                LogNilaiEvaluasi[]
+  nilaiEvaluasiDiisi              NilaiEvaluasi[]      @relation("NilaiDiisiOleh")
+  pengajuanEvaluasiDiselesaikan   PengajuanEvaluasi[]  @relation("PengajuanDiselesaikanOleh")
+  pengajuanEvaluasiDitandatangani PengajuanEvaluasi[]  @relation("PengajuanDitandatanganiOlehKoordinator")
+  pengajuanEvaluasiDiverifikasi   PengajuanEvaluasi[]  @relation("PengajuanDiverifikasiOleh")
+  opd                             OPD                  @relation(fields: [opdId], references: [opdId], onDelete: Restrict)
+  kredensialTTE                   KredensialTTE?
+  riwayatOpd                      RiwayatOpdPengguna[]
+  tandaTangan                     RiwayatTandaTangan[]
+}
+
+model OPD {
+  opdId              String               @id @default(uuid())
+  nama               String
+  deletedAt          DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  pelaksana          Pelaksana[]
+  pengajuanEvaluasi  PengajuanEvaluasi[]
+  pengguna           Pengguna[]
+  riwayatOpdPengguna RiwayatOpdPengguna[]
+  opdPeraturan       OPDPeraturan[]
+  sop                SOP[]
+}
+
+model RiwayatOpdPengguna {
+  riwayatOpdPenggunaId String    @id @default(uuid())
+  penggunaId           String
+  opdId                String
+  mulaiPada            DateTime  @default(now())
+  berakhirPada         DateTime?
+  alasan               String?
+  createdAt            DateTime  @default(now())
+  opd                  OPD       @relation(fields: [opdId], references: [opdId], onDelete: Restrict)
+  pengguna             Pengguna  @relation(fields: [penggunaId], references: [penggunaId], onDelete: Cascade)
+
+  @@unique([penggunaId, mulaiPada])
+}
+
+/// =========================
+/// MODUL 1 — MASTER & AKSES (REGULASI)
+/// =========================
+model Peraturan {
+  peraturanId String         @id @default(uuid())
+  nama        String
+  nomor       String
+  tahun       Int
+  tentang     String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  dasarHukum  DasarHukum[]
+  opdPemakai  OPDPeraturan[]
+
+  @@unique([nomor, tahun])
+}
+
+model OPDPeraturan {
+  opdId       String
+  peraturanId String
+  createdAt   DateTime  @default(now())
+  opd         OPD       @relation(fields: [opdId], references: [opdId], onDelete: Cascade)
+  peraturan   Peraturan @relation(fields: [peraturanId], references: [peraturanId], onDelete: Cascade)
+
+  @@id([opdId, peraturanId])
+}
+
+/// =========================
+/// MODUL 2 — AUTHORING SOP (INTI)
+/// =========================
+model SOP {
+  sopId      String      @id @default(uuid())
+  opdId      String
+  judul      String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  detailSops DetailSOP[]
+  opd        OPD         @relation(fields: [opdId], references: [opdId])
+}
+
+model DetailSOP {
+  detailSopId String @id @default(uuid())
+  sopId       String
+
+  salinDariDetailSopId   String?
+  status                 StatusSOP            @default(DRAFT)
+  versi                  Int                  @default(1)
+  nomorSOP               String               @unique
+  tanggalPembuatan       DateTime             @default(now())
+  tanggalRevisi          DateTime?
+  tanggalEfektif         DateTime?
+  namaLembaga            String               @db.Text
+  lebarKolomKegiatan     Int?
+  lebarKolomPelaksana    Int?
+  lebarKolomKelengkapan  Int?
+  lebarKolomWaktu        Int?
+  lebarKolomOutput       Int?
+  lebarKolomKeterangan   Int?
+  dibuatOlehId           String?
+  terakhirDieditOlehId   String?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  dasarHukum             DasarHukum[]
+  dibuatOleh             Pengguna?            @relation("SOPDibuatOleh", fields: [dibuatOlehId], references: [penggunaId], onDelete: Restrict)
+  salinDariDetailSop     DetailSOP?           @relation("DetailSOPSalinan", fields: [salinDariDetailSopId], references: [detailSopId])
+  disalinKeDariSumberIni DetailSOP[]          @relation("DetailSOPSalinan")
+  sop                    SOP                  @relation(fields: [sopId], references: [sopId], onDelete: Cascade)
+  terakhirDieditOleh     Pengguna?            @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [penggunaId], onDelete: Restrict)
+  swimlanes              DetailSOPPelaksana[]
+  diagramLayout          TataLetakDiagram[]
+  komentar               Komentar[]
+  lampiran               LampiranTeks[]
+  langkahSOP             LangkahSOP[]
+  logEditSop             LogEditSOP[]
+  nilaiEvaluasi          NilaiEvaluasi[]
+  relasiSopKeluar        SopTerkait[]         @relation("RelasiSOP")
+  relasiSopMasuk         SopTerkait[]         @relation("RelasiSOPTerkait")
+  dokumenTte             DokumenTte[]
+
+  @@unique([sopId, versi])
+}
+
+model LampiranTeks {
+  lampiranTeksId String        @id @default(uuid())
+  detailSopId    String
+  jenis          JenisLampiran
+  teks           String        @db.Text
+  detailSop      DetailSOP     @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+}
+
+model DasarHukum {
+  detailSopId String
+  peraturanId String
+  peraturan   Peraturan @relation(fields: [peraturanId], references: [peraturanId])
+  detailSop   DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+
+  @@id([detailSopId, peraturanId])
+}
+
+model SopTerkait {
+  detailSopId        String
+  detailSopTerkaitId String
+  sop                DetailSOP @relation("RelasiSOP", fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  sopTerkait         DetailSOP @relation("RelasiSOPTerkait", fields: [detailSopTerkaitId], references: [detailSopId], onDelete: Cascade)
+
+  @@id([detailSopId, detailSopTerkaitId])
+}
+
+model LangkahSOP {
+  langkahSopId              String               @id @default(uuid())
+  detailSopId               String
+  kegiatan                  String               @db.Text
+  jenis                     JenisLangkahProsedur @default(KEGIATAN)
+  urutan                    Int
+  kelengkapan               String
+  keluaran                  String
+  waktu                     Int
+  satuanWaktu               SatuanWaktu
+  keterangan                String               @db.Text
+  pelaksanaId               String
+  langkahSelanjutnyaYaId    String?
+  langkahSelanjutnyaTidakId String?
+  createdAt                 DateTime             @default(now())
+  updatedAt                 DateTime             @updatedAt
+  diagramEdgeKeluar         SisiDiagram[]        @relation("DiagramEdgeDari")
+  diagramEdgeMasuk          SisiDiagram[]        @relation("DiagramEdgeKe")
+  diagramNodePosition       PosisiNodeDiagram[]
+  langkahTidak              LangkahSOP?          @relation("LangkahTidak", fields: [langkahSelanjutnyaTidakId], references: [langkahSopId])
+  langkahSebelumTidak       LangkahSOP[]         @relation("LangkahTidak")
+  langkahYa                 LangkahSOP?          @relation("LangkahYa", fields: [langkahSelanjutnyaYaId], references: [langkahSopId])
+  langkahSebelumYa          LangkahSOP[]         @relation("LangkahYa")
+  pelaksana                 Pelaksana            @relation(fields: [pelaksanaId], references: [pelaksanaId])
+  detailSop                 DetailSOP            @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+
+  @@unique([detailSopId, urutan])
+}
+
+model Pelaksana {
+  pelaksanaId String               @id @default(uuid())
+  opdId       String
+  nama        String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  sopDetails  DetailSOPPelaksana[]
+  langkahSOP  LangkahSOP[]
+  opd         OPD                  @relation(fields: [opdId], references: [opdId])
+}
+
+model DetailSOPPelaksana {
+  detailSopId String
+  pelaksanaId String
+  urutan      Int       @default(0)
+  pelaksana   Pelaksana @relation(fields: [pelaksanaId], references: [pelaksanaId])
+  detailSop   DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+
+  @@id([detailSopId, pelaksanaId])
+}
+
+/// =========================
+/// MODUL 3 — KOLABORASI SOP
+/// =========================
+
+model LogEditSOP {
+  logEditSopId String    @id @default(uuid())
+  detailSopId  String
+  userId       String
+  keterangan   String?   @db.Text
+  createdAt    DateTime  @default(now())
+  detailSop    DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  user         Pengguna  @relation(fields: [userId], references: [penggunaId])
+}
+
+model Komentar {
+  komentarId  String         @id @default(uuid())
+  detailSopId String
+  userId      String
+  isi         String         @db.Text
+  status      StatusKomentar @default(TERBUKA)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  detailSop   DetailSOP      @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  user        Pengguna       @relation(fields: [userId], references: [penggunaId])
+}
+
+/// =========================
+/// MODUL 4 — DIAGRAM SOP
+/// =========================
+model TataLetakDiagram {
+  tataLetakDiagramId String              @id @default(uuid())
+  detailSopId        String
+  jenis              JenisDiagramSOP
+  versiLayout        Int                 @default(1)
+  layoutSeed         Int                 @default(0)
+  gayaPanah          GayaPanah?
+  langkahPerHalaman  Int?                @default(10)
+  lebarAreaKegiatan  Int?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  edgeOverrides      SisiDiagram[]
+  detailSop          DetailSOP           @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  nodeOverrides      PosisiNodeDiagram[]
+
+  @@unique([detailSopId, jenis, versiLayout])
+}
+
+model PosisiNodeDiagram {
+  tataLetakDiagramId String
+  langkahSopId       String
+  page               Int              @default(1)
+  x                  Int
+  y                  Int
+  updatedAt          DateTime         @updatedAt
+  tataLetakDiagram   TataLetakDiagram @relation(fields: [tataLetakDiagramId], references: [tataLetakDiagramId], onDelete: Cascade)
+  langkahSOP         LangkahSOP       @relation(fields: [langkahSopId], references: [langkahSopId])
+
+  @@id([tataLetakDiagramId, langkahSopId])
+}
+
+model SisiDiagram {
+  sisiDiagramId      String             @id @default(uuid())
+  tataLetakDiagramId String
+  dariLangkahId      String
+  keLangkahId        String
+  /// Membedakan edge ganda (mis. keputusan Ya vs Tidak) tanpa mengandalkan NULL di unique.
+  cabang             CabangDiagramEdge  @default(UTAMA)
+  labelTeks          String?
+  dariLangkah        LangkahSOP         @relation("DiagramEdgeDari", fields: [dariLangkahId], references: [langkahSopId])
+  tataLetakDiagram   TataLetakDiagram   @relation(fields: [tataLetakDiagramId], references: [tataLetakDiagramId], onDelete: Cascade)
+  keLangkah          LangkahSOP         @relation("DiagramEdgeKe", fields: [keLangkahId], references: [langkahSopId])
+  points             TitikSisiDiagram[]
+
+  @@unique([tataLetakDiagramId, dariLangkahId, keLangkahId, cabang])
+}
+
+model TitikSisiDiagram {
+  sisiDiagramId String
+  urutan        Int
+  x             Int
+  y             Int
+  sisiDiagram   SisiDiagram @relation(fields: [sisiDiagramId], references: [sisiDiagramId], onDelete: Cascade)
+
+  @@id([sisiDiagramId, urutan])
+}
+
+/// =========================
+/// MODUL 5 — PENGAJUAN & EVALUASI SOP
+/// =========================
+model PengajuanEvaluasi {
+  pengajuanEvaluasiId                 String                  @id @default(uuid())
+  opdId                               String
+  jenis                               JenisPengajuanEvaluasi
+  status                              StatusPengajuanEvaluasi @default(MENUNGGU_EVALUASI)
+  catatan                             String?                 @db.Text
+  nomorBA                             String?
+  tanggalPermintaan                   DateTime?
+  tanggalEvaluasi                     DateTime?
+  nilaiOPD                            Int?
+  diverifikasiOlehUserId              String?
+  ditandatanganiOlehKoordinatorUserId String?
+  tanggalTTDBaKoordinator             DateTime?
+  /// Evaluator yang men-trigger "selesai evaluasi" → kirim ke Biro Organisasi.
+  /// Syarat: semua NilaiEvaluasi dalam pengajuan ini sudah terisi hasil.
+  diselesaikanOlehId                  String?
+  tanggalDiselesaikan                 DateTime?
+  /// Versi untuk optimistic locking — increment di setiap update status.
+  /// Service: UPDATE ... SET status = ?, version = version + 1 WHERE id = ? AND version = ?
+  version                             Int                     @default(0)
+  createdAt                           DateTime                @default(now())
+  updatedAt                           DateTime                @updatedAt
+  logNilaiEvaluasi                    LogNilaiEvaluasi[]
+  nilaiEvaluasi                       NilaiEvaluasi[]
+  diselesaikanOleh                    Pengguna?               @relation("PengajuanDiselesaikanOleh", fields: [diselesaikanOlehId], references: [penggunaId])
+  ditandatanganiOlehKoordinatorUser   Pengguna?               @relation("PengajuanDitandatanganiOlehKoordinator", fields: [ditandatanganiOlehKoordinatorUserId], references: [penggunaId], onDelete: Restrict)
+  diverifikasiOlehUser                Pengguna?               @relation("PengajuanDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [penggunaId], onDelete: Restrict)
+  dokumenTte                          DokumenTte[]
+  opd                                 OPD                     @relation(fields: [opdId], references: [opdId])
+}
+
+model NilaiEvaluasi {
+  nilaiEvaluasiId     String            @id @default(uuid())
+  pengajuanEvaluasiId String
+  detailSopId         String
+  hasil               HasilEvaluasi?
+  catatan             String?           @db.Text
+  version             Int               @default(0)
+  dinilaiOlehId       String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  dinilaiOleh         Pengguna?         @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
+  pengajuanEvaluasi   PengajuanEvaluasi @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
+  detailSop           DetailSOP         @relation(fields: [detailSopId], references: [detailSopId])
+
+  @@unique([pengajuanEvaluasiId, detailSopId])
+}
+
+model LogNilaiEvaluasi {
+  logNilaiEvaluasiId  String            @id @default(uuid())
+  pengajuanEvaluasiId String
+  detailSopId         String
+  evaluatorId         String
+  hasilSebelum        HasilEvaluasi?
+  hasilSesudah        HasilEvaluasi?
+  catatanSebelum      String?           @db.Text
+  catatanSesudah      String?           @db.Text
+  createdAt           DateTime          @default(now())
+  evaluator           Pengguna          @relation(fields: [evaluatorId], references: [penggunaId])
+  pengajuanEvaluasi   PengajuanEvaluasi @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
+}
+
+/// =========================
+/// MODUL 6 — LEGALISASI & TTE
+/// =========================
+model KredensialTTE {
+  kredensialTteId    String    @id @default(uuid())
+  userId             String    @unique
+  hashPin            String
+  emailTerverifikasi Boolean   @default(false)
+  tokenVerifikasi    String?
+  tokenExpiry        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               Pengguna  @relation(fields: [userId], references: [penggunaId])
+}
+
+model DokumenTte {
+  dokumenTteId         String               @id @default(uuid())
+  nomorDokumen         String
+  jenisDokumen         JenisDokumenTte
+  judulDokumen         String
+  hashDokumen          String
+  versiDokumen         Int                  @default(1)
+  metodeKanonikalisasi String?
+  detailSopId          String?
+  pengajuanEvaluasiId  String?
+  createdAt            DateTime             @default(now())
+  detailSop            DetailSOP?           @relation(fields: [detailSopId], references: [detailSopId], onDelete: Restrict)
+  pengajuanEvaluasi    PengajuanEvaluasi?   @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Restrict)
+  riwayatTandaTangan   RiwayatTandaTangan[]
+
+  @@unique([detailSopId])
+  @@unique([pengajuanEvaluasiId])
+}
+
+model RiwayatTandaTangan {
+  riwayatTandaTanganId String        @id @default(uuid())
+  userId               String
+  dokumenTteId         String
+  peran                PeranPengguna
+  signatureValue       String?       @db.LongText
+  signatureAlgorithm   String?
+  signatureFormat      String?
+  keyId                String?
+  certSerialNumber     String?
+  certIssuer           String?
+  certSubject          String?
+  certFingerprint      String?
+  certValidFrom        DateTime?
+  certValidTo          DateTime?
+  ditandatanganiPada   DateTime      @default(now())
+  dokumenTte           DokumenTte    @relation(fields: [dokumenTteId], references: [dokumenTteId], onDelete: Restrict)
+  user                 Pengguna      @relation(fields: [userId], references: [penggunaId])
+
+  @@unique([dokumenTteId, peran])
+}
+
+/// =========================
+/// ENUMS
+/// =========================
+enum PeranPengguna {
+  PJ_EVALUATOR
+  EVALUATOR
+  KEPALA_OPD
+  PJ_PENYUSUN
+  PENYUSUN
+}
+
+enum StatusSOP {
+  DRAFT
+  SEDANG_DISUSUN
+  SIAP_DIEVALUASI
+  DIAJUKAN_EVALUASI
+  SEDANG_DIEVALUASI
+  REVISI_DARI_TIM_EVALUASI
+  SIAP_DIVERIFIKASI
+  DIVERIFIKASI_BIRO_ORGANISASI
+  /// Versi aktif yang sah — hanya 1 versi BERLAKU per SOP (enforce via trigger, lihat SCHEMA-CONSTRAINTS.md)
+  BERLAKU
+  /// Versi lama yang digantikan versi baru. Set otomatis saat versi baru menjadi BERLAKU.
+  DIGANTIKAN
+  DICABUT
+}
+
+enum JenisLangkahProsedur {
+  AWAL_AKHIR
+  KEGIATAN
+  KEPUTUSAN
+}
+
+enum SatuanWaktu {
+  m
+  h
+  d
+  w
+  mo
+  y
+}
+
+enum JenisDiagramSOP {
+  FLOWCHART
+  BPMN
+}
+
+/// Membedakan beberapa edge dari node yang sama ke node lain (mis. cabang Ya/Tidak).
+enum CabangDiagramEdge {
+  UTAMA
+  YA
+  TIDAK
+}
+
+enum GayaPanah {
+  LURUS
+  SIKU
+}
+
+enum JenisPengajuanEvaluasi {
+  TERJADWAL
+  MANDIRI
+}
+
+enum StatusPengajuanEvaluasi {
+  MENUNGGU_EVALUASI
+  SEDANG_DIEVALUASI
+  SELESAI_DIEVALUASI
+  DIVERIFIKASI_BIRO
+  DITANDATANGANI_KOORDINATOR
+  SELESAI
+}
+
+enum HasilEvaluasi {
+  SESUAI
+  TIDAK_SESUAI
+}
+
+enum JenisDokumenTte {
+  BERITA_ACARA_EVALUASI
+  SOP_BERLAKU
+  LAINNYA
+}
+
+enum StatusKomentar {
+  TERBUKA
+  SELESAI
+}
+
+enum JenisLampiran {
+  PERINGATAN
+  KUALIFIKASI_PELAKSANAAN
+  PERALATAN
+  PENCATATAN_PENDATAAN
+}

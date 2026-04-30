@@ -3,10 +3,7 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
-import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
-import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { RolesGuard } from './common/guards/roles.guard';
 
 // Configuration constants
 const CORS_MAX_AGE_SECONDS = 3600; // 1 hour
@@ -46,10 +43,8 @@ async function bootstrap() {
 
   // Global Guards
   const reflector = app.get(Reflector);
-  app.useGlobalGuards(new JwtAuthGuard(reflector), new RolesGuard(reflector));
 
   // Global Exception Filter
-  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // CORS Configuration
   const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
