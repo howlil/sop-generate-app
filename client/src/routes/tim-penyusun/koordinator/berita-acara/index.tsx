@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { BeritaAcaraKoordinatorPage } from '@/pages/tim-penyusun/koordinator/berita-acara'
+import { BeritaAcaraKoordinatorPage } from '@/pages/tim-penyusun/koordinator/berita-acara/BeritaAcaraKoordinatorPage'
 import { requireRoles } from '@/stores/authStore'
 
 export const Route = createFileRoute('/tim-penyusun/koordinator/berita-acara/')({

@@ -5,7 +5,11 @@ import { KepalaOPDFormDialog } from './KepalaOPDFormDialog'
 import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
 import { PindahJabatanDialog } from './PindahJabatanDialog'
 import { RiwayatJabatanDialog } from './RiwayatJabatanDialog'
-import type { FormTambahKepalaState, RiwayatDialogPerson, KepalaFormState } from '@/types/common'
+import type {
+  FormTambahKepalaState,
+  KepalaFormState,
+  RiwayatDialogPerson,
+} from '@/types/ui/organisasi'
 import type {
   OPDOption as OPD,
   KepalaOPDRow,

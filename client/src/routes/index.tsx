@@ -1,9 +1,36 @@
+import { lazy, Suspense } from 'react'
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { LandingPage } from '@/pages'
+import { z } from 'zod'
+import { zodSearchValidator } from '@tanstack/router-zod-adapter'
+import { RouteErrorPage } from '@/components/ui/route-error'
 import { ROLES, ROUTES } from '@/utils/constants'
 import { getRole, ensureAuthHydrated } from '@/stores/authStore'
 
+const homeSearchSchema = z.object({
+  denied: z.coerce.boolean().optional(),
+  redirect: z.string().max(2048).optional(),
+})
+
+const LandingPage = lazy(() =>
+  import('@/pages/LandingPage').then((m) => ({ default: m.LandingPage })),
+)
+
+function HomeRoutePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="text-center text-sm text-gray-600">Memuat beranda…</div>
+        </div>
+      }
+    >
+      <LandingPage />
+    </Suspense>
+  )
+}
+
 export const Route = createFileRoute('/')({
+  validateSearch: zodSearchValidator(homeSearchSchema),
   beforeLoad: async () => {
     await ensureAuthHydrated()
     const userRole = getRole()
@@ -22,5 +49,6 @@ export const Route = createFileRoute('/')({
       throw redirect({ to: targetRoute })
     }
   },
-  component: LandingPage,
+  component: HomeRoutePage,
+  errorComponent: ({ error, reset }) => <RouteErrorPage error={error} reset={reset} />,
 })

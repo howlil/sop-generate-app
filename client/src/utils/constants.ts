@@ -4,7 +4,9 @@
  * Note: Types are imported from @/types/common
  */
 
-import type { RoleKey, StatusBadgeConfig, StatusSOP } from "@/types/common";
+import type { RoleKey } from "@/types/dto/access.dto";
+import type { StatusSOP } from "@/types/dto/sop.dto";
+import type { StatusBadgeConfig } from "@/types/ui/shared";
 
 // ==================== CONSTANTS ====================
 

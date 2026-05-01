@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DetailSOP } from '@/pages/kepala-opd/sop/$id'
+import { DetailSOP } from '@/pages/kepala-opd/sop/DetailSOP'
 import { ROUTES } from '@/utils/constants'
 
 export const Route = createFileRoute('/kepala-opd/sop/$id')({

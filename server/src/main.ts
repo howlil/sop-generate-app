@@ -1,19 +1,52 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import cookieParser from 'cookie-parser';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
+import { ACCESS_TOKEN_COOKIE_NAME } from './modules/core/auth/helpers/auth.shared';
 
-// Configuration constants
-const CORS_MAX_AGE_SECONDS = 3600; // 1 hour
 const DEFAULT_PORT = 3000;
+const CORS_MAX_AGE_SECONDS = 3600;
+
+function buildCorsOptions(configService: ConfigService): CorsOptions {
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  const allowedOrigins = configService
+    .get<string>('ALLOWED_ORIGINS', '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  return {
+    origin:
+      nodeEnv === 'production'
+        ? (
+            origin: string | undefined,
+            callback: (error: Error | null, allow?: boolean) => void,
+          ) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+              callback(null, true);
+              return;
+            }
+            callback(new Error('CORS policy violation'));
+          }
+        : true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    credentials: true,
+    maxAge: CORS_MAX_AGE_SECONDS,
+  };
+}
 
 async function bootstrap() {
   const logger = WinstonModule.createLogger(WinstonLoggerConfig);
   const app = await NestFactory.create(AppModule, { logger });
+  const configService = app.get(ConfigService);
 
-  // Error boundaries - unhandled exceptions
+  app.use(cookieParser());
+
   process.on('uncaughtException', (err) => {
     logger.error('Uncaught Exception:', err);
   });
@@ -23,13 +56,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  // API Versioning
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
 
-  // Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -40,53 +71,36 @@ async function bootstrap() {
       },
     }),
   );
+  app.enableCors(buildCorsOptions(configService));
 
-  // Global Guards
-  const reflector = app.get(Reflector);
+  const nodeEnv = configService.get<string>('NODE_ENV', 'development');
+  const swaggerEnabled = configService.get<boolean>('SWAGGER_ENABLED', nodeEnv !== 'production');
+  if (swaggerEnabled) {
+    const config = new DocumentBuilder()
+      .setTitle('SOP Biro Organisasi API')
+      .setDescription('API untuk Sistem Manajemen SOP Biro Organisasi')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+      .addTag('Auth', 'Authentication endpoints')
+      .addTag('Users', 'User management')
+      .addTag('Health', 'Health check')
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
 
-  // Global Exception Filter
-
-  // CORS Configuration
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
-  app.enableCors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-              callback(null, true);
-            } else {
-              callback(new Error('CORS policy violation'));
-            }
-          }
-        : true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-    maxAge: CORS_MAX_AGE_SECONDS,
-  });
-
-  // Swagger setup
-  const config = new DocumentBuilder()
-    .setTitle('SOP Biro Organisasi API')
-    .setDescription('API untuk Sistem Manajemen SOP Biro Organisasi')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addTag('Auth', 'Authentication endpoints')
-    .addTag('Users', 'User management')
-    .addTag('Health', 'Health check')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
-
-  // Graceful shutdown
   app.enableShutdownHooks();
 
-  const port = process.env.PORT ?? DEFAULT_PORT.toString();
+  const port = configService.get<number>('PORT', DEFAULT_PORT);
   await app.listen(port);
   logger.log(`🚀 Server running on http://localhost:${port}/api`);
-  logger.log(`📚 Swagger docs: http://localhost:${port}/docs`);
+  if (swaggerEnabled) {
+    logger.log(`📚 Swagger docs: http://localhost:${port}/docs`);
+  }
   logger.log(`💚 Health check: http://localhost:${port}/health`);
-  logger.log(`🔐 Auth endpoint: http://localhost:${port}/api/v1/login`);
+  logger.log(`🔐 Auth (login): http://localhost:${port}/api/v1/auth/login`);
+  logger.log(`🔐 Auth (me): http://localhost:${port}/api/v1/auth/me`);
 }
 
-bootstrap();
+void bootstrap();

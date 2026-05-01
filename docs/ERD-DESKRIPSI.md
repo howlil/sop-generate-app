@@ -193,7 +193,7 @@ Sistem dibagi menjadi 6 area:
 
 ## DokumenTte
 - PK: `dokumenTteId`
-- Metadata dokumen: `nomorDokumen`, `jenisDokumen`, `judulDokumen`, `hashDokumen`
+- Metadata dokumen: `nomorDokumen`, `jenisDokumen` (`JenisDokumenTte`), `judulDokumen`, `hashDokumen`
 - Metadata verifikasi: `versiDokumen`, `metodeKanonikalisasi`
 - FK opsional:
   - `detailSopId`

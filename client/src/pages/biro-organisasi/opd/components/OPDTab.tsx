@@ -15,7 +15,7 @@ import { FormField } from '@/components/ui/form-field'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId, formatDateIdLong } from '@/utils/format-date'
-import type { OPDUI as OPD, KepalaOPDUI as KepalaOPD } from '@/features/organisasi/types/ui'
+import type { OPDUI as OPD, KepalaOPDUI as KepalaOPD } from '@/types/ui/organisasi'
 
 export interface OPDTabProps {
   filteredOPD: OPD[]

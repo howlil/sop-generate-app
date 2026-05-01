@@ -16,7 +16,7 @@ import logoSvg from "@/assets/logo.svg";
 import { HeaderBar } from "@/components/layout/HeaderBar";
 import { PageHeaderProvider } from "@/components/layout/PageHeaderProvider";
 import { useAuthStore } from "@/stores/authStore";
-import type { RoleKey } from "@/types/common";
+import type { RoleKey } from "@/types/dto/access.dto";
 import { cn } from "@/utils/cn";
 import { ROUTES } from "@/utils/constants";
 

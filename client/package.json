@@ -36,10 +36,12 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss": "^4.1.18",
     "vite-tsconfig-paths": "^6.0.2",
+    "zod": "^4.4.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "^0.3.11",
+    "@tanstack/router-zod-adapter": "^1.81.5",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.2.0",

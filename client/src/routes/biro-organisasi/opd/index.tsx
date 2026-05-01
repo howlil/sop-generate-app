@@ -1,10 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ManajemenOPD } from '@/pages/biro-organisasi/opd'
+import { ManajemenOPD } from '@/pages/biro-organisasi/opd/ManajemenOPD'
 
 export const Route = createFileRoute('/biro-organisasi/opd/')({
-  component: ManajemenOPDPage,
+  component: ManajemenOPD,
 })
-
-function ManajemenOPDPage() {
-  return <ManajemenOPD />
-}

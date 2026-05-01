@@ -1,7 +1,7 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Input } from '@/components/ui/input'
-import type { KepalaFormState } from "@/types/common"
+import type { KepalaFormState } from "@/types/ui/organisasi"
 import type { KepalaOPDRow as KepalaOPD, OPDOption as OPD } from './types'
 
 export interface KepalaOPDFormDialogProps {

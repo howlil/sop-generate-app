@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
-import type { Peraturan } from '@/features/organisasi'
+import type { Peraturan } from "@/types/dto/peraturan.dto";
 
 export interface PeraturanTableTabProps {
   filteredPeraturan: Peraturan[]

@@ -1,7 +1,7 @@
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import { Select } from '@/components/ui/select'
-import type { FormTambahKepalaState } from '@/types/common'
+import type { FormTambahKepalaState } from '@/types/ui/organisasi'
 
 interface OPD {
   id: string

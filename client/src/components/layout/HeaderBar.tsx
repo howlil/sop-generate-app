@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { usePageHeaderContext } from "@/components/layout/PageHeaderProvider";
-import { useAppRole } from "@/features/auth";
+import { useAppRole } from "@/hooks/useAppRole";
 import { useAuthStore } from "@/stores/authStore";
 
 export function HeaderBar() {
@@ -30,7 +30,7 @@ export function HeaderBar() {
     });
   };
 
-  const roleLabel = role ? getRoleLabel(role) : "-";
+  const roleLabel = role ? getRoleLabel(role) : "";
   const displayName = getRoleDisplayName();
   const nip = getRoleNip();
 
@@ -71,7 +71,7 @@ export function HeaderBar() {
                   {displayName}
                 </p>
                 <p className="text-xs text-gray-500">{roleLabel}</p>
-                {nip && nip !== "-" && (
+                {nip && nip !== "" && (
                   <p className="text-xs text-gray-500">NIP. {nip}</p>
                 )}
               </div>

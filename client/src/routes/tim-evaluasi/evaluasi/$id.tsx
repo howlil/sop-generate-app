@@ -1,11 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { DetailEvaluasiOPD } from '@/pages/tim-evaluasi/$id'
+import { z } from 'zod'
+import { zodSearchValidator } from '@tanstack/router-zod-adapter'
+import { DetailEvaluasiOPD } from '@/pages/tim-evaluasi/evaluasi/DetailEvaluasiOPD'
+import { RouteErrorPage } from '@/components/ui/route-error'
+
+const evaluasiDetailSearchSchema = z.object({
+  sopId: z.string().optional(),
+})
 
 export const Route = createFileRoute('/tim-evaluasi/evaluasi/$id')({
-  validateSearch: (search: Record<string, unknown>) => ({
-    sopId: (search.sopId as string) ?? undefined,
-  }),
+  validateSearch: zodSearchValidator(evaluasiDetailSearchSchema),
   component: DetailEvaluasiOPDPage,
+  errorComponent: ({ error, reset }) => <RouteErrorPage error={error} reset={reset} />,
 })
 
 function DetailEvaluasiOPDPage() {

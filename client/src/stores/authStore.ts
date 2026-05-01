@@ -22,13 +22,13 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "@/features/auth/types/users";
+import type { User } from "@/types/dto/users.dto";
 import { ROUTES } from "@/utils/constants";
 
 /**
  * Core user fields used in the auth store.
  * The full User type (with pangkat, nohp, createdAt, updatedAt) is defined
- * in @/features/auth/types/users.ts — import that when extra fields are needed.
+ * in @/types/dto/users.dto.ts — import that when extra fields are needed.
  */
 type AuthUser = Pick<User, "id" | "email" | "nama" | "peran" | "opdId" | "nip" | "jabatan">;
 

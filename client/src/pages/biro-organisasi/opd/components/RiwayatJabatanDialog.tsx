@@ -11,7 +11,7 @@ import {
 import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
-import type { RiwayatDialogPerson } from "@/types/common"
+import type { RiwayatDialogPerson } from "@/types/ui/organisasi"
 import type { OPDOption as OPD, KepalaOPDRow, RiwayatRow } from './types'
 
 export interface RiwayatJabatanDialogProps {

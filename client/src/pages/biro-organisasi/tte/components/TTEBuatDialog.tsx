@@ -9,15 +9,15 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import type { TTERole } from "@/features/tte";
+import type { TTERole } from "@/types/dto/tte.dto";
 import {
   useTTEProfil,
   useRegisterTTE,
   useMintTokenVerifikasi,
   getTTEVerificationSuccessUrl,
-} from "@/features/tte/hooks/useTte";
-import type { RegisterTteDto } from "@/features/tte/types/tte";
-import { showErrorMessages } from "@/utils/toast"
+} from "@/api/tte";
+import type { RegisterTteDto } from "@/types/dto/tte.dto";
+import { showErrorMessages } from "@/hooks/useToast"
 
 type WizardStep = "data-diri" | "pin" | "cek-email";
 
@@ -52,6 +52,7 @@ export function TTEBuatDialog({
     null,
   );
 
+  /* Reset wizard form saat dialog dibuka / profil default berubah (sinkron UI, bukan fetch). */
   useEffect(() => {
     if (open) {
       setStep("data-diri");

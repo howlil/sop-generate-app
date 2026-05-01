@@ -20,7 +20,7 @@ import {
   useQueryClient,
   type QueryKey,
 } from "@tanstack/react-query";
-import { useToast, showErrorMessages } from "@/utils/toast";
+import { useToast, showErrorMessages } from "@/hooks/useToast";
 
 interface UseMutationWithToastOptions<TData = unknown, TVariables = unknown> {
   /** The mutation function to execute */
