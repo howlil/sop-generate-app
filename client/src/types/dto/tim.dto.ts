@@ -1,44 +1,60 @@
 export type StatusTim = "AKTIF" | "NONAKTIF";
-export type PeranInternalTimPenyusun = "Koordinator" | "Anggota";
 
-export interface AnggotaTimPenyusun {
+/** Item penyusun pada GET /api/v1/penyusun (per grup OPD). */
+export interface PenyusunPublikItem {
   id: string;
-  userId: string;
-  opdId: string;
+  nama: string;
+  nip: string;
+  jabatan: string;
+  pangkat: string;
+  email: string;
+  nohp: string;
+  peran: "PENYUSUN" | "PJ_PENYUSUN";
   status: StatusTim;
-  tanggalBergabung: string;
-  berakhirPada?: string;
-  createdAt: string;
-  updatedAt: string;
-  user?: {
-    id: string;
-    nama: string;
-    email: string;
-    nip: string;
-    jabatan: string;
-    pangkat: string;
-    nohp: string;
-    peran: string;
-  };
-  opd?: {
-    id: string;
-    nama: string;
-  };
-  jumlahSOPDisusun?: number;
-  peranInternal?: PeranInternalTimPenyusun;
 }
 
-export interface TimPenyusunQueryParams {
-  opdId?: string;
-  page?: number;
-  limit?: number;
+/** Grup OPD dari GET /api/v1/penyusun */
+export interface TimPenyusunOpdGrup {
+  opdId: string;
+  namaOpd: string;
+  penyusun: PenyusunPublikItem[];
 }
 
-export interface PaginatedTimPenyusunResponse<TItem = AnggotaTimPenyusun> {
-  data: TItem[];
-  total: number;
-  page: number;
-  limit: number;
+/** GET /api/v1/penyusun/:id/riwayat-opd — OPD yang pernah terikat (penempatan / mutasi). */
+export interface RiwayatOpdPenyusunItem {
+  opdId: string;
+  namaOpd: string;
+  pertamaDicatat: string;
+  terakhirDiperbarui: string;
+}
+
+/** POST /api/v1/penyusun */
+export interface CreatePenggunaPenyusunDto {
+  opdId: string;
+  nama: string;
+  nip: string;
+  peran: "PENYUSUN" | "PJ_PENYUSUN";
+  pangkat: string;
+  jabatan: string;
+  email: string;
+  nohp: string;
+}
+
+/** PATCH /api/v1/penyusun/:id */
+export interface UpdatePenggunaPenyusunDto {
+  email?: string;
+  nama?: string;
+  nip?: string;
+  peran?: "PENYUSUN" | "PJ_PENYUSUN";
+  pangkat?: string;
+  jabatan?: string;
+  nohp?: string;
+  status?: StatusTim;
+}
+
+export interface UpdatePenyusunMutationDto {
+  id: string;
+  payload: UpdatePenggunaPenyusunDto;
 }
 
 export interface AnggotaTimEvaluasi {
@@ -61,11 +77,6 @@ export interface AnggotaTimEvaluasi {
   };
 }
 
-export interface CreateTimPenyusunDto {
-  userId: string;
-  opdId: string;
-}
-
 export interface PindahTimPenyusunDto {
   opdId: string;
 }
@@ -75,11 +86,35 @@ export interface PindahTimPenyusunMutationDto {
   opdId: string;
 }
 
+/** Payload tambah anggota Tim Evaluasi (Evaluator); opdId dan sandi default di server. */
 export interface CreateTimEvaluasiDto {
-  userId: string;
+  email: string;
+  nama: string;
+  nip: string;
+  jabatan: string;
+  pangkat: string;
+  nohp: string;
 }
 
-export interface UpdateTimEvaluasiDto {
-  status: StatusTim;
-  berakhirPada?: string;
+/** Payload pembaruan profil anggota Tim Evaluasi. */
+export interface UpdateTimEvaluasiAnggotaDto {
+  email?: string;
+  nama?: string;
+  nip?: string;
+  jabatan?: string;
+  pangkat?: string;
+  nohp?: string;
+  status?: StatusTim;
+}
+
+export interface UpdateTimEvaluasiMutationDto {
+  id: string;
+  payload: UpdateTimEvaluasiAnggotaDto;
+}
+
+/** Grup evaluator dari GET /api/v1/evaluator */
+export interface EvaluatorOpdGrup {
+  opdId: string;
+  namaOpd: string;
+  evaluator: AnggotaTimEvaluasi[];
 }

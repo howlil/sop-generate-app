@@ -1,66 +1,48 @@
 /**
  * Peraturan API service
- * Matches server: PeraturanController
+ * Matches server: PeraturanController (bungkus ApiSuccessResponse)
  */
 
+import { useQuery } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
-import type {
-  PeraturanResponse,
-} from '@/types/dto/peraturan.dto'
+import { queryKeys } from '@/config/query-keys'
+import { useMutationWithToast } from '@/hooks/useMutationWithToast'
+import { STALE_TIME } from '@/utils/constants'
+import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   CreatePeraturanDto,
   PeraturanListQueryParams,
+  PeraturanResponse,
   UpdatePeraturanDto,
+  UpdatePeraturanMutationDto,
 } from '@/types/dto/peraturan.dto'
 
-export const peraturanApi = {
-  /**
-   * PRT-01: Get all peraturan
-   * Filter by OPD for non-BIRO roles
-   */
-  findAll: (params?: PeraturanListQueryParams) =>
-    apiClient.get<PeraturanResponse[]>(`/peraturan${buildQueryString(params)}`),
-
-  /**
-   * PRT-06: Get peraturan by ID
-   */
-  findById: (id: string) =>
-    apiClient.get<PeraturanResponse>(`/peraturan/${id}`),
-
-  /**
-   * PRT-02: Create new peraturan (Tim Penyusun / Koordinator Tim Penyusun)
-   */
-  create: (payload: CreatePeraturanDto) =>
-    apiClient.post<PeraturanResponse>('/peraturan', payload),
-
-  /**
-   * PRT-03: Update peraturan
-   */
-  update: (id: string, payload: UpdatePeraturanDto) =>
-    apiClient.patch<PeraturanResponse>(`/peraturan/${id}`, payload),
-
-  /**
-   * PRT-09: Delete peraturan
-   * Fails if still used as DasarHukum
-   */
-  delete: (id: string) =>
-    apiClient.delete(`/peraturan/${id}`),
+async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
+  const envelope = await promise
+  return envelope.data as T
 }
 
-/**
- * usePeraturan hook - TanStack Query
- */
+export const peraturanApi = {
+  findAll: (params?: PeraturanListQueryParams): Promise<PeraturanResponse[]> =>
+    unwrap(
+      apiClient.get<ApiSuccessResponse<PeraturanResponse[]>>(
+        `/peraturan${buildQueryString(params as Record<string, unknown> | undefined)}`,
+      ),
+    ),
 
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/config/query-keys";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { STALE_TIME } from "@/utils/constants";
-import type {
-  CreatePeraturanDto,
-  PeraturanListQueryParams,
-  UpdatePeraturanMutationDto,
-  UpdatePeraturanDto,
-} from "@/types/dto/peraturan.dto";
+  findById: (id: string): Promise<PeraturanResponse> =>
+    unwrap(apiClient.get<ApiSuccessResponse<PeraturanResponse>>(`/peraturan/${id}`)),
+
+  /** Buat master peraturan + tautan ke OPD pengguna (opdId dari JWT di server). */
+  create: (payload: CreatePeraturanDto): Promise<PeraturanResponse> =>
+    unwrap(apiClient.post<ApiSuccessResponse<PeraturanResponse>>('/peraturan', payload)),
+
+  update: (id: string, payload: UpdatePeraturanDto): Promise<PeraturanResponse> =>
+    unwrap(apiClient.patch<ApiSuccessResponse<PeraturanResponse>>(`/peraturan/${id}`, payload)),
+
+  delete: (id: string): Promise<void> =>
+    unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/peraturan/${id}`)),
+}
 
 export function usePeraturan(opdId?: string) {
   const {
@@ -71,31 +53,28 @@ export function usePeraturan(opdId?: string) {
     queryKey: queryKeys.peraturanList(opdId),
     queryFn: () => peraturanApi.findAll(opdId ? ({ opdId } as PeraturanListQueryParams) : undefined),
     staleTime: STALE_TIME.MEDIUM,
-  });
+  })
 
   const createMutation = useMutationWithToast({
     mutationFn: (payload: CreatePeraturanDto) => peraturanApi.create(payload),
     invalidateKeys: [queryKeys.peraturanList(opdId)],
-    successMessage: "Peraturan berhasil ditambahkan",
-    errorMessagePrefix: "Gagal menambahkan peraturan",
-  });
+    successMessage: 'Peraturan berhasil ditambahkan',
+    errorMessagePrefix: 'Gagal menambahkan peraturan',
+  })
 
   const updateMutation = useMutationWithToast({
-    mutationFn: ({
-      id,
-      payload,
-    }: UpdatePeraturanMutationDto) => peraturanApi.update(id, payload),
+    mutationFn: ({ id, payload }: UpdatePeraturanMutationDto) => peraturanApi.update(id, payload),
     invalidateKeys: [queryKeys.peraturanList(opdId)],
-    successMessage: "Peraturan berhasil diperbarui",
-    errorMessagePrefix: "Gagal memperbarui peraturan",
-  });
+    successMessage: 'Peraturan berhasil diperbarui',
+    errorMessagePrefix: 'Gagal memperbarui peraturan',
+  })
 
   const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => peraturanApi.delete(id),
     invalidateKeys: [queryKeys.peraturanList(opdId)],
-    successMessage: "Peraturan berhasil dihapus",
-    errorMessagePrefix: "Gagal menghapus peraturan",
-  });
+    successMessage: 'Peraturan berhasil dihapus',
+    errorMessagePrefix: 'Gagal menghapus peraturan',
+  })
 
   return {
     list,
@@ -107,5 +86,5 @@ export function usePeraturan(opdId?: string) {
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
-  };
+  }
 }

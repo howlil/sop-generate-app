@@ -1,8 +1,10 @@
+import type { PeranPengguna } from "@/types/dto/access.dto";
+
 export interface User {
   id: string;
   email: string;
   nama: string;
-  peran: string;
+  peran: PeranPengguna;
   opdId: string | null;
   nip: string;
   jabatan: string;
@@ -23,7 +25,7 @@ export interface CreateUserDto {
   email: string;
   nama: string;
   kataSandi?: string;
-  peran: string;
+  peran: PeranPengguna;
   opdId?: string;
   nip?: string;
   jabatan?: string;
@@ -35,7 +37,7 @@ export interface UpdateUserDto {
   email?: string;
   nama?: string;
   kataSandi?: string;
-  peran?: string;
+  peran?: PeranPengguna;
   opdId?: string;
   nip?: string;
   jabatan?: string;

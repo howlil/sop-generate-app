@@ -1,13 +1,13 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import type { ApiSuccessResponse } from '../../../common/types/api-success-response.type';
+import { JwtAuthGuard, type ApiSuccessResponse } from '../../../common';
 import { AuthService } from './auth.service';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   buildAccessTokenCookieOptions,
+  buildClearAccessTokenCookieOptions,
   type JwtAccessPayload,
   type PublicPengguna,
 } from './helpers/auth.shared';
@@ -48,7 +48,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(JwtAuthGuard)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Profil pengguna saat ini',
@@ -63,6 +63,52 @@ export class AuthController {
       message: 'Data pengguna berhasil diambil',
       success: true,
       data: pengguna,
+    };
+  }
+
+  @Post('refresh')
+  @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Perbarui sesi',
+    description: 'Menerbitkan ulang cookie JWT akses berdasarkan token yang masih valid.',
+  })
+  @ApiResponse({ status: 200, description: 'Token diperbarui' })
+  @ApiResponse({ status: 401, description: 'Tidak terautentikasi' })
+  async refresh(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiSuccessResponse<{ success: true }>> {
+    const { accessToken, cookieMaxAgeMs } = await this.authService.refreshAccessToken(req.user);
+    const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+    res.cookie(
+      ACCESS_TOKEN_COOKIE_NAME,
+      accessToken,
+      buildAccessTokenCookieOptions(cookieMaxAgeMs, nodeEnv === 'production'),
+    );
+    return {
+      message: 'Sesi diperbarui',
+      success: true,
+      data: { success: true },
+    };
+  }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Keluar',
+    description: 'Menghapus cookie JWT akses.',
+  })
+  @ApiResponse({ status: 200, description: 'Logout berhasil' })
+  async logout(@Res({ passthrough: true }) res: Response): Promise<ApiSuccessResponse<{ success: true }>> {
+    const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+    res.clearCookie(
+      ACCESS_TOKEN_COOKIE_NAME,
+      buildClearAccessTokenCookieOptions(nodeEnv === 'production'),
+    );
+    return {
+      message: 'Logout berhasil',
+      success: true,
+      data: { success: true },
     };
   }
 }

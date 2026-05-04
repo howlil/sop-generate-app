@@ -5,8 +5,8 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, useSearch } from "@tanstack/react-router";
 import { Send, List, Printer } from "lucide-react";
-import { SOPPreviewTemplate } from "@/components/sop/SOPPreviewTemplate";
-import { SOPListCard } from "@/components/sop/SOPListCard";
+import { SOPPreviewTemplate } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
+import { SOPListCard } from "@/pages/penyusun/sop/components/SOPListCard";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
@@ -24,9 +24,11 @@ import { useCollapsiblePanels } from "@/hooks/useCollapsiblePanels";
 import { useAppRole } from "@/hooks/useAppRole";
 import { formatDateId } from "@/utils/format-date";
 import type { NilaiEvaluasi, PengajuanEvaluasi } from "@/types/dto/evaluasi.dto";
-import type { StatusHasilEvaluasi } from "@/types/dto/evaluasi.dto";
+import type {
+  StatusHasilEvaluasi,
+  EvaluasiBatchSubmitError,
+} from "@/types/dto/evaluasi.dto";
 import type { RiwayatEvaluasiEntry } from "@/api/evaluasi";
-import type { EvaluasiBatchSubmitError } from "@/api/evaluasi";
 
 // Legacy data transform helpers (now backed by API hooks)
 function transformRiwayatToLegacy(
@@ -46,6 +48,7 @@ function transformRiwayatToLegacy(
 
 import { DetailEvaluasiOPDSubmitDialog } from "./components/DetailEvaluasiOPDSubmitDialog";
 import { DetailEvaluasiOPDFormPanel } from "./components/DetailEvaluasiOPDFormPanel";
+import type { DetailEvaluasiActiveTab } from "./components/DetailEvaluasiOPDFormPanel";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const POST_SUBMIT_DELAY_MS = 1500;
@@ -183,7 +186,8 @@ export function DetailEvaluasiOPD() {
   );
 
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
-  const [activeFormTab, setActiveFormTab] = useState<"sop" | "opd">("sop");
+  const [activeFormTab, setActiveFormTab] =
+    useState<DetailEvaluasiActiveTab>("sop");
   const [ratingOPD, setRatingOPD] = useState<number | null>(null);
 
   const namaEvaluator = getRoleUserName();
@@ -325,7 +329,7 @@ export function DetailEvaluasiOPD() {
           <span>
             <strong>{sedangDievaluasiList.length} SOP</strong> siap dikirim —
             gunakan <strong>Kirim Hasil Evaluasi</strong> untuk memilih dan
-            mengirim hasil ke Tim Penyusun.
+            mengirim hasil ke penyusun.
           </span>
           <Button
             type="button"
@@ -457,21 +461,27 @@ export function DetailEvaluasiOPD() {
         }
         rightPanel={
           <DetailEvaluasiOPDFormPanel
-            opd={opd}
-            collapsed={rightPanelCollapsed}
-            onCollapsedChange={setRightPanelCollapsed}
-            activeFormTab={activeFormTab}
-            onTabChange={setActiveFormTab}
-            effectiveSopId={effectiveSopId}
-            lastEvaluatedBy={lastEvaluatedBy}
-            statusEvaluasi={statusEvaluasi}
-            setStatusEvaluasi={handleSetStatusEvaluasi}
-            komentarEvaluasi={komentarEvaluasi ?? ""}
-            setKomentarEvaluasi={setKomentarEvaluasi}
-            riwayatSop={riwayatSop}
-            riwayatOpd={riwayatOpd}
-            ratingOPD={ratingOPD}
-            setRatingOPD={setRatingOPD}
+            panelState={{
+              collapsed: rightPanelCollapsed,
+              onCollapsedChange: setRightPanelCollapsed,
+              activeFormTab,
+              onTabChange: setActiveFormTab,
+            }}
+            sopForm={{
+              effectiveSopId,
+              lastEvaluatedBy,
+              statusEvaluasi,
+              setStatusEvaluasi: handleSetStatusEvaluasi,
+              komentarEvaluasi: komentarEvaluasi ?? "",
+              setKomentarEvaluasi,
+              riwayatSop,
+            }}
+            opdForm={{
+              opd,
+              riwayatOpd,
+              ratingOPD,
+              setRatingOPD,
+            }}
           />
         }
       />

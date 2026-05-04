@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ROUTES } from '@/utils/constants'
 import { useSop } from "@/api/sop";
-import type { SopItem } from '@/types/ui/sop'
+import type { SopDaftarRow } from '@/types/dto/sop.dto'
 
 const EVALUASI_STATUSES = [
   "DIAJUKAN_EVALUASI",
@@ -35,11 +35,11 @@ export interface OpdEvaluasiItem {
 
 function useOpdEvaluasiList(): OpdEvaluasiItem[] {
   const { list: sopListRaw } = useSop();
-  const mergedSopList = sopListRaw as unknown as SopItem[];
+  const mergedSopList: SopDaftarRow[] = sopListRaw;
 
   return useMemo(() => {
     /** Group SOPs by opdId, collecting unique OPD names from opdId. */
-    const opdMap = new Map<string, { sops: typeof mergedSopList }>();
+    const opdMap = new Map<string, { sops: SopDaftarRow[] }>();
     for (const sop of mergedSopList) {
       const opdId = sop.opdId ?? "unknown";
       if (!opdMap.has(opdId)) opdMap.set(opdId, { sops: [] });

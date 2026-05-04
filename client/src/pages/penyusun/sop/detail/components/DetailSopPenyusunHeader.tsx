@@ -1,0 +1,148 @@
+import { AlertTriangle, Check, CloudOff, CloudUpload, Printer, RefreshCcw, Save } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { cn } from '@/utils/cn'
+import type { SOPDetailMetadata } from "@/types/ui/sop";
+import type { StatusSOP } from "@/types/dto/sop.dto";
+import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
+
+export interface DetailSOPPenyusunHeaderProps {
+  metadata: SOPDetailMetadata
+  currentSopStatus: StatusSOP
+  isRevisionFlow: boolean
+  primaryActionLabel: string
+  /**
+   * Status autosave gabungan (header + prosedur) — ditampilkan sebagai indikator
+   * kecil di kanan tombol aksi.
+   */
+  autosaveStatus?: SopHeaderAutosaveStatus
+  /** Handler untuk mencoba ulang autosave saat status `error`. */
+  onRetryAutosave?: () => void | Promise<void>
+  onComplete: () => void
+  onPrint: () => void
+}
+
+interface AutosaveBadgeAppearance {
+  Icon: typeof Save
+  label: string
+  className: string
+}
+
+function autosaveAppearance(status: SopHeaderAutosaveStatus): AutosaveBadgeAppearance | null {
+  switch (status) {
+    case 'pending':
+      return {
+        Icon: CloudUpload,
+        label: 'Perubahan menunggu disimpan',
+        className: 'bg-amber-50 text-amber-700 border-amber-200',
+      }
+    case 'saving':
+      return {
+        Icon: CloudUpload,
+        label: 'Menyimpan...',
+        className: 'bg-blue-50 text-blue-700 border-blue-200',
+      }
+    case 'saved':
+      return {
+        Icon: Check,
+        label: 'Tersimpan',
+        className: 'bg-green-50 text-green-700 border-green-200',
+      }
+    case 'error':
+      return {
+        Icon: CloudOff,
+        label: 'Gagal menyimpan',
+        className: 'bg-red-50 text-red-700 border-red-200',
+      }
+    case 'idle':
+    default:
+      return null
+  }
+}
+
+export function DetailSOPPenyusunHeader({
+  metadata,
+  currentSopStatus,
+  isRevisionFlow,
+  primaryActionLabel,
+  autosaveStatus = 'idle',
+  onRetryAutosave,
+  onComplete,
+  onPrint,
+}: DetailSOPPenyusunHeaderProps) {
+  const indicator = autosaveAppearance(autosaveStatus)
+  return (
+    <>
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-sm font-semibold text-gray-900">Dokumen SOP</h2>
+        <div className="flex items-center gap-2">
+          {indicator !== null ? (
+            <span
+              role="status"
+              aria-live="polite"
+              className={cn(
+                'inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[11px] font-medium',
+                indicator.className,
+              )}
+              title={
+                autosaveStatus === 'error'
+                  ? 'Autosave header SOP gagal — klik tombol di sebelahnya untuk coba lagi.'
+                  : 'Status autosave header SOP'
+              }
+            >
+              <indicator.Icon className="h-3 w-3" aria-hidden />
+              {indicator.label}
+            </span>
+          ) : null}
+          {autosaveStatus === 'error' && onRetryAutosave !== undefined ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 px-2 text-[11px] text-red-700 border-red-200 hover:bg-red-50"
+              onClick={() => void onRetryAutosave()}
+              title="Kirim ulang perubahan header"
+            >
+              <RefreshCcw className="h-3 w-3" />
+              Coba lagi
+            </Button>
+          ) : null}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
+            onClick={onPrint}
+          >
+            <Printer className="w-3.5 h-3.5" /> Print SOP
+          </Button>
+          <Button
+            size="sm"
+            className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
+            onClick={onComplete}
+          >
+            <Check className="w-3.5 h-3.5" />
+            {primaryActionLabel}
+          </Button>
+        </div>
+      </div>
+      <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+        <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">
+          v{metadata.version || '1.0'}
+        </Badge>
+        <StatusBadge status={currentSopStatus} className="text-xs border-0" />
+      </div>
+      {isRevisionFlow && (
+        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
+          SOP ini dikembalikan oleh Tim Evaluasi untuk revisi. Setelah perbaikan selesai, klik
+          {' '}
+          <span className="font-semibold">Selesaikan revisi</span>
+          {' '}
+          lalu ajukan ulang dari
+          {' '}
+          <span className="font-semibold">Manajemen SOP</span>.
+        </div>
+      )}
+    </>
+  )
+}

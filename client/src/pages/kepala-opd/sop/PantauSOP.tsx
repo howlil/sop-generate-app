@@ -4,7 +4,7 @@ import { Eye, FileText, Ban } from "lucide-react";
 import { Table } from "@/components/ui/data-table";
 import { IconActionButton } from "@/components/ui/icon-action-button";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
-import { SOPStatusFilterSelect } from "@/components/sop/SOPStatusFilterSelect";
+import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatusFilterSelect";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -13,7 +13,7 @@ import { ROUTES } from "@/utils/constants";
 import { useAuthStore } from "@/stores/authStore";
 import { useSop } from "@/api/sop";
 import { useSopStatus } from "@/api/sop";
-import type { SopItem } from "@/types/ui/sop";
+import type { SopDaftarRow } from "@/types/dto/sop.dto";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useOpd } from "@/api/opd";
 
@@ -42,7 +42,7 @@ export function PantauSOP() {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return listByStatus;
     return listByStatus.filter((s) =>
-      [s.judul, s.nomorSOP].join(" ").toLowerCase().includes(q),
+      [s.judul, s.nomorSop ?? ""].join(" ").toLowerCase().includes(q),
     );
   }, [listByStatus, searchQuery]);
 
@@ -95,12 +95,14 @@ export function PantauSOP() {
                       </Table.Td>
                       <Table.Td>
                         <p className="font-mono text-gray-700 text-[11px]">
-                          {sop.nomorSOP}
+                          {sop.nomorSop ?? "—"}
                         </p>
                       </Table.Td>
                       <Table.Td>
                         <p className="text-gray-700">
-                          {formatDateIdLong(sop.terakhirDiperbarui)}
+                          {sop.terakhirDiperbarui
+                            ? formatDateIdLong(sop.terakhirDiperbarui)
+                            : "—"}
                         </p>
                       </Table.Td>
                       <Table.Td>
@@ -114,11 +116,11 @@ export function PantauSOP() {
                             params={{ id: sop.id }}
                             title="Lihat detail"
                           />
-                          {sop.status === "BERLAKU" && (
+                          {sop.status === "BERLAKU" && sop.detailSopId != null && (
                             <IconActionButton
                               icon={Ban}
                               title="Cabut SOP"
-                              onClick={() => setCabutSopId(sop.id)}
+                              onClick={() => setCabutSopId(sop.detailSopId)}
                             />
                           )}
                         </div>

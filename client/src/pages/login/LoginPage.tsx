@@ -1,8 +1,10 @@
-
-import { LoginForm } from "@/components/auth/LoginForm";
-import { LoginHero } from "@/components/auth/LoginHero";
+import { useAuth } from "@/api/auth";
+import { LoginForm } from "@/pages/login/components/LoginForm";
+import { LoginHero } from "@/pages/login/components/LoginHero";
 
 export function LoginPage() {
+  const { login, isLoggingIn } = useAuth();
+
   return (
     <div className="min-h-screen bg-white flex">
       {/* Left Panel - Futuristic Hero */}
@@ -29,7 +31,7 @@ export function LoginPage() {
       {/* Right Panel - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center bg-white">
         <div className="w-full max-w-md p-8">
-          <LoginForm />
+          <LoginForm isSubmitting={isLoggingIn} onSubmitLogin={login} />
         </div>
       </div>
     </div>

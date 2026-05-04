@@ -22,8 +22,11 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { apiClient } from "@/lib/api/api-client";
+import type { LoginApiResponse, PublicPenggunaLoginData } from "@/types/dto/auth.dto";
 import type { User } from "@/types/dto/users.dto";
 import { ROUTES } from "@/utils/constants";
+import { toNavigationRole } from "@/utils/role-key";
 
 /**
  * Core user fields used in the auth store.
@@ -65,16 +68,45 @@ export const useAuthStore = create<AuthState>()(
  */
 let hydrationPromise: Promise<void> | null = null;
 
-export function ensureAuthHydrated(maxWait = 2000): Promise<void> {
+function mapPublicDataToAuthUser(u: PublicPenggunaLoginData): AuthUser {
+  return {
+    id: u.penggunaId,
+    email: u.email,
+    nama: u.nama,
+    peran: u.peran,
+    opdId: u.opdId,
+    nip: u.nip,
+    jabatan: u.jabatan,
+  };
+}
+
+/**
+ * Mengisi store dari cookie sesi (GET /auth/me + credentials).
+ * Dipakai setelah refresh: cookie HttpOnly tidak bisa dibaca JS; tanpa ini guard hanya melihat localStorage.
+ */
+export async function syncAuthFromCookie(): Promise<boolean> {
+  if (typeof window === "undefined") {
+    return false;
+  }
+  try {
+    const res = await apiClient.get<LoginApiResponse>("/auth/me");
+    useAuthStore.getState().setUser(mapPublicDataToAuthUser(res.data));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function ensureAuthHydrated(maxWait = 2000): Promise<void> {
   // persist middleware is unavailable during SSR (no localStorage)
-  if (typeof window === 'undefined') return Promise.resolve();
-  if (!useAuthStore.persist) return Promise.resolve();
-  if (useAuthStore.persist.hasHydrated()) return Promise.resolve();
+  if (typeof window === 'undefined') return;
+  if (!useAuthStore.persist) return;
+  if (useAuthStore.persist.hasHydrated()) return;
 
   if (!hydrationPromise) {
     hydrationPromise = new Promise((resolve) => {
       let resolved = false;
-      
+
       const finish = () => {
         if (!resolved) {
           resolved = true;
@@ -91,7 +123,7 @@ export function ensureAuthHydrated(maxWait = 2000): Promise<void> {
     });
   }
 
-  return hydrationPromise;
+  await hydrationPromise;
 }
 
 /**
@@ -104,7 +136,7 @@ export function getRole(): string | undefined {
 
 /**
  * Route guard: redirect if user doesn't have one of the required roles.
- * Usage in route file: beforeLoad: requireRoles(['BIRO_ORGANISASI'])
+ * Usage in route file: beforeLoad: requireRoles(['PJ_EVALUATOR'])
  */
 export function requireRoles(roles: string[]) {
   return async () => {
@@ -113,7 +145,8 @@ export function requireRoles(roles: string[]) {
 
     await ensureAuthHydrated();
     const user = useAuthStore.getState().user;
-    if (!user || !roles.includes(user.peran)) {
+    const navRole = user ? toNavigationRole(user.peran) : undefined;
+    if (!user || navRole === undefined || !roles.includes(navRole)) {
       const { redirect } = await import("@tanstack/react-router");
       throw redirect({ to: ROUTES.HOME });
     }

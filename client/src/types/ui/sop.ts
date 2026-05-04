@@ -11,17 +11,27 @@ export interface SOPDetailMetadata {
   logoUrl?: string;
   tanggalEfektif?: string;
   tanggalRevisi?: string;
+  /** ISO 8601 dari API (`tanggalPembuatan` DetailSOP). */
+  tanggalPembuatan?: string;
   version?: number;
   name?: string;
   number?: string;
   institutionLogo?: string;
   institutionLines?: string[];
   lawBasis?: string[];
+  /** ID kanonis peraturan untuk PATCH header (sejajar urutan dengan `lawBasis`). */
+  lawBasisIds?: string[];
   relatedSop?: string[];
+  /** ID kanonis DetailSOP terkait untuk PATCH header (sejajar urutan dengan `relatedSop`). */
+  relatedSopDetailIds?: string[];
   warning?: string;
   implementQualification?: string | string[];
   equipment?: string | string[];
   recordData?: string | string[];
+  /** Nama untuk blok DISAHKAN OLEH (Kepala OPD). */
+  picName?: string;
+  /** NIP untuk blok DISAHKAN OLEH. */
+  picNumber?: string;
 }
 
 export interface ProsedurRow {
@@ -41,6 +51,10 @@ export interface ProsedurRow {
   output?: string;
   keterangan?: string;
   type?: "terminator" | "task" | "decision";
+  /** UI-only: pilihan user antara Mulai vs Selesai untuk row terminator.
+   *  Tidak dipersist (server hanya kenal AWAL_AKHIR). Setelah refresh,
+   *  diagram tetap melabel Mulai/Selesai berdasarkan posisi. */
+  terminatorRole?: "start" | "end";
   id_next_step_if_yes?: string;
   id_next_step_if_no?: string;
   pelaksanaIds?: string[];

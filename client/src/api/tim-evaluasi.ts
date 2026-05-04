@@ -1,79 +1,96 @@
 /**
- * Tim Evaluasi API service
- * Matches server: TimEvaluasiController
+ * Tim Evaluasi API — relatif ke base `/api/v1` → `EvaluatorController` di `/evaluator`.
  */
 
-import { apiClient } from "@/lib/api/api-client";
+import { useQuery } from '@tanstack/react-query'
+import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { queryKeys } from '@/config/query-keys'
+import { useMutationWithToast } from '@/hooks/useMutationWithToast'
+import { STALE_TIME } from '@/utils/constants'
+import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   AnggotaTimEvaluasi,
-} from "@/types/dto/tim.dto";
-import type { CreateTimEvaluasiDto } from "@/types/dto/tim.dto";
+  CreateTimEvaluasiDto,
+  EvaluatorOpdGrup,
+  UpdateTimEvaluasiAnggotaDto,
+  UpdateTimEvaluasiMutationDto,
+} from '@/types/dto/tim.dto'
+
+async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
+  const envelope = await promise
+  return envelope.data as T
+}
 
 export const timEvaluasiApi = {
-  findAll: () =>
-    apiClient.get<AnggotaTimEvaluasi[]>("/tim-evaluasi"),
-
-  findById: (id: string) =>
-    apiClient.get<AnggotaTimEvaluasi>(`/tim-evaluasi/${id}`),
+  findAll: async (params?: { search?: string }): Promise<AnggotaTimEvaluasi[]> => {
+    const s = params?.search?.trim()
+    const qs = buildQueryString(s ? { search: s } : undefined)
+    const grup = await unwrap(
+      apiClient.get<ApiSuccessResponse<EvaluatorOpdGrup[]>>(
+        `/evaluator${qs}`,
+      ),
+    )
+    return grup.flatMap((g) => g.evaluator)
+  },
 
   tambah: (payload: CreateTimEvaluasiDto) =>
-    apiClient.post<AnggotaTimEvaluasi>("/tim-evaluasi", payload),
+    unwrap(
+      apiClient.post<ApiSuccessResponse<AnggotaTimEvaluasi>>('/evaluator', payload),
+    ),
 
-  nonaktifkan: (id: string) =>
-    apiClient.patch<AnggotaTimEvaluasi>(`/tim-evaluasi/${id}/nonaktifkan`),
-};
+  update: (id: string, payload: UpdateTimEvaluasiAnggotaDto) =>
+    unwrap(
+      apiClient.patch<ApiSuccessResponse<AnggotaTimEvaluasi>>(
+        `/evaluator/${id}`,
+        payload,
+      ),
+    ),
 
-/**
- * useTimEvaluasi hook - TanStack Query
- */
+  hapus: async (id: string): Promise<void> => {
+    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/evaluator/${id}`))
+  },
+}
 
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/config/query-keys";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { STALE_TIME } from "@/utils/constants";
-
-export function useTimEvaluasi() {
-  const {
-    data: list = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: queryKeys.timEvaluasiList(),
-    queryFn: () => timEvaluasiApi.findAll(),
+export function useTimEvaluasi(search?: string) {
+  const searchKey = search?.trim() ?? ''
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.timEvaluasiList(searchKey || undefined),
+    queryFn: () =>
+      timEvaluasiApi.findAll(searchKey ? { search: searchKey } : undefined),
     staleTime: STALE_TIME.MEDIUM,
-  });
+  })
 
   const tambahMutation = useMutationWithToast({
-    mutationFn: (payload: CreateTimEvaluasiDto) =>
-      timEvaluasiApi.tambah(payload),
+    mutationFn: (payload: CreateTimEvaluasiDto) => timEvaluasiApi.tambah(payload),
     invalidateKeys: [queryKeys.timEvaluasi],
-    successMessage: "Anggota Tim Evaluasi berhasil ditambahkan",
-    errorMessagePrefix: "Gagal menambahkan anggota",
-  });
+    successMessage: 'Anggota Tim Evaluasi berhasil ditambahkan',
+    errorMessagePrefix: 'Gagal menambahkan anggota',
+  })
 
-  const nonaktifkanMutation = useMutationWithToast({
-    mutationFn: (id: string) => timEvaluasiApi.nonaktifkan(id),
+  const updateMutation = useMutationWithToast({
+    mutationFn: ({ id, payload }: UpdateTimEvaluasiMutationDto) =>
+      timEvaluasiApi.update(id, payload),
     invalidateKeys: [queryKeys.timEvaluasi],
-    successMessage: "Anggota Tim Evaluasi dinonaktifkan",
-    errorMessagePrefix: "Gagal menonaktifkan anggota",
-  });
+    successMessage: 'Data anggota berhasil diperbarui',
+    errorMessagePrefix: 'Gagal memperbarui anggota',
+  })
+
+  const hapusMutation = useMutationWithToast({
+    mutationFn: (id: string) => timEvaluasiApi.hapus(id),
+    invalidateKeys: [queryKeys.timEvaluasi],
+    successMessage: 'Anggota Tim Evaluasi berhasil dinonaktifkan',
+    errorMessagePrefix: 'Gagal menonaktifkan anggota',
+  })
 
   return {
-    list,
+    list: data ?? [],
     isLoading,
     error,
     tambah: tambahMutation.mutateAsync,
-    nonaktifkan: nonaktifkanMutation.mutateAsync,
+    update: updateMutation.mutateAsync,
+    hapus: hapusMutation.mutateAsync,
     isAdding: tambahMutation.isPending,
-    isNonaktifkan: nonaktifkanMutation.isPending,
-  };
-}
-
-export function useTimEvaluasiDetail(id?: string) {
-  return useQuery({
-    queryKey: ['timEvaluasi', 'detail', id],
-    queryFn: () => timEvaluasiApi.findById(id!),
-    staleTime: STALE_TIME.MEDIUM,
-    enabled: !!id,
-  });
+    isUpdating: updateMutation.isPending,
+    isDeleting: hapusMutation.isPending,
+  }
 }

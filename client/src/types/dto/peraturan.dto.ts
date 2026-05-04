@@ -32,8 +32,8 @@ export interface PeraturanListQueryParams {
   opdId?: string;
 }
 
+/** Body POST /peraturan — opdId ditetapkan server dari sesi pengguna (JWT). */
 export interface CreatePeraturanDto {
-  opdId: string;
   namaPeraturan: string;
   nomor: string;
   tahun: number;

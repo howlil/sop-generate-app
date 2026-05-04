@@ -36,7 +36,7 @@ const workflowSteps = [
   {
     step: '01',
     title: 'Susun',
-    description: 'Tim Penyusun membuat SOP dengan editor prosedur berbasis swimlane yang intuitif.',
+    description: 'Penyusun membuat SOP dengan editor prosedur berbasis swimlane yang intuitif.',
     icon: PenTool,
     color: 'blue',
   },
@@ -65,7 +65,7 @@ const workflowSteps = [
 
 const roleBenefits = [
   {
-    role: 'Tim Penyusun',
+    role: 'Penyusun',
     description: 'Fokus pada substansi, bukan administrasi. Editor prosedur visual membuat penyusunan SOP jadi lebih mudah.',
     features: ['Editor prosedur drag-and-drop', 'Preview SOP real-time', 'Template siap pakai', 'Kolaborasi tim'],
     icon: FileText,
@@ -101,7 +101,7 @@ const faqs = [
   },
   {
     question: 'Siapa saja yang bisa menggunakan sistem ini?',
-    answer: 'Sistem ini dirancang untuk 5 peran: Tim Penyusun, Koordinator Tim Penyusun, Tim Evaluasi, Biro Organisasi, dan Kepala OPD. Setiap peran memiliki dashboard dan fitur yang disesuaikan.',
+    answer: 'Sistem ini dirancang untuk 5 peran: Penyusun, PJ Penyusun, Tim Evaluasi, Biro Organisasi, dan Kepala OPD. Setiap peran memiliki dashboard dan fitur yang disesuaikan.',
   },
   {
     question: 'Bagaimana keamanan tanda tangan elektronik?',
@@ -140,7 +140,7 @@ function RoleTabs() {
   const [isTransitioning, setIsTransitioning] = useState(false)
 
   const tabs = [
-    { label: 'Tim Penyusun', icon: FileText },
+    { label: 'Penyusun', icon: FileText },
     { label: 'Tim Evaluasi', icon: Search },
     { label: 'Biro Organisasi', icon: CheckCircle },
     { label: 'Kepala OPD', icon: Award },

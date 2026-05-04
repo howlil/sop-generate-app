@@ -1,7 +1,7 @@
 export type PeranTTE =
   | "KEPALA_OPD"
-  | "BIRO_ORGANISASI"
-  | "KOORDINATOR_TIM_PENYUSUN";
+  | "PJ_EVALUATOR"
+  | "PJ_PENYUSUN";
 
 export interface KredensialTTE {
   id: string;
@@ -53,8 +53,8 @@ export interface TTESignaturePayload {
 
 export type TTERole =
   | "kepala-opd"
-  | "biro-organisasi"
-  | "koordinator-tim-penyusun";
+  | "pj-evaluator"
+  | "pj-penyusun";
 
 export interface RegisterTteDto {
   pin: string;

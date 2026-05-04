@@ -274,6 +274,17 @@ export const StatusKomentar: {
 export type StatusKomentar = (typeof StatusKomentar)[keyof typeof StatusKomentar]
 
 
+export const BagianSOP: {
+  HEADER: 'HEADER',
+  LANGKAH: 'LANGKAH',
+  STATUS: 'STATUS',
+  KOMENTAR: 'KOMENTAR',
+  EVALUASI: 'EVALUASI'
+};
+
+export type BagianSOP = (typeof BagianSOP)[keyof typeof BagianSOP]
+
+
 export const JenisLampiran: {
   PERINGATAN: 'PERINGATAN',
   KUALIFIKASI_PELAKSANAAN: 'KUALIFIKASI_PELAKSANAAN',
@@ -332,6 +343,10 @@ export const JenisDokumenTte: typeof $Enums.JenisDokumenTte
 export type StatusKomentar = $Enums.StatusKomentar
 
 export const StatusKomentar: typeof $Enums.StatusKomentar
+
+export type BagianSOP = $Enums.BagianSOP
+
+export const BagianSOP: typeof $Enums.BagianSOP
 
 export type JenisLampiran = $Enums.JenisLampiran
 
@@ -937,7 +952,7 @@ export namespace Prisma {
   ? False
   : T extends Uint8Array
   ? False
-  : T extends bigint
+  : T extends BigInt
   ? False
   : T extends object
   ? True
@@ -3944,6 +3959,8 @@ export namespace Prisma {
     kredensialTTE?: boolean | Pengguna$kredensialTTEArgs<ExtArgs>
     riwayatOpd?: boolean | Pengguna$riwayatOpdArgs<ExtArgs>
     tandaTangan?: boolean | Pengguna$tandaTanganArgs<ExtArgs>
+    opdSebagaiKepala?: boolean | Pengguna$opdSebagaiKepalaArgs<ExtArgs>
+    opdSebagaiPjPenyusun?: boolean | Pengguna$opdSebagaiPjPenyusunArgs<ExtArgs>
     _count?: boolean | PenggunaCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["pengguna"]>
 
@@ -3980,6 +3997,8 @@ export namespace Prisma {
     kredensialTTE?: boolean | Pengguna$kredensialTTEArgs<ExtArgs>
     riwayatOpd?: boolean | Pengguna$riwayatOpdArgs<ExtArgs>
     tandaTangan?: boolean | Pengguna$tandaTanganArgs<ExtArgs>
+    opdSebagaiKepala?: boolean | Pengguna$opdSebagaiKepalaArgs<ExtArgs>
+    opdSebagaiPjPenyusun?: boolean | Pengguna$opdSebagaiPjPenyusunArgs<ExtArgs>
     _count?: boolean | PenggunaCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -3999,6 +4018,8 @@ export namespace Prisma {
       kredensialTTE: Prisma.$KredensialTTEPayload<ExtArgs> | null
       riwayatOpd: Prisma.$RiwayatOpdPenggunaPayload<ExtArgs>[]
       tandaTangan: Prisma.$RiwayatTandaTanganPayload<ExtArgs>[]
+      opdSebagaiKepala: Prisma.$OPDPayload<ExtArgs> | null
+      opdSebagaiPjPenyusun: Prisma.$OPDPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       penggunaId: string
@@ -4367,26 +4388,28 @@ export namespace Prisma {
     kredensialTTE<T extends Pengguna$kredensialTTEArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$kredensialTTEArgs<ExtArgs>>): Prisma__KredensialTTEClient<$Result.GetResult<Prisma.$KredensialTTEPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     riwayatOpd<T extends Pengguna$riwayatOpdArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$riwayatOpdArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RiwayatOpdPenggunaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tandaTangan<T extends Pengguna$tandaTanganArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$tandaTanganArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RiwayatTandaTanganPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    opdSebagaiKepala<T extends Pengguna$opdSebagaiKepalaArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$opdSebagaiKepalaArgs<ExtArgs>>): Prisma__OPDClient<$Result.GetResult<Prisma.$OPDPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    opdSebagaiPjPenyusun<T extends Pengguna$opdSebagaiPjPenyusunArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$opdSebagaiPjPenyusunArgs<ExtArgs>>): Prisma__OPDClient<$Result.GetResult<Prisma.$OPDPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -5040,6 +5063,44 @@ export namespace Prisma {
   }
 
   /**
+   * Pengguna.opdSebagaiKepala
+   */
+  export type Pengguna$opdSebagaiKepalaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OPD
+     */
+    select?: OPDSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OPD
+     */
+    omit?: OPDOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OPDInclude<ExtArgs> | null
+    where?: OPDWhereInput
+  }
+
+  /**
+   * Pengguna.opdSebagaiPjPenyusun
+   */
+  export type Pengguna$opdSebagaiPjPenyusunArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OPD
+     */
+    select?: OPDSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OPD
+     */
+    omit?: OPDOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OPDInclude<ExtArgs> | null
+    where?: OPDWhereInput
+  }
+
+  /**
    * Pengguna without action
    */
   export type PenggunaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5071,6 +5132,9 @@ export namespace Prisma {
   export type OPDMinAggregateOutputType = {
     opdId: string | null
     nama: string | null
+    isBiroOrganisasi: boolean | null
+    kepalaPenggunaId: string | null
+    pjPenyusunPenggunaId: string | null
     deletedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5079,6 +5143,9 @@ export namespace Prisma {
   export type OPDMaxAggregateOutputType = {
     opdId: string | null
     nama: string | null
+    isBiroOrganisasi: boolean | null
+    kepalaPenggunaId: string | null
+    pjPenyusunPenggunaId: string | null
     deletedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -5087,6 +5154,9 @@ export namespace Prisma {
   export type OPDCountAggregateOutputType = {
     opdId: number
     nama: number
+    isBiroOrganisasi: number
+    kepalaPenggunaId: number
+    pjPenyusunPenggunaId: number
     deletedAt: number
     createdAt: number
     updatedAt: number
@@ -5097,6 +5167,9 @@ export namespace Prisma {
   export type OPDMinAggregateInputType = {
     opdId?: true
     nama?: true
+    isBiroOrganisasi?: true
+    kepalaPenggunaId?: true
+    pjPenyusunPenggunaId?: true
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -5105,6 +5178,9 @@ export namespace Prisma {
   export type OPDMaxAggregateInputType = {
     opdId?: true
     nama?: true
+    isBiroOrganisasi?: true
+    kepalaPenggunaId?: true
+    pjPenyusunPenggunaId?: true
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -5113,6 +5189,9 @@ export namespace Prisma {
   export type OPDCountAggregateInputType = {
     opdId?: true
     nama?: true
+    isBiroOrganisasi?: true
+    kepalaPenggunaId?: true
+    pjPenyusunPenggunaId?: true
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -5194,6 +5273,9 @@ export namespace Prisma {
   export type OPDGroupByOutputType = {
     opdId: string
     nama: string
+    isBiroOrganisasi: boolean
+    kepalaPenggunaId: string | null
+    pjPenyusunPenggunaId: string | null
     deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -5219,9 +5301,14 @@ export namespace Prisma {
   export type OPDSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     opdId?: boolean
     nama?: boolean
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: boolean
+    pjPenyusunPenggunaId?: boolean
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    kepalaPengguna?: boolean | OPD$kepalaPenggunaArgs<ExtArgs>
+    pjPenyusunPengguna?: boolean | OPD$pjPenyusunPenggunaArgs<ExtArgs>
     pelaksana?: boolean | OPD$pelaksanaArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | OPD$pengajuanEvaluasiArgs<ExtArgs>
     pengguna?: boolean | OPD$penggunaArgs<ExtArgs>
@@ -5236,13 +5323,18 @@ export namespace Prisma {
   export type OPDSelectScalar = {
     opdId?: boolean
     nama?: boolean
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: boolean
+    pjPenyusunPenggunaId?: boolean
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type OPDOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"opdId" | "nama" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["oPD"]>
+  export type OPDOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"opdId" | "nama" | "isBiroOrganisasi" | "kepalaPenggunaId" | "pjPenyusunPenggunaId" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["oPD"]>
   export type OPDInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    kepalaPengguna?: boolean | OPD$kepalaPenggunaArgs<ExtArgs>
+    pjPenyusunPengguna?: boolean | OPD$pjPenyusunPenggunaArgs<ExtArgs>
     pelaksana?: boolean | OPD$pelaksanaArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | OPD$pengajuanEvaluasiArgs<ExtArgs>
     pengguna?: boolean | OPD$penggunaArgs<ExtArgs>
@@ -5255,6 +5347,8 @@ export namespace Prisma {
   export type $OPDPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "OPD"
     objects: {
+      kepalaPengguna: Prisma.$PenggunaPayload<ExtArgs> | null
+      pjPenyusunPengguna: Prisma.$PenggunaPayload<ExtArgs> | null
       pelaksana: Prisma.$PelaksanaPayload<ExtArgs>[]
       pengajuanEvaluasi: Prisma.$PengajuanEvaluasiPayload<ExtArgs>[]
       pengguna: Prisma.$PenggunaPayload<ExtArgs>[]
@@ -5265,6 +5359,18 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       opdId: string
       nama: string
+      /**
+       * Penanda OPD Biro Organisasi (tunggal). Constraint "maksimal satu" dijaga oleh trigger MySQL.
+       */
+      isBiroOrganisasi: boolean
+      /**
+       * Pointer slot Kepala OPD; @unique mencegah pengguna sama jadi kepala di dua OPD.
+       */
+      kepalaPenggunaId: string | null
+      /**
+       * Pointer slot PJ Penyusun OPD; @unique sama untuk satu PJ per pengguna.
+       */
+      pjPenyusunPenggunaId: string | null
       deletedAt: Date | null
       createdAt: Date
       updatedAt: Date
@@ -5608,6 +5714,8 @@ export namespace Prisma {
    */
   export interface Prisma__OPDClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    kepalaPengguna<T extends OPD$kepalaPenggunaArgs<ExtArgs> = {}>(args?: Subset<T, OPD$kepalaPenggunaArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    pjPenyusunPengguna<T extends OPD$pjPenyusunPenggunaArgs<ExtArgs> = {}>(args?: Subset<T, OPD$pjPenyusunPenggunaArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     pelaksana<T extends OPD$pelaksanaArgs<ExtArgs> = {}>(args?: Subset<T, OPD$pelaksanaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PelaksanaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     pengajuanEvaluasi<T extends OPD$pengajuanEvaluasiArgs<ExtArgs> = {}>(args?: Subset<T, OPD$pengajuanEvaluasiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PengajuanEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     pengguna<T extends OPD$penggunaArgs<ExtArgs> = {}>(args?: Subset<T, OPD$penggunaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -5620,20 +5728,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -5645,6 +5753,9 @@ export namespace Prisma {
   interface OPDFieldRefs {
     readonly opdId: FieldRef<"OPD", 'String'>
     readonly nama: FieldRef<"OPD", 'String'>
+    readonly isBiroOrganisasi: FieldRef<"OPD", 'Boolean'>
+    readonly kepalaPenggunaId: FieldRef<"OPD", 'String'>
+    readonly pjPenyusunPenggunaId: FieldRef<"OPD", 'String'>
     readonly deletedAt: FieldRef<"OPD", 'DateTime'>
     readonly createdAt: FieldRef<"OPD", 'DateTime'>
     readonly updatedAt: FieldRef<"OPD", 'DateTime'>
@@ -5996,6 +6107,44 @@ export namespace Prisma {
   }
 
   /**
+   * OPD.kepalaPengguna
+   */
+  export type OPD$kepalaPenggunaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Pengguna
+     */
+    select?: PenggunaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Pengguna
+     */
+    omit?: PenggunaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PenggunaInclude<ExtArgs> | null
+    where?: PenggunaWhereInput
+  }
+
+  /**
+   * OPD.pjPenyusunPengguna
+   */
+  export type OPD$pjPenyusunPenggunaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Pengguna
+     */
+    select?: PenggunaSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Pengguna
+     */
+    omit?: PenggunaOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PenggunaInclude<ExtArgs> | null
+    where?: PenggunaWhereInput
+  }
+
+  /**
    * OPD.pelaksana
    */
   export type OPD$pelaksanaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6169,65 +6318,47 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaMinAggregateOutputType = {
-    riwayatOpdPenggunaId: string | null
     penggunaId: string | null
     opdId: string | null
-    mulaiPada: Date | null
-    berakhirPada: Date | null
-    alasan: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RiwayatOpdPenggunaMaxAggregateOutputType = {
-    riwayatOpdPenggunaId: string | null
     penggunaId: string | null
     opdId: string | null
-    mulaiPada: Date | null
-    berakhirPada: Date | null
-    alasan: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RiwayatOpdPenggunaCountAggregateOutputType = {
-    riwayatOpdPenggunaId: number
     penggunaId: number
     opdId: number
-    mulaiPada: number
-    berakhirPada: number
-    alasan: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
 
   export type RiwayatOpdPenggunaMinAggregateInputType = {
-    riwayatOpdPenggunaId?: true
     penggunaId?: true
     opdId?: true
-    mulaiPada?: true
-    berakhirPada?: true
-    alasan?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type RiwayatOpdPenggunaMaxAggregateInputType = {
-    riwayatOpdPenggunaId?: true
     penggunaId?: true
     opdId?: true
-    mulaiPada?: true
-    berakhirPada?: true
-    alasan?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type RiwayatOpdPenggunaCountAggregateInputType = {
-    riwayatOpdPenggunaId?: true
     penggunaId?: true
     opdId?: true
-    mulaiPada?: true
-    berakhirPada?: true
-    alasan?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -6304,13 +6435,10 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaGroupByOutputType = {
-    riwayatOpdPenggunaId: string
     penggunaId: string
     opdId: string
-    mulaiPada: Date
-    berakhirPada: Date | null
-    alasan: string | null
     createdAt: Date
+    updatedAt: Date
     _count: RiwayatOpdPenggunaCountAggregateOutputType | null
     _min: RiwayatOpdPenggunaMinAggregateOutputType | null
     _max: RiwayatOpdPenggunaMaxAggregateOutputType | null
@@ -6331,13 +6459,10 @@ export namespace Prisma {
 
 
   export type RiwayatOpdPenggunaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    riwayatOpdPenggunaId?: boolean
     penggunaId?: boolean
     opdId?: boolean
-    mulaiPada?: boolean
-    berakhirPada?: boolean
-    alasan?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     opd?: boolean | OPDDefaultArgs<ExtArgs>
     pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["riwayatOpdPengguna"]>
@@ -6345,16 +6470,13 @@ export namespace Prisma {
 
 
   export type RiwayatOpdPenggunaSelectScalar = {
-    riwayatOpdPenggunaId?: boolean
     penggunaId?: boolean
     opdId?: boolean
-    mulaiPada?: boolean
-    berakhirPada?: boolean
-    alasan?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type RiwayatOpdPenggunaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"riwayatOpdPenggunaId" | "penggunaId" | "opdId" | "mulaiPada" | "berakhirPada" | "alasan" | "createdAt", ExtArgs["result"]["riwayatOpdPengguna"]>
+  export type RiwayatOpdPenggunaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"penggunaId" | "opdId" | "createdAt" | "updatedAt", ExtArgs["result"]["riwayatOpdPengguna"]>
   export type RiwayatOpdPenggunaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     opd?: boolean | OPDDefaultArgs<ExtArgs>
     pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
@@ -6367,13 +6489,10 @@ export namespace Prisma {
       pengguna: Prisma.$PenggunaPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
-      riwayatOpdPenggunaId: string
       penggunaId: string
       opdId: string
-      mulaiPada: Date
-      berakhirPada: Date | null
-      alasan: string | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["riwayatOpdPengguna"]>
     composites: {}
   }
@@ -6457,8 +6576,8 @@ export namespace Prisma {
      * // Get first 10 RiwayatOpdPenggunas
      * const riwayatOpdPenggunas = await prisma.riwayatOpdPengguna.findMany({ take: 10 })
      * 
-     * // Only select the `riwayatOpdPenggunaId`
-     * const riwayatOpdPenggunaWithRiwayatOpdPenggunaIdOnly = await prisma.riwayatOpdPengguna.findMany({ select: { riwayatOpdPenggunaId: true } })
+     * // Only select the `penggunaId`
+     * const riwayatOpdPenggunaWithPenggunaIdOnly = await prisma.riwayatOpdPengguna.findMany({ select: { penggunaId: true } })
      * 
      */
     findMany<T extends RiwayatOpdPenggunaFindManyArgs>(args?: SelectSubset<T, RiwayatOpdPenggunaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RiwayatOpdPenggunaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -6722,20 +6841,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -6745,13 +6864,10 @@ export namespace Prisma {
    * Fields of the RiwayatOpdPengguna model
    */
   interface RiwayatOpdPenggunaFieldRefs {
-    readonly riwayatOpdPenggunaId: FieldRef<"RiwayatOpdPengguna", 'String'>
     readonly penggunaId: FieldRef<"RiwayatOpdPengguna", 'String'>
     readonly opdId: FieldRef<"RiwayatOpdPengguna", 'String'>
-    readonly mulaiPada: FieldRef<"RiwayatOpdPengguna", 'DateTime'>
-    readonly berakhirPada: FieldRef<"RiwayatOpdPengguna", 'DateTime'>
-    readonly alasan: FieldRef<"RiwayatOpdPengguna", 'String'>
     readonly createdAt: FieldRef<"RiwayatOpdPengguna", 'DateTime'>
+    readonly updatedAt: FieldRef<"RiwayatOpdPengguna", 'DateTime'>
   }
     
 
@@ -7718,20 +7834,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -8176,18 +8292,21 @@ export namespace Prisma {
     opdId: string | null
     peraturanId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type OPDPeraturanMaxAggregateOutputType = {
     opdId: string | null
     peraturanId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type OPDPeraturanCountAggregateOutputType = {
     opdId: number
     peraturanId: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -8196,18 +8315,21 @@ export namespace Prisma {
     opdId?: true
     peraturanId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type OPDPeraturanMaxAggregateInputType = {
     opdId?: true
     peraturanId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type OPDPeraturanCountAggregateInputType = {
     opdId?: true
     peraturanId?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -8287,6 +8409,7 @@ export namespace Prisma {
     opdId: string
     peraturanId: string
     createdAt: Date
+    updatedAt: Date
     _count: OPDPeraturanCountAggregateOutputType | null
     _min: OPDPeraturanMinAggregateOutputType | null
     _max: OPDPeraturanMaxAggregateOutputType | null
@@ -8310,6 +8433,7 @@ export namespace Prisma {
     opdId?: boolean
     peraturanId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     opd?: boolean | OPDDefaultArgs<ExtArgs>
     peraturan?: boolean | PeraturanDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["oPDPeraturan"]>
@@ -8320,9 +8444,10 @@ export namespace Prisma {
     opdId?: boolean
     peraturanId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type OPDPeraturanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"opdId" | "peraturanId" | "createdAt", ExtArgs["result"]["oPDPeraturan"]>
+  export type OPDPeraturanOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"opdId" | "peraturanId" | "createdAt" | "updatedAt", ExtArgs["result"]["oPDPeraturan"]>
   export type OPDPeraturanInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     opd?: boolean | OPDDefaultArgs<ExtArgs>
     peraturan?: boolean | PeraturanDefaultArgs<ExtArgs>
@@ -8338,6 +8463,7 @@ export namespace Prisma {
       opdId: string
       peraturanId: string
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["oPDPeraturan"]>
     composites: {}
   }
@@ -8686,20 +8812,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -8712,6 +8838,7 @@ export namespace Prisma {
     readonly opdId: FieldRef<"OPDPeraturan", 'String'>
     readonly peraturanId: FieldRef<"OPDPeraturan", 'String'>
     readonly createdAt: FieldRef<"OPDPeraturan", 'DateTime'>
+    readonly updatedAt: FieldRef<"OPDPeraturan", 'DateTime'>
   }
     
 
@@ -9624,20 +9751,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -10852,20 +10979,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -11621,6 +11748,8 @@ export namespace Prisma {
     detailSopId: string | null
     jenis: $Enums.JenisLampiran | null
     teks: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type LampiranTeksMaxAggregateOutputType = {
@@ -11628,6 +11757,8 @@ export namespace Prisma {
     detailSopId: string | null
     jenis: $Enums.JenisLampiran | null
     teks: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type LampiranTeksCountAggregateOutputType = {
@@ -11635,6 +11766,8 @@ export namespace Prisma {
     detailSopId: number
     jenis: number
     teks: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -11644,6 +11777,8 @@ export namespace Prisma {
     detailSopId?: true
     jenis?: true
     teks?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type LampiranTeksMaxAggregateInputType = {
@@ -11651,6 +11786,8 @@ export namespace Prisma {
     detailSopId?: true
     jenis?: true
     teks?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type LampiranTeksCountAggregateInputType = {
@@ -11658,6 +11795,8 @@ export namespace Prisma {
     detailSopId?: true
     jenis?: true
     teks?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -11738,6 +11877,8 @@ export namespace Prisma {
     detailSopId: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt: Date
+    updatedAt: Date
     _count: LampiranTeksCountAggregateOutputType | null
     _min: LampiranTeksMinAggregateOutputType | null
     _max: LampiranTeksMaxAggregateOutputType | null
@@ -11762,6 +11903,8 @@ export namespace Prisma {
     detailSopId?: boolean
     jenis?: boolean
     teks?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["lampiranTeks"]>
 
@@ -11772,9 +11915,11 @@ export namespace Prisma {
     detailSopId?: boolean
     jenis?: boolean
     teks?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type LampiranTeksOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"lampiranTeksId" | "detailSopId" | "jenis" | "teks", ExtArgs["result"]["lampiranTeks"]>
+  export type LampiranTeksOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"lampiranTeksId" | "detailSopId" | "jenis" | "teks" | "createdAt" | "updatedAt", ExtArgs["result"]["lampiranTeks"]>
   export type LampiranTeksInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
   }
@@ -11789,6 +11934,8 @@ export namespace Prisma {
       detailSopId: string
       jenis: $Enums.JenisLampiran
       teks: string
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["lampiranTeks"]>
     composites: {}
   }
@@ -12136,20 +12283,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -12163,6 +12310,8 @@ export namespace Prisma {
     readonly detailSopId: FieldRef<"LampiranTeks", 'String'>
     readonly jenis: FieldRef<"LampiranTeks", 'JenisLampiran'>
     readonly teks: FieldRef<"LampiranTeks", 'String'>
+    readonly createdAt: FieldRef<"LampiranTeks", 'DateTime'>
+    readonly updatedAt: FieldRef<"LampiranTeks", 'DateTime'>
   }
     
 
@@ -12542,16 +12691,22 @@ export namespace Prisma {
   export type DasarHukumMinAggregateOutputType = {
     detailSopId: string | null
     peraturanId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type DasarHukumMaxAggregateOutputType = {
     detailSopId: string | null
     peraturanId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type DasarHukumCountAggregateOutputType = {
     detailSopId: number
     peraturanId: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -12559,16 +12714,22 @@ export namespace Prisma {
   export type DasarHukumMinAggregateInputType = {
     detailSopId?: true
     peraturanId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type DasarHukumMaxAggregateInputType = {
     detailSopId?: true
     peraturanId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type DasarHukumCountAggregateInputType = {
     detailSopId?: true
     peraturanId?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -12647,6 +12808,8 @@ export namespace Prisma {
   export type DasarHukumGroupByOutputType = {
     detailSopId: string
     peraturanId: string
+    createdAt: Date
+    updatedAt: Date
     _count: DasarHukumCountAggregateOutputType | null
     _min: DasarHukumMinAggregateOutputType | null
     _max: DasarHukumMaxAggregateOutputType | null
@@ -12669,6 +12832,8 @@ export namespace Prisma {
   export type DasarHukumSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     detailSopId?: boolean
     peraturanId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     peraturan?: boolean | PeraturanDefaultArgs<ExtArgs>
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["dasarHukum"]>
@@ -12678,9 +12843,11 @@ export namespace Prisma {
   export type DasarHukumSelectScalar = {
     detailSopId?: boolean
     peraturanId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type DasarHukumOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "peraturanId", ExtArgs["result"]["dasarHukum"]>
+  export type DasarHukumOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "peraturanId" | "createdAt" | "updatedAt", ExtArgs["result"]["dasarHukum"]>
   export type DasarHukumInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     peraturan?: boolean | PeraturanDefaultArgs<ExtArgs>
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
@@ -12695,6 +12862,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       detailSopId: string
       peraturanId: string
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["dasarHukum"]>
     composites: {}
   }
@@ -13043,20 +13212,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -13068,6 +13237,8 @@ export namespace Prisma {
   interface DasarHukumFieldRefs {
     readonly detailSopId: FieldRef<"DasarHukum", 'String'>
     readonly peraturanId: FieldRef<"DasarHukum", 'String'>
+    readonly createdAt: FieldRef<"DasarHukum", 'DateTime'>
+    readonly updatedAt: FieldRef<"DasarHukum", 'DateTime'>
   }
     
 
@@ -13447,16 +13618,22 @@ export namespace Prisma {
   export type SopTerkaitMinAggregateOutputType = {
     detailSopId: string | null
     detailSopTerkaitId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SopTerkaitMaxAggregateOutputType = {
     detailSopId: string | null
     detailSopTerkaitId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SopTerkaitCountAggregateOutputType = {
     detailSopId: number
     detailSopTerkaitId: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -13464,16 +13641,22 @@ export namespace Prisma {
   export type SopTerkaitMinAggregateInputType = {
     detailSopId?: true
     detailSopTerkaitId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type SopTerkaitMaxAggregateInputType = {
     detailSopId?: true
     detailSopTerkaitId?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type SopTerkaitCountAggregateInputType = {
     detailSopId?: true
     detailSopTerkaitId?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -13552,6 +13735,8 @@ export namespace Prisma {
   export type SopTerkaitGroupByOutputType = {
     detailSopId: string
     detailSopTerkaitId: string
+    createdAt: Date
+    updatedAt: Date
     _count: SopTerkaitCountAggregateOutputType | null
     _min: SopTerkaitMinAggregateOutputType | null
     _max: SopTerkaitMaxAggregateOutputType | null
@@ -13574,6 +13759,8 @@ export namespace Prisma {
   export type SopTerkaitSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     detailSopId?: boolean
     detailSopTerkaitId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     sop?: boolean | DetailSOPDefaultArgs<ExtArgs>
     sopTerkait?: boolean | DetailSOPDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["sopTerkait"]>
@@ -13583,9 +13770,11 @@ export namespace Prisma {
   export type SopTerkaitSelectScalar = {
     detailSopId?: boolean
     detailSopTerkaitId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type SopTerkaitOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "detailSopTerkaitId", ExtArgs["result"]["sopTerkait"]>
+  export type SopTerkaitOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "detailSopTerkaitId" | "createdAt" | "updatedAt", ExtArgs["result"]["sopTerkait"]>
   export type SopTerkaitInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sop?: boolean | DetailSOPDefaultArgs<ExtArgs>
     sopTerkait?: boolean | DetailSOPDefaultArgs<ExtArgs>
@@ -13600,6 +13789,8 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       detailSopId: string
       detailSopTerkaitId: string
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["sopTerkait"]>
     composites: {}
   }
@@ -13948,20 +14139,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -13973,6 +14164,8 @@ export namespace Prisma {
   interface SopTerkaitFieldRefs {
     readonly detailSopId: FieldRef<"SopTerkait", 'String'>
     readonly detailSopTerkaitId: FieldRef<"SopTerkait", 'String'>
+    readonly createdAt: FieldRef<"SopTerkait", 'DateTime'>
+    readonly updatedAt: FieldRef<"SopTerkait", 'DateTime'>
   }
     
 
@@ -15051,20 +15244,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -16163,20 +16356,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -16629,18 +16822,24 @@ export namespace Prisma {
     detailSopId: string | null
     pelaksanaId: string | null
     urutan: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type DetailSOPPelaksanaMaxAggregateOutputType = {
     detailSopId: string | null
     pelaksanaId: string | null
     urutan: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type DetailSOPPelaksanaCountAggregateOutputType = {
     detailSopId: number
     pelaksanaId: number
     urutan: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -16657,18 +16856,24 @@ export namespace Prisma {
     detailSopId?: true
     pelaksanaId?: true
     urutan?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type DetailSOPPelaksanaMaxAggregateInputType = {
     detailSopId?: true
     pelaksanaId?: true
     urutan?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type DetailSOPPelaksanaCountAggregateInputType = {
     detailSopId?: true
     pelaksanaId?: true
     urutan?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -16762,6 +16967,8 @@ export namespace Prisma {
     detailSopId: string
     pelaksanaId: string
     urutan: number
+    createdAt: Date
+    updatedAt: Date
     _count: DetailSOPPelaksanaCountAggregateOutputType | null
     _avg: DetailSOPPelaksanaAvgAggregateOutputType | null
     _sum: DetailSOPPelaksanaSumAggregateOutputType | null
@@ -16787,6 +16994,8 @@ export namespace Prisma {
     detailSopId?: boolean
     pelaksanaId?: boolean
     urutan?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     pelaksana?: boolean | PelaksanaDefaultArgs<ExtArgs>
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["detailSOPPelaksana"]>
@@ -16797,9 +17006,11 @@ export namespace Prisma {
     detailSopId?: boolean
     pelaksanaId?: boolean
     urutan?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type DetailSOPPelaksanaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "pelaksanaId" | "urutan", ExtArgs["result"]["detailSOPPelaksana"]>
+  export type DetailSOPPelaksanaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "pelaksanaId" | "urutan" | "createdAt" | "updatedAt", ExtArgs["result"]["detailSOPPelaksana"]>
   export type DetailSOPPelaksanaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pelaksana?: boolean | PelaksanaDefaultArgs<ExtArgs>
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
@@ -16815,6 +17026,8 @@ export namespace Prisma {
       detailSopId: string
       pelaksanaId: string
       urutan: number
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["detailSOPPelaksana"]>
     composites: {}
   }
@@ -17163,20 +17376,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -17189,6 +17402,8 @@ export namespace Prisma {
     readonly detailSopId: FieldRef<"DetailSOPPelaksana", 'String'>
     readonly pelaksanaId: FieldRef<"DetailSOPPelaksana", 'String'>
     readonly urutan: FieldRef<"DetailSOPPelaksana", 'Int'>
+    readonly createdAt: FieldRef<"DetailSOPPelaksana", 'DateTime'>
+    readonly updatedAt: FieldRef<"DetailSOPPelaksana", 'DateTime'>
   }
     
 
@@ -17569,24 +17784,37 @@ export namespace Prisma {
     logEditSopId: string | null
     detailSopId: string | null
     userId: string | null
+    bagian: $Enums.BagianSOP | null
+    entityId: string | null
     keterangan: string | null
+    closedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type LogEditSOPMaxAggregateOutputType = {
     logEditSopId: string | null
     detailSopId: string | null
     userId: string | null
+    bagian: $Enums.BagianSOP | null
+    entityId: string | null
     keterangan: string | null
+    closedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type LogEditSOPCountAggregateOutputType = {
     logEditSopId: number
     detailSopId: number
     userId: number
+    bagian: number
+    entityId: number
     keterangan: number
+    meta: number
+    closedAt: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -17595,24 +17823,37 @@ export namespace Prisma {
     logEditSopId?: true
     detailSopId?: true
     userId?: true
+    bagian?: true
+    entityId?: true
     keterangan?: true
+    closedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type LogEditSOPMaxAggregateInputType = {
     logEditSopId?: true
     detailSopId?: true
     userId?: true
+    bagian?: true
+    entityId?: true
     keterangan?: true
+    closedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type LogEditSOPCountAggregateInputType = {
     logEditSopId?: true
     detailSopId?: true
     userId?: true
+    bagian?: true
+    entityId?: true
     keterangan?: true
+    meta?: true
+    closedAt?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -17692,8 +17933,13 @@ export namespace Prisma {
     logEditSopId: string
     detailSopId: string
     userId: string
+    bagian: $Enums.BagianSOP
+    entityId: string | null
     keterangan: string | null
+    meta: JsonValue | null
+    closedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     _count: LogEditSOPCountAggregateOutputType | null
     _min: LogEditSOPMinAggregateOutputType | null
     _max: LogEditSOPMaxAggregateOutputType | null
@@ -17717,8 +17963,13 @@ export namespace Prisma {
     logEditSopId?: boolean
     detailSopId?: boolean
     userId?: boolean
+    bagian?: boolean
+    entityId?: boolean
     keterangan?: boolean
+    meta?: boolean
+    closedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
     user?: boolean | PenggunaDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["logEditSOP"]>
@@ -17729,11 +17980,16 @@ export namespace Prisma {
     logEditSopId?: boolean
     detailSopId?: boolean
     userId?: boolean
+    bagian?: boolean
+    entityId?: boolean
     keterangan?: boolean
+    meta?: boolean
+    closedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type LogEditSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"logEditSopId" | "detailSopId" | "userId" | "keterangan" | "createdAt", ExtArgs["result"]["logEditSOP"]>
+  export type LogEditSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"logEditSopId" | "detailSopId" | "userId" | "bagian" | "entityId" | "keterangan" | "meta" | "closedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["logEditSOP"]>
   export type LogEditSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
     user?: boolean | PenggunaDefaultArgs<ExtArgs>
@@ -17749,8 +18005,25 @@ export namespace Prisma {
       logEditSopId: string
       detailSopId: string
       userId: string
+      bagian: $Enums.BagianSOP
+      /**
+       * ID entitas spesifik yang dirujuk (mis. komentarId, langkahId). Null untuk header SOP.
+       */
+      entityId: string | null
+      /**
+       * Ringkasan human-readable yang sudah memuat label bagian + field yang berubah.
+       */
       keterangan: string | null
+      /**
+       * Metadata terstruktur untuk sesi merge: { fields: string[], count: number }.
+       */
+      meta: Prisma.JsonValue | null
+      /**
+       * Sesi dianggap selesai bila tidak null. Sesi terbuka (null) bisa di-merge dengan edit lanjutan dalam idle window.
+       */
+      closedAt: Date | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["logEditSOP"]>
     composites: {}
   }
@@ -18099,20 +18372,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -18125,8 +18398,13 @@ export namespace Prisma {
     readonly logEditSopId: FieldRef<"LogEditSOP", 'String'>
     readonly detailSopId: FieldRef<"LogEditSOP", 'String'>
     readonly userId: FieldRef<"LogEditSOP", 'String'>
+    readonly bagian: FieldRef<"LogEditSOP", 'BagianSOP'>
+    readonly entityId: FieldRef<"LogEditSOP", 'String'>
     readonly keterangan: FieldRef<"LogEditSOP", 'String'>
+    readonly meta: FieldRef<"LogEditSOP", 'Json'>
+    readonly closedAt: FieldRef<"LogEditSOP", 'DateTime'>
     readonly createdAt: FieldRef<"LogEditSOP", 'DateTime'>
+    readonly updatedAt: FieldRef<"LogEditSOP", 'DateTime'>
   }
     
 
@@ -19057,20 +19335,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -20099,20 +20377,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -20576,6 +20854,7 @@ export namespace Prisma {
     page: number | null
     x: number | null
     y: number | null
+    createdAt: Date | null
     updatedAt: Date | null
   }
 
@@ -20585,6 +20864,7 @@ export namespace Prisma {
     page: number | null
     x: number | null
     y: number | null
+    createdAt: Date | null
     updatedAt: Date | null
   }
 
@@ -20594,6 +20874,7 @@ export namespace Prisma {
     page: number
     x: number
     y: number
+    createdAt: number
     updatedAt: number
     _all: number
   }
@@ -20617,6 +20898,7 @@ export namespace Prisma {
     page?: true
     x?: true
     y?: true
+    createdAt?: true
     updatedAt?: true
   }
 
@@ -20626,6 +20908,7 @@ export namespace Prisma {
     page?: true
     x?: true
     y?: true
+    createdAt?: true
     updatedAt?: true
   }
 
@@ -20635,6 +20918,7 @@ export namespace Prisma {
     page?: true
     x?: true
     y?: true
+    createdAt?: true
     updatedAt?: true
     _all?: true
   }
@@ -20731,6 +21015,7 @@ export namespace Prisma {
     page: number
     x: number
     y: number
+    createdAt: Date
     updatedAt: Date
     _count: PosisiNodeDiagramCountAggregateOutputType | null
     _avg: PosisiNodeDiagramAvgAggregateOutputType | null
@@ -20759,6 +21044,7 @@ export namespace Prisma {
     page?: boolean
     x?: boolean
     y?: boolean
+    createdAt?: boolean
     updatedAt?: boolean
     tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
     langkahSOP?: boolean | LangkahSOPDefaultArgs<ExtArgs>
@@ -20772,10 +21058,11 @@ export namespace Prisma {
     page?: boolean
     x?: boolean
     y?: boolean
+    createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PosisiNodeDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"tataLetakDiagramId" | "langkahSopId" | "page" | "x" | "y" | "updatedAt", ExtArgs["result"]["posisiNodeDiagram"]>
+  export type PosisiNodeDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"tataLetakDiagramId" | "langkahSopId" | "page" | "x" | "y" | "createdAt" | "updatedAt", ExtArgs["result"]["posisiNodeDiagram"]>
   export type PosisiNodeDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
     langkahSOP?: boolean | LangkahSOPDefaultArgs<ExtArgs>
@@ -20793,6 +21080,7 @@ export namespace Prisma {
       page: number
       x: number
       y: number
+      createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["posisiNodeDiagram"]>
     composites: {}
@@ -21142,20 +21430,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -21170,6 +21458,7 @@ export namespace Prisma {
     readonly page: FieldRef<"PosisiNodeDiagram", 'Int'>
     readonly x: FieldRef<"PosisiNodeDiagram", 'Int'>
     readonly y: FieldRef<"PosisiNodeDiagram", 'Int'>
+    readonly createdAt: FieldRef<"PosisiNodeDiagram", 'DateTime'>
     readonly updatedAt: FieldRef<"PosisiNodeDiagram", 'DateTime'>
   }
     
@@ -21554,6 +21843,8 @@ export namespace Prisma {
     keLangkahId: string | null
     cabang: $Enums.CabangDiagramEdge | null
     labelTeks: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SisiDiagramMaxAggregateOutputType = {
@@ -21563,6 +21854,8 @@ export namespace Prisma {
     keLangkahId: string | null
     cabang: $Enums.CabangDiagramEdge | null
     labelTeks: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type SisiDiagramCountAggregateOutputType = {
@@ -21572,6 +21865,8 @@ export namespace Prisma {
     keLangkahId: number
     cabang: number
     labelTeks: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -21583,6 +21878,8 @@ export namespace Prisma {
     keLangkahId?: true
     cabang?: true
     labelTeks?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type SisiDiagramMaxAggregateInputType = {
@@ -21592,6 +21889,8 @@ export namespace Prisma {
     keLangkahId?: true
     cabang?: true
     labelTeks?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type SisiDiagramCountAggregateInputType = {
@@ -21601,6 +21900,8 @@ export namespace Prisma {
     keLangkahId?: true
     cabang?: true
     labelTeks?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -21683,6 +21984,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang: $Enums.CabangDiagramEdge
     labelTeks: string | null
+    createdAt: Date
+    updatedAt: Date
     _count: SisiDiagramCountAggregateOutputType | null
     _min: SisiDiagramMinAggregateOutputType | null
     _max: SisiDiagramMaxAggregateOutputType | null
@@ -21709,6 +22012,8 @@ export namespace Prisma {
     keLangkahId?: boolean
     cabang?: boolean
     labelTeks?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     dariLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
     tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
     keLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
@@ -21725,9 +22030,11 @@ export namespace Prisma {
     keLangkahId?: boolean
     cabang?: boolean
     labelTeks?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type SisiDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sisiDiagramId" | "tataLetakDiagramId" | "dariLangkahId" | "keLangkahId" | "cabang" | "labelTeks", ExtArgs["result"]["sisiDiagram"]>
+  export type SisiDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sisiDiagramId" | "tataLetakDiagramId" | "dariLangkahId" | "keLangkahId" | "cabang" | "labelTeks" | "createdAt" | "updatedAt", ExtArgs["result"]["sisiDiagram"]>
   export type SisiDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     dariLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
     tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
@@ -21754,6 +22061,8 @@ export namespace Prisma {
        */
       cabang: $Enums.CabangDiagramEdge
       labelTeks: string | null
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["sisiDiagram"]>
     composites: {}
   }
@@ -22104,20 +22413,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -22133,6 +22442,8 @@ export namespace Prisma {
     readonly keLangkahId: FieldRef<"SisiDiagram", 'String'>
     readonly cabang: FieldRef<"SisiDiagram", 'CabangDiagramEdge'>
     readonly labelTeks: FieldRef<"SisiDiagram", 'String'>
+    readonly createdAt: FieldRef<"SisiDiagram", 'DateTime'>
+    readonly updatedAt: FieldRef<"SisiDiagram", 'DateTime'>
   }
     
 
@@ -22552,6 +22863,8 @@ export namespace Prisma {
     urutan: number | null
     x: number | null
     y: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TitikSisiDiagramMaxAggregateOutputType = {
@@ -22559,6 +22872,8 @@ export namespace Prisma {
     urutan: number | null
     x: number | null
     y: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TitikSisiDiagramCountAggregateOutputType = {
@@ -22566,6 +22881,8 @@ export namespace Prisma {
     urutan: number
     x: number
     y: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -22587,6 +22904,8 @@ export namespace Prisma {
     urutan?: true
     x?: true
     y?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type TitikSisiDiagramMaxAggregateInputType = {
@@ -22594,6 +22913,8 @@ export namespace Prisma {
     urutan?: true
     x?: true
     y?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type TitikSisiDiagramCountAggregateInputType = {
@@ -22601,6 +22922,8 @@ export namespace Prisma {
     urutan?: true
     x?: true
     y?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -22695,6 +23018,8 @@ export namespace Prisma {
     urutan: number
     x: number
     y: number
+    createdAt: Date
+    updatedAt: Date
     _count: TitikSisiDiagramCountAggregateOutputType | null
     _avg: TitikSisiDiagramAvgAggregateOutputType | null
     _sum: TitikSisiDiagramSumAggregateOutputType | null
@@ -22721,6 +23046,8 @@ export namespace Prisma {
     urutan?: boolean
     x?: boolean
     y?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     sisiDiagram?: boolean | SisiDiagramDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["titikSisiDiagram"]>
 
@@ -22731,9 +23058,11 @@ export namespace Prisma {
     urutan?: boolean
     x?: boolean
     y?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type TitikSisiDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sisiDiagramId" | "urutan" | "x" | "y", ExtArgs["result"]["titikSisiDiagram"]>
+  export type TitikSisiDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sisiDiagramId" | "urutan" | "x" | "y" | "createdAt" | "updatedAt", ExtArgs["result"]["titikSisiDiagram"]>
   export type TitikSisiDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     sisiDiagram?: boolean | SisiDiagramDefaultArgs<ExtArgs>
   }
@@ -22748,6 +23077,8 @@ export namespace Prisma {
       urutan: number
       x: number
       y: number
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["titikSisiDiagram"]>
     composites: {}
   }
@@ -23095,20 +23426,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -23122,6 +23453,8 @@ export namespace Prisma {
     readonly urutan: FieldRef<"TitikSisiDiagram", 'Int'>
     readonly x: FieldRef<"TitikSisiDiagram", 'Int'>
     readonly y: FieldRef<"TitikSisiDiagram", 'Int'>
+    readonly createdAt: FieldRef<"TitikSisiDiagram", 'DateTime'>
+    readonly updatedAt: FieldRef<"TitikSisiDiagram", 'DateTime'>
   }
     
 
@@ -24220,20 +24553,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -25377,20 +25710,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -25814,6 +26147,7 @@ export namespace Prisma {
     catatanSebelum: string | null
     catatanSesudah: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type LogNilaiEvaluasiMaxAggregateOutputType = {
@@ -25826,6 +26160,7 @@ export namespace Prisma {
     catatanSebelum: string | null
     catatanSesudah: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type LogNilaiEvaluasiCountAggregateOutputType = {
@@ -25838,6 +26173,7 @@ export namespace Prisma {
     catatanSebelum: number
     catatanSesudah: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -25852,6 +26188,7 @@ export namespace Prisma {
     catatanSebelum?: true
     catatanSesudah?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type LogNilaiEvaluasiMaxAggregateInputType = {
@@ -25864,6 +26201,7 @@ export namespace Prisma {
     catatanSebelum?: true
     catatanSesudah?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type LogNilaiEvaluasiCountAggregateInputType = {
@@ -25876,6 +26214,7 @@ export namespace Prisma {
     catatanSebelum?: true
     catatanSesudah?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -25961,6 +26300,7 @@ export namespace Prisma {
     catatanSebelum: string | null
     catatanSesudah: string | null
     createdAt: Date
+    updatedAt: Date
     _count: LogNilaiEvaluasiCountAggregateOutputType | null
     _min: LogNilaiEvaluasiMinAggregateOutputType | null
     _max: LogNilaiEvaluasiMaxAggregateOutputType | null
@@ -25990,6 +26330,7 @@ export namespace Prisma {
     catatanSebelum?: boolean
     catatanSesudah?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     evaluator?: boolean | PenggunaDefaultArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["logNilaiEvaluasi"]>
@@ -26006,9 +26347,10 @@ export namespace Prisma {
     catatanSebelum?: boolean
     catatanSesudah?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type LogNilaiEvaluasiOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"logNilaiEvaluasiId" | "pengajuanEvaluasiId" | "detailSopId" | "evaluatorId" | "hasilSebelum" | "hasilSesudah" | "catatanSebelum" | "catatanSesudah" | "createdAt", ExtArgs["result"]["logNilaiEvaluasi"]>
+  export type LogNilaiEvaluasiOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"logNilaiEvaluasiId" | "pengajuanEvaluasiId" | "detailSopId" | "evaluatorId" | "hasilSebelum" | "hasilSesudah" | "catatanSebelum" | "catatanSesudah" | "createdAt" | "updatedAt", ExtArgs["result"]["logNilaiEvaluasi"]>
   export type LogNilaiEvaluasiInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     evaluator?: boolean | PenggunaDefaultArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
@@ -26030,6 +26372,7 @@ export namespace Prisma {
       catatanSebelum: string | null
       catatanSesudah: string | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["logNilaiEvaluasi"]>
     composites: {}
   }
@@ -26378,20 +26721,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -26410,6 +26753,7 @@ export namespace Prisma {
     readonly catatanSebelum: FieldRef<"LogNilaiEvaluasi", 'String'>
     readonly catatanSesudah: FieldRef<"LogNilaiEvaluasi", 'String'>
     readonly createdAt: FieldRef<"LogNilaiEvaluasi", 'DateTime'>
+    readonly updatedAt: FieldRef<"LogNilaiEvaluasi", 'DateTime'>
   }
     
 
@@ -27346,20 +27690,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -27774,6 +28118,7 @@ export namespace Prisma {
     detailSopId: string | null
     pengajuanEvaluasiId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type DokumenTteMaxAggregateOutputType = {
@@ -27787,6 +28132,7 @@ export namespace Prisma {
     detailSopId: string | null
     pengajuanEvaluasiId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type DokumenTteCountAggregateOutputType = {
@@ -27800,6 +28146,7 @@ export namespace Prisma {
     detailSopId: number
     pengajuanEvaluasiId: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -27823,6 +28170,7 @@ export namespace Prisma {
     detailSopId?: true
     pengajuanEvaluasiId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type DokumenTteMaxAggregateInputType = {
@@ -27836,6 +28184,7 @@ export namespace Prisma {
     detailSopId?: true
     pengajuanEvaluasiId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type DokumenTteCountAggregateInputType = {
@@ -27849,6 +28198,7 @@ export namespace Prisma {
     detailSopId?: true
     pengajuanEvaluasiId?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -27949,6 +28299,7 @@ export namespace Prisma {
     detailSopId: string | null
     pengajuanEvaluasiId: string | null
     createdAt: Date
+    updatedAt: Date
     _count: DokumenTteCountAggregateOutputType | null
     _avg: DokumenTteAvgAggregateOutputType | null
     _sum: DokumenTteSumAggregateOutputType | null
@@ -27981,6 +28332,7 @@ export namespace Prisma {
     detailSopId?: boolean
     pengajuanEvaluasiId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     detailSop?: boolean | DokumenTte$detailSopArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | DokumenTte$pengajuanEvaluasiArgs<ExtArgs>
     riwayatTandaTangan?: boolean | DokumenTte$riwayatTandaTanganArgs<ExtArgs>
@@ -28000,9 +28352,10 @@ export namespace Prisma {
     detailSopId?: boolean
     pengajuanEvaluasiId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type DokumenTteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"dokumenTteId" | "nomorDokumen" | "jenisDokumen" | "judulDokumen" | "hashDokumen" | "versiDokumen" | "metodeKanonikalisasi" | "detailSopId" | "pengajuanEvaluasiId" | "createdAt", ExtArgs["result"]["dokumenTte"]>
+  export type DokumenTteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"dokumenTteId" | "nomorDokumen" | "jenisDokumen" | "judulDokumen" | "hashDokumen" | "versiDokumen" | "metodeKanonikalisasi" | "detailSopId" | "pengajuanEvaluasiId" | "createdAt" | "updatedAt", ExtArgs["result"]["dokumenTte"]>
   export type DokumenTteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSop?: boolean | DokumenTte$detailSopArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | DokumenTte$pengajuanEvaluasiArgs<ExtArgs>
@@ -28028,6 +28381,7 @@ export namespace Prisma {
       detailSopId: string | null
       pengajuanEvaluasiId: string | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["dokumenTte"]>
     composites: {}
   }
@@ -28377,20 +28731,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -28410,6 +28764,7 @@ export namespace Prisma {
     readonly detailSopId: FieldRef<"DokumenTte", 'String'>
     readonly pengajuanEvaluasiId: FieldRef<"DokumenTte", 'String'>
     readonly createdAt: FieldRef<"DokumenTte", 'DateTime'>
+    readonly updatedAt: FieldRef<"DokumenTte", 'DateTime'>
   }
     
 
@@ -28864,6 +29219,8 @@ export namespace Prisma {
     certValidFrom: Date | null
     certValidTo: Date | null
     ditandatanganiPada: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RiwayatTandaTanganMaxAggregateOutputType = {
@@ -28882,6 +29239,8 @@ export namespace Prisma {
     certValidFrom: Date | null
     certValidTo: Date | null
     ditandatanganiPada: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type RiwayatTandaTanganCountAggregateOutputType = {
@@ -28900,6 +29259,8 @@ export namespace Prisma {
     certValidFrom: number
     certValidTo: number
     ditandatanganiPada: number
+    createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -28920,6 +29281,8 @@ export namespace Prisma {
     certValidFrom?: true
     certValidTo?: true
     ditandatanganiPada?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type RiwayatTandaTanganMaxAggregateInputType = {
@@ -28938,6 +29301,8 @@ export namespace Prisma {
     certValidFrom?: true
     certValidTo?: true
     ditandatanganiPada?: true
+    createdAt?: true
+    updatedAt?: true
   }
 
   export type RiwayatTandaTanganCountAggregateInputType = {
@@ -28956,6 +29321,8 @@ export namespace Prisma {
     certValidFrom?: true
     certValidTo?: true
     ditandatanganiPada?: true
+    createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -29047,6 +29414,8 @@ export namespace Prisma {
     certValidFrom: Date | null
     certValidTo: Date | null
     ditandatanganiPada: Date
+    createdAt: Date
+    updatedAt: Date
     _count: RiwayatTandaTanganCountAggregateOutputType | null
     _min: RiwayatTandaTanganMinAggregateOutputType | null
     _max: RiwayatTandaTanganMaxAggregateOutputType | null
@@ -29082,6 +29451,8 @@ export namespace Prisma {
     certValidFrom?: boolean
     certValidTo?: boolean
     ditandatanganiPada?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
     dokumenTte?: boolean | DokumenTteDefaultArgs<ExtArgs>
     user?: boolean | PenggunaDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["riwayatTandaTangan"]>
@@ -29104,9 +29475,11 @@ export namespace Prisma {
     certValidFrom?: boolean
     certValidTo?: boolean
     ditandatanganiPada?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type RiwayatTandaTanganOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"riwayatTandaTanganId" | "userId" | "dokumenTteId" | "peran" | "signatureValue" | "signatureAlgorithm" | "signatureFormat" | "keyId" | "certSerialNumber" | "certIssuer" | "certSubject" | "certFingerprint" | "certValidFrom" | "certValidTo" | "ditandatanganiPada", ExtArgs["result"]["riwayatTandaTangan"]>
+  export type RiwayatTandaTanganOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"riwayatTandaTanganId" | "userId" | "dokumenTteId" | "peran" | "signatureValue" | "signatureAlgorithm" | "signatureFormat" | "keyId" | "certSerialNumber" | "certIssuer" | "certSubject" | "certFingerprint" | "certValidFrom" | "certValidTo" | "ditandatanganiPada" | "createdAt" | "updatedAt", ExtArgs["result"]["riwayatTandaTangan"]>
   export type RiwayatTandaTanganInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     dokumenTte?: boolean | DokumenTteDefaultArgs<ExtArgs>
     user?: boolean | PenggunaDefaultArgs<ExtArgs>
@@ -29134,6 +29507,8 @@ export namespace Prisma {
       certValidFrom: Date | null
       certValidTo: Date | null
       ditandatanganiPada: Date
+      createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["riwayatTandaTangan"]>
     composites: {}
   }
@@ -29482,20 +29857,20 @@ export namespace Prisma {
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)   | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>)   | null): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>)   | null): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void)   | null): $Utils.JsPromise<T>
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
 
@@ -29520,6 +29895,8 @@ export namespace Prisma {
     readonly certValidFrom: FieldRef<"RiwayatTandaTangan", 'DateTime'>
     readonly certValidTo: FieldRef<"RiwayatTandaTangan", 'DateTime'>
     readonly ditandatanganiPada: FieldRef<"RiwayatTandaTangan", 'DateTime'>
+    readonly createdAt: FieldRef<"RiwayatTandaTangan", 'DateTime'>
+    readonly updatedAt: FieldRef<"RiwayatTandaTangan", 'DateTime'>
   }
     
 
@@ -29922,6 +30299,9 @@ export namespace Prisma {
   export const OPDScalarFieldEnum: {
     opdId: 'opdId',
     nama: 'nama',
+    isBiroOrganisasi: 'isBiroOrganisasi',
+    kepalaPenggunaId: 'kepalaPenggunaId',
+    pjPenyusunPenggunaId: 'pjPenyusunPenggunaId',
     deletedAt: 'deletedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -29931,13 +30311,10 @@ export namespace Prisma {
 
 
   export const RiwayatOpdPenggunaScalarFieldEnum: {
-    riwayatOpdPenggunaId: 'riwayatOpdPenggunaId',
     penggunaId: 'penggunaId',
     opdId: 'opdId',
-    mulaiPada: 'mulaiPada',
-    berakhirPada: 'berakhirPada',
-    alasan: 'alasan',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type RiwayatOpdPenggunaScalarFieldEnum = (typeof RiwayatOpdPenggunaScalarFieldEnum)[keyof typeof RiwayatOpdPenggunaScalarFieldEnum]
@@ -29959,7 +30336,8 @@ export namespace Prisma {
   export const OPDPeraturanScalarFieldEnum: {
     opdId: 'opdId',
     peraturanId: 'peraturanId',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type OPDPeraturanScalarFieldEnum = (typeof OPDPeraturanScalarFieldEnum)[keyof typeof OPDPeraturanScalarFieldEnum]
@@ -30006,7 +30384,9 @@ export namespace Prisma {
     lampiranTeksId: 'lampiranTeksId',
     detailSopId: 'detailSopId',
     jenis: 'jenis',
-    teks: 'teks'
+    teks: 'teks',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type LampiranTeksScalarFieldEnum = (typeof LampiranTeksScalarFieldEnum)[keyof typeof LampiranTeksScalarFieldEnum]
@@ -30014,7 +30394,9 @@ export namespace Prisma {
 
   export const DasarHukumScalarFieldEnum: {
     detailSopId: 'detailSopId',
-    peraturanId: 'peraturanId'
+    peraturanId: 'peraturanId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type DasarHukumScalarFieldEnum = (typeof DasarHukumScalarFieldEnum)[keyof typeof DasarHukumScalarFieldEnum]
@@ -30022,7 +30404,9 @@ export namespace Prisma {
 
   export const SopTerkaitScalarFieldEnum: {
     detailSopId: 'detailSopId',
-    detailSopTerkaitId: 'detailSopTerkaitId'
+    detailSopTerkaitId: 'detailSopTerkaitId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SopTerkaitScalarFieldEnum = (typeof SopTerkaitScalarFieldEnum)[keyof typeof SopTerkaitScalarFieldEnum]
@@ -30063,7 +30447,9 @@ export namespace Prisma {
   export const DetailSOPPelaksanaScalarFieldEnum: {
     detailSopId: 'detailSopId',
     pelaksanaId: 'pelaksanaId',
-    urutan: 'urutan'
+    urutan: 'urutan',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type DetailSOPPelaksanaScalarFieldEnum = (typeof DetailSOPPelaksanaScalarFieldEnum)[keyof typeof DetailSOPPelaksanaScalarFieldEnum]
@@ -30073,8 +30459,13 @@ export namespace Prisma {
     logEditSopId: 'logEditSopId',
     detailSopId: 'detailSopId',
     userId: 'userId',
+    bagian: 'bagian',
+    entityId: 'entityId',
     keterangan: 'keterangan',
-    createdAt: 'createdAt'
+    meta: 'meta',
+    closedAt: 'closedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type LogEditSOPScalarFieldEnum = (typeof LogEditSOPScalarFieldEnum)[keyof typeof LogEditSOPScalarFieldEnum]
@@ -30115,6 +30506,7 @@ export namespace Prisma {
     page: 'page',
     x: 'x',
     y: 'y',
+    createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
@@ -30127,7 +30519,9 @@ export namespace Prisma {
     dariLangkahId: 'dariLangkahId',
     keLangkahId: 'keLangkahId',
     cabang: 'cabang',
-    labelTeks: 'labelTeks'
+    labelTeks: 'labelTeks',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type SisiDiagramScalarFieldEnum = (typeof SisiDiagramScalarFieldEnum)[keyof typeof SisiDiagramScalarFieldEnum]
@@ -30137,7 +30531,9 @@ export namespace Prisma {
     sisiDiagramId: 'sisiDiagramId',
     urutan: 'urutan',
     x: 'x',
-    y: 'y'
+    y: 'y',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type TitikSisiDiagramScalarFieldEnum = (typeof TitikSisiDiagramScalarFieldEnum)[keyof typeof TitikSisiDiagramScalarFieldEnum]
@@ -30190,7 +30586,8 @@ export namespace Prisma {
     hasilSesudah: 'hasilSesudah',
     catatanSebelum: 'catatanSebelum',
     catatanSesudah: 'catatanSesudah',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type LogNilaiEvaluasiScalarFieldEnum = (typeof LogNilaiEvaluasiScalarFieldEnum)[keyof typeof LogNilaiEvaluasiScalarFieldEnum]
@@ -30220,7 +30617,8 @@ export namespace Prisma {
     metodeKanonikalisasi: 'metodeKanonikalisasi',
     detailSopId: 'detailSopId',
     pengajuanEvaluasiId: 'pengajuanEvaluasiId',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type DokumenTteScalarFieldEnum = (typeof DokumenTteScalarFieldEnum)[keyof typeof DokumenTteScalarFieldEnum]
@@ -30241,7 +30639,9 @@ export namespace Prisma {
     certFingerprint: 'certFingerprint',
     certValidFrom: 'certValidFrom',
     certValidTo: 'certValidTo',
-    ditandatanganiPada: 'ditandatanganiPada'
+    ditandatanganiPada: 'ditandatanganiPada',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type RiwayatTandaTanganScalarFieldEnum = (typeof RiwayatTandaTanganScalarFieldEnum)[keyof typeof RiwayatTandaTanganScalarFieldEnum]
@@ -30253,6 +30653,14 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
   export const NullsOrder: {
@@ -30280,17 +30688,17 @@ export namespace Prisma {
 
   export const OPDOrderByRelevanceFieldEnum: {
     opdId: 'opdId',
-    nama: 'nama'
+    nama: 'nama',
+    kepalaPenggunaId: 'kepalaPenggunaId',
+    pjPenyusunPenggunaId: 'pjPenyusunPenggunaId'
   };
 
   export type OPDOrderByRelevanceFieldEnum = (typeof OPDOrderByRelevanceFieldEnum)[keyof typeof OPDOrderByRelevanceFieldEnum]
 
 
   export const RiwayatOpdPenggunaOrderByRelevanceFieldEnum: {
-    riwayatOpdPenggunaId: 'riwayatOpdPenggunaId',
     penggunaId: 'penggunaId',
-    opdId: 'opdId',
-    alasan: 'alasan'
+    opdId: 'opdId'
   };
 
   export type RiwayatOpdPenggunaOrderByRelevanceFieldEnum = (typeof RiwayatOpdPenggunaOrderByRelevanceFieldEnum)[keyof typeof RiwayatOpdPenggunaOrderByRelevanceFieldEnum]
@@ -30393,10 +30801,28 @@ export namespace Prisma {
   export type DetailSOPPelaksanaOrderByRelevanceFieldEnum = (typeof DetailSOPPelaksanaOrderByRelevanceFieldEnum)[keyof typeof DetailSOPPelaksanaOrderByRelevanceFieldEnum]
 
 
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
   export const LogEditSOPOrderByRelevanceFieldEnum: {
     logEditSopId: 'logEditSopId',
     detailSopId: 'detailSopId',
     userId: 'userId',
+    entityId: 'entityId',
     keterangan: 'keterangan'
   };
 
@@ -30550,6 +30976,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -30581,6 +31014,27 @@ export namespace Prisma {
    * Reference to a field of type 'SatuanWaktu'
    */
   export type EnumSatuanWaktuFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SatuanWaktu'>
+    
+
+
+  /**
+   * Reference to a field of type 'BagianSOP'
+   */
+  export type EnumBagianSOPFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BagianSOP'>
+    
+
+
+  /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -30634,13 +31088,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Boolean'
-   */
-  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-  /**
    * Reference to a field of type 'JenisDokumenTte'
    */
   export type EnumJenisDokumenTteFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisDokumenTte'>
@@ -30687,6 +31134,8 @@ export namespace Prisma {
     kredensialTTE?: XOR<KredensialTTENullableScalarRelationFilter, KredensialTTEWhereInput> | null
     riwayatOpd?: RiwayatOpdPenggunaListRelationFilter
     tandaTangan?: RiwayatTandaTanganListRelationFilter
+    opdSebagaiKepala?: XOR<OPDNullableScalarRelationFilter, OPDWhereInput> | null
+    opdSebagaiPjPenyusun?: XOR<OPDNullableScalarRelationFilter, OPDWhereInput> | null
   }
 
   export type PenggunaOrderByWithRelationInput = {
@@ -30716,6 +31165,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEOrderByWithRelationInput
     riwayatOpd?: RiwayatOpdPenggunaOrderByRelationAggregateInput
     tandaTangan?: RiwayatTandaTanganOrderByRelationAggregateInput
+    opdSebagaiKepala?: OPDOrderByWithRelationInput
+    opdSebagaiPjPenyusun?: OPDOrderByWithRelationInput
     _relevance?: PenggunaOrderByRelevanceInput
   }
 
@@ -30749,6 +31200,8 @@ export namespace Prisma {
     kredensialTTE?: XOR<KredensialTTENullableScalarRelationFilter, KredensialTTEWhereInput> | null
     riwayatOpd?: RiwayatOpdPenggunaListRelationFilter
     tandaTangan?: RiwayatTandaTanganListRelationFilter
+    opdSebagaiKepala?: XOR<OPDNullableScalarRelationFilter, OPDWhereInput> | null
+    opdSebagaiPjPenyusun?: XOR<OPDNullableScalarRelationFilter, OPDWhereInput> | null
   }, "penggunaId" | "email" | "nip">
 
   export type PenggunaOrderByWithAggregationInput = {
@@ -30795,9 +31248,14 @@ export namespace Prisma {
     NOT?: OPDWhereInput | OPDWhereInput[]
     opdId?: StringFilter<"OPD"> | string
     nama?: StringFilter<"OPD"> | string
+    isBiroOrganisasi?: BoolFilter<"OPD"> | boolean
+    kepalaPenggunaId?: StringNullableFilter<"OPD"> | string | null
+    pjPenyusunPenggunaId?: StringNullableFilter<"OPD"> | string | null
     deletedAt?: DateTimeNullableFilter<"OPD"> | Date | string | null
     createdAt?: DateTimeFilter<"OPD"> | Date | string
     updatedAt?: DateTimeFilter<"OPD"> | Date | string
+    kepalaPengguna?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
+    pjPenyusunPengguna?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     pelaksana?: PelaksanaListRelationFilter
     pengajuanEvaluasi?: PengajuanEvaluasiListRelationFilter
     pengguna?: PenggunaListRelationFilter
@@ -30809,9 +31267,14 @@ export namespace Prisma {
   export type OPDOrderByWithRelationInput = {
     opdId?: SortOrder
     nama?: SortOrder
+    isBiroOrganisasi?: SortOrder
+    kepalaPenggunaId?: SortOrderInput | SortOrder
+    pjPenyusunPenggunaId?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    kepalaPengguna?: PenggunaOrderByWithRelationInput
+    pjPenyusunPengguna?: PenggunaOrderByWithRelationInput
     pelaksana?: PelaksanaOrderByRelationAggregateInput
     pengajuanEvaluasi?: PengajuanEvaluasiOrderByRelationAggregateInput
     pengguna?: PenggunaOrderByRelationAggregateInput
@@ -30823,24 +31286,32 @@ export namespace Prisma {
 
   export type OPDWhereUniqueInput = Prisma.AtLeast<{
     opdId?: string
+    kepalaPenggunaId?: string
+    pjPenyusunPenggunaId?: string
     AND?: OPDWhereInput | OPDWhereInput[]
     OR?: OPDWhereInput[]
     NOT?: OPDWhereInput | OPDWhereInput[]
     nama?: StringFilter<"OPD"> | string
+    isBiroOrganisasi?: BoolFilter<"OPD"> | boolean
     deletedAt?: DateTimeNullableFilter<"OPD"> | Date | string | null
     createdAt?: DateTimeFilter<"OPD"> | Date | string
     updatedAt?: DateTimeFilter<"OPD"> | Date | string
+    kepalaPengguna?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
+    pjPenyusunPengguna?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     pelaksana?: PelaksanaListRelationFilter
     pengajuanEvaluasi?: PengajuanEvaluasiListRelationFilter
     pengguna?: PenggunaListRelationFilter
     riwayatOpdPengguna?: RiwayatOpdPenggunaListRelationFilter
     opdPeraturan?: OPDPeraturanListRelationFilter
     sop?: SOPListRelationFilter
-  }, "opdId">
+  }, "opdId" | "kepalaPenggunaId" | "pjPenyusunPenggunaId">
 
   export type OPDOrderByWithAggregationInput = {
     opdId?: SortOrder
     nama?: SortOrder
+    isBiroOrganisasi?: SortOrder
+    kepalaPenggunaId?: SortOrderInput | SortOrder
+    pjPenyusunPenggunaId?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30855,6 +31326,9 @@ export namespace Prisma {
     NOT?: OPDScalarWhereWithAggregatesInput | OPDScalarWhereWithAggregatesInput[]
     opdId?: StringWithAggregatesFilter<"OPD"> | string
     nama?: StringWithAggregatesFilter<"OPD"> | string
+    isBiroOrganisasi?: BoolWithAggregatesFilter<"OPD"> | boolean
+    kepalaPenggunaId?: StringNullableWithAggregatesFilter<"OPD"> | string | null
+    pjPenyusunPenggunaId?: StringNullableWithAggregatesFilter<"OPD"> | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"OPD"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"OPD"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"OPD"> | Date | string
@@ -30864,54 +31338,42 @@ export namespace Prisma {
     AND?: RiwayatOpdPenggunaWhereInput | RiwayatOpdPenggunaWhereInput[]
     OR?: RiwayatOpdPenggunaWhereInput[]
     NOT?: RiwayatOpdPenggunaWhereInput | RiwayatOpdPenggunaWhereInput[]
-    riwayatOpdPenggunaId?: StringFilter<"RiwayatOpdPengguna"> | string
     penggunaId?: StringFilter<"RiwayatOpdPengguna"> | string
     opdId?: StringFilter<"RiwayatOpdPengguna"> | string
-    mulaiPada?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
-    berakhirPada?: DateTimeNullableFilter<"RiwayatOpdPengguna"> | Date | string | null
-    alasan?: StringNullableFilter<"RiwayatOpdPengguna"> | string | null
     createdAt?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
+    updatedAt?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
     pengguna?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
   }
 
   export type RiwayatOpdPenggunaOrderByWithRelationInput = {
-    riwayatOpdPenggunaId?: SortOrder
     penggunaId?: SortOrder
     opdId?: SortOrder
-    mulaiPada?: SortOrder
-    berakhirPada?: SortOrderInput | SortOrder
-    alasan?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     opd?: OPDOrderByWithRelationInput
     pengguna?: PenggunaOrderByWithRelationInput
     _relevance?: RiwayatOpdPenggunaOrderByRelevanceInput
   }
 
   export type RiwayatOpdPenggunaWhereUniqueInput = Prisma.AtLeast<{
-    riwayatOpdPenggunaId?: string
-    penggunaId_mulaiPada?: RiwayatOpdPenggunaPenggunaIdMulaiPadaCompoundUniqueInput
+    penggunaId_opdId?: RiwayatOpdPenggunaPenggunaIdOpdIdCompoundUniqueInput
     AND?: RiwayatOpdPenggunaWhereInput | RiwayatOpdPenggunaWhereInput[]
     OR?: RiwayatOpdPenggunaWhereInput[]
     NOT?: RiwayatOpdPenggunaWhereInput | RiwayatOpdPenggunaWhereInput[]
     penggunaId?: StringFilter<"RiwayatOpdPengguna"> | string
     opdId?: StringFilter<"RiwayatOpdPengguna"> | string
-    mulaiPada?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
-    berakhirPada?: DateTimeNullableFilter<"RiwayatOpdPengguna"> | Date | string | null
-    alasan?: StringNullableFilter<"RiwayatOpdPengguna"> | string | null
     createdAt?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
+    updatedAt?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
     pengguna?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
-  }, "riwayatOpdPenggunaId" | "penggunaId_mulaiPada">
+  }, "penggunaId_opdId">
 
   export type RiwayatOpdPenggunaOrderByWithAggregationInput = {
-    riwayatOpdPenggunaId?: SortOrder
     penggunaId?: SortOrder
     opdId?: SortOrder
-    mulaiPada?: SortOrder
-    berakhirPada?: SortOrderInput | SortOrder
-    alasan?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: RiwayatOpdPenggunaCountOrderByAggregateInput
     _max?: RiwayatOpdPenggunaMaxOrderByAggregateInput
     _min?: RiwayatOpdPenggunaMinOrderByAggregateInput
@@ -30921,13 +31383,10 @@ export namespace Prisma {
     AND?: RiwayatOpdPenggunaScalarWhereWithAggregatesInput | RiwayatOpdPenggunaScalarWhereWithAggregatesInput[]
     OR?: RiwayatOpdPenggunaScalarWhereWithAggregatesInput[]
     NOT?: RiwayatOpdPenggunaScalarWhereWithAggregatesInput | RiwayatOpdPenggunaScalarWhereWithAggregatesInput[]
-    riwayatOpdPenggunaId?: StringWithAggregatesFilter<"RiwayatOpdPengguna"> | string
     penggunaId?: StringWithAggregatesFilter<"RiwayatOpdPengguna"> | string
     opdId?: StringWithAggregatesFilter<"RiwayatOpdPengguna"> | string
-    mulaiPada?: DateTimeWithAggregatesFilter<"RiwayatOpdPengguna"> | Date | string
-    berakhirPada?: DateTimeNullableWithAggregatesFilter<"RiwayatOpdPengguna"> | Date | string | null
-    alasan?: StringNullableWithAggregatesFilter<"RiwayatOpdPengguna"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"RiwayatOpdPengguna"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RiwayatOpdPengguna"> | Date | string
   }
 
   export type PeraturanWhereInput = {
@@ -31009,6 +31468,7 @@ export namespace Prisma {
     opdId?: StringFilter<"OPDPeraturan"> | string
     peraturanId?: StringFilter<"OPDPeraturan"> | string
     createdAt?: DateTimeFilter<"OPDPeraturan"> | Date | string
+    updatedAt?: DateTimeFilter<"OPDPeraturan"> | Date | string
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
     peraturan?: XOR<PeraturanScalarRelationFilter, PeraturanWhereInput>
   }
@@ -31017,6 +31477,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     opd?: OPDOrderByWithRelationInput
     peraturan?: PeraturanOrderByWithRelationInput
     _relevance?: OPDPeraturanOrderByRelevanceInput
@@ -31030,6 +31491,7 @@ export namespace Prisma {
     opdId?: StringFilter<"OPDPeraturan"> | string
     peraturanId?: StringFilter<"OPDPeraturan"> | string
     createdAt?: DateTimeFilter<"OPDPeraturan"> | Date | string
+    updatedAt?: DateTimeFilter<"OPDPeraturan"> | Date | string
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
     peraturan?: XOR<PeraturanScalarRelationFilter, PeraturanWhereInput>
   }, "opdId_peraturanId">
@@ -31038,6 +31500,7 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: OPDPeraturanCountOrderByAggregateInput
     _max?: OPDPeraturanMaxOrderByAggregateInput
     _min?: OPDPeraturanMinOrderByAggregateInput
@@ -31050,6 +31513,7 @@ export namespace Prisma {
     opdId?: StringWithAggregatesFilter<"OPDPeraturan"> | string
     peraturanId?: StringWithAggregatesFilter<"OPDPeraturan"> | string
     createdAt?: DateTimeWithAggregatesFilter<"OPDPeraturan"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"OPDPeraturan"> | Date | string
   }
 
   export type SOPWhereInput = {
@@ -31298,6 +31762,8 @@ export namespace Prisma {
     detailSopId?: StringFilter<"LampiranTeks"> | string
     jenis?: EnumJenisLampiranFilter<"LampiranTeks"> | $Enums.JenisLampiran
     teks?: StringFilter<"LampiranTeks"> | string
+    createdAt?: DateTimeFilter<"LampiranTeks"> | Date | string
+    updatedAt?: DateTimeFilter<"LampiranTeks"> | Date | string
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }
 
@@ -31306,6 +31772,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     jenis?: SortOrder
     teks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     detailSop?: DetailSOPOrderByWithRelationInput
     _relevance?: LampiranTeksOrderByRelevanceInput
   }
@@ -31318,6 +31786,8 @@ export namespace Prisma {
     detailSopId?: StringFilter<"LampiranTeks"> | string
     jenis?: EnumJenisLampiranFilter<"LampiranTeks"> | $Enums.JenisLampiran
     teks?: StringFilter<"LampiranTeks"> | string
+    createdAt?: DateTimeFilter<"LampiranTeks"> | Date | string
+    updatedAt?: DateTimeFilter<"LampiranTeks"> | Date | string
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }, "lampiranTeksId">
 
@@ -31326,6 +31796,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     jenis?: SortOrder
     teks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: LampiranTeksCountOrderByAggregateInput
     _max?: LampiranTeksMaxOrderByAggregateInput
     _min?: LampiranTeksMinOrderByAggregateInput
@@ -31339,6 +31811,8 @@ export namespace Prisma {
     detailSopId?: StringWithAggregatesFilter<"LampiranTeks"> | string
     jenis?: EnumJenisLampiranWithAggregatesFilter<"LampiranTeks"> | $Enums.JenisLampiran
     teks?: StringWithAggregatesFilter<"LampiranTeks"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"LampiranTeks"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LampiranTeks"> | Date | string
   }
 
   export type DasarHukumWhereInput = {
@@ -31347,6 +31821,8 @@ export namespace Prisma {
     NOT?: DasarHukumWhereInput | DasarHukumWhereInput[]
     detailSopId?: StringFilter<"DasarHukum"> | string
     peraturanId?: StringFilter<"DasarHukum"> | string
+    createdAt?: DateTimeFilter<"DasarHukum"> | Date | string
+    updatedAt?: DateTimeFilter<"DasarHukum"> | Date | string
     peraturan?: XOR<PeraturanScalarRelationFilter, PeraturanWhereInput>
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }
@@ -31354,6 +31830,8 @@ export namespace Prisma {
   export type DasarHukumOrderByWithRelationInput = {
     detailSopId?: SortOrder
     peraturanId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     peraturan?: PeraturanOrderByWithRelationInput
     detailSop?: DetailSOPOrderByWithRelationInput
     _relevance?: DasarHukumOrderByRelevanceInput
@@ -31366,6 +31844,8 @@ export namespace Prisma {
     NOT?: DasarHukumWhereInput | DasarHukumWhereInput[]
     detailSopId?: StringFilter<"DasarHukum"> | string
     peraturanId?: StringFilter<"DasarHukum"> | string
+    createdAt?: DateTimeFilter<"DasarHukum"> | Date | string
+    updatedAt?: DateTimeFilter<"DasarHukum"> | Date | string
     peraturan?: XOR<PeraturanScalarRelationFilter, PeraturanWhereInput>
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }, "detailSopId_peraturanId">
@@ -31373,6 +31853,8 @@ export namespace Prisma {
   export type DasarHukumOrderByWithAggregationInput = {
     detailSopId?: SortOrder
     peraturanId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: DasarHukumCountOrderByAggregateInput
     _max?: DasarHukumMaxOrderByAggregateInput
     _min?: DasarHukumMinOrderByAggregateInput
@@ -31384,6 +31866,8 @@ export namespace Prisma {
     NOT?: DasarHukumScalarWhereWithAggregatesInput | DasarHukumScalarWhereWithAggregatesInput[]
     detailSopId?: StringWithAggregatesFilter<"DasarHukum"> | string
     peraturanId?: StringWithAggregatesFilter<"DasarHukum"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"DasarHukum"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"DasarHukum"> | Date | string
   }
 
   export type SopTerkaitWhereInput = {
@@ -31392,6 +31876,8 @@ export namespace Prisma {
     NOT?: SopTerkaitWhereInput | SopTerkaitWhereInput[]
     detailSopId?: StringFilter<"SopTerkait"> | string
     detailSopTerkaitId?: StringFilter<"SopTerkait"> | string
+    createdAt?: DateTimeFilter<"SopTerkait"> | Date | string
+    updatedAt?: DateTimeFilter<"SopTerkait"> | Date | string
     sop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
     sopTerkait?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }
@@ -31399,6 +31885,8 @@ export namespace Prisma {
   export type SopTerkaitOrderByWithRelationInput = {
     detailSopId?: SortOrder
     detailSopTerkaitId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     sop?: DetailSOPOrderByWithRelationInput
     sopTerkait?: DetailSOPOrderByWithRelationInput
     _relevance?: SopTerkaitOrderByRelevanceInput
@@ -31411,6 +31899,8 @@ export namespace Prisma {
     NOT?: SopTerkaitWhereInput | SopTerkaitWhereInput[]
     detailSopId?: StringFilter<"SopTerkait"> | string
     detailSopTerkaitId?: StringFilter<"SopTerkait"> | string
+    createdAt?: DateTimeFilter<"SopTerkait"> | Date | string
+    updatedAt?: DateTimeFilter<"SopTerkait"> | Date | string
     sop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
     sopTerkait?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }, "detailSopId_detailSopTerkaitId">
@@ -31418,6 +31908,8 @@ export namespace Prisma {
   export type SopTerkaitOrderByWithAggregationInput = {
     detailSopId?: SortOrder
     detailSopTerkaitId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SopTerkaitCountOrderByAggregateInput
     _max?: SopTerkaitMaxOrderByAggregateInput
     _min?: SopTerkaitMinOrderByAggregateInput
@@ -31429,6 +31921,8 @@ export namespace Prisma {
     NOT?: SopTerkaitScalarWhereWithAggregatesInput | SopTerkaitScalarWhereWithAggregatesInput[]
     detailSopId?: StringWithAggregatesFilter<"SopTerkait"> | string
     detailSopTerkaitId?: StringWithAggregatesFilter<"SopTerkait"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SopTerkait"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SopTerkait"> | Date | string
   }
 
   export type LangkahSOPWhereInput = {
@@ -31633,6 +32127,8 @@ export namespace Prisma {
     detailSopId?: StringFilter<"DetailSOPPelaksana"> | string
     pelaksanaId?: StringFilter<"DetailSOPPelaksana"> | string
     urutan?: IntFilter<"DetailSOPPelaksana"> | number
+    createdAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
+    updatedAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
     pelaksana?: XOR<PelaksanaScalarRelationFilter, PelaksanaWhereInput>
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }
@@ -31641,6 +32137,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pelaksanaId?: SortOrder
     urutan?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     pelaksana?: PelaksanaOrderByWithRelationInput
     detailSop?: DetailSOPOrderByWithRelationInput
     _relevance?: DetailSOPPelaksanaOrderByRelevanceInput
@@ -31654,6 +32152,8 @@ export namespace Prisma {
     detailSopId?: StringFilter<"DetailSOPPelaksana"> | string
     pelaksanaId?: StringFilter<"DetailSOPPelaksana"> | string
     urutan?: IntFilter<"DetailSOPPelaksana"> | number
+    createdAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
+    updatedAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
     pelaksana?: XOR<PelaksanaScalarRelationFilter, PelaksanaWhereInput>
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }, "detailSopId_pelaksanaId">
@@ -31662,6 +32162,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pelaksanaId?: SortOrder
     urutan?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: DetailSOPPelaksanaCountOrderByAggregateInput
     _avg?: DetailSOPPelaksanaAvgOrderByAggregateInput
     _max?: DetailSOPPelaksanaMaxOrderByAggregateInput
@@ -31676,6 +32178,8 @@ export namespace Prisma {
     detailSopId?: StringWithAggregatesFilter<"DetailSOPPelaksana"> | string
     pelaksanaId?: StringWithAggregatesFilter<"DetailSOPPelaksana"> | string
     urutan?: IntWithAggregatesFilter<"DetailSOPPelaksana"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"DetailSOPPelaksana"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"DetailSOPPelaksana"> | Date | string
   }
 
   export type LogEditSOPWhereInput = {
@@ -31685,8 +32189,13 @@ export namespace Prisma {
     logEditSopId?: StringFilter<"LogEditSOP"> | string
     detailSopId?: StringFilter<"LogEditSOP"> | string
     userId?: StringFilter<"LogEditSOP"> | string
+    bagian?: EnumBagianSOPFilter<"LogEditSOP"> | $Enums.BagianSOP
+    entityId?: StringNullableFilter<"LogEditSOP"> | string | null
     keterangan?: StringNullableFilter<"LogEditSOP"> | string | null
+    meta?: JsonNullableFilter<"LogEditSOP">
+    closedAt?: DateTimeNullableFilter<"LogEditSOP"> | Date | string | null
     createdAt?: DateTimeFilter<"LogEditSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"LogEditSOP"> | Date | string
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
     user?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
   }
@@ -31695,8 +32204,13 @@ export namespace Prisma {
     logEditSopId?: SortOrder
     detailSopId?: SortOrder
     userId?: SortOrder
+    bagian?: SortOrder
+    entityId?: SortOrderInput | SortOrder
     keterangan?: SortOrderInput | SortOrder
+    meta?: SortOrderInput | SortOrder
+    closedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     detailSop?: DetailSOPOrderByWithRelationInput
     user?: PenggunaOrderByWithRelationInput
     _relevance?: LogEditSOPOrderByRelevanceInput
@@ -31709,8 +32223,13 @@ export namespace Prisma {
     NOT?: LogEditSOPWhereInput | LogEditSOPWhereInput[]
     detailSopId?: StringFilter<"LogEditSOP"> | string
     userId?: StringFilter<"LogEditSOP"> | string
+    bagian?: EnumBagianSOPFilter<"LogEditSOP"> | $Enums.BagianSOP
+    entityId?: StringNullableFilter<"LogEditSOP"> | string | null
     keterangan?: StringNullableFilter<"LogEditSOP"> | string | null
+    meta?: JsonNullableFilter<"LogEditSOP">
+    closedAt?: DateTimeNullableFilter<"LogEditSOP"> | Date | string | null
     createdAt?: DateTimeFilter<"LogEditSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"LogEditSOP"> | Date | string
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
     user?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
   }, "logEditSopId">
@@ -31719,8 +32238,13 @@ export namespace Prisma {
     logEditSopId?: SortOrder
     detailSopId?: SortOrder
     userId?: SortOrder
+    bagian?: SortOrder
+    entityId?: SortOrderInput | SortOrder
     keterangan?: SortOrderInput | SortOrder
+    meta?: SortOrderInput | SortOrder
+    closedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: LogEditSOPCountOrderByAggregateInput
     _max?: LogEditSOPMaxOrderByAggregateInput
     _min?: LogEditSOPMinOrderByAggregateInput
@@ -31733,8 +32257,13 @@ export namespace Prisma {
     logEditSopId?: StringWithAggregatesFilter<"LogEditSOP"> | string
     detailSopId?: StringWithAggregatesFilter<"LogEditSOP"> | string
     userId?: StringWithAggregatesFilter<"LogEditSOP"> | string
+    bagian?: EnumBagianSOPWithAggregatesFilter<"LogEditSOP"> | $Enums.BagianSOP
+    entityId?: StringNullableWithAggregatesFilter<"LogEditSOP"> | string | null
     keterangan?: StringNullableWithAggregatesFilter<"LogEditSOP"> | string | null
+    meta?: JsonNullableWithAggregatesFilter<"LogEditSOP">
+    closedAt?: DateTimeNullableWithAggregatesFilter<"LogEditSOP"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"LogEditSOP"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LogEditSOP"> | Date | string
   }
 
   export type KomentarWhereInput = {
@@ -31905,6 +32434,7 @@ export namespace Prisma {
     page?: IntFilter<"PosisiNodeDiagram"> | number
     x?: IntFilter<"PosisiNodeDiagram"> | number
     y?: IntFilter<"PosisiNodeDiagram"> | number
+    createdAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
     updatedAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
     tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
     langkahSOP?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
@@ -31916,6 +32446,7 @@ export namespace Prisma {
     page?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
     tataLetakDiagram?: TataLetakDiagramOrderByWithRelationInput
     langkahSOP?: LangkahSOPOrderByWithRelationInput
@@ -31932,6 +32463,7 @@ export namespace Prisma {
     page?: IntFilter<"PosisiNodeDiagram"> | number
     x?: IntFilter<"PosisiNodeDiagram"> | number
     y?: IntFilter<"PosisiNodeDiagram"> | number
+    createdAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
     updatedAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
     tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
     langkahSOP?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
@@ -31943,6 +32475,7 @@ export namespace Prisma {
     page?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PosisiNodeDiagramCountOrderByAggregateInput
     _avg?: PosisiNodeDiagramAvgOrderByAggregateInput
@@ -31960,6 +32493,7 @@ export namespace Prisma {
     page?: IntWithAggregatesFilter<"PosisiNodeDiagram"> | number
     x?: IntWithAggregatesFilter<"PosisiNodeDiagram"> | number
     y?: IntWithAggregatesFilter<"PosisiNodeDiagram"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"PosisiNodeDiagram"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PosisiNodeDiagram"> | Date | string
   }
 
@@ -31973,6 +32507,8 @@ export namespace Prisma {
     keLangkahId?: StringFilter<"SisiDiagram"> | string
     cabang?: EnumCabangDiagramEdgeFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
     labelTeks?: StringNullableFilter<"SisiDiagram"> | string | null
+    createdAt?: DateTimeFilter<"SisiDiagram"> | Date | string
+    updatedAt?: DateTimeFilter<"SisiDiagram"> | Date | string
     dariLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
     tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
     keLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
@@ -31986,6 +32522,8 @@ export namespace Prisma {
     keLangkahId?: SortOrder
     cabang?: SortOrder
     labelTeks?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     dariLangkah?: LangkahSOPOrderByWithRelationInput
     tataLetakDiagram?: TataLetakDiagramOrderByWithRelationInput
     keLangkah?: LangkahSOPOrderByWithRelationInput
@@ -32004,6 +32542,8 @@ export namespace Prisma {
     keLangkahId?: StringFilter<"SisiDiagram"> | string
     cabang?: EnumCabangDiagramEdgeFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
     labelTeks?: StringNullableFilter<"SisiDiagram"> | string | null
+    createdAt?: DateTimeFilter<"SisiDiagram"> | Date | string
+    updatedAt?: DateTimeFilter<"SisiDiagram"> | Date | string
     dariLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
     tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
     keLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
@@ -32017,6 +32557,8 @@ export namespace Prisma {
     keLangkahId?: SortOrder
     cabang?: SortOrder
     labelTeks?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: SisiDiagramCountOrderByAggregateInput
     _max?: SisiDiagramMaxOrderByAggregateInput
     _min?: SisiDiagramMinOrderByAggregateInput
@@ -32032,6 +32574,8 @@ export namespace Prisma {
     keLangkahId?: StringWithAggregatesFilter<"SisiDiagram"> | string
     cabang?: EnumCabangDiagramEdgeWithAggregatesFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
     labelTeks?: StringNullableWithAggregatesFilter<"SisiDiagram"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"SisiDiagram"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SisiDiagram"> | Date | string
   }
 
   export type TitikSisiDiagramWhereInput = {
@@ -32042,6 +32586,8 @@ export namespace Prisma {
     urutan?: IntFilter<"TitikSisiDiagram"> | number
     x?: IntFilter<"TitikSisiDiagram"> | number
     y?: IntFilter<"TitikSisiDiagram"> | number
+    createdAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
+    updatedAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
     sisiDiagram?: XOR<SisiDiagramScalarRelationFilter, SisiDiagramWhereInput>
   }
 
@@ -32050,6 +32596,8 @@ export namespace Prisma {
     urutan?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     sisiDiagram?: SisiDiagramOrderByWithRelationInput
     _relevance?: TitikSisiDiagramOrderByRelevanceInput
   }
@@ -32063,6 +32611,8 @@ export namespace Prisma {
     urutan?: IntFilter<"TitikSisiDiagram"> | number
     x?: IntFilter<"TitikSisiDiagram"> | number
     y?: IntFilter<"TitikSisiDiagram"> | number
+    createdAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
+    updatedAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
     sisiDiagram?: XOR<SisiDiagramScalarRelationFilter, SisiDiagramWhereInput>
   }, "sisiDiagramId_urutan">
 
@@ -32071,6 +32621,8 @@ export namespace Prisma {
     urutan?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: TitikSisiDiagramCountOrderByAggregateInput
     _avg?: TitikSisiDiagramAvgOrderByAggregateInput
     _max?: TitikSisiDiagramMaxOrderByAggregateInput
@@ -32086,6 +32638,8 @@ export namespace Prisma {
     urutan?: IntWithAggregatesFilter<"TitikSisiDiagram"> | number
     x?: IntWithAggregatesFilter<"TitikSisiDiagram"> | number
     y?: IntWithAggregatesFilter<"TitikSisiDiagram"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"TitikSisiDiagram"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TitikSisiDiagram"> | Date | string
   }
 
   export type PengajuanEvaluasiWhereInput = {
@@ -32322,6 +32876,7 @@ export namespace Prisma {
     catatanSebelum?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     createdAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
+    updatedAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
     evaluator?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
   }
@@ -32336,6 +32891,7 @@ export namespace Prisma {
     catatanSebelum?: SortOrderInput | SortOrder
     catatanSesudah?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     evaluator?: PenggunaOrderByWithRelationInput
     pengajuanEvaluasi?: PengajuanEvaluasiOrderByWithRelationInput
     _relevance?: LogNilaiEvaluasiOrderByRelevanceInput
@@ -32354,6 +32910,7 @@ export namespace Prisma {
     catatanSebelum?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     createdAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
+    updatedAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
     evaluator?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
   }, "logNilaiEvaluasiId">
@@ -32368,6 +32925,7 @@ export namespace Prisma {
     catatanSebelum?: SortOrderInput | SortOrder
     catatanSesudah?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: LogNilaiEvaluasiCountOrderByAggregateInput
     _max?: LogNilaiEvaluasiMaxOrderByAggregateInput
     _min?: LogNilaiEvaluasiMinOrderByAggregateInput
@@ -32386,6 +32944,7 @@ export namespace Prisma {
     catatanSebelum?: StringNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"LogNilaiEvaluasi"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"LogNilaiEvaluasi"> | Date | string
   }
 
   export type KredensialTTEWhereInput = {
@@ -32473,6 +33032,7 @@ export namespace Prisma {
     detailSopId?: StringNullableFilter<"DokumenTte"> | string | null
     pengajuanEvaluasiId?: StringNullableFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeFilter<"DokumenTte"> | Date | string
+    updatedAt?: DateTimeFilter<"DokumenTte"> | Date | string
     detailSop?: XOR<DetailSOPNullableScalarRelationFilter, DetailSOPWhereInput> | null
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiNullableScalarRelationFilter, PengajuanEvaluasiWhereInput> | null
     riwayatTandaTangan?: RiwayatTandaTanganListRelationFilter
@@ -32489,6 +33049,7 @@ export namespace Prisma {
     detailSopId?: SortOrderInput | SortOrder
     pengajuanEvaluasiId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     detailSop?: DetailSOPOrderByWithRelationInput
     pengajuanEvaluasi?: PengajuanEvaluasiOrderByWithRelationInput
     riwayatTandaTangan?: RiwayatTandaTanganOrderByRelationAggregateInput
@@ -32509,6 +33070,7 @@ export namespace Prisma {
     versiDokumen?: IntFilter<"DokumenTte"> | number
     metodeKanonikalisasi?: StringNullableFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeFilter<"DokumenTte"> | Date | string
+    updatedAt?: DateTimeFilter<"DokumenTte"> | Date | string
     detailSop?: XOR<DetailSOPNullableScalarRelationFilter, DetailSOPWhereInput> | null
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiNullableScalarRelationFilter, PengajuanEvaluasiWhereInput> | null
     riwayatTandaTangan?: RiwayatTandaTanganListRelationFilter
@@ -32525,6 +33087,7 @@ export namespace Prisma {
     detailSopId?: SortOrderInput | SortOrder
     pengajuanEvaluasiId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: DokumenTteCountOrderByAggregateInput
     _avg?: DokumenTteAvgOrderByAggregateInput
     _max?: DokumenTteMaxOrderByAggregateInput
@@ -32546,6 +33109,7 @@ export namespace Prisma {
     detailSopId?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
     pengajuanEvaluasiId?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"DokumenTte"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"DokumenTte"> | Date | string
   }
 
   export type RiwayatTandaTanganWhereInput = {
@@ -32567,6 +33131,8 @@ export namespace Prisma {
     certValidFrom?: DateTimeNullableFilter<"RiwayatTandaTangan"> | Date | string | null
     certValidTo?: DateTimeNullableFilter<"RiwayatTandaTangan"> | Date | string | null
     ditandatanganiPada?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+    createdAt?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+    updatedAt?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
     dokumenTte?: XOR<DokumenTteScalarRelationFilter, DokumenTteWhereInput>
     user?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
   }
@@ -32587,6 +33153,8 @@ export namespace Prisma {
     certValidFrom?: SortOrderInput | SortOrder
     certValidTo?: SortOrderInput | SortOrder
     ditandatanganiPada?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     dokumenTte?: DokumenTteOrderByWithRelationInput
     user?: PenggunaOrderByWithRelationInput
     _relevance?: RiwayatTandaTanganOrderByRelevanceInput
@@ -32612,6 +33180,8 @@ export namespace Prisma {
     certValidFrom?: DateTimeNullableFilter<"RiwayatTandaTangan"> | Date | string | null
     certValidTo?: DateTimeNullableFilter<"RiwayatTandaTangan"> | Date | string | null
     ditandatanganiPada?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+    createdAt?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+    updatedAt?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
     dokumenTte?: XOR<DokumenTteScalarRelationFilter, DokumenTteWhereInput>
     user?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
   }, "riwayatTandaTanganId" | "dokumenTteId_peran">
@@ -32632,6 +33202,8 @@ export namespace Prisma {
     certValidFrom?: SortOrderInput | SortOrder
     certValidTo?: SortOrderInput | SortOrder
     ditandatanganiPada?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: RiwayatTandaTanganCountOrderByAggregateInput
     _max?: RiwayatTandaTanganMaxOrderByAggregateInput
     _min?: RiwayatTandaTanganMinOrderByAggregateInput
@@ -32656,6 +33228,8 @@ export namespace Prisma {
     certValidFrom?: DateTimeNullableWithAggregatesFilter<"RiwayatTandaTangan"> | Date | string | null
     certValidTo?: DateTimeNullableWithAggregatesFilter<"RiwayatTandaTangan"> | Date | string | null
     ditandatanganiPada?: DateTimeWithAggregatesFilter<"RiwayatTandaTangan"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"RiwayatTandaTangan"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RiwayatTandaTangan"> | Date | string
   }
 
   export type PenggunaCreateInput = {
@@ -32684,6 +33258,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateInput = {
@@ -32712,6 +33288,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUpdateInput = {
@@ -32740,6 +33318,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateInput = {
@@ -32768,6 +33348,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaCreateManyInput = {
@@ -32820,9 +33402,12 @@ export namespace Prisma {
   export type OPDCreateInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
     pengguna?: PenggunaCreateNestedManyWithoutOpdInput
@@ -32834,6 +33419,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32848,9 +33436,12 @@ export namespace Prisma {
   export type OPDUpdateInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
     pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
@@ -32862,6 +33453,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32876,6 +33470,9 @@ export namespace Prisma {
   export type OPDCreateManyInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32884,6 +33481,7 @@ export namespace Prisma {
   export type OPDUpdateManyMutationInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32892,77 +33490,59 @@ export namespace Prisma {
   export type OPDUncheckedUpdateManyInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatOpdPenggunaCreateInput = {
-    riwayatOpdPenggunaId?: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutRiwayatOpdPenggunaInput
     pengguna: PenggunaCreateNestedOneWithoutRiwayatOpdInput
   }
 
   export type RiwayatOpdPenggunaUncheckedCreateInput = {
-    riwayatOpdPenggunaId?: string
     penggunaId: string
     opdId: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatOpdPenggunaUpdateInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutRiwayatOpdPenggunaNestedInput
     pengguna?: PenggunaUpdateOneRequiredWithoutRiwayatOpdNestedInput
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
     penggunaId?: StringFieldUpdateOperationsInput | string
     opdId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatOpdPenggunaCreateManyInput = {
-    riwayatOpdPenggunaId?: string
     penggunaId: string
     opdId: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatOpdPenggunaUpdateManyMutationInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateManyInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
     penggunaId?: StringFieldUpdateOperationsInput | string
     opdId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PeraturanCreateInput = {
@@ -33045,6 +33625,7 @@ export namespace Prisma {
 
   export type OPDPeraturanCreateInput = {
     createdAt?: Date | string
+    updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutOpdPeraturanInput
     peraturan: PeraturanCreateNestedOneWithoutOpdPemakaiInput
   }
@@ -33053,10 +33634,12 @@ export namespace Prisma {
     opdId: string
     peraturanId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OPDPeraturanUpdateInput = {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutOpdPeraturanNestedInput
     peraturan?: PeraturanUpdateOneRequiredWithoutOpdPemakaiNestedInput
   }
@@ -33065,22 +33648,26 @@ export namespace Prisma {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OPDPeraturanCreateManyInput = {
     opdId: string
     peraturanId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OPDPeraturanUpdateManyMutationInput = {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OPDPeraturanUncheckedUpdateManyInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     peraturanId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SOPCreateInput = {
@@ -33351,6 +33938,8 @@ export namespace Prisma {
     lampiranTeksId?: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop: DetailSOPCreateNestedOneWithoutLampiranInput
   }
 
@@ -33359,12 +33948,16 @@ export namespace Prisma {
     detailSopId: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LampiranTeksUpdateInput = {
     lampiranTeksId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneRequiredWithoutLampiranNestedInput
   }
 
@@ -33373,6 +33966,8 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LampiranTeksCreateManyInput = {
@@ -33380,12 +33975,16 @@ export namespace Prisma {
     detailSopId: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LampiranTeksUpdateManyMutationInput = {
     lampiranTeksId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LampiranTeksUncheckedUpdateManyInput = {
@@ -33393,9 +33992,13 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DasarHukumCreateInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
     peraturan: PeraturanCreateNestedOneWithoutDasarHukumInput
     detailSop: DetailSOPCreateNestedOneWithoutDasarHukumInput
   }
@@ -33403,9 +34006,13 @@ export namespace Prisma {
   export type DasarHukumUncheckedCreateInput = {
     detailSopId: string
     peraturanId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DasarHukumUpdateInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     peraturan?: PeraturanUpdateOneRequiredWithoutDasarHukumNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutDasarHukumNestedInput
   }
@@ -33413,23 +34020,32 @@ export namespace Prisma {
   export type DasarHukumUncheckedUpdateInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     peraturanId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DasarHukumCreateManyInput = {
     detailSopId: string
     peraturanId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DasarHukumUpdateManyMutationInput = {
-
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DasarHukumUncheckedUpdateManyInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     peraturanId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SopTerkaitCreateInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
     sop: DetailSOPCreateNestedOneWithoutRelasiSopKeluarInput
     sopTerkait: DetailSOPCreateNestedOneWithoutRelasiSopMasukInput
   }
@@ -33437,9 +34053,13 @@ export namespace Prisma {
   export type SopTerkaitUncheckedCreateInput = {
     detailSopId: string
     detailSopTerkaitId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SopTerkaitUpdateInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sop?: DetailSOPUpdateOneRequiredWithoutRelasiSopKeluarNestedInput
     sopTerkait?: DetailSOPUpdateOneRequiredWithoutRelasiSopMasukNestedInput
   }
@@ -33447,20 +34067,27 @@ export namespace Prisma {
   export type SopTerkaitUncheckedUpdateInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     detailSopTerkaitId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SopTerkaitCreateManyInput = {
     detailSopId: string
     detailSopTerkaitId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SopTerkaitUpdateManyMutationInput = {
-
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SopTerkaitUncheckedUpdateManyInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     detailSopTerkaitId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LangkahSOPCreateInput = {
@@ -33670,6 +34297,8 @@ export namespace Prisma {
 
   export type DetailSOPPelaksanaCreateInput = {
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
     pelaksana: PelaksanaCreateNestedOneWithoutSopDetailsInput
     detailSop: DetailSOPCreateNestedOneWithoutSwimlanesInput
   }
@@ -33678,10 +34307,14 @@ export namespace Prisma {
     detailSopId: string
     pelaksanaId: string
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DetailSOPPelaksanaUpdateInput = {
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pelaksana?: PelaksanaUpdateOneRequiredWithoutSopDetailsNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutSwimlanesNestedInput
   }
@@ -33690,28 +34323,41 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DetailSOPPelaksanaCreateManyInput = {
     detailSopId: string
     pelaksanaId: string
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DetailSOPPelaksanaUpdateManyMutationInput = {
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DetailSOPPelaksanaUncheckedUpdateManyInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogEditSOPCreateInput = {
     logEditSopId?: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop: DetailSOPCreateNestedOneWithoutLogEditSopInput
     user: PenggunaCreateNestedOneWithoutLogEditSopInput
   }
@@ -33720,14 +34366,24 @@ export namespace Prisma {
     logEditSopId?: string
     detailSopId: string
     userId: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogEditSOPUpdateInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneRequiredWithoutLogEditSopNestedInput
     user?: PenggunaUpdateOneRequiredWithoutLogEditSopNestedInput
   }
@@ -33736,30 +34392,50 @@ export namespace Prisma {
     logEditSopId?: StringFieldUpdateOperationsInput | string
     detailSopId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogEditSOPCreateManyInput = {
     logEditSopId?: string
     detailSopId: string
     userId: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogEditSOPUpdateManyMutationInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogEditSOPUncheckedUpdateManyInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
     detailSopId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type KomentarCreateInput = {
@@ -33932,6 +34608,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
     tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutNodeOverridesInput
     langkahSOP: LangkahSOPCreateNestedOneWithoutDiagramNodePositionInput
@@ -33943,6 +34620,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -33950,6 +34628,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutNodeOverridesNestedInput
     langkahSOP?: LangkahSOPUpdateOneRequiredWithoutDiagramNodePositionNestedInput
@@ -33961,6 +34640,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33970,6 +34650,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -33977,6 +34658,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33986,6 +34668,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33993,6 +34676,8 @@ export namespace Prisma {
     sisiDiagramId?: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
     tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
     keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
@@ -34006,6 +34691,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
   }
 
@@ -34013,6 +34700,8 @@ export namespace Prisma {
     sisiDiagramId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
     tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
     keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
@@ -34026,6 +34715,8 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
   }
 
@@ -34036,12 +34727,16 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SisiDiagramUpdateManyMutationInput = {
     sisiDiagramId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SisiDiagramUncheckedUpdateManyInput = {
@@ -34051,12 +34746,16 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TitikSisiDiagramCreateInput = {
     urutan: number
     x: number
     y: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
     sisiDiagram: SisiDiagramCreateNestedOneWithoutPointsInput
   }
 
@@ -34065,12 +34764,16 @@ export namespace Prisma {
     urutan: number
     x: number
     y: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TitikSisiDiagramUpdateInput = {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sisiDiagram?: SisiDiagramUpdateOneRequiredWithoutPointsNestedInput
   }
 
@@ -34079,6 +34782,8 @@ export namespace Prisma {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TitikSisiDiagramCreateManyInput = {
@@ -34086,12 +34791,16 @@ export namespace Prisma {
     urutan: number
     x: number
     y: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TitikSisiDiagramUpdateManyMutationInput = {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TitikSisiDiagramUncheckedUpdateManyInput = {
@@ -34099,6 +34808,8 @@ export namespace Prisma {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PengajuanEvaluasiCreateInput = {
@@ -34338,6 +35049,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     evaluator: PenggunaCreateNestedOneWithoutLogNilaiEvaluasiInput
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
   }
@@ -34352,6 +35064,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogNilaiEvaluasiUpdateInput = {
@@ -34362,6 +35075,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     evaluator?: PenggunaUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
   }
@@ -34376,6 +35090,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiCreateManyInput = {
@@ -34388,6 +35103,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogNilaiEvaluasiUpdateManyMutationInput = {
@@ -34398,6 +35114,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiUncheckedUpdateManyInput = {
@@ -34410,6 +35127,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type KredensialTTECreateInput = {
@@ -34497,6 +35215,7 @@ export namespace Prisma {
     versiDokumen?: number
     metodeKanonikalisasi?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop?: DetailSOPCreateNestedOneWithoutDokumenTteInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedOneWithoutDokumenTteInput
     riwayatTandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutDokumenTteInput
@@ -34513,6 +35232,7 @@ export namespace Prisma {
     detailSopId?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     riwayatTandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutDokumenTteInput
   }
 
@@ -34525,6 +35245,7 @@ export namespace Prisma {
     versiDokumen?: IntFieldUpdateOperationsInput | number
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneWithoutDokumenTteNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneWithoutDokumenTteNestedInput
     riwayatTandaTangan?: RiwayatTandaTanganUpdateManyWithoutDokumenTteNestedInput
@@ -34541,6 +35262,7 @@ export namespace Prisma {
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     riwayatTandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutDokumenTteNestedInput
   }
 
@@ -34555,6 +35277,7 @@ export namespace Prisma {
     detailSopId?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DokumenTteUpdateManyMutationInput = {
@@ -34566,6 +35289,7 @@ export namespace Prisma {
     versiDokumen?: IntFieldUpdateOperationsInput | number
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DokumenTteUncheckedUpdateManyInput = {
@@ -34579,6 +35303,7 @@ export namespace Prisma {
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganCreateInput = {
@@ -34595,6 +35320,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     dokumenTte: DokumenTteCreateNestedOneWithoutRiwayatTandaTanganInput
     user: PenggunaCreateNestedOneWithoutTandaTanganInput
   }
@@ -34615,6 +35342,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatTandaTanganUpdateInput = {
@@ -34631,6 +35360,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dokumenTte?: DokumenTteUpdateOneRequiredWithoutRiwayatTandaTanganNestedInput
     user?: PenggunaUpdateOneRequiredWithoutTandaTanganNestedInput
   }
@@ -34651,6 +35382,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganCreateManyInput = {
@@ -34669,6 +35402,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatTandaTanganUpdateManyMutationInput = {
@@ -34685,6 +35420,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganUncheckedUpdateManyInput = {
@@ -34703,6 +35440,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -34805,6 +35544,11 @@ export namespace Prisma {
     every?: RiwayatTandaTanganWhereInput
     some?: RiwayatTandaTanganWhereInput
     none?: RiwayatTandaTanganWhereInput
+  }
+
+  export type OPDNullableScalarRelationFilter = {
+    is?: OPDWhereInput | null
+    isNot?: OPDWhereInput | null
   }
 
   export type SortOrderInput = {
@@ -34954,6 +35698,31 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | null
+    notIn?: string[] | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    search?: string
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type PenggunaNullableScalarRelationFilter = {
+    is?: PenggunaWhereInput | null
+    isNot?: PenggunaWhereInput | null
+  }
+
   export type PelaksanaListRelationFilter = {
     every?: PelaksanaWhereInput
     some?: PelaksanaWhereInput
@@ -35003,6 +35772,9 @@ export namespace Prisma {
   export type OPDCountOrderByAggregateInput = {
     opdId?: SortOrder
     nama?: SortOrder
+    isBiroOrganisasi?: SortOrder
+    kepalaPenggunaId?: SortOrder
+    pjPenyusunPenggunaId?: SortOrder
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -35011,6 +35783,9 @@ export namespace Prisma {
   export type OPDMaxOrderByAggregateInput = {
     opdId?: SortOrder
     nama?: SortOrder
+    isBiroOrganisasi?: SortOrder
+    kepalaPenggunaId?: SortOrder
+    pjPenyusunPenggunaId?: SortOrder
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -35019,70 +35794,20 @@ export namespace Prisma {
   export type OPDMinOrderByAggregateInput = {
     opdId?: SortOrder
     nama?: SortOrder
+    isBiroOrganisasi?: SortOrder
+    kepalaPenggunaId?: SortOrder
+    pjPenyusunPenggunaId?: SortOrder
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | null
-    notIn?: string[] | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    search?: string
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type PenggunaScalarRelationFilter = {
-    is?: PenggunaWhereInput
-    isNot?: PenggunaWhereInput
-  }
-
-  export type RiwayatOpdPenggunaOrderByRelevanceInput = {
-    fields: RiwayatOpdPenggunaOrderByRelevanceFieldEnum | RiwayatOpdPenggunaOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type RiwayatOpdPenggunaPenggunaIdMulaiPadaCompoundUniqueInput = {
-    penggunaId: string
-    mulaiPada: Date | string
-  }
-
-  export type RiwayatOpdPenggunaCountOrderByAggregateInput = {
-    riwayatOpdPenggunaId?: SortOrder
-    penggunaId?: SortOrder
-    opdId?: SortOrder
-    mulaiPada?: SortOrder
-    berakhirPada?: SortOrder
-    alasan?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type RiwayatOpdPenggunaMaxOrderByAggregateInput = {
-    riwayatOpdPenggunaId?: SortOrder
-    penggunaId?: SortOrder
-    opdId?: SortOrder
-    mulaiPada?: SortOrder
-    berakhirPada?: SortOrder
-    alasan?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type RiwayatOpdPenggunaMinOrderByAggregateInput = {
-    riwayatOpdPenggunaId?: SortOrder
-    penggunaId?: SortOrder
-    opdId?: SortOrder
-    mulaiPada?: SortOrder
-    berakhirPada?: SortOrder
-    alasan?: SortOrder
-    createdAt?: SortOrder
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -35101,6 +35826,43 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type PenggunaScalarRelationFilter = {
+    is?: PenggunaWhereInput
+    isNot?: PenggunaWhereInput
+  }
+
+  export type RiwayatOpdPenggunaOrderByRelevanceInput = {
+    fields: RiwayatOpdPenggunaOrderByRelevanceFieldEnum | RiwayatOpdPenggunaOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type RiwayatOpdPenggunaPenggunaIdOpdIdCompoundUniqueInput = {
+    penggunaId: string
+    opdId: string
+  }
+
+  export type RiwayatOpdPenggunaCountOrderByAggregateInput = {
+    penggunaId?: SortOrder
+    opdId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RiwayatOpdPenggunaMaxOrderByAggregateInput = {
+    penggunaId?: SortOrder
+    opdId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type RiwayatOpdPenggunaMinOrderByAggregateInput = {
+    penggunaId?: SortOrder
+    opdId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -35209,18 +35971,21 @@ export namespace Prisma {
     opdId?: SortOrder
     peraturanId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type OPDPeraturanMaxOrderByAggregateInput = {
     opdId?: SortOrder
     peraturanId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type OPDPeraturanMinOrderByAggregateInput = {
     opdId?: SortOrder
     peraturanId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SOPOrderByRelevanceInput = {
@@ -35269,11 +36034,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
-  export type PenggunaNullableScalarRelationFilter = {
-    is?: PenggunaWhereInput | null
-    isNot?: PenggunaWhereInput | null
   }
 
   export type DetailSOPNullableScalarRelationFilter = {
@@ -35495,6 +36255,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     jenis?: SortOrder
     teks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LampiranTeksMaxOrderByAggregateInput = {
@@ -35502,6 +36264,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     jenis?: SortOrder
     teks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LampiranTeksMinOrderByAggregateInput = {
@@ -35509,6 +36273,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     jenis?: SortOrder
     teks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EnumJenisLampiranWithAggregatesFilter<$PrismaModel = never> = {
@@ -35535,16 +36301,22 @@ export namespace Prisma {
   export type DasarHukumCountOrderByAggregateInput = {
     detailSopId?: SortOrder
     peraturanId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DasarHukumMaxOrderByAggregateInput = {
     detailSopId?: SortOrder
     peraturanId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DasarHukumMinOrderByAggregateInput = {
     detailSopId?: SortOrder
     peraturanId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SopTerkaitOrderByRelevanceInput = {
@@ -35561,16 +36333,22 @@ export namespace Prisma {
   export type SopTerkaitCountOrderByAggregateInput = {
     detailSopId?: SortOrder
     detailSopTerkaitId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SopTerkaitMaxOrderByAggregateInput = {
     detailSopId?: SortOrder
     detailSopTerkaitId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SopTerkaitMinOrderByAggregateInput = {
     detailSopId?: SortOrder
     detailSopTerkaitId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EnumJenisLangkahProsedurFilter<$PrismaModel = never> = {
@@ -35757,6 +36535,8 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pelaksanaId?: SortOrder
     urutan?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DetailSOPPelaksanaAvgOrderByAggregateInput = {
@@ -35767,16 +36547,50 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pelaksanaId?: SortOrder
     urutan?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DetailSOPPelaksanaMinOrderByAggregateInput = {
     detailSopId?: SortOrder
     pelaksanaId?: SortOrder
     urutan?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DetailSOPPelaksanaSumOrderByAggregateInput = {
     urutan?: SortOrder
+  }
+
+  export type EnumBagianSOPFilter<$PrismaModel = never> = {
+    equals?: $Enums.BagianSOP | EnumBagianSOPFieldRefInput<$PrismaModel>
+    in?: $Enums.BagianSOP[]
+    notIn?: $Enums.BagianSOP[]
+    not?: NestedEnumBagianSOPFilter<$PrismaModel> | $Enums.BagianSOP
+  }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
   export type LogEditSOPOrderByRelevanceInput = {
@@ -35789,24 +36603,73 @@ export namespace Prisma {
     logEditSopId?: SortOrder
     detailSopId?: SortOrder
     userId?: SortOrder
+    bagian?: SortOrder
+    entityId?: SortOrder
     keterangan?: SortOrder
+    meta?: SortOrder
+    closedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LogEditSOPMaxOrderByAggregateInput = {
     logEditSopId?: SortOrder
     detailSopId?: SortOrder
     userId?: SortOrder
+    bagian?: SortOrder
+    entityId?: SortOrder
     keterangan?: SortOrder
+    closedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LogEditSOPMinOrderByAggregateInput = {
     logEditSopId?: SortOrder
     detailSopId?: SortOrder
     userId?: SortOrder
+    bagian?: SortOrder
+    entityId?: SortOrder
     keterangan?: SortOrder
+    closedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumBagianSOPWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BagianSOP | EnumBagianSOPFieldRefInput<$PrismaModel>
+    in?: $Enums.BagianSOP[]
+    notIn?: $Enums.BagianSOP[]
+    not?: NestedEnumBagianSOPWithAggregatesFilter<$PrismaModel> | $Enums.BagianSOP
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBagianSOPFilter<$PrismaModel>
+    _max?: NestedEnumBagianSOPFilter<$PrismaModel>
+  }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type EnumStatusKomentarFilter<$PrismaModel = never> = {
@@ -35988,6 +36851,7 @@ export namespace Prisma {
     page?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -36003,6 +36867,7 @@ export namespace Prisma {
     page?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -36012,6 +36877,7 @@ export namespace Prisma {
     page?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
@@ -36058,6 +36924,8 @@ export namespace Prisma {
     keLangkahId?: SortOrder
     cabang?: SortOrder
     labelTeks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SisiDiagramMaxOrderByAggregateInput = {
@@ -36067,6 +36935,8 @@ export namespace Prisma {
     keLangkahId?: SortOrder
     cabang?: SortOrder
     labelTeks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type SisiDiagramMinOrderByAggregateInput = {
@@ -36076,6 +36946,8 @@ export namespace Prisma {
     keLangkahId?: SortOrder
     cabang?: SortOrder
     labelTeks?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EnumCabangDiagramEdgeWithAggregatesFilter<$PrismaModel = never> = {
@@ -36109,6 +36981,8 @@ export namespace Prisma {
     urutan?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TitikSisiDiagramAvgOrderByAggregateInput = {
@@ -36122,6 +36996,8 @@ export namespace Prisma {
     urutan?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TitikSisiDiagramMinOrderByAggregateInput = {
@@ -36129,6 +37005,8 @@ export namespace Prisma {
     urutan?: SortOrder
     x?: SortOrder
     y?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TitikSisiDiagramSumOrderByAggregateInput = {
@@ -36340,6 +37218,7 @@ export namespace Prisma {
     catatanSebelum?: SortOrder
     catatanSesudah?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LogNilaiEvaluasiMaxOrderByAggregateInput = {
@@ -36352,6 +37231,7 @@ export namespace Prisma {
     catatanSebelum?: SortOrder
     catatanSesudah?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type LogNilaiEvaluasiMinOrderByAggregateInput = {
@@ -36364,11 +37244,7 @@ export namespace Prisma {
     catatanSebelum?: SortOrder
     catatanSesudah?: SortOrder
     createdAt?: SortOrder
-  }
-
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+    updatedAt?: SortOrder
   }
 
   export type KredensialTTEOrderByRelevanceInput = {
@@ -36410,14 +37286,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
   export type EnumJenisDokumenTteFilter<$PrismaModel = never> = {
     equals?: $Enums.JenisDokumenTte | EnumJenisDokumenTteFieldRefInput<$PrismaModel>
     in?: $Enums.JenisDokumenTte[]
@@ -36447,6 +37315,7 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pengajuanEvaluasiId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DokumenTteAvgOrderByAggregateInput = {
@@ -36464,6 +37333,7 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pengajuanEvaluasiId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DokumenTteMinOrderByAggregateInput = {
@@ -36477,6 +37347,7 @@ export namespace Prisma {
     detailSopId?: SortOrder
     pengajuanEvaluasiId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DokumenTteSumOrderByAggregateInput = {
@@ -36525,6 +37396,8 @@ export namespace Prisma {
     certValidFrom?: SortOrder
     certValidTo?: SortOrder
     ditandatanganiPada?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RiwayatTandaTanganMaxOrderByAggregateInput = {
@@ -36543,6 +37416,8 @@ export namespace Prisma {
     certValidFrom?: SortOrder
     certValidTo?: SortOrder
     ditandatanganiPada?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type RiwayatTandaTanganMinOrderByAggregateInput = {
@@ -36561,6 +37436,8 @@ export namespace Prisma {
     certValidFrom?: SortOrder
     certValidTo?: SortOrder
     ditandatanganiPada?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type DetailSOPCreateNestedManyWithoutDibuatOlehInput = {
@@ -36652,6 +37529,18 @@ export namespace Prisma {
     connect?: RiwayatTandaTanganWhereUniqueInput | RiwayatTandaTanganWhereUniqueInput[]
   }
 
+  export type OPDCreateNestedOneWithoutKepalaPenggunaInput = {
+    create?: XOR<OPDCreateWithoutKepalaPenggunaInput, OPDUncheckedCreateWithoutKepalaPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutKepalaPenggunaInput
+    connect?: OPDWhereUniqueInput
+  }
+
+  export type OPDCreateNestedOneWithoutPjPenyusunPenggunaInput = {
+    create?: XOR<OPDCreateWithoutPjPenyusunPenggunaInput, OPDUncheckedCreateWithoutPjPenyusunPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutPjPenyusunPenggunaInput
+    connect?: OPDWhereUniqueInput
+  }
+
   export type DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput = {
     create?: XOR<DetailSOPCreateWithoutDibuatOlehInput, DetailSOPUncheckedCreateWithoutDibuatOlehInput> | DetailSOPCreateWithoutDibuatOlehInput[] | DetailSOPUncheckedCreateWithoutDibuatOlehInput[]
     connectOrCreate?: DetailSOPCreateOrConnectWithoutDibuatOlehInput | DetailSOPCreateOrConnectWithoutDibuatOlehInput[]
@@ -36733,6 +37622,18 @@ export namespace Prisma {
     connectOrCreate?: RiwayatTandaTanganCreateOrConnectWithoutUserInput | RiwayatTandaTanganCreateOrConnectWithoutUserInput[]
     createMany?: RiwayatTandaTanganCreateManyUserInputEnvelope
     connect?: RiwayatTandaTanganWhereUniqueInput | RiwayatTandaTanganWhereUniqueInput[]
+  }
+
+  export type OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput = {
+    create?: XOR<OPDCreateWithoutKepalaPenggunaInput, OPDUncheckedCreateWithoutKepalaPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutKepalaPenggunaInput
+    connect?: OPDWhereUniqueInput
+  }
+
+  export type OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput = {
+    create?: XOR<OPDCreateWithoutPjPenyusunPenggunaInput, OPDUncheckedCreateWithoutPjPenyusunPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutPjPenyusunPenggunaInput
+    connect?: OPDWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -36923,6 +37824,26 @@ export namespace Prisma {
     deleteMany?: RiwayatTandaTanganScalarWhereInput | RiwayatTandaTanganScalarWhereInput[]
   }
 
+  export type OPDUpdateOneWithoutKepalaPenggunaNestedInput = {
+    create?: XOR<OPDCreateWithoutKepalaPenggunaInput, OPDUncheckedCreateWithoutKepalaPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutKepalaPenggunaInput
+    upsert?: OPDUpsertWithoutKepalaPenggunaInput
+    disconnect?: OPDWhereInput | boolean
+    delete?: OPDWhereInput | boolean
+    connect?: OPDWhereUniqueInput
+    update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutKepalaPenggunaInput, OPDUpdateWithoutKepalaPenggunaInput>, OPDUncheckedUpdateWithoutKepalaPenggunaInput>
+  }
+
+  export type OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput = {
+    create?: XOR<OPDCreateWithoutPjPenyusunPenggunaInput, OPDUncheckedCreateWithoutPjPenyusunPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutPjPenyusunPenggunaInput
+    upsert?: OPDUpsertWithoutPjPenyusunPenggunaInput
+    disconnect?: OPDWhereInput | boolean
+    delete?: OPDWhereInput | boolean
+    connect?: OPDWhereUniqueInput
+    update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutPjPenyusunPenggunaInput, OPDUpdateWithoutPjPenyusunPenggunaInput>, OPDUncheckedUpdateWithoutPjPenyusunPenggunaInput>
+  }
+
   export type DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput = {
     create?: XOR<DetailSOPCreateWithoutDibuatOlehInput, DetailSOPUncheckedCreateWithoutDibuatOlehInput> | DetailSOPCreateWithoutDibuatOlehInput[] | DetailSOPUncheckedCreateWithoutDibuatOlehInput[]
     connectOrCreate?: DetailSOPCreateOrConnectWithoutDibuatOlehInput | DetailSOPCreateOrConnectWithoutDibuatOlehInput[]
@@ -37087,6 +38008,38 @@ export namespace Prisma {
     deleteMany?: RiwayatTandaTanganScalarWhereInput | RiwayatTandaTanganScalarWhereInput[]
   }
 
+  export type OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput = {
+    create?: XOR<OPDCreateWithoutKepalaPenggunaInput, OPDUncheckedCreateWithoutKepalaPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutKepalaPenggunaInput
+    upsert?: OPDUpsertWithoutKepalaPenggunaInput
+    disconnect?: OPDWhereInput | boolean
+    delete?: OPDWhereInput | boolean
+    connect?: OPDWhereUniqueInput
+    update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutKepalaPenggunaInput, OPDUpdateWithoutKepalaPenggunaInput>, OPDUncheckedUpdateWithoutKepalaPenggunaInput>
+  }
+
+  export type OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput = {
+    create?: XOR<OPDCreateWithoutPjPenyusunPenggunaInput, OPDUncheckedCreateWithoutPjPenyusunPenggunaInput>
+    connectOrCreate?: OPDCreateOrConnectWithoutPjPenyusunPenggunaInput
+    upsert?: OPDUpsertWithoutPjPenyusunPenggunaInput
+    disconnect?: OPDWhereInput | boolean
+    delete?: OPDWhereInput | boolean
+    connect?: OPDWhereUniqueInput
+    update?: XOR<XOR<OPDUpdateToOneWithWhereWithoutPjPenyusunPenggunaInput, OPDUpdateWithoutPjPenyusunPenggunaInput>, OPDUncheckedUpdateWithoutPjPenyusunPenggunaInput>
+  }
+
+  export type PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput = {
+    create?: XOR<PenggunaCreateWithoutOpdSebagaiKepalaInput, PenggunaUncheckedCreateWithoutOpdSebagaiKepalaInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutOpdSebagaiKepalaInput
+    connect?: PenggunaWhereUniqueInput
+  }
+
+  export type PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput = {
+    create?: XOR<PenggunaCreateWithoutOpdSebagaiPjPenyusunInput, PenggunaUncheckedCreateWithoutOpdSebagaiPjPenyusunInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutOpdSebagaiPjPenyusunInput
+    connect?: PenggunaWhereUniqueInput
+  }
+
   export type PelaksanaCreateNestedManyWithoutOpdInput = {
     create?: XOR<PelaksanaCreateWithoutOpdInput, PelaksanaUncheckedCreateWithoutOpdInput> | PelaksanaCreateWithoutOpdInput[] | PelaksanaUncheckedCreateWithoutOpdInput[]
     connectOrCreate?: PelaksanaCreateOrConnectWithoutOpdInput | PelaksanaCreateOrConnectWithoutOpdInput[]
@@ -37171,6 +38124,30 @@ export namespace Prisma {
     connect?: SOPWhereUniqueInput | SOPWhereUniqueInput[]
   }
 
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput = {
+    create?: XOR<PenggunaCreateWithoutOpdSebagaiKepalaInput, PenggunaUncheckedCreateWithoutOpdSebagaiKepalaInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutOpdSebagaiKepalaInput
+    upsert?: PenggunaUpsertWithoutOpdSebagaiKepalaInput
+    disconnect?: PenggunaWhereInput | boolean
+    delete?: PenggunaWhereInput | boolean
+    connect?: PenggunaWhereUniqueInput
+    update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutOpdSebagaiKepalaInput, PenggunaUpdateWithoutOpdSebagaiKepalaInput>, PenggunaUncheckedUpdateWithoutOpdSebagaiKepalaInput>
+  }
+
+  export type PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput = {
+    create?: XOR<PenggunaCreateWithoutOpdSebagaiPjPenyusunInput, PenggunaUncheckedCreateWithoutOpdSebagaiPjPenyusunInput>
+    connectOrCreate?: PenggunaCreateOrConnectWithoutOpdSebagaiPjPenyusunInput
+    upsert?: PenggunaUpsertWithoutOpdSebagaiPjPenyusunInput
+    disconnect?: PenggunaWhereInput | boolean
+    delete?: PenggunaWhereInput | boolean
+    connect?: PenggunaWhereUniqueInput
+    update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutOpdSebagaiPjPenyusunInput, PenggunaUpdateWithoutOpdSebagaiPjPenyusunInput>, PenggunaUncheckedUpdateWithoutOpdSebagaiPjPenyusunInput>
+  }
+
   export type PelaksanaUpdateManyWithoutOpdNestedInput = {
     create?: XOR<PelaksanaCreateWithoutOpdInput, PelaksanaUncheckedCreateWithoutOpdInput> | PelaksanaCreateWithoutOpdInput[] | PelaksanaUncheckedCreateWithoutOpdInput[]
     connectOrCreate?: PelaksanaCreateOrConnectWithoutOpdInput | PelaksanaCreateOrConnectWithoutOpdInput[]
@@ -37253,6 +38230,10 @@ export namespace Prisma {
     update?: SOPUpdateWithWhereUniqueWithoutOpdInput | SOPUpdateWithWhereUniqueWithoutOpdInput[]
     updateMany?: SOPUpdateManyWithWhereWithoutOpdInput | SOPUpdateManyWithWhereWithoutOpdInput[]
     deleteMany?: SOPScalarWhereInput | SOPScalarWhereInput[]
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type PelaksanaUncheckedUpdateManyWithoutOpdNestedInput = {
@@ -37349,10 +38330,6 @@ export namespace Prisma {
     create?: XOR<PenggunaCreateWithoutRiwayatOpdInput, PenggunaUncheckedCreateWithoutRiwayatOpdInput>
     connectOrCreate?: PenggunaCreateOrConnectWithoutRiwayatOpdInput
     connect?: PenggunaWhereUniqueInput
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type OPDUpdateOneRequiredWithoutRiwayatOpdPenggunaNestedInput = {
@@ -38615,6 +39592,10 @@ export namespace Prisma {
     connect?: PenggunaWhereUniqueInput
   }
 
+  export type EnumBagianSOPFieldUpdateOperationsInput = {
+    set?: $Enums.BagianSOP
+  }
+
   export type DetailSOPUpdateOneRequiredWithoutLogEditSopNestedInput = {
     create?: XOR<DetailSOPCreateWithoutLogEditSopInput, DetailSOPUncheckedCreateWithoutLogEditSopInput>
     connectOrCreate?: DetailSOPCreateOrConnectWithoutLogEditSopInput
@@ -39177,10 +40158,6 @@ export namespace Prisma {
     connect?: PenggunaWhereUniqueInput
   }
 
-  export type BoolFieldUpdateOperationsInput = {
-    set?: boolean
-  }
-
   export type PenggunaUpdateOneRequiredWithoutKredensialTTENestedInput = {
     create?: XOR<PenggunaCreateWithoutKredensialTTEInput, PenggunaUncheckedCreateWithoutKredensialTTEInput>
     connectOrCreate?: PenggunaCreateOrConnectWithoutKredensialTTEInput
@@ -39417,6 +40394,11 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | null
@@ -39430,6 +40412,14 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     search?: string
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -39572,6 +40562,46 @@ export namespace Prisma {
     _max?: NestedEnumSatuanWaktuFilter<$PrismaModel>
   }
 
+  export type NestedEnumBagianSOPFilter<$PrismaModel = never> = {
+    equals?: $Enums.BagianSOP | EnumBagianSOPFieldRefInput<$PrismaModel>
+    in?: $Enums.BagianSOP[]
+    notIn?: $Enums.BagianSOP[]
+    not?: NestedEnumBagianSOPFilter<$PrismaModel> | $Enums.BagianSOP
+  }
+
+  export type NestedEnumBagianSOPWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.BagianSOP | EnumBagianSOPFieldRefInput<$PrismaModel>
+    in?: $Enums.BagianSOP[]
+    notIn?: $Enums.BagianSOP[]
+    not?: NestedEnumBagianSOPWithAggregatesFilter<$PrismaModel> | $Enums.BagianSOP
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBagianSOPFilter<$PrismaModel>
+    _max?: NestedEnumBagianSOPFilter<$PrismaModel>
+  }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
   export type NestedEnumStatusKomentarFilter<$PrismaModel = never> = {
     equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel>
     in?: $Enums.StatusKomentar[]
@@ -39689,19 +40719,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedEnumHasilEvaluasiNullableFilter<$PrismaModel>
     _max?: NestedEnumHasilEvaluasiNullableFilter<$PrismaModel>
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
-  }
-
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedEnumJenisDokumenTteFilter<$PrismaModel = never> = {
@@ -39907,16 +40924,26 @@ export namespace Prisma {
 
   export type LogEditSOPCreateWithoutUserInput = {
     logEditSopId?: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop: DetailSOPCreateNestedOneWithoutLogEditSopInput
   }
 
   export type LogEditSOPUncheckedCreateWithoutUserInput = {
     logEditSopId?: string
     detailSopId: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogEditSOPCreateOrConnectWithoutUserInput = {
@@ -39937,6 +40964,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
   }
 
@@ -39949,6 +40977,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogNilaiEvaluasiCreateOrConnectWithoutEvaluatorInput = {
@@ -40158,9 +41187,12 @@ export namespace Prisma {
   export type OPDCreateWithoutPenggunaInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
     riwayatOpdPengguna?: RiwayatOpdPenggunaCreateNestedManyWithoutOpdInput
@@ -40171,6 +41203,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateWithoutPenggunaInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40212,21 +41247,15 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaCreateWithoutPenggunaInput = {
-    riwayatOpdPenggunaId?: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutRiwayatOpdPenggunaInput
   }
 
   export type RiwayatOpdPenggunaUncheckedCreateWithoutPenggunaInput = {
-    riwayatOpdPenggunaId?: string
     opdId: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatOpdPenggunaCreateOrConnectWithoutPenggunaInput = {
@@ -40253,6 +41282,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     dokumenTte: DokumenTteCreateNestedOneWithoutRiwayatTandaTanganInput
   }
 
@@ -40271,6 +41302,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatTandaTanganCreateOrConnectWithoutUserInput = {
@@ -40281,6 +41314,80 @@ export namespace Prisma {
   export type RiwayatTandaTanganCreateManyUserInputEnvelope = {
     data: RiwayatTandaTanganCreateManyUserInput | RiwayatTandaTanganCreateManyUserInput[]
     skipDuplicates?: boolean
+  }
+
+  export type OPDCreateWithoutKepalaPenggunaInput = {
+    opdId?: string
+    nama: string
+    isBiroOrganisasi?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
+    pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
+    pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
+    pengguna?: PenggunaCreateNestedManyWithoutOpdInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaCreateNestedManyWithoutOpdInput
+    opdPeraturan?: OPDPeraturanCreateNestedManyWithoutOpdInput
+    sop?: SOPCreateNestedManyWithoutOpdInput
+  }
+
+  export type OPDUncheckedCreateWithoutKepalaPenggunaInput = {
+    opdId?: string
+    nama: string
+    isBiroOrganisasi?: boolean
+    pjPenyusunPenggunaId?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    pelaksana?: PelaksanaUncheckedCreateNestedManyWithoutOpdInput
+    pengajuanEvaluasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutOpdInput
+    pengguna?: PenggunaUncheckedCreateNestedManyWithoutOpdInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutOpdInput
+    opdPeraturan?: OPDPeraturanUncheckedCreateNestedManyWithoutOpdInput
+    sop?: SOPUncheckedCreateNestedManyWithoutOpdInput
+  }
+
+  export type OPDCreateOrConnectWithoutKepalaPenggunaInput = {
+    where: OPDWhereUniqueInput
+    create: XOR<OPDCreateWithoutKepalaPenggunaInput, OPDUncheckedCreateWithoutKepalaPenggunaInput>
+  }
+
+  export type OPDCreateWithoutPjPenyusunPenggunaInput = {
+    opdId?: string
+    nama: string
+    isBiroOrganisasi?: boolean
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
+    pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
+    pengguna?: PenggunaCreateNestedManyWithoutOpdInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaCreateNestedManyWithoutOpdInput
+    opdPeraturan?: OPDPeraturanCreateNestedManyWithoutOpdInput
+    sop?: SOPCreateNestedManyWithoutOpdInput
+  }
+
+  export type OPDUncheckedCreateWithoutPjPenyusunPenggunaInput = {
+    opdId?: string
+    nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    pelaksana?: PelaksanaUncheckedCreateNestedManyWithoutOpdInput
+    pengajuanEvaluasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutOpdInput
+    pengguna?: PenggunaUncheckedCreateNestedManyWithoutOpdInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutOpdInput
+    opdPeraturan?: OPDPeraturanUncheckedCreateNestedManyWithoutOpdInput
+    sop?: SOPUncheckedCreateNestedManyWithoutOpdInput
+  }
+
+  export type OPDCreateOrConnectWithoutPjPenyusunPenggunaInput = {
+    where: OPDWhereUniqueInput
+    create: XOR<OPDCreateWithoutPjPenyusunPenggunaInput, OPDUncheckedCreateWithoutPjPenyusunPenggunaInput>
   }
 
   export type DetailSOPUpsertWithWhereUniqueWithoutDibuatOlehInput = {
@@ -40393,8 +41500,13 @@ export namespace Prisma {
     logEditSopId?: StringFilter<"LogEditSOP"> | string
     detailSopId?: StringFilter<"LogEditSOP"> | string
     userId?: StringFilter<"LogEditSOP"> | string
+    bagian?: EnumBagianSOPFilter<"LogEditSOP"> | $Enums.BagianSOP
+    entityId?: StringNullableFilter<"LogEditSOP"> | string | null
     keterangan?: StringNullableFilter<"LogEditSOP"> | string | null
+    meta?: JsonNullableFilter<"LogEditSOP">
+    closedAt?: DateTimeNullableFilter<"LogEditSOP"> | Date | string | null
     createdAt?: DateTimeFilter<"LogEditSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"LogEditSOP"> | Date | string
   }
 
   export type LogNilaiEvaluasiUpsertWithWhereUniqueWithoutEvaluatorInput = {
@@ -40426,6 +41538,7 @@ export namespace Prisma {
     catatanSebelum?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     createdAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
+    updatedAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
   }
 
   export type NilaiEvaluasiUpsertWithWhereUniqueWithoutDinilaiOlehInput = {
@@ -40544,9 +41657,12 @@ export namespace Prisma {
   export type OPDUpdateWithoutPenggunaInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
     riwayatOpdPengguna?: RiwayatOpdPenggunaUpdateManyWithoutOpdNestedInput
@@ -40557,6 +41673,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateWithoutPenggunaInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40618,13 +41737,10 @@ export namespace Prisma {
     AND?: RiwayatOpdPenggunaScalarWhereInput | RiwayatOpdPenggunaScalarWhereInput[]
     OR?: RiwayatOpdPenggunaScalarWhereInput[]
     NOT?: RiwayatOpdPenggunaScalarWhereInput | RiwayatOpdPenggunaScalarWhereInput[]
-    riwayatOpdPenggunaId?: StringFilter<"RiwayatOpdPengguna"> | string
     penggunaId?: StringFilter<"RiwayatOpdPengguna"> | string
     opdId?: StringFilter<"RiwayatOpdPengguna"> | string
-    mulaiPada?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
-    berakhirPada?: DateTimeNullableFilter<"RiwayatOpdPengguna"> | Date | string | null
-    alasan?: StringNullableFilter<"RiwayatOpdPengguna"> | string | null
     createdAt?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
+    updatedAt?: DateTimeFilter<"RiwayatOpdPengguna"> | Date | string
   }
 
   export type RiwayatTandaTanganUpsertWithWhereUniqueWithoutUserInput = {
@@ -40662,6 +41778,220 @@ export namespace Prisma {
     certValidFrom?: DateTimeNullableFilter<"RiwayatTandaTangan"> | Date | string | null
     certValidTo?: DateTimeNullableFilter<"RiwayatTandaTangan"> | Date | string | null
     ditandatanganiPada?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+    createdAt?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+    updatedAt?: DateTimeFilter<"RiwayatTandaTangan"> | Date | string
+  }
+
+  export type OPDUpsertWithoutKepalaPenggunaInput = {
+    update: XOR<OPDUpdateWithoutKepalaPenggunaInput, OPDUncheckedUpdateWithoutKepalaPenggunaInput>
+    create: XOR<OPDCreateWithoutKepalaPenggunaInput, OPDUncheckedCreateWithoutKepalaPenggunaInput>
+    where?: OPDWhereInput
+  }
+
+  export type OPDUpdateToOneWithWhereWithoutKepalaPenggunaInput = {
+    where?: OPDWhereInput
+    data: XOR<OPDUpdateWithoutKepalaPenggunaInput, OPDUncheckedUpdateWithoutKepalaPenggunaInput>
+  }
+
+  export type OPDUpdateWithoutKepalaPenggunaInput = {
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
+    pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
+    pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
+    pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaUpdateManyWithoutOpdNestedInput
+    opdPeraturan?: OPDPeraturanUpdateManyWithoutOpdNestedInput
+    sop?: SOPUpdateManyWithoutOpdNestedInput
+  }
+
+  export type OPDUncheckedUpdateWithoutKepalaPenggunaInput = {
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pelaksana?: PelaksanaUncheckedUpdateManyWithoutOpdNestedInput
+    pengajuanEvaluasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutOpdNestedInput
+    pengguna?: PenggunaUncheckedUpdateManyWithoutOpdNestedInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutOpdNestedInput
+    opdPeraturan?: OPDPeraturanUncheckedUpdateManyWithoutOpdNestedInput
+    sop?: SOPUncheckedUpdateManyWithoutOpdNestedInput
+  }
+
+  export type OPDUpsertWithoutPjPenyusunPenggunaInput = {
+    update: XOR<OPDUpdateWithoutPjPenyusunPenggunaInput, OPDUncheckedUpdateWithoutPjPenyusunPenggunaInput>
+    create: XOR<OPDCreateWithoutPjPenyusunPenggunaInput, OPDUncheckedCreateWithoutPjPenyusunPenggunaInput>
+    where?: OPDWhereInput
+  }
+
+  export type OPDUpdateToOneWithWhereWithoutPjPenyusunPenggunaInput = {
+    where?: OPDWhereInput
+    data: XOR<OPDUpdateWithoutPjPenyusunPenggunaInput, OPDUncheckedUpdateWithoutPjPenyusunPenggunaInput>
+  }
+
+  export type OPDUpdateWithoutPjPenyusunPenggunaInput = {
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
+    pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
+    pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaUpdateManyWithoutOpdNestedInput
+    opdPeraturan?: OPDPeraturanUpdateManyWithoutOpdNestedInput
+    sop?: SOPUpdateManyWithoutOpdNestedInput
+  }
+
+  export type OPDUncheckedUpdateWithoutPjPenyusunPenggunaInput = {
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pelaksana?: PelaksanaUncheckedUpdateManyWithoutOpdNestedInput
+    pengajuanEvaluasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutOpdNestedInput
+    pengguna?: PenggunaUncheckedUpdateManyWithoutOpdNestedInput
+    riwayatOpdPengguna?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutOpdNestedInput
+    opdPeraturan?: OPDPeraturanUncheckedUpdateManyWithoutOpdNestedInput
+    sop?: SOPUncheckedUpdateManyWithoutOpdNestedInput
+  }
+
+  export type PenggunaCreateWithoutOpdSebagaiKepalaInput = {
+    penggunaId?: string
+    email: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
+    komentar?: KomentarCreateNestedManyWithoutUserInput
+    logEditSop?: LogEditSOPCreateNestedManyWithoutUserInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutEvaluatorInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehKoordinatorUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
+    opd: OPDCreateNestedOneWithoutPenggunaInput
+    kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
+    riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
+  }
+
+  export type PenggunaUncheckedCreateWithoutOpdSebagaiKepalaInput = {
+    penggunaId?: string
+    email: string
+    opdId: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
+    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
+    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutUserInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutEvaluatorInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehKoordinatorUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
+    kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
+  }
+
+  export type PenggunaCreateOrConnectWithoutOpdSebagaiKepalaInput = {
+    where: PenggunaWhereUniqueInput
+    create: XOR<PenggunaCreateWithoutOpdSebagaiKepalaInput, PenggunaUncheckedCreateWithoutOpdSebagaiKepalaInput>
+  }
+
+  export type PenggunaCreateWithoutOpdSebagaiPjPenyusunInput = {
+    penggunaId?: string
+    email: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
+    komentar?: KomentarCreateNestedManyWithoutUserInput
+    logEditSop?: LogEditSOPCreateNestedManyWithoutUserInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutEvaluatorInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehKoordinatorUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
+    opd: OPDCreateNestedOneWithoutPenggunaInput
+    kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
+    riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+  }
+
+  export type PenggunaUncheckedCreateWithoutOpdSebagaiPjPenyusunInput = {
+    penggunaId?: string
+    email: string
+    opdId: string
+    nama: string
+    kataSandi: string
+    peran: $Enums.PeranPengguna
+    nip: string
+    jabatan: string
+    pangkat: string
+    nohp: string
+    deletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
+    detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
+    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
+    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutUserInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutEvaluatorInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehKoordinatorUserInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
+    kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
+    tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+  }
+
+  export type PenggunaCreateOrConnectWithoutOpdSebagaiPjPenyusunInput = {
+    where: PenggunaWhereUniqueInput
+    create: XOR<PenggunaCreateWithoutOpdSebagaiPjPenyusunInput, PenggunaUncheckedCreateWithoutOpdSebagaiPjPenyusunInput>
   }
 
   export type PelaksanaCreateWithoutOpdInput = {
@@ -40771,6 +42101,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutOpdInput = {
@@ -40798,6 +42130,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutOpdInput = {
@@ -40811,21 +42145,15 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaCreateWithoutOpdInput = {
-    riwayatOpdPenggunaId?: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     pengguna: PenggunaCreateNestedOneWithoutRiwayatOpdInput
   }
 
   export type RiwayatOpdPenggunaUncheckedCreateWithoutOpdInput = {
-    riwayatOpdPenggunaId?: string
     penggunaId: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatOpdPenggunaCreateOrConnectWithoutOpdInput = {
@@ -40840,12 +42168,14 @@ export namespace Prisma {
 
   export type OPDPeraturanCreateWithoutOpdInput = {
     createdAt?: Date | string
+    updatedAt?: Date | string
     peraturan: PeraturanCreateNestedOneWithoutOpdPemakaiInput
   }
 
   export type OPDPeraturanUncheckedCreateWithoutOpdInput = {
     peraturanId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OPDPeraturanCreateOrConnectWithoutOpdInput = {
@@ -40882,6 +42212,144 @@ export namespace Prisma {
   export type SOPCreateManyOpdInputEnvelope = {
     data: SOPCreateManyOpdInput | SOPCreateManyOpdInput[]
     skipDuplicates?: boolean
+  }
+
+  export type PenggunaUpsertWithoutOpdSebagaiKepalaInput = {
+    update: XOR<PenggunaUpdateWithoutOpdSebagaiKepalaInput, PenggunaUncheckedUpdateWithoutOpdSebagaiKepalaInput>
+    create: XOR<PenggunaCreateWithoutOpdSebagaiKepalaInput, PenggunaUncheckedCreateWithoutOpdSebagaiKepalaInput>
+    where?: PenggunaWhereInput
+  }
+
+  export type PenggunaUpdateToOneWithWhereWithoutOpdSebagaiKepalaInput = {
+    where?: PenggunaWhereInput
+    data: XOR<PenggunaUpdateWithoutOpdSebagaiKepalaInput, PenggunaUncheckedUpdateWithoutOpdSebagaiKepalaInput>
+  }
+
+  export type PenggunaUpdateWithoutOpdSebagaiKepalaInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
+    komentar?: KomentarUpdateManyWithoutUserNestedInput
+    logEditSop?: LogEditSOPUpdateManyWithoutUserNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutEvaluatorNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehKoordinatorUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
+  }
+
+  export type PenggunaUncheckedUpdateWithoutOpdSebagaiKepalaInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
+    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
+    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutUserNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutEvaluatorNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehKoordinatorUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
+  }
+
+  export type PenggunaUpsertWithoutOpdSebagaiPjPenyusunInput = {
+    update: XOR<PenggunaUpdateWithoutOpdSebagaiPjPenyusunInput, PenggunaUncheckedUpdateWithoutOpdSebagaiPjPenyusunInput>
+    create: XOR<PenggunaCreateWithoutOpdSebagaiPjPenyusunInput, PenggunaUncheckedCreateWithoutOpdSebagaiPjPenyusunInput>
+    where?: PenggunaWhereInput
+  }
+
+  export type PenggunaUpdateToOneWithWhereWithoutOpdSebagaiPjPenyusunInput = {
+    where?: PenggunaWhereInput
+    data: XOR<PenggunaUpdateWithoutOpdSebagaiPjPenyusunInput, PenggunaUncheckedUpdateWithoutOpdSebagaiPjPenyusunInput>
+  }
+
+  export type PenggunaUpdateWithoutOpdSebagaiPjPenyusunInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
+    komentar?: KomentarUpdateManyWithoutUserNestedInput
+    logEditSop?: LogEditSOPUpdateManyWithoutUserNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutEvaluatorNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehKoordinatorUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
+    kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+  }
+
+  export type PenggunaUncheckedUpdateWithoutOpdSebagaiPjPenyusunInput = {
+    penggunaId?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    opdId?: StringFieldUpdateOperationsInput | string
+    nama?: StringFieldUpdateOperationsInput | string
+    kataSandi?: StringFieldUpdateOperationsInput | string
+    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
+    nip?: StringFieldUpdateOperationsInput | string
+    jabatan?: StringFieldUpdateOperationsInput | string
+    pangkat?: StringFieldUpdateOperationsInput | string
+    nohp?: StringFieldUpdateOperationsInput | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
+    detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
+    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
+    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutUserNestedInput
+    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutEvaluatorNestedInput
+    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
+    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
+    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehKoordinatorUserNestedInput
+    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
+    kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
+    riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
+    tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
   }
 
   export type PelaksanaUpsertWithWhereUniqueWithoutOpdInput = {
@@ -41001,6 +42469,7 @@ export namespace Prisma {
     opdId?: StringFilter<"OPDPeraturan"> | string
     peraturanId?: StringFilter<"OPDPeraturan"> | string
     createdAt?: DateTimeFilter<"OPDPeraturan"> | Date | string
+    updatedAt?: DateTimeFilter<"OPDPeraturan"> | Date | string
   }
 
   export type SOPUpsertWithWhereUniqueWithoutOpdInput = {
@@ -41033,9 +42502,12 @@ export namespace Prisma {
   export type OPDCreateWithoutRiwayatOpdPenggunaInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
     pengguna?: PenggunaCreateNestedManyWithoutOpdInput
@@ -41046,6 +42518,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateWithoutRiwayatOpdPenggunaInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41086,6 +42561,8 @@ export namespace Prisma {
     opd: OPDCreateNestedOneWithoutPenggunaInput
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutRiwayatOpdInput = {
@@ -41113,6 +42590,8 @@ export namespace Prisma {
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutRiwayatOpdInput = {
@@ -41134,9 +42613,12 @@ export namespace Prisma {
   export type OPDUpdateWithoutRiwayatOpdPenggunaInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
     pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
@@ -41147,6 +42629,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateWithoutRiwayatOpdPenggunaInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41193,6 +42678,8 @@ export namespace Prisma {
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutRiwayatOpdInput = {
@@ -41220,14 +42707,20 @@ export namespace Prisma {
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DasarHukumCreateWithoutPeraturanInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop: DetailSOPCreateNestedOneWithoutDasarHukumInput
   }
 
   export type DasarHukumUncheckedCreateWithoutPeraturanInput = {
     detailSopId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DasarHukumCreateOrConnectWithoutPeraturanInput = {
@@ -41242,12 +42735,14 @@ export namespace Prisma {
 
   export type OPDPeraturanCreateWithoutPeraturanInput = {
     createdAt?: Date | string
+    updatedAt?: Date | string
     opd: OPDCreateNestedOneWithoutOpdPeraturanInput
   }
 
   export type OPDPeraturanUncheckedCreateWithoutPeraturanInput = {
     opdId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OPDPeraturanCreateOrConnectWithoutPeraturanInput = {
@@ -41282,6 +42777,8 @@ export namespace Prisma {
     NOT?: DasarHukumScalarWhereInput | DasarHukumScalarWhereInput[]
     detailSopId?: StringFilter<"DasarHukum"> | string
     peraturanId?: StringFilter<"DasarHukum"> | string
+    createdAt?: DateTimeFilter<"DasarHukum"> | Date | string
+    updatedAt?: DateTimeFilter<"DasarHukum"> | Date | string
   }
 
   export type OPDPeraturanUpsertWithWhereUniqueWithoutPeraturanInput = {
@@ -41303,9 +42800,12 @@ export namespace Prisma {
   export type OPDCreateWithoutOpdPeraturanInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
     pengguna?: PenggunaCreateNestedManyWithoutOpdInput
@@ -41316,6 +42816,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateWithoutOpdPeraturanInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41372,9 +42875,12 @@ export namespace Prisma {
   export type OPDUpdateWithoutOpdPeraturanInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
     pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
@@ -41385,6 +42891,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateWithoutOpdPeraturanInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41509,9 +43018,12 @@ export namespace Prisma {
   export type OPDCreateWithoutSopInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
     pengguna?: PenggunaCreateNestedManyWithoutOpdInput
@@ -41522,6 +43034,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateWithoutSopInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -41567,9 +43082,12 @@ export namespace Prisma {
   export type OPDUpdateWithoutSopInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
     pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
@@ -41580,6 +43098,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateWithoutSopInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -41591,11 +43112,15 @@ export namespace Prisma {
   }
 
   export type DasarHukumCreateWithoutDetailSopInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
     peraturan: PeraturanCreateNestedOneWithoutDasarHukumInput
   }
 
   export type DasarHukumUncheckedCreateWithoutDetailSopInput = {
     peraturanId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DasarHukumCreateOrConnectWithoutDetailSopInput = {
@@ -41633,6 +43158,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutDetailSopDibuatInput = {
@@ -41660,6 +43187,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutDetailSopDibuatInput = {
@@ -41864,6 +43393,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutDetailSopDieditInput = {
@@ -41891,6 +43422,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutDetailSopDieditInput = {
@@ -41900,12 +43433,16 @@ export namespace Prisma {
 
   export type DetailSOPPelaksanaCreateWithoutDetailSopInput = {
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
     pelaksana: PelaksanaCreateNestedOneWithoutSopDetailsInput
   }
 
   export type DetailSOPPelaksanaUncheckedCreateWithoutDetailSopInput = {
     pelaksanaId: string
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DetailSOPPelaksanaCreateOrConnectWithoutDetailSopInput = {
@@ -41988,12 +43525,16 @@ export namespace Prisma {
     lampiranTeksId?: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LampiranTeksUncheckedCreateWithoutDetailSopInput = {
     lampiranTeksId?: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LampiranTeksCreateOrConnectWithoutDetailSopInput = {
@@ -42062,16 +43603,26 @@ export namespace Prisma {
 
   export type LogEditSOPCreateWithoutDetailSopInput = {
     logEditSopId?: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     user: PenggunaCreateNestedOneWithoutLogEditSopInput
   }
 
   export type LogEditSOPUncheckedCreateWithoutDetailSopInput = {
     logEditSopId?: string
     userId: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogEditSOPCreateOrConnectWithoutDetailSopInput = {
@@ -42117,11 +43668,15 @@ export namespace Prisma {
   }
 
   export type SopTerkaitCreateWithoutSopInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
     sopTerkait: DetailSOPCreateNestedOneWithoutRelasiSopMasukInput
   }
 
   export type SopTerkaitUncheckedCreateWithoutSopInput = {
     detailSopTerkaitId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SopTerkaitCreateOrConnectWithoutSopInput = {
@@ -42135,11 +43690,15 @@ export namespace Prisma {
   }
 
   export type SopTerkaitCreateWithoutSopTerkaitInput = {
+    createdAt?: Date | string
+    updatedAt?: Date | string
     sop: DetailSOPCreateNestedOneWithoutRelasiSopKeluarInput
   }
 
   export type SopTerkaitUncheckedCreateWithoutSopTerkaitInput = {
     detailSopId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SopTerkaitCreateOrConnectWithoutSopTerkaitInput = {
@@ -42161,6 +43720,7 @@ export namespace Prisma {
     versiDokumen?: number
     metodeKanonikalisasi?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedOneWithoutDokumenTteInput
     riwayatTandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutDokumenTteInput
   }
@@ -42175,6 +43735,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     riwayatTandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutDokumenTteInput
   }
 
@@ -42240,6 +43801,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutDetailSopDibuatInput = {
@@ -42267,6 +43830,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DetailSOPUpsertWithoutDisalinKeDariSumberIniInput = {
@@ -42427,6 +43992,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutDetailSopDieditInput = {
@@ -42454,6 +44021,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DetailSOPPelaksanaUpsertWithWhereUniqueWithoutDetailSopInput = {
@@ -42479,6 +44048,8 @@ export namespace Prisma {
     detailSopId?: StringFilter<"DetailSOPPelaksana"> | string
     pelaksanaId?: StringFilter<"DetailSOPPelaksana"> | string
     urutan?: IntFilter<"DetailSOPPelaksana"> | number
+    createdAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
+    updatedAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
   }
 
   export type TataLetakDiagramUpsertWithWhereUniqueWithoutDetailSopInput = {
@@ -42553,6 +44124,8 @@ export namespace Prisma {
     detailSopId?: StringFilter<"LampiranTeks"> | string
     jenis?: EnumJenisLampiranFilter<"LampiranTeks"> | $Enums.JenisLampiran
     teks?: StringFilter<"LampiranTeks"> | string
+    createdAt?: DateTimeFilter<"LampiranTeks"> | Date | string
+    updatedAt?: DateTimeFilter<"LampiranTeks"> | Date | string
   }
 
   export type LangkahSOPUpsertWithWhereUniqueWithoutDetailSopInput = {
@@ -42646,6 +44219,8 @@ export namespace Prisma {
     NOT?: SopTerkaitScalarWhereInput | SopTerkaitScalarWhereInput[]
     detailSopId?: StringFilter<"SopTerkait"> | string
     detailSopTerkaitId?: StringFilter<"SopTerkait"> | string
+    createdAt?: DateTimeFilter<"SopTerkait"> | Date | string
+    updatedAt?: DateTimeFilter<"SopTerkait"> | Date | string
   }
 
   export type SopTerkaitUpsertWithWhereUniqueWithoutSopTerkaitInput = {
@@ -42694,6 +44269,7 @@ export namespace Prisma {
     detailSopId?: StringNullableFilter<"DokumenTte"> | string | null
     pengajuanEvaluasiId?: StringNullableFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeFilter<"DokumenTte"> | Date | string
+    updatedAt?: DateTimeFilter<"DokumenTte"> | Date | string
   }
 
   export type DetailSOPCreateWithoutLampiranInput = {
@@ -43368,6 +44944,8 @@ export namespace Prisma {
     sisiDiagramId?: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
     keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
     points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
@@ -43379,6 +44957,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
   }
 
@@ -43396,6 +44976,8 @@ export namespace Prisma {
     sisiDiagramId?: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
     tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
     points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
@@ -43407,6 +44989,8 @@ export namespace Prisma {
     dariLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
   }
 
@@ -43424,6 +45008,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
     tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutNodeOverridesInput
   }
@@ -43433,6 +45018,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -43774,6 +45360,8 @@ export namespace Prisma {
     keLangkahId?: StringFilter<"SisiDiagram"> | string
     cabang?: EnumCabangDiagramEdgeFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
     labelTeks?: StringNullableFilter<"SisiDiagram"> | string | null
+    createdAt?: DateTimeFilter<"SisiDiagram"> | Date | string
+    updatedAt?: DateTimeFilter<"SisiDiagram"> | Date | string
   }
 
   export type SisiDiagramUpsertWithWhereUniqueWithoutKeLangkahInput = {
@@ -43817,6 +45405,7 @@ export namespace Prisma {
     page?: IntFilter<"PosisiNodeDiagram"> | number
     x?: IntFilter<"PosisiNodeDiagram"> | number
     y?: IntFilter<"PosisiNodeDiagram"> | number
+    createdAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
     updatedAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
   }
 
@@ -44072,12 +45661,16 @@ export namespace Prisma {
 
   export type DetailSOPPelaksanaCreateWithoutPelaksanaInput = {
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop: DetailSOPCreateNestedOneWithoutSwimlanesInput
   }
 
   export type DetailSOPPelaksanaUncheckedCreateWithoutPelaksanaInput = {
     detailSopId: string
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DetailSOPPelaksanaCreateOrConnectWithoutPelaksanaInput = {
@@ -44147,9 +45740,12 @@ export namespace Prisma {
   export type OPDCreateWithoutPelaksanaInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedManyWithoutOpdInput
     pengguna?: PenggunaCreateNestedManyWithoutOpdInput
     riwayatOpdPengguna?: RiwayatOpdPenggunaCreateNestedManyWithoutOpdInput
@@ -44160,6 +45756,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateWithoutPelaksanaInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44221,9 +45820,12 @@ export namespace Prisma {
   export type OPDUpdateWithoutPelaksanaInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateManyWithoutOpdNestedInput
     pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
     riwayatOpdPengguna?: RiwayatOpdPenggunaUpdateManyWithoutOpdNestedInput
@@ -44234,6 +45836,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateWithoutPelaksanaInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44546,6 +46151,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutLogEditSopInput = {
@@ -44573,6 +46180,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutLogEditSopInput = {
@@ -44695,6 +46304,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutLogEditSopInput = {
@@ -44722,6 +46333,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DetailSOPCreateWithoutKomentarInput = {
@@ -44822,6 +46435,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutKomentarInput = {
@@ -44849,6 +46464,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutKomentarInput = {
@@ -44971,6 +46588,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutKomentarInput = {
@@ -44998,12 +46617,16 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type SisiDiagramCreateWithoutTataLetakDiagramInput = {
     sisiDiagramId?: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
     keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
     points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
@@ -45015,6 +46638,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
   }
 
@@ -45105,6 +46730,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
     langkahSOP: LangkahSOPCreateNestedOneWithoutDiagramNodePositionInput
   }
@@ -45114,6 +46740,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -45549,12 +47176,16 @@ export namespace Prisma {
     urutan: number
     x: number
     y: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput = {
     urutan: number
     x: number
     y: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput = {
@@ -45740,12 +47371,16 @@ export namespace Prisma {
     urutan?: IntFilter<"TitikSisiDiagram"> | number
     x?: IntFilter<"TitikSisiDiagram"> | number
     y?: IntFilter<"TitikSisiDiagram"> | number
+    createdAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
+    updatedAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
   }
 
   export type SisiDiagramCreateWithoutPointsInput = {
     sisiDiagramId?: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
     dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
     tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
     keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
@@ -45758,6 +47393,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SisiDiagramCreateOrConnectWithoutPointsInput = {
@@ -45780,6 +47417,8 @@ export namespace Prisma {
     sisiDiagramId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
     tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
     keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
@@ -45792,6 +47431,8 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput = {
@@ -45802,6 +47443,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     evaluator: PenggunaCreateNestedOneWithoutLogNilaiEvaluasiInput
   }
 
@@ -45814,6 +47456,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput = {
@@ -45883,6 +47526,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutPengajuanEvaluasiDiselesaikanInput = {
@@ -45910,6 +47555,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutPengajuanEvaluasiDiselesaikanInput = {
@@ -45942,6 +47589,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutPengajuanEvaluasiDitandatanganiInput = {
@@ -45969,6 +47618,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutPengajuanEvaluasiDitandatanganiInput = {
@@ -46001,6 +47652,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutPengajuanEvaluasiDiverifikasiInput = {
@@ -46028,6 +47681,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutPengajuanEvaluasiDiverifikasiInput = {
@@ -46044,6 +47699,7 @@ export namespace Prisma {
     versiDokumen?: number
     metodeKanonikalisasi?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop?: DetailSOPCreateNestedOneWithoutDokumenTteInput
     riwayatTandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutDokumenTteInput
   }
@@ -46058,6 +47714,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: string | null
     detailSopId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     riwayatTandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutDokumenTteInput
   }
 
@@ -46074,9 +47731,12 @@ export namespace Prisma {
   export type OPDCreateWithoutPengajuanEvaluasiInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    kepalaPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiKepalaInput
+    pjPenyusunPengguna?: PenggunaCreateNestedOneWithoutOpdSebagaiPjPenyusunInput
     pelaksana?: PelaksanaCreateNestedManyWithoutOpdInput
     pengguna?: PenggunaCreateNestedManyWithoutOpdInput
     riwayatOpdPengguna?: RiwayatOpdPenggunaCreateNestedManyWithoutOpdInput
@@ -46087,6 +47747,9 @@ export namespace Prisma {
   export type OPDUncheckedCreateWithoutPengajuanEvaluasiInput = {
     opdId?: string
     nama: string
+    isBiroOrganisasi?: boolean
+    kepalaPenggunaId?: string | null
+    pjPenyusunPenggunaId?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -46170,6 +47833,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDiselesaikanInput = {
@@ -46197,6 +47862,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUpsertWithoutPengajuanEvaluasiDitandatanganiInput = {
@@ -46235,6 +47902,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDitandatanganiInput = {
@@ -46262,6 +47931,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUpsertWithoutPengajuanEvaluasiDiverifikasiInput = {
@@ -46300,6 +47971,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutPengajuanEvaluasiDiverifikasiInput = {
@@ -46327,6 +48000,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DokumenTteUpsertWithWhereUniqueWithoutPengajuanEvaluasiInput = {
@@ -46359,9 +48034,12 @@ export namespace Prisma {
   export type OPDUpdateWithoutPengajuanEvaluasiInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    kepalaPengguna?: PenggunaUpdateOneWithoutOpdSebagaiKepalaNestedInput
+    pjPenyusunPengguna?: PenggunaUpdateOneWithoutOpdSebagaiPjPenyusunNestedInput
     pelaksana?: PelaksanaUpdateManyWithoutOpdNestedInput
     pengguna?: PenggunaUpdateManyWithoutOpdNestedInput
     riwayatOpdPengguna?: RiwayatOpdPenggunaUpdateManyWithoutOpdNestedInput
@@ -46372,6 +48050,9 @@ export namespace Prisma {
   export type OPDUncheckedUpdateWithoutPengajuanEvaluasiInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     nama?: StringFieldUpdateOperationsInput | string
+    isBiroOrganisasi?: BoolFieldUpdateOperationsInput | boolean
+    kepalaPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
+    pjPenyusunPenggunaId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46407,6 +48088,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutNilaiEvaluasiDiisiInput = {
@@ -46434,6 +48117,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutNilaiEvaluasiDiisiInput = {
@@ -46599,6 +48284,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutNilaiEvaluasiDiisiInput = {
@@ -46626,6 +48313,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PengajuanEvaluasiUpsertWithoutNilaiEvaluasiInput = {
@@ -46787,6 +48476,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutLogNilaiEvaluasiInput = {
@@ -46814,6 +48505,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutLogNilaiEvaluasiInput = {
@@ -46906,6 +48599,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutLogNilaiEvaluasiInput = {
@@ -46933,6 +48628,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PengajuanEvaluasiUpsertWithoutLogNilaiEvaluasiInput = {
@@ -47015,6 +48712,8 @@ export namespace Prisma {
     opd: OPDCreateNestedOneWithoutPenggunaInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutKredensialTTEInput = {
@@ -47042,6 +48741,8 @@ export namespace Prisma {
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
     tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutKredensialTTEInput = {
@@ -47085,6 +48786,8 @@ export namespace Prisma {
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutKredensialTTEInput = {
@@ -47112,6 +48815,8 @@ export namespace Prisma {
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DetailSOPCreateWithoutDokumenTteInput = {
@@ -47250,6 +48955,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
     user: PenggunaCreateNestedOneWithoutTandaTanganInput
   }
 
@@ -47268,6 +48975,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatTandaTanganCreateOrConnectWithoutDokumenTteInput = {
@@ -47439,6 +49148,7 @@ export namespace Prisma {
     versiDokumen?: number
     metodeKanonikalisasi?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     detailSop?: DetailSOPCreateNestedOneWithoutDokumenTteInput
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedOneWithoutDokumenTteInput
   }
@@ -47454,6 +49164,7 @@ export namespace Prisma {
     detailSopId?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DokumenTteCreateOrConnectWithoutRiwayatTandaTanganInput = {
@@ -47486,6 +49197,8 @@ export namespace Prisma {
     opd: OPDCreateNestedOneWithoutPenggunaInput
     kredensialTTE?: KredensialTTECreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
+    opdSebagaiKepala?: OPDCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaUncheckedCreateWithoutTandaTanganInput = {
@@ -47513,6 +49226,8 @@ export namespace Prisma {
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
     kredensialTTE?: KredensialTTEUncheckedCreateNestedOneWithoutUserInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
+    opdSebagaiKepala?: OPDUncheckedCreateNestedOneWithoutKepalaPenggunaInput
+    opdSebagaiPjPenyusun?: OPDUncheckedCreateNestedOneWithoutPjPenyusunPenggunaInput
   }
 
   export type PenggunaCreateOrConnectWithoutTandaTanganInput = {
@@ -47540,6 +49255,7 @@ export namespace Prisma {
     versiDokumen?: IntFieldUpdateOperationsInput | number
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneWithoutDokumenTteNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneWithoutDokumenTteNestedInput
   }
@@ -47555,6 +49271,7 @@ export namespace Prisma {
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PenggunaUpsertWithoutTandaTanganInput = {
@@ -47593,6 +49310,8 @@ export namespace Prisma {
     opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutTandaTanganInput = {
@@ -47620,6 +49339,8 @@ export namespace Prisma {
     pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type DetailSOPCreateManyDibuatOlehInput = {
@@ -47678,8 +49399,13 @@ export namespace Prisma {
   export type LogEditSOPCreateManyUserInput = {
     logEditSopId?: string
     detailSopId: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogNilaiEvaluasiCreateManyEvaluatorInput = {
@@ -47691,6 +49417,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type NilaiEvaluasiCreateManyDinilaiOlehInput = {
@@ -47762,12 +49489,9 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaCreateManyPenggunaInput = {
-    riwayatOpdPenggunaId?: string
     opdId: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatTandaTanganCreateManyUserInput = {
@@ -47785,6 +49509,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DetailSOPUpdateWithoutDibuatOlehInput = {
@@ -47996,23 +49722,38 @@ export namespace Prisma {
 
   export type LogEditSOPUpdateWithoutUserInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneRequiredWithoutLogEditSopNestedInput
   }
 
   export type LogEditSOPUncheckedUpdateWithoutUserInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
     detailSopId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogEditSOPUncheckedUpdateManyWithoutUserInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
     detailSopId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiUpdateWithoutEvaluatorInput = {
@@ -48023,6 +49764,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
   }
 
@@ -48035,6 +49777,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiUncheckedUpdateManyWithoutEvaluatorInput = {
@@ -48046,6 +49789,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NilaiEvaluasiUpdateWithoutDinilaiOlehInput = {
@@ -48271,30 +50015,21 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaUpdateWithoutPenggunaInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutRiwayatOpdPenggunaNestedInput
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateWithoutPenggunaInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
     opdId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
     opdId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganUpdateWithoutUserInput = {
@@ -48311,6 +50046,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dokumenTte?: DokumenTteUpdateOneRequiredWithoutRiwayatTandaTanganNestedInput
   }
 
@@ -48329,6 +50066,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganUncheckedUpdateManyWithoutUserInput = {
@@ -48346,6 +50085,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PelaksanaCreateManyOpdInput = {
@@ -48390,17 +50131,15 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaCreateManyOpdInput = {
-    riwayatOpdPenggunaId?: string
     penggunaId: string
-    mulaiPada?: Date | string
-    berakhirPada?: Date | string | null
-    alasan?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OPDPeraturanCreateManyOpdInput = {
     peraturanId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SOPCreateManyOpdInput = {
@@ -48523,6 +50262,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateWithoutOpdInput = {
@@ -48550,6 +50291,8 @@ export namespace Prisma {
     kredensialTTE?: KredensialTTEUncheckedUpdateOneWithoutUserNestedInput
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
+    opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
+    opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
   }
 
   export type PenggunaUncheckedUpdateManyWithoutOpdInput = {
@@ -48568,45 +50311,39 @@ export namespace Prisma {
   }
 
   export type RiwayatOpdPenggunaUpdateWithoutOpdInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengguna?: PenggunaUpdateOneRequiredWithoutRiwayatOpdNestedInput
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateWithoutOpdInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
     penggunaId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatOpdPenggunaUncheckedUpdateManyWithoutOpdInput = {
-    riwayatOpdPenggunaId?: StringFieldUpdateOperationsInput | string
     penggunaId?: StringFieldUpdateOperationsInput | string
-    mulaiPada?: DateTimeFieldUpdateOperationsInput | Date | string
-    berakhirPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    alasan?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OPDPeraturanUpdateWithoutOpdInput = {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     peraturan?: PeraturanUpdateOneRequiredWithoutOpdPemakaiNestedInput
   }
 
   export type OPDPeraturanUncheckedUpdateWithoutOpdInput = {
     peraturanId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OPDPeraturanUncheckedUpdateManyWithoutOpdInput = {
     peraturanId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SOPUpdateWithoutOpdInput = {
@@ -48634,38 +50371,50 @@ export namespace Prisma {
 
   export type DasarHukumCreateManyPeraturanInput = {
     detailSopId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type OPDPeraturanCreateManyPeraturanInput = {
     opdId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DasarHukumUpdateWithoutPeraturanInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneRequiredWithoutDasarHukumNestedInput
   }
 
   export type DasarHukumUncheckedUpdateWithoutPeraturanInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DasarHukumUncheckedUpdateManyWithoutPeraturanInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OPDPeraturanUpdateWithoutPeraturanInput = {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     opd?: OPDUpdateOneRequiredWithoutOpdPeraturanNestedInput
   }
 
   export type OPDPeraturanUncheckedUpdateWithoutPeraturanInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OPDPeraturanUncheckedUpdateManyWithoutPeraturanInput = {
     opdId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DetailSOPCreateManySopInput = {
@@ -48782,6 +50531,8 @@ export namespace Prisma {
 
   export type DasarHukumCreateManyDetailSopInput = {
     peraturanId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DetailSOPCreateManySalinDariDetailSopInput = {
@@ -48809,6 +50560,8 @@ export namespace Prisma {
   export type DetailSOPPelaksanaCreateManyDetailSopInput = {
     pelaksanaId: string
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TataLetakDiagramCreateManyDetailSopInput = {
@@ -48836,6 +50589,8 @@ export namespace Prisma {
     lampiranTeksId?: string
     jenis: $Enums.JenisLampiran
     teks: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LangkahSOPCreateManyDetailSopInput = {
@@ -48858,8 +50613,13 @@ export namespace Prisma {
   export type LogEditSOPCreateManyDetailSopInput = {
     logEditSopId?: string
     userId: string
+    bagian?: $Enums.BagianSOP
+    entityId?: string | null
     keterangan?: string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type NilaiEvaluasiCreateManyDetailSopInput = {
@@ -48875,10 +50635,14 @@ export namespace Prisma {
 
   export type SopTerkaitCreateManySopInput = {
     detailSopTerkaitId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SopTerkaitCreateManySopTerkaitInput = {
     detailSopId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DokumenTteCreateManyDetailSopInput = {
@@ -48891,18 +50655,25 @@ export namespace Prisma {
     metodeKanonikalisasi?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type DasarHukumUpdateWithoutDetailSopInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     peraturan?: PeraturanUpdateOneRequiredWithoutDasarHukumNestedInput
   }
 
   export type DasarHukumUncheckedUpdateWithoutDetailSopInput = {
     peraturanId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DasarHukumUncheckedUpdateManyWithoutDetailSopInput = {
     peraturanId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DetailSOPUpdateWithoutSalinDariDetailSopInput = {
@@ -48997,17 +50768,23 @@ export namespace Prisma {
 
   export type DetailSOPPelaksanaUpdateWithoutDetailSopInput = {
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pelaksana?: PelaksanaUpdateOneRequiredWithoutSopDetailsNestedInput
   }
 
   export type DetailSOPPelaksanaUncheckedUpdateWithoutDetailSopInput = {
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopInput = {
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TataLetakDiagramUpdateWithoutDetailSopInput = {
@@ -49081,18 +50858,24 @@ export namespace Prisma {
     lampiranTeksId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LampiranTeksUncheckedUpdateWithoutDetailSopInput = {
     lampiranTeksId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LampiranTeksUncheckedUpdateManyWithoutDetailSopInput = {
     lampiranTeksId?: StringFieldUpdateOperationsInput | string
     jenis?: EnumJenisLampiranFieldUpdateOperationsInput | $Enums.JenisLampiran
     teks?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LangkahSOPUpdateWithoutDetailSopInput = {
@@ -49158,23 +50941,38 @@ export namespace Prisma {
 
   export type LogEditSOPUpdateWithoutDetailSopInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: PenggunaUpdateOneRequiredWithoutLogEditSopNestedInput
   }
 
   export type LogEditSOPUncheckedUpdateWithoutDetailSopInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogEditSOPUncheckedUpdateManyWithoutDetailSopInput = {
     logEditSopId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    bagian?: EnumBagianSOPFieldUpdateOperationsInput | $Enums.BagianSOP
+    entityId?: NullableStringFieldUpdateOperationsInput | string | null
     keterangan?: NullableStringFieldUpdateOperationsInput | string | null
+    meta?: NullableJsonNullValueInput | InputJsonValue
+    closedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NilaiEvaluasiUpdateWithoutDetailSopInput = {
@@ -49211,27 +51009,39 @@ export namespace Prisma {
   }
 
   export type SopTerkaitUpdateWithoutSopInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sopTerkait?: DetailSOPUpdateOneRequiredWithoutRelasiSopMasukNestedInput
   }
 
   export type SopTerkaitUncheckedUpdateWithoutSopInput = {
     detailSopTerkaitId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SopTerkaitUncheckedUpdateManyWithoutSopInput = {
     detailSopTerkaitId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SopTerkaitUpdateWithoutSopTerkaitInput = {
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sop?: DetailSOPUpdateOneRequiredWithoutRelasiSopKeluarNestedInput
   }
 
   export type SopTerkaitUncheckedUpdateWithoutSopTerkaitInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SopTerkaitUncheckedUpdateManyWithoutSopTerkaitInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DokumenTteUpdateWithoutDetailSopInput = {
@@ -49243,6 +51053,7 @@ export namespace Prisma {
     versiDokumen?: IntFieldUpdateOperationsInput | number
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneWithoutDokumenTteNestedInput
     riwayatTandaTangan?: RiwayatTandaTanganUpdateManyWithoutDokumenTteNestedInput
   }
@@ -49257,6 +51068,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     riwayatTandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutDokumenTteNestedInput
   }
 
@@ -49270,6 +51082,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SisiDiagramCreateManyDariLangkahInput = {
@@ -49278,6 +51091,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type SisiDiagramCreateManyKeLangkahInput = {
@@ -49286,6 +51101,8 @@ export namespace Prisma {
     dariLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type PosisiNodeDiagramCreateManyLangkahSOPInput = {
@@ -49293,6 +51110,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -49334,6 +51152,8 @@ export namespace Prisma {
     sisiDiagramId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
     keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
     points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
@@ -49345,6 +51165,8 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
   }
 
@@ -49354,12 +51176,16 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type SisiDiagramUpdateWithoutKeLangkahInput = {
     sisiDiagramId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
     tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
     points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
@@ -49371,6 +51197,8 @@ export namespace Prisma {
     dariLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
   }
 
@@ -49380,12 +51208,15 @@ export namespace Prisma {
     dariLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PosisiNodeDiagramUpdateWithoutLangkahSOPInput = {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutNodeOverridesNestedInput
   }
@@ -49395,6 +51226,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -49403,6 +51235,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -49531,6 +51364,8 @@ export namespace Prisma {
   export type DetailSOPPelaksanaCreateManyPelaksanaInput = {
     detailSopId: string
     urutan?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LangkahSOPCreateManyPelaksanaInput = {
@@ -49552,17 +51387,23 @@ export namespace Prisma {
 
   export type DetailSOPPelaksanaUpdateWithoutPelaksanaInput = {
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneRequiredWithoutSwimlanesNestedInput
   }
 
   export type DetailSOPPelaksanaUncheckedUpdateWithoutPelaksanaInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DetailSOPPelaksanaUncheckedUpdateManyWithoutPelaksanaInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LangkahSOPUpdateWithoutPelaksanaInput = {
@@ -49632,6 +51473,8 @@ export namespace Prisma {
     keLangkahId: string
     cabang?: $Enums.CabangDiagramEdge
     labelTeks?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type PosisiNodeDiagramCreateManyTataLetakDiagramInput = {
@@ -49639,6 +51482,7 @@ export namespace Prisma {
     page?: number
     x: number
     y: number
+    createdAt?: Date | string
     updatedAt?: Date | string
   }
 
@@ -49646,6 +51490,8 @@ export namespace Prisma {
     sisiDiagramId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
     keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
     points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
@@ -49657,6 +51503,8 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
   }
 
@@ -49666,12 +51514,15 @@ export namespace Prisma {
     keLangkahId?: StringFieldUpdateOperationsInput | string
     cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
     labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PosisiNodeDiagramUpdateWithoutTataLetakDiagramInput = {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSOP?: LangkahSOPUpdateOneRequiredWithoutDiagramNodePositionNestedInput
   }
@@ -49681,6 +51532,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -49689,6 +51541,7 @@ export namespace Prisma {
     page?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -49696,24 +51549,32 @@ export namespace Prisma {
     urutan: number
     x: number
     y: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TitikSisiDiagramUpdateWithoutSisiDiagramInput = {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TitikSisiDiagramUncheckedUpdateWithoutSisiDiagramInput = {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramInput = {
     urutan?: IntFieldUpdateOperationsInput | number
     x?: IntFieldUpdateOperationsInput | number
     y?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiCreateManyPengajuanEvaluasiInput = {
@@ -49725,6 +51586,7 @@ export namespace Prisma {
     catatanSebelum?: string | null
     catatanSesudah?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type NilaiEvaluasiCreateManyPengajuanEvaluasiInput = {
@@ -49748,6 +51610,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: string | null
     detailSopId?: string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type LogNilaiEvaluasiUpdateWithoutPengajuanEvaluasiInput = {
@@ -49758,6 +51621,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     evaluator?: PenggunaUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
   }
 
@@ -49770,6 +51634,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiUncheckedUpdateManyWithoutPengajuanEvaluasiInput = {
@@ -49781,6 +51646,7 @@ export namespace Prisma {
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NilaiEvaluasiUpdateWithoutPengajuanEvaluasiInput = {
@@ -49825,6 +51691,7 @@ export namespace Prisma {
     versiDokumen?: IntFieldUpdateOperationsInput | number
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneWithoutDokumenTteNestedInput
     riwayatTandaTangan?: RiwayatTandaTanganUpdateManyWithoutDokumenTteNestedInput
   }
@@ -49839,6 +51706,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     riwayatTandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutDokumenTteNestedInput
   }
 
@@ -49852,6 +51720,7 @@ export namespace Prisma {
     metodeKanonikalisasi?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganCreateManyDokumenTteInput = {
@@ -49869,6 +51738,8 @@ export namespace Prisma {
     certValidFrom?: Date | string | null
     certValidTo?: Date | string | null
     ditandatanganiPada?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type RiwayatTandaTanganUpdateWithoutDokumenTteInput = {
@@ -49885,6 +51756,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: PenggunaUpdateOneRequiredWithoutTandaTanganNestedInput
   }
 
@@ -49903,6 +51776,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RiwayatTandaTanganUncheckedUpdateManyWithoutDokumenTteInput = {
@@ -49920,6 +51795,8 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

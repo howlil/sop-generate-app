@@ -39,7 +39,7 @@ export function getUserFriendlyMessage(error: unknown): string {
           return 'OPD ini sudah memiliki Kepala OPD aktif. Nonaktifkan Kepala OPD saat ini terlebih dahulu, atau pilih OPD lain.';
         }
         if (apiError.message.includes('Koordinator')) {
-          return 'OPD ini sudah memiliki Koordinator Tim Penyusun aktif. Nonaktifkan Koordinator saat ini terlebih dahulu, atau pilih OPD lain.';
+          return 'OPD ini sudah memiliki PJ Penyusun aktif. Nonaktifkan PJ Penyusun saat ini terlebih dahulu, atau pilih OPD lain.';
         }
         return 'Data sudah ada. Silakan periksa kembali data yang Anda masukkan.';
       

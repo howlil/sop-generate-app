@@ -10,9 +10,11 @@ import {
 import { InfoCard } from '@/components/ui/info-card'
 import {
   STATUS_HASIL_EVALUASI,
-} from "@/api/evaluasi";
-import type { StatusHasilEvaluasi } from "@/types/dto/evaluasi.dto";
-import type { EvaluasiBatchSubmitError } from "@/api/evaluasi";
+} from "@/types/dto/evaluasi.dto";
+import type {
+  StatusHasilEvaluasi,
+  EvaluasiBatchSubmitError,
+} from "@/types/dto/evaluasi.dto";
 
 export interface SedangDievaluasiItem {
   id: string
@@ -139,7 +141,7 @@ export function DetailEvaluasiOPDSubmitDialog({
               </div>
               <InfoCard variant="warning">
                 <p className="text-xs text-amber-800">
-                  <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah. SOP dengan hasil <strong>Revisi Biro</strong> harus diperbaiki oleh Tim Penyusun lalu diajukan ulang dari <strong>Manajemen SOP</strong>.
+                  <strong>Perhatian:</strong> Setelah dikirim, hasil evaluasi tidak dapat diubah. SOP dengan hasil <strong>Revisi Biro</strong> harus diperbaiki oleh penyusun lalu diajukan ulang dari <strong>Manajemen SOP</strong>.
                 </p>
               </InfoCard>
             </>

@@ -17,15 +17,29 @@ export type JenisLampiran =
   | "KUALIFIKASI_PELAKSANAAN"
   | "PERALATAN"
   | "PENCATATAN_PENDATAAN";
-export type BagianSOP =
-  | "METADATA"
-  | "LANGKAH_SOP"
-  | "LAMPIRAN_TEKS"
-  | "DASAR_HUKUM"
-  | "PELAKSANA"
-  | "DIAGRAM"
-  | "SOP_TERKAIT";
+/** Selaras dengan enum `BagianSOP` di server (sumber log aktivitas + komentar). */
+export type BagianSOP = "HEADER" | "LANGKAH" | "STATUS" | "KOMENTAR" | "EVALUASI";
 
+/** Baris daftar dari GET /sop (versi DetailSOP terbaru per header). */
+export interface TerakhirDieditRingkas {
+  nama: string | null;
+  waktu: string | null;
+}
+
+export interface SopDaftarRow {
+  id: string;
+  opdId: string;
+  detailSopId: string | null;
+  judul: string;
+  nomorSop: string | null;
+  pembuat: string | null;
+  terakhirDiedit: TerakhirDieditRingkas;
+  status: string;
+  peraturanId: string | null;
+  terakhirDiperbarui: string | null;
+}
+
+/** Header SOP + meta legacy (POST/PATCH detail, mock); daftar penyusun memakai `SopDaftarRow`. */
 export interface Sop {
   id: string;
   opdId: string;
@@ -78,6 +92,52 @@ export interface SopDetail {
   langkahSOP?: LangkahSOP[];
   swimlanes?: DetailSOPPelaksana[];
   nilaiEvaluasi?: { id: string; hasil?: string; catatan?: string }[];
+  /** Kepala OPD OPD pemilik SOP (mis. dari GET workbench); blok DISAHKAN OLEH. */
+  kepalaOpd?: { nama: string | null; nip: string | null } | null;
+  /** ID peraturan dasar hukum (urut createdAt asc), dari GET workbench. */
+  dasarHukumPeraturanIds?: string[];
+  /** ID DetailSOP terkait (relasi keluar), dari GET workbench. */
+  sopTerkaitDetailIds?: string[];
+  /** Teks peringatan dari LampiranTeks jenis PERINGATAN. */
+  peringatan?: string | null;
+  /** Item kualifikasi pelaksanaan (LampiranTeks jenis KUALIFIKASI_PELAKSANAAN). */
+  kualifikasiPelaksanaan?: string[];
+  /** Item peralatan dan perlengkapan (LampiranTeks jenis PERALATAN). */
+  peralatanPerlengkapan?: string[];
+  /** Item pencatatan dan pendataan (LampiranTeks jenis PENCATATAN_PENDATAAN). */
+  pencatatanPendataan?: string[];
+}
+
+/** Metadata sesi log (Google Docs style): field union + jumlah event tergabung. */
+export interface PenyusunWorkbenchLogEditMeta {
+  fields: string[];
+  count: number;
+}
+
+/** Satu entri log pada GET workbench. Sesi yang masih berlangsung: `closedAt = null`. */
+export interface PenyusunWorkbenchLogEdit {
+  id: string;
+  sopDetailId: string;
+  userId: string;
+  bagian: BagianSOP;
+  entityId?: string | null;
+  keterangan?: string | null;
+  meta?: PenyusunWorkbenchLogEditMeta | null;
+  aktorRole: string;
+  createdAt: string;
+  closedAt?: string | null;
+  user?: { id: string; nama: string; email: string };
+}
+
+/** Respons GET `/sop/penyusun-workbench/:detailSopId`. */
+export interface PenyusunWorkbenchData {
+  detail: SopDetail;
+  langkah: LangkahSOP[];
+  logEdit: PenyusunWorkbenchLogEdit[];
+}
+
+export interface PenyusunWorkbenchQueryParams {
+  logsLimit?: number;
 }
 
 export interface LampiranTeks {
@@ -158,17 +218,16 @@ export interface DetailSopListQueryParams {
   status?: string;
 }
 
+/** Payload POST `/sop` — opdId & pembuat di-set server dari JWT. */
 export interface CreateSopRequest {
   judul: string;
-  opdId: string;
-  logoInstansi?: string;
+  nomorSop: string;
   namaLembaga?: string;
 }
 
 export interface CreateSopRequestDto {
   judul: string;
-  opdId: string;
-  logoInstansi?: string;
+  nomorSop: string;
   namaLembaga?: string;
 }
 
@@ -187,6 +246,57 @@ export interface UpdateMetadataDto {
   lebarKolomWaktu?: number;
   lebarKolomOutput?: number;
   lebarKolomKeterangan?: number;
+}
+
+/** Payload PATCH `/sop/header/:detailSopId` — semua field opsional, hanya yang dikirim yang disimpan. */
+export interface UpdateSopHeaderDto {
+  judul?: string;
+  nomorSOP?: string;
+  namaLembaga?: string;
+  peringatan?: string;
+  dasarHukumPeraturanIds?: string[];
+  sopTerkaitDetailIds?: string[];
+  kualifikasiPelaksanaan?: string[];
+  peralatanPerlengkapan?: string[];
+  pencatatanPendataan?: string[];
+}
+
+export interface UpdateSopHeaderMutationDto {
+  detailSopId: string;
+  payload: UpdateSopHeaderDto;
+}
+
+/** Satu entri swimlane pada PATCH `/sop/langkah/:detailSopId`. Urutan = posisi index. */
+export interface PelaksanaPatchItem {
+  pelaksanaId: string;
+}
+
+/** Satu langkah prosedur pada PATCH `/sop/langkah/:detailSopId`. */
+export interface LangkahPatchItem {
+  /** ID stabil di payload (existing UUID langkahSopId atau client-generated). */
+  tempId: string;
+  jenis: JenisLangkahProsedur;
+  kegiatan: string;
+  kelengkapan?: string;
+  keluaran?: string;
+  waktu?: number;
+  satuanWaktu?: SatuanWaktu;
+  keterangan?: string;
+  /** Pelaksana eksekutor langkah ini; harus muncul di `pelaksana[]` payload atau swimlane existing. */
+  pelaksanaId?: string;
+  /** Cabang Ya — merujuk `tempId` entri lain. Hanya berlaku untuk jenis KEPUTUSAN. */
+  langkahSelanjutnyaYaTempId?: string | null;
+  /** Cabang Tidak — merujuk `tempId` entri lain. Hanya berlaku untuk jenis KEPUTUSAN. */
+  langkahSelanjutnyaTidakTempId?: string | null;
+}
+
+/**
+ * Payload PATCH `/sop/langkah/:detailSopId` — replace-all per section yang dikirim.
+ * Hanya field yang di-set yang dieksekusi; debounce autosave-friendly.
+ */
+export interface UpdateSopProsedurDto {
+  pelaksana?: PelaksanaPatchItem[];
+  langkah?: LangkahPatchItem[];
 }
 
 export interface UpdateStatusDto {

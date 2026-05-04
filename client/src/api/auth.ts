@@ -1,20 +1,17 @@
-/**
- * Auth API service
- * Matches server: AuthController
- * Note: Authentication tokens are stored in HttpOnly cookies (backend-managed)
- */
 
 import { apiClient } from '@/lib/api/api-client'
-import type { LoginResponse } from '@/types/dto/auth.dto'
-import type { ChangePasswordDto, LoginRequestDto } from '@/types/dto/auth.dto'
+import type { ChangePasswordDto, LoginApiResponse, LoginRequestDto } from '@/types/dto/auth.dto'
 
 export const authApi = {
-  /**
-   * AUTH-01: Login with email and password
-   * Backend sets HttpOnly cookies for access_token and refresh_token
-   */
+
   login: (payload: LoginRequestDto) =>
-    apiClient.post<LoginResponse>('/login', payload),
+    apiClient.post<LoginApiResponse>('/auth/login', {
+      email: payload.email,
+      password: payload.kataSandi,
+    }),
+
+  /** Profil sesi saat ini — memakai cookie HttpOnly; untuk bootstrap setelah refresh. */
+  me: () => apiClient.get<LoginApiResponse>('/auth/me'),
 
   /**
    * AUTH-02: Refresh access token
@@ -22,7 +19,7 @@ export const authApi = {
    * Returns { success: true } on success.
    */
   refresh: () =>
-    apiClient.post<{ success: true }>('/refresh'),
+    apiClient.post<{ message: string; success: boolean; data: { success: true } }>('/auth/refresh'),
 
   /**
    * AUTH-06: Change password for logged-in user
@@ -35,7 +32,7 @@ export const authApi = {
    */
   logout: async () => {
     try {
-      await apiClient.post<{ message: string }>('/logout')
+      await apiClient.post<{ message: string }>('/auth/logout')
     } catch {
       // Continue with local cleanup even if server call fails
     }
@@ -44,14 +41,15 @@ export const authApi = {
 }
 
 import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/config/query-client";
 import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
 import { useToast, showErrorMessages } from "@/hooks/useToast";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ROUTES } from "@/utils/constants";
+import { navigateToAppPath, resolvePostLoginPath } from "@/utils/role-routing";
 
 export function useAuth() {
   const navigate = useNavigate();
-  const { redirect = "/" } = useSearch({ strict: false }) as { redirect?: string };
+  const { redirect } = useSearch({ strict: false }) as { redirect?: string };
   const { showToast } = useToast();
   // Use selectors with shallow comparison for optimal performance
   const setUser = useAuthStore((state) => state.setUser);
@@ -60,26 +58,25 @@ export function useAuth() {
   const loginMutation = useMutation({
     mutationFn: (payload: LoginRequestDto) => authApi.login(payload),
     onSuccess: async (response) => {
-
+      const u = response.data;
       setUser({
-        id: response.user.id,
-        email: response.user.email,
-        nama: response.user.nama,
-        peran: response.user.peran,
-        opdId: response.user.opdId,
-        nip: response.user.nip,
-        jabatan: response.user.jabatan,
+        id: u.penggunaId,
+        email: u.email,
+        nama: u.nama,
+        peran: u.peran,
+        opdId: u.opdId,
+        nip: u.nip,
+        jabatan: u.jabatan,
       });
 
-      showToast(`Selamat datang, ${response.user.nama}!`, "success");
+      showToast(`Selamat datang, ${u.nama}!`, "success");
 
       try {
         await ensureAuthHydrated(1000);
-        navigate({ to: redirect || ROUTES.HOME });
+        navigateToAppPath(navigate, resolvePostLoginPath(redirect, u.peran));
       } catch {
-        // Fallback: navigate anyway after a short delay
         setTimeout(() => {
-          navigate({ to: redirect || ROUTES.HOME });
+          navigateToAppPath(navigate, resolvePostLoginPath(redirect, u.peran));
         }, 100);
       }
     },
@@ -96,13 +93,18 @@ export function useAuth() {
     },
   });
 
+  /**
+   * Keluar: POST `/auth/logout` (hapus cookie HttpOnly) → kosongkan store → hapus cache React Query.
+   * Navigasi ke beranda/login dilakukan pemanggil (mis. HeaderBar).
+   */
   const logoutHandler = async () => {
     try {
       await authApi.logout();
     } catch {
-      // Continue with local cleanup even if server call fails
+      // Lanjut bersihkan klien walau server gagal
     }
     logout();
+    queryClient.clear();
   };
 
   return {

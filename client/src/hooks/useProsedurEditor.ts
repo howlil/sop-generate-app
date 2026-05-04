@@ -23,7 +23,11 @@ export interface UseProsedurEditorReturn {
     implementers: { id: string; name: string }[],
   ) => void;
   handleDeleteRow: (index: number) => void;
-  handleTypeChange: (index: number, type: ProsedurRow["type"]) => void;
+  handleTypeChange: (
+    index: number,
+    type: ProsedurRow["type"],
+    terminatorRole?: "start" | "end",
+  ) => void;
   handleKegiatanChange: (index: number, kegiatan: string) => void;
   handlePelaksanaChange: (
     index: number,
@@ -95,9 +99,21 @@ export function useProsedurEditor(
   );
 
   const handleTypeChange = useCallback(
-    (index: number, type: ProsedurRow["type"]) => {
+    (
+      index: number,
+      type: ProsedurRow["type"],
+      terminatorRole?: "start" | "end",
+    ) => {
       setProsedurRows((prev) =>
-        prev.map((r, i) => (i === index ? { ...r, type } : r)),
+        prev.map((r, i) =>
+          i === index
+            ? {
+                ...r,
+                type,
+                terminatorRole: type === "terminator" ? terminatorRole : undefined,
+              }
+            : r,
+        ),
       );
     },
     [setProsedurRows],
@@ -156,10 +172,32 @@ export function useProsedurEditor(
         w: "Minggu",
         mo: "Bulan",
       };
-      const label = unitLabelMap[unit] || "";
-      const value = amount ? `${amount} ${label}` : "";
+      const normalizedAmount = amount.trim();
+      const parsedAmount = Number.parseInt(normalizedAmount, 10);
+      const validAmount =
+        normalizedAmount.length > 0 && Number.isFinite(parsedAmount)
+          ? Math.max(0, parsedAmount)
+          : undefined;
+      const normalizedUnit = ["m", "h", "d", "w", "mo"].includes(unit)
+        ? unit
+        : "m";
+      const label = unitLabelMap[normalizedUnit] || "";
+      const value = validAmount !== undefined ? `${validAmount} ${label}` : "";
       setProsedurRows((prev) =>
-        prev.map((r, i) => (i === index ? { ...r, mutu_waktu: value } : r)),
+        prev.map((r, i) =>
+          i === index
+            ? {
+                ...r,
+                mutu_waktu: value,
+                waktu: validAmount,
+                time: validAmount,
+                satuanWaktu:
+                  validAmount !== undefined ? normalizedUnit : undefined,
+                time_unit:
+                  validAmount !== undefined ? normalizedUnit : undefined,
+              }
+            : r,
+        ),
       );
     },
     [setProsedurRows],

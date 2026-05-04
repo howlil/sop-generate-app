@@ -13,17 +13,17 @@ import {
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { usePageHeaderContext } from "@/components/layout/PageHeaderProvider";
 import { useAppRole } from "@/hooks/useAppRole";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuth } from "@/api/auth";
 
 export function HeaderBar() {
   const navigate = useNavigate();
   const { role, getRoleLabel, getRoleNip, getRoleDisplayName } = useAppRole();
-  const logout = useAuthStore((state) => state.logout);
+  const { logout: logoutSession } = useAuth();
   const pageHeader = usePageHeaderContext();
   const headerContent = pageHeader?.headerContent;
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logoutSession();
     navigate({
       to: ROUTES.HOME,
       search: { denied: undefined, redirect: undefined },
@@ -79,7 +79,9 @@ export function HeaderBar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
-              onSelect={handleLogout}
+              onSelect={() => {
+                void handleLogout();
+              }}
             >
               <LogOut className="w-3.5 h-3.5 mr-2" />
               Logout

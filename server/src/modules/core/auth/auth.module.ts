@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import type { StringValue } from 'ms';
 import { AuthController } from './auth.controller';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
+import { resolveAccessTokenExpiry } from './helpers/auth.shared';
 import { JwtAccessStrategy } from './helpers/jwt-access.strategy';
 
 @Module({
@@ -14,16 +14,19 @@ import { JwtAccessStrategy } from './helpers/jwt-access.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.getOrThrow<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: config.get<string>('JWT_EXPIRATION', '15m') as StringValue,
-        },
-      }),
+      useFactory: (config: ConfigService): JwtModuleOptions => {
+        const expiresInSeconds = resolveAccessTokenExpiry(config.get('JWT_EXPIRATION')).expiresInSeconds;
+        return {
+          secret: config.getOrThrow<string>('JWT_SECRET'),
+          signOptions: {
+            expiresIn: expiresInSeconds,
+          },
+        };
+      },
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthRepository, JwtAccessStrategy],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule, JwtAccessStrategy],
 })
 export class AuthModule {}

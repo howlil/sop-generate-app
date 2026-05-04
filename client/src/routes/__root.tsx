@@ -15,7 +15,7 @@ import { NotFoundPage } from "@/components/ui/not-found";
 import { RouteErrorPage } from "@/components/ui/route-error";
 import { RouteFocusManager } from "@/components/ui/route-focus-manager";
 import { queryClient } from "@/config/query-client";
-import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
+import { useAuthStore, ensureAuthHydrated, syncAuthFromCookie } from "@/stores/authStore";
 import { ROUTES } from "@/utils/constants";
 
 export const Route = createRootRoute({
@@ -24,9 +24,22 @@ export const Route = createRootRoute({
       location.pathname === ROUTES.HOME || location.pathname.startsWith(ROUTES.AUTH.LOGIN);
     if (isPublic) return;
 
+    /** Lewati guard di SSR: persist & sesi JS hanya di browser (sama seperti requireRoles). */
+    const isServerSide =
+      import.meta.env.SSR === true ||
+      typeof globalThis.window === "undefined" ||
+      typeof globalThis.document === "undefined";
+    if (isServerSide) {
+      return;
+    }
+
     await ensureAuthHydrated();
 
-    const store = useAuthStore.getState();
+    let store = useAuthStore.getState();
+    if (!store.user) {
+      await syncAuthFromCookie();
+      store = useAuthStore.getState();
+    }
 
     if (!store.user) {
       throw redirect({

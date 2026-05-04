@@ -36,11 +36,19 @@ export interface KepalaFormState {
   nip: string;
   email: string;
   phone: string;
+  jabatan: string;
+  pangkat: string;
+  status: 'AKTIF' | 'NONAKTIF';
 }
 
 export interface FormTambahKepalaState {
   opdId: string;
-  userId: string;
+  nama: string;
+  email: string;
+  nip: string;
+  jabatan: string;
+  pangkat: string;
+  nohp: string;
 }
 
 export interface PindahFormState {
@@ -52,9 +60,4 @@ export interface PindahDialogPerson {
   email: string;
   nip?: string;
 }
-
-export interface RiwayatDialogPerson {
-  name: string;
-  email: string;
-  nip?: string;
-}
+  

@@ -34,7 +34,7 @@ export interface ListPageLayoutProps {
  * - SOPSaya
  * - DaftarSOPEvaluasi
  * - DaftarSOP
- * - ManajemenTimEvaluasi
+ * - ManajemenEvaluator
  * 
  * @example
  * ```tsx

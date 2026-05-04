@@ -85,14 +85,22 @@ export function useMintTokenVerifikasi() {
   });
 }
 
-export function useTandaTanganiBA(options?: { isKoordinator?: boolean }) {
+export function useTandaTanganiBA(options?: {
+  isKoordinator?: boolean;
+  /** Mengganti pesan sukses bawaan (satu sumber toast; jangan panggil showToast lagi setelah mutateAsync). */
+  successMessage?: string;
+}) {
+  const defaultSuccessKoordinator =
+    "Berita Acara berhasil ditandatangani oleh PJ Penyusun.";
+  const defaultSuccessEvaluator = "Berita Acara berhasil ditandatangani";
+  const successMessage =
+    options?.successMessage ??
+    (options?.isKoordinator ? defaultSuccessKoordinator : defaultSuccessEvaluator);
   return useMutationWithToast({
     mutationFn: ({ pengajuanId, payload }: TandaTanganiBaMutationDto) =>
       tteApi.tandaTanganiBA(pengajuanId, payload),
     invalidateKeys: [queryKeys.evaluasi],
-    successMessage: options?.isKoordinator
-      ? "Berita Acara berhasil ditandatangani (Koordinator)"
-      : "Berita Acara berhasil ditandatangani",
+    successMessage,
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menandatangani Berita Acara",
   });
@@ -103,7 +111,7 @@ export function useTandaTanganiSOP() {
     mutationFn: ({ sopDetailId, payload }: TandaTanganiSopMutationDto) =>
       tteApi.tandaTanganiSOP(sopDetailId, payload),
     invalidateKeys: [queryKeys.sop, queryKeys.evaluasi],
-    successMessage: "SOP berhasil disahkan",
+    successMessage: "SOP berhasil disahkan dengan TTE BSRE.",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal mengesahkan SOP",
   });
@@ -111,8 +119,12 @@ export function useTandaTanganiSOP() {
 
 // ==================== Pin Confirmation Handler Utility ====================
 /**
- * Creates a PIN confirmation handler for TTE signing.
- * Wraps a mutation's mutateAsync with a standard (pin) => Promise<boolean> signature.
+ * Membuat handler konfirmasi PIN untuk penandatanganan TTE.
+ * Membungkus `mutateAsync` dengan tanda tangan `(pin) => Promise<boolean>`.
+ *
+ * `onSuccess` hanya untuk efek samping UI (mis. tutup dialog dari parent, reset state).
+ * Jangan memanggil `showToast` sukses di sini bila `mutateAsync` berasal dari hook
+ * yang memakai `useMutationWithToast` — toast sukses/error sudah ditangani di hook.
  */
 export function createPinConfirmHandler<T>(
   mutateAsync: (vars: T) => Promise<unknown>,

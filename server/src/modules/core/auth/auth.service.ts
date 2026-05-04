@@ -1,12 +1,14 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import ms from 'ms';
-import type { StringValue } from 'ms';
 import { AuthRepository, type PenggunaAuthRecord } from './auth.repository';
 import type { LoginDto } from './login.dto';
-import type { JwtAccessPayload, PublicPengguna } from './helpers/auth.shared';
+import {
+  resolveAccessTokenExpiry,
+  type JwtAccessPayload,
+  type PublicPengguna,
+} from './helpers/auth.shared';
 
 @Injectable()
 export class AuthService {
@@ -37,9 +39,14 @@ export class AuthService {
       email: row.email,
       peran: row.peran,
     };
-    const expiresIn = this.config.get<string>('JWT_EXPIRATION', '15m') as StringValue;
-    const accessToken = await this.jwtService.signAsync({ ...payload }, { expiresIn });
-    const cookieMaxAgeMs = this.resolveAccessTokenMaxAgeMs(expiresIn);
+    const { expiresInSeconds, maxAgeMs } = resolveAccessTokenExpiry(
+      this.config.get('JWT_EXPIRATION'),
+    );
+    const signOptions: JwtSignOptions = {
+      expiresIn: expiresInSeconds,
+    };
+    const accessToken = await this.jwtService.signAsync({ ...payload }, signOptions);
+    const cookieMaxAgeMs = maxAgeMs;
     return {
       accessToken,
       pengguna: this.mapToPublicPengguna(row),
@@ -58,12 +65,24 @@ export class AuthService {
     return this.mapToPublicPengguna(row);
   }
 
-  private resolveAccessTokenMaxAgeMs(expiresIn: StringValue): number {
-    const parsed = ms(expiresIn);
-    if (typeof parsed === 'number' && parsed > 0) {
-      return parsed;
-    }
-    return ms('15m');
+  /**
+   * Menerbitkan ulang JWT akses dengan klaim yang sama (token masih valid).
+   */
+  async refreshAccessToken(payload: JwtAccessPayload): Promise<{
+    accessToken: string;
+    cookieMaxAgeMs: number;
+  }> {
+    const { expiresInSeconds, maxAgeMs } = resolveAccessTokenExpiry(
+      this.config.get('JWT_EXPIRATION'),
+    );
+    const signOptions: JwtSignOptions = {
+      expiresIn: expiresInSeconds,
+    };
+    const accessToken = await this.jwtService.signAsync(
+      { sub: payload.sub, email: payload.email, peran: payload.peran },
+      signOptions,
+    );
+    return { accessToken, cookieMaxAgeMs: maxAgeMs };
   }
 
   private mapToPublicPengguna(row: PenggunaAuthRecord): PublicPengguna {
@@ -72,6 +91,7 @@ export class AuthService {
       email: row.email,
       nama: row.nama,
       peran: row.peran,
+      opdId: row.opdId,
       nip: row.nip,
       jabatan: row.jabatan,
       pangkat: row.pangkat,

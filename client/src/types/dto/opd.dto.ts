@@ -1,29 +1,21 @@
-export interface OpdResponse {
+/** OPD ringkas (GET list & GET by id) — selaras server. */
+export interface OpdRingkas {
   id: string;
   nama: string;
-  deletedAt?: string;
+}
+
+/** OPD setelah create/update — selaras server. */
+export interface OpdMutasi {
+  id: string;
+  nama: string;
   createdAt: string;
   updatedAt: string;
-  _count?: {
-    pengguna: number;
-    sop: number;
-    pelaksana: number;
-    anggotaTimPenyusun: number;
-    pengajuanEvaluasi: number;
-    peraturan: number;
-  };
-  totalSOP?: number;
-  sopBerlaku?: number;
-  sopDraft?: number;
 }
 
-export type OPD = OpdResponse;
+/** @deprecated gunakan OpdRingkas; tetap diekspor untuk kompatibilitas impor lama */
+export type OpdResponse = OpdRingkas;
 
-export interface OpdWithStats extends OpdResponse {
-  totalSOP: number;
-  sopBerlaku: number;
-  sopDraft: number;
-}
+export type OPD = OpdRingkas;
 
 export interface CreateOpdDto {
   nama: string;

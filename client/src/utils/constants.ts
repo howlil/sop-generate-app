@@ -22,20 +22,21 @@ export const STALE_TIME = {
   LONG: 10 * 60 * 1000, // Stable data (rekap, reference data)
 } as const;
 
+/** Konstanta string — sama dengan enum Prisma `PeranPengguna`. */
 export const ROLES = {
-  BIRO_ORGANISASI: "BIRO_ORGANISASI",
-  TIM_PENYUSUN: "TIM_PENYUSUN",
-  KOORDINATOR_TIM_PENYUSUN: "KOORDINATOR_TIM_PENYUSUN",
+  PJ_EVALUATOR: "PJ_EVALUATOR",
+  EVALUATOR: "EVALUATOR",
   KEPALA_OPD: "KEPALA_OPD",
-  TIM_EVALUASI: "TIM_EVALUASI",
+  PJ_PENYUSUN: "PJ_PENYUSUN",
+  PENYUSUN: "PENYUSUN",
 } as const;
 
 export const ROLE_LABELS: Record<RoleKey, string> = {
-  BIRO_ORGANISASI: "Biro Organisasi",
-  TIM_PENYUSUN: "Tim Penyusun",
-  KOORDINATOR_TIM_PENYUSUN: "Koordinator Tim Penyusun",
+  PJ_EVALUATOR: "PJ Evaluasi",
+  EVALUATOR: "Evaluator",
   KEPALA_OPD: "Kepala OPD",
-  TIM_EVALUASI: "Tim Evaluasi",
+  PJ_PENYUSUN: "PJ Penyusun",
+  PENYUSUN: "Penyusun",
 } as const;
 
 export const ROUTES = {
@@ -43,28 +44,28 @@ export const ROUTES = {
   AUTH: {
     LOGIN: "/login",
   },
-  TIM_PENYUSUN: {
-    SOP: "/tim-penyusun/sop",
-    DETAIL_SOP: "/tim-penyusun/sop/$id",
-    PELAKSANA: "/tim-penyusun/pelaksana",
-    PERATURAN: "/tim-penyusun/peraturan",
-    KOORDINATOR_TTE: "/tim-penyusun/koordinator/tte",
-    KOORDINATOR_BERITA_ACARA: "/tim-penyusun/koordinator/berita-acara",
-    DETAIL_BERITA_ACARA: "/tim-penyusun/koordinator/berita-acara/$id",
+  PENYUSUN: {
+    SOP: "/penyusun/sop",
+    DETAIL_SOP: "/penyusun/sop/$id",
+    PELAKSANA: "/penyusun/pelaksana",
+    PERATURAN: "/penyusun/peraturan",
+    KOORDINATOR_TTE: "/penyusun/koordinator/tte",
+    KOORDINATOR_BERITA_ACARA: "/penyusun/koordinator/berita-acara",
+    DETAIL_BERITA_ACARA: "/penyusun/koordinator/berita-acara/$id",
   },
   KEPALA_OPD: {
     SOP: "/kepala-opd/sop",
     DETAIL_SOP: "/kepala-opd/sop/$id",
     TTE: "/kepala-opd/tte",
   },
-  BIRO_ORGANISASI: {
-    GRAFIK_EVALUASI: "/biro-organisasi/grafik-evaluasi",
-    OPD: "/biro-organisasi/opd",
-    TIM_PENYUSUN: "/biro-organisasi/tim-penyusun",
-    TIM_EVALUASI: "/biro-organisasi/tim-evaluasi",
-    EVALUASI: "/biro-organisasi/evaluasi",
-    DETAIL_EVALUASI: "/biro-organisasi/evaluasi/$id",
-    TTE: "/biro-organisasi/tte",
+  PJ_EVALUATOR: {
+    GRAFIK_EVALUASI: "/pj-evaluator/grafik-evaluasi",
+    OPD: "/pj-evaluator/opd",
+    PENYUSUN: "/pj-evaluator/penyusun",
+    EVALUATOR: "/pj-evaluator/evaluator",
+    EVALUASI: "/pj-evaluator/evaluasi",
+    DETAIL_EVALUASI: "/pj-evaluator/evaluasi/$id",
+    TTE: "/pj-evaluator/tte",
   },
   TIM_EVALUASI: {
     EVALUASI: "/tim-evaluasi/evaluasi",
@@ -85,14 +86,14 @@ export const IA = {
   NAV_BIRO_EVALUASI_TERJADWAL: "Evaluasi Terjadwal",
   NAV_BIRO_BATCH_BA: "Manajemen Evaluasi SOP",
   NAV_BIRO_VERIFIKASI_BA: "Verifikasi BA",
-  NAV_TP_BA_KOORDINATOR: "Berita Acara Koordinator",
+  NAV_TP_BA_KOORDINATOR: "Berita Acara PJ Penyusun",
   NAV_KO_BA_PENGESAHAN: "Berita Acara Pengesahan",
   NAV_TE_EVALUASI: "Evaluasi SOP",
   BERITA_ACARA: "Berita Acara",
   BATCH_EVALUASI_OPD: "Batch Evaluasi OPD",
   TERJADWAL_EVALUASI_OPD: "Terjadwal Evaluasi OPD",
   VERIFIKASI_BA_BIRO: "Verifikasi Berita Acara oleh Biro",
-  VERIFIKASI_BA_KOORDINATOR: "Verifikasi Berita Acara oleh Koordinator",
+  VERIFIKASI_BA_KOORDINATOR: "Verifikasi Berita Acara oleh PJ Penyusun",
   PENGESAHAN_SOP: "Pengesahan SOP",
 } as const;
 
@@ -119,7 +120,7 @@ export const STATUS_BADGE_CONFIG = {
     bgColor: "bg-yellow-100",
   },
   REVISI_DARI_TIM_EVALUASI: {
-    label: "Revisi",
+    label: "Revisi dari Evaluator",
     color: "text-orange-700",
     bgColor: "bg-orange-100",
   },
@@ -129,7 +130,7 @@ export const STATUS_BADGE_CONFIG = {
     bgColor: "bg-green-100",
   },
   DIVERIFIKASI_BIRO_ORGANISASI: {
-    label: "Diverifikasi",
+    label: "Diverifikasi PJ Evaluator",
     color: "text-green-700",
     bgColor: "bg-green-100",
   },

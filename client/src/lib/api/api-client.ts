@@ -15,10 +15,14 @@ const API_BASE_URL = clientEnv.VITE_API_BASE_URL
 function getHeaders(): HeadersInit {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
 
-  // CSRF Token (if available)
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-  if (csrfToken) {
-    headers['X-CSRF-Token'] = csrfToken
+  // CSRF Token (if available) — hanya di browser; `document` tidak ada saat SSR.
+  if (typeof document !== 'undefined') {
+    const csrfToken = document
+      .querySelector('meta[name="csrf-token"]')
+      ?.getAttribute('content')
+    if (csrfToken) {
+      headers['X-CSRF-Token'] = csrfToken
+    }
   }
 
   return headers
@@ -118,7 +122,7 @@ function rejectRequestQueue(error: Error | ApiError) {
  */
 async function refreshAccessToken(): Promise<boolean> {
   try {
-    const url = `${API_BASE_URL}/refresh`
+    const url = `${API_BASE_URL}/auth/refresh`
     const response = await fetch(url, {
       method: 'POST',
       headers: getHeaders(),
@@ -184,22 +188,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
 
   try {
-    if (import.meta.env.DEV) {
-      console.log(`[API Client] ${options.method || 'GET'} ${url}`);
-    }
     response = await fetch(url, {
       ...options,
       headers,
       credentials: 'include', // Include cookies in requests
       signal: controller.signal,
     })
-    if (import.meta.env.DEV) {
-      console.log(`[API Client] Response: ${response.status} ${response.statusText}`);
-    }
   } catch (networkError: unknown) {
-    if (import.meta.env.DEV) {
-      console.error('[API Client] Network error:', networkError)
-    }
     const isTimeout = networkError instanceof DOMException && networkError.name === 'AbortError'
     const message = isTimeout 
       ? 'Permintaan melebihi batas waktu' 
@@ -241,5 +236,5 @@ export const apiClient = {
   post: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
   patch: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
   put: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: async (endpoint: string) => request<void>(endpoint, { method: 'DELETE' }),
+  delete: <T = void>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
 }

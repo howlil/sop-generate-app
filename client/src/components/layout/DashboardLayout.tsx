@@ -19,6 +19,7 @@ import { useAuthStore } from "@/stores/authStore";
 import type { RoleKey } from "@/types/dto/access.dto";
 import { cn } from "@/utils/cn";
 import { ROUTES } from "@/utils/constants";
+import { toNavigationRole } from "@/utils/role-key";
 
 interface SidebarItem {
   to: string;
@@ -26,79 +27,80 @@ interface SidebarItem {
   icon: LucideIcon;
 }
 
+/** Item pertama per peran harus selaras dengan @/utils/role-routing ROLE_DEFAULT_LANDING (redirect setelah login & `/`). */
 const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
-  BIRO_ORGANISASI: [
+  PJ_EVALUATOR: [
     {
-      to: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI,
+      to: ROUTES.PJ_EVALUATOR.GRAFIK_EVALUASI,
       label: "Grafik Evaluasi",
       icon: BarChart3,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.OPD,
+      to: ROUTES.PJ_EVALUATOR.OPD,
       label: "Manajemen OPD",
       icon: Building2,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.TIM_PENYUSUN,
-      label: "Manajemen Tim Penyusun",
+      to: ROUTES.PJ_EVALUATOR.PENYUSUN,
+      label: "Manajemen Penyusun",
       icon: UserPlus,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.TIM_EVALUASI,
+      to: ROUTES.PJ_EVALUATOR.EVALUATOR,
       label: "Manajemen Tim Evaluasi",
       icon: Users,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.EVALUASI,
+      to: ROUTES.PJ_EVALUATOR.EVALUASI,
       label: "Manajemen Evaluasi SOP",
       icon: FileCheck,
     },
     {
-      to: ROUTES.BIRO_ORGANISASI.TTE,
+      to: ROUTES.PJ_EVALUATOR.TTE,
       label: "TTD Elektronik",
       icon: PenLine,
     },
   ],
-  TIM_PENYUSUN: [
+  PENYUSUN: [
     {
-      to: ROUTES.TIM_PENYUSUN.SOP,
+      to: ROUTES.PENYUSUN.SOP,
       label: "Manajemen SOP",
       icon: FileText,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.PELAKSANA,
+      to: ROUTES.PENYUSUN.PELAKSANA,
       label: "Kelola Pelaksana SOP",
       icon: UserCog,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.PERATURAN,
+      to: ROUTES.PENYUSUN.PERATURAN,
       label: "Manajemen Peraturan",
       icon: BookOpen,
     },
   ],
-  KOORDINATOR_TIM_PENYUSUN: [
+  PJ_PENYUSUN: [
     {
-      to: ROUTES.TIM_PENYUSUN.SOP,
+      to: ROUTES.PENYUSUN.SOP,
       label: "Manajemen SOP",
       icon: FileText,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.PELAKSANA,
+      to: ROUTES.PENYUSUN.PELAKSANA,
       label: "Kelola Pelaksana SOP",
       icon: UserCog,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.PERATURAN,
+      to: ROUTES.PENYUSUN.PERATURAN,
       label: "Manajemen Peraturan",
       icon: BookOpen,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.KOORDINATOR_BERITA_ACARA,
-      label: "Berita Acara Koordinator",
+      to: ROUTES.PENYUSUN.KOORDINATOR_BERITA_ACARA,
+      label: "Berita Acara PJ Penyusun",
       icon: FileSignature,
     },
     {
-      to: ROUTES.TIM_PENYUSUN.KOORDINATOR_TTE,
+      to: ROUTES.PENYUSUN.KOORDINATOR_TTE,
       label: "TTD Elektronik",
       icon: PenLine,
     },
@@ -111,7 +113,7 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
       icon: PenLine,
     },
   ],
-  TIM_EVALUASI: [
+  EVALUATOR: [
     { to: ROUTES.TIM_EVALUASI.EVALUASI, label: "Evaluasi SOP", icon: FileCheck },
   ],
 };
@@ -123,7 +125,8 @@ function isActivePath(pathname: string, itemTo: string): boolean {
 export function DashboardLayout() {
   const { pathname } = useLocation();
   const user = useAuthStore((state) => state.user);
-  const sidebarItems = SIDEBAR_ITEMS[user?.peran as RoleKey] ?? [];
+  const navRole = user?.peran !== undefined ? toNavigationRole(user.peran) : undefined;
+  const sidebarItems = navRole !== undefined ? SIDEBAR_ITEMS[navRole] ?? [] : [];
 
   return (
     <div className="flex h-[100dvh] flex-col md:flex-row md:h-screen">

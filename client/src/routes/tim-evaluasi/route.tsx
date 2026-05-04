@@ -4,7 +4,7 @@ import { RouteErrorPage } from '@/components/ui/route-error'
 import { requireRoles } from '@/stores/authStore'
 
 export const Route = createFileRoute('/tim-evaluasi')({
-  beforeLoad: requireRoles(['TIM_EVALUASI']),
+  beforeLoad: requireRoles(['EVALUATOR']),
   component: DashboardLayout,
   errorComponent: ({ error, reset }) => <RouteErrorPage error={error} reset={reset} />,
 })

@@ -1,9 +1,15 @@
+/**
+ * Peran untuk guard navigasi & UI — selaras dengan enum `PeranPengguna` di Prisma (server).
+ */
 export type RoleKey =
-  | "BIRO_ORGANISASI"
-  | "TIM_PENYUSUN"
-  | "KOORDINATOR_TIM_PENYUSUN"
+  | "PJ_EVALUATOR"
+  | "EVALUATOR"
   | "KEPALA_OPD"
-  | "TIM_EVALUASI";
+  | "PJ_PENYUSUN"
+  | "PENYUSUN";
+
+/** Alias semantik: nilai yang sama dengan kolom `Pengguna.peran` di database. */
+export type PeranPengguna = RoleKey;
 
 export type PermissionKey =
   | "view_dashboard"

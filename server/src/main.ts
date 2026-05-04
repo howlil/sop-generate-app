@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import { WinstonModule } from 'nest-winston';
 import { AppModule } from './app.module';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
+import { createDefaultValidationPipe } from './common';
 import { ACCESS_TOKEN_COOKIE_NAME } from './modules/core/auth/helpers/auth.shared';
 
 const DEFAULT_PORT = 3000;
@@ -61,16 +62,9 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }),
-  );
+  /** Satu instance pipa validasi untuk seluruh aplikasi (sesuai dokumentasi Nest). */
+  app.useGlobalPipes(createDefaultValidationPipe());
+
   app.enableCors(buildCorsOptions(configService));
 
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
@@ -83,6 +77,8 @@ async function bootstrap() {
       .addBearerAuth()
       .addCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
       .addTag('Auth', 'Authentication endpoints')
+      .addTag('OPD', 'Master organisasi perangkat daerah')
+      .addTag('Tim Evaluasi', 'Anggota tim evaluasi (Evaluator Biro)')
       .addTag('Users', 'User management')
       .addTag('Health', 'Health check')
       .build();

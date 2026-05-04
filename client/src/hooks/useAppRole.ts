@@ -5,12 +5,14 @@
 import { useAuthStore } from "@/stores/authStore";
 import { ROLES, ROLE_LABELS } from "@/utils/constants";
 import type { RoleKey } from "@/types/dto/access.dto";
+import { toNavigationRole } from "@/utils/role-key";
 
 export { ROLES };
 
 export function useAppRole() {
   const user = useAuthStore((state) => state.user);
-  const role = user?.peran as RoleKey | undefined;
+  const role =
+    user?.peran !== undefined ? toNavigationRole(user.peran) : undefined;
 
   const getRoleLabel = (r: RoleKey) => ROLE_LABELS[r] ?? r;
   const getRoleNip = () => user?.nip ?? "";
@@ -24,10 +26,10 @@ export function useAppRole() {
     getRoleNip,
     getRoleUserName,
     getRoleDisplayName,
-    isBiroOrganisasi: role === ROLES.BIRO_ORGANISASI,
+    isPjEvaluator: role === ROLES.PJ_EVALUATOR,
+    isEvaluator: role === ROLES.EVALUATOR,
     isKepalaOPD: role === ROLES.KEPALA_OPD,
-    isTimEvaluasi: role === ROLES.TIM_EVALUASI,
-    isTimPenyusun: role === ROLES.TIM_PENYUSUN,
-    isKoordinator: role === "KOORDINATOR_TIM_PENYUSUN",
+    isPenyusun: role === ROLES.PENYUSUN,
+    isPjPenyusun: role === ROLES.PJ_PENYUSUN,
   };
 }

@@ -1,19 +1,3 @@
-/**
- * useMutationWithToast - Factory hook for CRUD mutations with toast notifications
- *
- * Eliminates duplicated boilerplate across all feature hooks where every mutation
- * follows the same pattern: mutate → invalidate query → show toast on success/error.
- *
- * @example
- * ```ts
- * const { mutateAsync: create, isPending: isCreating } = useMutationWithToast({
- *   mutationFn: (payload) => sopApi.create(payload),
- *   invalidateKeys: [queryKeys.sop],
- *   successMessage: 'SOP berhasil dibuat',
- *   errorMessagePrefix: 'Gagal membuat SOP',
- * })
- * ```
- */
 
 import {
   useMutation,

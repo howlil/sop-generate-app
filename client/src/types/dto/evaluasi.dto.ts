@@ -1,4 +1,16 @@
 export type StatusHasilEvaluasi = "SESUAI" | "TIDAK_SESUAI";
+export const STATUS_HASIL_EVALUASI = {
+  SESUAI: "SESUAI",
+  TIDAK_SESUAI: "TIDAK_SESUAI",
+} as const;
+
+export interface EvaluasiBatchSubmitError {
+  kind: "none" | "no_selection" | "incomplete";
+  items: { id: string; judul: string; nomorSOP: string }[];
+  sopId?: string;
+  message?: string;
+}
+
 export type StatusPengajuanEvaluasi =
   | "MENUNGGU_EVALUASI"
   | "SEDANG_DIEVALUASI"

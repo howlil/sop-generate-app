@@ -3,8 +3,8 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { z } from 'zod'
 import { zodSearchValidator } from '@tanstack/router-zod-adapter'
 import { RouteErrorPage } from '@/components/ui/route-error'
-import { ROLES, ROUTES } from '@/utils/constants'
-import { getRole, ensureAuthHydrated } from '@/stores/authStore'
+import { getRoleDefaultLandingPath } from '@/utils/role-routing'
+import { getRole, ensureAuthHydrated, syncAuthFromCookie } from '@/stores/authStore'
 
 const homeSearchSchema = z.object({
   denied: z.coerce.boolean().optional(),
@@ -33,18 +33,14 @@ export const Route = createFileRoute('/')({
   validateSearch: zodSearchValidator(homeSearchSchema),
   beforeLoad: async () => {
     await ensureAuthHydrated()
+    if (!getRole()) {
+      await syncAuthFromCookie()
+    }
     const userRole = getRole()
     if (!userRole) {
       return
     }
-    const roleDashboards: Record<string, string> = {
-      [ROLES.BIRO_ORGANISASI]: ROUTES.BIRO_ORGANISASI.GRAFIK_EVALUASI,
-      [ROLES.TIM_PENYUSUN]: ROUTES.TIM_PENYUSUN.SOP,
-      [ROLES.KOORDINATOR_TIM_PENYUSUN]: ROUTES.TIM_PENYUSUN.SOP,
-      [ROLES.KEPALA_OPD]: ROUTES.KEPALA_OPD.SOP,
-      [ROLES.TIM_EVALUASI]: ROUTES.TIM_EVALUASI.EVALUASI,
-    }
-    const targetRoute = roleDashboards[userRole]
+    const targetRoute = getRoleDefaultLandingPath(userRole)
     if (targetRoute) {
       throw redirect({ to: targetRoute })
     }

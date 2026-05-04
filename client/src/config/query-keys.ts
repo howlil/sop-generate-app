@@ -16,9 +16,12 @@ export const queryKeys = {
     search?: string
   }) => ['users', 'list', params] as const,
 
-  // Jabatan (Kepala OPD management)
-  jabatan: ['jabatan'] as const,
-  jabatanRiwayat: (opdId?: string) => ['jabatan', 'riwayat', opdId] as const,
+  /** Manajemen Kepala OPD (Biro) — GET/PATCH/DELETE `/kepala-opd` */
+  kepalaOpd: ['kepalaOpd'] as const,
+  /** GET `/kepala-opd` — termasuk query `search` */
+  kepalaOpdList: (search?: string) =>
+    ['kepalaOpd', 'list', 'v2', search ?? ''] as const,
+  kepalaOpdRiwayat: (penggunaId: string) => ['kepalaOpd', 'riwayatOpd', penggunaId] as const,
 
   // Peraturan
   peraturan: ['peraturan'] as const,
@@ -28,6 +31,8 @@ export const queryKeys = {
   sop: ['sop'] as const,
   sopList: (params?: { opdId?: string; status?: string }) => ['sop', 'list', params] as const,
   sopById: (id: string) => ['sop', 'byId', id] as const,
+  /** GET `/sop/penyusun-workbench/:detailSopId` — agregat detail + langkah + log */
+  penyusunWorkbench: (detailSopId: string) => ['sop', 'penyusunWorkbench', detailSopId] as const,
 
   // Detail SOP
   detailSop: ['detailSop'] as const,
@@ -35,38 +40,28 @@ export const queryKeys = {
   detailSopById: (id: string) => ['detailSop', 'byId', id] as const,
   detailSopLogs: (id: string) => ['detailSop', 'logs', id] as const,
 
-  // Langkah SOP
-  langkahSop: ['langkahSop'] as const,
-  langkahSopByDetail: (sopDetailId: string) => ['langkahSop', 'byDetail', sopDetailId] as const,
-
   // Pelaksana
   pelaksana: ['pelaksana'] as const,
   pelaksanaByOpd: (opdId: string) => ['pelaksana', 'byOpd', opdId] as const,
 
-  // Swimlane
-  swimlane: (sopDetailId: string) => ['swimlane', sopDetailId] as const,
-
-  // Lampiran
-  lampiran: (sopDetailId: string) => ['lampiran', sopDetailId] as const,
-
-  // Dasar Hukum
-  dasarHukum: (sopDetailId: string) => ['dasarHukum', sopDetailId] as const,
-
-  // SOP Terkait
-  sopTerkait: (sopDetailId: string) => ['sopTerkait', sopDetailId] as const,
-
   // OPD
   opd: ['opd'] as const,
-  opdList: () => ['opd', 'list'] as const,
-  opdById: (id: string) => ['opd', 'byId', id] as const,
+  /** v2: invalidasi cache setelah respons API memakai bungkus { data } konsisten */
+  /** GET `/opd` — termasuk query `search` (PJ_EVALUATOR) */
+  opdList: (search?: string) => ['opd', 'list', 'v2', search ?? ''] as const,
 
-  // Tim Penyusun
-  timPenyusun: ['timPenyusun'] as const,
-  timPenyusunList: (opdId?: string, page?: number, limit?: number) => ['timPenyusun', 'list', opdId, page, limit] as const,
+  /** Manajemen penyusun Biro (GET /api/v1/penyusun — grup per OPD) */
+  penyusun: ['penyusun'] as const,
+  penyusunGrup: () => ['penyusun', 'grup', 'v1'] as const,
+  penyusunRiwayatOpd: (penggunaId: string) =>
+    ['penyusun', 'riwayatOpd', penggunaId] as const,
 
   // Tim Evaluasi
   timEvaluasi: ['timEvaluasi'] as const,
-  timEvaluasiList: () => ['timEvaluasi', 'list'] as const,
+  /** v2: respons bungkus ApiSuccessResponse + CRUD pengguna Evaluator */
+  /** GET `/evaluator` — termasuk query `search` */
+  timEvaluasiList: (search?: string) =>
+    ['timEvaluasi', 'list', 'v3', search ?? ''] as const,
 
   // Evaluasi
   evaluasi: ['evaluasi'] as const,
@@ -79,8 +74,6 @@ export const queryKeys = {
   tteProfil: ['tte', 'profil'] as const,
   tteRiwayat: ['tte', 'riwayat'] as const,
 
-  // Audit
-  audit: ['audit'] as const,
-  auditBySopDetail: (sopDetailId: string) => ['audit', 'bySopDetail', sopDetailId] as const,
-  auditAll: (params?: { bagian?: string }) => ['audit', 'all', params] as const,
+  /** Komentar SOP (TIM_EVALUASI -> PENYUSUN). */
+  sopKomentar: (detailSopId: string) => ['sop', 'komentar', detailSopId] as const,
 }

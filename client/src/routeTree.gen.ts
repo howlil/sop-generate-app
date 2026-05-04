@@ -9,56 +9,58 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TimPenyusunRouteRouteImport } from './routes/tim-penyusun/route'
 import { Route as TimEvaluasiRouteRouteImport } from './routes/tim-evaluasi/route'
+import { Route as PjEvaluatorRouteRouteImport } from './routes/pj-evaluator/route'
+import { Route as PenyusunRouteRouteImport } from './routes/penyusun/route'
 import { Route as KepalaOpdRouteRouteImport } from './routes/kepala-opd/route'
-import { Route as BiroOrganisasiRouteRouteImport } from './routes/biro-organisasi/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TimPenyusunIndexRouteImport } from './routes/tim-penyusun/index'
 import { Route as TimEvaluasiIndexRouteImport } from './routes/tim-evaluasi/index'
+import { Route as PjEvaluatorIndexRouteImport } from './routes/pj-evaluator/index'
+import { Route as PenyusunIndexRouteImport } from './routes/penyusun/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as KepalaOpdIndexRouteImport } from './routes/kepala-opd/index'
-import { Route as BiroOrganisasiIndexRouteImport } from './routes/biro-organisasi/index'
+import { Route as TimPenyusunSplatRouteImport } from './routes/tim-penyusun/$'
 import { Route as TimEvaluasiEvaluasiRouteRouteImport } from './routes/tim-evaluasi/evaluasi/route'
-import { Route as BiroOrganisasiEvaluasiRouteRouteImport } from './routes/biro-organisasi/evaluasi/route'
-import { Route as TimPenyusunSopIndexRouteImport } from './routes/tim-penyusun/sop/index'
-import { Route as TimPenyusunPeraturanIndexRouteImport } from './routes/tim-penyusun/peraturan/index'
-import { Route as TimPenyusunPelaksanaIndexRouteImport } from './routes/tim-penyusun/pelaksana/index'
+import { Route as PjEvaluatorEvaluasiRouteRouteImport } from './routes/pj-evaluator/evaluasi/route'
 import { Route as TimEvaluasiEvaluasiIndexRouteImport } from './routes/tim-evaluasi/evaluasi/index'
+import { Route as PjEvaluatorTteIndexRouteImport } from './routes/pj-evaluator/tte/index'
+import { Route as PjEvaluatorPenyusunIndexRouteImport } from './routes/pj-evaluator/penyusun/index'
+import { Route as PjEvaluatorOpdIndexRouteImport } from './routes/pj-evaluator/opd/index'
+import { Route as PjEvaluatorGrafikEvaluasiIndexRouteImport } from './routes/pj-evaluator/grafik-evaluasi/index'
+import { Route as PjEvaluatorEvaluatorIndexRouteImport } from './routes/pj-evaluator/evaluator/index'
+import { Route as PjEvaluatorEvaluasiIndexRouteImport } from './routes/pj-evaluator/evaluasi/index'
+import { Route as PenyusunSopIndexRouteImport } from './routes/penyusun/sop/index'
+import { Route as PenyusunPeraturanIndexRouteImport } from './routes/penyusun/peraturan/index'
+import { Route as PenyusunPelaksanaIndexRouteImport } from './routes/penyusun/pelaksana/index'
 import { Route as KepalaOpdTteIndexRouteImport } from './routes/kepala-opd/tte/index'
 import { Route as KepalaOpdSopIndexRouteImport } from './routes/kepala-opd/sop/index'
-import { Route as BiroOrganisasiTteIndexRouteImport } from './routes/biro-organisasi/tte/index'
-import { Route as BiroOrganisasiTimPenyusunIndexRouteImport } from './routes/biro-organisasi/tim-penyusun/index'
-import { Route as BiroOrganisasiTimEvaluasiIndexRouteImport } from './routes/biro-organisasi/tim-evaluasi/index'
-import { Route as BiroOrganisasiOpdIndexRouteImport } from './routes/biro-organisasi/opd/index'
-import { Route as BiroOrganisasiGrafikEvaluasiIndexRouteImport } from './routes/biro-organisasi/grafik-evaluasi/index'
-import { Route as BiroOrganisasiEvaluasiIndexRouteImport } from './routes/biro-organisasi/evaluasi/index'
-import { Route as TimPenyusunSopIdRouteImport } from './routes/tim-penyusun/sop/$id'
 import { Route as TimEvaluasiEvaluasiIdRouteImport } from './routes/tim-evaluasi/evaluasi/$id'
+import { Route as PjEvaluatorEvaluasiIdRouteImport } from './routes/pj-evaluator/evaluasi/$id'
+import { Route as PenyusunSopIdRouteImport } from './routes/penyusun/sop/$id'
 import { Route as KepalaOpdSopIdRouteImport } from './routes/kepala-opd/sop/$id'
-import { Route as BiroOrganisasiEvaluasiIdRouteImport } from './routes/biro-organisasi/evaluasi/$id'
-import { Route as TimPenyusunKoordinatorTteIndexRouteImport } from './routes/tim-penyusun/koordinator/tte/index'
-import { Route as TimPenyusunKoordinatorBeritaAcaraIndexRouteImport } from './routes/tim-penyusun/koordinator/berita-acara/index'
-import { Route as TimPenyusunKoordinatorBeritaAcaraIdRouteImport } from './routes/tim-penyusun/koordinator/berita-acara/$id'
+import { Route as PenyusunKoordinatorTteIndexRouteImport } from './routes/penyusun/koordinator/tte/index'
+import { Route as PenyusunKoordinatorBeritaAcaraIndexRouteImport } from './routes/penyusun/koordinator/berita-acara/index'
+import { Route as PenyusunKoordinatorBeritaAcaraIdRouteImport } from './routes/penyusun/koordinator/berita-acara/$id'
 
-const TimPenyusunRouteRoute = TimPenyusunRouteRouteImport.update({
-  id: '/tim-penyusun',
-  path: '/tim-penyusun',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TimEvaluasiRouteRoute = TimEvaluasiRouteRouteImport.update({
   id: '/tim-evaluasi',
   path: '/tim-evaluasi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PjEvaluatorRouteRoute = PjEvaluatorRouteRouteImport.update({
+  id: '/pj-evaluator',
+  path: '/pj-evaluator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PenyusunRouteRoute = PenyusunRouteRouteImport.update({
+  id: '/penyusun',
+  path: '/penyusun',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KepalaOpdRouteRoute = KepalaOpdRouteRouteImport.update({
   id: '/kepala-opd',
   path: '/kepala-opd',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BiroOrganisasiRouteRoute = BiroOrganisasiRouteRouteImport.update({
-  id: '/biro-organisasi',
-  path: '/biro-organisasi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -67,14 +69,24 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const TimPenyusunIndexRoute = TimPenyusunIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => TimPenyusunRouteRoute,
+  id: '/tim-penyusun/',
+  path: '/tim-penyusun/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TimEvaluasiIndexRoute = TimEvaluasiIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => TimEvaluasiRouteRoute,
+} as any)
+const PjEvaluatorIndexRoute = PjEvaluatorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PjEvaluatorRouteRoute,
+} as any)
+const PenyusunIndexRoute = PenyusunIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PenyusunRouteRoute,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
@@ -86,10 +98,10 @@ const KepalaOpdIndexRoute = KepalaOpdIndexRouteImport.update({
   path: '/',
   getParentRoute: () => KepalaOpdRouteRoute,
 } as any)
-const BiroOrganisasiIndexRoute = BiroOrganisasiIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => BiroOrganisasiRouteRoute,
+const TimPenyusunSplatRoute = TimPenyusunSplatRouteImport.update({
+  id: '/tim-penyusun/$',
+  path: '/tim-penyusun/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TimEvaluasiEvaluasiRouteRoute =
   TimEvaluasiEvaluasiRouteRouteImport.update({
@@ -97,28 +109,11 @@ const TimEvaluasiEvaluasiRouteRoute =
     path: '/evaluasi',
     getParentRoute: () => TimEvaluasiRouteRoute,
   } as any)
-const BiroOrganisasiEvaluasiRouteRoute =
-  BiroOrganisasiEvaluasiRouteRouteImport.update({
+const PjEvaluatorEvaluasiRouteRoute =
+  PjEvaluatorEvaluasiRouteRouteImport.update({
     id: '/evaluasi',
     path: '/evaluasi',
-    getParentRoute: () => BiroOrganisasiRouteRoute,
-  } as any)
-const TimPenyusunSopIndexRoute = TimPenyusunSopIndexRouteImport.update({
-  id: '/sop/',
-  path: '/sop/',
-  getParentRoute: () => TimPenyusunRouteRoute,
-} as any)
-const TimPenyusunPeraturanIndexRoute =
-  TimPenyusunPeraturanIndexRouteImport.update({
-    id: '/peraturan/',
-    path: '/peraturan/',
-    getParentRoute: () => TimPenyusunRouteRoute,
-  } as any)
-const TimPenyusunPelaksanaIndexRoute =
-  TimPenyusunPelaksanaIndexRouteImport.update({
-    id: '/pelaksana/',
-    path: '/pelaksana/',
-    getParentRoute: () => TimPenyusunRouteRoute,
+    getParentRoute: () => PjEvaluatorRouteRoute,
   } as any)
 const TimEvaluasiEvaluasiIndexRoute =
   TimEvaluasiEvaluasiIndexRouteImport.update({
@@ -126,6 +121,55 @@ const TimEvaluasiEvaluasiIndexRoute =
     path: '/',
     getParentRoute: () => TimEvaluasiEvaluasiRouteRoute,
   } as any)
+const PjEvaluatorTteIndexRoute = PjEvaluatorTteIndexRouteImport.update({
+  id: '/tte/',
+  path: '/tte/',
+  getParentRoute: () => PjEvaluatorRouteRoute,
+} as any)
+const PjEvaluatorPenyusunIndexRoute =
+  PjEvaluatorPenyusunIndexRouteImport.update({
+    id: '/penyusun/',
+    path: '/penyusun/',
+    getParentRoute: () => PjEvaluatorRouteRoute,
+  } as any)
+const PjEvaluatorOpdIndexRoute = PjEvaluatorOpdIndexRouteImport.update({
+  id: '/opd/',
+  path: '/opd/',
+  getParentRoute: () => PjEvaluatorRouteRoute,
+} as any)
+const PjEvaluatorGrafikEvaluasiIndexRoute =
+  PjEvaluatorGrafikEvaluasiIndexRouteImport.update({
+    id: '/grafik-evaluasi/',
+    path: '/grafik-evaluasi/',
+    getParentRoute: () => PjEvaluatorRouteRoute,
+  } as any)
+const PjEvaluatorEvaluatorIndexRoute =
+  PjEvaluatorEvaluatorIndexRouteImport.update({
+    id: '/evaluator/',
+    path: '/evaluator/',
+    getParentRoute: () => PjEvaluatorRouteRoute,
+  } as any)
+const PjEvaluatorEvaluasiIndexRoute =
+  PjEvaluatorEvaluasiIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PjEvaluatorEvaluasiRouteRoute,
+  } as any)
+const PenyusunSopIndexRoute = PenyusunSopIndexRouteImport.update({
+  id: '/sop/',
+  path: '/sop/',
+  getParentRoute: () => PenyusunRouteRoute,
+} as any)
+const PenyusunPeraturanIndexRoute = PenyusunPeraturanIndexRouteImport.update({
+  id: '/peraturan/',
+  path: '/peraturan/',
+  getParentRoute: () => PenyusunRouteRoute,
+} as any)
+const PenyusunPelaksanaIndexRoute = PenyusunPelaksanaIndexRouteImport.update({
+  id: '/pelaksana/',
+  path: '/pelaksana/',
+  getParentRoute: () => PenyusunRouteRoute,
+} as any)
 const KepalaOpdTteIndexRoute = KepalaOpdTteIndexRouteImport.update({
   id: '/tte/',
   path: '/tte/',
@@ -136,288 +180,260 @@ const KepalaOpdSopIndexRoute = KepalaOpdSopIndexRouteImport.update({
   path: '/sop/',
   getParentRoute: () => KepalaOpdRouteRoute,
 } as any)
-const BiroOrganisasiTteIndexRoute = BiroOrganisasiTteIndexRouteImport.update({
-  id: '/tte/',
-  path: '/tte/',
-  getParentRoute: () => BiroOrganisasiRouteRoute,
-} as any)
-const BiroOrganisasiTimPenyusunIndexRoute =
-  BiroOrganisasiTimPenyusunIndexRouteImport.update({
-    id: '/tim-penyusun/',
-    path: '/tim-penyusun/',
-    getParentRoute: () => BiroOrganisasiRouteRoute,
-  } as any)
-const BiroOrganisasiTimEvaluasiIndexRoute =
-  BiroOrganisasiTimEvaluasiIndexRouteImport.update({
-    id: '/tim-evaluasi/',
-    path: '/tim-evaluasi/',
-    getParentRoute: () => BiroOrganisasiRouteRoute,
-  } as any)
-const BiroOrganisasiOpdIndexRoute = BiroOrganisasiOpdIndexRouteImport.update({
-  id: '/opd/',
-  path: '/opd/',
-  getParentRoute: () => BiroOrganisasiRouteRoute,
-} as any)
-const BiroOrganisasiGrafikEvaluasiIndexRoute =
-  BiroOrganisasiGrafikEvaluasiIndexRouteImport.update({
-    id: '/grafik-evaluasi/',
-    path: '/grafik-evaluasi/',
-    getParentRoute: () => BiroOrganisasiRouteRoute,
-  } as any)
-const BiroOrganisasiEvaluasiIndexRoute =
-  BiroOrganisasiEvaluasiIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => BiroOrganisasiEvaluasiRouteRoute,
-  } as any)
-const TimPenyusunSopIdRoute = TimPenyusunSopIdRouteImport.update({
-  id: '/sop/$id',
-  path: '/sop/$id',
-  getParentRoute: () => TimPenyusunRouteRoute,
-} as any)
 const TimEvaluasiEvaluasiIdRoute = TimEvaluasiEvaluasiIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => TimEvaluasiEvaluasiRouteRoute,
+} as any)
+const PjEvaluatorEvaluasiIdRoute = PjEvaluatorEvaluasiIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PjEvaluatorEvaluasiRouteRoute,
+} as any)
+const PenyusunSopIdRoute = PenyusunSopIdRouteImport.update({
+  id: '/sop/$id',
+  path: '/sop/$id',
+  getParentRoute: () => PenyusunRouteRoute,
 } as any)
 const KepalaOpdSopIdRoute = KepalaOpdSopIdRouteImport.update({
   id: '/sop/$id',
   path: '/sop/$id',
   getParentRoute: () => KepalaOpdRouteRoute,
 } as any)
-const BiroOrganisasiEvaluasiIdRoute =
-  BiroOrganisasiEvaluasiIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => BiroOrganisasiEvaluasiRouteRoute,
-  } as any)
-const TimPenyusunKoordinatorTteIndexRoute =
-  TimPenyusunKoordinatorTteIndexRouteImport.update({
+const PenyusunKoordinatorTteIndexRoute =
+  PenyusunKoordinatorTteIndexRouteImport.update({
     id: '/koordinator/tte/',
     path: '/koordinator/tte/',
-    getParentRoute: () => TimPenyusunRouteRoute,
+    getParentRoute: () => PenyusunRouteRoute,
   } as any)
-const TimPenyusunKoordinatorBeritaAcaraIndexRoute =
-  TimPenyusunKoordinatorBeritaAcaraIndexRouteImport.update({
+const PenyusunKoordinatorBeritaAcaraIndexRoute =
+  PenyusunKoordinatorBeritaAcaraIndexRouteImport.update({
     id: '/koordinator/berita-acara/',
     path: '/koordinator/berita-acara/',
-    getParentRoute: () => TimPenyusunRouteRoute,
+    getParentRoute: () => PenyusunRouteRoute,
   } as any)
-const TimPenyusunKoordinatorBeritaAcaraIdRoute =
-  TimPenyusunKoordinatorBeritaAcaraIdRouteImport.update({
+const PenyusunKoordinatorBeritaAcaraIdRoute =
+  PenyusunKoordinatorBeritaAcaraIdRouteImport.update({
     id: '/koordinator/berita-acara/$id',
     path: '/koordinator/berita-acara/$id',
-    getParentRoute: () => TimPenyusunRouteRoute,
+    getParentRoute: () => PenyusunRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/biro-organisasi': typeof BiroOrganisasiRouteRouteWithChildren
   '/kepala-opd': typeof KepalaOpdRouteRouteWithChildren
+  '/penyusun': typeof PenyusunRouteRouteWithChildren
+  '/pj-evaluator': typeof PjEvaluatorRouteRouteWithChildren
   '/tim-evaluasi': typeof TimEvaluasiRouteRouteWithChildren
-  '/tim-penyusun': typeof TimPenyusunRouteRouteWithChildren
-  '/biro-organisasi/evaluasi': typeof BiroOrganisasiEvaluasiRouteRouteWithChildren
+  '/pj-evaluator/evaluasi': typeof PjEvaluatorEvaluasiRouteRouteWithChildren
   '/tim-evaluasi/evaluasi': typeof TimEvaluasiEvaluasiRouteRouteWithChildren
-  '/biro-organisasi/': typeof BiroOrganisasiIndexRoute
+  '/tim-penyusun/$': typeof TimPenyusunSplatRoute
   '/kepala-opd/': typeof KepalaOpdIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/penyusun/': typeof PenyusunIndexRoute
+  '/pj-evaluator/': typeof PjEvaluatorIndexRoute
   '/tim-evaluasi/': typeof TimEvaluasiIndexRoute
   '/tim-penyusun/': typeof TimPenyusunIndexRoute
-  '/biro-organisasi/evaluasi/$id': typeof BiroOrganisasiEvaluasiIdRoute
   '/kepala-opd/sop/$id': typeof KepalaOpdSopIdRoute
+  '/penyusun/sop/$id': typeof PenyusunSopIdRoute
+  '/pj-evaluator/evaluasi/$id': typeof PjEvaluatorEvaluasiIdRoute
   '/tim-evaluasi/evaluasi/$id': typeof TimEvaluasiEvaluasiIdRoute
-  '/tim-penyusun/sop/$id': typeof TimPenyusunSopIdRoute
-  '/biro-organisasi/evaluasi/': typeof BiroOrganisasiEvaluasiIndexRoute
-  '/biro-organisasi/grafik-evaluasi/': typeof BiroOrganisasiGrafikEvaluasiIndexRoute
-  '/biro-organisasi/opd/': typeof BiroOrganisasiOpdIndexRoute
-  '/biro-organisasi/tim-evaluasi/': typeof BiroOrganisasiTimEvaluasiIndexRoute
-  '/biro-organisasi/tim-penyusun/': typeof BiroOrganisasiTimPenyusunIndexRoute
-  '/biro-organisasi/tte/': typeof BiroOrganisasiTteIndexRoute
   '/kepala-opd/sop/': typeof KepalaOpdSopIndexRoute
   '/kepala-opd/tte/': typeof KepalaOpdTteIndexRoute
+  '/penyusun/pelaksana/': typeof PenyusunPelaksanaIndexRoute
+  '/penyusun/peraturan/': typeof PenyusunPeraturanIndexRoute
+  '/penyusun/sop/': typeof PenyusunSopIndexRoute
+  '/pj-evaluator/evaluasi/': typeof PjEvaluatorEvaluasiIndexRoute
+  '/pj-evaluator/evaluator/': typeof PjEvaluatorEvaluatorIndexRoute
+  '/pj-evaluator/grafik-evaluasi/': typeof PjEvaluatorGrafikEvaluasiIndexRoute
+  '/pj-evaluator/opd/': typeof PjEvaluatorOpdIndexRoute
+  '/pj-evaluator/penyusun/': typeof PjEvaluatorPenyusunIndexRoute
+  '/pj-evaluator/tte/': typeof PjEvaluatorTteIndexRoute
   '/tim-evaluasi/evaluasi/': typeof TimEvaluasiEvaluasiIndexRoute
-  '/tim-penyusun/pelaksana/': typeof TimPenyusunPelaksanaIndexRoute
-  '/tim-penyusun/peraturan/': typeof TimPenyusunPeraturanIndexRoute
-  '/tim-penyusun/sop/': typeof TimPenyusunSopIndexRoute
-  '/tim-penyusun/koordinator/berita-acara/$id': typeof TimPenyusunKoordinatorBeritaAcaraIdRoute
-  '/tim-penyusun/koordinator/berita-acara/': typeof TimPenyusunKoordinatorBeritaAcaraIndexRoute
-  '/tim-penyusun/koordinator/tte/': typeof TimPenyusunKoordinatorTteIndexRoute
+  '/penyusun/koordinator/berita-acara/$id': typeof PenyusunKoordinatorBeritaAcaraIdRoute
+  '/penyusun/koordinator/berita-acara/': typeof PenyusunKoordinatorBeritaAcaraIndexRoute
+  '/penyusun/koordinator/tte/': typeof PenyusunKoordinatorTteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/biro-organisasi': typeof BiroOrganisasiIndexRoute
+  '/tim-penyusun/$': typeof TimPenyusunSplatRoute
   '/kepala-opd': typeof KepalaOpdIndexRoute
   '/login': typeof LoginIndexRoute
+  '/penyusun': typeof PenyusunIndexRoute
+  '/pj-evaluator': typeof PjEvaluatorIndexRoute
   '/tim-evaluasi': typeof TimEvaluasiIndexRoute
   '/tim-penyusun': typeof TimPenyusunIndexRoute
-  '/biro-organisasi/evaluasi/$id': typeof BiroOrganisasiEvaluasiIdRoute
   '/kepala-opd/sop/$id': typeof KepalaOpdSopIdRoute
+  '/penyusun/sop/$id': typeof PenyusunSopIdRoute
+  '/pj-evaluator/evaluasi/$id': typeof PjEvaluatorEvaluasiIdRoute
   '/tim-evaluasi/evaluasi/$id': typeof TimEvaluasiEvaluasiIdRoute
-  '/tim-penyusun/sop/$id': typeof TimPenyusunSopIdRoute
-  '/biro-organisasi/evaluasi': typeof BiroOrganisasiEvaluasiIndexRoute
-  '/biro-organisasi/grafik-evaluasi': typeof BiroOrganisasiGrafikEvaluasiIndexRoute
-  '/biro-organisasi/opd': typeof BiroOrganisasiOpdIndexRoute
-  '/biro-organisasi/tim-evaluasi': typeof BiroOrganisasiTimEvaluasiIndexRoute
-  '/biro-organisasi/tim-penyusun': typeof BiroOrganisasiTimPenyusunIndexRoute
-  '/biro-organisasi/tte': typeof BiroOrganisasiTteIndexRoute
   '/kepala-opd/sop': typeof KepalaOpdSopIndexRoute
   '/kepala-opd/tte': typeof KepalaOpdTteIndexRoute
+  '/penyusun/pelaksana': typeof PenyusunPelaksanaIndexRoute
+  '/penyusun/peraturan': typeof PenyusunPeraturanIndexRoute
+  '/penyusun/sop': typeof PenyusunSopIndexRoute
+  '/pj-evaluator/evaluasi': typeof PjEvaluatorEvaluasiIndexRoute
+  '/pj-evaluator/evaluator': typeof PjEvaluatorEvaluatorIndexRoute
+  '/pj-evaluator/grafik-evaluasi': typeof PjEvaluatorGrafikEvaluasiIndexRoute
+  '/pj-evaluator/opd': typeof PjEvaluatorOpdIndexRoute
+  '/pj-evaluator/penyusun': typeof PjEvaluatorPenyusunIndexRoute
+  '/pj-evaluator/tte': typeof PjEvaluatorTteIndexRoute
   '/tim-evaluasi/evaluasi': typeof TimEvaluasiEvaluasiIndexRoute
-  '/tim-penyusun/pelaksana': typeof TimPenyusunPelaksanaIndexRoute
-  '/tim-penyusun/peraturan': typeof TimPenyusunPeraturanIndexRoute
-  '/tim-penyusun/sop': typeof TimPenyusunSopIndexRoute
-  '/tim-penyusun/koordinator/berita-acara/$id': typeof TimPenyusunKoordinatorBeritaAcaraIdRoute
-  '/tim-penyusun/koordinator/berita-acara': typeof TimPenyusunKoordinatorBeritaAcaraIndexRoute
-  '/tim-penyusun/koordinator/tte': typeof TimPenyusunKoordinatorTteIndexRoute
+  '/penyusun/koordinator/berita-acara/$id': typeof PenyusunKoordinatorBeritaAcaraIdRoute
+  '/penyusun/koordinator/berita-acara': typeof PenyusunKoordinatorBeritaAcaraIndexRoute
+  '/penyusun/koordinator/tte': typeof PenyusunKoordinatorTteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/biro-organisasi': typeof BiroOrganisasiRouteRouteWithChildren
   '/kepala-opd': typeof KepalaOpdRouteRouteWithChildren
+  '/penyusun': typeof PenyusunRouteRouteWithChildren
+  '/pj-evaluator': typeof PjEvaluatorRouteRouteWithChildren
   '/tim-evaluasi': typeof TimEvaluasiRouteRouteWithChildren
-  '/tim-penyusun': typeof TimPenyusunRouteRouteWithChildren
-  '/biro-organisasi/evaluasi': typeof BiroOrganisasiEvaluasiRouteRouteWithChildren
+  '/pj-evaluator/evaluasi': typeof PjEvaluatorEvaluasiRouteRouteWithChildren
   '/tim-evaluasi/evaluasi': typeof TimEvaluasiEvaluasiRouteRouteWithChildren
-  '/biro-organisasi/': typeof BiroOrganisasiIndexRoute
+  '/tim-penyusun/$': typeof TimPenyusunSplatRoute
   '/kepala-opd/': typeof KepalaOpdIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/penyusun/': typeof PenyusunIndexRoute
+  '/pj-evaluator/': typeof PjEvaluatorIndexRoute
   '/tim-evaluasi/': typeof TimEvaluasiIndexRoute
   '/tim-penyusun/': typeof TimPenyusunIndexRoute
-  '/biro-organisasi/evaluasi/$id': typeof BiroOrganisasiEvaluasiIdRoute
   '/kepala-opd/sop/$id': typeof KepalaOpdSopIdRoute
+  '/penyusun/sop/$id': typeof PenyusunSopIdRoute
+  '/pj-evaluator/evaluasi/$id': typeof PjEvaluatorEvaluasiIdRoute
   '/tim-evaluasi/evaluasi/$id': typeof TimEvaluasiEvaluasiIdRoute
-  '/tim-penyusun/sop/$id': typeof TimPenyusunSopIdRoute
-  '/biro-organisasi/evaluasi/': typeof BiroOrganisasiEvaluasiIndexRoute
-  '/biro-organisasi/grafik-evaluasi/': typeof BiroOrganisasiGrafikEvaluasiIndexRoute
-  '/biro-organisasi/opd/': typeof BiroOrganisasiOpdIndexRoute
-  '/biro-organisasi/tim-evaluasi/': typeof BiroOrganisasiTimEvaluasiIndexRoute
-  '/biro-organisasi/tim-penyusun/': typeof BiroOrganisasiTimPenyusunIndexRoute
-  '/biro-organisasi/tte/': typeof BiroOrganisasiTteIndexRoute
   '/kepala-opd/sop/': typeof KepalaOpdSopIndexRoute
   '/kepala-opd/tte/': typeof KepalaOpdTteIndexRoute
+  '/penyusun/pelaksana/': typeof PenyusunPelaksanaIndexRoute
+  '/penyusun/peraturan/': typeof PenyusunPeraturanIndexRoute
+  '/penyusun/sop/': typeof PenyusunSopIndexRoute
+  '/pj-evaluator/evaluasi/': typeof PjEvaluatorEvaluasiIndexRoute
+  '/pj-evaluator/evaluator/': typeof PjEvaluatorEvaluatorIndexRoute
+  '/pj-evaluator/grafik-evaluasi/': typeof PjEvaluatorGrafikEvaluasiIndexRoute
+  '/pj-evaluator/opd/': typeof PjEvaluatorOpdIndexRoute
+  '/pj-evaluator/penyusun/': typeof PjEvaluatorPenyusunIndexRoute
+  '/pj-evaluator/tte/': typeof PjEvaluatorTteIndexRoute
   '/tim-evaluasi/evaluasi/': typeof TimEvaluasiEvaluasiIndexRoute
-  '/tim-penyusun/pelaksana/': typeof TimPenyusunPelaksanaIndexRoute
-  '/tim-penyusun/peraturan/': typeof TimPenyusunPeraturanIndexRoute
-  '/tim-penyusun/sop/': typeof TimPenyusunSopIndexRoute
-  '/tim-penyusun/koordinator/berita-acara/$id': typeof TimPenyusunKoordinatorBeritaAcaraIdRoute
-  '/tim-penyusun/koordinator/berita-acara/': typeof TimPenyusunKoordinatorBeritaAcaraIndexRoute
-  '/tim-penyusun/koordinator/tte/': typeof TimPenyusunKoordinatorTteIndexRoute
+  '/penyusun/koordinator/berita-acara/$id': typeof PenyusunKoordinatorBeritaAcaraIdRoute
+  '/penyusun/koordinator/berita-acara/': typeof PenyusunKoordinatorBeritaAcaraIndexRoute
+  '/penyusun/koordinator/tte/': typeof PenyusunKoordinatorTteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/biro-organisasi'
     | '/kepala-opd'
+    | '/penyusun'
+    | '/pj-evaluator'
     | '/tim-evaluasi'
-    | '/tim-penyusun'
-    | '/biro-organisasi/evaluasi'
+    | '/pj-evaluator/evaluasi'
     | '/tim-evaluasi/evaluasi'
-    | '/biro-organisasi/'
+    | '/tim-penyusun/$'
     | '/kepala-opd/'
     | '/login/'
+    | '/penyusun/'
+    | '/pj-evaluator/'
     | '/tim-evaluasi/'
     | '/tim-penyusun/'
-    | '/biro-organisasi/evaluasi/$id'
     | '/kepala-opd/sop/$id'
+    | '/penyusun/sop/$id'
+    | '/pj-evaluator/evaluasi/$id'
     | '/tim-evaluasi/evaluasi/$id'
-    | '/tim-penyusun/sop/$id'
-    | '/biro-organisasi/evaluasi/'
-    | '/biro-organisasi/grafik-evaluasi/'
-    | '/biro-organisasi/opd/'
-    | '/biro-organisasi/tim-evaluasi/'
-    | '/biro-organisasi/tim-penyusun/'
-    | '/biro-organisasi/tte/'
     | '/kepala-opd/sop/'
     | '/kepala-opd/tte/'
+    | '/penyusun/pelaksana/'
+    | '/penyusun/peraturan/'
+    | '/penyusun/sop/'
+    | '/pj-evaluator/evaluasi/'
+    | '/pj-evaluator/evaluator/'
+    | '/pj-evaluator/grafik-evaluasi/'
+    | '/pj-evaluator/opd/'
+    | '/pj-evaluator/penyusun/'
+    | '/pj-evaluator/tte/'
     | '/tim-evaluasi/evaluasi/'
-    | '/tim-penyusun/pelaksana/'
-    | '/tim-penyusun/peraturan/'
-    | '/tim-penyusun/sop/'
-    | '/tim-penyusun/koordinator/berita-acara/$id'
-    | '/tim-penyusun/koordinator/berita-acara/'
-    | '/tim-penyusun/koordinator/tte/'
+    | '/penyusun/koordinator/berita-acara/$id'
+    | '/penyusun/koordinator/berita-acara/'
+    | '/penyusun/koordinator/tte/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/biro-organisasi'
+    | '/tim-penyusun/$'
     | '/kepala-opd'
     | '/login'
+    | '/penyusun'
+    | '/pj-evaluator'
     | '/tim-evaluasi'
     | '/tim-penyusun'
-    | '/biro-organisasi/evaluasi/$id'
     | '/kepala-opd/sop/$id'
+    | '/penyusun/sop/$id'
+    | '/pj-evaluator/evaluasi/$id'
     | '/tim-evaluasi/evaluasi/$id'
-    | '/tim-penyusun/sop/$id'
-    | '/biro-organisasi/evaluasi'
-    | '/biro-organisasi/grafik-evaluasi'
-    | '/biro-organisasi/opd'
-    | '/biro-organisasi/tim-evaluasi'
-    | '/biro-organisasi/tim-penyusun'
-    | '/biro-organisasi/tte'
     | '/kepala-opd/sop'
     | '/kepala-opd/tte'
+    | '/penyusun/pelaksana'
+    | '/penyusun/peraturan'
+    | '/penyusun/sop'
+    | '/pj-evaluator/evaluasi'
+    | '/pj-evaluator/evaluator'
+    | '/pj-evaluator/grafik-evaluasi'
+    | '/pj-evaluator/opd'
+    | '/pj-evaluator/penyusun'
+    | '/pj-evaluator/tte'
     | '/tim-evaluasi/evaluasi'
-    | '/tim-penyusun/pelaksana'
-    | '/tim-penyusun/peraturan'
-    | '/tim-penyusun/sop'
-    | '/tim-penyusun/koordinator/berita-acara/$id'
-    | '/tim-penyusun/koordinator/berita-acara'
-    | '/tim-penyusun/koordinator/tte'
+    | '/penyusun/koordinator/berita-acara/$id'
+    | '/penyusun/koordinator/berita-acara'
+    | '/penyusun/koordinator/tte'
   id:
     | '__root__'
     | '/'
-    | '/biro-organisasi'
     | '/kepala-opd'
+    | '/penyusun'
+    | '/pj-evaluator'
     | '/tim-evaluasi'
-    | '/tim-penyusun'
-    | '/biro-organisasi/evaluasi'
+    | '/pj-evaluator/evaluasi'
     | '/tim-evaluasi/evaluasi'
-    | '/biro-organisasi/'
+    | '/tim-penyusun/$'
     | '/kepala-opd/'
     | '/login/'
+    | '/penyusun/'
+    | '/pj-evaluator/'
     | '/tim-evaluasi/'
     | '/tim-penyusun/'
-    | '/biro-organisasi/evaluasi/$id'
     | '/kepala-opd/sop/$id'
+    | '/penyusun/sop/$id'
+    | '/pj-evaluator/evaluasi/$id'
     | '/tim-evaluasi/evaluasi/$id'
-    | '/tim-penyusun/sop/$id'
-    | '/biro-organisasi/evaluasi/'
-    | '/biro-organisasi/grafik-evaluasi/'
-    | '/biro-organisasi/opd/'
-    | '/biro-organisasi/tim-evaluasi/'
-    | '/biro-organisasi/tim-penyusun/'
-    | '/biro-organisasi/tte/'
     | '/kepala-opd/sop/'
     | '/kepala-opd/tte/'
+    | '/penyusun/pelaksana/'
+    | '/penyusun/peraturan/'
+    | '/penyusun/sop/'
+    | '/pj-evaluator/evaluasi/'
+    | '/pj-evaluator/evaluator/'
+    | '/pj-evaluator/grafik-evaluasi/'
+    | '/pj-evaluator/opd/'
+    | '/pj-evaluator/penyusun/'
+    | '/pj-evaluator/tte/'
     | '/tim-evaluasi/evaluasi/'
-    | '/tim-penyusun/pelaksana/'
-    | '/tim-penyusun/peraturan/'
-    | '/tim-penyusun/sop/'
-    | '/tim-penyusun/koordinator/berita-acara/$id'
-    | '/tim-penyusun/koordinator/berita-acara/'
-    | '/tim-penyusun/koordinator/tte/'
+    | '/penyusun/koordinator/berita-acara/$id'
+    | '/penyusun/koordinator/berita-acara/'
+    | '/penyusun/koordinator/tte/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BiroOrganisasiRouteRoute: typeof BiroOrganisasiRouteRouteWithChildren
   KepalaOpdRouteRoute: typeof KepalaOpdRouteRouteWithChildren
+  PenyusunRouteRoute: typeof PenyusunRouteRouteWithChildren
+  PjEvaluatorRouteRoute: typeof PjEvaluatorRouteRouteWithChildren
   TimEvaluasiRouteRoute: typeof TimEvaluasiRouteRouteWithChildren
-  TimPenyusunRouteRoute: typeof TimPenyusunRouteRouteWithChildren
+  TimPenyusunSplatRoute: typeof TimPenyusunSplatRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  TimPenyusunIndexRoute: typeof TimPenyusunIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tim-penyusun': {
-      id: '/tim-penyusun'
-      path: '/tim-penyusun'
-      fullPath: '/tim-penyusun'
-      preLoaderRoute: typeof TimPenyusunRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/tim-evaluasi': {
       id: '/tim-evaluasi'
       path: '/tim-evaluasi'
@@ -425,18 +441,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimEvaluasiRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pj-evaluator': {
+      id: '/pj-evaluator'
+      path: '/pj-evaluator'
+      fullPath: '/pj-evaluator'
+      preLoaderRoute: typeof PjEvaluatorRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/penyusun': {
+      id: '/penyusun'
+      path: '/penyusun'
+      fullPath: '/penyusun'
+      preLoaderRoute: typeof PenyusunRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kepala-opd': {
       id: '/kepala-opd'
       path: '/kepala-opd'
       fullPath: '/kepala-opd'
       preLoaderRoute: typeof KepalaOpdRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/biro-organisasi': {
-      id: '/biro-organisasi'
-      path: '/biro-organisasi'
-      fullPath: '/biro-organisasi'
-      preLoaderRoute: typeof BiroOrganisasiRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -448,10 +471,10 @@ declare module '@tanstack/react-router' {
     }
     '/tim-penyusun/': {
       id: '/tim-penyusun/'
-      path: '/'
+      path: '/tim-penyusun'
       fullPath: '/tim-penyusun/'
       preLoaderRoute: typeof TimPenyusunIndexRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/tim-evaluasi/': {
       id: '/tim-evaluasi/'
@@ -459,6 +482,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/tim-evaluasi/'
       preLoaderRoute: typeof TimEvaluasiIndexRouteImport
       parentRoute: typeof TimEvaluasiRouteRoute
+    }
+    '/pj-evaluator/': {
+      id: '/pj-evaluator/'
+      path: '/'
+      fullPath: '/pj-evaluator/'
+      preLoaderRoute: typeof PjEvaluatorIndexRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
+    }
+    '/penyusun/': {
+      id: '/penyusun/'
+      path: '/'
+      fullPath: '/penyusun/'
+      preLoaderRoute: typeof PenyusunIndexRouteImport
+      parentRoute: typeof PenyusunRouteRoute
     }
     '/login/': {
       id: '/login/'
@@ -474,12 +511,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KepalaOpdIndexRouteImport
       parentRoute: typeof KepalaOpdRouteRoute
     }
-    '/biro-organisasi/': {
-      id: '/biro-organisasi/'
-      path: '/'
-      fullPath: '/biro-organisasi/'
-      preLoaderRoute: typeof BiroOrganisasiIndexRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
+    '/tim-penyusun/$': {
+      id: '/tim-penyusun/$'
+      path: '/tim-penyusun/$'
+      fullPath: '/tim-penyusun/$'
+      preLoaderRoute: typeof TimPenyusunSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/tim-evaluasi/evaluasi': {
       id: '/tim-evaluasi/evaluasi'
@@ -488,33 +525,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimEvaluasiEvaluasiRouteRouteImport
       parentRoute: typeof TimEvaluasiRouteRoute
     }
-    '/biro-organisasi/evaluasi': {
-      id: '/biro-organisasi/evaluasi'
+    '/pj-evaluator/evaluasi': {
+      id: '/pj-evaluator/evaluasi'
       path: '/evaluasi'
-      fullPath: '/biro-organisasi/evaluasi'
-      preLoaderRoute: typeof BiroOrganisasiEvaluasiRouteRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
-    }
-    '/tim-penyusun/sop/': {
-      id: '/tim-penyusun/sop/'
-      path: '/sop'
-      fullPath: '/tim-penyusun/sop/'
-      preLoaderRoute: typeof TimPenyusunSopIndexRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
-    }
-    '/tim-penyusun/peraturan/': {
-      id: '/tim-penyusun/peraturan/'
-      path: '/peraturan'
-      fullPath: '/tim-penyusun/peraturan/'
-      preLoaderRoute: typeof TimPenyusunPeraturanIndexRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
-    }
-    '/tim-penyusun/pelaksana/': {
-      id: '/tim-penyusun/pelaksana/'
-      path: '/pelaksana'
-      fullPath: '/tim-penyusun/pelaksana/'
-      preLoaderRoute: typeof TimPenyusunPelaksanaIndexRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
+      fullPath: '/pj-evaluator/evaluasi'
+      preLoaderRoute: typeof PjEvaluatorEvaluasiRouteRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
     }
     '/tim-evaluasi/evaluasi/': {
       id: '/tim-evaluasi/evaluasi/'
@@ -522,6 +538,69 @@ declare module '@tanstack/react-router' {
       fullPath: '/tim-evaluasi/evaluasi/'
       preLoaderRoute: typeof TimEvaluasiEvaluasiIndexRouteImport
       parentRoute: typeof TimEvaluasiEvaluasiRouteRoute
+    }
+    '/pj-evaluator/tte/': {
+      id: '/pj-evaluator/tte/'
+      path: '/tte'
+      fullPath: '/pj-evaluator/tte/'
+      preLoaderRoute: typeof PjEvaluatorTteIndexRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
+    }
+    '/pj-evaluator/penyusun/': {
+      id: '/pj-evaluator/penyusun/'
+      path: '/penyusun'
+      fullPath: '/pj-evaluator/penyusun/'
+      preLoaderRoute: typeof PjEvaluatorPenyusunIndexRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
+    }
+    '/pj-evaluator/opd/': {
+      id: '/pj-evaluator/opd/'
+      path: '/opd'
+      fullPath: '/pj-evaluator/opd/'
+      preLoaderRoute: typeof PjEvaluatorOpdIndexRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
+    }
+    '/pj-evaluator/grafik-evaluasi/': {
+      id: '/pj-evaluator/grafik-evaluasi/'
+      path: '/grafik-evaluasi'
+      fullPath: '/pj-evaluator/grafik-evaluasi/'
+      preLoaderRoute: typeof PjEvaluatorGrafikEvaluasiIndexRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
+    }
+    '/pj-evaluator/evaluator/': {
+      id: '/pj-evaluator/evaluator/'
+      path: '/evaluator'
+      fullPath: '/pj-evaluator/evaluator/'
+      preLoaderRoute: typeof PjEvaluatorEvaluatorIndexRouteImport
+      parentRoute: typeof PjEvaluatorRouteRoute
+    }
+    '/pj-evaluator/evaluasi/': {
+      id: '/pj-evaluator/evaluasi/'
+      path: '/'
+      fullPath: '/pj-evaluator/evaluasi/'
+      preLoaderRoute: typeof PjEvaluatorEvaluasiIndexRouteImport
+      parentRoute: typeof PjEvaluatorEvaluasiRouteRoute
+    }
+    '/penyusun/sop/': {
+      id: '/penyusun/sop/'
+      path: '/sop'
+      fullPath: '/penyusun/sop/'
+      preLoaderRoute: typeof PenyusunSopIndexRouteImport
+      parentRoute: typeof PenyusunRouteRoute
+    }
+    '/penyusun/peraturan/': {
+      id: '/penyusun/peraturan/'
+      path: '/peraturan'
+      fullPath: '/penyusun/peraturan/'
+      preLoaderRoute: typeof PenyusunPeraturanIndexRouteImport
+      parentRoute: typeof PenyusunRouteRoute
+    }
+    '/penyusun/pelaksana/': {
+      id: '/penyusun/pelaksana/'
+      path: '/pelaksana'
+      fullPath: '/penyusun/pelaksana/'
+      preLoaderRoute: typeof PenyusunPelaksanaIndexRouteImport
+      parentRoute: typeof PenyusunRouteRoute
     }
     '/kepala-opd/tte/': {
       id: '/kepala-opd/tte/'
@@ -537,61 +616,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KepalaOpdSopIndexRouteImport
       parentRoute: typeof KepalaOpdRouteRoute
     }
-    '/biro-organisasi/tte/': {
-      id: '/biro-organisasi/tte/'
-      path: '/tte'
-      fullPath: '/biro-organisasi/tte/'
-      preLoaderRoute: typeof BiroOrganisasiTteIndexRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
-    }
-    '/biro-organisasi/tim-penyusun/': {
-      id: '/biro-organisasi/tim-penyusun/'
-      path: '/tim-penyusun'
-      fullPath: '/biro-organisasi/tim-penyusun/'
-      preLoaderRoute: typeof BiroOrganisasiTimPenyusunIndexRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
-    }
-    '/biro-organisasi/tim-evaluasi/': {
-      id: '/biro-organisasi/tim-evaluasi/'
-      path: '/tim-evaluasi'
-      fullPath: '/biro-organisasi/tim-evaluasi/'
-      preLoaderRoute: typeof BiroOrganisasiTimEvaluasiIndexRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
-    }
-    '/biro-organisasi/opd/': {
-      id: '/biro-organisasi/opd/'
-      path: '/opd'
-      fullPath: '/biro-organisasi/opd/'
-      preLoaderRoute: typeof BiroOrganisasiOpdIndexRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
-    }
-    '/biro-organisasi/grafik-evaluasi/': {
-      id: '/biro-organisasi/grafik-evaluasi/'
-      path: '/grafik-evaluasi'
-      fullPath: '/biro-organisasi/grafik-evaluasi/'
-      preLoaderRoute: typeof BiroOrganisasiGrafikEvaluasiIndexRouteImport
-      parentRoute: typeof BiroOrganisasiRouteRoute
-    }
-    '/biro-organisasi/evaluasi/': {
-      id: '/biro-organisasi/evaluasi/'
-      path: '/'
-      fullPath: '/biro-organisasi/evaluasi/'
-      preLoaderRoute: typeof BiroOrganisasiEvaluasiIndexRouteImport
-      parentRoute: typeof BiroOrganisasiEvaluasiRouteRoute
-    }
-    '/tim-penyusun/sop/$id': {
-      id: '/tim-penyusun/sop/$id'
-      path: '/sop/$id'
-      fullPath: '/tim-penyusun/sop/$id'
-      preLoaderRoute: typeof TimPenyusunSopIdRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
-    }
     '/tim-evaluasi/evaluasi/$id': {
       id: '/tim-evaluasi/evaluasi/$id'
       path: '/$id'
       fullPath: '/tim-evaluasi/evaluasi/$id'
       preLoaderRoute: typeof TimEvaluasiEvaluasiIdRouteImport
       parentRoute: typeof TimEvaluasiEvaluasiRouteRoute
+    }
+    '/pj-evaluator/evaluasi/$id': {
+      id: '/pj-evaluator/evaluasi/$id'
+      path: '/$id'
+      fullPath: '/pj-evaluator/evaluasi/$id'
+      preLoaderRoute: typeof PjEvaluatorEvaluasiIdRouteImport
+      parentRoute: typeof PjEvaluatorEvaluasiRouteRoute
+    }
+    '/penyusun/sop/$id': {
+      id: '/penyusun/sop/$id'
+      path: '/sop/$id'
+      fullPath: '/penyusun/sop/$id'
+      preLoaderRoute: typeof PenyusunSopIdRouteImport
+      parentRoute: typeof PenyusunRouteRoute
     }
     '/kepala-opd/sop/$id': {
       id: '/kepala-opd/sop/$id'
@@ -600,77 +644,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KepalaOpdSopIdRouteImport
       parentRoute: typeof KepalaOpdRouteRoute
     }
-    '/biro-organisasi/evaluasi/$id': {
-      id: '/biro-organisasi/evaluasi/$id'
-      path: '/$id'
-      fullPath: '/biro-organisasi/evaluasi/$id'
-      preLoaderRoute: typeof BiroOrganisasiEvaluasiIdRouteImport
-      parentRoute: typeof BiroOrganisasiEvaluasiRouteRoute
-    }
-    '/tim-penyusun/koordinator/tte/': {
-      id: '/tim-penyusun/koordinator/tte/'
+    '/penyusun/koordinator/tte/': {
+      id: '/penyusun/koordinator/tte/'
       path: '/koordinator/tte'
-      fullPath: '/tim-penyusun/koordinator/tte/'
-      preLoaderRoute: typeof TimPenyusunKoordinatorTteIndexRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
+      fullPath: '/penyusun/koordinator/tte/'
+      preLoaderRoute: typeof PenyusunKoordinatorTteIndexRouteImport
+      parentRoute: typeof PenyusunRouteRoute
     }
-    '/tim-penyusun/koordinator/berita-acara/': {
-      id: '/tim-penyusun/koordinator/berita-acara/'
+    '/penyusun/koordinator/berita-acara/': {
+      id: '/penyusun/koordinator/berita-acara/'
       path: '/koordinator/berita-acara'
-      fullPath: '/tim-penyusun/koordinator/berita-acara/'
-      preLoaderRoute: typeof TimPenyusunKoordinatorBeritaAcaraIndexRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
+      fullPath: '/penyusun/koordinator/berita-acara/'
+      preLoaderRoute: typeof PenyusunKoordinatorBeritaAcaraIndexRouteImport
+      parentRoute: typeof PenyusunRouteRoute
     }
-    '/tim-penyusun/koordinator/berita-acara/$id': {
-      id: '/tim-penyusun/koordinator/berita-acara/$id'
+    '/penyusun/koordinator/berita-acara/$id': {
+      id: '/penyusun/koordinator/berita-acara/$id'
       path: '/koordinator/berita-acara/$id'
-      fullPath: '/tim-penyusun/koordinator/berita-acara/$id'
-      preLoaderRoute: typeof TimPenyusunKoordinatorBeritaAcaraIdRouteImport
-      parentRoute: typeof TimPenyusunRouteRoute
+      fullPath: '/penyusun/koordinator/berita-acara/$id'
+      preLoaderRoute: typeof PenyusunKoordinatorBeritaAcaraIdRouteImport
+      parentRoute: typeof PenyusunRouteRoute
     }
   }
 }
-
-interface BiroOrganisasiEvaluasiRouteRouteChildren {
-  BiroOrganisasiEvaluasiIdRoute: typeof BiroOrganisasiEvaluasiIdRoute
-  BiroOrganisasiEvaluasiIndexRoute: typeof BiroOrganisasiEvaluasiIndexRoute
-}
-
-const BiroOrganisasiEvaluasiRouteRouteChildren: BiroOrganisasiEvaluasiRouteRouteChildren =
-  {
-    BiroOrganisasiEvaluasiIdRoute: BiroOrganisasiEvaluasiIdRoute,
-    BiroOrganisasiEvaluasiIndexRoute: BiroOrganisasiEvaluasiIndexRoute,
-  }
-
-const BiroOrganisasiEvaluasiRouteRouteWithChildren =
-  BiroOrganisasiEvaluasiRouteRoute._addFileChildren(
-    BiroOrganisasiEvaluasiRouteRouteChildren,
-  )
-
-interface BiroOrganisasiRouteRouteChildren {
-  BiroOrganisasiEvaluasiRouteRoute: typeof BiroOrganisasiEvaluasiRouteRouteWithChildren
-  BiroOrganisasiIndexRoute: typeof BiroOrganisasiIndexRoute
-  BiroOrganisasiGrafikEvaluasiIndexRoute: typeof BiroOrganisasiGrafikEvaluasiIndexRoute
-  BiroOrganisasiOpdIndexRoute: typeof BiroOrganisasiOpdIndexRoute
-  BiroOrganisasiTimEvaluasiIndexRoute: typeof BiroOrganisasiTimEvaluasiIndexRoute
-  BiroOrganisasiTimPenyusunIndexRoute: typeof BiroOrganisasiTimPenyusunIndexRoute
-  BiroOrganisasiTteIndexRoute: typeof BiroOrganisasiTteIndexRoute
-}
-
-const BiroOrganisasiRouteRouteChildren: BiroOrganisasiRouteRouteChildren = {
-  BiroOrganisasiEvaluasiRouteRoute:
-    BiroOrganisasiEvaluasiRouteRouteWithChildren,
-  BiroOrganisasiIndexRoute: BiroOrganisasiIndexRoute,
-  BiroOrganisasiGrafikEvaluasiIndexRoute:
-    BiroOrganisasiGrafikEvaluasiIndexRoute,
-  BiroOrganisasiOpdIndexRoute: BiroOrganisasiOpdIndexRoute,
-  BiroOrganisasiTimEvaluasiIndexRoute: BiroOrganisasiTimEvaluasiIndexRoute,
-  BiroOrganisasiTimPenyusunIndexRoute: BiroOrganisasiTimPenyusunIndexRoute,
-  BiroOrganisasiTteIndexRoute: BiroOrganisasiTteIndexRoute,
-}
-
-const BiroOrganisasiRouteRouteWithChildren =
-  BiroOrganisasiRouteRoute._addFileChildren(BiroOrganisasiRouteRouteChildren)
 
 interface KepalaOpdRouteRouteChildren {
   KepalaOpdIndexRoute: typeof KepalaOpdIndexRoute
@@ -689,6 +685,72 @@ const KepalaOpdRouteRouteChildren: KepalaOpdRouteRouteChildren = {
 const KepalaOpdRouteRouteWithChildren = KepalaOpdRouteRoute._addFileChildren(
   KepalaOpdRouteRouteChildren,
 )
+
+interface PenyusunRouteRouteChildren {
+  PenyusunIndexRoute: typeof PenyusunIndexRoute
+  PenyusunSopIdRoute: typeof PenyusunSopIdRoute
+  PenyusunPelaksanaIndexRoute: typeof PenyusunPelaksanaIndexRoute
+  PenyusunPeraturanIndexRoute: typeof PenyusunPeraturanIndexRoute
+  PenyusunSopIndexRoute: typeof PenyusunSopIndexRoute
+  PenyusunKoordinatorBeritaAcaraIdRoute: typeof PenyusunKoordinatorBeritaAcaraIdRoute
+  PenyusunKoordinatorBeritaAcaraIndexRoute: typeof PenyusunKoordinatorBeritaAcaraIndexRoute
+  PenyusunKoordinatorTteIndexRoute: typeof PenyusunKoordinatorTteIndexRoute
+}
+
+const PenyusunRouteRouteChildren: PenyusunRouteRouteChildren = {
+  PenyusunIndexRoute: PenyusunIndexRoute,
+  PenyusunSopIdRoute: PenyusunSopIdRoute,
+  PenyusunPelaksanaIndexRoute: PenyusunPelaksanaIndexRoute,
+  PenyusunPeraturanIndexRoute: PenyusunPeraturanIndexRoute,
+  PenyusunSopIndexRoute: PenyusunSopIndexRoute,
+  PenyusunKoordinatorBeritaAcaraIdRoute: PenyusunKoordinatorBeritaAcaraIdRoute,
+  PenyusunKoordinatorBeritaAcaraIndexRoute:
+    PenyusunKoordinatorBeritaAcaraIndexRoute,
+  PenyusunKoordinatorTteIndexRoute: PenyusunKoordinatorTteIndexRoute,
+}
+
+const PenyusunRouteRouteWithChildren = PenyusunRouteRoute._addFileChildren(
+  PenyusunRouteRouteChildren,
+)
+
+interface PjEvaluatorEvaluasiRouteRouteChildren {
+  PjEvaluatorEvaluasiIdRoute: typeof PjEvaluatorEvaluasiIdRoute
+  PjEvaluatorEvaluasiIndexRoute: typeof PjEvaluatorEvaluasiIndexRoute
+}
+
+const PjEvaluatorEvaluasiRouteRouteChildren: PjEvaluatorEvaluasiRouteRouteChildren =
+  {
+    PjEvaluatorEvaluasiIdRoute: PjEvaluatorEvaluasiIdRoute,
+    PjEvaluatorEvaluasiIndexRoute: PjEvaluatorEvaluasiIndexRoute,
+  }
+
+const PjEvaluatorEvaluasiRouteRouteWithChildren =
+  PjEvaluatorEvaluasiRouteRoute._addFileChildren(
+    PjEvaluatorEvaluasiRouteRouteChildren,
+  )
+
+interface PjEvaluatorRouteRouteChildren {
+  PjEvaluatorEvaluasiRouteRoute: typeof PjEvaluatorEvaluasiRouteRouteWithChildren
+  PjEvaluatorIndexRoute: typeof PjEvaluatorIndexRoute
+  PjEvaluatorEvaluatorIndexRoute: typeof PjEvaluatorEvaluatorIndexRoute
+  PjEvaluatorGrafikEvaluasiIndexRoute: typeof PjEvaluatorGrafikEvaluasiIndexRoute
+  PjEvaluatorOpdIndexRoute: typeof PjEvaluatorOpdIndexRoute
+  PjEvaluatorPenyusunIndexRoute: typeof PjEvaluatorPenyusunIndexRoute
+  PjEvaluatorTteIndexRoute: typeof PjEvaluatorTteIndexRoute
+}
+
+const PjEvaluatorRouteRouteChildren: PjEvaluatorRouteRouteChildren = {
+  PjEvaluatorEvaluasiRouteRoute: PjEvaluatorEvaluasiRouteRouteWithChildren,
+  PjEvaluatorIndexRoute: PjEvaluatorIndexRoute,
+  PjEvaluatorEvaluatorIndexRoute: PjEvaluatorEvaluatorIndexRoute,
+  PjEvaluatorGrafikEvaluasiIndexRoute: PjEvaluatorGrafikEvaluasiIndexRoute,
+  PjEvaluatorOpdIndexRoute: PjEvaluatorOpdIndexRoute,
+  PjEvaluatorPenyusunIndexRoute: PjEvaluatorPenyusunIndexRoute,
+  PjEvaluatorTteIndexRoute: PjEvaluatorTteIndexRoute,
+}
+
+const PjEvaluatorRouteRouteWithChildren =
+  PjEvaluatorRouteRoute._addFileChildren(PjEvaluatorRouteRouteChildren)
 
 interface TimEvaluasiEvaluasiRouteRouteChildren {
   TimEvaluasiEvaluasiIdRoute: typeof TimEvaluasiEvaluasiIdRoute
@@ -719,40 +781,15 @@ const TimEvaluasiRouteRouteChildren: TimEvaluasiRouteRouteChildren = {
 const TimEvaluasiRouteRouteWithChildren =
   TimEvaluasiRouteRoute._addFileChildren(TimEvaluasiRouteRouteChildren)
 
-interface TimPenyusunRouteRouteChildren {
-  TimPenyusunIndexRoute: typeof TimPenyusunIndexRoute
-  TimPenyusunSopIdRoute: typeof TimPenyusunSopIdRoute
-  TimPenyusunPelaksanaIndexRoute: typeof TimPenyusunPelaksanaIndexRoute
-  TimPenyusunPeraturanIndexRoute: typeof TimPenyusunPeraturanIndexRoute
-  TimPenyusunSopIndexRoute: typeof TimPenyusunSopIndexRoute
-  TimPenyusunKoordinatorBeritaAcaraIdRoute: typeof TimPenyusunKoordinatorBeritaAcaraIdRoute
-  TimPenyusunKoordinatorBeritaAcaraIndexRoute: typeof TimPenyusunKoordinatorBeritaAcaraIndexRoute
-  TimPenyusunKoordinatorTteIndexRoute: typeof TimPenyusunKoordinatorTteIndexRoute
-}
-
-const TimPenyusunRouteRouteChildren: TimPenyusunRouteRouteChildren = {
-  TimPenyusunIndexRoute: TimPenyusunIndexRoute,
-  TimPenyusunSopIdRoute: TimPenyusunSopIdRoute,
-  TimPenyusunPelaksanaIndexRoute: TimPenyusunPelaksanaIndexRoute,
-  TimPenyusunPeraturanIndexRoute: TimPenyusunPeraturanIndexRoute,
-  TimPenyusunSopIndexRoute: TimPenyusunSopIndexRoute,
-  TimPenyusunKoordinatorBeritaAcaraIdRoute:
-    TimPenyusunKoordinatorBeritaAcaraIdRoute,
-  TimPenyusunKoordinatorBeritaAcaraIndexRoute:
-    TimPenyusunKoordinatorBeritaAcaraIndexRoute,
-  TimPenyusunKoordinatorTteIndexRoute: TimPenyusunKoordinatorTteIndexRoute,
-}
-
-const TimPenyusunRouteRouteWithChildren =
-  TimPenyusunRouteRoute._addFileChildren(TimPenyusunRouteRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BiroOrganisasiRouteRoute: BiroOrganisasiRouteRouteWithChildren,
   KepalaOpdRouteRoute: KepalaOpdRouteRouteWithChildren,
+  PenyusunRouteRoute: PenyusunRouteRouteWithChildren,
+  PjEvaluatorRouteRoute: PjEvaluatorRouteRouteWithChildren,
   TimEvaluasiRouteRoute: TimEvaluasiRouteRouteWithChildren,
-  TimPenyusunRouteRoute: TimPenyusunRouteRouteWithChildren,
+  TimPenyusunSplatRoute: TimPenyusunSplatRoute,
   LoginIndexRoute: LoginIndexRoute,
+  TimPenyusunIndexRoute: TimPenyusunIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

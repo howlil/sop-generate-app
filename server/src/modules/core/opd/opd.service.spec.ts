@@ -1,0 +1,97 @@
+import { ConflictException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { PeranPengguna } from '../../../generated/prisma';
+import type { JwtAccessPayload } from '../auth/helpers/auth.shared';
+import { OpdRepository } from './opd.repository';
+import { OpdService } from './opd.service';
+
+describe('OpdService', () => {
+  let service: OpdService;
+  let opdRepository: jest.Mocked<
+    Pick<
+      OpdRepository,
+      | 'findOpdIdByPenggunaId'
+      | 'findManyRingkasAktif'
+      | 'findRingkasAktifById'
+      | 'findAktifById'
+      | 'create'
+      | 'update'
+      | 'softDelete'
+      | 'summarizeBlockingRelations'
+    >
+  >;
+
+  const userPj: JwtAccessPayload = {
+    sub: 'pengguna-1',
+    email: 'pj@example.com',
+    peran: PeranPengguna.PJ_EVALUATOR,
+  };
+
+  beforeEach(async () => {
+    opdRepository = {
+      findOpdIdByPenggunaId: jest.fn(),
+      findManyRingkasAktif: jest.fn(),
+      findRingkasAktifById: jest.fn(),
+      findAktifById: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      softDelete: jest.fn(),
+      summarizeBlockingRelations: jest.fn(),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        OpdService,
+        {
+          provide: OpdRepository,
+          useValue: opdRepository,
+        },
+      ],
+    }).compile();
+
+    service = module.get(OpdService);
+  });
+
+  it('should_throw_conflict_when_soft_delete_and_opd_has_related_rows', async () => {
+    const now = new Date();
+    opdRepository.findAktifById.mockResolvedValue({
+      opdId: 'opd-a',
+      nama: 'OPD A',
+      isBiroOrganisasi: false,
+      kepalaPenggunaId: null,
+      pjPenyusunPenggunaId: null,
+      deletedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+    opdRepository.summarizeBlockingRelations.mockResolvedValue({
+      pengguna: 1,
+      sop: 0,
+      pengajuanEvaluasi: 0,
+      pelaksana: 0,
+      riwayatOpdPengguna: 0,
+      opdPeraturan: 0,
+    });
+
+    await expect(service.softDelete('opd-a')).rejects.toBeInstanceOf(ConflictException);
+    expect(opdRepository.softDelete).not.toHaveBeenCalled();
+  });
+
+  it('should_throw_conflict_when_soft_delete_and_kepala_slot_is_set', async () => {
+    const now = new Date();
+    opdRepository.findAktifById.mockResolvedValue({
+      opdId: 'opd-b',
+      nama: 'OPD B',
+      isBiroOrganisasi: false,
+      kepalaPenggunaId: 'user-kepala',
+      pjPenyusunPenggunaId: null,
+      deletedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await expect(service.softDelete('opd-b')).rejects.toBeInstanceOf(ConflictException);
+    expect(opdRepository.summarizeBlockingRelations).not.toHaveBeenCalled();
+    expect(opdRepository.softDelete).not.toHaveBeenCalled();
+  });
+});

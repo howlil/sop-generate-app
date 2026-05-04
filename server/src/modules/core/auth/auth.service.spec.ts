@@ -87,6 +87,7 @@ describe('AuthService', () => {
       email: sampleRow.email,
       nama: sampleRow.nama,
       peran: sampleRow.peran,
+      opdId: sampleRow.opdId,
       nip: sampleRow.nip,
       jabatan: sampleRow.jabatan,
       pangkat: sampleRow.pangkat,
@@ -94,7 +95,7 @@ describe('AuthService', () => {
     });
     expect(jwtService.signAsync).toHaveBeenCalledWith(
       { sub: sampleRow.penggunaId, email: sampleRow.email, peran: sampleRow.peran },
-      { expiresIn: '15m' },
+      { expiresIn: 900 },
     );
   });
 
@@ -111,6 +112,7 @@ describe('AuthService', () => {
       email: sampleRow.email,
       nama: sampleRow.nama,
       peran: sampleRow.peran,
+      opdId: sampleRow.opdId,
       nip: sampleRow.nip,
       jabatan: sampleRow.jabatan,
       pangkat: sampleRow.pangkat,

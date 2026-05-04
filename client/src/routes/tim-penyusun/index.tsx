@@ -3,11 +3,6 @@ import { ROUTES } from '@/utils/constants'
 
 export const Route = createFileRoute('/tim-penyusun/')({
   beforeLoad: () => {
-    throw redirect({ to: ROUTES.TIM_PENYUSUN.SOP })
+    throw redirect({ to: ROUTES.PENYUSUN.SOP })
   },
-  component: RedirectPlaceholder,
 })
-
-function RedirectPlaceholder() {
-  return null
-}

@@ -2105,13 +2105,13 @@ declare interface PrismaPromise_2<TResult, TSpec extends PrismaOperationSpec<unk
      * @param onrejected same as regular promises
      * @param transaction transaction options
      */
-    catch<R = never>(onrejected?: ((reason: any) => R | PromiseLike<R>)   | null, transaction?: PrismaPromiseTransaction): Promise<TResult | R>;
+    catch<R = never>(onrejected?: ((reason: any) => R | PromiseLike<R>) | undefined | null, transaction?: PrismaPromiseTransaction): Promise<TResult | R>;
     /**
      * Extension of the original `.finally` function
      * @param onfinally same as regular promises
      * @param transaction transaction options
      */
-    finally(onfinally?: (() => void)   | null, transaction?: PrismaPromiseTransaction): Promise<TResult>;
+    finally(onfinally?: (() => void) | undefined | null, transaction?: PrismaPromiseTransaction): Promise<TResult>;
     /**
      * Called when executing a batch of regular tx
      * @param transaction transaction options for batch tx

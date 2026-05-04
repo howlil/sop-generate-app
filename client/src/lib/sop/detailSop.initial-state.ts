@@ -9,6 +9,9 @@ export function getInitialSopDetailMetadata(): SOPDetailMetadata {
     logoUrl: "",
     tanggalEfektif: "",
     tanggalRevisi: "",
+    tanggalPembuatan: "",
+    picName: "",
+    picNumber: "",
   };
 }
 

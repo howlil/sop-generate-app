@@ -7,7 +7,10 @@ const envSchema = z.object({
   SWAGGER_ENABLED: z.coerce.boolean().default(true),
   JWT_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32).optional(),
-  JWT_EXPIRATION: z.string().default('15m'),
+  JWT_EXPIRATION: z.preprocess(
+    (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+    z.string().default('15m'),
+  ),
   JWT_REFRESH_EXPIRATION: z.string().default('7d'),
   DATABASE_HOST: z.string().min(1),
   DATABASE_USER: z.string().min(1),

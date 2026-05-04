@@ -11,9 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
-import { SOPPreviewTemplate } from "@/components/sop/SOPPreviewTemplate";
+import { SOPPreviewTemplate } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
 import { InfoField } from "@/components/ui/info-field";
-import { PinVerificationDialog } from "@/components/tte/PinVerificationDialog";
+import { PinVerificationDialog } from "@/pages/pj-evaluator/tte/components/PinVerificationDialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useToast } from "@/hooks/useToast";
 import { useSopStatus } from "@/api/sop";
@@ -51,7 +51,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         sopStatus?: StatusSOP;
         waktuPenugasan?: string;
         unitTerkait?: string;
-        timPenyusun?: string;
+        penyusun?: string;
         terakhirDiperbarui?: string;
         deskripsiProyek?: string;
       }
@@ -92,17 +92,25 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         number: "",
         lembaga: "",
         logoUrl: "",
-        tanggalEfektif: "",
-        tanggalRevisi: "",
+        createdDate: "",
+        effectiveDate: "",
+        revisionDate: "",
+        version: 1,
+        picName: "",
+        picNumber: "",
       };
     return {
       id: sopDetail.id,
-      name: sopDetail.namaLembaga,
+      name: sopDetail.sop?.judul ?? "",
       number: sopDetail.nomorSOP,
       lembaga: sopDetail.namaLembaga,
       logoUrl: sopDetail.logoInstansi,
-      tanggalEfektif: sopDetail.tanggalEfektif ?? "",
-      tanggalRevisi: sopDetail.tanggalRevisi ?? "",
+      version: sopDetail.versi,
+      createdDate: sopDetail.tanggalPembuatan ?? "",
+      effectiveDate: sopDetail.tanggalEfektif ?? "",
+      revisionDate: sopDetail.tanggalRevisi ?? "",
+      picName: sopDetail.kepalaOpd?.nama?.trim() ?? "",
+      picNumber: sopDetail.kepalaOpd?.nip?.trim() ?? "",
     };
   }, [sopDetail]);
 
@@ -123,7 +131,6 @@ export function DetailSOP(props: DetailSOPProps = {}) {
     }),
     () => {
       if (id) setSopStatusOverride(id, "BERLAKU");
-      showToast("SOP berhasil disahkan dengan TTE BSRE.");
     },
   );
 
@@ -180,7 +187,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         )}
         {needBaSignFirst && (
           <span className="text-xs text-amber-700 bg-amber-50 px-2 py-1 rounded-md">
-            Berita Acara harus ditandatangani oleh Koordinator Tim Penyusun terlebih dahulu sebelum SOP dapat disahkan.
+            Berita Acara harus ditandatangani oleh PJ Penyusun terlebih dahulu sebelum SOP dapat disahkan.
           </span>
         )}
         {showSignButton && sopStatus === "BERLAKU" && id && (
@@ -201,7 +208,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const hasProyekInfo = Boolean(
     detailMetaState?.waktuPenugasan ??
     detailMetaState?.unitTerkait ??
-    detailMetaState?.timPenyusun ??
+    detailMetaState?.penyusun ??
     detailMetaState?.deskripsiProyek,
   );
 
@@ -239,9 +246,9 @@ export function DetailSOP(props: DetailSOPProps = {}) {
                       {detailMetaState.unitTerkait}
                     </InfoField>
                   )}
-                  {detailMetaState?.timPenyusun && (
-                    <InfoField label="Tim" icon={<Users />}>
-                      {detailMetaState.timPenyusun}
+                  {detailMetaState?.penyusun && (
+                    <InfoField label="Penyusun" icon={<Users />}>
+                      {detailMetaState.penyusun}
                     </InfoField>
                   )}
                   {detailMetaState?.terakhirDiperbarui && (
@@ -272,8 +279,10 @@ export function DetailSOP(props: DetailSOPProps = {}) {
                 name: p.nama,
               }))}
               tteSignaturePayload={undefined}
-              activeTab={activeTab}
-              onActiveTabChange={setActiveTab}
+              diagramState={{
+                activeTab,
+                onActiveTabChange: setActiveTab,
+              }}
             />
           </div>
         }

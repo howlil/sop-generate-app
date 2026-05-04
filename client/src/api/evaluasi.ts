@@ -10,10 +10,12 @@ import type {
 } from '@/types/dto/evaluasi.dto'
 import type {
   CreatePengajuanEvaluasiDto,
+  EvaluasiBatchSubmitError,
   EvaluasiListQueryParams,
   IsiNilaiEvaluasiDto,
   RekapEvaluasiApiResponse,
   SelesaiEvaluasiDto,
+  StatusHasilEvaluasi,
 } from '@/types/dto/evaluasi.dto'
 
 export const evaluasiApi = {
@@ -107,14 +109,9 @@ import type {
   IsiNilaiEvaluasiMutationDto,
   SelesaiEvaluasiMutationDto,
 } from "@/types/dto/evaluasi.dto";
-import type { StatusHasilEvaluasi } from "@/types/dto/evaluasi.dto";
+import { STATUS_HASIL_EVALUASI } from "@/types/dto/evaluasi.dto";
 
 // ==================== Evaluasi Domain Logic ====================
-export const STATUS_HASIL_EVALUASI = {
-  SESUAI: "SESUAI",
-  TIDAK_SESUAI: "TIDAK_SESUAI",
-} as const;
-
 export interface StatusHasilEvaluasiForm {
   hasil: StatusHasilEvaluasi;
   catatan: string;
@@ -430,13 +427,6 @@ export function useEvaluasiDraft(
 import { useState, useCallback, useMemo } from "react";
 import { useToast, showErrorMessages } from "@/hooks/useToast";
 import type { StatusHasilEvaluasi } from "@/types/dto/evaluasi.dto";
-
-export interface EvaluasiBatchSubmitError {
-  kind: "none" | "no_selection" | "incomplete";
-  items: { id: string; judul: string; nomorSOP: string }[];
-  sopId?: string;
-  message?: string;
-}
 
 export interface EvaluasiSubmitItem {
   id: string;
