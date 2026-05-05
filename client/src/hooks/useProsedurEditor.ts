@@ -156,7 +156,7 @@ export function useProsedurEditor(
     (index: number, value: string) => {
       setProsedurRows((prev) =>
         prev.map((r, i) =>
-          i === index ? { ...r, mutu_kelengkapan: value } : r,
+          i === index ? { ...r, mutu_kelengkapan: value, kelengkapan: value } : r,
         ),
       );
     },
@@ -206,7 +206,9 @@ export function useProsedurEditor(
   const handleOutputChange = useCallback(
     (index: number, value: string) => {
       setProsedurRows((prev) =>
-        prev.map((r, i) => (i === index ? { ...r, output: value } : r)),
+        prev.map((r, i) =>
+          i === index ? { ...r, output: value, keluaran: value } : r,
+        ),
       );
     },
     [setProsedurRows],

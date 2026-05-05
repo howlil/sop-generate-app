@@ -55,6 +55,23 @@ function resolvePelaksanaId(row: ProsedurRow): string {
   return fromMapping?.trim() ?? ''
 }
 
+/**
+ * Ambil teks pertama yang setelah trim tidak kosong.
+ * Dipakai untuk menggabungkan field UI (`mutu_kelengkapan`, `output`) dengan field kanonis API,
+ * karena `''` bukan nullish — `??` saja tidak cukup.
+ */
+export function pickNonEmptyTrimmed(
+  ...candidates: (string | undefined | null)[]
+): string | undefined {
+  for (const c of candidates) {
+    const t = (c ?? '').trim()
+    if (t.length > 0) {
+      return t
+    }
+  }
+  return undefined
+}
+
 function parseMutuWaktuFallback(
   mutuWaktu: string | undefined,
 ): { waktu?: number; satuanWaktu?: SatuanWaktu } {
@@ -125,8 +142,8 @@ function mapRowToLangkah(row: ProsedurRow): LangkahPatchItem | null {
     tempId: row.id,
     jenis,
     kegiatan,
-    kelengkapan: (row.kelengkapan ?? row.mutu_kelengkapan ?? '').trim() || undefined,
-    keluaran: (row.keluaran ?? row.output ?? '').trim() || undefined,
+    kelengkapan: pickNonEmptyTrimmed(row.mutu_kelengkapan, row.kelengkapan),
+    keluaran: pickNonEmptyTrimmed(row.output, row.keluaran),
     waktu,
     satuanWaktu,
     keterangan: (row.keterangan ?? '').trim() || undefined,

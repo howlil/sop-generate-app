@@ -52,24 +52,6 @@ export class PenyusunWorkbenchDetailDto {
   readonly namaLembaga!: string;
 
   @ApiPropertyOptional({ nullable: true })
-  readonly lebarKolomKegiatan?: number | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  readonly lebarKolomPelaksana?: number | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  readonly lebarKolomKelengkapan?: number | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  readonly lebarKolomWaktu?: number | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  readonly lebarKolomOutput?: number | null;
-
-  @ApiPropertyOptional({ nullable: true })
-  readonly lebarKolomKeterangan?: number | null;
-
-  @ApiPropertyOptional({ nullable: true })
   readonly dibuatOlehId?: string | null;
 
   @ApiPropertyOptional({ nullable: true })

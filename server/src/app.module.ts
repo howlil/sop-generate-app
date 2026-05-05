@@ -6,6 +6,8 @@ import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { validateEnv } from './config/env.validation';
 import { CoreModule } from './modules/core/core.module';
+import { EvaluationModule } from './modules/evaluation/evaluation.module';
+import { TteModule } from './modules/electronic-signature/tte.module';
 import { SopModule } from './modules/sop/sop.module';
 
 @Module({
@@ -21,6 +23,8 @@ import { SopModule } from './modules/sop/sop.module';
     PrismaModule,
     CoreModule,
     SopModule,
+    EvaluationModule,
+    TteModule,
   ],
 })
 export class AppModule {}

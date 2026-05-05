@@ -28,8 +28,10 @@ import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../c
 import { PeranPengguna } from '../../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../../core/auth/helpers/auth.shared';
 import { CreateSopDto } from './dto/create-sop.dto';
+import { ListSopQueryDto } from './dto/list-sop-query.dto';
 import { PenyusunWorkbenchDataDto } from './dto/penyusun-workbench-data.dto';
 import { SopDaftarRowDto } from './dto/sop-daftar-row.dto';
+import { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
 import { SopCatalogService } from './sop-catalog.service';
 
@@ -83,11 +85,25 @@ export class SopCatalogController {
     PeranPengguna.PJ_EVALUATOR,
   )
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Daftar SOP header untuk OPD pengguna (versi DetailSOP terbaru per SOP)' })
+  @ApiOperation({
+    summary:
+      'Daftar SOP header untuk OPD pengguna (versi DetailSOP terbaru per SOP). Filter opsional: status, tanggalDari, tanggalSampai (YYYY-MM-DD, tanggal dari `updatedAt` UTC).',
+  })
+  @ApiQuery({ name: 'status', required: false, description: 'Status DetailSOP terbaru atau `all`' })
+  @ApiQuery({ name: 'tanggalDari', required: false, description: 'Batas bawah tanggal terakhir diperbarui (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'tanggalSampai',
+    required: false,
+    description: 'Batas atas tanggal terakhir diperbarui (YYYY-MM-DD)',
+  })
   @ApiResponse({ status: 200, type: [SopDaftarRowDto] })
+  @ApiBadRequestResponse({ description: 'Rentang tanggal tidak valid (tanggalDari > tanggalSampai)' })
   @ApiForbiddenResponse()
-  async list(@Req() req: Request & { user: JwtAccessPayload }): Promise<ApiSuccessResponse<SopDaftarRowDto[]>> {
-    const data = await this.sopCatalogService.listForCurrentUser(req.user);
+  async list(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Query() query: ListSopQueryDto,
+  ): Promise<ApiSuccessResponse<SopDaftarRowDto[]>> {
+    const data = await this.sopCatalogService.listForCurrentUser(req.user, query);
     return {
       message: 'Daftar SOP berhasil diambil',
       success: true,
@@ -110,6 +126,38 @@ export class SopCatalogController {
     const data = await this.sopCatalogService.createForPenyusun(req.user, dto);
     return {
       message: 'SOP berhasil dibuat',
+      success: true,
+      data,
+    };
+  }
+
+  @Patch('status/:detailSopId')
+  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN, PeranPengguna.KEPALA_OPD)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary:
+      'Ubah status DetailSOP versi terbaru (transisi divalidasi di server). Param :detailSopId boleh ID DetailSOP atau ID header SOP.',
+  })
+  @ApiQuery({
+    name: 'logsLimit',
+    required: false,
+    description: 'Jumlah maksimum entri logEdit pada response workbench (1–500, default 100)',
+    schema: { default: 100, minimum: 1, maximum: 500 },
+  })
+  @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
+  @ApiBadRequestResponse({ description: 'Validasi DTO gagal' })
+  @ApiConflictResponse({ description: 'Transisi status tidak diizinkan atau status sudah sama' })
+  @ApiForbiddenResponse({ description: 'Peran tidak diizinkan untuk transisi ini' })
+  @ApiNotFoundResponse({ description: 'DetailSOP tidak ditemukan' })
+  async transitionDetailSopStatus(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+    @Body() dto: UpdateDetailSopStatusDto,
+    @Query('logsLimit', new DefaultValuePipe(100), ParseIntPipe) logsLimit: number,
+  ): Promise<ApiSuccessResponse<PenyusunWorkbenchDataDto>> {
+    const data = await this.sopCatalogService.transitionDetailSopStatus(req.user, detailSopId, dto, logsLimit);
+    return {
+      message: 'Status DetailSOP berhasil diperbarui',
       success: true,
       data,
     };

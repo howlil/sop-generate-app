@@ -21,6 +21,8 @@ export interface DetailSOPPenyusunHeaderProps {
   onRetryAutosave?: () => void | Promise<void>
   onComplete: () => void
   onPrint: () => void
+  /** Mode lihat: sembunyikan autosave, Selesai, dan retry. */
+  isReadOnly?: boolean
 }
 
 interface AutosaveBadgeAppearance {
@@ -70,8 +72,9 @@ export function DetailSOPPenyusunHeader({
   onRetryAutosave,
   onComplete,
   onPrint,
+  isReadOnly = false,
 }: DetailSOPPenyusunHeaderProps) {
-  const indicator = autosaveAppearance(autosaveStatus)
+  const indicator = isReadOnly ? null : autosaveAppearance(autosaveStatus)
   return (
     <>
       <div className="flex items-center justify-between gap-4">
@@ -95,7 +98,7 @@ export function DetailSOPPenyusunHeader({
               {indicator.label}
             </span>
           ) : null}
-          {autosaveStatus === 'error' && onRetryAutosave !== undefined ? (
+          {autosaveStatus === 'error' && !isReadOnly && onRetryAutosave !== undefined ? (
             <Button
               size="sm"
               variant="outline"
@@ -115,6 +118,7 @@ export function DetailSOPPenyusunHeader({
           >
             <Printer className="w-3.5 h-3.5" /> Print SOP
           </Button>
+          {!isReadOnly ? (
           <Button
             size="sm"
             className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
@@ -123,6 +127,7 @@ export function DetailSOPPenyusunHeader({
             <Check className="w-3.5 h-3.5" />
             {primaryActionLabel}
           </Button>
+          ) : null}
         </div>
       </div>
       <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
@@ -131,7 +136,7 @@ export function DetailSOPPenyusunHeader({
         </Badge>
         <StatusBadge status={currentSopStatus} className="text-xs border-0" />
       </div>
-      {isRevisionFlow && (
+      {isRevisionFlow && !isReadOnly && (
         <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
           SOP ini dikembalikan oleh Tim Evaluasi untuk revisi. Setelah perbaikan selesai, klik

@@ -176,16 +176,6 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
           )}
         </Button>
       </form>
-
-      {/* Help Section */}
-      <div className="mt-8 pt-6 border-t border-slate-200">
-        <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <span className="font-medium">Belum memiliki akun?</span>{" "}
-            <span className="text-blue-700">Hubungi admin Biro Organisasi</span>
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

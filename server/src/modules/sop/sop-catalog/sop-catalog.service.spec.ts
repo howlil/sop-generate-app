@@ -1,8 +1,22 @@
-import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PeranPengguna, Prisma } from '../../../generated/prisma';
+import {
+  JenisLampiran,
+  JenisLangkahProsedur,
+  PeranPengguna,
+  Prisma,
+  SatuanWaktu,
+  StatusSOP,
+} from '../../../generated/prisma';
 import type { JwtAccessPayload } from '../../../common';
 import type { CreateSopDto } from './dto/create-sop.dto';
+import type { ListSopQueryDto } from './dto/list-sop-query.dto';
+import type { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import type { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
 import { SopCatalogRepository, type SopDaftarDbRow, type SopWorkbenchDbPayload } from './sop-catalog.repository';
 import { SopCatalogService } from './sop-catalog.service';
@@ -19,6 +33,8 @@ describe('SopCatalogService', () => {
       | 'createSopWithInitialDetail'
       | 'findWorkbenchPayloadByDetailOrSopId'
       | 'findDetailIdByDetailOrSopId'
+      | 'findLatestDetailStatusContext'
+      | 'updateDetailSopStatus'
       | 'updateSopHeaderTransaction'
     >
   > = {
@@ -29,6 +45,8 @@ describe('SopCatalogService', () => {
     createSopWithInitialDetail: jest.fn(),
     findWorkbenchPayloadByDetailOrSopId: jest.fn(),
     findDetailIdByDetailOrSopId: jest.fn(),
+    findLatestDetailStatusContext: jest.fn(),
+    updateDetailSopStatus: jest.fn(),
     updateSopHeaderTransaction: jest.fn(),
   };
   const user: JwtAccessPayload = {
@@ -73,6 +91,7 @@ describe('SopCatalogService', () => {
     };
     repoMock.findDaftarByOpdId.mockResolvedValue([row]);
     const actual = await service.listForCurrentUser(user);
+    expect(repoMock.findDaftarByOpdId).toHaveBeenCalledWith('opd-1', {});
     expect(actual).toHaveLength(1);
     expect(actual[0]).toMatchObject({
       id: 'sop-1',
@@ -92,6 +111,7 @@ describe('SopCatalogService', () => {
     const row: SopDaftarDbRow = { sopId: 'sop-2', opdId: 'opd-1', judul: 'Tanpa detail', detail: undefined };
     repoMock.findDaftarByOpdId.mockResolvedValue([row]);
     const actual = await service.listForCurrentUser(user);
+    expect(repoMock.findDaftarByOpdId).toHaveBeenCalledWith('opd-1', {});
     expect(actual[0]).toMatchObject({
       id: 'sop-2',
       opdId: 'opd-1',
@@ -114,8 +134,56 @@ describe('SopCatalogService', () => {
     };
     repoMock.findDaftarAll.mockResolvedValue([]);
     await service.listForCurrentUser(evaluatorUser);
-    expect(repoMock.findDaftarAll).toHaveBeenCalled();
+    expect(repoMock.findDaftarAll).toHaveBeenCalledWith({});
     expect(repoMock.findOpdIdByPenggunaId).not.toHaveBeenCalled();
+  });
+
+  it('should_pass_filters_to_repository_when_user_is_penyusun', async () => {
+    const query = {
+      status: 'DRAFT',
+      tanggalDari: '2026-01-01',
+      tanggalSampai: '2026-01-31',
+    } as ListSopQueryDto;
+    repoMock.findDaftarByOpdId.mockResolvedValue([]);
+    await service.listForCurrentUser(user, query);
+    expect(repoMock.findDaftarByOpdId).toHaveBeenCalledWith('opd-1', {
+      status: 'DRAFT',
+      tanggalDari: '2026-01-01',
+      tanggalSampai: '2026-01-31',
+    });
+  });
+
+  it('should_use_findDaftarAll_with_filters_when_user_is_evaluator', async () => {
+    const evaluatorUser: JwtAccessPayload = {
+      sub: 'ev-2',
+      email: 'ev2@b.c',
+      peran: PeranPengguna.EVALUATOR,
+    };
+    const query = { status: 'SIAP_DIEVALUASI', tanggalDari: '2026-02-01' } as ListSopQueryDto;
+    repoMock.findDaftarAll.mockResolvedValue([]);
+    await service.listForCurrentUser(evaluatorUser, query);
+    expect(repoMock.findDaftarAll).toHaveBeenCalledWith({
+      status: 'SIAP_DIEVALUASI',
+      tanggalDari: '2026-02-01',
+      tanggalSampai: undefined,
+    });
+  });
+
+  it('should_throw_BadRequest_when_tanggalDari_after_tanggalSampai', async () => {
+    const query = { tanggalDari: '2026-02-10', tanggalSampai: '2026-02-01' } as ListSopQueryDto;
+    await expect(service.listForCurrentUser(user, query)).rejects.toBeInstanceOf(BadRequestException);
+    expect(repoMock.findDaftarByOpdId).not.toHaveBeenCalled();
+  });
+
+  it('should_treat_status_all_as_no_status_filter', async () => {
+    const query = { status: 'all', tanggalSampai: '2026-06-30' } as ListSopQueryDto;
+    repoMock.findDaftarByOpdId.mockResolvedValue([]);
+    await service.listForCurrentUser(user, query);
+    expect(repoMock.findDaftarByOpdId).toHaveBeenCalledWith('opd-1', {
+      status: undefined,
+      tanggalDari: undefined,
+      tanggalSampai: '2026-06-30',
+    });
   });
 
   it('should_create_sop_with_empty_nama_lembaga_when_dto_omits_field', async () => {
@@ -245,12 +313,6 @@ describe('SopCatalogService', () => {
       tanggalRevisi: null,
       tanggalEfektif: null,
       namaLembaga: 'Lembaga',
-      lebarKolomKegiatan: null,
-      lebarKolomPelaksana: null,
-      lebarKolomKelengkapan: null,
-      lebarKolomWaktu: null,
-      lebarKolomOutput: null,
-      lebarKolomKeterangan: null,
       dibuatOlehId: 'p1',
       terakhirDieditOlehId: null,
       createdAt: t,
@@ -296,12 +358,6 @@ describe('SopCatalogService', () => {
       tanggalRevisi: null,
       tanggalEfektif: null,
       namaLembaga: 'Lembaga 2',
-      lebarKolomKegiatan: null,
-      lebarKolomPelaksana: null,
-      lebarKolomKelengkapan: null,
-      lebarKolomWaktu: null,
-      lebarKolomOutput: null,
-      lebarKolomKeterangan: null,
       dibuatOlehId: 'p1',
       terakhirDieditOlehId: null,
       createdAt: t,
@@ -374,12 +430,6 @@ describe('SopCatalogService', () => {
         tanggalRevisi: null,
         tanggalEfektif: null,
         namaLembaga: 'Lembaga',
-        lebarKolomKegiatan: null,
-        lebarKolomPelaksana: null,
-        lebarKolomKelengkapan: null,
-        lebarKolomWaktu: null,
-        lebarKolomOutput: null,
-        lebarKolomKeterangan: null,
         dibuatOlehId: 'p1',
         terakhirDieditOlehId: null,
         createdAt: t,
@@ -593,6 +643,279 @@ describe('SopCatalogService', () => {
       expect(actual.detail.kualifikasiPelaksanaan).toEqual(['S1 Hukum', 'Sertifikat A']);
       expect(actual.detail.peralatanPerlengkapan).toEqual([]);
       expect(actual.detail.pencatatanPendataan).toEqual([]);
+    });
+  });
+
+  describe('transitionDetailSopStatus', () => {
+    const t = new Date('2026-05-01T08:00:00.000Z');
+    function stubWorkbenchPayload(status: string): SopWorkbenchDbPayload {
+      return {
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        salinDariDetailSopId: null,
+        status,
+        versi: 1,
+        nomorSOP: 'ST/1',
+        tanggalPembuatan: t,
+        tanggalRevisi: null,
+        tanggalEfektif: null,
+        namaLembaga: 'Lembaga',
+        dibuatOlehId: 'p1',
+        terakhirDieditOlehId: null,
+        createdAt: t,
+        updatedAt: t,
+        sop: {
+          sopId: 'sop-st',
+          opdId: 'opd-1',
+          judul: 'Judul ST',
+          createdAt: t,
+          updatedAt: t,
+          opd: {
+            opdId: 'opd-1',
+            nama: 'OPD Satu',
+            kepalaPenggunaId: null,
+            kepalaPengguna: null,
+          },
+        },
+        dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
+        terakhirDieditOleh: null,
+        lampiran: [],
+        dasarHukum: [],
+        relasiSopKeluar: [],
+        relasiSopMasuk: [],
+        swimlanes: [],
+        nilaiEvaluasi: [],
+        langkahSOP: [],
+        logEditSop: [],
+      } as unknown as SopWorkbenchDbPayload;
+    }
+
+    function stubWorkbenchSiapLengkap(status: string): SopWorkbenchDbPayload {
+      const pelaksanaId = 'pel-1';
+      const langkahId = 'langkah-1';
+      const base = stubWorkbenchPayload(status);
+      return {
+        ...base,
+        lampiran: [
+          {
+            lampiranTeksId: 'lt-per',
+            detailSopId: 'det-st',
+            jenis: JenisLampiran.PERINGATAN,
+            teks: 'Perhatikan prosedur',
+            createdAt: t,
+            updatedAt: t,
+          },
+          {
+            lampiranTeksId: 'lt-kua',
+            detailSopId: 'det-st',
+            jenis: JenisLampiran.KUALIFIKASI_PELAKSANAAN,
+            teks: 'Kualifikasi A',
+            createdAt: t,
+            updatedAt: t,
+          },
+          {
+            lampiranTeksId: 'lt-alat',
+            detailSopId: 'det-st',
+            jenis: JenisLampiran.PERALATAN,
+            teks: 'Alat B',
+            createdAt: t,
+            updatedAt: t,
+          },
+          {
+            lampiranTeksId: 'lt-cat',
+            detailSopId: 'det-st',
+            jenis: JenisLampiran.PENCATATAN_PENDATAAN,
+            teks: 'Catatan C',
+            createdAt: t,
+            updatedAt: t,
+          },
+        ],
+        dasarHukum: [
+          {
+            detailSopId: 'det-st',
+            peraturanId: 'per-1',
+            createdAt: t,
+            updatedAt: t,
+            peraturan: {
+              peraturanId: 'per-1',
+              nama: 'PP',
+              nomor: '1',
+              tahun: 2024,
+              tentang: 'Peraturan contoh',
+              createdAt: t,
+              updatedAt: t,
+            },
+          },
+        ],
+        relasiSopKeluar: [
+          {
+            detailSopId: 'det-st',
+            detailSopTerkaitId: 'det-lain',
+            createdAt: t,
+            updatedAt: t,
+            sopTerkait: {
+              detailSopId: 'det-lain',
+              sopId: 'sop-lain',
+              nomorSOP: '99/2026',
+              sop: { sopId: 'sop-lain', judul: 'SOP lain' },
+            },
+          },
+        ],
+        swimlanes: [
+          {
+            detailSopId: 'det-st',
+            pelaksanaId,
+            urutan: 0,
+            createdAt: t,
+            updatedAt: t,
+            pelaksana: {
+              pelaksanaId,
+              opdId: 'opd-1',
+              nama: 'Pelaksana',
+              createdAt: t,
+              updatedAt: t,
+            },
+          },
+        ],
+        langkahSOP: [
+          {
+            langkahSopId: langkahId,
+            detailSopId: 'det-st',
+            urutan: 1,
+            kegiatan: 'Isi formulir',
+            jenis: JenisLangkahProsedur.KEGIATAN,
+            kelengkapan: 'Form',
+            keluaran: 'Draft',
+            waktu: 1,
+            satuanWaktu: SatuanWaktu.h,
+            keterangan: 'Keterangan langkah',
+            pelaksanaId,
+            langkahSelanjutnyaYaId: null,
+            langkahSelanjutnyaTidakId: null,
+            createdAt: t,
+            updatedAt: t,
+            pelaksana: {
+              pelaksanaId,
+              opdId: 'opd-1',
+              nama: 'Pelaksana',
+              createdAt: t,
+              updatedAt: t,
+            },
+          },
+        ],
+      } as unknown as SopWorkbenchDbPayload;
+    }
+
+    beforeEach(() => {
+      repoMock.updateDetailSopStatus.mockResolvedValue(undefined);
+    });
+
+    it('should_throw_not_found_when_detail_missing', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValueOnce(null);
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
+      await expect(service.transitionDetailSopStatus(user, 'unknown-id', dto)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_throw_conflict_when_target_equals_current', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.DRAFT };
+      await expect(service.transitionDetailSopStatus(user, 'det-st', dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_throw_conflict_when_draft_to_berlaku', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.BERLAKU };
+      await expect(service.transitionDetailSopStatus(user, 'det-st', dto)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_allow_draft_to_siap_dievaluasi_for_penyusun_when_workbench_lengkap', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      const draftRow = stubWorkbenchSiapLengkap('DRAFT');
+      const refreshed = stubWorkbenchSiapLengkap('SIAP_DIEVALUASI');
+      repoMock.findWorkbenchPayloadByDetailOrSopId
+        .mockResolvedValueOnce(draftRow)
+        .mockResolvedValueOnce(refreshed);
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
+      const actual = await service.transitionDetailSopStatus(user, 'det-st', dto);
+      expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
+        detailSopId: 'det-st',
+        status: StatusSOP.SIAP_DIEVALUASI,
+        userId: 'pengguna-1',
+      });
+      expect(actual.detail.status).toBe('SIAP_DIEVALUASI');
+    });
+
+    it('should_throw_bad_request_when_workbench_tidak_lengkap_for_siap_dievaluasi', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(stubWorkbenchPayload('DRAFT'));
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
+      await expect(service.transitionDetailSopStatus(user, 'det-st', dto)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_forbid_penyusun_submitting_evaluasi_from_siap', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        status: StatusSOP.SIAP_DIEVALUASI,
+        sopOpdId: 'opd-1',
+      });
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.DIAJUKAN_EVALUASI };
+      await expect(service.transitionDetailSopStatus(user, 'det-st', dto)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_allow_pj_penyusun_submitting_evaluasi_from_siap', async () => {
+      const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-st',
+        sopId: 'sop-st',
+        status: StatusSOP.SIAP_DIEVALUASI,
+        sopOpdId: 'opd-1',
+      });
+      const refreshed = stubWorkbenchPayload('DIAJUKAN_EVALUASI');
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(refreshed);
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.DIAJUKAN_EVALUASI };
+      const actual = await service.transitionDetailSopStatus(pjUser, 'det-st', dto);
+      expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
+        detailSopId: 'det-st',
+        status: StatusSOP.DIAJUKAN_EVALUASI,
+        userId: 'pengguna-1',
+      });
+      expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');
     });
   });
 });

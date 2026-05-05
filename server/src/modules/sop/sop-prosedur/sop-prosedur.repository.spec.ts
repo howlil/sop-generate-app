@@ -35,9 +35,6 @@ function makeTx(existingLangkahIds: string[]): {
 
   const tx = {
     detailSOPPelaksana: { deleteMany: record('detailSOPPelaksana', 'deleteMany'), createMany: record('detailSOPPelaksana', 'createMany') },
-    titikSisiDiagram: { deleteMany: record('titikSisiDiagram', 'deleteMany') },
-    sisiDiagram: { deleteMany: record('sisiDiagram', 'deleteMany') },
-    posisiNodeDiagram: { deleteMany: record('posisiNodeDiagram', 'deleteMany') },
     langkahSOP: {
       findMany: record('langkahSOP', 'findMany'),
       updateMany: record('langkahSOP', 'updateMany'),
@@ -84,7 +81,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     expect(calls.some((c) => c.table === 'logEditSOP')).toBe(true);
   });
 
-  it('should_clear_diagram_refs_then_break_self_fk_then_delete_then_insert_then_relink', async () => {
+  it('should_break_self_fk_then_delete_then_insert_then_relink', async () => {
     const { repo, calls } = makeRepo(['L-1', 'L-2']);
     await repo.updateProsedurTransaction({
       detailSopId: 'det-1',
@@ -114,21 +111,11 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
 
     const opsOrder = calls
       .filter((c) =>
-        [
-          'titikSisiDiagram',
-          'sisiDiagram',
-          'posisiNodeDiagram',
-          'langkahSOP',
-          'detailSOP',
-          'logEditSOP',
-        ].includes(c.table),
+        ['langkahSOP', 'detailSOP', 'logEditSOP'].includes(c.table),
       )
       .map((c) => `${c.table}.${c.op}`);
 
     const idxFindMany = opsOrder.indexOf('langkahSOP.findMany');
-    const idxTitikDelete = opsOrder.indexOf('titikSisiDiagram.deleteMany');
-    const idxSisiDelete = opsOrder.indexOf('sisiDiagram.deleteMany');
-    const idxPosisiDelete = opsOrder.indexOf('posisiNodeDiagram.deleteMany');
     const idxUpdateMany = opsOrder.indexOf('langkahSOP.updateMany');
     const idxLangkahDelete = opsOrder.indexOf('langkahSOP.deleteMany');
     const idxFirstCreate = opsOrder.indexOf('langkahSOP.create');
@@ -137,10 +124,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     const idxLogCreate = opsOrder.lastIndexOf('logEditSOP.create');
 
     expect(idxFindMany).toBeGreaterThanOrEqual(0);
-    expect(idxTitikDelete).toBeGreaterThan(idxFindMany);
-    expect(idxSisiDelete).toBeGreaterThan(idxTitikDelete);
-    expect(idxPosisiDelete).toBeGreaterThan(idxSisiDelete);
-    expect(idxUpdateMany).toBeGreaterThan(idxPosisiDelete);
+    expect(idxUpdateMany).toBeGreaterThan(idxFindMany);
     expect(idxLangkahDelete).toBeGreaterThan(idxUpdateMany);
     expect(idxFirstCreate).toBeGreaterThan(idxLangkahDelete);
     expect(idxBranchUpdate).toBeGreaterThan(idxFirstCreate);
@@ -154,7 +138,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     expect(branchUpdates).toHaveLength(1);
   });
 
-  it('should_skip_diagram_cleanup_when_no_existing_langkah', async () => {
+  it('should_insert_langkah_when_no_existing_without_diagram_cleanup', async () => {
     const { repo, calls } = makeRepo([]);
     await repo.updateProsedurTransaction({
       detailSopId: 'det-1',
@@ -172,9 +156,6 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
       },
       changedFields: ['langkah'],
     });
-    expect(calls.some((c) => c.table === 'titikSisiDiagram')).toBe(false);
-    expect(calls.some((c) => c.table === 'sisiDiagram')).toBe(false);
-    expect(calls.some((c) => c.table === 'posisiNodeDiagram')).toBe(false);
     expect(calls.some((c) => c.table === 'langkahSOP' && c.op === 'create')).toBe(true);
   });
 

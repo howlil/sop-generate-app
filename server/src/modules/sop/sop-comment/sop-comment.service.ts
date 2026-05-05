@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import { PeranPengguna, StatusKomentar } from '../../../generated/prisma';
-import type { CreateKomentarDto } from './dto/create-komentar.dto';
 import type { KomentarResponseDto } from './dto/komentar-response.dto';
 import type { KomentarWithUser } from './sop-comment.repository';
 import { SopCommentRepository } from './sop-comment.repository';
@@ -72,30 +71,6 @@ export class SopCommentService {
     await this.assertOpdScope(user, resolved.sopOpdId);
     const items = await this.sopCommentRepository.listByDetail(resolved.detailSopId);
     return items.map((it) => this.toResponse(it));
-  }
-
-  async createKomentar(
-    user: JwtAccessPayload,
-    detailOrSopId: string,
-    dto: CreateKomentarDto,
-  ): Promise<KomentarResponseDto> {
-    if (user.peran !== PeranPengguna.EVALUATOR) {
-      throw new ForbiddenException('Hanya Tim Evaluasi yang dapat menambahkan komentar');
-    }
-    const resolved = await this.sopCommentRepository.findDetailIdByDetailOrSopId(detailOrSopId);
-    if (resolved === null) {
-      throw new NotFoundException('SOP tidak ditemukan');
-    }
-    const isi = dto.isi.trim();
-    if (isi.length === 0) {
-      throw new ConflictException('Komentar tidak boleh kosong');
-    }
-    const created = await this.sopCommentRepository.createKomentarWithLog({
-      detailSopId: resolved.detailSopId,
-      userId: user.sub,
-      isi,
-    });
-    return this.toResponse(created);
   }
 
   async resolveKomentar(

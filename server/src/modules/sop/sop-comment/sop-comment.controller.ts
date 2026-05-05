@@ -1,13 +1,10 @@
 import {
-  Body,
   Controller,
   Delete,
   Get,
-  HttpCode,
   Param,
   ParseUUIDPipe,
   Patch,
-  Post,
   Req,
 } from '@nestjs/common';
 import {
@@ -23,7 +20,6 @@ import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
 import { PeranPengguna } from '../../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../../core/auth/helpers/auth.shared';
-import { CreateKomentarDto } from './dto/create-komentar.dto';
 import { KomentarResponseDto } from './dto/komentar-response.dto';
 import { SopCommentService } from './sop-comment.service';
 
@@ -56,27 +52,6 @@ export class SopCommentController {
     const data = await this.sopCommentService.listForDetailSop(req.user, detailSopId);
     return {
       message: 'Daftar komentar berhasil diambil',
-      success: true,
-      data,
-    };
-  }
-
-  @Post(':detailSopId')
-  @HttpCode(201)
-  @Roles(PeranPengguna.EVALUATOR)
-  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Kirim komentar baru (hanya Tim Evaluasi).' })
-  @ApiResponse({ status: 201, type: KomentarResponseDto })
-  @ApiForbiddenResponse()
-  @ApiNotFoundResponse({ description: 'SOP tidak ditemukan' })
-  async create(
-    @Req() req: Request & { user: JwtAccessPayload },
-    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
-    @Body() dto: CreateKomentarDto,
-  ): Promise<ApiSuccessResponse<KomentarResponseDto>> {
-    const data = await this.sopCommentService.createKomentar(req.user, detailSopId, dto);
-    return {
-      message: 'Komentar berhasil dikirim',
       success: true,
       data,
     };

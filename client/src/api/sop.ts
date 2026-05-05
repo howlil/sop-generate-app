@@ -14,7 +14,6 @@ import { transformLangkahToProsedurRow, transformSopDetailToMetadata } from "@/l
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
 import type {
   Pelaksana,
-  Sop,
   SopDaftarRow,
   SopDetail,
   StatusSOP,
@@ -25,13 +24,10 @@ import type {
   CreateSopRequestDto,
   DetailSopListQueryParams,
   SopListQueryParams,
-  UpdateSopMutationDto,
-  UpdateSopJudulDto,
   SetSopStatusOverrideMutationDto,
   CreatePelaksanaMutationDto,
   UpdatePelaksanaMutationDto,
   UpdateStatusDto,
-  UpdateStatusMutationDto,
   UpdateSopHeaderDto,
   UpdateSopProsedurDto,
   PenyusunWorkbenchData,
@@ -39,7 +35,7 @@ import type {
   PenyusunWorkbenchQueryParams,
 } from '@/types/dto/sop.dto'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
-import type { CreateKomentarDto, KomentarItem } from '@/types/dto/komentar.dto'
+import type { KomentarItem } from '@/types/dto/komentar.dto'
 import type { ProsedurRow, SOPDetailMetadata } from "@/types/ui/sop";
 
 /** Master pelaksana (`GET/POST/PATCH/DELETE /pelaksana`) memakai bungkus API Nest. */
@@ -96,19 +92,10 @@ export const sopApi = {
     )
   },
 
-  findById: (id: string) =>
-    apiClient.get<Sop>(`/sop/${id}`),
-
   create: (payload: CreateSopRequestDto) =>
     unwrapSopCreateEnvelope(
       apiClient.post<ApiSuccessResponse<SopDaftarRow>>('/sop', payload),
     ),
-
-  update: (id: string, payload: UpdateSopJudulDto) =>
-    apiClient.patch<Sop>(`/sop/${id}`, payload),
-
-  delete: (id: string) =>
-    apiClient.delete(`/sop/${id}`),
 
   // ================= DetailSOP =================
 
@@ -154,11 +141,13 @@ export const sopApi = {
     ),
 
   /**
-   * PATCH status DetailSOP (transisi status: SEDANG_DISUSUN, SIAP_DIEVALUASI, dst).
-   * Endpoint legacy `/detail-sop/:id/status` masih dipakai untuk transisi status.
+   * PATCH status DetailSOP (`/sop/status/:id`). Param boleh detailSopId atau sopId header.
+   * Mengembalikan workbench terbaru (transisi divalidasi di server).
    */
   updateStatus: (id: string, payload: UpdateStatusDto) =>
-    apiClient.patch<SopDetail>(`/detail-sop/${id}/status`, payload),
+    unwrapPenyusunWorkbench(
+      apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(`/sop/status/${id}`, payload),
+    ),
 
   // ================= Pelaksana (master per OPD) =================
 
@@ -186,15 +175,6 @@ export const sopApi = {
       apiClient.get<ApiSuccessResponse<KomentarItem[]>>(`/sop/komentar/${detailSopId}`),
     ),
 
-  /** POST `/sop/komentar/:detailSopId` — TIM_EVALUASI kirim komentar baru. */
-  createKomentar: (detailSopId: string, payload: CreateKomentarDto) =>
-    unwrapKomentarItemEnvelope(
-      apiClient.post<ApiSuccessResponse<KomentarItem>>(
-        `/sop/komentar/${detailSopId}`,
-        payload,
-      ),
-    ),
-
   /** PATCH `/sop/komentar/:komentarId/selesai` — penyusun menandai komentar selesai. */
   resolveKomentar: (komentarId: string) =>
     unwrapKomentarItemEnvelope(
@@ -202,10 +182,6 @@ export const sopApi = {
         `/sop/komentar/${komentarId}/selesai`,
       ),
     ),
-
-  /** DELETE `/sop/komentar/:komentarId` — pembuat (TIM_EVALUASI) menghapus komentarnya. */
-  deleteKomentar: (komentarId: string) =>
-    apiClient.delete<ApiSuccessResponse<null>>(`/sop/komentar/${komentarId}`),
 }
 
 /**
@@ -218,11 +194,14 @@ export function canEditSop(status: StatusSOP): boolean {
 }
 
 export function canKepalaOpdSignSop(status: string): boolean {
-  return status === "DITANDATANGANI_KOORDINATOR";
+  return status === "DIVERIFIKASI_BIRO_ORGANISASI";
 }
 
+/** Masih dalam pipeline pengesahan (belum tentu boleh tombol tanda tangan Kepala). */
 export function isSopEligibleForSigning(sop: { status: string }): boolean {
-  return sop.status === "DITANDATANGANI_KOORDINATOR";
+  return (
+    sop.status === "SIAP_DIVERIFIKASI" || sop.status === "DIVERIFIKASI_BIRO_ORGANISASI"
+  );
 }
 
 // ==================== Penyusun (PJ koordinator) — akses UI ====================
@@ -238,6 +217,13 @@ function sopListQueryOptions(params?: SopListQueryParams) {
   } as const;
 }
 
+/** Hanya data daftar SOP (Suspense); untuk kombinasi dengan filter terpisah tanpa duplikasi mutasi. */
+export function useSopListSuspenseQuery(params?: SopListQueryParams) {
+  return useSuspenseQuery<SopDaftarRow[]>({
+    ...sopListQueryOptions(params),
+  });
+}
+
 export function useSop(params?: SopListQueryParams) {
   const {
     data: list = [],
@@ -247,38 +233,10 @@ export function useSop(params?: SopListQueryParams) {
     ...sopListQueryOptions(params),
   });
 
-  const createMutation = useMutationWithToast({
-    mutationFn: (payload: CreateSopRequestDto) => sopApi.create(payload),
-    invalidateKeys: [queryKeys.sop],
-    successMessage: "SOP berhasil dibuat",
-    errorMessagePrefix: "Gagal membuat SOP",
-  });
-
-  const updateMutation = useMutationWithToast({
-    mutationFn: ({ id, judul }: UpdateSopMutationDto) =>
-      sopApi.update(id, { judul }),
-    invalidateKeys: [queryKeys.sop],
-    successMessage: "Judul SOP berhasil diperbarui",
-    errorMessagePrefix: "Gagal memperbarui SOP",
-  });
-
-  const deleteMutation = useMutationWithToast({
-    mutationFn: (id: string) => sopApi.delete(id),
-    invalidateKeys: [queryKeys.sop],
-    successMessage: "SOP berhasil dihapus",
-    errorMessagePrefix: "Gagal menghapus SOP",
-  });
-
   return {
     list,
     isLoading,
     error,
-    create: createMutation.mutateAsync,
-    update: updateMutation.mutateAsync,
-    delete: deleteMutation.mutateAsync,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
   };
 }
 
@@ -292,39 +250,13 @@ export function useSopSuspense(params?: SopListQueryParams) {
     successMessage: "SOP berhasil dibuat",
     errorMessagePrefix: "Gagal membuat SOP",
   });
-  const updateMutation = useMutationWithToast({
-    mutationFn: ({ id, judul }: UpdateSopMutationDto) =>
-      sopApi.update(id, { judul }),
-    invalidateKeys: [queryKeys.sop],
-    successMessage: "Judul SOP berhasil diperbarui",
-    errorMessagePrefix: "Gagal memperbarui SOP",
-  });
-  const deleteMutation = useMutationWithToast({
-    mutationFn: (id: string) => sopApi.delete(id),
-    invalidateKeys: [queryKeys.sop],
-    successMessage: "SOP berhasil dihapus",
-    errorMessagePrefix: "Gagal menghapus SOP",
-  });
   return {
     list,
     isLoading: false,
     error: undefined,
     create: createMutation.mutateAsync,
-    update: updateMutation.mutateAsync,
-    delete: deleteMutation.mutateAsync,
     isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
   };
-}
-
-export function useSopDetail(id: string) {
-  return useQuery({
-    queryKey: queryKeys.sopById(id),
-    queryFn: () => sopApi.findById(id),
-    enabled: !!id,
-    staleTime: STALE_TIME.MEDIUM,
-  });
 }
 
 /**
@@ -342,8 +274,11 @@ export function useSopStatus() {
     mutationFn: ({ sopId, status }: SetSopStatusOverrideMutationDto) =>
       sopApi.updateStatus(sopId, { status }),
     invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.penyusunWorkbench(variables.sopId) });
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(queryKeys.penyusunWorkbench(variables.sopId), data);
+      if (data.detail.id !== variables.sopId) {
+        queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+      }
     },
     successMessage: "Status SOP berhasil diubah",
     useDetailedErrors: true,
@@ -498,20 +433,6 @@ export function useUpdateSopProsedur(detailSopId: string) {
   });
 }
 
-export function useUpdateStatus() {
-  const queryClient = useQueryClient();
-  return useMutationWithToast({
-    mutationFn: ({ id, payload }: UpdateStatusMutationDto) =>
-      sopApi.updateStatus(id, payload),
-    invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
-    onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.penyusunWorkbench(variables.id) });
-    },
-    successMessage: "Status SOP berhasil diubah",
-    errorMessagePrefix: "Gagal mengubah status",
-  });
-}
-
 interface UseDetailSopPenyusunActionsParams {
   setSopStatusOverrideAsync: (payload: {
     sopId: string;
@@ -614,6 +535,8 @@ export interface UseDetailSopPenyusunDataResult {
   prosedurAutosaveStatus: SopProsedurAutosaveStatus;
   /** Error autosave prosedur terakhir. */
   prosedurAutosaveError: Error | null;
+  /** True jika status SOP mengizinkan mengubah dokumen (autosave dan kontrol edit aktif). */
+  canEditDetail: boolean;
 }
 
 export function useDetailSopPenyusunData(
@@ -645,6 +568,12 @@ export function useDetailSopPenyusunData(
   const sopDetail = workbench?.detail;
   const langkahList = workbench?.langkah ?? [];
   const auditLogs = workbench?.logEdit ?? [];
+  const resolvedStatusForEdit = useMemo(
+    (): StatusSOP =>
+      (workbench?.detail.status ?? sopStatusOverride ?? DEFAULT_SOP_STATUS) as StatusSOP,
+    [workbench?.detail.status, sopStatusOverride],
+  );
+  const canEditDetail = canEditSop(resolvedStatusForEdit);
   /* Sinkron state lokal HANYA saat berganti DetailSOP (mis. masuk halaman /:id baru).
      PATCH yang dipicu autosave akan update cache TanStack lewat setQueryData, tapi
      TIDAK boleh menimpa metadata UI yang sedang diketik user. Identitas: detailSopId. */
@@ -655,7 +584,7 @@ export function useDetailSopPenyusunData(
     detailSopId: sopDetailId,
     snapshot: headerSnapshot,
     save: updateSopHeaderMutation.mutateAsync,
-    enabled: Boolean(sopDetailId) && Boolean(sopDetail),
+    enabled: Boolean(sopDetailId) && Boolean(sopDetail) && canEditDetail,
   });
 
   const prosedurSnapshot = useMemo(
@@ -666,7 +595,7 @@ export function useDetailSopPenyusunData(
     detailSopId: sopDetailId,
     snapshot: prosedurSnapshot,
     save: updateSopProsedurMutation.mutateAsync,
-    enabled: Boolean(sopDetailId) && Boolean(sopDetail),
+    enabled: Boolean(sopDetailId) && Boolean(sopDetail) && canEditDetail,
   });
 
   useEffect(() => {
@@ -738,7 +667,7 @@ export function useDetailSopPenyusunData(
     [sopList, sopDetail?.sopId],
   );
 
-  const currentSopStatus: StatusSOP = (sopStatusOverride ?? DEFAULT_SOP_STATUS) as StatusSOP;
+  const currentSopStatus: StatusSOP = resolvedStatusForEdit;
   const isRevisionFlow = currentSopStatus === "REVISI_DARI_TIM_EVALUASI";
   const primaryActionLabel = isRevisionFlow ? "Selesaikan revisi" : "Selesai";
   const isLoading = isLoadingWorkbench;
@@ -776,6 +705,7 @@ export function useDetailSopPenyusunData(
     autosaveError: headerAutosave.lastError,
     prosedurAutosaveStatus: prosedurAutosave.status,
     prosedurAutosaveError: prosedurAutosave.lastError,
+    canEditDetail,
   };
 }
 
@@ -859,6 +789,8 @@ export interface UseDetailSopPenyusunReturn {
   flushHeaderAutosave: () => Promise<void>;
   /** Paksa flush autosave prosedur SOP. */
   flushProsedurAutosave: () => Promise<void>;
+  /** Status dokumen mengizinkan penyuntingan header dan langkah. */
+  canEditDetail: boolean;
 }
 
 export function useDetailSopPenyusun(
@@ -918,38 +850,30 @@ export function useDetailSopPenyusun(
     prosedurAutosaveError: data.prosedurAutosaveError,
     flushHeaderAutosave: data.flushHeaderAutosave,
     flushProsedurAutosave: data.flushProsedurAutosave,
+    canEditDetail: data.canEditDetail,
   };
 }
 
 
 export interface UseDaftarSopDataParams {
+  /** Daftar dari server (sudah termasuk filter status/tanggal bila dikirim ke API). */
+  list: SopDaftarRow[];
   searchQuery: string;
-  filterStatus: string | null;
-  filterPeraturan: string | null;
-  filterTanggalDari: string | null;
-  filterTanggalSampai: string | null;
-  isFilterOpen: boolean;
 }
 
+/** Filter teks pencarian lokal pada daftar SOP yang sudah diambil dari server. */
 export function useDaftarSopData(params: UseDaftarSopDataParams) {
-  const { list = [] } = useSopSuspense();
-  const filteredList = list.filter((sop) => {
+  const filteredList = useMemo(() => {
     const q = params.searchQuery.trim().toLowerCase();
-    const matchesSearch =
-      !q ||
-      sop.judul.toLowerCase().includes(q) ||
-      (sop.nomorSop ?? "").toLowerCase().includes(q) ||
-      (sop.pembuat ?? "").toLowerCase().includes(q);
-    const matchesStatus = !params.filterStatus || params.filterStatus === "all" || sop.status === params.filterStatus;
-    const matchesPeraturan =
-      !params.filterPeraturan || params.filterPeraturan === "all" || sop.peraturanId === params.filterPeraturan;
-    const updated = sop.terakhirDiperbarui;
-    const matchesDateFrom = !params.filterTanggalDari || !updated || updated >= params.filterTanggalDari;
-    const matchesDateTo = !params.filterTanggalSampai || !updated || updated <= params.filterTanggalSampai;
-    return matchesSearch && matchesStatus && matchesPeraturan && matchesDateFrom && matchesDateTo;
-  });
-  const eligibleSopsForEvaluasi = list.filter((sop) => sop.status === "SIAP_DIEVALUASI");
-  return { filteredList, eligibleSopsForEvaluasi };
+    if (!q) return params.list;
+    return params.list.filter(
+      (sop) =>
+        sop.judul.toLowerCase().includes(q) ||
+        (sop.nomorSop ?? "").toLowerCase().includes(q) ||
+        (sop.pembuat ?? "").toLowerCase().includes(q),
+    );
+  }, [params.list, params.searchQuery]);
+  return { filteredList };
 }
 
 /* =====================================================
@@ -966,33 +890,11 @@ export function useSopKomentar(detailSopId: string | undefined) {
   });
 }
 
-/** Mutasi: TIM_EVALUASI kirim komentar baru. */
-export function useCreateSopKomentar(detailSopId: string | undefined) {
-  return useMutationWithToast({
-    mutationFn: (payload: CreateKomentarDto) =>
-      sopApi.createKomentar(detailSopId as string, payload),
-    invalidateKeys: [queryKeys.sopKomentar(detailSopId ?? "")],
-    successMessage: "Komentar berhasil dikirim",
-    errorMessagePrefix: "Gagal mengirim komentar",
-  });
-}
-
-/** Mutasi: PENYUSUN/PJ_PENYUSUN menandai komentar selesai. */
 export function useResolveSopKomentar(detailSopId: string | undefined) {
   return useMutationWithToast({
     mutationFn: (komentarId: string) => sopApi.resolveKomentar(komentarId),
     invalidateKeys: [queryKeys.sopKomentar(detailSopId ?? "")],
     successMessage: "Komentar ditandai selesai",
     errorMessagePrefix: "Gagal menandai komentar selesai",
-  });
-}
-
-/** Mutasi: pembuat (TIM_EVALUASI) menghapus komentarnya sendiri. */
-export function useDeleteSopKomentar(detailSopId: string | undefined) {
-  return useMutationWithToast({
-    mutationFn: (komentarId: string) => sopApi.deleteKomentar(komentarId),
-    invalidateKeys: [queryKeys.sopKomentar(detailSopId ?? "")],
-    successMessage: "Komentar dihapus",
-    errorMessagePrefix: "Gagal menghapus komentar",
   });
 }

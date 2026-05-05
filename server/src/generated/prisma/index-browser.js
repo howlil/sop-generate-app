@@ -190,12 +190,6 @@ exports.Prisma.DetailSOPScalarFieldEnum = {
   tanggalRevisi: 'tanggalRevisi',
   tanggalEfektif: 'tanggalEfektif',
   namaLembaga: 'namaLembaga',
-  lebarKolomKegiatan: 'lebarKolomKegiatan',
-  lebarKolomPelaksana: 'lebarKolomPelaksana',
-  lebarKolomKelengkapan: 'lebarKolomKelengkapan',
-  lebarKolomWaktu: 'lebarKolomWaktu',
-  lebarKolomOutput: 'lebarKolomOutput',
-  lebarKolomKeterangan: 'lebarKolomKeterangan',
   dibuatOlehId: 'dibuatOlehId',
   terakhirDieditOlehId: 'terakhirDieditOlehId',
   createdAt: 'createdAt',
@@ -278,49 +272,6 @@ exports.Prisma.KomentarScalarFieldEnum = {
   userId: 'userId',
   isi: 'isi',
   status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.TataLetakDiagramScalarFieldEnum = {
-  tataLetakDiagramId: 'tataLetakDiagramId',
-  detailSopId: 'detailSopId',
-  jenis: 'jenis',
-  versiLayout: 'versiLayout',
-  layoutSeed: 'layoutSeed',
-  gayaPanah: 'gayaPanah',
-  langkahPerHalaman: 'langkahPerHalaman',
-  lebarAreaKegiatan: 'lebarAreaKegiatan',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.PosisiNodeDiagramScalarFieldEnum = {
-  tataLetakDiagramId: 'tataLetakDiagramId',
-  langkahSopId: 'langkahSopId',
-  page: 'page',
-  x: 'x',
-  y: 'y',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.SisiDiagramScalarFieldEnum = {
-  sisiDiagramId: 'sisiDiagramId',
-  tataLetakDiagramId: 'tataLetakDiagramId',
-  dariLangkahId: 'dariLangkahId',
-  keLangkahId: 'keLangkahId',
-  cabang: 'cabang',
-  labelTeks: 'labelTeks',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.TitikSisiDiagramScalarFieldEnum = {
-  sisiDiagramId: 'sisiDiagramId',
-  urutan: 'urutan',
-  x: 'x',
-  y: 'y',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -547,28 +498,6 @@ exports.Prisma.KomentarOrderByRelevanceFieldEnum = {
   isi: 'isi'
 };
 
-exports.Prisma.TataLetakDiagramOrderByRelevanceFieldEnum = {
-  tataLetakDiagramId: 'tataLetakDiagramId',
-  detailSopId: 'detailSopId'
-};
-
-exports.Prisma.PosisiNodeDiagramOrderByRelevanceFieldEnum = {
-  tataLetakDiagramId: 'tataLetakDiagramId',
-  langkahSopId: 'langkahSopId'
-};
-
-exports.Prisma.SisiDiagramOrderByRelevanceFieldEnum = {
-  sisiDiagramId: 'sisiDiagramId',
-  tataLetakDiagramId: 'tataLetakDiagramId',
-  dariLangkahId: 'dariLangkahId',
-  keLangkahId: 'keLangkahId',
-  labelTeks: 'labelTeks'
-};
-
-exports.Prisma.TitikSisiDiagramOrderByRelevanceFieldEnum = {
-  sisiDiagramId: 'sisiDiagramId'
-};
-
 exports.Prisma.PengajuanEvaluasiOrderByRelevanceFieldEnum = {
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   opdId: 'opdId',
@@ -683,22 +612,6 @@ exports.StatusKomentar = exports.$Enums.StatusKomentar = {
   SELESAI: 'SELESAI'
 };
 
-exports.JenisDiagramSOP = exports.$Enums.JenisDiagramSOP = {
-  FLOWCHART: 'FLOWCHART',
-  BPMN: 'BPMN'
-};
-
-exports.GayaPanah = exports.$Enums.GayaPanah = {
-  LURUS: 'LURUS',
-  SIKU: 'SIKU'
-};
-
-exports.CabangDiagramEdge = exports.$Enums.CabangDiagramEdge = {
-  UTAMA: 'UTAMA',
-  YA: 'YA',
-  TIDAK: 'TIDAK'
-};
-
 exports.JenisPengajuanEvaluasi = exports.$Enums.JenisPengajuanEvaluasi = {
   TERJADWAL: 'TERJADWAL',
   MANDIRI: 'MANDIRI'
@@ -715,7 +628,7 @@ exports.StatusPengajuanEvaluasi = exports.$Enums.StatusPengajuanEvaluasi = {
 
 exports.HasilEvaluasi = exports.$Enums.HasilEvaluasi = {
   SESUAI: 'SESUAI',
-  TIDAK_SESUAI: 'TIDAK_SESUAI'
+  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN'
 };
 
 exports.JenisDokumenTte = exports.$Enums.JenisDokumenTte = {
@@ -740,10 +653,6 @@ exports.Prisma.ModelName = {
   DetailSOPPelaksana: 'DetailSOPPelaksana',
   LogEditSOP: 'LogEditSOP',
   Komentar: 'Komentar',
-  TataLetakDiagram: 'TataLetakDiagram',
-  PosisiNodeDiagram: 'PosisiNodeDiagram',
-  SisiDiagram: 'SisiDiagram',
-  TitikSisiDiagram: 'TitikSisiDiagram',
   PengajuanEvaluasi: 'PengajuanEvaluasi',
   NilaiEvaluasi: 'NilaiEvaluasi',
   LogNilaiEvaluasi: 'LogNilaiEvaluasi',

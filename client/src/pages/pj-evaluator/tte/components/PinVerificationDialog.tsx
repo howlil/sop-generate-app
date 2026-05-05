@@ -24,7 +24,7 @@ export function PinVerificationDialog({
   open,
   onOpenChange,
   title,
-  description = 'Masukkan PIN TTE BSRE Anda untuk melanjutkan.',
+  description = 'Masukkan PIN TTE Anda untuk melanjutkan (simulasi).',
   onConfirm,
   confirmLabel = 'Verifikasi PIN',
 }: PinVerificationDialogProps) {

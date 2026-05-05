@@ -72,12 +72,6 @@ export interface SopDetail {
   tanggalEfektif?: string;
   logoInstansi: string;
   namaLembaga: string;
-  lebarKolomKegiatan?: number;
-  lebarKolomPelaksana?: number;
-  lebarKolomKelengkapan?: number;
-  lebarKolomWaktu?: number;
-  lebarKolomOutput?: number;
-  lebarKolomKeterangan?: number;
   dibuatOlehId?: string;
   terakhirDieditOlehId?: string;
   createdAt: string;
@@ -209,7 +203,12 @@ export interface Pelaksana {
 
 export interface SopListQueryParams {
   opdId?: string;
+  /** Status DetailSOP terbaru (bukan `all`). */
   status?: string;
+  /** Batas bawah tanggal `updatedAt` (YYYY-MM-DD, UTC). */
+  tanggalDari?: string;
+  /** Batas atas tanggal `updatedAt` (YYYY-MM-DD, UTC). */
+  tanggalSampai?: string;
 }
 
 export interface DetailSopListQueryParams {
@@ -231,21 +230,11 @@ export interface CreateSopRequestDto {
   namaLembaga?: string;
 }
 
-export interface UpdateSopJudulDto {
-  judul: string;
-}
-
 export interface UpdateMetadataDto {
   logoInstansi?: string;
   namaLembaga?: string;
   tanggalRevisi?: string;
   tanggalEfektif?: string;
-  lebarKolomKegiatan?: number;
-  lebarKolomPelaksana?: number;
-  lebarKolomKelengkapan?: number;
-  lebarKolomWaktu?: number;
-  lebarKolomOutput?: number;
-  lebarKolomKeterangan?: number;
 }
 
 /** Payload PATCH `/sop/header/:detailSopId` — semua field opsional, hanya yang dikirim yang disimpan. */
@@ -357,19 +346,9 @@ export interface CreateSopTerkaitDto {
   sopTerkaitId: string;
 }
 
-export interface UpdateSopMutationDto {
-  id: string;
-  judul: string;
-}
-
 export interface UpdateMetadataMutationDto {
   id: string;
   payload: UpdateMetadataDto;
-}
-
-export interface UpdateStatusMutationDto {
-  id: string;
-  payload: UpdateStatusDto;
 }
 
 export interface SetSopStatusOverrideMutationDto {

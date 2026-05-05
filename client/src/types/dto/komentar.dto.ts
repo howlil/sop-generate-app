@@ -4,12 +4,12 @@ export type StatusKomentar = "TERBUKA" | "SELESAI";
 export interface KomentarUser {
   id: string;
   nama: string;
-  /** Peran pengguna (mis. "TIM_EVALUASI", "PENYUSUN"). */
+  /** Peran pengguna (mis. "EVALUATOR", "PENYUSUN"). */
   peran: string;
   email?: string | null;
 }
 
-/** Item komentar SOP — diproduksi oleh TIM_EVALUASI, ditandai selesai oleh penyusun. */
+/** Item komentar SOP — diproduksi oleh evaluator, ditandai selesai oleh penyusun. */
 export interface KomentarItem {
   id: string;
   sopDetailId: string;

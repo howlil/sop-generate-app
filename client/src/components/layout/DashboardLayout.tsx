@@ -114,7 +114,7 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
     },
   ],
   EVALUATOR: [
-    { to: ROUTES.TIM_EVALUASI.EVALUASI, label: "Evaluasi SOP", icon: FileCheck },
+    { to: ROUTES.EVALUATOR.EVALUASI, label: "Evaluasi SOP", icon: FileCheck },
   ],
 };
 

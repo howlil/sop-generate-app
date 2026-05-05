@@ -70,8 +70,16 @@ export function DetailSOPPenyusun() {
     prosedurAutosaveStatus,
     prosedurAutosaveError,
     flushProsedurAutosave,
+    canEditDetail,
   } = useDetailSopPenyusun(id, detailMetaState?.sopStatus, undefined)
 
+  const isReadOnly = !canEditDetail
+
+  useEffect(() => {
+    if (isReadOnly) {
+      setIsEditingSteps(false)
+    }
+  }, [isReadOnly, setIsEditingSteps])
   /* `setMetadata` perlu di-cast karena hook mengembalikan dispatcher yang sama persis
      bentuknya dengan tipe context — alias ini hanya untuk memenuhi naming convention. */
   const setMetadata = _setMetadata
@@ -83,6 +91,7 @@ export function DetailSOPPenyusun() {
   /* Toast error autosave sekali per error reference (hindari spam saat re-render). */
   const lastHeaderErrorRef = useRef<Error | null>(null)
   useEffect(() => {
+    if (isReadOnly) return
     if (autosaveError && autosaveError !== lastHeaderErrorRef.current) {
       lastHeaderErrorRef.current = autosaveError
       showToast(`Gagal autosave header SOP: ${autosaveError.message}`, 'error')
@@ -90,10 +99,11 @@ export function DetailSOPPenyusun() {
     if (autosaveError === null) {
       lastHeaderErrorRef.current = null
     }
-  }, [autosaveError, showToast])
+  }, [autosaveError, showToast, isReadOnly])
 
   const lastProsedurErrorRef = useRef<Error | null>(null)
   useEffect(() => {
+    if (isReadOnly) return
     if (prosedurAutosaveError && prosedurAutosaveError !== lastProsedurErrorRef.current) {
       lastProsedurErrorRef.current = prosedurAutosaveError
       showToast(
@@ -104,22 +114,33 @@ export function DetailSOPPenyusun() {
     if (prosedurAutosaveError === null) {
       lastProsedurErrorRef.current = null
     }
-  }, [prosedurAutosaveError, showToast])
+  }, [prosedurAutosaveError, showToast, isReadOnly])
 
-  /* Best-effort flush sebelum user menutup tab/refresh + saat unmount. Header dan
-     prosedur di-flush bersamaan agar tidak ada perubahan tertinggal di salah satu. */
+  /* Best-effort flush sebelum tab disembunyikan / ditutup / refresh. */
   useEffect(() => {
-    const handleBeforeUnload = () => {
+    if (isReadOnly) return
+    const flushBothFireAndForget = (): void => {
       void flushHeaderAutosave()
       void flushProsedurAutosave()
     }
-    window.addEventListener('beforeunload', handleBeforeUnload)
+    const flushBothAwaited = (): void => {
+      void Promise.all([flushHeaderAutosave(), flushProsedurAutosave()])
+    }
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState === 'hidden') {
+        flushBothAwaited()
+      }
+    }
+    window.addEventListener('beforeunload', flushBothFireAndForget)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('pagehide', flushBothAwaited)
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload)
-      void flushHeaderAutosave()
-      void flushProsedurAutosave()
+      window.removeEventListener('beforeunload', flushBothFireAndForget)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('pagehide', flushBothAwaited)
+      flushBothAwaited()
     }
-  }, [flushHeaderAutosave, flushProsedurAutosave])
+  }, [flushHeaderAutosave, flushProsedurAutosave, isReadOnly])
 
   const editorContextValue = useMemo<SopEditorContextValue>(
     () => ({
@@ -144,6 +165,7 @@ export function DetailSOPPenyusun() {
       isKomentarLoading,
       resolveKomentar: resolveKomentarAsync,
       isResolvingKomentar,
+      isReadOnly,
     }),
     [
       id,
@@ -167,6 +189,7 @@ export function DetailSOPPenyusun() {
       isKomentarLoading,
       resolveKomentarAsync,
       isResolvingKomentar,
+      isReadOnly,
     ],
   )
 
@@ -185,9 +208,9 @@ export function DetailSOPPenyusun() {
       <DetailPageLayout
         breadcrumb={[
           { label: 'Manajemen SOP', to: ROUTES.PENYUSUN.SOP },
-          { label: 'Edit SOP' },
+          { label: isReadOnly ? 'Lihat SOP' : 'Edit SOP' },
         ]}
-        title="Edit Dokumen SOP"
+        title={isReadOnly ? 'Lihat Dokumen SOP' : 'Edit Dokumen SOP'}
         description={metadata.nama ?? metadata.judul ?? ''}
         backTo={ROUTES.PENYUSUN.SOP}
         backSize="icon"
@@ -202,6 +225,7 @@ export function DetailSOPPenyusun() {
             onRetryAutosave={combinedFlushAutosave}
             onComplete={() => handleComplete(id, role ?? null, navigate)}
             onPrint={() => window.print()}
+            isReadOnly={isReadOnly}
           />
         }
         main={
@@ -221,6 +245,7 @@ export function DetailSOPPenyusun() {
             rightPanelTab={rightPanelTab}
             onTabChange={setRightPanelTab}
             auditEntries={auditLogs ?? []}
+            editTabLabel={isReadOnly ? 'Informasi' : 'Edit'}
           />
         }
       />

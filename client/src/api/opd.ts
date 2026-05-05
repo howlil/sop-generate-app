@@ -10,6 +10,7 @@ import { STALE_TIME } from '@/utils/constants'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   CreateOpdDto,
+  OpdEvaluasiRingkas,
   OpdMutasi,
   OpdRingkas,
   UpdateOpdDto,
@@ -58,11 +59,41 @@ export const opdApi = {
   delete: async (id: string): Promise<void> => {
     await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/opd/${id}`))
   },
+
+  /** GET `/opd/evaluasi-ringkas` — peran EVALUATOR / PJ_EVALUATOR. */
+  findEvaluasiRingkas: async (params?: {
+    search?: string
+  }): Promise<OpdEvaluasiRingkas[]> => {
+    const s = params?.search?.trim()
+    const qs = buildQueryString(s ? { search: s } : undefined)
+    return unwrap(
+      apiClient.get<ApiSuccessResponse<OpdEvaluasiRingkas[]>>(
+        `/opd/evaluasi-ringkas${qs}`,
+      ),
+    )
+  },
 }
 
 export interface UseOpdOptions {
   /** Filter nama OPD (substring); relevan untuk PJ_EVALUATOR. */
   readonly search?: string
+}
+
+export function useOpdEvaluasiRingkas(search?: string) {
+  const searchKey = search?.trim() ?? ''
+  const { data, isLoading, error } = useQuery({
+    queryKey: queryKeys.opdEvaluasiRingkas(searchKey || undefined),
+    queryFn: () =>
+      opdApi.findEvaluasiRingkas(
+        searchKey ? { search: searchKey } : undefined,
+      ),
+    staleTime: STALE_TIME.MEDIUM,
+  })
+  return {
+    list: data ?? [],
+    isLoading,
+    error,
+  }
 }
 
 export function useOpd(options?: UseOpdOptions) {

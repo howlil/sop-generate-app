@@ -75,7 +75,9 @@ export interface SopEditorContextValue {
   prosedurAutosaveError: Error | null
   /** Paksa flush autosave prosedur SOP. */
   flushProsedurAutosave: () => Promise<void>
-  /** Daftar komentar SOP (TIM_EVALUASI -> PENYUSUN). */
+  /** Dokumen hanya untuk dibaca (status tidak mengizinkan penyuntingan). */
+  isReadOnly: boolean
+  /** Daftar komentar SOP (evaluator → penyusun). */
   komentarList: KomentarItem[]
   /** True saat fetching daftar komentar (untuk skeleton/empty state). */
   isKomentarLoading: boolean
@@ -119,6 +121,7 @@ export function SopEditorProvider({ value, children }: SopEditorProviderProps) {
       value.isKomentarLoading,
       value.resolveKomentar,
       value.isResolvingKomentar,
+      value.isReadOnly,
     ],
   )
   return (
@@ -134,7 +137,7 @@ export function useSopEditor(): SopEditorContextValue {
   return ctx
 }
 
-/** Versi non-throwing untuk komponen yang dapat dipakai di luar provider (mis. tim-evaluasi). */
+/** Versi non-throwing untuk komponen yang dapat dipakai di luar provider (mis. halaman evaluator). */
 export function useSopEditorOptional(): SopEditorContextValue | null {
   return useContext(SopEditorContext)
 }

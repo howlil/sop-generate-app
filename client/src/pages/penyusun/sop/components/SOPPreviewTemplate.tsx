@@ -9,7 +9,7 @@ import { SOPDiagramBpmn } from "./SOPDiagram/SOPDiagramBpmn";
 import { rowsToSteps } from "./SOPDiagram/logic/sopDiagramTypes";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { TTESignaturePayload } from "@/types/dto/tte.dto";
-import type { ProsedurRow } from "@/types/ui/sop";
+import type { ProsedurRow, SOPDetailMetadata } from "@/types/ui/sop";
 import {
   getInitialSopDetailMetadata,
   getInitialSopDetailImplementers,
@@ -44,7 +44,8 @@ export interface SOPPreviewTemplateProps {
   /** TTE signature payload jika SOP sudah disahkan */
   tteSignaturePayload?: TTESignaturePayload | null;
   /** Metadata lengkap (jika ada, dipakai untuk header; jika tidak, pakai seed + name/number) */
-  metadata?: Partial<SOPHeaderInfoProps> & { name: string };
+  metadata?: Partial<SOPHeaderInfoProps> &
+    Partial<SOPDetailMetadata> & { name: string };
   /** Prosedur rows (jika tidak ada, pakai seed) */
   prosedurRows?: ProsedurRow[];
   /** Implementers (jika tidak ada, pakai seed) */
@@ -105,11 +106,33 @@ export function SOPPreviewTemplate({
     [prosedurRows, safeImplementers],
   );
 
+  /** Selaraskan field metadata penyusun/API (`tanggalPembuatan`, `nama`) ke props header cetak. */
   const metadata: SOPHeaderInfoProps = {
     ...DEFAULT_METADATA,
     ...(nameOverride != null && { name: nameOverride }),
     ...(numberOverride != null && { number: numberOverride }),
     ...metadataOverride,
+    ...(metadataOverride &&
+    metadataOverride.tanggalPembuatan != null &&
+    String(metadataOverride.tanggalPembuatan).trim() !== ""
+      ? { createdDate: String(metadataOverride.tanggalPembuatan) }
+      : {}),
+    ...(metadataOverride &&
+    metadataOverride.tanggalRevisi != null &&
+    String(metadataOverride.tanggalRevisi).trim() !== ""
+      ? { revisionDate: String(metadataOverride.tanggalRevisi) }
+      : {}),
+    ...(metadataOverride &&
+    metadataOverride.tanggalEfektif != null &&
+    String(metadataOverride.tanggalEfektif).trim() !== ""
+      ? { effectiveDate: String(metadataOverride.tanggalEfektif) }
+      : {}),
+    ...(metadataOverride &&
+    !metadataOverride.name &&
+    metadataOverride.nama != null &&
+    String(metadataOverride.nama).trim() !== ""
+      ? { name: String(metadataOverride.nama) }
+      : {}),
   } as SOPHeaderInfoProps;
 
   const hasDiagramToolbar = effectiveOptions.toolbar != null;

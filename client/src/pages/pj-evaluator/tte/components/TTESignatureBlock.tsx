@@ -45,7 +45,7 @@ export function TTESignatureBlock({
       <p className="text-xs font-medium text-gray-700 mb-1">{roleLabel}</p>
       <p className="text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
       <p className="text-xs text-gray-600">NIP. {payload.nip}</p>
-      <p className="text-xs text-gray-500 mt-1">Tanda Tangan Elektronik BSRE</p>
+      <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p>
       <p className="text-xs text-gray-500">{signedDate}</p>
       {qrDataUrl && (
         <div className="mt-2 flex justify-center">

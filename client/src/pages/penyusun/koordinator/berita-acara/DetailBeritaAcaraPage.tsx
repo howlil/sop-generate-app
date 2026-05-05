@@ -297,7 +297,7 @@ export function DetailBeritaAcaraPage() {
       open={tteDialogOpen}
       onOpenChange={setTteDialogOpen}
       title="Verifikasi PIN TTE"
-      description="Masukkan PIN TTE BSRE untuk menandatangani Berita Acara ini."
+      description="Masukkan PIN TTE untuk menandatangani Berita Acara ini (simulasi)."
       onConfirm={handlePinConfirm}
     />
     </>

@@ -5,13 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { SetPageHeader } from '@/components/layout/PageHeaderProvider'
 import type { TTERole } from "@/types/dto/tte.dto";
 import {
-  getTTEVerificationSuccessUrl,
-  useMintTokenVerifikasi,
   useRegisterTTE,
   useTTEProfil,
 } from '@/api/tte'
 import { formatDateIdLong } from '@/utils/format-date'
 import { TTEBuatDialog } from './components/TTEBuatDialog'
+import { useAppRole } from '@/hooks/useAppRole'
 
 const ROLE_LABEL: Record<TTERole, string> = {
   'kepala-opd': 'Kepala OPD',
@@ -21,18 +20,14 @@ const ROLE_LABEL: Record<TTERole, string> = {
 
 export interface TTDElektronikPageProps {
   role: TTERole
-  defaultNip: string
-  defaultNama: string
 }
 
 export function TTDElektronikPage({
   role,
-  defaultNip,
-  defaultNama,
 }: TTDElektronikPageProps) {
+  const { user, getRoleNip, getRoleDisplayName } = useAppRole()
   const { data: profile, isLoading } = useTTEProfil()
   const registerTTE = useRegisterTTE()
-  const mintTokenVerifikasi = useMintTokenVerifikasi()
   const [dialogOpen, setDialogOpen] = useState(false)
 
   const statusLabel = !profile
@@ -50,8 +45,8 @@ export function TTDElektronikPage({
     <div className="space-y-4">
       <SetPageHeader
         breadcrumb={[{ label: ROLE_LABEL[role] }, { label: 'TTD Elektronik' }]}
-        title="Buat TTD Elektronik (TTE BSRE)"
-        description="Kelola tanda tangan elektronik untuk mengesahkan SOP atau memverifikasi evaluasi."
+        title="TTD Elektronik (simulasi BSRE)"
+        description="Kelola PIN penandatanganan untuk mengesahkan SOP atau Berita Acara. Identitas dari akun login; tanpa integrasi BSSN."
       />
 
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -94,13 +89,10 @@ export function TTDElektronikPage({
       <TTEBuatDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        role={role}
-        defaultNip={defaultNip}
-        defaultNama={defaultNama}
-        profile={profile}
+        namaRingkas={profile?.user?.nama ?? getRoleDisplayName() ?? user?.nama ?? ''}
+        nipRingkas={profile?.user?.nip ?? getRoleNip() ?? user?.nip ?? ''}
+        profile={profile ?? undefined}
         onRegisterTTE={(payload) => registerTTE.mutateAsync(payload)}
-        onMintTokenVerifikasi={() => mintTokenVerifikasi.mutateAsync()}
-        getVerificationUrl={getTTEVerificationSuccessUrl}
       />
     </div>
   )

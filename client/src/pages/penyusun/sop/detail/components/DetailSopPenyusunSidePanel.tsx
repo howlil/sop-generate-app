@@ -11,6 +11,8 @@ export interface DetailSOPPenyusunSidePanelProps {
   rightPanelTab: "edit" | "komentar" | "aktivitas";
   onTabChange: (tab: "edit" | "komentar" | "aktivitas") => void;
   auditEntries: PenyusunWorkbenchLogEdit[];
+  /** Label tab pertama (Edit vs Informasi saat mode lihat). */
+  editTabLabel?: string;
 }
 
 export function DetailSOPPenyusunSidePanel({
@@ -19,6 +21,7 @@ export function DetailSOPPenyusunSidePanel({
   rightPanelTab,
   onTabChange,
   auditEntries = [],
+  editTabLabel = 'Edit',
 }: DetailSOPPenyusunSidePanelProps) {
   return (
     <CollapsibleSidePanel
@@ -28,15 +31,24 @@ export function DetailSOPPenyusunSidePanel({
       widthCollapsed="w-10"
       widthExpanded="w-full"
       tabs={[
-        { id: 'edit', label: 'Edit', icon: <PenLine className="w-3.5 h-3.5" /> },
-        { id: 'komentar', label: 'Komentar', icon: <MessageSquare className="w-3.5 h-3.5" /> },
+        { id: 'edit', label: editTabLabel, icon: <PenLine className="w-3.5 h-3.5" /> },
+        { id: 'komentar', label: 'Umpan balik', icon: <MessageSquare className="w-3.5 h-3.5" /> },
         { id: 'aktivitas', label: 'Aktivitas', icon: <Activity className="w-3.5 h-3.5" /> },
       ]}
       activeTab={rightPanelTab}
       onTabChange={onTabChange as (tabId: string) => void}
     >
       {rightPanelTab === 'edit' && <DetailSOPMetadataPanel />}
-      {rightPanelTab === 'komentar' && <KomentarPanel />}
+      {rightPanelTab === 'komentar' && (
+        <div className="flex flex-col min-h-0 flex-1">
+          <p className="text-xs text-gray-500 px-3 pt-3 pb-2 border-b border-gray-100 flex-shrink-0 leading-snug">
+            Riwayat umpan balik Tim Evaluasi. Catatan formal saat dokumen dikembalikan untuk revisi muncul di sini secara otomatis; Anda dapat menandai entri sebagai selesai setelah ditindaklanjuti.
+          </p>
+          <div className="flex-1 min-h-0 overflow-auto">
+            <KomentarPanel />
+          </div>
+        </div>
+      )}
       {rightPanelTab === 'aktivitas' && (
         <div className="p-3">
           <p className="text-xs text-gray-500 mb-3">

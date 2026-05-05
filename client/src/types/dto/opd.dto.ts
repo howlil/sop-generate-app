@@ -4,6 +4,14 @@ export interface OpdRingkas {
   nama: string;
 }
 
+/** GET `/opd/evaluasi-ringkas` — OPD dengan jumlah SOP dalam pipeline evaluasi. */
+export interface OpdEvaluasiRingkas {
+  id: string;
+  nama: string;
+  jumlahSop: number;
+  jumlahSopBaru: number;
+}
+
 /** OPD setelah create/update — selaras server. */
 export interface OpdMutasi {
   id: string;

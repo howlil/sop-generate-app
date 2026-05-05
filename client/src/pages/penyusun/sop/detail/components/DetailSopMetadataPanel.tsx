@@ -16,6 +16,7 @@ export function DetailSOPMetadataPanel() {
     implementers,
     setImplementers,
     masterPelaksanaOptions,
+    isReadOnly,
   } = useSopEditor()
   const [isLawBasisOpen, setIsLawBasisOpen] = useState(false)
   const [isRelatedPosOpen, setIsRelatedPosOpen] = useState(false)
@@ -31,6 +32,8 @@ export function DetailSOPMetadataPanel() {
         />
       </div>
 
+      {!isReadOnly ? (
+        <>
       <LawBasisDialog
         open={isLawBasisOpen}
         onOpenChange={setIsLawBasisOpen}
@@ -57,6 +60,8 @@ export function DetailSOPMetadataPanel() {
           existingImplementers={implementers}
           onAdd={(fullList) => setImplementers(fullList)}
         />
+      ) : null}
+        </>
       ) : null}
     </>
   )

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { TTESignaturePayload } from '../types/tte'
+import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 
 /** Skema runtime untuk payload tanda tangan TTE dari API (JSON). */
 export const tteSignaturePayloadSchema = z.object({

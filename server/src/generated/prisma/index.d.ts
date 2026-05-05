@@ -95,28 +95,6 @@ export type LogEditSOP = $Result.DefaultSelection<Prisma.$LogEditSOPPayload>
  */
 export type Komentar = $Result.DefaultSelection<Prisma.$KomentarPayload>
 /**
- * Model TataLetakDiagram
- * =========================
- * MODUL 4 — DIAGRAM SOP
- * =========================
- */
-export type TataLetakDiagram = $Result.DefaultSelection<Prisma.$TataLetakDiagramPayload>
-/**
- * Model PosisiNodeDiagram
- * 
- */
-export type PosisiNodeDiagram = $Result.DefaultSelection<Prisma.$PosisiNodeDiagramPayload>
-/**
- * Model SisiDiagram
- * 
- */
-export type SisiDiagram = $Result.DefaultSelection<Prisma.$SisiDiagramPayload>
-/**
- * Model TitikSisiDiagram
- * 
- */
-export type TitikSisiDiagram = $Result.DefaultSelection<Prisma.$TitikSisiDiagramPayload>
-/**
  * Model PengajuanEvaluasi
  * =========================
  * MODUL 5 — PENGAJUAN & EVALUASI SOP
@@ -204,31 +182,6 @@ export const SatuanWaktu: {
 export type SatuanWaktu = (typeof SatuanWaktu)[keyof typeof SatuanWaktu]
 
 
-export const JenisDiagramSOP: {
-  FLOWCHART: 'FLOWCHART',
-  BPMN: 'BPMN'
-};
-
-export type JenisDiagramSOP = (typeof JenisDiagramSOP)[keyof typeof JenisDiagramSOP]
-
-
-export const CabangDiagramEdge: {
-  UTAMA: 'UTAMA',
-  YA: 'YA',
-  TIDAK: 'TIDAK'
-};
-
-export type CabangDiagramEdge = (typeof CabangDiagramEdge)[keyof typeof CabangDiagramEdge]
-
-
-export const GayaPanah: {
-  LURUS: 'LURUS',
-  SIKU: 'SIKU'
-};
-
-export type GayaPanah = (typeof GayaPanah)[keyof typeof GayaPanah]
-
-
 export const JenisPengajuanEvaluasi: {
   TERJADWAL: 'TERJADWAL',
   MANDIRI: 'MANDIRI'
@@ -251,7 +204,7 @@ export type StatusPengajuanEvaluasi = (typeof StatusPengajuanEvaluasi)[keyof typ
 
 export const HasilEvaluasi: {
   SESUAI: 'SESUAI',
-  TIDAK_SESUAI: 'TIDAK_SESUAI'
+  PERLU_PERBAIKAN: 'PERLU_PERBAIKAN'
 };
 
 export type HasilEvaluasi = (typeof HasilEvaluasi)[keyof typeof HasilEvaluasi]
@@ -311,18 +264,6 @@ export const JenisLangkahProsedur: typeof $Enums.JenisLangkahProsedur
 export type SatuanWaktu = $Enums.SatuanWaktu
 
 export const SatuanWaktu: typeof $Enums.SatuanWaktu
-
-export type JenisDiagramSOP = $Enums.JenisDiagramSOP
-
-export const JenisDiagramSOP: typeof $Enums.JenisDiagramSOP
-
-export type CabangDiagramEdge = $Enums.CabangDiagramEdge
-
-export const CabangDiagramEdge: typeof $Enums.CabangDiagramEdge
-
-export type GayaPanah = $Enums.GayaPanah
-
-export const GayaPanah: typeof $Enums.GayaPanah
 
 export type JenisPengajuanEvaluasi = $Enums.JenisPengajuanEvaluasi
 
@@ -622,46 +563,6 @@ export class PrismaClient<
     * ```
     */
   get komentar(): Prisma.KomentarDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.tataLetakDiagram`: Exposes CRUD operations for the **TataLetakDiagram** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more TataLetakDiagrams
-    * const tataLetakDiagrams = await prisma.tataLetakDiagram.findMany()
-    * ```
-    */
-  get tataLetakDiagram(): Prisma.TataLetakDiagramDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.posisiNodeDiagram`: Exposes CRUD operations for the **PosisiNodeDiagram** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more PosisiNodeDiagrams
-    * const posisiNodeDiagrams = await prisma.posisiNodeDiagram.findMany()
-    * ```
-    */
-  get posisiNodeDiagram(): Prisma.PosisiNodeDiagramDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.sisiDiagram`: Exposes CRUD operations for the **SisiDiagram** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more SisiDiagrams
-    * const sisiDiagrams = await prisma.sisiDiagram.findMany()
-    * ```
-    */
-  get sisiDiagram(): Prisma.SisiDiagramDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.titikSisiDiagram`: Exposes CRUD operations for the **TitikSisiDiagram** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more TitikSisiDiagrams
-    * const titikSisiDiagrams = await prisma.titikSisiDiagram.findMany()
-    * ```
-    */
-  get titikSisiDiagram(): Prisma.TitikSisiDiagramDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.pengajuanEvaluasi`: Exposes CRUD operations for the **PengajuanEvaluasi** model.
@@ -1171,10 +1072,6 @@ export namespace Prisma {
     DetailSOPPelaksana: 'DetailSOPPelaksana',
     LogEditSOP: 'LogEditSOP',
     Komentar: 'Komentar',
-    TataLetakDiagram: 'TataLetakDiagram',
-    PosisiNodeDiagram: 'PosisiNodeDiagram',
-    SisiDiagram: 'SisiDiagram',
-    TitikSisiDiagram: 'TitikSisiDiagram',
     PengajuanEvaluasi: 'PengajuanEvaluasi',
     NilaiEvaluasi: 'NilaiEvaluasi',
     LogNilaiEvaluasi: 'LogNilaiEvaluasi',
@@ -1196,7 +1093,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranTeks" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "komentar" | "tataLetakDiagram" | "posisiNodeDiagram" | "sisiDiagram" | "titikSisiDiagram" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "kredensialTTE" | "dokumenTte" | "riwayatTandaTangan"
+      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranTeks" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "komentar" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "kredensialTTE" | "dokumenTte" | "riwayatTandaTangan"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2190,270 +2087,6 @@ export namespace Prisma {
           }
         }
       }
-      TataLetakDiagram: {
-        payload: Prisma.$TataLetakDiagramPayload<ExtArgs>
-        fields: Prisma.TataLetakDiagramFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.TataLetakDiagramFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.TataLetakDiagramFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>
-          }
-          findFirst: {
-            args: Prisma.TataLetakDiagramFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.TataLetakDiagramFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>
-          }
-          findMany: {
-            args: Prisma.TataLetakDiagramFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>[]
-          }
-          create: {
-            args: Prisma.TataLetakDiagramCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>
-          }
-          createMany: {
-            args: Prisma.TataLetakDiagramCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.TataLetakDiagramDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>
-          }
-          update: {
-            args: Prisma.TataLetakDiagramUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>
-          }
-          deleteMany: {
-            args: Prisma.TataLetakDiagramDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.TataLetakDiagramUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.TataLetakDiagramUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TataLetakDiagramPayload>
-          }
-          aggregate: {
-            args: Prisma.TataLetakDiagramAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateTataLetakDiagram>
-          }
-          groupBy: {
-            args: Prisma.TataLetakDiagramGroupByArgs<ExtArgs>
-            result: $Utils.Optional<TataLetakDiagramGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.TataLetakDiagramCountArgs<ExtArgs>
-            result: $Utils.Optional<TataLetakDiagramCountAggregateOutputType> | number
-          }
-        }
-      }
-      PosisiNodeDiagram: {
-        payload: Prisma.$PosisiNodeDiagramPayload<ExtArgs>
-        fields: Prisma.PosisiNodeDiagramFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.PosisiNodeDiagramFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.PosisiNodeDiagramFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>
-          }
-          findFirst: {
-            args: Prisma.PosisiNodeDiagramFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.PosisiNodeDiagramFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>
-          }
-          findMany: {
-            args: Prisma.PosisiNodeDiagramFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>[]
-          }
-          create: {
-            args: Prisma.PosisiNodeDiagramCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>
-          }
-          createMany: {
-            args: Prisma.PosisiNodeDiagramCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.PosisiNodeDiagramDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>
-          }
-          update: {
-            args: Prisma.PosisiNodeDiagramUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>
-          }
-          deleteMany: {
-            args: Prisma.PosisiNodeDiagramDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.PosisiNodeDiagramUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.PosisiNodeDiagramUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$PosisiNodeDiagramPayload>
-          }
-          aggregate: {
-            args: Prisma.PosisiNodeDiagramAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregatePosisiNodeDiagram>
-          }
-          groupBy: {
-            args: Prisma.PosisiNodeDiagramGroupByArgs<ExtArgs>
-            result: $Utils.Optional<PosisiNodeDiagramGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.PosisiNodeDiagramCountArgs<ExtArgs>
-            result: $Utils.Optional<PosisiNodeDiagramCountAggregateOutputType> | number
-          }
-        }
-      }
-      SisiDiagram: {
-        payload: Prisma.$SisiDiagramPayload<ExtArgs>
-        fields: Prisma.SisiDiagramFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.SisiDiagramFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.SisiDiagramFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>
-          }
-          findFirst: {
-            args: Prisma.SisiDiagramFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.SisiDiagramFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>
-          }
-          findMany: {
-            args: Prisma.SisiDiagramFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>[]
-          }
-          create: {
-            args: Prisma.SisiDiagramCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>
-          }
-          createMany: {
-            args: Prisma.SisiDiagramCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.SisiDiagramDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>
-          }
-          update: {
-            args: Prisma.SisiDiagramUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>
-          }
-          deleteMany: {
-            args: Prisma.SisiDiagramDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.SisiDiagramUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.SisiDiagramUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$SisiDiagramPayload>
-          }
-          aggregate: {
-            args: Prisma.SisiDiagramAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateSisiDiagram>
-          }
-          groupBy: {
-            args: Prisma.SisiDiagramGroupByArgs<ExtArgs>
-            result: $Utils.Optional<SisiDiagramGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.SisiDiagramCountArgs<ExtArgs>
-            result: $Utils.Optional<SisiDiagramCountAggregateOutputType> | number
-          }
-        }
-      }
-      TitikSisiDiagram: {
-        payload: Prisma.$TitikSisiDiagramPayload<ExtArgs>
-        fields: Prisma.TitikSisiDiagramFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.TitikSisiDiagramFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.TitikSisiDiagramFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>
-          }
-          findFirst: {
-            args: Prisma.TitikSisiDiagramFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.TitikSisiDiagramFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>
-          }
-          findMany: {
-            args: Prisma.TitikSisiDiagramFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>[]
-          }
-          create: {
-            args: Prisma.TitikSisiDiagramCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>
-          }
-          createMany: {
-            args: Prisma.TitikSisiDiagramCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.TitikSisiDiagramDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>
-          }
-          update: {
-            args: Prisma.TitikSisiDiagramUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>
-          }
-          deleteMany: {
-            args: Prisma.TitikSisiDiagramDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.TitikSisiDiagramUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.TitikSisiDiagramUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$TitikSisiDiagramPayload>
-          }
-          aggregate: {
-            args: Prisma.TitikSisiDiagramAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateTitikSisiDiagram>
-          }
-          groupBy: {
-            args: Prisma.TitikSisiDiagramGroupByArgs<ExtArgs>
-            result: $Utils.Optional<TitikSisiDiagramGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.TitikSisiDiagramCountArgs<ExtArgs>
-            result: $Utils.Optional<TitikSisiDiagramCountAggregateOutputType> | number
-          }
-        }
-      }
       PengajuanEvaluasi: {
         payload: Prisma.$PengajuanEvaluasiPayload<ExtArgs>
         fields: Prisma.PengajuanEvaluasiFieldRefs
@@ -2973,10 +2606,6 @@ export namespace Prisma {
     detailSOPPelaksana?: DetailSOPPelaksanaOmit
     logEditSOP?: LogEditSOPOmit
     komentar?: KomentarOmit
-    tataLetakDiagram?: TataLetakDiagramOmit
-    posisiNodeDiagram?: PosisiNodeDiagramOmit
-    sisiDiagram?: SisiDiagramOmit
-    titikSisiDiagram?: TitikSisiDiagramOmit
     pengajuanEvaluasi?: PengajuanEvaluasiOmit
     nilaiEvaluasi?: NilaiEvaluasiOmit
     logNilaiEvaluasi?: LogNilaiEvaluasiOmit
@@ -3334,7 +2963,6 @@ export namespace Prisma {
     dasarHukum: number
     disalinKeDariSumberIni: number
     swimlanes: number
-    diagramLayout: number
     komentar: number
     lampiran: number
     langkahSOP: number
@@ -3349,7 +2977,6 @@ export namespace Prisma {
     dasarHukum?: boolean | DetailSOPCountOutputTypeCountDasarHukumArgs
     disalinKeDariSumberIni?: boolean | DetailSOPCountOutputTypeCountDisalinKeDariSumberIniArgs
     swimlanes?: boolean | DetailSOPCountOutputTypeCountSwimlanesArgs
-    diagramLayout?: boolean | DetailSOPCountOutputTypeCountDiagramLayoutArgs
     komentar?: boolean | DetailSOPCountOutputTypeCountKomentarArgs
     lampiran?: boolean | DetailSOPCountOutputTypeCountLampiranArgs
     langkahSOP?: boolean | DetailSOPCountOutputTypeCountLangkahSOPArgs
@@ -3390,13 +3017,6 @@ export namespace Prisma {
    */
   export type DetailSOPCountOutputTypeCountSwimlanesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DetailSOPPelaksanaWhereInput
-  }
-
-  /**
-   * DetailSOPCountOutputType without action
-   */
-  export type DetailSOPCountOutputTypeCountDiagramLayoutArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TataLetakDiagramWhereInput
   }
 
   /**
@@ -3461,17 +3081,11 @@ export namespace Prisma {
    */
 
   export type LangkahSOPCountOutputType = {
-    diagramEdgeKeluar: number
-    diagramEdgeMasuk: number
-    diagramNodePosition: number
     langkahSebelumTidak: number
     langkahSebelumYa: number
   }
 
   export type LangkahSOPCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    diagramEdgeKeluar?: boolean | LangkahSOPCountOutputTypeCountDiagramEdgeKeluarArgs
-    diagramEdgeMasuk?: boolean | LangkahSOPCountOutputTypeCountDiagramEdgeMasukArgs
-    diagramNodePosition?: boolean | LangkahSOPCountOutputTypeCountDiagramNodePositionArgs
     langkahSebelumTidak?: boolean | LangkahSOPCountOutputTypeCountLangkahSebelumTidakArgs
     langkahSebelumYa?: boolean | LangkahSOPCountOutputTypeCountLangkahSebelumYaArgs
   }
@@ -3485,27 +3099,6 @@ export namespace Prisma {
      * Select specific fields to fetch from the LangkahSOPCountOutputType
      */
     select?: LangkahSOPCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * LangkahSOPCountOutputType without action
-   */
-  export type LangkahSOPCountOutputTypeCountDiagramEdgeKeluarArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SisiDiagramWhereInput
-  }
-
-  /**
-   * LangkahSOPCountOutputType without action
-   */
-  export type LangkahSOPCountOutputTypeCountDiagramEdgeMasukArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SisiDiagramWhereInput
-  }
-
-  /**
-   * LangkahSOPCountOutputType without action
-   */
-  export type LangkahSOPCountOutputTypeCountDiagramNodePositionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PosisiNodeDiagramWhereInput
   }
 
   /**
@@ -3560,77 +3153,6 @@ export namespace Prisma {
    */
   export type PelaksanaCountOutputTypeCountLangkahSOPArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LangkahSOPWhereInput
-  }
-
-
-  /**
-   * Count Type TataLetakDiagramCountOutputType
-   */
-
-  export type TataLetakDiagramCountOutputType = {
-    edgeOverrides: number
-    nodeOverrides: number
-  }
-
-  export type TataLetakDiagramCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    edgeOverrides?: boolean | TataLetakDiagramCountOutputTypeCountEdgeOverridesArgs
-    nodeOverrides?: boolean | TataLetakDiagramCountOutputTypeCountNodeOverridesArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * TataLetakDiagramCountOutputType without action
-   */
-  export type TataLetakDiagramCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagramCountOutputType
-     */
-    select?: TataLetakDiagramCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * TataLetakDiagramCountOutputType without action
-   */
-  export type TataLetakDiagramCountOutputTypeCountEdgeOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SisiDiagramWhereInput
-  }
-
-  /**
-   * TataLetakDiagramCountOutputType without action
-   */
-  export type TataLetakDiagramCountOutputTypeCountNodeOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PosisiNodeDiagramWhereInput
-  }
-
-
-  /**
-   * Count Type SisiDiagramCountOutputType
-   */
-
-  export type SisiDiagramCountOutputType = {
-    points: number
-  }
-
-  export type SisiDiagramCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    points?: boolean | SisiDiagramCountOutputTypeCountPointsArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * SisiDiagramCountOutputType without action
-   */
-  export type SisiDiagramCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagramCountOutputType
-     */
-    select?: SisiDiagramCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * SisiDiagramCountOutputType without action
-   */
-  export type SisiDiagramCountOutputTypeCountPointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TitikSisiDiagramWhereInput
   }
 
 
@@ -10183,22 +9705,10 @@ export namespace Prisma {
 
   export type DetailSOPAvgAggregateOutputType = {
     versi: number | null
-    lebarKolomKegiatan: number | null
-    lebarKolomPelaksana: number | null
-    lebarKolomKelengkapan: number | null
-    lebarKolomWaktu: number | null
-    lebarKolomOutput: number | null
-    lebarKolomKeterangan: number | null
   }
 
   export type DetailSOPSumAggregateOutputType = {
     versi: number | null
-    lebarKolomKegiatan: number | null
-    lebarKolomPelaksana: number | null
-    lebarKolomKelengkapan: number | null
-    lebarKolomWaktu: number | null
-    lebarKolomOutput: number | null
-    lebarKolomKeterangan: number | null
   }
 
   export type DetailSOPMinAggregateOutputType = {
@@ -10212,12 +9722,6 @@ export namespace Prisma {
     tanggalRevisi: Date | null
     tanggalEfektif: Date | null
     namaLembaga: string | null
-    lebarKolomKegiatan: number | null
-    lebarKolomPelaksana: number | null
-    lebarKolomKelengkapan: number | null
-    lebarKolomWaktu: number | null
-    lebarKolomOutput: number | null
-    lebarKolomKeterangan: number | null
     dibuatOlehId: string | null
     terakhirDieditOlehId: string | null
     createdAt: Date | null
@@ -10235,12 +9739,6 @@ export namespace Prisma {
     tanggalRevisi: Date | null
     tanggalEfektif: Date | null
     namaLembaga: string | null
-    lebarKolomKegiatan: number | null
-    lebarKolomPelaksana: number | null
-    lebarKolomKelengkapan: number | null
-    lebarKolomWaktu: number | null
-    lebarKolomOutput: number | null
-    lebarKolomKeterangan: number | null
     dibuatOlehId: string | null
     terakhirDieditOlehId: string | null
     createdAt: Date | null
@@ -10258,12 +9756,6 @@ export namespace Prisma {
     tanggalRevisi: number
     tanggalEfektif: number
     namaLembaga: number
-    lebarKolomKegiatan: number
-    lebarKolomPelaksana: number
-    lebarKolomKelengkapan: number
-    lebarKolomWaktu: number
-    lebarKolomOutput: number
-    lebarKolomKeterangan: number
     dibuatOlehId: number
     terakhirDieditOlehId: number
     createdAt: number
@@ -10274,22 +9766,10 @@ export namespace Prisma {
 
   export type DetailSOPAvgAggregateInputType = {
     versi?: true
-    lebarKolomKegiatan?: true
-    lebarKolomPelaksana?: true
-    lebarKolomKelengkapan?: true
-    lebarKolomWaktu?: true
-    lebarKolomOutput?: true
-    lebarKolomKeterangan?: true
   }
 
   export type DetailSOPSumAggregateInputType = {
     versi?: true
-    lebarKolomKegiatan?: true
-    lebarKolomPelaksana?: true
-    lebarKolomKelengkapan?: true
-    lebarKolomWaktu?: true
-    lebarKolomOutput?: true
-    lebarKolomKeterangan?: true
   }
 
   export type DetailSOPMinAggregateInputType = {
@@ -10303,12 +9783,6 @@ export namespace Prisma {
     tanggalRevisi?: true
     tanggalEfektif?: true
     namaLembaga?: true
-    lebarKolomKegiatan?: true
-    lebarKolomPelaksana?: true
-    lebarKolomKelengkapan?: true
-    lebarKolomWaktu?: true
-    lebarKolomOutput?: true
-    lebarKolomKeterangan?: true
     dibuatOlehId?: true
     terakhirDieditOlehId?: true
     createdAt?: true
@@ -10326,12 +9800,6 @@ export namespace Prisma {
     tanggalRevisi?: true
     tanggalEfektif?: true
     namaLembaga?: true
-    lebarKolomKegiatan?: true
-    lebarKolomPelaksana?: true
-    lebarKolomKelengkapan?: true
-    lebarKolomWaktu?: true
-    lebarKolomOutput?: true
-    lebarKolomKeterangan?: true
     dibuatOlehId?: true
     terakhirDieditOlehId?: true
     createdAt?: true
@@ -10349,12 +9817,6 @@ export namespace Prisma {
     tanggalRevisi?: true
     tanggalEfektif?: true
     namaLembaga?: true
-    lebarKolomKegiatan?: true
-    lebarKolomPelaksana?: true
-    lebarKolomKelengkapan?: true
-    lebarKolomWaktu?: true
-    lebarKolomOutput?: true
-    lebarKolomKeterangan?: true
     dibuatOlehId?: true
     terakhirDieditOlehId?: true
     createdAt?: true
@@ -10459,12 +9921,6 @@ export namespace Prisma {
     tanggalRevisi: Date | null
     tanggalEfektif: Date | null
     namaLembaga: string
-    lebarKolomKegiatan: number | null
-    lebarKolomPelaksana: number | null
-    lebarKolomKelengkapan: number | null
-    lebarKolomWaktu: number | null
-    lebarKolomOutput: number | null
-    lebarKolomKeterangan: number | null
     dibuatOlehId: string | null
     terakhirDieditOlehId: string | null
     createdAt: Date
@@ -10501,12 +9957,6 @@ export namespace Prisma {
     tanggalRevisi?: boolean
     tanggalEfektif?: boolean
     namaLembaga?: boolean
-    lebarKolomKegiatan?: boolean
-    lebarKolomPelaksana?: boolean
-    lebarKolomKelengkapan?: boolean
-    lebarKolomWaktu?: boolean
-    lebarKolomOutput?: boolean
-    lebarKolomKeterangan?: boolean
     dibuatOlehId?: boolean
     terakhirDieditOlehId?: boolean
     createdAt?: boolean
@@ -10518,7 +9968,6 @@ export namespace Prisma {
     sop?: boolean | SOPDefaultArgs<ExtArgs>
     terakhirDieditOleh?: boolean | DetailSOP$terakhirDieditOlehArgs<ExtArgs>
     swimlanes?: boolean | DetailSOP$swimlanesArgs<ExtArgs>
-    diagramLayout?: boolean | DetailSOP$diagramLayoutArgs<ExtArgs>
     komentar?: boolean | DetailSOP$komentarArgs<ExtArgs>
     lampiran?: boolean | DetailSOP$lampiranArgs<ExtArgs>
     langkahSOP?: boolean | DetailSOP$langkahSOPArgs<ExtArgs>
@@ -10543,19 +9992,13 @@ export namespace Prisma {
     tanggalRevisi?: boolean
     tanggalEfektif?: boolean
     namaLembaga?: boolean
-    lebarKolomKegiatan?: boolean
-    lebarKolomPelaksana?: boolean
-    lebarKolomKelengkapan?: boolean
-    lebarKolomWaktu?: boolean
-    lebarKolomOutput?: boolean
-    lebarKolomKeterangan?: boolean
     dibuatOlehId?: boolean
     terakhirDieditOlehId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DetailSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "sopId" | "salinDariDetailSopId" | "status" | "versi" | "nomorSOP" | "tanggalPembuatan" | "tanggalRevisi" | "tanggalEfektif" | "namaLembaga" | "lebarKolomKegiatan" | "lebarKolomPelaksana" | "lebarKolomKelengkapan" | "lebarKolomWaktu" | "lebarKolomOutput" | "lebarKolomKeterangan" | "dibuatOlehId" | "terakhirDieditOlehId" | "createdAt" | "updatedAt", ExtArgs["result"]["detailSOP"]>
+  export type DetailSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "sopId" | "salinDariDetailSopId" | "status" | "versi" | "nomorSOP" | "tanggalPembuatan" | "tanggalRevisi" | "tanggalEfektif" | "namaLembaga" | "dibuatOlehId" | "terakhirDieditOlehId" | "createdAt" | "updatedAt", ExtArgs["result"]["detailSOP"]>
   export type DetailSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     dasarHukum?: boolean | DetailSOP$dasarHukumArgs<ExtArgs>
     dibuatOleh?: boolean | DetailSOP$dibuatOlehArgs<ExtArgs>
@@ -10564,7 +10007,6 @@ export namespace Prisma {
     sop?: boolean | SOPDefaultArgs<ExtArgs>
     terakhirDieditOleh?: boolean | DetailSOP$terakhirDieditOlehArgs<ExtArgs>
     swimlanes?: boolean | DetailSOP$swimlanesArgs<ExtArgs>
-    diagramLayout?: boolean | DetailSOP$diagramLayoutArgs<ExtArgs>
     komentar?: boolean | DetailSOP$komentarArgs<ExtArgs>
     lampiran?: boolean | DetailSOP$lampiranArgs<ExtArgs>
     langkahSOP?: boolean | DetailSOP$langkahSOPArgs<ExtArgs>
@@ -10586,7 +10028,6 @@ export namespace Prisma {
       sop: Prisma.$SOPPayload<ExtArgs>
       terakhirDieditOleh: Prisma.$PenggunaPayload<ExtArgs> | null
       swimlanes: Prisma.$DetailSOPPelaksanaPayload<ExtArgs>[]
-      diagramLayout: Prisma.$TataLetakDiagramPayload<ExtArgs>[]
       komentar: Prisma.$KomentarPayload<ExtArgs>[]
       lampiran: Prisma.$LampiranTeksPayload<ExtArgs>[]
       langkahSOP: Prisma.$LangkahSOPPayload<ExtArgs>[]
@@ -10607,12 +10048,6 @@ export namespace Prisma {
       tanggalRevisi: Date | null
       tanggalEfektif: Date | null
       namaLembaga: string
-      lebarKolomKegiatan: number | null
-      lebarKolomPelaksana: number | null
-      lebarKolomKelengkapan: number | null
-      lebarKolomWaktu: number | null
-      lebarKolomOutput: number | null
-      lebarKolomKeterangan: number | null
       dibuatOlehId: string | null
       terakhirDieditOlehId: string | null
       createdAt: Date
@@ -10964,7 +10399,6 @@ export namespace Prisma {
     sop<T extends SOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SOPDefaultArgs<ExtArgs>>): Prisma__SOPClient<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     terakhirDieditOleh<T extends DetailSOP$terakhirDieditOlehArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$terakhirDieditOlehArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     swimlanes<T extends DetailSOP$swimlanesArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$swimlanesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DetailSOPPelaksanaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    diagramLayout<T extends DetailSOP$diagramLayoutArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$diagramLayoutArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     komentar<T extends DetailSOP$komentarArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$komentarArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lampiran<T extends DetailSOP$lampiranArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$lampiranArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LampiranTeksPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     langkahSOP<T extends DetailSOP$langkahSOPArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$langkahSOPArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11012,12 +10446,6 @@ export namespace Prisma {
     readonly tanggalRevisi: FieldRef<"DetailSOP", 'DateTime'>
     readonly tanggalEfektif: FieldRef<"DetailSOP", 'DateTime'>
     readonly namaLembaga: FieldRef<"DetailSOP", 'String'>
-    readonly lebarKolomKegiatan: FieldRef<"DetailSOP", 'Int'>
-    readonly lebarKolomPelaksana: FieldRef<"DetailSOP", 'Int'>
-    readonly lebarKolomKelengkapan: FieldRef<"DetailSOP", 'Int'>
-    readonly lebarKolomWaktu: FieldRef<"DetailSOP", 'Int'>
-    readonly lebarKolomOutput: FieldRef<"DetailSOP", 'Int'>
-    readonly lebarKolomKeterangan: FieldRef<"DetailSOP", 'Int'>
     readonly dibuatOlehId: FieldRef<"DetailSOP", 'String'>
     readonly terakhirDieditOlehId: FieldRef<"DetailSOP", 'String'>
     readonly createdAt: FieldRef<"DetailSOP", 'DateTime'>
@@ -11496,30 +10924,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DetailSOPPelaksanaScalarFieldEnum | DetailSOPPelaksanaScalarFieldEnum[]
-  }
-
-  /**
-   * DetailSOP.diagramLayout
-   */
-  export type DetailSOP$diagramLayoutArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    where?: TataLetakDiagramWhereInput
-    orderBy?: TataLetakDiagramOrderByWithRelationInput | TataLetakDiagramOrderByWithRelationInput[]
-    cursor?: TataLetakDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TataLetakDiagramScalarFieldEnum | TataLetakDiagramScalarFieldEnum[]
   }
 
   /**
@@ -14814,9 +14218,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    diagramEdgeKeluar?: boolean | LangkahSOP$diagramEdgeKeluarArgs<ExtArgs>
-    diagramEdgeMasuk?: boolean | LangkahSOP$diagramEdgeMasukArgs<ExtArgs>
-    diagramNodePosition?: boolean | LangkahSOP$diagramNodePositionArgs<ExtArgs>
     langkahTidak?: boolean | LangkahSOP$langkahTidakArgs<ExtArgs>
     langkahSebelumTidak?: boolean | LangkahSOP$langkahSebelumTidakArgs<ExtArgs>
     langkahYa?: boolean | LangkahSOP$langkahYaArgs<ExtArgs>
@@ -14848,9 +14249,6 @@ export namespace Prisma {
 
   export type LangkahSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"langkahSopId" | "detailSopId" | "kegiatan" | "jenis" | "urutan" | "kelengkapan" | "keluaran" | "waktu" | "satuanWaktu" | "keterangan" | "pelaksanaId" | "langkahSelanjutnyaYaId" | "langkahSelanjutnyaTidakId" | "createdAt" | "updatedAt", ExtArgs["result"]["langkahSOP"]>
   export type LangkahSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    diagramEdgeKeluar?: boolean | LangkahSOP$diagramEdgeKeluarArgs<ExtArgs>
-    diagramEdgeMasuk?: boolean | LangkahSOP$diagramEdgeMasukArgs<ExtArgs>
-    diagramNodePosition?: boolean | LangkahSOP$diagramNodePositionArgs<ExtArgs>
     langkahTidak?: boolean | LangkahSOP$langkahTidakArgs<ExtArgs>
     langkahSebelumTidak?: boolean | LangkahSOP$langkahSebelumTidakArgs<ExtArgs>
     langkahYa?: boolean | LangkahSOP$langkahYaArgs<ExtArgs>
@@ -14863,9 +14261,6 @@ export namespace Prisma {
   export type $LangkahSOPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "LangkahSOP"
     objects: {
-      diagramEdgeKeluar: Prisma.$SisiDiagramPayload<ExtArgs>[]
-      diagramEdgeMasuk: Prisma.$SisiDiagramPayload<ExtArgs>[]
-      diagramNodePosition: Prisma.$PosisiNodeDiagramPayload<ExtArgs>[]
       langkahTidak: Prisma.$LangkahSOPPayload<ExtArgs> | null
       langkahSebelumTidak: Prisma.$LangkahSOPPayload<ExtArgs>[]
       langkahYa: Prisma.$LangkahSOPPayload<ExtArgs> | null
@@ -15229,9 +14624,6 @@ export namespace Prisma {
    */
   export interface Prisma__LangkahSOPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    diagramEdgeKeluar<T extends LangkahSOP$diagramEdgeKeluarArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$diagramEdgeKeluarArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    diagramEdgeMasuk<T extends LangkahSOP$diagramEdgeMasukArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$diagramEdgeMasukArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    diagramNodePosition<T extends LangkahSOP$diagramNodePositionArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$diagramNodePositionArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     langkahTidak<T extends LangkahSOP$langkahTidakArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$langkahTidakArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     langkahSebelumTidak<T extends LangkahSOP$langkahSebelumTidakArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$langkahSebelumTidakArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     langkahYa<T extends LangkahSOP$langkahYaArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$langkahYaArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -15627,78 +15019,6 @@ export namespace Prisma {
      * Limit how many LangkahSOPS to delete.
      */
     limit?: number
-  }
-
-  /**
-   * LangkahSOP.diagramEdgeKeluar
-   */
-  export type LangkahSOP$diagramEdgeKeluarArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    where?: SisiDiagramWhereInput
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    cursor?: SisiDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SisiDiagramScalarFieldEnum | SisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * LangkahSOP.diagramEdgeMasuk
-   */
-  export type LangkahSOP$diagramEdgeMasukArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    where?: SisiDiagramWhereInput
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    cursor?: SisiDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SisiDiagramScalarFieldEnum | SisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * LangkahSOP.diagramNodePosition
-   */
-  export type LangkahSOP$diagramNodePositionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    where?: PosisiNodeDiagramWhereInput
-    orderBy?: PosisiNodeDiagramOrderByWithRelationInput | PosisiNodeDiagramOrderByWithRelationInput[]
-    cursor?: PosisiNodeDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PosisiNodeDiagramScalarFieldEnum | PosisiNodeDiagramScalarFieldEnum[]
   }
 
   /**
@@ -19728,4096 +19048,6 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: KomentarInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model TataLetakDiagram
-   */
-
-  export type AggregateTataLetakDiagram = {
-    _count: TataLetakDiagramCountAggregateOutputType | null
-    _avg: TataLetakDiagramAvgAggregateOutputType | null
-    _sum: TataLetakDiagramSumAggregateOutputType | null
-    _min: TataLetakDiagramMinAggregateOutputType | null
-    _max: TataLetakDiagramMaxAggregateOutputType | null
-  }
-
-  export type TataLetakDiagramAvgAggregateOutputType = {
-    versiLayout: number | null
-    layoutSeed: number | null
-    langkahPerHalaman: number | null
-    lebarAreaKegiatan: number | null
-  }
-
-  export type TataLetakDiagramSumAggregateOutputType = {
-    versiLayout: number | null
-    layoutSeed: number | null
-    langkahPerHalaman: number | null
-    lebarAreaKegiatan: number | null
-  }
-
-  export type TataLetakDiagramMinAggregateOutputType = {
-    tataLetakDiagramId: string | null
-    detailSopId: string | null
-    jenis: $Enums.JenisDiagramSOP | null
-    versiLayout: number | null
-    layoutSeed: number | null
-    gayaPanah: $Enums.GayaPanah | null
-    langkahPerHalaman: number | null
-    lebarAreaKegiatan: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type TataLetakDiagramMaxAggregateOutputType = {
-    tataLetakDiagramId: string | null
-    detailSopId: string | null
-    jenis: $Enums.JenisDiagramSOP | null
-    versiLayout: number | null
-    layoutSeed: number | null
-    gayaPanah: $Enums.GayaPanah | null
-    langkahPerHalaman: number | null
-    lebarAreaKegiatan: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type TataLetakDiagramCountAggregateOutputType = {
-    tataLetakDiagramId: number
-    detailSopId: number
-    jenis: number
-    versiLayout: number
-    layoutSeed: number
-    gayaPanah: number
-    langkahPerHalaman: number
-    lebarAreaKegiatan: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type TataLetakDiagramAvgAggregateInputType = {
-    versiLayout?: true
-    layoutSeed?: true
-    langkahPerHalaman?: true
-    lebarAreaKegiatan?: true
-  }
-
-  export type TataLetakDiagramSumAggregateInputType = {
-    versiLayout?: true
-    layoutSeed?: true
-    langkahPerHalaman?: true
-    lebarAreaKegiatan?: true
-  }
-
-  export type TataLetakDiagramMinAggregateInputType = {
-    tataLetakDiagramId?: true
-    detailSopId?: true
-    jenis?: true
-    versiLayout?: true
-    layoutSeed?: true
-    gayaPanah?: true
-    langkahPerHalaman?: true
-    lebarAreaKegiatan?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type TataLetakDiagramMaxAggregateInputType = {
-    tataLetakDiagramId?: true
-    detailSopId?: true
-    jenis?: true
-    versiLayout?: true
-    layoutSeed?: true
-    gayaPanah?: true
-    langkahPerHalaman?: true
-    lebarAreaKegiatan?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type TataLetakDiagramCountAggregateInputType = {
-    tataLetakDiagramId?: true
-    detailSopId?: true
-    jenis?: true
-    versiLayout?: true
-    layoutSeed?: true
-    gayaPanah?: true
-    langkahPerHalaman?: true
-    lebarAreaKegiatan?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type TataLetakDiagramAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which TataLetakDiagram to aggregate.
-     */
-    where?: TataLetakDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TataLetakDiagrams to fetch.
-     */
-    orderBy?: TataLetakDiagramOrderByWithRelationInput | TataLetakDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: TataLetakDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TataLetakDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TataLetakDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned TataLetakDiagrams
-    **/
-    _count?: true | TataLetakDiagramCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: TataLetakDiagramAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: TataLetakDiagramSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: TataLetakDiagramMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: TataLetakDiagramMaxAggregateInputType
-  }
-
-  export type GetTataLetakDiagramAggregateType<T extends TataLetakDiagramAggregateArgs> = {
-        [P in keyof T & keyof AggregateTataLetakDiagram]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateTataLetakDiagram[P]>
-      : GetScalarType<T[P], AggregateTataLetakDiagram[P]>
-  }
-
-
-
-
-  export type TataLetakDiagramGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TataLetakDiagramWhereInput
-    orderBy?: TataLetakDiagramOrderByWithAggregationInput | TataLetakDiagramOrderByWithAggregationInput[]
-    by: TataLetakDiagramScalarFieldEnum[] | TataLetakDiagramScalarFieldEnum
-    having?: TataLetakDiagramScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: TataLetakDiagramCountAggregateInputType | true
-    _avg?: TataLetakDiagramAvgAggregateInputType
-    _sum?: TataLetakDiagramSumAggregateInputType
-    _min?: TataLetakDiagramMinAggregateInputType
-    _max?: TataLetakDiagramMaxAggregateInputType
-  }
-
-  export type TataLetakDiagramGroupByOutputType = {
-    tataLetakDiagramId: string
-    detailSopId: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout: number
-    layoutSeed: number
-    gayaPanah: $Enums.GayaPanah | null
-    langkahPerHalaman: number | null
-    lebarAreaKegiatan: number | null
-    createdAt: Date
-    updatedAt: Date
-    _count: TataLetakDiagramCountAggregateOutputType | null
-    _avg: TataLetakDiagramAvgAggregateOutputType | null
-    _sum: TataLetakDiagramSumAggregateOutputType | null
-    _min: TataLetakDiagramMinAggregateOutputType | null
-    _max: TataLetakDiagramMaxAggregateOutputType | null
-  }
-
-  type GetTataLetakDiagramGroupByPayload<T extends TataLetakDiagramGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<TataLetakDiagramGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof TataLetakDiagramGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], TataLetakDiagramGroupByOutputType[P]>
-            : GetScalarType<T[P], TataLetakDiagramGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type TataLetakDiagramSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    tataLetakDiagramId?: boolean
-    detailSopId?: boolean
-    jenis?: boolean
-    versiLayout?: boolean
-    layoutSeed?: boolean
-    gayaPanah?: boolean
-    langkahPerHalaman?: boolean
-    lebarAreaKegiatan?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    edgeOverrides?: boolean | TataLetakDiagram$edgeOverridesArgs<ExtArgs>
-    detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
-    nodeOverrides?: boolean | TataLetakDiagram$nodeOverridesArgs<ExtArgs>
-    _count?: boolean | TataLetakDiagramCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["tataLetakDiagram"]>
-
-
-
-  export type TataLetakDiagramSelectScalar = {
-    tataLetakDiagramId?: boolean
-    detailSopId?: boolean
-    jenis?: boolean
-    versiLayout?: boolean
-    layoutSeed?: boolean
-    gayaPanah?: boolean
-    langkahPerHalaman?: boolean
-    lebarAreaKegiatan?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type TataLetakDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"tataLetakDiagramId" | "detailSopId" | "jenis" | "versiLayout" | "layoutSeed" | "gayaPanah" | "langkahPerHalaman" | "lebarAreaKegiatan" | "createdAt" | "updatedAt", ExtArgs["result"]["tataLetakDiagram"]>
-  export type TataLetakDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    edgeOverrides?: boolean | TataLetakDiagram$edgeOverridesArgs<ExtArgs>
-    detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
-    nodeOverrides?: boolean | TataLetakDiagram$nodeOverridesArgs<ExtArgs>
-    _count?: boolean | TataLetakDiagramCountOutputTypeDefaultArgs<ExtArgs>
-  }
-
-  export type $TataLetakDiagramPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "TataLetakDiagram"
-    objects: {
-      edgeOverrides: Prisma.$SisiDiagramPayload<ExtArgs>[]
-      detailSop: Prisma.$DetailSOPPayload<ExtArgs>
-      nodeOverrides: Prisma.$PosisiNodeDiagramPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      tataLetakDiagramId: string
-      detailSopId: string
-      jenis: $Enums.JenisDiagramSOP
-      versiLayout: number
-      layoutSeed: number
-      gayaPanah: $Enums.GayaPanah | null
-      langkahPerHalaman: number | null
-      lebarAreaKegiatan: number | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["tataLetakDiagram"]>
-    composites: {}
-  }
-
-  type TataLetakDiagramGetPayload<S extends boolean | null | undefined | TataLetakDiagramDefaultArgs> = $Result.GetResult<Prisma.$TataLetakDiagramPayload, S>
-
-  type TataLetakDiagramCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<TataLetakDiagramFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: TataLetakDiagramCountAggregateInputType | true
-    }
-
-  export interface TataLetakDiagramDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TataLetakDiagram'], meta: { name: 'TataLetakDiagram' } }
-    /**
-     * Find zero or one TataLetakDiagram that matches the filter.
-     * @param {TataLetakDiagramFindUniqueArgs} args - Arguments to find a TataLetakDiagram
-     * @example
-     * // Get one TataLetakDiagram
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends TataLetakDiagramFindUniqueArgs>(args: SelectSubset<T, TataLetakDiagramFindUniqueArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one TataLetakDiagram that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {TataLetakDiagramFindUniqueOrThrowArgs} args - Arguments to find a TataLetakDiagram
-     * @example
-     * // Get one TataLetakDiagram
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends TataLetakDiagramFindUniqueOrThrowArgs>(args: SelectSubset<T, TataLetakDiagramFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first TataLetakDiagram that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramFindFirstArgs} args - Arguments to find a TataLetakDiagram
-     * @example
-     * // Get one TataLetakDiagram
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends TataLetakDiagramFindFirstArgs>(args?: SelectSubset<T, TataLetakDiagramFindFirstArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first TataLetakDiagram that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramFindFirstOrThrowArgs} args - Arguments to find a TataLetakDiagram
-     * @example
-     * // Get one TataLetakDiagram
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends TataLetakDiagramFindFirstOrThrowArgs>(args?: SelectSubset<T, TataLetakDiagramFindFirstOrThrowArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more TataLetakDiagrams that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all TataLetakDiagrams
-     * const tataLetakDiagrams = await prisma.tataLetakDiagram.findMany()
-     * 
-     * // Get first 10 TataLetakDiagrams
-     * const tataLetakDiagrams = await prisma.tataLetakDiagram.findMany({ take: 10 })
-     * 
-     * // Only select the `tataLetakDiagramId`
-     * const tataLetakDiagramWithTataLetakDiagramIdOnly = await prisma.tataLetakDiagram.findMany({ select: { tataLetakDiagramId: true } })
-     * 
-     */
-    findMany<T extends TataLetakDiagramFindManyArgs>(args?: SelectSubset<T, TataLetakDiagramFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a TataLetakDiagram.
-     * @param {TataLetakDiagramCreateArgs} args - Arguments to create a TataLetakDiagram.
-     * @example
-     * // Create one TataLetakDiagram
-     * const TataLetakDiagram = await prisma.tataLetakDiagram.create({
-     *   data: {
-     *     // ... data to create a TataLetakDiagram
-     *   }
-     * })
-     * 
-     */
-    create<T extends TataLetakDiagramCreateArgs>(args: SelectSubset<T, TataLetakDiagramCreateArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many TataLetakDiagrams.
-     * @param {TataLetakDiagramCreateManyArgs} args - Arguments to create many TataLetakDiagrams.
-     * @example
-     * // Create many TataLetakDiagrams
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends TataLetakDiagramCreateManyArgs>(args?: SelectSubset<T, TataLetakDiagramCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a TataLetakDiagram.
-     * @param {TataLetakDiagramDeleteArgs} args - Arguments to delete one TataLetakDiagram.
-     * @example
-     * // Delete one TataLetakDiagram
-     * const TataLetakDiagram = await prisma.tataLetakDiagram.delete({
-     *   where: {
-     *     // ... filter to delete one TataLetakDiagram
-     *   }
-     * })
-     * 
-     */
-    delete<T extends TataLetakDiagramDeleteArgs>(args: SelectSubset<T, TataLetakDiagramDeleteArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one TataLetakDiagram.
-     * @param {TataLetakDiagramUpdateArgs} args - Arguments to update one TataLetakDiagram.
-     * @example
-     * // Update one TataLetakDiagram
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends TataLetakDiagramUpdateArgs>(args: SelectSubset<T, TataLetakDiagramUpdateArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more TataLetakDiagrams.
-     * @param {TataLetakDiagramDeleteManyArgs} args - Arguments to filter TataLetakDiagrams to delete.
-     * @example
-     * // Delete a few TataLetakDiagrams
-     * const { count } = await prisma.tataLetakDiagram.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends TataLetakDiagramDeleteManyArgs>(args?: SelectSubset<T, TataLetakDiagramDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more TataLetakDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many TataLetakDiagrams
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends TataLetakDiagramUpdateManyArgs>(args: SelectSubset<T, TataLetakDiagramUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one TataLetakDiagram.
-     * @param {TataLetakDiagramUpsertArgs} args - Arguments to update or create a TataLetakDiagram.
-     * @example
-     * // Update or create a TataLetakDiagram
-     * const tataLetakDiagram = await prisma.tataLetakDiagram.upsert({
-     *   create: {
-     *     // ... data to create a TataLetakDiagram
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the TataLetakDiagram we want to update
-     *   }
-     * })
-     */
-    upsert<T extends TataLetakDiagramUpsertArgs>(args: SelectSubset<T, TataLetakDiagramUpsertArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of TataLetakDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramCountArgs} args - Arguments to filter TataLetakDiagrams to count.
-     * @example
-     * // Count the number of TataLetakDiagrams
-     * const count = await prisma.tataLetakDiagram.count({
-     *   where: {
-     *     // ... the filter for the TataLetakDiagrams we want to count
-     *   }
-     * })
-    **/
-    count<T extends TataLetakDiagramCountArgs>(
-      args?: Subset<T, TataLetakDiagramCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], TataLetakDiagramCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a TataLetakDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends TataLetakDiagramAggregateArgs>(args: Subset<T, TataLetakDiagramAggregateArgs>): Prisma.PrismaPromise<GetTataLetakDiagramAggregateType<T>>
-
-    /**
-     * Group by TataLetakDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TataLetakDiagramGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends TataLetakDiagramGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: TataLetakDiagramGroupByArgs['orderBy'] }
-        : { orderBy?: TataLetakDiagramGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, TataLetakDiagramGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTataLetakDiagramGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the TataLetakDiagram model
-   */
-  readonly fields: TataLetakDiagramFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for TataLetakDiagram.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__TataLetakDiagramClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    edgeOverrides<T extends TataLetakDiagram$edgeOverridesArgs<ExtArgs> = {}>(args?: Subset<T, TataLetakDiagram$edgeOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    detailSop<T extends DetailSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOPDefaultArgs<ExtArgs>>): Prisma__DetailSOPClient<$Result.GetResult<Prisma.$DetailSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    nodeOverrides<T extends TataLetakDiagram$nodeOverridesArgs<ExtArgs> = {}>(args?: Subset<T, TataLetakDiagram$nodeOverridesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the TataLetakDiagram model
-   */
-  interface TataLetakDiagramFieldRefs {
-    readonly tataLetakDiagramId: FieldRef<"TataLetakDiagram", 'String'>
-    readonly detailSopId: FieldRef<"TataLetakDiagram", 'String'>
-    readonly jenis: FieldRef<"TataLetakDiagram", 'JenisDiagramSOP'>
-    readonly versiLayout: FieldRef<"TataLetakDiagram", 'Int'>
-    readonly layoutSeed: FieldRef<"TataLetakDiagram", 'Int'>
-    readonly gayaPanah: FieldRef<"TataLetakDiagram", 'GayaPanah'>
-    readonly langkahPerHalaman: FieldRef<"TataLetakDiagram", 'Int'>
-    readonly lebarAreaKegiatan: FieldRef<"TataLetakDiagram", 'Int'>
-    readonly createdAt: FieldRef<"TataLetakDiagram", 'DateTime'>
-    readonly updatedAt: FieldRef<"TataLetakDiagram", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * TataLetakDiagram findUnique
-   */
-  export type TataLetakDiagramFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TataLetakDiagram to fetch.
-     */
-    where: TataLetakDiagramWhereUniqueInput
-  }
-
-  /**
-   * TataLetakDiagram findUniqueOrThrow
-   */
-  export type TataLetakDiagramFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TataLetakDiagram to fetch.
-     */
-    where: TataLetakDiagramWhereUniqueInput
-  }
-
-  /**
-   * TataLetakDiagram findFirst
-   */
-  export type TataLetakDiagramFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TataLetakDiagram to fetch.
-     */
-    where?: TataLetakDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TataLetakDiagrams to fetch.
-     */
-    orderBy?: TataLetakDiagramOrderByWithRelationInput | TataLetakDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for TataLetakDiagrams.
-     */
-    cursor?: TataLetakDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TataLetakDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TataLetakDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TataLetakDiagrams.
-     */
-    distinct?: TataLetakDiagramScalarFieldEnum | TataLetakDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TataLetakDiagram findFirstOrThrow
-   */
-  export type TataLetakDiagramFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TataLetakDiagram to fetch.
-     */
-    where?: TataLetakDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TataLetakDiagrams to fetch.
-     */
-    orderBy?: TataLetakDiagramOrderByWithRelationInput | TataLetakDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for TataLetakDiagrams.
-     */
-    cursor?: TataLetakDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TataLetakDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TataLetakDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TataLetakDiagrams.
-     */
-    distinct?: TataLetakDiagramScalarFieldEnum | TataLetakDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TataLetakDiagram findMany
-   */
-  export type TataLetakDiagramFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TataLetakDiagrams to fetch.
-     */
-    where?: TataLetakDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TataLetakDiagrams to fetch.
-     */
-    orderBy?: TataLetakDiagramOrderByWithRelationInput | TataLetakDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing TataLetakDiagrams.
-     */
-    cursor?: TataLetakDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TataLetakDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TataLetakDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TataLetakDiagrams.
-     */
-    distinct?: TataLetakDiagramScalarFieldEnum | TataLetakDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TataLetakDiagram create
-   */
-  export type TataLetakDiagramCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to create a TataLetakDiagram.
-     */
-    data: XOR<TataLetakDiagramCreateInput, TataLetakDiagramUncheckedCreateInput>
-  }
-
-  /**
-   * TataLetakDiagram createMany
-   */
-  export type TataLetakDiagramCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many TataLetakDiagrams.
-     */
-    data: TataLetakDiagramCreateManyInput | TataLetakDiagramCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * TataLetakDiagram update
-   */
-  export type TataLetakDiagramUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to update a TataLetakDiagram.
-     */
-    data: XOR<TataLetakDiagramUpdateInput, TataLetakDiagramUncheckedUpdateInput>
-    /**
-     * Choose, which TataLetakDiagram to update.
-     */
-    where: TataLetakDiagramWhereUniqueInput
-  }
-
-  /**
-   * TataLetakDiagram updateMany
-   */
-  export type TataLetakDiagramUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update TataLetakDiagrams.
-     */
-    data: XOR<TataLetakDiagramUpdateManyMutationInput, TataLetakDiagramUncheckedUpdateManyInput>
-    /**
-     * Filter which TataLetakDiagrams to update
-     */
-    where?: TataLetakDiagramWhereInput
-    /**
-     * Limit how many TataLetakDiagrams to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * TataLetakDiagram upsert
-   */
-  export type TataLetakDiagramUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * The filter to search for the TataLetakDiagram to update in case it exists.
-     */
-    where: TataLetakDiagramWhereUniqueInput
-    /**
-     * In case the TataLetakDiagram found by the `where` argument doesn't exist, create a new TataLetakDiagram with this data.
-     */
-    create: XOR<TataLetakDiagramCreateInput, TataLetakDiagramUncheckedCreateInput>
-    /**
-     * In case the TataLetakDiagram was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<TataLetakDiagramUpdateInput, TataLetakDiagramUncheckedUpdateInput>
-  }
-
-  /**
-   * TataLetakDiagram delete
-   */
-  export type TataLetakDiagramDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-    /**
-     * Filter which TataLetakDiagram to delete.
-     */
-    where: TataLetakDiagramWhereUniqueInput
-  }
-
-  /**
-   * TataLetakDiagram deleteMany
-   */
-  export type TataLetakDiagramDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which TataLetakDiagrams to delete
-     */
-    where?: TataLetakDiagramWhereInput
-    /**
-     * Limit how many TataLetakDiagrams to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * TataLetakDiagram.edgeOverrides
-   */
-  export type TataLetakDiagram$edgeOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    where?: SisiDiagramWhereInput
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    cursor?: SisiDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: SisiDiagramScalarFieldEnum | SisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TataLetakDiagram.nodeOverrides
-   */
-  export type TataLetakDiagram$nodeOverridesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    where?: PosisiNodeDiagramWhereInput
-    orderBy?: PosisiNodeDiagramOrderByWithRelationInput | PosisiNodeDiagramOrderByWithRelationInput[]
-    cursor?: PosisiNodeDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: PosisiNodeDiagramScalarFieldEnum | PosisiNodeDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TataLetakDiagram without action
-   */
-  export type TataLetakDiagramDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TataLetakDiagram
-     */
-    select?: TataLetakDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TataLetakDiagram
-     */
-    omit?: TataLetakDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TataLetakDiagramInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model PosisiNodeDiagram
-   */
-
-  export type AggregatePosisiNodeDiagram = {
-    _count: PosisiNodeDiagramCountAggregateOutputType | null
-    _avg: PosisiNodeDiagramAvgAggregateOutputType | null
-    _sum: PosisiNodeDiagramSumAggregateOutputType | null
-    _min: PosisiNodeDiagramMinAggregateOutputType | null
-    _max: PosisiNodeDiagramMaxAggregateOutputType | null
-  }
-
-  export type PosisiNodeDiagramAvgAggregateOutputType = {
-    page: number | null
-    x: number | null
-    y: number | null
-  }
-
-  export type PosisiNodeDiagramSumAggregateOutputType = {
-    page: number | null
-    x: number | null
-    y: number | null
-  }
-
-  export type PosisiNodeDiagramMinAggregateOutputType = {
-    tataLetakDiagramId: string | null
-    langkahSopId: string | null
-    page: number | null
-    x: number | null
-    y: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PosisiNodeDiagramMaxAggregateOutputType = {
-    tataLetakDiagramId: string | null
-    langkahSopId: string | null
-    page: number | null
-    x: number | null
-    y: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type PosisiNodeDiagramCountAggregateOutputType = {
-    tataLetakDiagramId: number
-    langkahSopId: number
-    page: number
-    x: number
-    y: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type PosisiNodeDiagramAvgAggregateInputType = {
-    page?: true
-    x?: true
-    y?: true
-  }
-
-  export type PosisiNodeDiagramSumAggregateInputType = {
-    page?: true
-    x?: true
-    y?: true
-  }
-
-  export type PosisiNodeDiagramMinAggregateInputType = {
-    tataLetakDiagramId?: true
-    langkahSopId?: true
-    page?: true
-    x?: true
-    y?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PosisiNodeDiagramMaxAggregateInputType = {
-    tataLetakDiagramId?: true
-    langkahSopId?: true
-    page?: true
-    x?: true
-    y?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type PosisiNodeDiagramCountAggregateInputType = {
-    tataLetakDiagramId?: true
-    langkahSopId?: true
-    page?: true
-    x?: true
-    y?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type PosisiNodeDiagramAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PosisiNodeDiagram to aggregate.
-     */
-    where?: PosisiNodeDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PosisiNodeDiagrams to fetch.
-     */
-    orderBy?: PosisiNodeDiagramOrderByWithRelationInput | PosisiNodeDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: PosisiNodeDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PosisiNodeDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PosisiNodeDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned PosisiNodeDiagrams
-    **/
-    _count?: true | PosisiNodeDiagramCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: PosisiNodeDiagramAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: PosisiNodeDiagramSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: PosisiNodeDiagramMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: PosisiNodeDiagramMaxAggregateInputType
-  }
-
-  export type GetPosisiNodeDiagramAggregateType<T extends PosisiNodeDiagramAggregateArgs> = {
-        [P in keyof T & keyof AggregatePosisiNodeDiagram]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregatePosisiNodeDiagram[P]>
-      : GetScalarType<T[P], AggregatePosisiNodeDiagram[P]>
-  }
-
-
-
-
-  export type PosisiNodeDiagramGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: PosisiNodeDiagramWhereInput
-    orderBy?: PosisiNodeDiagramOrderByWithAggregationInput | PosisiNodeDiagramOrderByWithAggregationInput[]
-    by: PosisiNodeDiagramScalarFieldEnum[] | PosisiNodeDiagramScalarFieldEnum
-    having?: PosisiNodeDiagramScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: PosisiNodeDiagramCountAggregateInputType | true
-    _avg?: PosisiNodeDiagramAvgAggregateInputType
-    _sum?: PosisiNodeDiagramSumAggregateInputType
-    _min?: PosisiNodeDiagramMinAggregateInputType
-    _max?: PosisiNodeDiagramMaxAggregateInputType
-  }
-
-  export type PosisiNodeDiagramGroupByOutputType = {
-    tataLetakDiagramId: string
-    langkahSopId: string
-    page: number
-    x: number
-    y: number
-    createdAt: Date
-    updatedAt: Date
-    _count: PosisiNodeDiagramCountAggregateOutputType | null
-    _avg: PosisiNodeDiagramAvgAggregateOutputType | null
-    _sum: PosisiNodeDiagramSumAggregateOutputType | null
-    _min: PosisiNodeDiagramMinAggregateOutputType | null
-    _max: PosisiNodeDiagramMaxAggregateOutputType | null
-  }
-
-  type GetPosisiNodeDiagramGroupByPayload<T extends PosisiNodeDiagramGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<PosisiNodeDiagramGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof PosisiNodeDiagramGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], PosisiNodeDiagramGroupByOutputType[P]>
-            : GetScalarType<T[P], PosisiNodeDiagramGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type PosisiNodeDiagramSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    tataLetakDiagramId?: boolean
-    langkahSopId?: boolean
-    page?: boolean
-    x?: boolean
-    y?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
-    langkahSOP?: boolean | LangkahSOPDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["posisiNodeDiagram"]>
-
-
-
-  export type PosisiNodeDiagramSelectScalar = {
-    tataLetakDiagramId?: boolean
-    langkahSopId?: boolean
-    page?: boolean
-    x?: boolean
-    y?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type PosisiNodeDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"tataLetakDiagramId" | "langkahSopId" | "page" | "x" | "y" | "createdAt" | "updatedAt", ExtArgs["result"]["posisiNodeDiagram"]>
-  export type PosisiNodeDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
-    langkahSOP?: boolean | LangkahSOPDefaultArgs<ExtArgs>
-  }
-
-  export type $PosisiNodeDiagramPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "PosisiNodeDiagram"
-    objects: {
-      tataLetakDiagram: Prisma.$TataLetakDiagramPayload<ExtArgs>
-      langkahSOP: Prisma.$LangkahSOPPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      tataLetakDiagramId: string
-      langkahSopId: string
-      page: number
-      x: number
-      y: number
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["posisiNodeDiagram"]>
-    composites: {}
-  }
-
-  type PosisiNodeDiagramGetPayload<S extends boolean | null | undefined | PosisiNodeDiagramDefaultArgs> = $Result.GetResult<Prisma.$PosisiNodeDiagramPayload, S>
-
-  type PosisiNodeDiagramCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<PosisiNodeDiagramFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: PosisiNodeDiagramCountAggregateInputType | true
-    }
-
-  export interface PosisiNodeDiagramDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PosisiNodeDiagram'], meta: { name: 'PosisiNodeDiagram' } }
-    /**
-     * Find zero or one PosisiNodeDiagram that matches the filter.
-     * @param {PosisiNodeDiagramFindUniqueArgs} args - Arguments to find a PosisiNodeDiagram
-     * @example
-     * // Get one PosisiNodeDiagram
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends PosisiNodeDiagramFindUniqueArgs>(args: SelectSubset<T, PosisiNodeDiagramFindUniqueArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one PosisiNodeDiagram that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {PosisiNodeDiagramFindUniqueOrThrowArgs} args - Arguments to find a PosisiNodeDiagram
-     * @example
-     * // Get one PosisiNodeDiagram
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends PosisiNodeDiagramFindUniqueOrThrowArgs>(args: SelectSubset<T, PosisiNodeDiagramFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PosisiNodeDiagram that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramFindFirstArgs} args - Arguments to find a PosisiNodeDiagram
-     * @example
-     * // Get one PosisiNodeDiagram
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends PosisiNodeDiagramFindFirstArgs>(args?: SelectSubset<T, PosisiNodeDiagramFindFirstArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first PosisiNodeDiagram that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramFindFirstOrThrowArgs} args - Arguments to find a PosisiNodeDiagram
-     * @example
-     * // Get one PosisiNodeDiagram
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends PosisiNodeDiagramFindFirstOrThrowArgs>(args?: SelectSubset<T, PosisiNodeDiagramFindFirstOrThrowArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more PosisiNodeDiagrams that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all PosisiNodeDiagrams
-     * const posisiNodeDiagrams = await prisma.posisiNodeDiagram.findMany()
-     * 
-     * // Get first 10 PosisiNodeDiagrams
-     * const posisiNodeDiagrams = await prisma.posisiNodeDiagram.findMany({ take: 10 })
-     * 
-     * // Only select the `tataLetakDiagramId`
-     * const posisiNodeDiagramWithTataLetakDiagramIdOnly = await prisma.posisiNodeDiagram.findMany({ select: { tataLetakDiagramId: true } })
-     * 
-     */
-    findMany<T extends PosisiNodeDiagramFindManyArgs>(args?: SelectSubset<T, PosisiNodeDiagramFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a PosisiNodeDiagram.
-     * @param {PosisiNodeDiagramCreateArgs} args - Arguments to create a PosisiNodeDiagram.
-     * @example
-     * // Create one PosisiNodeDiagram
-     * const PosisiNodeDiagram = await prisma.posisiNodeDiagram.create({
-     *   data: {
-     *     // ... data to create a PosisiNodeDiagram
-     *   }
-     * })
-     * 
-     */
-    create<T extends PosisiNodeDiagramCreateArgs>(args: SelectSubset<T, PosisiNodeDiagramCreateArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many PosisiNodeDiagrams.
-     * @param {PosisiNodeDiagramCreateManyArgs} args - Arguments to create many PosisiNodeDiagrams.
-     * @example
-     * // Create many PosisiNodeDiagrams
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends PosisiNodeDiagramCreateManyArgs>(args?: SelectSubset<T, PosisiNodeDiagramCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a PosisiNodeDiagram.
-     * @param {PosisiNodeDiagramDeleteArgs} args - Arguments to delete one PosisiNodeDiagram.
-     * @example
-     * // Delete one PosisiNodeDiagram
-     * const PosisiNodeDiagram = await prisma.posisiNodeDiagram.delete({
-     *   where: {
-     *     // ... filter to delete one PosisiNodeDiagram
-     *   }
-     * })
-     * 
-     */
-    delete<T extends PosisiNodeDiagramDeleteArgs>(args: SelectSubset<T, PosisiNodeDiagramDeleteArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one PosisiNodeDiagram.
-     * @param {PosisiNodeDiagramUpdateArgs} args - Arguments to update one PosisiNodeDiagram.
-     * @example
-     * // Update one PosisiNodeDiagram
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends PosisiNodeDiagramUpdateArgs>(args: SelectSubset<T, PosisiNodeDiagramUpdateArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more PosisiNodeDiagrams.
-     * @param {PosisiNodeDiagramDeleteManyArgs} args - Arguments to filter PosisiNodeDiagrams to delete.
-     * @example
-     * // Delete a few PosisiNodeDiagrams
-     * const { count } = await prisma.posisiNodeDiagram.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends PosisiNodeDiagramDeleteManyArgs>(args?: SelectSubset<T, PosisiNodeDiagramDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more PosisiNodeDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many PosisiNodeDiagrams
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends PosisiNodeDiagramUpdateManyArgs>(args: SelectSubset<T, PosisiNodeDiagramUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one PosisiNodeDiagram.
-     * @param {PosisiNodeDiagramUpsertArgs} args - Arguments to update or create a PosisiNodeDiagram.
-     * @example
-     * // Update or create a PosisiNodeDiagram
-     * const posisiNodeDiagram = await prisma.posisiNodeDiagram.upsert({
-     *   create: {
-     *     // ... data to create a PosisiNodeDiagram
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the PosisiNodeDiagram we want to update
-     *   }
-     * })
-     */
-    upsert<T extends PosisiNodeDiagramUpsertArgs>(args: SelectSubset<T, PosisiNodeDiagramUpsertArgs<ExtArgs>>): Prisma__PosisiNodeDiagramClient<$Result.GetResult<Prisma.$PosisiNodeDiagramPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of PosisiNodeDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramCountArgs} args - Arguments to filter PosisiNodeDiagrams to count.
-     * @example
-     * // Count the number of PosisiNodeDiagrams
-     * const count = await prisma.posisiNodeDiagram.count({
-     *   where: {
-     *     // ... the filter for the PosisiNodeDiagrams we want to count
-     *   }
-     * })
-    **/
-    count<T extends PosisiNodeDiagramCountArgs>(
-      args?: Subset<T, PosisiNodeDiagramCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], PosisiNodeDiagramCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a PosisiNodeDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends PosisiNodeDiagramAggregateArgs>(args: Subset<T, PosisiNodeDiagramAggregateArgs>): Prisma.PrismaPromise<GetPosisiNodeDiagramAggregateType<T>>
-
-    /**
-     * Group by PosisiNodeDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {PosisiNodeDiagramGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends PosisiNodeDiagramGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: PosisiNodeDiagramGroupByArgs['orderBy'] }
-        : { orderBy?: PosisiNodeDiagramGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, PosisiNodeDiagramGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPosisiNodeDiagramGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the PosisiNodeDiagram model
-   */
-  readonly fields: PosisiNodeDiagramFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for PosisiNodeDiagram.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__PosisiNodeDiagramClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    tataLetakDiagram<T extends TataLetakDiagramDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TataLetakDiagramDefaultArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    langkahSOP<T extends LangkahSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOPDefaultArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the PosisiNodeDiagram model
-   */
-  interface PosisiNodeDiagramFieldRefs {
-    readonly tataLetakDiagramId: FieldRef<"PosisiNodeDiagram", 'String'>
-    readonly langkahSopId: FieldRef<"PosisiNodeDiagram", 'String'>
-    readonly page: FieldRef<"PosisiNodeDiagram", 'Int'>
-    readonly x: FieldRef<"PosisiNodeDiagram", 'Int'>
-    readonly y: FieldRef<"PosisiNodeDiagram", 'Int'>
-    readonly createdAt: FieldRef<"PosisiNodeDiagram", 'DateTime'>
-    readonly updatedAt: FieldRef<"PosisiNodeDiagram", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * PosisiNodeDiagram findUnique
-   */
-  export type PosisiNodeDiagramFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which PosisiNodeDiagram to fetch.
-     */
-    where: PosisiNodeDiagramWhereUniqueInput
-  }
-
-  /**
-   * PosisiNodeDiagram findUniqueOrThrow
-   */
-  export type PosisiNodeDiagramFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which PosisiNodeDiagram to fetch.
-     */
-    where: PosisiNodeDiagramWhereUniqueInput
-  }
-
-  /**
-   * PosisiNodeDiagram findFirst
-   */
-  export type PosisiNodeDiagramFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which PosisiNodeDiagram to fetch.
-     */
-    where?: PosisiNodeDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PosisiNodeDiagrams to fetch.
-     */
-    orderBy?: PosisiNodeDiagramOrderByWithRelationInput | PosisiNodeDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PosisiNodeDiagrams.
-     */
-    cursor?: PosisiNodeDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PosisiNodeDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PosisiNodeDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PosisiNodeDiagrams.
-     */
-    distinct?: PosisiNodeDiagramScalarFieldEnum | PosisiNodeDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * PosisiNodeDiagram findFirstOrThrow
-   */
-  export type PosisiNodeDiagramFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which PosisiNodeDiagram to fetch.
-     */
-    where?: PosisiNodeDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PosisiNodeDiagrams to fetch.
-     */
-    orderBy?: PosisiNodeDiagramOrderByWithRelationInput | PosisiNodeDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for PosisiNodeDiagrams.
-     */
-    cursor?: PosisiNodeDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PosisiNodeDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PosisiNodeDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PosisiNodeDiagrams.
-     */
-    distinct?: PosisiNodeDiagramScalarFieldEnum | PosisiNodeDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * PosisiNodeDiagram findMany
-   */
-  export type PosisiNodeDiagramFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which PosisiNodeDiagrams to fetch.
-     */
-    where?: PosisiNodeDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of PosisiNodeDiagrams to fetch.
-     */
-    orderBy?: PosisiNodeDiagramOrderByWithRelationInput | PosisiNodeDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing PosisiNodeDiagrams.
-     */
-    cursor?: PosisiNodeDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` PosisiNodeDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` PosisiNodeDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of PosisiNodeDiagrams.
-     */
-    distinct?: PosisiNodeDiagramScalarFieldEnum | PosisiNodeDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * PosisiNodeDiagram create
-   */
-  export type PosisiNodeDiagramCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to create a PosisiNodeDiagram.
-     */
-    data: XOR<PosisiNodeDiagramCreateInput, PosisiNodeDiagramUncheckedCreateInput>
-  }
-
-  /**
-   * PosisiNodeDiagram createMany
-   */
-  export type PosisiNodeDiagramCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many PosisiNodeDiagrams.
-     */
-    data: PosisiNodeDiagramCreateManyInput | PosisiNodeDiagramCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * PosisiNodeDiagram update
-   */
-  export type PosisiNodeDiagramUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to update a PosisiNodeDiagram.
-     */
-    data: XOR<PosisiNodeDiagramUpdateInput, PosisiNodeDiagramUncheckedUpdateInput>
-    /**
-     * Choose, which PosisiNodeDiagram to update.
-     */
-    where: PosisiNodeDiagramWhereUniqueInput
-  }
-
-  /**
-   * PosisiNodeDiagram updateMany
-   */
-  export type PosisiNodeDiagramUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update PosisiNodeDiagrams.
-     */
-    data: XOR<PosisiNodeDiagramUpdateManyMutationInput, PosisiNodeDiagramUncheckedUpdateManyInput>
-    /**
-     * Filter which PosisiNodeDiagrams to update
-     */
-    where?: PosisiNodeDiagramWhereInput
-    /**
-     * Limit how many PosisiNodeDiagrams to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * PosisiNodeDiagram upsert
-   */
-  export type PosisiNodeDiagramUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * The filter to search for the PosisiNodeDiagram to update in case it exists.
-     */
-    where: PosisiNodeDiagramWhereUniqueInput
-    /**
-     * In case the PosisiNodeDiagram found by the `where` argument doesn't exist, create a new PosisiNodeDiagram with this data.
-     */
-    create: XOR<PosisiNodeDiagramCreateInput, PosisiNodeDiagramUncheckedCreateInput>
-    /**
-     * In case the PosisiNodeDiagram was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<PosisiNodeDiagramUpdateInput, PosisiNodeDiagramUncheckedUpdateInput>
-  }
-
-  /**
-   * PosisiNodeDiagram delete
-   */
-  export type PosisiNodeDiagramDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-    /**
-     * Filter which PosisiNodeDiagram to delete.
-     */
-    where: PosisiNodeDiagramWhereUniqueInput
-  }
-
-  /**
-   * PosisiNodeDiagram deleteMany
-   */
-  export type PosisiNodeDiagramDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which PosisiNodeDiagrams to delete
-     */
-    where?: PosisiNodeDiagramWhereInput
-    /**
-     * Limit how many PosisiNodeDiagrams to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * PosisiNodeDiagram without action
-   */
-  export type PosisiNodeDiagramDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the PosisiNodeDiagram
-     */
-    select?: PosisiNodeDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the PosisiNodeDiagram
-     */
-    omit?: PosisiNodeDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: PosisiNodeDiagramInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model SisiDiagram
-   */
-
-  export type AggregateSisiDiagram = {
-    _count: SisiDiagramCountAggregateOutputType | null
-    _min: SisiDiagramMinAggregateOutputType | null
-    _max: SisiDiagramMaxAggregateOutputType | null
-  }
-
-  export type SisiDiagramMinAggregateOutputType = {
-    sisiDiagramId: string | null
-    tataLetakDiagramId: string | null
-    dariLangkahId: string | null
-    keLangkahId: string | null
-    cabang: $Enums.CabangDiagramEdge | null
-    labelTeks: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type SisiDiagramMaxAggregateOutputType = {
-    sisiDiagramId: string | null
-    tataLetakDiagramId: string | null
-    dariLangkahId: string | null
-    keLangkahId: string | null
-    cabang: $Enums.CabangDiagramEdge | null
-    labelTeks: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type SisiDiagramCountAggregateOutputType = {
-    sisiDiagramId: number
-    tataLetakDiagramId: number
-    dariLangkahId: number
-    keLangkahId: number
-    cabang: number
-    labelTeks: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type SisiDiagramMinAggregateInputType = {
-    sisiDiagramId?: true
-    tataLetakDiagramId?: true
-    dariLangkahId?: true
-    keLangkahId?: true
-    cabang?: true
-    labelTeks?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SisiDiagramMaxAggregateInputType = {
-    sisiDiagramId?: true
-    tataLetakDiagramId?: true
-    dariLangkahId?: true
-    keLangkahId?: true
-    cabang?: true
-    labelTeks?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type SisiDiagramCountAggregateInputType = {
-    sisiDiagramId?: true
-    tataLetakDiagramId?: true
-    dariLangkahId?: true
-    keLangkahId?: true
-    cabang?: true
-    labelTeks?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type SisiDiagramAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SisiDiagram to aggregate.
-     */
-    where?: SisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SisiDiagrams to fetch.
-     */
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: SisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned SisiDiagrams
-    **/
-    _count?: true | SisiDiagramCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: SisiDiagramMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: SisiDiagramMaxAggregateInputType
-  }
-
-  export type GetSisiDiagramAggregateType<T extends SisiDiagramAggregateArgs> = {
-        [P in keyof T & keyof AggregateSisiDiagram]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateSisiDiagram[P]>
-      : GetScalarType<T[P], AggregateSisiDiagram[P]>
-  }
-
-
-
-
-  export type SisiDiagramGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: SisiDiagramWhereInput
-    orderBy?: SisiDiagramOrderByWithAggregationInput | SisiDiagramOrderByWithAggregationInput[]
-    by: SisiDiagramScalarFieldEnum[] | SisiDiagramScalarFieldEnum
-    having?: SisiDiagramScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: SisiDiagramCountAggregateInputType | true
-    _min?: SisiDiagramMinAggregateInputType
-    _max?: SisiDiagramMaxAggregateInputType
-  }
-
-  export type SisiDiagramGroupByOutputType = {
-    sisiDiagramId: string
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang: $Enums.CabangDiagramEdge
-    labelTeks: string | null
-    createdAt: Date
-    updatedAt: Date
-    _count: SisiDiagramCountAggregateOutputType | null
-    _min: SisiDiagramMinAggregateOutputType | null
-    _max: SisiDiagramMaxAggregateOutputType | null
-  }
-
-  type GetSisiDiagramGroupByPayload<T extends SisiDiagramGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<SisiDiagramGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof SisiDiagramGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], SisiDiagramGroupByOutputType[P]>
-            : GetScalarType<T[P], SisiDiagramGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type SisiDiagramSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    sisiDiagramId?: boolean
-    tataLetakDiagramId?: boolean
-    dariLangkahId?: boolean
-    keLangkahId?: boolean
-    cabang?: boolean
-    labelTeks?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    dariLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
-    tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
-    keLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
-    points?: boolean | SisiDiagram$pointsArgs<ExtArgs>
-    _count?: boolean | SisiDiagramCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["sisiDiagram"]>
-
-
-
-  export type SisiDiagramSelectScalar = {
-    sisiDiagramId?: boolean
-    tataLetakDiagramId?: boolean
-    dariLangkahId?: boolean
-    keLangkahId?: boolean
-    cabang?: boolean
-    labelTeks?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type SisiDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sisiDiagramId" | "tataLetakDiagramId" | "dariLangkahId" | "keLangkahId" | "cabang" | "labelTeks" | "createdAt" | "updatedAt", ExtArgs["result"]["sisiDiagram"]>
-  export type SisiDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    dariLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
-    tataLetakDiagram?: boolean | TataLetakDiagramDefaultArgs<ExtArgs>
-    keLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
-    points?: boolean | SisiDiagram$pointsArgs<ExtArgs>
-    _count?: boolean | SisiDiagramCountOutputTypeDefaultArgs<ExtArgs>
-  }
-
-  export type $SisiDiagramPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "SisiDiagram"
-    objects: {
-      dariLangkah: Prisma.$LangkahSOPPayload<ExtArgs>
-      tataLetakDiagram: Prisma.$TataLetakDiagramPayload<ExtArgs>
-      keLangkah: Prisma.$LangkahSOPPayload<ExtArgs>
-      points: Prisma.$TitikSisiDiagramPayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      sisiDiagramId: string
-      tataLetakDiagramId: string
-      dariLangkahId: string
-      keLangkahId: string
-      /**
-       * Membedakan edge ganda (mis. keputusan Ya vs Tidak) tanpa mengandalkan NULL di unique.
-       */
-      cabang: $Enums.CabangDiagramEdge
-      labelTeks: string | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["sisiDiagram"]>
-    composites: {}
-  }
-
-  type SisiDiagramGetPayload<S extends boolean | null | undefined | SisiDiagramDefaultArgs> = $Result.GetResult<Prisma.$SisiDiagramPayload, S>
-
-  type SisiDiagramCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<SisiDiagramFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: SisiDiagramCountAggregateInputType | true
-    }
-
-  export interface SisiDiagramDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SisiDiagram'], meta: { name: 'SisiDiagram' } }
-    /**
-     * Find zero or one SisiDiagram that matches the filter.
-     * @param {SisiDiagramFindUniqueArgs} args - Arguments to find a SisiDiagram
-     * @example
-     * // Get one SisiDiagram
-     * const sisiDiagram = await prisma.sisiDiagram.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends SisiDiagramFindUniqueArgs>(args: SelectSubset<T, SisiDiagramFindUniqueArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one SisiDiagram that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {SisiDiagramFindUniqueOrThrowArgs} args - Arguments to find a SisiDiagram
-     * @example
-     * // Get one SisiDiagram
-     * const sisiDiagram = await prisma.sisiDiagram.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends SisiDiagramFindUniqueOrThrowArgs>(args: SelectSubset<T, SisiDiagramFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SisiDiagram that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramFindFirstArgs} args - Arguments to find a SisiDiagram
-     * @example
-     * // Get one SisiDiagram
-     * const sisiDiagram = await prisma.sisiDiagram.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends SisiDiagramFindFirstArgs>(args?: SelectSubset<T, SisiDiagramFindFirstArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first SisiDiagram that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramFindFirstOrThrowArgs} args - Arguments to find a SisiDiagram
-     * @example
-     * // Get one SisiDiagram
-     * const sisiDiagram = await prisma.sisiDiagram.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends SisiDiagramFindFirstOrThrowArgs>(args?: SelectSubset<T, SisiDiagramFindFirstOrThrowArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more SisiDiagrams that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all SisiDiagrams
-     * const sisiDiagrams = await prisma.sisiDiagram.findMany()
-     * 
-     * // Get first 10 SisiDiagrams
-     * const sisiDiagrams = await prisma.sisiDiagram.findMany({ take: 10 })
-     * 
-     * // Only select the `sisiDiagramId`
-     * const sisiDiagramWithSisiDiagramIdOnly = await prisma.sisiDiagram.findMany({ select: { sisiDiagramId: true } })
-     * 
-     */
-    findMany<T extends SisiDiagramFindManyArgs>(args?: SelectSubset<T, SisiDiagramFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a SisiDiagram.
-     * @param {SisiDiagramCreateArgs} args - Arguments to create a SisiDiagram.
-     * @example
-     * // Create one SisiDiagram
-     * const SisiDiagram = await prisma.sisiDiagram.create({
-     *   data: {
-     *     // ... data to create a SisiDiagram
-     *   }
-     * })
-     * 
-     */
-    create<T extends SisiDiagramCreateArgs>(args: SelectSubset<T, SisiDiagramCreateArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many SisiDiagrams.
-     * @param {SisiDiagramCreateManyArgs} args - Arguments to create many SisiDiagrams.
-     * @example
-     * // Create many SisiDiagrams
-     * const sisiDiagram = await prisma.sisiDiagram.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends SisiDiagramCreateManyArgs>(args?: SelectSubset<T, SisiDiagramCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a SisiDiagram.
-     * @param {SisiDiagramDeleteArgs} args - Arguments to delete one SisiDiagram.
-     * @example
-     * // Delete one SisiDiagram
-     * const SisiDiagram = await prisma.sisiDiagram.delete({
-     *   where: {
-     *     // ... filter to delete one SisiDiagram
-     *   }
-     * })
-     * 
-     */
-    delete<T extends SisiDiagramDeleteArgs>(args: SelectSubset<T, SisiDiagramDeleteArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one SisiDiagram.
-     * @param {SisiDiagramUpdateArgs} args - Arguments to update one SisiDiagram.
-     * @example
-     * // Update one SisiDiagram
-     * const sisiDiagram = await prisma.sisiDiagram.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends SisiDiagramUpdateArgs>(args: SelectSubset<T, SisiDiagramUpdateArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more SisiDiagrams.
-     * @param {SisiDiagramDeleteManyArgs} args - Arguments to filter SisiDiagrams to delete.
-     * @example
-     * // Delete a few SisiDiagrams
-     * const { count } = await prisma.sisiDiagram.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends SisiDiagramDeleteManyArgs>(args?: SelectSubset<T, SisiDiagramDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more SisiDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many SisiDiagrams
-     * const sisiDiagram = await prisma.sisiDiagram.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends SisiDiagramUpdateManyArgs>(args: SelectSubset<T, SisiDiagramUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one SisiDiagram.
-     * @param {SisiDiagramUpsertArgs} args - Arguments to update or create a SisiDiagram.
-     * @example
-     * // Update or create a SisiDiagram
-     * const sisiDiagram = await prisma.sisiDiagram.upsert({
-     *   create: {
-     *     // ... data to create a SisiDiagram
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the SisiDiagram we want to update
-     *   }
-     * })
-     */
-    upsert<T extends SisiDiagramUpsertArgs>(args: SelectSubset<T, SisiDiagramUpsertArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of SisiDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramCountArgs} args - Arguments to filter SisiDiagrams to count.
-     * @example
-     * // Count the number of SisiDiagrams
-     * const count = await prisma.sisiDiagram.count({
-     *   where: {
-     *     // ... the filter for the SisiDiagrams we want to count
-     *   }
-     * })
-    **/
-    count<T extends SisiDiagramCountArgs>(
-      args?: Subset<T, SisiDiagramCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], SisiDiagramCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a SisiDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends SisiDiagramAggregateArgs>(args: Subset<T, SisiDiagramAggregateArgs>): Prisma.PrismaPromise<GetSisiDiagramAggregateType<T>>
-
-    /**
-     * Group by SisiDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {SisiDiagramGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends SisiDiagramGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: SisiDiagramGroupByArgs['orderBy'] }
-        : { orderBy?: SisiDiagramGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, SisiDiagramGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSisiDiagramGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the SisiDiagram model
-   */
-  readonly fields: SisiDiagramFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for SisiDiagram.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__SisiDiagramClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    dariLangkah<T extends LangkahSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOPDefaultArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    tataLetakDiagram<T extends TataLetakDiagramDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TataLetakDiagramDefaultArgs<ExtArgs>>): Prisma__TataLetakDiagramClient<$Result.GetResult<Prisma.$TataLetakDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    keLangkah<T extends LangkahSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOPDefaultArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    points<T extends SisiDiagram$pointsArgs<ExtArgs> = {}>(args?: Subset<T, SisiDiagram$pointsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the SisiDiagram model
-   */
-  interface SisiDiagramFieldRefs {
-    readonly sisiDiagramId: FieldRef<"SisiDiagram", 'String'>
-    readonly tataLetakDiagramId: FieldRef<"SisiDiagram", 'String'>
-    readonly dariLangkahId: FieldRef<"SisiDiagram", 'String'>
-    readonly keLangkahId: FieldRef<"SisiDiagram", 'String'>
-    readonly cabang: FieldRef<"SisiDiagram", 'CabangDiagramEdge'>
-    readonly labelTeks: FieldRef<"SisiDiagram", 'String'>
-    readonly createdAt: FieldRef<"SisiDiagram", 'DateTime'>
-    readonly updatedAt: FieldRef<"SisiDiagram", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * SisiDiagram findUnique
-   */
-  export type SisiDiagramFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which SisiDiagram to fetch.
-     */
-    where: SisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * SisiDiagram findUniqueOrThrow
-   */
-  export type SisiDiagramFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which SisiDiagram to fetch.
-     */
-    where: SisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * SisiDiagram findFirst
-   */
-  export type SisiDiagramFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which SisiDiagram to fetch.
-     */
-    where?: SisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SisiDiagrams to fetch.
-     */
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SisiDiagrams.
-     */
-    cursor?: SisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SisiDiagrams.
-     */
-    distinct?: SisiDiagramScalarFieldEnum | SisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * SisiDiagram findFirstOrThrow
-   */
-  export type SisiDiagramFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which SisiDiagram to fetch.
-     */
-    where?: SisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SisiDiagrams to fetch.
-     */
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for SisiDiagrams.
-     */
-    cursor?: SisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SisiDiagrams.
-     */
-    distinct?: SisiDiagramScalarFieldEnum | SisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * SisiDiagram findMany
-   */
-  export type SisiDiagramFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which SisiDiagrams to fetch.
-     */
-    where?: SisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of SisiDiagrams to fetch.
-     */
-    orderBy?: SisiDiagramOrderByWithRelationInput | SisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing SisiDiagrams.
-     */
-    cursor?: SisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` SisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` SisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of SisiDiagrams.
-     */
-    distinct?: SisiDiagramScalarFieldEnum | SisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * SisiDiagram create
-   */
-  export type SisiDiagramCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to create a SisiDiagram.
-     */
-    data: XOR<SisiDiagramCreateInput, SisiDiagramUncheckedCreateInput>
-  }
-
-  /**
-   * SisiDiagram createMany
-   */
-  export type SisiDiagramCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many SisiDiagrams.
-     */
-    data: SisiDiagramCreateManyInput | SisiDiagramCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * SisiDiagram update
-   */
-  export type SisiDiagramUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to update a SisiDiagram.
-     */
-    data: XOR<SisiDiagramUpdateInput, SisiDiagramUncheckedUpdateInput>
-    /**
-     * Choose, which SisiDiagram to update.
-     */
-    where: SisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * SisiDiagram updateMany
-   */
-  export type SisiDiagramUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update SisiDiagrams.
-     */
-    data: XOR<SisiDiagramUpdateManyMutationInput, SisiDiagramUncheckedUpdateManyInput>
-    /**
-     * Filter which SisiDiagrams to update
-     */
-    where?: SisiDiagramWhereInput
-    /**
-     * Limit how many SisiDiagrams to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * SisiDiagram upsert
-   */
-  export type SisiDiagramUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * The filter to search for the SisiDiagram to update in case it exists.
-     */
-    where: SisiDiagramWhereUniqueInput
-    /**
-     * In case the SisiDiagram found by the `where` argument doesn't exist, create a new SisiDiagram with this data.
-     */
-    create: XOR<SisiDiagramCreateInput, SisiDiagramUncheckedCreateInput>
-    /**
-     * In case the SisiDiagram was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<SisiDiagramUpdateInput, SisiDiagramUncheckedUpdateInput>
-  }
-
-  /**
-   * SisiDiagram delete
-   */
-  export type SisiDiagramDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter which SisiDiagram to delete.
-     */
-    where: SisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * SisiDiagram deleteMany
-   */
-  export type SisiDiagramDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which SisiDiagrams to delete
-     */
-    where?: SisiDiagramWhereInput
-    /**
-     * Limit how many SisiDiagrams to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * SisiDiagram.points
-   */
-  export type SisiDiagram$pointsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    where?: TitikSisiDiagramWhereInput
-    orderBy?: TitikSisiDiagramOrderByWithRelationInput | TitikSisiDiagramOrderByWithRelationInput[]
-    cursor?: TitikSisiDiagramWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: TitikSisiDiagramScalarFieldEnum | TitikSisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * SisiDiagram without action
-   */
-  export type SisiDiagramDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the SisiDiagram
-     */
-    select?: SisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the SisiDiagram
-     */
-    omit?: SisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SisiDiagramInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model TitikSisiDiagram
-   */
-
-  export type AggregateTitikSisiDiagram = {
-    _count: TitikSisiDiagramCountAggregateOutputType | null
-    _avg: TitikSisiDiagramAvgAggregateOutputType | null
-    _sum: TitikSisiDiagramSumAggregateOutputType | null
-    _min: TitikSisiDiagramMinAggregateOutputType | null
-    _max: TitikSisiDiagramMaxAggregateOutputType | null
-  }
-
-  export type TitikSisiDiagramAvgAggregateOutputType = {
-    urutan: number | null
-    x: number | null
-    y: number | null
-  }
-
-  export type TitikSisiDiagramSumAggregateOutputType = {
-    urutan: number | null
-    x: number | null
-    y: number | null
-  }
-
-  export type TitikSisiDiagramMinAggregateOutputType = {
-    sisiDiagramId: string | null
-    urutan: number | null
-    x: number | null
-    y: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type TitikSisiDiagramMaxAggregateOutputType = {
-    sisiDiagramId: string | null
-    urutan: number | null
-    x: number | null
-    y: number | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type TitikSisiDiagramCountAggregateOutputType = {
-    sisiDiagramId: number
-    urutan: number
-    x: number
-    y: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type TitikSisiDiagramAvgAggregateInputType = {
-    urutan?: true
-    x?: true
-    y?: true
-  }
-
-  export type TitikSisiDiagramSumAggregateInputType = {
-    urutan?: true
-    x?: true
-    y?: true
-  }
-
-  export type TitikSisiDiagramMinAggregateInputType = {
-    sisiDiagramId?: true
-    urutan?: true
-    x?: true
-    y?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type TitikSisiDiagramMaxAggregateInputType = {
-    sisiDiagramId?: true
-    urutan?: true
-    x?: true
-    y?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type TitikSisiDiagramCountAggregateInputType = {
-    sisiDiagramId?: true
-    urutan?: true
-    x?: true
-    y?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type TitikSisiDiagramAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which TitikSisiDiagram to aggregate.
-     */
-    where?: TitikSisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TitikSisiDiagrams to fetch.
-     */
-    orderBy?: TitikSisiDiagramOrderByWithRelationInput | TitikSisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: TitikSisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TitikSisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TitikSisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned TitikSisiDiagrams
-    **/
-    _count?: true | TitikSisiDiagramCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to average
-    **/
-    _avg?: TitikSisiDiagramAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: TitikSisiDiagramSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: TitikSisiDiagramMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: TitikSisiDiagramMaxAggregateInputType
-  }
-
-  export type GetTitikSisiDiagramAggregateType<T extends TitikSisiDiagramAggregateArgs> = {
-        [P in keyof T & keyof AggregateTitikSisiDiagram]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateTitikSisiDiagram[P]>
-      : GetScalarType<T[P], AggregateTitikSisiDiagram[P]>
-  }
-
-
-
-
-  export type TitikSisiDiagramGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: TitikSisiDiagramWhereInput
-    orderBy?: TitikSisiDiagramOrderByWithAggregationInput | TitikSisiDiagramOrderByWithAggregationInput[]
-    by: TitikSisiDiagramScalarFieldEnum[] | TitikSisiDiagramScalarFieldEnum
-    having?: TitikSisiDiagramScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: TitikSisiDiagramCountAggregateInputType | true
-    _avg?: TitikSisiDiagramAvgAggregateInputType
-    _sum?: TitikSisiDiagramSumAggregateInputType
-    _min?: TitikSisiDiagramMinAggregateInputType
-    _max?: TitikSisiDiagramMaxAggregateInputType
-  }
-
-  export type TitikSisiDiagramGroupByOutputType = {
-    sisiDiagramId: string
-    urutan: number
-    x: number
-    y: number
-    createdAt: Date
-    updatedAt: Date
-    _count: TitikSisiDiagramCountAggregateOutputType | null
-    _avg: TitikSisiDiagramAvgAggregateOutputType | null
-    _sum: TitikSisiDiagramSumAggregateOutputType | null
-    _min: TitikSisiDiagramMinAggregateOutputType | null
-    _max: TitikSisiDiagramMaxAggregateOutputType | null
-  }
-
-  type GetTitikSisiDiagramGroupByPayload<T extends TitikSisiDiagramGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<TitikSisiDiagramGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof TitikSisiDiagramGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], TitikSisiDiagramGroupByOutputType[P]>
-            : GetScalarType<T[P], TitikSisiDiagramGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type TitikSisiDiagramSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    sisiDiagramId?: boolean
-    urutan?: boolean
-    x?: boolean
-    y?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    sisiDiagram?: boolean | SisiDiagramDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["titikSisiDiagram"]>
-
-
-
-  export type TitikSisiDiagramSelectScalar = {
-    sisiDiagramId?: boolean
-    urutan?: boolean
-    x?: boolean
-    y?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type TitikSisiDiagramOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"sisiDiagramId" | "urutan" | "x" | "y" | "createdAt" | "updatedAt", ExtArgs["result"]["titikSisiDiagram"]>
-  export type TitikSisiDiagramInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    sisiDiagram?: boolean | SisiDiagramDefaultArgs<ExtArgs>
-  }
-
-  export type $TitikSisiDiagramPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "TitikSisiDiagram"
-    objects: {
-      sisiDiagram: Prisma.$SisiDiagramPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      sisiDiagramId: string
-      urutan: number
-      x: number
-      y: number
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["titikSisiDiagram"]>
-    composites: {}
-  }
-
-  type TitikSisiDiagramGetPayload<S extends boolean | null | undefined | TitikSisiDiagramDefaultArgs> = $Result.GetResult<Prisma.$TitikSisiDiagramPayload, S>
-
-  type TitikSisiDiagramCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<TitikSisiDiagramFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: TitikSisiDiagramCountAggregateInputType | true
-    }
-
-  export interface TitikSisiDiagramDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TitikSisiDiagram'], meta: { name: 'TitikSisiDiagram' } }
-    /**
-     * Find zero or one TitikSisiDiagram that matches the filter.
-     * @param {TitikSisiDiagramFindUniqueArgs} args - Arguments to find a TitikSisiDiagram
-     * @example
-     * // Get one TitikSisiDiagram
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends TitikSisiDiagramFindUniqueArgs>(args: SelectSubset<T, TitikSisiDiagramFindUniqueArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one TitikSisiDiagram that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {TitikSisiDiagramFindUniqueOrThrowArgs} args - Arguments to find a TitikSisiDiagram
-     * @example
-     * // Get one TitikSisiDiagram
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends TitikSisiDiagramFindUniqueOrThrowArgs>(args: SelectSubset<T, TitikSisiDiagramFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first TitikSisiDiagram that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramFindFirstArgs} args - Arguments to find a TitikSisiDiagram
-     * @example
-     * // Get one TitikSisiDiagram
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends TitikSisiDiagramFindFirstArgs>(args?: SelectSubset<T, TitikSisiDiagramFindFirstArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first TitikSisiDiagram that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramFindFirstOrThrowArgs} args - Arguments to find a TitikSisiDiagram
-     * @example
-     * // Get one TitikSisiDiagram
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends TitikSisiDiagramFindFirstOrThrowArgs>(args?: SelectSubset<T, TitikSisiDiagramFindFirstOrThrowArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more TitikSisiDiagrams that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all TitikSisiDiagrams
-     * const titikSisiDiagrams = await prisma.titikSisiDiagram.findMany()
-     * 
-     * // Get first 10 TitikSisiDiagrams
-     * const titikSisiDiagrams = await prisma.titikSisiDiagram.findMany({ take: 10 })
-     * 
-     * // Only select the `sisiDiagramId`
-     * const titikSisiDiagramWithSisiDiagramIdOnly = await prisma.titikSisiDiagram.findMany({ select: { sisiDiagramId: true } })
-     * 
-     */
-    findMany<T extends TitikSisiDiagramFindManyArgs>(args?: SelectSubset<T, TitikSisiDiagramFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a TitikSisiDiagram.
-     * @param {TitikSisiDiagramCreateArgs} args - Arguments to create a TitikSisiDiagram.
-     * @example
-     * // Create one TitikSisiDiagram
-     * const TitikSisiDiagram = await prisma.titikSisiDiagram.create({
-     *   data: {
-     *     // ... data to create a TitikSisiDiagram
-     *   }
-     * })
-     * 
-     */
-    create<T extends TitikSisiDiagramCreateArgs>(args: SelectSubset<T, TitikSisiDiagramCreateArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many TitikSisiDiagrams.
-     * @param {TitikSisiDiagramCreateManyArgs} args - Arguments to create many TitikSisiDiagrams.
-     * @example
-     * // Create many TitikSisiDiagrams
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends TitikSisiDiagramCreateManyArgs>(args?: SelectSubset<T, TitikSisiDiagramCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a TitikSisiDiagram.
-     * @param {TitikSisiDiagramDeleteArgs} args - Arguments to delete one TitikSisiDiagram.
-     * @example
-     * // Delete one TitikSisiDiagram
-     * const TitikSisiDiagram = await prisma.titikSisiDiagram.delete({
-     *   where: {
-     *     // ... filter to delete one TitikSisiDiagram
-     *   }
-     * })
-     * 
-     */
-    delete<T extends TitikSisiDiagramDeleteArgs>(args: SelectSubset<T, TitikSisiDiagramDeleteArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one TitikSisiDiagram.
-     * @param {TitikSisiDiagramUpdateArgs} args - Arguments to update one TitikSisiDiagram.
-     * @example
-     * // Update one TitikSisiDiagram
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends TitikSisiDiagramUpdateArgs>(args: SelectSubset<T, TitikSisiDiagramUpdateArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more TitikSisiDiagrams.
-     * @param {TitikSisiDiagramDeleteManyArgs} args - Arguments to filter TitikSisiDiagrams to delete.
-     * @example
-     * // Delete a few TitikSisiDiagrams
-     * const { count } = await prisma.titikSisiDiagram.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends TitikSisiDiagramDeleteManyArgs>(args?: SelectSubset<T, TitikSisiDiagramDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more TitikSisiDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many TitikSisiDiagrams
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends TitikSisiDiagramUpdateManyArgs>(args: SelectSubset<T, TitikSisiDiagramUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one TitikSisiDiagram.
-     * @param {TitikSisiDiagramUpsertArgs} args - Arguments to update or create a TitikSisiDiagram.
-     * @example
-     * // Update or create a TitikSisiDiagram
-     * const titikSisiDiagram = await prisma.titikSisiDiagram.upsert({
-     *   create: {
-     *     // ... data to create a TitikSisiDiagram
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the TitikSisiDiagram we want to update
-     *   }
-     * })
-     */
-    upsert<T extends TitikSisiDiagramUpsertArgs>(args: SelectSubset<T, TitikSisiDiagramUpsertArgs<ExtArgs>>): Prisma__TitikSisiDiagramClient<$Result.GetResult<Prisma.$TitikSisiDiagramPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of TitikSisiDiagrams.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramCountArgs} args - Arguments to filter TitikSisiDiagrams to count.
-     * @example
-     * // Count the number of TitikSisiDiagrams
-     * const count = await prisma.titikSisiDiagram.count({
-     *   where: {
-     *     // ... the filter for the TitikSisiDiagrams we want to count
-     *   }
-     * })
-    **/
-    count<T extends TitikSisiDiagramCountArgs>(
-      args?: Subset<T, TitikSisiDiagramCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], TitikSisiDiagramCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a TitikSisiDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends TitikSisiDiagramAggregateArgs>(args: Subset<T, TitikSisiDiagramAggregateArgs>): Prisma.PrismaPromise<GetTitikSisiDiagramAggregateType<T>>
-
-    /**
-     * Group by TitikSisiDiagram.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {TitikSisiDiagramGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends TitikSisiDiagramGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: TitikSisiDiagramGroupByArgs['orderBy'] }
-        : { orderBy?: TitikSisiDiagramGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, TitikSisiDiagramGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTitikSisiDiagramGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the TitikSisiDiagram model
-   */
-  readonly fields: TitikSisiDiagramFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for TitikSisiDiagram.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__TitikSisiDiagramClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    sisiDiagram<T extends SisiDiagramDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SisiDiagramDefaultArgs<ExtArgs>>): Prisma__SisiDiagramClient<$Result.GetResult<Prisma.$SisiDiagramPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the TitikSisiDiagram model
-   */
-  interface TitikSisiDiagramFieldRefs {
-    readonly sisiDiagramId: FieldRef<"TitikSisiDiagram", 'String'>
-    readonly urutan: FieldRef<"TitikSisiDiagram", 'Int'>
-    readonly x: FieldRef<"TitikSisiDiagram", 'Int'>
-    readonly y: FieldRef<"TitikSisiDiagram", 'Int'>
-    readonly createdAt: FieldRef<"TitikSisiDiagram", 'DateTime'>
-    readonly updatedAt: FieldRef<"TitikSisiDiagram", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * TitikSisiDiagram findUnique
-   */
-  export type TitikSisiDiagramFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TitikSisiDiagram to fetch.
-     */
-    where: TitikSisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * TitikSisiDiagram findUniqueOrThrow
-   */
-  export type TitikSisiDiagramFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TitikSisiDiagram to fetch.
-     */
-    where: TitikSisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * TitikSisiDiagram findFirst
-   */
-  export type TitikSisiDiagramFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TitikSisiDiagram to fetch.
-     */
-    where?: TitikSisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TitikSisiDiagrams to fetch.
-     */
-    orderBy?: TitikSisiDiagramOrderByWithRelationInput | TitikSisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for TitikSisiDiagrams.
-     */
-    cursor?: TitikSisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TitikSisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TitikSisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TitikSisiDiagrams.
-     */
-    distinct?: TitikSisiDiagramScalarFieldEnum | TitikSisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TitikSisiDiagram findFirstOrThrow
-   */
-  export type TitikSisiDiagramFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TitikSisiDiagram to fetch.
-     */
-    where?: TitikSisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TitikSisiDiagrams to fetch.
-     */
-    orderBy?: TitikSisiDiagramOrderByWithRelationInput | TitikSisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for TitikSisiDiagrams.
-     */
-    cursor?: TitikSisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TitikSisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TitikSisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TitikSisiDiagrams.
-     */
-    distinct?: TitikSisiDiagramScalarFieldEnum | TitikSisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TitikSisiDiagram findMany
-   */
-  export type TitikSisiDiagramFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter, which TitikSisiDiagrams to fetch.
-     */
-    where?: TitikSisiDiagramWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of TitikSisiDiagrams to fetch.
-     */
-    orderBy?: TitikSisiDiagramOrderByWithRelationInput | TitikSisiDiagramOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing TitikSisiDiagrams.
-     */
-    cursor?: TitikSisiDiagramWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` TitikSisiDiagrams from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` TitikSisiDiagrams.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of TitikSisiDiagrams.
-     */
-    distinct?: TitikSisiDiagramScalarFieldEnum | TitikSisiDiagramScalarFieldEnum[]
-  }
-
-  /**
-   * TitikSisiDiagram create
-   */
-  export type TitikSisiDiagramCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to create a TitikSisiDiagram.
-     */
-    data: XOR<TitikSisiDiagramCreateInput, TitikSisiDiagramUncheckedCreateInput>
-  }
-
-  /**
-   * TitikSisiDiagram createMany
-   */
-  export type TitikSisiDiagramCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many TitikSisiDiagrams.
-     */
-    data: TitikSisiDiagramCreateManyInput | TitikSisiDiagramCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * TitikSisiDiagram update
-   */
-  export type TitikSisiDiagramUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * The data needed to update a TitikSisiDiagram.
-     */
-    data: XOR<TitikSisiDiagramUpdateInput, TitikSisiDiagramUncheckedUpdateInput>
-    /**
-     * Choose, which TitikSisiDiagram to update.
-     */
-    where: TitikSisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * TitikSisiDiagram updateMany
-   */
-  export type TitikSisiDiagramUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update TitikSisiDiagrams.
-     */
-    data: XOR<TitikSisiDiagramUpdateManyMutationInput, TitikSisiDiagramUncheckedUpdateManyInput>
-    /**
-     * Filter which TitikSisiDiagrams to update
-     */
-    where?: TitikSisiDiagramWhereInput
-    /**
-     * Limit how many TitikSisiDiagrams to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * TitikSisiDiagram upsert
-   */
-  export type TitikSisiDiagramUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * The filter to search for the TitikSisiDiagram to update in case it exists.
-     */
-    where: TitikSisiDiagramWhereUniqueInput
-    /**
-     * In case the TitikSisiDiagram found by the `where` argument doesn't exist, create a new TitikSisiDiagram with this data.
-     */
-    create: XOR<TitikSisiDiagramCreateInput, TitikSisiDiagramUncheckedCreateInput>
-    /**
-     * In case the TitikSisiDiagram was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<TitikSisiDiagramUpdateInput, TitikSisiDiagramUncheckedUpdateInput>
-  }
-
-  /**
-   * TitikSisiDiagram delete
-   */
-  export type TitikSisiDiagramDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
-    /**
-     * Filter which TitikSisiDiagram to delete.
-     */
-    where: TitikSisiDiagramWhereUniqueInput
-  }
-
-  /**
-   * TitikSisiDiagram deleteMany
-   */
-  export type TitikSisiDiagramDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which TitikSisiDiagrams to delete
-     */
-    where?: TitikSisiDiagramWhereInput
-    /**
-     * Limit how many TitikSisiDiagrams to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * TitikSisiDiagram without action
-   */
-  export type TitikSisiDiagramDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the TitikSisiDiagram
-     */
-    select?: TitikSisiDiagramSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the TitikSisiDiagram
-     */
-    omit?: TitikSisiDiagramOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: TitikSisiDiagramInclude<ExtArgs> | null
   }
 
 
@@ -30365,12 +25595,6 @@ export namespace Prisma {
     tanggalRevisi: 'tanggalRevisi',
     tanggalEfektif: 'tanggalEfektif',
     namaLembaga: 'namaLembaga',
-    lebarKolomKegiatan: 'lebarKolomKegiatan',
-    lebarKolomPelaksana: 'lebarKolomPelaksana',
-    lebarKolomKelengkapan: 'lebarKolomKelengkapan',
-    lebarKolomWaktu: 'lebarKolomWaktu',
-    lebarKolomOutput: 'lebarKolomOutput',
-    lebarKolomKeterangan: 'lebarKolomKeterangan',
     dibuatOlehId: 'dibuatOlehId',
     terakhirDieditOlehId: 'terakhirDieditOlehId',
     createdAt: 'createdAt',
@@ -30482,61 +25706,6 @@ export namespace Prisma {
   };
 
   export type KomentarScalarFieldEnum = (typeof KomentarScalarFieldEnum)[keyof typeof KomentarScalarFieldEnum]
-
-
-  export const TataLetakDiagramScalarFieldEnum: {
-    tataLetakDiagramId: 'tataLetakDiagramId',
-    detailSopId: 'detailSopId',
-    jenis: 'jenis',
-    versiLayout: 'versiLayout',
-    layoutSeed: 'layoutSeed',
-    gayaPanah: 'gayaPanah',
-    langkahPerHalaman: 'langkahPerHalaman',
-    lebarAreaKegiatan: 'lebarAreaKegiatan',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type TataLetakDiagramScalarFieldEnum = (typeof TataLetakDiagramScalarFieldEnum)[keyof typeof TataLetakDiagramScalarFieldEnum]
-
-
-  export const PosisiNodeDiagramScalarFieldEnum: {
-    tataLetakDiagramId: 'tataLetakDiagramId',
-    langkahSopId: 'langkahSopId',
-    page: 'page',
-    x: 'x',
-    y: 'y',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type PosisiNodeDiagramScalarFieldEnum = (typeof PosisiNodeDiagramScalarFieldEnum)[keyof typeof PosisiNodeDiagramScalarFieldEnum]
-
-
-  export const SisiDiagramScalarFieldEnum: {
-    sisiDiagramId: 'sisiDiagramId',
-    tataLetakDiagramId: 'tataLetakDiagramId',
-    dariLangkahId: 'dariLangkahId',
-    keLangkahId: 'keLangkahId',
-    cabang: 'cabang',
-    labelTeks: 'labelTeks',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type SisiDiagramScalarFieldEnum = (typeof SisiDiagramScalarFieldEnum)[keyof typeof SisiDiagramScalarFieldEnum]
-
-
-  export const TitikSisiDiagramScalarFieldEnum: {
-    sisiDiagramId: 'sisiDiagramId',
-    urutan: 'urutan',
-    x: 'x',
-    y: 'y',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type TitikSisiDiagramScalarFieldEnum = (typeof TitikSisiDiagramScalarFieldEnum)[keyof typeof TitikSisiDiagramScalarFieldEnum]
 
 
   export const PengajuanEvaluasiScalarFieldEnum: {
@@ -30839,40 +26008,6 @@ export namespace Prisma {
   export type KomentarOrderByRelevanceFieldEnum = (typeof KomentarOrderByRelevanceFieldEnum)[keyof typeof KomentarOrderByRelevanceFieldEnum]
 
 
-  export const TataLetakDiagramOrderByRelevanceFieldEnum: {
-    tataLetakDiagramId: 'tataLetakDiagramId',
-    detailSopId: 'detailSopId'
-  };
-
-  export type TataLetakDiagramOrderByRelevanceFieldEnum = (typeof TataLetakDiagramOrderByRelevanceFieldEnum)[keyof typeof TataLetakDiagramOrderByRelevanceFieldEnum]
-
-
-  export const PosisiNodeDiagramOrderByRelevanceFieldEnum: {
-    tataLetakDiagramId: 'tataLetakDiagramId',
-    langkahSopId: 'langkahSopId'
-  };
-
-  export type PosisiNodeDiagramOrderByRelevanceFieldEnum = (typeof PosisiNodeDiagramOrderByRelevanceFieldEnum)[keyof typeof PosisiNodeDiagramOrderByRelevanceFieldEnum]
-
-
-  export const SisiDiagramOrderByRelevanceFieldEnum: {
-    sisiDiagramId: 'sisiDiagramId',
-    tataLetakDiagramId: 'tataLetakDiagramId',
-    dariLangkahId: 'dariLangkahId',
-    keLangkahId: 'keLangkahId',
-    labelTeks: 'labelTeks'
-  };
-
-  export type SisiDiagramOrderByRelevanceFieldEnum = (typeof SisiDiagramOrderByRelevanceFieldEnum)[keyof typeof SisiDiagramOrderByRelevanceFieldEnum]
-
-
-  export const TitikSisiDiagramOrderByRelevanceFieldEnum: {
-    sisiDiagramId: 'sisiDiagramId'
-  };
-
-  export type TitikSisiDiagramOrderByRelevanceFieldEnum = (typeof TitikSisiDiagramOrderByRelevanceFieldEnum)[keyof typeof TitikSisiDiagramOrderByRelevanceFieldEnum]
-
-
   export const PengajuanEvaluasiOrderByRelevanceFieldEnum: {
     pengajuanEvaluasiId: 'pengajuanEvaluasiId',
     opdId: 'opdId',
@@ -31042,27 +26177,6 @@ export namespace Prisma {
    * Reference to a field of type 'StatusKomentar'
    */
   export type EnumStatusKomentarFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusKomentar'>
-    
-
-
-  /**
-   * Reference to a field of type 'JenisDiagramSOP'
-   */
-  export type EnumJenisDiagramSOPFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisDiagramSOP'>
-    
-
-
-  /**
-   * Reference to a field of type 'GayaPanah'
-   */
-  export type EnumGayaPanahFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GayaPanah'>
-    
-
-
-  /**
-   * Reference to a field of type 'CabangDiagramEdge'
-   */
-  export type EnumCabangDiagramEdgeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CabangDiagramEdge'>
     
 
 
@@ -31589,12 +26703,6 @@ export namespace Prisma {
     tanggalRevisi?: DateTimeNullableFilter<"DetailSOP"> | Date | string | null
     tanggalEfektif?: DateTimeNullableFilter<"DetailSOP"> | Date | string | null
     namaLembaga?: StringFilter<"DetailSOP"> | string
-    lebarKolomKegiatan?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomPelaksana?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomKelengkapan?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomWaktu?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomOutput?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomKeterangan?: IntNullableFilter<"DetailSOP"> | number | null
     dibuatOlehId?: StringNullableFilter<"DetailSOP"> | string | null
     terakhirDieditOlehId?: StringNullableFilter<"DetailSOP"> | string | null
     createdAt?: DateTimeFilter<"DetailSOP"> | Date | string
@@ -31606,7 +26714,6 @@ export namespace Prisma {
     sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
     terakhirDieditOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     swimlanes?: DetailSOPPelaksanaListRelationFilter
-    diagramLayout?: TataLetakDiagramListRelationFilter
     komentar?: KomentarListRelationFilter
     lampiran?: LampiranTeksListRelationFilter
     langkahSOP?: LangkahSOPListRelationFilter
@@ -31628,12 +26735,6 @@ export namespace Prisma {
     tanggalRevisi?: SortOrderInput | SortOrder
     tanggalEfektif?: SortOrderInput | SortOrder
     namaLembaga?: SortOrder
-    lebarKolomKegiatan?: SortOrderInput | SortOrder
-    lebarKolomPelaksana?: SortOrderInput | SortOrder
-    lebarKolomKelengkapan?: SortOrderInput | SortOrder
-    lebarKolomWaktu?: SortOrderInput | SortOrder
-    lebarKolomOutput?: SortOrderInput | SortOrder
-    lebarKolomKeterangan?: SortOrderInput | SortOrder
     dibuatOlehId?: SortOrderInput | SortOrder
     terakhirDieditOlehId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -31645,7 +26746,6 @@ export namespace Prisma {
     sop?: SOPOrderByWithRelationInput
     terakhirDieditOleh?: PenggunaOrderByWithRelationInput
     swimlanes?: DetailSOPPelaksanaOrderByRelationAggregateInput
-    diagramLayout?: TataLetakDiagramOrderByRelationAggregateInput
     komentar?: KomentarOrderByRelationAggregateInput
     lampiran?: LampiranTeksOrderByRelationAggregateInput
     langkahSOP?: LangkahSOPOrderByRelationAggregateInput
@@ -31672,12 +26772,6 @@ export namespace Prisma {
     tanggalRevisi?: DateTimeNullableFilter<"DetailSOP"> | Date | string | null
     tanggalEfektif?: DateTimeNullableFilter<"DetailSOP"> | Date | string | null
     namaLembaga?: StringFilter<"DetailSOP"> | string
-    lebarKolomKegiatan?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomPelaksana?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomKelengkapan?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomWaktu?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomOutput?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomKeterangan?: IntNullableFilter<"DetailSOP"> | number | null
     dibuatOlehId?: StringNullableFilter<"DetailSOP"> | string | null
     terakhirDieditOlehId?: StringNullableFilter<"DetailSOP"> | string | null
     createdAt?: DateTimeFilter<"DetailSOP"> | Date | string
@@ -31689,7 +26783,6 @@ export namespace Prisma {
     sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
     terakhirDieditOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     swimlanes?: DetailSOPPelaksanaListRelationFilter
-    diagramLayout?: TataLetakDiagramListRelationFilter
     komentar?: KomentarListRelationFilter
     lampiran?: LampiranTeksListRelationFilter
     langkahSOP?: LangkahSOPListRelationFilter
@@ -31711,12 +26804,6 @@ export namespace Prisma {
     tanggalRevisi?: SortOrderInput | SortOrder
     tanggalEfektif?: SortOrderInput | SortOrder
     namaLembaga?: SortOrder
-    lebarKolomKegiatan?: SortOrderInput | SortOrder
-    lebarKolomPelaksana?: SortOrderInput | SortOrder
-    lebarKolomKelengkapan?: SortOrderInput | SortOrder
-    lebarKolomWaktu?: SortOrderInput | SortOrder
-    lebarKolomOutput?: SortOrderInput | SortOrder
-    lebarKolomKeterangan?: SortOrderInput | SortOrder
     dibuatOlehId?: SortOrderInput | SortOrder
     terakhirDieditOlehId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -31742,12 +26829,6 @@ export namespace Prisma {
     tanggalRevisi?: DateTimeNullableWithAggregatesFilter<"DetailSOP"> | Date | string | null
     tanggalEfektif?: DateTimeNullableWithAggregatesFilter<"DetailSOP"> | Date | string | null
     namaLembaga?: StringWithAggregatesFilter<"DetailSOP"> | string
-    lebarKolomKegiatan?: IntNullableWithAggregatesFilter<"DetailSOP"> | number | null
-    lebarKolomPelaksana?: IntNullableWithAggregatesFilter<"DetailSOP"> | number | null
-    lebarKolomKelengkapan?: IntNullableWithAggregatesFilter<"DetailSOP"> | number | null
-    lebarKolomWaktu?: IntNullableWithAggregatesFilter<"DetailSOP"> | number | null
-    lebarKolomOutput?: IntNullableWithAggregatesFilter<"DetailSOP"> | number | null
-    lebarKolomKeterangan?: IntNullableWithAggregatesFilter<"DetailSOP"> | number | null
     dibuatOlehId?: StringNullableWithAggregatesFilter<"DetailSOP"> | string | null
     terakhirDieditOlehId?: StringNullableWithAggregatesFilter<"DetailSOP"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"DetailSOP"> | Date | string
@@ -31944,9 +27025,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: StringNullableFilter<"LangkahSOP"> | string | null
     createdAt?: DateTimeFilter<"LangkahSOP"> | Date | string
     updatedAt?: DateTimeFilter<"LangkahSOP"> | Date | string
-    diagramEdgeKeluar?: SisiDiagramListRelationFilter
-    diagramEdgeMasuk?: SisiDiagramListRelationFilter
-    diagramNodePosition?: PosisiNodeDiagramListRelationFilter
     langkahTidak?: XOR<LangkahSOPNullableScalarRelationFilter, LangkahSOPWhereInput> | null
     langkahSebelumTidak?: LangkahSOPListRelationFilter
     langkahYa?: XOR<LangkahSOPNullableScalarRelationFilter, LangkahSOPWhereInput> | null
@@ -31971,9 +27049,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    diagramEdgeKeluar?: SisiDiagramOrderByRelationAggregateInput
-    diagramEdgeMasuk?: SisiDiagramOrderByRelationAggregateInput
-    diagramNodePosition?: PosisiNodeDiagramOrderByRelationAggregateInput
     langkahTidak?: LangkahSOPOrderByWithRelationInput
     langkahSebelumTidak?: LangkahSOPOrderByRelationAggregateInput
     langkahYa?: LangkahSOPOrderByWithRelationInput
@@ -32003,9 +27078,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: StringNullableFilter<"LangkahSOP"> | string | null
     createdAt?: DateTimeFilter<"LangkahSOP"> | Date | string
     updatedAt?: DateTimeFilter<"LangkahSOP"> | Date | string
-    diagramEdgeKeluar?: SisiDiagramListRelationFilter
-    diagramEdgeMasuk?: SisiDiagramListRelationFilter
-    diagramNodePosition?: PosisiNodeDiagramListRelationFilter
     langkahTidak?: XOR<LangkahSOPNullableScalarRelationFilter, LangkahSOPWhereInput> | null
     langkahSebelumTidak?: LangkahSOPListRelationFilter
     langkahYa?: XOR<LangkahSOPNullableScalarRelationFilter, LangkahSOPWhereInput> | null
@@ -32333,313 +27405,6 @@ export namespace Prisma {
     status?: EnumStatusKomentarWithAggregatesFilter<"Komentar"> | $Enums.StatusKomentar
     createdAt?: DateTimeWithAggregatesFilter<"Komentar"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Komentar"> | Date | string
-  }
-
-  export type TataLetakDiagramWhereInput = {
-    AND?: TataLetakDiagramWhereInput | TataLetakDiagramWhereInput[]
-    OR?: TataLetakDiagramWhereInput[]
-    NOT?: TataLetakDiagramWhereInput | TataLetakDiagramWhereInput[]
-    tataLetakDiagramId?: StringFilter<"TataLetakDiagram"> | string
-    detailSopId?: StringFilter<"TataLetakDiagram"> | string
-    jenis?: EnumJenisDiagramSOPFilter<"TataLetakDiagram"> | $Enums.JenisDiagramSOP
-    versiLayout?: IntFilter<"TataLetakDiagram"> | number
-    layoutSeed?: IntFilter<"TataLetakDiagram"> | number
-    gayaPanah?: EnumGayaPanahNullableFilter<"TataLetakDiagram"> | $Enums.GayaPanah | null
-    langkahPerHalaman?: IntNullableFilter<"TataLetakDiagram"> | number | null
-    lebarAreaKegiatan?: IntNullableFilter<"TataLetakDiagram"> | number | null
-    createdAt?: DateTimeFilter<"TataLetakDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"TataLetakDiagram"> | Date | string
-    edgeOverrides?: SisiDiagramListRelationFilter
-    detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
-    nodeOverrides?: PosisiNodeDiagramListRelationFilter
-  }
-
-  export type TataLetakDiagramOrderByWithRelationInput = {
-    tataLetakDiagramId?: SortOrder
-    detailSopId?: SortOrder
-    jenis?: SortOrder
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    gayaPanah?: SortOrderInput | SortOrder
-    langkahPerHalaman?: SortOrderInput | SortOrder
-    lebarAreaKegiatan?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    edgeOverrides?: SisiDiagramOrderByRelationAggregateInput
-    detailSop?: DetailSOPOrderByWithRelationInput
-    nodeOverrides?: PosisiNodeDiagramOrderByRelationAggregateInput
-    _relevance?: TataLetakDiagramOrderByRelevanceInput
-  }
-
-  export type TataLetakDiagramWhereUniqueInput = Prisma.AtLeast<{
-    tataLetakDiagramId?: string
-    detailSopId_jenis_versiLayout?: TataLetakDiagramDetailSopIdJenisVersiLayoutCompoundUniqueInput
-    AND?: TataLetakDiagramWhereInput | TataLetakDiagramWhereInput[]
-    OR?: TataLetakDiagramWhereInput[]
-    NOT?: TataLetakDiagramWhereInput | TataLetakDiagramWhereInput[]
-    detailSopId?: StringFilter<"TataLetakDiagram"> | string
-    jenis?: EnumJenisDiagramSOPFilter<"TataLetakDiagram"> | $Enums.JenisDiagramSOP
-    versiLayout?: IntFilter<"TataLetakDiagram"> | number
-    layoutSeed?: IntFilter<"TataLetakDiagram"> | number
-    gayaPanah?: EnumGayaPanahNullableFilter<"TataLetakDiagram"> | $Enums.GayaPanah | null
-    langkahPerHalaman?: IntNullableFilter<"TataLetakDiagram"> | number | null
-    lebarAreaKegiatan?: IntNullableFilter<"TataLetakDiagram"> | number | null
-    createdAt?: DateTimeFilter<"TataLetakDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"TataLetakDiagram"> | Date | string
-    edgeOverrides?: SisiDiagramListRelationFilter
-    detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
-    nodeOverrides?: PosisiNodeDiagramListRelationFilter
-  }, "tataLetakDiagramId" | "detailSopId_jenis_versiLayout">
-
-  export type TataLetakDiagramOrderByWithAggregationInput = {
-    tataLetakDiagramId?: SortOrder
-    detailSopId?: SortOrder
-    jenis?: SortOrder
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    gayaPanah?: SortOrderInput | SortOrder
-    langkahPerHalaman?: SortOrderInput | SortOrder
-    lebarAreaKegiatan?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: TataLetakDiagramCountOrderByAggregateInput
-    _avg?: TataLetakDiagramAvgOrderByAggregateInput
-    _max?: TataLetakDiagramMaxOrderByAggregateInput
-    _min?: TataLetakDiagramMinOrderByAggregateInput
-    _sum?: TataLetakDiagramSumOrderByAggregateInput
-  }
-
-  export type TataLetakDiagramScalarWhereWithAggregatesInput = {
-    AND?: TataLetakDiagramScalarWhereWithAggregatesInput | TataLetakDiagramScalarWhereWithAggregatesInput[]
-    OR?: TataLetakDiagramScalarWhereWithAggregatesInput[]
-    NOT?: TataLetakDiagramScalarWhereWithAggregatesInput | TataLetakDiagramScalarWhereWithAggregatesInput[]
-    tataLetakDiagramId?: StringWithAggregatesFilter<"TataLetakDiagram"> | string
-    detailSopId?: StringWithAggregatesFilter<"TataLetakDiagram"> | string
-    jenis?: EnumJenisDiagramSOPWithAggregatesFilter<"TataLetakDiagram"> | $Enums.JenisDiagramSOP
-    versiLayout?: IntWithAggregatesFilter<"TataLetakDiagram"> | number
-    layoutSeed?: IntWithAggregatesFilter<"TataLetakDiagram"> | number
-    gayaPanah?: EnumGayaPanahNullableWithAggregatesFilter<"TataLetakDiagram"> | $Enums.GayaPanah | null
-    langkahPerHalaman?: IntNullableWithAggregatesFilter<"TataLetakDiagram"> | number | null
-    lebarAreaKegiatan?: IntNullableWithAggregatesFilter<"TataLetakDiagram"> | number | null
-    createdAt?: DateTimeWithAggregatesFilter<"TataLetakDiagram"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"TataLetakDiagram"> | Date | string
-  }
-
-  export type PosisiNodeDiagramWhereInput = {
-    AND?: PosisiNodeDiagramWhereInput | PosisiNodeDiagramWhereInput[]
-    OR?: PosisiNodeDiagramWhereInput[]
-    NOT?: PosisiNodeDiagramWhereInput | PosisiNodeDiagramWhereInput[]
-    tataLetakDiagramId?: StringFilter<"PosisiNodeDiagram"> | string
-    langkahSopId?: StringFilter<"PosisiNodeDiagram"> | string
-    page?: IntFilter<"PosisiNodeDiagram"> | number
-    x?: IntFilter<"PosisiNodeDiagram"> | number
-    y?: IntFilter<"PosisiNodeDiagram"> | number
-    createdAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
-    tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
-    langkahSOP?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
-  }
-
-  export type PosisiNodeDiagramOrderByWithRelationInput = {
-    tataLetakDiagramId?: SortOrder
-    langkahSopId?: SortOrder
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    tataLetakDiagram?: TataLetakDiagramOrderByWithRelationInput
-    langkahSOP?: LangkahSOPOrderByWithRelationInput
-    _relevance?: PosisiNodeDiagramOrderByRelevanceInput
-  }
-
-  export type PosisiNodeDiagramWhereUniqueInput = Prisma.AtLeast<{
-    tataLetakDiagramId_langkahSopId?: PosisiNodeDiagramTataLetakDiagramIdLangkahSopIdCompoundUniqueInput
-    AND?: PosisiNodeDiagramWhereInput | PosisiNodeDiagramWhereInput[]
-    OR?: PosisiNodeDiagramWhereInput[]
-    NOT?: PosisiNodeDiagramWhereInput | PosisiNodeDiagramWhereInput[]
-    tataLetakDiagramId?: StringFilter<"PosisiNodeDiagram"> | string
-    langkahSopId?: StringFilter<"PosisiNodeDiagram"> | string
-    page?: IntFilter<"PosisiNodeDiagram"> | number
-    x?: IntFilter<"PosisiNodeDiagram"> | number
-    y?: IntFilter<"PosisiNodeDiagram"> | number
-    createdAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
-    tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
-    langkahSOP?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
-  }, "tataLetakDiagramId_langkahSopId">
-
-  export type PosisiNodeDiagramOrderByWithAggregationInput = {
-    tataLetakDiagramId?: SortOrder
-    langkahSopId?: SortOrder
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: PosisiNodeDiagramCountOrderByAggregateInput
-    _avg?: PosisiNodeDiagramAvgOrderByAggregateInput
-    _max?: PosisiNodeDiagramMaxOrderByAggregateInput
-    _min?: PosisiNodeDiagramMinOrderByAggregateInput
-    _sum?: PosisiNodeDiagramSumOrderByAggregateInput
-  }
-
-  export type PosisiNodeDiagramScalarWhereWithAggregatesInput = {
-    AND?: PosisiNodeDiagramScalarWhereWithAggregatesInput | PosisiNodeDiagramScalarWhereWithAggregatesInput[]
-    OR?: PosisiNodeDiagramScalarWhereWithAggregatesInput[]
-    NOT?: PosisiNodeDiagramScalarWhereWithAggregatesInput | PosisiNodeDiagramScalarWhereWithAggregatesInput[]
-    tataLetakDiagramId?: StringWithAggregatesFilter<"PosisiNodeDiagram"> | string
-    langkahSopId?: StringWithAggregatesFilter<"PosisiNodeDiagram"> | string
-    page?: IntWithAggregatesFilter<"PosisiNodeDiagram"> | number
-    x?: IntWithAggregatesFilter<"PosisiNodeDiagram"> | number
-    y?: IntWithAggregatesFilter<"PosisiNodeDiagram"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"PosisiNodeDiagram"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"PosisiNodeDiagram"> | Date | string
-  }
-
-  export type SisiDiagramWhereInput = {
-    AND?: SisiDiagramWhereInput | SisiDiagramWhereInput[]
-    OR?: SisiDiagramWhereInput[]
-    NOT?: SisiDiagramWhereInput | SisiDiagramWhereInput[]
-    sisiDiagramId?: StringFilter<"SisiDiagram"> | string
-    tataLetakDiagramId?: StringFilter<"SisiDiagram"> | string
-    dariLangkahId?: StringFilter<"SisiDiagram"> | string
-    keLangkahId?: StringFilter<"SisiDiagram"> | string
-    cabang?: EnumCabangDiagramEdgeFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
-    labelTeks?: StringNullableFilter<"SisiDiagram"> | string | null
-    createdAt?: DateTimeFilter<"SisiDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"SisiDiagram"> | Date | string
-    dariLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
-    tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
-    keLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
-    points?: TitikSisiDiagramListRelationFilter
-  }
-
-  export type SisiDiagramOrderByWithRelationInput = {
-    sisiDiagramId?: SortOrder
-    tataLetakDiagramId?: SortOrder
-    dariLangkahId?: SortOrder
-    keLangkahId?: SortOrder
-    cabang?: SortOrder
-    labelTeks?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    dariLangkah?: LangkahSOPOrderByWithRelationInput
-    tataLetakDiagram?: TataLetakDiagramOrderByWithRelationInput
-    keLangkah?: LangkahSOPOrderByWithRelationInput
-    points?: TitikSisiDiagramOrderByRelationAggregateInput
-    _relevance?: SisiDiagramOrderByRelevanceInput
-  }
-
-  export type SisiDiagramWhereUniqueInput = Prisma.AtLeast<{
-    sisiDiagramId?: string
-    tataLetakDiagramId_dariLangkahId_keLangkahId_cabang?: SisiDiagramTataLetakDiagramIdDariLangkahIdKeLangkahIdCabangCompoundUniqueInput
-    AND?: SisiDiagramWhereInput | SisiDiagramWhereInput[]
-    OR?: SisiDiagramWhereInput[]
-    NOT?: SisiDiagramWhereInput | SisiDiagramWhereInput[]
-    tataLetakDiagramId?: StringFilter<"SisiDiagram"> | string
-    dariLangkahId?: StringFilter<"SisiDiagram"> | string
-    keLangkahId?: StringFilter<"SisiDiagram"> | string
-    cabang?: EnumCabangDiagramEdgeFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
-    labelTeks?: StringNullableFilter<"SisiDiagram"> | string | null
-    createdAt?: DateTimeFilter<"SisiDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"SisiDiagram"> | Date | string
-    dariLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
-    tataLetakDiagram?: XOR<TataLetakDiagramScalarRelationFilter, TataLetakDiagramWhereInput>
-    keLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
-    points?: TitikSisiDiagramListRelationFilter
-  }, "sisiDiagramId" | "tataLetakDiagramId_dariLangkahId_keLangkahId_cabang">
-
-  export type SisiDiagramOrderByWithAggregationInput = {
-    sisiDiagramId?: SortOrder
-    tataLetakDiagramId?: SortOrder
-    dariLangkahId?: SortOrder
-    keLangkahId?: SortOrder
-    cabang?: SortOrder
-    labelTeks?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: SisiDiagramCountOrderByAggregateInput
-    _max?: SisiDiagramMaxOrderByAggregateInput
-    _min?: SisiDiagramMinOrderByAggregateInput
-  }
-
-  export type SisiDiagramScalarWhereWithAggregatesInput = {
-    AND?: SisiDiagramScalarWhereWithAggregatesInput | SisiDiagramScalarWhereWithAggregatesInput[]
-    OR?: SisiDiagramScalarWhereWithAggregatesInput[]
-    NOT?: SisiDiagramScalarWhereWithAggregatesInput | SisiDiagramScalarWhereWithAggregatesInput[]
-    sisiDiagramId?: StringWithAggregatesFilter<"SisiDiagram"> | string
-    tataLetakDiagramId?: StringWithAggregatesFilter<"SisiDiagram"> | string
-    dariLangkahId?: StringWithAggregatesFilter<"SisiDiagram"> | string
-    keLangkahId?: StringWithAggregatesFilter<"SisiDiagram"> | string
-    cabang?: EnumCabangDiagramEdgeWithAggregatesFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
-    labelTeks?: StringNullableWithAggregatesFilter<"SisiDiagram"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"SisiDiagram"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"SisiDiagram"> | Date | string
-  }
-
-  export type TitikSisiDiagramWhereInput = {
-    AND?: TitikSisiDiagramWhereInput | TitikSisiDiagramWhereInput[]
-    OR?: TitikSisiDiagramWhereInput[]
-    NOT?: TitikSisiDiagramWhereInput | TitikSisiDiagramWhereInput[]
-    sisiDiagramId?: StringFilter<"TitikSisiDiagram"> | string
-    urutan?: IntFilter<"TitikSisiDiagram"> | number
-    x?: IntFilter<"TitikSisiDiagram"> | number
-    y?: IntFilter<"TitikSisiDiagram"> | number
-    createdAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
-    sisiDiagram?: XOR<SisiDiagramScalarRelationFilter, SisiDiagramWhereInput>
-  }
-
-  export type TitikSisiDiagramOrderByWithRelationInput = {
-    sisiDiagramId?: SortOrder
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    sisiDiagram?: SisiDiagramOrderByWithRelationInput
-    _relevance?: TitikSisiDiagramOrderByRelevanceInput
-  }
-
-  export type TitikSisiDiagramWhereUniqueInput = Prisma.AtLeast<{
-    sisiDiagramId_urutan?: TitikSisiDiagramSisiDiagramIdUrutanCompoundUniqueInput
-    AND?: TitikSisiDiagramWhereInput | TitikSisiDiagramWhereInput[]
-    OR?: TitikSisiDiagramWhereInput[]
-    NOT?: TitikSisiDiagramWhereInput | TitikSisiDiagramWhereInput[]
-    sisiDiagramId?: StringFilter<"TitikSisiDiagram"> | string
-    urutan?: IntFilter<"TitikSisiDiagram"> | number
-    x?: IntFilter<"TitikSisiDiagram"> | number
-    y?: IntFilter<"TitikSisiDiagram"> | number
-    createdAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
-    sisiDiagram?: XOR<SisiDiagramScalarRelationFilter, SisiDiagramWhereInput>
-  }, "sisiDiagramId_urutan">
-
-  export type TitikSisiDiagramOrderByWithAggregationInput = {
-    sisiDiagramId?: SortOrder
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: TitikSisiDiagramCountOrderByAggregateInput
-    _avg?: TitikSisiDiagramAvgOrderByAggregateInput
-    _max?: TitikSisiDiagramMaxOrderByAggregateInput
-    _min?: TitikSisiDiagramMinOrderByAggregateInput
-    _sum?: TitikSisiDiagramSumOrderByAggregateInput
-  }
-
-  export type TitikSisiDiagramScalarWhereWithAggregatesInput = {
-    AND?: TitikSisiDiagramScalarWhereWithAggregatesInput | TitikSisiDiagramScalarWhereWithAggregatesInput[]
-    OR?: TitikSisiDiagramScalarWhereWithAggregatesInput[]
-    NOT?: TitikSisiDiagramScalarWhereWithAggregatesInput | TitikSisiDiagramScalarWhereWithAggregatesInput[]
-    sisiDiagramId?: StringWithAggregatesFilter<"TitikSisiDiagram"> | string
-    urutan?: IntWithAggregatesFilter<"TitikSisiDiagram"> | number
-    x?: IntWithAggregatesFilter<"TitikSisiDiagram"> | number
-    y?: IntWithAggregatesFilter<"TitikSisiDiagram"> | number
-    createdAt?: DateTimeWithAggregatesFilter<"TitikSisiDiagram"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"TitikSisiDiagram"> | Date | string
   }
 
   export type PengajuanEvaluasiWhereInput = {
@@ -33738,12 +28503,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -33753,7 +28512,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -33775,12 +28533,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -33788,7 +28540,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -33808,12 +28559,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -33823,7 +28568,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -33845,12 +28589,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33858,7 +28596,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -33880,12 +28617,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -33901,12 +28632,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33922,12 +28647,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34102,9 +28821,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
@@ -34129,9 +28845,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
   }
@@ -34148,9 +28861,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
@@ -34175,9 +28885,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
   }
@@ -34502,312 +29209,6 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     isi?: StringFieldUpdateOperationsInput | string
     status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TataLetakDiagramCreateInput = {
-    tataLetakDiagramId?: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    edgeOverrides?: SisiDiagramCreateNestedManyWithoutTataLetakDiagramInput
-    detailSop: DetailSOPCreateNestedOneWithoutDiagramLayoutInput
-    nodeOverrides?: PosisiNodeDiagramCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramUncheckedCreateInput = {
-    tataLetakDiagramId?: string
-    detailSopId: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    edgeOverrides?: SisiDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput
-    nodeOverrides?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramUpdateInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    edgeOverrides?: SisiDiagramUpdateManyWithoutTataLetakDiagramNestedInput
-    detailSop?: DetailSOPUpdateOneRequiredWithoutDiagramLayoutNestedInput
-    nodeOverrides?: PosisiNodeDiagramUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type TataLetakDiagramUncheckedUpdateInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    edgeOverrides?: SisiDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput
-    nodeOverrides?: PosisiNodeDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type TataLetakDiagramCreateManyInput = {
-    tataLetakDiagramId?: string
-    detailSopId: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TataLetakDiagramUpdateManyMutationInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TataLetakDiagramUncheckedUpdateManyInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramCreateInput = {
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutNodeOverridesInput
-    langkahSOP: LangkahSOPCreateNestedOneWithoutDiagramNodePositionInput
-  }
-
-  export type PosisiNodeDiagramUncheckedCreateInput = {
-    tataLetakDiagramId: string
-    langkahSopId: string
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PosisiNodeDiagramUpdateInput = {
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutNodeOverridesNestedInput
-    langkahSOP?: LangkahSOPUpdateOneRequiredWithoutDiagramNodePositionNestedInput
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramCreateManyInput = {
-    tataLetakDiagramId: string
-    langkahSopId: string
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PosisiNodeDiagramUpdateManyMutationInput = {
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateManyInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SisiDiagramCreateInput = {
-    sisiDiagramId?: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
-    tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
-    keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
-    points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramUncheckedCreateInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramUpdateInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
-    tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
-    keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
-    points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramCreateManyInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type SisiDiagramUpdateManyMutationInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SisiDiagramUncheckedUpdateManyInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TitikSisiDiagramCreateInput = {
-    urutan: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    sisiDiagram: SisiDiagramCreateNestedOneWithoutPointsInput
-  }
-
-  export type TitikSisiDiagramUncheckedCreateInput = {
-    sisiDiagramId: string
-    urutan: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TitikSisiDiagramUpdateInput = {
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sisiDiagram?: SisiDiagramUpdateOneRequiredWithoutPointsNestedInput
-  }
-
-  export type TitikSisiDiagramUncheckedUpdateInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TitikSisiDiagramCreateManyInput = {
-    sisiDiagramId: string
-    urutan: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TitikSisiDiagramUpdateManyMutationInput = {
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TitikSisiDiagramUncheckedUpdateManyInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -36025,17 +30426,6 @@ export namespace Prisma {
     not?: NestedEnumStatusSOPFilter<$PrismaModel> | $Enums.StatusSOP
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type DetailSOPNullableScalarRelationFilter = {
     is?: DetailSOPWhereInput | null
     isNot?: DetailSOPWhereInput | null
@@ -36050,12 +30440,6 @@ export namespace Prisma {
     every?: DetailSOPPelaksanaWhereInput
     some?: DetailSOPPelaksanaWhereInput
     none?: DetailSOPPelaksanaWhereInput
-  }
-
-  export type TataLetakDiagramListRelationFilter = {
-    every?: TataLetakDiagramWhereInput
-    some?: TataLetakDiagramWhereInput
-    none?: TataLetakDiagramWhereInput
   }
 
   export type LampiranTeksListRelationFilter = {
@@ -36083,10 +30467,6 @@ export namespace Prisma {
   }
 
   export type DetailSOPPelaksanaOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type TataLetakDiagramOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -36128,12 +30508,6 @@ export namespace Prisma {
     tanggalRevisi?: SortOrder
     tanggalEfektif?: SortOrder
     namaLembaga?: SortOrder
-    lebarKolomKegiatan?: SortOrder
-    lebarKolomPelaksana?: SortOrder
-    lebarKolomKelengkapan?: SortOrder
-    lebarKolomWaktu?: SortOrder
-    lebarKolomOutput?: SortOrder
-    lebarKolomKeterangan?: SortOrder
     dibuatOlehId?: SortOrder
     terakhirDieditOlehId?: SortOrder
     createdAt?: SortOrder
@@ -36142,12 +30516,6 @@ export namespace Prisma {
 
   export type DetailSOPAvgOrderByAggregateInput = {
     versi?: SortOrder
-    lebarKolomKegiatan?: SortOrder
-    lebarKolomPelaksana?: SortOrder
-    lebarKolomKelengkapan?: SortOrder
-    lebarKolomWaktu?: SortOrder
-    lebarKolomOutput?: SortOrder
-    lebarKolomKeterangan?: SortOrder
   }
 
   export type DetailSOPMaxOrderByAggregateInput = {
@@ -36161,12 +30529,6 @@ export namespace Prisma {
     tanggalRevisi?: SortOrder
     tanggalEfektif?: SortOrder
     namaLembaga?: SortOrder
-    lebarKolomKegiatan?: SortOrder
-    lebarKolomPelaksana?: SortOrder
-    lebarKolomKelengkapan?: SortOrder
-    lebarKolomWaktu?: SortOrder
-    lebarKolomOutput?: SortOrder
-    lebarKolomKeterangan?: SortOrder
     dibuatOlehId?: SortOrder
     terakhirDieditOlehId?: SortOrder
     createdAt?: SortOrder
@@ -36184,12 +30546,6 @@ export namespace Prisma {
     tanggalRevisi?: SortOrder
     tanggalEfektif?: SortOrder
     namaLembaga?: SortOrder
-    lebarKolomKegiatan?: SortOrder
-    lebarKolomPelaksana?: SortOrder
-    lebarKolomKelengkapan?: SortOrder
-    lebarKolomWaktu?: SortOrder
-    lebarKolomOutput?: SortOrder
-    lebarKolomKeterangan?: SortOrder
     dibuatOlehId?: SortOrder
     terakhirDieditOlehId?: SortOrder
     createdAt?: SortOrder
@@ -36198,12 +30554,6 @@ export namespace Prisma {
 
   export type DetailSOPSumOrderByAggregateInput = {
     versi?: SortOrder
-    lebarKolomKegiatan?: SortOrder
-    lebarKolomPelaksana?: SortOrder
-    lebarKolomKelengkapan?: SortOrder
-    lebarKolomWaktu?: SortOrder
-    lebarKolomOutput?: SortOrder
-    lebarKolomKeterangan?: SortOrder
   }
 
   export type EnumStatusSOPWithAggregatesFilter<$PrismaModel = never> = {
@@ -36214,22 +30564,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumStatusSOPFilter<$PrismaModel>
     _max?: NestedEnumStatusSOPFilter<$PrismaModel>
-  }
-
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type EnumJenisLampiranFilter<$PrismaModel = never> = {
@@ -36365,18 +30699,6 @@ export namespace Prisma {
     not?: NestedEnumSatuanWaktuFilter<$PrismaModel> | $Enums.SatuanWaktu
   }
 
-  export type SisiDiagramListRelationFilter = {
-    every?: SisiDiagramWhereInput
-    some?: SisiDiagramWhereInput
-    none?: SisiDiagramWhereInput
-  }
-
-  export type PosisiNodeDiagramListRelationFilter = {
-    every?: PosisiNodeDiagramWhereInput
-    some?: PosisiNodeDiagramWhereInput
-    none?: PosisiNodeDiagramWhereInput
-  }
-
   export type LangkahSOPNullableScalarRelationFilter = {
     is?: LangkahSOPWhereInput | null
     isNot?: LangkahSOPWhereInput | null
@@ -36385,14 +30707,6 @@ export namespace Prisma {
   export type PelaksanaScalarRelationFilter = {
     is?: PelaksanaWhereInput
     isNot?: PelaksanaWhereInput
-  }
-
-  export type SisiDiagramOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type PosisiNodeDiagramOrderByRelationAggregateInput = {
-    _count?: SortOrder
   }
 
   export type LangkahSOPOrderByRelevanceInput = {
@@ -36725,296 +31039,6 @@ export namespace Prisma {
     _max?: NestedEnumStatusKomentarFilter<$PrismaModel>
   }
 
-  export type EnumJenisDiagramSOPFilter<$PrismaModel = never> = {
-    equals?: $Enums.JenisDiagramSOP | EnumJenisDiagramSOPFieldRefInput<$PrismaModel>
-    in?: $Enums.JenisDiagramSOP[]
-    notIn?: $Enums.JenisDiagramSOP[]
-    not?: NestedEnumJenisDiagramSOPFilter<$PrismaModel> | $Enums.JenisDiagramSOP
-  }
-
-  export type EnumGayaPanahNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.GayaPanah | EnumGayaPanahFieldRefInput<$PrismaModel> | null
-    in?: $Enums.GayaPanah[] | null
-    notIn?: $Enums.GayaPanah[] | null
-    not?: NestedEnumGayaPanahNullableFilter<$PrismaModel> | $Enums.GayaPanah | null
-  }
-
-  export type TataLetakDiagramOrderByRelevanceInput = {
-    fields: TataLetakDiagramOrderByRelevanceFieldEnum | TataLetakDiagramOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type TataLetakDiagramDetailSopIdJenisVersiLayoutCompoundUniqueInput = {
-    detailSopId: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout: number
-  }
-
-  export type TataLetakDiagramCountOrderByAggregateInput = {
-    tataLetakDiagramId?: SortOrder
-    detailSopId?: SortOrder
-    jenis?: SortOrder
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    gayaPanah?: SortOrder
-    langkahPerHalaman?: SortOrder
-    lebarAreaKegiatan?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TataLetakDiagramAvgOrderByAggregateInput = {
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    langkahPerHalaman?: SortOrder
-    lebarAreaKegiatan?: SortOrder
-  }
-
-  export type TataLetakDiagramMaxOrderByAggregateInput = {
-    tataLetakDiagramId?: SortOrder
-    detailSopId?: SortOrder
-    jenis?: SortOrder
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    gayaPanah?: SortOrder
-    langkahPerHalaman?: SortOrder
-    lebarAreaKegiatan?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TataLetakDiagramMinOrderByAggregateInput = {
-    tataLetakDiagramId?: SortOrder
-    detailSopId?: SortOrder
-    jenis?: SortOrder
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    gayaPanah?: SortOrder
-    langkahPerHalaman?: SortOrder
-    lebarAreaKegiatan?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TataLetakDiagramSumOrderByAggregateInput = {
-    versiLayout?: SortOrder
-    layoutSeed?: SortOrder
-    langkahPerHalaman?: SortOrder
-    lebarAreaKegiatan?: SortOrder
-  }
-
-  export type EnumJenisDiagramSOPWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.JenisDiagramSOP | EnumJenisDiagramSOPFieldRefInput<$PrismaModel>
-    in?: $Enums.JenisDiagramSOP[]
-    notIn?: $Enums.JenisDiagramSOP[]
-    not?: NestedEnumJenisDiagramSOPWithAggregatesFilter<$PrismaModel> | $Enums.JenisDiagramSOP
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumJenisDiagramSOPFilter<$PrismaModel>
-    _max?: NestedEnumJenisDiagramSOPFilter<$PrismaModel>
-  }
-
-  export type EnumGayaPanahNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.GayaPanah | EnumGayaPanahFieldRefInput<$PrismaModel> | null
-    in?: $Enums.GayaPanah[] | null
-    notIn?: $Enums.GayaPanah[] | null
-    not?: NestedEnumGayaPanahNullableWithAggregatesFilter<$PrismaModel> | $Enums.GayaPanah | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumGayaPanahNullableFilter<$PrismaModel>
-    _max?: NestedEnumGayaPanahNullableFilter<$PrismaModel>
-  }
-
-  export type TataLetakDiagramScalarRelationFilter = {
-    is?: TataLetakDiagramWhereInput
-    isNot?: TataLetakDiagramWhereInput
-  }
-
-  export type LangkahSOPScalarRelationFilter = {
-    is?: LangkahSOPWhereInput
-    isNot?: LangkahSOPWhereInput
-  }
-
-  export type PosisiNodeDiagramOrderByRelevanceInput = {
-    fields: PosisiNodeDiagramOrderByRelevanceFieldEnum | PosisiNodeDiagramOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type PosisiNodeDiagramTataLetakDiagramIdLangkahSopIdCompoundUniqueInput = {
-    tataLetakDiagramId: string
-    langkahSopId: string
-  }
-
-  export type PosisiNodeDiagramCountOrderByAggregateInput = {
-    tataLetakDiagramId?: SortOrder
-    langkahSopId?: SortOrder
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PosisiNodeDiagramAvgOrderByAggregateInput = {
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-  }
-
-  export type PosisiNodeDiagramMaxOrderByAggregateInput = {
-    tataLetakDiagramId?: SortOrder
-    langkahSopId?: SortOrder
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PosisiNodeDiagramMinOrderByAggregateInput = {
-    tataLetakDiagramId?: SortOrder
-    langkahSopId?: SortOrder
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type PosisiNodeDiagramSumOrderByAggregateInput = {
-    page?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-  }
-
-  export type EnumCabangDiagramEdgeFilter<$PrismaModel = never> = {
-    equals?: $Enums.CabangDiagramEdge | EnumCabangDiagramEdgeFieldRefInput<$PrismaModel>
-    in?: $Enums.CabangDiagramEdge[]
-    notIn?: $Enums.CabangDiagramEdge[]
-    not?: NestedEnumCabangDiagramEdgeFilter<$PrismaModel> | $Enums.CabangDiagramEdge
-  }
-
-  export type TitikSisiDiagramListRelationFilter = {
-    every?: TitikSisiDiagramWhereInput
-    some?: TitikSisiDiagramWhereInput
-    none?: TitikSisiDiagramWhereInput
-  }
-
-  export type TitikSisiDiagramOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type SisiDiagramOrderByRelevanceInput = {
-    fields: SisiDiagramOrderByRelevanceFieldEnum | SisiDiagramOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type SisiDiagramTataLetakDiagramIdDariLangkahIdKeLangkahIdCabangCompoundUniqueInput = {
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang: $Enums.CabangDiagramEdge
-  }
-
-  export type SisiDiagramCountOrderByAggregateInput = {
-    sisiDiagramId?: SortOrder
-    tataLetakDiagramId?: SortOrder
-    dariLangkahId?: SortOrder
-    keLangkahId?: SortOrder
-    cabang?: SortOrder
-    labelTeks?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SisiDiagramMaxOrderByAggregateInput = {
-    sisiDiagramId?: SortOrder
-    tataLetakDiagramId?: SortOrder
-    dariLangkahId?: SortOrder
-    keLangkahId?: SortOrder
-    cabang?: SortOrder
-    labelTeks?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type SisiDiagramMinOrderByAggregateInput = {
-    sisiDiagramId?: SortOrder
-    tataLetakDiagramId?: SortOrder
-    dariLangkahId?: SortOrder
-    keLangkahId?: SortOrder
-    cabang?: SortOrder
-    labelTeks?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type EnumCabangDiagramEdgeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CabangDiagramEdge | EnumCabangDiagramEdgeFieldRefInput<$PrismaModel>
-    in?: $Enums.CabangDiagramEdge[]
-    notIn?: $Enums.CabangDiagramEdge[]
-    not?: NestedEnumCabangDiagramEdgeWithAggregatesFilter<$PrismaModel> | $Enums.CabangDiagramEdge
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCabangDiagramEdgeFilter<$PrismaModel>
-    _max?: NestedEnumCabangDiagramEdgeFilter<$PrismaModel>
-  }
-
-  export type SisiDiagramScalarRelationFilter = {
-    is?: SisiDiagramWhereInput
-    isNot?: SisiDiagramWhereInput
-  }
-
-  export type TitikSisiDiagramOrderByRelevanceInput = {
-    fields: TitikSisiDiagramOrderByRelevanceFieldEnum | TitikSisiDiagramOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type TitikSisiDiagramSisiDiagramIdUrutanCompoundUniqueInput = {
-    sisiDiagramId: string
-    urutan: number
-  }
-
-  export type TitikSisiDiagramCountOrderByAggregateInput = {
-    sisiDiagramId?: SortOrder
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TitikSisiDiagramAvgOrderByAggregateInput = {
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-  }
-
-  export type TitikSisiDiagramMaxOrderByAggregateInput = {
-    sisiDiagramId?: SortOrder
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TitikSisiDiagramMinOrderByAggregateInput = {
-    sisiDiagramId?: SortOrder
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type TitikSisiDiagramSumOrderByAggregateInput = {
-    urutan?: SortOrder
-    x?: SortOrder
-    y?: SortOrder
-  }
-
   export type EnumJenisPengajuanEvaluasiFilter<$PrismaModel = never> = {
     equals?: $Enums.JenisPengajuanEvaluasi | EnumJenisPengajuanEvaluasiFieldRefInput<$PrismaModel>
     in?: $Enums.JenisPengajuanEvaluasi[]
@@ -37027,6 +31051,17 @@ export namespace Prisma {
     in?: $Enums.StatusPengajuanEvaluasi[]
     notIn?: $Enums.StatusPengajuanEvaluasi[]
     not?: NestedEnumStatusPengajuanEvaluasiFilter<$PrismaModel> | $Enums.StatusPengajuanEvaluasi
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type PengajuanEvaluasiOrderByRelevanceInput = {
@@ -37123,6 +31158,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumStatusPengajuanEvaluasiFilter<$PrismaModel>
     _max?: NestedEnumStatusPengajuanEvaluasiFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type EnumHasilEvaluasiNullableFilter<$PrismaModel = never> = {
@@ -38569,13 +32620,6 @@ export namespace Prisma {
     connect?: DetailSOPPelaksanaWhereUniqueInput | DetailSOPPelaksanaWhereUniqueInput[]
   }
 
-  export type TataLetakDiagramCreateNestedManyWithoutDetailSopInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutDetailSopInput, TataLetakDiagramUncheckedCreateWithoutDetailSopInput> | TataLetakDiagramCreateWithoutDetailSopInput[] | TataLetakDiagramUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutDetailSopInput | TataLetakDiagramCreateOrConnectWithoutDetailSopInput[]
-    createMany?: TataLetakDiagramCreateManyDetailSopInputEnvelope
-    connect?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-  }
-
   export type KomentarCreateNestedManyWithoutDetailSopInput = {
     create?: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput> | KomentarCreateWithoutDetailSopInput[] | KomentarUncheckedCreateWithoutDetailSopInput[]
     connectOrCreate?: KomentarCreateOrConnectWithoutDetailSopInput | KomentarCreateOrConnectWithoutDetailSopInput[]
@@ -38653,13 +32697,6 @@ export namespace Prisma {
     connect?: DetailSOPPelaksanaWhereUniqueInput | DetailSOPPelaksanaWhereUniqueInput[]
   }
 
-  export type TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutDetailSopInput, TataLetakDiagramUncheckedCreateWithoutDetailSopInput> | TataLetakDiagramCreateWithoutDetailSopInput[] | TataLetakDiagramUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutDetailSopInput | TataLetakDiagramCreateOrConnectWithoutDetailSopInput[]
-    createMany?: TataLetakDiagramCreateManyDetailSopInputEnvelope
-    connect?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-  }
-
   export type KomentarUncheckedCreateNestedManyWithoutDetailSopInput = {
     create?: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput> | KomentarCreateWithoutDetailSopInput[] | KomentarUncheckedCreateWithoutDetailSopInput[]
     connectOrCreate?: KomentarCreateOrConnectWithoutDetailSopInput | KomentarCreateOrConnectWithoutDetailSopInput[]
@@ -38718,14 +32755,6 @@ export namespace Prisma {
 
   export type EnumStatusSOPFieldUpdateOperationsInput = {
     set?: $Enums.StatusSOP
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type DasarHukumUpdateManyWithoutDetailSopNestedInput = {
@@ -38806,20 +32835,6 @@ export namespace Prisma {
     update?: DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput | DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput[]
     updateMany?: DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput | DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput[]
     deleteMany?: DetailSOPPelaksanaScalarWhereInput | DetailSOPPelaksanaScalarWhereInput[]
-  }
-
-  export type TataLetakDiagramUpdateManyWithoutDetailSopNestedInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutDetailSopInput, TataLetakDiagramUncheckedCreateWithoutDetailSopInput> | TataLetakDiagramCreateWithoutDetailSopInput[] | TataLetakDiagramUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutDetailSopInput | TataLetakDiagramCreateOrConnectWithoutDetailSopInput[]
-    upsert?: TataLetakDiagramUpsertWithWhereUniqueWithoutDetailSopInput | TataLetakDiagramUpsertWithWhereUniqueWithoutDetailSopInput[]
-    createMany?: TataLetakDiagramCreateManyDetailSopInputEnvelope
-    set?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    disconnect?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    delete?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    connect?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    update?: TataLetakDiagramUpdateWithWhereUniqueWithoutDetailSopInput | TataLetakDiagramUpdateWithWhereUniqueWithoutDetailSopInput[]
-    updateMany?: TataLetakDiagramUpdateManyWithWhereWithoutDetailSopInput | TataLetakDiagramUpdateManyWithWhereWithoutDetailSopInput[]
-    deleteMany?: TataLetakDiagramScalarWhereInput | TataLetakDiagramScalarWhereInput[]
   }
 
   export type KomentarUpdateManyWithoutDetailSopNestedInput = {
@@ -38974,20 +32989,6 @@ export namespace Prisma {
     update?: DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput | DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput[]
     updateMany?: DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput | DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput[]
     deleteMany?: DetailSOPPelaksanaScalarWhereInput | DetailSOPPelaksanaScalarWhereInput[]
-  }
-
-  export type TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutDetailSopInput, TataLetakDiagramUncheckedCreateWithoutDetailSopInput> | TataLetakDiagramCreateWithoutDetailSopInput[] | TataLetakDiagramUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutDetailSopInput | TataLetakDiagramCreateOrConnectWithoutDetailSopInput[]
-    upsert?: TataLetakDiagramUpsertWithWhereUniqueWithoutDetailSopInput | TataLetakDiagramUpsertWithWhereUniqueWithoutDetailSopInput[]
-    createMany?: TataLetakDiagramCreateManyDetailSopInputEnvelope
-    set?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    disconnect?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    delete?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    connect?: TataLetakDiagramWhereUniqueInput | TataLetakDiagramWhereUniqueInput[]
-    update?: TataLetakDiagramUpdateWithWhereUniqueWithoutDetailSopInput | TataLetakDiagramUpdateWithWhereUniqueWithoutDetailSopInput[]
-    updateMany?: TataLetakDiagramUpdateManyWithWhereWithoutDetailSopInput | TataLetakDiagramUpdateManyWithWhereWithoutDetailSopInput[]
-    deleteMany?: TataLetakDiagramScalarWhereInput | TataLetakDiagramScalarWhereInput[]
   }
 
   export type KomentarUncheckedUpdateManyWithoutDetailSopNestedInput = {
@@ -39176,27 +33177,6 @@ export namespace Prisma {
     update?: XOR<XOR<DetailSOPUpdateToOneWithWhereWithoutRelasiSopMasukInput, DetailSOPUpdateWithoutRelasiSopMasukInput>, DetailSOPUncheckedUpdateWithoutRelasiSopMasukInput>
   }
 
-  export type SisiDiagramCreateNestedManyWithoutDariLangkahInput = {
-    create?: XOR<SisiDiagramCreateWithoutDariLangkahInput, SisiDiagramUncheckedCreateWithoutDariLangkahInput> | SisiDiagramCreateWithoutDariLangkahInput[] | SisiDiagramUncheckedCreateWithoutDariLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutDariLangkahInput | SisiDiagramCreateOrConnectWithoutDariLangkahInput[]
-    createMany?: SisiDiagramCreateManyDariLangkahInputEnvelope
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-  }
-
-  export type SisiDiagramCreateNestedManyWithoutKeLangkahInput = {
-    create?: XOR<SisiDiagramCreateWithoutKeLangkahInput, SisiDiagramUncheckedCreateWithoutKeLangkahInput> | SisiDiagramCreateWithoutKeLangkahInput[] | SisiDiagramUncheckedCreateWithoutKeLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutKeLangkahInput | SisiDiagramCreateOrConnectWithoutKeLangkahInput[]
-    createMany?: SisiDiagramCreateManyKeLangkahInputEnvelope
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-  }
-
-  export type PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput> | PosisiNodeDiagramCreateWithoutLangkahSOPInput[] | PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput | PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput[]
-    createMany?: PosisiNodeDiagramCreateManyLangkahSOPInputEnvelope
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-  }
-
   export type LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput = {
     create?: XOR<LangkahSOPCreateWithoutLangkahSebelumTidakInput, LangkahSOPUncheckedCreateWithoutLangkahSebelumTidakInput>
     connectOrCreate?: LangkahSOPCreateOrConnectWithoutLangkahSebelumTidakInput
@@ -39235,27 +33215,6 @@ export namespace Prisma {
     connect?: DetailSOPWhereUniqueInput
   }
 
-  export type SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput = {
-    create?: XOR<SisiDiagramCreateWithoutDariLangkahInput, SisiDiagramUncheckedCreateWithoutDariLangkahInput> | SisiDiagramCreateWithoutDariLangkahInput[] | SisiDiagramUncheckedCreateWithoutDariLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutDariLangkahInput | SisiDiagramCreateOrConnectWithoutDariLangkahInput[]
-    createMany?: SisiDiagramCreateManyDariLangkahInputEnvelope
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-  }
-
-  export type SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput = {
-    create?: XOR<SisiDiagramCreateWithoutKeLangkahInput, SisiDiagramUncheckedCreateWithoutKeLangkahInput> | SisiDiagramCreateWithoutKeLangkahInput[] | SisiDiagramUncheckedCreateWithoutKeLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutKeLangkahInput | SisiDiagramCreateOrConnectWithoutKeLangkahInput[]
-    createMany?: SisiDiagramCreateManyKeLangkahInputEnvelope
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-  }
-
-  export type PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput> | PosisiNodeDiagramCreateWithoutLangkahSOPInput[] | PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput | PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput[]
-    createMany?: PosisiNodeDiagramCreateManyLangkahSOPInputEnvelope
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-  }
-
   export type LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput = {
     create?: XOR<LangkahSOPCreateWithoutLangkahTidakInput, LangkahSOPUncheckedCreateWithoutLangkahTidakInput> | LangkahSOPCreateWithoutLangkahTidakInput[] | LangkahSOPUncheckedCreateWithoutLangkahTidakInput[]
     connectOrCreate?: LangkahSOPCreateOrConnectWithoutLangkahTidakInput | LangkahSOPCreateOrConnectWithoutLangkahTidakInput[]
@@ -39276,48 +33235,6 @@ export namespace Prisma {
 
   export type EnumSatuanWaktuFieldUpdateOperationsInput = {
     set?: $Enums.SatuanWaktu
-  }
-
-  export type SisiDiagramUpdateManyWithoutDariLangkahNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutDariLangkahInput, SisiDiagramUncheckedCreateWithoutDariLangkahInput> | SisiDiagramCreateWithoutDariLangkahInput[] | SisiDiagramUncheckedCreateWithoutDariLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutDariLangkahInput | SisiDiagramCreateOrConnectWithoutDariLangkahInput[]
-    upsert?: SisiDiagramUpsertWithWhereUniqueWithoutDariLangkahInput | SisiDiagramUpsertWithWhereUniqueWithoutDariLangkahInput[]
-    createMany?: SisiDiagramCreateManyDariLangkahInputEnvelope
-    set?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    disconnect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    delete?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    update?: SisiDiagramUpdateWithWhereUniqueWithoutDariLangkahInput | SisiDiagramUpdateWithWhereUniqueWithoutDariLangkahInput[]
-    updateMany?: SisiDiagramUpdateManyWithWhereWithoutDariLangkahInput | SisiDiagramUpdateManyWithWhereWithoutDariLangkahInput[]
-    deleteMany?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-  }
-
-  export type SisiDiagramUpdateManyWithoutKeLangkahNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutKeLangkahInput, SisiDiagramUncheckedCreateWithoutKeLangkahInput> | SisiDiagramCreateWithoutKeLangkahInput[] | SisiDiagramUncheckedCreateWithoutKeLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutKeLangkahInput | SisiDiagramCreateOrConnectWithoutKeLangkahInput[]
-    upsert?: SisiDiagramUpsertWithWhereUniqueWithoutKeLangkahInput | SisiDiagramUpsertWithWhereUniqueWithoutKeLangkahInput[]
-    createMany?: SisiDiagramCreateManyKeLangkahInputEnvelope
-    set?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    disconnect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    delete?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    update?: SisiDiagramUpdateWithWhereUniqueWithoutKeLangkahInput | SisiDiagramUpdateWithWhereUniqueWithoutKeLangkahInput[]
-    updateMany?: SisiDiagramUpdateManyWithWhereWithoutKeLangkahInput | SisiDiagramUpdateManyWithWhereWithoutKeLangkahInput[]
-    deleteMany?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-  }
-
-  export type PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput> | PosisiNodeDiagramCreateWithoutLangkahSOPInput[] | PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput | PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput[]
-    upsert?: PosisiNodeDiagramUpsertWithWhereUniqueWithoutLangkahSOPInput | PosisiNodeDiagramUpsertWithWhereUniqueWithoutLangkahSOPInput[]
-    createMany?: PosisiNodeDiagramCreateManyLangkahSOPInputEnvelope
-    set?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    disconnect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    delete?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    update?: PosisiNodeDiagramUpdateWithWhereUniqueWithoutLangkahSOPInput | PosisiNodeDiagramUpdateWithWhereUniqueWithoutLangkahSOPInput[]
-    updateMany?: PosisiNodeDiagramUpdateManyWithWhereWithoutLangkahSOPInput | PosisiNodeDiagramUpdateManyWithWhereWithoutLangkahSOPInput[]
-    deleteMany?: PosisiNodeDiagramScalarWhereInput | PosisiNodeDiagramScalarWhereInput[]
   }
 
   export type LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput = {
@@ -39382,48 +33299,6 @@ export namespace Prisma {
     upsert?: DetailSOPUpsertWithoutLangkahSOPInput
     connect?: DetailSOPWhereUniqueInput
     update?: XOR<XOR<DetailSOPUpdateToOneWithWhereWithoutLangkahSOPInput, DetailSOPUpdateWithoutLangkahSOPInput>, DetailSOPUncheckedUpdateWithoutLangkahSOPInput>
-  }
-
-  export type SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutDariLangkahInput, SisiDiagramUncheckedCreateWithoutDariLangkahInput> | SisiDiagramCreateWithoutDariLangkahInput[] | SisiDiagramUncheckedCreateWithoutDariLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutDariLangkahInput | SisiDiagramCreateOrConnectWithoutDariLangkahInput[]
-    upsert?: SisiDiagramUpsertWithWhereUniqueWithoutDariLangkahInput | SisiDiagramUpsertWithWhereUniqueWithoutDariLangkahInput[]
-    createMany?: SisiDiagramCreateManyDariLangkahInputEnvelope
-    set?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    disconnect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    delete?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    update?: SisiDiagramUpdateWithWhereUniqueWithoutDariLangkahInput | SisiDiagramUpdateWithWhereUniqueWithoutDariLangkahInput[]
-    updateMany?: SisiDiagramUpdateManyWithWhereWithoutDariLangkahInput | SisiDiagramUpdateManyWithWhereWithoutDariLangkahInput[]
-    deleteMany?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-  }
-
-  export type SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutKeLangkahInput, SisiDiagramUncheckedCreateWithoutKeLangkahInput> | SisiDiagramCreateWithoutKeLangkahInput[] | SisiDiagramUncheckedCreateWithoutKeLangkahInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutKeLangkahInput | SisiDiagramCreateOrConnectWithoutKeLangkahInput[]
-    upsert?: SisiDiagramUpsertWithWhereUniqueWithoutKeLangkahInput | SisiDiagramUpsertWithWhereUniqueWithoutKeLangkahInput[]
-    createMany?: SisiDiagramCreateManyKeLangkahInputEnvelope
-    set?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    disconnect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    delete?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    update?: SisiDiagramUpdateWithWhereUniqueWithoutKeLangkahInput | SisiDiagramUpdateWithWhereUniqueWithoutKeLangkahInput[]
-    updateMany?: SisiDiagramUpdateManyWithWhereWithoutKeLangkahInput | SisiDiagramUpdateManyWithWhereWithoutKeLangkahInput[]
-    deleteMany?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput> | PosisiNodeDiagramCreateWithoutLangkahSOPInput[] | PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput | PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput[]
-    upsert?: PosisiNodeDiagramUpsertWithWhereUniqueWithoutLangkahSOPInput | PosisiNodeDiagramUpsertWithWhereUniqueWithoutLangkahSOPInput[]
-    createMany?: PosisiNodeDiagramCreateManyLangkahSOPInputEnvelope
-    set?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    disconnect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    delete?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    update?: PosisiNodeDiagramUpdateWithWhereUniqueWithoutLangkahSOPInput | PosisiNodeDiagramUpdateWithWhereUniqueWithoutLangkahSOPInput[]
-    updateMany?: PosisiNodeDiagramUpdateManyWithWhereWithoutLangkahSOPInput | PosisiNodeDiagramUpdateManyWithWhereWithoutLangkahSOPInput[]
-    deleteMany?: PosisiNodeDiagramScalarWhereInput | PosisiNodeDiagramScalarWhereInput[]
   }
 
   export type LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput = {
@@ -39644,242 +33519,6 @@ export namespace Prisma {
     update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutKomentarInput, PenggunaUpdateWithoutKomentarInput>, PenggunaUncheckedUpdateWithoutKomentarInput>
   }
 
-  export type SisiDiagramCreateNestedManyWithoutTataLetakDiagramInput = {
-    create?: XOR<SisiDiagramCreateWithoutTataLetakDiagramInput, SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput> | SisiDiagramCreateWithoutTataLetakDiagramInput[] | SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput | SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    createMany?: SisiDiagramCreateManyTataLetakDiagramInputEnvelope
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-  }
-
-  export type DetailSOPCreateNestedOneWithoutDiagramLayoutInput = {
-    create?: XOR<DetailSOPCreateWithoutDiagramLayoutInput, DetailSOPUncheckedCreateWithoutDiagramLayoutInput>
-    connectOrCreate?: DetailSOPCreateOrConnectWithoutDiagramLayoutInput
-    connect?: DetailSOPWhereUniqueInput
-  }
-
-  export type PosisiNodeDiagramCreateNestedManyWithoutTataLetakDiagramInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput> | PosisiNodeDiagramCreateWithoutTataLetakDiagramInput[] | PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput | PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    createMany?: PosisiNodeDiagramCreateManyTataLetakDiagramInputEnvelope
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-  }
-
-  export type SisiDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput = {
-    create?: XOR<SisiDiagramCreateWithoutTataLetakDiagramInput, SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput> | SisiDiagramCreateWithoutTataLetakDiagramInput[] | SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput | SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    createMany?: SisiDiagramCreateManyTataLetakDiagramInputEnvelope
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-  }
-
-  export type PosisiNodeDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput> | PosisiNodeDiagramCreateWithoutTataLetakDiagramInput[] | PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput | PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    createMany?: PosisiNodeDiagramCreateManyTataLetakDiagramInputEnvelope
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-  }
-
-  export type EnumJenisDiagramSOPFieldUpdateOperationsInput = {
-    set?: $Enums.JenisDiagramSOP
-  }
-
-  export type NullableEnumGayaPanahFieldUpdateOperationsInput = {
-    set?: $Enums.GayaPanah | null
-  }
-
-  export type SisiDiagramUpdateManyWithoutTataLetakDiagramNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutTataLetakDiagramInput, SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput> | SisiDiagramCreateWithoutTataLetakDiagramInput[] | SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput | SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    upsert?: SisiDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput | SisiDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput[]
-    createMany?: SisiDiagramCreateManyTataLetakDiagramInputEnvelope
-    set?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    disconnect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    delete?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    update?: SisiDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput | SisiDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput[]
-    updateMany?: SisiDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput | SisiDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput[]
-    deleteMany?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-  }
-
-  export type DetailSOPUpdateOneRequiredWithoutDiagramLayoutNestedInput = {
-    create?: XOR<DetailSOPCreateWithoutDiagramLayoutInput, DetailSOPUncheckedCreateWithoutDiagramLayoutInput>
-    connectOrCreate?: DetailSOPCreateOrConnectWithoutDiagramLayoutInput
-    upsert?: DetailSOPUpsertWithoutDiagramLayoutInput
-    connect?: DetailSOPWhereUniqueInput
-    update?: XOR<XOR<DetailSOPUpdateToOneWithWhereWithoutDiagramLayoutInput, DetailSOPUpdateWithoutDiagramLayoutInput>, DetailSOPUncheckedUpdateWithoutDiagramLayoutInput>
-  }
-
-  export type PosisiNodeDiagramUpdateManyWithoutTataLetakDiagramNestedInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput> | PosisiNodeDiagramCreateWithoutTataLetakDiagramInput[] | PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput | PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    upsert?: PosisiNodeDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput | PosisiNodeDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput[]
-    createMany?: PosisiNodeDiagramCreateManyTataLetakDiagramInputEnvelope
-    set?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    disconnect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    delete?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    update?: PosisiNodeDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput | PosisiNodeDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput[]
-    updateMany?: PosisiNodeDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput | PosisiNodeDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput[]
-    deleteMany?: PosisiNodeDiagramScalarWhereInput | PosisiNodeDiagramScalarWhereInput[]
-  }
-
-  export type SisiDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutTataLetakDiagramInput, SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput> | SisiDiagramCreateWithoutTataLetakDiagramInput[] | SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput | SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    upsert?: SisiDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput | SisiDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput[]
-    createMany?: SisiDiagramCreateManyTataLetakDiagramInputEnvelope
-    set?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    disconnect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    delete?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    connect?: SisiDiagramWhereUniqueInput | SisiDiagramWhereUniqueInput[]
-    update?: SisiDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput | SisiDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput[]
-    updateMany?: SisiDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput | SisiDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput[]
-    deleteMany?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput = {
-    create?: XOR<PosisiNodeDiagramCreateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput> | PosisiNodeDiagramCreateWithoutTataLetakDiagramInput[] | PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput[]
-    connectOrCreate?: PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput | PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput[]
-    upsert?: PosisiNodeDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput | PosisiNodeDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput[]
-    createMany?: PosisiNodeDiagramCreateManyTataLetakDiagramInputEnvelope
-    set?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    disconnect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    delete?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    connect?: PosisiNodeDiagramWhereUniqueInput | PosisiNodeDiagramWhereUniqueInput[]
-    update?: PosisiNodeDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput | PosisiNodeDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput[]
-    updateMany?: PosisiNodeDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput | PosisiNodeDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput[]
-    deleteMany?: PosisiNodeDiagramScalarWhereInput | PosisiNodeDiagramScalarWhereInput[]
-  }
-
-  export type TataLetakDiagramCreateNestedOneWithoutNodeOverridesInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutNodeOverridesInput, TataLetakDiagramUncheckedCreateWithoutNodeOverridesInput>
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutNodeOverridesInput
-    connect?: TataLetakDiagramWhereUniqueInput
-  }
-
-  export type LangkahSOPCreateNestedOneWithoutDiagramNodePositionInput = {
-    create?: XOR<LangkahSOPCreateWithoutDiagramNodePositionInput, LangkahSOPUncheckedCreateWithoutDiagramNodePositionInput>
-    connectOrCreate?: LangkahSOPCreateOrConnectWithoutDiagramNodePositionInput
-    connect?: LangkahSOPWhereUniqueInput
-  }
-
-  export type TataLetakDiagramUpdateOneRequiredWithoutNodeOverridesNestedInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutNodeOverridesInput, TataLetakDiagramUncheckedCreateWithoutNodeOverridesInput>
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutNodeOverridesInput
-    upsert?: TataLetakDiagramUpsertWithoutNodeOverridesInput
-    connect?: TataLetakDiagramWhereUniqueInput
-    update?: XOR<XOR<TataLetakDiagramUpdateToOneWithWhereWithoutNodeOverridesInput, TataLetakDiagramUpdateWithoutNodeOverridesInput>, TataLetakDiagramUncheckedUpdateWithoutNodeOverridesInput>
-  }
-
-  export type LangkahSOPUpdateOneRequiredWithoutDiagramNodePositionNestedInput = {
-    create?: XOR<LangkahSOPCreateWithoutDiagramNodePositionInput, LangkahSOPUncheckedCreateWithoutDiagramNodePositionInput>
-    connectOrCreate?: LangkahSOPCreateOrConnectWithoutDiagramNodePositionInput
-    upsert?: LangkahSOPUpsertWithoutDiagramNodePositionInput
-    connect?: LangkahSOPWhereUniqueInput
-    update?: XOR<XOR<LangkahSOPUpdateToOneWithWhereWithoutDiagramNodePositionInput, LangkahSOPUpdateWithoutDiagramNodePositionInput>, LangkahSOPUncheckedUpdateWithoutDiagramNodePositionInput>
-  }
-
-  export type LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput = {
-    create?: XOR<LangkahSOPCreateWithoutDiagramEdgeKeluarInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeKeluarInput>
-    connectOrCreate?: LangkahSOPCreateOrConnectWithoutDiagramEdgeKeluarInput
-    connect?: LangkahSOPWhereUniqueInput
-  }
-
-  export type TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutEdgeOverridesInput, TataLetakDiagramUncheckedCreateWithoutEdgeOverridesInput>
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutEdgeOverridesInput
-    connect?: TataLetakDiagramWhereUniqueInput
-  }
-
-  export type LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput = {
-    create?: XOR<LangkahSOPCreateWithoutDiagramEdgeMasukInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeMasukInput>
-    connectOrCreate?: LangkahSOPCreateOrConnectWithoutDiagramEdgeMasukInput
-    connect?: LangkahSOPWhereUniqueInput
-  }
-
-  export type TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput = {
-    create?: XOR<TitikSisiDiagramCreateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput> | TitikSisiDiagramCreateWithoutSisiDiagramInput[] | TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput[]
-    connectOrCreate?: TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput | TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput[]
-    createMany?: TitikSisiDiagramCreateManySisiDiagramInputEnvelope
-    connect?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-  }
-
-  export type TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput = {
-    create?: XOR<TitikSisiDiagramCreateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput> | TitikSisiDiagramCreateWithoutSisiDiagramInput[] | TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput[]
-    connectOrCreate?: TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput | TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput[]
-    createMany?: TitikSisiDiagramCreateManySisiDiagramInputEnvelope
-    connect?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-  }
-
-  export type EnumCabangDiagramEdgeFieldUpdateOperationsInput = {
-    set?: $Enums.CabangDiagramEdge
-  }
-
-  export type LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput = {
-    create?: XOR<LangkahSOPCreateWithoutDiagramEdgeKeluarInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeKeluarInput>
-    connectOrCreate?: LangkahSOPCreateOrConnectWithoutDiagramEdgeKeluarInput
-    upsert?: LangkahSOPUpsertWithoutDiagramEdgeKeluarInput
-    connect?: LangkahSOPWhereUniqueInput
-    update?: XOR<XOR<LangkahSOPUpdateToOneWithWhereWithoutDiagramEdgeKeluarInput, LangkahSOPUpdateWithoutDiagramEdgeKeluarInput>, LangkahSOPUncheckedUpdateWithoutDiagramEdgeKeluarInput>
-  }
-
-  export type TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput = {
-    create?: XOR<TataLetakDiagramCreateWithoutEdgeOverridesInput, TataLetakDiagramUncheckedCreateWithoutEdgeOverridesInput>
-    connectOrCreate?: TataLetakDiagramCreateOrConnectWithoutEdgeOverridesInput
-    upsert?: TataLetakDiagramUpsertWithoutEdgeOverridesInput
-    connect?: TataLetakDiagramWhereUniqueInput
-    update?: XOR<XOR<TataLetakDiagramUpdateToOneWithWhereWithoutEdgeOverridesInput, TataLetakDiagramUpdateWithoutEdgeOverridesInput>, TataLetakDiagramUncheckedUpdateWithoutEdgeOverridesInput>
-  }
-
-  export type LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput = {
-    create?: XOR<LangkahSOPCreateWithoutDiagramEdgeMasukInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeMasukInput>
-    connectOrCreate?: LangkahSOPCreateOrConnectWithoutDiagramEdgeMasukInput
-    upsert?: LangkahSOPUpsertWithoutDiagramEdgeMasukInput
-    connect?: LangkahSOPWhereUniqueInput
-    update?: XOR<XOR<LangkahSOPUpdateToOneWithWhereWithoutDiagramEdgeMasukInput, LangkahSOPUpdateWithoutDiagramEdgeMasukInput>, LangkahSOPUncheckedUpdateWithoutDiagramEdgeMasukInput>
-  }
-
-  export type TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput = {
-    create?: XOR<TitikSisiDiagramCreateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput> | TitikSisiDiagramCreateWithoutSisiDiagramInput[] | TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput[]
-    connectOrCreate?: TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput | TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput[]
-    upsert?: TitikSisiDiagramUpsertWithWhereUniqueWithoutSisiDiagramInput | TitikSisiDiagramUpsertWithWhereUniqueWithoutSisiDiagramInput[]
-    createMany?: TitikSisiDiagramCreateManySisiDiagramInputEnvelope
-    set?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    disconnect?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    delete?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    connect?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    update?: TitikSisiDiagramUpdateWithWhereUniqueWithoutSisiDiagramInput | TitikSisiDiagramUpdateWithWhereUniqueWithoutSisiDiagramInput[]
-    updateMany?: TitikSisiDiagramUpdateManyWithWhereWithoutSisiDiagramInput | TitikSisiDiagramUpdateManyWithWhereWithoutSisiDiagramInput[]
-    deleteMany?: TitikSisiDiagramScalarWhereInput | TitikSisiDiagramScalarWhereInput[]
-  }
-
-  export type TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput = {
-    create?: XOR<TitikSisiDiagramCreateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput> | TitikSisiDiagramCreateWithoutSisiDiagramInput[] | TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput[]
-    connectOrCreate?: TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput | TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput[]
-    upsert?: TitikSisiDiagramUpsertWithWhereUniqueWithoutSisiDiagramInput | TitikSisiDiagramUpsertWithWhereUniqueWithoutSisiDiagramInput[]
-    createMany?: TitikSisiDiagramCreateManySisiDiagramInputEnvelope
-    set?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    disconnect?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    delete?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    connect?: TitikSisiDiagramWhereUniqueInput | TitikSisiDiagramWhereUniqueInput[]
-    update?: TitikSisiDiagramUpdateWithWhereUniqueWithoutSisiDiagramInput | TitikSisiDiagramUpdateWithWhereUniqueWithoutSisiDiagramInput[]
-    updateMany?: TitikSisiDiagramUpdateManyWithWhereWithoutSisiDiagramInput | TitikSisiDiagramUpdateManyWithWhereWithoutSisiDiagramInput[]
-    deleteMany?: TitikSisiDiagramScalarWhereInput | TitikSisiDiagramScalarWhereInput[]
-  }
-
-  export type SisiDiagramCreateNestedOneWithoutPointsInput = {
-    create?: XOR<SisiDiagramCreateWithoutPointsInput, SisiDiagramUncheckedCreateWithoutPointsInput>
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutPointsInput
-    connect?: SisiDiagramWhereUniqueInput
-  }
-
-  export type SisiDiagramUpdateOneRequiredWithoutPointsNestedInput = {
-    create?: XOR<SisiDiagramCreateWithoutPointsInput, SisiDiagramUncheckedCreateWithoutPointsInput>
-    connectOrCreate?: SisiDiagramCreateOrConnectWithoutPointsInput
-    upsert?: SisiDiagramUpsertWithoutPointsInput
-    connect?: SisiDiagramWhereUniqueInput
-    update?: XOR<XOR<SisiDiagramUpdateToOneWithWhereWithoutPointsInput, SisiDiagramUpdateWithoutPointsInput>, SisiDiagramUncheckedUpdateWithoutPointsInput>
-  }
-
   export type LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput = {
     create?: XOR<LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput, LogNilaiEvaluasiUncheckedCreateWithoutPengajuanEvaluasiInput> | LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput[] | LogNilaiEvaluasiUncheckedCreateWithoutPengajuanEvaluasiInput[]
     connectOrCreate?: LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput | LogNilaiEvaluasiCreateOrConnectWithoutPengajuanEvaluasiInput[]
@@ -39952,6 +33591,14 @@ export namespace Prisma {
 
   export type EnumStatusPengajuanEvaluasiFieldUpdateOperationsInput = {
     set?: $Enums.StatusPengajuanEvaluasi
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type LogNilaiEvaluasiUpdateManyWithoutPengajuanEvaluasiNestedInput = {
@@ -40484,33 +34131,6 @@ export namespace Prisma {
     _max?: NestedEnumStatusSOPFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
-  }
-
   export type NestedEnumJenisLampiranFilter<$PrismaModel = never> = {
     equals?: $Enums.JenisLampiran | EnumJenisLampiranFieldRefInput<$PrismaModel>
     in?: $Enums.JenisLampiran[]
@@ -40619,57 +34239,6 @@ export namespace Prisma {
     _max?: NestedEnumStatusKomentarFilter<$PrismaModel>
   }
 
-  export type NestedEnumJenisDiagramSOPFilter<$PrismaModel = never> = {
-    equals?: $Enums.JenisDiagramSOP | EnumJenisDiagramSOPFieldRefInput<$PrismaModel>
-    in?: $Enums.JenisDiagramSOP[]
-    notIn?: $Enums.JenisDiagramSOP[]
-    not?: NestedEnumJenisDiagramSOPFilter<$PrismaModel> | $Enums.JenisDiagramSOP
-  }
-
-  export type NestedEnumGayaPanahNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.GayaPanah | EnumGayaPanahFieldRefInput<$PrismaModel> | null
-    in?: $Enums.GayaPanah[] | null
-    notIn?: $Enums.GayaPanah[] | null
-    not?: NestedEnumGayaPanahNullableFilter<$PrismaModel> | $Enums.GayaPanah | null
-  }
-
-  export type NestedEnumJenisDiagramSOPWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.JenisDiagramSOP | EnumJenisDiagramSOPFieldRefInput<$PrismaModel>
-    in?: $Enums.JenisDiagramSOP[]
-    notIn?: $Enums.JenisDiagramSOP[]
-    not?: NestedEnumJenisDiagramSOPWithAggregatesFilter<$PrismaModel> | $Enums.JenisDiagramSOP
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumJenisDiagramSOPFilter<$PrismaModel>
-    _max?: NestedEnumJenisDiagramSOPFilter<$PrismaModel>
-  }
-
-  export type NestedEnumGayaPanahNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.GayaPanah | EnumGayaPanahFieldRefInput<$PrismaModel> | null
-    in?: $Enums.GayaPanah[] | null
-    notIn?: $Enums.GayaPanah[] | null
-    not?: NestedEnumGayaPanahNullableWithAggregatesFilter<$PrismaModel> | $Enums.GayaPanah | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumGayaPanahNullableFilter<$PrismaModel>
-    _max?: NestedEnumGayaPanahNullableFilter<$PrismaModel>
-  }
-
-  export type NestedEnumCabangDiagramEdgeFilter<$PrismaModel = never> = {
-    equals?: $Enums.CabangDiagramEdge | EnumCabangDiagramEdgeFieldRefInput<$PrismaModel>
-    in?: $Enums.CabangDiagramEdge[]
-    notIn?: $Enums.CabangDiagramEdge[]
-    not?: NestedEnumCabangDiagramEdgeFilter<$PrismaModel> | $Enums.CabangDiagramEdge
-  }
-
-  export type NestedEnumCabangDiagramEdgeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.CabangDiagramEdge | EnumCabangDiagramEdgeFieldRefInput<$PrismaModel>
-    in?: $Enums.CabangDiagramEdge[]
-    notIn?: $Enums.CabangDiagramEdge[]
-    not?: NestedEnumCabangDiagramEdgeWithAggregatesFilter<$PrismaModel> | $Enums.CabangDiagramEdge
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumCabangDiagramEdgeFilter<$PrismaModel>
-    _max?: NestedEnumCabangDiagramEdgeFilter<$PrismaModel>
-  }
-
   export type NestedEnumJenisPengajuanEvaluasiFilter<$PrismaModel = never> = {
     equals?: $Enums.JenisPengajuanEvaluasi | EnumJenisPengajuanEvaluasiFieldRefInput<$PrismaModel>
     in?: $Enums.JenisPengajuanEvaluasi[]
@@ -40702,6 +34271,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumStatusPengajuanEvaluasiFilter<$PrismaModel>
     _max?: NestedEnumStatusPengajuanEvaluasiFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumHasilEvaluasiNullableFilter<$PrismaModel = never> = {
@@ -40747,12 +34343,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -40761,7 +34351,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -40783,19 +34372,12 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -40825,12 +34407,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -40839,7 +34415,6 @@ export namespace Prisma {
     disalinKeDariSumberIni?: DetailSOPCreateNestedManyWithoutSalinDariDetailSopInput
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -40861,19 +34436,12 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -41420,12 +34988,6 @@ export namespace Prisma {
     tanggalRevisi?: DateTimeNullableFilter<"DetailSOP"> | Date | string | null
     tanggalEfektif?: DateTimeNullableFilter<"DetailSOP"> | Date | string | null
     namaLembaga?: StringFilter<"DetailSOP"> | string
-    lebarKolomKegiatan?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomPelaksana?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomKelengkapan?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomWaktu?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomOutput?: IntNullableFilter<"DetailSOP"> | number | null
-    lebarKolomKeterangan?: IntNullableFilter<"DetailSOP"> | number | null
     dibuatOlehId?: StringNullableFilter<"DetailSOP"> | string | null
     terakhirDieditOlehId?: StringNullableFilter<"DetailSOP"> | string | null
     createdAt?: DateTimeFilter<"DetailSOP"> | Date | string
@@ -42946,12 +36508,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -42960,7 +36516,6 @@ export namespace Prisma {
     disalinKeDariSumberIni?: DetailSOPCreateNestedManyWithoutSalinDariDetailSopInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -42981,12 +36536,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -42994,7 +36543,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -43205,12 +36753,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -43219,7 +36761,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -43241,19 +36782,12 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -43278,12 +36812,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -43292,7 +36820,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -43313,12 +36840,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -43326,7 +36847,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -43455,44 +36975,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type TataLetakDiagramCreateWithoutDetailSopInput = {
-    tataLetakDiagramId?: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    edgeOverrides?: SisiDiagramCreateNestedManyWithoutTataLetakDiagramInput
-    nodeOverrides?: PosisiNodeDiagramCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramUncheckedCreateWithoutDetailSopInput = {
-    tataLetakDiagramId?: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    edgeOverrides?: SisiDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput
-    nodeOverrides?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramCreateOrConnectWithoutDetailSopInput = {
-    where: TataLetakDiagramWhereUniqueInput
-    create: XOR<TataLetakDiagramCreateWithoutDetailSopInput, TataLetakDiagramUncheckedCreateWithoutDetailSopInput>
-  }
-
-  export type TataLetakDiagramCreateManyDetailSopInputEnvelope = {
-    data: TataLetakDiagramCreateManyDetailSopInput | TataLetakDiagramCreateManyDetailSopInput[]
-    skipDuplicates?: boolean
-  }
-
   export type KomentarCreateWithoutDetailSopInput = {
     komentarId?: string
     isi: string
@@ -43559,9 +37041,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
@@ -43584,9 +37063,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
   }
@@ -43854,12 +37330,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -43868,7 +37338,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -43890,19 +37359,12 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -44050,38 +37512,6 @@ export namespace Prisma {
     urutan?: IntFilter<"DetailSOPPelaksana"> | number
     createdAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
     updatedAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
-  }
-
-  export type TataLetakDiagramUpsertWithWhereUniqueWithoutDetailSopInput = {
-    where: TataLetakDiagramWhereUniqueInput
-    update: XOR<TataLetakDiagramUpdateWithoutDetailSopInput, TataLetakDiagramUncheckedUpdateWithoutDetailSopInput>
-    create: XOR<TataLetakDiagramCreateWithoutDetailSopInput, TataLetakDiagramUncheckedCreateWithoutDetailSopInput>
-  }
-
-  export type TataLetakDiagramUpdateWithWhereUniqueWithoutDetailSopInput = {
-    where: TataLetakDiagramWhereUniqueInput
-    data: XOR<TataLetakDiagramUpdateWithoutDetailSopInput, TataLetakDiagramUncheckedUpdateWithoutDetailSopInput>
-  }
-
-  export type TataLetakDiagramUpdateManyWithWhereWithoutDetailSopInput = {
-    where: TataLetakDiagramScalarWhereInput
-    data: XOR<TataLetakDiagramUpdateManyMutationInput, TataLetakDiagramUncheckedUpdateManyWithoutDetailSopInput>
-  }
-
-  export type TataLetakDiagramScalarWhereInput = {
-    AND?: TataLetakDiagramScalarWhereInput | TataLetakDiagramScalarWhereInput[]
-    OR?: TataLetakDiagramScalarWhereInput[]
-    NOT?: TataLetakDiagramScalarWhereInput | TataLetakDiagramScalarWhereInput[]
-    tataLetakDiagramId?: StringFilter<"TataLetakDiagram"> | string
-    detailSopId?: StringFilter<"TataLetakDiagram"> | string
-    jenis?: EnumJenisDiagramSOPFilter<"TataLetakDiagram"> | $Enums.JenisDiagramSOP
-    versiLayout?: IntFilter<"TataLetakDiagram"> | number
-    layoutSeed?: IntFilter<"TataLetakDiagram"> | number
-    gayaPanah?: EnumGayaPanahNullableFilter<"TataLetakDiagram"> | $Enums.GayaPanah | null
-    langkahPerHalaman?: IntNullableFilter<"TataLetakDiagram"> | number | null
-    lebarAreaKegiatan?: IntNullableFilter<"TataLetakDiagram"> | number | null
-    createdAt?: DateTimeFilter<"TataLetakDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"TataLetakDiagram"> | Date | string
   }
 
   export type KomentarUpsertWithWhereUniqueWithoutDetailSopInput = {
@@ -44281,12 +37711,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -44296,7 +37720,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutDetailSopInput
@@ -44317,12 +37740,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -44330,7 +37747,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -44365,12 +37781,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -44380,7 +37790,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutDetailSopNestedInput
@@ -44401,12 +37810,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44414,7 +37817,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -44460,12 +37862,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
@@ -44474,7 +37870,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -44496,19 +37891,12 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -44577,12 +37965,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
@@ -44591,7 +37973,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -44613,19 +37994,12 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -44645,12 +38019,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -44660,7 +38028,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -44681,12 +38048,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -44694,7 +38055,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -44718,12 +38078,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -44733,7 +38087,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -44754,12 +38107,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -44767,7 +38114,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -44802,12 +38148,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -44817,7 +38157,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -44838,12 +38177,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44851,7 +38184,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -44881,12 +38213,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -44896,7 +38222,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -44917,12 +38242,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44930,7 +38249,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -44938,98 +38256,6 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
-  }
-
-  export type SisiDiagramCreateWithoutDariLangkahInput = {
-    sisiDiagramId?: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
-    keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
-    points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramUncheckedCreateWithoutDariLangkahInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramCreateOrConnectWithoutDariLangkahInput = {
-    where: SisiDiagramWhereUniqueInput
-    create: XOR<SisiDiagramCreateWithoutDariLangkahInput, SisiDiagramUncheckedCreateWithoutDariLangkahInput>
-  }
-
-  export type SisiDiagramCreateManyDariLangkahInputEnvelope = {
-    data: SisiDiagramCreateManyDariLangkahInput | SisiDiagramCreateManyDariLangkahInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SisiDiagramCreateWithoutKeLangkahInput = {
-    sisiDiagramId?: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
-    tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
-    points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramUncheckedCreateWithoutKeLangkahInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramCreateOrConnectWithoutKeLangkahInput = {
-    where: SisiDiagramWhereUniqueInput
-    create: XOR<SisiDiagramCreateWithoutKeLangkahInput, SisiDiagramUncheckedCreateWithoutKeLangkahInput>
-  }
-
-  export type SisiDiagramCreateManyKeLangkahInputEnvelope = {
-    data: SisiDiagramCreateManyKeLangkahInput | SisiDiagramCreateManyKeLangkahInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type PosisiNodeDiagramCreateWithoutLangkahSOPInput = {
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutNodeOverridesInput
-  }
-
-  export type PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput = {
-    tataLetakDiagramId: string
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PosisiNodeDiagramCreateOrConnectWithoutLangkahSOPInput = {
-    where: PosisiNodeDiagramWhereUniqueInput
-    create: XOR<PosisiNodeDiagramCreateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput>
-  }
-
-  export type PosisiNodeDiagramCreateManyLangkahSOPInputEnvelope = {
-    data: PosisiNodeDiagramCreateManyLangkahSOPInput | PosisiNodeDiagramCreateManyLangkahSOPInput[]
-    skipDuplicates?: boolean
   }
 
   export type LangkahSOPCreateWithoutLangkahSebelumTidakInput = {
@@ -45044,9 +38270,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
@@ -45070,9 +38293,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
   }
 
@@ -45093,9 +38313,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
@@ -45118,9 +38335,6 @@ export namespace Prisma {
     langkahSelanjutnyaYaId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
   }
@@ -45147,9 +38361,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
@@ -45173,9 +38384,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
   }
 
@@ -45196,9 +38404,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
@@ -45221,9 +38426,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
   }
@@ -45270,12 +38472,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -45285,7 +38481,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutDetailSopInput
@@ -45306,12 +38501,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -45319,7 +38508,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -45332,81 +38520,6 @@ export namespace Prisma {
   export type DetailSOPCreateOrConnectWithoutLangkahSOPInput = {
     where: DetailSOPWhereUniqueInput
     create: XOR<DetailSOPCreateWithoutLangkahSOPInput, DetailSOPUncheckedCreateWithoutLangkahSOPInput>
-  }
-
-  export type SisiDiagramUpsertWithWhereUniqueWithoutDariLangkahInput = {
-    where: SisiDiagramWhereUniqueInput
-    update: XOR<SisiDiagramUpdateWithoutDariLangkahInput, SisiDiagramUncheckedUpdateWithoutDariLangkahInput>
-    create: XOR<SisiDiagramCreateWithoutDariLangkahInput, SisiDiagramUncheckedCreateWithoutDariLangkahInput>
-  }
-
-  export type SisiDiagramUpdateWithWhereUniqueWithoutDariLangkahInput = {
-    where: SisiDiagramWhereUniqueInput
-    data: XOR<SisiDiagramUpdateWithoutDariLangkahInput, SisiDiagramUncheckedUpdateWithoutDariLangkahInput>
-  }
-
-  export type SisiDiagramUpdateManyWithWhereWithoutDariLangkahInput = {
-    where: SisiDiagramScalarWhereInput
-    data: XOR<SisiDiagramUpdateManyMutationInput, SisiDiagramUncheckedUpdateManyWithoutDariLangkahInput>
-  }
-
-  export type SisiDiagramScalarWhereInput = {
-    AND?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-    OR?: SisiDiagramScalarWhereInput[]
-    NOT?: SisiDiagramScalarWhereInput | SisiDiagramScalarWhereInput[]
-    sisiDiagramId?: StringFilter<"SisiDiagram"> | string
-    tataLetakDiagramId?: StringFilter<"SisiDiagram"> | string
-    dariLangkahId?: StringFilter<"SisiDiagram"> | string
-    keLangkahId?: StringFilter<"SisiDiagram"> | string
-    cabang?: EnumCabangDiagramEdgeFilter<"SisiDiagram"> | $Enums.CabangDiagramEdge
-    labelTeks?: StringNullableFilter<"SisiDiagram"> | string | null
-    createdAt?: DateTimeFilter<"SisiDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"SisiDiagram"> | Date | string
-  }
-
-  export type SisiDiagramUpsertWithWhereUniqueWithoutKeLangkahInput = {
-    where: SisiDiagramWhereUniqueInput
-    update: XOR<SisiDiagramUpdateWithoutKeLangkahInput, SisiDiagramUncheckedUpdateWithoutKeLangkahInput>
-    create: XOR<SisiDiagramCreateWithoutKeLangkahInput, SisiDiagramUncheckedCreateWithoutKeLangkahInput>
-  }
-
-  export type SisiDiagramUpdateWithWhereUniqueWithoutKeLangkahInput = {
-    where: SisiDiagramWhereUniqueInput
-    data: XOR<SisiDiagramUpdateWithoutKeLangkahInput, SisiDiagramUncheckedUpdateWithoutKeLangkahInput>
-  }
-
-  export type SisiDiagramUpdateManyWithWhereWithoutKeLangkahInput = {
-    where: SisiDiagramScalarWhereInput
-    data: XOR<SisiDiagramUpdateManyMutationInput, SisiDiagramUncheckedUpdateManyWithoutKeLangkahInput>
-  }
-
-  export type PosisiNodeDiagramUpsertWithWhereUniqueWithoutLangkahSOPInput = {
-    where: PosisiNodeDiagramWhereUniqueInput
-    update: XOR<PosisiNodeDiagramUpdateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedUpdateWithoutLangkahSOPInput>
-    create: XOR<PosisiNodeDiagramCreateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedCreateWithoutLangkahSOPInput>
-  }
-
-  export type PosisiNodeDiagramUpdateWithWhereUniqueWithoutLangkahSOPInput = {
-    where: PosisiNodeDiagramWhereUniqueInput
-    data: XOR<PosisiNodeDiagramUpdateWithoutLangkahSOPInput, PosisiNodeDiagramUncheckedUpdateWithoutLangkahSOPInput>
-  }
-
-  export type PosisiNodeDiagramUpdateManyWithWhereWithoutLangkahSOPInput = {
-    where: PosisiNodeDiagramScalarWhereInput
-    data: XOR<PosisiNodeDiagramUpdateManyMutationInput, PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPInput>
-  }
-
-  export type PosisiNodeDiagramScalarWhereInput = {
-    AND?: PosisiNodeDiagramScalarWhereInput | PosisiNodeDiagramScalarWhereInput[]
-    OR?: PosisiNodeDiagramScalarWhereInput[]
-    NOT?: PosisiNodeDiagramScalarWhereInput | PosisiNodeDiagramScalarWhereInput[]
-    tataLetakDiagramId?: StringFilter<"PosisiNodeDiagram"> | string
-    langkahSopId?: StringFilter<"PosisiNodeDiagram"> | string
-    page?: IntFilter<"PosisiNodeDiagram"> | number
-    x?: IntFilter<"PosisiNodeDiagram"> | number
-    y?: IntFilter<"PosisiNodeDiagram"> | number
-    createdAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"PosisiNodeDiagram"> | Date | string
   }
 
   export type LangkahSOPUpsertWithoutLangkahSebelumTidakInput = {
@@ -45432,9 +38545,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
@@ -45458,9 +38568,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
   }
 
@@ -45503,9 +38610,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
@@ -45529,9 +38633,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
   }
 
@@ -45600,12 +38701,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -45615,7 +38710,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutDetailSopNestedInput
@@ -45636,12 +38730,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45649,7 +38737,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -45695,9 +38782,6 @@ export namespace Prisma {
     keterangan: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
@@ -45720,9 +38804,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
   }
@@ -45881,12 +38962,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -45895,7 +38970,6 @@ export namespace Prisma {
     disalinKeDariSumberIni?: DetailSOPCreateNestedManyWithoutSalinDariDetailSopInput
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -45917,19 +38991,12 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -45994,12 +39061,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -46008,7 +39069,6 @@ export namespace Prisma {
     disalinKeDariSumberIni?: DetailSOPUpdateManyWithoutSalinDariDetailSopNestedInput
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -46030,19 +39090,12 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -46062,12 +39115,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -46077,7 +39124,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -46098,12 +39144,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -46111,7 +39151,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -46209,12 +39248,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -46224,7 +39257,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -46245,12 +39277,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46258,7 +39284,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -46346,12 +39371,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -46361,7 +39380,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutDetailSopInput
@@ -46382,12 +39400,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -46395,7 +39407,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -46493,12 +39504,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -46508,7 +39513,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutDetailSopNestedInput
@@ -46529,12 +39533,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46542,7 +39540,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -46619,820 +39616,6 @@ export namespace Prisma {
     tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
     opdSebagaiKepala?: OPDUncheckedUpdateOneWithoutKepalaPenggunaNestedInput
     opdSebagaiPjPenyusun?: OPDUncheckedUpdateOneWithoutPjPenyusunPenggunaNestedInput
-  }
-
-  export type SisiDiagramCreateWithoutTataLetakDiagramInput = {
-    sisiDiagramId?: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
-    keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
-    points?: TitikSisiDiagramCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput = {
-    sisiDiagramId?: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    points?: TitikSisiDiagramUncheckedCreateNestedManyWithoutSisiDiagramInput
-  }
-
-  export type SisiDiagramCreateOrConnectWithoutTataLetakDiagramInput = {
-    where: SisiDiagramWhereUniqueInput
-    create: XOR<SisiDiagramCreateWithoutTataLetakDiagramInput, SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput>
-  }
-
-  export type SisiDiagramCreateManyTataLetakDiagramInputEnvelope = {
-    data: SisiDiagramCreateManyTataLetakDiagramInput | SisiDiagramCreateManyTataLetakDiagramInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type DetailSOPCreateWithoutDiagramLayoutInput = {
-    detailSopId?: string
-    status?: $Enums.StatusSOP
-    versi?: number
-    nomorSOP: string
-    tanggalPembuatan?: Date | string
-    tanggalRevisi?: Date | string | null
-    tanggalEfektif?: Date | string | null
-    namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
-    dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
-    salinDariDetailSop?: DetailSOPCreateNestedOneWithoutDisalinKeDariSumberIniInput
-    disalinKeDariSumberIni?: DetailSOPCreateNestedManyWithoutSalinDariDetailSopInput
-    sop: SOPCreateNestedOneWithoutDetailSopsInput
-    terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
-    swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
-    lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
-    langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
-    logEditSop?: LogEditSOPCreateNestedManyWithoutDetailSopInput
-    nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutDetailSopInput
-    relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
-    relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
-    dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
-  }
-
-  export type DetailSOPUncheckedCreateWithoutDiagramLayoutInput = {
-    detailSopId?: string
-    sopId: string
-    salinDariDetailSopId?: string | null
-    status?: $Enums.StatusSOP
-    versi?: number
-    nomorSOP: string
-    tanggalPembuatan?: Date | string
-    tanggalRevisi?: Date | string | null
-    tanggalEfektif?: Date | string | null
-    namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
-    dibuatOlehId?: string | null
-    terakhirDieditOlehId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
-    disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
-    swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
-    lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
-    langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
-    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutDetailSopInput
-    nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDetailSopInput
-    relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
-    relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
-    dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
-  }
-
-  export type DetailSOPCreateOrConnectWithoutDiagramLayoutInput = {
-    where: DetailSOPWhereUniqueInput
-    create: XOR<DetailSOPCreateWithoutDiagramLayoutInput, DetailSOPUncheckedCreateWithoutDiagramLayoutInput>
-  }
-
-  export type PosisiNodeDiagramCreateWithoutTataLetakDiagramInput = {
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    langkahSOP: LangkahSOPCreateNestedOneWithoutDiagramNodePositionInput
-  }
-
-  export type PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput = {
-    langkahSopId: string
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PosisiNodeDiagramCreateOrConnectWithoutTataLetakDiagramInput = {
-    where: PosisiNodeDiagramWhereUniqueInput
-    create: XOR<PosisiNodeDiagramCreateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput>
-  }
-
-  export type PosisiNodeDiagramCreateManyTataLetakDiagramInputEnvelope = {
-    data: PosisiNodeDiagramCreateManyTataLetakDiagramInput | PosisiNodeDiagramCreateManyTataLetakDiagramInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type SisiDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput = {
-    where: SisiDiagramWhereUniqueInput
-    update: XOR<SisiDiagramUpdateWithoutTataLetakDiagramInput, SisiDiagramUncheckedUpdateWithoutTataLetakDiagramInput>
-    create: XOR<SisiDiagramCreateWithoutTataLetakDiagramInput, SisiDiagramUncheckedCreateWithoutTataLetakDiagramInput>
-  }
-
-  export type SisiDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput = {
-    where: SisiDiagramWhereUniqueInput
-    data: XOR<SisiDiagramUpdateWithoutTataLetakDiagramInput, SisiDiagramUncheckedUpdateWithoutTataLetakDiagramInput>
-  }
-
-  export type SisiDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput = {
-    where: SisiDiagramScalarWhereInput
-    data: XOR<SisiDiagramUpdateManyMutationInput, SisiDiagramUncheckedUpdateManyWithoutTataLetakDiagramInput>
-  }
-
-  export type DetailSOPUpsertWithoutDiagramLayoutInput = {
-    update: XOR<DetailSOPUpdateWithoutDiagramLayoutInput, DetailSOPUncheckedUpdateWithoutDiagramLayoutInput>
-    create: XOR<DetailSOPCreateWithoutDiagramLayoutInput, DetailSOPUncheckedCreateWithoutDiagramLayoutInput>
-    where?: DetailSOPWhereInput
-  }
-
-  export type DetailSOPUpdateToOneWithWhereWithoutDiagramLayoutInput = {
-    where?: DetailSOPWhereInput
-    data: XOR<DetailSOPUpdateWithoutDiagramLayoutInput, DetailSOPUncheckedUpdateWithoutDiagramLayoutInput>
-  }
-
-  export type DetailSOPUpdateWithoutDiagramLayoutInput = {
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
-    versi?: IntFieldUpdateOperationsInput | number
-    nomorSOP?: StringFieldUpdateOperationsInput | string
-    tanggalPembuatan?: DateTimeFieldUpdateOperationsInput | Date | string
-    tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
-    dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
-    salinDariDetailSop?: DetailSOPUpdateOneWithoutDisalinKeDariSumberIniNestedInput
-    disalinKeDariSumberIni?: DetailSOPUpdateManyWithoutSalinDariDetailSopNestedInput
-    sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
-    terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
-    swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
-    lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
-    langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
-    logEditSop?: LogEditSOPUpdateManyWithoutDetailSopNestedInput
-    nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutDetailSopNestedInput
-    relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
-    relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
-    dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
-  }
-
-  export type DetailSOPUncheckedUpdateWithoutDiagramLayoutInput = {
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    sopId?: StringFieldUpdateOperationsInput | string
-    salinDariDetailSopId?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
-    versi?: IntFieldUpdateOperationsInput | number
-    nomorSOP?: StringFieldUpdateOperationsInput | string
-    tanggalPembuatan?: DateTimeFieldUpdateOperationsInput | Date | string
-    tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
-    dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
-    terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
-    disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
-    swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
-    lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
-    langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
-    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutDetailSopNestedInput
-    nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
-    relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
-    relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
-    dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
-  }
-
-  export type PosisiNodeDiagramUpsertWithWhereUniqueWithoutTataLetakDiagramInput = {
-    where: PosisiNodeDiagramWhereUniqueInput
-    update: XOR<PosisiNodeDiagramUpdateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedUpdateWithoutTataLetakDiagramInput>
-    create: XOR<PosisiNodeDiagramCreateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedCreateWithoutTataLetakDiagramInput>
-  }
-
-  export type PosisiNodeDiagramUpdateWithWhereUniqueWithoutTataLetakDiagramInput = {
-    where: PosisiNodeDiagramWhereUniqueInput
-    data: XOR<PosisiNodeDiagramUpdateWithoutTataLetakDiagramInput, PosisiNodeDiagramUncheckedUpdateWithoutTataLetakDiagramInput>
-  }
-
-  export type PosisiNodeDiagramUpdateManyWithWhereWithoutTataLetakDiagramInput = {
-    where: PosisiNodeDiagramScalarWhereInput
-    data: XOR<PosisiNodeDiagramUpdateManyMutationInput, PosisiNodeDiagramUncheckedUpdateManyWithoutTataLetakDiagramInput>
-  }
-
-  export type TataLetakDiagramCreateWithoutNodeOverridesInput = {
-    tataLetakDiagramId?: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    edgeOverrides?: SisiDiagramCreateNestedManyWithoutTataLetakDiagramInput
-    detailSop: DetailSOPCreateNestedOneWithoutDiagramLayoutInput
-  }
-
-  export type TataLetakDiagramUncheckedCreateWithoutNodeOverridesInput = {
-    tataLetakDiagramId?: string
-    detailSopId: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    edgeOverrides?: SisiDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramCreateOrConnectWithoutNodeOverridesInput = {
-    where: TataLetakDiagramWhereUniqueInput
-    create: XOR<TataLetakDiagramCreateWithoutNodeOverridesInput, TataLetakDiagramUncheckedCreateWithoutNodeOverridesInput>
-  }
-
-  export type LangkahSOPCreateWithoutDiagramNodePositionInput = {
-    langkahSopId?: string
-    kegiatan: string
-    jenis?: $Enums.JenisLangkahProsedur
-    urutan: number
-    kelengkapan: string
-    keluaran: string
-    waktu: number
-    satuanWaktu: $Enums.SatuanWaktu
-    keterangan: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
-    langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
-    langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
-    langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
-    pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
-    detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
-  }
-
-  export type LangkahSOPUncheckedCreateWithoutDiagramNodePositionInput = {
-    langkahSopId?: string
-    detailSopId: string
-    kegiatan: string
-    jenis?: $Enums.JenisLangkahProsedur
-    urutan: number
-    kelengkapan: string
-    keluaran: string
-    waktu: number
-    satuanWaktu: $Enums.SatuanWaktu
-    keterangan: string
-    pelaksanaId: string
-    langkahSelanjutnyaYaId?: string | null
-    langkahSelanjutnyaTidakId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
-    langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
-  }
-
-  export type LangkahSOPCreateOrConnectWithoutDiagramNodePositionInput = {
-    where: LangkahSOPWhereUniqueInput
-    create: XOR<LangkahSOPCreateWithoutDiagramNodePositionInput, LangkahSOPUncheckedCreateWithoutDiagramNodePositionInput>
-  }
-
-  export type TataLetakDiagramUpsertWithoutNodeOverridesInput = {
-    update: XOR<TataLetakDiagramUpdateWithoutNodeOverridesInput, TataLetakDiagramUncheckedUpdateWithoutNodeOverridesInput>
-    create: XOR<TataLetakDiagramCreateWithoutNodeOverridesInput, TataLetakDiagramUncheckedCreateWithoutNodeOverridesInput>
-    where?: TataLetakDiagramWhereInput
-  }
-
-  export type TataLetakDiagramUpdateToOneWithWhereWithoutNodeOverridesInput = {
-    where?: TataLetakDiagramWhereInput
-    data: XOR<TataLetakDiagramUpdateWithoutNodeOverridesInput, TataLetakDiagramUncheckedUpdateWithoutNodeOverridesInput>
-  }
-
-  export type TataLetakDiagramUpdateWithoutNodeOverridesInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    edgeOverrides?: SisiDiagramUpdateManyWithoutTataLetakDiagramNestedInput
-    detailSop?: DetailSOPUpdateOneRequiredWithoutDiagramLayoutNestedInput
-  }
-
-  export type TataLetakDiagramUncheckedUpdateWithoutNodeOverridesInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    edgeOverrides?: SisiDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type LangkahSOPUpsertWithoutDiagramNodePositionInput = {
-    update: XOR<LangkahSOPUpdateWithoutDiagramNodePositionInput, LangkahSOPUncheckedUpdateWithoutDiagramNodePositionInput>
-    create: XOR<LangkahSOPCreateWithoutDiagramNodePositionInput, LangkahSOPUncheckedCreateWithoutDiagramNodePositionInput>
-    where?: LangkahSOPWhereInput
-  }
-
-  export type LangkahSOPUpdateToOneWithWhereWithoutDiagramNodePositionInput = {
-    where?: LangkahSOPWhereInput
-    data: XOR<LangkahSOPUpdateWithoutDiagramNodePositionInput, LangkahSOPUncheckedUpdateWithoutDiagramNodePositionInput>
-  }
-
-  export type LangkahSOPUpdateWithoutDiagramNodePositionInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    kegiatan?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
-    urutan?: IntFieldUpdateOperationsInput | number
-    kelengkapan?: StringFieldUpdateOperationsInput | string
-    keluaran?: StringFieldUpdateOperationsInput | string
-    waktu?: IntFieldUpdateOperationsInput | number
-    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
-    keterangan?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
-    langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
-    langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
-    langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
-    pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
-    detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
-  }
-
-  export type LangkahSOPUncheckedUpdateWithoutDiagramNodePositionInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    kegiatan?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
-    urutan?: IntFieldUpdateOperationsInput | number
-    kelengkapan?: StringFieldUpdateOperationsInput | string
-    keluaran?: StringFieldUpdateOperationsInput | string
-    waktu?: IntFieldUpdateOperationsInput | number
-    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
-    keterangan?: StringFieldUpdateOperationsInput | string
-    pelaksanaId?: StringFieldUpdateOperationsInput | string
-    langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
-    langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
-    langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
-  }
-
-  export type LangkahSOPCreateWithoutDiagramEdgeKeluarInput = {
-    langkahSopId?: string
-    kegiatan: string
-    jenis?: $Enums.JenisLangkahProsedur
-    urutan: number
-    kelengkapan: string
-    keluaran: string
-    waktu: number
-    satuanWaktu: $Enums.SatuanWaktu
-    keterangan: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    diagramEdgeMasuk?: SisiDiagramCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
-    langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
-    langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
-    langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
-    langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
-    pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
-    detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
-  }
-
-  export type LangkahSOPUncheckedCreateWithoutDiagramEdgeKeluarInput = {
-    langkahSopId?: string
-    detailSopId: string
-    kegiatan: string
-    jenis?: $Enums.JenisLangkahProsedur
-    urutan: number
-    kelengkapan: string
-    keluaran: string
-    waktu: number
-    satuanWaktu: $Enums.SatuanWaktu
-    keterangan: string
-    pelaksanaId: string
-    langkahSelanjutnyaYaId?: string | null
-    langkahSelanjutnyaTidakId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    diagramEdgeMasuk?: SisiDiagramUncheckedCreateNestedManyWithoutKeLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
-    langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
-    langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
-  }
-
-  export type LangkahSOPCreateOrConnectWithoutDiagramEdgeKeluarInput = {
-    where: LangkahSOPWhereUniqueInput
-    create: XOR<LangkahSOPCreateWithoutDiagramEdgeKeluarInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeKeluarInput>
-  }
-
-  export type TataLetakDiagramCreateWithoutEdgeOverridesInput = {
-    tataLetakDiagramId?: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    detailSop: DetailSOPCreateNestedOneWithoutDiagramLayoutInput
-    nodeOverrides?: PosisiNodeDiagramCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramUncheckedCreateWithoutEdgeOverridesInput = {
-    tataLetakDiagramId?: string
-    detailSopId: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    nodeOverrides?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutTataLetakDiagramInput
-  }
-
-  export type TataLetakDiagramCreateOrConnectWithoutEdgeOverridesInput = {
-    where: TataLetakDiagramWhereUniqueInput
-    create: XOR<TataLetakDiagramCreateWithoutEdgeOverridesInput, TataLetakDiagramUncheckedCreateWithoutEdgeOverridesInput>
-  }
-
-  export type LangkahSOPCreateWithoutDiagramEdgeMasukInput = {
-    langkahSopId?: string
-    kegiatan: string
-    jenis?: $Enums.JenisLangkahProsedur
-    urutan: number
-    kelengkapan: string
-    keluaran: string
-    waktu: number
-    satuanWaktu: $Enums.SatuanWaktu
-    keterangan: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramCreateNestedManyWithoutDariLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramCreateNestedManyWithoutLangkahSOPInput
-    langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
-    langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
-    langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
-    langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
-    pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
-    detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
-  }
-
-  export type LangkahSOPUncheckedCreateWithoutDiagramEdgeMasukInput = {
-    langkahSopId?: string
-    detailSopId: string
-    kegiatan: string
-    jenis?: $Enums.JenisLangkahProsedur
-    urutan: number
-    kelengkapan: string
-    keluaran: string
-    waktu: number
-    satuanWaktu: $Enums.SatuanWaktu
-    keterangan: string
-    pelaksanaId: string
-    langkahSelanjutnyaYaId?: string | null
-    langkahSelanjutnyaTidakId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedCreateNestedManyWithoutDariLangkahInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedCreateNestedManyWithoutLangkahSOPInput
-    langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
-    langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
-  }
-
-  export type LangkahSOPCreateOrConnectWithoutDiagramEdgeMasukInput = {
-    where: LangkahSOPWhereUniqueInput
-    create: XOR<LangkahSOPCreateWithoutDiagramEdgeMasukInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeMasukInput>
-  }
-
-  export type TitikSisiDiagramCreateWithoutSisiDiagramInput = {
-    urutan: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput = {
-    urutan: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TitikSisiDiagramCreateOrConnectWithoutSisiDiagramInput = {
-    where: TitikSisiDiagramWhereUniqueInput
-    create: XOR<TitikSisiDiagramCreateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput>
-  }
-
-  export type TitikSisiDiagramCreateManySisiDiagramInputEnvelope = {
-    data: TitikSisiDiagramCreateManySisiDiagramInput | TitikSisiDiagramCreateManySisiDiagramInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type LangkahSOPUpsertWithoutDiagramEdgeKeluarInput = {
-    update: XOR<LangkahSOPUpdateWithoutDiagramEdgeKeluarInput, LangkahSOPUncheckedUpdateWithoutDiagramEdgeKeluarInput>
-    create: XOR<LangkahSOPCreateWithoutDiagramEdgeKeluarInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeKeluarInput>
-    where?: LangkahSOPWhereInput
-  }
-
-  export type LangkahSOPUpdateToOneWithWhereWithoutDiagramEdgeKeluarInput = {
-    where?: LangkahSOPWhereInput
-    data: XOR<LangkahSOPUpdateWithoutDiagramEdgeKeluarInput, LangkahSOPUncheckedUpdateWithoutDiagramEdgeKeluarInput>
-  }
-
-  export type LangkahSOPUpdateWithoutDiagramEdgeKeluarInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    kegiatan?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
-    urutan?: IntFieldUpdateOperationsInput | number
-    kelengkapan?: StringFieldUpdateOperationsInput | string
-    keluaran?: StringFieldUpdateOperationsInput | string
-    waktu?: IntFieldUpdateOperationsInput | number
-    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
-    keterangan?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
-    langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
-    langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
-    langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
-    langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
-    pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
-    detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
-  }
-
-  export type LangkahSOPUncheckedUpdateWithoutDiagramEdgeKeluarInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    kegiatan?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
-    urutan?: IntFieldUpdateOperationsInput | number
-    kelengkapan?: StringFieldUpdateOperationsInput | string
-    keluaran?: StringFieldUpdateOperationsInput | string
-    waktu?: IntFieldUpdateOperationsInput | number
-    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
-    keterangan?: StringFieldUpdateOperationsInput | string
-    pelaksanaId?: StringFieldUpdateOperationsInput | string
-    langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
-    langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
-    langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
-    langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
-  }
-
-  export type TataLetakDiagramUpsertWithoutEdgeOverridesInput = {
-    update: XOR<TataLetakDiagramUpdateWithoutEdgeOverridesInput, TataLetakDiagramUncheckedUpdateWithoutEdgeOverridesInput>
-    create: XOR<TataLetakDiagramCreateWithoutEdgeOverridesInput, TataLetakDiagramUncheckedCreateWithoutEdgeOverridesInput>
-    where?: TataLetakDiagramWhereInput
-  }
-
-  export type TataLetakDiagramUpdateToOneWithWhereWithoutEdgeOverridesInput = {
-    where?: TataLetakDiagramWhereInput
-    data: XOR<TataLetakDiagramUpdateWithoutEdgeOverridesInput, TataLetakDiagramUncheckedUpdateWithoutEdgeOverridesInput>
-  }
-
-  export type TataLetakDiagramUpdateWithoutEdgeOverridesInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    detailSop?: DetailSOPUpdateOneRequiredWithoutDiagramLayoutNestedInput
-    nodeOverrides?: PosisiNodeDiagramUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type TataLetakDiagramUncheckedUpdateWithoutEdgeOverridesInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    nodeOverrides?: PosisiNodeDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type LangkahSOPUpsertWithoutDiagramEdgeMasukInput = {
-    update: XOR<LangkahSOPUpdateWithoutDiagramEdgeMasukInput, LangkahSOPUncheckedUpdateWithoutDiagramEdgeMasukInput>
-    create: XOR<LangkahSOPCreateWithoutDiagramEdgeMasukInput, LangkahSOPUncheckedCreateWithoutDiagramEdgeMasukInput>
-    where?: LangkahSOPWhereInput
-  }
-
-  export type LangkahSOPUpdateToOneWithWhereWithoutDiagramEdgeMasukInput = {
-    where?: LangkahSOPWhereInput
-    data: XOR<LangkahSOPUpdateWithoutDiagramEdgeMasukInput, LangkahSOPUncheckedUpdateWithoutDiagramEdgeMasukInput>
-  }
-
-  export type LangkahSOPUpdateWithoutDiagramEdgeMasukInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    kegiatan?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
-    urutan?: IntFieldUpdateOperationsInput | number
-    kelengkapan?: StringFieldUpdateOperationsInput | string
-    keluaran?: StringFieldUpdateOperationsInput | string
-    waktu?: IntFieldUpdateOperationsInput | number
-    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
-    keterangan?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
-    langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
-    langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
-    langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
-    langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
-    pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
-    detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
-  }
-
-  export type LangkahSOPUncheckedUpdateWithoutDiagramEdgeMasukInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    kegiatan?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
-    urutan?: IntFieldUpdateOperationsInput | number
-    kelengkapan?: StringFieldUpdateOperationsInput | string
-    keluaran?: StringFieldUpdateOperationsInput | string
-    waktu?: IntFieldUpdateOperationsInput | number
-    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
-    keterangan?: StringFieldUpdateOperationsInput | string
-    pelaksanaId?: StringFieldUpdateOperationsInput | string
-    langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
-    langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
-    langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
-    langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
-  }
-
-  export type TitikSisiDiagramUpsertWithWhereUniqueWithoutSisiDiagramInput = {
-    where: TitikSisiDiagramWhereUniqueInput
-    update: XOR<TitikSisiDiagramUpdateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedUpdateWithoutSisiDiagramInput>
-    create: XOR<TitikSisiDiagramCreateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedCreateWithoutSisiDiagramInput>
-  }
-
-  export type TitikSisiDiagramUpdateWithWhereUniqueWithoutSisiDiagramInput = {
-    where: TitikSisiDiagramWhereUniqueInput
-    data: XOR<TitikSisiDiagramUpdateWithoutSisiDiagramInput, TitikSisiDiagramUncheckedUpdateWithoutSisiDiagramInput>
-  }
-
-  export type TitikSisiDiagramUpdateManyWithWhereWithoutSisiDiagramInput = {
-    where: TitikSisiDiagramScalarWhereInput
-    data: XOR<TitikSisiDiagramUpdateManyMutationInput, TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramInput>
-  }
-
-  export type TitikSisiDiagramScalarWhereInput = {
-    AND?: TitikSisiDiagramScalarWhereInput | TitikSisiDiagramScalarWhereInput[]
-    OR?: TitikSisiDiagramScalarWhereInput[]
-    NOT?: TitikSisiDiagramScalarWhereInput | TitikSisiDiagramScalarWhereInput[]
-    sisiDiagramId?: StringFilter<"TitikSisiDiagram"> | string
-    urutan?: IntFilter<"TitikSisiDiagram"> | number
-    x?: IntFilter<"TitikSisiDiagram"> | number
-    y?: IntFilter<"TitikSisiDiagram"> | number
-    createdAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
-    updatedAt?: DateTimeFilter<"TitikSisiDiagram"> | Date | string
-  }
-
-  export type SisiDiagramCreateWithoutPointsInput = {
-    sisiDiagramId?: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    dariLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeKeluarInput
-    tataLetakDiagram: TataLetakDiagramCreateNestedOneWithoutEdgeOverridesInput
-    keLangkah: LangkahSOPCreateNestedOneWithoutDiagramEdgeMasukInput
-  }
-
-  export type SisiDiagramUncheckedCreateWithoutPointsInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type SisiDiagramCreateOrConnectWithoutPointsInput = {
-    where: SisiDiagramWhereUniqueInput
-    create: XOR<SisiDiagramCreateWithoutPointsInput, SisiDiagramUncheckedCreateWithoutPointsInput>
-  }
-
-  export type SisiDiagramUpsertWithoutPointsInput = {
-    update: XOR<SisiDiagramUpdateWithoutPointsInput, SisiDiagramUncheckedUpdateWithoutPointsInput>
-    create: XOR<SisiDiagramCreateWithoutPointsInput, SisiDiagramUncheckedCreateWithoutPointsInput>
-    where?: SisiDiagramWhereInput
-  }
-
-  export type SisiDiagramUpdateToOneWithWhereWithoutPointsInput = {
-    where?: SisiDiagramWhereInput
-    data: XOR<SisiDiagramUpdateWithoutPointsInput, SisiDiagramUncheckedUpdateWithoutPointsInput>
-  }
-
-  export type SisiDiagramUpdateWithoutPointsInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
-    tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
-    keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateWithoutPointsInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput = {
@@ -48184,12 +40367,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -48199,7 +40376,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -48220,12 +40396,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -48233,7 +40403,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -48392,12 +40561,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -48407,7 +40570,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -48428,12 +40590,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48441,7 +40597,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -48828,12 +40983,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
@@ -48843,7 +40992,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
@@ -48864,12 +41012,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -48877,7 +41019,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     disalinKeDariSumberIni?: DetailSOPUncheckedCreateNestedManyWithoutSalinDariDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    diagramLayout?: TataLetakDiagramUncheckedCreateNestedManyWithoutDetailSopInput
     komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiran?: LampiranTeksUncheckedCreateNestedManyWithoutDetailSopInput
     langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
@@ -49009,12 +41150,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -49024,7 +41159,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -49045,12 +41179,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49058,7 +41186,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -49354,12 +41481,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49376,12 +41497,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49522,12 +41637,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -49536,7 +41645,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -49558,19 +41666,12 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -49592,12 +41693,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49612,12 +41707,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -49626,7 +41715,6 @@ export namespace Prisma {
     disalinKeDariSumberIni?: DetailSOPUpdateManyWithoutSalinDariDetailSopNestedInput
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -49648,19 +41736,12 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -49682,12 +41763,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50427,12 +42502,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -50448,12 +42517,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -50462,7 +42525,6 @@ export namespace Prisma {
     disalinKeDariSumberIni?: DetailSOPUpdateManyWithoutSalinDariDetailSopNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -50483,12 +42545,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50496,7 +42552,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -50517,12 +42572,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50545,12 +42594,6 @@ export namespace Prisma {
     tanggalRevisi?: Date | string | null
     tanggalEfektif?: Date | string | null
     namaLembaga: string
-    lebarKolomKegiatan?: number | null
-    lebarKolomPelaksana?: number | null
-    lebarKolomKelengkapan?: number | null
-    lebarKolomWaktu?: number | null
-    lebarKolomOutput?: number | null
-    lebarKolomKeterangan?: number | null
     dibuatOlehId?: string | null
     terakhirDieditOlehId?: string | null
     createdAt?: Date | string
@@ -50560,18 +42603,6 @@ export namespace Prisma {
   export type DetailSOPPelaksanaCreateManyDetailSopInput = {
     pelaksanaId: string
     urutan?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TataLetakDiagramCreateManyDetailSopInput = {
-    tataLetakDiagramId?: string
-    jenis: $Enums.JenisDiagramSOP
-    versiLayout?: number
-    layoutSeed?: number
-    gayaPanah?: $Enums.GayaPanah | null
-    langkahPerHalaman?: number | null
-    lebarAreaKegiatan?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -50685,12 +42716,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
@@ -50699,7 +42724,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
@@ -50720,12 +42744,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50733,7 +42751,6 @@ export namespace Prisma {
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     disalinKeDariSumberIni?: DetailSOPUncheckedUpdateManyWithoutSalinDariDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    diagramLayout?: TataLetakDiagramUncheckedUpdateManyWithoutDetailSopNestedInput
     komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiran?: LampiranTeksUncheckedUpdateManyWithoutDetailSopNestedInput
     langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -50754,12 +42771,6 @@ export namespace Prisma {
     tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     namaLembaga?: StringFieldUpdateOperationsInput | string
-    lebarKolomKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomPelaksana?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKelengkapan?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomWaktu?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomOutput?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarKolomKeterangan?: NullableIntFieldUpdateOperationsInput | number | null
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50783,46 +42794,6 @@ export namespace Prisma {
   export type DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopInput = {
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TataLetakDiagramUpdateWithoutDetailSopInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    edgeOverrides?: SisiDiagramUpdateManyWithoutTataLetakDiagramNestedInput
-    nodeOverrides?: PosisiNodeDiagramUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type TataLetakDiagramUncheckedUpdateWithoutDetailSopInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    edgeOverrides?: SisiDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput
-    nodeOverrides?: PosisiNodeDiagramUncheckedUpdateManyWithoutTataLetakDiagramNestedInput
-  }
-
-  export type TataLetakDiagramUncheckedUpdateManyWithoutDetailSopInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    jenis?: EnumJenisDiagramSOPFieldUpdateOperationsInput | $Enums.JenisDiagramSOP
-    versiLayout?: IntFieldUpdateOperationsInput | number
-    layoutSeed?: IntFieldUpdateOperationsInput | number
-    gayaPanah?: NullableEnumGayaPanahFieldUpdateOperationsInput | $Enums.GayaPanah | null
-    langkahPerHalaman?: NullableIntFieldUpdateOperationsInput | number | null
-    lebarAreaKegiatan?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50890,9 +42861,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
@@ -50915,9 +42883,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
   }
@@ -51085,35 +43050,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type SisiDiagramCreateManyDariLangkahInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type SisiDiagramCreateManyKeLangkahInput = {
-    sisiDiagramId?: string
-    tataLetakDiagramId: string
-    dariLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PosisiNodeDiagramCreateManyLangkahSOPInput = {
-    tataLetakDiagramId: string
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type LangkahSOPCreateManyLangkahTidakInput = {
     langkahSopId?: string
     detailSopId: string
@@ -51148,97 +43084,6 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type SisiDiagramUpdateWithoutDariLangkahInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
-    keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
-    points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateWithoutDariLangkahInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateManyWithoutDariLangkahInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SisiDiagramUpdateWithoutKeLangkahInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
-    tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutEdgeOverridesNestedInput
-    points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateWithoutKeLangkahInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateManyWithoutKeLangkahInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramUpdateWithoutLangkahSOPInput = {
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    tataLetakDiagram?: TataLetakDiagramUpdateOneRequiredWithoutNodeOverridesNestedInput
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateWithoutLangkahSOPInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPInput = {
-    tataLetakDiagramId?: StringFieldUpdateOperationsInput | string
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type LangkahSOPUpdateWithoutLangkahTidakInput = {
     langkahSopId?: StringFieldUpdateOperationsInput | string
     kegiatan?: StringFieldUpdateOperationsInput | string
@@ -51251,9 +43096,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
@@ -51276,9 +43118,6 @@ export namespace Prisma {
     langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
   }
@@ -51312,9 +43151,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
@@ -51337,9 +43173,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
   }
@@ -51418,9 +43251,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUpdateManyWithoutLangkahSOPNestedInput
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
@@ -51443,9 +43273,6 @@ export namespace Prisma {
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    diagramEdgeKeluar?: SisiDiagramUncheckedUpdateManyWithoutDariLangkahNestedInput
-    diagramEdgeMasuk?: SisiDiagramUncheckedUpdateManyWithoutKeLangkahNestedInput
-    diagramNodePosition?: PosisiNodeDiagramUncheckedUpdateManyWithoutLangkahSOPNestedInput
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
   }
@@ -51463,116 +43290,6 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type SisiDiagramCreateManyTataLetakDiagramInput = {
-    sisiDiagramId?: string
-    dariLangkahId: string
-    keLangkahId: string
-    cabang?: $Enums.CabangDiagramEdge
-    labelTeks?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type PosisiNodeDiagramCreateManyTataLetakDiagramInput = {
-    langkahSopId: string
-    page?: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type SisiDiagramUpdateWithoutTataLetakDiagramInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeKeluarNestedInput
-    keLangkah?: LangkahSOPUpdateOneRequiredWithoutDiagramEdgeMasukNestedInput
-    points?: TitikSisiDiagramUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateWithoutTataLetakDiagramInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    points?: TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramNestedInput
-  }
-
-  export type SisiDiagramUncheckedUpdateManyWithoutTataLetakDiagramInput = {
-    sisiDiagramId?: StringFieldUpdateOperationsInput | string
-    dariLangkahId?: StringFieldUpdateOperationsInput | string
-    keLangkahId?: StringFieldUpdateOperationsInput | string
-    cabang?: EnumCabangDiagramEdgeFieldUpdateOperationsInput | $Enums.CabangDiagramEdge
-    labelTeks?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramUpdateWithoutTataLetakDiagramInput = {
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    langkahSOP?: LangkahSOPUpdateOneRequiredWithoutDiagramNodePositionNestedInput
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateWithoutTataLetakDiagramInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type PosisiNodeDiagramUncheckedUpdateManyWithoutTataLetakDiagramInput = {
-    langkahSopId?: StringFieldUpdateOperationsInput | string
-    page?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TitikSisiDiagramCreateManySisiDiagramInput = {
-    urutan: number
-    x: number
-    y: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type TitikSisiDiagramUpdateWithoutSisiDiagramInput = {
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TitikSisiDiagramUncheckedUpdateWithoutSisiDiagramInput = {
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type TitikSisiDiagramUncheckedUpdateManyWithoutSisiDiagramInput = {
-    urutan?: IntFieldUpdateOperationsInput | number
-    x?: IntFieldUpdateOperationsInput | number
-    y?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -3,6 +3,7 @@ import { PeranPengguna } from '../../../generated/prisma';
 import type { JwtAccessPayload } from '../auth/helpers/auth.shared';
 import { CreateOpdDto } from './dto/create-opd.dto';
 import { UpdateOpdDto } from './dto/update-opd.dto';
+import type { OpdEvaluasiRingkasResponseDto } from './dto/opd-evaluasi-ringkas-response.dto';
 import type { OpdMutasiResponseDto } from './dto/opd-mutasi-response.dto';
 import type { OpdRingkasResponseDto } from './dto/opd-ringkas-response.dto';
 import { OpdRepository } from './opd.repository';
@@ -10,6 +11,17 @@ import { OpdRepository } from './opd.repository';
 @Injectable()
 export class OpdService {
   constructor(private readonly opdRepository: OpdRepository) {}
+
+  /** Hanya untuk peran evaluasi; otorisasi di controller. */
+  async listEvaluasiRingkas(search?: string): Promise<OpdEvaluasiRingkasResponseDto[]> {
+    const rows = await this.opdRepository.findEvaluasiRingkas(search);
+    return rows.map((r) => ({
+      id: r.opdId,
+      nama: r.nama,
+      jumlahSop: r.jumlahSop,
+      jumlahSopBaru: r.jumlahSopBaru,
+    }));
+  }
 
   async listRingkas(user: JwtAccessPayload, search?: string): Promise<OpdRingkasResponseDto[]> {
     if (user.peran === PeranPengguna.PJ_EVALUATOR) {

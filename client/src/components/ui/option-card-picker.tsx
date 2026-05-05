@@ -55,6 +55,8 @@ export interface OptionCardPickerProps<T> {
   className?: string
   /** Class untuk tiap kartu opsi */
   optionClassName?: string
+  /** Nonaktifkan interaksi (mis. belum ada pengajuan evaluasi di server) */
+  disabled?: boolean
 }
 
 function isEqual<T>(a: T | null, b: T): boolean {
@@ -75,6 +77,7 @@ export function OptionCardPicker<T>({
   columns = 2,
   className,
   optionClassName,
+  disabled = false,
 }: OptionCardPickerProps<T>) {
   const gridClass = {
     2: 'grid-cols-2',
@@ -92,12 +95,18 @@ export function OptionCardPicker<T>({
           <button
             key={String(opt.value)}
             type="button"
+            disabled={disabled}
             className={cn(
               BASE_OPTION_CLASS,
               selected ? styles.selected : '',
-              optionClassName
+              optionClassName,
+              disabled && 'opacity-50 cursor-not-allowed hover:bg-white',
             )}
-            onClick={() => onChange(opt.value)}
+            onClick={() => {
+              if (!disabled) {
+                onChange(opt.value);
+              }
+            }}
           >
             {opt.icon && (
               <div

@@ -128,12 +128,6 @@ model DetailSOP {
   tanggalRevisi          DateTime?
   tanggalEfektif         DateTime?
   namaLembaga            String               @db.Text
-  lebarKolomKegiatan     Int?
-  lebarKolomPelaksana    Int?
-  lebarKolomKelengkapan  Int?
-  lebarKolomWaktu        Int?
-  lebarKolomOutput       Int?
-  lebarKolomKeterangan   Int?
   dibuatOlehId           String?
   terakhirDieditOlehId   String?
   createdAt              DateTime             @default(now())
@@ -145,7 +139,6 @@ model DetailSOP {
   sop                    SOP                  @relation(fields: [sopId], references: [sopId], onDelete: Cascade)
   terakhirDieditOleh     Pengguna?            @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [penggunaId], onDelete: Restrict)
   swimlanes              DetailSOPPelaksana[]
-  diagramLayout          TataLetakDiagram[]
   komentar               Komentar[]
   lampiran               LampiranTeks[]
   langkahSOP             LangkahSOP[]
@@ -206,9 +199,6 @@ model LangkahSOP {
   langkahSelanjutnyaTidakId String?
   createdAt                 DateTime             @default(now())
   updatedAt                 DateTime             @updatedAt
-  diagramEdgeKeluar         SisiDiagram[]        @relation("DiagramEdgeDari")
-  diagramEdgeMasuk          SisiDiagram[]        @relation("DiagramEdgeKe")
-  diagramNodePosition       PosisiNodeDiagram[]
   langkahTidak              LangkahSOP?          @relation("LangkahTidak", fields: [langkahSelanjutnyaTidakId], references: [langkahSopId])
   langkahSebelumTidak       LangkahSOP[]         @relation("LangkahTidak")
   langkahYa                 LangkahSOP?          @relation("LangkahYa", fields: [langkahSelanjutnyaYaId], references: [langkahSopId])
@@ -278,71 +268,6 @@ model Komentar {
   updatedAt   DateTime       @updatedAt
   detailSop   DetailSOP      @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
   user        Pengguna       @relation(fields: [userId], references: [penggunaId])
-}
-
-/// =========================
-/// MODUL 4 — DIAGRAM SOP
-/// =========================
-model TataLetakDiagram {
-  tataLetakDiagramId String              @id @default(uuid())
-  detailSopId        String
-  jenis              JenisDiagramSOP
-  versiLayout        Int                 @default(1)
-  layoutSeed         Int                 @default(0)
-  gayaPanah          GayaPanah?
-  langkahPerHalaman  Int?                @default(10)
-  lebarAreaKegiatan  Int?
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  edgeOverrides      SisiDiagram[]
-  detailSop          DetailSOP           @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
-  nodeOverrides      PosisiNodeDiagram[]
-
-  @@unique([detailSopId, jenis, versiLayout])
-}
-
-model PosisiNodeDiagram {
-  tataLetakDiagramId String
-  langkahSopId       String
-  page               Int              @default(1)
-  x                  Int
-  y                  Int
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-  tataLetakDiagram   TataLetakDiagram @relation(fields: [tataLetakDiagramId], references: [tataLetakDiagramId], onDelete: Cascade)
-  langkahSOP         LangkahSOP       @relation(fields: [langkahSopId], references: [langkahSopId])
-
-  @@id([tataLetakDiagramId, langkahSopId])
-}
-
-model SisiDiagram {
-  sisiDiagramId      String             @id @default(uuid())
-  tataLetakDiagramId String
-  dariLangkahId      String
-  keLangkahId        String
-  /// Membedakan edge ganda (mis. keputusan Ya vs Tidak) tanpa mengandalkan NULL di unique.
-  cabang             CabangDiagramEdge  @default(UTAMA)
-  labelTeks          String?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  dariLangkah        LangkahSOP         @relation("DiagramEdgeDari", fields: [dariLangkahId], references: [langkahSopId])
-  tataLetakDiagram   TataLetakDiagram   @relation(fields: [tataLetakDiagramId], references: [tataLetakDiagramId], onDelete: Cascade)
-  keLangkah          LangkahSOP         @relation("DiagramEdgeKe", fields: [keLangkahId], references: [langkahSopId])
-  points             TitikSisiDiagram[]
-
-  @@unique([tataLetakDiagramId, dariLangkahId, keLangkahId, cabang])
-}
-
-model TitikSisiDiagram {
-  sisiDiagramId String
-  urutan        Int
-  x             Int
-  y             Int
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  sisiDiagram   SisiDiagram @relation(fields: [sisiDiagramId], references: [sisiDiagramId], onDelete: Cascade)
-
-  @@id([sisiDiagramId, urutan])
 }
 
 /// =========================
@@ -512,23 +437,6 @@ enum SatuanWaktu {
   y
 }
 
-enum JenisDiagramSOP {
-  FLOWCHART
-  BPMN
-}
-
-/// Membedakan beberapa edge dari node yang sama ke node lain (mis. cabang Ya/Tidak).
-enum CabangDiagramEdge {
-  UTAMA
-  YA
-  TIDAK
-}
-
-enum GayaPanah {
-  LURUS
-  SIKU
-}
-
 enum JenisPengajuanEvaluasi {
   TERJADWAL
   MANDIRI
@@ -545,7 +453,7 @@ enum StatusPengajuanEvaluasi {
 
 enum HasilEvaluasi {
   SESUAI
-  TIDAK_SESUAI
+  PERLU_PERBAIKAN
 }
 
 enum JenisDokumenTte {

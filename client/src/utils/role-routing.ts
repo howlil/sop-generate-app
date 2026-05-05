@@ -10,7 +10,7 @@ export const ROLE_DEFAULT_LANDING: Record<RoleKey, string> = {
   PENYUSUN: ROUTES.PENYUSUN.SOP,
   PJ_PENYUSUN: ROUTES.PENYUSUN.SOP,
   KEPALA_OPD: ROUTES.KEPALA_OPD.SOP,
-  EVALUATOR: ROUTES.TIM_EVALUASI.EVALUASI,
+  EVALUATOR: ROUTES.EVALUATOR.EVALUASI,
 };
 
 /** Prefiks area aplikasi yang dibatasi per peran (guard kasar untuk redirect aman). */
@@ -25,7 +25,7 @@ const ROLE_ROUTE_PREFIXES: { prefix: string; roles: RoleKey[] }[] = [
     roles: ['PENYUSUN', 'PJ_PENYUSUN'],
   },
   { prefix: '/kepala-opd', roles: ['KEPALA_OPD'] },
-  { prefix: '/tim-evaluasi', roles: ['EVALUATOR'] },
+  { prefix: '/evaluator', roles: ['EVALUATOR'] },
 ];
 
 export function getRoleDefaultLandingPath(peran: string): string | undefined {

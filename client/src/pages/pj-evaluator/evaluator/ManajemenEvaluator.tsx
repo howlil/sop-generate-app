@@ -12,8 +12,8 @@ import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
-import { useTimEvaluasi } from '@/api/tim-evaluasi'
-import type { AnggotaTimEvaluasi, StatusTim } from '@/types/dto/tim.dto'
+import { useEvaluatorAnggota } from '@/api/evaluator-anggota'
+import type { EvaluatorAnggota, StatusTim } from '@/types/dto/tim.dto'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
@@ -41,14 +41,14 @@ export function ManajemenEvaluator() {
   const evaluatorSearch =
     debouncedSearch.trim() !== '' ? debouncedSearch.trim() : undefined
   const {
-    list: timList,
+    list: evaluatorList,
     hapus,
     tambah,
     update,
     isAdding,
     isUpdating,
     isDeleting,
-  } = useTimEvaluasi(evaluatorSearch)
+  } = useEvaluatorAnggota(evaluatorSearch)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingAnggotaId, setEditingAnggotaId] = useState<string | null>(null)
@@ -72,7 +72,7 @@ export function ManajemenEvaluator() {
     status: 'AKTIF',
   })
 
-  const openEditDialog = (tim: AnggotaTimEvaluasi) => {
+  const openEditDialog = (tim: EvaluatorAnggota) => {
     const u = tim.user
     setEditingAnggotaId(tim.id)
     setFormData({
@@ -175,7 +175,7 @@ export function ManajemenEvaluator() {
         </SearchToolbar>
       }
     >
-      <Table.Paginated data={timList} label="anggota">
+      <Table.Paginated data={evaluatorList} label="anggota">
         {(pageData) => (
           <Table.Table>
             <thead>

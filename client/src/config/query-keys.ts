@@ -29,8 +29,12 @@ export const queryKeys = {
 
   // SOP
   sop: ['sop'] as const,
-  sopList: (params?: { opdId?: string; status?: string }) => ['sop', 'list', params] as const,
-  sopById: (id: string) => ['sop', 'byId', id] as const,
+  sopList: (params?: {
+    opdId?: string
+    status?: string
+    tanggalDari?: string
+    tanggalSampai?: string
+  }) => ['sop', 'list', params] as const,
   /** GET `/sop/penyusun-workbench/:detailSopId` — agregat detail + langkah + log */
   penyusunWorkbench: (detailSopId: string) => ['sop', 'penyusunWorkbench', detailSopId] as const,
 
@@ -38,7 +42,6 @@ export const queryKeys = {
   detailSop: ['detailSop'] as const,
   detailSopList: (params?: { sopId?: string; opdId?: string; status?: string }) => ['detailSop', 'list', params] as const,
   detailSopById: (id: string) => ['detailSop', 'byId', id] as const,
-  detailSopLogs: (id: string) => ['detailSop', 'logs', id] as const,
 
   // Pelaksana
   pelaksana: ['pelaksana'] as const,
@@ -49,6 +52,9 @@ export const queryKeys = {
   /** v2: invalidasi cache setelah respons API memakai bungkus { data } konsisten */
   /** GET `/opd` — termasuk query `search` (PJ_EVALUATOR) */
   opdList: (search?: string) => ['opd', 'list', 'v2', search ?? ''] as const,
+  /** GET `/opd/evaluasi-ringkas` — evaluator / PJ evaluator */
+  opdEvaluasiRingkas: (search?: string) =>
+    ['opd', 'evaluasiRingkas', search ?? ''] as const,
 
   /** Manajemen penyusun Biro (GET /api/v1/penyusun — grup per OPD) */
   penyusun: ['penyusun'] as const,
@@ -56,24 +62,30 @@ export const queryKeys = {
   penyusunRiwayatOpd: (penggunaId: string) =>
     ['penyusun', 'riwayatOpd', penggunaId] as const,
 
-  // Tim Evaluasi
-  timEvaluasi: ['timEvaluasi'] as const,
-  /** v2: respons bungkus ApiSuccessResponse + CRUD pengguna Evaluator */
+  /** Manajemen anggota evaluator Biro — GET/POST/PATCH/DELETE `/evaluator` */
+  evaluatorAnggota: ['evaluatorAnggota'] as const,
   /** GET `/evaluator` — termasuk query `search` */
-  timEvaluasiList: (search?: string) =>
-    ['timEvaluasi', 'list', 'v3', search ?? ''] as const,
+  evaluatorAnggotaList: (search?: string) =>
+    ['evaluatorAnggota', 'list', 'v3', search ?? ''] as const,
 
   // Evaluasi
   evaluasi: ['evaluasi'] as const,
   evaluasiList: (params?: { opdId?: string; status?: string; jenis?: string }) => ['evaluasi', 'list', params] as const,
   evaluasiById: (id: string) => ['evaluasi', 'byId', id] as const,
-  evaluasiRekap: (tahun?: number) => ['evaluasi', 'rekap', tahun] as const,
+  evaluasiGrafikTahunan: (params?: { tahun?: number; tahunDari?: number; tahunSampai?: number }) =>
+    ['evaluasi', 'grafikTahunan', params ?? {}] as const,
+  /** GET `/evaluasi/workspace/opd/:opdId` — invalidate seluruh subtree dengan prefix ini setelah mutasi nilai */
+  evaluasiWorkspaceOpdAll: ['evaluasi', 'workspaceOpd'] as const,
+  evaluasiWorkspaceOpd: (
+    opdId: string,
+    params?: { detailSopId?: string; expand?: string; riwayatLimit?: number },
+  ) => ['evaluasi', 'workspaceOpd', opdId, params ?? {}] as const,
 
   // TTE
   tte: ['tte'] as const,
   tteProfil: ['tte', 'profil'] as const,
   tteRiwayat: ['tte', 'riwayat'] as const,
 
-  /** Komentar SOP (TIM_EVALUASI -> PENYUSUN). */
+  /** Komentar SOP (evaluator → penyusun). */
   sopKomentar: (detailSopId: string) => ['sop', 'komentar', detailSopId] as const,
 }

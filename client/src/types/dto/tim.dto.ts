@@ -57,7 +57,7 @@ export interface UpdatePenyusunMutationDto {
   payload: UpdatePenggunaPenyusunDto;
 }
 
-export interface AnggotaTimEvaluasi {
+export interface EvaluatorAnggota {
   id: string;
   userId: string;
   status: StatusTim;
@@ -86,8 +86,8 @@ export interface PindahTimPenyusunMutationDto {
   opdId: string;
 }
 
-/** Payload tambah anggota Tim Evaluasi (Evaluator); opdId dan sandi default di server. */
-export interface CreateTimEvaluasiDto {
+/** Payload tambah anggota evaluator Biro; opdId dan sandi default di server. */
+export interface CreateEvaluatorAnggotaDto {
   email: string;
   nama: string;
   nip: string;
@@ -96,8 +96,8 @@ export interface CreateTimEvaluasiDto {
   nohp: string;
 }
 
-/** Payload pembaruan profil anggota Tim Evaluasi. */
-export interface UpdateTimEvaluasiAnggotaDto {
+/** Payload pembaruan profil anggota evaluator. */
+export interface UpdateEvaluatorAnggotaDto {
   email?: string;
   nama?: string;
   nip?: string;
@@ -107,14 +107,14 @@ export interface UpdateTimEvaluasiAnggotaDto {
   status?: StatusTim;
 }
 
-export interface UpdateTimEvaluasiMutationDto {
+export interface UpdateEvaluatorAnggotaMutationDto {
   id: string;
-  payload: UpdateTimEvaluasiAnggotaDto;
+  payload: UpdateEvaluatorAnggotaDto;
 }
 
 /** Grup evaluator dari GET /api/v1/evaluator */
 export interface EvaluatorOpdGrup {
   opdId: string;
   namaOpd: string;
-  evaluator: AnggotaTimEvaluasi[];
+  evaluator: EvaluatorAnggota[];
 }

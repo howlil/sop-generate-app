@@ -68,35 +68,43 @@ export class SopCommentRepository {
     });
   }
 
+  /** Buat komentar baru + tulis log diskrit bagian KOMENTAR (dalam transaksi yang sudah berjalan). */
+  async createKomentarWithLogTx(
+    tx: Prisma.TransactionClient,
+    params: { detailSopId: string; userId: string; isi: string },
+  ): Promise<KomentarWithUser> {
+    const created = await tx.komentar.create({
+      data: {
+        detailSopId: params.detailSopId,
+        userId: params.userId,
+        isi: params.isi,
+        status: StatusKomentar.TERBUKA,
+      },
+      include: {
+        user: { select: { penggunaId: true, nama: true, email: true, peran: true } },
+      },
+    });
+    await appendOrCreateLogSession({
+      tx,
+      detailSopId: params.detailSopId,
+      userId: params.userId,
+      bagian: BagianSOP.KOMENTAR,
+      entityId: created.komentarId,
+      fields: ['create'],
+      discrete: true,
+    });
+    return created;
+  }
+
   /** Buat komentar baru + tulis log diskrit bagian KOMENTAR. */
   async createKomentarWithLog(params: {
     detailSopId: string;
     userId: string;
     isi: string;
   }): Promise<KomentarWithUser> {
-    return this.prisma.$transaction(async (tx) => {
-      const created = await tx.komentar.create({
-        data: {
-          detailSopId: params.detailSopId,
-          userId: params.userId,
-          isi: params.isi,
-          status: StatusKomentar.TERBUKA,
-        },
-        include: {
-          user: { select: { penggunaId: true, nama: true, email: true, peran: true } },
-        },
-      });
-      await appendOrCreateLogSession({
-        tx,
-        detailSopId: params.detailSopId,
-        userId: params.userId,
-        bagian: BagianSOP.KOMENTAR,
-        entityId: created.komentarId,
-        fields: ['create'],
-        discrete: true,
-      });
-      return created;
-    });
+    return this.prisma.$transaction(async (tx) =>
+      this.createKomentarWithLogTx(tx, params),
+    );
   }
 
   /** Tandai komentar sebagai SELESAI + tulis log diskrit. */

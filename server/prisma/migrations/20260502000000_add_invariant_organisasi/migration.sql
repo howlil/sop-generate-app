@@ -50,6 +50,9 @@ ALTER TABLE `riwayatopdpengguna` DROP PRIMARY KEY,
     ADD COLUMN `updatedAt` DATETIME(3) NOT NULL,
     ADD PRIMARY KEY (`penggunaId`, `opdId`);
 
+-- AddForeignKey (FK penggunaId dilepas di atas agar bisa ubah PK; pasang kembali sesuai schema Prisma)
+ALTER TABLE `riwayatopdpengguna` ADD CONSTRAINT `RiwayatOpdPengguna_penggunaId_fkey` FOREIGN KEY (`penggunaId`) REFERENCES `Pengguna`(`penggunaId`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- AlterTable
 ALTER TABLE `riwayattandatangan` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     ADD COLUMN `updatedAt` DATETIME(3) NOT NULL;

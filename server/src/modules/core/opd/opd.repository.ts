@@ -1,11 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import type { OPD, Prisma } from '../../../generated/prisma';
+import { StatusSOP, type OPD, type Prisma } from '../../../generated/prisma';
 
 export type OpdRingkasRow = {
   readonly opdId: string;
   readonly nama: string;
 };
+
+/** Hitungan SOP dalam pipeline evaluasi per OPD (DetailSOP dengan versi tertinggi per header). */
+export type OpdEvaluasiRingkasRepoRow = {
+  readonly opdId: string;
+  readonly nama: string;
+  readonly jumlahSop: number;
+  readonly jumlahSopBaru: number;
+};
+
+const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
+  StatusSOP.DIAJUKAN_EVALUASI,
+  StatusSOP.SEDANG_DIEVALUASI,
+  StatusSOP.REVISI_DARI_TIM_EVALUASI,
+  StatusSOP.SIAP_DIVERIFIKASI,
+] as const;
+
+const STATUS_PIPELINE_SET = new Set<string>(STATUS_PIPELINE_EVALUASI);
 
 @Injectable()
 export class OpdRepository {
@@ -29,6 +46,68 @@ export class OpdRepository {
       select: { opdId: true, nama: true },
       orderBy: { nama: 'asc' },
     });
+  }
+
+  /**
+   * Daftar OPD aktif (filter nama) yang punya minimal satu SOP dengan DetailSOP terbaru
+   * dalam status pipeline evaluasi.
+   */
+  async findEvaluasiRingkas(search?: string): Promise<OpdEvaluasiRingkasRepoRow[]> {
+    const trimmed = search?.trim();
+    const opdRows = await this.prisma.oPD.findMany({
+      where: {
+        deletedAt: null,
+        ...(trimmed ? { nama: { contains: trimmed } } : {}),
+      },
+      select: { opdId: true, nama: true },
+      orderBy: { nama: 'asc' },
+    });
+    if (opdRows.length === 0) {
+      return [];
+    }
+    const opdIdSet = new Set(opdRows.map((r) => r.opdId));
+    const sopRows = await this.prisma.sOP.findMany({
+      where: { opdId: { in: [...opdIdSet] } },
+      select: {
+        opdId: true,
+        detailSops: {
+          orderBy: { versi: 'desc' },
+          take: 1,
+          select: { status: true },
+        },
+      },
+    });
+    const totals = new Map<string, { jumlahSop: number; jumlahSopBaru: number }>();
+    for (const row of sopRows) {
+      const detail = row.detailSops[0];
+      if (detail === undefined) {
+        continue;
+      }
+      const statusStr = detail.status as string;
+      if (!STATUS_PIPELINE_SET.has(statusStr)) {
+        continue;
+      }
+      const cur = totals.get(row.opdId) ?? { jumlahSop: 0, jumlahSopBaru: 0 };
+      cur.jumlahSop += 1;
+      if (detail.status === StatusSOP.DIAJUKAN_EVALUASI) {
+        cur.jumlahSopBaru += 1;
+      }
+      totals.set(row.opdId, cur);
+    }
+    const result: OpdEvaluasiRingkasRepoRow[] = [];
+    for (const opd of opdRows) {
+      const t = totals.get(opd.opdId);
+      if (t === undefined || t.jumlahSop < 1) {
+        continue;
+      }
+      result.push({
+        opdId: opd.opdId,
+        nama: opd.nama,
+        jumlahSop: t.jumlahSop,
+        jumlahSopBaru: t.jumlahSopBaru,
+      });
+    }
+    return result;
   }
 
   async findRingkasAktifById(opdId: string): Promise<OpdRingkasRow | null> {

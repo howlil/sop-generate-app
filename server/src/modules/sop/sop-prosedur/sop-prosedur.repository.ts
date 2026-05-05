@@ -110,8 +110,7 @@ export class SopProsedurRepository {
 
   /**
    * Replace-all swimlane + langkah dalam satu transaksi. Operasi disusun agar
-   * aman terhadap FK self-relasi cabang dan dependensi diagram (PosisiNodeDiagram,
-   * SisiDiagram) yang menunjuk ke `LangkahSOP`.
+   * aman terhadap FK self-relasi cabang pada `LangkahSOP`.
    */
   async updateProsedurTransaction(params: {
     detailSopId: string;
@@ -162,7 +161,7 @@ export class SopProsedurRepository {
 
   /**
    * Strategi replace-all langkah:
-   *   1. Cari id langkah existing → hapus referensi diagram yang menunjuk ke id tsb.
+   *   1. Cari id langkah existing → putus self-FK cabang, lalu hapus langkah.
    *   2. Set `langkahSelanjutnyaYaId/TidakId = null` untuk hindari FK restrict
    *      saat delete (self-relasi default Prisma `Restrict`).
    *   3. `deleteMany` langkah existing.
@@ -184,38 +183,19 @@ export class SopProsedurRepository {
     ).map((r) => r.langkahSopId);
 
     if (existingIds.length > 0) {
-      // 1. Bersihkan referensi diagram ke langkah lama
-      await tx.titikSisiDiagram.deleteMany({
-        where: { sisiDiagram: { OR: [
-          { dariLangkahId: { in: existingIds } },
-          { keLangkahId: { in: existingIds } },
-        ] } },
-      });
-      await tx.sisiDiagram.deleteMany({
-        where: {
-          OR: [
-            { dariLangkahId: { in: existingIds } },
-            { keLangkahId: { in: existingIds } },
-          ],
-        },
-      });
-      await tx.posisiNodeDiagram.deleteMany({
-        where: { langkahSopId: { in: existingIds } },
-      });
-
-      // 2. Putuskan self-FK cabang agar deleteMany tidak ditolak Restrict
+      // 1. Putuskan self-FK cabang agar deleteMany tidak ditolak Restrict
       await tx.langkahSOP.updateMany({
         where: { detailSopId },
         data: { langkahSelanjutnyaYaId: null, langkahSelanjutnyaTidakId: null },
       });
 
-      // 3. Hapus langkah lama
+      // 2. Hapus langkah lama
       await tx.langkahSOP.deleteMany({ where: { detailSopId } });
     }
 
     if (langkah.length === 0) return;
 
-    // 4. Buat langkah baru tanpa relasi cabang dulu
+    // 3. Buat langkah baru tanpa relasi cabang dulu
     const tempToId = new Map<string, string>();
     for (const [i, item] of langkah.entries()) {
       const id = randomUUID();
@@ -244,7 +224,7 @@ export class SopProsedurRepository {
       });
     }
 
-    // 5. Pasang relasi cabang Ya/Tidak
+    // 4. Pasang relasi cabang Ya/Tidak
     for (const item of langkah) {
       const sourceId = tempToId.get(item.tempId);
       if (sourceId === undefined) continue;

@@ -19,7 +19,7 @@ export const DEFAULT_PAGE_SIZE = 10 as const;
 export const STALE_TIME = {
   SHORT: 2 * 60 * 1000, // Volatile data (detail SOP, drafts)
   MEDIUM: 5 * 60 * 1000, // Moderate changes (SOP lists, teams, OPD)
-  LONG: 10 * 60 * 1000, // Stable data (rekap, reference data)
+  LONG: 10 * 60 * 1000, // Data stabil (grafik tahunan, referensi)
 } as const;
 
 /** Konstanta string — sama dengan enum Prisma `PeranPengguna`. */
@@ -67,19 +67,16 @@ export const ROUTES = {
     DETAIL_EVALUASI: "/pj-evaluator/evaluasi/$id",
     TTE: "/pj-evaluator/tte",
   },
-  TIM_EVALUASI: {
-    EVALUASI: "/tim-evaluasi/evaluasi",
-    DETAIL_EVALUASI_OPD: "/tim-evaluasi/evaluasi/$id",
-  },
-  VALIDASI: {
-    TTD_BERHASIL: "/validasi/ttd-berhasil",
-    PENGESAHAN: "/validasi/pengesahan/$id",
+  /** Workspace peran EVALUATOR (bukan PJ dashboard). */
+  EVALUATOR: {
+    EVALUASI: "/evaluator/evaluasi",
+    DETAIL_EVALUASI_OPD: "/evaluator/evaluasi/$id",
   },
 } as const;
 
 export const EVALUASI_DISPLAY_STATUS_OPTIONS = [
   { value: "SESUAI", label: "Sesuai" },
-  { value: "TIDAK_SESUAI", label: "Tidak Sesuai" },
+  { value: "PERLU_PERBAIKAN", label: "Perlu Perbaikan" },
 ] as const;
 
 export const IA = {
@@ -139,6 +136,22 @@ export const STATUS_BADGE_CONFIG = {
     label: "Nonaktif",
     color: "text-gray-700",
     bgColor: "bg-gray-100",
+  },
+  /** Label workspace evaluator (bukan enum StatusSOP). */
+  "Diajukan Evaluasi": {
+    label: "Diajukan Evaluasi",
+    color: "text-blue-700",
+    bgColor: "bg-blue-100",
+  },
+  "Sedang Dievaluasi": {
+    label: "Sedang Dievaluasi",
+    color: "text-yellow-700",
+    bgColor: "bg-yellow-100",
+  },
+  "Selesai Evaluasi": {
+    label: "Selesai Evaluasi",
+    color: "text-green-700",
+    bgColor: "bg-green-100",
   },
   default: { label: "Unknown", color: "text-gray-700", bgColor: "bg-gray-100" },
 } as const satisfies Record<string, StatusBadgeConfig>;

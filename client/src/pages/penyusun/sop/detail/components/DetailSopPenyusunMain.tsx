@@ -57,21 +57,9 @@ export function DetailSOPPenyusunMain({
   diagramVersion,
   onDiagramVersionChange,
 }: DetailSOPPenyusunMainProps) {
-  const { metadata, prosedurRows, setProsedurRows, implementers } = useSopEditor()
+  const { metadata, prosedurRows, setProsedurRows, implementers, isReadOnly } = useSopEditor()
   const previewMetadata = useMemo(() => toPreviewMetadata(metadata), [metadata])
-  return (
-    <div className="flex-1 overflow-auto p-4">
-      <SOPPreviewTemplate
-        metadata={previewMetadata}
-        prosedurRows={prosedurRows}
-        implementers={implementers}
-        diagramState={{
-          pathLayoutSeed: diagramVersion,
-          activeTab,
-          onActiveTabChange,
-        }}
-        previewOptions={{
-          toolbar: (
+  const toolbar = isReadOnly ? null : (
             <div
               className="inline-flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-lg bg-white/55 p-0.5 ring-1 ring-gray-200/70"
               role="group"
@@ -110,15 +98,30 @@ export function DetailSOPPenyusunMain({
                 Layout
               </Button>
             </div>
-          ),
-          diagramAlternate: isEditingSteps ? (
+          )
+  const diagramAlternate =
+    !isReadOnly && isEditingSteps ? (
             <DetailSOPProsedurEditor
               prosedurRows={prosedurRows}
               setProsedurRows={setProsedurRows}
               implementers={implementers}
               onDone={() => setIsEditingSteps(false)}
             />
-          ) : undefined,
+          ) : undefined
+  return (
+    <div className="flex-1 overflow-auto p-4">
+      <SOPPreviewTemplate
+        metadata={previewMetadata}
+        prosedurRows={prosedurRows}
+        implementers={implementers}
+        diagramState={{
+          pathLayoutSeed: diagramVersion,
+          activeTab,
+          onActiveTabChange,
+        }}
+        previewOptions={{
+          toolbar,
+          diagramAlternate,
         }}
       />
     </div>

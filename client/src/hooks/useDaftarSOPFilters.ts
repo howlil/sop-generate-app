@@ -7,7 +7,6 @@ import { useState, useCallback, useMemo } from "react";
 export interface DaftarSOPFilters {
   searchQuery: string;
   statusFilter: string | null;
-  filterPeraturan: string | null;
   filterTanggalDari: string | null;
   filterTanggalSampai: string | null;
 }
@@ -16,7 +15,6 @@ export function useDaftarSopFilters() {
   const [filters, setFilters] = useState<DaftarSOPFilters>({
     searchQuery: "",
     statusFilter: null,
-    filterPeraturan: null,
     filterTanggalDari: null,
     filterTanggalSampai: null,
   });
@@ -31,10 +29,6 @@ export function useDaftarSopFilters() {
     setFilters((prev) => ({ ...prev, statusFilter: status }));
   }, []);
 
-  const setFilterPeraturan = useCallback((peraturan: string | null) => {
-    setFilters((prev) => ({ ...prev, filterPeraturan: peraturan }));
-  }, []);
-
   const setFilterTanggalDari = useCallback((tanggal: string | null) => {
     setFilters((prev) => ({ ...prev, filterTanggalDari: tanggal }));
   }, []);
@@ -47,7 +41,6 @@ export function useDaftarSopFilters() {
     setFilters({
       searchQuery: "",
       statusFilter: null,
-      filterPeraturan: null,
       filterTanggalDari: null,
       filterTanggalSampai: null,
     });
@@ -55,8 +48,7 @@ export function useDaftarSopFilters() {
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filters.statusFilter) count++;
-    if (filters.filterPeraturan) count++;
+    if (filters.statusFilter && filters.statusFilter !== "all") count++;
     if (filters.filterTanggalDari) count++;
     if (filters.filterTanggalSampai) count++;
     return count;
@@ -67,7 +59,6 @@ export function useDaftarSopFilters() {
     // Direct access aliases for pages that destructure flat
     searchQuery: filters.searchQuery,
     filterStatus: filters.statusFilter,
-    filterPeraturan: filters.filterPeraturan,
     filterTanggalDari: filters.filterTanggalDari,
     filterTanggalSampai: filters.filterTanggalSampai,
     isFilterOpen,
@@ -76,7 +67,6 @@ export function useDaftarSopFilters() {
     // Setters
     setSearchQuery,
     setStatusFilter,
-    setFilterPeraturan,
     setFilterTanggalDari,
     setFilterTanggalSampai,
     clearFilters,

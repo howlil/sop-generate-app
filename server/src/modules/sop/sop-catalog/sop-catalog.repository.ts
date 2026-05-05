@@ -73,9 +73,46 @@ export type SopDaftarDbRow = {
     | undefined;
 };
 
+/** Filter daftar SOP (DetailSOP terbaru): status dan/atau rentang tanggal `updatedAt` (YYYY-MM-DD, UTC). */
+export interface SopDaftarListFilters {
+  readonly status?: string;
+  readonly tanggalDari?: string;
+  readonly tanggalSampai?: string;
+}
+
 @Injectable()
 export class SopCatalogRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  private static isoDateUtc(d: Date): string {
+    return d.toISOString().slice(0, 10);
+  }
+
+  private applyDaftarFilters(rows: SopDaftarDbRow[], filters: SopDaftarListFilters): SopDaftarDbRow[] {
+    const hasStatus = filters.status !== undefined && filters.status.length > 0;
+    const hasDari = filters.tanggalDari !== undefined && filters.tanggalDari.length > 0;
+    const hasSampai = filters.tanggalSampai !== undefined && filters.tanggalSampai.length > 0;
+    if (!hasStatus && !hasDari && !hasSampai) {
+      return rows;
+    }
+    return rows.filter((r) => {
+      const d = r.detail;
+      if (d === undefined) {
+        return false;
+      }
+      if (hasStatus && d.status !== filters.status) {
+        return false;
+      }
+      const day = SopCatalogRepository.isoDateUtc(d.updatedAt);
+      if (hasDari && day < filters.tanggalDari!) {
+        return false;
+      }
+      if (hasSampai && day > filters.tanggalSampai!) {
+        return false;
+      }
+      return true;
+    });
+  }
 
   async findOpdIdByPenggunaId(penggunaId: string): Promise<string | null> {
     const row = await this.prisma.pengguna.findFirst({
@@ -151,7 +188,7 @@ export class SopCatalogRepository {
     };
   }
 
-  async findDaftarByOpdId(opdId: string): Promise<SopDaftarDbRow[]> {
+  async findDaftarByOpdId(opdId: string, filters: SopDaftarListFilters = {}): Promise<SopDaftarDbRow[]> {
     const rows = await this.prisma.sOP.findMany({
       where: { opdId },
       orderBy: { updatedAt: 'desc' },
@@ -178,7 +215,7 @@ export class SopCatalogRepository {
         },
       },
     });
-    return rows.map((r) => {
+    const mappedByOpd = rows.map((r) => {
       const d = r.detailSops[0];
       if (d === undefined) {
         return { sopId: r.sopId, opdId: r.opdId, judul: r.judul, detail: undefined };
@@ -201,6 +238,7 @@ export class SopCatalogRepository {
         },
       };
     });
+    return this.applyDaftarFilters(mappedByOpd, filters);
   }
 
   /** Daftar semua SOP (untuk peran evaluasi yang membutuhkan agregasi lintas OPD). */
@@ -317,6 +355,53 @@ export class SopCatalogRepository {
   }
 
   /**
+   * Status + OPD untuk DetailSOP terbaru; `detailOrSopId` boleh ID DetailSOP atau ID header SOP.
+   */
+  async findLatestDetailStatusContext(detailOrSopId: string): Promise<{
+    detailSopId: string;
+    sopId: string;
+    status: StatusSOP;
+    sopOpdId: string;
+  } | null> {
+    const resolved = await this.findDetailIdByDetailOrSopId(detailOrSopId);
+    if (resolved === null) {
+      return null;
+    }
+    const row = await this.prisma.detailSOP.findUnique({
+      where: { detailSopId: resolved.detailSopId },
+      select: {
+        detailSopId: true,
+        sopId: true,
+        status: true,
+        sop: { select: { opdId: true } },
+      },
+    });
+    if (row === null) {
+      return null;
+    }
+    return {
+      detailSopId: row.detailSopId,
+      sopId: row.sopId,
+      status: row.status,
+      sopOpdId: row.sop.opdId,
+    };
+  }
+
+  async updateDetailSopStatus(params: {
+    detailSopId: string;
+    status: StatusSOP;
+    userId: string;
+  }): Promise<void> {
+    await this.prisma.detailSOP.update({
+      where: { detailSopId: params.detailSopId },
+      data: {
+        status: params.status,
+        terakhirDieditOlehId: params.userId,
+      },
+    });
+  }
+
+  /**
    * Partial update header SOP dalam satu transaksi (judul header, kolom DetailSOP,
    * relasi DasarHukum, SopTerkait, dan kelompok LampiranTeks per jenis).
    * Replace-all untuk array; field skalar hanya ditulis bila dikirim.
@@ -426,7 +511,7 @@ export class SopCatalogRepository {
     });
   }
 
-  async findDaftarAll(): Promise<SopDaftarDbRow[]> {
+  async findDaftarAll(filters: SopDaftarListFilters = {}): Promise<SopDaftarDbRow[]> {
     const rows = await this.prisma.sOP.findMany({
       orderBy: { updatedAt: 'desc' },
       select: {
@@ -452,7 +537,7 @@ export class SopCatalogRepository {
         },
       },
     });
-    return rows.map((r) => {
+    const mapped = rows.map((r) => {
       const d = r.detailSops[0];
       if (d === undefined) {
         return { sopId: r.sopId, opdId: r.opdId, judul: r.judul, detail: undefined };
@@ -475,5 +560,6 @@ export class SopCatalogRepository {
         },
       };
     });
+    return this.applyDaftarFilters(mapped, filters);
   }
 }

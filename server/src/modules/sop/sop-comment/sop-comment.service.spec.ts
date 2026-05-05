@@ -2,7 +2,6 @@ import { ConflictException, ForbiddenException, NotFoundException } from '@nestj
 import { Test, TestingModule } from '@nestjs/testing';
 import type { JwtAccessPayload } from '../../../common';
 import { PeranPengguna, StatusKomentar } from '../../../generated/prisma';
-import type { CreateKomentarDto } from './dto/create-komentar.dto';
 import type { KomentarWithUser } from './sop-comment.repository';
 import { SopCommentRepository } from './sop-comment.repository';
 import { SopCommentService } from './sop-comment.service';
@@ -15,7 +14,6 @@ describe('SopCommentService', () => {
       | 'findDetailIdByDetailOrSopId'
       | 'findKomentarById'
       | 'listByDetail'
-      | 'createKomentarWithLog'
       | 'resolveKomentarWithLog'
       | 'deleteKomentarWithLog'
       | 'findOpdIdByPenggunaId'
@@ -24,7 +22,6 @@ describe('SopCommentService', () => {
     findDetailIdByDetailOrSopId: jest.fn(),
     findKomentarById: jest.fn(),
     listByDetail: jest.fn(),
-    createKomentarWithLog: jest.fn(),
     resolveKomentarWithLog: jest.fn(),
     deleteKomentarWithLog: jest.fn(),
     findOpdIdByPenggunaId: jest.fn(),
@@ -121,54 +118,6 @@ describe('SopCommentService', () => {
       repoMock.listByDetail.mockResolvedValueOnce([]);
       await service.listForDetailSop(makeUser(PeranPengguna.EVALUATOR), 'det-1');
       expect(repoMock.findOpdIdByPenggunaId).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('createKomentar', () => {
-    const dto: CreateKomentarDto = { isi: 'pertanyaan dari evaluator' };
-
-    it('should_throw_forbidden_when_role_not_evaluator', async () => {
-      await expect(
-        service.createKomentar(makeUser(PeranPengguna.PENYUSUN), 'det-1', dto),
-      ).rejects.toBeInstanceOf(ForbiddenException);
-      expect(repoMock.createKomentarWithLog).not.toHaveBeenCalled();
-    });
-
-    it('should_throw_not_found_when_id_unresolvable', async () => {
-      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce(null);
-      await expect(
-        service.createKomentar(makeUser(PeranPengguna.EVALUATOR), 'unknown', dto),
-      ).rejects.toBeInstanceOf(NotFoundException);
-    });
-
-    it('should_create_komentar_when_evaluator', async () => {
-      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
-        detailSopId: 'det-1',
-        sopOpdId: 'opd-1',
-      });
-      repoMock.createKomentarWithLog.mockResolvedValueOnce(fakeKomentar());
-      const result = await service.createKomentar(
-        makeUser(PeranPengguna.EVALUATOR, 'evaluator-1'),
-        'det-1',
-        dto,
-      );
-      expect(repoMock.createKomentarWithLog).toHaveBeenCalledWith({
-        detailSopId: 'det-1',
-        userId: 'evaluator-1',
-        isi: 'pertanyaan dari evaluator',
-      });
-      expect(result.id).toBe('kom-1');
-    });
-
-    it('should_throw_conflict_when_isi_only_whitespace', async () => {
-      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
-        detailSopId: 'det-1',
-        sopOpdId: 'opd-1',
-      });
-      await expect(
-        service.createKomentar(makeUser(PeranPengguna.EVALUATOR), 'det-1', { isi: '   ' }),
-      ).rejects.toBeInstanceOf(ConflictException);
-      expect(repoMock.createKomentarWithLog).not.toHaveBeenCalled();
     });
   });
 

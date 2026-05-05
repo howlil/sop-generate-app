@@ -1,115 +1,113 @@
 /**
- * Evaluasi API service
- * Matches server: EvaluasiController
+ * Evaluasi API — selaras modul Nest `evaluation`:
+ * - GET/POST `/evaluasi` → `PengajuanEvaluasiController`
+ * - PATCH `.../nilai/:detailSopId` | `.../selesai` → `EvaluasiNilaiController`
+ * - GET `/evaluasi/workspace/opd/:opdId` → `EvaluasiWorkspaceController`
+ * - GET `/evaluasi/laporan/grafik-tahunan` → `EvaluasiGrafikController`
  */
 
-import { apiClient } from '@/lib/api/api-client'
+import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   NilaiEvaluasi,
   PengajuanEvaluasi,
 } from '@/types/dto/evaluasi.dto'
 import type {
   CreatePengajuanEvaluasiDto,
-  EvaluasiBatchSubmitError,
+  EvaluasiGrafikTahunanData,
+  EvaluasiGrafikTahunanQueryParams,
   EvaluasiListQueryParams,
+  EvaluasiWorkspaceOpdResponse,
+  EvaluasiWorkspacePengajuanAktif,
+  EvaluasiWorkspaceQueryParams,
   IsiNilaiEvaluasiDto,
-  RekapEvaluasiApiResponse,
+  IsiNilaiEvaluasiMutationDto,
   SelesaiEvaluasiDto,
+  SelesaiEvaluasiMutationDto,
   StatusHasilEvaluasi,
 } from '@/types/dto/evaluasi.dto'
+import { STATUS_HASIL_EVALUASI } from '@/types/dto/evaluasi.dto'
+import { useMutationWithToast } from '@/hooks/useMutationWithToast'
+import { queryKeys } from '@/config/query-keys'
+import { STALE_TIME } from '@/utils/constants'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
+import { useToast, showErrorMessages } from '@/hooks/useToast'
+
+async function unwrapEvaluasiWorkspaceOpd(
+  promise: Promise<ApiSuccessResponse<EvaluasiWorkspaceOpdResponse>>,
+): Promise<EvaluasiWorkspaceOpdResponse> {
+  const envelope = await promise
+  return envelope.data
+}
+
+async function unwrapEvaluasiEnvelope<T>(
+  promise: Promise<ApiSuccessResponse<T>>,
+): Promise<T> {
+  const envelope = await promise
+  return envelope.data
+}
 
 export const evaluasiApi = {
   findAll: (params?: EvaluasiListQueryParams) => {
-    const query = params ? '?' + new URLSearchParams(params).toString() : ''
-    return apiClient.get<PengajuanEvaluasi[]>(`/evaluasi${query}`)
+    const query = params
+      ? '?' + new URLSearchParams(params as Record<string, string>).toString()
+      : ''
+    return unwrapEvaluasiEnvelope(
+      apiClient.get<ApiSuccessResponse<PengajuanEvaluasi[]>>(`/evaluasi${query}`),
+    )
   },
 
   findById: (id: string) =>
-    apiClient.get<PengajuanEvaluasi>(`/evaluasi/${id}`),
+    unwrapEvaluasiEnvelope(apiClient.get<ApiSuccessResponse<PengajuanEvaluasi>>(`/evaluasi/${id}`)),
 
   create: (payload: CreatePengajuanEvaluasiDto) =>
-    apiClient.post<PengajuanEvaluasi>('/evaluasi', payload),
+    unwrapEvaluasiEnvelope(
+      apiClient.post<ApiSuccessResponse<PengajuanEvaluasi>>('/evaluasi', payload),
+    ),
 
   isiNilai: (
     pengajuanEvaluasiId: string,
     sopDetailId: string,
     payload: IsiNilaiEvaluasiDto,
   ) =>
-    apiClient.patch<NilaiEvaluasi>(
-      `/evaluasi/${pengajuanEvaluasiId}/nilai/${sopDetailId}`,
-      payload,
+    unwrapEvaluasiEnvelope(
+      apiClient.patch<ApiSuccessResponse<NilaiEvaluasi>>(
+        `/evaluasi/${pengajuanEvaluasiId}/nilai/${sopDetailId}`,
+        payload,
+      ),
     ),
 
   selesai: (
     pengajuanEvaluasiId: string,
     payload: SelesaiEvaluasiDto,
   ) =>
-    apiClient.patch<PengajuanEvaluasi>(
-      `/evaluasi/${pengajuanEvaluasiId}/selesai`,
-      payload,
+    unwrapEvaluasiEnvelope(
+      apiClient.patch<ApiSuccessResponse<PengajuanEvaluasi>>(
+        `/evaluasi/${pengajuanEvaluasiId}/selesai`,
+        payload,
+      ),
     ),
 
   update: (id: string, payload: Partial<PengajuanEvaluasi>) =>
     apiClient.patch<PengajuanEvaluasi>(`/evaluasi/${id}`, payload),
 
-  rekap: async (tahun?: number) => {
-    const query = tahun ? `?tahun=${tahun}` : ''
-    const response = await apiClient.get<RekapEvaluasiApiResponse>(`/evaluasi/rekap${query}`)
-
-    // Transform server response to RekapEvaluasi[] format
-    if (!response || !response.opd) return []
-
-    return response.opd.map(opd => {
-      // Calculate completion rate
-      const completionRate = opd.total > 0 ? Math.round((opd.selesai / opd.total) * 100) : 0
-
-      // Transform pengajuanDetails to detail format
-      const detail = opd.pengajuanDetails.map(p => ({
-        pengajuanEvaluasiId: p.pengajuanEvaluasiId,
-        jenis: p.jenis,
-        status: p.status,
-        nilaiOPD: p.nilaiOPD,
-        tanggalEvaluasi: p.tanggalEvaluasi ?? '',
-        detailSopCount: p.detailSopCount,
-        hasilEvaluasi: p.hasilEvaluasi,
-        // Computed fields for compatibility
-        opdId: opd.opdId,
-        opdNama: opd.opdNama,
-        totalPengajuan: opd.total,
-        nilaiRataRata: opd.nilaiRataRata ?? undefined,
-      }))
-
-      return {
-        opdId: opd.opdId,
-        opdNama: opd.opdNama,
-        tahun: response.tahun,
-        totalPengajuan: opd.total,
-        totalTerjadwal: opd.pengajuanDetails.filter(p => p.jenis === 'TERJADWAL').length,
-        totalMandiri: opd.pengajuanDetails.filter(p => p.jenis === 'MANDIRI').length,
-        nilaiRataRata: opd.nilaiRataRata ?? undefined,
-        completionRate,
-        detail,
-      }
-    })
+  /** GET `/evaluasi/laporan/grafik-tahunan` — dasbor PJ evaluator (bungkus API). */
+  grafikTahunan: async (params?: EvaluasiGrafikTahunanQueryParams) => {
+    const envelope = await apiClient.get<ApiSuccessResponse<EvaluasiGrafikTahunanData>>(
+      `/evaluasi/laporan/grafik-tahunan${buildQueryString(params as Record<string, unknown> | undefined)}`,
+    )
+    return envelope.data
   },
+
+  workspaceOpd: (opdId: string, params?: EvaluasiWorkspaceQueryParams) =>
+    unwrapEvaluasiWorkspaceOpd(
+      apiClient.get<ApiSuccessResponse<EvaluasiWorkspaceOpdResponse>>(
+        `/evaluasi/workspace/opd/${opdId}${buildQueryString(params as Record<string, unknown> | undefined)}`,
+      ),
+    ),
 }
-
-/**
- * useEvaluasi hook - TanStack Query
- * Matches server: EvaluasiService endpoints
- */
-
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/config/query-keys";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { STALE_TIME } from "@/utils/constants";
-import type {
-  CreatePengajuanEvaluasiDto,
-  EvaluasiListQueryParams,
-  IsiNilaiEvaluasiMutationDto,
-  SelesaiEvaluasiMutationDto,
-} from "@/types/dto/evaluasi.dto";
-import { STATUS_HASIL_EVALUASI } from "@/types/dto/evaluasi.dto";
 
 // ==================== Evaluasi Domain Logic ====================
 export interface StatusHasilEvaluasiForm {
@@ -130,16 +128,98 @@ export function isFormEvaluasiSopComplete(
   return !!form.hasil && (form.hasil as string) !== "";
 }
 
+/** Satu baris ringkasan untuk dialog ajukan ke PJ (merge draft SOP terpilih). */
+export interface AjukanEvaluasiSnapshotRow {
+  readonly detailSopId: string;
+  readonly judul: string;
+  readonly nomorSOP: string;
+  readonly hasilLabel: string;
+}
+
+/** Alasan tombol ajukan dinonaktifkan; `null` berarti syarat klien terpenuhi. */
+export function getAjukanEvaluasiBlockingReason(
+  pengajuan: EvaluasiWorkspacePengajuanAktif | null | undefined,
+  ratingOPD: number | null,
+  selectedDetailId: string | null | undefined,
+  draftHasil: StatusHasilEvaluasi | null | undefined,
+): string | null {
+  if (!pengajuan) {
+    return "Tidak ada pengajuan evaluasi aktif untuk OPD ini.";
+  }
+  if (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5) {
+    return "Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.";
+  }
+  if (pengajuan.nilaiPerDetail.length === 0) {
+    return "Pengajuan belum memiliki daftar dokumen untuk dinilai.";
+  }
+  for (const row of pengajuan.nilaiPerDetail) {
+    const effectiveHasil =
+      selectedDetailId === row.detailSopId &&
+      draftHasil !== null &&
+      draftHasil !== undefined
+        ? draftHasil
+        : row.hasil;
+    if (effectiveHasil !== STATUS_HASIL_EVALUASI.SESUAI) {
+      return "Semua SOP harus bernilai Sesuai (simpan per dokumen, tunggu konfirmasi simpan) sebelum mengajukan hasil ke PJ Evaluator.";
+    }
+  }
+  return null;
+}
+
+export function buildAjukanEvaluasiSnapshotRows(
+  pengajuan: EvaluasiWorkspacePengajuanAktif | null | undefined,
+  judulByDetailId: Map<string, { judul: string; nomorSOP: string }>,
+  selectedDetailId: string | null | undefined,
+  draftHasil: StatusHasilEvaluasi | null | undefined,
+): AjukanEvaluasiSnapshotRow[] {
+  if (!pengajuan) {
+    return [];
+  }
+  return pengajuan.nilaiPerDetail.map((row) => {
+    const meta = judulByDetailId.get(row.detailSopId);
+    const effectiveHasil =
+      selectedDetailId === row.detailSopId &&
+      draftHasil !== null &&
+      draftHasil !== undefined
+        ? draftHasil
+        : row.hasil;
+    let hasilLabel = "Belum dinilai";
+    if (effectiveHasil === STATUS_HASIL_EVALUASI.SESUAI) {
+      hasilLabel = "Sesuai";
+    } else if (effectiveHasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN) {
+      hasilLabel = "Perlu Perbaikan";
+    }
+    return {
+      detailSopId: row.detailSopId,
+      judul: meta?.judul ?? row.detailSopId.slice(0, 8) + "…",
+      nomorSOP: meta?.nomorSOP ?? "—",
+      hasilLabel,
+    };
+  });
+}
+
 // ==================== Evaluasi Hooks ====================
-export function useEvaluasi(params?: EvaluasiListQueryParams) {
+export function useEvaluasi(params?: EvaluasiListQueryParams & { enabled?: boolean }) {
+  const enabled = params?.enabled ?? true;
+  const listParams: EvaluasiListQueryParams | undefined =
+    params === undefined
+      ? undefined
+      : (Object.fromEntries(
+          Object.entries({
+            opdId: params.opdId,
+            status: params.status,
+            jenis: params.jenis,
+          }).filter(([, v]) => v !== undefined),
+        ) as EvaluasiListQueryParams);
   const {
     data: list = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: queryKeys.evaluasiList(params),
-    queryFn: () => evaluasiApi.findAll(params),
+    queryKey: queryKeys.evaluasiList(listParams),
+    queryFn: () => evaluasiApi.findAll(listParams),
     staleTime: STALE_TIME.MEDIUM,
+    enabled,
   });
 
   const createMutation = useMutationWithToast({
@@ -159,6 +239,28 @@ export function useEvaluasi(params?: EvaluasiListQueryParams) {
   };
 }
 
+/** Workspace evaluasi per OPD — satu GET agregat untuk halaman evaluator. */
+export function useEvaluasiWorkspaceOpd(
+  opdId: string,
+  params?: EvaluasiWorkspaceQueryParams & { enabled?: boolean },
+) {
+  const enabled = params?.enabled ?? true;
+  const queryParams: EvaluasiWorkspaceQueryParams | undefined =
+    params === undefined
+      ? undefined
+      : {
+          detailSopId: params.detailSopId,
+          expand: params.expand,
+          riwayatLimit: params.riwayatLimit,
+        };
+  return useQuery({
+    queryKey: queryKeys.evaluasiWorkspaceOpd(opdId, queryParams),
+    queryFn: () => evaluasiApi.workspaceOpd(opdId, queryParams),
+    enabled: Boolean(opdId) && enabled,
+    staleTime: STALE_TIME.SHORT,
+  });
+}
+
 export function useEvaluasiDetail(id: string) {
   return useQuery({
     queryKey: queryKeys.evaluasiById(id),
@@ -176,7 +278,7 @@ export function useIsiNilaiEvaluasi() {
       payload,
     }: IsiNilaiEvaluasiMutationDto) =>
       evaluasiApi.isiNilai(pengajuanEvaluasiId, sopDetailId, payload),
-    invalidateKeys: [queryKeys.evaluasi],
+    invalidateKeys: [queryKeys.evaluasi, queryKeys.evaluasiWorkspaceOpdAll],
     successMessage: "Hasil evaluasi berhasil disimpan",
     errorMessagePrefix: "Gagal menyimpan hasil evaluasi",
   });
@@ -186,16 +288,20 @@ export function useSelesaiEvaluasi() {
   return useMutationWithToast({
     mutationFn: ({ pengajuanEvaluasiId, payload }: SelesaiEvaluasiMutationDto) =>
       evaluasiApi.selesai(pengajuanEvaluasiId, payload),
-    invalidateKeys: [queryKeys.evaluasi],
+    invalidateKeys: [
+      queryKeys.evaluasi,
+      queryKeys.evaluasiWorkspaceOpdAll,
+      queryKeys.evaluasiGrafikTahunan(undefined),
+    ],
     successMessage: "Evaluasi berhasil diselesaikan",
     errorMessagePrefix: "Gagal menyelesaikan evaluasi",
   });
 }
 
-export function useRekapEvaluasi(tahun?: number) {
+export function useEvaluasiGrafikTahunan(params?: EvaluasiGrafikTahunanQueryParams) {
   return useQuery({
-    queryKey: queryKeys.evaluasiRekap(tahun),
-    queryFn: () => evaluasiApi.rekap(tahun),
+    queryKey: queryKeys.evaluasiGrafikTahunan(params),
+    queryFn: () => evaluasiApi.grafikTahunan(params),
     staleTime: 10 * 60 * 1000,
   });
 }
@@ -232,12 +338,6 @@ export function usePengajuanEvaluasiDetail(pengajuanId?: string) {
  * 5. Handles optimistic locking with version tracking
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-
-import { queryKeys } from "@/config/query-keys";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import type { StatusHasilEvaluasi } from "@/types/dto/evaluasi.dto";
-
 const AUTO_SAVE_DELAY_MS = 1500;
 
 export interface UseEvaluasiDraftReturn {
@@ -254,14 +354,14 @@ export interface UseEvaluasiDraftReturn {
 export function useEvaluasiDraft(
   opdId?: string,
   sopId?: string,
+  workspacePengajuanAktif?: EvaluasiWorkspacePengajuanAktif | null,
 ): UseEvaluasiDraftReturn {
-  // Fetch active pengajuan evaluasi
   const {
     pengajuanId,
     pengajuan,
     isLoading: isLoadingPengajuan,
     getCurrentVersion,
-  } = usePengajuanEvaluasiAktif(opdId);
+  } = usePengajuanEvaluasiAktif(opdId, workspacePengajuanAktif);
 
   // Map sopId (header) to sopDetailId from pengajuan
   const sopDetailId = useMemo(() => {
@@ -292,6 +392,11 @@ export function useEvaluasiDraft(
   const [komentarEvaluasi, setKomentarEvaluasiState] = useState<string>(
     existingNilai?.catatan ?? "",
   );
+
+  useEffect(() => {
+    setStatusEvaluasiState(existingNilai?.hasil ?? null);
+    setKomentarEvaluasiState(existingNilai?.catatan ?? "");
+  }, [existingNilai?.hasil, existingNilai?.catatan, sopDetailId]);
 
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -325,7 +430,7 @@ export function useEvaluasiDraft(
         version,
       });
     },
-    invalidateKeys: [queryKeys.evaluasi],
+    invalidateKeys: [queryKeys.evaluasi, queryKeys.evaluasiWorkspaceOpdAll],
     successMessage: "Draft evaluasi berhasil disimpan",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menyimpan draft evaluasi",
@@ -338,7 +443,9 @@ export function useEvaluasiDraft(
 
   /** Trigger auto-save with debounce */
   const triggerAutoSave = useCallback(() => {
-    if (!pengajuanId || !sopDetailId || isLoadingPengajuan) return;
+    if (!pengajuanId || !sopDetailId || isLoadingPengajuan) {
+      return;
+    }
     if (statusEvaluasi == null) return; // Don't save if no status yet
 
     if (autoSaveTimerRef.current) {
@@ -419,22 +526,8 @@ export function useEvaluasiDraft(
 }
 
 /**
- * useEvaluasiSubmit Hook
- * Manages batch SOP evaluation submission with check-all state.
- * Uses evaluasiApi.isiNilai() + evaluasiApi.selesai() for real API calls.
+ * useEvaluasiSubmit — menyelesaikan pengajuan (PATCH selesai) setelah semua SOP SESUAI di server.
  */
-
-import { useState, useCallback, useMemo } from "react";
-import { useToast, showErrorMessages } from "@/hooks/useToast";
-import type { StatusHasilEvaluasi } from "@/types/dto/evaluasi.dto";
-
-export interface EvaluasiSubmitItem {
-  id: string;
-  judul: string;
-  nomorSOP: string;
-  hasil: StatusHasilEvaluasi;
-  komentarEvaluasi: string;
-}
 
 interface LastEvaluatedEntry {
   date: string;
@@ -442,140 +535,95 @@ interface LastEvaluatedEntry {
 }
 
 interface UseEvaluasiSubmitConfig {
-  sedangDievaluasiList: EvaluasiSubmitItem[];
-  namaEvaluator: string;
+  pengajuanAktifId: string | undefined;
   ratingOPD: number | null;
-  opdId?: string;
-  setLastEvaluatedBy: React.Dispatch<React.SetStateAction<Record<string, LastEvaluatedEntry>>>;
+  detailIdsInPengajuan: readonly string[];
+  canSubmit: boolean;
+  blockingMessage: string | null;
+  namaEvaluator: string;
+  setLastEvaluatedBy: Dispatch<
+    SetStateAction<Record<string, LastEvaluatedEntry>>
+  >;
   onSuccess?: () => void;
 }
 
 export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
   const {
-    sedangDievaluasiList,
-    namaEvaluator,
+    pengajuanAktifId,
     ratingOPD,
+    detailIdsInPengajuan,
+    canSubmit,
+    blockingMessage,
+    namaEvaluator,
     setLastEvaluatedBy,
     onSuccess,
   } = config;
   const { showToast } = useToast();
-  const [submitSelectedIds, setSubmitSelectedIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [terjadwalSubmitError, setTerjadwalSubmitError] = useState<
     string | null
   >(null);
 
-  const isSubmitCheckAll = useMemo(
-    () =>
-      sedangDievaluasiList.length > 0 &&
-      submitSelectedIds.size === sedangDievaluasiList.length,
-    [sedangDievaluasiList, submitSelectedIds],
-  );
-
-  const isSubmitCheckAllIndeterminate = useMemo(
-    () =>
-      submitSelectedIds.size > 0 &&
-      submitSelectedIds.size < sedangDievaluasiList.length,
-    [sedangDievaluasiList, submitSelectedIds],
-  );
-
-  const toggleSubmitSelected = useCallback((id: string) => {
-    setSubmitSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const setSubmitCheckAll = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        setSubmitSelectedIds(new Set(sedangDievaluasiList.map((i) => i.id)));
-      } else {
-        setSubmitSelectedIds(new Set());
-      }
-    },
-    [sedangDievaluasiList],
-  );
-
   const clearTerjadwalSubmitError = useCallback(() => {
     setTerjadwalSubmitError(null);
   }, []);
 
-  const handleSubmitAll = useCallback(
-    async (pengajuanId?: string) => {
-      if (submitSelectedIds.size === 0) return;
-
-      const selected = sedangDievaluasiList.filter((i) =>
-        submitSelectedIds.has(i.id),
+  const handleSubmitAll = useCallback(async () => {
+    if (!pengajuanAktifId) {
+      setTerjadwalSubmitError("Pengajuan evaluasi tidak tersedia.");
+      return;
+    }
+    if (!canSubmit) {
+      setTerjadwalSubmitError(
+        blockingMessage ?? "Syarat pengajuan belum terpenuhi.",
       );
-      if (selected.length === 0) return;
-
-      setIsSubmitting(true);
-      setTerjadwalSubmitError(null);
-
-      try {
-        if (pengajuanId) {
-          // Submit each SOP evaluation via API
-          for (const item of selected) {
-            await evaluasiApi.isiNilai(pengajuanId, item.id, {
-              hasil: item.hasil,
-              catatan: item.komentarEvaluasi || undefined,
-              version: 0,
-            });
-          }
-
-          // If ratingOPD is set, complete the evaluation
-          if (ratingOPD != null) {
-            await evaluasiApi.selesai(pengajuanId, {
-              nilaiOPD: ratingOPD,
-            });
-          }
+      return;
+    }
+    if (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5) {
+      setTerjadwalSubmitError("Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.");
+      return;
+    }
+    setIsSubmitting(true);
+    setTerjadwalSubmitError(null);
+    try {
+      await evaluasiApi.selesai(pengajuanAktifId, { nilaiOPD: ratingOPD });
+      const now = new Date().toISOString();
+      setLastEvaluatedBy((prev: Record<string, LastEvaluatedEntry>) => {
+        const next = { ...prev };
+        for (const id of detailIdsInPengajuan) {
+          next[id] = { date: now, evaluatorName: namaEvaluator };
         }
-
-        // Update local state to mark as evaluated
-        const now = new Date().toISOString();
-        setLastEvaluatedBy((prev: Record<string, LastEvaluatedEntry>) => {
-          const next = { ...prev };
-          for (const item of selected) {
-            next[item.id] = { date: now, evaluatorName: namaEvaluator };
-          }
-          return next;
-        });
-
-        showToast(`${selected.length} SOP berhasil dievaluasi`, "success");
-        onSuccess?.();
-      } catch (error) {
-        const err = error as Error;
-        const message = err.message || "Gagal mengirim evaluasi";
-        setTerjadwalSubmitError(message);
-        showErrorMessages(error, message);
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [
-      submitSelectedIds,
-      sedangDievaluasiList,
-      namaEvaluator,
-      ratingOPD,
-      setLastEvaluatedBy,
-      onSuccess,
-      showToast,
-    ],
-  );
+        return next;
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.evaluasiWorkspaceOpdAll,
+      });
+      showToast("Pengajuan berhasil diajukan ke PJ Evaluator", "success");
+      onSuccess?.();
+    } catch (error) {
+      const err = error as Error;
+      const message = err.message || "Gagal mengajukan hasil evaluasi";
+      setTerjadwalSubmitError(message);
+      showErrorMessages(error, message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+    pengajuanAktifId,
+    ratingOPD,
+    detailIdsInPengajuan,
+    canSubmit,
+    blockingMessage,
+    namaEvaluator,
+    setLastEvaluatedBy,
+    queryClient,
+    showToast,
+    onSuccess,
+  ]);
 
   return {
-    submitSelectedIds,
-    setSubmitSelectedIds,
     isSubmitting,
-    isSubmitCheckAll,
-    isSubmitCheckAllIndeterminate,
-    toggleSubmitSelected,
-    setSubmitCheckAll,
     handleSubmitAll,
     terjadwalSubmitError,
     clearTerjadwalSubmitError,
@@ -586,7 +634,6 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
  * useEvaluasiSopByOpd hook - Fetch SOPs for evaluation by OPD
  */
 
-import { useMemo } from "react";
 import { useDetailSopList } from "@/api/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import type { SopDetail } from "@/types/dto/sop.dto";
@@ -691,11 +738,11 @@ export function useRiwayatEvaluasiOpd(opdId: string): {
     if (!pengajuanList) return [];
     return pengajuanList
       .map((p) => ({
-        id: p.id,
         tanggal: p.tanggalDiselesaikan ?? p.updatedAt,
         evaluator: p.diselesaikanOleh?.nama ?? "Unknown",
         hasil: "SESUAI" as const,
         catatan: p.catatan ?? "",
+        nilaiOPD: p.nilaiOPD,
       }))
       .sort((a, b) => b.tanggal.localeCompare(a.tanggal));
   }, [pengajuanList]);
@@ -707,9 +754,6 @@ export function useRiwayatEvaluasiOpd(opdId: string): {
  * usePengajuanEvaluasiAktif Hook
  * Finds the active evaluation submission (SEDANG_DIEVALUASI) for an OPD
  */
-
-import { useMemo } from "react";
-import type { NilaiEvaluasi } from "@/types/dto/evaluasi.dto";
 
 export interface UsePengajuanEvaluasiAktifReturn {
   /** Pengajuan ID (null if no active pengajuan) */
@@ -729,33 +773,74 @@ export interface UsePengajuanEvaluasiAktifReturn {
 }
 
 /**
+ * Pilih pengajuan yang masih bisa dinilai evaluator (selaras workspace + PATCH nilai).
+ */
+function pickPengajuanAktifUntukEvaluator(
+  list: PengajuanEvaluasi[],
+): PengajuanEvaluasi | null {
+  const aktif = list.filter(
+    (p) =>
+      p.status === "SEDANG_DIEVALUASI" || p.status === "MENUNGGU_EVALUASI",
+  );
+  if (aktif.length === 0) {
+    return null;
+  }
+  return (
+    [...aktif].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] ?? null
+  );
+}
+
+/**
  * Hook to find active evaluation submission for an OPD
  * @param opdId - OPD ID to find active pengajuan for
  */
 export function usePengajuanEvaluasiAktif(
   opdId?: string,
+  workspacePengajuanAktif?: EvaluasiWorkspacePengajuanAktif | null,
 ): UsePengajuanEvaluasiAktifReturn {
+  /** Hanya pakai bundel workspace bila server mengirim objek pengajuan; `null` = muat ulang via GET /evaluasi. */
+  const fromWorkspace =
+    workspacePengajuanAktif !== undefined && workspacePengajuanAktif !== null;
   const {
     list: pengajuanList,
     isLoading,
     error,
   } = useEvaluasi({
     opdId,
-    status: "SEDANG_DIEVALUASI",
+    enabled: Boolean(opdId) && !fromWorkspace,
   });
 
-  // Find the first active pengajuan
   const activePengajuan = useMemo(() => {
-    if (!pengajuanList || pengajuanList.length === 0) return null;
-    return pengajuanList[0] ?? null;
-  }, [pengajuanList]);
+    if (fromWorkspace) {
+      const p = workspacePengajuanAktif!;
+      return {
+        id: p.id,
+        status: p.status,
+        nilaiEvaluasi: p.nilaiPerDetail.map(
+          (n): NilaiEvaluasi => ({
+            id: `ws-${n.detailSopId}`,
+            pengajuanEvaluasiId: p.id,
+            sopDetailId: n.detailSopId,
+            hasil: n.hasil ?? undefined,
+            catatan: n.catatan ?? undefined,
+            version: n.version,
+            createdAt: "",
+            updatedAt: "",
+          }),
+        ),
+      };
+    }
+    if (!pengajuanList || pengajuanList.length === 0) {
+      return null;
+    }
+    return pickPengajuanAktifUntukEvaluator(pengajuanList);
+  }, [fromWorkspace, workspacePengajuanAktif, pengajuanList]);
 
-  // Helper to get current version for optimistic locking
-  const getCurrentVersion = (sopDetailId: string): number => {
-    if (!activePengajuan?.nilaiEvaluasi) return 0;
-    const nilai = activePengajuan.nilaiEvaluasi.find(
-      (n) => n.sopDetailId === sopDetailId,
-    );
+  const getCurrentVersion = (detailId: string): number => {
+    if (!activePengajuan?.nilaiEvaluasi) {
+      return 0;
+    }
+    const nilai = activePengajuan.nilaiEvaluasi.find((n) => n.sopDetailId === detailId);
     return nilai?.version ?? 0;
   };
 
@@ -768,8 +853,8 @@ export function usePengajuanEvaluasiAktif(
           nilaiEvaluasi: activePengajuan.nilaiEvaluasi ?? [],
         }
       : null,
-    isLoading,
-    error,
+    isLoading: fromWorkspace ? false : isLoading,
+    error: fromWorkspace ? null : error,
     getCurrentVersion,
   };
 }

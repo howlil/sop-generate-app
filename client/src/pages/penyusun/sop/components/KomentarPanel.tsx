@@ -21,7 +21,7 @@ export interface KomentarPanelComposer {
 export interface KomentarPanelProps {
   /**
    * Sumber komentar override. Default: dari `useSopEditor()` (penyusun panel).
-   * Sisi tim-evaluasi yang tidak punya editor context bisa pass langsung.
+   * Sisi evaluator yang tidak punya editor context bisa pass langsung.
    */
   comments?: KomentarItem[]
   /** Skeleton/loading state saat fetch awal. */
@@ -30,7 +30,7 @@ export interface KomentarPanelProps {
   onResolve?: (komentarId: string) => Promise<unknown>
   /** Indikator resolve in-flight. */
   isResolving?: boolean
-  /** Composer (textarea + tombol kirim) opsional — TIM_EVALUASI saja. */
+  /** Composer (textarea + tombol kirim) opsional — peran evaluator saja. */
   composer?: KomentarPanelComposer
   /** Subjudul ringkasan opsional di atas list. */
   summary?: ReactNode
@@ -172,7 +172,9 @@ export function KomentarPanel({
                     </div>
                   </div>
                   {isOpen ? (
-                    canResolveByRole && resolveAction !== undefined ? (
+                    canResolveByRole &&
+                    resolveAction !== undefined &&
+                    editor?.isReadOnly !== true ? (
                       <Button
                         type="button"
                         variant="ghost"

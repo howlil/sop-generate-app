@@ -1,11 +1,13 @@
-export type StatusHasilEvaluasi = "SESUAI" | "TIDAK_SESUAI";
+import type { PenyusunWorkbenchData } from "./sop.dto";
+
+export type StatusHasilEvaluasi = "SESUAI" | "PERLU_PERBAIKAN";
 export const STATUS_HASIL_EVALUASI = {
   SESUAI: "SESUAI",
-  TIDAK_SESUAI: "TIDAK_SESUAI",
+  PERLU_PERBAIKAN: "PERLU_PERBAIKAN",
 } as const;
 
 export interface EvaluasiBatchSubmitError {
-  kind: "none" | "no_selection" | "incomplete";
+  kind: "none" | "no_selection" | "incomplete" | "blocked";
   items: { id: string; judul: string; nomorSOP: string }[];
   sopId?: string;
   message?: string;
@@ -20,32 +22,33 @@ export type StatusPengajuanEvaluasi =
   | "SELESAI";
 export type JenisPengajuanEvaluasi = "TERJADWAL" | "MANDIRI";
 
-export interface RekapEvaluasi {
-  opdId: string;
-  opdNama: string;
-  tahun: number;
-  totalPengajuan: number;
-  totalTerjadwal: number;
-  totalMandiri: number;
-  nilaiRataRata?: number;
-  detail: RekapDetail[];
+export interface EvaluasiGrafikTahunanPerOpd {
+  opdId: string
+  opdNama: string
+  jumlahEvaluasi: number
+  rataRataSkor: number | null
 }
 
-export interface RekapDetail {
-  pengajuanEvaluasiId: string;
-  jenis: JenisPengajuanEvaluasi;
-  status: StatusPengajuanEvaluasi;
-  nilaiOPD?: number;
-  tanggalEvaluasi: string;
-  detailSopCount: number;
-  hasilEvaluasi: {
-    sesuai: number;
-    tidakSesuai: number;
-  };
-  opdId?: string;
-  opdNama?: string;
-  totalPengajuan?: number;
-  nilaiRataRata?: number;
+export interface EvaluasiGrafikTahunanRingkasanTahun {
+  tahun: number
+  totalPenilaian: number
+  jumlahOpdDenganPenilaian: number
+  rataRataSkorOpd: number | null
+  perOpd: EvaluasiGrafikTahunanPerOpd[]
+}
+
+/** GET `/evaluasi/laporan/grafik-tahunan` — payload `data`. */
+export interface EvaluasiGrafikTahunanData {
+  totalOpdAktif: number
+  daftarOpd: Array<{ opdId: string; opdNama: string }>
+  ringkasanPerTahun: EvaluasiGrafikTahunanRingkasanTahun[]
+}
+
+export interface EvaluasiGrafikTahunanQueryParams {
+  /** Satu tahun; dipakai bila tidak mengirim `tahunDari` / `tahunSampai`. */
+  tahun?: number
+  tahunDari?: number
+  tahunSampai?: number
 }
 
 export interface PengajuanEvaluasi {
@@ -157,8 +160,9 @@ export interface IsiNilaiEvaluasiDto {
   version?: number;
 }
 
+/** Wajib saat PATCH selesai — server menolak tanpa skor OPD 1–5. */
 export interface SelesaiEvaluasiDto {
-  nilaiOPD?: number;
+  nilaiOPD: number;
 }
 
 export interface UpdatePengajuanEvaluasiDto {
@@ -197,27 +201,67 @@ export interface SelesaiEvaluasiMutationDto {
   payload: SelesaiEvaluasiDto;
 }
 
-export interface RekapEvaluasiApiResponse {
-  tahun: number;
-  totalPengajuan: number;
-  totalSelesai: number;
-  overallNilaiRataRata: number | null;
-  opd: Array<{
-    opdId: string;
-    opdNama: string;
-    total: number;
-    selesai: number;
-    sesuai: number;
-    tidakSesuai: number;
-    nilaiRataRata: number | null;
-    pengajuanDetails: Array<{
-      pengajuanEvaluasiId: string;
-      jenis: string;
-      status: string;
-      nilaiOPD: number | null;
-      tanggalEvaluasi: string | null;
-      detailSopCount: number;
-      hasilEvaluasi: { sesuai: number; tidakSesuai: number };
-    }>;
-  }>;
+/** GET `/evaluasi/workspace/opd/:opdId` — agregat halaman workspace evaluator. */
+export type EvaluasiWorkspaceTampilanAlur =
+  | "perlu_evaluasi"
+  | "sedang_dievaluasi"
+  | "selesai_pengajuan_ini";
+
+export interface EvaluasiWorkspaceNilaiPerDetail {
+  detailSopId: string;
+  hasil: StatusHasilEvaluasi | null;
+  catatan: string | null;
+  version: number;
+}
+
+export interface EvaluasiWorkspacePengajuanAktif {
+  id: string;
+  status: string;
+  nilaiPerDetail: EvaluasiWorkspaceNilaiPerDetail[];
+}
+
+export interface EvaluasiWorkspaceDaftarSopRow {
+  detailSopId: string;
+  sopId: string;
+  judul: string;
+  nomorSOP: string;
+  statusDetail: string;
+  tampilanAlur: EvaluasiWorkspaceTampilanAlur;
+  evaluatorTerakhir: { nama: string; pada: string } | null;
+}
+
+export interface EvaluasiWorkspaceRiwayatOpdEntry {
+  tanggal: string;
+  evaluatorNama: string;
+  catatan?: string | null;
+  nilaiOPD?: number | null;
+  pengajuanEvaluasiId: string;
+}
+
+export interface EvaluasiWorkspaceRiwayatNilaiEntry {
+  tanggal: string;
+  evaluatorNama: string;
+  hasil: StatusHasilEvaluasi;
+  catatan?: string | null;
+  pengajuanEvaluasiId: string;
+}
+
+export interface EvaluasiWorkspacePreview {
+  detailSopId: string;
+  workbench: PenyusunWorkbenchData;
+}
+
+export interface EvaluasiWorkspaceOpdResponse {
+  opd: { id: string; nama: string };
+  pengajuanAktif: EvaluasiWorkspacePengajuanAktif | null;
+  daftarSop: EvaluasiWorkspaceDaftarSopRow[];
+  riwayatOpd: EvaluasiWorkspaceRiwayatOpdEntry[];
+  preview: EvaluasiWorkspacePreview | null;
+  riwayatNilaiSopTerpilih: EvaluasiWorkspaceRiwayatNilaiEntry[];
+}
+
+export interface EvaluasiWorkspaceQueryParams {
+  detailSopId?: string;
+  expand?: string;
+  riwayatLimit?: number;
 }

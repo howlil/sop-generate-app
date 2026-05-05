@@ -178,8 +178,8 @@ export function DetailSOP(props: DetailSOPProps = {}) {
             disabled={!tteReady}
             title={
               !tteReady
-                ? "Setup TTE terlebih dahulu"
-                : "Mengesahkan SOP dengan TTE BSRE"
+                ? "Setup PIN TTE di menu TTD Elektronik"
+                : "Mengesahkan SOP (simulasi TTE)"
             }
           >
             Tanda tangan
@@ -293,7 +293,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         open={pinDialogOpen}
         onOpenChange={setPinDialogOpen}
         title="Verifikasi PIN TTE"
-        description="Masukkan PIN TTE BSRE untuk mengesahkan SOP ini."
+        description="Masukkan PIN TTE untuk mengesahkan SOP ini (simulasi)."
         onConfirm={handlePinConfirm}
         confirmLabel="Mengesahkan"
       />

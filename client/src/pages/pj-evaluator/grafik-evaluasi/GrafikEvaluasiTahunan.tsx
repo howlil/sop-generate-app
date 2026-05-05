@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
+import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import {
   BarChart3,
   Building2,
@@ -10,12 +11,11 @@ import {
   ChevronDown,
 } from 'lucide-react'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { Select } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
-import { useRekapEvaluasi } from "@/api/evaluasi";
+import { GrafikEvaluasiTahunPicker } from '@/pages/pj-evaluator/grafik-evaluasi/grafik-evaluasi-tahun-picker'
+import { useEvaluasiGrafikTahunan } from "@/api/evaluasi";
+import type { EvaluasiGrafikTahunanQueryParams } from '@/types/dto/evaluasi.dto'
 
-/* ─── Type Mapping ─── */
-/** Pemetaan RekapEvaluasi ke bentuk ringkas per OPD/tahun untuk grafik */
 interface DetailOpdPerTahun {
   tahun: string
   opdId: string
@@ -45,90 +45,78 @@ function skorColor(skor: number): string {
 
 const INITIAL_SHOW = 15
 
+const TAHUN_MIN = 2000
+const TAHUN_MAX = 2100
+const RENTANG_DEBOUNCE_MS = 400
+
+function clampYear(y: number): number {
+  return Math.min(TAHUN_MAX, Math.max(TAHUN_MIN, Math.round(y)))
+}
+
+/** Query default untuk praprefetch route — tahun berjalan. */
+export function getDefaultGrafikEvaluasiTahunQuery(): EvaluasiGrafikTahunanQueryParams {
+  return { tahun: clampYear(new Date().getFullYear()) }
+}
+
 /* ─── Component ─── */
 
 export function GrafikEvaluasiTahunan() {
   const [filterTahun, setFilterTahun] = useState<string>('')
-  
-  const { data: rekapList = [], isLoading } = useRekapEvaluasi()
-
-  // Transform RekapEvaluasi[] to Summary[] format
-  // Since we now have per-OPD data, we need to aggregate by year
-  const summary = useMemo(() => {
-    if (!rekapList || rekapList.length === 0) return []
-    
-    // Group by year and aggregate
-    const yearMap = new Map<string, {
-      tahun: string
-      totalOpd: number
-      rataRataNilai: number
-      totalPengajuan: number
-      allNilai: number[]
-    }>()
-    
-    rekapList.forEach(rekap => {
-      const tahun = rekap.tahun.toString()
-      if (!yearMap.has(tahun)) {
-        yearMap.set(tahun, {
-          tahun,
-          totalOpd: 0,
-          rataRataNilai: 0,
-          totalPengajuan: 0,
-          allNilai: [],
-        })
-      }
-      const yearData = yearMap.get(tahun)!
-      yearData.totalOpd += 1
-      yearData.totalPengajuan += rekap.totalPengajuan
-      if (rekap.nilaiRataRata != null) {
-        yearData.allNilai.push(rekap.nilaiRataRata)
-      }
-    })
-    
-    // Calculate averages
-    return Array.from(yearMap.values()).map(year => ({
-      tahun: year.tahun,
-      totalOpd: year.totalOpd,
-      rataRataNilai: year.allNilai.length > 0
-        ? Math.round((year.allNilai.reduce((a, b) => a + b, 0) / year.allNilai.length) * 100) / 100
-        : 0,
-      totalPengajuan: year.totalPengajuan,
-    }))
-  }, [rekapList])
-
-  // Transform RekapEvaluasi[] to DetailOpdPerTahun[] format
-  // Now each rekap IS an OPD detail, so this is more straightforward
-  const detail = useMemo(() => {
-    if (!rekapList || rekapList.length === 0) return []
-    
-    return rekapList.map(rekap => ({
-      tahun: rekap.tahun.toString(),
-      opdId: rekap.opdId,
-      opdNama: rekap.opdNama,
-      jumlahEvaluasi: rekap.totalPengajuan,
-      rataRataSkor: rekap.nilaiRataRata ?? 0,
-    }))
-  }, [rekapList])
-
-  /** Unique OPD list derived from all detail rows across years. */
-  const opdList = useMemo(() => {
-    const seen = new Map<string, { id: string; nama: string }>()
-    for (const row of detail) {
-      if (!seen.has(row.opdId)) seen.set(row.opdId, { id: row.opdId, nama: row.opdNama })
-    }
-    return Array.from(seen.values())
-  }, [detail])
-
+  const [selectedYear, setSelectedYear] = useState(() => clampYear(new Date().getFullYear()))
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [searchOPD, setSearchOPD] = useState('')
   const [rankBy, setRankBy] = useState<'skor' | 'evaluasi'>('skor')
   const [showAll, setShowAll] = useState(false)
 
-  /* Sinkron default tahun filter ke data rekap (state UI, bukan fetch). */
+  const queryParamsCommitted = useMemo((): EvaluasiGrafikTahunanQueryParams => {
+    return { tahun: clampYear(selectedYear) }
+  }, [selectedYear])
+
+  const debouncedQuery = useDebouncedValue(queryParamsCommitted, RENTANG_DEBOUNCE_MS)
+
+  const { data: grafik, isLoading, isFetching } = useEvaluasiGrafikTahunan(debouncedQuery)
+
+  const summary = useMemo(() => {
+    if (!grafik?.ringkasanPerTahun?.length) return []
+    return grafik.ringkasanPerTahun.map((s) => ({
+      tahun: String(s.tahun),
+      totalOpd: s.jumlahOpdDenganPenilaian,
+      rataRataNilai: s.rataRataSkorOpd ?? 0,
+      totalPengajuan: s.totalPenilaian,
+    }))
+  }, [grafik])
+
+  const detail = useMemo(() => {
+    if (!grafik?.ringkasanPerTahun?.length) return []
+    return grafik.ringkasanPerTahun.flatMap((s) =>
+      s.perOpd.map((p) => ({
+        tahun: String(s.tahun),
+        opdId: p.opdId,
+        opdNama: p.opdNama,
+        jumlahEvaluasi: p.jumlahEvaluasi,
+        rataRataSkor: p.rataRataSkor ?? 0,
+      })),
+    )
+  }, [grafik])
+
+  const opdList = useMemo(() => {
+    if (!grafik?.daftarOpd?.length) return []
+    return grafik.daftarOpd.map((o) => ({ id: o.opdId, nama: o.opdNama }))
+  }, [grafik])
+
   useEffect(() => {
-    if (summary.length > 0 && !filterTahun) {
-      setFilterTahun(summary[summary.length - 1]?.tahun ?? '')
+    const y = String(clampYear(selectedYear))
+    if (summary.length === 0) {
+      setFilterTahun('')
+      return
     }
-  }, [summary, filterTahun])
+    const tersedia = new Set(summary.map((s) => s.tahun))
+    if (tersedia.has(y)) {
+      setFilterTahun(y)
+      return
+    }
+    setFilterTahun(summary[0]!.tahun)
+  }, [selectedYear, summary])
 
   /* ─── derived data ─── */
 
@@ -191,20 +179,19 @@ export function GrafikEvaluasiTahunan() {
     if (!currentYear) return null
     const rows = detailByTahun[filterTahun] ?? []
     const totalOPD = opdList.length
-    const evaluated = rows.length
+    const evaluatedRows = rows.filter((r) => r.jumlahEvaluasi > 0)
+    const evaluated = evaluatedRows.length
     const coveragePct = totalOPD > 0 ? Math.round((evaluated / totalOPD) * 100) : 0
     const skorBuckets = { high: 0, mid: 0, low: 0, none: 0 }
-    for (const r of rows) {
+    for (const r of evaluatedRows) {
       if (r.rataRataSkor >= 4) skorBuckets.high++
       else if (r.rataRataSkor >= 3) skorBuckets.mid++
       else if (r.rataRataSkor > 0) skorBuckets.low++
       else skorBuckets.none++
     }
-
-    const topOPD = rows.length > 0
-      ? [...rows].sort((a, b) => b.rataRataSkor - a.rataRataSkor)[0]
+    const topOPD = evaluatedRows.length > 0
+      ? [...evaluatedRows].sort((a, b) => b.rataRataSkor - a.rataRataSkor)[0]
       : null
-
     return { totalOPD, evaluated, coveragePct, skorBuckets, topOPD }
   }, [currentYear, detailByTahun, filterTahun, opdList.length])
 
@@ -227,17 +214,23 @@ export function GrafikEvaluasiTahunan() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* ── Tahun selector ── */}
-          <div className="flex items-center gap-2">
-              <Select
-                value={filterTahun}
-                onValueChange={(v) => { setFilterTahun(v); setShowAll(false) }}
-                options={summary.map((s) => ({ value: s.tahun, label: s.tahun }))}
-                placeholder="Tahun"
-                className="w-28 h-8 text-xs"
-                aria-label="Filter tahun"
+          {/* ── Tahun untuk query API ── */}
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[10px] font-medium text-gray-500">Tahun</span>
+              <GrafikEvaluasiTahunPicker
+                open={pickerOpen}
+                onOpenChange={setPickerOpen}
+                tahunMin={TAHUN_MIN}
+                tahunMax={TAHUN_MAX}
+                selectedYear={selectedYear}
+                onSelectYear={setSelectedYear}
               />
             </div>
+            {isFetching && !isLoading ? (
+              <span className="pb-2 text-[11px] text-gray-400">Memperbarui data…</span>
+            ) : null}
+          </div>
 
             {/* ── KPI Cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

@@ -13,12 +13,9 @@ const SEED_OPD_BIRO_NAMA = 'Biro Organisasi Sekretariat Daerah';
 const SEED_OPD_CONTOH_NAMA = 'OPD Contoh (seed)';
 const SEED_PERATURAN_NOMOR = '12 Tahun 2024';
 const SEED_PERATURAN_TAHUN = 2024;
-const SEED_PJ_EVALUATOR_EMAIL = 'pj.evaluator@gmail.com';
+const SEED_PJ_EVALUATOR_EMAIL = 'pjevaluator@gmail.com';
 
-/**
- * Mengisi data master (OPD, peraturan, relasi) dan satu pengguna PJ_EVALUATOR untuk pengembangan.
- * Operasi idempotent: aman dijalankan ulang.
- */
+
 @Injectable()
 export class SeedService {
   private readonly logger = new Logger(SeedService.name);
@@ -34,7 +31,7 @@ export class SeedService {
   async run(): Promise<void> {
     const plainPassword: string = this.config.get<string>(
       'SEED_PJ_EVALUATOR_PASSWORD',
-      'DevPjEvaluator123!',
+      '@Password123:)',
     );
     const hashedPassword: string = await bcrypt.hash(plainPassword, BCRYPT_SALT_ROUNDS);
     await this.prisma.$transaction(async (tx) => {

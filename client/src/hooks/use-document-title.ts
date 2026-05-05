@@ -1,6 +1,3 @@
-/**
- * Set document.title for browser tab
- */
 
 import { useEffect } from 'react'
 

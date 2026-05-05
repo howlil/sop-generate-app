@@ -1,6 +1,7 @@
 import type {
   JenisLangkahProsedur,
   LangkahSOP,
+  PenyusunWorkbenchData,
   SopDetail,
 } from "@/types/dto/sop.dto";
 import type { ProsedurRow, SOPDetailMetadata } from "@/types/ui/sop";
@@ -110,3 +111,29 @@ export function transformLangkahToProsedurRow(langkah: LangkahSOP): ProsedurRow 
   };
 }
 
+/** Memetakan payload workbench API ke props pratinjau dokumen (SOPPreviewTemplate). */
+export function mapPenyusunWorkbenchToPreviewProps(data: PenyusunWorkbenchData): {
+  metadata: SOPDetailMetadata;
+  prosedurRows: ProsedurRow[];
+  implementers: { id: string; name: string }[];
+  name?: string;
+  number?: string;
+} {
+  const detail = data.detail as SopDetail;
+  const metadata = transformSopDetailToMetadata(detail);
+  const prosedurRows = data.langkah.map((step) =>
+    transformLangkahToProsedurRow(step as LangkahSOP),
+  );
+  const lanes = [...(detail.swimlanes ?? [])].sort((a, b) => a.urutan - b.urutan);
+  const implementers = lanes.map((lane) => ({
+    id: lane.pelaksanaId,
+    name: lane.pelaksana?.namaPelaksana ?? lane.pelaksanaId,
+  }));
+  return {
+    name: detail.sop?.judul,
+    number: detail.nomorSOP,
+    metadata,
+    prosedurRows,
+    implementers,
+  };
+}

@@ -24,21 +24,21 @@ import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
-import { Select } from "@/components/ui/select";
 import { SearchInput } from "@/components/ui/search-input";
 import { formatDateIdLong } from "@/utils/format-date";
 import { ROUTES } from "@/utils/constants";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatusFilterSelect";
 import { BuatSOPDialog } from "@/pages/penyusun/sop/components/BuatSOPDialog";
-import { usePeraturan } from "@/api/peraturan";
 import {
   canEditSop,
   canPjPenyusunRunCoordinatorActions,
   sopApi,
   useDaftarSopData,
+  useSopListSuspenseQuery,
   useSopSuspense,
 } from "@/api/sop";
+import type { SopListQueryParams } from "@/types/dto/sop.dto";
 import { useDaftarSopFilters } from "@/hooks/useDaftarSOPFilters";
 import { useToast } from "@/hooks/useToast";
 import { useAppRole } from "@/hooks/useAppRole";
@@ -47,25 +47,34 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 export function ManajemenSOP() {
   useDocumentTitle("Manajemen SOP — Penyusun");
   const filterStatusId = "filter-status-sop";
-  const filterPeraturanId = "filter-peraturan-sop";
   const filterTanggalDariId = "filter-tanggal-dari-sop";
   const filterTanggalSampaiId = "filter-tanggal-sampai-sop";
   const requestEvaluasiSearchId = "request-evaluasi-search-sop";
   const { showToast } = useToast();
   const { role } = useAppRole();
   const filters = useDaftarSopFilters();
-  const {
-    eligibleSopsForEvaluasi,
-    filteredList,
-  } = useDaftarSopData({
+  const sopListParams = useMemo((): SopListQueryParams | undefined => {
+    const status =
+      filters.filterStatus && filters.filterStatus !== "all"
+        ? filters.filterStatus
+        : undefined;
+    const tanggalDari = filters.filterTanggalDari?.trim() || undefined;
+    const tanggalSampai = filters.filterTanggalSampai?.trim() || undefined;
+    if (!status && !tanggalDari && !tanggalSampai) {
+      return undefined;
+    }
+    return { status, tanggalDari, tanggalSampai };
+  }, [filters.filterStatus, filters.filterTanggalDari, filters.filterTanggalSampai]);
+  const { list: listFilteredByServer, create } = useSopSuspense(sopListParams);
+  const { data: listUnfiltered = [] } = useSopListSuspenseQuery(undefined);
+  const eligibleSopsForEvaluasi = useMemo(
+    () => listUnfiltered.filter((sop) => sop.status === "SIAP_DIEVALUASI"),
+    [listUnfiltered],
+  );
+  const { filteredList } = useDaftarSopData({
+    list: listFilteredByServer,
     searchQuery: filters.searchQuery,
-    filterStatus: filters.filterStatus,
-    filterPeraturan: filters.filterPeraturan,
-    filterTanggalDari: filters.filterTanggalDari,
-    filterTanggalSampai: filters.filterTanggalSampai,
-    isFilterOpen: filters.isFilterOpen,
   });
-  const { create } = useSopSuspense();
 
   const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] =
     useState(false);
@@ -86,8 +95,6 @@ export function ManajemenSOP() {
         (sop.pembuat && sop.pembuat.toLowerCase().includes(q)),
     );
   }, [eligibleSopsForEvaluasi, requestEvaluasiSearchQuery]);
-
-  const { list: peraturanList } = usePeraturan();
 
   const toggleSopSelectionForAjukan = (sopId: string) => {
     setSelectedSopIdsForAjukan((prev) => {
@@ -189,20 +196,6 @@ export function ManajemenSOP() {
                     id={filterStatusId}
                     value={filters.filterStatus ?? "all"}
                     onValueChange={filters.setStatusFilter}
-                  />
-                </FormField>
-                <FormField label="Peraturan Dasar" htmlFor={filterPeraturanId}>
-                  <Select
-                    id={filterPeraturanId}
-                    value={filters.filterPeraturan ?? undefined}
-                    onValueChange={filters.setFilterPeraturan}
-                    options={[
-                      { value: "all", label: "Semua Peraturan" },
-                      ...peraturanList.map((p) => ({
-                        value: p.id,
-                        label: p.namaPeraturan,
-                      })),
-                    ]}
                   />
                 </FormField>
                 <FormField label="Terakhir diperbarui">

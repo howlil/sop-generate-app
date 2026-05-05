@@ -21,10 +21,17 @@ function HasilBadge({ hasil }: { hasil?: string | null }) {
       </span>
     )
   }
+  if (hasil === "PERLU_PERBAIKAN") {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full font-medium">
+        <XCircle className="w-3 h-3" />
+        Perlu Perbaikan
+      </span>
+    )
+  }
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full font-medium">
-      <XCircle className="w-3 h-3" />
-      Tidak Sesuai
+    <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded-full font-medium">
+      {hasil}
     </span>
   )
 }

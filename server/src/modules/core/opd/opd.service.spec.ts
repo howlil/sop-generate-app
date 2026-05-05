@@ -1,7 +1,5 @@
 import { ConflictException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { PeranPengguna } from '../../../generated/prisma';
-import type { JwtAccessPayload } from '../auth/helpers/auth.shared';
 import { OpdRepository } from './opd.repository';
 import { OpdService } from './opd.service';
 
@@ -18,14 +16,9 @@ describe('OpdService', () => {
       | 'update'
       | 'softDelete'
       | 'summarizeBlockingRelations'
+      | 'findEvaluasiRingkas'
     >
   >;
-
-  const userPj: JwtAccessPayload = {
-    sub: 'pengguna-1',
-    email: 'pj@example.com',
-    peran: PeranPengguna.PJ_EVALUATOR,
-  };
 
   beforeEach(async () => {
     opdRepository = {
@@ -37,6 +30,7 @@ describe('OpdService', () => {
       update: jest.fn(),
       softDelete: jest.fn(),
       summarizeBlockingRelations: jest.fn(),
+      findEvaluasiRingkas: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -93,5 +87,26 @@ describe('OpdService', () => {
     await expect(service.softDelete('opd-b')).rejects.toBeInstanceOf(ConflictException);
     expect(opdRepository.summarizeBlockingRelations).not.toHaveBeenCalled();
     expect(opdRepository.softDelete).not.toHaveBeenCalled();
+  });
+
+  it('should_map_evaluasi_ringkas_rows_to_response_dto', async () => {
+    opdRepository.findEvaluasiRingkas.mockResolvedValue([
+      {
+        opdId: '11111111-1111-1111-1111-111111111111',
+        nama: 'Dinas Contoh',
+        jumlahSop: 3,
+        jumlahSopBaru: 1,
+      },
+    ]);
+    const actual = await service.listEvaluasiRingkas('Contoh');
+    expect(opdRepository.findEvaluasiRingkas).toHaveBeenCalledWith('Contoh');
+    expect(actual).toEqual([
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        nama: 'Dinas Contoh',
+        jumlahSop: 3,
+        jumlahSopBaru: 1,
+      },
+    ]);
   });
 });

@@ -27,6 +27,7 @@ import { PeranPengguna } from '../../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../auth/helpers/auth.shared';
 import { CreateOpdDto } from './dto/create-opd.dto';
 import { UpdateOpdDto } from './dto/update-opd.dto';
+import { OpdEvaluasiRingkasResponseDto } from './dto/opd-evaluasi-ringkas-response.dto';
 import { OpdMutasiResponseDto } from './dto/opd-mutasi-response.dto';
 import { OpdRingkasResponseDto } from './dto/opd-ringkas-response.dto';
 import { OpdService } from './opd.service';
@@ -53,6 +54,30 @@ export class OpdController {
     const data = await this.opdService.listRingkas(req.user, search);
     return {
       message: 'Daftar OPD berhasil diambil',
+      success: true,
+      data,
+    };
+  }
+
+  @Get('evaluasi-ringkas')
+  @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Daftar OPD dengan jumlah SOP dalam pipeline evaluasi (evaluator)',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Filter nama OPD (substring)',
+  })
+  @ApiResponse({ status: 200, description: 'Berhasil', type: [OpdEvaluasiRingkasResponseDto] })
+  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR atau PJ_EVALUATOR' })
+  async findEvaluasiRingkas(
+    @Query('search') search?: string,
+  ): Promise<ApiSuccessResponse<OpdEvaluasiRingkasResponseDto[]>> {
+    const data = await this.opdService.listEvaluasiRingkas(search);
+    return {
+      message: 'Daftar OPD evaluasi berhasil diambil',
       success: true,
       data,
     };

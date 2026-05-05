@@ -30,9 +30,6 @@ export const peraturanApi = {
       ),
     ),
 
-  findById: (id: string): Promise<PeraturanResponse> =>
-    unwrap(apiClient.get<ApiSuccessResponse<PeraturanResponse>>(`/peraturan/${id}`)),
-
   /** Buat master peraturan + tautan ke OPD pengguna (opdId dari JWT di server). */
   create: (payload: CreatePeraturanDto): Promise<PeraturanResponse> =>
     unwrap(apiClient.post<ApiSuccessResponse<PeraturanResponse>>('/peraturan', payload)),
@@ -40,8 +37,9 @@ export const peraturanApi = {
   update: (id: string, payload: UpdatePeraturanDto): Promise<PeraturanResponse> =>
     unwrap(apiClient.patch<ApiSuccessResponse<PeraturanResponse>>(`/peraturan/${id}`, payload)),
 
-  delete: (id: string): Promise<void> =>
-    unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/peraturan/${id}`)),
+  delete: async (id: string): Promise<void> => {
+    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/peraturan/${id}`))
+  },
 }
 
 export function usePeraturan(opdId?: string) {
