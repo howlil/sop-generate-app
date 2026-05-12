@@ -17,13 +17,13 @@ import {
 } from '../../generated/prisma';
 import { RegisterTteDto } from './register-tte.dto';
 import { TandaTanganiDto } from './tanda-tangani.dto';
+import { buildTteQrPayload } from './tte-verifikasi-qr.util';
 import { TteRepository } from './tte.repository';
 
-/** Respons profil TTE untuk klien (mirror `KredensialTTE` di frontend). */
+/** Respons profil TTE untuk klien — PIN disimpan di baris `Pengguna`. */
 export type TteProfilResponse = {
   readonly id: string;
   readonly userId: string;
-  readonly emailTerverifikasi: boolean;
   readonly peran: 'KEPALA_OPD' | 'PJ_EVALUATOR' | 'PJ_PENYUSUN';
   readonly createdAt: string;
   readonly updatedAt: string;
@@ -41,6 +41,8 @@ export type TteRiwayatResponse = {
   readonly id: string;
   readonly userId: string;
   readonly peran: 'KEPALA_OPD' | 'PJ_EVALUATOR' | 'PJ_PENYUSUN';
+  /** ID `DokumenTte` — dipakai untuk payload QR tanpa kolom tambahan di DB. */
+  readonly dokumenTteId: string;
   readonly nomorDokumen: string;
   readonly jenisDokumen: string;
   readonly judulDokumen: string;
@@ -49,6 +51,40 @@ export type TteRiwayatResponse = {
   readonly pengajuanEvaluasiId?: string;
   readonly ditandatanganiPada: string;
   readonly user?: { readonly id: string; readonly nama: string; readonly nip: string };
+  /** URL publik verifikasi jika `PUBLIC_TTE_VERIFY_BASE_URL` di-set; selain itu null (pakai `qrPayload`). */
+  readonly qrVerificationUrl: string | null;
+  /** String yang di-encode ke QR (URL publik atau JSON deterministik). */
+  readonly qrPayload: string;
+};
+
+/** Respons GET publik verifikasi pengesahan (scan QR) — kunci junction `(userId, dokumenTteId)`; tanpa nilai tanda tangan mentah. */
+export type TtePengesahanPublicResponse = {
+  readonly userId: string;
+  readonly dokumenTteId: string;
+  readonly ditandatanganiPada: string;
+  readonly peran: 'KEPALA_OPD' | 'PJ_EVALUATOR' | 'PJ_PENYUSUN';
+  readonly penandatangan: {
+    readonly nama: string;
+    readonly nip: string;
+    readonly jabatan: string;
+  };
+  readonly dokumen: {
+    readonly dokumenTteId: string;
+    readonly nomorDokumen: string;
+    readonly judulDokumen: string;
+    readonly jenisDokumen: string;
+    readonly hashDokumen: string;
+    readonly sopDetailId?: string;
+    readonly pengajuanEvaluasiId?: string;
+  };
+  readonly qrVerificationUrl: string | null;
+  readonly qrPayload: string;
+};
+
+export type TteBatchSignSopPengajuanResponse = {
+  readonly pengajuanEvaluasiId: string;
+  readonly totalSopDitandatangani: number;
+  readonly ditandatanganiPada: string;
 };
 
 /**
@@ -58,23 +94,24 @@ export type TteRiwayatResponse = {
 @Injectable()
 export class TteService {
   private readonly signingSecret: string;
+  private readonly publicTteVerifyBaseUrl: string | undefined;
 
   constructor(
     private readonly tteRepository: TteRepository,
     private readonly configService: ConfigService,
   ) {
+    this.publicTteVerifyBaseUrl = this.configService.get<string>('PUBLIC_TTE_VERIFY_BASE_URL');
     const raw = this.configService.get<string>('TTE_SIGNING_SECRET', '');
     const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
     if (raw.length >= 16) {
       this.signingSecret = raw;
-      return;
-    }
-    if (nodeEnv === 'production') {
+    } else if (nodeEnv === 'production') {
       throw new Error(
         'TTE_SIGNING_SECRET tidak valid — seharusnya sudah divalidasi di ConfigModule (production minimal 32 karakter)',
       );
+    } else {
+      this.signingSecret = 'local-dev-only-tte-secret-min16';
     }
-    this.signingSecret = 'local-dev-only-tte-secret-min16';
   }
 
   private mapPeranResponse(peran: PeranPengguna): 'KEPALA_OPD' | 'PJ_EVALUATOR' | 'PJ_PENYUSUN' {
@@ -153,11 +190,10 @@ export class TteService {
       return null;
     }
     return {
-      id: row.kredensialTteId,
-      userId: row.userId,
-      emailTerverifikasi: row.emailTerverifikasi,
+      id: pengguna.penggunaId,
+      userId: pengguna.penggunaId,
       peran: peranClient,
-      createdAt: row.createdAt.toISOString(),
+      createdAt: row.ttePinSetAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
       user: {
         id: pengguna.penggunaId,
@@ -180,14 +216,12 @@ export class TteService {
     const row = await this.tteRepository.upsertKredensialPin({
       userId: user.sub,
       hashPin,
-      emailTerverifikasi: true,
     });
     return {
-      id: row.kredensialTteId,
-      userId: row.userId,
-      emailTerverifikasi: row.emailTerverifikasi,
+      id: pengguna.penggunaId,
+      userId: pengguna.penggunaId,
       peran: peranClient,
-      createdAt: row.createdAt.toISOString(),
+      createdAt: row.ttePinSetAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
       user: {
         id: pengguna.penggunaId,
@@ -221,12 +255,52 @@ export class TteService {
     return rows.map((r) => this.mapRiwayat(r));
   }
 
+  /**
+   * Verifikasi publik: data pengesahan berdasarkan pasangan junction `(userId, dokumenTteId)` (nilai di URL/QR).
+   * Tidak memerlukan autentikasi.
+   */
+  async getPengesahanPublic(dokumenTteId: string, userId: string): Promise<TtePengesahanPublicResponse> {
+    const row = await this.tteRepository.findRiwayatPengesahanByUserAndDokumen(userId, dokumenTteId);
+    if (row === null || row.dokumenTte === null || row.user === null) {
+      throw new NotFoundException('Data pengesahan tidak ditemukan');
+    }
+    const qr = buildTteQrPayload({
+      publicVerifyBaseUrl: this.publicTteVerifyBaseUrl,
+      dokumenTteId: row.dokumenTte.dokumenTteId,
+      hashDokumen: row.dokumenTte.hashDokumen,
+    });
+    const peran = this.mapPeranResponse(row.peran);
+    return {
+      userId: row.userId,
+      dokumenTteId: row.dokumenTteId,
+      ditandatanganiPada: row.ditandatanganiPada.toISOString(),
+      peran,
+      penandatangan: {
+        nama: row.user.nama,
+        nip: row.user.nip,
+        jabatan: row.user.jabatan ?? '',
+      },
+      dokumen: {
+        dokumenTteId: row.dokumenTte.dokumenTteId,
+        nomorDokumen: row.dokumenTte.nomorDokumen,
+        judulDokumen: row.dokumenTte.judulDokumen,
+        jenisDokumen: String(row.dokumenTte.jenisDokumen),
+        hashDokumen: row.dokumenTte.hashDokumen,
+        sopDetailId: row.dokumenTte.detailSopId ?? undefined,
+        pengajuanEvaluasiId: row.dokumenTte.pengajuanEvaluasiId ?? undefined,
+      },
+      qrVerificationUrl: qr.qrVerificationUrl,
+      qrPayload: qr.qrPayload,
+    };
+  }
+
   private mapRiwayat(row: {
-    riwayatTandaTanganId: string;
     userId: string;
+    dokumenTteId: string;
     peran: PeranPengguna;
     ditandatanganiPada: Date;
     dokumenTte: {
+      dokumenTteId: string;
       nomorDokumen: string;
       judulDokumen: string;
       hashDokumen: string;
@@ -237,10 +311,16 @@ export class TteService {
     user: { penggunaId: string; nama: string; nip: string };
   }): TteRiwayatResponse {
     const peranMap = this.mapPeranResponse(row.peran);
+    const qr = buildTteQrPayload({
+      publicVerifyBaseUrl: this.publicTteVerifyBaseUrl,
+      dokumenTteId: row.dokumenTte.dokumenTteId,
+      hashDokumen: row.dokumenTte.hashDokumen,
+    });
     return {
-      id: row.riwayatTandaTanganId,
+      id: `${row.dokumenTte.dokumenTteId}:${row.userId}`,
       userId: row.userId,
       peran: peranMap,
+      dokumenTteId: row.dokumenTte.dokumenTteId,
       nomorDokumen: row.dokumenTte.nomorDokumen,
       jenisDokumen: String(row.dokumenTte.jenisDokumen),
       judulDokumen: row.dokumenTte.judulDokumen,
@@ -249,6 +329,8 @@ export class TteService {
       pengajuanEvaluasiId: row.dokumenTte.pengajuanEvaluasiId ?? undefined,
       ditandatanganiPada: row.ditandatanganiPada.toISOString(),
       user: { id: row.user.penggunaId, nama: row.user.nama, nip: row.user.nip },
+      qrVerificationUrl: qr.qrVerificationUrl,
+      qrPayload: qr.qrPayload,
     };
   }
 
@@ -309,13 +391,18 @@ export class TteService {
       if (result.error === 'ALREADY_SIGNED') {
         throw new ConflictException('Berita Acara sudah ditandatangani untuk peran ini');
       }
+      if (result.error === 'INVALID_DOC_PARENT') {
+        throw new ConflictException(
+          'Data dokumen TTE tidak konsisten: wajib tepat satu referensi parent (DetailSOP atau PengajuanEvaluasi)',
+        );
+      }
       if (!result.ok || result.riwayat === null || result.riwayat === undefined) {
         throw new ConflictException('Gagal menyelesaikan penandatanganan');
       }
       return this.mapRiwayat(result.riwayat);
     }
     if (pengguna.peran === PeranPengguna.PJ_PENYUSUN) {
-      const result = await this.tteRepository.transaksiTandaTanganiBaKoordinator({
+      const result = await this.tteRepository.transaksiTandaTanganiBaPjPenyusun({
         pengajuanEvaluasiId,
         userId: user.sub,
         userOpdId: pengguna.opdId,
@@ -338,6 +425,14 @@ export class TteService {
       }
       if (result.error === 'ALREADY_SIGNED') {
         throw new ConflictException('Berita Acara sudah ditandatangani untuk peran ini');
+      }
+      if (result.error === 'INVALID_DOC_PARENT') {
+        throw new ConflictException(
+          'Data dokumen TTE tidak konsisten: wajib tepat satu referensi parent (DetailSOP atau PengajuanEvaluasi)',
+        );
+      }
+      if (result.error === 'DOC_MISMATCH') {
+        throw new ConflictException('Dokumen TTE tidak cocok dengan pengajuan evaluasi');
       }
       if (!result.ok || result.riwayat === null || result.riwayat === undefined) {
         throw new ConflictException('Gagal menyelesaikan penandatanganan');
@@ -399,9 +494,91 @@ export class TteService {
     if (result.error === 'ALREADY_SIGNED') {
       throw new ConflictException('SOP sudah ditandatangani oleh Kepala OPD');
     }
+    if (result.error === 'INVALID_DOC_PARENT') {
+      throw new ConflictException(
+        'Data dokumen TTE tidak konsisten: wajib tepat satu referensi parent (DetailSOP atau PengajuanEvaluasi)',
+      );
+    }
     if (!result.ok || result.riwayat === null || result.riwayat === undefined) {
       throw new ConflictException('Gagal menyelesaikan penandatanganan');
     }
     return this.mapRiwayat(result.riwayat);
+  }
+
+  async tandaTanganiSemuaSopPengajuan(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+    dto: TandaTanganiDto,
+  ): Promise<TteBatchSignSopPengajuanResponse> {
+    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
+    if (pengguna === null) {
+      throw new NotFoundException('Pengguna tidak ditemukan');
+    }
+    if (pengguna.peran !== PeranPengguna.KEPALA_OPD) {
+      throw new ForbiddenException('Hanya Kepala OPD yang dapat menandatangani seluruh SOP');
+    }
+    await this.assertPinValid(user.sub, dto.pin);
+    const hashDokumen = this.hashDokumenKanonik({
+      jenis: JenisDokumenTte.SOP_BERLAKU,
+      nomorDokumen: dto.nomorDokumen,
+      judulDokumen: dto.judulDokumen,
+      refId: pengajuanEvaluasiId,
+    });
+    const signedAt = new Date();
+    const signatureFields = this.buildSignatureMetadata({
+      hashDokumen,
+      userId: user.sub,
+      peran: PeranPengguna.KEPALA_OPD,
+      signedAt,
+      nama: pengguna.nama,
+      nip: pengguna.nip,
+    });
+    const result = await this.tteRepository.transaksiTandaTanganiSemuaSopPengajuan({
+      pengajuanEvaluasiId,
+      userId: user.sub,
+      userOpdId: pengguna.opdId,
+      peran: PeranPengguna.KEPALA_OPD,
+      hashDokumen,
+      nomorDokumen: dto.nomorDokumen,
+      judulDokumen: dto.judulDokumen,
+      signatureFields,
+    });
+    if (result.error === 'NOT_FOUND') {
+      throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
+    }
+    if (result.error === 'FORBIDDEN_OPD') {
+      throw new ForbiddenException('Pengajuan tidak termasuk OPD Anda');
+    }
+    if (result.error === 'BAD_PENGAJUAN_STATUS') {
+      throw new ConflictException(
+        `Pengajuan tidak dapat ditandatangani pada status ${String((result as { status?: StatusPengajuanEvaluasi }).status)}. Batch tanda tangan Kepala OPD hanya diizinkan pada status ${String((result as { expectedStatus?: StatusPengajuanEvaluasi }).expectedStatus ?? StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN)}.`,
+      );
+    }
+    if (result.error === 'EMPTY_SOP') {
+      throw new BadRequestException('Pengajuan tidak memiliki SOP untuk ditandatangani');
+    }
+    if (result.error === 'BAD_SOP_STATUS') {
+      throw new ConflictException(
+        `SOP ${String((result as { nomorSOP?: string }).nomorSOP ?? (result as { detailSopId?: string }).detailSopId)} (${String((result as { judulSOP?: string }).judulSOP ?? '-')}) tidak dapat ditandatangani dari status ${String((result as { status?: StatusSOP }).status)}. Status yang diwajibkan: ${String((result as { expectedStatus?: StatusSOP }).expectedStatus ?? StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI)}.`,
+      );
+    }
+    if (result.error === 'ALREADY_SIGNED') {
+      throw new ConflictException(
+        `SOP ${String((result as { detailSopId?: string }).detailSopId)} sudah ditandatangani oleh Kepala OPD`,
+      );
+    }
+    if (result.error === 'INVALID_DOC_PARENT') {
+      throw new ConflictException(
+        `Data dokumen TTE tidak konsisten untuk SOP ${String((result as { detailSopId?: string }).detailSopId)}: wajib tepat satu referensi parent (DetailSOP atau PengajuanEvaluasi)`,
+      );
+    }
+    if (!result.ok) {
+      throw new ConflictException('Gagal menandatangani seluruh SOP dalam pengajuan');
+    }
+    return {
+      pengajuanEvaluasiId,
+      totalSopDitandatangani: result.totalSopDitandatangani,
+      ditandatanganiPada: signedAt.toISOString(),
+    };
   }
 }

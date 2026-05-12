@@ -32,7 +32,7 @@ export const ROLES = {
 } as const;
 
 export const ROLE_LABELS: Record<RoleKey, string> = {
-  PJ_EVALUATOR: "PJ Evaluasi",
+  PJ_EVALUATOR: "PJ Evaluator",
   EVALUATOR: "Evaluator",
   KEPALA_OPD: "Kepala OPD",
   PJ_PENYUSUN: "PJ Penyusun",
@@ -41,6 +41,10 @@ export const ROLE_LABELS: Record<RoleKey, string> = {
 
 export const ROUTES = {
   HOME: "/",
+  /** Halaman publik verifikasi pengesahan TTE (scan QR, tanpa login). */
+  VALIDASI: {
+    PENGESAHAN_PREFIX: "/validasi/pengesahan",
+  },
   AUTH: {
     LOGIN: "/login",
   },
@@ -49,13 +53,15 @@ export const ROUTES = {
     DETAIL_SOP: "/penyusun/sop/$id",
     PELAKSANA: "/penyusun/pelaksana",
     PERATURAN: "/penyusun/peraturan",
-    KOORDINATOR_TTE: "/penyusun/koordinator/tte",
-    KOORDINATOR_BERITA_ACARA: "/penyusun/koordinator/berita-acara",
-    DETAIL_BERITA_ACARA: "/penyusun/koordinator/berita-acara/$id",
+    PJ_PENYUSUN_TTE: "/penyusun/pj-penyusun/tte",
+    PJ_PENYUSUN_BERITA_ACARA: "/penyusun/pj-penyusun/berita-acara",
+    DETAIL_BERITA_ACARA: "/penyusun/pj-penyusun/berita-acara/$id",
   },
   KEPALA_OPD: {
     SOP: "/kepala-opd/sop",
     DETAIL_SOP: "/kepala-opd/sop/$id",
+    PENGAJUAN: "/kepala-opd/pengajuan",
+    DETAIL_PENGAJUAN: "/kepala-opd/pengajuan/$id",
     TTE: "/kepala-opd/tte",
   },
   PJ_EVALUATOR: {
@@ -70,7 +76,9 @@ export const ROUTES = {
   /** Workspace peran EVALUATOR (bukan PJ dashboard). */
   EVALUATOR: {
     EVALUASI: "/evaluator/evaluasi",
+    /** Bookmark lama (opdId) — redirect ke pengajuan aktif atau daftar terfilter. */
     DETAIL_EVALUASI_OPD: "/evaluator/evaluasi/$id",
+    DETAIL_EVALUASI_PENGAJUAN: "/evaluator/evaluasi/pengajuan/$id",
   },
 } as const;
 
@@ -89,7 +97,7 @@ export const IA = {
   BERITA_ACARA: "Berita Acara",
   BATCH_EVALUASI_OPD: "Batch Evaluasi OPD",
   TERJADWAL_EVALUASI_OPD: "Terjadwal Evaluasi OPD",
-  VERIFIKASI_BA_BIRO: "Verifikasi Berita Acara oleh Biro",
+  VERIFIKASI_BA_BIRO: "Verifikasi Berita Acara oleh PJ Evaluator",
   VERIFIKASI_BA_KOORDINATOR: "Verifikasi Berita Acara oleh PJ Penyusun",
   PENGESAHAN_SOP: "Pengesahan SOP",
 } as const;
@@ -98,13 +106,13 @@ export const STATUS_BADGE_CONFIG = {
   DRAFT: { label: "Draft", color: "text-gray-700", bgColor: "bg-gray-100" },
   SEDANG_DISUSUN: {
     label: "Sedang Disusun",
-    color: "text-blue-700",
-    bgColor: "bg-blue-100",
+    color: "text-indigo-700",
+    bgColor: "bg-indigo-100",
   },
   SIAP_DIEVALUASI: {
     label: "Siap Dievaluasi",
-    color: "text-blue-700",
-    bgColor: "bg-blue-100",
+    color: "text-cyan-800",
+    bgColor: "bg-cyan-100",
   },
   DIAJUKAN_EVALUASI: {
     label: "Diajukan Evaluasi",
@@ -113,29 +121,70 @@ export const STATUS_BADGE_CONFIG = {
   },
   SEDANG_DIEVALUASI: {
     label: "Sedang Dievaluasi",
-    color: "text-yellow-700",
-    bgColor: "bg-yellow-100",
+    color: "text-amber-800",
+    bgColor: "bg-amber-100",
   },
-  REVISI_DARI_TIM_EVALUASI: {
-    label: "Revisi dari Evaluator",
+  REVISI_DARI_EVALUATOR: {
+    label: "Perlu revisi (evaluator)",
     color: "text-orange-700",
     bgColor: "bg-orange-100",
   },
   SIAP_DIVERIFIKASI: {
     label: "Siap Diverifikasi",
-    color: "text-green-700",
-    bgColor: "bg-green-100",
+    color: "text-teal-800",
+    bgColor: "bg-teal-100",
   },
-  DIVERIFIKASI_BIRO_ORGANISASI: {
+  DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: {
     label: "Diverifikasi PJ Evaluator",
     color: "text-green-700",
     bgColor: "bg-green-100",
+  },
+  BERLAKU: {
+    label: "Berlaku",
+    color: "text-emerald-800",
+    bgColor: "bg-emerald-100",
+  },
+  DICABUT: {
+    label: "Dicabut",
+    color: "text-rose-800",
+    bgColor: "bg-rose-100",
   },
   AKTIF: { label: "Aktif", color: "text-green-700", bgColor: "bg-green-100" },
   NONAKTIF: {
     label: "Nonaktif",
     color: "text-gray-700",
     bgColor: "bg-gray-100",
+  },
+  /** Status Berita Acara PJ Penyusun (bukan enum StatusSOP). */
+  DIVERIFIKASI_PJ_EVALUATOR: {
+    label: "Diverifikasi PJ Evaluator",
+    color: "text-orange-700",
+    bgColor: "bg-orange-100",
+  },
+  DITANDATANGANI_PJ_PENYUSUN: {
+    label: "Ditandatangani PJ Penyusun",
+    color: "text-green-700",
+    bgColor: "bg-green-100",
+  },
+  SELESAI_DIEVALUASI: {
+    label: "Selesai Dievaluasi",
+    color: "text-green-700",
+    bgColor: "bg-green-100",
+  },
+  SELESAI: {
+    label: "Selesai",
+    color: "text-emerald-800",
+    bgColor: "bg-emerald-100",
+  },
+  DISETUJAI: {
+    label: "Disetujui",
+    color: "text-emerald-800",
+    bgColor: "bg-emerald-100",
+  },
+  DITOLAK: {
+    label: "Ditolak",
+    color: "text-rose-800",
+    bgColor: "bg-rose-100",
   },
   /** Label workspace evaluator (bukan enum StatusSOP). */
   "Diajukan Evaluasi": {
@@ -145,8 +194,8 @@ export const STATUS_BADGE_CONFIG = {
   },
   "Sedang Dievaluasi": {
     label: "Sedang Dievaluasi",
-    color: "text-yellow-700",
-    bgColor: "bg-yellow-100",
+    color: "text-amber-800",
+    bgColor: "bg-amber-100",
   },
   "Selesai Evaluasi": {
     label: "Selesai Evaluasi",

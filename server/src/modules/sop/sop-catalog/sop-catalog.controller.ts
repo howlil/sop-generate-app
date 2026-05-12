@@ -76,6 +76,44 @@ export class SopCatalogController {
     };
   }
 
+  @Post('penyusun-workbench/:detailSopId/kirim-ulang-evaluasi')
+  @HttpCode(200)
+  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary:
+      'Kirim ulang ke evaluator setelah revisi (satu aksi: SIAP_DIEVALUASI lalu DIAJUKAN_EVALUASI dalam transaksi)',
+    description:
+      'Hanya untuk DetailSOP berstatus REVISI_DARI_EVALUATOR. Memvalidasi kelengkapan dokumen seperti tombol Selesai/Siap dievaluasi, lalu mengajukan kembali ke evaluator tanpa langkah terpisah di Manajemen SOP. Param :detailSopId boleh ID DetailSOP atau ID header SOP.',
+  })
+  @ApiQuery({
+    name: 'logsLimit',
+    required: false,
+    description: 'Jumlah maksimum entri logEdit pada response workbench (1–500, default 100)',
+    schema: { default: 100, minimum: 1, maximum: 500 },
+  })
+  @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
+  @ApiBadRequestResponse({ description: 'SOP belum lengkap untuk diajukan kembali' })
+  @ApiConflictResponse({ description: 'Status bukan REVISI_DARI_EVALUATOR' })
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse({ description: 'DetailSOP tidak ditemukan' })
+  async kirimUlangEvaluasiSetelahRevisi(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+    @Query('logsLimit', new DefaultValuePipe(100), ParseIntPipe) logsLimit: number,
+  ): Promise<ApiSuccessResponse<PenyusunWorkbenchDataDto>> {
+    const data = await this.sopCatalogService.kirimUlangKeEvaluatorSetelahRevisi(
+      req.user,
+      detailSopId,
+      logsLimit,
+    );
+    return {
+      message: 'SOP berhasil dikirim ulang ke evaluator',
+      success: true,
+      data,
+    };
+  }
+
   @Get()
   @Roles(
     PeranPengguna.PENYUSUN,

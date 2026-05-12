@@ -26,6 +26,11 @@ const envSchema = z
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().min(16).optional(),
     ),
+    /** Basis URL publik (frontend) untuk tautan verifikasi dokumen di QR — opsional; tanpa ini QR memakai JSON deterministik. */
+    PUBLIC_TTE_VERIFY_BASE_URL: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+      z.string().url().optional(),
+    ),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV !== 'production') {

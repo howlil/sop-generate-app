@@ -21,6 +21,8 @@ export interface DetailSOPPenyusunHeaderProps {
   onRetryAutosave?: () => void | Promise<void>
   onComplete: () => void
   onPrint: () => void
+  /** Menonaktifkan tombol aksi utama (mis. saat POST kirim ulang evaluasi). */
+  isPrimaryActionPending?: boolean
   /** Mode lihat: sembunyikan autosave, Selesai, dan retry. */
   isReadOnly?: boolean
 }
@@ -72,6 +74,7 @@ export function DetailSOPPenyusunHeader({
   onRetryAutosave,
   onComplete,
   onPrint,
+  isPrimaryActionPending = false,
   isReadOnly = false,
 }: DetailSOPPenyusunHeaderProps) {
   const indicator = isReadOnly ? null : autosaveAppearance(autosaveStatus)
@@ -121,11 +124,12 @@ export function DetailSOPPenyusunHeader({
           {!isReadOnly ? (
           <Button
             size="sm"
-            className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5"
+            className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-60"
             onClick={onComplete}
+            disabled={isPrimaryActionPending}
           >
             <Check className="w-3.5 h-3.5" />
-            {primaryActionLabel}
+            {isPrimaryActionPending ? 'Mengirim…' : primaryActionLabel}
           </Button>
           ) : null}
         </div>
@@ -139,13 +143,11 @@ export function DetailSOPPenyusunHeader({
       {isRevisionFlow && !isReadOnly && (
         <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
-          SOP ini dikembalikan oleh Tim Evaluasi untuk revisi. Setelah perbaikan selesai, klik
+          SOP ini dikembalikan oleh evaluator untuk revisi. Setelah perbaikan selesai, klik
           {' '}
-          <span className="font-semibold">Selesaikan revisi</span>
+          <span className="font-semibold">Kirim ulang ke evaluator</span>
           {' '}
-          lalu ajukan ulang dari
-          {' '}
-          <span className="font-semibold">Manajemen SOP</span>.
+          — dokumen akan langsung diajukan kembali tanpa langkah tambahan di Manajemen SOP.
         </div>
       )}
     </>

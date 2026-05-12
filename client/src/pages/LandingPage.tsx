@@ -1,5 +1,5 @@
 /**
- * Landing Page — Sistem Informasi SOP Biro Organisasi
+ * Landing Page — Sistem Informasi SOP PJ Evaluator Organisasi
  *
  * Sections:
  * 1. Header (sticky nav)
@@ -43,14 +43,14 @@ const workflowSteps = [
   {
     step: '02',
     title: 'Evaluasi',
-    description: 'Tim Evaluasi menilai kesesuaian SOP terhadap standar yang berlaku secara terstruktur.',
+    description: 'Evaluator menilai kesesuaian SOP terhadap standar yang berlaku secara terstruktur.',
     icon: Search,
     color: 'amber',
   },
   {
     step: '03',
     title: 'Verifikasi',
-    description: 'Biro Organisasi memverifikasi hasil evaluasi dan memastikan kualitas SOP.',
+    description: 'PJ Evaluator Organisasi memverifikasi hasil evaluasi dan memastikan kualitas SOP.',
     icon: CheckCircle,
     color: 'green',
   },
@@ -72,14 +72,14 @@ const roleBenefits = [
     gradient: 'from-blue-500 to-blue-600',
   },
   {
-    role: 'Tim Evaluasi',
+    role: 'Evaluator',
     description: 'Penilaian terstruktur dengan rubrik yang jelas. Tidak ada lagi evaluasi yang subjektif atau tidak konsisten.',
     features: ['Rubrik evaluasi standar', 'Dashboard tugas', 'Riwayat penilaian', 'Catatan terstruktur'],
     icon: Search,
     gradient: 'from-amber-500 to-amber-600',
   },
   {
-    role: 'Biro Organisasi',
+    role: 'PJ Evaluator Organisasi',
     description: 'Pantau seluruh proses evaluasi dari hulu ke hilir. Verifikasi BA dengan satu klik.',
     features: ['Grafik evaluasi tahunan', 'Manajemen tim', 'Verifikasi BA digital', 'Laporan otomatis'],
     icon: CheckCircle,
@@ -101,7 +101,7 @@ const faqs = [
   },
   {
     question: 'Siapa saja yang bisa menggunakan sistem ini?',
-    answer: 'Sistem ini dirancang untuk 5 peran: Penyusun, PJ Penyusun, Tim Evaluasi, Biro Organisasi, dan Kepala OPD. Setiap peran memiliki dashboard dan fitur yang disesuaikan.',
+    answer: 'Sistem ini dirancang untuk 5 peran: Penyusun, PJ Penyusun, Evaluator, PJ Evaluator Organisasi, dan Kepala OPD. Setiap peran memiliki dashboard dan fitur yang disesuaikan.',
   },
   {
     question: 'Bagaimana keamanan tanda tangan elektronik?',
@@ -141,8 +141,8 @@ function RoleTabs() {
 
   const tabs = [
     { label: 'Penyusun', icon: FileText },
-    { label: 'Tim Evaluasi', icon: Search },
-    { label: 'Biro Organisasi', icon: CheckCircle },
+    { label: 'Evaluator', icon: Search },
+    { label: 'PJ Evaluator Organisasi', icon: CheckCircle },
     { label: 'Kepala OPD', icon: Award },
   ]
 
@@ -358,7 +358,7 @@ export function LandingPage() {
             <img src={logoSvg} alt="Logo" className="w-9 h-9" />
             <div className="hidden sm:block">
               <h1 className={cn('text-sm font-semibold leading-tight transition-colors', scrolled ? 'text-gray-900' : 'text-white')}>Sistem Informasi SOP</h1>
-              <p className={cn('text-[11px] leading-tight transition-colors', scrolled ? 'text-gray-500' : 'text-blue-200')}>Biro Organisasi</p>
+              <p className={cn('text-[11px] leading-tight transition-colors', scrolled ? 'text-gray-500' : 'text-blue-200')}>PJ Evaluator Organisasi</p>
             </div>
           </div>
           <Link to={ROUTES.AUTH.LOGIN}>
@@ -610,7 +610,7 @@ export function LandingPage() {
           </h3>
           <p className="text-blue-100 max-w-lg mx-auto text-sm leading-relaxed">
             Mulai gunakan platform ini untuk menyusun, mengevaluasi, dan mengesahkan SOP secara digital.
-            Hubungi admin Biro Organisasi untuk pembuatan akun.
+            Hubungi admin PJ Evaluator Organisasi untuk pembuatan akun.
           </p>
           <Link to={ROUTES.AUTH.LOGIN}>
             <button className="bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 rounded-full text-sm font-medium inline-flex items-center gap-2 transition-all">
@@ -626,7 +626,7 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src={logoSvg} alt="Logo" className="w-8 h-8" />
-            <span className="text-sm text-gray-600">Sistem Informasi SOP — Biro Organisasi</span>
+            <span className="text-sm text-gray-600">Sistem Informasi SOP — PJ Evaluator Organisasi</span>
           </div>
           <p className="text-xs text-gray-400">
             &copy; {new Date().getFullYear()} Hak cipta dilindungi.

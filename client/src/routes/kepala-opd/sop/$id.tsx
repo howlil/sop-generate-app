@@ -14,7 +14,6 @@ function KepalaOPDDetailSOPPage() {
         { label: 'Detail SOP' },
       ]}
       backTo={ROUTES.KEPALA_OPD.SOP}
-      showSignButton={true}
     />
   )
 }

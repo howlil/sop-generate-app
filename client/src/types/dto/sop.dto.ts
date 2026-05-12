@@ -4,19 +4,14 @@ export type StatusSOP =
   | "SIAP_DIEVALUASI"
   | "DIAJUKAN_EVALUASI"
   | "SEDANG_DIEVALUASI"
-  | "REVISI_DARI_TIM_EVALUASI"
+  | "REVISI_DARI_EVALUATOR"
   | "SIAP_DIVERIFIKASI"
-  | "DIVERIFIKASI_BIRO_ORGANISASI"
+  | "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI"
   | "BERLAKU"
   | "DICABUT";
 
 export type JenisLangkahProsedur = "AWAL_AKHIR" | "KEGIATAN" | "KEPUTUSAN";
 export type SatuanWaktu = "m" | "h" | "d" | "w" | "mo" | "y";
-export type JenisLampiran =
-  | "PERINGATAN"
-  | "KUALIFIKASI_PELAKSANAAN"
-  | "PERALATAN"
-  | "PENCATATAN_PENDATAAN";
 /** Selaras dengan enum `BagianSOP` di server (sumber log aktivitas + komentar). */
 export type BagianSOP = "HEADER" | "LANGKAH" | "STATUS" | "KOMENTAR" | "EVALUASI";
 
@@ -79,7 +74,12 @@ export interface SopDetail {
   sop?: Sop;
   dibuatOleh?: { id: string; nama: string };
   terakhirDieditOleh?: { id: string; nama: string };
-  lampiran?: LampiranTeks[];
+  lampiran?: {
+    peringatan: Array<{ id: string; teks: string; createdAt: string }>;
+    kualifikasiPelaksanaan: Array<{ id: string; teks: string; createdAt: string }>;
+    peralatanPerlengkapan: Array<{ id: string; teks: string; createdAt: string }>;
+    pencatatanPendataan: Array<{ id: string; teks: string; createdAt: string }>;
+  };
   dasarHukum?: DasarHukum[];
   relasiSopKeluar?: SopTerkait[];
   relasiSopMasuk?: SopTerkait[];
@@ -92,14 +92,6 @@ export interface SopDetail {
   dasarHukumPeraturanIds?: string[];
   /** ID DetailSOP terkait (relasi keluar), dari GET workbench. */
   sopTerkaitDetailIds?: string[];
-  /** Teks peringatan dari LampiranTeks jenis PERINGATAN. */
-  peringatan?: string | null;
-  /** Item kualifikasi pelaksanaan (LampiranTeks jenis KUALIFIKASI_PELAKSANAAN). */
-  kualifikasiPelaksanaan?: string[];
-  /** Item peralatan dan perlengkapan (LampiranTeks jenis PERALATAN). */
-  peralatanPerlengkapan?: string[];
-  /** Item pencatatan dan pendataan (LampiranTeks jenis PENCATATAN_PENDATAAN). */
-  pencatatanPendataan?: string[];
 }
 
 /** Metadata sesi log (Google Docs style): field union + jumlah event tergabung. */
@@ -114,7 +106,7 @@ export interface PenyusunWorkbenchLogEdit {
   sopDetailId: string;
   userId: string;
   bagian: BagianSOP;
-  entityId?: string | null;
+  targetEntityId?: string | null;
   keterangan?: string | null;
   meta?: PenyusunWorkbenchLogEditMeta | null;
   aktorRole: string;
@@ -132,16 +124,6 @@ export interface PenyusunWorkbenchData {
 
 export interface PenyusunWorkbenchQueryParams {
   logsLimit?: number;
-}
-
-export interface LampiranTeks {
-  id: string;
-  sopDetailId: string;
-  judul: string;
-  jenis: JenisLampiran;
-  isi?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface DasarHukum {
@@ -242,12 +224,14 @@ export interface UpdateSopHeaderDto {
   judul?: string;
   nomorSOP?: string;
   namaLembaga?: string;
-  peringatan?: string;
   dasarHukumPeraturanIds?: string[];
   sopTerkaitDetailIds?: string[];
-  kualifikasiPelaksanaan?: string[];
-  peralatanPerlengkapan?: string[];
-  pencatatanPendataan?: string[];
+  lampiran?: {
+    peringatan?: string[];
+    kualifikasiPelaksanaan?: string[];
+    peralatanPerlengkapan?: string[];
+    pencatatanPendataan?: string[];
+  };
 }
 
 export interface UpdateSopHeaderMutationDto {
@@ -330,11 +314,7 @@ export interface CreateDetailSOPPelaksanaDto {
   urutan?: number;
 }
 
-export interface CreateLampiranTeksDto {
-  judul: string;
-  jenis: JenisLampiran;
-  isi?: string;
-}
+// Catatan: DTO create lampiran spesifik belum diekspos; lampiran dimutasi via PATCH header (`UpdateSopHeaderDto.lampiran`).
 
 export interface CreateDasarHukumDto {
   judul: string;
@@ -384,13 +364,13 @@ export const SOP_STATUS_FILTER_OPTIONS = [
   { value: "DIAJUKAN_EVALUASI" as const, label: "DIAJUKAN_EVALUASI" },
   { value: "SEDANG_DIEVALUASI" as const, label: "SEDANG_DIEVALUASI" },
   {
-    value: "REVISI_DARI_TIM_EVALUASI" as const,
-    label: "REVISI_DARI_TIM_EVALUASI",
+    value: "REVISI_DARI_EVALUATOR" as const,
+    label: "Perlu revisi (evaluator)",
   },
   { value: "SIAP_DIVERIFIKASI" as const, label: "SIAP_DIVERIFIKASI" },
   {
-    value: "DIVERIFIKASI_BIRO_ORGANISASI" as const,
-    label: "DIVERIFIKASI_BIRO_ORGANISASI",
+    value: "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI" as const,
+    label: "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI",
   },
   { value: "BERLAKU" as const, label: "BERLAKU" },
   { value: "DICABUT" as const, label: "DICABUT" },

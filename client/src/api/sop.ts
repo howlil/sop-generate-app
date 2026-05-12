@@ -149,6 +149,19 @@ export const sopApi = {
       apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(`/sop/status/${id}`, payload),
     ),
 
+  /**
+   * POST setelah revisi evaluator: transaksi server SIAP_DIEVALUASI → DIAJUKAN_EVALUASI.
+   * Param boleh detailSopId atau sopId header (sama seperti workbench).
+   */
+  kirimUlangEvaluasiSetelahRevisi: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) => {
+    const query = buildQueryString(params as Record<string, unknown> | undefined)
+    return unwrapPenyusunWorkbench(
+      apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(
+        `/sop/penyusun-workbench/${detailSopId}/kirim-ulang-evaluasi${query}`,
+      ),
+    )
+  },
+
   // ================= Pelaksana (master per OPD) =================
 
   findPelaksana: (opdId: string) =>
@@ -190,17 +203,17 @@ export const sopApi = {
 
 // ==================== SOP Domain Logic ====================
 export function canEditSop(status: StatusSOP): boolean {
-  return status === "DRAFT" || status === "REVISI_DARI_TIM_EVALUASI";
+  return status === "DRAFT" || status === "REVISI_DARI_EVALUATOR";
 }
 
 export function canKepalaOpdSignSop(status: string): boolean {
-  return status === "DIVERIFIKASI_BIRO_ORGANISASI";
+  return status === "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI";
 }
 
 /** Masih dalam pipeline pengesahan (belum tentu boleh tombol tanda tangan Kepala). */
 export function isSopEligibleForSigning(sop: { status: string }): boolean {
   return (
-    sop.status === "SIAP_DIVERIFIKASI" || sop.status === "DIVERIFIKASI_BIRO_ORGANISASI"
+    sop.status === "SIAP_DIVERIFIKASI" || sop.status === "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI"
   );
 }
 
@@ -398,6 +411,20 @@ export function useDetailSopById(id: string) {
 }
 
 /**
+ * GET `/sop/penyusun-workbench/:detailSopId` — agregat detail + langkah + log
+ * untuk dipakai di pratinjau SOP (header + langkah). Cache key sejajar dengan
+ * mutasi header/prosedur/status di file ini sehingga refresh otomatis sinkron.
+ */
+export function usePenyusunWorkbench(detailSopId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.penyusunWorkbench(detailSopId ?? ''),
+    queryFn: () => sopApi.getPenyusunWorkbench(detailSopId!),
+    enabled: !!detailSopId,
+    staleTime: STALE_TIME.SHORT,
+  });
+}
+
+/**
  * Mutation autosave PATCH header SOP. Tidak memunculkan toast (silent autosave),
  * tidak meng-invalidate cache; sebagai gantinya `setQueryData` workbench dengan response
  * agar panel main + side panel tetap sinkron tanpa GET ulang.
@@ -447,7 +474,7 @@ interface UseDetailSopPenyusunActionsParams {
 }
 
 /**
- * Aksi tingkat halaman editor: hanya transisi status SOP (Selesai/Selesaikan revisi).
+ * Aksi tingkat halaman editor: Selesai → SIAP_DIEVALUASI; alur revisi → POST kirim ulang ke evaluator.
  * Persistensi data (header, swimlane, langkah) seluruhnya ditangani oleh autosave.
  */
 export function useDetailSopPenyusunActions({
@@ -460,6 +487,18 @@ export function useDetailSopPenyusunActions({
   const flushAll = useCallback(async () => {
     await Promise.all([flushHeaderAutosave(), flushProsedurAutosave()]);
   }, [flushHeaderAutosave, flushProsedurAutosave]);
+
+  const kirimUlangKeEvaluatorMutation = useMutationWithToast({
+    mutationFn: (sopOrDetailId: string) => sopApi.kirimUlangEvaluasiSetelahRevisi(sopOrDetailId),
+    invalidateKeys: [
+      queryKeys.sop,
+      queryKeys.evaluasiWorkspaceOpdAll,
+      queryKeys.evaluasiWorkspacePengajuanAll,
+      queryKeys.evaluasiRingkasAll,
+    ],
+    successMessage: "SOP berhasil dikirim ulang ke evaluator",
+    errorMessagePrefix: "Gagal mengirim ulang ke evaluator",
+  });
 
   const handleComplete = useCallback(
     async (
@@ -474,24 +513,41 @@ export function useDetailSopPenyusunActions({
 
       try {
         await flushAll();
-        await setSopStatusOverrideAsync({ sopId: id, status: "SIAP_DIEVALUASI" });
+      } catch {
         showToast(
-          isRevisionFlow
-            ? "Revisi selesai. Kembali ke Manajemen SOP untuk kirim ulang ke evaluasi."
-            : "SOP berhasil disimpan dan siap diajukan ke evaluasi.",
+          "Gagal menyimpan perubahan terlebih dahulu. Periksa data lalu coba lagi.",
+          "error",
         );
+        return;
+      }
+      try {
+        if (isRevisionFlow) {
+          await kirimUlangKeEvaluatorMutation.mutateAsync(id);
+        } else {
+          await setSopStatusOverrideAsync({ sopId: id, status: "SIAP_DIEVALUASI" });
+          showToast("SOP berhasil disimpan dan siap diajukan ke evaluasi.");
+        }
         if (navigateFn) {
           navigateFn({ to: ROUTES.PENYUSUN.SOP });
         }
       } catch {
-        showToast("Gagal menyelesaikan SOP. Periksa data yang diisi.", "error");
+        if (!isRevisionFlow) {
+          showToast("Gagal menyelesaikan SOP. Periksa data yang diisi.", "error");
+        }
       }
     },
-    [flushAll, isRevisionFlow, setSopStatusOverrideAsync, showToast],
+    [
+      flushAll,
+      isRevisionFlow,
+      kirimUlangKeEvaluatorMutation,
+      setSopStatusOverrideAsync,
+      showToast,
+    ],
   );
 
   return {
     handleComplete,
+    isKirimUlangPending: kirimUlangKeEvaluatorMutation.isPending,
   };
 }
 
@@ -668,8 +724,8 @@ export function useDetailSopPenyusunData(
   );
 
   const currentSopStatus: StatusSOP = resolvedStatusForEdit;
-  const isRevisionFlow = currentSopStatus === "REVISI_DARI_TIM_EVALUASI";
-  const primaryActionLabel = isRevisionFlow ? "Selesaikan revisi" : "Selesai";
+  const isRevisionFlow = currentSopStatus === "REVISI_DARI_EVALUATOR";
+  const primaryActionLabel = isRevisionFlow ? "Kirim ulang ke evaluator" : "Selesai";
   const isLoading = isLoadingWorkbench;
 
   return {
@@ -777,6 +833,8 @@ export interface UseDetailSopPenyusunReturn {
     role: string | null,
     navigate: (opts: NavigateOptions) => void,
   ) => Promise<void>;
+  /** True saat POST kirim-ulang-evaluasi (alur revisi). */
+  isKirimUlangKeEvaluatorPending: boolean;
   /** Status autosave header (idle/pending/saving/saved/error) untuk indikator UI. */
   autosaveStatus: SopHeaderAutosaveStatus;
   /** Error autosave header terakhir; reference baru per error agar consumer bisa toast sekali. */
@@ -801,7 +859,7 @@ export function useDetailSopPenyusun(
   const { showToast } = useToast();
   const data = useDetailSopPenyusunData(sopDetailId, sopStatusOverride);
 
-  const { handleComplete } = useDetailSopPenyusunActions({
+  const { handleComplete, isKirimUlangPending } = useDetailSopPenyusunActions({
     setSopStatusOverrideAsync: data.setSopStatusOverrideAsync,
     showToast,
     isRevisionFlow: data.isRevisionFlow,
@@ -844,6 +902,7 @@ export function useDetailSopPenyusun(
     primaryActionLabel: data.primaryActionLabel,
     handleMetadataChange,
     handleComplete,
+    isKirimUlangKeEvaluatorPending: isKirimUlangPending,
     autosaveStatus: data.autosaveStatus,
     autosaveError: data.autosaveError,
     prosedurAutosaveStatus: data.prosedurAutosaveStatus,

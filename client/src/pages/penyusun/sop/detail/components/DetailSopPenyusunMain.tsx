@@ -42,7 +42,7 @@ function toPreviewMetadata(meta: SOPDetailMetadata) {
     picNumber: meta.picNumber ?? '',
     lawBasis: meta.lawBasis ?? [],
     relatedSop: meta.relatedSop ?? [],
-    warning: meta.warning ?? '',
+    warning: toArrayField(meta.warning),
     implementQualification: toArrayField(meta.implementQualification),
     equipment: toArrayField(meta.equipment),
     recordData: toArrayField(meta.recordData),

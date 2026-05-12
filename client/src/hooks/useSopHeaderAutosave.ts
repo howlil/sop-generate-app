@@ -13,7 +13,7 @@ export interface SopHeaderSnapshot {
   judul: string
   nomorSOP: string
   namaLembaga: string
-  peringatan: string
+  peringatan: string[]
   dasarHukumPeraturanIds: string[]
   sopTerkaitDetailIds: string[]
   kualifikasiPelaksanaan: string[]
@@ -42,7 +42,7 @@ export function buildSopHeaderSnapshot(metadata: SOPDetailMetadata): SopHeaderSn
     judul: (metadata.judul ?? metadata.nama ?? '').trim(),
     nomorSOP: (metadata.nomorSOP ?? metadata.nomor ?? '').trim(),
     namaLembaga: lembaga,
-    peringatan: (metadata.warning ?? '').trim(),
+    peringatan: asArray(metadata.warning),
     dasarHukumPeraturanIds: [...(metadata.lawBasisIds ?? [])],
     sopTerkaitDetailIds: [...(metadata.relatedSopDetailIds ?? [])],
     kualifikasiPelaksanaan: asArray(metadata.implementQualification),
@@ -71,7 +71,9 @@ export function diffSopHeaderSnapshots(
   if (current.judul !== baseline.judul) dto.judul = current.judul
   if (current.nomorSOP !== baseline.nomorSOP) dto.nomorSOP = current.nomorSOP
   if (current.namaLembaga !== baseline.namaLembaga) dto.namaLembaga = current.namaLembaga
-  if (current.peringatan !== baseline.peringatan) dto.peringatan = current.peringatan
+  if (!arraysEqual(current.peringatan, baseline.peringatan)) {
+    dto.lampiran = { ...(dto.lampiran ?? {}), peringatan: current.peringatan }
+  }
   if (!arraysEqual(current.dasarHukumPeraturanIds, baseline.dasarHukumPeraturanIds)) {
     dto.dasarHukumPeraturanIds = current.dasarHukumPeraturanIds
   }
@@ -79,13 +81,13 @@ export function diffSopHeaderSnapshots(
     dto.sopTerkaitDetailIds = current.sopTerkaitDetailIds
   }
   if (!arraysEqual(current.kualifikasiPelaksanaan, baseline.kualifikasiPelaksanaan)) {
-    dto.kualifikasiPelaksanaan = current.kualifikasiPelaksanaan
+    dto.lampiran = { ...(dto.lampiran ?? {}), kualifikasiPelaksanaan: current.kualifikasiPelaksanaan }
   }
   if (!arraysEqual(current.peralatanPerlengkapan, baseline.peralatanPerlengkapan)) {
-    dto.peralatanPerlengkapan = current.peralatanPerlengkapan
+    dto.lampiran = { ...(dto.lampiran ?? {}), peralatanPerlengkapan: current.peralatanPerlengkapan }
   }
   if (!arraysEqual(current.pencatatanPendataan, baseline.pencatatanPendataan)) {
-    dto.pencatatanPendataan = current.pencatatanPendataan
+    dto.lampiran = { ...(dto.lampiran ?? {}), pencatatanPendataan: current.pencatatanPendataan }
   }
   return dto
 }

@@ -22,8 +22,8 @@ export interface AppendLogParams {
   detailSopId: string;
   userId: string;
   bagian: BagianSOP;
-  /** Untuk event yang merujuk entitas spesifik (mis. komentarId). */
-  entityId?: string | null;
+  /** Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK. */
+  targetEntityId?: string | null;
   /** Daftar field domain yang baru saja berubah pada satu request. */
   fields: string[];
   /** Force selalu buat entry baru (untuk event diskrit, mis. KOMENTAR/STATUS). */
@@ -99,7 +99,7 @@ function asMeta(raw: unknown): LogEditSessionMeta {
 }
 
 /**
- * Append-or-create entry log untuk satu (detailSop, user, bagian, entityId).
+ * Append-or-create entry log untuk satu (detailSop, user, bagian, targetEntityId).
  *
  * - `discrete=true` selalu buat entry baru `closedAt = now`.
  * - Bila ada sesi terbuka same triple dan `updatedAt > now - idleWindowMs` -> merge.
@@ -109,7 +109,7 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
   const now = p.now ?? new Date();
   const window = p.idleWindowMs ?? DEFAULT_LOG_SESSION_IDLE_MS;
   const fields = p.fields.filter((f) => typeof f === 'string' && f.length > 0);
-  const entityId = p.entityId ?? null;
+  const targetEntityId = p.targetEntityId ?? null;
 
   if (p.discrete === true) {
     const meta: LogEditSessionMeta = { fields, count: 1 };
@@ -118,7 +118,7 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
         detailSopId: p.detailSopId,
         userId: p.userId,
         bagian: p.bagian,
-        entityId,
+        targetEntityId,
         meta: meta as unknown as Prisma.InputJsonValue,
         keterangan: buildLogSummary(p.bagian, meta),
         closedAt: now,
@@ -133,7 +133,7 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
       detailSopId: p.detailSopId,
       userId: p.userId,
       bagian: p.bagian,
-      entityId,
+      targetEntityId,
       closedAt: null,
       updatedAt: { gt: cutoff },
     },
@@ -162,7 +162,7 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
       detailSopId: p.detailSopId,
       userId: p.userId,
       bagian: p.bagian,
-      entityId,
+      targetEntityId,
       closedAt: null,
     },
     data: { closedAt: now },
@@ -174,7 +174,7 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
       detailSopId: p.detailSopId,
       userId: p.userId,
       bagian: p.bagian,
-      entityId,
+      targetEntityId,
       meta: fresh as unknown as Prisma.InputJsonValue,
       keterangan: buildLogSummary(p.bagian, fresh),
       closedAt: null,

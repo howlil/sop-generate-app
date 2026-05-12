@@ -25,6 +25,15 @@ export class PeraturanService {
       tentang: row.tentang,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
+      lastEditedById: row.lastEditedById,
+      lastEditedBy:
+        row.lastEditedBy === null
+          ? null
+          : {
+              id: row.lastEditedBy.penggunaId,
+              nama: row.lastEditedBy.nama,
+              opd: { id: row.lastEditedBy.opd.opdId, nama: row.lastEditedBy.opd.nama },
+            },
       digunakan: row.dasarHukumCount,
     };
   }
@@ -67,6 +76,7 @@ export class PeraturanService {
         tahun: dto.tahun,
         tentang: dto.tentang,
         opdId,
+        lastEditedById: user.sub,
       });
       return this.mapRow(row, opdId);
     } catch (err) {
@@ -108,7 +118,7 @@ export class PeraturanService {
       return this.mapRow(row, opdId);
     }
     try {
-      const row = await this.peraturanRepository.updateMaster(id, patch);
+      const row = await this.peraturanRepository.updateMasterWithLastEditor(id, patch, user.sub);
       return this.mapRow(row, opdId);
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {

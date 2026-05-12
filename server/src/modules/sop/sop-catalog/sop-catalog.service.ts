@@ -7,12 +7,12 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
-  JenisLampiran,
   JenisLangkahProsedur,
   PeranPengguna,
   Prisma,
   StatusSOP,
 } from '../../../generated/prisma';
+import { buildNilaiEvaluasiClientId } from '../../evaluation/nilai-evaluasi-client-id';
 import type { CreateSopDto } from './dto/create-sop.dto';
 import type { PenyusunWorkbenchDataDto } from './dto/penyusun-workbench-data.dto';
 import type { SopDaftarRowDto } from './dto/sop-daftar-row.dto';
@@ -74,15 +74,37 @@ export class SopCatalogService {
       createdAt: this.toIso(row.sop.createdAt),
       updatedAt: this.toIso(row.sop.updatedAt),
     };
-    const lampiran = row.lampiran.map((l) => ({
-      id: l.lampiranTeksId,
-      sopDetailId: detailId,
-      judul: l.jenis,
-      jenis: l.jenis,
-      isi: l.teks,
-      createdAt: this.toIso(l.createdAt),
-      updatedAt: this.toIso(l.updatedAt),
-    }));
+    const peringatanSorted = [...row.lampiranPeringatan].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
+    );
+    const lampiran = {
+      peringatan: peringatanSorted.map((l) => ({
+        id: l.lampiranPeringatanId,
+        teks: l.teks,
+        createdAt: this.toIso(l.createdAt),
+      })),
+      kualifikasiPelaksanaan: [...row.lampiranKualifikasiPelaksanaan]
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map((l) => ({
+          id: l.lampiranKualifikasiPelaksanaanId,
+          teks: l.teks,
+          createdAt: this.toIso(l.createdAt),
+        })),
+      peralatanPerlengkapan: [...row.lampiranPeralatanPerlengkapan]
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map((l) => ({
+          id: l.lampiranPeralatanPerlengkapanId,
+          teks: l.teks,
+          createdAt: this.toIso(l.createdAt),
+        })),
+      pencatatanPendataan: [...row.lampiranPencatatanPendataan]
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+        .map((l) => ({
+          id: l.lampiranPencatatanPendataanId,
+          teks: l.teks,
+          createdAt: this.toIso(l.createdAt),
+        })),
+    };
     const dasarHukumSorted = [...row.dasarHukum].sort(
       (a, b) => a.createdAt.getTime() - b.createdAt.getTime(),
     );
@@ -114,30 +136,6 @@ export class SopCatalogService {
       },
     }));
     const sopTerkaitDetailIds = relasiSopKeluarSorted.map((rel) => rel.detailSopTerkaitId);
-    const lampiranByJenis = new Map<string, typeof row.lampiran>();
-    for (const item of row.lampiran) {
-      const list = lampiranByJenis.get(item.jenis) ?? [];
-      list.push(item);
-      lampiranByJenis.set(item.jenis, list);
-    }
-    const sortByCreated = (
-      list: typeof row.lampiran | undefined,
-    ): typeof row.lampiran =>
-      list === undefined
-        ? []
-        : [...list].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    const peringatanRows = sortByCreated(lampiranByJenis.get(JenisLampiran.PERINGATAN));
-    const peringatan =
-      peringatanRows.length === 0 ? null : peringatanRows[peringatanRows.length - 1].teks;
-    const kualifikasiPelaksanaan = sortByCreated(
-      lampiranByJenis.get(JenisLampiran.KUALIFIKASI_PELAKSANAAN),
-    ).map((l) => l.teks);
-    const peralatanPerlengkapan = sortByCreated(
-      lampiranByJenis.get(JenisLampiran.PERALATAN),
-    ).map((l) => l.teks);
-    const pencatatanPendataan = sortByCreated(
-      lampiranByJenis.get(JenisLampiran.PENCATATAN_PENDATAAN),
-    ).map((l) => l.teks);
     const relasiSopMasuk = row.relasiSopMasuk.map((rel) => ({
       id: `${rel.detailSopId}-${rel.detailSopTerkaitId}`,
       sopDetailId: rel.detailSopTerkaitId,
@@ -165,7 +163,7 @@ export class SopCatalogService {
       },
     }));
     const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => ({
-      id: n.nilaiEvaluasiId,
+      id: buildNilaiEvaluasiClientId(n.pengajuanEvaluasiId, n.detailSopId),
       hasil: n.hasil === null || n.hasil === undefined ? undefined : String(n.hasil),
       catatan: n.catatan ?? undefined,
     }));
@@ -205,10 +203,6 @@ export class SopCatalogService {
       kepalaOpd,
       dasarHukumPeraturanIds,
       sopTerkaitDetailIds,
-      peringatan,
-      kualifikasiPelaksanaan,
-      peralatanPerlengkapan,
-      pencatatanPendataan,
     };
     const langkah: PenyusunWorkbenchDataDto['langkah'] = row.langkahSOP.map((step) => ({
       id: step.langkahSopId,
@@ -249,7 +243,7 @@ export class SopCatalogService {
         sopDetailId: log.detailSopId,
         userId: log.userId,
         bagian: log.bagian,
-        entityId: log.entityId,
+        targetEntityId: log.targetEntityId,
         keterangan: log.keterangan ?? null,
         meta: metaObj === null ? null : { fields, count },
         aktorRole: String(log.user.peran),
@@ -295,7 +289,7 @@ export class SopCatalogService {
       const allowedFrom = new Set<StatusSOP>([
         StatusSOP.DRAFT,
         StatusSOP.SEDANG_DISUSUN,
-        StatusSOP.REVISI_DARI_TIM_EVALUASI,
+        StatusSOP.REVISI_DARI_EVALUATOR,
       ]);
       if (!allowedFrom.has(current)) {
         throw new ConflictException(
@@ -321,7 +315,7 @@ export class SopCatalogService {
     if (target === StatusSOP.BERLAKU) {
       const allowedFrom = new Set<StatusSOP>([
         StatusSOP.SIAP_DIVERIFIKASI,
-        StatusSOP.DIVERIFIKASI_BIRO_ORGANISASI,
+        StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
       ]);
       if (!allowedFrom.has(current)) {
         throw new ConflictException(
@@ -368,36 +362,16 @@ export class SopCatalogService {
     if (row.relasiSopKeluar.length === 0) {
       pesan.push('Minimal satu SOP terkait wajib dipilih');
     }
-    const lampiranByJenis = new Map<JenisLampiran, SopWorkbenchDbPayload['lampiran']>();
-    for (const item of row.lampiran) {
-      const list = lampiranByJenis.get(item.jenis) ?? [];
-      list.push(item);
-      lampiranByJenis.set(item.jenis, list);
-    }
-    const sortLampiranCreated = (list: SopWorkbenchDbPayload['lampiran'] | undefined) =>
-      list === undefined ? [] : [...list].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    const peringatanRows = sortLampiranCreated(lampiranByJenis.get(JenisLampiran.PERINGATAN));
-    const teksPeringatanTerakhir =
-      peringatanRows.length === 0 ? '' : peringatanRows[peringatanRows.length - 1].teks.trim();
-    if (teksPeringatanTerakhir === '') {
-      pesan.push('Peringatan wajib diisi');
-    }
-    const assertMinimalTeksPerJenis = (jenis: JenisLampiran, label: string): void => {
-      const sorted = sortLampiranCreated(lampiranByJenis.get(jenis));
-      const adaIsi = sorted.some((r) => r.teks.trim().length > 0);
+    const assertMinimalTeks = (items: ReadonlyArray<{ teks: string }>, label: string): void => {
+      const adaIsi = items.some((r) => r.teks.trim().length > 0);
       if (!adaIsi) {
         pesan.push(`${label} wajib berisi minimal satu isian`);
       }
     };
-    assertMinimalTeksPerJenis(
-      JenisLampiran.KUALIFIKASI_PELAKSANAAN,
-      'Kualifikasi pelaksanaan',
-    );
-    assertMinimalTeksPerJenis(JenisLampiran.PERALATAN, 'Peralatan dan perlengkapan');
-    assertMinimalTeksPerJenis(
-      JenisLampiran.PENCATATAN_PENDATAAN,
-      'Pencatatan dan pendataan',
-    );
+    assertMinimalTeks(row.lampiranPeringatan, 'Peringatan');
+    assertMinimalTeks(row.lampiranKualifikasiPelaksanaan, 'Kualifikasi pelaksanaan');
+    assertMinimalTeks(row.lampiranPeralatanPerlengkapan, 'Peralatan dan perlengkapan');
+    assertMinimalTeks(row.lampiranPencatatanPendataan, 'Pencatatan dan pendataan');
     if (row.swimlanes.length === 0) {
       pesan.push('Minimal satu kolom pelaksana (swimlane) wajib ada');
     }
@@ -488,17 +462,65 @@ export class SopCatalogService {
     return this.mapWorkbenchPayload(refreshed);
   }
 
+  /**
+   * Penyusun / PJ Penyusun: satu aksi dari `REVISI_DARI_EVALUATOR` setelah perbaikan —
+   * validasi kelengkapan seperti Siap Dievaluasi, lalu transaksi SIAP_DIEVALUASI → DIAJUKAN_EVALUASI.
+   * Berbeda dari `PATCH /sop/status` ke `DIAJUKAN_EVALUASI` yang hanya untuk PJ pada SOP sudah SIAP.
+   */
+  async kirimUlangKeEvaluatorSetelahRevisi(
+    user: JwtAccessPayload,
+    detailOrSopId: string,
+    logsLimitRaw?: number,
+  ): Promise<PenyusunWorkbenchDataDto> {
+    if (user.peran !== PeranPengguna.PENYUSUN && user.peran !== PeranPengguna.PJ_PENYUSUN) {
+      throw new ForbiddenException(
+        'Hanya penyusun atau PJ Penyusun yang dapat mengirim ulang ke evaluator setelah revisi',
+      );
+    }
+    const ctx = await this.sopCatalogRepository.findLatestDetailStatusContext(detailOrSopId);
+    if (ctx === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    if (ctx.status !== StatusSOP.REVISI_DARI_EVALUATOR) {
+      throw new ConflictException(
+        `Hanya SOP berstatus REVISI_DARI_EVALUATOR yang dapat dikirim ulang ke evaluator (status saat ini: ${String(ctx.status)})`,
+      );
+    }
+    await this.assertOpdAccessForWorkbench(user, ctx.sopOpdId);
+    const logsLimit = this.clampLogsLimit(logsLimitRaw);
+    const draftPayload = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
+      ctx.detailSopId,
+      logsLimit,
+    );
+    if (draftPayload === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    this.assertWorkbenchCompleteForSiapDievaluasi(draftPayload);
+    await this.sopCatalogRepository.transitionDetailSopRevisiToDiajukanEvaluasi({
+      detailSopId: ctx.detailSopId,
+      userId: user.sub,
+    });
+    const refreshed = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
+      ctx.detailSopId,
+      logsLimit,
+    );
+    if (refreshed === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan setelah kirim ulang evaluasi');
+    }
+    return this.mapWorkbenchPayload(refreshed);
+  }
+
   private collectChangedHeaderFields(dto: UpdateSopHeaderDto): string[] {
     const out: string[] = [];
     if (dto.judul !== undefined) out.push('judul');
     if (dto.nomorSOP !== undefined) out.push('nomorSOP');
     if (dto.namaLembaga !== undefined) out.push('namaLembaga');
-    if (dto.peringatan !== undefined) out.push('peringatan');
     if (dto.dasarHukumPeraturanIds !== undefined) out.push('dasarHukumPeraturanIds');
     if (dto.sopTerkaitDetailIds !== undefined) out.push('sopTerkaitDetailIds');
-    if (dto.kualifikasiPelaksanaan !== undefined) out.push('kualifikasiPelaksanaan');
-    if (dto.peralatanPerlengkapan !== undefined) out.push('peralatanPerlengkapan');
-    if (dto.pencatatanPendataan !== undefined) out.push('pencatatanPendataan');
+    if (dto.lampiran?.peringatan !== undefined) out.push('lampiran.peringatan');
+    if (dto.lampiran?.kualifikasiPelaksanaan !== undefined) out.push('lampiran.kualifikasiPelaksanaan');
+    if (dto.lampiran?.peralatanPerlengkapan !== undefined) out.push('lampiran.peralatanPerlengkapan');
+    if (dto.lampiran?.pencatatanPendataan !== undefined) out.push('lampiran.pencatatanPendataan');
     return out;
   }
 
@@ -511,12 +533,9 @@ export class SopCatalogService {
       judul: dto.judul,
       nomorSOP: dto.nomorSOP,
       namaLembaga: dto.namaLembaga,
-      peringatan: dto.peringatan,
       dasarHukumPeraturanIds: dto.dasarHukumPeraturanIds,
       sopTerkaitDetailIds: dto.sopTerkaitDetailIds,
-      kualifikasiPelaksanaan: dto.kualifikasiPelaksanaan,
-      peralatanPerlengkapan: dto.peralatanPerlengkapan,
-      pencatatanPendataan: dto.pencatatanPendataan,
+      lampiran: dto.lampiran,
     };
   }
 

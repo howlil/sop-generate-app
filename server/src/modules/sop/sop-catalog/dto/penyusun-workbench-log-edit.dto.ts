@@ -26,8 +26,11 @@ export class PenyusunWorkbenchLogEditDto {
   })
   readonly bagian!: 'HEADER' | 'LANGKAH' | 'STATUS' | 'KOMENTAR' | 'EVALUASI';
 
-  @ApiPropertyOptional({ nullable: true, description: 'ID entitas yang dirujuk (mis. komentarId).' })
-  readonly entityId?: string | null;
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK.',
+  })
+  readonly targetEntityId?: string | null;
 
   @ApiPropertyOptional({ nullable: true, description: 'Ringkasan keterangan untuk UI.' })
   readonly keterangan?: string | null;

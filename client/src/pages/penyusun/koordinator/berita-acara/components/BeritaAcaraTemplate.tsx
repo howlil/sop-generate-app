@@ -5,6 +5,7 @@
 import { TTESignatureBlock } from "@/pages/pj-evaluator/tte/components/TTESignatureBlock";
 import { formatTempatTanggal } from "@/utils/format-date";
 import type { TTESignaturePayload } from "@/types/dto/tte.dto";
+import { SOP_INSTITUTION_LOGO_URL } from "@/lib/sop/sop-institution-logo";
 
 export interface BeritaAcaraTemplateProps {
   /** Nama OPD (e.g. "Dinas Koperasi dan UKM") */
@@ -13,12 +14,23 @@ export interface BeritaAcaraTemplateProps {
   nomorBA?: string;
   /** Tanggal verifikasi (untuk "Padang, Bulan Tahun") */
   tanggalVerifikasi?: string | null;
-  /** Nama pejabat Biro Organisasi */
+  /** Nama pejabat PJ Evaluator Organisasi */
   namaBiro?: string;
-  /** TTE Biro (jika sudah TTD) */
-  tteSignaturePayload?: TTESignaturePayload;
-  /** Nama OPD / pejabat OPD (kolom kiri TTD, opsional) */
-  namaKepalaOPD?: string;
+  /** Nama PJ Penyusun OPD */
+  namaPjPenyusun?: string;
+  /** TTE PJ Evaluator Organisasi (jika sudah TTD) */
+  tteSignaturePayloadPjEvaluator?: TTESignaturePayload;
+  /** TTE PJ Penyusun OPD (jika sudah TTD) */
+  tteSignaturePayloadPjPenyusun?: TTESignaturePayload;
+  /** Nilai keseluruhan OPD dari penutupan pengajuan (opsional, tidak ditampilkan di template ringkas). */
+  nilaiKeseluruhanOpd?: number;
+  /** Ringkasan hasil evaluasi per SOP (opsional, tidak ditampilkan di template ringkas). */
+  ringkasanHasilPerSop?: ReadonlyArray<{
+    nomorSOP: string;
+    judul: string;
+    hasilEvaluasi?: string;
+    ringkasanCatatanEvaluator?: string;
+  }>;
   /** Tampilkan dalam mode cetak (margin, font) */
   forPrint?: boolean;
 }
@@ -28,25 +40,28 @@ export function BeritaAcaraTemplate({
   nomorBA,
   tanggalVerifikasi,
   namaBiro,
-  tteSignaturePayload,
-  namaKepalaOPD,
+  namaPjPenyusun,
+  tteSignaturePayloadPjEvaluator,
+  tteSignaturePayloadPjPenyusun,
   forPrint = false,
 }: BeritaAcaraTemplateProps) {
   const dateLine = formatTempatTanggal(
     tanggalVerifikasi ?? new Date().toISOString().slice(0, 10),
   );
   const wrapperClass = forPrint
-    ? "bg-white text-black p-8 max-w-[210mm] mx-auto font-serif text-[11pt]"
-    : "bg-white text-gray-900 p-6 rounded-lg border border-gray-200 font-serif text-sm";
+    ? "mx-auto box-border w-[210mm] min-h-[297mm] bg-white text-black font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm]"
+    : "mx-auto box-border w-full max-w-[210mm] min-h-[297mm] bg-white text-gray-900 font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm] rounded-lg border border-gray-300 shadow-sm print:w-[210mm] print:min-h-[297mm] print:rounded-none print:border-none print:shadow-none print:px-[3cm] print:pt-[3cm] print:pb-[2.5cm]";
 
   return (
     <article className={wrapperClass}>
       {/* Kop */}
       <header className="border-b-2 border-black pb-3 mb-6">
         <div className="flex items-start gap-4">
-          <div className="w-16 h-20 flex-shrink-0 border-2 border-gray-700 flex items-center justify-center text-[8px] font-bold text-center leading-tight px-0.5">
-            SUMATERA BARAT
-          </div>
+          <img
+            src={SOP_INSTITUTION_LOGO_URL}
+            alt="Logo Provinsi Sumatera Barat"
+            className="w-16 h-20 flex-shrink-0 object-contain"
+          />
           <div className="flex-1 text-center">
             <p className="text-base font-bold uppercase leading-tight">
               Pemerintah Provinsi Sumatera Barat
@@ -73,7 +88,7 @@ export function BeritaAcaraTemplate({
         </h2>
         {nomorBA && <p className="text-xs mt-1">Nomor: {nomorBA}</p>}
         <p className="text-xs mt-2">
-          Bertempat di Ruang Rapat Biro Organisasi Lt. III Escape Building
+          Bertempat di Ruang Rapat PJ Evaluator Organisasi Lt. III Escape Building
         </p>
       </div>
 
@@ -82,7 +97,7 @@ export function BeritaAcaraTemplate({
         <p>
           Dalam rangka pelaksanaan kegiatan Evaluasi Standar Operasional
           Prosedur (SOP) pada Perangkat Daerah, UPTD, dan Unit Layanan di
-          lingkungan Pemerintah Provinsi Sumatera Barat, Biro Organisasi telah
+          lingkungan Pemerintah Provinsi Sumatera Barat, PJ Evaluator Organisasi telah
           melaksanakan verifikasi dan evaluasi SOP pada sejumlah perangkat
           daerah.
         </p>
@@ -117,6 +132,7 @@ export function BeritaAcaraTemplate({
             uraian tugas yang tumpang tindih antara satu dengan yang lainnya.
           </li>
         </ol>
+        {/* Template ringkas: skor agregat dan tabel ringkasan dihilangkan sesuai permintaan UI terbaru */}
         <p>
           Demikian Berita Acara Pelaksanaan Verifikasi dan Evaluasi Standar
           Operasional Prosedur (SOP) di Lingkup Pemerintah Provinsi Sumatera
@@ -132,22 +148,40 @@ export function BeritaAcaraTemplate({
       {/* Blok tanda tangan */}
       <div className="grid grid-cols-2 gap-8">
         <div className="border border-gray-800 p-4 text-center">
-          <p className="text-xs font-bold uppercase mb-8">{opd}</p>
-          <div className="h-16 mb-2" />
-          <p className="text-sm font-bold">{namaKepalaOPD ?? "—"}</p>
-        </div>
-        <div className="border border-gray-800 p-4 text-center">
-          <p className="text-xs font-bold uppercase mb-8">Biro Organisasi</p>
-          {tteSignaturePayload ? (
+          <p className="text-xs font-bold uppercase mb-2">Biro Organisasi</p>
+          {tteSignaturePayloadPjEvaluator ? (
             <TTESignatureBlock
-              payload={tteSignaturePayload}
-              roleLabel="Biro Organisasi"
+              payload={tteSignaturePayloadPjEvaluator}
+              showRoleLabel={false}
+              showNip={false}
+              showCaption={false}
+              showSignedDate={false}
+              placeNameBelowQr
               qrSize={64}
             />
           ) : (
             <>
               <div className="h-16 mb-2" />
               <p className="text-sm font-bold">{namaBiro ?? "—"}</p>
+            </>
+          )}
+        </div>
+        <div className="border border-gray-800 p-4 text-center">
+          <p className="text-xs font-bold uppercase mb-2">{opd}</p>
+          {tteSignaturePayloadPjPenyusun ? (
+            <TTESignatureBlock
+              payload={tteSignaturePayloadPjPenyusun}
+              showRoleLabel={false}
+              showNip={false}
+              showCaption={false}
+              showSignedDate={false}
+              placeNameBelowQr
+              qrSize={64}
+            />
+          ) : (
+            <>
+              <div className="h-16 mb-2" />
+              <p className="text-sm font-bold">{namaPjPenyusun ?? "—"}</p>
             </>
           )}
         </div>

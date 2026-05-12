@@ -131,12 +131,7 @@ export function KomentarPanel({
 
       {summary !== undefined && summary !== null ? (
         <p className="text-xs text-gray-600 mb-2 px-3 pt-3">{summary}</p>
-      ) : (
-        <p className="text-xs text-gray-500 mb-2 px-3 pt-3">
-          Komentar ini ditulis oleh Tim Evaluasi. Penyusun dapat menandainya selesai jika sudah
-          ditindak lanjuti.
-        </p>
-      )}
+      ) : null}
 
       <div className="p-3 space-y-2">
         {loading ? (

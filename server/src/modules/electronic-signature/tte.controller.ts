@@ -23,6 +23,7 @@ import { RegisterTteDto } from './register-tte.dto';
 import { TandaTanganiDto } from './tanda-tangani.dto';
 import {
   TteService,
+  type TteBatchSignSopPengajuanResponse,
   type TteProfilResponse,
   type TteRiwayatResponse,
 } from './tte.service';
@@ -58,7 +59,7 @@ export class TteController {
   @ApiOperation({
     summary: 'Daftar atau ubah PIN TTE',
     description:
-      'Simulasi BSRE: tidak ada layanan pihak ketiga; email pengguna dipakai dari data akun dan langsung dianggap terverifikasi.',
+      'Simulasi BSRE: tidak ada layanan pihak ketiga; PIN di-hash (bcrypt) dan disimpan pada data pengguna.',
   })
   async registerProfil(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -108,7 +109,11 @@ export class TteController {
 
   @Get('riwayat')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Riwayat tanda tangan pengguna saat ini' })
+  @ApiOperation({
+    summary: 'Riwayat tanda tangan pengguna saat ini',
+    description:
+      'Setiap item menyertakan `dokumenTteId`, `hashDokumen`, `qrPayload` (string untuk di-encode ke QR), dan `qrVerificationUrl` bila `PUBLIC_TTE_VERIFY_BASE_URL` diset — tanpa kolom DB tambahan.',
+  })
   async listRiwayat(
     @Req() req: Request & { user: JwtAccessPayload },
   ): Promise<ApiSuccessResponse<TteRiwayatResponse[]>> {
@@ -125,7 +130,7 @@ export class TteController {
   @ApiOperation({
     summary: 'Tanda tangani Berita Acara evaluasi',
     description:
-      'PJ Evaluator pada status SELESAI_DIEVALUASI → DIVERIFIKASI_BIRO. PJ Penyusun pada DIVERIFIKASI_BIRO → DITANDATANGANI_KOORDINATOR.',
+      'PJ Evaluator pada status SELESAI_DIEVALUASI → DIVERIFIKASI_PJ_EVALUATOR. PJ Penyusun pada DIVERIFIKASI_PJ_EVALUATOR → DITANDATANGANI_PJ_PENYUSUN.',
   })
   @ApiResponse({ status: 200, description: 'Berhasil' })
   async tandaTanganiBa(
@@ -146,7 +151,7 @@ export class TteController {
   @ApiOperation({
     summary: 'Tanda tangani SOP (Kepala OPD)',
     description:
-      'Hanya dari status DIVERIFIKASI_BIRO_ORGANISASI (setelah BA ditandatangani PJ Penyusun) menjadi BERLAKU.',
+      'Hanya dari status DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI (setelah BA ditandatangani PJ Penyusun) menjadi BERLAKU.',
   })
   async tandaTanganiSop(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -156,6 +161,26 @@ export class TteController {
     const data = await this.tteService.tandaTanganiSop(req.user, sopDetailId, dto);
     return {
       message: 'SOP berhasil disahkan dengan TTE simulasi',
+      success: true,
+      data,
+    };
+  }
+
+  @Post('tanda-tangani/pengajuan/:pengajuanId/sop-semua')
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Tanda tangani seluruh SOP dalam satu pengajuan (Kepala OPD)',
+    description:
+      'Atomic all-or-nothing: semua SOP yang eligible dalam pengajuan ditandatangani sekaligus. Jika satu gagal, seluruh transaksi dibatalkan.',
+  })
+  async tandaTanganiSemuaSopPengajuan(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('pengajuanId', ParseUUIDPipe) pengajuanId: string,
+    @Body() dto: TandaTanganiDto,
+  ): Promise<ApiSuccessResponse<TteBatchSignSopPengajuanResponse>> {
+    const data = await this.tteService.tandaTanganiSemuaSopPengajuan(req.user, pengajuanId, dto);
+    return {
+      message: 'Seluruh SOP dalam pengajuan berhasil ditandatangani',
       success: true,
       data,
     };

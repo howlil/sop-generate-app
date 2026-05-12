@@ -70,6 +70,7 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
   ) => {
     const isRight = side === 'right'
     const ChevronCollapse = isRight ? ChevronRight : ChevronLeft
+    const ChevronExpand = isRight ? ChevronLeft : ChevronRight
     const hasTabs = tabs != null && tabs.length > 0
 
     return (
@@ -90,7 +91,7 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
             onClick={() => onCollapsedChange(false)}
             title={collapseButtonLabel ?? (tabs?.[0]?.label ?? title ?? 'Buka panel')}
           >
-            {collapseButtonIcon ?? tabs?.[0]?.icon ?? null}
+            {collapseButtonIcon ?? tabs?.[0]?.icon ?? <ChevronExpand className="w-4 h-4 text-gray-500" />}
             {(collapseButtonLabel ?? tabs?.[0]?.label) && (
               <span className="text-[10px] text-gray-500 leading-tight max-w-full truncate">
                 {collapseButtonLabel ?? tabs?.[0]?.label}
@@ -102,7 +103,7 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
             <div
               className={cn(
                 'flex items-center gap-2 flex-shrink-0 border-b border-gray-200',
-                hasTabs ? 'p-3 justify-between' : 'p-2 border-gray-100 bg-gray-50 justify-between'
+                hasTabs ? 'p-2 justify-between' : 'border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5 justify-between'
               )}
             >
               {hasTabs ? (
@@ -154,7 +155,7 @@ export const CollapsibleSidePanel = React.forwardRef<HTMLDivElement, Collapsible
                 </>
               )}
             </div>
-            <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
+            <div className="flex-1 min-h-0 overflow-auto scrollbar-hide px-2 pb-2 pt-1 sm:px-2 sm:pb-2">
               {children}
             </div>
           </>

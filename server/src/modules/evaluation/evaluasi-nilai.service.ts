@@ -7,6 +7,7 @@ import {
 import type { JwtAccessPayload } from '../../common';
 import {
   HasilEvaluasi,
+  JenisPengajuanEvaluasi,
   NilaiEvaluasi,
   PengajuanEvaluasi,
   Prisma,
@@ -15,16 +16,16 @@ import {
 } from '../../generated/prisma';
 import { IsiNilaiEvaluasiDto } from './dto/isi-nilai-evaluasi.dto';
 import type { NilaiEvaluasiPatchResponseDto } from './dto/nilai-evaluasi-patch-response.dto';
+import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
 import type { PengajuanEvaluasiSelesaiResponseDto } from './dto/pengajuan-evaluasi-selesai-response.dto';
 import { SelesaiEvaluasiDto } from './dto/selesai-evaluasi.dto';
 import { EvaluasiNilaiRepository } from './evaluasi-nilai.repository';
 import { SopCommentRepository } from '../sop/sop-comment/sop-comment.repository';
 
 /**
- * Kebijakan mutasi evaluasi (tanpa enum baru `StatusPengajuanEvaluasi`):
- * - Scope dokumen = baris `NilaiEvaluasi` dalam pengajuan `SEDANG_DIEVALUASI` atau `MENUNGGU_EVALUASI` (saat pertama mengisi nilai, pengajuan dipromosikan ke `SEDANG_DIEVALUASI`).
- * - `isiNilai`: `PERLU_PERBAIKAN` wajib `catatan` non-kosong; catatan disalin ke `Komentar` untuk panel penyusun; `DetailSOP` → `REVISI_DARI_TIM_EVALUASI` jika status ∈ `DIAJUKAN_EVALUASI`|`SEDANG_DIEVALUASI`.
- * - `selesai`: setiap baris harus `hasil === SESUAI`; skor `nilaiOPD` wajib; pengajuan → `SELESAI_DIEVALUASI`; `DetailSOP` terkait → `SIAP_DIVERIFIKASI`.
+ * Kebijakan mutasi evaluasi:
+ * - `isiNilai`: pengajuan harus `SEDANG_DIEVALUASI`; `PERLU_PERBAIKAN` wajib `catatan` non-kosong; catatan disalin ke `Komentar`; `DetailSOP` → `REVISI_DARI_EVALUATOR` jika status ∈ `DIAJUKAN_EVALUASI`|`SEDANG_DIEVALUASI`.
+ * - `selesai`: setiap baris harus `hasil === SESUAI`; pengajuan TERJADWAL wajib skor `nilaiOPD` 1–5; pengajuan MANDIRI tidak memakai skor OPD (`nilaiOPD` null); pengajuan → `SELESAI_DIEVALUASI`; `DetailSOP` terkait → `SIAP_DIVERIFIKASI`.
  */
 @Injectable()
 export class EvaluasiNilaiService {
@@ -65,22 +66,11 @@ export class EvaluasiNilaiService {
           );
         }
         const bolehIsiNilai =
-          pengajuan.status === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI ||
-          pengajuan.status === StatusPengajuanEvaluasi.MENUNGGU_EVALUASI;
+          pengajuan.status === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI;
         if (!bolehIsiNilai) {
           throw new NotFoundException(
             'Pengajuan evaluasi tidak ditemukan atau tidak aktif untuk diisi nilai',
           );
-        }
-        if (pengajuan.status === StatusPengajuanEvaluasi.MENUNGGU_EVALUASI) {
-          await tx.pengajuanEvaluasi.update({
-            where: { pengajuanEvaluasiId },
-            data: {
-              status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-              tanggalEvaluasi: new Date(),
-              version: { increment: 1 },
-            },
-          });
         }
         const sebelumnya = await tx.nilaiEvaluasi.findUnique({
           where: {
@@ -112,7 +102,12 @@ export class EvaluasiNilaiService {
           },
         });
         const sesudah = await tx.nilaiEvaluasi.update({
-          where: { nilaiEvaluasiId: sebelumnya.nilaiEvaluasiId },
+          where: {
+            pengajuanEvaluasiId_detailSopId: {
+              pengajuanEvaluasiId,
+              detailSopId,
+            },
+          },
           data: {
             hasil,
             catatan: catatanNorm,
@@ -134,7 +129,7 @@ export class EvaluasiNilaiService {
               },
             },
             data: {
-              status: StatusSOP.REVISI_DARI_TIM_EVALUASI,
+              status: StatusSOP.REVISI_DARI_EVALUATOR,
             },
           });
         }
@@ -151,7 +146,6 @@ export class EvaluasiNilaiService {
     dto: SelesaiEvaluasiDto,
   ): Promise<PengajuanEvaluasiSelesaiResponseDto> {
     const evaluatorId = user.sub;
-    const nilaiOpdFinal = dto.nilaiOPD;
 
     const yangDiupdate = await this.evaluasiNilaiRepository.runTransaction(
       async (
@@ -169,6 +163,27 @@ export class EvaluasiNilaiService {
             'Pengajuan tidak dalam status pengisian evaluator',
           );
         }
+        const mandiri = pengajuan.jenis === JenisPengajuanEvaluasi.MANDIRI;
+        if (mandiri && dto.nilaiOPD !== undefined) {
+          throw new BadRequestException(
+            'Evaluasi mandiri tidak menggunakan penilaian tingkat OPD; jangan kirim nilaiOPD.',
+          );
+        }
+        if (!mandiri) {
+          const skor = dto.nilaiOPD;
+          if (
+            skor === undefined ||
+            skor === null ||
+            !Number.isInteger(skor) ||
+            skor < 1 ||
+            skor > 5
+          ) {
+            throw new BadRequestException(
+              'Skor evaluasi tingkat OPD (1–5) wajib untuk pengajuan terjadwal.',
+            );
+          }
+        }
+        const nilaiOpdFinal = mandiri ? null : dto.nilaiOPD!;
         if (pengajuan.nilaiEvaluasi.length === 0) {
           throw new BadRequestException(
             'Pengajuan tidak memiliki dokumen untuk dinilai',
@@ -189,7 +204,7 @@ export class EvaluasiNilaiService {
               in: [
                 StatusSOP.DIAJUKAN_EVALUASI,
                 StatusSOP.SEDANG_DIEVALUASI,
-                StatusSOP.REVISI_DARI_TIM_EVALUASI,
+                StatusSOP.REVISI_DARI_EVALUATOR,
               ],
             },
           },
@@ -217,7 +232,7 @@ export class EvaluasiNilaiService {
 
   private static keResponseNilaiDto(row: NilaiEvaluasi): NilaiEvaluasiPatchResponseDto {
     return {
-      id: row.nilaiEvaluasiId,
+      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, row.detailSopId),
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
       sopDetailId: row.detailSopId,
       hasil:
@@ -246,7 +261,6 @@ export class EvaluasiNilaiService {
       tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),
       tanggalDiselesaikan: row.tanggalDiselesaikan?.toISOString(),
       diselesaikanOlehId: row.diselesaikanOlehId ?? undefined,
-      catatan: row.catatan ?? undefined,
       version: row.version,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),

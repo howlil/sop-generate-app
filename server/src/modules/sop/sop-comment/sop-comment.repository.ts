@@ -89,7 +89,7 @@ export class SopCommentRepository {
       detailSopId: params.detailSopId,
       userId: params.userId,
       bagian: BagianSOP.KOMENTAR,
-      entityId: created.komentarId,
+      targetEntityId: created.komentarId,
       fields: ['create'],
       discrete: true,
     });
@@ -126,7 +126,7 @@ export class SopCommentRepository {
         detailSopId: params.detailSopId,
         userId: params.actorUserId,
         bagian: BagianSOP.KOMENTAR,
-        entityId: params.komentarId,
+        targetEntityId: params.komentarId,
         fields: ['resolve'],
         discrete: true,
       });
@@ -146,7 +146,7 @@ export class SopCommentRepository {
         detailSopId: params.detailSopId,
         userId: params.actorUserId,
         bagian: BagianSOP.KOMENTAR,
-        entityId: params.komentarId,
+        targetEntityId: params.komentarId,
         fields: ['delete'],
         discrete: true,
       });

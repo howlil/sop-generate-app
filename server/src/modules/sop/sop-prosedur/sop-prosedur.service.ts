@@ -146,7 +146,7 @@ export class SopProsedurService {
         for (const p of dedup) {
           if (!valid.has(p.pelaksanaId)) {
             throw new BadRequestException(
-              `Pelaksana ${p.pelaksanaId} bukan milik OPD pemilik SOP`,
+              `Pelaksana ${p.pelaksanaId} harus dari OPD yang sama dengan SOP (swimlane)`,
             );
           }
         }
@@ -202,7 +202,7 @@ export class SopProsedurService {
   ): RepoLangkahPatchItem {
     if (item.pelaksanaId !== undefined && !allowedPelaksanaIds.has(item.pelaksanaId)) {
       throw new BadRequestException(
-        `pelaksanaId ${item.pelaksanaId} pada langkah '${item.tempId}' tidak ada di swimlane`,
+        `pelaksanaId ${item.pelaksanaId} pada langkah '${item.tempId}' harus dari OPD yang sama dengan SOP (tidak ada di swimlane)`,
       );
     }
 

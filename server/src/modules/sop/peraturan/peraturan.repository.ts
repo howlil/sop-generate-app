@@ -7,6 +7,12 @@ export type PeraturanRow = {
   nomor: string;
   tahun: number;
   tentang: string;
+  lastEditedById: string | null;
+  lastEditedBy: null | {
+    penggunaId: string;
+    nama: string;
+    opd: { opdId: string; nama: string };
+  };
   createdAt: Date;
   updatedAt: Date;
   dasarHukumCount: number;
@@ -35,6 +41,8 @@ export class PeraturanRepository {
         nomor: true,
         tahun: true,
         tentang: true,
+        lastEditedById: true,
+        lastEditedBy: { select: { penggunaId: true, nama: true, opd: { select: { opdId: true, nama: true } } } },
         createdAt: true,
         updatedAt: true,
         _count: { select: { dasarHukum: true } },
@@ -47,6 +55,8 @@ export class PeraturanRepository {
       nomor: r.nomor,
       tahun: r.tahun,
       tentang: r.tentang,
+      lastEditedById: r.lastEditedById ?? null,
+      lastEditedBy: r.lastEditedBy ?? null,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
       dasarHukumCount: r._count.dasarHukum,
@@ -75,6 +85,8 @@ export class PeraturanRepository {
         nomor: true,
         tahun: true,
         tentang: true,
+        lastEditedById: true,
+        lastEditedBy: { select: { penggunaId: true, nama: true, opd: { select: { opdId: true, nama: true } } } },
         createdAt: true,
         updatedAt: true,
         _count: { select: { dasarHukum: true } },
@@ -89,6 +101,8 @@ export class PeraturanRepository {
       nomor: row.nomor,
       tahun: row.tahun,
       tentang: row.tentang,
+      lastEditedById: row.lastEditedById ?? null,
+      lastEditedBy: row.lastEditedBy ?? null,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       dasarHukumCount: row._count.dasarHukum,
@@ -109,6 +123,7 @@ export class PeraturanRepository {
     tahun: number;
     tentang: string;
     opdId: string;
+    lastEditedById: string;
   }): Promise<PeraturanRow> {
     const created = await this.prisma.$transaction(async (tx) => {
       const p = await tx.peraturan.create({
@@ -117,6 +132,7 @@ export class PeraturanRepository {
           nomor: params.nomor,
           tahun: params.tahun,
           tentang: params.tentang,
+          lastEditedById: params.lastEditedById,
         },
       });
       await tx.oPDPeraturan.create({
@@ -130,6 +146,8 @@ export class PeraturanRepository {
           nomor: true,
           tahun: true,
           tentang: true,
+          lastEditedById: true,
+          lastEditedBy: { select: { penggunaId: true, nama: true, opd: { select: { opdId: true, nama: true } } } },
           createdAt: true,
           updatedAt: true,
           _count: { select: { dasarHukum: true } },
@@ -143,6 +161,8 @@ export class PeraturanRepository {
       nomor: created.nomor,
       tahun: created.tahun,
       tentang: created.tentang,
+      lastEditedById: created.lastEditedById ?? null,
+      lastEditedBy: created.lastEditedBy ?? null,
       createdAt: created.createdAt,
       updatedAt: created.updatedAt,
       dasarHukumCount: created._count.dasarHukum,
@@ -162,6 +182,8 @@ export class PeraturanRepository {
         nomor: true,
         tahun: true,
         tentang: true,
+        lastEditedById: true,
+        lastEditedBy: { select: { penggunaId: true, nama: true, opd: { select: { opdId: true, nama: true } } } },
         createdAt: true,
         updatedAt: true,
         _count: { select: { dasarHukum: true } },
@@ -173,6 +195,43 @@ export class PeraturanRepository {
       nomor: updated.nomor,
       tahun: updated.tahun,
       tentang: updated.tentang,
+      lastEditedById: updated.lastEditedById ?? null,
+      lastEditedBy: updated.lastEditedBy ?? null,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+      dasarHukumCount: updated._count.dasarHukum,
+    };
+  }
+
+  async updateMasterWithLastEditor(
+    peraturanId: string,
+    data: { nama?: string; nomor?: string; tahun?: number; tentang?: string },
+    lastEditedById: string,
+  ): Promise<PeraturanRow> {
+    const updated = await this.prisma.peraturan.update({
+      where: { peraturanId },
+      data: { ...data, lastEditedById },
+      select: {
+        peraturanId: true,
+        nama: true,
+        nomor: true,
+        tahun: true,
+        tentang: true,
+        lastEditedById: true,
+        lastEditedBy: { select: { penggunaId: true, nama: true, opd: { select: { opdId: true, nama: true } } } },
+        createdAt: true,
+        updatedAt: true,
+        _count: { select: { dasarHukum: true } },
+      },
+    });
+    return {
+      peraturanId: updated.peraturanId,
+      nama: updated.nama,
+      nomor: updated.nomor,
+      tahun: updated.tahun,
+      tentang: updated.tentang,
+      lastEditedById: updated.lastEditedById ?? null,
+      lastEditedBy: updated.lastEditedBy ?? null,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
       dasarHukumCount: updated._count.dasarHukum,

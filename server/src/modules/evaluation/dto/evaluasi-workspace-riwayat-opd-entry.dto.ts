@@ -9,9 +9,6 @@ export class EvaluasiWorkspaceRiwayatOpdEntryDto {
   readonly evaluatorNama!: string;
 
   @ApiPropertyOptional({ nullable: true })
-  readonly catatan!: string | null;
-
-  @ApiPropertyOptional({ nullable: true })
   readonly nilaiOPD!: number | null;
 
   @ApiProperty({ format: 'uuid' })

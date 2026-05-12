@@ -12,6 +12,9 @@ import { EvaluasiGrafikController } from './evaluasi-grafik.controller';
 import { EvaluasiGrafikRepository } from './evaluasi-grafik.repository';
 import { EvaluasiGrafikService } from './evaluasi-grafik.service';
 import { PengajuanEvaluasiController } from './pengajuan-evaluasi.controller';
+import { PengajuanEvaluasiDetailController } from './pengajuan-evaluasi-detail.controller';
+import { PengajuanEvaluasiDetailRepository } from './pengajuan-evaluasi-detail.repository';
+import { PengajuanEvaluasiDetailService } from './pengajuan-evaluasi-detail.service';
 import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
 
@@ -20,6 +23,7 @@ import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
   controllers: [
     EvaluasiWorkspaceController,
     PengajuanEvaluasiController,
+    PengajuanEvaluasiDetailController,
     EvaluasiNilaiController,
     EvaluasiGrafikController,
   ],
@@ -27,7 +31,9 @@ import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
     EvaluasiWorkspaceService,
     EvaluasiWorkspaceRepository,
     PengajuanEvaluasiRepository,
+    PengajuanEvaluasiDetailRepository,
     PengajuanEvaluasiService,
+    PengajuanEvaluasiDetailService,
     EvaluasiNilaiService,
     EvaluasiNilaiRepository,
     EvaluasiGrafikService,

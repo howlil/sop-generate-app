@@ -17,7 +17,7 @@ export interface ItemListCardProps<T> {
 }
 
 const DEFAULT_ITEM_CLASS =
-  'w-full justify-start text-left h-auto p-2 rounded-lg border text-xs transition-colors flex flex-col items-stretch border-gray-100 hover:bg-gray-50 text-gray-700'
+  'w-full justify-start text-left h-auto rounded-lg border px-2 py-1.5 text-xs transition-colors flex flex-col items-stretch border-gray-100 hover:bg-gray-50 text-gray-700'
 const DEFAULT_SELECTED_CLASS = 'border-blue-300 bg-blue-50 text-blue-900 hover:bg-blue-100'
 
 /**
@@ -44,9 +44,9 @@ export function ItemListCard<T>({
     )
   }
 
-  return (
-    <div className={cn('p-2 space-y-1', className)}>
-      {items.map((item) => {
+    return (
+      <div className={cn('space-y-1', className)}>
+        {items.map((item) => {
         const id = getKey(item)
         const isSelected = selectedId === id
         const isSelectable = onSelect != null
@@ -60,19 +60,19 @@ export function ItemListCard<T>({
               className={cn(itemClassName, isSelected && selectedItemClassName)}
               onClick={() => onSelect(id)}
             >
-              <p className="font-medium truncate w-full">{renderPrimary(item)}</p>
+              <p className="w-full truncate font-medium leading-snug">{renderPrimary(item)}</p>
               {renderSecondary && (
-                <div className="mt-1">{renderSecondary(item)}</div>
+                <div className="mt-0.5">{renderSecondary(item)}</div>
               )}
             </Button>
           )
         }
 
         return (
-          <div key={id} className={cn('p-2', itemClassName)}>
-            <p className="font-medium truncate w-full">{renderPrimary(item)}</p>
+          <div key={id} className={cn('px-2 py-1.5', itemClassName)}>
+            <p className="w-full truncate font-medium leading-snug">{renderPrimary(item)}</p>
             {renderSecondary && (
-              <div className="mt-1">{renderSecondary(item)}</div>
+              <div className="mt-0.5">{renderSecondary(item)}</div>
             )}
           </div>
         )

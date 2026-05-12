@@ -337,7 +337,6 @@ export class PenyusunService {
             tandaTangan: true,
           },
         },
-        kredensialTTE: true,
         opdSebagaiKepala: true,
         opdSebagaiPjPenyusun: true,
       },
@@ -358,7 +357,7 @@ export class PenyusunService {
       c.pengajuanEvaluasiDiverifikasi +
       c.riwayatOpd +
       c.tandaTangan;
-    if (sum > 0 || row.kredensialTTE !== null || row.opdSebagaiKepala !== null) {
+    if (sum > 0 || row.ttePinHash !== null || row.opdSebagaiKepala !== null) {
       throw new ConflictException(
         'Tidak dapat menghapus pengguna: masih ada data yang terikat (SOP, komentar, evaluasi, atau jabatan OPD).',
       );

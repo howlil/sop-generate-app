@@ -19,6 +19,8 @@ export interface DetailEvaluasiOPDSubmitDialogProps {
   blockingReason: string | null;
   onConfirm: () => void;
   isSubmitting?: boolean;
+  /** false untuk pengajuan MANDIRI — teks bantuan tanpa syarat skor OPD. */
+  requiresNilaiOpdInCopy?: boolean;
   /** Error validasi / server terakhir (ditampilkan di dalam dialog). */
   terjadwalSubmitError?: EvaluasiBatchSubmitError;
 }
@@ -31,6 +33,7 @@ export function DetailEvaluasiOPDSubmitDialog({
   blockingReason,
   onConfirm,
   isSubmitting = false,
+  requiresNilaiOpdInCopy = true,
   terjadwalSubmitError = { kind: "none", items: [] },
 }: DetailEvaluasiOPDSubmitDialogProps) {
   const serverMessage =
@@ -48,7 +51,14 @@ export function DetailEvaluasiOPDSubmitDialog({
           <p className="text-xs text-gray-600">
             Pengajuan hanya dapat diselesaikan jika{" "}
             <strong>semua SOP dalam pengajuan bernilai Sesuai</strong> (tersimpan di server)
-            dan <strong>skor evaluasi OPD (1–5)</strong> sudah diisi di tab Evaluasi OPD.
+            {requiresNilaiOpdInCopy ? (
+              <>
+                {" "}
+                dan <strong>skor evaluasi OPD (1–5)</strong> sudah diisi di tab Evaluasi OPD.
+              </>
+            ) : (
+              <>.</>
+            )}{" "}
             SOP <strong>Perlu Perbaikan</strong> dikembalikan ke penyusun melalui catatan
             formal pada tab Evaluasi SOP — bukan lewat dialog ini.
           </p>

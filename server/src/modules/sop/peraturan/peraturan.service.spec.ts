@@ -15,6 +15,7 @@ describe('PeraturanService', () => {
     | 'deleteOpdLink'
     | 'countOpdLinks'
     | 'deletePeraturan'
+    | 'findManyByOpdId'
   >> = {
     findOpdIdByPenggunaId: jest.fn(),
     hasOpdLink: jest.fn(),
@@ -22,6 +23,7 @@ describe('PeraturanService', () => {
     deleteOpdLink: jest.fn(),
     countOpdLinks: jest.fn(),
     deletePeraturan: jest.fn(),
+    findManyByOpdId: jest.fn(),
   };
   const user: JwtAccessPayload = {
     sub: 'pengguna-1',
@@ -62,5 +64,26 @@ describe('PeraturanService', () => {
     await service.remove(user, 'per-1');
     expect(repoMock.deleteOpdLink).toHaveBeenCalledWith('opd-1', 'per-1');
     expect(repoMock.deletePeraturan).not.toHaveBeenCalled();
+  });
+
+  it('should_include_last_edited_by_fields_on_list_mapping', async () => {
+    repoMock.findManyByOpdId.mockResolvedValue([
+      {
+        peraturanId: 'per-1',
+        nama: 'Permen A',
+        nomor: '1',
+        tahun: 2026,
+        tentang: 'Tentang A',
+        lastEditedById: 'u-last',
+        lastEditedBy: { penggunaId: 'u-last', nama: 'Budi', opd: { opdId: 'opd-1', nama: 'OPD X' } },
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+        dasarHukumCount: 3,
+      },
+    ]);
+    const rows = await service.list(user, undefined);
+    expect(rows[0]?.lastEditedById).toBe('u-last');
+    expect(rows[0]?.lastEditedBy?.nama).toBe('Budi');
+    expect(rows[0]?.lastEditedBy?.opd?.nama).toBe('OPD X');
   });
 });

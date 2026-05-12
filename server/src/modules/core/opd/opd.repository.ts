@@ -18,7 +18,7 @@ export type OpdEvaluasiRingkasRepoRow = {
 const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,
-  StatusSOP.REVISI_DARI_TIM_EVALUASI,
+  StatusSOP.REVISI_DARI_EVALUATOR,
   StatusSOP.SIAP_DIVERIFIKASI,
 ] as const;
 

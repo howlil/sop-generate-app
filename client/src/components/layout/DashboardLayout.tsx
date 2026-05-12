@@ -47,7 +47,7 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
     },
     {
       to: ROUTES.PJ_EVALUATOR.EVALUATOR,
-      label: "Manajemen Tim Evaluasi",
+      label: "Manajemen Evaluator",
       icon: Users,
     },
     {
@@ -95,18 +95,23 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
       icon: BookOpen,
     },
     {
-      to: ROUTES.PENYUSUN.KOORDINATOR_BERITA_ACARA,
+      to: ROUTES.PENYUSUN.PJ_PENYUSUN_BERITA_ACARA,
       label: "Berita Acara PJ Penyusun",
       icon: FileSignature,
     },
     {
-      to: ROUTES.PENYUSUN.KOORDINATOR_TTE,
+      to: ROUTES.PENYUSUN.PJ_PENYUSUN_TTE,
       label: "TTD Elektronik",
       icon: PenLine,
     },
   ],
   KEPALA_OPD: [
     { to: ROUTES.KEPALA_OPD.SOP, label: "Pantau SOP", icon: FileText },
+    {
+      to: ROUTES.KEPALA_OPD.PENGAJUAN,
+      label: "Pengajuan SOP",
+      icon: FileCheck,
+    },
     {
       to: ROUTES.KEPALA_OPD.TTE,
       label: "TTD Elektronik",

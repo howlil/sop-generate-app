@@ -10,6 +10,7 @@ import {
   JenisDokumenTte,
   PeranPengguna,
   StatusPengajuanEvaluasi,
+  StatusSOP,
 } from '../../generated/prisma';
 import type { JwtAccessPayload } from '../../common/types/jwt-access-payload.type';
 import type { TteRepository } from './tte.repository';
@@ -21,6 +22,12 @@ jest.mock('bcrypt', () => ({
 }));
 
 describe('TteService', () => {
+  const mockTtePinRow = {
+    hashPin: 'x',
+    ttePinSetAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-02T00:00:00.000Z'),
+  };
+
   const evaluatorUser: JwtAccessPayload = {
     sub: 'user-eval',
     email: 'e@test.id',
@@ -45,12 +52,14 @@ describe('TteService', () => {
       findKredensial: jest.fn(),
       upsertKredensialPin: jest.fn(),
       findRiwayatUser: jest.fn(),
+      findRiwayatPengesahanByUserAndDokumen: jest.fn(),
       assertRiwayatBelumAda: jest.fn(),
       transaksiTandaTanganiBaEvaluator: jest.fn(),
       transaksiTandaTanganiBaKoordinator: jest.fn(),
       transaksiTandaTanganiSop: jest.fn(),
+      transaksiTandaTanganiSemuaSopPengajuan: jest.fn(),
       ...partial,
-    } as jest.Mocked<TteRepository>;
+    } as unknown as jest.Mocked<TteRepository>;
   }
 
   function config(secret = 'unit-test-secret-key-min16') {
@@ -79,10 +88,10 @@ describe('TteService', () => {
         peran: PeranPengguna.PJ_EVALUATOR,
         opdId: 'opd-1',
       }),
-      findKredensial: jest.fn().mockResolvedValue({ hashPin: 'x' }),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       transaksiTandaTanganiBaEvaluator: jest.fn().mockResolvedValue({
         error: 'BAD_STATUS',
-        status: StatusPengajuanEvaluasi.MENUNGGU_EVALUASI,
+        status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
       }),
     });
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
@@ -108,7 +117,7 @@ describe('TteService', () => {
         peran: PeranPengguna.PJ_EVALUATOR,
         opdId: 'opd-1',
       }),
-      findKredensial: jest.fn().mockResolvedValue({ hashPin: 'x' }),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
     });
     (bcrypt.compare as jest.Mock).mockResolvedValue(false);
     const service = new TteService(repo, config());
@@ -124,11 +133,12 @@ describe('TteService', () => {
   it('should_return_riwayat_when_evaluator_ba_ok', async () => {
     const ditandatanganiPada = new Date('2026-01-01T00:00:00.000Z');
     const riwayatRow = {
-      riwayatTandaTanganId: 'rw-1',
       userId: evaluatorUser.sub,
+      dokumenTteId: 'doc-1',
       peran: PeranPengguna.PJ_EVALUATOR,
       ditandatanganiPada,
       dokumenTte: {
+        dokumenTteId: 'doc-1',
         nomorDokumen: 'BA-1',
         judulDokumen: 'J',
         hashDokumen: 'abc',
@@ -149,7 +159,7 @@ describe('TteService', () => {
         peran: PeranPengguna.PJ_EVALUATOR,
         opdId: 'opd-1',
       }),
-      findKredensial: jest.fn().mockResolvedValue({ hashPin: 'x' }),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       transaksiTandaTanganiBaEvaluator: jest.fn().mockResolvedValue({
         ok: true,
         riwayat: riwayatRow,
@@ -162,7 +172,7 @@ describe('TteService', () => {
       nomorDokumen: 'BA-1',
       judulDokumen: 'J',
     });
-    expect(actual.id).toBe('rw-1');
+    expect(actual.id).toBe('doc-1:user-eval');
     expect(actual.peran).toBe('PJ_EVALUATOR');
     expect(actual.nomorDokumen).toBe('BA-1');
   });
@@ -179,7 +189,7 @@ describe('TteService', () => {
         peran: PeranPengguna.PJ_PENYUSUN,
         opdId: 'opd-1',
       }),
-      findKredensial: jest.fn().mockResolvedValue({ hashPin: 'x' }),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
     });
     (bcrypt.compare as jest.Mock).mockResolvedValue(true);
     const service = new TteService(repo, config());
@@ -206,5 +216,96 @@ describe('TteService', () => {
     });
     const service = new TteService(repo, config());
     await expect(service.getProfil(kepalaUser)).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('should_throw_not_found_when_getPengesahanPublic_unknown_riwayat', async () => {
+    const repo = createRepoMock({
+      findRiwayatPengesahanByUserAndDokumen: jest.fn().mockResolvedValue(null),
+    });
+    const service = new TteService(repo, config());
+    await expect(
+      service.getPengesahanPublic(
+        '00000000-0000-4000-8000-000000000001',
+        '00000000-0000-4000-8000-000000000002',
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('should_return_pengesahan_public_when_riwayat_exists', async () => {
+    const ditandatanganiPada = new Date('2026-02-01T12:00:00.000Z');
+    const dokumenTteId = '00000000-0000-4000-8000-0000000000bb';
+    const userId = '00000000-0000-4000-8000-0000000000aa';
+    const repo = createRepoMock({
+      findRiwayatPengesahanByUserAndDokumen: jest.fn().mockResolvedValue({
+        userId,
+        dokumenTteId,
+        peran: PeranPengguna.PJ_EVALUATOR,
+        ditandatanganiPada,
+        dokumenTte: {
+          dokumenTteId,
+          nomorDokumen: 'BA-99',
+          judulDokumen: 'Berita Acara',
+          hashDokumen: 'deadbeef',
+          jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
+          detailSopId: null,
+          pengajuanEvaluasiId: 'pe-1',
+        },
+        user: {
+          penggunaId: userId,
+          nama: 'Evaluator',
+          nip: '198001011234567890',
+          jabatan: 'PJ Evaluator',
+        },
+      }),
+    });
+    const service = new TteService(repo, config());
+    const actual = await service.getPengesahanPublic(dokumenTteId, userId);
+    expect(actual.userId).toBe(userId);
+    expect(actual.dokumenTteId).toBe(dokumenTteId);
+    expect(actual.peran).toBe('PJ_EVALUATOR');
+    expect(actual.penandatangan.nama).toBe('Evaluator');
+    expect(actual.dokumen.nomorDokumen).toBe('BA-99');
+    expect(actual.dokumen.pengajuanEvaluasiId).toBe('pe-1');
+    expect(actual.qrVerificationUrl).toBeNull();
+    expect(JSON.parse(actual.qrPayload)).toEqual({
+      t: 'tte-verify-v1',
+      dokumenTteId,
+      hashDokumen: 'deadbeef',
+    });
+  });
+
+  it('should_show_detail_status_context_when_batch_sign_has_non_eligible_sop', async () => {
+    const repo = createRepoMock({
+      findPenggunaAktif: jest.fn().mockResolvedValue({
+        penggunaId: kepalaUser.sub,
+        email: kepalaUser.email,
+        nama: 'Kepala',
+        nip: '3',
+        jabatan: 'Kepala OPD',
+        pangkat: 'A',
+        peran: PeranPengguna.KEPALA_OPD,
+        opdId: 'opd-1',
+      }),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
+      transaksiTandaTanganiSemuaSopPengajuan: jest.fn().mockResolvedValue({
+        error: 'BAD_SOP_STATUS',
+        detailSopId: 'detail-1',
+        nomorSOP: 'SOP-DINKES-001-V1',
+        judulSOP: 'Pelayanan Surat Keterangan Sehat',
+        status: StatusSOP.BERLAKU,
+        expectedStatus: StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
+      }),
+    });
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    const service = new TteService(repo, config());
+    await expect(
+      service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'peng-1', {
+        pin: '1234',
+        nomorDokumen: 'DOC-1',
+        judulDokumen: 'Judul Dokumen',
+      }),
+    ).rejects.toThrow(
+      'SOP SOP-DINKES-001-V1 (Pelayanan Surat Keterangan Sehat) tidak dapat ditandatangani dari status BERLAKU. Status yang diwajibkan: DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI.',
+    );
   });
 });

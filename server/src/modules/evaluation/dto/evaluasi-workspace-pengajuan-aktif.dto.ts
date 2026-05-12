@@ -9,6 +9,9 @@ export class EvaluasiWorkspacePengajuanAktifDto {
   @ApiProperty()
   readonly status!: string;
 
+  @ApiProperty({ enum: ['TERJADWAL', 'MANDIRI'] })
+  readonly jenis!: string;
+
   @ApiProperty({ type: () => [EvaluasiWorkspaceNilaiPerDetailDto] })
   readonly nilaiPerDetail!: EvaluasiWorkspaceNilaiPerDetailDto[];
 }

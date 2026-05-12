@@ -30,16 +30,8 @@ export function TTDElektronikPage({
   const registerTTE = useRegisterTTE()
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const statusLabel = !profile
-    ? 'Belum dibuat'
-    : profile.emailTerverifikasi
-      ? 'Aktif'
-      : 'Menunggu verifikasi email'
-  const statusVariant = !profile
-    ? 'secondary'
-    : profile.emailTerverifikasi
-      ? 'default'
-      : 'outline'
+  const statusLabel = !profile ? 'Belum dibuat' : 'Aktif'
+  const statusVariant = !profile ? 'secondary' : 'default'
 
   return (
     <div className="space-y-4">

@@ -5,12 +5,16 @@
 import { apiClient } from "@/lib/api/api-client";
 import type { ApiSuccessResponse } from "@/types/dto/auth.dto";
 import type {
-  KredensialTTE,
   RegisterTteDto,
   RiwayatTandaTangan,
+  TtePengesahanPublic,
+  TteProfil,
   TandaTanganiBaDto,
   TandaTanganiBaMutationDto,
   TandaTanganiSopDto,
+  TandaTanganiSopPengajuanDto,
+  TandaTanganiSopPengajuanMutationDto,
+  TandaTanganiSopPengajuanResponse,
   TandaTanganiSopMutationDto,
 } from "@/types/dto/tte.dto";
 
@@ -21,13 +25,13 @@ async function unwrapTte<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T>
 
 export const tteApi = {
   getProfil: () =>
-    unwrapTte<KredensialTTE | null>(
-      apiClient.get<ApiSuccessResponse<KredensialTTE | null>>("/tte/profil"),
+    unwrapTte<TteProfil | null>(
+      apiClient.get<ApiSuccessResponse<TteProfil | null>>("/tte/profil"),
     ),
 
   registerProfil: (payload: RegisterTteDto) =>
-    unwrapTte<KredensialTTE>(
-      apiClient.post<ApiSuccessResponse<KredensialTTE>>("/tte/profil", payload),
+    unwrapTte<TteProfil>(
+      apiClient.post<ApiSuccessResponse<TteProfil>>("/tte/profil", payload),
     ),
 
   mintTokenVerifikasi: () =>
@@ -49,6 +53,14 @@ export const tteApi = {
       apiClient.get<ApiSuccessResponse<RiwayatTandaTangan[]>>("/tte/riwayat"),
     ),
 
+  /** Verifikasi pengesahan (publik, tanpa login). */
+  getPengesahanPublic: (dokumenTteId: string, userId: string) =>
+    unwrapTte<TtePengesahanPublic>(
+      apiClient.get<ApiSuccessResponse<TtePengesahanPublic>>(
+        `/tte/public/pengesahan/${encodeURIComponent(dokumenTteId)}/${encodeURIComponent(userId)}`,
+      ),
+    ),
+
   tandaTanganiBA: (pengajuanId: string, payload: TandaTanganiBaDto) =>
     unwrapTte<RiwayatTandaTangan>(
       apiClient.post<ApiSuccessResponse<RiwayatTandaTangan>>(
@@ -61,6 +73,17 @@ export const tteApi = {
     unwrapTte<RiwayatTandaTangan>(
       apiClient.post<ApiSuccessResponse<RiwayatTandaTangan>>(
         `/tte/tanda-tangani/sop/${sopDetailId}`,
+        payload,
+      ),
+    ),
+
+  tandaTanganiSemuaSopPengajuan: (
+    pengajuanId: string,
+    payload: TandaTanganiSopPengajuanDto,
+  ) =>
+    unwrapTte<TandaTanganiSopPengajuanResponse>(
+      apiClient.post<ApiSuccessResponse<TandaTanganiSopPengajuanResponse>>(
+        `/tte/tanda-tangani/pengajuan/${pengajuanId}/sop-semua`,
         payload,
       ),
     ),
@@ -84,6 +107,15 @@ export function useTTEProfil() {
   });
 }
 
+export function useTtePengesahanPublic(dokumenTteId: string, userId: string) {
+  return useQuery({
+    queryKey: queryKeys.ttePengesahanPublic(dokumenTteId, userId),
+    queryFn: () => tteApi.getPengesahanPublic(dokumenTteId, userId),
+    staleTime: STALE_TIME.LONG,
+    retry: false,
+  });
+}
+
 export function useRegisterTTE() {
   return useMutationWithToast({
     mutationFn: (payload: RegisterTteDto) => tteApi.registerProfil(payload),
@@ -95,16 +127,16 @@ export function useRegisterTTE() {
 }
 
 export function useTandaTanganiBA(options?: {
-  isKoordinator?: boolean;
+  isPjPenyusun?: boolean;
   /** Mengganti pesan sukses bawaan (satu sumber toast; jangan panggil showToast lagi setelah mutateAsync). */
   successMessage?: string;
 }) {
-  const defaultSuccessKoordinator =
+  const defaultSuccessPjPenyusun =
     "Berita Acara berhasil ditandatangani oleh PJ Penyusun.";
   const defaultSuccessEvaluator = "Berita Acara berhasil ditandatangani";
   const successMessage =
     options?.successMessage ??
-    (options?.isKoordinator ? defaultSuccessKoordinator : defaultSuccessEvaluator);
+    (options?.isPjPenyusun ? defaultSuccessPjPenyusun : defaultSuccessEvaluator);
   return useMutationWithToast({
     mutationFn: ({ pengajuanId, payload }: TandaTanganiBaMutationDto) =>
       tteApi.tandaTanganiBA(pengajuanId, payload),
@@ -132,6 +164,23 @@ export function useTandaTanganiSOP() {
     successMessage: "SOP berhasil disahkan (TTE simulasi / format selaras BSRE).",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal mengesahkan SOP",
+  });
+}
+
+export function useTandaTanganiSopPengajuan() {
+  return useMutationWithToast({
+    mutationFn: ({ pengajuanId, payload }: TandaTanganiSopPengajuanMutationDto) =>
+      tteApi.tandaTanganiSemuaSopPengajuan(pengajuanId, payload),
+    invalidateKeys: [
+      queryKeys.sop,
+      queryKeys.evaluasi,
+      queryKeys.tteRiwayat,
+      queryKeys.detailSop,
+      queryKeys.evaluasiWorkspaceOpdAll,
+    ],
+    successMessage: "Seluruh SOP dalam pengajuan berhasil ditandatangani.",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal menandatangani seluruh SOP pengajuan",
   });
 }
 

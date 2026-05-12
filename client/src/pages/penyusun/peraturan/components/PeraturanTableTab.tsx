@@ -49,6 +49,7 @@ export function PeraturanTableTab({
                 <Table.Th>Peraturan</Table.Th>
                 <Table.Th>Nomor</Table.Th>
                 <Table.Th>Tentang</Table.Th>
+                <Table.Th>Terakhir diedit</Table.Th>
                 <Table.Th align="center">Aksi</Table.Th>
               </Table.HeadRow>
             </thead>
@@ -64,6 +65,23 @@ export function PeraturanTableTab({
                     No. {peraturan.nomor}/{peraturan.tahun}
                   </Table.Td>
                   <Table.Td className="text-gray-900">{peraturan.tentang}</Table.Td>
+                  <Table.Td className="text-gray-700">
+                    {peraturan.lastEditedBy ? (
+                      <div
+                        className="min-w-0 max-w-[18rem] space-y-0.5"
+                        title={`${peraturan.lastEditedBy.nama} (${peraturan.lastEditedBy.opd.nama})`}
+                      >
+                        <div className="truncate font-medium text-gray-900">
+                          {peraturan.lastEditedBy.nama}
+                        </div>
+                        <div className="truncate text-xs text-gray-500">
+                          {peraturan.lastEditedBy.opd.nama}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </Table.Td>
                   <Table.Td className="text-center">
                     <div className="flex items-center justify-center gap-1">
                       <IconActionButton

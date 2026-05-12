@@ -10,7 +10,7 @@ export class OpdEvaluasiRingkasResponseDto {
 
   @ApiProperty({
     description:
-      'Jumlah SOP dengan status terbaru DIAJUKAN_EVALUASI, SEDANG_DIEVALUASI, REVISI_DARI_TIM_EVALUASI, atau SIAP_DIVERIFIKASI',
+      'Jumlah SOP dengan status terbaru DIAJUKAN_EVALUASI, SEDANG_DIEVALUASI, REVISI_DARI_EVALUATOR, atau SIAP_DIVERIFIKASI',
   })
   readonly jumlahSop!: number;
 

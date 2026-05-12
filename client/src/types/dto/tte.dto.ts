@@ -3,10 +3,10 @@ export type PeranTTE =
   | "PJ_EVALUATOR"
   | "PJ_PENYUSUN";
 
-export interface KredensialTTE {
+/** Profil TTE dari GET/POST `/tte/profil` — PIN disimpan di server pada data pengguna. */
+export interface TteProfil {
   id: string;
   userId: string;
-  emailTerverifikasi: boolean;
   peran: PeranTTE;
   createdAt: string;
   updatedAt: string;
@@ -23,6 +23,7 @@ export interface KredensialTTE {
 export interface RiwayatTandaTangan {
   id: string;
   userId: string;
+  dokumenTteId: string;
   peran: PeranTTE;
   nomorDokumen: string;
   jenisDokumen: string;
@@ -44,11 +45,38 @@ export interface RiwayatTandaTangan {
 }
 
 export interface TTESignaturePayload {
+  /** Turunan `dokumenTteId:userId` — kompatibel dengan ringkasan baris riwayat. */
   id: string;
+  dokumenTteId: string;
+  userId: string;
   nip: string;
   namaLengkap: string;
   jabatan?: string;
   signedAt?: string;
+}
+
+/** Respons GET publik verifikasi pengesahan (`/tte/public/pengesahan/:dokumenTteId/:userId`). */
+export interface TtePengesahanPublic {
+  userId: string;
+  dokumenTteId: string;
+  ditandatanganiPada: string;
+  peran: PeranTTE;
+  penandatangan: {
+    nama: string;
+    nip: string;
+    jabatan: string;
+  };
+  dokumen: {
+    dokumenTteId: string;
+    nomorDokumen: string;
+    judulDokumen: string;
+    jenisDokumen: string;
+    hashDokumen: string;
+    sopDetailId?: string;
+    pengajuanEvaluasiId?: string;
+  };
+  qrVerificationUrl: string | null;
+  qrPayload: string;
 }
 
 export type TTERole =
@@ -80,4 +108,21 @@ export interface TandaTanganiBaMutationDto {
 export interface TandaTanganiSopMutationDto {
   sopDetailId: string;
   payload: TandaTanganiSopDto;
+}
+
+export interface TandaTanganiSopPengajuanDto {
+  pin: string;
+  nomorDokumen: string;
+  judulDokumen: string;
+}
+
+export interface TandaTanganiSopPengajuanMutationDto {
+  pengajuanId: string;
+  payload: TandaTanganiSopPengajuanDto;
+}
+
+export interface TandaTanganiSopPengajuanResponse {
+  pengajuanEvaluasiId: string;
+  totalSopDitandatangani: number;
+  ditandatanganiPada: string;
 }

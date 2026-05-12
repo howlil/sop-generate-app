@@ -18,7 +18,8 @@ const OPTIONS: OptionCardOption<StatusHasilEvaluasi>[] = [
   {
     value: STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN,
     label: 'Perlu Perbaikan',
-    description: '→ SOP perlu perbaikan sebelum diverifikasi',
+    description:
+      '→ SOP dikembalikan ke penyusun untuk revisi; status dokumen menjadi Revisi dari evaluator setelah disimpan.',
     icon: <XCircle className="w-6 h-6" />,
     variant: 'warning',
   },
@@ -47,11 +48,16 @@ export function StatusHasilEvaluasiPicker({
         required
         disabled={disabled}
       />
-      {value === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && !komentarTrim && (
-        <InfoCard variant="warning" className="mt-2 flex items-start gap-2">
-          <p className="text-[10px] text-amber-800">Catatan wajib diisi jika hasil Perlu Perbaikan.</p>
+      {value === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN ? (
+        <InfoCard variant="warning" className="mt-2 flex flex-col gap-1.5">
+          <p className="text-[10px] text-amber-900 font-medium">
+            Dokumen ini akan dikembalikan ke penyusun OPD. Pastikan catatan di bawah jelas agar revisi terarah.
+          </p>
+          {!komentarTrim ? (
+            <p className="text-[10px] text-amber-800">Catatan wajib diisi jika hasil Perlu Perbaikan.</p>
+          ) : null}
         </InfoCard>
-      )}
+      ) : null}
     </>
   )
 }

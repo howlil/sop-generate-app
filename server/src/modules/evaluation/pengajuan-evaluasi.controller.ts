@@ -14,6 +14,7 @@ import { PeranPengguna } from '../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../core/auth/helpers/auth.shared';
 import { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
 import { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
+import { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
 import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
 
 @ApiTags('Evaluasi')
@@ -23,12 +24,17 @@ export class PengajuanEvaluasiController {
   constructor(private readonly pengajuanEvaluasiService: PengajuanEvaluasiService) {}
 
   @Get()
-  @Roles(PeranPengguna.PJ_EVALUATOR, PeranPengguna.EVALUATOR, PeranPengguna.PJ_PENYUSUN)
+  @Roles(
+    PeranPengguna.PJ_EVALUATOR,
+    PeranPengguna.EVALUATOR,
+    PeranPengguna.PJ_PENYUSUN,
+    PeranPengguna.KEPALA_OPD,
+  )
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Daftar pengajuan evaluasi',
     description:
-      'PJ Evaluator dan Evaluator melihat seluruh pengajuan (dapat difilter). PJ Penyusun hanya melihat pengajuan untuk OPD-nya.',
+      'PJ Evaluator dan Evaluator melihat seluruh pengajuan (dapat difilter). PJ Penyusun dan Kepala OPD hanya melihat pengajuan untuk OPD-nya. Filter beberapa status pakai query `statusIn` (diulang per nilai atau koma); bila digunakan, lebih diutamakan daripada `status` tunggal.',
   })
   @ApiResponse({ status: 200, description: 'Daftar payload pengajuan selaras kontrak front-end' })
   @ApiForbiddenResponse({ description: 'Peran tidak diizinkan' })
@@ -44,13 +50,45 @@ export class PengajuanEvaluasiController {
     };
   }
 
+  @Get('ringkas')
+  @Roles(
+    PeranPengguna.PJ_EVALUATOR,
+    PeranPengguna.EVALUATOR,
+    PeranPengguna.PJ_PENYUSUN,
+    PeranPengguna.KEPALA_OPD,
+  )
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Daftar pengajuan evaluasi ringkas (terpaginasi)',
+    description:
+      'Payload ringan untuk tabel dashboard: OPD, status, jenis, progres penilaian SOP. PJ Evaluator dan Evaluator melihat seluruh pengajuan (filter/search). PJ Penyusun dan Kepala OPD terbatas OPD sendiri.',
+  })
+  @ApiResponse({ status: 200 })
+  @ApiForbiddenResponse({ description: 'Peran tidak diizinkan' })
+  async findAllRingkas(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Query() query: PengajuanEvaluasiRingkasQueryDto,
+  ): Promise<ApiSuccessResponse<Record<string, unknown>>> {
+    const data = await this.pengajuanEvaluasiService.findAllRingkas(req.user, query);
+    return {
+      message: 'Daftar ringkas pengajuan evaluasi berhasil diambil',
+      success: true,
+      data,
+    };
+  }
+
   @Get(':pengajuanEvaluasiId')
-  @Roles(PeranPengguna.PJ_EVALUATOR, PeranPengguna.EVALUATOR, PeranPengguna.PJ_PENYUSUN)
+  @Roles(
+    PeranPengguna.PJ_EVALUATOR,
+    PeranPengguna.EVALUATOR,
+    PeranPengguna.PJ_PENYUSUN,
+    PeranPengguna.KEPALA_OPD,
+  )
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({ summary: 'Detail satu pengajuan evaluasi (beserta nilai & riwayat ringkas)' })
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiResponse({ status: 200 })
-  @ApiForbiddenResponse({ description: 'Tidak boleh mengakses OPD lain (PJ Penyusun)' })
+  @ApiForbiddenResponse({ description: 'Tidak boleh mengakses OPD lain (PJ Penyusun/Kepala OPD)' })
   @ApiNotFoundResponse({ description: 'Pengajuan tidak ditemukan' })
   async findOne(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -68,9 +106,9 @@ export class PengajuanEvaluasiController {
   @Roles(PeranPengguna.PJ_EVALUATOR)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Buka batch evaluasi untuk sekumpulan DetailSOP satu OPD',
+    summary: 'Buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD',
     description:
-      'Endpoint administratif / batch terjadwal untuk PJ Evaluator. Evaluator mandiri tidak membutuhkan pemanggilan ini: workspace evaluator dapat mem-bootstrap pengajuan jenis MANDIRI otomatis. Jika dipanggil, membuat pengajuan berstatus SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI bila masuk pipeline evaluasi.',
+      'Hanya PJ Evaluator. Body wajib `jenis`: TERJADWAL (batch resmi; evaluator wajib mengisi skor OPD 1–5 saat PATCH selesai) atau MANDIRI (tanpa penilaian OPD tingkat pengajuan). Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI bila memenuhi pipeline. Evaluator juga dapat memunculkan pengajuan MANDIRI otomatis lewat workspace tanpa memanggil endpoint ini.',
   })
   @ApiResponse({ status: 201 })
   @ApiForbiddenResponse({ description: 'Bukan PJ Evaluator' })

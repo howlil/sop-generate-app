@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  JenisLampiran,
   JenisLangkahProsedur,
   PeranPengguna,
   Prisma,
@@ -35,6 +34,7 @@ describe('SopCatalogService', () => {
       | 'findDetailIdByDetailOrSopId'
       | 'findLatestDetailStatusContext'
       | 'updateDetailSopStatus'
+      | 'transitionDetailSopRevisiToDiajukanEvaluasi'
       | 'updateSopHeaderTransaction'
     >
   > = {
@@ -47,6 +47,7 @@ describe('SopCatalogService', () => {
     findDetailIdByDetailOrSopId: jest.fn(),
     findLatestDetailStatusContext: jest.fn(),
     updateDetailSopStatus: jest.fn(),
+    transitionDetailSopRevisiToDiajukanEvaluasi: jest.fn(),
     updateSopHeaderTransaction: jest.fn(),
   };
   const user: JwtAccessPayload = {
@@ -305,7 +306,6 @@ describe('SopCatalogService', () => {
     const payload = {
       detailSopId: 'det-wb',
       sopId: 'sop-wb',
-      salinDariDetailSopId: null,
       status: 'DRAFT',
       versi: 1,
       nomorSOP: 'WB/1',
@@ -332,7 +332,10 @@ describe('SopCatalogService', () => {
       },
       dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
       terakhirDieditOleh: null,
-      lampiran: [],
+      lampiranPeringatan: [],
+      lampiranKualifikasiPelaksanaan: [],
+      lampiranPeralatanPerlengkapan: [],
+      lampiranPencatatanPendataan: [],
       dasarHukum: [],
       relasiSopKeluar: [],
       relasiSopMasuk: [],
@@ -350,7 +353,6 @@ describe('SopCatalogService', () => {
     const payload = {
       detailSopId: 'det-wb-2',
       sopId: 'sop-wb-2',
-      salinDariDetailSopId: null,
       status: 'DRAFT',
       versi: 1,
       nomorSOP: 'WB/2',
@@ -377,7 +379,10 @@ describe('SopCatalogService', () => {
       },
       dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
       terakhirDieditOleh: null,
-      lampiran: [],
+      lampiranPeringatan: [],
+      lampiranKualifikasiPelaksanaan: [],
+      lampiranPeralatanPerlengkapan: [],
+      lampiranPencatatanPendataan: [],
       dasarHukum: [],
       relasiSopKeluar: [],
       relasiSopMasuk: [],
@@ -390,7 +395,7 @@ describe('SopCatalogService', () => {
           detailSopId: 'det-wb-2',
           userId: 'p1',
           bagian: 'HEADER',
-          entityId: null,
+          targetEntityId: null,
           keterangan: 'Header SOP: Peringatan',
           meta: { fields: ['peringatan'], count: 1 },
           closedAt: null,
@@ -422,7 +427,6 @@ describe('SopCatalogService', () => {
       ({
         detailSopId: 'det-up',
         sopId: 'sop-up',
-        salinDariDetailSopId: null,
         status: 'DRAFT',
         versi: 1,
         nomorSOP: 'WB/UP',
@@ -449,7 +453,10 @@ describe('SopCatalogService', () => {
         },
         dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
         terakhirDieditOleh: null,
-        lampiran: [],
+        lampiranPeringatan: [],
+        lampiranKualifikasiPelaksanaan: [],
+        lampiranPeralatanPerlengkapan: [],
+        lampiranPencatatanPendataan: [],
         dasarHukum: [],
         relasiSopKeluar: [],
         relasiSopMasuk: [],
@@ -562,25 +569,29 @@ describe('SopCatalogService', () => {
 
     it('should_replace_lampiran_per_jenis_when_arrays_provided', async () => {
       const dto: UpdateSopHeaderDto = {
-        peringatan: 'Hati-hati saat verifikasi',
-        kualifikasiPelaksanaan: ['S1 Hukum', 'Sertifikat A'],
-        peralatanPerlengkapan: ['Komputer', 'Printer'],
-        pencatatanPendataan: ['Buku register'],
+        lampiran: {
+          peringatan: ['Hati-hati saat verifikasi'],
+          kualifikasiPelaksanaan: ['S1 Hukum', 'Sertifikat A'],
+          peralatanPerlengkapan: ['Komputer', 'Printer'],
+          pencatatanPendataan: ['Buku register'],
+        },
       };
       await service.updatePenyusunHeader(user, 'det-up', dto);
       expect(repoMock.updateSopHeaderTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
           input: expect.objectContaining({
-            peringatan: 'Hati-hati saat verifikasi',
-            kualifikasiPelaksanaan: ['S1 Hukum', 'Sertifikat A'],
-            peralatanPerlengkapan: ['Komputer', 'Printer'],
-            pencatatanPendataan: ['Buku register'],
+            lampiran: {
+              peringatan: ['Hati-hati saat verifikasi'],
+              kualifikasiPelaksanaan: ['S1 Hukum', 'Sertifikat A'],
+              peralatanPerlengkapan: ['Komputer', 'Printer'],
+              pencatatanPendataan: ['Buku register'],
+            },
           }),
           changedFields: expect.arrayContaining([
-            'peringatan',
-            'kualifikasiPelaksanaan',
-            'peralatanPerlengkapan',
-            'pencatatanPendataan',
+            'lampiran.peringatan',
+            'lampiran.kualifikasiPelaksanaan',
+            'lampiran.peralatanPerlengkapan',
+            'lampiran.pencatatanPendataan',
           ]),
         }),
       );
@@ -598,6 +609,16 @@ describe('SopCatalogService', () => {
       );
     });
 
+    it('should_propagate_bad_request_when_repo_rejects_sop_terkait_inverse', async () => {
+      repoMock.updateSopHeaderTransaction.mockRejectedValueOnce(
+        new BadRequestException('SOP terkait bentrok: salah satu target sudah menaut balik ke dokumen ini'),
+      );
+      const dto: UpdateSopHeaderDto = { sopTerkaitDetailIds: ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'] };
+      await expect(service.updatePenyusunHeader(user, 'det-up', dto)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
     it('should_skip_repo_when_dto_has_no_field', async () => {
       const dto: UpdateSopHeaderDto = {};
       await service.updatePenyusunHeader(user, 'det-up', dto);
@@ -607,27 +628,26 @@ describe('SopCatalogService', () => {
 
     it('should_return_workbench_with_grouped_lampiran_after_update', async () => {
       const refreshedPayload = baseWorkbenchPayload({
-        lampiran: [
+        lampiranPeringatan: [
           {
-            lampiranTeksId: 'l1',
+            lampiranPeringatanId: 'l1',
             detailSopId: 'det-up',
-            jenis: 'PERINGATAN',
             teks: 'Awas!',
             createdAt: t,
             updatedAt: t,
           },
+        ],
+        lampiranKualifikasiPelaksanaan: [
           {
-            lampiranTeksId: 'l2',
+            lampiranKualifikasiPelaksanaanId: 'l2',
             detailSopId: 'det-up',
-            jenis: 'KUALIFIKASI_PELAKSANAAN',
             teks: 'S1 Hukum',
             createdAt: t,
             updatedAt: t,
           },
           {
-            lampiranTeksId: 'l3',
+            lampiranKualifikasiPelaksanaanId: 'l3',
             detailSopId: 'det-up',
-            jenis: 'KUALIFIKASI_PELAKSANAAN',
             teks: 'Sertifikat A',
             createdAt: new Date(t.getTime() + 1000),
             updatedAt: new Date(t.getTime() + 1000),
@@ -637,12 +657,15 @@ describe('SopCatalogService', () => {
       repoMock.findWorkbenchPayloadByDetailOrSopId
         .mockResolvedValueOnce(baseWorkbenchPayload())
         .mockResolvedValueOnce(refreshedPayload);
-      const dto: UpdateSopHeaderDto = { peringatan: 'Awas!' };
+      const dto: UpdateSopHeaderDto = { lampiran: { peringatan: ['Awas!'] } };
       const actual = await service.updatePenyusunHeader(user, 'det-up', dto);
-      expect(actual.detail.peringatan).toBe('Awas!');
-      expect(actual.detail.kualifikasiPelaksanaan).toEqual(['S1 Hukum', 'Sertifikat A']);
-      expect(actual.detail.peralatanPerlengkapan).toEqual([]);
-      expect(actual.detail.pencatatanPendataan).toEqual([]);
+      expect(actual.detail.lampiran?.peringatan.map((i) => i.teks)).toEqual(['Awas!']);
+      expect(actual.detail.lampiran?.kualifikasiPelaksanaan.map((i) => i.teks)).toEqual([
+        'S1 Hukum',
+        'Sertifikat A',
+      ]);
+      expect(actual.detail.lampiran?.peralatanPerlengkapan.map((i) => i.teks)).toEqual([]);
+      expect(actual.detail.lampiran?.pencatatanPendataan.map((i) => i.teks)).toEqual([]);
     });
   });
 
@@ -652,7 +675,6 @@ describe('SopCatalogService', () => {
       return {
         detailSopId: 'det-st',
         sopId: 'sop-st',
-        salinDariDetailSopId: null,
         status,
         versi: 1,
         nomorSOP: 'ST/1',
@@ -679,7 +701,10 @@ describe('SopCatalogService', () => {
         },
         dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
         terakhirDieditOleh: null,
-        lampiran: [],
+        lampiranPeringatan: [],
+        lampiranKualifikasiPelaksanaan: [],
+        lampiranPeralatanPerlengkapan: [],
+        lampiranPencatatanPendataan: [],
         dasarHukum: [],
         relasiSopKeluar: [],
         relasiSopMasuk: [],
@@ -696,35 +721,37 @@ describe('SopCatalogService', () => {
       const base = stubWorkbenchPayload(status);
       return {
         ...base,
-        lampiran: [
+        lampiranPeringatan: [
           {
-            lampiranTeksId: 'lt-per',
             detailSopId: 'det-st',
-            jenis: JenisLampiran.PERINGATAN,
+            lampiranPeringatanId: 'lt-per',
             teks: 'Perhatikan prosedur',
             createdAt: t,
             updatedAt: t,
           },
+        ],
+        lampiranKualifikasiPelaksanaan: [
           {
-            lampiranTeksId: 'lt-kua',
             detailSopId: 'det-st',
-            jenis: JenisLampiran.KUALIFIKASI_PELAKSANAAN,
+            lampiranKualifikasiPelaksanaanId: 'lt-kua',
             teks: 'Kualifikasi A',
             createdAt: t,
             updatedAt: t,
           },
+        ],
+        lampiranPeralatanPerlengkapan: [
           {
-            lampiranTeksId: 'lt-alat',
             detailSopId: 'det-st',
-            jenis: JenisLampiran.PERALATAN,
+            lampiranPeralatanPerlengkapanId: 'lt-alat',
             teks: 'Alat B',
             createdAt: t,
             updatedAt: t,
           },
+        ],
+        lampiranPencatatanPendataan: [
           {
-            lampiranTeksId: 'lt-cat',
             detailSopId: 'det-st',
-            jenis: JenisLampiran.PENCATATAN_PENDATAAN,
+            lampiranPencatatanPendataanId: 'lt-cat',
             teks: 'Catatan C',
             createdAt: t,
             updatedAt: t,
@@ -913,6 +940,223 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
         detailSopId: 'det-st',
         status: StatusSOP.DIAJUKAN_EVALUASI,
+        userId: 'pengguna-1',
+      });
+      expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');
+    });
+  });
+
+  describe('kirimUlangKeEvaluatorSetelahRevisi', () => {
+    const t = new Date('2026-05-01T08:00:00.000Z');
+
+    function minimalRevisiWorkbench(): SopWorkbenchDbPayload {
+      const pelaksanaId = 'pel-1';
+      const langkahId = 'langkah-1';
+      return {
+        detailSopId: 'det-rev',
+        sopId: 'sop-rev',
+        status: 'REVISI_DARI_EVALUATOR',
+        versi: 1,
+        nomorSOP: 'REV/1',
+        tanggalPembuatan: t,
+        tanggalRevisi: null,
+        tanggalEfektif: null,
+        namaLembaga: 'Lembaga',
+        dibuatOlehId: 'p1',
+        terakhirDieditOlehId: null,
+        createdAt: t,
+        updatedAt: t,
+        sop: {
+          sopId: 'sop-rev',
+          opdId: 'opd-1',
+          judul: 'Judul Rev',
+          createdAt: t,
+          updatedAt: t,
+          opd: {
+            opdId: 'opd-1',
+            nama: 'OPD Satu',
+            kepalaPenggunaId: null,
+            kepalaPengguna: null,
+          },
+        },
+        dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
+        terakhirDieditOleh: null,
+        lampiranPeringatan: [
+          {
+            detailSopId: 'det-rev',
+            lampiranPeringatanId: 'lt-per',
+            teks: 'Perhatian',
+            createdAt: t,
+            updatedAt: t,
+          },
+        ],
+        lampiranKualifikasiPelaksanaan: [
+          {
+            detailSopId: 'det-rev',
+            lampiranKualifikasiPelaksanaanId: 'lt-kua',
+            teks: 'Kualifikasi',
+            createdAt: t,
+            updatedAt: t,
+          },
+        ],
+        lampiranPeralatanPerlengkapan: [
+          {
+            detailSopId: 'det-rev',
+            lampiranPeralatanPerlengkapanId: 'lt-alat',
+            teks: 'Alat',
+            createdAt: t,
+            updatedAt: t,
+          },
+        ],
+        lampiranPencatatanPendataan: [
+          {
+            detailSopId: 'det-rev',
+            lampiranPencatatanPendataanId: 'lt-cat',
+            teks: 'Catat',
+            createdAt: t,
+            updatedAt: t,
+          },
+        ],
+        dasarHukum: [
+          {
+            detailSopId: 'det-rev',
+            peraturanId: 'per-1',
+            createdAt: t,
+            updatedAt: t,
+            peraturan: {
+              peraturanId: 'per-1',
+              nama: 'PP',
+              nomor: '1',
+              tahun: 2024,
+              tentang: 'Peraturan contoh',
+              createdAt: t,
+              updatedAt: t,
+            },
+          },
+        ],
+        relasiSopKeluar: [
+          {
+            detailSopId: 'det-rev',
+            detailSopTerkaitId: 'det-lain',
+            createdAt: t,
+            updatedAt: t,
+            sopTerkait: {
+              detailSopId: 'det-lain',
+              sopId: 'sop-lain',
+              nomorSOP: '99/2026',
+              sop: { sopId: 'sop-lain', judul: 'SOP lain' },
+            },
+          },
+        ],
+        relasiSopMasuk: [],
+        swimlanes: [
+          {
+            detailSopId: 'det-rev',
+            pelaksanaId,
+            urutan: 0,
+            createdAt: t,
+            updatedAt: t,
+            pelaksana: {
+              pelaksanaId,
+              opdId: 'opd-1',
+              nama: 'Pelaksana',
+              createdAt: t,
+              updatedAt: t,
+            },
+          },
+        ],
+        nilaiEvaluasi: [],
+        langkahSOP: [
+          {
+            langkahSopId: langkahId,
+            detailSopId: 'det-rev',
+            urutan: 1,
+            kegiatan: 'Isi',
+            jenis: JenisLangkahProsedur.KEGIATAN,
+            kelengkapan: 'Form',
+            keluaran: 'Out',
+            waktu: 1,
+            satuanWaktu: SatuanWaktu.h,
+            keterangan: 'Ket',
+            pelaksanaId,
+            langkahSelanjutnyaYaId: null,
+            langkahSelanjutnyaTidakId: null,
+            createdAt: t,
+            updatedAt: t,
+            pelaksana: {
+              pelaksanaId,
+              opdId: 'opd-1',
+              nama: 'Pelaksana',
+              createdAt: t,
+              updatedAt: t,
+            },
+          },
+        ],
+        logEditSop: [],
+      } as unknown as SopWorkbenchDbPayload;
+    }
+
+    beforeEach(() => {
+      repoMock.transitionDetailSopRevisiToDiajukanEvaluasi.mockResolvedValue(undefined);
+    });
+
+    it('should_forbid_evaluator', async () => {
+      const evUser: JwtAccessPayload = { ...user, peran: PeranPengguna.EVALUATOR };
+      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(evUser, 'det-rev')).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(repoMock.findLatestDetailStatusContext).not.toHaveBeenCalled();
+    });
+
+    it('should_throw_conflict_when_bukan_revisi', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-rev',
+        sopId: 'sop-rev',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev')).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
+    });
+
+    it('should_apply_transaction_and_return_diajukan_for_penyusun', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-rev',
+        sopId: 'sop-rev',
+        status: StatusSOP.REVISI_DARI_EVALUATOR,
+        sopOpdId: 'opd-1',
+      });
+      const lengkap = minimalRevisiWorkbench();
+      const refreshed = { ...lengkap, status: 'DIAJUKAN_EVALUASI' } as unknown as SopWorkbenchDbPayload;
+      repoMock.findWorkbenchPayloadByDetailOrSopId
+        .mockResolvedValueOnce(lengkap)
+        .mockResolvedValueOnce(refreshed);
+      const actual = await service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev');
+      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).toHaveBeenCalledWith({
+        detailSopId: 'det-rev',
+        userId: 'pengguna-1',
+      });
+      expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');
+    });
+
+    it('should_allow_pj_penyusun', async () => {
+      const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-rev',
+        sopId: 'sop-rev',
+        status: StatusSOP.REVISI_DARI_EVALUATOR,
+        sopOpdId: 'opd-1',
+      });
+      const lengkap = minimalRevisiWorkbench();
+      const refreshed = { ...lengkap, status: 'DIAJUKAN_EVALUASI' } as unknown as SopWorkbenchDbPayload;
+      repoMock.findWorkbenchPayloadByDetailOrSopId
+        .mockResolvedValueOnce(lengkap)
+        .mockResolvedValueOnce(refreshed);
+      const actual = await service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev');
+      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).toHaveBeenCalledWith({
+        detailSopId: 'det-rev',
         userId: 'pengguna-1',
       });
       expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');

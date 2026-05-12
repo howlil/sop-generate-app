@@ -37,6 +37,8 @@ interface DetailEvaluasiOpdFormProps {
 }
 
 export interface DetailEvaluasiOPDFormPanelProps {
+  /** false untuk pengajuan MANDIRI — hanya tab Evaluasi SOP. */
+  penilaianOpdDiizinkan?: boolean;
   panelState: DetailEvaluasiPanelStateProps;
   sopForm: DetailEvaluasiSopFormProps;
   opdForm: DetailEvaluasiOpdFormProps;
@@ -49,35 +51,51 @@ function labelHasilRiwayat(hasil: string | null | undefined): string {
 }
 
 export function DetailEvaluasiOPDFormPanel({
+  penilaianOpdDiizinkan = true,
   panelState,
   sopForm,
   opdForm,
 }: DetailEvaluasiOPDFormPanelProps) {
+  const formTabs = penilaianOpdDiizinkan
+    ? [
+        {
+          id: "sop" as const,
+          label: "Evaluasi SOP",
+          icon: <FileText className="w-3.5 h-3.5" />,
+        },
+        {
+          id: "opd" as const,
+          label: "Evaluasi OPD",
+          icon: <Building2 className="w-3.5 h-3.5" />,
+        },
+      ]
+    : [
+        {
+          id: "sop" as const,
+          label: "Evaluasi SOP",
+          icon: <FileText className="w-3.5 h-3.5" />,
+        },
+      ];
+  const activeTabResolved = penilaianOpdDiizinkan
+    ? panelState.activeFormTab
+    : "sop";
   return (
     <CollapsibleSidePanel
       side="right"
       collapsed={panelState.collapsed}
       onCollapsedChange={panelState.onCollapsedChange}
       widthExpanded="w-full"
-      tabs={[
-        {
-          id: "sop",
-          label: "Evaluasi SOP",
-          icon: <FileText className="w-3.5 h-3.5" />,
-        },
-        {
-          id: "opd",
-          label: "Evaluasi OPD",
-          icon: <Building2 className="w-3.5 h-3.5" />,
-        },
-      ]}
-      activeTab={panelState.activeFormTab}
-      onTabChange={(id) => panelState.onTabChange(id as DetailEvaluasiActiveTab)}
+      tabs={formTabs}
+      activeTab={activeTabResolved}
+      onTabChange={(id) => {
+        if (!penilaianOpdDiizinkan) return;
+        panelState.onTabChange(id as DetailEvaluasiActiveTab);
+      }}
       collapseButtonLabel="Form"
       collapseButtonIcon={<PanelsTopLeft className="w-5 h-5" />}
     >
       <div className="p-3 space-y-4">
-        {panelState.activeFormTab === "sop" && (
+        {activeTabResolved === "sop" && (
           <>
             {!sopForm.effectiveSopId ? (
               <p className="text-xs text-gray-500">
@@ -159,7 +177,7 @@ export function DetailEvaluasiOPDFormPanel({
           </>
         )}
 
-        {panelState.activeFormTab === "opd" && (
+        {activeTabResolved === "opd" && penilaianOpdDiizinkan && (
           <>
             {!opdForm.opd ? (
               <p className="text-xs text-gray-500">OPD tidak tersedia.</p>

@@ -72,8 +72,17 @@ export class PenyusunWorkbenchDetailDto {
   @ApiPropertyOptional()
   readonly terakhirDieditOleh?: { id: string; nama: string };
 
-  @ApiPropertyOptional({ type: 'array', items: { type: 'object' } })
-  readonly lampiran?: unknown[];
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: false,
+    description: 'Lampiran non-prosedural pada dokumen SOP (struktur eksplisit per kategori).',
+  })
+  readonly lampiran?: {
+    peringatan: Array<{ id: string; teks: string; createdAt: string }>;
+    kualifikasiPelaksanaan: Array<{ id: string; teks: string; createdAt: string }>;
+    peralatanPerlengkapan: Array<{ id: string; teks: string; createdAt: string }>;
+    pencatatanPendataan: Array<{ id: string; teks: string; createdAt: string }>;
+  };
 
   @ApiPropertyOptional({ type: 'array', items: { type: 'object' } })
   readonly dasarHukum?: unknown[];
@@ -109,27 +118,6 @@ export class PenyusunWorkbenchDetailDto {
   })
   readonly sopTerkaitDetailIds?: string[];
 
-  @ApiPropertyOptional({
-    nullable: true,
-    description: 'Teks peringatan dari LampiranTeks jenis PERINGATAN (jika ada, ambil terbaru)',
-  })
-  readonly peringatan?: string | null;
-
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Item kualifikasi pelaksanaan (LampiranTeks jenis KUALIFIKASI_PELAKSANAAN, urut createdAt asc)',
-  })
-  readonly kualifikasiPelaksanaan?: string[];
-
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Item peralatan dan perlengkapan (LampiranTeks jenis PERALATAN)',
-  })
-  readonly peralatanPerlengkapan?: string[];
-
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Item pencatatan dan pendataan (LampiranTeks jenis PENCATATAN_PENDATAAN)',
-  })
-  readonly pencatatanPendataan?: string[];
+  // Catatan: field legacy `peringatan/kualifikasiPelaksanaan/peralatanPerlengkapan/pencatatanPendataan`
+  // diganti menjadi `lampiran` struktur baru.
 }

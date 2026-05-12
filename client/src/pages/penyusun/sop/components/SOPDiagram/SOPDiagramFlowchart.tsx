@@ -341,7 +341,7 @@ export function SOPDiagramFlowchart({
   /* ── Render ─────────────────────────────────────── */
 
   return (
-    <div className="flex flex-col gap-8 overflow-x-auto">
+    <div className="flex min-h-0 min-w-0 flex-col gap-8 overflow-visible">
       {allPages.map((pageSteps, pageIndex) => {
         const pageRows = rows.filter((r) =>
           pageSteps.some((s) => s.seq_number === r.no),
@@ -569,7 +569,7 @@ function FlowchartPage({
 
   return (
     <div
-      className={`print-page px-4 lg:px-0 print:px-0 mx-auto ${PAGE_WIDTH_CLASS} box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
+      className={`print-page mx-auto ${PAGE_WIDTH_CLASS} box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
     >
       <div id={areaId} className="relative">
         {opcTop.length > 0 && (

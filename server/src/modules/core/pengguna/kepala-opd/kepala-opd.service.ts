@@ -34,25 +34,18 @@ export class KepalaOpdService {
     if (opd === null) {
       throw new NotFoundException('OPD tidak ditemukan');
     }
-    if (opd.kepalaPenggunaId !== null) {
-      const slotUser = await this.prisma.pengguna.findUnique({
-        where: { penggunaId: opd.kepalaPenggunaId },
-      });
-      if (slotUser !== null && slotUser.deletedAt === null) {
-        throw new ConflictException(
-          'OPD ini sudah memiliki Kepala OPD aktif. Nonaktifkan atau akhiri jabatan yang ada terlebih dahulu.',
-        );
-      }
+    const activeSlot = await this.prisma.oPD.findFirst({
+      where: { opdId: dto.opdId, kepalaPenggunaId: { not: null } },
+      include: { kepalaPengguna: { select: { deletedAt: true } } },
+    });
+    if (activeSlot?.kepalaPengguna?.deletedAt === null) {
+      throw new ConflictException(
+        'OPD ini sudah memiliki Kepala OPD aktif. Nonaktifkan atau akhiri jabatan yang ada terlebih dahulu.',
+      );
     }
     const hashed = await bcrypt.hash(DEFAULT_PASSWORD, BCRYPT_SALT_ROUNDS);
     try {
       const created = await this.prisma.$transaction(async (tx) => {
-        if (opd.kepalaPenggunaId !== null) {
-          await tx.oPD.update({
-            where: { opdId: dto.opdId },
-            data: { kepalaPenggunaId: null },
-          });
-        }
         const u = await tx.pengguna.create({
           data: {
             email: dto.email.trim().toLowerCase(),
@@ -70,7 +63,7 @@ export class KepalaOpdService {
           where: { opdId: dto.opdId },
           data: { kepalaPenggunaId: u.penggunaId },
         });
-        await this.touchRiwayatOpdLink(tx, u.penggunaId, dto.opdId);
+        await this.setActiveRiwayatOpd(tx, u.penggunaId, dto.opdId);
         return u;
       });
       const full = await this.kepalaOpdRepository.findKepalaById(created.penggunaId);
@@ -143,31 +136,24 @@ export class KepalaOpdService {
           if (u === null) {
             throw new NotFoundException('Kepala OPD tidak ditemukan');
           }
-          const opdRow = await tx.oPD.findUnique({ where: { opdId: u.opdId } });
-          if (opdRow === null) {
-            throw new NotFoundException('OPD tidak ditemukan');
-          }
-          if (
-            opdRow.kepalaPenggunaId !== null &&
-            opdRow.kepalaPenggunaId !== penggunaId
-          ) {
-            const other = await tx.pengguna.findUnique({
-              where: { penggunaId: opdRow.kepalaPenggunaId },
-            });
-            if (other?.deletedAt === null) {
-              throw new ConflictException(
-                'OPD masih memiliki Kepala OPD aktif lain. Nonaktifkan yang ada terlebih dahulu.',
-              );
-            }
-            await tx.oPD.update({
-              where: { opdId: u.opdId },
-              data: { kepalaPenggunaId: null },
-            });
+          const slotAktif = await tx.oPD.findFirst({
+            where: {
+              opdId: u.opdId,
+              kepalaPenggunaId: { not: null },
+              NOT: { kepalaPenggunaId: penggunaId },
+            },
+            include: { kepalaPengguna: { select: { deletedAt: true } } },
+          });
+          if (slotAktif?.kepalaPengguna?.deletedAt === null) {
+            throw new ConflictException(
+              'OPD masih memiliki Kepala OPD aktif lain. Nonaktifkan yang ada terlebih dahulu.',
+            );
           }
           await tx.oPD.update({
             where: { opdId: u.opdId },
             data: { kepalaPenggunaId: penggunaId },
           });
+          await this.setActiveRiwayatOpd(tx, penggunaId, u.opdId);
         }
       });
       const full = await this.kepalaOpdRepository.findKepalaById(penggunaId);
@@ -193,7 +179,7 @@ export class KepalaOpdService {
       );
     }
     await this.prisma.$transaction(async (tx) => {
-      await this.clearKepalaSlotIfMatches(tx, existing.opdId, penggunaId);
+      await this.clearKepalaSlotIfMatches(tx, penggunaId);
       await tx.pengguna.update({
         where: { penggunaId },
         data: { deletedAt: new Date() },
@@ -229,22 +215,18 @@ export class KepalaOpdService {
     if (opdTujuan === null) {
       throw new NotFoundException('OPD tujuan tidak ditemukan');
     }
-    if (
-      opdTujuan.kepalaPenggunaId !== null &&
-      opdTujuan.kepalaPenggunaId !== existing.penggunaId
-    ) {
-      const lain = await tx.pengguna.findUnique({
-        where: { penggunaId: opdTujuan.kepalaPenggunaId },
-      });
-      if (lain !== null && lain.deletedAt === null) {
-        throw new ConflictException(
-          'OPD tujuan sudah memiliki Kepala OPD aktif. Nonaktifkan atau pindahkan yang ada terlebih dahulu.',
-        );
-      }
-      await tx.oPD.update({
-        where: { opdId: opdTujuanId },
-        data: { kepalaPenggunaId: null },
-      });
+    const slotTujuan = await tx.oPD.findFirst({
+      where: {
+        opdId: opdTujuanId,
+        kepalaPenggunaId: { not: null },
+        NOT: { kepalaPenggunaId: existing.penggunaId },
+      },
+      include: { kepalaPengguna: { select: { deletedAt: true } } },
+    });
+    if (slotTujuan?.kepalaPengguna?.deletedAt === null) {
+      throw new ConflictException(
+        'OPD tujuan sudah memiliki Kepala OPD aktif. Nonaktifkan atau pindahkan yang ada terlebih dahulu.',
+      );
     }
     await tx.oPD.updateMany({
       where: { kepalaPenggunaId: existing.penggunaId },
@@ -258,24 +240,20 @@ export class KepalaOpdService {
       where: { opdId: opdTujuanId },
       data: { kepalaPenggunaId: existing.penggunaId },
     });
-    await this.touchRiwayatOpdLink(tx, existing.penggunaId, opdTujuanId);
+    await this.setActiveRiwayatOpd(tx, existing.penggunaId, opdTujuanId);
   }
 
   private async clearKepalaSlotIfMatches(
     tx: Prisma.TransactionClient,
-    opdId: string,
     penggunaId: string,
   ): Promise<void> {
-    const o = await tx.oPD.findUnique({ where: { opdId } });
-    if (o?.kepalaPenggunaId === penggunaId) {
-      await tx.oPD.update({
-        where: { opdId },
-        data: { kepalaPenggunaId: null },
-      });
-    }
+    await tx.oPD.updateMany({
+      where: { kepalaPenggunaId: penggunaId },
+      data: { kepalaPenggunaId: null },
+    });
   }
 
-  private async touchRiwayatOpdLink(
+  private async setActiveRiwayatOpd(
     tx: Prisma.TransactionClient,
     penggunaId: string,
     opdId: string,

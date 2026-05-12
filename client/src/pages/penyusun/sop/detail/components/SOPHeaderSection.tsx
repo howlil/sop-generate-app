@@ -1,4 +1,5 @@
-import { X } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Building2, FileText, Hash, ShieldAlert, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
@@ -36,6 +37,48 @@ function asArray(v: string | string[] | undefined): string[] {
   return []
 }
 
+function SectionTitle({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: ReactNode
+  title: string
+  subtitle?: string
+}) {
+  return (
+    <div className="flex items-start gap-2">
+      <div className="mt-0.5 text-gray-500">{icon}</div>
+      <div>
+        <h3 className="text-xs font-semibold text-gray-900">{title}</h3>
+        {subtitle ? <p className="text-[11px] text-gray-500 mt-0.5">{subtitle}</p> : null}
+      </div>
+    </div>
+  )
+}
+
+function ReadOnlyTextBlock({
+  value,
+  placeholder,
+  multiline = false,
+}: {
+  value: string
+  placeholder: string
+  multiline?: boolean
+}) {
+  const hasValue = value.trim().length > 0
+  return (
+    <div
+      className={cn(
+        'rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-800',
+        multiline ? 'whitespace-pre-wrap leading-relaxed min-h-[84px]' : 'min-h-9 flex items-center',
+      )}
+    >
+      {hasValue ? value : <span className="text-gray-400">{placeholder}</span>}
+    </div>
+  )
+}
+
 export interface SOPHeaderSectionProps {
   onOpenLawBasisDialog: () => void
   onOpenRelatedPosDialog: () => void
@@ -55,61 +98,90 @@ export function SOPHeaderSection({
     useSopEditor()
 
   const roInput = isReadOnly ? 'cursor-default bg-gray-50 text-gray-800' : ''
+  const institutionText = metadataInstitutionTextareaValue(metadata)
+  const sopName = metadataDisplayName(metadata)
+  const sopNumber = metadataDisplayNumber(metadata)
+
   return (
-    <div className="rounded-lg border border-gray-200">
-      <div className="border-b border-gray-200 px-3 py-2">
-        <p className="text-xs font-semibold text-gray-900">
-          Header SOP{isReadOnly ? ' (lihat)' : ''}
-        </p>
-      </div>
-
-      <div className="space-y-3 p-3">
-        <FormField label="Nama/Detail lembaga (4 baris)">
-          <Textarea
-            className={cn('text-xs min-h-[84px]', roInput)}
-            readOnly={isReadOnly}
-            disabled={isReadOnly}
-            value={metadataInstitutionTextareaValue(metadata)}
-            onChange={(e) => {
-              const lines = toLinesKeepEmpty(e.target.value)
-              handleMetadataChange('institutionLines', lines)
-              handleMetadataChange('lembaga', lines.join('\n'))
-            }}
-            placeholder="Baris 1&#10;Baris 2&#10;Baris 3&#10;Baris 4"
+    <div className="space-y-4">
+      <p className="text-xs font-semibold text-gray-900 px-1">
+        Header SOP{isReadOnly ? ' (lihat)' : ''}
+      </p>
+      <div className="space-y-4">
+        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
+          <SectionTitle
+            icon={<Building2 className="h-3.5 w-3.5" />}
+            title="Identitas Dokumen"
+            subtitle="Informasi utama SOP untuk header dokumen."
           />
-        </FormField>
+          <FormField label={<span className="font-semibold text-gray-900">Nama/Detail lembaga (4 baris)</span>}>
+            {isReadOnly ? (
+              <ReadOnlyTextBlock
+                value={institutionText}
+                placeholder="Belum diisi."
+                multiline
+              />
+            ) : (
+              <Textarea
+                className={cn('text-xs min-h-[84px]', roInput)}
+                readOnly={isReadOnly}
+                disabled={isReadOnly}
+                value={institutionText}
+                onChange={(e) => {
+                  const lines = toLinesKeepEmpty(e.target.value)
+                  handleMetadataChange('institutionLines', lines)
+                  handleMetadataChange('lembaga', lines.join('\n'))
+                }}
+                placeholder="Baris 1&#10;Baris 2&#10;Baris 3&#10;Baris 4"
+              />
+            )}
+          </FormField>
+          <FormField label={<span className="font-semibold text-gray-900">Nama SOP</span>}>
+            {isReadOnly ? (
+              <ReadOnlyTextBlock value={sopName} placeholder="Belum ada nama SOP." />
+            ) : (
+              <Input
+                className={cn('h-9 text-xs', roInput)}
+                readOnly={isReadOnly}
+                disabled={isReadOnly}
+                value={sopName}
+                onChange={(e) => {
+                  const v = e.target.value
+                  handleMetadataChange('judul', v)
+                  handleMetadataChange('nama', v)
+                }}
+                placeholder="Judul SOP"
+              />
+            )}
+          </FormField>
+          <FormField label={<span className="font-semibold text-gray-900">Nomor SOP</span>}>
+            {isReadOnly ? (
+              <ReadOnlyTextBlock value={sopNumber} placeholder="Belum ada nomor SOP." />
+            ) : (
+              <Input
+                className={cn('h-9 text-xs', roInput)}
+                readOnly={isReadOnly}
+                disabled={isReadOnly}
+                value={sopNumber}
+                onChange={(e) => {
+                  const v = e.target.value
+                  handleMetadataChange('nomorSOP', v)
+                  handleMetadataChange('nomor', v)
+                }}
+                placeholder="Mis. 001/SOP/2026"
+              />
+            )}
+          </FormField>
+        </section>
 
-        <FormField label="Nama SOP">
-          <Input
-            className={cn('h-9 text-xs', roInput)}
-            readOnly={isReadOnly}
-            disabled={isReadOnly}
-            value={metadataDisplayName(metadata)}
-            onChange={(e) => {
-              const v = e.target.value
-              handleMetadataChange('judul', v)
-              handleMetadataChange('nama', v)
-            }}
-            placeholder="Judul SOP"
+        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
+          <SectionTitle
+            icon={<FileText className="h-3.5 w-3.5" />}
+            title="Referensi Dokumen"
+            subtitle="Dasar hukum dan keterkaitan dengan SOP lain."
           />
-        </FormField>
 
-        <FormField label="Nomor SOP">
-          <Input
-            className={cn('h-9 text-xs', roInput)}
-            readOnly={isReadOnly}
-            disabled={isReadOnly}
-            value={metadataDisplayNumber(metadata)}
-            onChange={(e) => {
-              const v = e.target.value
-              handleMetadataChange('nomorSOP', v)
-              handleMetadataChange('nomor', v)
-            }}
-            placeholder="Mis. 001/SOP/2026"
-          />
-        </FormField>
-
-        <FormField label="Dasar hukum">
+        <FormField label={<span className="font-semibold text-gray-900">Dasar hukum</span>}>
           {!isReadOnly ? (
           <div className="flex justify-end">
             <Button
@@ -128,7 +200,7 @@ export function SOPHeaderSection({
             ) : (
               (metadata.lawBasis ?? []).map((item: string, idx: number) => (
                 <div key={`${idx}-${item}`} className="flex items-start gap-2">
-                  <p className="text-xs text-gray-700 flex-1">{item}</p>
+                  <p className="text-xs text-gray-700 flex-1">• {item}</p>
                   {!isReadOnly ? (
                   <Button
                     variant="ghost"
@@ -151,7 +223,7 @@ export function SOPHeaderSection({
           </div>
         </FormField>
 
-        <FormField label="Keterkaitan dengan SOP">
+        <FormField label={<span className="font-semibold text-gray-900">Keterkaitan dengan SOP</span>}>
           {!isReadOnly ? (
           <div className="flex justify-end">
             <Button
@@ -170,7 +242,7 @@ export function SOPHeaderSection({
             ) : (
               (metadata.relatedSop ?? []).map((item: string, idx: number) => (
                 <div key={`${idx}-${item}`} className="flex items-start gap-2">
-                  <p className="text-xs text-gray-700 flex-1">{item}</p>
+                  <p className="text-xs text-gray-700 flex-1">• {item}</p>
                   {!isReadOnly ? (
                   <Button
                     variant="ghost"
@@ -192,20 +264,41 @@ export function SOPHeaderSection({
             )}
           </div>
         </FormField>
+        </section>
 
-        <FormField label="Peringatan">
-          <Input
-            className={cn('h-9 text-xs', roInput)}
-            readOnly={isReadOnly}
-            disabled={isReadOnly}
-            value={metadata.warning ?? ''}
-            onChange={(e) => handleMetadataChange('warning', e.target.value)}
+        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
+          <SectionTitle
+            icon={<Hash className="h-3.5 w-3.5" />}
+            title="Ketentuan Pelaksanaan"
+            subtitle="Informasi teknis pendukung pelaksanaan SOP."
           />
+
+        <FormField label={<span className="font-semibold text-gray-900">Peringatan</span>}>
+          {isReadOnly ? (
+            <ul className="mt-1 space-y-1 list-disc pl-4">
+              {asArray(metadata.warning).length === 0 ? (
+                <li className="text-xs text-gray-500">Tidak ada peringatan.</li>
+              ) : (
+                asArray(metadata.warning).map((line, idx) => (
+                  <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                    {line}
+                  </li>
+                ))
+              )}
+            </ul>
+          ) : (
+            <EditableStringList
+              items={asArray(metadata.warning)}
+              onChange={(next) => handleMetadataChange('warning', next)}
+              placeholder="Peringatan"
+              emptyMessage='Belum ada peringatan. Klik "Tambah" untuk menambahkan.'
+            />
+          )}
         </FormField>
 
-        <FormField label="Kualifikasi pelaksanaan">
+        <FormField label={<span className="font-semibold text-gray-900">Kualifikasi pelaksanaan</span>}>
           {isReadOnly ? (
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-1 space-y-1 list-disc pl-4">
               {asArray(metadata.implementQualification).length === 0 ? (
                 <li className="text-xs text-gray-500">Belum ada kualifikasi.</li>
               ) : (
@@ -226,9 +319,9 @@ export function SOPHeaderSection({
           )}
         </FormField>
 
-        <FormField label="Peralatan dan perlengkapan">
+        <FormField label={<span className="font-semibold text-gray-900">Peralatan dan perlengkapan</span>}>
           {isReadOnly ? (
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-1 space-y-1 list-disc pl-4">
               {asArray(metadata.equipment).length === 0 ? (
                 <li className="text-xs text-gray-500">Belum ada peralatan/perlengkapan.</li>
               ) : (
@@ -249,9 +342,9 @@ export function SOPHeaderSection({
           )}
         </FormField>
 
-        <FormField label="Pencatatan dan pendataan">
+        <FormField label={<span className="font-semibold text-gray-900">Pencatatan dan pendataan</span>}>
           {isReadOnly ? (
-            <ul className="mt-1 space-y-1">
+            <ul className="mt-1 space-y-1 list-disc pl-4">
               {asArray(metadata.recordData).length === 0 ? (
                 <li className="text-xs text-gray-500">Belum ada pencatatan/pendataan.</li>
               ) : (
@@ -271,8 +364,16 @@ export function SOPHeaderSection({
           />
           )}
         </FormField>
+        </section>
 
-        <FormField label="Aktor pelaksana">
+        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
+          <SectionTitle
+            icon={<Users className="h-3.5 w-3.5" />}
+            title="Aktor Pelaksana"
+            subtitle="Daftar pelaksana yang terlibat pada SOP."
+          />
+
+        <FormField label={<span className="font-semibold text-gray-900">Aktor pelaksana</span>}>
           {!isReadOnly ? (
           <div className="flex justify-end">
             <Button
@@ -291,7 +392,7 @@ export function SOPHeaderSection({
             ) : (
               implementers.map((imp, idx) => (
                 <div key={imp.id} className="flex items-start gap-2">
-                  <p className="text-xs text-gray-700 flex-1">{imp.name}</p>
+                  <p className="text-xs text-gray-700 flex-1">• {imp.name}</p>
                   {!isReadOnly ? (
                   <Button
                     variant="ghost"
@@ -310,6 +411,18 @@ export function SOPHeaderSection({
             )}
           </div>
         </FormField>
+        </section>
+
+        {isReadOnly ? (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+            <div className="flex items-start gap-2">
+              <ShieldAlert className="h-3.5 w-3.5 mt-0.5 text-amber-700" />
+              <p className="text-[11px] leading-relaxed text-amber-800">
+                Mode lihat aktif. Gunakan tab Edit pada dokumen yang dapat diubah untuk memperbarui metadata.
+              </p>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   )

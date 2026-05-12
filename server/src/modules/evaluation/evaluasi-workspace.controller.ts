@@ -59,4 +59,33 @@ export class EvaluasiWorkspaceController {
       data,
     };
   }
+
+  @Get('pengajuan/:pengajuanEvaluasiId')
+  @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Workspace evaluasi untuk satu pengajuan (daftar SOP = anggota batch)',
+    description:
+      'Sama bentuk respons dengan GET `.../workspace/opd/:opdId`, tetapi `daftarSop` dan `pengajuanAktif` selalu terikat pada `pengajuanEvaluasiId` yang diminta.',
+  })
+  @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
+  @ApiResponse({ status: 200, type: EvaluasiWorkspaceOpdResponseDto })
+  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR atau PJ_EVALUATOR' })
+  @ApiNotFoundResponse({ description: 'Pengajuan atau OPD tidak ditemukan' })
+  async getWorkspacePengajuan(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('pengajuanEvaluasiId', ParseUUIDPipe) pengajuanEvaluasiId: string,
+    @Query() query: EvaluasiWorkspaceQueryDto,
+  ): Promise<ApiSuccessResponse<EvaluasiWorkspaceOpdResponseDto>> {
+    const data = await this.evaluasiWorkspaceService.getWorkspacePengajuan(
+      req.user,
+      pengajuanEvaluasiId,
+      query,
+    );
+    return {
+      message: 'Data workspace evaluasi pengajuan berhasil diambil',
+      success: true,
+      data,
+    };
+  }
 }

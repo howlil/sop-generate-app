@@ -14,8 +14,12 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
+import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
+import { resolvePagination, toPaginatedData, type PaginatedData } from '../../common/utils/pagination.util';
 import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
+import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
+import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
 import type { PengajuanEvaluasiDetailRow } from './pengajuan-evaluasi.repository';
 import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 
@@ -27,10 +31,15 @@ const STATUS_DETAIL_SIAP_BATCH_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.SIAP_DIEVALUASI,
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,
-  StatusSOP.REVISI_DARI_TIM_EVALUASI,
+  StatusSOP.REVISI_DARI_EVALUATOR,
 ] as const;
 
 const statusBatchSet = new Set<string>(STATUS_DETAIL_SIAP_BATCH_EVALUASI);
+const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
+  StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+  StatusPengajuanEvaluasi.SELESAI,
+]);
 
 /** Satu baris pipeline workspace (detail terbaru per SOP) untuk bootstrap mandiri. */
 export type BarisPipelineEvaluasiOpd = Readonly<{
@@ -45,7 +54,7 @@ export type BarisPipelineEvaluasiOpd = Readonly<{
 export class PengajuanEvaluasiService {
   constructor(private readonly pengajuanEvaluasiRepository: PengajuanEvaluasiRepository) {}
 
-  /** Daftar pengajuan — PJ Penyusun otomatis dibatasi ke OPD-nya. */
+  /** Daftar pengajuan — PJ Penyusun & Kepala OPD otomatis dibatasi ke OPD-nya. */
   async findAll(
     user: JwtAccessPayload,
     query: PengajuanEvaluasiListQueryDto,
@@ -56,7 +65,20 @@ export class PengajuanEvaluasiService {
     return rows.map((r) => PengajuanEvaluasiService.mapRow(r));
   }
 
-  /** Satu pengajuan lengkap — PJ Penyusun hanya boleh mengakses OPD sendiri. */
+  /** Daftar ringkas terpaginasi untuk dashboard evaluator / PJ (performa). */
+  async findAllRingkas(
+    user: JwtAccessPayload,
+    query: PengajuanEvaluasiRingkasQueryDto,
+  ): Promise<PaginatedData<Record<string, unknown>>> {
+    const forcedOpdId = await this.resolveForcedOpdFilter(user);
+    const whereInput = this.pengajuanEvaluasiRepository.buildWhereRingkasFromQuery(query, forcedOpdId);
+    const { skip, take, page, limit } = resolvePagination(query);
+    const total = await this.pengajuanEvaluasiRepository.countWhere(whereInput);
+    const rows = await this.pengajuanEvaluasiRepository.findRingkasPage(whereInput, skip, take);
+    return toPaginatedData(rows, total, page, limit);
+  }
+
+  /** Satu pengajuan lengkap — PJ Penyusun/Kepala OPD hanya boleh mengakses OPD sendiri. */
   async findOne(user: JwtAccessPayload, pengajuanEvaluasiId: string): Promise<PengajuanEvaluasiApiPayload> {
     const row = await this.pengajuanEvaluasiRepository.findByIdFull(pengajuanEvaluasiId);
     if (row === null) {
@@ -76,17 +98,14 @@ export class PengajuanEvaluasiService {
         where: {
           opdId: dto.opdId,
           status: {
-            in: [
-              StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-              StatusPengajuanEvaluasi.MENUNGGU_EVALUASI,
-            ],
+            in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
           },
         },
         select: { pengajuanEvaluasiId: true },
       });
       if (blocking !== null) {
         throw new ConflictException(
-          'OPD ini masih memiliki pengajuan evaluasi aktif atau menunggu evaluasi. Selesaikan atau tutup terlebih dahulu.',
+          'OPD ini masih memiliki pengajuan evaluasi aktif. Selesaikan atau tutup terlebih dahulu.',
         );
       }
       for (const detailSopId of dto.sopDetailIds) {
@@ -106,14 +125,11 @@ export class PengajuanEvaluasiService {
         }
       }
       const sekarang = new Date();
-      const catatanNorm =
-        dto.catatan === undefined ? null : dto.catatan.trim() === '' ? null : dto.catatan.trim();
       const dibuat = await tx.pengajuanEvaluasi.create({
         data: {
           opdId: dto.opdId,
           jenis: dto.jenis,
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          catatan: catatanNorm,
           tanggalPermintaan: sekarang,
           tanggalEvaluasi: sekarang,
           nilaiEvaluasi: {
@@ -162,10 +178,7 @@ export class PengajuanEvaluasiService {
         where: {
           opdId,
           status: {
-            in: [
-              StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-              StatusPengajuanEvaluasi.MENUNGGU_EVALUASI,
-            ],
+            in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
           },
         },
         select: { pengajuanEvaluasiId: true },
@@ -194,8 +207,9 @@ export class PengajuanEvaluasiService {
         data: {
           opdId,
           jenis: JenisPengajuanEvaluasi.MANDIRI,
-          status: StatusPengajuanEvaluasi.MENUNGGU_EVALUASI,
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
           tanggalPermintaan: sekarang,
+          tanggalEvaluasi: sekarang,
           nilaiEvaluasi: {
             create: sopDetailIds.map((detailSopId) => ({ detailSopId })),
           },
@@ -216,7 +230,7 @@ export class PengajuanEvaluasiService {
     if (user.peran === PeranPengguna.PJ_EVALUATOR || user.peran === PeranPengguna.EVALUATOR) {
       return undefined;
     }
-    if (user.peran === PeranPengguna.PJ_PENYUSUN) {
+    if (user.peran === PeranPengguna.PJ_PENYUSUN || user.peran === PeranPengguna.KEPALA_OPD) {
       const opdId = await this.pengajuanEvaluasiRepository.findOpdIdPengguna(user.sub);
       if (opdId === null) {
         throw new ForbiddenException('OPD pengguna tidak ditemukan');
@@ -226,11 +240,18 @@ export class PengajuanEvaluasiService {
     throw new ForbiddenException('Peran tidak diizinkan mengakses daftar pengajuan evaluasi');
   }
 
+  /**
+   * Validasi akses baca pengajuan (dipakai sub-resource dokumen SOP & Berita Acara).
+   */
+  async assertUserCanAccessPengajuan(user: JwtAccessPayload, pengajuanOpdId: string): Promise<void> {
+    await this.assertCanAccessPengajuan(user, pengajuanOpdId);
+  }
+
   private async assertCanAccessPengajuan(user: JwtAccessPayload, pengajuanOpdId: string): Promise<void> {
     if (user.peran === PeranPengguna.PJ_EVALUATOR || user.peran === PeranPengguna.EVALUATOR) {
       return;
     }
-    if (user.peran === PeranPengguna.PJ_PENYUSUN) {
+    if (user.peran === PeranPengguna.PJ_PENYUSUN || user.peran === PeranPengguna.KEPALA_OPD) {
       const opdId = await this.pengajuanEvaluasiRepository.findOpdIdPengguna(user.sub);
       if (opdId === null || opdId !== pengajuanOpdId) {
         throw new ForbiddenException('Anda tidak dapat mengakses pengajuan evaluasi OPD lain');
@@ -253,7 +274,7 @@ export class PengajuanEvaluasiService {
       row.nomorBA ??
       (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
     const sopList = row.nilaiEvaluasi.map((n) => ({
-      id: n.nilaiEvaluasiId,
+      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
       sopDetailId: n.detailSopId,
       judul: n.detailSop.sop.judul,
       nomor: n.detailSop.nomorSOP,
@@ -263,7 +284,7 @@ export class PengajuanEvaluasiService {
       hasil: PengajuanEvaluasiService.stringifyHasil(n.hasil),
     }));
     const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => ({
-      id: n.nilaiEvaluasiId,
+      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
       sopDetailId: n.detailSopId,
       hasil: PengajuanEvaluasiService.stringifyHasil(n.hasil),
@@ -289,15 +310,15 @@ export class PengajuanEvaluasiService {
       catatanSesudah: log.catatanSesudah ?? undefined,
       createdAt: log.createdAt.toISOString(),
     }));
-    const tanggalVerifikasi =
-      row.status === StatusPengajuanEvaluasi.DIVERIFIKASI_BIRO ? row.updatedAt.toISOString() : undefined;
+    const tanggalVerifikasi = STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI.has(row.status)
+      ? row.updatedAt.toISOString()
+      : undefined;
     return {
       id: row.pengajuanEvaluasiId,
       opdId: row.opdId,
       opdNama: row.opd.nama,
       jenis: String(row.jenis),
       status: String(row.status),
-      catatan: row.catatan ?? undefined,
       nomorBA,
       tanggalPermintaan: row.tanggalPermintaan?.toISOString(),
       tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),
@@ -305,8 +326,10 @@ export class PengajuanEvaluasiService {
       namaBiro: undefined,
       nilaiOPD: row.nilaiOPD ?? undefined,
       diverifikasiOlehUserId: row.diverifikasiOlehUserId ?? undefined,
-      ditandatanganiOlehKoordinatorUserId: row.ditandatanganiOlehKoordinatorUserId ?? undefined,
-      tanggalTTDBaKoordinator: row.tanggalTTDBaKoordinator?.toISOString(),
+      namaPjEvaluator: row.diverifikasiOlehUser?.nama ?? row.diselesaikanOleh?.nama ?? undefined,
+      ditandatanganiOlehPjPenyusunUserId: row.ditandatanganiOlehPjPenyusunUserId ?? undefined,
+      namaPjPenyusun: row.ditandatanganiOlehPjPenyusunUser?.nama ?? undefined,
+      tanggalTTDBaPjPenyusun: row.tanggalTTDBaPjPenyusun?.toISOString(),
       diselesaikanOlehId: row.diselesaikanOlehId ?? undefined,
       diselesaikanOleh:
         row.diselesaikanOleh !== null && row.diselesaikanOleh !== undefined

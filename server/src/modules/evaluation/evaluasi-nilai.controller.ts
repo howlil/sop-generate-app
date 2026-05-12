@@ -31,7 +31,7 @@ export class EvaluasiNilaiController {
   @ApiOperation({
     summary: 'Isi / ubah nilai evaluasi untuk satu DetailSOP dalam pengajuan aktif',
     description:
-      'Pengajuan harus berstatus SEDANG_DIEVALUASI atau MENUNGGU_EVALUASI (otomatis menjadi SEDANG_DIEVALUASI pada penyimpanan pertama). Hasil Perlu perbaikan wajib disertai catatan; catatan disalin ke umpan balik penyusun (Komentar); status dokumen diarahkan ke REVISI_DARI_TIM_EVALUASI.',
+      'Pengajuan harus berstatus SEDANG_DIEVALUASI. Hasil Perlu perbaikan wajib disertai catatan; catatan disalin ke umpan balik penyusun (Komentar); status dokumen diarahkan ke REVISI_DARI_EVALUATOR.',
   })
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiParam({ name: 'detailSopId', format: 'uuid' })
@@ -64,7 +64,7 @@ export class EvaluasiNilaiController {
   @ApiOperation({
     summary: 'Selesaikan pengajuan evaluasi (semua SOP harus SESUAI, lalu ajukan ke PJ)',
     description:
-      'Memvalidasi seluruh baris NilaiEvaluasi berhasil SESUAI, memperbarui status dokumen ke SIAP_DIVERIFIKASI, dan mengubah pengajuan ke SELESAI_DIEVALUASI.',
+      'Memvalidasi seluruh baris NilaiEvaluasi berhasil SESUAI, memperbarui status dokumen ke SIAP_DIVERIFIKASI, dan mengubah pengajuan ke SELESAI_DIEVALUASI. Untuk pengajuan TERJADWAL wajib `nilaiOPD` 1–5; untuk MANDIRI jangan kirim `nilaiOPD` (evaluasi hanya per dokumen SOP).',
   })
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiResponse({ status: 200, type: PengajuanEvaluasiSelesaiResponseDto })

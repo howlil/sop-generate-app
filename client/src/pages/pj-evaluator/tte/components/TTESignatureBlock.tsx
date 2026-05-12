@@ -7,10 +7,15 @@ import { formatDateIdLong } from '@/utils/format-date'
 export interface TTESignatureBlockProps {
   payload: TTESignaturePayload
   /** Contoh label penanda: "OPD" atau "PJ Evaluator" */
-  roleLabel: string
+  roleLabel?: string
   /** Ukuran sisi QR (px). */
   qrSize?: number
   className?: string
+  showRoleLabel?: boolean
+  showNip?: boolean
+  showCaption?: boolean
+  showSignedDate?: boolean
+  placeNameBelowQr?: boolean
 }
 
 export function TTESignatureBlock({
@@ -18,12 +23,17 @@ export function TTESignatureBlock({
   roleLabel,
   qrSize = 80,
   className = '',
+  showRoleLabel = true,
+  showNip = true,
+  showCaption = true,
+  showSignedDate = true,
+  placeNameBelowQr = false,
 }: TTESignatureBlockProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    const url = getValidasiPengesahanUrl(payload.id)
+    const url = getValidasiPengesahanUrl(payload.dokumenTteId, payload.userId)
     QRCode.toDataURL(url, { width: qrSize, margin: 1 })
       .then((dataUrl) => {
         if (!cancelled) setQrDataUrl(dataUrl)
@@ -34,7 +44,7 @@ export function TTESignatureBlock({
     return () => {
       cancelled = true
     }
-  }, [payload.id, qrSize])
+  }, [payload.dokumenTteId, payload.userId, qrSize])
 
   const signedDate = payload.signedAt
     ? formatDateIdLong(payload.signedAt)
@@ -42,11 +52,9 @@ export function TTESignatureBlock({
 
   return (
     <div className={`inline-block text-center ${className}`}>
-      <p className="text-xs font-medium text-gray-700 mb-1">{roleLabel}</p>
-      <p className="text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
-      <p className="text-xs text-gray-600">NIP. {payload.nip}</p>
-      <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p>
-      <p className="text-xs text-gray-500">{signedDate}</p>
+      {showRoleLabel && roleLabel ? (
+        <p className="text-xs font-medium text-gray-700 mb-1">{roleLabel}</p>
+      ) : null}
       {qrDataUrl && (
         <div className="mt-2 flex justify-center">
           <img
@@ -57,6 +65,21 @@ export function TTESignatureBlock({
             className="border border-gray-200 rounded"
           />
         </div>
+      )}
+      {placeNameBelowQr ? (
+        <>
+          <p className="mt-2 text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
+          {showNip ? <p className="text-xs text-gray-600">NIP. {payload.nip}</p> : null}
+          {showCaption ? <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p> : null}
+          {showSignedDate ? <p className="text-xs text-gray-500">{signedDate}</p> : null}
+        </>
+      ) : (
+        <>
+          <p className="text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
+          {showNip ? <p className="text-xs text-gray-600">NIP. {payload.nip}</p> : null}
+          {showCaption ? <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p> : null}
+          {showSignedDate ? <p className="text-xs text-gray-500">{signedDate}</p> : null}
+        </>
       )}
     </div>
   )

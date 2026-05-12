@@ -154,7 +154,7 @@ export function ManajemenEvaluator() {
     <ListPageLayout
       breadcrumb={[{ label: 'Manajemen Evaluator' }]}
       title="Manajemen Evaluator"
-      description="Kelola pengguna peran Evaluator pada OPD Biro Organisasi (akses PJ Evaluator)."
+      description="Kelola pengguna peran Evaluator pada OPD PJ Evaluator Organisasi (akses PJ Evaluator)."
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari nama, NIP, atau email..."
@@ -258,7 +258,7 @@ export function ManajemenEvaluator() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         title="Tambah Evaluator"
-        description="Akun pengguna peran Evaluator pada OPD Biro Organisasi. Kata sandi awal ditetapkan server; bagikan kredensial dengan aman."
+        description="Akun pengguna peran Evaluator pada OPD PJ Evaluator Organisasi. Kata sandi awal ditetapkan server; bagikan kredensial dengan aman."
         confirmLabel={isAdding ? 'Menyimpan...' : 'Simpan'}
         cancelLabel="Batal"
         onConfirm={handleCreateSubmit}

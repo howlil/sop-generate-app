@@ -12,7 +12,7 @@ interface FakeRow {
   detailSopId: string;
   userId: string;
   bagian: BagianSOP;
-  entityId: string | null;
+  targetEntityId: string | null;
   meta: unknown;
   keterangan: string | null;
   closedAt: Date | null;
@@ -52,7 +52,7 @@ function makeTx(): { tx: { logEditSOP: CapturedTx }; capture: CapturedTx } {
         r.detailSopId === w.detailSopId &&
         r.userId === w.userId &&
         r.bagian === w.bagian &&
-        r.entityId === (w.entityId as string | null) &&
+        r.targetEntityId === (w.targetEntityId as string | null) &&
         r.closedAt === null &&
         (cutoff === undefined || r.updatedAt > cutoff),
     );
@@ -67,7 +67,7 @@ function makeTx(): { tx: { logEditSOP: CapturedTx }; capture: CapturedTx } {
       detailSopId: d.detailSopId as string,
       userId: d.userId as string,
       bagian: d.bagian as BagianSOP,
-      entityId: (d.entityId as string | null | undefined) ?? null,
+      targetEntityId: (d.targetEntityId as string | null | undefined) ?? null,
       meta: d.meta,
       keterangan: (d.keterangan as string | null | undefined) ?? null,
       closedAt: (d.closedAt as Date | null | undefined) ?? null,
@@ -107,7 +107,7 @@ function makeTx(): { tx: { logEditSOP: CapturedTx }; capture: CapturedTx } {
           r.detailSopId === w.detailSopId &&
           r.userId === w.userId &&
           r.bagian === w.bagian &&
-          r.entityId === (w.entityId as string | null) &&
+          r.targetEntityId === (w.targetEntityId as string | null) &&
           (w.closedAt === null ? r.closedAt === null : true)
         ) {
           rows[i] = {
@@ -288,7 +288,7 @@ describe('log-edit-session.helper', () => {
       expect(capture.rows[1]!.closedAt).toEqual(t2);
     });
 
-    it('should_separate_sessions_by_entityId', async () => {
+    it('should_separate_sessions_by_targetEntityId', async () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date(t1.getTime() + 60 * 1000);
@@ -298,7 +298,7 @@ describe('log-edit-session.helper', () => {
           detailSopId,
           userId,
           bagian: BagianSOP.LANGKAH,
-          entityId: 'lang-A',
+          targetEntityId: 'lang-A',
           fields: ['kegiatan'],
           now: t1,
         }),
@@ -309,7 +309,7 @@ describe('log-edit-session.helper', () => {
           detailSopId,
           userId,
           bagian: BagianSOP.LANGKAH,
-          entityId: 'lang-B',
+          targetEntityId: 'lang-B',
           fields: ['kegiatan'],
           now: t2,
         }),

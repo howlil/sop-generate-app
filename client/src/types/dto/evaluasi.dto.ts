@@ -1,4 +1,5 @@
 import type { PenyusunWorkbenchData } from "./sop.dto";
+import type { TTESignaturePayload } from "./tte.dto";
 
 export type StatusHasilEvaluasi = "SESUAI" | "PERLU_PERBAIKAN";
 export const STATUS_HASIL_EVALUASI = {
@@ -14,11 +15,10 @@ export interface EvaluasiBatchSubmitError {
 }
 
 export type StatusPengajuanEvaluasi =
-  | "MENUNGGU_EVALUASI"
   | "SEDANG_DIEVALUASI"
   | "SELESAI_DIEVALUASI"
-  | "DIVERIFIKASI_BIRO"
-  | "DITANDATANGANI_KOORDINATOR"
+  | "DIVERIFIKASI_PJ_EVALUATOR"
+  | "DITANDATANGANI_PJ_PENYUSUN"
   | "SELESAI";
 export type JenisPengajuanEvaluasi = "TERJADWAL" | "MANDIRI";
 
@@ -57,16 +57,16 @@ export interface PengajuanEvaluasi {
   opdNama?: string;
   jenis: JenisPengajuanEvaluasi;
   status: StatusPengajuanEvaluasi;
-  catatan?: string;
   nomorBA?: string;
   tanggalPermintaan?: string;
   tanggalEvaluasi?: string;
   tanggalVerifikasi?: string | null;
-  namaBiro?: string;
+  namaPjEvaluator?: string;
   nilaiOPD?: number;
   diverifikasiOlehUserId?: string;
-  ditandatanganiOlehKoordinatorUserId?: string;
-  tanggalTTDBaKoordinator?: string;
+  ditandatanganiOlehPjPenyusunUserId?: string;
+  namaPjPenyusun?: string;
+  tanggalTTDBaPjPenyusun?: string;
   diselesaikanOlehId?: string;
   diselesaikanOleh?: {
     id?: string;
@@ -106,7 +106,111 @@ export interface PengajuanEvaluasi {
   updatedAt: string;
 }
 
+/** Identifier stabil selaras server: `pengajuanEvaluasiId:detailSopId`. */
+export function buildNilaiEvaluasiClientId(
+  pengajuanEvaluasiId: string,
+  detailSopId: string,
+): string {
+  return `${pengajuanEvaluasiId}:${detailSopId}`;
+}
+
+/** Satu baris daftar SOP dalam batch — GET `/evaluasi/pengajuan/:id` (`sopItems`). */
+export interface PengajuanSopItemShell {
+  detailSopId: string;
+  sopId: string;
+  judul: string;
+  nomorSOP: string;
+  statusDetailSop: string;
+  hasilEvaluasi?: string;
+  catatanRingkas?: string;
+  evaluatorTerakhir?: { id: string; nama: string };
+}
+
+/** Entri log nilai dalam shell — paralel dengan `timelineNilai` di API. */
+export interface PengajuanTimelineNilaiEntry {
+  id: string;
+  sopDetailId: string;
+  evaluatorId: string;
+  evaluatorNama: string;
+  hasilSebelum?: StatusHasilEvaluasi;
+  hasilSesudah?: StatusHasilEvaluasi;
+  catatanSebelum?: string;
+  catatanSesudah?: string;
+  createdAt: string;
+}
+
+/** GET `/evaluasi/pengajuan/:id`. */
+export interface PengajuanEvaluasiShellOpd {
+  id: string;
+  nama: string;
+}
+
+export interface PengajuanEvaluasiShell {
+  id: string;
+  opdId: string;
+  opdNama: string;
+  jenis: string;
+  status: string;
+  version: number;
+  nomorBA?: string;
+  tanggalPermintaan?: string;
+  tanggalEvaluasi?: string;
+  tanggalVerifikasi?: string;
+  nilaiOPD?: number;
+  diverifikasiOlehUserId?: string;
+  namaPjEvaluator?: string;
+  ditandatanganiOlehPjPenyusunUserId?: string;
+  namaPjPenyusun?: string;
+  tanggalTTDBaPjPenyusun?: string;
+  diselesaikanOlehId?: string;
+  diselesaikanOleh?: { id: string; nama: string };
+  opd: PengajuanEvaluasiShellOpd;
+  timEvaluasi?: string;
+  tanggalDiselesaikan?: string;
+  sopItems: PengajuanSopItemShell[];
+  nilaiEvaluasi: NilaiEvaluasi[];
+  timelineNilai: PengajuanTimelineNilaiEntry[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** GET `/evaluasi/pengajuan/:id/sop-dokumen/:detailSopId`. */
+export interface PengajuanSopWorkbenchResponse {
+  detailSopId: string;
+  workbench: PenyusunWorkbenchData;
+}
+
+export interface BeritaAcaraHasilPerSopRow {
+  nomorSOP: string;
+  judul: string;
+  hasilEvaluasi?: string;
+  ringkasanCatatanEvaluator?: string;
+}
+
+/** GET `/evaluasi/pengajuan/:id/berita-acara`. */
+export interface BeritaAcaraEvaluasiView {
+  namaOpd: string;
+  nomorBA?: string;
+  tanggalEvaluasi?: string;
+  tanggalVerifikasiPjEvaluator?: string;
+  nilaiKeseluruhanOpd?: number;
+  hasilPerSop: BeritaAcaraHasilPerSopRow[];
+  timEvaluasi: {
+    penanggungJawabSelesai?: { id: string; nama: string };
+    evaluatorNamaUnik: string[];
+  };
+  tteBeritaAcara?: {
+    dokumenTteId: string;
+    hashDokumen: string;
+    versiDokumen: number;
+    adaRiwayatTandaTanganPerPeran: Record<string, boolean>;
+    payloadPjEvaluator?: TTESignaturePayload;
+    payloadPjPenyusun?: TTESignaturePayload;
+  };
+}
+
 export interface NilaiEvaluasi {
+  /** Gabungan `pengajuanEvaluasiId:detailSopId` (bukan UUID surrogate DB). */
   id: string;
   pengajuanEvaluasiId: string;
   sopDetailId: string;
@@ -151,7 +255,6 @@ export interface CreatePengajuanEvaluasiDto {
   opdId: string;
   jenis: JenisPengajuanEvaluasi;
   sopDetailIds: string[];
-  catatan?: string;
 }
 
 export interface IsiNilaiEvaluasiDto {
@@ -160,14 +263,13 @@ export interface IsiNilaiEvaluasiDto {
   version?: number;
 }
 
-/** Wajib saat PATCH selesai — server menolak tanpa skor OPD 1–5. */
+/** Wajib untuk pengajuan TERJADWAL pada PATCH selesai; untuk MANDIRI tidak dikirim. */
 export interface SelesaiEvaluasiDto {
-  nilaiOPD: number;
+  nilaiOPD?: number;
 }
 
 export interface UpdatePengajuanEvaluasiDto {
   status?: StatusPengajuanEvaluasi;
-  catatan?: string;
   nilaiOPD?: number;
 }
 
@@ -187,7 +289,47 @@ export interface UpdateNilaiEvaluasiDto {
 export interface EvaluasiListQueryParams {
   opdId?: string;
   status?: string;
+  /** Beberapa enum status (di-query sebagai `statusIn` berulang); mengalahkan `status` di server jika ada. */
+  statusIn?: readonly string[];
   jenis?: string;
+}
+
+/** Meta pagination — selaras server `toPaginatedData`. */
+export interface PaginationMetaDto {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/** Satu baris GET `/evaluasi/ringkas`. */
+export interface PengajuanEvaluasiRingkasRow {
+  pengajuanEvaluasiId: string;
+  opdId: string;
+  opdNama: string;
+  jenis: string;
+  status: string;
+  tanggalEvaluasi?: string;
+  createdAt: string;
+  jumlahSop: number;
+  jumlahSudahDinilai: number;
+  nilaiOPD?: number;
+}
+
+export interface PengajuanEvaluasiRingkasPage {
+  items: PengajuanEvaluasiRingkasRow[];
+  meta: PaginationMetaDto;
+}
+
+/** Query GET `/evaluasi/ringkas`. */
+export interface EvaluasiRingkasQueryParams {
+  page?: number;
+  limit?: number;
+  opdId?: string;
+  status?: string;
+  statusIn?: readonly string[];
+  jenis?: string;
+  search?: string;
 }
 
 export interface IsiNilaiEvaluasiMutationDto {
@@ -217,6 +359,7 @@ export interface EvaluasiWorkspaceNilaiPerDetail {
 export interface EvaluasiWorkspacePengajuanAktif {
   id: string;
   status: string;
+  jenis: JenisPengajuanEvaluasi;
   nilaiPerDetail: EvaluasiWorkspaceNilaiPerDetail[];
 }
 
@@ -233,7 +376,6 @@ export interface EvaluasiWorkspaceDaftarSopRow {
 export interface EvaluasiWorkspaceRiwayatOpdEntry {
   tanggal: string;
   evaluatorNama: string;
-  catatan?: string | null;
   nilaiOPD?: number | null;
   pengajuanEvaluasiId: string;
 }

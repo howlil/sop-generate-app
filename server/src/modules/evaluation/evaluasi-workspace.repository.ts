@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { StatusPengajuanEvaluasi, StatusSOP } from '../../generated/prisma';
-
+import { JenisPengajuanEvaluasi, StatusPengajuanEvaluasi, StatusSOP } from '../../generated/prisma';
+import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
 /** Selaras pipeline evaluasi pada `OpdRepository.findEvaluasiRingkas`. */
 const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,
-  StatusSOP.REVISI_DARI_TIM_EVALUASI,
+  StatusSOP.REVISI_DARI_EVALUATOR,
   StatusSOP.SIAP_DIVERIFIKASI,
 ] as const;
 
@@ -30,13 +30,13 @@ export type EvaluasiWorkspaceNilaiRepo = {
 export type EvaluasiWorkspacePengajuanAktifRepo = {
   readonly pengajuanEvaluasiId: string;
   readonly status: StatusPengajuanEvaluasi;
+  readonly jenis: JenisPengajuanEvaluasi;
   readonly nilaiEvaluasi: EvaluasiWorkspaceNilaiRepo[];
 };
 
 export type EvaluasiWorkspaceRiwayatOpdRepoRow = {
   readonly pengajuanEvaluasiId: string;
   readonly tanggalDiselesaikan: Date | null;
-  readonly catatan: string | null;
   readonly nilaiOPD: number | null;
   readonly evaluatorNama: string;
 };
@@ -47,6 +47,16 @@ export type EvaluasiWorkspaceRiwayatNilaiRepoRow = {
   readonly evaluatorNama: string;
   readonly hasil: string;
   readonly catatan: string | null;
+};
+
+/** Bundle pengajuan + nilai beserta detail SOP untuk workspace per pengajuan. */
+export type EvaluasiWorkspacePengajuanBundleRepo = {
+  readonly pengajuanEvaluasiId: string;
+  readonly opdId: string;
+  readonly status: StatusPengajuanEvaluasi;
+  readonly jenis: JenisPengajuanEvaluasi;
+  readonly nilaiEvaluasi: readonly EvaluasiWorkspaceNilaiRepo[];
+  readonly daftarRows: readonly EvaluasiWorkspaceDaftarRowRepo[];
 };
 
 @Injectable()
@@ -98,21 +108,77 @@ export class EvaluasiWorkspaceRepository {
     return out;
   }
 
+  /**
+   * Muat satu pengajuan beserta nilai dan metadata DetailSOP/SOP untuk daftar workspace.
+   * Daftar SOP = persis anggota batch (`NilaiEvaluasi` pengajuan ini).
+   */
+  async findPengajuanBundleForWorkspace(
+    pengajuanEvaluasiId: string,
+  ): Promise<EvaluasiWorkspacePengajuanBundleRepo | null> {
+    const row = await this.prisma.pengajuanEvaluasi.findUnique({
+      where: { pengajuanEvaluasiId },
+      select: {
+        pengajuanEvaluasiId: true,
+        opdId: true,
+        status: true,
+        jenis: true,
+        nilaiEvaluasi: {
+          select: {
+            detailSopId: true,
+            hasil: true,
+            catatan: true,
+            version: true,
+            detailSop: {
+              select: {
+                status: true,
+                nomorSOP: true,
+                sop: { select: { sopId: true, judul: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+    if (row === null) {
+      return null;
+    }
+    const nilaiEvaluasi: EvaluasiWorkspaceNilaiRepo[] = row.nilaiEvaluasi.map((n) => ({
+      detailSopId: n.detailSopId,
+      hasil: n.hasil === null || n.hasil === undefined ? null : String(n.hasil),
+      catatan: n.catatan ?? null,
+      version: n.version,
+    }));
+    const daftarRows: EvaluasiWorkspaceDaftarRowRepo[] = row.nilaiEvaluasi.map((n) => ({
+      detailSopId: n.detailSopId,
+      sopId: n.detailSop.sop.sopId,
+      judul: n.detailSop.sop.judul,
+      nomorSOP: n.detailSop.nomorSOP,
+      statusDetail: n.detailSop.status,
+    }));
+    daftarRows.sort((a, b) => a.judul.localeCompare(b.judul, 'id'));
+    return {
+      pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+      opdId: row.opdId,
+      status: row.status,
+      jenis: row.jenis,
+      nilaiEvaluasi,
+      daftarRows,
+    };
+  }
+
   async findPengajuanAktif(opdId: string): Promise<EvaluasiWorkspacePengajuanAktifRepo | null> {
     const row = await this.prisma.pengajuanEvaluasi.findFirst({
       where: {
         opdId,
         status: {
-          in: [
-            StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-            StatusPengajuanEvaluasi.MENUNGGU_EVALUASI,
-          ],
+          in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
         },
       },
       orderBy: { updatedAt: 'desc' },
       select: {
         pengajuanEvaluasiId: true,
         status: true,
+        jenis: true,
         nilaiEvaluasi: {
           select: {
             detailSopId: true,
@@ -129,6 +195,7 @@ export class EvaluasiWorkspaceRepository {
     return {
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
       status: row.status,
+      jenis: row.jenis,
       nilaiEvaluasi: row.nilaiEvaluasi.map((n) => ({
         detailSopId: n.detailSopId,
         hasil: n.hasil === null || n.hasil === undefined ? null : String(n.hasil),
@@ -140,13 +207,15 @@ export class EvaluasiWorkspaceRepository {
 
   async findRiwayatOpdSelesai(opdId: string, limit: number): Promise<EvaluasiWorkspaceRiwayatOpdRepoRow[]> {
     const rows = await this.prisma.pengajuanEvaluasi.findMany({
-      where: { opdId, status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI },
+      where: {
+        opdId,
+        status: StatusPengajuanEvaluasi.SELESAI,
+      },
       orderBy: [{ tanggalDiselesaikan: 'desc' }, { updatedAt: 'desc' }],
       take: limit,
       select: {
         pengajuanEvaluasiId: true,
         tanggalDiselesaikan: true,
-        catatan: true,
         nilaiOPD: true,
         diselesaikanOleh: { select: { nama: true } },
       },
@@ -154,7 +223,6 @@ export class EvaluasiWorkspaceRepository {
     return rows.map((r) => ({
       pengajuanEvaluasiId: r.pengajuanEvaluasiId,
       tanggalDiselesaikan: r.tanggalDiselesaikan,
-      catatan: r.catatan ?? null,
       nilaiOPD: r.nilaiOPD ?? null,
       evaluatorNama: r.diselesaikanOleh?.nama ?? '—',
     }));
@@ -166,7 +234,7 @@ export class EvaluasiWorkspaceRepository {
   ): Promise<EvaluasiWorkspaceRiwayatNilaiRepoRow[]> {
     const rows = await this.prisma.pengajuanEvaluasi.findMany({
       where: {
-        status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+        status: StatusPengajuanEvaluasi.SELESAI,
         nilaiEvaluasi: { some: { detailSopId } },
       },
       orderBy: [{ tanggalDiselesaikan: 'desc' }, { updatedAt: 'desc' }],

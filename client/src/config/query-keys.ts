@@ -70,8 +70,28 @@ export const queryKeys = {
 
   // Evaluasi
   evaluasi: ['evaluasi'] as const,
-  evaluasiList: (params?: { opdId?: string; status?: string; jenis?: string }) => ['evaluasi', 'list', params] as const,
+  evaluasiList: (params?: {
+    opdId?: string
+    status?: string
+    jenis?: string
+    statusIn?: readonly string[]
+  }) =>
+    [
+      'evaluasi',
+      'list',
+      params?.opdId,
+      params?.status,
+      params?.jenis,
+      params?.statusIn?.length ? [...params.statusIn].slice().sort().join(',') : '',
+    ] as const,
   evaluasiById: (id: string) => ['evaluasi', 'byId', id] as const,
+  evaluasiPengajuanShell: (id: string) => ['evaluasi', 'pengajuan', 'shell', id] as const,
+  evaluasiPengajuanSopDokumen: (
+    pengajuanId: string,
+    detailSopId: string,
+    logsLimit?: number,
+  ) => ['evaluasi', 'pengajuan', 'sopDokumen', pengajuanId, detailSopId, logsLimit ?? 100] as const,
+  evaluasiPengajuanBeritaAcara: (id: string) => ['evaluasi', 'pengajuan', 'beritaAcara', id] as const,
   evaluasiGrafikTahunan: (params?: { tahun?: number; tahunDari?: number; tahunSampai?: number }) =>
     ['evaluasi', 'grafikTahunan', params ?? {}] as const,
   /** GET `/evaluasi/workspace/opd/:opdId` — invalidate seluruh subtree dengan prefix ini setelah mutasi nilai */
@@ -80,11 +100,23 @@ export const queryKeys = {
     opdId: string,
     params?: { detailSopId?: string; expand?: string; riwayatLimit?: number },
   ) => ['evaluasi', 'workspaceOpd', opdId, params ?? {}] as const,
+  evaluasiWorkspacePengajuanAll: ['evaluasi', 'workspacePengajuan'] as const,
+  evaluasiWorkspacePengajuan: (
+    pengajuanId: string,
+    params?: { detailSopId?: string; expand?: string; riwayatLimit?: number },
+  ) => ['evaluasi', 'workspacePengajuan', pengajuanId, params ?? {}] as const,
+  evaluasiRingkas: (params?: Record<string, unknown>) =>
+    ['evaluasi', 'ringkas', params ?? {}] as const,
+  /** Invalidate semua query GET `/evaluasi/ringkas` */
+  evaluasiRingkasAll: ['evaluasi', 'ringkas'] as const,
 
   // TTE
   tte: ['tte'] as const,
   tteProfil: ['tte', 'profil'] as const,
   tteRiwayat: ['tte', 'riwayat'] as const,
+  /** GET `/tte/public/pengesahan/:dokumenTteId/:userId` — verifikasi publik (tanpa sesi). */
+  ttePengesahanPublic: (dokumenTteId: string, userId: string) =>
+    ['tte', 'pengesahan-public', dokumenTteId, userId] as const,
 
   /** Komentar SOP (evaluator → penyusun). */
   sopKomentar: (detailSopId: string) => ['sop', 'komentar', detailSopId] as const,

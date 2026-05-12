@@ -1,9 +1,8 @@
 /**
- * Workspace evaluasi SOP per OPD.
- * Dari list OPD, klik OPD → langsung ke workspace ini: daftar SOP (kiri), preview (tengah), form evaluasi (kanan).
+ * Workspace evaluasi — mode OPD (`GET …/workspace/opd/:id`) atau satu pengajuan (`GET …/workspace/pengajuan/:id`).
  */
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useParams, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Send, List, Printer } from "lucide-react";
 import { SOPPreviewTemplate } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
 import { SOPListCard } from "@/pages/penyusun/sop/components/SOPListCard";
@@ -14,11 +13,11 @@ import {
   useEvaluasiDraft,
   useEvaluasiSubmit,
   useEvaluasiWorkspaceOpd,
+  useEvaluasiWorkspacePengajuan,
   usePengajuanEvaluasiAktif,
   buildAjukanEvaluasiSnapshotRows,
   getAjukanEvaluasiBlockingReason,
 } from "@/api/evaluasi";
-import { ROUTES } from "@/utils/constants";
 import { ApiError } from "@/lib/api/api-client";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
 import { useCollapsiblePanels } from "@/hooks/useCollapsiblePanels";
@@ -38,6 +37,20 @@ import { useDocumentTitle } from "@/hooks/use-document-title";
 
 const POST_SUBMIT_DELAY_MS = 1500;
 
+export type EvaluasiWorkspacePageProps =
+  | {
+      mode: "opd";
+      opdId: string;
+      preferredSopId?: string;
+      listHref: string;
+    }
+  | {
+      mode: "pengajuan";
+      pengajuanEvaluasiId: string;
+      preferredSopId?: string;
+      listHref: string;
+    };
+
 function alurToDisplayLabel(
   alur: EvaluasiWorkspaceTampilanAlur,
 ): "Diajukan Evaluasi" | "Sedang Dievaluasi" | "Selesai Evaluasi" {
@@ -51,13 +64,11 @@ function alurToDisplayLabel(
   }
 }
 
-export function DetailEvaluasiOPD() {
-  const { id: opdId } = useParams({ from: "/evaluator/evaluasi/$id" });
-  const { sopId: preferredSopId } = useSearch({
-    from: "/evaluator/evaluasi/$id",
-  });
+export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
   const navigate = useNavigate();
   const { getRoleUserName } = useAppRole();
+  const preferredSopId = props.preferredSopId;
+  const listHref = props.listHref;
 
   const [selectedSopId, setSelectedSopId] = useState<string | null>(
     preferredSopId ?? null,
@@ -80,14 +91,31 @@ export function DetailEvaluasiOPD() {
     [selectedSopId],
   );
 
-  const {
-    data: workspace,
-    isLoading: isLoadingWorkspace,
-    error: workspaceError,
-  } = useEvaluasiWorkspaceOpd(opdId, workspaceQueryParams);
+  const opdIdArg = props.mode === "opd" ? props.opdId : "";
+  const pengajuanIdArg =
+    props.mode === "pengajuan" ? props.pengajuanEvaluasiId : "";
+
+  const wOpd = useEvaluasiWorkspaceOpd(opdIdArg, {
+    ...workspaceQueryParams,
+    enabled: props.mode === "opd",
+  });
+  const wPeng = useEvaluasiWorkspacePengajuan(pengajuanIdArg, {
+    ...workspaceQueryParams,
+    enabled: props.mode === "pengajuan",
+  });
+
+  const workspace =
+    props.mode === "opd" ? wOpd.data : wPeng.data;
+  const isLoadingWorkspace =
+    props.mode === "opd" ? wOpd.isLoading : wPeng.isLoading;
+  const workspaceError =
+    props.mode === "opd" ? wOpd.error : wPeng.error;
+
+  const opdIdUntukFallback =
+    props.mode === "opd" ? props.opdId : workspace?.opd.id;
 
   const pengajuanFallbackState = usePengajuanEvaluasiAktif(
-    opdId,
+    opdIdUntukFallback,
     workspace === undefined ? undefined : workspace.pengajuanAktif,
   );
 
@@ -109,6 +137,7 @@ export function DetailEvaluasiOPD() {
     return {
       id: fp.id,
       status: fp.status,
+      jenis: fp.jenis ?? "TERJADWAL",
       nilaiPerDetail: fp.nilaiEvaluasi.map((n) => ({
         detailSopId: n.sopDetailId,
         hasil: (n.hasil ?? null) as StatusHasilEvaluasi | null,
@@ -117,6 +146,12 @@ export function DetailEvaluasiOPD() {
       })),
     };
   }, [workspace, pengajuanFallbackState.pengajuan]);
+
+  /** Pengajuan terjadwal (batch PJ) memakai skor OPD; mandiri hanya per dokumen SOP. */
+  const requiresNilaiOpd = pengajuanAktifEffektif?.jenis !== "MANDIRI";
+
+  const opdIdUntukDraft =
+    workspace?.opd.id ?? (props.mode === "opd" ? props.opdId : undefined);
 
   const opd = useMemo(() => {
     if (!workspace) return null;
@@ -127,7 +162,7 @@ export function DetailEvaluasiOPD() {
     };
   }, [workspace]);
 
-  /** Satu baris per DetailSOP dalam pipeline evaluasi (server). */
+  /** Satu baris per DetailSOP dalam batch / pipeline evaluasi (server). */
   const sopsForOpd = useMemo(() => {
     if (!workspace) return [];
     return workspace.daftarSop.map((row) => ({
@@ -139,16 +174,40 @@ export function DetailEvaluasiOPD() {
     }));
   }, [workspace]);
 
+  const hasilEvaluasiByDetailId = useMemo(() => {
+    const m = new Map<string, StatusHasilEvaluasi | null>();
+    if (pengajuanAktifEffektif === undefined || pengajuanAktifEffektif === null) {
+      return m;
+    }
+    for (const row of pengajuanAktifEffektif.nilaiPerDetail) {
+      m.set(row.detailSopId, row.hasil);
+    }
+    return m;
+  }, [pengajuanAktifEffektif]);
+
   /** Status tampilan untuk filter/badge: server `tampilanAlur` + override lokal setelah kirim. */
   const sopsForOpdWithDisplayStatus = useMemo(
     () =>
-      sopsForOpd.map((s) => ({
-        ...s,
-        displayStatus: lastEvaluatedBy[s.id]
-          ? ("Selesai Evaluasi" as const)
-          : alurToDisplayLabel(s.alur),
-      })),
-    [sopsForOpd, lastEvaluatedBy],
+      sopsForOpd.map((s) => {
+        if (lastEvaluatedBy[s.id]) {
+          return {
+            ...s,
+            displayStatus: "Selesai Evaluasi" as const,
+          };
+        }
+        const hasil = hasilEvaluasiByDetailId.get(s.id) ?? null;
+        if (s.status === "REVISI_DARI_EVALUATOR" && hasil === "PERLU_PERBAIKAN") {
+          return { ...s, displayStatus: "Menunggu revisi OPD" as const };
+        }
+        if (s.status === "DIAJUKAN_EVALUASI" && hasil === "PERLU_PERBAIKAN") {
+          return { ...s, displayStatus: "Menunggu evaluasi ulang" as const };
+        }
+        return {
+          ...s,
+          displayStatus: alurToDisplayLabel(s.alur),
+        };
+      }),
+    [sopsForOpd, lastEvaluatedBy, hasilEvaluasiByDetailId],
   );
 
   const firstSopId = sopsForOpdWithDisplayStatus[0]?.id ?? null;
@@ -190,7 +249,7 @@ export function DetailEvaluasiOPD() {
     setStatusEvaluasi,
     saveDraft,
   } = useEvaluasiDraft(
-    opdId,
+    opdIdUntukDraft,
     effectiveSopId ?? undefined,
     workspace === undefined ? undefined : pengajuanAktifEffektif,
   );
@@ -215,6 +274,12 @@ export function DetailEvaluasiOPD() {
   const [activeFormTab, setActiveFormTab] =
     useState<DetailEvaluasiActiveTab>("sop");
   const [ratingOPD, setRatingOPD] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!requiresNilaiOpd && activeFormTab === "opd") {
+      setActiveFormTab("sop");
+    }
+  }, [requiresNilaiOpd, activeFormTab]);
 
   const judulByDetailId = useMemo(() => {
     const m = new Map<string, { judul: string; nomorSOP: string }>();
@@ -291,6 +356,7 @@ export function DetailEvaluasiOPD() {
   } = useEvaluasiSubmit({
     pengajuanAktifId: pengajuanAktifEffektif?.id,
     ratingOPD,
+    requiresNilaiOpd,
     detailIdsInPengajuan,
     canSubmit: canAjukan,
     blockingMessage: blockingAjukan,
@@ -299,7 +365,7 @@ export function DetailEvaluasiOPD() {
     onSuccess: () => {
       setIsSubmitOpen(false);
       setTimeout(
-        () => navigate({ to: ROUTES.EVALUATOR.EVALUASI }),
+        () => navigate({ to: listHref }),
         POST_SUBMIT_DELAY_MS,
       );
     },
@@ -322,7 +388,6 @@ export function DetailEvaluasiOPD() {
     return workspace.riwayatOpd.map((r) => ({
       tanggal: r.tanggal,
       evaluator: r.evaluatorNama,
-      catatan: r.catatan ?? "",
       nilaiOPD: r.nilaiOPD ?? undefined,
     }));
   }, [workspace]);
@@ -336,7 +401,7 @@ export function DetailEvaluasiOPD() {
     }
   }, [workspace]);
 
-  const opdNotFound =
+  const resourceNotFound =
     workspaceError instanceof ApiError && workspaceError.status === 404;
 
   /** Convert string error to EvaluasiBatchSubmitError shape */
@@ -349,15 +414,20 @@ export function DetailEvaluasiOPD() {
     };
   }, [terjadwalSubmitError]);
 
+  const notFoundMessage =
+    props.mode === "opd"
+      ? "OPD tidak ditemukan."
+      : "Pengajuan evaluasi tidak ditemukan.";
+
   if (isLoadingWorkspace && !workspace) {
     return (
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.EVALUATOR.EVALUASI },
+          { label: "Evaluasi SOP", to: listHref },
         ]}
         title="Evaluasi SOP"
         description=""
-        backTo={ROUTES.EVALUATOR.EVALUASI}
+        backTo={listHref}
         main={
           <p className="p-4 text-sm text-gray-600">Memuat workspace evaluasi…</p>
         }
@@ -365,15 +435,15 @@ export function DetailEvaluasiOPD() {
     );
   }
 
-  if (workspaceError && !opdNotFound) {
+  if (workspaceError && !resourceNotFound) {
     return (
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.EVALUATOR.EVALUASI },
+          { label: "Evaluasi SOP", to: listHref },
         ]}
         title="Evaluasi SOP"
         description=""
-        backTo={ROUTES.EVALUATOR.EVALUASI}
+        backTo={listHref}
         main={
           <p className="p-4 text-sm text-red-600">
             {workspaceError instanceof Error
@@ -385,16 +455,16 @@ export function DetailEvaluasiOPD() {
     );
   }
 
-  if (opdNotFound || (!opd && !isLoadingWorkspace)) {
+  if (resourceNotFound || (!opd && !isLoadingWorkspace)) {
     return (
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.EVALUATOR.EVALUASI },
+          { label: "Evaluasi SOP", to: listHref },
         ]}
         title="Evaluasi SOP"
         description=""
-        backTo={ROUTES.EVALUATOR.EVALUASI}
-        main={<p className="p-4 text-sm text-gray-600">OPD tidak ditemukan.</p>}
+        backTo={listHref}
+        main={<p className="p-4 text-sm text-gray-600">{notFoundMessage}</p>}
       />
     );
   }
@@ -403,11 +473,11 @@ export function DetailEvaluasiOPD() {
     return (
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.EVALUATOR.EVALUASI },
+          { label: "Evaluasi SOP", to: listHref },
         ]}
         title="Evaluasi SOP"
         description=""
-        backTo={ROUTES.EVALUATOR.EVALUASI}
+        backTo={listHref}
         main={
           <p className="p-4 text-sm text-gray-600">Memuat data OPD…</p>
         }
@@ -441,7 +511,15 @@ export function DetailEvaluasiOPD() {
           <span>
             {canAjukan ? (
               <>
-                Semua dokumen <strong>Sesuai</strong> dan skor OPD terisi — siap{" "}
+                Semua dokumen <strong>Sesuai</strong>
+                {requiresNilaiOpd ? (
+                  <>
+                    {" "}
+                    dan skor OPD terisi — siap{" "}
+                  </>
+                ) : (
+                  <> — siap </>
+                )}
                 <strong>Kirim Hasil Evaluasi</strong> ke PJ Evaluator.
               </>
             ) : (
@@ -464,12 +542,12 @@ export function DetailEvaluasiOPD() {
       )}
       <DetailPageLayout
         breadcrumb={[
-          { label: "Evaluasi SOP", to: ROUTES.EVALUATOR.EVALUASI },
+          { label: "Evaluasi SOP", to: listHref },
           { label: opd.nama },
         ]}
         title={`Evaluasi SOP — ${opd.nama}`}
         description="Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
-        backTo={ROUTES.EVALUATOR.EVALUASI}
+        backTo={listHref}
         backSize="icon"
         header={
           <>
@@ -570,6 +648,7 @@ export function DetailEvaluasiOPD() {
         }
         rightPanel={
           <DetailEvaluasiOPDFormPanel
+            penilaianOpdDiizinkan={requiresNilaiOpd}
             panelState={{
               collapsed: rightPanelCollapsed,
               onCollapsedChange: setRightPanelCollapsed,
@@ -596,6 +675,7 @@ export function DetailEvaluasiOPD() {
       />
 
       <DetailEvaluasiOPDSubmitDialog
+        requiresNilaiOpdInCopy={requiresNilaiOpd}
         open={isSubmitOpen}
         onOpenChange={(open) => {
           setIsSubmitOpen(open);

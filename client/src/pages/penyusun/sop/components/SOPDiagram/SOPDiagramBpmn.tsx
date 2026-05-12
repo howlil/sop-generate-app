@@ -83,6 +83,28 @@ function capitalizeWords(s: string): string {
   return (s ?? '').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+/** Satu struktur markup + rotasi eksplisit untuk semua baris swimlane (hindari teks aktor row 2+ terasa terbalik). */
+function SwimlaneActorNameCell(props: { laneHeightPx: number; label: string | undefined }) {
+  const { laneHeightPx, label } = props
+  return (
+    <td className="border-2 border-black w-8 align-middle p-0">
+      {/* translate + rotate bersama menjaga pusat geometris di tengah sel w-8 (grid saja bisa terlihat miring kanan/kanan). */}
+      <div className="relative w-8 shrink-0 overflow-visible" style={{ height: laneHeightPx }}>
+        <span
+          className="absolute left-1/2 top-1/2 whitespace-nowrap text-center font-medium text-xs leading-none"
+          style={{
+            direction: 'ltr',
+            transform: 'translate(-50%, -50%) rotate(-90deg)',
+            unicodeBidi: 'isolate',
+          }}
+        >
+          {label ?? ''}
+        </span>
+      </div>
+    </td>
+  )
+}
+
 export interface SOPDiagramBpmnProps {
   data: {
     name?: string
@@ -553,6 +575,12 @@ export function SOPDiagramBpmn({
     )
   }, [laneLayouts])
 
+  /** Tinggi badan tabel swimlane (tanpa ROW_SPACING antar-baris) — dipakai agar sel judul rowSpan ikut membangun tinggi baris */
+  const swimlaneTableBodyHeight = useMemo(() => {
+    if (!laneLayouts.length) return BASE_ROW_HEIGHT
+    return laneLayouts.reduce((sum, l) => sum + l.height, 0)
+  }, [laneLayouts])
+
   const charWidth = 9
   const rowHeight = 120
   const safetyFactor = 1
@@ -578,14 +606,15 @@ export function SOPDiagramBpmn({
   const A4_LANDSCAPE_PX = 1123 /* 297mm at 96dpi */
   const printScale = Math.min(1, A4_LANDSCAPE_PX / diagramWidth)
 
+  // justify-center memusatkan blok BPMN bila lebih sempit dari kolom cetak (header pakai w-full).
   return (
     <div
-      className="diagram-wrapper min-w-[calc(297mm-3cm)] mx-auto overflow-x-auto print-page print:max-w-[calc(297mm-3cm)] [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
+      className="diagram-wrapper print-page box-border flex w-full min-w-0 justify-center overflow-visible [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
       style={{ '-bpmn-print-scale': printScale } as React.CSSProperties}
     >
       <div
         id="bpmn-container"
-        className="diagram-container relative mx-auto print:origin-top-left"
+        className="diagram-container relative shrink-0 max-w-full print:origin-top-left"
         style={{
           width: diagramWidth,
           minHeight: totalDiagramHeight,
@@ -597,16 +626,19 @@ export function SOPDiagramBpmn({
             <tr>
               {name && (
                 <td
-                  className="border-2 border-black w-0 relative align-top"
+                  className="border-2 border-black w-0 align-middle p-0"
                   rowSpan={orderedImplementer.length}
                   style={{ width: dynamicTitleWidth }}
                 >
                   <div
-                    className="relative h-full flex items-center justify-center"
-                    style={{ width: dynamicTitleWidth }}
+                    className="flex items-center justify-center overflow-visible"
+                    style={{
+                      width: dynamicTitleWidth,
+                      height: swimlaneTableBodyHeight,
+                    }}
                   >
                     <p
-                      className="font-bold text-lg -rotate-90 text-center whitespace-nowrap"
+                      className="origin-center font-bold text-lg -rotate-90 text-center whitespace-nowrap"
                       style={{
                         maxWidth: orderedImplementer.length * rowHeight * safetyFactor,
                       }}
@@ -618,16 +650,10 @@ export function SOPDiagramBpmn({
               )}
               {laneLayouts.length > 0 && (
                 <>
-                  <td className="border-2 border-black w-8 align-top">
-                    <div
-                      className="flex items-center justify-center w-8"
-                      style={{ height: laneLayouts[0]?.height ?? BASE_ROW_HEIGHT }}
-                    >
-                      <p className="rotate-90 origin-center whitespace-nowrap font-medium text-xs">
-                        {orderedImplementer[0]?.name}
-                      </p>
-                    </div>
-                  </td>
+                  <SwimlaneActorNameCell
+                    laneHeightPx={laneLayouts[0]?.height ?? BASE_ROW_HEIGHT}
+                    label={orderedImplementer[0]?.name}
+                  />
                   <td className="border-2 border-black p-0 align-top">
                     <div
                       className="relative overflow-x-auto"
@@ -674,16 +700,7 @@ export function SOPDiagramBpmn({
             </tr>
             {laneLayouts.slice(1).map((lane, index) => (
               <tr key={lane.impId}>
-                <td className="border-2 border-black w-8 align-top">
-                  <div
-                    className="flex items-center justify-center w-8"
-                    style={{ height: lane.height }}
-                  >
-                    <p className="rotate-90 origin-center whitespace-nowrap font-medium text-xs">
-                      {orderedImplementer[index + 1]?.name}
-                    </p>
-                  </div>
-                </td>
+                <SwimlaneActorNameCell laneHeightPx={lane.height} label={orderedImplementer[index + 1]?.name} />
                 <td className="border-2 border-black p-0 align-top">
                   <div
                     className="relative overflow-x-auto"

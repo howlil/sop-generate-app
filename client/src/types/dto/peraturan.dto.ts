@@ -7,6 +7,8 @@ export interface PeraturanResponse {
   tentang: string;
   createdAt: string;
   updatedAt: string;
+  lastEditedById?: string | null;
+  lastEditedBy?: { id: string; nama: string; opd: { id: string; nama: string } } | null;
   opd?: {
     id: string;
     nama: string;

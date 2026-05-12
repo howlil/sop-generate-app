@@ -48,11 +48,11 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {logs.map((log) => (
         <div
           key={log.id}
-          className="relative bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-2"
+          className="relative space-y-1.5 rounded-lg border border-gray-200 bg-gray-50 p-2.5 shadow-sm"
         >
           {/* Header */}
           <div className="flex items-center justify-between gap-2">
@@ -84,7 +84,7 @@ export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluas
 
           {/* Catatan */}
           {log.catatanSesudah && (
-            <div className="flex items-start gap-1.5 text-xs text-gray-600 bg-white rounded p-2 border border-gray-100">
+            <div className="flex items-start gap-1.5 rounded border border-gray-100 bg-white p-1.5 text-xs text-gray-600">
               <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-gray-400" />
               <p className="whitespace-pre-wrap">{log.catatanSesudah}</p>
             </div>

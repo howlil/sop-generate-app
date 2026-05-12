@@ -22,17 +22,17 @@ export class EvaluatorService {
   constructor(private readonly penggunaRepository: PenggunaRepository) {}
 
   async listGrup(search?: string): Promise<EvaluatorOpdGrupDto[]> {
-    const biro = await this.penggunaRepository.findBiroOrganisasiOpd();
-    if (biro === null) {
+    const opdMaster = await this.penggunaRepository.findPjEvaluatorOrganisasiOpd();
+    if (opdMaster === null) {
       throw new ServiceUnavailableException(
-        'OPD Biro Organisasi belum dikonfigurasi. Hubungi administrator sistem.',
+        'OPD PJ Evaluator Organisasi belum dikonfigurasi. Hubungi administrator sistem.',
       );
     }
-    const rows = await this.penggunaRepository.findEvaluatorsByOpd(biro.opdId, search);
+    const rows = await this.penggunaRepository.findEvaluatorsByOpd(opdMaster.opdId, search);
     return [
       {
-        opdId: biro.opdId,
-        namaOpd: biro.nama,
+        opdId: opdMaster.opdId,
+        namaOpd: opdMaster.nama,
         evaluator: rows.map((r) => this.toAnggotaDto(r)),
       },
     ];
@@ -118,10 +118,10 @@ export class EvaluatorService {
   }
 
   private async requireBiroOpdId(): Promise<string> {
-    const opdId = await this.penggunaRepository.findBiroOrganisasiOpdId();
+    const opdId = await this.penggunaRepository.findPjEvaluatorOrganisasiOpdId();
     if (opdId === null) {
       throw new ServiceUnavailableException(
-        'OPD Biro Organisasi belum dikonfigurasi. Hubungi administrator sistem.',
+        'OPD PJ Evaluator Organisasi belum dikonfigurasi. Hubungi administrator sistem.',
       );
     }
     return opdId;

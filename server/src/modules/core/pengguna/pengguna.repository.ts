@@ -7,17 +7,17 @@ import { PeranPengguna } from '../../../generated/prisma';
 export class PenggunaRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findBiroOrganisasiOpdId(): Promise<string | null> {
+  async findPjEvaluatorOrganisasiOpdId(): Promise<string | null> {
     const row = await this.prisma.oPD.findFirst({
-      where: { isBiroOrganisasi: true, deletedAt: null },
+      where: { isPjEvaluatorOrganisasi: true, deletedAt: null },
       select: { opdId: true },
     });
     return row?.opdId ?? null;
   }
 
-  async findBiroOrganisasiOpd(): Promise<{ opdId: string; nama: string } | null> {
+  async findPjEvaluatorOrganisasiOpd(): Promise<{ opdId: string; nama: string } | null> {
     const row = await this.prisma.oPD.findFirst({
-      where: { isBiroOrganisasi: true, deletedAt: null },
+      where: { isPjEvaluatorOrganisasi: true, deletedAt: null },
       select: { opdId: true, nama: true },
     });
     return row ?? null;

@@ -51,7 +51,7 @@ describe('OpdService', () => {
     opdRepository.findAktifById.mockResolvedValue({
       opdId: 'opd-a',
       nama: 'OPD A',
-      isBiroOrganisasi: false,
+      isPjEvaluatorOrganisasi: false,
       kepalaPenggunaId: null,
       pjPenyusunPenggunaId: null,
       deletedAt: null,
@@ -76,7 +76,7 @@ describe('OpdService', () => {
     opdRepository.findAktifById.mockResolvedValue({
       opdId: 'opd-b',
       nama: 'OPD B',
-      isBiroOrganisasi: false,
+      isPjEvaluatorOrganisasi: false,
       kepalaPenggunaId: 'user-kepala',
       pjPenyusunPenggunaId: null,
       deletedAt: null,

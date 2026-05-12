@@ -1,5 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
-import { StatusPengajuanEvaluasi, StatusSOP, PeranPengguna } from '../../generated/prisma';
+import {
+  JenisPengajuanEvaluasi,
+  StatusPengajuanEvaluasi,
+  StatusSOP,
+  PeranPengguna,
+} from '../../generated/prisma';
 import type { JwtAccessPayload } from '../../common/types/jwt-access-payload.type';
 import { SopCatalogService } from '../sop/sop-catalog/sop-catalog.service';
 import type { EvaluasiWorkspaceRepository } from './evaluasi-workspace.repository';
@@ -25,13 +30,18 @@ describe('EvaluasiWorkspaceService', () => {
       findRiwayatNilaiUntukDetail: jest.fn(),
       detailMilikiOpd: jest.fn(),
       evaluatorTerakhirBatch: jest.fn(),
+      findPengajuanBundleForWorkspace: jest.fn(),
       ...partial,
     } as jest.Mocked<EvaluasiWorkspaceRepository>;
   }
 
-  function createPastikanMock(): { pastikanPengajuanMandiriUntukEvaluator: jest.Mock } {
+  function createPastikanMock(): {
+    pastikanPengajuanMandiriUntukEvaluator: jest.Mock;
+    assertUserCanAccessPengajuan: jest.Mock;
+  } {
     return {
       pastikanPengajuanMandiriUntukEvaluator: jest.fn().mockResolvedValue(undefined),
+      assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
     };
   }
 
@@ -74,7 +84,8 @@ describe('EvaluasiWorkspaceService', () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({
           pengajuanEvaluasiId: 'p-new',
-          status: StatusPengajuanEvaluasi.MENUNGGU_EVALUASI,
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.MANDIRI,
           nilaiEvaluasi: [
             {
               detailSopId: detailId,
@@ -103,6 +114,7 @@ describe('EvaluasiWorkspaceService', () => {
     );
     expect(repo.findPengajuanAktif).toHaveBeenCalledTimes(2);
     expect(actual.pengajuanAktif?.id).toBe('p-new');
+    expect(actual.pengajuanAktif?.jenis).toBe('MANDIRI');
     expect(actual.daftarSop).toHaveLength(1);
     expect(actual.daftarSop[0]?.tampilanAlur).toBe('sedang_dievaluasi');
     expect(sopCatalog.getPenyusunWorkbench).not.toHaveBeenCalled();
@@ -166,6 +178,7 @@ describe('EvaluasiWorkspaceService', () => {
       findPengajuanAktif: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
         nilaiEvaluasi: [
           {
             detailSopId: detailId,
@@ -269,5 +282,110 @@ describe('EvaluasiWorkspaceService', () => {
     expect(actual.preview).toBeNull();
     expect(getWorkbench).not.toHaveBeenCalled();
     expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
+  });
+
+  it('should_throw_not_found_when_pengajuan_bundle_missing', async () => {
+    const repo = createRepoMock({
+      findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue(null),
+    });
+    const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+    const pastikan = createPastikanMock();
+    const service = new EvaluasiWorkspaceService(
+      repo,
+      sopCatalog,
+      pastikan as unknown as PengajuanEvaluasiService,
+    );
+    await expect(service.getWorkspacePengajuan(userEvaluator, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', {})).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+    expect(pastikan.assertUserCanAccessPengajuan).not.toHaveBeenCalled();
+  });
+
+  it('should_map_workspace_pengajuan_from_bundle_nilai_only', async () => {
+    const repo = createRepoMock({
+      findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
+        pengajuanEvaluasiId: 'peng-1',
+        opdId: 'opd-1',
+        status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        nilaiEvaluasi: [
+          {
+            detailSopId: detailId,
+            hasil: null,
+            catatan: null,
+            version: 0,
+          },
+        ],
+        daftarRows: [
+          {
+            detailSopId: detailId,
+            sopId,
+            judul: 'SOP A',
+            nomorSOP: '001',
+            statusDetail: StatusSOP.SEDANG_DIEVALUASI,
+          },
+        ],
+      }),
+      findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+      findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+    });
+    const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+    const pastikan = createPastikanMock();
+    const service = new EvaluasiWorkspaceService(
+      repo,
+      sopCatalog,
+      pastikan as unknown as PengajuanEvaluasiService,
+    );
+    const actual = await service.getWorkspacePengajuan(userEvaluator, 'peng-1', {});
+    expect(pastikan.assertUserCanAccessPengajuan).toHaveBeenCalledWith(userEvaluator, 'opd-1');
+    expect(actual.daftarSop).toHaveLength(1);
+    expect(actual.daftarSop[0]?.detailSopId).toBe(detailId);
+    expect(actual.pengajuanAktif?.id).toBe('peng-1');
+    expect(actual.pengajuanAktif?.jenis).toBe('TERJADWAL');
+    expect(actual.pengajuanAktif?.nilaiPerDetail).toHaveLength(1);
+    expect(actual.opd.id).toBe('opd-1');
+  });
+
+  it('should_keep_pengajuan_status_visible_for_late_jobdesk_stage', async () => {
+    const repo = createRepoMock({
+      findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
+        pengajuanEvaluasiId: 'peng-2',
+        opdId: 'opd-1',
+        status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        nilaiEvaluasi: [
+          {
+            detailSopId: detailId,
+            hasil: 'SESUAI',
+            catatan: null,
+            version: 2,
+          },
+        ],
+        daftarRows: [
+          {
+            detailSopId: detailId,
+            sopId,
+            judul: 'SOP A',
+            nomorSOP: '001',
+            statusDetail: StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
+          },
+        ],
+      }),
+      findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+      findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+    });
+    const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+    const pastikan = createPastikanMock();
+    const service = new EvaluasiWorkspaceService(
+      repo,
+      sopCatalog,
+      pastikan as unknown as PengajuanEvaluasiService,
+    );
+    const actual = await service.getWorkspacePengajuan(userEvaluator, 'peng-2', {});
+    expect(actual.pengajuanAktif?.status).toBe('DITANDATANGANI_PJ_PENYUSUN');
   });
 });

@@ -24,11 +24,19 @@ export class UpdateSopHeaderDto {
   @MaxLength(2000)
   readonly namaLembaga?: string;
 
-  @ApiPropertyOptional({ description: 'Teks peringatan (lampiran tunggal jenis PERINGATAN)' })
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: false,
+    description:
+      'Lampiran non-prosedural (opsional). Jika properti tertentu dikirim, server akan melakukan replace-all pada kategori tersebut.',
+  })
   @IsOptional()
-  @IsString()
-  @MaxLength(2000)
-  readonly peringatan?: string;
+  readonly lampiran?: {
+    peringatan?: string[];
+    kualifikasiPelaksanaan?: string[];
+    peralatanPerlengkapan?: string[];
+    pencatatanPendataan?: string[];
+  };
 
   @ApiPropertyOptional({
     type: [String],
@@ -48,30 +56,5 @@ export class UpdateSopHeaderDto {
   @IsUUID('4', { each: true })
   readonly sopTerkaitDetailIds?: string[];
 
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Item kualifikasi pelaksanaan (replace-all lampiran KUALIFIKASI_PELAKSANAAN)',
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  readonly kualifikasiPelaksanaan?: string[];
-
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Item peralatan dan perlengkapan (replace-all lampiran PERALATAN)',
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  readonly peralatanPerlengkapan?: string[];
-
-  @ApiPropertyOptional({
-    type: [String],
-    description: 'Item pencatatan dan pendataan (replace-all lampiran PENCATATAN_PENDATAAN)',
-  })
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  readonly pencatatanPendataan?: string[];
+  // Catatan: field legacy lampiran list diganti nested `lampiran`.
 }

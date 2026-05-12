@@ -28,6 +28,11 @@ interface SopPreviewOptions {
   /** Kontrol tambahan di samping tab Flowchart/BPMN (bukan pengganti tab). */
   toolbar?: ReactNode;
   diagramAlternate?: ReactNode;
+  /**
+   * Tampilkan scrollbar internal pratinjau. Default `false` (mengikuti tampilan A4 cetak).
+   * Set `true` di konteks read-only/verifikasi agar pengguna sadar konten dapat di-scroll.
+   */
+  showScrollbar?: boolean;
 }
 
 interface SopPreviewDiagramState {
@@ -73,6 +78,7 @@ export function SOPPreviewTemplate({
     editable: previewOptions.editable ?? false,
     toolbar: previewOptions.toolbar ?? null,
     diagramAlternate: previewOptions.diagramAlternate ?? null,
+    showScrollbar: previewOptions.showScrollbar ?? false,
   };
   const effectiveDiagramState: Required<SopPreviewDiagramState> = {
     pathLayoutSeed: diagramState.pathLayoutSeed ?? 0,
@@ -138,7 +144,13 @@ export function SOPPreviewTemplate({
   const hasDiagramToolbar = effectiveOptions.toolbar != null;
 
   return (
-    <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
+    <div
+      className={
+        effectiveOptions.showScrollbar
+          ? "flex-1 min-h-0 overflow-auto"
+          : "flex-1 min-h-0 overflow-auto scrollbar-hide"
+      }
+    >
       <div className="sop-a4-preview p-2">
         <div className="space-y-8">
           <SOPHeaderInfo
@@ -204,30 +216,39 @@ export function SOPPreviewTemplate({
                 </div>
               )}
 
-              <div className="w-full">
-                {activeTab === "flowchart" ? (
-                  <SOPDiagramFlowchart
-                    data={{
-                      rows: prosedurRows,
-                      steps: diagramSteps,
-                      implementers: safeImplementers,
-                    }}
-                    config={{
-                      pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
-                    }}
-                  />
-                ) : (
-                  <SOPDiagramBpmn
-                    data={{
-                      name: metadata.name,
-                      steps: diagramSteps,
-                      implementers: safeImplementers,
-                    }}
-                    config={{
-                      pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
-                    }}
-                  />
-                )}
+              {/* Kulit scroll sama; kolom dalam beda Flowchart vs BPMN (routing/measure BPMN sensitif pada lebar blok). */}
+              <div className="flex justify-center">
+                <div className="min-w-0 w-full overflow-x-auto px-4 lg:px-0 print:px-0">
+                  {activeTab === "flowchart" ? (
+                    /* Flowchart lebar tetap A4 → mx-auto pusat blok di viewport lebar */
+                    <div className="mx-auto box-border min-w-0 w-full max-w-[calc(297mm-3cm)] print:mx-auto print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)] print:my-0 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+                      <SOPDiagramFlowchart
+                        data={{
+                          rows: prosedurRows,
+                          steps: diagramSteps,
+                          implementers: safeImplementers,
+                        }}
+                        config={{
+                          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    /* BPMN pola kolom cetak sama header (tanpa mx-auto layar) + diagram-wrapper pusat graf di dalam kolom */
+                    <div className="box-border min-w-0 w-full max-w-[calc(297mm-3cm)] print:mx-auto print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)] print:my-0 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+                      <SOPDiagramBpmn
+                        data={{
+                          name: metadata.name,
+                          steps: diagramSteps,
+                          implementers: safeImplementers,
+                        }}
+                        config={{
+                          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </>
           )}

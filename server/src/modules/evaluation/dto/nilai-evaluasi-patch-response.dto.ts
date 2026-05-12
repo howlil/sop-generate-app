@@ -3,7 +3,10 @@ import { HasilEvaluasi } from '../../../generated/prisma';
 
 /** Respons mutasi nilai — selaras field yang dipakai klien (`sopDetailId`). */
 export class NilaiEvaluasiPatchResponseDto {
-  @ApiProperty({ format: 'uuid' })
+  @ApiProperty({
+    description:
+      'Identifier stabil gabungan `pengajuanEvaluasiId:detailSopId` (bukan UUID kolom surrogate).',
+  })
   readonly id!: string;
 
   @ApiProperty({ format: 'uuid' })

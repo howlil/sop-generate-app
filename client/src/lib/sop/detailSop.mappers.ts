@@ -75,10 +75,10 @@ export function transformSopDetailToMetadata(detail: SopDetail): SOPDetailMetada
     lawBasisIds,
     relatedSop: relatedSopLabels,
     relatedSopDetailIds,
-    warning: detail.peringatan ?? "",
-    implementQualification: detail.kualifikasiPelaksanaan ?? [],
-    equipment: detail.peralatanPerlengkapan ?? [],
-    recordData: detail.pencatatanPendataan ?? [],
+    warning: (detail.lampiran?.peringatan ?? []).map((i) => i.teks),
+    implementQualification: (detail.lampiran?.kualifikasiPelaksanaan ?? []).map((i) => i.teks),
+    equipment: (detail.lampiran?.peralatanPerlengkapan ?? []).map((i) => i.teks),
+    recordData: (detail.lampiran?.pencatatanPendataan ?? []).map((i) => i.teks),
   };
 }
 

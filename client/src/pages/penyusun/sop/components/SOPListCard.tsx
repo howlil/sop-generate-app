@@ -6,6 +6,8 @@ export interface SOPListItem {
   nama: string
   nomor: string
   status?: string
+  statusSop?: string
+  statusEvaluasi?: string
 }
 
 export interface SOPListCardProps {
@@ -42,6 +44,21 @@ export function SOPListCard({
             status={sop.status}
             className="text-[10px] h-auto"
           />
+        ) : sop.statusSop || sop.statusEvaluasi ? (
+          <div className="flex flex-col gap-1">
+            {sop.statusSop ? (
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-gray-500">SOP</span>
+                <StatusBadge status={sop.statusSop} className="text-[10px] h-auto" />
+              </div>
+            ) : null}
+            {sop.statusEvaluasi ? (
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] text-gray-500">Evaluasi</span>
+                <StatusBadge status={sop.statusEvaluasi} className="text-[10px] h-auto" />
+              </div>
+            ) : null}
+          </div>
         ) : null
       }
       emptyMessage="Tidak ada SOP"

@@ -4,6 +4,8 @@ import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 /** Skema runtime untuk payload tanda tangan TTE dari API (JSON). */
 export const tteSignaturePayloadSchema = z.object({
   id: z.string(),
+  dokumenTteId: z.string().uuid(),
+  userId: z.string().uuid(),
   nip: z.string(),
   namaLengkap: z.string(),
   jabatan: z.string().optional(),

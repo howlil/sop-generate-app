@@ -5,6 +5,7 @@ import type { CorsOptions } from '@nestjs/common/interfaces/external/cors-option
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { WinstonModule } from 'nest-winston';
+import { createServer } from 'node:net';
 import { AppModule } from './app.module';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { createDefaultValidationPipe } from './common';
@@ -12,6 +13,7 @@ import { ACCESS_TOKEN_COOKIE_NAME } from './modules/core/auth/helpers/auth.share
 
 const DEFAULT_PORT = 3000;
 const CORS_MAX_AGE_SECONDS = 3600;
+const MAX_PORT_ATTEMPTS = 20;
 
 function buildCorsOptions(configService: ConfigService): CorsOptions {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
@@ -39,6 +41,29 @@ function buildCorsOptions(configService: ConfigService): CorsOptions {
     credentials: true,
     maxAge: CORS_MAX_AGE_SECONDS,
   };
+}
+
+async function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = createServer();
+    server.once('error', () => resolve(false));
+    server.once('listening', () => {
+      server.close(() => resolve(true));
+    });
+    server.listen(port, '::');
+  });
+}
+
+async function resolveAvailablePort(preferredPort: number): Promise<number> {
+  for (let attempt = 0; attempt < MAX_PORT_ATTEMPTS; attempt += 1) {
+    const candidatePort = preferredPort + attempt;
+    if (await isPortAvailable(candidatePort)) {
+      return candidatePort;
+    }
+  }
+  throw new Error(
+    `Tidak ada port tersedia mulai dari ${preferredPort} hingga ${preferredPort + MAX_PORT_ATTEMPTS - 1}.`,
+  );
 }
 
 async function bootstrap() {
@@ -88,15 +113,22 @@ async function bootstrap() {
 
   app.enableShutdownHooks();
 
-  const port = configService.get<number>('PORT', DEFAULT_PORT);
-  await app.listen(port);
-  logger.log(`🚀 Server running on http://localhost:${port}/api`);
-  if (swaggerEnabled) {
-    logger.log(`📚 Swagger docs: http://localhost:${port}/docs`);
+  const configuredPort = configService.get<number>('PORT', DEFAULT_PORT);
+  const resolvedPort = await resolveAvailablePort(configuredPort);
+  if (resolvedPort !== configuredPort) {
+    logger.warn(
+      `Port ${configuredPort} sedang dipakai. Server dialihkan ke port ${resolvedPort}.`,
+    );
   }
-  logger.log(`💚 Health check: http://localhost:${port}/health`);
-  logger.log(`🔐 Auth (login): http://localhost:${port}/api/v1/auth/login`);
-  logger.log(`🔐 Auth (me): http://localhost:${port}/api/v1/auth/me`);
+
+  await app.listen(resolvedPort);
+  logger.log(`🚀 Server running on http://localhost:${resolvedPort}/api`);
+  if (swaggerEnabled) {
+    logger.log(`📚 Swagger docs: http://localhost:${resolvedPort}/docs`);
+  }
+  logger.log(`💚 Health check: http://localhost:${resolvedPort}/health`);
+  logger.log(`🔐 Auth (login): http://localhost:${resolvedPort}/api/v1/auth/login`);
+  logger.log(`🔐 Auth (me): http://localhost:${resolvedPort}/api/v1/auth/me`);
 }
 
 void bootstrap();

@@ -64,6 +64,7 @@ export function DetailSOPPenyusun() {
     primaryActionLabel,
     handleMetadataChange,
     handleComplete,
+    isKirimUlangKeEvaluatorPending,
     autosaveStatus,
     autosaveError,
     flushHeaderAutosave,
@@ -226,6 +227,7 @@ export function DetailSOPPenyusun() {
             onComplete={() => handleComplete(id, role ?? null, navigate)}
             onPrint={() => window.print()}
             isReadOnly={isReadOnly}
+            isPrimaryActionPending={isKirimUlangKeEvaluatorPending}
           />
         }
         main={

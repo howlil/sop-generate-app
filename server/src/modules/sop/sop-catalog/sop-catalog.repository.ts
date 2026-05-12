@@ -1,19 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import type { Prisma } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { BagianSOP, JenisLampiran, StatusSOP } from '../../../generated/prisma';
+import { BagianSOP, StatusSOP } from '../../../generated/prisma';
 import { appendOrCreateLogSession } from '../sop-collaboration/log-edit-session.helper';
 
 export interface UpdateSopHeaderRepoInput {
   judul?: string;
   nomorSOP?: string;
   namaLembaga?: string;
-  peringatan?: string;
   dasarHukumPeraturanIds?: string[];
   sopTerkaitDetailIds?: string[];
-  kualifikasiPelaksanaan?: string[];
-  peralatanPerlengkapan?: string[];
-  pencatatanPendataan?: string[];
+  lampiran?: {
+    peringatan?: string[];
+    kualifikasiPelaksanaan?: string[];
+    peralatanPerlengkapan?: string[];
+    pencatatanPendataan?: string[];
+  };
 }
 
 /** Payload mentah workbench penyususun (DetailSOP + langkah + log) untuk dipetakan di service. */
@@ -33,7 +35,10 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
     };
     dibuatOleh: { select: { penggunaId: true; nama: true } };
     terakhirDieditOleh: { select: { penggunaId: true; nama: true } };
-    lampiran: true;
+    lampiranPeringatan: true;
+    lampiranKualifikasiPelaksanaan: true;
+    lampiranPeralatanPerlengkapan: true;
+    lampiranPencatatanPendataan: true;
     dasarHukum: { include: { peraturan: true } };
     relasiSopKeluar: {
       include: {
@@ -46,7 +51,9 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
       };
     };
     swimlanes: { include: { pelaksana: true } };
-    nilaiEvaluasi: { select: { nilaiEvaluasiId: true; hasil: true; catatan: true } };
+    nilaiEvaluasi: {
+      select: { pengajuanEvaluasiId: true; detailSopId: true; hasil: true; catatan: true };
+    };
     langkahSOP: { orderBy: { urutan: 'asc' }; include: { pelaksana: true } };
     logEditSop: {
       orderBy: { createdAt: 'desc' };
@@ -266,7 +273,10 @@ export class SopCatalogRepository {
         },
         dibuatOleh: { select: { penggunaId: true, nama: true } },
         terakhirDieditOleh: { select: { penggunaId: true, nama: true } },
-        lampiran: true,
+        lampiranPeringatan: true,
+        lampiranKualifikasiPelaksanaan: true,
+        lampiranPeralatanPerlengkapan: true,
+        lampiranPencatatanPendataan: true,
         dasarHukum: { include: { peraturan: true } },
         relasiSopKeluar: {
           include: {
@@ -279,7 +289,9 @@ export class SopCatalogRepository {
           },
         },
         swimlanes: { include: { pelaksana: true } },
-        nilaiEvaluasi: { select: { nilaiEvaluasiId: true, hasil: true, catatan: true } },
+        nilaiEvaluasi: {
+          select: { pengajuanEvaluasiId: true, detailSopId: true, hasil: true, catatan: true },
+        },
         langkahSOP: { orderBy: { urutan: 'asc' }, include: { pelaksana: true } },
         logEditSop: {
           orderBy: { createdAt: 'desc' },
@@ -402,6 +414,32 @@ export class SopCatalogRepository {
   }
 
   /**
+   * Transaksi: set SIAP_DIEVALUASI lalu DIAJUKAN_EVALUASI (kirim ulang setelah revisi evaluator).
+   */
+  async transitionDetailSopRevisiToDiajukanEvaluasi(params: {
+    detailSopId: string;
+    userId: string;
+  }): Promise<void> {
+    const { detailSopId, userId } = params;
+    await this.prisma.$transaction(async (tx) => {
+      await tx.detailSOP.update({
+        where: { detailSopId },
+        data: {
+          status: StatusSOP.SIAP_DIEVALUASI,
+          terakhirDieditOlehId: userId,
+        },
+      });
+      await tx.detailSOP.update({
+        where: { detailSopId },
+        data: {
+          status: StatusSOP.DIAJUKAN_EVALUASI,
+          terakhirDieditOlehId: userId,
+        },
+      });
+    });
+  }
+
+  /**
    * Partial update header SOP dalam satu transaksi (judul header, kolom DetailSOP,
    * relasi DasarHukum, SopTerkait, dan kelompok LampiranTeks per jenis).
    * Replace-all untuk array; field skalar hanya ditulis bila dikirim.
@@ -454,6 +492,15 @@ export class SopCatalogRepository {
           new Set(input.sopTerkaitDetailIds.filter((id) => id !== detailSopId)),
         );
         if (uniqueIds.length > 0) {
+          const inverse = await tx.sopTerkait.findFirst({
+            where: { detailSopTerkaitId: detailSopId, detailSopId: { in: uniqueIds } },
+            select: { detailSopId: true },
+          });
+          if (inverse !== null) {
+            throw new BadRequestException(
+              'SOP terkait bentrok: salah satu target sudah menaut balik ke dokumen ini; hapus relasi terbalik terlebih dahulu.',
+            );
+          }
           await tx.sopTerkait.createMany({
             data: uniqueIds.map((detailSopTerkaitId) => ({
               detailSopId,
@@ -464,39 +511,50 @@ export class SopCatalogRepository {
         }
       }
 
-      if (input.peringatan !== undefined) {
-        await tx.lampiranTeks.deleteMany({
-          where: { detailSopId, jenis: JenisLampiran.PERINGATAN },
-        });
-        const text = input.peringatan.trim();
-        if (text.length > 0) {
-          await tx.lampiranTeks.create({
-            data: { detailSopId, jenis: JenisLampiran.PERINGATAN, teks: text },
+      if (input.lampiran?.peringatan !== undefined) {
+        await tx.lampiranPeringatan.deleteMany({ where: { detailSopId } });
+        const cleaned = input.lampiran.peringatan
+          .map((it) => it.trim())
+          .filter((it) => it.length > 0);
+        if (cleaned.length > 0) {
+          await tx.lampiranPeringatan.createMany({
+            data: cleaned.map((teks) => ({ detailSopId, teks })),
           });
         }
       }
 
-      const arrayJenisMap: Array<{
-        key: keyof Pick<
-          UpdateSopHeaderRepoInput,
-          'kualifikasiPelaksanaan' | 'peralatanPerlengkapan' | 'pencatatanPendataan'
-        >;
-        jenis: JenisLampiran;
-      }> = [
-        { key: 'kualifikasiPelaksanaan', jenis: JenisLampiran.KUALIFIKASI_PELAKSANAAN },
-        { key: 'peralatanPerlengkapan', jenis: JenisLampiran.PERALATAN },
-        { key: 'pencatatanPendataan', jenis: JenisLampiran.PENCATATAN_PENDATAAN },
-      ];
-      for (const { key, jenis } of arrayJenisMap) {
-        const items = input[key];
-        if (items === undefined) {
-          continue;
-        }
-        await tx.lampiranTeks.deleteMany({ where: { detailSopId, jenis } });
-        const cleaned = items.map((it) => it.trim()).filter((it) => it.length > 0);
+      if (input.lampiran?.kualifikasiPelaksanaan !== undefined) {
+        await tx.lampiranKualifikasiPelaksanaan.deleteMany({ where: { detailSopId } });
+        const cleaned = input.lampiran.kualifikasiPelaksanaan
+          .map((it) => it.trim())
+          .filter((it) => it.length > 0);
         if (cleaned.length > 0) {
-          await tx.lampiranTeks.createMany({
-            data: cleaned.map((teks) => ({ detailSopId, jenis, teks })),
+          await tx.lampiranKualifikasiPelaksanaan.createMany({
+            data: cleaned.map((teks) => ({ detailSopId, teks })),
+          });
+        }
+      }
+
+      if (input.lampiran?.peralatanPerlengkapan !== undefined) {
+        await tx.lampiranPeralatanPerlengkapan.deleteMany({ where: { detailSopId } });
+        const cleaned = input.lampiran.peralatanPerlengkapan
+          .map((it) => it.trim())
+          .filter((it) => it.length > 0);
+        if (cleaned.length > 0) {
+          await tx.lampiranPeralatanPerlengkapan.createMany({
+            data: cleaned.map((teks) => ({ detailSopId, teks })),
+          });
+        }
+      }
+
+      if (input.lampiran?.pencatatanPendataan !== undefined) {
+        await tx.lampiranPencatatanPendataan.deleteMany({ where: { detailSopId } });
+        const cleaned = input.lampiran.pencatatanPendataan
+          .map((it) => it.trim())
+          .filter((it) => it.length > 0);
+        if (cleaned.length > 0) {
+          await tx.lampiranPencatatanPendataan.createMany({
+            data: cleaned.map((teks) => ({ detailSopId, teks })),
           });
         }
       }

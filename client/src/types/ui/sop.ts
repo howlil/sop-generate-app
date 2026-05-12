@@ -24,7 +24,7 @@ export interface SOPDetailMetadata {
   relatedSop?: string[];
   /** ID kanonis DetailSOP terkait untuk PATCH header (sejajar urutan dengan `relatedSop`). */
   relatedSopDetailIds?: string[];
-  warning?: string;
+  warning?: string | string[];
   implementQualification?: string | string[];
   equipment?: string | string[];
   recordData?: string | string[];

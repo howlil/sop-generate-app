@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import type { KredensialTTE, RegisterTteDto } from "@/types/dto/tte.dto";
+import type { RegisterTteDto, TteProfil } from "@/types/dto/tte.dto";
 import { showErrorMessages } from "@/hooks/useToast";
 
 export interface TTEBuatDialogProps {
@@ -18,7 +18,7 @@ export interface TTEBuatDialogProps {
   /** Nama/NIP dari sesi login atau profil API — hanya tampilan, tidak dikirim ke server. */
   namaRingkas: string;
   nipRingkas: string;
-  profile?: KredensialTTE | null;
+  profile?: TteProfil | null;
   onRegisterTTE: (payload: RegisterTteDto) => Promise<unknown>;
 }
 
@@ -79,11 +79,6 @@ export function TTEBuatDialog({
         <DialogHeader>
           <DialogTitle className="text-sm">Buat PIN TTE</DialogTitle>
         </DialogHeader>
-
-        <p className="text-xs text-gray-600 -mt-2">
-          Data pegawai diambil dari akun Anda (sesi login). Masukkan PIN untuk verifikasi saat
-          menandatangani dokumen (simulasi format BSRE, tanpa gateway BSSN).
-        </p>
 
         <div className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-xs space-y-0.5">
           <p className="font-medium text-gray-900">{displayNama || "—"}</p>

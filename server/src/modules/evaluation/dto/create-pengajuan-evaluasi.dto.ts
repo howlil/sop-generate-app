@@ -1,23 +1,24 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   ArrayMinSize,
   ArrayUnique,
   IsArray,
   IsEnum,
-  IsOptional,
-  IsString,
   IsUUID,
-  MaxLength,
 } from 'class-validator';
 import { JenisPengajuanEvaluasi } from '../../../generated/prisma';
 
-/** Body POST `/evaluasi` — buka batch evaluasi untuk sekumpulan DetailSOP satu OPD (PJ Evaluator). */
+/** Body POST `/evaluasi` — buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD (PJ Evaluator). */
 export class CreatePengajuanEvaluasiDto {
   @ApiProperty({ format: 'uuid' })
   @IsUUID()
   readonly opdId!: string;
 
-  @ApiProperty({ enum: JenisPengajuanEvaluasi })
+  @ApiProperty({
+    enum: JenisPengajuanEvaluasi,
+    description:
+      'TERJADWAL: batch resmi; evaluator mengisi skor OPD saat menyelesaikan pengajuan. MANDIRI: hanya penilaian per dokumen SOP (tanpa skor OPD tingkat pengajuan).',
+  })
   @IsEnum(JenisPengajuanEvaluasi)
   readonly jenis!: JenisPengajuanEvaluasi;
 
@@ -27,10 +28,4 @@ export class CreatePengajuanEvaluasiDto {
   @ArrayUnique()
   @IsUUID('4', { each: true })
   readonly sopDetailIds!: string[];
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  @MaxLength(65_000)
-  readonly catatan?: string;
 }

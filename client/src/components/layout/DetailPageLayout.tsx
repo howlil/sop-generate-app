@@ -31,26 +31,27 @@ function DetailWorkspace({
   return (
     <div
       className={cn(
-        'flex flex-1 flex-col min-h-0 overflow-hidden rounded-lg border border-gray-200 bg-white',
+        // Workspace shell: subtle depth + calmer background (main content tetap putih).
+        'flex flex-1 flex-col min-h-0 overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 shadow-sm',
         className
       )}
     >
       {header != null && (
-        <div className="flex-shrink-0 border-b border-gray-200 bg-white px-4 py-3 min-h-[3rem]">
+        <div className="flex-shrink-0 border-b border-slate-200/80 bg-white/70 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           {header}
         </div>
       )}
       <div className="flex flex-1 min-h-0 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {leftPanel != null && (
-          <div className="border-b border-gray-200 lg:border-b-0 lg:border-r lg:max-w-[min(280px,40vw)] shrink-0 max-h-[min(50vh,360px)] lg:max-h-none overflow-auto">
+          <div className="border-b border-slate-200/80 bg-slate-50/60 lg:border-b-0 lg:border-r lg:max-w-[min(300px,30vw)] shrink-0 max-h-[min(46vh,340px)] lg:max-h-none overflow-auto">
             {leftPanel}
           </div>
         )}
-        <div className="flex-1 flex flex-col min-w-0 min-h-[40vh] border-gray-200 overflow-hidden lg:border-r">
+        <div className="flex min-h-[40vh] min-w-0 flex-1 flex-col overflow-hidden bg-white px-2 py-2 sm:px-3 sm:py-3 lg:border-r lg:border-slate-200/80">
           {main}
         </div>
         {rightPanel != null && (
-          <div className="border-t border-gray-200 lg:border-t-0 lg:border-l lg:max-w-[min(360px,45vw)] shrink-0 max-h-[min(55vh,480px)] lg:max-h-none overflow-auto">
+          <div className="border-t border-slate-200/80 bg-slate-50/60 lg:border-t-0 lg:border-l lg:max-w-[min(340px,28vw)] shrink-0 max-h-[min(52vh,440px)] lg:max-h-none overflow-auto">
             {rightPanel}
           </div>
         )}
@@ -132,7 +133,7 @@ export function DetailPageLayout({
 }: DetailPageLayoutProps) {
   const mainContent = main ?? children
   return (
-    <div className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-3'}>
+    <div className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-2 sm:gap-3'}>
       <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}

@@ -41,9 +41,6 @@ export function DetailSOPPenyusunSidePanel({
       {rightPanelTab === 'edit' && <DetailSOPMetadataPanel />}
       {rightPanelTab === 'komentar' && (
         <div className="flex flex-col min-h-0 flex-1">
-          <p className="text-xs text-gray-500 px-3 pt-3 pb-2 border-b border-gray-100 flex-shrink-0 leading-snug">
-            Riwayat umpan balik Tim Evaluasi. Catatan formal saat dokumen dikembalikan untuk revisi muncul di sini secara otomatis; Anda dapat menandai entri sebagai selesai setelah ditindaklanjuti.
-          </p>
           <div className="flex-1 min-h-0 overflow-auto">
             <KomentarPanel />
           </div>
@@ -51,10 +48,6 @@ export function DetailSOPPenyusunSidePanel({
       )}
       {rightPanelTab === 'aktivitas' && (
         <div className="p-3">
-          <p className="text-xs text-gray-500 mb-3">
-            Riwayat aktivitas SOP — siapa mengubah bagian apa, kapan. Edit beruntun dalam 10 menit
-            digabung jadi satu baris (gaya Google Docs).
-          </p>
           <RiwayatStatusPanel entries={auditEntries} />
         </div>
       )}

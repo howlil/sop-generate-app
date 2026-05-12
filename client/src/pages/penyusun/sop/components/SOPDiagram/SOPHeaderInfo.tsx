@@ -25,13 +25,19 @@ export interface SOPHeaderInfoProps {
   implementQualification?: string[]
   relatedSop?: string[]
   equipment?: string[]
-  warning?: string
+  warning?: string | string[]
   recordData?: string[]
   signature?: string
   /** Tanda tangan elektronik BSRE (jika SOP sudah disahkan dengan TTE). */
   tteSignaturePayload?: TTESignaturePayload | null
   editable?: boolean
   onMetadataChange?: (field: string, value: unknown) => void
+}
+
+function toArrayField(value: string | string[] | undefined): string[] {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string' && value.length > 0) return [value]
+  return []
 }
 
 export function SOPHeaderInfo({
@@ -50,7 +56,7 @@ export function SOPHeaderInfo({
   implementQualification = [],
   relatedSop = [],
   equipment = [],
-  warning = '',
+  warning = [],
   recordData = [],
   signature = '',
   tteSignaturePayload,
@@ -315,7 +321,15 @@ export function SOPHeaderInfo({
               </tr>
               <tr>
                 <td className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
-                  {warning ?? ''}
+                  {toArrayField(warning).length > 0 ? (
+                    <ol className="list-decimal list-outside ml-5 text-left break-words">
+                      {toArrayField(warning).map((item, i) => (
+                        <li key={i} className="break-words">{item}</li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p> - </p>
+                  )}
                 </td>
                 <td colSpan={3} className="align-top border-2 py-0.5 px-2 border-black min-w-0 break-words">
                   {recordData.length > 0 ? (

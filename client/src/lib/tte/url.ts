@@ -1,3 +1,3 @@
-export function getValidasiPengesahanUrl(id: string): string {
-  return `${window.location.origin}/validasi/pengesahan/${id}`;
+export function getValidasiPengesahanUrl(dokumenTteId: string, userId: string): string {
+  return `${window.location.origin}/validasi/pengesahan/${dokumenTteId}/${userId}`;
 }
