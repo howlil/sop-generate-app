@@ -26,6 +26,8 @@ export interface RiwayatOpdPenyusunItem {
   namaOpd: string;
   pertamaDicatat: string;
   terakhirDiperbarui: string;
+  /** Selaras `Pengguna.opdId` */
+  isAktif: boolean;
 }
 
 /** POST /api/v1/penyusun */

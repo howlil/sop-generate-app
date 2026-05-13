@@ -54,9 +54,11 @@ export class EvaluasiWorkspaceService {
     if (opdRow === null) {
       throw new NotFoundException('OPD tidak ditemukan');
     }
+    await this.pengajuanEvaluasiService.assertUserCanAccessPengajuan(user, opdId);
     const riwayatLimit = query.riwayatLimit ?? DEFAULT_RIWAYAT_LIMIT;
+    const includeSiapDievaluasi = user.peran === PeranPengguna.PJ_PENYUSUN;
     let [daftarRows, pengajuanAktifRepo, riwayatOpdRepo] = await Promise.all([
-      this.evaluasiWorkspaceRepository.findDaftarDetailPipeline(opdId),
+      this.evaluasiWorkspaceRepository.findDaftarDetailPipeline(opdId, { includeSiapDievaluasi }),
       this.evaluasiWorkspaceRepository.findPengajuanAktif(opdId),
       this.evaluasiWorkspaceRepository.findRiwayatOpdSelesai(opdId, riwayatLimit),
     ]);

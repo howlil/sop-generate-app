@@ -141,9 +141,6 @@ exports.Prisma.PenggunaScalarFieldEnum = {
 exports.Prisma.OPDScalarFieldEnum = {
   opdId: 'opdId',
   nama: 'nama',
-  isPjEvaluatorOrganisasi: 'isPjEvaluatorOrganisasi',
-  kepalaPenggunaId: 'kepalaPenggunaId',
-  pjPenyusunPenggunaId: 'pjPenyusunPenggunaId',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -152,6 +149,7 @@ exports.Prisma.OPDScalarFieldEnum = {
 exports.Prisma.RiwayatOpdPenggunaScalarFieldEnum = {
   penggunaId: 'penggunaId',
   opdId: 'opdId',
+  isAktif: 'isAktif',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -279,16 +277,22 @@ exports.Prisma.DetailSOPPelaksanaScalarFieldEnum = {
 };
 
 exports.Prisma.LogEditSOPScalarFieldEnum = {
-  logEditSopId: 'logEditSopId',
   detailSopId: 'detailSopId',
-  userId: 'userId',
+  penggunaId: 'penggunaId',
+  createdAt: 'createdAt',
   bagian: 'bagian',
   targetEntityId: 'targetEntityId',
   keterangan: 'keterangan',
-  meta: 'meta',
+  sesiChangeCount: 'sesiChangeCount',
   closedAt: 'closedAt',
-  createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LogEditSopDomainFieldScalarFieldEnum = {
+  detailSopId: 'detailSopId',
+  penggunaId: 'penggunaId',
+  logCreatedAt: 'logCreatedAt',
+  domainField: 'domainField'
 };
 
 exports.Prisma.KomentarScalarFieldEnum = {
@@ -332,16 +336,14 @@ exports.Prisma.NilaiEvaluasiScalarFieldEnum = {
 };
 
 exports.Prisma.LogNilaiEvaluasiScalarFieldEnum = {
-  logNilaiEvaluasiId: 'logNilaiEvaluasiId',
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   detailSopId: 'detailSopId',
-  evaluatorId: 'evaluatorId',
+  penggunaId: 'penggunaId',
   hasilSebelum: 'hasilSebelum',
   hasilSesudah: 'hasilSesudah',
   catatanSebelum: 'catatanSebelum',
   catatanSesudah: 'catatanSesudah',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.DokumenTteScalarFieldEnum = {
@@ -380,11 +382,6 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
-exports.Prisma.NullableJsonNullValueInput = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull
-};
-
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -405,9 +402,7 @@ exports.Prisma.PenggunaOrderByRelevanceFieldEnum = {
 
 exports.Prisma.OPDOrderByRelevanceFieldEnum = {
   opdId: 'opdId',
-  nama: 'nama',
-  kepalaPenggunaId: 'kepalaPenggunaId',
-  pjPenyusunPenggunaId: 'pjPenyusunPenggunaId'
+  nama: 'nama'
 };
 
 exports.Prisma.RiwayatOpdPenggunaOrderByRelevanceFieldEnum = {
@@ -500,23 +495,17 @@ exports.Prisma.DetailSOPPelaksanaOrderByRelevanceFieldEnum = {
   pelaksanaId: 'pelaksanaId'
 };
 
-exports.Prisma.JsonNullValueFilter = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull,
-  AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-};
-
 exports.Prisma.LogEditSOPOrderByRelevanceFieldEnum = {
-  logEditSopId: 'logEditSopId',
   detailSopId: 'detailSopId',
-  userId: 'userId',
+  penggunaId: 'penggunaId',
   targetEntityId: 'targetEntityId',
   keterangan: 'keterangan'
+};
+
+exports.Prisma.LogEditSopDomainFieldOrderByRelevanceFieldEnum = {
+  detailSopId: 'detailSopId',
+  penggunaId: 'penggunaId',
+  domainField: 'domainField'
 };
 
 exports.Prisma.KomentarOrderByRelevanceFieldEnum = {
@@ -543,10 +532,9 @@ exports.Prisma.NilaiEvaluasiOrderByRelevanceFieldEnum = {
 };
 
 exports.Prisma.LogNilaiEvaluasiOrderByRelevanceFieldEnum = {
-  logNilaiEvaluasiId: 'logNilaiEvaluasiId',
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   detailSopId: 'detailSopId',
-  evaluatorId: 'evaluatorId',
+  penggunaId: 'penggunaId',
   catatanSebelum: 'catatanSebelum',
   catatanSesudah: 'catatanSesudah'
 };
@@ -664,6 +652,7 @@ exports.Prisma.ModelName = {
   Pelaksana: 'Pelaksana',
   DetailSOPPelaksana: 'DetailSOPPelaksana',
   LogEditSOP: 'LogEditSOP',
+  LogEditSopDomainField: 'LogEditSopDomainField',
   Komentar: 'Komentar',
   PengajuanEvaluasi: 'PengajuanEvaluasi',
   NilaiEvaluasi: 'NilaiEvaluasi',

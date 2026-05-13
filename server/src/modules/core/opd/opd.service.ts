@@ -60,9 +60,10 @@ export class OpdService {
     if (existing === null) {
       throw new NotFoundException('OPD tidak ditemukan');
     }
-    if (existing.kepalaPenggunaId !== null || existing.pjPenyusunPenggunaId !== null) {
+    const struktural = await this.opdRepository.countPenggunaStrukturalAktifByOpdId(opdId);
+    if (struktural > 0) {
       throw new ConflictException(
-        'OPD masih memiliki jabatan Kepala OPD atau PJ Penyusun. Selesaikan penunjukan terlebih dahulu.',
+        'OPD masih memiliki jabatan struktural (Kepala OPD, PJ Penyusun, atau tim evaluator). Pindahkan atau nonaktifkan pengguna terlebih dahulu.',
       );
     }
     const rel = await this.opdRepository.summarizeBlockingRelations(opdId);

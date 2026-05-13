@@ -21,6 +21,7 @@ describe('PenyusunService', () => {
       update: jest.fn(),
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+      findFirstOrThrow: jest.fn(),
       count: jest.fn(),
       delete: jest.fn(),
     },
@@ -31,6 +32,7 @@ describe('PenyusunService', () => {
     riwayatOpdPengguna: {
       create: jest.fn(),
       upsert: jest.fn(),
+      updateMany: jest.fn(),
     },
   };
 
@@ -145,5 +147,78 @@ describe('PenyusunService', () => {
     });
     await expect(service.pindah('pj-move', 'opd-tujuan')).rejects.toBeInstanceOf(ConflictException);
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('should_create_riwayat_dengan_isAktif_true_saat_create_penyusun', async () => {
+    const createdUser = {
+      penggunaId: 'new-u',
+      email: 'n@x.id',
+      nip: '99',
+      opdId: 'opd-1',
+      peran: PeranPengguna.PENYUSUN,
+      nama: 'N',
+      pangkat: 'IV/a',
+      jabatan: 'J',
+      nohp: '0',
+      deletedAt: null,
+    } as Pengguna;
+    prismaMock.pengguna.create.mockResolvedValueOnce(createdUser);
+    const actual = await service.create({
+      opdId: 'opd-1',
+      nama: 'N',
+      nip: '99',
+      peran: 'PENYUSUN',
+      pangkat: 'IV/a',
+      jabatan: 'J',
+      email: 'n@x.id',
+      nohp: '0',
+    });
+    expect(actual.id).toBe('new-u');
+    expect(prismaMock.riwayatOpdPengguna.create).toHaveBeenCalledWith({
+      data: { penggunaId: 'new-u', opdId: 'opd-1', isAktif: true },
+    });
+  });
+
+  it('should_sinkronkan_isAktif_saat_pindah_penyusun', async () => {
+    penyusunRepoMock.findPenyusunAktifById.mockResolvedValueOnce({
+      penggunaId: 'u-move',
+      email: 'mv@x.id',
+      nip: '88',
+      opdId: 'opd-asal',
+      peran: PeranPengguna.PENYUSUN,
+      nama: 'MV',
+      pangkat: 'IV/a',
+      jabatan: 'J',
+      nohp: '0',
+      deletedAt: null,
+    } as Pengguna);
+    penyusunRepoMock.findOpdById.mockResolvedValueOnce({ opdId: 'opd-tujuan', nama: 'Tujuan' });
+    prismaMock.pengguna.findFirstOrThrow.mockResolvedValueOnce({
+      penggunaId: 'u-move',
+      opdId: 'opd-tujuan',
+      peran: PeranPengguna.PENYUSUN,
+      nama: 'MV',
+      nip: '88',
+      email: 'mv@x.id',
+      pangkat: 'IV/a',
+      jabatan: 'J',
+      nohp: '0',
+      deletedAt: null,
+    } as Pengguna);
+    await service.pindah('u-move', 'opd-tujuan');
+    expect(prismaMock.riwayatOpdPengguna.upsert).toHaveBeenNthCalledWith(1, {
+      where: { penggunaId_opdId: { penggunaId: 'u-move', opdId: 'opd-asal' } },
+      create: { penggunaId: 'u-move', opdId: 'opd-asal', isAktif: false },
+      update: { isAktif: false, updatedAt: expect.any(Date) as Date },
+    });
+    expect(prismaMock.riwayatOpdPengguna.updateMany).toHaveBeenCalledWith({
+      where: { penggunaId: 'u-move' },
+      data: { isAktif: false },
+    });
+    expect(prismaMock.riwayatOpdPengguna.upsert).toHaveBeenNthCalledWith(2, {
+      where: { penggunaId_opdId: { penggunaId: 'u-move', opdId: 'opd-tujuan' } },
+      create: { penggunaId: 'u-move', opdId: 'opd-tujuan', isAktif: true },
+      update: { isAktif: true, updatedAt: expect.any(Date) as Date },
+    });
   });
 });

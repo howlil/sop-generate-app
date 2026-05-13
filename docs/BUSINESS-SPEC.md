@@ -21,6 +21,24 @@ tolong deseignkan best practinya secara komprehensif baik client maupun server
 
 ---
 
+
+## usecase
+- detailkan lagi flownya di bagian status 
+  - status apa aja yang adi di penyusun
+  - status apa aja yang ad di evalutor
+  - satus apa aja yang adi pj evaluator
+  - status apa aja yang ada di pj penyusun evaluasi
+  - statsu apa aja yang ada di kepala opd
+- optimasi lagi field" yang ada di database
+- gimana flow dan busines logic kalau sop ini suda disahkan kemudian mau di evaluasi lagi
+- perbaiki diagram sop
+- perbaiki erd pada bagain pengguna opd dan peran, handler yang best practice giman
+- fix dan perbaiki workflow dari evluator kalau direvisi
+  - misal ada 5 pengajuan 1 revisi, gimana proses workflow dari revisi ini?
+    - evaluator emngisi catatn revisi -> sop di edit di evaluasi -> kirim kan kembali evaluator
+- fix : tengok mana komponent yang di deadkan ketika lagi ngedit atau cuman lihat aja, 
+- perjelas lebih detail constraint dari aplikasi
+
 ## Daftar Isi
 
 1. [Domain Map](#1-domain-map)

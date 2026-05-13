@@ -13,8 +13,8 @@ describe('EvaluatorService', () => {
   let repository: jest.Mocked<
     Pick<
       PenggunaRepository,
-      | 'findBiroOrganisasiOpdId'
-      | 'findBiroOrganisasiOpd'
+      | 'findPjEvaluatorOrganisasiOpdId'
+      | 'findPjEvaluatorOrganisasiOpd'
       | 'findEvaluatorsByOpd'
       | 'findEvaluatorByIdInOpd'
       | 'findEvaluatorAktifById'
@@ -35,6 +35,8 @@ describe('EvaluatorService', () => {
     jabatan: 'J',
     pangkat: 'P',
     nohp: '0',
+    ttePinHash: null,
+    ttePinSetAt: null,
     deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -42,8 +44,8 @@ describe('EvaluatorService', () => {
 
   beforeEach(async () => {
     repository = {
-      findBiroOrganisasiOpdId: jest.fn().mockResolvedValue('opd-biro'),
-      findBiroOrganisasiOpd: jest.fn().mockResolvedValue({ opdId: 'opd-biro', nama: 'Biro' }),
+      findPjEvaluatorOrganisasiOpdId: jest.fn().mockResolvedValue('opd-biro'),
+      findPjEvaluatorOrganisasiOpd: jest.fn().mockResolvedValue({ opdId: 'opd-biro', nama: 'Biro' }),
       findEvaluatorsByOpd: jest.fn().mockResolvedValue([baseRow]),
       findEvaluatorByIdInOpd: jest.fn().mockResolvedValue(baseRow),
       findEvaluatorAktifById: jest.fn().mockResolvedValue(baseRow),

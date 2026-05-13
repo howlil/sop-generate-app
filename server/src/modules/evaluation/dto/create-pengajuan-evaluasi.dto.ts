@@ -10,10 +10,6 @@ import { JenisPengajuanEvaluasi } from '../../../generated/prisma';
 
 /** Body POST `/evaluasi` — buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD (PJ Evaluator). */
 export class CreatePengajuanEvaluasiDto {
-  @ApiProperty({ format: 'uuid' })
-  @IsUUID()
-  readonly opdId!: string;
-
   @ApiProperty({
     enum: JenisPengajuanEvaluasi,
     description:

@@ -13,4 +13,7 @@ export class RiwayatOpdPenyusunItemDto {
 
   @ApiProperty({ description: 'Terakhir diperbarui (mis. setelah pindah mutasi)' })
   readonly terakhirDiperbarui!: Date;
+
+  @ApiProperty({ description: 'True jika OPD ini sama dengan penempatan utama pengguna saat ini' })
+  readonly isAktif!: boolean;
 }

@@ -42,4 +42,6 @@ export interface KepalaOpdRiwayatItemDto {
   namaOpd: string
   dicatatPada: string
   diperbaruiPada: string
+  /** Selaras `Pengguna.opdId` */
+  isAktif: boolean
 }

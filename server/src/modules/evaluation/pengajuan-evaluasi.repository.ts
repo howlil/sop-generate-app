@@ -32,7 +32,7 @@ const pengajuanEvaluasiDetailInclude = Prisma.validator<Prisma.PengajuanEvaluasi
     orderBy: { createdAt: 'desc' },
     take: 200,
     include: {
-      evaluator: { select: { nama: true } },
+      pengguna: { select: { nama: true } },
     },
   },
 });

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Building2, ChevronDown, ChevronRight, Eye, Plus } from 'lucide-react'
+import { Building2, ChevronDown, ChevronRight, Eye } from 'lucide-react'
 import {
   STATUS_PENGAJUAN_SIAP_TTD_PJ_EVALUATOR,
   STATUS_RIWAYAT_FINAL_EVALUASI,
@@ -18,8 +18,6 @@ import { ROUTES, IA, DEFAULT_PAGE_SIZE } from '@/utils/constants'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { formatDateId } from '@/utils/format-date'
-import { Button } from '@/components/ui/button'
-import { BuatPengajuanEvaluasiDialog } from '@/pages/pj-evaluator/evaluasi/components/buat-pengajuan-evaluasi-dialog'
 
 type FilterTab = 'pengajuan' | 'riwayat'
 type PengajuanGroupByOpd = {
@@ -52,7 +50,6 @@ export function ManajemenEvaluasiSop() {
   const [filterTab, setFilterTab] = useState<FilterTab>('pengajuan')
   const [expandedOpdIds, setExpandedOpdIds] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [dialogBukaPengajuanOpen, setDialogBukaPengajuanOpen] = useState(false)
   const debouncedSearch = useDebouncedValue(searchQuery, 300)
 
   const ringkasParams = useMemo(() => {
@@ -159,15 +156,6 @@ export function ManajemenEvaluasiSop() {
                 ))}
               </TabsList>
             </Tabs>
-            <Button
-              type="button"
-              size="sm"
-              className="shrink-0"
-              onClick={() => setDialogBukaPengajuanOpen(true)}
-            >
-              <Plus className="w-4 h-4 mr-1.5" aria-hidden />
-              Buka pengajuan evaluasi
-            </Button>
           </div>
         </div>
       }
@@ -301,10 +289,6 @@ export function ManajemenEvaluasiSop() {
           </div>
         ) : null}
       </div>
-      <BuatPengajuanEvaluasiDialog
-        open={dialogBukaPengajuanOpen}
-        onOpenChange={setDialogBukaPengajuanOpen}
-      />
     </ListPageLayout>
   )
 }

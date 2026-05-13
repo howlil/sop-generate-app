@@ -17,6 +17,7 @@ import type { CreateSopDto } from './dto/create-sop.dto';
 import type { ListSopQueryDto } from './dto/list-sop-query.dto';
 import type { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import type { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
+import { encodeLogEditSopClientId } from '../sop-collaboration/log-edit-session.helper';
 import { SopCatalogRepository, type SopDaftarDbRow, type SopWorkbenchDbPayload } from './sop-catalog.repository';
 import { SopCatalogService } from './sop-catalog.service';
 
@@ -326,8 +327,7 @@ describe('SopCatalogService', () => {
         opd: {
           opdId: 'opd-lain',
           nama: 'OPD Lain',
-          kepalaPenggunaId: null,
-          kepalaPengguna: null,
+          pengguna: [],
         },
       },
       dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
@@ -373,8 +373,7 @@ describe('SopCatalogService', () => {
         opd: {
           opdId: 'opd-1',
           nama: 'OPD Satu',
-          kepalaPenggunaId: 'kepala-1',
-          kepalaPengguna: { nama: 'Dr. Kepala', nip: '198001012010011001' },
+          pengguna: [{ nama: 'Dr. Kepala', nip: '198001012010011001' }],
         },
       },
       dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
@@ -391,17 +390,17 @@ describe('SopCatalogService', () => {
       langkahSOP: [],
       logEditSop: [
         {
-          logEditSopId: 'log-1',
           detailSopId: 'det-wb-2',
-          userId: 'p1',
+          penggunaId: 'p1',
+          createdAt: t,
           bagian: 'HEADER',
           targetEntityId: null,
           keterangan: 'Header SOP: Peringatan',
-          meta: { fields: ['peringatan'], count: 1 },
+          sesiChangeCount: 1,
           closedAt: null,
-          createdAt: t,
           updatedAt: t,
-          user: {
+          domainFields: [{ domainField: 'peringatan' }],
+          pengguna: {
             penggunaId: 'p1',
             nama: 'Budi',
             email: 'budi@x',
@@ -418,6 +417,7 @@ describe('SopCatalogService', () => {
     expect(actual.detail.kepalaOpd).toEqual({ nama: 'Dr. Kepala', nip: '198001012010011001' });
     expect(actual.langkah).toHaveLength(0);
     expect(actual.logEdit).toHaveLength(1);
+    expect(actual.logEdit[0]?.id).toBe(encodeLogEditSopClientId('det-wb-2', 'p1', t));
     expect(actual.logEdit[0]?.aktorRole).toBe(PeranPengguna.PENYUSUN);
   });
 
@@ -447,8 +447,7 @@ describe('SopCatalogService', () => {
           opd: {
             opdId: 'opd-1',
             nama: 'OPD Satu',
-            kepalaPenggunaId: null,
-            kepalaPengguna: null,
+            pengguna: [],
           },
         },
         dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
@@ -496,8 +495,7 @@ describe('SopCatalogService', () => {
           opd: {
             opdId: 'opd-lain',
             nama: 'OPD Lain',
-            kepalaPenggunaId: null,
-            kepalaPengguna: null,
+            pengguna: [],
           },
         },
       });
@@ -695,8 +693,7 @@ describe('SopCatalogService', () => {
           opd: {
             opdId: 'opd-1',
             nama: 'OPD Satu',
-            kepalaPenggunaId: null,
-            kepalaPengguna: null,
+            pengguna: [],
           },
         },
         dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
@@ -975,8 +972,7 @@ describe('SopCatalogService', () => {
           opd: {
             opdId: 'opd-1',
             nama: 'OPD Satu',
-            kepalaPenggunaId: null,
-            kepalaPengguna: null,
+            pengguna: [],
           },
         },
         dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },

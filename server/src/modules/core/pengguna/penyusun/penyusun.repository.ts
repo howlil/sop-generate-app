@@ -74,6 +74,7 @@ export class PenyusunRepository {
       namaOpd: string;
       pertamaDicatat: Date;
       terakhirDiperbarui: Date;
+      isAktif: boolean;
     }>
   > {
     const rows = await this.prisma.riwayatOpdPengguna.findMany({
@@ -86,6 +87,7 @@ export class PenyusunRepository {
       namaOpd: r.opd.nama,
       pertamaDicatat: r.createdAt,
       terakhirDiperbarui: r.updatedAt,
+      isAktif: r.isAktif,
     }));
   }
 }

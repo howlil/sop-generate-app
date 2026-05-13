@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import type { Prisma } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { BagianSOP, StatusSOP } from '../../../generated/prisma';
+import { BagianSOP, PeranPengguna, StatusSOP } from '../../../generated/prisma';
 import { appendOrCreateLogSession } from '../sop-collaboration/log-edit-session.helper';
 
 export interface UpdateSopHeaderRepoInput {
@@ -27,8 +27,11 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
           select: {
             opdId: true;
             nama: true;
-            kepalaPenggunaId: true;
-            kepalaPengguna: { select: { nama: true; nip: true } };
+            pengguna: {
+              where: { peran: 'KEPALA_OPD'; deletedAt: null };
+              take: 1;
+              select: { nama: true; nip: true };
+            };
           };
         };
       };
@@ -58,7 +61,10 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
     logEditSop: {
       orderBy: { createdAt: 'desc' };
       take: number;
-      include: { user: { select: { penggunaId: true; nama: true; email: true; peran: true } } };
+      include: {
+        domainFields: true;
+        pengguna: { select: { penggunaId: true; nama: true; email: true; peran: true } };
+      };
     };
   };
 }>;
@@ -265,8 +271,11 @@ export class SopCatalogRepository {
               select: {
                 opdId: true,
                 nama: true,
-                kepalaPenggunaId: true,
-                kepalaPengguna: { select: { nama: true, nip: true } },
+                pengguna: {
+                  where: { peran: PeranPengguna.KEPALA_OPD, deletedAt: null },
+                  take: 1,
+                  select: { nama: true, nip: true },
+                },
               },
             },
           },
@@ -297,7 +306,8 @@ export class SopCatalogRepository {
           orderBy: { createdAt: 'desc' },
           take: logsLimit,
           include: {
-            user: { select: { penggunaId: true, nama: true, email: true, peran: true } },
+            domainFields: true,
+            pengguna: { select: { penggunaId: true, nama: true, email: true, peran: true } },
           },
         },
       },
@@ -562,7 +572,7 @@ export class SopCatalogRepository {
       await appendOrCreateLogSession({
         tx,
         detailSopId,
-        userId,
+        penggunaId: userId,
         bagian: BagianSOP.HEADER,
         fields: changedFields,
       });

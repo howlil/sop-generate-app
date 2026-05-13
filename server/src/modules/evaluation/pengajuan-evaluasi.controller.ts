@@ -103,15 +103,15 @@ export class PengajuanEvaluasiController {
   }
 
   @Post()
-  @Roles(PeranPengguna.PJ_EVALUATOR)
+  @Roles(PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD',
     description:
-      'Hanya PJ Evaluator. Body wajib `jenis`: TERJADWAL (batch resmi; evaluator wajib mengisi skor OPD 1–5 saat PATCH selesai) atau MANDIRI (tanpa penilaian OPD tingkat pengajuan). Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI bila memenuhi pipeline. Evaluator juga dapat memunculkan pengajuan MANDIRI otomatis lewat workspace tanpa memanggil endpoint ini.',
+      'Hanya PJ Penyusun OPD. OPD diambil otomatis dari akun login. Body wajib `jenis`: TERJADWAL (batch resmi; evaluator wajib mengisi skor OPD 1-5 saat PATCH selesai) atau MANDIRI (tanpa penilaian OPD tingkat pengajuan). Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI bila memenuhi pipeline.',
   })
   @ApiResponse({ status: 201 })
-  @ApiForbiddenResponse({ description: 'Bukan PJ Evaluator' })
+  @ApiForbiddenResponse({ description: 'Bukan PJ Penyusun atau OPD tidak sesuai' })
   async create(
     @Req() req: Request & { user: JwtAccessPayload },
     @Body() dto: CreatePengajuanEvaluasiDto,

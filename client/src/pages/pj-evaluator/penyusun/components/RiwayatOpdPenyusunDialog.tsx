@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { penyusunApi } from '@/api/penyusun'
 import { queryKeys } from '@/config/query-keys'
 import { STALE_TIME } from '@/utils/constants'
@@ -69,7 +70,14 @@ export function RiwayatOpdPenyusunDialog({
                 key={r.opdId}
                 className="rounded-md border border-gray-100 bg-gray-50/80 px-3 py-2"
               >
-                <p className="font-medium text-gray-900">{r.namaOpd}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-gray-900">{r.namaOpd}</p>
+                  {r.isAktif ? (
+                    <Badge variant="success" className="text-[10px]">
+                      OPD saat ini
+                    </Badge>
+                  ) : null}
+                </div>
                 <p className="text-[11px] text-gray-500 mt-1">
                   Pertama dicatat: {formatTanggal(r.pertamaDicatat)}
                 </p>

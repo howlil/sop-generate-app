@@ -7,6 +7,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
+import { encodeLogNilaiEvaluasiClientId } from './log-nilai-evaluasi-client-id';
 import type { SopCatalogService } from '../sop/sop-catalog/sop-catalog.service';
 import type { PengajuanEvaluasiDetailRepository } from './pengajuan-evaluasi-detail.repository';
 import { PengajuanEvaluasiDetailService } from './pengajuan-evaluasi-detail.service';
@@ -89,16 +90,15 @@ describe('PengajuanEvaluasiDetailService', () => {
       dokumenTte: [{ nomorDokumen: 'BA-TTE-FALLBACK' }],
       logNilaiEvaluasi: [
         {
-          logNilaiEvaluasiId: 'log-1',
           pengajuanEvaluasiId: pengajuanId,
           detailSopId: detailSopA,
-          evaluatorId: 'evo-1',
+          penggunaId: 'evo-1',
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
           catatanSesudah: null,
           createdAt,
-          evaluator: { nama: 'Eva Luna' },
+          pengguna: { nama: 'Eva Luna' },
         },
       ],
       ...(extra ?? {}),
@@ -171,6 +171,7 @@ describe('PengajuanEvaluasiDetailService', () => {
     const sop = {} as unknown as SopCatalogService;
     const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
     const shell = await service.getShell(userPj, pengajuanId);
+    const logCreatedAt = new Date('2026-05-05T08:00:00.000Z');
     expect(shell.id).toBe(pengajuanId);
     expect(shell.sopItems).toHaveLength(2);
     expect(shell.timelineNilai).toHaveLength(1);
@@ -178,6 +179,9 @@ describe('PengajuanEvaluasiDetailService', () => {
     expect(shell.sopItems[0]?.detailSopId).toBe(detailSopA);
     expect(shell.sopItems[0]?.hasilEvaluasi).toBe('SESUAI');
     expect(shell.nilaiEvaluasi[0]?.id).toBe(`${pengajuanId}:${detailSopA}`);
+    expect(shell.timelineNilai[0]?.id).toBe(
+      encodeLogNilaiEvaluasiClientId(pengajuanId, detailSopA, 'evo-1', logCreatedAt),
+    );
   });
 
   it('ba_view_should_sort_hasil_per_sop_nomor_numerically', async () => {

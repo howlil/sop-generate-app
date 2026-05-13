@@ -87,7 +87,7 @@ export class SopCommentRepository {
     await appendOrCreateLogSession({
       tx,
       detailSopId: params.detailSopId,
-      userId: params.userId,
+      penggunaId: params.userId,
       bagian: BagianSOP.KOMENTAR,
       targetEntityId: created.komentarId,
       fields: ['create'],
@@ -124,7 +124,7 @@ export class SopCommentRepository {
       await appendOrCreateLogSession({
         tx,
         detailSopId: params.detailSopId,
-        userId: params.actorUserId,
+        penggunaId: params.actorUserId,
         bagian: BagianSOP.KOMENTAR,
         targetEntityId: params.komentarId,
         fields: ['resolve'],
@@ -144,7 +144,7 @@ export class SopCommentRepository {
       await appendOrCreateLogSession({
         tx,
         detailSopId: params.detailSopId,
-        userId: params.actorUserId,
+        penggunaId: params.actorUserId,
         bagian: BagianSOP.KOMENTAR,
         targetEntityId: params.komentarId,
         fields: ['delete'],

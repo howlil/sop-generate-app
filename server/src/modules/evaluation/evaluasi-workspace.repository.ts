@@ -11,6 +11,10 @@ const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
 ] as const;
 
 const STATUS_PIPELINE_SET = new Set<string>(STATUS_PIPELINE_EVALUASI);
+const STATUS_PIPELINE_DENGAN_SIAP_SET = new Set<string>([
+  ...STATUS_PIPELINE_EVALUASI.map(String),
+  String(StatusSOP.SIAP_DIEVALUASI),
+]);
 
 export type EvaluasiWorkspaceDaftarRowRepo = {
   readonly detailSopId: string;
@@ -70,7 +74,13 @@ export class EvaluasiWorkspaceRepository {
     });
   }
 
-  async findDaftarDetailPipeline(opdId: string): Promise<EvaluasiWorkspaceDaftarRowRepo[]> {
+  async findDaftarDetailPipeline(
+    opdId: string,
+    options?: { readonly includeSiapDievaluasi?: boolean },
+  ): Promise<EvaluasiWorkspaceDaftarRowRepo[]> {
+    const allowedStatus = options?.includeSiapDievaluasi === true
+      ? STATUS_PIPELINE_DENGAN_SIAP_SET
+      : STATUS_PIPELINE_SET;
     const sops = await this.prisma.sOP.findMany({
       where: { opdId },
       select: {
@@ -94,7 +104,7 @@ export class EvaluasiWorkspaceRepository {
       if (d === undefined) {
         continue;
       }
-      if (!STATUS_PIPELINE_SET.has(String(d.status))) {
+      if (!allowedStatus.has(String(d.status))) {
         continue;
       }
       out.push({
@@ -286,7 +296,7 @@ export class EvaluasiWorkspaceRepository {
       select: {
         detailSopId: true,
         createdAt: true,
-        evaluator: { select: { nama: true } },
+        pengguna: { select: { nama: true } },
       },
     });
     for (const log of logs) {
@@ -294,7 +304,7 @@ export class EvaluasiWorkspaceRepository {
         continue;
       }
       map.set(log.detailSopId, {
-        nama: log.evaluator.nama,
+        nama: log.pengguna.nama,
         pada: log.createdAt.toISOString(),
       });
     }

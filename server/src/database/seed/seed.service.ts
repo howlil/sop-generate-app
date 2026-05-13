@@ -53,7 +53,7 @@ interface SeedUserRecord extends Omit<SeedUserInput, 'opdKey'> {
 // ─── Static Seed Data ───────────────────────────────────────────────────────
 
 const SEED_USERS: ReadonlyArray<SeedUserInput> = [
-  // ── Biro Organisasi (isPjEvaluatorOrganisasi = true) ──────────────────
+  // ── Biro Organisasi (PJ_EVALUATOR + evaluator memakai opdId OPD ini) ──
   {
     email: 'pjevaluator@gmail.com',
     nama: 'PJ Evaluator (seed)',
@@ -225,10 +225,10 @@ export class SeedService {
 
     await this.prisma.$transaction(async (tx) => {
       // 1. OPD
-      const opdPjEvaluator = await this.ensureOpd(tx, SEED_OPD_PJ_EVALUATOR, true);
-      const opdDinkes = await this.ensureOpd(tx, SEED_OPD_DINKES, false);
-      const opdDiskominfo = await this.ensureOpd(tx, SEED_OPD_DISKOMINFO, false);
-      const opdDisdik = await this.ensureOpd(tx, SEED_OPD_DISDIK, false);
+      const opdPjEvaluator = await this.ensureOpd(tx, SEED_OPD_PJ_EVALUATOR);
+      const opdDinkes = await this.ensureOpd(tx, SEED_OPD_DINKES);
+      const opdDiskominfo = await this.ensureOpd(tx, SEED_OPD_DISKOMINFO);
+      const opdDisdik = await this.ensureOpd(tx, SEED_OPD_DISDIK);
 
       const opdIdMap: Record<string, string> = {
         [SEED_OPD_PJ_EVALUATOR]: opdPjEvaluator.opdId,
@@ -240,26 +240,13 @@ export class SeedService {
       // 2. Pengguna
       const u = await this.seedUsers(tx, hashedPassword, opdIdMap);
 
-      // 3. Kepala & PJ Penyusun per OPD (setelah user terbuat; trigger DB mensyaratkan peran KEPALA_OPD / PJ_PENYUSUN + opdId sama)
-      await this.ensureOpdLeadership(tx, {
-        opdDinkesId: opdDinkes.opdId,
-        kepalaDinkesId: u['kepalaopd.dinkes@gmail.com'].penggunaId,
-        pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
-        opdDiskominfoId: opdDiskominfo.opdId,
-        kepalaDiskominfoId: u['kepalaopd.diskominfo@gmail.com'].penggunaId,
-        pjPenyusunDiskominfoId: u['pjpenyusun.diskominfo@gmail.com'].penggunaId,
-        opdDisdikId: opdDisdik.opdId,
-        kepalaDisdikId: u['kepalaopd.disdik@gmail.com'].penggunaId,
-        pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
-      });
-
-      // 4. Riwayat OPD (jejak pindah OPD per pengguna)
+      // 3. Riwayat OPD (jejak pindah OPD per pengguna)
       await this.seedRiwayatOpd(tx, Object.values(u));
 
-      // 5. Peraturan
+      // 4. Peraturan
       const p = await this.seedPeraturan(tx, u['pjpenyusun.dinkes@gmail.com'].penggunaId);
 
-      // 6. OPD ↔ Peraturan
+      // 5. OPD ↔ Peraturan
       await this.seedOpdPeraturan(tx, {
         opdDinkesId: opdDinkes.opdId,
         opdDiskominfoId: opdDiskominfo.opdId,
@@ -270,14 +257,14 @@ export class SeedService {
         pergubLayananId: p['15 Tahun 2022'].peraturanId,
       });
 
-      // 7. Pelaksana
+      // 6. Pelaksana
       const pel = await this.seedPelaksana(tx, {
         opdDinkesId: opdDinkes.opdId,
         opdDiskominfoId: opdDiskominfo.opdId,
         opdDisdikId: opdDisdik.opdId,
       });
 
-      // 8. SOP & DetailSOP — mencakup SEMUA 11 StatusSOP
+      // 7. SOP & DetailSOP — mencakup SEMUA 11 StatusSOP
       const d = await this.seedSopDanDetail(tx, {
         opdDinkesId: opdDinkes.opdId,
         opdDiskominfoId: opdDiskominfo.opdId,
@@ -287,19 +274,19 @@ export class SeedService {
         penyusunDisdikId: u['penyusun.disdik@gmail.com'].penggunaId,
       });
 
-      // 9. Dasar Hukum & SOP Terkait
+      // 8. Dasar Hukum & SOP Terkait
       await this.seedDasarHukumDanRelasi(tx, {
         d,
         p,
       });
 
-      // 10. Swimlane (DetailSOPPelaksana) & LangkahSOP — mencakup SEMUA SatuanWaktu & JenisLangkahProsedur
+      // 9. Swimlane (DetailSOPPelaksana) & LangkahSOP — mencakup SEMUA SatuanWaktu & JenisLangkahProsedur
       await this.seedSwimlaneDanLangkah(tx, { d, pel });
 
-      // 11. Lampiran (semua 4 tipe) untuk beberapa SOP
+      // 10. Lampiran (semua 4 tipe) untuk beberapa SOP
       await this.seedLampiran(tx, { d });
 
-      // 12. Kolaborasi: Komentar & LogEditSOP — mencakup SEMUA BagianSOP & StatusKomentar
+      // 11. Kolaborasi: Komentar & LogEditSOP — mencakup SEMUA BagianSOP & StatusKomentar
       await this.seedKolaborasi(tx, {
         d,
         evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
@@ -309,7 +296,7 @@ export class SeedService {
         penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
       });
 
-      // 13. PengajuanEvaluasi & NilaiEvaluasi — mencakup SEMUA 6 StatusPengajuanEvaluasi
+      // 12. PengajuanEvaluasi & NilaiEvaluasi — mencakup SEMUA 6 StatusPengajuanEvaluasi
       const pe = await this.seedPengajuanDanNilaiEvaluasi(tx, {
         d,
         opdDinkesId: opdDinkes.opdId,
@@ -323,13 +310,13 @@ export class SeedService {
         pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
       });
 
-      // 14. Log Nilai Evaluasi
+      // 13. Log Nilai Evaluasi
       await this.seedLogNilaiEvaluasi(tx, { d, pe, evaluator1Id: u['evaluator1@gmail.com'].penggunaId, evaluator2Id: u['evaluator2@gmail.com'].penggunaId });
 
-      // 15. DokumenTTE — JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
+      // 14. DokumenTTE — JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
       const dok = await this.seedDokumenTte(tx, { d, pe });
 
-      // 16. PIN TTE di `Pengguna` & RiwayatTandaTangan
+      // 15. PIN TTE di `Pengguna` & RiwayatTandaTangan
       await this.seedKredensialDanRiwayatTtd(tx, {
         u,
         dok,
@@ -351,7 +338,7 @@ export class SeedService {
         '6 PengajuanEvaluasi (semua 6 StatusPengajuanEvaluasi),',
         'semua SatuanWaktu, JenisLangkahProsedur, BagianSOP,',
         'JenisDokumenTte, StatusKomentar, HasilEvaluasi.',
-        'Invariant DB (CHECK/trigger): lihat migrasi 20260515120000_invariant_dokumentte_sop_terkait_pelaksana_opd_slots.',
+        'Invariant jabatan OPD: Pengguna.opdId + peran (+ deletedAt); lihat layanan core/pengguna & opd.',
       ].join(' '),
     );
     this.logger.warn(
@@ -361,27 +348,16 @@ export class SeedService {
 
   // ── MODUL 1: Master & Akses ─────────────────────────────────────────────
 
-  private async ensureOpd(
-    tx: Prisma.TransactionClient,
-    nama: string,
-    isPjEvaluatorOrganisasi: boolean,
-  ): Promise<{ opdId: string }> {
+  private async ensureOpd(tx: Prisma.TransactionClient, nama: string): Promise<{ opdId: string }> {
     const existing = await tx.oPD.findFirst({
       where: { nama },
-      select: { opdId: true, isPjEvaluatorOrganisasi: true },
+      select: { opdId: true },
     });
     if (existing !== null) {
-      if (existing.isPjEvaluatorOrganisasi !== isPjEvaluatorOrganisasi) {
-        return tx.oPD.update({
-          where: { opdId: existing.opdId },
-          data: { isPjEvaluatorOrganisasi },
-          select: { opdId: true },
-        });
-      }
       return existing;
     }
     return tx.oPD.create({
-      data: { nama, isPjEvaluatorOrganisasi },
+      data: { nama },
       select: { opdId: true },
     });
   }
@@ -435,44 +411,6 @@ export class SeedService {
     return result;
   }
 
-  /** Slot `OPD.kepalaPenggunaId` / `pjPenyusunPenggunaId` — harus pengguna dengan peran & opdId yang cocok (trigger `trg_opd_kepala_pj_konsisten_*`). */
-  private async ensureOpdLeadership(
-    tx: Prisma.TransactionClient,
-    params: {
-      opdDinkesId: string;
-      kepalaDinkesId: string;
-      pjPenyusunDinkesId: string;
-      opdDiskominfoId: string;
-      kepalaDiskominfoId: string;
-      pjPenyusunDiskominfoId: string;
-      opdDisdikId: string;
-      kepalaDisdikId: string;
-      pjPenyusunDisdikId: string;
-    },
-  ): Promise<void> {
-    await tx.oPD.update({
-      where: { opdId: params.opdDinkesId },
-      data: {
-        kepalaPenggunaId: params.kepalaDinkesId,
-        pjPenyusunPenggunaId: params.pjPenyusunDinkesId,
-      },
-    });
-    await tx.oPD.update({
-      where: { opdId: params.opdDiskominfoId },
-      data: {
-        kepalaPenggunaId: params.kepalaDiskominfoId,
-        pjPenyusunPenggunaId: params.pjPenyusunDiskominfoId,
-      },
-    });
-    await tx.oPD.update({
-      where: { opdId: params.opdDisdikId },
-      data: {
-        kepalaPenggunaId: params.kepalaDisdikId,
-        pjPenyusunPenggunaId: params.pjPenyusunDisdikId,
-      },
-    });
-  }
-
   private async seedRiwayatOpd(
     tx: Prisma.TransactionClient,
     users: ReadonlyArray<SeedUserRecord>,
@@ -480,8 +418,8 @@ export class SeedService {
     for (const user of users) {
       await tx.riwayatOpdPengguna.upsert({
         where: { penggunaId_opdId: { penggunaId: user.penggunaId, opdId: user.opdId } },
-        create: { penggunaId: user.penggunaId, opdId: user.opdId },
-        update: {},
+        create: { penggunaId: user.penggunaId, opdId: user.opdId, isAktif: true },
+        update: { isAktif: true },
       });
     }
   }
@@ -1276,74 +1214,107 @@ export class SeedService {
       ],
     });
 
-    await tx.logEditSOP.createMany({
-      data: [
-        // BagianSOP.HEADER
-        {
-          detailSopId: d['DINKES_001_V1'].detailSopId,
-          userId: penyusunDinkesId,
-          bagian: BagianSOP.HEADER,
-          keterangan: 'Memperbarui nama lembaga dan tanggal efektif pada header SOP.',
-          meta: { fields: ['namaLembaga', 'tanggalEfektif'], count: 2 },
-          closedAt: new Date('2024-06-15T08:00:00.000Z'),
+    const seedLogs: ReadonlyArray<{
+      readonly createdAt: Date;
+      readonly detailSopId: string;
+      readonly penggunaId: string;
+      readonly bagian: BagianSOP;
+      readonly targetEntityId?: string | null;
+      readonly keterangan: string | null;
+      readonly sesiChangeCount: number;
+      readonly closedAt: Date | null;
+      readonly fields: readonly string[];
+    }> = [
+      {
+        createdAt: new Date('2024-06-15T08:00:00.000Z'),
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        penggunaId: penyusunDinkesId,
+        bagian: BagianSOP.HEADER,
+        keterangan: 'Memperbarui nama lembaga dan tanggal efektif pada header SOP.',
+        sesiChangeCount: 2,
+        closedAt: new Date('2024-06-15T08:00:00.000Z'),
+        fields: ['namaLembaga', 'tanggalEfektif'],
+      },
+      {
+        createdAt: new Date('2024-06-20T09:00:00.000Z'),
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        penggunaId: penyusunDinkesId,
+        bagian: BagianSOP.LANGKAH,
+        keterangan: 'Menambahkan langkah pemeriksaan medis oleh dokter (langkah 4).',
+        sesiChangeCount: 3,
+        closedAt: new Date('2024-06-20T09:00:00.000Z'),
+        fields: ['kegiatan', 'waktu', 'satuanWaktu'],
+      },
+      {
+        createdAt: new Date('2024-07-01T10:00:00.000Z'),
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        penggunaId: pjPenyusunDinkesId,
+        bagian: BagianSOP.STATUS,
+        keterangan: 'Status SOP diubah dari SIAP_DIEVALUASI menjadi BERLAKU setelah pengesahan.',
+        sesiChangeCount: 1,
+        closedAt: new Date('2024-07-01T10:00:00.000Z'),
+        fields: ['status'],
+      },
+      {
+        createdAt: new Date('2026-03-01T09:30:00.000Z'),
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        penggunaId: evaluator1Id,
+        bagian: BagianSOP.KOMENTAR,
+        targetEntityId: null,
+        keterangan: 'Menambahkan komentar terkait SLA pada langkah keputusan.',
+        sesiChangeCount: 1,
+        closedAt: new Date('2026-03-01T09:30:00.000Z'),
+        fields: ['isi'],
+      },
+      {
+        createdAt: new Date('2026-03-01T10:00:00.000Z'),
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        penggunaId: evaluator1Id,
+        bagian: BagianSOP.EVALUASI,
+        keterangan: 'Menambahkan catatan hasil evaluasi awal: dokumen lengkap.',
+        sesiChangeCount: 2,
+        closedAt: new Date('2026-03-01T10:00:00.000Z'),
+        fields: ['catatan', 'hasil'],
+      },
+      {
+        createdAt: new Date('2026-04-10T14:00:00.000Z'),
+        detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
+        penggunaId: penyusunDiskominfoId,
+        bagian: BagianSOP.LANGKAH,
+        keterangan: 'Menambahkan langkah penolakan informasi (langkah 5) sesuai masukan evaluator.',
+        sesiChangeCount: 2,
+        closedAt: new Date('2026-04-10T14:00:00.000Z'),
+        fields: ['kegiatan', 'keterangan'],
+      },
+      {
+        createdAt: new Date('2026-05-01T11:00:00.000Z'),
+        detailSopId: d['DINKES_001_V2'].detailSopId,
+        penggunaId: penyusunDinkesId,
+        bagian: BagianSOP.HEADER,
+        keterangan: null,
+        sesiChangeCount: 1,
+        closedAt: null,
+        fields: ['tanggalRevisi'],
+      },
+    ];
+
+    for (const L of seedLogs) {
+      await tx.logEditSOP.create({
+        data: {
+          detailSopId: L.detailSopId,
+          penggunaId: L.penggunaId,
+          createdAt: L.createdAt,
+          bagian: L.bagian,
+          targetEntityId: L.targetEntityId ?? null,
+          keterangan: L.keterangan,
+          sesiChangeCount: L.sesiChangeCount,
+          closedAt: L.closedAt,
+          domainFields: {
+            create: [...L.fields].map((domainField) => ({ domainField })),
+          },
         },
-        // BagianSOP.LANGKAH
-        {
-          detailSopId: d['DINKES_001_V1'].detailSopId,
-          userId: penyusunDinkesId,
-          bagian: BagianSOP.LANGKAH,
-          keterangan: 'Menambahkan langkah pemeriksaan medis oleh dokter (langkah 4).',
-          meta: { fields: ['kegiatan', 'waktu', 'satuanWaktu'], count: 3 },
-          closedAt: new Date('2024-06-20T09:00:00.000Z'),
-        },
-        // BagianSOP.STATUS
-        {
-          detailSopId: d['DINKES_001_V1'].detailSopId,
-          userId: pjPenyusunDinkesId,
-          bagian: BagianSOP.STATUS,
-          keterangan: 'Status SOP diubah dari SIAP_DIEVALUASI menjadi BERLAKU setelah pengesahan.',
-          meta: { fields: ['status'], count: 1 },
-          closedAt: new Date('2024-07-01T10:00:00.000Z'),
-        },
-        // BagianSOP.KOMENTAR
-        {
-          detailSopId: d['DINKES_001_V1'].detailSopId,
-          userId: evaluator1Id,
-          bagian: BagianSOP.KOMENTAR,
-          targetEntityId: null,
-          keterangan: 'Menambahkan komentar terkait SLA pada langkah keputusan.',
-          meta: { fields: ['isi'], count: 1 },
-          closedAt: new Date('2026-03-01T09:30:00.000Z'),
-        },
-        // BagianSOP.EVALUASI
-        {
-          detailSopId: d['DINKES_001_V1'].detailSopId,
-          userId: evaluator1Id,
-          bagian: BagianSOP.EVALUASI,
-          keterangan: 'Menambahkan catatan hasil evaluasi awal: dokumen lengkap.',
-          meta: { fields: ['catatan', 'hasil'], count: 2 },
-          closedAt: new Date('2026-03-01T10:00:00.000Z'),
-        },
-        // Log untuk Diskominfo
-        {
-          detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
-          userId: penyusunDiskominfoId,
-          bagian: BagianSOP.LANGKAH,
-          keterangan: 'Menambahkan langkah penolakan informasi (langkah 5) sesuai masukan evaluator.',
-          meta: { fields: ['kegiatan', 'keterangan'], count: 2 },
-          closedAt: new Date('2026-04-10T14:00:00.000Z'),
-        },
-        // Log dengan sesi terbuka (closedAt null) — simulasi pengeditan aktif
-        {
-          detailSopId: d['DINKES_001_V2'].detailSopId,
-          userId: penyusunDinkesId,
-          bagian: BagianSOP.HEADER,
-          keterangan: null,
-          meta: { fields: ['tanggalRevisi'], count: 1 },
-          closedAt: null, // sesi masih terbuka
-        },
-      ],
-    });
+      });
+    }
   }
 
   // ── MODUL 5: Evaluasi ──────────────────────────────────────────────────
@@ -1596,7 +1567,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
           detailSopId: d['DINKES_001_V1'].detailSopId,
-          evaluatorId: evaluator1Id,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:00.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
@@ -1606,7 +1578,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
           detailSopId: d['DINKES_001_V2'].detailSopId,
-          evaluatorId: evaluator1Id,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:01.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
           catatanSebelum: null,
@@ -1616,7 +1589,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
           detailSopId: d['DINKES_001_V2'].detailSopId,
-          evaluatorId: evaluator1Id,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:02.000Z'),
           hasilSebelum: HasilEvaluasi.PERLU_PERBAIKAN,
           hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
           catatanSebelum: 'Perlu perjelas SLA pada langkah keputusan dan kapasitas dokter.',
@@ -1626,7 +1600,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DISKOMINFO_MANDIRI'].pengajuanEvaluasiId,
           detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
-          evaluatorId: evaluator2Id,
+          penggunaId: evaluator2Id,
+          createdAt: new Date('2025-06-01T10:00:03.000Z'),
           hasilSebelum: null,
           hasilSesudah: null,
           catatanSebelum: null,
@@ -1636,7 +1611,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
           detailSopId: d['DISDIK_001_V1'].detailSopId,
-          evaluatorId: evaluator2Id,
+          penggunaId: evaluator2Id,
+          createdAt: new Date('2025-06-01T10:00:04.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
@@ -1646,7 +1622,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DISKOMINFO_TERJADWAL'].pengajuanEvaluasiId,
           detailSopId: d['DISKOMINFO_002_V1'].detailSopId,
-          evaluatorId: evaluator1Id,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:05.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
@@ -1656,7 +1633,8 @@ export class SeedService {
         {
           pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
           detailSopId: d['DISDIK_001_V2'].detailSopId,
-          evaluatorId: evaluator1Id,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:06.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,

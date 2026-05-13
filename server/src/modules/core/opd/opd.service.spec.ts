@@ -17,6 +17,7 @@ describe('OpdService', () => {
       | 'softDelete'
       | 'summarizeBlockingRelations'
       | 'findEvaluasiRingkas'
+      | 'countPenggunaStrukturalAktifByOpdId'
     >
   >;
 
@@ -31,6 +32,7 @@ describe('OpdService', () => {
       softDelete: jest.fn(),
       summarizeBlockingRelations: jest.fn(),
       findEvaluasiRingkas: jest.fn(),
+      countPenggunaStrukturalAktifByOpdId: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -51,13 +53,11 @@ describe('OpdService', () => {
     opdRepository.findAktifById.mockResolvedValue({
       opdId: 'opd-a',
       nama: 'OPD A',
-      isPjEvaluatorOrganisasi: false,
-      kepalaPenggunaId: null,
-      pjPenyusunPenggunaId: null,
       deletedAt: null,
       createdAt: now,
       updatedAt: now,
     });
+    opdRepository.countPenggunaStrukturalAktifByOpdId.mockResolvedValue(0);
     opdRepository.summarizeBlockingRelations.mockResolvedValue({
       pengguna: 1,
       sop: 0,
@@ -71,18 +71,16 @@ describe('OpdService', () => {
     expect(opdRepository.softDelete).not.toHaveBeenCalled();
   });
 
-  it('should_throw_conflict_when_soft_delete_and_kepala_slot_is_set', async () => {
+  it('should_throw_conflict_when_soft_delete_and_struktural_pengguna_exists', async () => {
     const now = new Date();
     opdRepository.findAktifById.mockResolvedValue({
       opdId: 'opd-b',
       nama: 'OPD B',
-      isPjEvaluatorOrganisasi: false,
-      kepalaPenggunaId: 'user-kepala',
-      pjPenyusunPenggunaId: null,
       deletedAt: null,
       createdAt: now,
       updatedAt: now,
     });
+    opdRepository.countPenggunaStrukturalAktifByOpdId.mockResolvedValue(1);
 
     await expect(service.softDelete('opd-b')).rejects.toBeInstanceOf(ConflictException);
     expect(opdRepository.summarizeBlockingRelations).not.toHaveBeenCalled();

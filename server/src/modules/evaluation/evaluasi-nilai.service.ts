@@ -90,11 +90,13 @@ export class EvaluasiNilaiService {
             'Konflik versi: data nilai sudah berubah, muat ulang lalu coba lagi',
           );
         }
+        const logCreatedAt = new Date();
         await tx.logNilaiEvaluasi.create({
           data: {
             pengajuanEvaluasiId,
             detailSopId,
-            evaluatorId,
+            penggunaId: evaluatorId,
+            createdAt: logCreatedAt,
             hasilSebelum: sebelumnya.hasil,
             hasilSesudah: hasil,
             catatanSebelum: sebelumnya.catatan ?? null,

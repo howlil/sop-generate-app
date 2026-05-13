@@ -19,28 +19,24 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FormDialog } from "@/components/ui/form-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
-import { SearchInput } from "@/components/ui/search-input";
 import { formatDateIdLong } from "@/utils/format-date";
 import { ROUTES } from "@/utils/constants";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatusFilterSelect";
 import { BuatSOPDialog } from "@/pages/penyusun/sop/components/BuatSOPDialog";
+import { BukaPengajuanEvaluasiDialog } from "@/pages/penyusun/sop/components/BukaPengajuanEvaluasiDialog";
 import {
   canEditSop,
   canPjPenyusunRunCoordinatorActions,
-  sopApi,
   useDaftarSopData,
-  useSopListSuspenseQuery,
   useSopSuspense,
 } from "@/api/sop";
 import type { SopListQueryParams } from "@/types/dto/sop.dto";
 import { useDaftarSopFilters } from "@/hooks/useDaftarSOPFilters";
-import { useToast } from "@/hooks/useToast";
 import { useAppRole } from "@/hooks/useAppRole";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
@@ -49,8 +45,6 @@ export function ManajemenSOP() {
   const filterStatusId = "filter-status-sop";
   const filterTanggalDariId = "filter-tanggal-dari-sop";
   const filterTanggalSampaiId = "filter-tanggal-sampai-sop";
-  const requestEvaluasiSearchId = "request-evaluasi-search-sop";
-  const { showToast } = useToast();
   const { role } = useAppRole();
   const filters = useDaftarSopFilters();
   const sopListParams = useMemo((): SopListQueryParams | undefined => {
@@ -66,82 +60,14 @@ export function ManajemenSOP() {
     return { status, tanggalDari, tanggalSampai };
   }, [filters.filterStatus, filters.filterTanggalDari, filters.filterTanggalSampai]);
   const { list: listFilteredByServer, create } = useSopSuspense(sopListParams);
-  const { data: listUnfiltered = [] } = useSopListSuspenseQuery(undefined);
-  const eligibleSopsForEvaluasi = useMemo(
-    () => listUnfiltered.filter((sop) => sop.status === "SIAP_DIEVALUASI"),
-    [listUnfiltered],
-  );
   const { filteredList } = useDaftarSopData({
     list: listFilteredByServer,
     searchQuery: filters.searchQuery,
   });
 
-  const [isRequestEvaluasiDialogOpen, setIsRequestEvaluasiDialogOpen] =
+  const [isBukaPengajuanEvaluasiDialogOpen, setIsBukaPengajuanEvaluasiDialogOpen] =
     useState(false);
-  const [requestEvaluasiSearchQuery, setRequestEvaluasiSearchQuery] =
-    useState("");
   const [isBuatSOPDialogOpen, setIsBuatSOPDialogOpen] = useState(false);
-  const [selectedSopIdsForAjukan, setSelectedSopIdsForAjukan] = useState<
-    Set<string>
-  >(new Set());
-
-  const eligibleSopsFilteredBySearch = useMemo(() => {
-    const q = requestEvaluasiSearchQuery.trim().toLowerCase();
-    if (!q) return eligibleSopsForEvaluasi;
-    return eligibleSopsForEvaluasi.filter(
-      (sop) =>
-        sop.judul.toLowerCase().includes(q) ||
-        (sop.nomorSop ?? "").toLowerCase().includes(q) ||
-        (sop.pembuat && sop.pembuat.toLowerCase().includes(q)),
-    );
-  }, [eligibleSopsForEvaluasi, requestEvaluasiSearchQuery]);
-
-  const toggleSopSelectionForAjukan = (sopId: string) => {
-    setSelectedSopIdsForAjukan((prev) => {
-      const next = new Set(prev);
-      if (next.has(sopId)) next.delete(sopId);
-      else next.add(sopId);
-      return next;
-    });
-  };
-
-  const confirmAjukanEvaluasiBulk = async () => {
-    if (!canPjPenyusunRunCoordinatorActions(role ?? "")) {
-      showToast(
-        "Hanya PJ Penyusun yang dapat mengajukan evaluasi.",
-        "error",
-      );
-      return;
-    }
-    if (selectedSopIdsForAjukan.size === 0) {
-      showToast("Pilih minimal satu SOP untuk diajukan.", "error");
-      return;
-    }
-    const ids = Array.from(selectedSopIdsForAjukan);
-
-    try {
-      // Call API to update status for each selected SOP
-      await Promise.all(
-        ids.map(async (sopId) => {
-          // Find the SOP to get detailSopId
-          const sop = eligibleSopsForEvaluasi.find((s) => s.id === sopId);
-          if (sop?.detailSopId) {
-            await sopApi.updateStatus(sop.detailSopId, {
-              status: "DIAJUKAN_EVALUASI",
-            });
-          }
-        }),
-      );
-
-      showToast(`${ids.length} SOP berhasil diajukan ke evaluasi`);
-      setIsRequestEvaluasiDialogOpen(false);
-      setSelectedSopIdsForAjukan(new Set());
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Gagal mengajukan SOP ke evaluasi";
-      showToast(message, "error");
-    }
-  };
 
   return (
     <ListPageLayout
@@ -240,13 +166,10 @@ export function ManajemenSOP() {
               variant="outline"
               size="sm"
               className="h-8 text-xs gap-1.5"
-              onClick={() => {
-                setSelectedSopIdsForAjukan(new Set());
-                setIsRequestEvaluasiDialogOpen(true);
-              }}
+              onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
             >
               <Send className="w-3.5 h-3.5" />
-              Ajukan / Kirim Ulang Evaluasi
+              Buka pengajuan evaluasi
             </Button>
           )}
           <Button
@@ -353,83 +276,10 @@ export function ManajemenSOP() {
         )}
       </Table.Paginated>
 
-      <FormDialog
-        open={isRequestEvaluasiDialogOpen}
-        onOpenChange={(open) => {
-          setIsRequestEvaluasiDialogOpen(open);
-          if (!open) setRequestEvaluasiSearchQuery("");
-        }}
-        title="Ajukan / Kirim Ulang Evaluasi SOP"
-        description="Pilih SOP yang siap dikirim ke evaluasi. Setelah diajukan, SOP tidak dapat diubah hingga evaluator mengirim hasil."
-        confirmLabel={`Kirim ke Evaluasi (${selectedSopIdsForAjukan.size} SOP)`}
-        onConfirm={confirmAjukanEvaluasiBulk}
-        confirmDisabled={selectedSopIdsForAjukan.size === 0}
-        size="lg"
-      >
-        <div className="flex flex-col gap-2">
-          <SearchInput
-            id={requestEvaluasiSearchId}
-            aria-label="Cari SOP untuk diajukan ke evaluasi"
-            placeholder="Cari judul, nomor SOP, atau pembuat..."
-            value={requestEvaluasiSearchQuery}
-            onChange={(e) => setRequestEvaluasiSearchQuery(e.target.value)}
-            className="w-full max-w-none"
-            inputClassName="border border-gray-200 rounded-md bg-gray-50/50 text-xs h-8"
-          />
-          <div className="overflow-y-auto scrollbar-hide min-h-0 border border-gray-200 rounded-lg max-h-[50vh]">
-            {eligibleSopsForEvaluasi.length === 0 ? (
-              <EmptyState
-                icon={<FileText className="w-10 h-10" />}
-                title="Tidak ada SOP yang siap diajukan"
-                description="SOP harus berstatus Siap Dievaluasi (setelah Selesai Menyusun dari Draft atau Revisi). SOP yang sedang dalam evaluasi aktif tidak ditampilkan."
-              />
-            ) : eligibleSopsFilteredBySearch.length === 0 ? (
-              <div className="py-8 text-center text-xs text-gray-500">
-                Tidak ada SOP yang cocok dengan pencarian.
-              </div>
-            ) : (
-              <ul className="divide-y divide-gray-100">
-                {eligibleSopsFilteredBySearch.map((sop) => {
-                  const isSelected = selectedSopIdsForAjukan.has(sop.id);
-                  return (
-                    <li key={sop.id} className="p-3 hover:bg-gray-50">
-                      <div className="flex items-start gap-3">
-                        <label
-                          htmlFor={`ajukan-evaluasi-${sop.id}`}
-                          className="flex items-center pt-0.5 cursor-pointer shrink-0"
-                        >
-                          <input
-                            id={`ajukan-evaluasi-${sop.id}`}
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleSopSelectionForAjukan(sop.id)}
-                            aria-label={`Pilih SOP ${sop.judul} untuk diajukan ke evaluasi`}
-                            title={`Pilih SOP ${sop.judul}`}
-                            className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-                          />
-                        </label>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900">
-                            {sop.judul}
-                          </p>
-                          {sop.pembuat && (
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              Pembuat: {sop.pembuat}
-                            </p>
-                          )}
-                          <div className="mt-1.5">
-                            <StatusBadge status={sop.status ?? "DRAFT"} />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        </div>
-      </FormDialog>
+      <BukaPengajuanEvaluasiDialog
+        open={isBukaPengajuanEvaluasiDialogOpen}
+        onOpenChange={setIsBukaPengajuanEvaluasiDialogOpen}
+      />
 
       <BuatSOPDialog
         open={isBuatSOPDialogOpen}

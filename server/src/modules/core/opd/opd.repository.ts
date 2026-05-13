@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { StatusSOP, type OPD, type Prisma } from '../../../generated/prisma';
+import { PeranPengguna, StatusSOP, type OPD, type Prisma } from '../../../generated/prisma';
 
 export type OpdRingkasRow = {
   readonly opdId: string;
@@ -120,6 +120,24 @@ export class OpdRepository {
   async findAktifById(opdId: string): Promise<OPD | null> {
     return this.prisma.oPD.findFirst({
       where: { opdId, deletedAt: null },
+    });
+  }
+
+  /** Pengguna aktif dengan peran struktural di OPD (kepala, PJ penyusun, evaluator). */
+  async countPenggunaStrukturalAktifByOpdId(opdId: string): Promise<number> {
+    return this.prisma.pengguna.count({
+      where: {
+        opdId,
+        deletedAt: null,
+        peran: {
+          in: [
+            PeranPengguna.KEPALA_OPD,
+            PeranPengguna.PJ_PENYUSUN,
+            PeranPengguna.PJ_EVALUATOR,
+            PeranPengguna.EVALUATOR,
+          ],
+        },
+      },
     });
   }
 

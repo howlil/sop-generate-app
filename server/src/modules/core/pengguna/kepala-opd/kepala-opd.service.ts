@@ -12,6 +12,7 @@ import { CreateKepalaOpdDto } from './dto/create-kepala-opd.dto';
 import { KepalaOpdPublicDto } from './dto/kepala-opd-public.dto';
 import { KepalaOpdRiwayatItemDto } from './dto/kepala-opd-riwayat-item.dto';
 import { UpdateKepalaOpdDto } from './dto/update-kepala-opd.dto';
+import { PenggunaRepository } from '../pengguna.repository';
 import { KepalaOpdRepository, type KepalaOpdWithCounts } from './kepala-opd.repository';
 
 const BCRYPT_SALT_ROUNDS = 10;
@@ -22,6 +23,7 @@ export class KepalaOpdService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly kepalaOpdRepository: KepalaOpdRepository,
+    private readonly penggunaRepository: PenggunaRepository,
   ) {}
 
   async findAll(search?: string): Promise<KepalaOpdPublicDto[]> {
@@ -34,11 +36,11 @@ export class KepalaOpdService {
     if (opd === null) {
       throw new NotFoundException('OPD tidak ditemukan');
     }
-    const activeSlot = await this.prisma.oPD.findFirst({
-      where: { opdId: dto.opdId, kepalaPenggunaId: { not: null } },
-      include: { kepalaPengguna: { select: { deletedAt: true } } },
-    });
-    if (activeSlot?.kepalaPengguna?.deletedAt === null) {
+    const lainAktif = await this.penggunaRepository.countAktifByOpdIdAndPeran(
+      dto.opdId,
+      PeranPengguna.KEPALA_OPD,
+    );
+    if (lainAktif > 0) {
       throw new ConflictException(
         'OPD ini sudah memiliki Kepala OPD aktif. Nonaktifkan atau akhiri jabatan yang ada terlebih dahulu.',
       );
@@ -58,10 +60,6 @@ export class KepalaOpdService {
             peran: PeranPengguna.KEPALA_OPD,
             opdId: dto.opdId,
           },
-        });
-        await tx.oPD.update({
-          where: { opdId: dto.opdId },
-          data: { kepalaPenggunaId: u.penggunaId },
         });
         await this.setActiveRiwayatOpd(tx, u.penggunaId, dto.opdId);
         return u;
@@ -125,34 +123,24 @@ export class KepalaOpdService {
             data,
           });
         }
-        if (dto.status === 'NONAKTIF') {
-          await tx.oPD.updateMany({
-            where: { kepalaPenggunaId: penggunaId },
-            data: { kepalaPenggunaId: null },
-          });
-        }
         if (dto.status === 'AKTIF' && existing.deletedAt !== null) {
           const u = await tx.pengguna.findUnique({ where: { penggunaId } });
           if (u === null) {
             throw new NotFoundException('Kepala OPD tidak ditemukan');
           }
-          const slotAktif = await tx.oPD.findFirst({
+          const kepalaLain = await tx.pengguna.count({
             where: {
               opdId: u.opdId,
-              kepalaPenggunaId: { not: null },
-              NOT: { kepalaPenggunaId: penggunaId },
+              peran: PeranPengguna.KEPALA_OPD,
+              deletedAt: null,
+              NOT: { penggunaId },
             },
-            include: { kepalaPengguna: { select: { deletedAt: true } } },
           });
-          if (slotAktif?.kepalaPengguna?.deletedAt === null) {
+          if (kepalaLain > 0) {
             throw new ConflictException(
               'OPD masih memiliki Kepala OPD aktif lain. Nonaktifkan yang ada terlebih dahulu.',
             );
           }
-          await tx.oPD.update({
-            where: { opdId: u.opdId },
-            data: { kepalaPenggunaId: penggunaId },
-          });
           await this.setActiveRiwayatOpd(tx, penggunaId, u.opdId);
         }
       });
@@ -179,7 +167,6 @@ export class KepalaOpdService {
       );
     }
     await this.prisma.$transaction(async (tx) => {
-      await this.clearKepalaSlotIfMatches(tx, penggunaId);
       await tx.pengguna.update({
         where: { penggunaId },
         data: { deletedAt: new Date() },
@@ -198,6 +185,7 @@ export class KepalaOpdService {
       namaOpd: r.opd.nama,
       dicatatPada: r.createdAt,
       diperbaruiPada: r.updatedAt,
+      isAktif: r.isAktif,
     }));
   }
 
@@ -215,42 +203,31 @@ export class KepalaOpdService {
     if (opdTujuan === null) {
       throw new NotFoundException('OPD tujuan tidak ditemukan');
     }
-    const slotTujuan = await tx.oPD.findFirst({
+    const kepalaLainDiTujuan = await tx.pengguna.count({
       where: {
         opdId: opdTujuanId,
-        kepalaPenggunaId: { not: null },
-        NOT: { kepalaPenggunaId: existing.penggunaId },
+        peran: PeranPengguna.KEPALA_OPD,
+        deletedAt: null,
+        NOT: { penggunaId: existing.penggunaId },
       },
-      include: { kepalaPengguna: { select: { deletedAt: true } } },
     });
-    if (slotTujuan?.kepalaPengguna?.deletedAt === null) {
+    if (kepalaLainDiTujuan > 0) {
       throw new ConflictException(
         'OPD tujuan sudah memiliki Kepala OPD aktif. Nonaktifkan atau pindahkan yang ada terlebih dahulu.',
       );
     }
-    await tx.oPD.updateMany({
-      where: { kepalaPenggunaId: existing.penggunaId },
-      data: { kepalaPenggunaId: null },
+    await tx.riwayatOpdPengguna.upsert({
+      where: {
+        penggunaId_opdId: { penggunaId: existing.penggunaId, opdId: existing.opdId },
+      },
+      create: { penggunaId: existing.penggunaId, opdId: existing.opdId, isAktif: false },
+      update: { isAktif: false, updatedAt: new Date() },
     });
     await tx.pengguna.update({
       where: { penggunaId: existing.penggunaId },
       data: { opdId: opdTujuanId },
     });
-    await tx.oPD.update({
-      where: { opdId: opdTujuanId },
-      data: { kepalaPenggunaId: existing.penggunaId },
-    });
     await this.setActiveRiwayatOpd(tx, existing.penggunaId, opdTujuanId);
-  }
-
-  private async clearKepalaSlotIfMatches(
-    tx: Prisma.TransactionClient,
-    penggunaId: string,
-  ): Promise<void> {
-    await tx.oPD.updateMany({
-      where: { kepalaPenggunaId: penggunaId },
-      data: { kepalaPenggunaId: null },
-    });
   }
 
   private async setActiveRiwayatOpd(
@@ -258,12 +235,16 @@ export class KepalaOpdService {
     penggunaId: string,
     opdId: string,
   ): Promise<void> {
+    await tx.riwayatOpdPengguna.updateMany({
+      where: { penggunaId },
+      data: { isAktif: false },
+    });
     await tx.riwayatOpdPengguna.upsert({
       where: {
         penggunaId_opdId: { penggunaId, opdId },
       },
-      create: { penggunaId, opdId },
-      update: { updatedAt: new Date() },
+      create: { penggunaId, opdId, isAktif: true },
+      update: { isAktif: true, updatedAt: new Date() },
     });
   }
 

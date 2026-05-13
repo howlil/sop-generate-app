@@ -39,7 +39,7 @@ describe('PengajuanEvaluasiService', () => {
     expect(actual).toEqual([]);
   });
 
-  it('should_forbid_create_when_bukan_pj_evaluator', async () => {
+  it('should_forbid_create_when_bukan_pj_penyusun', async () => {
     const runTransaction = jest.fn();
     const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
     const service = new PengajuanEvaluasiService(repo);
@@ -47,12 +47,26 @@ describe('PengajuanEvaluasiService', () => {
       service.create(
         { sub: 'x', email: 'e', peran: PeranPengguna.EVALUATOR },
         {
-          opdId: '00000000-0000-4000-8000-000000000001',
           jenis: JenisPengajuanEvaluasi.TERJADWAL,
           sopDetailIds: ['00000000-0000-4000-8000-000000000002'],
         },
       ),
     ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(runTransaction).not.toHaveBeenCalled();
+  });
+
+  it('should_forbid_create_when_pj_penyusun_tidak_punya_opd', async () => {
+    const findOpdIdPengguna = jest.fn().mockResolvedValue(null);
+    const runTransaction = jest.fn();
+    const repo = { findOpdIdPengguna, runTransaction } as unknown as PengajuanEvaluasiRepository;
+    const service = new PengajuanEvaluasiService(repo);
+    await expect(
+      service.create(userPjPenyusun, {
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        sopDetailIds: ['00000000-0000-4000-8000-000000000002'],
+      }),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(findOpdIdPengguna).toHaveBeenCalledWith('u1');
     expect(runTransaction).not.toHaveBeenCalled();
   });
 
@@ -120,11 +134,11 @@ describe('PengajuanEvaluasiService', () => {
       ditandatanganiOlehPjPenyusunUser: null,
     } as unknown as PengajuanEvaluasiDetailRow;
     const findByIdFull = jest.fn().mockResolvedValue(mockRow);
-    const repo = { runTransaction, findByIdFull } as unknown as PengajuanEvaluasiRepository;
+    const findOpdIdPengguna = jest.fn().mockResolvedValue(opdId);
+    const repo = { runTransaction, findByIdFull, findOpdIdPengguna } as unknown as PengajuanEvaluasiRepository;
     const service = new PengajuanEvaluasiService(repo);
-    const userPj = { sub: 'pj-1', email: 'pj@test', peran: PeranPengguna.PJ_EVALUATOR };
+    const userPj = { sub: 'pj-1', email: 'pj@test', peran: PeranPengguna.PJ_PENYUSUN };
     const actual = await service.create(userPj, {
-      opdId,
       jenis,
       sopDetailIds: [detailSopId],
     });

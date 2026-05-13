@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useKepalaOpdRiwayat } from '@/api/kepala-opd'
 import { formatDateIdLong } from '@/utils/format-date'
 
@@ -40,9 +41,16 @@ export function KepalaOpdRiwayatDialog({
             rows?.map((r) => (
               <div
                 key={r.opdId}
-                className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex justify-between gap-2"
+                className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 flex justify-between gap-2 items-start"
               >
-                <span className="font-medium text-gray-900">{r.namaOpd}</span>
+                <span className="font-medium text-gray-900 inline-flex flex-wrap items-center gap-2">
+                  {r.namaOpd}
+                  {r.isAktif ? (
+                    <Badge variant="success" className="text-[10px]">
+                      OPD saat ini
+                    </Badge>
+                  ) : null}
+                </span>
                 <span className="text-gray-500 shrink-0">
                   {formatDateIdLong(r.diperbaruiPada)}
                 </span>

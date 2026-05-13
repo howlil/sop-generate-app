@@ -19,6 +19,7 @@ import type { SopDaftarRowDto } from './dto/sop-daftar-row.dto';
 import type { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import type { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
 import type { ListSopQueryDto } from './dto/list-sop-query.dto';
+import { encodeLogEditSopClientId } from '../sop-collaboration/log-edit-session.helper';
 import {
   SopCatalogRepository,
   type SopDaftarDbRow,
@@ -167,7 +168,7 @@ export class SopCatalogService {
       hasil: n.hasil === null || n.hasil === undefined ? undefined : String(n.hasil),
       catatan: n.catatan ?? undefined,
     }));
-    const kp = row.sop.opd?.kepalaPengguna;
+    const kp = row.sop.opd?.pengguna[0];
     const kepalaOpd: PenyusunWorkbenchDataDto['detail']['kepalaOpd'] =
       kp === null || kp === undefined ? null : { nama: kp.nama ?? null, nip: kp.nip ?? null };
     const detail: PenyusunWorkbenchDataDto['detail'] = {
@@ -226,33 +227,23 @@ export class SopCatalogService {
       },
     }));
     const logEdit: PenyusunWorkbenchDataDto['logEdit'] = row.logEditSop.map((log) => {
-      const rawMeta = log.meta as unknown;
-      const metaObj =
-        rawMeta !== null && typeof rawMeta === 'object'
-          ? (rawMeta as { fields?: unknown; count?: unknown })
-          : null;
-      const fields = Array.isArray(metaObj?.fields)
-        ? metaObj.fields.filter((v): v is string => typeof v === 'string')
-        : [];
-      const count =
-        metaObj !== null && typeof metaObj.count === 'number' && Number.isFinite(metaObj.count)
-          ? metaObj.count
-          : 0;
+      const fields = log.domainFields.map((f) => f.domainField).sort();
+      const count = log.sesiChangeCount;
       return {
-        id: log.logEditSopId,
+        id: encodeLogEditSopClientId(log.detailSopId, log.penggunaId, log.createdAt),
         sopDetailId: log.detailSopId,
-        userId: log.userId,
+        userId: log.penggunaId,
         bagian: log.bagian,
         targetEntityId: log.targetEntityId,
         keterangan: log.keterangan ?? null,
-        meta: metaObj === null ? null : { fields, count },
-        aktorRole: String(log.user.peran),
+        meta: fields.length === 0 && count === 0 ? null : { fields, count },
+        aktorRole: String(log.pengguna.peran),
         createdAt: this.toIso(log.createdAt),
         closedAt: log.closedAt instanceof Date ? this.toIso(log.closedAt) : null,
         user: {
-          id: log.user.penggunaId,
-          nama: log.user.nama,
-          email: log.user.email,
+          id: log.pengguna.penggunaId,
+          nama: log.pengguna.nama,
+          email: log.pengguna.email,
         },
       };
     });

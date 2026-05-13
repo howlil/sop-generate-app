@@ -230,9 +230,11 @@ export interface NilaiEvaluasi {
 }
 
 export interface LogNilaiEvaluasi {
+  /** Id komposit ter-encode untuk klien (bukan UUID); memuat pengajuan, detail SOP, pengguna, dan `createdAt`. */
   id: string;
   pengajuanEvaluasiId?: string;
   sopDetailId: string;
+  /** Nilai sama dengan `penggunaId` evaluator di server (nama field tetap untuk kompatibilitas API). */
   evaluatorId: string;
   evaluatorNama?: string;
   hasilSebelum?: StatusHasilEvaluasi;
@@ -252,7 +254,6 @@ export interface BatchListSopItem {
 }
 
 export interface CreatePengajuanEvaluasiDto {
-  opdId: string;
   jenis: JenisPengajuanEvaluasi;
   sopDetailIds: string[];
 }

@@ -58,6 +58,7 @@ export class KepalaOpdRepository {
       opdId: string;
       createdAt: Date;
       updatedAt: Date;
+      isAktif: boolean;
       opd: { nama: string };
     }[]
   > {

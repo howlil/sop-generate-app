@@ -152,7 +152,7 @@ export class SopProsedurRepository {
       await appendOrCreateLogSession({
         tx,
         detailSopId,
-        userId,
+        penggunaId: userId,
         bagian: BagianSOP.LANGKAH,
         fields: changedFields,
       });

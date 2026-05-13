@@ -24,12 +24,12 @@ export class EvaluasiWorkspaceController {
   constructor(private readonly evaluasiWorkspaceService: EvaluasiWorkspaceService) {}
 
   @Get('opd/:opdId')
-  @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
+  @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR, PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Workspace evaluasi per OPD (agregat untuk halaman evaluator)',
     description:
-      'Menggabungkan OPD, daftar SOP pipeline evaluasi, pengajuan aktif, riwayat terbatas, dan opsional preview workbench saat `expand=preview` + `detailSopId`.',
+      'Menggabungkan OPD, daftar SOP pipeline evaluasi, pengajuan aktif, riwayat terbatas, dan opsional preview workbench saat `expand=preview` + `detailSopId`. PJ Penyusun hanya dapat membuka workspace OPD sendiri.',
   })
   @ApiParam({ name: 'opdId', format: 'uuid' })
   @ApiQuery({ name: 'detailSopId', required: false, format: 'uuid' })
@@ -45,7 +45,7 @@ export class EvaluasiWorkspaceController {
     schema: { default: 30, minimum: 1, maximum: 50 },
   })
   @ApiResponse({ status: 200, type: EvaluasiWorkspaceOpdResponseDto })
-  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR atau PJ_EVALUATOR' })
+  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR/PJ_EVALUATOR/PJ_PENYUSUN atau OPD tidak sesuai' })
   @ApiNotFoundResponse({ description: 'OPD tidak ditemukan' })
   async getWorkspaceOpd(
     @Req() req: Request & { user: JwtAccessPayload },

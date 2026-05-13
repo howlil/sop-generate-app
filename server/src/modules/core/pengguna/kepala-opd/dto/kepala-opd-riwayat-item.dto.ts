@@ -13,4 +13,7 @@ export class KepalaOpdRiwayatItemDto {
 
   @ApiProperty()
   readonly diperbaruiPada!: Date;
+
+  @ApiProperty({ description: 'True jika OPD ini sama dengan penempatan utama pengguna saat ini' })
+  readonly isAktif!: boolean;
 }

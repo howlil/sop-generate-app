@@ -100,8 +100,9 @@ export interface PenyusunWorkbenchLogEditMeta {
   count: number;
 }
 
-/** Satu entri log pada GET workbench. Sesi yang masih berlangsung: `closedAt = null`. */
+/** Satu entri log pada GET workbench. Sesi yang masih berlangsung: `closedAt = null`. `id` bukan UUID — lihat encode komposit server. */
 export interface PenyusunWorkbenchLogEdit {
+  /** Identitas stabil dari server (gabungan detailSopId + userId + createdAt), bukan UUID. */
   id: string;
   sopDetailId: string;
   userId: string;

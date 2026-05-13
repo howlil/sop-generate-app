@@ -7,90 +7,140 @@ import {
   type LogEditSessionMeta,
 } from './log-edit-session.helper';
 
-interface FakeRow {
-  logEditSopId: string;
+interface FakeDomainRow {
   detailSopId: string;
-  userId: string;
+  penggunaId: string;
+  logCreatedAt: Date;
+  domainField: string;
+}
+
+interface FakeLogRow {
+  detailSopId: string;
+  penggunaId: string;
+  createdAt: Date;
   bagian: BagianSOP;
   targetEntityId: string | null;
-  meta: unknown;
   keterangan: string | null;
+  sesiChangeCount: number;
   closedAt: Date | null;
-  createdAt: Date;
   updatedAt: Date;
+  domainFields: FakeDomainRow[];
 }
 
 interface CapturedTx {
-  rows: FakeRow[];
+  rows: FakeLogRow[];
+  domainRows: FakeDomainRow[];
   findFirst: jest.Mock;
   create: jest.Mock;
   update: jest.Mock;
   updateMany: jest.Mock;
-  /** Synthetic clock dipakai sebagai sumber `updatedAt` baris baru/diubah. */
+  domainDeleteMany: jest.Mock;
+  domainCreateMany: jest.Mock;
   setClock: (now: Date) => void;
 }
 
-function makeTx(): { tx: { logEditSOP: CapturedTx }; capture: CapturedTx } {
-  const rows: FakeRow[] = [];
+function makeTx(): {
+  tx: { logEditSOP: CapturedTx; logEditSopDomainField: Pick<CapturedTx, 'domainDeleteMany' | 'domainCreateMany'> };
+  capture: CapturedTx;
+} {
+  const rows: FakeLogRow[] = [];
+  const domainRows: FakeDomainRow[] = [];
   let clock: Date = new Date();
   const capture: CapturedTx = {
     rows,
+    domainRows,
     findFirst: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     updateMany: jest.fn(),
+    domainDeleteMany: jest.fn(),
+    domainCreateMany: jest.fn(),
     setClock: (next) => {
       clock = next;
     },
   };
 
-  capture.findFirst.mockImplementation(async (args: { where: Record<string, unknown> }) => {
+  capture.findFirst.mockImplementation(async (args: { where: Record<string, unknown>; include?: unknown }) => {
     const w = args.where;
     const cutoff = (w.updatedAt as { gt: Date } | undefined)?.gt;
     const candidates = rows.filter(
       (r) =>
         r.detailSopId === w.detailSopId &&
-        r.userId === w.userId &&
+        r.penggunaId === w.penggunaId &&
         r.bagian === w.bagian &&
         r.targetEntityId === (w.targetEntityId as string | null) &&
         r.closedAt === null &&
         (cutoff === undefined || r.updatedAt > cutoff),
     );
     candidates.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-    return candidates[0] ?? null;
+    const hit = candidates[0] ?? null;
+    if (hit === null) {
+      return null;
+    }
+    if (args.include !== undefined && typeof args.include === 'object' && 'domainFields' in (args.include as object)) {
+      return {
+        ...hit,
+        domainFields: hit.domainFields.map((df) => ({ domainField: df.domainField })),
+      };
+    }
+    return hit;
   });
 
   capture.create.mockImplementation(async (args: { data: Record<string, unknown> }) => {
     const d = args.data;
-    const row: FakeRow = {
-      logEditSopId: `row-${rows.length + 1}`,
-      detailSopId: d.detailSopId as string,
-      userId: d.userId as string,
+    const createdAt = d.createdAt as Date;
+    const detailSopId = d.detailSopId as string;
+    const penggunaId = d.penggunaId as string;
+    const nested = d.domainFields as { create: { domainField: string }[] } | undefined;
+    const creates = nested?.create ?? [];
+    const domainFields: FakeDomainRow[] = creates.map((c) => ({
+      detailSopId,
+      penggunaId,
+      logCreatedAt: createdAt,
+      domainField: c.domainField,
+    }));
+    domainRows.push(...domainFields);
+    const row: FakeLogRow = {
+      detailSopId,
+      penggunaId,
+      createdAt,
       bagian: d.bagian as BagianSOP,
       targetEntityId: (d.targetEntityId as string | null | undefined) ?? null,
-      meta: d.meta,
       keterangan: (d.keterangan as string | null | undefined) ?? null,
+      sesiChangeCount: (d.sesiChangeCount as number | undefined) ?? 1,
       closedAt: (d.closedAt as Date | null | undefined) ?? null,
-      createdAt: clock,
       updatedAt: clock,
+      domainFields,
     };
     rows.push(row);
     return row;
   });
 
   capture.update.mockImplementation(
-    async (args: { where: { logEditSopId: string }; data: Record<string, unknown> }) => {
-      const idx = rows.findIndex((r) => r.logEditSopId === args.where.logEditSopId);
-      if (idx === -1) throw new Error('row not found');
+    async (args: {
+      where: { detailSopId_penggunaId_createdAt: { detailSopId: string; penggunaId: string; createdAt: Date } };
+      data: Record<string, unknown>;
+    }) => {
+      const k = args.where.detailSopId_penggunaId_createdAt;
+      const idx = rows.findIndex(
+        (r) =>
+          r.detailSopId === k.detailSopId &&
+          r.penggunaId === k.penggunaId &&
+          r.createdAt.getTime() === k.createdAt.getTime(),
+      );
+      if (idx === -1) {
+        throw new Error('row not found');
+      }
       const target = rows[idx]!;
-      const updated: FakeRow = {
+      const updated: FakeLogRow = {
         ...target,
-        meta: 'meta' in args.data ? args.data.meta : target.meta,
+        sesiChangeCount:
+          'sesiChangeCount' in args.data ? (args.data.sesiChangeCount as number) : target.sesiChangeCount,
         keterangan:
           'keterangan' in args.data ? (args.data.keterangan as string | null) : target.keterangan,
-        closedAt:
-          'closedAt' in args.data ? (args.data.closedAt as Date | null) : target.closedAt,
+        closedAt: 'closedAt' in args.data ? (args.data.closedAt as Date | null) : target.closedAt,
         updatedAt: clock,
+        domainFields: target.domainFields,
       };
       rows[idx] = updated;
       return updated;
@@ -105,7 +155,7 @@ function makeTx(): { tx: { logEditSOP: CapturedTx }; capture: CapturedTx } {
         const r = rows[i]!;
         if (
           r.detailSopId === w.detailSopId &&
-          r.userId === w.userId &&
+          r.penggunaId === w.penggunaId &&
           r.bagian === w.bagian &&
           r.targetEntityId === (w.targetEntityId as string | null) &&
           (w.closedAt === null ? r.closedAt === null : true)
@@ -122,13 +172,71 @@ function makeTx(): { tx: { logEditSOP: CapturedTx }; capture: CapturedTx } {
     },
   );
 
+  capture.domainDeleteMany.mockImplementation(async (args: { where: Record<string, unknown> }) => {
+    const w = args.where;
+    let n = 0;
+    for (let i = domainRows.length - 1; i >= 0; i -= 1) {
+      const d = domainRows[i]!;
+      if (
+        d.detailSopId === w.detailSopId &&
+        d.penggunaId === w.penggunaId &&
+        d.logCreatedAt.getTime() === (w.logCreatedAt as Date).getTime()
+      ) {
+        domainRows.splice(i, 1);
+        n += 1;
+      }
+    }
+    for (const r of rows) {
+      if (
+        r.detailSopId === w.detailSopId &&
+        r.penggunaId === w.penggunaId &&
+        r.createdAt.getTime() === (w.logCreatedAt as Date).getTime()
+      ) {
+        r.domainFields = [];
+      }
+    }
+    return { count: n };
+  });
+
+  capture.domainCreateMany.mockImplementation(async (args: { data: FakeDomainRow[] }) => {
+    for (const d of args.data) {
+      domainRows.push(d);
+      const parent = rows.find(
+        (r) =>
+          r.detailSopId === d.detailSopId &&
+          r.penggunaId === d.penggunaId &&
+          r.createdAt.getTime() === d.logCreatedAt.getTime(),
+      );
+      if (parent !== undefined) {
+        parent.domainFields.push(d);
+      }
+    }
+    return { count: args.data.length };
+  });
+
   return {
-    tx: { logEditSOP: capture },
+    tx: {
+      logEditSOP: capture,
+      logEditSopDomainField: {
+        domainDeleteMany: capture.domainDeleteMany,
+        domainCreateMany: capture.domainCreateMany,
+      },
+    },
     capture,
   };
 }
 
-/** Helper kecil untuk sinkronisasi clock fake dengan `now` yang dikirim ke helper. */
+/** Mock tx: hanya delegate log + domain field (sisanya tidak dipakai helper). */
+function asAppendTx(raw: ReturnType<typeof makeTx>['tx']): Parameters<typeof appendOrCreateLogSession>[0]['tx'] {
+  return {
+    logEditSOP: raw.logEditSOP,
+    logEditSopDomainField: {
+      deleteMany: raw.logEditSopDomainField.domainDeleteMany,
+      createMany: raw.logEditSopDomainField.domainCreateMany,
+    },
+  } as unknown as Parameters<typeof appendOrCreateLogSession>[0]['tx'];
+}
+
 async function appendAt(
   capture: CapturedTx,
   now: Date,
@@ -168,16 +276,16 @@ describe('log-edit-session.helper', () => {
 
   describe('appendOrCreateLogSession', () => {
     const detailSopId = 'detail-1';
-    const userId = 'user-1';
+    const penggunaId = 'user-1';
 
     it('should_create_new_session_when_no_open_session_exists', async () => {
       const { tx, capture } = makeTx();
       const now = new Date('2026-05-04T10:00:00Z');
       await appendAt(capture, now, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.HEADER,
           fields: ['peringatan'],
           now,
@@ -198,9 +306,9 @@ describe('log-edit-session.helper', () => {
       const t2 = new Date(t1.getTime() + 5 * 60 * 1000);
       await appendAt(capture, t1, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.HEADER,
           fields: ['peringatan'],
           now: t1,
@@ -208,9 +316,9 @@ describe('log-edit-session.helper', () => {
       );
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.HEADER,
           fields: ['nomorSOP'],
           now: t2,
@@ -218,10 +326,12 @@ describe('log-edit-session.helper', () => {
       );
       expect(capture.create).toHaveBeenCalledTimes(1);
       expect(capture.update).toHaveBeenCalledTimes(1);
+      expect(capture.domainDeleteMany).toHaveBeenCalled();
+      expect(capture.domainCreateMany).toHaveBeenCalled();
       expect(capture.rows.length).toBe(1);
-      const meta = capture.rows[0]!.meta as LogEditSessionMeta;
-      expect(meta.count).toBe(2);
-      expect(meta.fields.sort()).toEqual(['nomorSOP', 'peringatan'].sort());
+      expect(capture.rows[0]!.sesiChangeCount).toBe(2);
+      const keys = capture.rows[0]!.domainFields.map((x) => x.domainField).sort();
+      expect(keys).toEqual(['nomorSOP', 'peringatan'].sort());
       expect(capture.rows[0]!.keterangan).toContain('Header SOP');
       expect(capture.rows[0]!.keterangan).toContain('(2 perubahan)');
     });
@@ -232,9 +342,9 @@ describe('log-edit-session.helper', () => {
       const t2 = new Date(t1.getTime() + DEFAULT_LOG_SESSION_IDLE_MS + 60 * 1000);
       await appendAt(capture, t1, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.HEADER,
           fields: ['peringatan'],
           now: t1,
@@ -242,16 +352,15 @@ describe('log-edit-session.helper', () => {
       );
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.HEADER,
           fields: ['judul'],
           now: t2,
         }),
       );
       expect(capture.create).toHaveBeenCalledTimes(2);
-      /* Sesi lama harus ditutup oleh updateMany, sehingga rows[0].closedAt non-null. */
       expect(capture.rows[0]!.closedAt).not.toBeNull();
       expect(capture.rows[1]!.closedAt).toBeNull();
     });
@@ -262,9 +371,9 @@ describe('log-edit-session.helper', () => {
       const t2 = new Date(t1.getTime() + 60 * 1000);
       await appendAt(capture, t1, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.KOMENTAR,
           fields: ['create'],
           discrete: true,
@@ -273,9 +382,9 @@ describe('log-edit-session.helper', () => {
       );
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.KOMENTAR,
           fields: ['create'],
           discrete: true,
@@ -294,9 +403,9 @@ describe('log-edit-session.helper', () => {
       const t2 = new Date(t1.getTime() + 60 * 1000);
       await appendAt(capture, t1, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.LANGKAH,
           targetEntityId: 'lang-A',
           fields: ['kegiatan'],
@@ -305,9 +414,9 @@ describe('log-edit-session.helper', () => {
       );
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
-          tx: tx as never,
+          tx: asAppendTx(tx),
           detailSopId,
-          userId,
+          penggunaId,
           bagian: BagianSOP.LANGKAH,
           targetEntityId: 'lang-B',
           fields: ['kegiatan'],

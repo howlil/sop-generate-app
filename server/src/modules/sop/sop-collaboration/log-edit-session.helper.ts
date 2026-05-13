@@ -8,7 +8,7 @@ import { BagianSOP } from '../../../generated/prisma';
  */
 export const DEFAULT_LOG_SESSION_IDLE_MS = 10 * 60 * 1000;
 
-/** Bentuk meta yang disimpan di kolom `meta` JSON pada `LogEditSOP`. */
+/** Bentuk meta sesi (memori / respons API), bukan kolom JSON. */
 export interface LogEditSessionMeta {
   /** Daftar field domain yang berubah selama sesi (union string set). */
   fields: string[];
@@ -20,7 +20,7 @@ export interface AppendLogParams {
   /** Prisma transaction client. Helper dimaksudkan dijalankan dalam transaksi. */
   tx: Prisma.TransactionClient;
   detailSopId: string;
-  userId: string;
+  penggunaId: string;
   bagian: BagianSOP;
   /** Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK. */
   targetEntityId?: string | null;
@@ -61,6 +61,15 @@ const BAGIAN_LABEL_ID: Record<BagianSOP, string> = {
   EVALUASI: 'Evaluasi',
 };
 
+/** Id stabil untuk klien (bukan UUID): tripel PK dipisah unit separator. */
+export function encodeLogEditSopClientId(
+  detailSopId: string,
+  penggunaId: string,
+  createdAt: Date,
+): string {
+  return `${detailSopId}\u001f${penggunaId}\u001f${createdAt.toISOString()}`;
+}
+
 /** Konversi nama field domain ke label Bahasa Indonesia. Field tak dikenal dipakai apa adanya. */
 export function translateField(field: string): string {
   return FIELD_LABEL_ID[field] ?? field;
@@ -77,29 +86,44 @@ export function buildLogSummary(bagian: BagianSOP, meta: LogEditSessionMeta): st
 function unionFields(prev: string[], next: string[]): string[] {
   const set = new Set<string>();
   for (const v of prev) {
-    if (typeof v === 'string' && v.length > 0) set.add(v);
+    if (typeof v === 'string' && v.length > 0) {
+      set.add(v);
+    }
   }
   for (const v of next) {
-    if (typeof v === 'string' && v.length > 0) set.add(v);
+    if (typeof v === 'string' && v.length > 0) {
+      set.add(v);
+    }
   }
   return Array.from(set);
 }
 
-function asMeta(raw: unknown): LogEditSessionMeta {
-  if (raw === null || typeof raw !== 'object') {
-    return { fields: [], count: 0 };
+async function replaceDomainFields(
+  tx: Prisma.TransactionClient,
+  detailSopId: string,
+  penggunaId: string,
+  logCreatedAt: Date,
+  domainFields: string[],
+): Promise<void> {
+  await tx.logEditSopDomainField.deleteMany({
+    where: { detailSopId, penggunaId, logCreatedAt },
+  });
+  const unique = Array.from(new Set(domainFields.filter((f) => typeof f === 'string' && f.length > 0)));
+  if (unique.length === 0) {
+    return;
   }
-  const obj = raw as Record<string, unknown>;
-  const fieldsRaw = obj.fields;
-  const fields = Array.isArray(fieldsRaw)
-    ? fieldsRaw.filter((v): v is string => typeof v === 'string')
-    : [];
-  const count = typeof obj.count === 'number' && Number.isFinite(obj.count) ? obj.count : 0;
-  return { fields, count };
+  await tx.logEditSopDomainField.createMany({
+    data: unique.map((domainField) => ({
+      detailSopId,
+      penggunaId,
+      logCreatedAt,
+      domainField,
+    })),
+  });
 }
 
 /**
- * Append-or-create entry log untuk satu (detailSop, user, bagian, targetEntityId).
+ * Append-or-create entry log untuk satu (detailSop, pengguna, bagian, targetEntityId).
  *
  * - `discrete=true` selalu buat entry baru `closedAt = now`.
  * - Bila ada sesi terbuka same triple dan `updatedAt > now - idleWindowMs` -> merge.
@@ -116,12 +140,16 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
     await p.tx.logEditSOP.create({
       data: {
         detailSopId: p.detailSopId,
-        userId: p.userId,
+        penggunaId: p.penggunaId,
+        createdAt: now,
         bagian: p.bagian,
         targetEntityId,
-        meta: meta as unknown as Prisma.InputJsonValue,
         keterangan: buildLogSummary(p.bagian, meta),
+        sesiChangeCount: 1,
         closedAt: now,
+        domainFields: {
+          create: Array.from(new Set(fields)).map((domainField) => ({ domainField })),
+        },
       },
     });
     return;
@@ -131,28 +159,42 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
   const open = await p.tx.logEditSOP.findFirst({
     where: {
       detailSopId: p.detailSopId,
-      userId: p.userId,
+      penggunaId: p.penggunaId,
       bagian: p.bagian,
       targetEntityId,
       closedAt: null,
       updatedAt: { gt: cutoff },
     },
     orderBy: { updatedAt: 'desc' },
+    include: { domainFields: true },
   });
 
   if (open !== null) {
-    const prevMeta = asMeta(open.meta);
+    const prevFields = open.domainFields.map((r) => r.domainField);
     const merged: LogEditSessionMeta = {
-      fields: unionFields(prevMeta.fields, fields),
-      count: prevMeta.count + 1,
+      fields: unionFields(prevFields, fields),
+      count: open.sesiChangeCount + 1,
     };
     await p.tx.logEditSOP.update({
-      where: { logEditSopId: open.logEditSopId },
+      where: {
+        detailSopId_penggunaId_createdAt: {
+          detailSopId: open.detailSopId,
+          penggunaId: open.penggunaId,
+          createdAt: open.createdAt,
+        },
+      },
       data: {
-        meta: merged as unknown as Prisma.InputJsonValue,
+        sesiChangeCount: merged.count,
         keterangan: buildLogSummary(p.bagian, merged),
       },
     });
+    await replaceDomainFields(
+      p.tx,
+      open.detailSopId,
+      open.penggunaId,
+      open.createdAt,
+      merged.fields,
+    );
     return;
   }
 
@@ -160,7 +202,7 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
   await p.tx.logEditSOP.updateMany({
     where: {
       detailSopId: p.detailSopId,
-      userId: p.userId,
+      penggunaId: p.penggunaId,
       bagian: p.bagian,
       targetEntityId,
       closedAt: null,
@@ -172,12 +214,16 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
   await p.tx.logEditSOP.create({
     data: {
       detailSopId: p.detailSopId,
-      userId: p.userId,
+      penggunaId: p.penggunaId,
+      createdAt: now,
       bagian: p.bagian,
       targetEntityId,
-      meta: fresh as unknown as Prisma.InputJsonValue,
       keterangan: buildLogSummary(p.bagian, fresh),
+      sesiChangeCount: 1,
       closedAt: null,
+      domainFields: {
+        create: Array.from(new Set(fields)).map((domainField) => ({ domainField })),
+      },
     },
   });
 }

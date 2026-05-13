@@ -11,7 +11,10 @@ export class PenyusunWorkbenchLogEditMetaDto {
 
 /** Satu entri log edit untuk tab Aktivitas (sesi gaya Google Docs + bagian SOP). */
 export class PenyusunWorkbenchLogEditDto {
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'Identitas stabil entri log (bukan UUID): gabungan detailSopId + penggunaId + createdAt (unit separator).',
+  })
   readonly id!: string;
 
   @ApiProperty()

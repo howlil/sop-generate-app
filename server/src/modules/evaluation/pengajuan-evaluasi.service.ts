@@ -14,6 +14,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
+import { encodeLogNilaiEvaluasiClientId } from './log-nilai-evaluasi-client-id';
 import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
 import { resolvePagination, toPaginatedData, type PaginatedData } from '../../common/utils/pagination.util';
 import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
@@ -48,7 +49,7 @@ export type BarisPipelineEvaluasiOpd = Readonly<{
 }>;
 
 /**
- * Daftar & detail pengajuan evaluasi (REST) serta pembukaan batch oleh PJ Evaluator.
+ * Daftar & detail pengajuan evaluasi (REST) serta pembukaan pengajuan oleh PJ Penyusun.
  */
 @Injectable()
 export class PengajuanEvaluasiService {
@@ -88,15 +89,19 @@ export class PengajuanEvaluasiService {
     return PengajuanEvaluasiService.mapRow(row);
   }
 
-  /** Membuka batch evaluasi (SEDANG_DIEVALUASI + baris nilai per dokumen). Hanya PJ Evaluator. */
+  /** Membuka pengajuan evaluasi (SEDANG_DIEVALUASI + baris nilai per dokumen). Hanya PJ Penyusun OPD terkait. */
   async create(user: JwtAccessPayload, dto: CreatePengajuanEvaluasiDto): Promise<PengajuanEvaluasiApiPayload> {
-    if (user.peran !== PeranPengguna.PJ_EVALUATOR) {
-      throw new ForbiddenException('Hanya PJ Evaluator yang dapat membuat pengajuan evaluasi batch');
+    if (user.peran !== PeranPengguna.PJ_PENYUSUN) {
+      throw new ForbiddenException('Hanya PJ Penyusun yang dapat membuka pengajuan evaluasi');
+    }
+    const opdIdPengguna = await this.pengajuanEvaluasiRepository.findOpdIdPengguna(user.sub);
+    if (opdIdPengguna === null) {
+      throw new ForbiddenException('OPD pengguna tidak ditemukan');
     }
     const idBaru = await this.pengajuanEvaluasiRepository.runTransaction(async (tx: Prisma.TransactionClient) => {
       const blocking = await tx.pengajuanEvaluasi.findFirst({
         where: {
-          opdId: dto.opdId,
+          opdId: opdIdPengguna,
           status: {
             in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
           },
@@ -110,13 +115,11 @@ export class PengajuanEvaluasiService {
       }
       for (const detailSopId of dto.sopDetailIds) {
         const detail = await tx.detailSOP.findFirst({
-          where: { detailSopId, sop: { opdId: dto.opdId } },
+          where: { detailSopId, sop: { opdId: opdIdPengguna } },
           select: { detailSopId: true, status: true },
         });
         if (detail === null) {
-          throw new BadRequestException(
-            `Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD yang dipilih.`,
-          );
+          throw new BadRequestException(`Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD Anda.`);
         }
         if (!statusBatchSet.has(String(detail.status))) {
           throw new BadRequestException(
@@ -127,7 +130,7 @@ export class PengajuanEvaluasiService {
       const sekarang = new Date();
       const dibuat = await tx.pengajuanEvaluasi.create({
         data: {
-          opdId: dto.opdId,
+          opdId: opdIdPengguna,
           jenis: dto.jenis,
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
           tanggalPermintaan: sekarang,
@@ -300,10 +303,15 @@ export class PengajuanEvaluasiService {
       updatedAt: n.updatedAt.toISOString(),
     }));
     const riwayatEvaluasi = row.logNilaiEvaluasi.map((log) => ({
-      id: log.logNilaiEvaluasiId,
+      id: encodeLogNilaiEvaluasiClientId(
+        log.pengajuanEvaluasiId,
+        log.detailSopId,
+        log.penggunaId,
+        log.createdAt,
+      ),
       sopDetailId: log.detailSopId,
-      evaluatorId: log.evaluatorId,
-      evaluatorNama: log.evaluator.nama,
+      evaluatorId: log.penggunaId,
+      evaluatorNama: log.pengguna.nama,
       hasilSebelum: PengajuanEvaluasiService.stringifyHasil(log.hasilSebelum),
       hasilSesudah: PengajuanEvaluasiService.stringifyHasil(log.hasilSesudah),
       catatanSebelum: log.catatanSebelum ?? undefined,

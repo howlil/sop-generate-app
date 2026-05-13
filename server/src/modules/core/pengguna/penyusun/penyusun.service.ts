@@ -67,14 +67,8 @@ export class PenyusunService {
             opdId: dto.opdId,
           },
         });
-        if (dto.peran === PeranPengguna.PJ_PENYUSUN) {
-          await tx.oPD.update({
-            where: { opdId: dto.opdId },
-            data: { pjPenyusunPenggunaId: u.penggunaId },
-          });
-        }
         await tx.riwayatOpdPengguna.create({
-          data: { penggunaId: u.penggunaId, opdId: dto.opdId },
+          data: { penggunaId: u.penggunaId, opdId: dto.opdId, isAktif: true },
         });
         return u;
       });
@@ -137,32 +131,6 @@ export class PenyusunService {
     }
     try {
       const updated = await this.prisma.$transaction(async (tx) => {
-        if (nextDeletedAt !== null && existing.deletedAt === null) {
-          await tx.oPD.updateMany({
-            where: { pjPenyusunPenggunaId: penggunaId },
-            data: { pjPenyusunPenggunaId: null },
-          });
-        }
-        if (willBeActive) {
-          if (
-            peranNext === PeranPengguna.PJ_PENYUSUN &&
-            existing.peran !== PeranPengguna.PJ_PENYUSUN
-          ) {
-            await tx.oPD.update({
-              where: { opdId: existing.opdId },
-              data: { pjPenyusunPenggunaId: penggunaId },
-            });
-          }
-          if (
-            peranNext === PeranPengguna.PENYUSUN &&
-            existing.peran === PeranPengguna.PJ_PENYUSUN
-          ) {
-            await tx.oPD.updateMany({
-              where: { pjPenyusunPenggunaId: penggunaId },
-              data: { pjPenyusunPenggunaId: null },
-            });
-          }
-        }
         const data: Prisma.PenggunaUpdateInput = {};
         if (dto.nama !== undefined) data.nama = dto.nama.trim();
         if (emailNext !== undefined) data.email = emailNext;
@@ -178,16 +146,6 @@ export class PenyusunService {
           where: { penggunaId },
           data,
         });
-        if (
-          existing.deletedAt !== null &&
-          nextDeletedAt === null &&
-          u.peran === PeranPengguna.PJ_PENYUSUN
-        ) {
-          await tx.oPD.update({
-            where: { opdId: u.opdId },
-            data: { pjPenyusunPenggunaId: penggunaId },
-          });
-        }
         return u;
       });
       return this.toPublikItem(updated);
@@ -203,10 +161,6 @@ export class PenyusunService {
       throw new NotFoundException('Penyusun tidak ditemukan');
     }
     await this.prisma.$transaction(async (tx) => {
-      await tx.oPD.updateMany({
-        where: { pjPenyusunPenggunaId: penggunaId },
-        data: { pjPenyusunPenggunaId: null },
-      });
       await tx.pengguna.update({
         where: { penggunaId },
         data: { deletedAt: new Date() },
@@ -232,12 +186,6 @@ export class PenyusunService {
           where: { penggunaId },
           data: { deletedAt: null },
         });
-        if (u.peran === PeranPengguna.PJ_PENYUSUN) {
-          await tx.oPD.update({
-            where: { opdId: u.opdId },
-            data: { pjPenyusunPenggunaId: penggunaId },
-          });
-        }
         return u;
       });
       return this.toPublikItem(restored);
@@ -264,27 +212,18 @@ export class PenyusunService {
     }
     try {
       const moved = await this.prisma.$transaction(async (tx) => {
-        await tx.oPD.updateMany({
-          where: { pjPenyusunPenggunaId: penggunaId },
-          data: { pjPenyusunPenggunaId: null },
+        await tx.riwayatOpdPengguna.upsert({
+          where: {
+            penggunaId_opdId: { penggunaId, opdId: existing.opdId },
+          },
+          create: { penggunaId, opdId: existing.opdId, isAktif: false },
+          update: { isAktif: false, updatedAt: new Date() },
         });
-        await this.touchRiwayatOpdLink(tx, penggunaId, existing.opdId);
-        if (existing.peran === PeranPengguna.PJ_PENYUSUN) {
-          await tx.pengguna.update({
-            where: { penggunaId },
-            data: { opdId: opdTujuanId },
-          });
-          await tx.oPD.update({
-            where: { opdId: opdTujuanId },
-            data: { pjPenyusunPenggunaId: penggunaId },
-          });
-        } else {
-          await tx.pengguna.update({
-            where: { penggunaId },
-            data: { opdId: opdTujuanId },
-          });
-        }
-        await this.touchRiwayatOpdLink(tx, penggunaId, opdTujuanId);
+        await tx.pengguna.update({
+          where: { penggunaId },
+          data: { opdId: opdTujuanId },
+        });
+        await this.sinkronkanRiwayatOpdAktif(tx, penggunaId, opdTujuanId);
         return tx.pengguna.findFirstOrThrow({ where: { penggunaId } });
       });
       return this.toPublikItem(moved);
@@ -306,6 +245,7 @@ export class PenyusunService {
       namaOpd: r.namaOpd,
       pertamaDicatat: r.pertamaDicatat,
       terakhirDiperbarui: r.terakhirDiperbarui,
+      isAktif: r.isAktif,
     }));
   }
 
@@ -337,8 +277,6 @@ export class PenyusunService {
             tandaTangan: true,
           },
         },
-        opdSebagaiKepala: true,
-        opdSebagaiPjPenyusun: true,
       },
     });
     if (row === null) {
@@ -357,30 +295,34 @@ export class PenyusunService {
       c.pengajuanEvaluasiDiverifikasi +
       c.riwayatOpd +
       c.tandaTangan;
-    if (sum > 0 || row.ttePinHash !== null || row.opdSebagaiKepala !== null) {
+    if (sum > 0 || row.ttePinHash !== null) {
       throw new ConflictException(
         'Tidak dapat menghapus pengguna: masih ada data yang terikat (SOP, komentar, evaluasi, atau jabatan OPD).',
       );
     }
-    if (row.opdSebagaiPjPenyusun !== null) {
+    if (row.peran === PeranPengguna.PJ_PENYUSUN) {
       throw new ConflictException(
         'Tidak dapat menghapus pengguna: masih terdaftar sebagai PJ Penyusun pada OPD.',
       );
     }
   }
 
-  /** Mencatat / memperbarui pasangan (pengguna, OPD) di riwayat (mis. saat pindah atau kembali ke OPD lama). */
-  private async touchRiwayatOpdLink(
+  /** Menyetel tepat satu baris `isAktif` untuk `opdIdAktif` selaras `Pengguna.opdId`. */
+  private async sinkronkanRiwayatOpdAktif(
     tx: Prisma.TransactionClient,
     penggunaId: string,
-    opdId: string,
+    opdIdAktif: string,
   ): Promise<void> {
+    await tx.riwayatOpdPengguna.updateMany({
+      where: { penggunaId },
+      data: { isAktif: false },
+    });
     await tx.riwayatOpdPengguna.upsert({
       where: {
-        penggunaId_opdId: { penggunaId, opdId },
+        penggunaId_opdId: { penggunaId, opdId: opdIdAktif },
       },
-      create: { penggunaId, opdId },
-      update: { updatedAt: new Date() },
+      create: { penggunaId, opdId: opdIdAktif, isAktif: true },
+      update: { isAktif: true, updatedAt: new Date() },
     });
   }
 

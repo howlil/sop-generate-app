@@ -7,20 +7,42 @@ import { PeranPengguna } from '../../../generated/prisma';
 export class PenggunaRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * OPD "biro" = `opdId` dari pengguna aktif berperan PJ_EVALUATOR (invariant di layanan).
+   */
   async findPjEvaluatorOrganisasiOpdId(): Promise<string | null> {
-    const row = await this.prisma.oPD.findFirst({
-      where: { isPjEvaluatorOrganisasi: true, deletedAt: null },
+    const row = await this.prisma.pengguna.findFirst({
+      where: { peran: PeranPengguna.PJ_EVALUATOR, deletedAt: null },
       select: { opdId: true },
     });
     return row?.opdId ?? null;
   }
 
   async findPjEvaluatorOrganisasiOpd(): Promise<{ opdId: string; nama: string } | null> {
-    const row = await this.prisma.oPD.findFirst({
-      where: { isPjEvaluatorOrganisasi: true, deletedAt: null },
-      select: { opdId: true, nama: true },
+    const row = await this.prisma.pengguna.findFirst({
+      where: { peran: PeranPengguna.PJ_EVALUATOR, deletedAt: null },
+      select: { opdId: true, opd: { select: { nama: true } } },
     });
-    return row ?? null;
+    if (row === null) {
+      return null;
+    }
+    return { opdId: row.opdId, nama: row.opd.nama };
+  }
+
+  /** Jumlah pengguna aktif dengan peran tertentu di OPD (opsional abaikan satu pengguna). */
+  async countAktifByOpdIdAndPeran(
+    opdId: string,
+    peran: PeranPengguna,
+    exceptPenggunaId?: string,
+  ): Promise<number> {
+    return this.prisma.pengguna.count({
+      where: {
+        opdId,
+        peran,
+        deletedAt: null,
+        ...(exceptPenggunaId !== undefined ? { NOT: { penggunaId: exceptPenggunaId } } : {}),
+      },
+    });
   }
 
   /**

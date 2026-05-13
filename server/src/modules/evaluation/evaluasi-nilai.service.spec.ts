@@ -82,6 +82,17 @@ describe('EvaluasiNilaiService', () => {
         }),
       );
       expect(updatePengajuan).not.toHaveBeenCalled();
+      expect(mockTx.logNilaiEvaluasi.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            pengajuanEvaluasiId: 'p1',
+            detailSopId: 'd1',
+            penggunaId: user.sub,
+            hasilSesudah: HasilEvaluasi.SESUAI,
+            createdAt: expect.any(Date),
+          }),
+        }),
+      );
     });
 
     it('should_call_createKomentarWithLogTx_when_perlu_perbaikan_dengan_catatan', async () => {

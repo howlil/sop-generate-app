@@ -23,12 +23,31 @@ WHERE d.`detailSopId` IS NULL
   AND d.`pengajuanEvaluasiId` IS NULL
   AND r.`userId` IS NULL;
 
--- CHECK memvalidasi baris yang ada; jika masih ada pelanggaran, migrasi gagal (perbaiki data manual).
-ALTER TABLE `DokumenTte`
-  ADD CONSTRAINT `chk_dokumentte_satu_orang_tua` CHECK (
-    (`detailSopId` IS NOT NULL AND `pengajuanEvaluasiId` IS NULL)
-    OR (`detailSopId` IS NULL AND `pengajuanEvaluasiId` IS NOT NULL)
-  );
+DROP TRIGGER IF EXISTS `trg_dokumentte_satu_parent_insert`;
+CREATE TRIGGER `trg_dokumentte_satu_parent_insert`
+BEFORE INSERT ON `DokumenTte`
+FOR EACH ROW
+BEGIN
+  IF NOT (
+    (NEW.`detailSopId` IS NOT NULL AND NEW.`pengajuanEvaluasiId` IS NULL)
+    OR (NEW.`detailSopId` IS NULL AND NEW.`pengajuanEvaluasiId` IS NOT NULL)
+  ) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DokumenTte wajib punya tepat satu parent: DetailSOP atau PengajuanEvaluasi';
+  END IF;
+END;
+
+DROP TRIGGER IF EXISTS `trg_dokumentte_satu_parent_update`;
+CREATE TRIGGER `trg_dokumentte_satu_parent_update`
+BEFORE UPDATE ON `DokumenTte`
+FOR EACH ROW
+BEGIN
+  IF NOT (
+    (NEW.`detailSopId` IS NOT NULL AND NEW.`pengajuanEvaluasiId` IS NULL)
+    OR (NEW.`detailSopId` IS NULL AND NEW.`pengajuanEvaluasiId` IS NOT NULL)
+  ) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'DokumenTte wajib punya tepat satu parent: DetailSOP atau PengajuanEvaluasi';
+  END IF;
+END;
 
 -- ---------------------------------------------------------------------------
 -- 2) SopTerkait: trigger anti-self & anti pasangan (A,B) jika (B,A) ada

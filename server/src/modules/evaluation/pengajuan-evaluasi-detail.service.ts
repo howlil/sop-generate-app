@@ -9,6 +9,7 @@ import {
   PeranPengguna,
   StatusPengajuanEvaluasi,
 } from '../../generated/prisma';
+import { encodeLogNilaiEvaluasiClientId } from './log-nilai-evaluasi-client-id';
 import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
 import { SopCatalogService } from '../sop/sop-catalog/sop-catalog.service';
 import type { BeritaAcaraEvaluasiViewDto } from './dto/berita-acara-evaluasi-view.dto';
@@ -227,10 +228,15 @@ export class PengajuanEvaluasiDetailService {
       updatedAt: n.updatedAt.toISOString(),
     }));
     const timelineNilai = row.logNilaiEvaluasi.map((log) => ({
-      id: log.logNilaiEvaluasiId,
+      id: encodeLogNilaiEvaluasiClientId(
+        log.pengajuanEvaluasiId,
+        log.detailSopId,
+        log.penggunaId,
+        log.createdAt,
+      ),
       sopDetailId: log.detailSopId,
-      evaluatorId: log.evaluatorId,
-      evaluatorNama: log.evaluator.nama,
+      evaluatorId: log.penggunaId,
+      evaluatorNama: log.pengguna.nama,
       hasilSebelum: PengajuanEvaluasiDetailService.stringifyHasil(log.hasilSebelum),
       hasilSesudah: PengajuanEvaluasiDetailService.stringifyHasil(log.hasilSesudah),
       catatanSebelum: log.catatanSebelum ?? undefined,

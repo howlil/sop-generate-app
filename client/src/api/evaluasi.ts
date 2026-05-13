@@ -3,7 +3,7 @@
  * - GET/POST `/evaluasi` → `PengajuanEvaluasiController`
  * - GET `/evaluasi/pengajuan/:id` | `.../sop-dokumen/:detailSopId` | `.../berita-acara` → `PengajuanEvaluasiDetailController`
  * - PATCH `.../nilai/:detailSopId` | `.../selesai` → `EvaluasiNilaiController`
- * - GET `/evaluasi/workspace/opd/:opdId` → `EvaluasiWorkspaceController`
+ * - GET `/evaluasi/workspace/opd/:opdId` → `EvaluasiWorkspaceController` (evaluator/PJ evaluator/PJ penyusun)
  * - GET `/evaluasi/laporan/grafik-tahunan` → `EvaluasiGrafikController`
  */
 
@@ -445,7 +445,7 @@ export function useKepalaOpdPengajuan(opdId?: string) {
   };
 }
 
-/** Workspace evaluasi per OPD — satu GET agregat untuk halaman evaluator. */
+/** Workspace evaluasi per OPD - satu GET agregat untuk halaman evaluator dan dialog PJ penyusun. */
 export function useEvaluasiWorkspaceOpd(
   opdId: string,
   params?: EvaluasiWorkspaceQueryParams & { enabled?: boolean },
