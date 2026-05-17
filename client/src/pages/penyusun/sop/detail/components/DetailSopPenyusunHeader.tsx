@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { AlertTriangle, Check, CloudOff, CloudUpload, Printer, RefreshCcw, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { cn } from '@/utils/cn'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
@@ -77,7 +79,19 @@ export function DetailSOPPenyusunHeader({
   isPrimaryActionPending = false,
   isReadOnly = false,
 }: DetailSOPPenyusunHeaderProps) {
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const indicator = isReadOnly ? null : autosaveAppearance(autosaveStatus)
+  const confirmTitle = isRevisionFlow
+    ? 'Kirim ulang ke evaluator?'
+    : 'Yakin SOP sudah siap?'
+  const confirmDescription = isRevisionFlow
+    ? 'SOP akan langsung diajukan kembali ke evaluator tanpa langkah tambahan di Manajemen SOP. Pastikan semua revisi sudah selesai.'
+    : 'Status SOP akan diubah menjadi Siap dievaluasi. PJ Penyusun dapat membuka pengajuan evaluasi ke Biro Organisasi. Pastikan dokumen sudah lengkap sebelum melanjutkan.'
+  const confirmLabel = isRevisionFlow ? 'Ya, kirim ulang' : 'Ya, selesai'
+  const handleConfirmComplete = () => {
+    setIsConfirmOpen(false)
+    onComplete()
+  }
   return (
     <>
       <div className="flex items-center justify-between gap-4">
@@ -125,7 +139,7 @@ export function DetailSOPPenyusunHeader({
           <Button
             size="sm"
             className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-60"
-            onClick={onComplete}
+            onClick={() => setIsConfirmOpen(true)}
             disabled={isPrimaryActionPending}
           >
             <Check className="w-3.5 h-3.5" />
@@ -134,6 +148,15 @@ export function DetailSOPPenyusunHeader({
           ) : null}
         </div>
       </div>
+      <ConfirmDialog
+        open={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        title={confirmTitle}
+        description={confirmDescription}
+        confirmLabel={confirmLabel}
+        cancelLabel="Batal"
+        onConfirm={handleConfirmComplete}
+      />
       <div className="pt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
         <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">
           v{metadata.version || '1.0'}

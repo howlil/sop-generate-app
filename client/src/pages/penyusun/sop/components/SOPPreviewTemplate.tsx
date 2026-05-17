@@ -14,6 +14,7 @@ import {
   getInitialSopDetailMetadata,
   getInitialSopDetailImplementers,
 } from "@/lib/sop/detailSop.initial-state";
+import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from "./SOPDiagram/logic/sopDocumentLayout";
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata();
 const DEFAULT_PROSEDUR_ROWS: ProsedurRow[] = [];
@@ -221,7 +222,7 @@ export function SOPPreviewTemplate({
                 <div className="min-w-0 w-full overflow-x-auto px-4 lg:px-0 print:px-0">
                   {activeTab === "flowchart" ? (
                     /* Flowchart lebar tetap A4 → mx-auto pusat blok di viewport lebar */
-                    <div className="mx-auto box-border min-w-0 w-full max-w-[calc(297mm-3cm)] print:mx-auto print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)] print:my-0 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+                    <div className={`mx-auto ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
                       <SOPDiagramFlowchart
                         data={{
                           rows: prosedurRows,
@@ -234,8 +235,8 @@ export function SOPPreviewTemplate({
                       />
                     </div>
                   ) : (
-                    /* BPMN pola kolom cetak sama header (tanpa mx-auto layar) + diagram-wrapper pusat graf di dalam kolom */
-                    <div className="box-border min-w-0 w-full max-w-[calc(297mm-3cm)] print:mx-auto print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)] print:my-0 [print-color-adjust:exact] [-webkit-print-color-adjust:exact]">
+                    /* BPMN: lebar swimlane mengikuti kolom cetak yang sama dengan header */
+                    <div className={SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}>
                       <SOPDiagramBpmn
                         data={{
                           name: metadata.name,

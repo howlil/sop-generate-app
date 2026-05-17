@@ -15,14 +15,12 @@ import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
 import type {
   Pelaksana,
   SopDaftarRow,
-  SopDetail,
   StatusSOP,
 } from '@/types/dto/sop.dto'
 import type { Peraturan } from "@/types/dto/peraturan.dto";
 import type {
   CreatePelaksanaDto,
   CreateSopRequestDto,
-  DetailSopListQueryParams,
   SopListQueryParams,
   SetSopStatusOverrideMutationDto,
   CreatePelaksanaMutationDto,
@@ -97,16 +95,6 @@ export const sopApi = {
       apiClient.post<ApiSuccessResponse<SopDaftarRow>>('/sop', payload),
     ),
 
-  // ================= DetailSOP =================
-
-  findDetailAll: (params?: DetailSopListQueryParams) => {
-    const query = buildQueryString(params as Record<string, unknown> | undefined)
-    return apiClient.get<SopDetail[]>(`/detail-sop${query}`)
-  },
-
-  findDetailById: (id: string) =>
-    apiClient.get<SopDetail>(`/detail-sop/${id}`),
-
   getPenyusunWorkbench: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) => {
     const query = buildQueryString(params as Record<string, unknown> | undefined)
     return unwrapPenyusunWorkbench(
@@ -143,6 +131,9 @@ export const sopApi = {
   /**
    * PATCH status DetailSOP (`/sop/status/:id`). Param boleh detailSopId atau sopId header.
    * Mengembalikan workbench terbaru (transisi divalidasi di server).
+   *
+   * Pengajuan evaluasi batch ke Biro: gunakan `POST /evaluasi` (modul evaluation), bukan
+   * PATCH `DIAJUKAN_EVALUASI` per baris dari UI penyusun.
    */
   updateStatus: (id: string, payload: UpdateStatusDto) =>
     unwrapPenyusunWorkbench(
@@ -202,8 +193,13 @@ export const sopApi = {
  */
 
 // ==================== SOP Domain Logic ====================
+/** Status yang mengizinkan penyuntingan dokumen (selaras BUSINESS-SPEC §5.2). */
 export function canEditSop(status: StatusSOP): boolean {
-  return status === "DRAFT" || status === "REVISI_DARI_EVALUATOR";
+  return (
+    status === "DRAFT" ||
+    status === "SEDANG_DISUSUN" ||
+    status === "REVISI_DARI_EVALUATOR"
+  );
 }
 
 export function canKepalaOpdSignSop(status: string): boolean {
@@ -393,23 +389,6 @@ export function usePelaksana(opdId?: string) {
   };
 }
 
-export function useDetailSopList(params?: DetailSopListQueryParams) {
-  return useQuery({
-    queryKey: queryKeys.detailSopList(params),
-    queryFn: () => sopApi.findDetailAll(params),
-    staleTime: STALE_TIME.SHORT,
-  });
-}
-
-export function useDetailSopById(id: string) {
-  return useQuery({
-    queryKey: queryKeys.detailSopById(id),
-    queryFn: () => sopApi.findDetailById(id),
-    enabled: !!id,
-    staleTime: STALE_TIME.SHORT,
-  });
-}
-
 /**
  * GET `/sop/penyusun-workbench/:detailSopId` — agregat detail + langkah + log
  * untuk dipakai di pratinjau SOP (header + langkah). Cache key sejajar dengan
@@ -484,6 +463,7 @@ export function useDetailSopPenyusunActions({
   flushHeaderAutosave,
   flushProsedurAutosave,
 }: UseDetailSopPenyusunActionsParams) {
+  const queryClient = useQueryClient();
   const flushAll = useCallback(async () => {
     await Promise.all([flushHeaderAutosave(), flushProsedurAutosave()]);
   }, [flushHeaderAutosave, flushProsedurAutosave]);
@@ -498,6 +478,12 @@ export function useDetailSopPenyusunActions({
     ],
     successMessage: "SOP berhasil dikirim ulang ke evaluator",
     errorMessagePrefix: "Gagal mengirim ulang ke evaluator",
+    onSuccess: (data, sopOrDetailId) => {
+      queryClient.setQueryData(queryKeys.penyusunWorkbench(sopOrDetailId), data);
+      if (data.detail.id !== sopOrDetailId) {
+        queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+      }
+    },
   });
 
   const handleComplete = useCallback(
@@ -763,38 +749,6 @@ export function useDetailSopPenyusunData(
     prosedurAutosaveError: prosedurAutosave.lastError,
     canEditDetail,
   };
-}
-
-/**
- * Pure mutation hook for requesting evaluation.
- * UI state (dialog, selection) should be managed by the consuming component.
- */
-
-export function useSubmitEvaluasiRequest() {
-  return useMutationWithToast({
-    mutationFn: async (sopIds: string[]) => {
-      // Use Promise.allSettled to prevent partial state corruption
-      const results = await Promise.allSettled(
-        sopIds.map((sopId) =>
-          sopApi.updateStatus(sopId, { status: "DIAJUKAN_EVALUASI" }),
-        ),
-      );
-
-      const failed = results.filter((r) => r.status === "rejected");
-      if (failed.length > 0) {
-        const failedCount = failed.length;
-        const successCount = sopIds.length - failedCount;
-        throw new Error(
-          `${failedCount} SOP gagal diajukan (${successCount} berhasil). Periksa koneksi dan coba lagi.`,
-        );
-      }
-
-      return results;
-    },
-    invalidateKeys: [queryKeys.sop],
-    successMessage: "SOP berhasil diajukan ke evaluasi",
-    errorMessagePrefix: "Gagal mengajukan SOP",
-  });
 }
 
 export interface UseDetailSopPenyusunReturn {

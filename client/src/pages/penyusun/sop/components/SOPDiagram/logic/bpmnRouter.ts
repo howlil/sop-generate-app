@@ -34,6 +34,23 @@ export interface BpmnLaneLayout {
   lanes: LaneInfo[]
   columnStartXs: number[]
   columnWidths: number[]
+  /** Offset DOM kolom konten (judul SOP + aktor) terhadap koordinat layout. */
+  originX?: number
+  originY?: number
+}
+
+/** Geser layout kolom/lane ke ruang koordinat DOM `#bpmn-container`. */
+export function translateBpmnLaneLayoutToDom(
+  layout: BpmnLaneLayout,
+): BpmnLaneLayout {
+  const originX = layout.originX ?? 0
+  const originY = layout.originY ?? 0
+  if (originX === 0 && originY === 0) return layout
+  return {
+    ...layout,
+    columnStartXs: layout.columnStartXs.map((x) => x + originX),
+    lanes: layout.lanes.map((lane) => ({ ...lane, top: lane.top + originY })),
+  }
 }
 
 /* ── Connection metadata ──────────────────────────────────────── */

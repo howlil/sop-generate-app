@@ -3,6 +3,7 @@
  * Digabung dalam satu file karena ukuran kecil (~25–38 baris masing-masing).
  */
 import { useMemo } from 'react'
+import { BPMN_EVENT_RADIUS, BPMN_GATEWAY_HALF_SIZE } from '../../logic/bpmnDiagramMetrics'
 
 // ----- Event -----
 
@@ -24,7 +25,7 @@ export function Event({
       <circle
         cx={x}
         cy={y}
-        r={37}
+        r={BPMN_EVENT_RADIUS}
         fill="white"
         stroke="#000"
         strokeWidth="2"
@@ -34,7 +35,7 @@ export function Event({
         y={y}
         textAnchor="middle"
         dominantBaseline="middle"
-        fontSize="12"
+        fontSize="11"
         fontWeight="500"
         fill="black"
       >
@@ -53,12 +54,10 @@ interface GatewayProps {
   name?: string
 }
 
-const DIAMOND_SIZE = 40
-
 export function Gateway({ id, x = 0, y = 0 }: GatewayProps) {
   const diamondPath = useMemo(
     () =>
-      `M ${x} ${y - DIAMOND_SIZE} L ${x + DIAMOND_SIZE} ${y} L ${x} ${y + DIAMOND_SIZE} L ${x - DIAMOND_SIZE} ${y} Z`,
+      `M ${x} ${y - BPMN_GATEWAY_HALF_SIZE} L ${x + BPMN_GATEWAY_HALF_SIZE} ${y} L ${x} ${y + BPMN_GATEWAY_HALF_SIZE} L ${x - BPMN_GATEWAY_HALF_SIZE} ${y} Z`,
     [x, y]
   )
 

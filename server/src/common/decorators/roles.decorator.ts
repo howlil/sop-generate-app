@@ -8,10 +8,7 @@ export function Roles(...peran: PeranPengguna[]): ReturnType<typeof SetMetadata>
   return SetMetadata(ROLES_METADATA_KEY, peran);
 }
 
-/**
- * Gabungan guard JWT + otorisasi peran (pakai `@Roles` pada kelas/method bila perlu).
- * Menghindari pengulangan `@UseGuards(JwtAuthGuard, RolesGuard)` di setiap controller.
- */
+
 export function UseJwtAndRolesGuards(): ReturnType<typeof applyDecorators> {
   return applyDecorators(UseGuards(JwtAuthGuard, RolesGuard));
 }

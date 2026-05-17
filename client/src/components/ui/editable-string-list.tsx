@@ -3,8 +3,8 @@
  * Replaces the repeated pattern in DetailSOPMetadataPanel.
  */
 import { X } from 'lucide-react'
+import { AutoResizeTextarea } from '@/components/ui/auto-resize-textarea'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 interface EditableStringListProps {
   items: string[]
@@ -42,9 +42,11 @@ export function EditableStringList({
       </div>
       <div className="space-y-2 mt-1.5">
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2">
-            <Input
-              className="h-9 text-xs flex-1"
+          <div key={idx} className="flex items-start gap-2">
+            <AutoResizeTextarea
+              className="flex-1 min-h-9 py-1.5"
+              minRows={1}
+              maxRows={8}
               value={item}
               onChange={(e) => handleChange(idx, e.target.value)}
               placeholder={placeholder ? `${placeholder} ${idx + 1}` : undefined}
@@ -52,7 +54,7 @@ export function EditableStringList({
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 w-9 p-0 text-gray-500 hover:text-red-600"
+              className="h-9 w-9 shrink-0 p-0 text-gray-500 hover:text-red-600"
               onClick={() => handleRemove(idx)}
               title="Hapus"
             >

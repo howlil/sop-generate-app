@@ -414,12 +414,23 @@ export class SopCatalogRepository {
     status: StatusSOP;
     userId: string;
   }): Promise<void> {
-    await this.prisma.detailSOP.update({
-      where: { detailSopId: params.detailSopId },
-      data: {
-        status: params.status,
-        terakhirDieditOlehId: params.userId,
-      },
+    const { detailSopId, status, userId } = params;
+    await this.prisma.$transaction(async (tx) => {
+      await tx.detailSOP.update({
+        where: { detailSopId },
+        data: {
+          status,
+          terakhirDieditOlehId: userId,
+        },
+      });
+      await appendOrCreateLogSession({
+        tx,
+        detailSopId,
+        penggunaId: userId,
+        bagian: BagianSOP.STATUS,
+        fields: ['status'],
+        discrete: true,
+      });
     });
   }
 
@@ -439,12 +450,28 @@ export class SopCatalogRepository {
           terakhirDieditOlehId: userId,
         },
       });
+      await appendOrCreateLogSession({
+        tx,
+        detailSopId,
+        penggunaId: userId,
+        bagian: BagianSOP.STATUS,
+        fields: ['status'],
+        discrete: true,
+      });
       await tx.detailSOP.update({
         where: { detailSopId },
         data: {
           status: StatusSOP.DIAJUKAN_EVALUASI,
           terakhirDieditOlehId: userId,
         },
+      });
+      await appendOrCreateLogSession({
+        tx,
+        detailSopId,
+        penggunaId: userId,
+        bagian: BagianSOP.STATUS,
+        fields: ['status'],
+        discrete: true,
       });
     });
   }

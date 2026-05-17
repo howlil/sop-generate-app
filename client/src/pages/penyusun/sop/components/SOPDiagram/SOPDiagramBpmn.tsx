@@ -25,58 +25,21 @@ import type {
   ArrowConnectionConfig,
   LabelConfig,
 } from './logic/sopDiagramTypes'
-
-const TASK_MIN_WIDTH = 90
-const TASK_MIN_HEIGHT = 50
-const TASK_CHAR_WIDTH_APPROX = 8
-const TASK_LINE_HEIGHT_FOR_SIZING = 15
-const TASK_HORIZONTAL_PADDING = 20
-const TASK_VERTICAL_PADDING = 20
-const TASK_MAX_LINE_LENGTH_TARGET = 15
-const BASE_ROW_HEIGHT = 160
-const ROW_SPACING = 20
-const COLUMN_SPACING = 50
-const BASE_X = 10
-const RIGHT_MARGIN = 100
+import {
+  BPMN_BASE_ROW_HEIGHT,
+  BPMN_BASE_X,
+  BPMN_COLUMN_SPACING,
+  BPMN_LANE_STEP_PADDING,
+  BPMN_RIGHT_MARGIN,
+  BPMN_ROW_SPACING,
+  BPMN_TASK_MIN_HEIGHT,
+  BPMN_TASK_MIN_WIDTH,
+  getBpmnStepLayoutDimensions,
+} from './logic/bpmnDiagramMetrics'
 
 export interface ProcessedBpmnStep extends SOPStep {
   id_step: string
   seq_number: number
-}
-
-function getStepDimensions(
-  stepName: string | undefined,
-  stepType: string
-): { width: number; height: number } {
-  if (stepType !== 'task') {
-    if (stepType === 'terminator') return { width: 120, height: 60 }
-    if (stepType === 'decision') return { width: 120, height: 80 }
-    return { width: TASK_MIN_WIDTH, height: TASK_MIN_HEIGHT }
-  }
-  if (!stepName) return { width: TASK_MIN_WIDTH, height: TASK_MIN_HEIGHT }
-
-  const lines: string[] = []
-  const words = stepName.split(' ')
-  let currentLine = ''
-  for (const word of words) {
-    if (currentLine === '') {
-      currentLine = word
-    } else if (currentLine.length + 1 + word.length <= TASK_MAX_LINE_LENGTH_TARGET) {
-      currentLine += ' ' + word
-    } else {
-      lines.push(currentLine)
-      currentLine = word
-    }
-  }
-  if (currentLine !== '') lines.push(currentLine)
-  const actualLines = lines.length > 0 ? lines : [stepName]
-
-  const longestLength = actualLines.reduce((max, line) => Math.max(max, line.length), 0)
-  const requiredWidth = longestLength * TASK_CHAR_WIDTH_APPROX
-  const calculatedWidth = Math.max(TASK_MIN_WIDTH, requiredWidth + TASK_HORIZONTAL_PADDING)
-  const requiredHeight = actualLines.length * TASK_LINE_HEIGHT_FOR_SIZING
-  const calculatedHeight = Math.max(TASK_MIN_HEIGHT, requiredHeight + TASK_VERTICAL_PADDING)
-  return { width: calculatedWidth, height: calculatedHeight }
 }
 
 function capitalizeWords(s: string): string {
@@ -182,6 +145,9 @@ export function SOPDiagramBpmn({
     }>
   >([])
   const [bpmnLaneLayoutForRouter, setBpmnLaneLayoutForRouter] = useState<BpmnLaneLayout | null>(null)
+  const [layoutContentOrigin, setLayoutContentOrigin] = useState({ x: 0, y: 0 })
+  const [layoutMeasureVersion, setLayoutMeasureVersion] = useState(0)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
 
   const orderedImplementer = useMemo(() => {
     if (!implementers?.length) return []
@@ -302,29 +268,6 @@ export function SOPDiagramBpmn({
     [processedSteps]
   )
 
-  useLayoutEffect(() => {
-    const container = document.getElementById('bpmn-container')
-    if (!container) {
-      obstacleRectsRef.current = null
-      return
-    }
-    const OBSTACLE_MARGIN = 10
-    const rects = obstacles.map((o) => {
-      const el = document.getElementById(o.id)
-      if (!el) return null
-      const r = el.getBoundingClientRect()
-      const c = container.getBoundingClientRect()
-      return {
-        left: Math.round(r.left - c.left) - OBSTACLE_MARGIN,
-        top: Math.round(r.top - c.top) - OBSTACLE_MARGIN,
-        width: Math.round(r.width) + OBSTACLE_MARGIN * 2,
-        height: Math.round(r.height) + OBSTACLE_MARGIN * 2,
-      }
-    })
-    const filtered = rects.filter((r): r is NonNullable<typeof r> => r != null)
-    obstacleRectsRef.current = filtered.length > 0 ? filtered : null
-  }, [pathLayoutSeed, obstacles])
-
   const bpmnConnectionsMeta = useMemo((): BpmnConnectionMeta[] => {
     if (!laneLayouts.length) return []
     const stepMap = new Map<string, { lane: number; columnIndex: number }>()
@@ -388,7 +331,7 @@ export function SOPDiagramBpmn({
     const numLanes = Math.max(1, orderedImplementer.length)
     const stepDimensionsCache = new Map<string, { width: number; height: number }>()
     processedSteps.forEach((step) => {
-      stepDimensionsCache.set(step.id_step, getStepDimensions(step.name, step.type))
+      stepDimensionsCache.set(step.id_step, getBpmnStepLayoutDimensions(step.name, step.type))
     })
 
     const stepColumnMap = new Map<string, number>()
@@ -433,25 +376,28 @@ export function SOPDiagramBpmn({
     })
 
     const columnStartXs: number[] = []
-    let curX = BASE_X
+    let curX = BPMN_BASE_X
     for (let i = 0; i <= maxColIdx; i++) {
       columnStartXs[i] = curX
-      curX += maxColumnWidths[i] + COLUMN_SPACING
+      curX += maxColumnWidths[i] + BPMN_COLUMN_SPACING
     }
 
-    const laneMaxHeights = new Array(numLanes).fill(BASE_ROW_HEIGHT)
+    const laneMaxHeights = new Array(numLanes).fill(BPMN_BASE_ROW_HEIGHT)
     processedSteps.forEach((step) => {
       let laneIdx = orderedImplementer.findIndex((i) => i.id === step.id_implementer)
       if (laneIdx === -1) laneIdx = 0
-      const dims = stepDimensionsCache.get(step.id_step) ?? { width: TASK_MIN_WIDTH, height: TASK_MIN_HEIGHT }
-      laneMaxHeights[laneIdx] = Math.max(laneMaxHeights[laneIdx], dims.height + 60)
+      const dims = stepDimensionsCache.get(step.id_step) ?? {
+        width: BPMN_TASK_MIN_WIDTH,
+        height: BPMN_TASK_MIN_HEIGHT,
+      }
+      laneMaxHeights[laneIdx] = Math.max(laneMaxHeights[laneIdx], dims.height + BPMN_LANE_STEP_PADDING)
     })
 
     const laneYPositions: number[] = []
     let cumulativeY = 0
     for (let i = 0; i < numLanes; i++) {
       laneYPositions[i] = cumulativeY + laneMaxHeights[i] / 2
-      cumulativeY += laneMaxHeights[i] + ROW_SPACING
+      cumulativeY += laneMaxHeights[i] + BPMN_ROW_SPACING
     }
 
     const globalSteps: Array<{
@@ -472,8 +418,11 @@ export function SOPDiagramBpmn({
       let laneIdx = orderedImplementer.findIndex((i) => i.id === step.id_implementer)
       if (laneIdx === -1) laneIdx = 0
       const columnIndex = stepColumnMap.get(step.id_step) ?? 0
-      const dims = stepDimensionsCache.get(step.id_step) ?? { width: TASK_MIN_WIDTH, height: TASK_MIN_HEIGHT }
-      const colStart = columnStartXs[columnIndex] ?? BASE_X
+      const dims = stepDimensionsCache.get(step.id_step) ?? {
+        width: BPMN_TASK_MIN_WIDTH,
+        height: BPMN_TASK_MIN_HEIGHT,
+      }
+      const colStart = columnStartXs[columnIndex] ?? BPMN_BASE_X
       const colWidth = maxColumnWidths[columnIndex] ?? dims.width
       const x = colStart + colWidth / 2
       const y = laneYPositions[laneIdx]
@@ -495,7 +444,7 @@ export function SOPDiagramBpmn({
     layoutRef.current = { steps: globalSteps, columnStartXs, maxColumnWidths }
     const layouts = orderedImplementer.map((imp, index) => {
       const stepsInLane = globalSteps.filter((s) => s.lane === index)
-      const laneHeight = stepsInLane[0]?.laneHeight ?? BASE_ROW_HEIGHT
+      const laneHeight = stepsInLane[0]?.laneHeight ?? BPMN_BASE_ROW_HEIGHT
       return {
         impId: imp.id,
         height: laneHeight,
@@ -512,7 +461,7 @@ export function SOPDiagramBpmn({
       let laneTop = 0
       const lanes = layouts.map((l, i) => {
         const info = { index: i, top: laneTop, height: l.height }
-        laneTop += l.height + ROW_SPACING
+        laneTop += l.height + BPMN_ROW_SPACING
         return info
       })
       setBpmnLaneLayoutForRouter({
@@ -531,53 +480,25 @@ export function SOPDiagramBpmn({
 
   const bpmnBoundsRef = useRef<{ left: number; top: number; right: number; bottom: number } | null>(null)
 
-  useEffect(() => {
-    if (processedSteps.length > 0) {
-      setArrowsReady(false)
-      let cancelled = false
-      const run = () => {
-        requestAnimationFrame(() => {
-          if (cancelled) return
-          requestAnimationFrame(() => {
-            if (cancelled) return
-            const container = document.getElementById('bpmn-container')
-            if (container) {
-              const containerRect = container.getBoundingClientRect()
-              bpmnBoundsRef.current = {
-                left: 0,
-                top: 0,
-                right: containerRect.width,
-                bottom: containerRect.height,
-              }
-            }
-            setArrowsReady(true)
-          })
-        })
-      }
-      run()
-      return () => { cancelled = true }
-    }
-  }, [processedSteps.length])
-
   const diagramWidth = useMemo(() => {
-    if (!laneLayouts.length) return RIGHT_MARGIN + TASK_MIN_WIDTH + RIGHT_MARGIN
+    if (!laneLayouts.length) return BPMN_RIGHT_MARGIN + BPMN_TASK_MIN_WIDTH + BPMN_RIGHT_MARGIN
     const allSteps = laneLayouts.flatMap((l) => l.steps)
-    if (!allSteps.length) return RIGHT_MARGIN + TASK_MIN_WIDTH + RIGHT_MARGIN
+    if (!allSteps.length) return BPMN_RIGHT_MARGIN + BPMN_TASK_MIN_WIDTH + BPMN_RIGHT_MARGIN
     const maxX = Math.max(...allSteps.map((s) => s.x + (s.width ?? 0) / 2))
-    return maxX + RIGHT_MARGIN
+    return maxX + BPMN_RIGHT_MARGIN
   }, [laneLayouts])
 
   const totalDiagramHeight = useMemo(() => {
-    if (!laneLayouts.length) return BASE_ROW_HEIGHT
+    if (!laneLayouts.length) return BPMN_BASE_ROW_HEIGHT
     return laneLayouts.reduce(
-      (acc, l, i) => acc + l.height + (i < laneLayouts.length - 1 ? ROW_SPACING : 0),
+      (acc, l, i) => acc + l.height + (i < laneLayouts.length - 1 ? BPMN_ROW_SPACING : 0),
       0
     )
   }, [laneLayouts])
 
   /** Tinggi badan tabel swimlane (tanpa ROW_SPACING antar-baris) — dipakai agar sel judul rowSpan ikut membangun tinggi baris */
   const swimlaneTableBodyHeight = useMemo(() => {
-    if (!laneLayouts.length) return BASE_ROW_HEIGHT
+    if (!laneLayouts.length) return BPMN_BASE_ROW_HEIGHT
     return laneLayouts.reduce((sum, l) => sum + l.height, 0)
   }, [laneLayouts])
 
@@ -593,6 +514,104 @@ export function SOPDiagramBpmn({
       })()
     : 0
 
+  useEffect(() => {
+    if (processedSteps.length === 0) {
+      setArrowsReady(false)
+      return
+    }
+    setArrowsReady(false)
+    let cancelled = false
+    const run = () => {
+      requestAnimationFrame(() => {
+        if (cancelled) return
+        requestAnimationFrame(() => {
+          if (cancelled) return
+          const container = document.getElementById('bpmn-container')
+          if (container) {
+            const containerRect = container.getBoundingClientRect()
+            bpmnBoundsRef.current = {
+              left: 0,
+              top: 0,
+              right: containerRect.width,
+              bottom: containerRect.height,
+            }
+            setContainerSize({
+              width: Math.round(containerRect.width),
+              height: Math.round(containerRect.height),
+            })
+          }
+          setArrowsReady(true)
+        })
+      })
+    }
+    run()
+    return () => { cancelled = true }
+  }, [processedSteps.length, laneLayouts.length, diagramWidth, dynamicTitleWidth])
+
+  const measureLayoutContentOrigin = useCallback((): { x: number; y: number } => {
+    const container = document.getElementById('bpmn-container')
+    const firstStep = laneLayouts[0]?.steps[0]
+    if (!container || !firstStep) return { x: 0, y: 0 }
+    const el =
+      container.querySelector<SVGElement>(`#${CSS.escape(firstStep.id)}`) ??
+      document.getElementById(firstStep.id)
+    if (!el) return { x: 0, y: 0 }
+    const shapeRect = el.getBoundingClientRect()
+    const containerRect = container.getBoundingClientRect()
+    const layoutLeft = firstStep.x - (firstStep.width ?? 0) / 2
+    const layoutTop = firstStep.y - (firstStep.height ?? 0) / 2
+    return {
+      x: Math.round(shapeRect.left - containerRect.left - layoutLeft),
+      y: Math.round(shapeRect.top - containerRect.top - layoutTop),
+    }
+  }, [laneLayouts])
+
+  const routerLaneLayout = useMemo((): BpmnLaneLayout | null => {
+    if (!bpmnLaneLayoutForRouter) return null
+    return {
+      ...bpmnLaneLayoutForRouter,
+      originX: layoutContentOrigin.x,
+      originY: layoutContentOrigin.y,
+    }
+  }, [bpmnLaneLayoutForRouter, layoutContentOrigin])
+
+  useLayoutEffect(() => {
+    if (!arrowsReady) return
+    const container = document.getElementById('bpmn-container')
+    if (!container) {
+      obstacleRectsRef.current = null
+      return
+    }
+    const OBSTACLE_MARGIN = 10
+    const rects = obstacles.map((o) => {
+      const el =
+        container.querySelector<SVGElement>(`#${CSS.escape(o.id)}`) ??
+        document.getElementById(o.id)
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      const c = container.getBoundingClientRect()
+      return {
+        left: Math.round(r.left - c.left) - OBSTACLE_MARGIN,
+        top: Math.round(r.top - c.top) - OBSTACLE_MARGIN,
+        width: Math.round(r.width) + OBSTACLE_MARGIN * 2,
+        height: Math.round(r.height) + OBSTACLE_MARGIN * 2,
+      }
+    })
+    const filtered = rects.filter((r): r is NonNullable<typeof r> => r != null)
+    obstacleRectsRef.current = filtered.length > 0 ? filtered : null
+    setLayoutContentOrigin(measureLayoutContentOrigin())
+    setLayoutMeasureVersion((v) => v + 1)
+  }, [
+    pathLayoutSeed,
+    obstacles,
+    laneLayouts.length,
+    arrowsReady,
+    diagramWidth,
+    measureLayoutContentOrigin,
+  ])
+
+  const arrowRerouteVersion = pathLayoutSeed + layoutMeasureVersion
+
   const decisionTextPositions = labelConfig?.positions ?? {}
   const handleDecisionTextDrag = useCallback(
     (stepId: string, position: { x: number; y: number }) => {
@@ -606,22 +625,21 @@ export function SOPDiagramBpmn({
   const A4_LANDSCAPE_PX = 1123 /* 297mm at 96dpi */
   const printScale = Math.min(1, A4_LANDSCAPE_PX / diagramWidth)
 
-  // justify-center memusatkan blok BPMN bila lebih sempit dari kolom cetak (header pakai w-full).
   return (
     <div
-      className="diagram-wrapper print-page box-border flex w-full min-w-0 justify-center overflow-visible [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
+      className="diagram-wrapper print-page box-border w-full min-w-0 overflow-visible [print-color-adjust:exact] [-webkit-print-color-adjust:exact]"
       style={{ '-bpmn-print-scale': printScale } as React.CSSProperties}
     >
       <div
         id="bpmn-container"
-        className="diagram-container relative shrink-0 max-w-full print:origin-top-left"
+        className="diagram-container relative w-full min-w-0 print:origin-top-left"
         style={{
-          width: diagramWidth,
           minHeight: totalDiagramHeight,
+          height: totalDiagramHeight > 0 ? totalDiagramHeight : undefined,
           printColorAdjust: 'exact',
         }}
       >
-        <table className="border-2 border-black relative z-10 w-full my-5" style={{ width: diagramWidth }}>
+        <table className="border-2 border-black relative z-10 w-full table-fixed my-5">
           <tbody>
             <tr>
               {name && (
@@ -651,21 +669,18 @@ export function SOPDiagramBpmn({
               {laneLayouts.length > 0 && (
                 <>
                   <SwimlaneActorNameCell
-                    laneHeightPx={laneLayouts[0]?.height ?? BASE_ROW_HEIGHT}
+                    laneHeightPx={laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT}
                     label={orderedImplementer[0]?.name}
                   />
-                  <td className="border-2 border-black p-0 align-top">
+                  <td className="border-2 border-black p-0 align-top w-full">
                     <div
-                      className="relative overflow-x-auto"
-                      style={{
-                        height: laneLayouts[0]?.height ?? BASE_ROW_HEIGHT,
-                        width: diagramWidth,
-                      }}
+                      className="relative w-full overflow-x-auto"
+                      style={{ height: laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT }}
                     >
                       <svg
-                        className="w-full h-full block"
+                        className="block"
                         width={diagramWidth}
-                        height={laneLayouts[0]?.height ?? BASE_ROW_HEIGHT}
+                        height={laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT}
                       >
                         {(laneLayouts[0]?.steps ?? []).map((step) => (
                           <g key={step.id}>
@@ -701,13 +716,10 @@ export function SOPDiagramBpmn({
             {laneLayouts.slice(1).map((lane, index) => (
               <tr key={lane.impId}>
                 <SwimlaneActorNameCell laneHeightPx={lane.height} label={orderedImplementer[index + 1]?.name} />
-                <td className="border-2 border-black p-0 align-top">
-                  <div
-                    className="relative overflow-x-auto"
-                    style={{ height: lane.height, width: diagramWidth }}
-                  >
+                <td className="border-2 border-black p-0 align-top w-full">
+                  <div className="relative w-full overflow-x-auto" style={{ height: lane.height }}>
                     <svg
-                      className="w-full h-full block"
+                      className="block"
                       width={diagramWidth}
                       height={lane.height}
                     >
@@ -747,13 +759,12 @@ export function SOPDiagramBpmn({
         {/* Decision text overlay (per lane, positioned in global coords) */}
         {laneLayouts.length > 0 && (
           <svg
-            className={`absolute left-0 top-0 z-30 ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
-            style={{ width: diagramWidth, height: totalDiagramHeight }}
+            className={`absolute inset-0 z-30 h-full w-full ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
           >
             {laneLayouts.flatMap((lane, laneIndex) => {
               const yOffset = laneLayouts
                 .slice(0, laneIndex)
-                .reduce((a, l) => a + l.height + ROW_SPACING, 0)
+                .reduce((a, l) => a + l.height + BPMN_ROW_SPACING, 0)
               const globalY = yOffset + lane.height / 2
               return lane.steps
                 .filter((s) => s.type === 'decision')
@@ -773,27 +784,29 @@ export function SOPDiagramBpmn({
           </svg>
         )}
 
-        {arrowsReady && bpmnConnections.length > 0 && (
+        {arrowsReady && containerSize.width > 0 && bpmnConnections.length > 0 && (
           <svg
-            className="absolute inset-0 h-full z-20 pointer-events-none"
-            style={{ width: diagramWidth }}
+            className="pointer-events-none absolute left-0 top-0 z-40 overflow-visible"
+            width={containerSize.width}
+            height={containerSize.height}
           >
             {bpmnConnections.map((conn, idx) => {
               const meta = bpmnConnectionsMeta[idx]
               const hasValidLayout =
-                bpmnLaneLayoutForRouter?.lanes?.length != null && bpmnLaneLayoutForRouter.lanes.length > 0
+                routerLaneLayout?.lanes?.length != null && routerLaneLayout.lanes.length > 0
               const useBpmnConnector =
-                hasValidLayout && bpmnLaneLayoutForRouter && meta && bpmnConnectionsMeta.length === bpmnConnections.length
+                hasValidLayout && routerLaneLayout && meta && bpmnConnectionsMeta.length === bpmnConnections.length
+              const connectorKey = `${conn.id}-${arrowRerouteVersion}`
               if (useBpmnConnector) {
                 return (
                   <BpmnArrowConnector
-                    key={conn.id}
+                    key={connectorKey}
                     connection={meta}
                     idcontainer="bpmn-container"
                     idarrow={`bpmn-${idx}-${conn.id}`}
                     obstacles={obstacles}
                     usedSides={usedSides}
-                    laneLayout={bpmnLaneLayoutForRouter}
+                    laneLayout={routerLaneLayout}
                     connectionIndex={idx}
                     allConnectionsMeta={bpmnConnectionsMeta}
                     manualConfig={effectiveArrowConfig[conn.id]}
@@ -801,14 +814,14 @@ export function SOPDiagramBpmn({
                     onPathUpdated={onPathUpdated}
                     constraintRect={bpmnBoundsRef.current}
                     routedSegmentsRef={routedSegmentsRef}
-                    rerouteVersion={pathLayoutSeed}
+                    rerouteVersion={arrowRerouteVersion}
                     obstacleRectsRef={obstacleRectsRef}
                   />
                 )
               }
               return (
                 <FlowchartArrowConnector
-                  key={conn.id}
+                  key={connectorKey}
                   connection={conn}
                   idcontainer="bpmn-container"
                   idarrow={`bpmn-${idx}-${conn.id}`}

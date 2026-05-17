@@ -521,6 +521,40 @@ describe('SopCatalogService', () => {
       );
     });
 
+    it('should_return_workbench_with_logEdit_after_header_patch', async () => {
+      const logTime = new Date('2026-04-01T09:00:00.000Z');
+      repoMock.findWorkbenchPayloadByDetailOrSopId
+        .mockResolvedValueOnce(baseWorkbenchPayload())
+        .mockResolvedValueOnce(
+          baseWorkbenchPayload({
+            logEditSop: [
+              {
+                detailSopId: 'det-up',
+                penggunaId: 'p1',
+                createdAt: logTime,
+                bagian: 'HEADER',
+                targetEntityId: null,
+                keterangan: 'Header SOP: Judul SOP',
+                sesiChangeCount: 1,
+                closedAt: null,
+                updatedAt: logTime,
+                domainFields: [{ domainField: 'judul' }],
+                pengguna: {
+                  penggunaId: 'p1',
+                  nama: 'Budi',
+                  email: 'budi@x',
+                  peran: PeranPengguna.PENYUSUN,
+                },
+              },
+            ],
+          }),
+        );
+      const dto: UpdateSopHeaderDto = { judul: 'Judul Baru' };
+      const actual = await service.updatePenyusunHeader(user, 'det-up', dto);
+      expect(actual.logEdit.length).toBeGreaterThan(0);
+      expect(actual.logEdit[0]?.meta?.fields).toContain('judul');
+    });
+
     it('should_update_nomor_and_namaLembaga_on_detail_when_provided', async () => {
       const dto: UpdateSopHeaderDto = {
         nomorSOP: '042/2026',
@@ -586,10 +620,10 @@ describe('SopCatalogService', () => {
             },
           }),
           changedFields: expect.arrayContaining([
-            'lampiran.peringatan',
-            'lampiran.kualifikasiPelaksanaan',
-            'lampiran.peralatanPerlengkapan',
-            'lampiran.pencatatanPendataan',
+            'peringatan',
+            'kualifikasiPelaksanaan',
+            'peralatanPerlengkapan',
+            'pencatatanPendataan',
           ]),
         }),
       );

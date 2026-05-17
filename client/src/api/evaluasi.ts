@@ -982,52 +982,6 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
 }
 
 /**
- * useEvaluasiSopByOpd hook - Fetch SOPs for evaluation by OPD
- */
-
-import { useDetailSopList } from "@/api/sop";
-import type { StatusSOP } from "@/types/dto/sop.dto";
-import type { SopDetail } from "@/types/dto/sop.dto";
-
-/** Status that indicate SOP is in evaluation workflow (server enum values) */
-const EVALUASI_STATUS: StatusSOP[] = [
-  "DIAJUKAN_EVALUASI",
-  "SEDANG_DIEVALUASI",
-  "SIAP_DIVERIFIKASI",
-  "REVISI_DARI_EVALUATOR",
-];
-
-/**
- * Hook to fetch SOPs that need evaluation for a specific OPD.
- * Combines detail SOP list with evaluation pengajuan data.
- */
-export function useEvaluasiSopByOpd(opdId: string) {
-  const { data: sopDetails = [], isLoading: isLoadingSop } = useDetailSopList({
-    opdId,
-  });
-  const { list: pengajuanList = [], isLoading: isLoadingEvaluasi } =
-    useEvaluasi();
-
-  /** Find pengajuan that matches this OPD */
-  const pengajuanOpd = useMemo(() => {
-    return pengajuanList.find((p) => p.opdId === opdId);
-  }, [pengajuanList, opdId]);
-
-  /** Filter SOPs that are in evaluation workflow */
-  const sopList = useMemo(() => {
-    return (sopDetails as SopDetail[]).filter((sop: SopDetail) =>
-      EVALUASI_STATUS.includes(sop.status),
-    );
-  }, [sopDetails]);
-
-  return {
-    sopList,
-    pengajuan: pengajuanOpd ?? null,
-    isLoading: isLoadingSop || isLoadingEvaluasi,
-  };
-}
-
-/**
  * Interface for evaluation history entry
  */
 export interface RiwayatEvaluasiEntry {

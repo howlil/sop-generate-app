@@ -508,10 +508,10 @@ export class SopCatalogService {
     if (dto.namaLembaga !== undefined) out.push('namaLembaga');
     if (dto.dasarHukumPeraturanIds !== undefined) out.push('dasarHukumPeraturanIds');
     if (dto.sopTerkaitDetailIds !== undefined) out.push('sopTerkaitDetailIds');
-    if (dto.lampiran?.peringatan !== undefined) out.push('lampiran.peringatan');
-    if (dto.lampiran?.kualifikasiPelaksanaan !== undefined) out.push('lampiran.kualifikasiPelaksanaan');
-    if (dto.lampiran?.peralatanPerlengkapan !== undefined) out.push('lampiran.peralatanPerlengkapan');
-    if (dto.lampiran?.pencatatanPendataan !== undefined) out.push('lampiran.pencatatanPendataan');
+    if (dto.lampiran?.peringatan !== undefined) out.push('peringatan');
+    if (dto.lampiran?.kualifikasiPelaksanaan !== undefined) out.push('kualifikasiPelaksanaan');
+    if (dto.lampiran?.peralatanPerlengkapan !== undefined) out.push('peralatanPerlengkapan');
+    if (dto.lampiran?.pencatatanPendataan !== undefined) out.push('pencatatanPendataan');
     return out;
   }
 

@@ -194,12 +194,6 @@ export interface SopListQueryParams {
   tanggalSampai?: string;
 }
 
-export interface DetailSopListQueryParams {
-  sopId?: string;
-  opdId?: string;
-  status?: string;
-}
-
 /** Payload POST `/sop` — opdId & pembuat di-set server dari JWT. */
 export interface CreateSopRequest {
   judul: string;

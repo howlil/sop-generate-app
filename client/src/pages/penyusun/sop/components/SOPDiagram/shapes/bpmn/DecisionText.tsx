@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from 'react'
+import {
+  DIAGRAM_CHAR_WIDTH_APPROX,
+  DIAGRAM_MAX_SHAPE_WIDTH,
+  wrapDiagramText,
+} from '../../logic/wrapDiagramText'
 
-const MAX_CHARS_PER_LINE = 15
 const LINE_HEIGHT = 14
 
 export interface BpmnDecisionTextProps {
@@ -12,25 +16,6 @@ export interface BpmnDecisionTextProps {
   customPosition?: { x: number; y: number } | null
   editMode?: boolean
   onPositionChanged?: (stepId: string, position: { x: number; y: number }) => void
-}
-
-function splitTextToLines(text: string): string[] {
-  if (!text) return ['']
-  const words = text.split(' ')
-  const lines: string[] = []
-  let currentLine = ''
-  for (const word of words) {
-    if (currentLine === '') {
-      currentLine = word
-    } else if ((currentLine + ' ' + word).length <= MAX_CHARS_PER_LINE) {
-      currentLine += ' ' + word
-    } else {
-      lines.push(currentLine)
-      currentLine = word
-    }
-  }
-  if (currentLine !== '') lines.push(currentLine)
-  return lines.length > 0 ? lines : ['']
 }
 
 export function BpmnDecisionText({
@@ -46,7 +31,7 @@ export function BpmnDecisionText({
   const [isDragging, setIsDragging] = useState(false)
   const lastPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
 
-  const textLines = splitTextToLines(stepName)
+  const textLines = wrapDiagramText(stepName)
   const defaultPos = { x, y }
   const effectivePosition = isDragging && dragPosition
     ? dragPosition
@@ -87,7 +72,10 @@ export function BpmnDecisionText({
   const totalTextHeight = textLines.length * LINE_HEIGHT
   const clickAreaHeight = Math.max(30, totalTextHeight + 10)
   const longestLine = textLines.reduce((a, b) => (a.length >= b.length ? a : b), '')
-  const clickAreaWidth = Math.max(80, longestLine.length * 8 + 20)
+  const clickAreaWidth = Math.min(
+    DIAGRAM_MAX_SHAPE_WIDTH,
+    Math.max(80, longestLine.length * DIAGRAM_CHAR_WIDTH_APPROX + 20),
+  )
 
   return (
     <g>

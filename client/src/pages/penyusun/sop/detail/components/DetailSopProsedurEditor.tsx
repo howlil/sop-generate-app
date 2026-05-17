@@ -15,6 +15,10 @@ import {
 } from './ProsedurEditorCells'
 import { DecisionStepDialog } from './DecisionStepDialog'
 import type { ProsedurRow } from '@/types/ui/sop'
+import {
+  formatProsedurValidationMessage,
+  validateProsedurRows,
+} from '@/lib/sop/validateProsedurRows'
 
 export interface DetailSOPProsedurEditorProps {
   prosedurRows: ProsedurRow[]
@@ -66,6 +70,15 @@ export function DetailSOPProsedurEditor({
       return
     }
     handleAddRow(index, implementers)
+  }
+
+  const handleDone = () => {
+    const validation = validateProsedurRows(prosedurRows, implementers.length)
+    if (!validation.valid) {
+      showToast(formatProsedurValidationMessage(validation.errors), 'error')
+      return
+    }
+    onDone()
   }
 
   return (
@@ -204,7 +217,7 @@ export function DetailSOPProsedurEditor({
           variant="default"
           size="sm"
           className="h-7 text-[11px] px-2"
-          onClick={onDone}
+          onClick={handleDone}
         >
           Selesai edit
         </Button>

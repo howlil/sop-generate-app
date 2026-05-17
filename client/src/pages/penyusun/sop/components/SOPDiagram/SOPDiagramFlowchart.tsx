@@ -23,6 +23,7 @@ import {
   getOpcShapesForPage,
   type OpcPair,
 } from './logic/flowchartPagination'
+import { SOP_DOCUMENT_PAGE_WIDTH_CLASS } from './logic/sopDocumentLayout'
 
 /* ───────────────────────── Defaults ─────────────────────────── */
 
@@ -37,7 +38,7 @@ const DEFAULT_LAYOUT = {
 }
 
 /** Lebar tetap A4 content agar konsisten (path/arrow tidak berubah saat resize); scroll horizontal jika viewport sempit */
-const PAGE_WIDTH_CLASS = 'w-[calc(297mm-3cm)] min-w-[calc(297mm-3cm)] print:w-[calc(297mm-3cm)] print:min-w-[calc(297mm-3cm)] print:max-w-[calc(297mm-3cm)]'
+const PAGE_WIDTH_CLASS = SOP_DOCUMENT_PAGE_WIDTH_CLASS
 
 /* ───────────────────────── Props ─────────────────────────── */
 

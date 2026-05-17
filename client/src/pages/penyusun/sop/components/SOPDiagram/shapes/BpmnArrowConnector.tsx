@@ -6,6 +6,7 @@ import {
   scorePath,
   bpmnPathToSegments,
   bpmnPathHitsObstacle,
+  translateBpmnLaneLayoutToDom,
   type BpmnConnectionMeta,
   type BpmnLaneLayout,
   type UsedSides,
@@ -61,17 +62,39 @@ type ElemPos = {
 }
 
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
-  const el = document.getElementById(elementId)
+  const el =
+    container.querySelector<SVGElement>(`#${CSS.escape(elementId)}`) ??
+    document.getElementById(elementId)
   if (!el) return null
-  const r = el.getBoundingClientRect()
-  const c = container.getBoundingClientRect()
+  const containerRect = container.getBoundingClientRect()
+  if (el instanceof SVGGraphicsElement) {
+    const bbox = el.getBBox()
+    const ctm = el.getScreenCTM()
+    if (ctm) {
+      const topLeft = new DOMPoint(bbox.x, bbox.y).matrixTransform(ctm)
+      const bottomRight = new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(ctm)
+      const left = Math.round(topLeft.x - containerRect.left)
+      const top = Math.round(topLeft.y - containerRect.top)
+      const right = Math.round(bottomRight.x - containerRect.left)
+      const bottom = Math.round(bottomRight.y - containerRect.top)
+      return {
+        left,
+        top,
+        width: Math.max(1, right - left),
+        height: Math.max(1, bottom - top),
+        right,
+        bottom,
+      }
+    }
+  }
+  const shapeRect = el.getBoundingClientRect()
   return {
-    left: Math.round(r.left - c.left),
-    top: Math.round(r.top - c.top),
-    width: Math.round(r.width),
-    height: Math.round(r.height),
-    right: Math.round(r.right - c.left),
-    bottom: Math.round(r.bottom - c.top),
+    left: Math.round(shapeRect.left - containerRect.left),
+    top: Math.round(shapeRect.top - containerRect.top),
+    width: Math.round(shapeRect.width),
+    height: Math.round(shapeRect.height),
+    right: Math.round(shapeRect.right - containerRect.left),
+    bottom: Math.round(shapeRect.bottom - containerRect.top),
   }
 }
 
@@ -299,20 +322,23 @@ export function BpmnArrowConnector({
     const distB = anchorDistance(toSlotIndex)
 
     const hasValidLayout = curLayout?.lanes != null && curLayout.lanes.length > 0
+    const domLayout = hasValidLayout && curLayout
+      ? translateBpmnLaneLayoutToDom(curLayout)
+      : null
 
     let bestPath: { x: number; y: number }[] | null = null
     let bestSides: [Side, Side] | null = null
     let bestScore = Infinity
 
     for (const [sSide, eSide] of sidePairs.slice(0, MAX_SIDE_PAIRS)) {
-      const path = hasValidLayout
+      const path = domLayout
         ? routeBpmn({
         fromShape, toShape,
         fromSide: sSide, toSide: eSide,
         fromDistance: distA, toDistance: distB,
         fromIsDiamond: connection.sourceType === 'flowchart-decision',
         toIsDiamond: connection.targetType === 'flowchart-decision',
-        layout: curLayout,
+        layout: domLayout,
         fromLane: connection.fromLane,
         toLane: connection.toLane,
         fromCol: connection.fromCol,
@@ -338,18 +364,21 @@ export function BpmnArrowConnector({
       }
     }
 
-    // Jangan pakai garis lurus center-to-center jika ada obstacle: path akan menembus shape.
     if (!bestPath || !bestSides) {
-      if (obsRects.length > 0) {
-        setPathData('')
-        setLabelPos(null)
-        return
-      }
       const [sSide, eSide] = sidePairs[0] ?? ['right', 'left']
-      bestPath = [
-        { x: fromPos.left + fromPos.width / 2, y: fromPos.top + fromPos.height / 2 },
-        { x: toPos.left + toPos.width / 2, y: toPos.top + toPos.height / 2 },
-      ]
+      const startCenter = {
+        x: fromPos.left + fromPos.width / 2,
+        y: fromPos.top + fromPos.height / 2,
+      }
+      const endCenter = {
+        x: toPos.left + toPos.width / 2,
+        y: toPos.top + toPos.height / 2,
+      }
+      const fallback =
+        Math.abs(startCenter.x - endCenter.x) > 8
+          ? [startCenter, { x: endCenter.x, y: startCenter.y }, endCenter]
+          : [startCenter, { x: startCenter.x, y: endCenter.y }, endCenter]
+      bestPath = fallback
       bestSides = [sSide, eSide]
     }
 

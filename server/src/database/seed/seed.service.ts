@@ -296,7 +296,7 @@ export class SeedService {
         penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
       });
 
-      // 12. PengajuanEvaluasi & NilaiEvaluasi — mencakup SEMUA 6 StatusPengajuanEvaluasi
+      // 12. PengajuanEvaluasi & NilaiEvaluasi — 6 baris seed untuk seluruh 5 nilai StatusPengajuanEvaluasi (dua baris SEDANG_DIEVALUASI)
       const pe = await this.seedPengajuanDanNilaiEvaluasi(tx, {
         d,
         opdDinkesId: opdDinkes.opdId,
@@ -335,7 +335,7 @@ export class SeedService {
         'Seed selesai.',
         'Cakupan: 4 OPD, 12 pengguna (semua PeranPengguna),',
         '4 peraturan, 13 DetailSOP (semua 11 StatusSOP),',
-        '6 PengajuanEvaluasi (semua 6 StatusPengajuanEvaluasi),',
+        '6 baris PengajuanEvaluasi (5 nilai StatusPengajuanEvaluasi di enum; dua baris memakai SEDANG_DIEVALUASI),',
         'semua SatuanWaktu, JenisLangkahProsedur, BagianSOP,',
         'JenisDokumenTte, StatusKomentar, HasilEvaluasi.',
         'Invariant jabatan OPD: Pengguna.opdId + peran (+ deletedAt); lihat layanan core/pengguna & opd.',

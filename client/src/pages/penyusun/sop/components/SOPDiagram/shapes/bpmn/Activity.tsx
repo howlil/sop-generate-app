@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
+import {
+  DIAGRAM_LINE_HEIGHT,
+  measureDiagramTextBox,
+  wrapDiagramText,
+} from '../../logic/wrapDiagramText'
 
-const MAX_LINE_LENGTH_TARGET = 15
-const CHAR_WIDTH_APPROX = 8
-const LINE_HEIGHT = 15
-const HORIZONTAL_PADDING = 20
-const VERTICAL_PADDING = 20
+const LINE_HEIGHT = DIAGRAM_LINE_HEIGHT
 
 interface ActivityProps {
   id?: string
@@ -19,41 +20,20 @@ export function Activity({
   id,
   x = 0,
   y = 0,
-  width = 120,
-  height = 60,
+  width = 80,
+  height = 40,
   name = '',
 }: ActivityProps) {
-  const textLines = useMemo(() => {
-    if (!name) return [] as string[]
-    const lines: string[] = []
-    const words = name.split(' ')
-    let currentLine = ''
-    for (const word of words) {
-      if (currentLine === '') {
-        currentLine = word
-      } else if (currentLine.length + 1 + word.length <= MAX_LINE_LENGTH_TARGET) {
-        currentLine += ` ${word}`
-      } else {
-        lines.push(currentLine)
-        currentLine = word
-      }
-    }
-    if (currentLine !== '') lines.push(currentLine)
-    return lines.length > 0 ? lines : [name]
-  }, [name])
+  const textLines = useMemo(() => wrapDiagramText(name ?? ''), [name])
 
-  const computedWidth = useMemo(() => {
-    if (textLines.length === 0) return width
-    const longestLineLength = textLines.reduce((max, line) => Math.max(max, line.length), 0)
-    const requiredTextWidth = longestLineLength * CHAR_WIDTH_APPROX
-    return Math.max(width, requiredTextWidth + HORIZONTAL_PADDING)
-  }, [textLines, width])
-
-  const computedHeight = useMemo(() => {
-    if (textLines.length === 0) return height
-    const requiredTextHeight = textLines.length * LINE_HEIGHT
-    return Math.max(height, requiredTextHeight + VERTICAL_PADDING)
-  }, [height, textLines])
+  const { computedWidth, computedHeight } = useMemo(() => {
+    const measured = measureDiagramTextBox({
+      lines: textLines,
+      minWidth: width,
+      minHeight: height,
+    })
+    return { computedWidth: measured.width, computedHeight: measured.height }
+  }, [textLines, width, height])
 
   const firstTspanDy = useMemo(() => {
     if (textLines.length <= 1) return -((textLines.length - 1) * LINE_HEIGHT) / 2

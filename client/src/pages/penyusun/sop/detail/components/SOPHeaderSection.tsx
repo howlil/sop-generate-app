@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Building2, FileText, Hash, ShieldAlert, Users, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { AutoResizeTextarea } from '@/components/ui/auto-resize-textarea'
 import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
 import { Textarea } from '@/components/ui/textarea'
@@ -140,8 +141,10 @@ export function SOPHeaderSection({
             {isReadOnly ? (
               <ReadOnlyTextBlock value={sopName} placeholder="Belum ada nama SOP." />
             ) : (
-              <Input
-                className={cn('h-9 text-xs', roInput)}
+              <AutoResizeTextarea
+                className={cn('text-xs min-h-9 py-1.5', roInput)}
+                minRows={1}
+                maxRows={8}
                 readOnly={isReadOnly}
                 disabled={isReadOnly}
                 value={sopName}

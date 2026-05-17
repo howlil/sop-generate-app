@@ -38,10 +38,8 @@ export const queryKeys = {
   /** GET `/sop/penyusun-workbench/:detailSopId` — agregat detail + langkah + log */
   penyusunWorkbench: (detailSopId: string) => ['sop', 'penyusunWorkbench', detailSopId] as const,
 
-  // Detail SOP
+  /** Prefix invalidasi cache detail SOP (mis. setelah TTE / status). */
   detailSop: ['detailSop'] as const,
-  detailSopList: (params?: { sopId?: string; opdId?: string; status?: string }) => ['detailSop', 'list', params] as const,
-  detailSopById: (id: string) => ['detailSop', 'byId', id] as const,
 
   // Pelaksana
   pelaksana: ['pelaksana'] as const,
