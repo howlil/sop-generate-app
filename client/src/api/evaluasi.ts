@@ -8,6 +8,8 @@
  */
 
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { unwrapApiData } from '@/lib/api/response'
+import { mapEvaluasiShellToLegacyPengajuan } from '@/lib/evaluasi/evaluasi-mappers'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   BeritaAcaraEvaluasiView,
@@ -30,81 +32,42 @@ import type {
   SelesaiEvaluasiDto,
   SelesaiEvaluasiMutationDto,
   StatusHasilEvaluasi,
+  UmpanBalikEvaluasiDetail,
 } from '@/types/dto/evaluasi.dto'
-import { STATUS_HASIL_EVALUASI, buildNilaiEvaluasiClientId } from '@/types/dto/evaluasi.dto'
+import { STATUS_HASIL_EVALUASI } from '@/types/dto/evaluasi.dto'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { queryKeys } from '@/config/query-keys'
 import { STALE_TIME } from '@/utils/constants'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
 import { useToast, showErrorMessages } from '@/hooks/useToast'
+
+export { mapEvaluasiShellToLegacyPengajuan } from '@/lib/evaluasi/evaluasi-mappers'
+export {
+  buildAjukanEvaluasiSnapshotRows,
+  getAjukanEvaluasiBlockingReason,
+  hasHasilEvaluasiTersimpan,
+  getStatusSopAfterEvaluasi,
+  getKirimUlangBlockingReason,
+  canKirimUlangSetelahRevisi,
+  isFormEvaluasiSopComplete,
+  type AjukanEvaluasiSnapshotRow,
+  type StatusHasilEvaluasiForm,
+} from '@/lib/evaluasi/evaluasi-domain'
 
 async function unwrapEvaluasiWorkspaceOpd(
   promise: Promise<ApiSuccessResponse<EvaluasiWorkspaceOpdResponse>>,
 ): Promise<EvaluasiWorkspaceOpdResponse> {
-  const envelope = await promise
-  return envelope.data
+  return unwrapApiData(promise)
 }
 
 async function unwrapEvaluasiEnvelope<T>(
   promise: Promise<ApiSuccessResponse<T>>,
 ): Promise<T> {
-  const envelope = await promise
-  return envelope.data
+  return unwrapApiData(promise)
 }
 
 /** Memetakan shell GET `/evaluasi/pengajuan/:id` → bentuk `PengajuanEvaluasi` untuk komponen eksisting. */
-export function mapEvaluasiShellToLegacyPengajuan(shell: PengajuanEvaluasiShell): PengajuanEvaluasi {
-  return {
-    id: shell.id,
-    opdId: shell.opdId,
-    opdNama: shell.opdNama,
-    jenis: shell.jenis as PengajuanEvaluasi["jenis"],
-    status: shell.status as PengajuanEvaluasi["status"],
-    nomorBA: shell.nomorBA,
-    tanggalPermintaan: shell.tanggalPermintaan,
-    tanggalEvaluasi: shell.tanggalEvaluasi,
-    tanggalVerifikasi: shell.tanggalVerifikasi ?? null,
-    nilaiOPD: shell.nilaiOPD,
-    diverifikasiOlehUserId: shell.diverifikasiOlehUserId,
-    namaPjEvaluator: shell.namaPjEvaluator,
-    ditandatanganiOlehPjPenyusunUserId: shell.ditandatanganiOlehPjPenyusunUserId,
-    namaPjPenyusun: shell.namaPjPenyusun,
-    tanggalTTDBaPjPenyusun: shell.tanggalTTDBaPjPenyusun,
-    diselesaikanOlehId: shell.diselesaikanOlehId,
-    diselesaikanOleh: shell.diselesaikanOleh,
-    opd: shell.opd,
-    timEvaluasi: shell.timEvaluasi,
-    tanggalDiselesaikan: shell.tanggalDiselesaikan,
-    nilaiEvaluasi: shell.nilaiEvaluasi,
-    sopList: shell.sopItems.map((item) => ({
-      id: buildNilaiEvaluasiClientId(shell.id, item.detailSopId),
-      sopDetailId: item.detailSopId,
-      judul: item.judul,
-      nomor: item.nomorSOP,
-      nama: item.judul,
-      nomorSOP: item.nomorSOP,
-      status: item.statusDetailSop,
-      hasil: item.hasilEvaluasi as StatusHasilEvaluasi | undefined,
-    })),
-    riwayatEvaluasi: shell.timelineNilai.map((t) => ({
-      id: t.id,
-      sopDetailId: t.sopDetailId,
-      evaluatorId: t.evaluatorId,
-      evaluatorNama: t.evaluatorNama,
-      hasilSebelum: t.hasilSebelum,
-      hasilSesudah: t.hasilSesudah,
-      catatanSebelum: t.catatanSebelum,
-      catatanSesudah: t.catatanSesudah,
-      createdAt: t.createdAt,
-    })),
-    version: shell.version,
-    createdAt: shell.createdAt,
-    updatedAt: shell.updatedAt,
-  }
-}
-
 /** Bentuk query string GET `/evaluasi` (termasuk `statusIn` berulang). */
 function appendEvaluasiListQuery(searchParams: URLSearchParams, params: EvaluasiListQueryParams): void {
   if (params.opdId !== undefined) searchParams.set('opdId', params.opdId)
@@ -199,6 +162,20 @@ export const evaluasiApi = {
       ),
     ),
 
+  getUmpanBalikEvaluasi: (detailSopId: string) =>
+    unwrapEvaluasiEnvelope(
+      apiClient.get<ApiSuccessResponse<UmpanBalikEvaluasiDetail | null>>(
+        `/evaluasi/umpan-balik/detail/${detailSopId}`,
+      ),
+    ),
+
+  tandaiTindakLanjutSelesai: (pengajuanEvaluasiId: string, detailSopId: string) =>
+    unwrapEvaluasiEnvelope(
+      apiClient.patch<ApiSuccessResponse<NilaiEvaluasi>>(
+        `/evaluasi/${pengajuanEvaluasiId}/nilai/${detailSopId}/tindak-lanjut-selesai`,
+      ),
+    ),
+
   selesai: (
     pengajuanEvaluasiId: string,
     payload: SelesaiEvaluasiDto,
@@ -228,6 +205,14 @@ export const evaluasiApi = {
       ),
     ),
 
+  /** GET `/evaluasi/workspace/opd-saya` — OPD dari JWT (PJ Penyusun / Kepala OPD). */
+  workspaceOpdSaya: (params?: EvaluasiWorkspaceQueryParams) =>
+    unwrapEvaluasiWorkspaceOpd(
+      apiClient.get<ApiSuccessResponse<EvaluasiWorkspaceOpdResponse>>(
+        `/evaluasi/workspace/opd-saya${buildQueryString(params as Record<string, unknown> | undefined)}`,
+      ),
+    ),
+
   workspacePengajuan: (pengajuanEvaluasiId: string, params?: EvaluasiWorkspaceQueryParams) =>
     unwrapEvaluasiWorkspaceOpd(
       apiClient.get<ApiSuccessResponse<EvaluasiWorkspaceOpdResponse>>(
@@ -243,102 +228,36 @@ export const evaluasiApi = {
     ),
 }
 
-// ==================== Evaluasi Domain Logic ====================
-export interface StatusHasilEvaluasiForm {
-  hasil: StatusHasilEvaluasi;
-  catatan: string;
+/** Umpan balik evaluasi aktif untuk panel penyusun (alur revisi). */
+export function useUmpanBalikEvaluasi(detailSopId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.evaluasiUmpanBalik(detailSopId ?? ''),
+    queryFn: () => evaluasiApi.getUmpanBalikEvaluasi(detailSopId as string),
+    enabled: Boolean(detailSopId) && enabled,
+    staleTime: STALE_TIME.SHORT,
+  })
 }
 
-export function getStatusSopAfterEvaluasi(hasil: StatusHasilEvaluasi): string {
-  if (hasil === "SESUAI") {
-    return "SIAP_DIVERIFIKASI";
-  }
-  return "REVISI_DARI_EVALUATOR";
+export function useTandaiTindakLanjutSelesai(detailSopId: string | undefined) {
+  return useMutationWithToast({
+    mutationFn: ({
+      pengajuanEvaluasiId,
+      detailSopId: detailId,
+    }: {
+      pengajuanEvaluasiId: string
+      detailSopId: string
+    }) => evaluasiApi.tandaiTindakLanjutSelesai(pengajuanEvaluasiId, detailId),
+    invalidateKeys: [
+      queryKeys.evaluasiUmpanBalik(detailSopId ?? ''),
+      queryKeys.evaluasiWorkspaceOpdAll,
+      queryKeys.evaluasiWorkspacePengajuanAll,
+      queryKeys.penyusunWorkbench(detailSopId ?? ''),
+    ],
+    successMessage: 'Umpan balik evaluasi ditandai selesai',
+    errorMessagePrefix: 'Gagal menandai tindak lanjut',
+  })
 }
 
-export function isFormEvaluasiSopComplete(
-  form: StatusHasilEvaluasiForm,
-): boolean {
-  return !!form.hasil && (form.hasil as string) !== "";
-}
-
-/** Satu baris ringkasan untuk dialog ajukan ke PJ (merge draft SOP terpilih). */
-export interface AjukanEvaluasiSnapshotRow {
-  readonly detailSopId: string;
-  readonly judul: string;
-  readonly nomorSOP: string;
-  readonly hasilLabel: string;
-}
-
-/** Alasan tombol ajukan dinonaktifkan; `null` berarti syarat klien terpenuhi. */
-export function getAjukanEvaluasiBlockingReason(
-  pengajuan: EvaluasiWorkspacePengajuanAktif | null | undefined,
-  ratingOPD: number | null,
-  selectedDetailId: string | null | undefined,
-  draftHasil: StatusHasilEvaluasi | null | undefined,
-): string | null {
-  if (!pengajuan) {
-    return "Tidak ada pengajuan evaluasi aktif untuk OPD ini.";
-  }
-  const wajibSkorOpd = pengajuan.jenis !== "MANDIRI";
-  if (
-    wajibSkorOpd &&
-    (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5)
-  ) {
-    return "Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.";
-  }
-  if (pengajuan.nilaiPerDetail.length === 0) {
-    return "Pengajuan belum memiliki daftar dokumen untuk dinilai.";
-  }
-  let jumlahBelumSesuai = 0;
-  for (const row of pengajuan.nilaiPerDetail) {
-    const effectiveHasil =
-      selectedDetailId === row.detailSopId &&
-      draftHasil !== null &&
-      draftHasil !== undefined
-        ? draftHasil
-        : row.hasil;
-    if (effectiveHasil !== STATUS_HASIL_EVALUASI.SESUAI) {
-      jumlahBelumSesuai += 1;
-    }
-  }
-  if (jumlahBelumSesuai > 0) {
-    return `Masih ada ${jumlahBelumSesuai} SOP yang belum bernilai Sesuai (simpan per dokumen, tunggu konfirmasi simpan) sebelum mengajukan hasil ke PJ Evaluator.`;
-  }
-  return null;
-}
-
-export function buildAjukanEvaluasiSnapshotRows(
-  pengajuan: EvaluasiWorkspacePengajuanAktif | null | undefined,
-  judulByDetailId: Map<string, { judul: string; nomorSOP: string }>,
-  selectedDetailId: string | null | undefined,
-  draftHasil: StatusHasilEvaluasi | null | undefined,
-): AjukanEvaluasiSnapshotRow[] {
-  if (!pengajuan) {
-    return [];
-  }
-  return pengajuan.nilaiPerDetail.map((row) => {
-    const meta = judulByDetailId.get(row.detailSopId);
-    const effectiveHasil =
-      selectedDetailId === row.detailSopId &&
-      draftHasil !== null &&
-      draftHasil !== undefined
-        ? draftHasil
-        : row.hasil;
-    let hasilLabel = "Belum dinilai";
-    if (effectiveHasil === STATUS_HASIL_EVALUASI.SESUAI) {
-      hasilLabel = "Sesuai";
-    } else if (effectiveHasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN) {
-      hasilLabel = "Perlu Perbaikan";
-    }
-    return {
-      detailSopId: row.detailSopId,
-      judul: meta?.judul ?? row.detailSopId.slice(0, 8) + "…",
-      nomorSOP: meta?.nomorSOP ?? "—",
-      hasilLabel,
-    };
-  });
-}
 
 // ==================== Evaluasi Hooks ====================
 export function useEvaluasi(params?: EvaluasiListQueryParams & { enabled?: boolean }) {
@@ -375,6 +294,7 @@ export function useEvaluasi(params?: EvaluasiListQueryParams & { enabled?: boole
       queryKeys.evaluasi,
       queryKeys.evaluasiRingkasAll,
       queryKeys.evaluasiWorkspaceOpdAll,
+      queryKeys.evaluasiWorkspaceOpdSayaAll,
       queryKeys.evaluasiWorkspacePengajuanAll,
     ],
     successMessage: "Pengajuan evaluasi berhasil dibuat",
@@ -404,6 +324,26 @@ export const STATUS_PENGAJUAN_SIAP_TTD_PJ_EVALUATOR = [
 export const STATUS_RIWAYAT_FINAL_EVALUASI = [
   "SELESAI",
 ] as const satisfies readonly PengajuanEvaluasi["status"][];
+
+/** Halaman Berita Acara PJ Penyusun — tab Perlu TTE. */
+export const STATUS_BERITA_ACARA_PERLU_TTE = [
+  "DIVERIFIKASI_PJ_EVALUATOR",
+] as const satisfies readonly PengajuanEvaluasi["status"][];
+
+/** Halaman Berita Acara PJ Penyusun — tab Riwayat. */
+export const STATUS_BERITA_ACARA_RIWAYAT = [
+  "DITANDATANGANI_PJ_PENYUSUN",
+  "SELESAI",
+] as const satisfies readonly PengajuanEvaluasi["status"][];
+
+/** Semua status yang ditampilkan di halaman Berita Acara PJ Penyusun. */
+export const STATUS_BERITA_ACARA_SEMUA = [
+  ...STATUS_BERITA_ACARA_PERLU_TTE,
+  ...STATUS_BERITA_ACARA_RIWAYAT,
+] as const satisfies readonly PengajuanEvaluasi["status"][];
+
+const BERITA_ACARA_PERLU_TTE_SET = new Set<string>(STATUS_BERITA_ACARA_PERLU_TTE);
+const BERITA_ACARA_RIWAYAT_SET = new Set<string>(STATUS_BERITA_ACARA_RIWAYAT);
 
 const KEPALA_OPD_PENDING_SIGN_STATUSES: readonly PengajuanEvaluasi["status"][] = [
   "DITANDATANGANI_PJ_PENYUSUN",
@@ -443,6 +383,53 @@ export function useKepalaOpdPengajuan(opdId?: string) {
     isLoading,
     error,
   };
+}
+
+export interface BeritaAcaraPjPenyusunBuckets {
+  perluTindakan: PengajuanEvaluasi[];
+  riwayat: PengajuanEvaluasi[];
+}
+
+/** Daftar Berita Acara PJ Penyusun — tab Perlu TTE vs Riwayat (satu fetch, bucket di client). */
+export function useBeritaAcaraPjPenyusun() {
+  const { list, isLoading, error } = useEvaluasi({
+    statusIn: [...STATUS_BERITA_ACARA_SEMUA],
+  });
+
+  const buckets = useMemo<BeritaAcaraPjPenyusunBuckets>(() => {
+    const perluTindakan = list.filter((item) =>
+      BERITA_ACARA_PERLU_TTE_SET.has(item.status),
+    );
+    const riwayat = list.filter((item) => BERITA_ACARA_RIWAYAT_SET.has(item.status));
+    return { perluTindakan, riwayat };
+  }, [list]);
+
+  return {
+    ...buckets,
+    isLoading,
+    error,
+  };
+}
+
+/** Workspace OPD pengguna (GET `/evaluasi/workspace/opd-saya`) — dialog buka pengajuan PJ Penyusun. */
+export function useEvaluasiWorkspaceOpdSaya(
+  params?: EvaluasiWorkspaceQueryParams & { enabled?: boolean },
+) {
+  const enabled = params?.enabled ?? true;
+  const queryParams: EvaluasiWorkspaceQueryParams | undefined =
+    params === undefined
+      ? undefined
+      : {
+          detailSopId: params.detailSopId,
+          expand: params.expand,
+          riwayatLimit: params.riwayatLimit,
+        };
+  return useQuery({
+    queryKey: queryKeys.evaluasiWorkspaceOpdSaya(queryParams),
+    queryFn: () => evaluasiApi.workspaceOpdSaya(queryParams),
+    enabled,
+    staleTime: STALE_TIME.SHORT,
+  });
 }
 
 /** Workspace evaluasi per OPD - satu GET agregat untuk halaman evaluator dan dialog PJ penyusun. */
@@ -651,6 +638,8 @@ export function useEvaluasiDraft(
   opdId?: string,
   sopId?: string,
   workspacePengajuanAktif?: EvaluasiWorkspacePengajuanAktif | null,
+  readOnly = false,
+  tahapPenilaian?: import('@/lib/evaluasi/evaluasi-domain').TahapPenilaianSop,
 ): UseEvaluasiDraftReturn {
   const {
     pengajuanId,
@@ -689,13 +678,20 @@ export function useEvaluasiDraft(
     existingNilai?.catatan ?? "",
   );
 
-  useEffect(() => {
-    setStatusEvaluasiState(existingNilai?.hasil ?? null);
-    setKomentarEvaluasiState(existingNilai?.catatan ?? "");
-  }, [existingNilai?.hasil, existingNilai?.catatan, sopDetailId]);
-
+  const isTinjauanUlang = tahapPenilaian === 'tinjauan_ulang';
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSubmittedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (isTinjauanUlang) {
+      setStatusEvaluasiState(null);
+      setKomentarEvaluasiState('');
+      lastSubmittedRef.current = null;
+      return;
+    }
+    setStatusEvaluasiState(existingNilai?.hasil ?? null);
+    setKomentarEvaluasiState(existingNilai?.catatan ?? '');
+  }, [existingNilai?.hasil, existingNilai?.catatan, sopDetailId, isTinjauanUlang]);
 
   // Clear timer on unmount
   useEffect(() => {
@@ -745,6 +741,9 @@ export function useEvaluasiDraft(
 
   /** Trigger auto-save with debounce */
   const triggerAutoSave = useCallback(() => {
+    if (readOnly) {
+      return;
+    }
     if (!pengajuanId || !sopDetailId || isLoadingPengajuan) {
       return;
     }
@@ -757,8 +756,12 @@ export function useEvaluasiDraft(
     }
 
     // Hindari autosave bila tidak ada perubahan dibanding server state.
-    const existingHasil = existingNilai?.hasil ?? null;
-    const existingCatatan = (existingNilai?.catatan ?? '').trim();
+    const existingHasil = isTinjauanUlang
+      ? null
+      : (existingNilai?.hasil ?? null);
+    const existingCatatan = isTinjauanUlang
+      ? ''
+      : (existingNilai?.catatan ?? '').trim();
     if (
       statusEvaluasi === existingHasil &&
       komentarEvaluasi.trim() === existingCatatan
@@ -791,6 +794,7 @@ export function useEvaluasiDraft(
       });
     }, AUTO_SAVE_DELAY_MS);
   }, [
+    readOnly,
     pengajuanId,
     sopDetailId,
     isLoadingPengajuan,
@@ -800,6 +804,7 @@ export function useEvaluasiDraft(
     existingNilai?.hasil,
     existingNilai?.catatan,
     getCurrentVersion,
+    isTinjauanUlang,
   ]);
 
   const setStatusEvaluasi = useCallback(
@@ -822,6 +827,9 @@ export function useEvaluasiDraft(
 
   /** Manual save - immediate, no debounce */
   const saveDraft = useCallback(() => {
+    if (readOnly) {
+      return;
+    }
     if (!pengajuanId || !sopDetailId || statusEvaluasi == null) {
       return;
     }
@@ -839,6 +847,7 @@ export function useEvaluasiDraft(
       komentar: komentarEvaluasi,
     });
   }, [
+    readOnly,
     pengajuanId,
     sopDetailId,
     statusEvaluasi,
@@ -867,23 +876,13 @@ export function useEvaluasiDraft(
  * useEvaluasiSubmit — menyelesaikan pengajuan (PATCH selesai) setelah semua SOP SESUAI di server.
  */
 
-interface LastEvaluatedEntry {
-  date: string;
-  evaluatorName: string;
-}
-
 interface UseEvaluasiSubmitConfig {
   pengajuanAktifId: string | undefined;
   ratingOPD: number | null;
   /** false untuk pengajuan MANDIRI — PATCH selesai tanpa nilaiOPD. */
   requiresNilaiOpd: boolean;
-  detailIdsInPengajuan: readonly string[];
   canSubmit: boolean;
   blockingMessage: string | null;
-  namaEvaluator: string;
-  setLastEvaluatedBy: Dispatch<
-    SetStateAction<Record<string, LastEvaluatedEntry>>
-  >;
   onSuccess?: () => void;
 }
 
@@ -892,11 +891,8 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
     pengajuanAktifId,
     ratingOPD,
     requiresNilaiOpd,
-    detailIdsInPengajuan,
     canSubmit,
     blockingMessage,
-    namaEvaluator,
-    setLastEvaluatedBy,
     onSuccess,
   } = config;
   const { showToast } = useToast();
@@ -932,14 +928,6 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
         ? { nilaiOPD: ratingOPD! }
         : {};
       await evaluasiApi.selesai(pengajuanAktifId, payload);
-      const now = new Date().toISOString();
-      setLastEvaluatedBy((prev: Record<string, LastEvaluatedEntry>) => {
-        const next = { ...prev };
-        for (const id of detailIdsInPengajuan) {
-          next[id] = { date: now, evaluatorName: namaEvaluator };
-        }
-        return next;
-      });
       await queryClient.invalidateQueries({
         queryKey: queryKeys.evaluasiWorkspaceOpdAll,
       });
@@ -963,11 +951,8 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
     pengajuanAktifId,
     ratingOPD,
     requiresNilaiOpd,
-    detailIdsInPengajuan,
     canSubmit,
     blockingMessage,
-    namaEvaluator,
-    setLastEvaluatedBy,
     queryClient,
     showToast,
     onSuccess,
@@ -1066,6 +1051,7 @@ export interface UsePengajuanEvaluasiAktifReturn {
   pengajuan: {
     id: string;
     status: string;
+    statusLabel: string;
     jenis: JenisPengajuanEvaluasi;
     nilaiEvaluasi: NilaiEvaluasi[];
   } | null;
@@ -1118,13 +1104,17 @@ export function usePengajuanEvaluasiAktif(
       return {
         id: p.id,
         status: p.status,
+        statusLabel: p.statusLabel,
         jenis: p.jenis,
         nilaiEvaluasi: p.nilaiPerDetail.map(
           (n): NilaiEvaluasi => ({
             id: `ws-${n.detailSopId}`,
             pengajuanEvaluasiId: p.id,
             sopDetailId: n.detailSopId,
-            hasil: n.hasil ?? undefined,
+            hasil:
+              n.hasil === "SESUAI" || n.hasil === "PERLU_PERBAIKAN"
+                ? n.hasil
+                : undefined,
             catatan: n.catatan ?? undefined,
             version: n.version,
             createdAt: "",
@@ -1136,7 +1126,17 @@ export function usePengajuanEvaluasiAktif(
     if (!pengajuanList || pengajuanList.length === 0) {
       return null;
     }
-    return pickPengajuanAktifUntukEvaluator(pengajuanList);
+    const picked = pickPengajuanAktifUntukEvaluator(pengajuanList);
+    if (!picked) {
+      return null;
+    }
+    return {
+      id: picked.id,
+      status: picked.status,
+      statusLabel: picked.statusLabel ?? picked.status,
+      jenis: picked.jenis,
+      nilaiEvaluasi: picked.nilaiEvaluasi ?? [],
+    };
   }, [fromWorkspace, workspacePengajuanAktif, pengajuanList]);
 
   const getCurrentVersion = (detailId: string): number => {
@@ -1153,6 +1153,7 @@ export function usePengajuanEvaluasiAktif(
       ? {
           id: activePengajuan.id,
           status: activePengajuan.status,
+          statusLabel: activePengajuan.statusLabel,
           jenis: activePengajuan.jenis ?? "TERJADWAL",
           nilaiEvaluasi: activePengajuan.nilaiEvaluasi ?? [],
         }

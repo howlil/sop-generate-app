@@ -1,13 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { TTDElektronikPage } from '@/pages/pj-evaluator/tte/TTDElektronikPage'
-import { requireRoles } from '@/stores/authStore'
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { ROUTES } from "@/utils/constants";
 
-export const Route = createFileRoute('/penyusun/pj-penyusun/tte/')({
-  beforeLoad: requireRoles(['PJ_PENYUSUN']),
-  component: PjPenyusunTtePage,
-})
-
-function PjPenyusunTtePage() {
-  return <TTDElektronikPage role="pj-penyusun" />
-}
-
+export const Route = createFileRoute("/penyusun/pj-penyusun/tte/")({
+  beforeLoad: () => {
+    throw redirect({ to: ROUTES.PENYUSUN.ME });
+  },
+});

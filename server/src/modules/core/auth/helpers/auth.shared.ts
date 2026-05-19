@@ -78,6 +78,11 @@ export function buildClearAccessTokenCookieOptions(isProduction: boolean): Pick<
   };
 }
 
+export type PublicPenggunaTteStatus = {
+  readonly configured: boolean;
+  readonly pinSetAt?: string;
+};
+
 export type PublicPengguna = {
   readonly penggunaId: string;
   readonly email: string;
@@ -88,6 +93,7 @@ export type PublicPengguna = {
   readonly jabatan: string;
   readonly pangkat: string;
   readonly nohp: string;
+  readonly tte: PublicPenggunaTteStatus;
 };
 
 export type { JwtAccessPayload };

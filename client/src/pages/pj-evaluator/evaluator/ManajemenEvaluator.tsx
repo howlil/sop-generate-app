@@ -17,23 +17,16 @@ import type { EvaluatorAnggota, StatusTim } from '@/types/dto/tim.dto'
 import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { formatDateId } from '@/utils/format-date'
+import { hasRequiredStringFields } from '@/lib/forms/validation'
 
-const createFormValid = (f: {
-  namaLengkap: string
-  nip: string
-  jabatan: string
-  pangkat: string
-  email: string
-  nohp: string
-}): boolean =>
-  Boolean(
-    f.namaLengkap.trim() &&
-      f.nip.trim() &&
-      f.jabatan.trim() &&
-      f.pangkat.trim() &&
-      f.email.trim() &&
-      f.nohp.trim(),
-  )
+const REQUIRED_EVALUATOR_FIELDS = [
+  'namaLengkap',
+  'nip',
+  'jabatan',
+  'pangkat',
+  'email',
+  'nohp',
+] as const
 
 export function ManajemenEvaluator() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -71,6 +64,7 @@ export function ManajemenEvaluator() {
     nohp: '',
     status: 'AKTIF',
   })
+  const isFormValid = hasRequiredStringFields(formData, REQUIRED_EVALUATOR_FIELDS)
 
   const openEditDialog = (tim: EvaluatorAnggota) => {
     const u = tim.user
@@ -110,7 +104,7 @@ export function ManajemenEvaluator() {
   }
 
   const handleCreateSubmit = async () => {
-    if (!createFormValid(formData)) return
+    if (!isFormValid) return
     try {
       await tambah({
         email: formData.email.trim(),
@@ -129,7 +123,7 @@ export function ManajemenEvaluator() {
 
   const handleEditSubmit = async () => {
     if (!editingAnggotaId) return
-    if (!formData.namaLengkap.trim() || !formData.nip.trim()) return
+    if (!isFormValid) return
     try {
       await update({
         id: editingAnggotaId,
@@ -262,7 +256,7 @@ export function ManajemenEvaluator() {
         confirmLabel={isAdding ? 'Menyimpan...' : 'Simpan'}
         cancelLabel="Batal"
         onConfirm={handleCreateSubmit}
-        confirmDisabled={!createFormValid(formData) || isAdding}
+        confirmDisabled={!isFormValid || isAdding}
         size="md"
       >
         <div className="space-y-3">
@@ -325,7 +319,7 @@ export function ManajemenEvaluator() {
         confirmLabel={isUpdating ? 'Menyimpan...' : 'Simpan Perubahan'}
         cancelLabel="Batal"
         onConfirm={handleEditSubmit}
-        confirmDisabled={!formData.namaLengkap || !formData.nip || isUpdating}
+        confirmDisabled={!isFormValid || isUpdating}
         size="md"
       >
         <div className="space-y-3">

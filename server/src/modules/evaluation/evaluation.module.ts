@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { AuthModule } from '../core/auth/auth.module';
 import { SopCatalogModule } from '../sop/sop-catalog/sop-catalog.module';
-import { SopCommentModule } from '../sop/sop-comment/sop-comment.module';
 import { EvaluasiNilaiController } from './evaluasi-nilai.controller';
+import { EvaluasiUmpanBalikController } from './evaluasi-umpan-balik.controller';
+import { EvaluasiUmpanBalikService } from './evaluasi-umpan-balik.service';
 import { EvaluasiNilaiRepository } from './evaluasi-nilai.repository';
 import { EvaluasiNilaiService } from './evaluasi-nilai.service';
 import { EvaluasiWorkspaceController } from './evaluasi-workspace.controller';
@@ -19,12 +20,13 @@ import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
 
 @Module({
-  imports: [AuthModule, SopCatalogModule, SopCommentModule],
+  imports: [AuthModule, forwardRef(() => SopCatalogModule)],
   controllers: [
     EvaluasiWorkspaceController,
     PengajuanEvaluasiController,
     PengajuanEvaluasiDetailController,
     EvaluasiNilaiController,
+    EvaluasiUmpanBalikController,
     EvaluasiGrafikController,
   ],
   providers: [
@@ -36,8 +38,10 @@ import { PengajuanEvaluasiService } from './pengajuan-evaluasi.service';
     PengajuanEvaluasiDetailService,
     EvaluasiNilaiService,
     EvaluasiNilaiRepository,
+    EvaluasiUmpanBalikService,
     EvaluasiGrafikService,
     EvaluasiGrafikRepository,
   ],
+  exports: [EvaluasiNilaiService, EvaluasiNilaiRepository],
 })
 export class EvaluationModule {}

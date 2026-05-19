@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import {
+  NILAI_OPD_SKOR_MAX,
+  NILAI_OPD_SKOR_MIN,
+} from './nilai-opd-skor.constants';
 
 /** Satu baris agregasi SQL per tahun × OPD. */
 export type EvaluasiGrafikAggRow = {
@@ -60,7 +64,14 @@ export class EvaluasiGrafikRepository {
           p.opdId AS opdId,
           o.nama AS opdNama,
           CAST(COUNT(*) AS UNSIGNED) AS jumlahEvaluasi,
-          AVG(p.nilaiOPD) AS rataRataSkor
+          AVG(
+            CASE
+              WHEN p.nilaiOPD IS NOT NULL
+                AND p.nilaiOPD >= ${NILAI_OPD_SKOR_MIN}
+                AND p.nilaiOPD <= ${NILAI_OPD_SKOR_MAX}
+              THEN p.nilaiOPD
+            END
+          ) AS rataRataSkor
         FROM PengajuanEvaluasi p
         INNER JOIN OPD o ON o.opdId = p.opdId AND o.deletedAt IS NULL
         WHERE p.status IN (${STATUS_SELESAI_SQL_IN})

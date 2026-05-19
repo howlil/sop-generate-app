@@ -59,6 +59,7 @@ export function transformSopDetailToMetadata(detail: SopDetail): SOPDetailMetada
       .filter((j) => j.length > 0) ?? [];
   return {
     id: detail.id,
+    sopId: detail.sopId,
     nomorSOP: detail.nomorSOP,
     nama: detail.sop?.judul ?? "",
     judul: detail.sop?.judul,
@@ -69,6 +70,8 @@ export function transformSopDetailToMetadata(detail: SopDetail): SOPDetailMetada
     tanggalEfektif: detail.tanggalEfektif ?? "",
     tanggalRevisi: detail.tanggalRevisi ?? "",
     version: detail.versi,
+    revisiDariDetailSopId: detail.revisiDariDetailSopId ?? null,
+    revisiDariVersi: detail.revisiDariVersi ?? null,
     picName: detail.kepalaOpd?.nama?.trim() ?? "",
     picNumber: detail.kepalaOpd?.nip?.trim() ?? "",
     lawBasis: lawBasisLabels,

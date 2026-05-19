@@ -1,4 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  NILAI_OPD_SKOR_MAX,
+  NILAI_OPD_SKOR_MIN,
+} from '../nilai-opd-skor.constants';
 
 /** Statistik evaluasi satu OPD dalam satu tahun kalender. */
 export class EvaluasiGrafikTahunanPerOpdDto {
@@ -13,7 +17,7 @@ export class EvaluasiGrafikTahunanPerOpdDto {
 
   @ApiPropertyOptional({
     nullable: true,
-    description: 'Rata-rata nilaiOPD pengajuan pada tahun ini; null jika tidak ada nilai',
+    description: `Rata-rata nilaiOPD valid (${NILAI_OPD_SKOR_MIN}–${NILAI_OPD_SKOR_MAX}) pada tahun ini; null jika tidak ada nilai`,
   })
   readonly rataRataSkor!: number | null;
 }

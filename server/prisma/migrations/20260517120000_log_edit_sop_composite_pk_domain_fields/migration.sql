@@ -36,6 +36,7 @@ WHERE l.`meta` IS NOT NULL
   AND JSON_LENGTH(JSON_EXTRACT(l.`meta`, '$.fields')) > 0;
 
 ALTER TABLE `LogEditSOP` DROP FOREIGN KEY `LogEditSOP_userId_fkey`;
+ALTER TABLE `LogEditSOP` DROP FOREIGN KEY `LogEditSOP_detailSopId_fkey`;
 
 DROP INDEX `LogEditSOP_detailSopId_userId_bagian_closedAt_idx` ON `LogEditSOP`;
 DROP INDEX `LogEditSOP_detailSopId_createdAt_idx` ON `LogEditSOP`;
@@ -54,6 +55,8 @@ ALTER TABLE `LogEditSOP` ADD PRIMARY KEY (`detailSopId`, `penggunaId`, `createdA
 
 CREATE INDEX `LogEditSOP_detailSopId_penggunaId_bagian_closedAt_idx` ON `LogEditSOP`(`detailSopId`, `penggunaId`, `bagian`, `closedAt`);
 CREATE INDEX `LogEditSOP_detailSopId_createdAt_idx` ON `LogEditSOP`(`detailSopId`, `createdAt`);
+
+ALTER TABLE `LogEditSOP` ADD CONSTRAINT `LogEditSOP_detailSopId_fkey` FOREIGN KEY (`detailSopId`) REFERENCES `DetailSOP`(`detailSopId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `LogEditSOP` ADD CONSTRAINT `LogEditSOP_penggunaId_fkey` FOREIGN KEY (`penggunaId`) REFERENCES `Pengguna`(`penggunaId`) ON DELETE RESTRICT ON UPDATE CASCADE;
 

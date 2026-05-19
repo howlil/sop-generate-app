@@ -73,6 +73,16 @@ export class SopProsedurRepository {
     return { detailSopId: latest, sopOpdId: header.opdId };
   }
 
+  async findDetailStatus(
+    detailSopId: string,
+  ): Promise<import('../../../generated/prisma').StatusSOP | null> {
+    const row = await this.prisma.detailSOP.findUnique({
+      where: { detailSopId },
+      select: { status: true },
+    });
+    return row?.status ?? null;
+  }
+
   async findOpdIdByPenggunaId(penggunaId: string): Promise<string | null> {
     const row = await this.prisma.pengguna.findFirst({
       where: { penggunaId, deletedAt: null },

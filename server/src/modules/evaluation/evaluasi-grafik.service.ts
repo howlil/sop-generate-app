@@ -3,6 +3,7 @@ import type { EvaluasiGrafikAggRow, EvaluasiGrafikOpdAktifRow } from './evaluasi
 import { EvaluasiGrafikRepository } from './evaluasi-grafik.repository';
 import { EvaluasiGrafikTahunanQueryDto } from './dto/evaluasi-grafik-tahunan-query.dto';
 import type { EvaluasiGrafikTahunanResponseDto } from './dto/evaluasi-grafik-tahunan-response.dto';
+import { isNilaiOpdSkorValid } from './nilai-opd-skor.constants';
 
 /** Membulatkan skor ke dua angka di belakang koma (konsisten dengan tampilan KPI). */
 function roundSkor(n: number): number {
@@ -14,7 +15,7 @@ function toSkorDariDb(v: unknown): number | null {
     return null;
   }
   const n = typeof v === 'number' ? v : Number(v);
-  if (!Number.isFinite(n)) {
+  if (!Number.isFinite(n) || !isNilaiOpdSkorValid(Math.round(n))) {
     return null;
   }
   return roundSkor(n);

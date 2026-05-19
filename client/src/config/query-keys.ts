@@ -29,6 +29,7 @@ export const queryKeys = {
 
   // SOP
   sop: ['sop'] as const,
+  sopRiwayatVersi: (sopId: string) => ['sop', 'riwayat-versi', sopId] as const,
   sopList: (params?: {
     opdId?: string
     status?: string
@@ -56,7 +57,7 @@ export const queryKeys = {
 
   /** Manajemen penyusun Biro (GET /api/v1/penyusun — grup per OPD) */
   penyusun: ['penyusun'] as const,
-  penyusunGrup: () => ['penyusun', 'grup', 'v1'] as const,
+  penyusunGrup: (search?: string) => ['penyusun', 'grup', 'v1', search ?? ''] as const,
   penyusunRiwayatOpd: (penggunaId: string) =>
     ['penyusun', 'riwayatOpd', penggunaId] as const,
 
@@ -94,6 +95,10 @@ export const queryKeys = {
     ['evaluasi', 'grafikTahunan', params ?? {}] as const,
   /** GET `/evaluasi/workspace/opd/:opdId` — invalidate seluruh subtree dengan prefix ini setelah mutasi nilai */
   evaluasiWorkspaceOpdAll: ['evaluasi', 'workspaceOpd'] as const,
+  evaluasiWorkspaceOpdSayaAll: ['evaluasi', 'workspaceOpdSaya'] as const,
+  evaluasiWorkspaceOpdSaya: (
+    params?: { detailSopId?: string; expand?: string; riwayatLimit?: number },
+  ) => ['evaluasi', 'workspaceOpdSaya', params ?? {}] as const,
   evaluasiWorkspaceOpd: (
     opdId: string,
     params?: { detailSopId?: string; expand?: string; riwayatLimit?: number },
@@ -116,6 +121,10 @@ export const queryKeys = {
   ttePengesahanPublic: (dokumenTteId: string, userId: string) =>
     ['tte', 'pengesahan-public', dokumenTteId, userId] as const,
 
-  /** Komentar SOP (evaluator → penyusun). */
+  /** Komentar SOP (kolaborasi fase penyusunan). */
   sopKomentar: (detailSopId: string) => ['sop', 'komentar', detailSopId] as const,
+
+  /** GET `/evaluasi/umpan-balik/detail/:detailSopId` */
+  evaluasiUmpanBalik: (detailSopId: string) =>
+    ['evaluasi', 'umpan-balik', detailSopId] as const,
 }

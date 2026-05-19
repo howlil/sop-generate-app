@@ -12,6 +12,11 @@ export interface ApiSuccessResponse<T> {
   data: T;
 }
 
+export interface PublicPenggunaTteStatus {
+  configured: boolean;
+  pinSetAt?: string;
+}
+
 /** Payload `data` dari POST /auth/login (mirror server PublicPengguna) */
 export interface PublicPenggunaLoginData {
   penggunaId: string;
@@ -23,6 +28,7 @@ export interface PublicPenggunaLoginData {
   jabatan: string;
   pangkat: string;
   nohp: string;
+  tte: PublicPenggunaTteStatus;
 }
 
 export type LoginApiResponse = ApiSuccessResponse<PublicPenggunaLoginData>;

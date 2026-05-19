@@ -14,6 +14,9 @@ import type { Pelaksana } from "@/types/dto/sop.dto";
 import { usePelaksana } from "@/api/sop";
 import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/useToast";
+import { hasRequiredStringFields } from "@/lib/forms/validation";
+
+const REQUIRED_PELAKSANA_FIELDS = ["namaPelaksana"] as const;
 
 export function PelaksanaSOP() {
   const { showToast } = useToast();
@@ -23,6 +26,25 @@ export function PelaksanaSOP() {
 
   // Validate user has OPD assigned
   const userOpdId = user?.opdId;
+
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Pelaksana | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    namaPelaksana: "",
+  });
+  const isFormValid = hasRequiredStringFields(formData, REQUIRED_PELAKSANA_FIELDS);
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredList = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter((item) =>
+      String(item.namaPelaksana ?? "")
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [list, searchQuery]);
 
   if (!userOpdId) {
     return (
@@ -40,24 +62,6 @@ export function PelaksanaSOP() {
     );
   }
 
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Pelaksana | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    namaPelaksana: "",
-  });
-  const [searchQuery, setSearchQuery] = useState("");
-  const filteredList = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter((item) =>
-      String(item.namaPelaksana ?? "")
-        .toLowerCase()
-        .includes(q),
-    );
-  }, [list, searchQuery]);
-
   const openEdit = (p: Pelaksana) => {
     setEditing(p);
     setFormData({
@@ -74,7 +78,7 @@ export function PelaksanaSOP() {
   };
 
   const handleCreate = async () => {
-    if (!formData.namaPelaksana.trim()) {
+    if (!isFormValid) {
       showToast("Nama pelaksana wajib diisi", "error");
       return;
     }
@@ -92,7 +96,7 @@ export function PelaksanaSOP() {
 
   const handleEdit = async () => {
     if (!editing) return;
-    if (!formData.namaPelaksana.trim()) {
+    if (!isFormValid) {
       showToast("Nama pelaksana wajib diisi", "error");
       return;
     }
@@ -205,7 +209,7 @@ export function PelaksanaSOP() {
         confirmLabel="Simpan"
         cancelLabel="Batal"
         onConfirm={handleCreate}
-        confirmDisabled={!formData.namaPelaksana.trim()}
+        confirmDisabled={!isFormValid}
         size="lg"
       >
         <FormField label="Nama Pelaksana" required>
@@ -228,7 +232,7 @@ export function PelaksanaSOP() {
         confirmLabel="Simpan Perubahan"
         cancelLabel="Batal"
         onConfirm={handleEdit}
-        confirmDisabled={!formData.namaPelaksana.trim()}
+        confirmDisabled={!isFormValid}
         size="lg"
       >
         <FormField label="Nama Pelaksana" required>

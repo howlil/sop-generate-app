@@ -4,6 +4,7 @@ import {
   SatuanWaktu,
 } from '../../../generated/prisma';
 import type { PrismaService } from '../../../common/prisma/prisma.service';
+import { buildLogSummary } from '../sop-collaboration/log-edit-session.helper';
 import { SopProsedurRepository } from './sop-prosedur.repository';
 
 interface CallLog {
@@ -48,6 +49,10 @@ function makeTx(existingLangkahIds: string[]): {
       create: record('logEditSOP', 'create'),
       update: record('logEditSOP', 'update'),
       updateMany: record('logEditSOP', 'updateMany'),
+    },
+    logEditSopDomainField: {
+      deleteMany: record('logEditSopDomainField', 'deleteMany'),
+      createMany: record('logEditSopDomainField', 'createMany'),
     },
   };
   return { tx, calls };
@@ -169,8 +174,23 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     });
     const logCreate = calls.find((c) => c.table === 'logEditSOP' && c.op === 'create');
     expect(logCreate).toBeDefined();
-    const data = (logCreate!.args as { data: { bagian: BagianSOP; meta: unknown } }).data;
+    type LogCreateData = {
+      bagian: BagianSOP;
+      sesiChangeCount: number;
+      keterangan: string;
+      closedAt: Date | null;
+      domainFields: { create: Array<{ domainField: string }> };
+    };
+    const data = (logCreate!.args as { data: LogCreateData }).data;
     expect(data.bagian).toBe(BagianSOP.LANGKAH);
-    expect(data.meta).toMatchObject({ fields: ['pelaksana'], count: 1 });
+    expect(data.sesiChangeCount).toBe(1);
+    expect(data.closedAt).toBeNull();
+    expect(data.keterangan).toBe(
+      buildLogSummary(BagianSOP.LANGKAH, { fields: ['pelaksana'], count: 1 }),
+    );
+    expect(data.domainFields.create).toEqual([{ domainField: 'pelaksana' }]);
+    expect(
+      calls.some((c) => c.table === 'logEditSOP' && c.op === 'findFirst'),
+    ).toBe(true);
   });
 });

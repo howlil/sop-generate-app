@@ -36,7 +36,7 @@ export class PengajuanEvaluasiDetailController {
   @ApiOperation({
     summary: 'Dokumen SOP lengkap dalam konteks pengajuan evaluasi',
     description:
-      'Workbench penyusun (detail + langkah + log) hanya untuk DetailSOP yang termasuk pengajuan. Mencegah akses dokumen luar batch dengan menebak UUID.',
+      'Workbench penyusun (detail + langkah + log) hanya untuk DetailSOP yang termasuk pengajuan. Mencegah akses dokumen luar pengajuan evaluasi dengan menebak UUID.',
   })
   @ApiParam({ name: 'pengajuanId', format: 'uuid' })
   @ApiParam({ name: 'detailSopId', format: 'uuid' })
@@ -108,7 +108,7 @@ export class PengajuanEvaluasiDetailController {
   @ApiOperation({
     summary: 'Shell pengajuan evaluasi (ringkas)',
     description:
-      'Metadata pengajuan, daftar SOP dalam batch, nilai per baris, dan timeline tanpa isi dokumen besar.',
+      'Metadata pengajuan, daftar SOP dalam pengajuan evaluasi, nilai per baris, dan timeline tanpa isi dokumen besar.',
   })
   @ApiParam({ name: 'pengajuanId', format: 'uuid' })
   @ApiResponse({ status: 200, type: PengajuanEvaluasiShellDto })

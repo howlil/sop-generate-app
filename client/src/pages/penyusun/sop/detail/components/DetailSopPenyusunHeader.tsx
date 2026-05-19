@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { AlertTriangle, Check, CloudOff, CloudUpload, Printer, RefreshCcw, Save } from 'lucide-react'
+import { AlertTriangle, Check, CloudOff, CloudUpload, GitBranchPlus, Printer, RefreshCcw, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { SopStatusBadge } from '@/components/status/sop-status-badge'
 import { cn } from '@/utils/cn'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
@@ -12,6 +12,7 @@ import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
 export interface DetailSOPPenyusunHeaderProps {
   metadata: SOPDetailMetadata
   currentSopStatus: StatusSOP
+  currentSopStatusLabel: string
   isRevisionFlow: boolean
   primaryActionLabel: string
   /**
@@ -27,6 +28,13 @@ export interface DetailSOPPenyusunHeaderProps {
   isPrimaryActionPending?: boolean
   /** Mode lihat: sembunyikan autosave, Selesai, dan retry. */
   isReadOnly?: boolean
+  /** Pesan blokir kirim ulang (tindak lanjut belum SELESAI). */
+  kirimUlangBlockingReason?: string | null
+  /** Tampilkan tombol buat versi baru dari BERLAKU. */
+  canBuatVersiBaru?: boolean
+  buatVersiBaruBlockingReason?: string | null
+  onBuatVersiBaru?: () => void
+  isBuatVersiBaruPending?: boolean
 }
 
 interface AutosaveBadgeAppearance {
@@ -70,6 +78,7 @@ function autosaveAppearance(status: SopHeaderAutosaveStatus): AutosaveBadgeAppea
 export function DetailSOPPenyusunHeader({
   metadata,
   currentSopStatus,
+  currentSopStatusLabel,
   isRevisionFlow,
   primaryActionLabel,
   autosaveStatus = 'idle',
@@ -78,6 +87,11 @@ export function DetailSOPPenyusunHeader({
   onPrint,
   isPrimaryActionPending = false,
   isReadOnly = false,
+  kirimUlangBlockingReason = null,
+  canBuatVersiBaru = false,
+  buatVersiBaruBlockingReason = null,
+  onBuatVersiBaru,
+  isBuatVersiBaruPending = false,
 }: DetailSOPPenyusunHeaderProps) {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const indicator = isReadOnly ? null : autosaveAppearance(autosaveStatus)
@@ -85,7 +99,8 @@ export function DetailSOPPenyusunHeader({
     ? 'Kirim ulang ke evaluator?'
     : 'Yakin SOP sudah siap?'
   const confirmDescription = isRevisionFlow
-    ? 'SOP akan langsung diajukan kembali ke evaluator tanpa langkah tambahan di Manajemen SOP. Pastikan semua revisi sudah selesai.'
+    ? kirimUlangBlockingReason ??
+      'SOP akan langsung diajukan kembali ke evaluator. Pastikan umpan balik evaluasi sudah ditandai selesai dan semua perbaikan tersimpan.'
     : 'Status SOP akan diubah menjadi Siap dievaluasi. PJ Penyusun dapat membuka pengajuan evaluasi ke Biro Organisasi. Pastikan dokumen sudah lengkap sebelum melanjutkan.'
   const confirmLabel = isRevisionFlow ? 'Ya, kirim ulang' : 'Ya, selesai'
   const handleConfirmComplete = () => {
@@ -135,12 +150,26 @@ export function DetailSOPPenyusunHeader({
           >
             <Printer className="w-3.5 h-3.5" /> Print SOP
           </Button>
+          {canBuatVersiBaru && onBuatVersiBaru ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 px-3 text-xs gap-1.5 rounded-md border-emerald-200 text-emerald-800 hover:bg-emerald-50"
+              onClick={onBuatVersiBaru}
+              disabled={isBuatVersiBaruPending || Boolean(buatVersiBaruBlockingReason)}
+              title={buatVersiBaruBlockingReason ?? undefined}
+            >
+              <GitBranchPlus className="w-3.5 h-3.5" />
+              {isBuatVersiBaruPending ? 'Membuat…' : 'Buat versi baru'}
+            </Button>
+          ) : null}
           {!isReadOnly ? (
           <Button
             size="sm"
             className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-60"
             onClick={() => setIsConfirmOpen(true)}
-            disabled={isPrimaryActionPending}
+            disabled={isPrimaryActionPending || Boolean(kirimUlangBlockingReason)}
+            title={kirimUlangBlockingReason ?? undefined}
           >
             <Check className="w-3.5 h-3.5" />
             {isPrimaryActionPending ? 'Mengirim…' : primaryActionLabel}
@@ -161,16 +190,30 @@ export function DetailSOPPenyusunHeader({
         <Badge className="h-4 px-1.5 text-xs bg-blue-100 text-blue-700 border-0">
           v{metadata.version || '1.0'}
         </Badge>
-        <StatusBadge status={currentSopStatus} className="text-xs border-0" />
+        {metadata.revisiDariVersi != null ? (
+          <span className="text-gray-500">Revisi dari v{metadata.revisiDariVersi}</span>
+        ) : null}
+        <SopStatusBadge
+          status={currentSopStatus}
+          label={currentSopStatusLabel}
+          showDomain={false}
+          className="text-xs"
+        />
       </div>
       {isRevisionFlow && !isReadOnly && (
         <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
-          SOP ini dikembalikan oleh evaluator untuk revisi. Setelah perbaikan selesai, klik
-          {' '}
-          <span className="font-semibold">Kirim ulang ke evaluator</span>
-          {' '}
-          — dokumen akan langsung diajukan kembali tanpa langkah tambahan di Manajemen SOP.
+          {kirimUlangBlockingReason ? (
+            kirimUlangBlockingReason
+          ) : (
+            <>
+              SOP ini dikembalikan oleh evaluator untuk revisi. Tandai umpan balik selesai di tab
+              {' '}
+              <span className="font-semibold">Umpan balik</span>
+              , lalu klik{' '}
+              <span className="font-semibold">Kirim ulang ke evaluator</span>.
+            </>
+          )}
         </div>
       )}
     </>

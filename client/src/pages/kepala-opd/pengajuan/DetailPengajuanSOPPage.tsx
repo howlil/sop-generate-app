@@ -10,7 +10,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { NotFoundWithBack } from "@/components/ui/not-found";
 import { InfoCard } from "@/components/ui/info-card";
 import { InfoField } from "@/components/ui/info-field";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-evaluasi-status-header";
 import { CollapsibleSidePanel } from "@/components/ui/collapsible-side-panel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PinVerificationDialog } from "@/pages/pj-evaluator/tte/components/PinVerificationDialog";
@@ -29,12 +29,6 @@ function formatDate(value: string | undefined | null): string {
     month: "long",
     year: "numeric",
   });
-}
-
-function mapStatusEvaluasiSop(hasil: string | undefined): string {
-  if (hasil === "SESUAI") return "SELESAI_DIEVALUASI";
-  if (hasil === "PERLU_PERBAIKAN") return "REVISI_DARI_EVALUATOR";
-  return "BELUM_DINILAI";
 }
 
 export function DetailPengajuanSOPPage() {
@@ -166,9 +160,6 @@ export function DetailPengajuanSOPPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5">
               <InfoField label="OPD">{pengajuan.opdNama ?? pengajuan.opd?.nama ?? "—"}</InfoField>
               <InfoField label="Jenis">{pengajuan.jenis}</InfoField>
-              <InfoField label="Status">
-                <StatusBadge status={pengajuan.status} />
-              </InfoField>
               <InfoField label="Nomor BA">
                 <span className="font-mono">{pengajuan.nomorBA ?? "—"}</span>
               </InfoField>
@@ -177,6 +168,11 @@ export function DetailPengajuanSOPPage() {
               </InfoField>
               <InfoField label="Jumlah SOP">{`${sopList.length} dokumen`}</InfoField>
             </div>
+            <PengajuanEvaluasiStatusHeader
+              status={pengajuan.status}
+              statusLabel={pengajuan.statusLabel ?? pengajuan.status}
+              role="KEPALA_OPD"
+            />
             {!canSignAll && !isSudahBerlaku && (
               <InfoCard variant="warning" icon={<AlertCircle />} title="Pengajuan belum siap ditandatangani">
                 Pengajuan harus berstatus ditandatangani PJ Penyusun sebelum disahkan Kepala OPD.
@@ -209,8 +205,10 @@ export function DetailPengajuanSOPPage() {
                 id: item.sopDetailId,
                 nama: item.nama,
                 nomor: item.nomor,
-                statusSop: item.status,
-                statusEvaluasi: mapStatusEvaluasiSop(item.hasil),
+                statusDokumen: item.status,
+                statusDokumenLabel: item.statusLabel ?? item.status,
+                hasilEvaluasi: item.hasil,
+                hasilEvaluasiLabel: item.hasilLabel,
               }))}
               selectedId={effectiveSopDetailId}
               onSelect={setSelectedSopId}

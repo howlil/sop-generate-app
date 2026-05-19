@@ -18,7 +18,9 @@ export function StatusBadge({ status, className, label }: StatusBadgeProps) {
   const displayLabel = label ?? config.label
 
   return (
-    <Badge className={cn(BASE_CLASS, config.className, className)}>
+    <Badge
+      className={cn(BASE_CLASS, config.bgColor, config.color, className)}
+    >
       {displayLabel}
     </Badge>
   )

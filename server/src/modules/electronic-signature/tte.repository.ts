@@ -71,7 +71,7 @@ export class TteRepository {
     };
   }
 
-  async upsertKredensialPin(params: { userId: string; hashPin: string }): Promise<TteKredensialRow> {
+  async createKredensialPin(params: { userId: string; hashPin: string }): Promise<TteKredensialRow> {
     const sekarang = new Date();
     const row = await this.prisma.pengguna.update({
       where: { penggunaId: params.userId },
@@ -84,6 +84,22 @@ export class TteRepository {
     return {
       hashPin: row.ttePinHash!,
       ttePinSetAt: row.ttePinSetAt!,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  async updateKredensialPinHash(params: { userId: string; hashPin: string }): Promise<TteKredensialRow> {
+    const row = await this.prisma.pengguna.update({
+      where: { penggunaId: params.userId },
+      data: { ttePinHash: params.hashPin },
+      select: { ttePinHash: true, ttePinSetAt: true, updatedAt: true },
+    });
+    if (row.ttePinHash === null || row.ttePinSetAt === null) {
+      throw new Error('Kredensial TTE tidak ditemukan setelah pembaruan');
+    }
+    return {
+      hashPin: row.ttePinHash,
+      ttePinSetAt: row.ttePinSetAt,
       updatedAt: row.updatedAt,
     };
   }
@@ -139,6 +155,20 @@ export class TteRepository {
       where: {
         dokumenTteId_peran: { dokumenTteId, peran },
       },
+    });
+  }
+
+  private async gantikanVersiBerlakuLain(
+    tx: Prisma.TransactionClient,
+    params: { sopId: string; detailSopId: string },
+  ): Promise<void> {
+    await tx.detailSOP.updateMany({
+      where: {
+        sopId: params.sopId,
+        detailSopId: { not: params.detailSopId },
+        status: StatusSOP.BERLAKU,
+      },
+      data: { status: StatusSOP.DIGANTIKAN },
     });
   }
 
@@ -448,6 +478,10 @@ export class TteRepository {
           keyId: params.signatureFields.keyId,
         },
       });
+      await this.gantikanVersiBerlakuLain(tx, {
+        sopId: detail.sopId,
+        detailSopId: params.detailSopId,
+      });
       await tx.detailSOP.update({
         where: { detailSopId: params.detailSopId },
         data: {
@@ -455,6 +489,36 @@ export class TteRepository {
           terakhirDieditOlehId: params.userId,
         },
       });
+      const pengajuan = await tx.pengajuanEvaluasi.findFirst({
+        where: {
+          opdId: params.userOpdId,
+          status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+          nilaiEvaluasi: { some: { detailSopId: params.detailSopId } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        include: {
+          nilaiEvaluasi: {
+            select: {
+              detailSop: { select: { status: true } },
+            },
+          },
+        },
+      });
+      if (
+        pengajuan !== null &&
+        pengajuan.nilaiEvaluasi.length > 0 &&
+        pengajuan.nilaiEvaluasi.every(
+          (nilai) => nilai.detailSop.status === StatusSOP.BERLAKU,
+        )
+      ) {
+        await tx.pengajuanEvaluasi.update({
+          where: { pengajuanEvaluasiId: pengajuan.pengajuanEvaluasiId },
+          data: {
+            status: StatusPengajuanEvaluasi.SELESAI,
+            version: { increment: 1 },
+          },
+        });
+      }
       const riwayat = await tx.riwayatTandaTangan.findUnique({
         where: {
           userId_dokumenTteId: { userId: params.userId, dokumenTteId: dokumen.dokumenTteId },
@@ -540,10 +604,14 @@ export class TteRepository {
           where: { detailSopId: detail.detailSopId },
         });
         const judulDokumenPerSop = `${params.judulDokumen} - ${detail.sop.judul}`;
+        const nomorDokumenPerSop =
+          pengajuan.nilaiEvaluasi.length > 1
+            ? `${params.nomorDokumen}-${detail.nomorSOP}`
+            : params.nomorDokumen;
         if (dokumen === null) {
           dokumen = await tx.dokumenTte.create({
             data: {
-              nomorDokumen: params.nomorDokumen,
+              nomorDokumen: nomorDokumenPerSop,
               judulDokumen: judulDokumenPerSop,
               hashDokumen: params.hashDokumen,
               jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
@@ -561,7 +629,7 @@ export class TteRepository {
           await tx.dokumenTte.update({
             where: { dokumenTteId: dokumen.dokumenTteId },
             data: {
-              nomorDokumen: params.nomorDokumen,
+              nomorDokumen: nomorDokumenPerSop,
               judulDokumen: judulDokumenPerSop,
               hashDokumen: params.hashDokumen,
             },
@@ -590,6 +658,10 @@ export class TteRepository {
             certValidTo: params.signatureFields.certValidTo,
             keyId: params.signatureFields.keyId,
           },
+        });
+        await this.gantikanVersiBerlakuLain(tx, {
+          sopId: detail.sopId,
+          detailSopId: detail.detailSopId,
         });
         await tx.detailSOP.update({
           where: { detailSopId: detail.detailSopId },

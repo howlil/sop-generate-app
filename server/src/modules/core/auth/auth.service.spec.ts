@@ -1,5 +1,6 @@
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
+  hash: jest.fn(),
 }));
 
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
@@ -12,7 +13,9 @@ import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let authRepository: jest.Mocked<Pick<AuthRepository, 'findActivePenggunaByEmail' | 'findActivePenggunaById'>>;
+  let authRepository: jest.Mocked<
+    Pick<AuthRepository, 'findActivePenggunaByEmail' | 'findActivePenggunaById' | 'updateKataSandi'>
+  >;
   let jwtService: jest.Mocked<Pick<JwtService, 'signAsync'>>;
 
   const sampleRow: PenggunaAuthRecord = {
@@ -26,6 +29,8 @@ describe('AuthService', () => {
     jabatan: 'Staf',
     pangkat: 'III/a',
     nohp: '08123456789',
+    ttePinHash: null,
+    ttePinSetAt: null,
     deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -33,9 +38,11 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     (bcrypt.compare as jest.Mock).mockReset();
+    (bcrypt.hash as jest.Mock).mockReset();
     authRepository = {
       findActivePenggunaByEmail: jest.fn(),
       findActivePenggunaById: jest.fn(),
+      updateKataSandi: jest.fn().mockResolvedValue(undefined),
     };
     jwtService = {
       signAsync: jest.fn().mockResolvedValue('signed-jwt'),
@@ -92,6 +99,7 @@ describe('AuthService', () => {
       jabatan: sampleRow.jabatan,
       pangkat: sampleRow.pangkat,
       nohp: sampleRow.nohp,
+      tte: { configured: false },
     });
     expect(jwtService.signAsync).toHaveBeenCalledWith(
       { sub: sampleRow.penggunaId, email: sampleRow.email, peran: sampleRow.peran },
@@ -117,6 +125,43 @@ describe('AuthService', () => {
       jabatan: sampleRow.jabatan,
       pangkat: sampleRow.pangkat,
       nohp: sampleRow.nohp,
+      tte: { configured: false },
     });
+  });
+
+  it('should_update_password_when_old_password_valid', async () => {
+    authRepository.findActivePenggunaById.mockResolvedValue(sampleRow);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    (bcrypt.hash as jest.Mock).mockResolvedValue('new-hash');
+    await service.changePassword(sampleRow.penggunaId, {
+      kataSandiLama: 'old-pass',
+      kataSandiBaru: 'new-pass-8',
+    });
+    expect(bcrypt.compare).toHaveBeenCalledWith('old-pass', sampleRow.kataSandi);
+    expect(bcrypt.hash).toHaveBeenCalledWith('new-pass-8', 10);
+    expect(authRepository.updateKataSandi).toHaveBeenCalledWith(sampleRow.penggunaId, 'new-hash');
+  });
+
+  it('should_throw_unauthorized_when_changePassword_old_password_wrong', async () => {
+    authRepository.findActivePenggunaById.mockResolvedValue(sampleRow);
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+    await expect(
+      service.changePassword(sampleRow.penggunaId, {
+        kataSandiLama: 'wrong',
+        kataSandiBaru: 'new-pass-8',
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(authRepository.updateKataSandi).not.toHaveBeenCalled();
+  });
+
+  it('should_throw_not_found_when_changePassword_pengguna_missing', async () => {
+    authRepository.findActivePenggunaById.mockResolvedValue(null);
+    await expect(
+      service.changePassword('missing-id', {
+        kataSandiLama: 'old',
+        kataSandiBaru: 'new-pass-8',
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(authRepository.updateKataSandi).not.toHaveBeenCalled();
   });
 });

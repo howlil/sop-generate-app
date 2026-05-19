@@ -4,11 +4,12 @@ import {
   routeBpmn,
   selectBpmnSidePairs,
   scorePath,
+  scoreBpmnRouteCandidate,
   bpmnPathToSegments,
-  bpmnPathHitsObstacle,
   translateBpmnLaneLayoutToDom,
   type BpmnConnectionMeta,
   type BpmnLaneLayout,
+  type BpmnRouteCandidate,
   type UsedSides,
   type Side,
   type OccupiedSegment,
@@ -68,23 +69,24 @@ function getElementPosition(elementId: string, container: HTMLElement): ElemPos 
   if (!el) return null
   const containerRect = container.getBoundingClientRect()
   if (el instanceof SVGGraphicsElement) {
-    const bbox = el.getBBox()
-    const ctm = el.getScreenCTM()
-    if (ctm) {
-      const topLeft = new DOMPoint(bbox.x, bbox.y).matrixTransform(ctm)
-      const bottomRight = new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(ctm)
-      const left = Math.round(topLeft.x - containerRect.left)
-      const top = Math.round(topLeft.y - containerRect.top)
-      const right = Math.round(bottomRight.x - containerRect.left)
-      const bottom = Math.round(bottomRight.y - containerRect.top)
-      return {
-        left,
-        top,
-        width: Math.max(1, right - left),
-        height: Math.max(1, bottom - top),
-        right,
-        bottom,
+    try {
+      const bbox = el.getBBox()
+      const ctm = el.getScreenCTM()
+      if (ctm && bbox.width > 0 && bbox.height > 0) {
+        const topLeft = new DOMPoint(bbox.x, bbox.y).matrixTransform(ctm)
+        const bottomRight = new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(ctm)
+        const left = Math.round(topLeft.x - containerRect.left)
+        const top = Math.round(topLeft.y - containerRect.top)
+        const right = Math.round(bottomRight.x - containerRect.left)
+        const bottom = Math.round(bottomRight.y - containerRect.top)
+        const width = Math.max(1, right - left)
+        const height = Math.max(1, bottom - top)
+        if (width > 0 && height > 0) {
+          return { left, top, width, height, right, bottom }
+        }
       }
+    } catch {
+      /* getBBox/CTM gagal — fallback ke getBoundingClientRect */
     }
   }
   const shapeRect = el.getBoundingClientRect()
@@ -165,6 +167,61 @@ function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boole
   if (!c?.startPoint || !c?.endPoint) return false
   const { startPoint: s, endPoint: e } = c
   return [s.x, s.y, e.x, e.y].every(v => typeof v === 'number' && !isNaN(v))
+}
+
+function rectsOverlap(a: ElemPos | { left: number; top: number; width: number; height: number }, b: ElemPos | { left: number; top: number; width: number; height: number }): boolean {
+  return (
+    a.left < b.left + b.width &&
+    a.left + a.width > b.left &&
+    a.top < b.top + b.height &&
+    a.top + a.height > b.top
+  )
+}
+
+/** Hindari shape sumber/target di daftar obstacle routing — sudah di-handle di endpoint. */
+function filterRoutingObstacles(
+  obsRects: Array<{ left: number; top: number; width: number; height: number }>,
+  fromShape: { left: number; top: number; width: number; height: number },
+  toShape: { left: number; top: number; width: number; height: number },
+): Array<{ left: number; top: number; width: number; height: number }> {
+  return obsRects.filter((obs) => !rectsOverlap(obs, fromShape) && !rectsOverlap(obs, toShape))
+}
+
+type ShapeRect = { left: number; top: number; width: number; height: number }
+
+function bpmnEdgePoint(
+  shape: ShapeRect,
+  side: Side,
+  distance: number,
+  isDiamond?: boolean,
+): { x: number; y: number } {
+  const t = isDiamond ? 0.5 : distance
+  switch (side) {
+    case 'top':
+      return { x: shape.left + shape.width * t, y: shape.top }
+    case 'bottom':
+      return { x: shape.left + shape.width * t, y: shape.top + shape.height }
+    case 'left':
+      return { x: shape.left, y: shape.top + shape.height * t }
+    case 'right':
+      return { x: shape.left + shape.width, y: shape.top + shape.height * t }
+  }
+}
+
+function buildSideAnchoredFallbackPath(
+  fromShape: ShapeRect,
+  toShape: ShapeRect,
+  sSide: Side,
+  eSide: Side,
+  fromIsDiamond: boolean,
+  toIsDiamond: boolean,
+): { x: number; y: number }[] {
+  const start = bpmnEdgePoint(fromShape, sSide, 0.5, fromIsDiamond)
+  const end = bpmnEdgePoint(toShape, eSide, 0.5, toIsDiamond)
+  if (Math.abs(start.x - end.x) > 8) {
+    return [start, { x: end.x, y: start.y }, end]
+  }
+  return [start, { x: start.x, y: end.y }, end]
 }
 
 /* ───────────────────────── Constants ─────────────────────────── */
@@ -288,6 +345,7 @@ export function BpmnArrowConnector({
 
     const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
     const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
+    const routingObstacles = filterRoutingObstacles(obsRects, fromShape, toShape)
 
     const sidePairs = selectBpmnSidePairs(
       connection,
@@ -307,19 +365,20 @@ export function BpmnArrowConnector({
     const curLayout = laneLayoutRef.current
     const allMeta = allConnectionsMeta
 
-    // Slot anchor deterministik berdasarkan urutan koneksi, agar tidak ada 2 head di anchor yang sama.
-    // fromSlotIndex = berapa banyak koneksi sebelumnya yang keluar dari node yang sama.
-    const anchorSlots = [0.5, 0.25, 0.75]
-    const anchorDistance = (count: number): number => {
-      if (count <= 0) return anchorSlots[0]
-      if (count === 1) return anchorSlots[1]
-      if (count === 2) return anchorSlots[2]
-      return anchorSlots[0]
+    const anchorSlots = [0.5, 0.28, 0.72, 0.18, 0.82, 0.4, 0.6]
+    const anchorDistance = (count: number): number => anchorSlots[count % anchorSlots.length]
+    const usedAnchorCount = (shapeId: string, side: Side) => {
+      const sideUsage = usedSidesRef.current[shapeId]
+      const incoming = (sideUsage?.in?.[side] ?? []).filter((id) => id !== connection.id).length
+      const outgoing = (sideUsage?.out?.[side] ?? []).filter((id) => id !== connection.id).length
+      return incoming + outgoing
     }
-    const fromSlotIndex = allMeta.filter((m, j) => j < connectionIndex && m.from === connection.from).length
-    const toSlotIndex = allMeta.filter((m, j) => j < connectionIndex && m.to === connection.to).length
-    const distA = anchorDistance(fromSlotIndex)
-    const distB = anchorDistance(toSlotIndex)
+    const priorShapeUseCount = (shapeId: string) =>
+      allMeta.filter((m, j) =>
+        j < connectionIndex &&
+        m.id !== connection.id &&
+        (m.from === shapeId || m.to === shapeId)
+      ).length
 
     const hasValidLayout = curLayout?.lanes != null && curLayout.lanes.length > 0
     const domLayout = hasValidLayout && curLayout
@@ -327,62 +386,93 @@ export function BpmnArrowConnector({
       : null
 
     let bestPath: { x: number; y: number }[] | null = null
-    let bestSides: [Side, Side] | null = null
+    let bestCandidate: BpmnRouteCandidate | null = null
     let bestScore = Infinity
+    let routedByEngine = false
 
-    for (const [sSide, eSide] of sidePairs.slice(0, MAX_SIDE_PAIRS)) {
-      const path = domLayout
-        ? routeBpmn({
-        fromShape, toShape,
-        fromSide: sSide, toSide: eSide,
-        fromDistance: distA, toDistance: distB,
-        fromIsDiamond: connection.sourceType === 'flowchart-decision',
-        toIsDiamond: connection.targetType === 'flowchart-decision',
-        layout: domLayout,
-        fromLane: connection.fromLane,
-        toLane: connection.toLane,
-        fromCol: connection.fromCol,
-        toCol: connection.toCol,
-        obstacles: obsRects,
-        occupiedSegments: occupied,
-        globalBounds,
-      })
-        : (() => {
-            const start = { x: fromPos.left + fromPos.width / 2, y: fromPos.top + fromPos.height / 2 }
-            const end = { x: toPos.left + toPos.width / 2, y: toPos.top + toPos.height / 2 }
-            return [start, end]
-          })()
-
-      if (path.length < 2) continue
-      // Prioritas: path tidak boleh menembus shape. Abaikan path yang masih hit obstacle.
-      if (obsRects.length > 0 && bpmnPathHitsObstacle(path, obsRects, fromShape, toShape)) continue
-      const score = scorePath(path, occupied)
-      if (score < bestScore) {
-        bestPath = path
-        bestSides = [sSide, eSide]
-        bestScore = score
+    const tryRouteCandidates = (obstacleSet: typeof routingObstacles): void => {
+      if (!domLayout) return
+      for (const candidate of sidePairs.slice(0, MAX_SIDE_PAIRS)) {
+        const { sSide, eSide } = candidate
+        const distA = anchorDistance(Math.max(
+          usedAnchorCount(connection.from, sSide),
+          priorShapeUseCount(connection.from),
+        ))
+        const distB = anchorDistance(Math.max(
+          usedAnchorCount(connection.to, eSide),
+          priorShapeUseCount(connection.to),
+        ))
+        const path = routeBpmn({
+          fromShape,
+          toShape,
+          fromSide: sSide,
+          toSide: eSide,
+          fromDistance: distA,
+          toDistance: distB,
+          fromIsDiamond: connection.sourceType === 'flowchart-decision',
+          toIsDiamond: connection.targetType === 'flowchart-decision',
+          layout: domLayout,
+          fromLane: connection.fromLane,
+          toLane: connection.toLane,
+          fromCol: connection.fromCol,
+          toCol: connection.toCol,
+          obstacles: obstacleSet,
+          occupiedSegments: occupied,
+          globalBounds,
+          sourceJettySize: candidate.sourceJettySize,
+          targetJettySize: candidate.targetJettySize,
+        })
+        if (path.length < 2) continue
+        const score = scoreBpmnRouteCandidate(candidate) + scorePath(path, occupied)
+        if (score < bestScore) {
+          bestPath = path
+          bestCandidate = candidate
+          bestScore = score
+          routedByEngine = true
+        }
       }
     }
 
-    if (!bestPath || !bestSides) {
-      const [sSide, eSide] = sidePairs[0] ?? ['right', 'left']
-      const startCenter = {
-        x: fromPos.left + fromPos.width / 2,
-        y: fromPos.top + fromPos.height / 2,
-      }
-      const endCenter = {
-        x: toPos.left + toPos.width / 2,
-        y: toPos.top + toPos.height / 2,
-      }
-      const fallback =
-        Math.abs(startCenter.x - endCenter.x) > 8
-          ? [startCenter, { x: endCenter.x, y: startCenter.y }, endCenter]
-          : [startCenter, { x: startCenter.x, y: endCenter.y }, endCenter]
-      bestPath = fallback
-      bestSides = [sSide, eSide]
+    tryRouteCandidates(routingObstacles)
+    if (!routedByEngine && routingObstacles.length > 0) {
+      tryRouteCandidates([])
+    }
+
+    const pickFallbackCandidate = (): BpmnRouteCandidate =>
+      bestCandidate ?? sidePairs[0] ?? { sSide: 'right', eSide: 'left' }
+
+    if (!domLayout) {
+      const fc = pickFallbackCandidate()
+      bestPath = buildSideAnchoredFallbackPath(
+        fromShape,
+        toShape,
+        fc.sSide,
+        fc.eSide,
+        connection.sourceType === 'flowchart-decision',
+        connection.targetType === 'flowchart-decision',
+      )
+      bestCandidate = fc
+    }
+
+    if (!bestPath || !bestCandidate) {
+      const fc = pickFallbackCandidate()
+      bestPath = buildSideAnchoredFallbackPath(
+        fromShape,
+        toShape,
+        fc.sSide,
+        fc.eSide,
+        connection.sourceType === 'flowchart-decision',
+        connection.targetType === 'flowchart-decision',
+      )
+      bestCandidate = fc
     }
 
     const finalPath = snapToOrthogonal(bestPath)
+    if (finalPath.length < 2) {
+      setPathData('')
+      setLabelPos(null)
+      return
+    }
 
     if (capturedRoutedSegs) {
       capturedRoutedSegs.current.set(connection.id, bpmnPathToSegments(finalPath))
@@ -396,7 +486,7 @@ export function BpmnArrowConnector({
     }
     setLabelPos(lp)
 
-    const [sSide, eSide] = bestSides
+    const { sSide, eSide } = bestCandidate
     const payload: PathUpdatedPayload = {
       connectionId: connection.id, from: connection.from, to: connection.to,
       sSide, eSide,

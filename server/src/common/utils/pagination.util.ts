@@ -3,13 +3,13 @@ import type { PaginationQueryDto } from '../dto/pagination-query.dto';
 export type PaginationMeta = {
   page: number;
   limit: number;
-  total: number;
+  totalItems: number;
   totalPages: number;
 };
 
 export type PaginatedData<T> = {
   items: T[];
-  meta: PaginationMeta;
+  pagination: PaginationMeta;
 };
 
 /** Hitung `skip` / `take` untuk Prisma dari query yang sudah divalidasi. */
@@ -39,10 +39,10 @@ export function toPaginatedData<T>(
   const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
   return {
     items,
-    meta: {
+    pagination: {
       page,
       limit,
-      total,
+      totalItems: total,
       totalPages,
     },
   };

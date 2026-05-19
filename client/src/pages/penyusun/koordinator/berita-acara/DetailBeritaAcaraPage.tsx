@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react'
-import { useParams, useNavigate } from '@tanstack/react-router'
-import { useEvaluasiDetail, usePengajuanBeritaAcaraView, usePengajuanSopDokumenWorkbench } from "@/api/evaluasi";
-import { PinVerificationDialog } from "@/pages/pj-evaluator/tte/components/PinVerificationDialog";
-import { createPinConfirmHandler } from "@/api/tte";
-import { useTandaTanganiBA } from '@/api/tte'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams } from '@tanstack/react-router'
+import {
+  usePengajuanBeritaAcaraView,
+  usePengajuanEvaluasiDetail,
+  usePengajuanSopDokumenWorkbench,
+} from '@/api/evaluasi'
+import { PinVerificationDialog } from '@/pages/pj-evaluator/tte/components/PinVerificationDialog'
+import { createPinConfirmHandler, useTandaTanganiBA } from '@/api/tte'
 import { BeritaAcaraTemplate } from '@/pages/penyusun/koordinator/berita-acara/components/BeritaAcaraTemplate'
 import { SOPListCard } from '@/pages/penyusun/sop/components/SOPListCard'
 import { SOPPreviewTemplate } from '@/pages/penyusun/sop/components/SOPPreviewTemplate'
@@ -12,19 +15,13 @@ import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
 import { NotFoundWithBack } from '@/components/ui/not-found'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { PengajuanEvaluasiStatusHeader } from '@/components/evaluasi/pengajuan-evaluasi-status-header'
 import { InfoCard } from '@/components/ui/info-card'
 import { InfoField } from '@/components/ui/info-field'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
-import {
-  CheckCircle,
-  Loader2,
-  AlertCircle,
-  Printer,
-  ChevronRight,
-} from 'lucide-react'
+import { AlertCircle, CheckCircle, Loader2, Printer } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
 
 const PRINT_DELAY_MS = 150
@@ -40,16 +37,17 @@ function formatDate(dateStr: string | null | undefined): string {
 
 export function DetailBeritaAcaraPage() {
   const { id } = useParams({ from: '/penyusun/pj-penyusun/berita-acara/$id' })
-  const navigate = useNavigate()
   const [tteDialogOpen, setTteDialogOpen] = useState(false)
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('ba')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
+  const { pengajuan, loading: isLoading } = usePengajuanEvaluasiDetail(id)
 
-  const { data: pengajuan, isLoading, error } = useEvaluasiDetail(id)
+  useEffect(() => {
+    setSelectedSopId(null)
+  }, [id])
 
   const tandaTanganiBA = useTandaTanganiBA({ isPjPenyusun: true })
-
   const handlePinConfirm = createPinConfirmHandler(
     tandaTanganiBA.mutateAsync,
     (pin) => ({
@@ -64,24 +62,32 @@ export function DetailBeritaAcaraPage() {
 
   const isReadyForSignature = pengajuan?.status === 'DIVERIFIKASI_PJ_EVALUATOR'
   const isAlreadySigned = pengajuan?.status === 'DITANDATANGANI_PJ_PENYUSUN'
+  const isSelesai = pengajuan?.status === 'SELESAI'
   const sopList = pengajuan?.sopList ?? []
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId
   const selectedSop = sopList.find((sop) => sop.sopDetailId === effectiveSopDetailId) ?? null
+
   const sopWorkbenchEnabled = Boolean(previewMainTab === 'sop' && effectiveSopDetailId)
-  const { data: sopDokumen, isFetching: sopWorkbenchLoading } = usePengajuanSopDokumenWorkbench(
-    id,
-    effectiveSopDetailId,
-    { enabled: sopWorkbenchEnabled },
-  )
+  const {
+    data: sopDokumen,
+    isFetching: sopWorkbenchLoading,
+    isError: sopWorkbenchError,
+    refetch: refetchSopDokumen,
+  } = usePengajuanSopDokumenWorkbench(id, effectiveSopDetailId, {
+    enabled: sopWorkbenchEnabled,
+  })
+
   const sopPreviewProps = useMemo(() => {
     const wb = sopDokumen?.workbench
     if (wb === undefined) return null
     return mapPenyusunWorkbenchToPreviewProps(wb)
   }, [sopDokumen])
+
+  const isSopPreviewLoading = sopWorkbenchEnabled && sopPreviewProps === null && sopWorkbenchLoading
   const { data: baView } = usePengajuanBeritaAcaraView(id, { enabled: true })
 
-  if (isLoading && pengajuan === undefined) {
+  if (isLoading && pengajuan === null) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 min-h-[320px] text-gray-600 text-sm">
         <Loader2 className="h-9 w-9 animate-spin text-gray-400" aria-hidden />
@@ -90,7 +96,7 @@ export function DetailBeritaAcaraPage() {
     )
   }
 
-  if (pengajuan === undefined) {
+  if (pengajuan === null) {
     return (
       <NotFoundWithBack
         message="Pengajuan evaluasi tidak ditemukan."
@@ -117,9 +123,7 @@ export function DetailBeritaAcaraPage() {
         header={
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-sm font-semibold text-gray-900">
-                Informasi OPD & Evaluasi
-              </h2>
+              <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   variant="outline"
@@ -160,28 +164,35 @@ export function DetailBeritaAcaraPage() {
               <InfoField label="Nomor BA">
                 <span className="font-mono">{pengajuan.nomorBA ?? '-'}</span>
               </InfoField>
-              <InfoField label="Status">
-                <StatusBadge status={pengajuan.status} />
-              </InfoField>
               <InfoField label="Tanggal Verifikasi">{formatDate(pengajuan.tanggalVerifikasi)}</InfoField>
               <InfoField label="Evaluator">{pengajuan.timEvaluasi ?? '-'}</InfoField>
               <InfoField label="Jumlah SOP">{`${sopList.length} dokumen`}</InfoField>
             </div>
+            <PengajuanEvaluasiStatusHeader
+              status={pengajuan.status}
+              statusLabel={pengajuan.statusLabel ?? pengajuan.status}
+              role="PJ_PENYUSUN"
+            />
             {isReadyForSignature && (
               <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
                 <div className="flex gap-3">
                   <AlertCircle className="h-5 w-5 flex-shrink-0 text-orange-700" />
-                  <div>
-                    <p className="text-xs text-orange-700">
-                      Berita Acara ini telah diverifikasi oleh PJ Evaluator dan menunggu tanda tangan Anda.
-                    </p>
-                  </div>
+                  <p className="text-xs text-orange-700">
+                    Berita Acara ini telah diverifikasi oleh PJ Evaluator dan menunggu tanda tangan Anda.
+                  </p>
                 </div>
               </div>
             )}
             {isAlreadySigned && (
               <InfoCard variant="success" icon={<CheckCircle />} title="Berita Acara telah ditandatangani">
-                Ditandatangani pada {formatDate(pengajuan.tanggalTTDBaPjPenyusun)}.
+                Ditandatangani pada {formatDate(pengajuan.tanggalTTDBaPjPenyusun)}. Menunggu pengesahan
+                Kepala OPD.
+              </InfoCard>
+            )}
+            {isSelesai && (
+              <InfoCard variant="success" icon={<CheckCircle />} title="Pengajuan evaluasi selesai">
+                Seluruh SOP dalam pengajuan ini telah ditandatangani Kepala OPD. Berita Acara dapat dicetak
+                sebagai arsip.
               </InfoCard>
             )}
           </div>
@@ -200,7 +211,10 @@ export function DetailBeritaAcaraPage() {
                 id: sop.sopDetailId,
                 nama: sop.nama,
                 nomor: sop.nomor,
-                status: sop.status,
+                statusDokumen: sop.status,
+                statusDokumenLabel: sop.statusLabel ?? sop.status,
+                hasilEvaluasi: sop.hasil,
+                hasilEvaluasiLabel: sop.hasilLabel,
               }))}
               selectedId={effectiveSopDetailId}
               onSelect={setSelectedSopId}
@@ -208,114 +222,75 @@ export function DetailBeritaAcaraPage() {
           </CollapsibleSidePanel>
         }
       >
-        <>
-          {error && (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <AlertCircle className="mb-3 h-12 w-12 text-red-500" />
-              <h3 className="mb-1 text-lg font-semibold text-gray-700">
-                Gagal Memuat Data
-              </h3>
-              <p className="mb-4 max-w-md text-sm text-gray-500">
-                Terjadi kesalahan saat mengambil detail berita acara.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => navigate({ to: ROUTES.PENYUSUN.PJ_PENYUSUN_BERITA_ACARA })}
-              >
-                Kembali ke Daftar
-              </Button>
+        <div className="flex h-full min-h-0 min-w-0 flex-col">
+          <Tabs
+            value={previewMainTab}
+            onValueChange={(value) => setPreviewMainTab(value as 'sop' | 'ba')}
+            className="flex h-full min-h-0 flex-col"
+          >
+            <div className="border-b border-gray-200 px-2 py-2">
+              <TabsList className="h-8 bg-transparent p-0 gap-2">
+                <TabsTrigger value="sop" className="h-8 text-xs">
+                  Pratinjau SOP
+                </TabsTrigger>
+                <TabsTrigger value="ba" className="h-8 text-xs">
+                  Berita Acara
+                </TabsTrigger>
+              </TabsList>
             </div>
-          )}
-          {!error && (
-            <div className="flex h-full min-h-0 min-w-0 flex-col">
-              <Tabs
-                value={previewMainTab}
-                onValueChange={(value) => setPreviewMainTab(value as 'sop' | 'ba')}
-                className="flex h-full min-h-0 flex-col"
-              >
-                <div className="border-b border-gray-200 px-2 py-2">
-                  <TabsList className="h-8 bg-transparent p-0 gap-2">
-                    <TabsTrigger value="sop" className="h-8 text-xs">
-                      Pratinjau SOP
-                    </TabsTrigger>
-                    <TabsTrigger value="ba" className="h-8 text-xs">
-                      Berita Acara
-                    </TabsTrigger>
-                  </TabsList>
-                </div>
-                <TabsContent value="sop" className="mt-3 flex min-h-0 flex-1 flex-col overflow-auto px-2 pb-2">
-                  {selectedSop !== null ? (
-                    sopWorkbenchLoading ? (
-                      <div className="flex flex-col items-center justify-center gap-2 py-16 text-gray-500 text-sm">
-                        <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
-                        Memuat dokumen SOP…
-                      </div>
-                    ) : sopPreviewProps !== null ? (
-                      <SOPPreviewTemplate
-                        name={sopPreviewProps.name}
-                        number={sopPreviewProps.number}
-                        metadata={sopPreviewProps.metadata as SOPPreviewTemplateProps['metadata']}
-                        prosedurRows={sopPreviewProps.prosedurRows}
-                        implementers={sopPreviewProps.implementers}
-                        previewOptions={{ editable: false, showScrollbar: true }}
-                      />
-                    ) : (
-                      <div className="rounded-lg border bg-white p-4 space-y-4">
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-500">SOP terpilih</p>
-                          <h3 className="text-sm font-semibold text-gray-900">{selectedSop.judul}</h3>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600">
-                          <div>
-                            Nomor SOP:{' '}
-                            <span className="font-mono font-medium">
-                              {selectedSop.nomorSOP ?? selectedSop.nomor ?? '-'}
-                            </span>
-                          </div>
-                          <div>
-                            Status: <span className="font-medium">{selectedSop.status ?? '-'}</span>
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              navigate({
-                                to: ROUTES.PENYUSUN.DETAIL_SOP,
-                                params: { id: selectedSop.sopDetailId },
-                              })
-                            }
-                          >
-                            Lihat Detail SOP
-                            <ChevronRight className="ml-1 h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  ) : (
-                    <div className="flex h-full min-h-[240px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-sm text-gray-500">
-                      Tidak ada SOP untuk ditampilkan.
-                    </div>
-                  )}
-                </TabsContent>
-                <TabsContent value="ba" className="mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2">
-                  <div className="w-full">
-                    <BeritaAcaraTemplate
-                      opd={pengajuan.opdNama ?? pengajuan.opd?.nama ?? ''}
-                      nomorBA={baView?.nomorBA ?? pengajuan.nomorBA}
-                      tanggalVerifikasi={baView?.tanggalVerifikasiPjEvaluator ?? pengajuan.tanggalVerifikasi}
-                      namaBiro={pengajuan.namaPjEvaluator}
-                      namaPjPenyusun={pengajuan.namaPjPenyusun ?? pengajuan.opdNama ?? 'PJ Penyusun OPD'}
-                      tteSignaturePayloadPjEvaluator={baView?.tteBeritaAcara?.payloadPjEvaluator}
-                      tteSignaturePayloadPjPenyusun={baView?.tteBeritaAcara?.payloadPjPenyusun}
-                    />
+            <TabsContent value="sop" className="mt-3 flex min-h-0 flex-1 flex-col overflow-auto px-2 pb-2">
+              {selectedSop !== null ? (
+                isSopPreviewLoading ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-16 text-gray-500 text-sm">
+                    <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+                    Memuat dokumen SOP…
                   </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-        </>
+                ) : sopPreviewProps !== null ? (
+                  <SOPPreviewTemplate
+                    name={sopPreviewProps.name}
+                    number={sopPreviewProps.number}
+                    metadata={sopPreviewProps.metadata as SOPPreviewTemplateProps['metadata']}
+                    prosedurRows={sopPreviewProps.prosedurRows}
+                    implementers={sopPreviewProps.implementers}
+                    previewOptions={{ editable: false, showScrollbar: true }}
+                  />
+                ) : sopWorkbenchError ? (
+                  <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                    <AlertCircle className="h-10 w-10 text-red-500" aria-hidden />
+                    <p className="max-w-md text-sm text-gray-600">
+                      Dokumen lengkap SOP dalam pengajuan evaluasi tidak dapat dimuat.
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void refetchSopDokumen()}
+                    >
+                      Coba lagi
+                    </Button>
+                  </div>
+                ) : null
+              ) : (
+                <div className="flex h-full min-h-[240px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-sm text-gray-500">
+                  Tidak ada SOP untuk ditampilkan.
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="ba" className="mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2">
+              <div className="w-full">
+                <BeritaAcaraTemplate
+                  opd={pengajuan.opdNama ?? pengajuan.opd?.nama ?? ''}
+                  nomorBA={baView?.nomorBA ?? pengajuan.nomorBA}
+                  tanggalVerifikasi={baView?.tanggalVerifikasiPjEvaluator ?? pengajuan.tanggalVerifikasi}
+                  namaBiro={pengajuan.namaPjEvaluator}
+                  namaPjPenyusun={pengajuan.namaPjPenyusun ?? pengajuan.opdNama ?? 'PJ Penyusun OPD'}
+                  tteSignaturePayloadPjEvaluator={baView?.tteBeritaAcara?.payloadPjEvaluator}
+                  tteSignaturePayloadPjPenyusun={baView?.tteBeritaAcara?.payloadPjPenyusun}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
       </DetailPageLayout>
 
       <PinVerificationDialog

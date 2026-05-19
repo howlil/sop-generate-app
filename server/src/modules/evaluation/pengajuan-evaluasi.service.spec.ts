@@ -17,6 +17,39 @@ describe('PengajuanEvaluasiService', () => {
     peran: PeranPengguna.PJ_PENYUSUN,
   };
 
+  it('should_return_paginated_ringkas_with_total_items', async () => {
+    const ringkasRow = {
+      pengajuanEvaluasiId: 'p1',
+      opdId: 'opd-a',
+      opdNama: 'OPD A',
+      jenis: 'TERJADWAL',
+      status: 'SELESAI_DIEVALUASI',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      jumlahSop: 2,
+      jumlahSudahDinilai: 2,
+    };
+    const repo = {
+      findOpdIdPengguna: jest.fn(),
+      buildWhereRingkasFromQuery: jest.fn().mockReturnValue({}),
+      countWhere: jest.fn().mockResolvedValue(25),
+      findRingkasPage: jest.fn().mockResolvedValue([ringkasRow]),
+    } as unknown as PengajuanEvaluasiRepository;
+    const service = new PengajuanEvaluasiService(repo);
+    const actual = await service.findAllRingkas(
+      { sub: 'pj', email: 'pj@test', peran: PeranPengguna.PJ_EVALUATOR },
+      { page: 2, limit: 10 },
+    );
+    expect(repo.countWhere).toHaveBeenCalled();
+    expect(repo.findRingkasPage).toHaveBeenCalledWith({}, 10, 10);
+    expect(actual.items).toHaveLength(1);
+    expect(actual.pagination).toEqual({
+      page: 2,
+      limit: 10,
+      totalItems: 25,
+      totalPages: 3,
+    });
+  });
+
   it('should_forbid_findAll_when_bukan_evaluator_atau_pj_penyusun', async () => {
     const repo = {} as unknown as PengajuanEvaluasiRepository;
     const service = new PengajuanEvaluasiService(repo);
@@ -167,7 +200,7 @@ describe('PengajuanEvaluasiService', () => {
     expect(runTransaction).not.toHaveBeenCalled();
   });
 
-  it('should_noop_pastikan_mandiri_when_pipeline_tidak_eligible_batch', async () => {
+  it('should_noop_pastikan_mandiri_when_pipeline_tidak_eligible_pengajuan', async () => {
     const runTransaction = jest.fn();
     const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
     const service = new PengajuanEvaluasiService(repo);

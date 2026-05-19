@@ -17,6 +17,9 @@ export class PengajuanEvaluasiRingkasRowDto {
   @ApiProperty()
   readonly status!: string;
 
+  @ApiProperty()
+  readonly statusLabel!: string;
+
   @ApiPropertyOptional({ description: 'ISO date-time' })
   readonly tanggalEvaluasi?: string;
 

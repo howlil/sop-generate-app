@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -12,10 +13,12 @@ import type { JwtAccessPayload } from '../../common';
 import {
   JenisDokumenTte,
   PeranPengguna,
+  Prisma,
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
 import { RegisterTteDto } from './register-tte.dto';
+import { UpdateTtePinDto } from './update-tte-pin.dto';
 import { TandaTanganiDto } from './tanda-tangani.dto';
 import { buildTteQrPayload } from './tte-verifikasi-qr.util';
 import { TteRepository } from './tte.repository';
@@ -184,26 +187,11 @@ export class TteService {
     if (pengguna === null) {
       throw new NotFoundException('Pengguna tidak ditemukan');
     }
-    const peranClient = this.mapPeranResponse(pengguna.peran);
     const row = await this.tteRepository.findKredensial(user.sub);
     if (row === null) {
       return null;
     }
-    return {
-      id: pengguna.penggunaId,
-      userId: pengguna.penggunaId,
-      peran: peranClient,
-      createdAt: row.ttePinSetAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-      user: {
-        id: pengguna.penggunaId,
-        nama: pengguna.nama,
-        email: pengguna.email,
-        nip: pengguna.nip,
-        jabatan: pengguna.jabatan,
-        pangkat: pengguna.pangkat,
-      },
-    };
+    return this.buildProfilResponse(pengguna, row);
   }
 
   async registerProfil(user: JwtAccessPayload, dto: RegisterTteDto): Promise<TteProfilResponse> {
@@ -211,16 +199,49 @@ export class TteService {
     if (pengguna === null) {
       throw new NotFoundException('Pengguna tidak ditemukan');
     }
-    const peranClient = this.mapPeranResponse(pengguna.peran);
+    const existing = await this.tteRepository.findKredensial(user.sub);
+    if (existing !== null) {
+      throw new ConflictException(
+        'PIN TTE sudah diatur. Gunakan ubah PIN jika ingin memperbarui.',
+      );
+    }
     const hashPin = await bcrypt.hash(dto.pin, 10);
-    const row = await this.tteRepository.upsertKredensialPin({
+    const row = await this.tteRepository.createKredensialPin({
       userId: user.sub,
       hashPin,
     });
+    return this.buildProfilResponse(pengguna, row);
+  }
+
+  async updateProfilPin(user: JwtAccessPayload, dto: UpdateTtePinDto): Promise<TteProfilResponse> {
+    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
+    if (pengguna === null) {
+      throw new NotFoundException('Pengguna tidak ditemukan');
+    }
+    const existing = await this.tteRepository.findKredensial(user.sub);
+    if (existing === null) {
+      throw new BadRequestException('PIN TTE belum diatur. Atur PIN terlebih dahulu.');
+    }
+    const pinValid = await bcrypt.compare(dto.pinLama, existing.hashPin);
+    if (!pinValid) {
+      throw new UnauthorizedException('PIN lama tidak sesuai');
+    }
+    const hashPin = await bcrypt.hash(dto.pinBaru, 10);
+    const row = await this.tteRepository.updateKredensialPinHash({
+      userId: user.sub,
+      hashPin,
+    });
+    return this.buildProfilResponse(pengguna, row);
+  }
+
+  private buildProfilResponse(
+    pengguna: { penggunaId: string; nama: string; email: string; nip: string; jabatan: string; pangkat: string; peran: PeranPengguna },
+    row: { ttePinSetAt: Date; updatedAt: Date },
+  ): TteProfilResponse {
     return {
       id: pengguna.penggunaId,
       userId: pengguna.penggunaId,
-      peran: peranClient,
+      peran: this.mapPeranResponse(pengguna.peran),
       createdAt: row.ttePinSetAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
       user: {
@@ -345,6 +366,22 @@ export class TteService {
     }
   }
 
+  private async runTteRepositoryMutation<T>(operation: () => Promise<T>): Promise<T> {
+    try {
+      return await operation();
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        const target = Array.isArray(err.meta?.target)
+          ? err.meta.target.map(String).join(',')
+          : String(err.meta?.target ?? '');
+        if (target.includes('nomorDokumen')) {
+          throw new ConflictException('Nomor dokumen sudah digunakan');
+        }
+      }
+      throw err;
+    }
+  }
+
   async tandaTanganiBa(
     user: JwtAccessPayload,
     pengajuanEvaluasiId: string,
@@ -371,15 +408,17 @@ export class TteService {
       nip: pengguna.nip,
     });
     if (pengguna.peran === PeranPengguna.PJ_EVALUATOR) {
-      const result = await this.tteRepository.transaksiTandaTanganiBaEvaluator({
-        pengajuanEvaluasiId,
-        userId: user.sub,
-        peran: PeranPengguna.PJ_EVALUATOR,
-        hashDokumen,
-        nomorDokumen: dto.nomorDokumen,
-        judulDokumen: dto.judulDokumen,
-        signatureFields,
-      });
+      const result = await this.runTteRepositoryMutation(() =>
+        this.tteRepository.transaksiTandaTanganiBaEvaluator({
+          pengajuanEvaluasiId,
+          userId: user.sub,
+          peran: PeranPengguna.PJ_EVALUATOR,
+          hashDokumen,
+          nomorDokumen: dto.nomorDokumen,
+          judulDokumen: dto.judulDokumen,
+          signatureFields,
+        }),
+      );
       if (result.error === 'NOT_FOUND') {
         throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
       }
@@ -402,16 +441,18 @@ export class TteService {
       return this.mapRiwayat(result.riwayat);
     }
     if (pengguna.peran === PeranPengguna.PJ_PENYUSUN) {
-      const result = await this.tteRepository.transaksiTandaTanganiBaPjPenyusun({
-        pengajuanEvaluasiId,
-        userId: user.sub,
-        userOpdId: pengguna.opdId,
-        peran: PeranPengguna.PJ_PENYUSUN,
-        hashDokumen,
-        nomorDokumen: dto.nomorDokumen,
-        judulDokumen: dto.judulDokumen,
-        signatureFields,
-      });
+      const result = await this.runTteRepositoryMutation(() =>
+        this.tteRepository.transaksiTandaTanganiBaPjPenyusun({
+          pengajuanEvaluasiId,
+          userId: user.sub,
+          userOpdId: pengguna.opdId,
+          peran: PeranPengguna.PJ_PENYUSUN,
+          hashDokumen,
+          nomorDokumen: dto.nomorDokumen,
+          judulDokumen: dto.judulDokumen,
+          signatureFields,
+        }),
+      );
       if (result.error === 'NOT_FOUND') {
         throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
       }
@@ -470,16 +511,18 @@ export class TteService {
       nama: pengguna.nama,
       nip: pengguna.nip,
     });
-    const result = await this.tteRepository.transaksiTandaTanganiSop({
-      detailSopId,
-      userId: user.sub,
-      userOpdId: pengguna.opdId,
-      peran: PeranPengguna.KEPALA_OPD,
-      hashDokumen,
-      nomorDokumen: dto.nomorDokumen,
-      judulDokumen: dto.judulDokumen,
-      signatureFields,
-    });
+    const result = await this.runTteRepositoryMutation(() =>
+      this.tteRepository.transaksiTandaTanganiSop({
+        detailSopId,
+        userId: user.sub,
+        userOpdId: pengguna.opdId,
+        peran: PeranPengguna.KEPALA_OPD,
+        hashDokumen,
+        nomorDokumen: dto.nomorDokumen,
+        judulDokumen: dto.judulDokumen,
+        signatureFields,
+      }),
+    );
     if (result.error === 'NOT_FOUND') {
       throw new NotFoundException('Detail SOP tidak ditemukan');
     }
@@ -533,16 +576,18 @@ export class TteService {
       nama: pengguna.nama,
       nip: pengguna.nip,
     });
-    const result = await this.tteRepository.transaksiTandaTanganiSemuaSopPengajuan({
-      pengajuanEvaluasiId,
-      userId: user.sub,
-      userOpdId: pengguna.opdId,
-      peran: PeranPengguna.KEPALA_OPD,
-      hashDokumen,
-      nomorDokumen: dto.nomorDokumen,
-      judulDokumen: dto.judulDokumen,
-      signatureFields,
-    });
+    const result = await this.runTteRepositoryMutation(() =>
+      this.tteRepository.transaksiTandaTanganiSemuaSopPengajuan({
+        pengajuanEvaluasiId,
+        userId: user.sub,
+        userOpdId: pengguna.opdId,
+        peran: PeranPengguna.KEPALA_OPD,
+        hashDokumen,
+        nomorDokumen: dto.nomorDokumen,
+        judulDokumen: dto.judulDokumen,
+        signatureFields,
+      }),
+    );
     if (result.error === 'NOT_FOUND') {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }
@@ -551,7 +596,7 @@ export class TteService {
     }
     if (result.error === 'BAD_PENGAJUAN_STATUS') {
       throw new ConflictException(
-        `Pengajuan tidak dapat ditandatangani pada status ${String((result as { status?: StatusPengajuanEvaluasi }).status)}. Batch tanda tangan Kepala OPD hanya diizinkan pada status ${String((result as { expectedStatus?: StatusPengajuanEvaluasi }).expectedStatus ?? StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN)}.`,
+        `Pengajuan tidak dapat ditandatangani pada status ${String((result as { status?: StatusPengajuanEvaluasi }).status)}. Pengesahan massal SOP dalam pengajuan evaluasi hanya diizinkan pada status ${String((result as { expectedStatus?: StatusPengajuanEvaluasi }).expectedStatus ?? StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN)}.`,
       );
     }
     if (result.error === 'EMPTY_SOP') {

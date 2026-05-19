@@ -3,7 +3,7 @@ import { EvaluasiWorkspaceDaftarSopRowDto } from './evaluasi-workspace-daftar-so
 import { EvaluasiWorkspaceOpRingkasDto } from './evaluasi-workspace-op-ringkas.dto';
 import { EvaluasiWorkspacePengajuanAktifDto } from './evaluasi-workspace-pengajuan-aktif.dto';
 import { EvaluasiWorkspacePreviewDto } from './evaluasi-workspace-preview.dto';
-import { EvaluasiWorkspaceRiwayatNilaiEntryDto } from './evaluasi-workspace-riwayat-nilai-entry.dto';
+import { EvaluasiWorkspaceLogNilaiEntryDto } from './evaluasi-workspace-log-nilai-entry.dto';
 import { EvaluasiWorkspaceRiwayatOpdEntryDto } from './evaluasi-workspace-riwayat-opd-entry.dto';
 
 /** Respons GET `/evaluasi/workspace/opd/:opdId`. */
@@ -32,8 +32,9 @@ export class EvaluasiWorkspaceOpdResponseDto {
   readonly preview!: EvaluasiWorkspacePreviewDto | null;
 
   @ApiProperty({
-    type: () => [EvaluasiWorkspaceRiwayatNilaiEntryDto],
-    description: 'Riwayat nilai untuk DetailSOP pada query; kosong jika detailSopId tidak dikirim',
+    type: () => [EvaluasiWorkspaceLogNilaiEntryDto],
+    description:
+      'Log penilaian untuk DetailSOP pada query (pengajuan aktif); kosong jika detailSopId tidak dikirim',
   })
-  readonly riwayatNilaiSopTerpilih!: EvaluasiWorkspaceRiwayatNilaiEntryDto[];
+  readonly logNilaiSopTerpilih!: EvaluasiWorkspaceLogNilaiEntryDto[];
 }

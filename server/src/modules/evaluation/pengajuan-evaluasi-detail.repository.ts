@@ -19,7 +19,7 @@ export type BeritaAcaraDokumenRow = {
   }>;
 };
 
-/** Akses data terbatas untuk sub-resource detail pengajuan (keanggotaan batch, TTE BA). */
+/** Akses data terbatas untuk sub-resource detail pengajuan (keanggotaan pengajuan evaluasi, TTE BA). */
 @Injectable()
 export class PengajuanEvaluasiDetailRepository {
   constructor(private readonly prisma: PrismaService) {}

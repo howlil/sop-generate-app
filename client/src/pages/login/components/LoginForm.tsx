@@ -15,7 +15,7 @@ import type { LoginRequestDto } from "@/types/dto/auth.dto";
 
 export interface LoginFormProps {
   isSubmitting: boolean;
-  onSubmitLogin: (payload: LoginRequestDto) => Promise<void>;
+  onSubmitLogin: (payload: LoginRequestDto) => Promise<unknown>;
 }
 
 export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {

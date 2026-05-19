@@ -7,7 +7,7 @@ import { SearchToolbar } from "@/components/ui/search-toolbar";
 import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatusFilterSelect";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { formatDateIdLong } from "@/utils/format-date";
 import { ROUTES } from "@/utils/constants";
 import { useAuthStore } from "@/stores/authStore";
@@ -102,7 +102,11 @@ export function PantauSOP() {
                         </p>
                       </Table.Td>
                       <Table.Td>
-                        <StatusBadge status={sop.status} />
+                        <SopStatusBadge
+                          status={sop.status}
+                          label={sop.statusLabel}
+                          showDomain={false}
+                        />
                       </Table.Td>
                       <Table.Td>
                         <IconActionButton

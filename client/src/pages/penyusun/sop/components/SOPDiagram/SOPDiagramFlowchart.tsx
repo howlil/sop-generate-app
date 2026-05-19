@@ -767,6 +767,8 @@ function FlowchartPage({
                 idarrow={`p${pageIndex}-${idx}-${conn.id}`}
                 obstacles={obstacles}
                 usedSides={usedSides}
+                connectionIndex={idx}
+                allConnections={connections}
                 manualConfig={arrowConfig?.[conn.id]}
                 manualLabelPosition={labelConfig?.positions?.[conn.id]}
                 onPathUpdated={onPathUpdated}

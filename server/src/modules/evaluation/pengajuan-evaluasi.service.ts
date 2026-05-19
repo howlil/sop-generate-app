@@ -7,6 +7,12 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../common';
 import {
+  displayHasilEvaluasi,
+  displayStatusPengajuan,
+  displayStatusSop,
+  displayStatusTindakLanjut,
+} from '../../common/status/status-display';
+import {
   HasilEvaluasi,
   JenisPengajuanEvaluasi,
   PeranPengguna,
@@ -27,15 +33,15 @@ import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 /** Payload selaras kebutuhan client (`PengajuanEvaluasi` di `evaluasi.dto.ts`). */
 type PengajuanEvaluasiApiPayload = Record<string, unknown>;
 
-/** Detail SOP yang boleh dimasukkan batch evaluasi baru (alur penyusun → evaluator). */
-const STATUS_DETAIL_SIAP_BATCH_EVALUASI: readonly StatusSOP[] = [
+/** Detail SOP yang boleh dimasukkan pengajuan evaluasi baru (alur penyusun → evaluator). */
+const STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.SIAP_DIEVALUASI,
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,
   StatusSOP.REVISI_DARI_EVALUATOR,
 ] as const;
 
-const statusBatchSet = new Set<string>(STATUS_DETAIL_SIAP_BATCH_EVALUASI);
+const statusSiapPengajuanEvaluasiSet = new Set<string>(STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI);
 const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
   StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
   StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
@@ -121,9 +127,9 @@ export class PengajuanEvaluasiService {
         if (detail === null) {
           throw new BadRequestException(`Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD Anda.`);
         }
-        if (!statusBatchSet.has(String(detail.status))) {
+        if (!statusSiapPengajuanEvaluasiSet.has(String(detail.status))) {
           throw new BadRequestException(
-            `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat dimasukkan batch evaluasi.`,
+            `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat dimasukkan pengajuan evaluasi.`,
           );
         }
       }
@@ -144,7 +150,7 @@ export class PengajuanEvaluasiService {
       await tx.detailSOP.updateMany({
         where: {
           detailSopId: { in: dto.sopDetailIds },
-          status: { in: [...STATUS_DETAIL_SIAP_BATCH_EVALUASI] },
+          status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
         },
         data: { status: StatusSOP.SEDANG_DIEVALUASI },
       });
@@ -159,7 +165,7 @@ export class PengajuanEvaluasiService {
 
   /**
    * Untuk workspace evaluator: jika belum ada pengajuan aktif dan ada dokumen eligibel,
-   * buat pengajuan `MANDIRI` + baris `NilaiEvaluasi` (tanpa menunggu PJ membuka batch).
+   * buat pengajuan `MANDIRI` + baris `NilaiEvaluasi` (tanpa menunggu PJ membuka pengajuan evaluasi).
    * No-op jika sudah ada pengajuan aktif atau pemanggil bukan EVALUATOR.
    */
   async pastikanPengajuanMandiriUntukEvaluator(
@@ -171,7 +177,7 @@ export class PengajuanEvaluasiService {
       return;
     }
     const sopDetailIds = pipelineRows
-      .filter((r) => statusBatchSet.has(String(r.statusDetail)))
+      .filter((r) => statusSiapPengajuanEvaluasiSet.has(String(r.statusDetail)))
       .map((r) => r.detailSopId);
     if (sopDetailIds.length === 0) {
       return;
@@ -199,7 +205,7 @@ export class PengajuanEvaluasiService {
             `Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD.`,
           );
         }
-        if (!statusBatchSet.has(String(detail.status))) {
+        if (!statusSiapPengajuanEvaluasiSet.has(String(detail.status))) {
           throw new BadRequestException(
             `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat masuk pengajuan mandiri.`,
           );
@@ -222,11 +228,22 @@ export class PengajuanEvaluasiService {
       await tx.detailSOP.updateMany({
         where: {
           detailSopId: { in: sopDetailIds },
-          status: { in: [...STATUS_DETAIL_SIAP_BATCH_EVALUASI] },
+          status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
         },
         data: { status: StatusSOP.SEDANG_DIEVALUASI },
       });
     });
+  }
+
+  /** OPD terikat akun PJ Penyusun / Kepala OPD (untuk workspace tanpa param opdId). */
+  async resolveOpdIdTerikat(user: JwtAccessPayload): Promise<string> {
+    const opdId = await this.resolveForcedOpdFilter(user);
+    if (opdId === undefined) {
+      throw new ForbiddenException(
+        'Hanya PJ Penyusun atau Kepala OPD yang dapat menggunakan workspace OPD sendiri',
+      );
+    }
+    return opdId;
   }
 
   private async resolveForcedOpdFilter(user: JwtAccessPayload): Promise<string | undefined> {
@@ -264,44 +281,49 @@ export class PengajuanEvaluasiService {
     throw new ForbiddenException('Peran tidak diizinkan mengakses detail pengajuan evaluasi');
   }
 
-  private static stringifyHasil(v: HasilEvaluasi | null | undefined): string | undefined {
-    if (v === null || v === undefined) {
-      return undefined;
-    }
-    return String(v);
-  }
-
   private static mapRow(row: PengajuanEvaluasiDetailRow): PengajuanEvaluasiApiPayload {
     const dokBa = row.dokumenTte[0];
     const nomorBA =
       row.nomorBA ??
       (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
-    const sopList = row.nilaiEvaluasi.map((n) => ({
-      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
-      sopDetailId: n.detailSopId,
-      judul: n.detailSop.sop.judul,
-      nomor: n.detailSop.nomorSOP,
-      nama: n.detailSop.sop.judul,
-      nomorSOP: n.detailSop.nomorSOP,
-      status: String(n.detailSop.status),
-      hasil: PengajuanEvaluasiService.stringifyHasil(n.hasil),
-    }));
-    const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => ({
-      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
-      pengajuanEvaluasiId: row.pengajuanEvaluasiId,
-      sopDetailId: n.detailSopId,
-      hasil: PengajuanEvaluasiService.stringifyHasil(n.hasil),
-      catatan: n.catatan ?? undefined,
-      version: n.version,
-      dinilaiOlehId: n.dinilaiOlehId ?? undefined,
-      dinilaiOleh:
-        n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
-          ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
-          : undefined,
-      sopDetail: { id: n.detailSopId },
-      createdAt: n.createdAt.toISOString(),
-      updatedAt: n.updatedAt.toISOString(),
-    }));
+    const sopList = row.nilaiEvaluasi.map((n) => {
+      const statusDisplay = displayStatusSop(n.detailSop.status);
+      const hasilDisplay = displayHasilEvaluasi(n.hasil);
+      return {
+        id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
+        sopDetailId: n.detailSopId,
+        judul: n.detailSop.sop.judul,
+        nomor: n.detailSop.nomorSOP,
+        nama: n.detailSop.sop.judul,
+        nomorSOP: n.detailSop.nomorSOP,
+        status: statusDisplay.value,
+        statusLabel: statusDisplay.label,
+        hasil: hasilDisplay.value,
+        hasilLabel: hasilDisplay.label,
+      };
+    });
+    const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => {
+      const tindakDisplay = displayStatusTindakLanjut(n.statusTindakLanjut);
+      return {
+        id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
+        pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+        sopDetailId: n.detailSopId,
+        hasil: displayHasilEvaluasi(n.hasil).value,
+        catatan: n.catatan ?? undefined,
+        statusTindakLanjut: tindakDisplay?.value,
+        statusTindakLanjutLabel: tindakDisplay?.label,
+        ditindaklanjutiPada: n.ditindaklanjutiPada?.toISOString(),
+        version: n.version,
+        dinilaiOlehId: n.dinilaiOlehId ?? undefined,
+        dinilaiOleh:
+          n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
+            ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
+            : undefined,
+        sopDetail: { id: n.detailSopId },
+        createdAt: n.createdAt.toISOString(),
+        updatedAt: n.updatedAt.toISOString(),
+      };
+    });
     const riwayatEvaluasi = row.logNilaiEvaluasi.map((log) => ({
       id: encodeLogNilaiEvaluasiClientId(
         log.pengajuanEvaluasiId,
@@ -312,8 +334,14 @@ export class PengajuanEvaluasiService {
       sopDetailId: log.detailSopId,
       evaluatorId: log.penggunaId,
       evaluatorNama: log.pengguna.nama,
-      hasilSebelum: PengajuanEvaluasiService.stringifyHasil(log.hasilSebelum),
-      hasilSesudah: PengajuanEvaluasiService.stringifyHasil(log.hasilSesudah),
+      hasilSebelum:
+        log.hasilSebelum === null || log.hasilSebelum === undefined
+          ? undefined
+          : displayHasilEvaluasi(log.hasilSebelum).value,
+      hasilSesudah:
+        log.hasilSesudah === null || log.hasilSesudah === undefined
+          ? undefined
+          : displayHasilEvaluasi(log.hasilSesudah).value,
       catatanSebelum: log.catatanSebelum ?? undefined,
       catatanSesudah: log.catatanSesudah ?? undefined,
       createdAt: log.createdAt.toISOString(),
@@ -321,12 +349,14 @@ export class PengajuanEvaluasiService {
     const tanggalVerifikasi = STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI.has(row.status)
       ? row.updatedAt.toISOString()
       : undefined;
+    const statusDisplay = displayStatusPengajuan(row.status);
     return {
       id: row.pengajuanEvaluasiId,
       opdId: row.opdId,
       opdNama: row.opd.nama,
       jenis: String(row.jenis),
-      status: String(row.status),
+      status: statusDisplay.value,
+      statusLabel: statusDisplay.label,
       nomorBA,
       tanggalPermintaan: row.tanggalPermintaan?.toISOString(),
       tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),

@@ -7,9 +7,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { InfoCard } from "@/components/ui/info-card";
 import type { AjukanEvaluasiSnapshotRow } from "@/api/evaluasi";
-import type { EvaluasiBatchSubmitError } from "@/types/dto/evaluasi.dto";
+import type { PengajuanEvaluasiSubmitError } from "@/types/dto/evaluasi.dto";
 
 export interface DetailEvaluasiOPDSubmitDialogProps {
   open: boolean;
@@ -22,7 +21,7 @@ export interface DetailEvaluasiOPDSubmitDialogProps {
   /** false untuk pengajuan MANDIRI — teks bantuan tanpa syarat skor OPD. */
   requiresNilaiOpdInCopy?: boolean;
   /** Error validasi / server terakhir (ditampilkan di dalam dialog). */
-  terjadwalSubmitError?: EvaluasiBatchSubmitError;
+  terjadwalSubmitError?: PengajuanEvaluasiSubmitError;
 }
 
 export function DetailEvaluasiOPDSubmitDialog({
@@ -33,78 +32,46 @@ export function DetailEvaluasiOPDSubmitDialog({
   blockingReason,
   onConfirm,
   isSubmitting = false,
-  requiresNilaiOpdInCopy = true,
   terjadwalSubmitError = { kind: "none", items: [] },
 }: DetailEvaluasiOPDSubmitDialogProps) {
   const serverMessage =
     terjadwalSubmitError.kind === "blocked" || terjadwalSubmitError.kind === "incomplete"
       ? terjadwalSubmitError.message
       : null;
+  const alertMessage = serverMessage ?? (!canConfirm ? blockingReason : null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-sm">Ajukan hasil ke PJ Evaluator</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
-          <p className="text-xs text-gray-600">
-            Pengajuan hanya dapat diselesaikan jika{" "}
-            <strong>semua SOP dalam pengajuan bernilai Sesuai</strong> (tersimpan di server)
-            {requiresNilaiOpdInCopy ? (
-              <>
-                {" "}
-                dan <strong>skor evaluasi OPD (1–5)</strong> sudah diisi di tab Evaluasi OPD.
-              </>
-            ) : (
-              <>.</>
-            )}{" "}
-            SOP <strong>Perlu Perbaikan</strong> dikembalikan ke penyusun melalui catatan
-            formal pada tab Evaluasi SOP — bukan lewat dialog ini.
-          </p>
-          {serverMessage ? (
-            <InfoCard variant="warning" className="border-red-200 bg-red-50 text-red-900">
-              <p className="text-sm font-medium">{serverMessage}</p>
-            </InfoCard>
-          ) : null}
-          {!canConfirm && blockingReason ? (
-            <InfoCard variant="warning">
-              <p className="text-xs text-amber-900">{blockingReason}</p>
-            </InfoCard>
+          {alertMessage ? (
+            <p className="text-xs text-amber-900 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+              {alertMessage}
+            </p>
           ) : null}
           {snapshotRows.length === 0 ? (
-            <InfoCard variant="warning">
-              <p className="text-sm text-amber-800">
-                Tidak ada dokumen dalam pengajuan evaluasi aktif untuk OPD ini.
-              </p>
-            </InfoCard>
+            <p className="text-xs text-gray-500">Tidak ada dokumen dalam pengajuan ini.</p>
           ) : (
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-2 max-h-52 overflow-auto scrollbar-hide">
-              <p className="text-[10px] font-semibold text-gray-600 mb-2">
-                Ringkasan nilai per dokumen (termasuk draf SOP terpilih)
-              </p>
-              <ul className="space-y-1.5 text-xs">
-                {snapshotRows.map((row) => (
-                  <li
-                    key={row.detailSopId}
-                    className="flex flex-col gap-0.5 py-1.5 border-b border-gray-100 last:border-0"
-                  >
-                    <span className="font-medium text-gray-900">{row.judul}</span>
-                    <span className="text-gray-500 font-mono">{row.nomorSOP}</span>
-                    <span className="text-[10px] text-blue-700 font-medium">
-                      → {row.hasilLabel}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="max-h-52 overflow-auto rounded-md border border-gray-200 divide-y divide-gray-100 text-xs scrollbar-hide">
+              {snapshotRows.map((row) => (
+                <li
+                  key={row.detailSopId}
+                  className="flex items-start justify-between gap-3 px-3 py-2"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-gray-900 truncate">{row.judul}</p>
+                    <p className="text-[10px] text-gray-500 font-mono truncate">{row.nomorSOP}</p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-medium text-gray-700">
+                    {row.hasilLabel}
+                  </span>
+                </li>
+              ))}
+            </ul>
           )}
-          <InfoCard variant="warning">
-            <p className="text-xs text-amber-800">
-              Setelah diajukan, pengajuan ini berstatus selesai dievaluasi dan dokumen yang
-              Sesuai akan maju ke tahap verifikasi sesuai alur Biro.
-            </p>
-          </InfoCard>
         </div>
         <DialogFooter className="gap-2">
           <Button
@@ -120,9 +87,7 @@ export function DetailEvaluasiOPDSubmitDialog({
             size="sm"
             className="h-8 text-xs gap-1.5"
             onClick={onConfirm}
-            disabled={
-              snapshotRows.length === 0 || !canConfirm || isSubmitting
-            }
+            disabled={snapshotRows.length === 0 || !canConfirm || isSubmitting}
           >
             <Send className="w-3.5 h-3.5" /> Ya, ajukan ke PJ
           </Button>

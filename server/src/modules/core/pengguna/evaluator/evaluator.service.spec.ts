@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PeranPengguna, type Pengguna } from '../../../../generated/prisma';
 import { PenggunaRepository } from '../pengguna.repository';
@@ -92,5 +93,49 @@ describe('EvaluatorService', () => {
   it('should_pass_search_to_findEvaluatorsByOpd', async () => {
     await service.listGrup('  teguh  ');
     expect(repository.findEvaluatorsByOpd).toHaveBeenCalledWith('opd-biro', '  teguh  ');
+  });
+
+  it('should_throw_service_unavailable_on_listGrup_when_no_pj', async () => {
+    repository.findPjEvaluatorOrganisasiOpd.mockResolvedValueOnce(null);
+    await expect(service.listGrup()).rejects.toBeInstanceOf(ServiceUnavailableException);
+  });
+
+  it('should_throw_service_unavailable_when_biro_not_configured_on_create', async () => {
+    repository.findPjEvaluatorOrganisasiOpdId.mockResolvedValueOnce(null);
+    await expect(
+      service.createAnggota({
+        email: 'e@test.com',
+        nama: 'N',
+        nip: 'nip1',
+        jabatan: 'Jab',
+        pangkat: 'P',
+        nohp: '08',
+      }),
+    ).rejects.toBeInstanceOf(ServiceUnavailableException);
+    expect(repository.createEvaluator).not.toHaveBeenCalled();
+  });
+
+  it('should_assign_evaluator_to_biro_opd_on_create', async () => {
+    await service.createAnggota({
+      email: 'e@test.com',
+      nama: 'N',
+      nip: 'nip1',
+      jabatan: 'Jab',
+      pangkat: 'P',
+      nohp: '08',
+    });
+    expect(repository.createEvaluator).toHaveBeenCalledWith(
+      expect.objectContaining({
+        opd: { connect: { opdId: 'opd-biro' } },
+        peran: PeranPengguna.EVALUATOR,
+      }),
+    );
+  });
+
+  it('should_throw_not_found_when_update_evaluator_outside_biro', async () => {
+    repository.findEvaluatorByIdInOpd.mockResolvedValueOnce(null);
+    await expect(service.updateAnggota('u-unknown', { nama: 'X' })).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

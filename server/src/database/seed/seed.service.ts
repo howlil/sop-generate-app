@@ -15,9 +15,16 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
+import { mapStatusSopUntukPengajuan, SEED_TTE_PIN } from './seed-status.util';
 
 const BCRYPT_SALT_ROUNDS = 10;
 const DEFAULT_SEED_PASSWORD = '@Password123:)';
+const STATUS_PENGAJUAN_AKTIF_SEED: readonly StatusPengajuanEvaluasi[] = [
+  StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+  StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+  StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+] as const;
 
 /** Identitas OPD — dipakai sebagai kunci lookup di SEED_USERS */
 const SEED_OPD_PJ_EVALUATOR = 'Biro Organisasi Sekretariat Daerah';
@@ -222,6 +229,7 @@ export class SeedService {
   async run(): Promise<void> {
     const plainPassword = this.config.get<string>('SEED_DEFAULT_PASSWORD', DEFAULT_SEED_PASSWORD);
     const hashedPassword = await bcrypt.hash(plainPassword, BCRYPT_SALT_ROUNDS);
+    const ttePinHash = await bcrypt.hash(SEED_TTE_PIN, BCRYPT_SALT_ROUNDS);
 
     await this.prisma.$transaction(async (tx) => {
       // 1. OPD
@@ -296,7 +304,7 @@ export class SeedService {
         penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
       });
 
-      // 12. PengajuanEvaluasi & NilaiEvaluasi — 6 baris seed untuk seluruh 5 nilai StatusPengajuanEvaluasi (dua baris SEDANG_DIEVALUASI)
+      // 12. PengajuanEvaluasi & NilaiEvaluasi (+ pengajuan sintetis untuk pagination)
       const pe = await this.seedPengajuanDanNilaiEvaluasi(tx, {
         d,
         opdDinkesId: opdDinkes.opdId,
@@ -310,16 +318,27 @@ export class SeedService {
         pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
       });
 
+      await this.syncSemuaStatusDetailSopPengajuan(tx, pe);
+
+      await this.ensureProsedurUntukSemuaNilaiEvaluasi(tx, pel, {
+        opdDinkesId: opdDinkes.opdId,
+        opdDiskominfoId: opdDiskominfo.opdId,
+        opdDisdikId: opdDisdik.opdId,
+      });
+
       // 13. Log Nilai Evaluasi
       await this.seedLogNilaiEvaluasi(tx, { d, pe, evaluator1Id: u['evaluator1@gmail.com'].penggunaId, evaluator2Id: u['evaluator2@gmail.com'].penggunaId });
 
-      // 14. DokumenTTE — JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
+      await this.validateSeedEvaluationBusinessRules(tx);
+
+      // 14. DokumenTTE - JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
       const dok = await this.seedDokumenTte(tx, { d, pe });
 
       // 15. PIN TTE di `Pengguna` & RiwayatTandaTangan
       await this.seedKredensialDanRiwayatTtd(tx, {
         u,
         dok,
+        ttePinHash,
         pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
         kepalaDinkesId: u['kepalaopd.dinkes@gmail.com'].penggunaId,
         pjPenyusunDiskominfoId: u['pjpenyusun.diskominfo@gmail.com'].penggunaId,
@@ -327,22 +346,21 @@ export class SeedService {
         pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
         kepalaDisdikId: u['kepalaopd.disdik@gmail.com'].penggunaId,
         pjEvaluatorId: u['pjevaluator@gmail.com'].penggunaId,
+        evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
+        evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
       });
     });
 
     this.logger.log(
       [
         'Seed selesai.',
-        'Cakupan: 4 OPD, 12 pengguna (semua PeranPengguna),',
-        '4 peraturan, 13 DetailSOP (semua 11 StatusSOP),',
-        '6 baris PengajuanEvaluasi (5 nilai StatusPengajuanEvaluasi di enum; dua baris memakai SEDANG_DIEVALUASI),',
-        'semua SatuanWaktu, JenisLangkahProsedur, BagianSOP,',
-        'JenisDokumenTte, StatusKomentar, HasilEvaluasi.',
-        'Invariant jabatan OPD: Pengguna.opdId + peran (+ deletedAt); lihat layanan core/pengguna & opd.',
+        'Reset dev: pnpm db:fresh (prisma migrate reset + seed).',
+        'Cakupan: 4 OPD, 12 pengguna, 13 DetailSOP, 14+ PengajuanEvaluasi,',
+        'invariant status SOP seragam per pengajuan, prosedur minimal (≥3 langkah, ≥2 pelaksana).',
       ].join(' '),
     );
     this.logger.warn(
-      `Atur SEED_DEFAULT_PASSWORD di .env. Nilai default (${DEFAULT_SEED_PASSWORD}) hanya untuk pengembangan lokal.`,
+      `Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}). PIN TTE seed: ${SEED_TTE_PIN} (development).`,
     );
   }
 
@@ -566,6 +584,7 @@ export class SeedService {
       dibuatOlehId: params.penyusunDinkesId,
       terakhirDieditOlehId: params.penyusunDinkesId,
       tanggalRevisi: new Date('2026-02-01T00:00:00.000Z'),
+      revisiDariDetailSopId: d['DINKES_001_V1'].detailSopId,
     });
 
     // StatusSOP.DRAFT — baru dibuat, belum disusun
@@ -672,12 +691,13 @@ export class SeedService {
       tanggalEfektif: new Date('2023-06-01T00:00:00.000Z'),
     });
 
-    // StatusSOP.BERLAKU — versi baru pengganti (constraint: 1 BERLAKU per SOP)
+    // StatusSOP.SIAP_DIVERIFIKASI — versi baru menunggu pengesahan Kepala OPD (alur DISDIK_MANDIRI)
     d['DISDIK_001_V2'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DISDIK-001-V2',
       sopId: sopPPDB.sopId,
       versi: 2,
-      status: StatusSOP.BERLAKU,
+      revisiDariDetailSopId: d['DISDIK_001_V1'].detailSopId,
+      status: StatusSOP.SIAP_DIVERIFIKASI,
       namaLembaga: 'Dinas Pendidikan Provinsi',
       dibuatOlehId: params.penyusunDisdikId,
       terakhirDieditOlehId: params.penyusunDisdikId,
@@ -712,6 +732,7 @@ export class SeedService {
       terakhirDieditOlehId: string;
       tanggalEfektif?: Date;
       tanggalRevisi?: Date;
+      revisiDariDetailSopId?: string | null;
     },
   ): Promise<{ detailSopId: string }> {
     return tx.detailSOP.upsert({
@@ -723,6 +744,7 @@ export class SeedService {
         terakhirDieditOlehId: data.terakhirDieditOlehId,
         tanggalEfektif: data.tanggalEfektif,
         tanggalRevisi: data.tanggalRevisi,
+        revisiDariDetailSopId: data.revisiDariDetailSopId ?? null,
       },
       select: { detailSopId: true },
     });
@@ -1379,7 +1401,7 @@ export class SeedService {
       status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
       tanggalPermintaan: new Date('2026-01-10T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-01-15T00:00:00.000Z'),
-      nilaiOPD: 78,
+      nilaiOPD: 4,
       diverifikasiOlehUserId: null,
       ditandatanganiOlehPjPenyusunUserId: null,
       tanggalTTDBaPjPenyusun: null,
@@ -1387,29 +1409,29 @@ export class SeedService {
       tanggalDiselesaikan: new Date('2026-01-20T00:00:00.000Z'),
     });
 
-    // 4. DIVERIFIKASI_PJ_EVALUATOR — telah diverifikasi, menunggu tanda tangan PJ Penyusun
+    // 4. SELESAI - riwayat pengajuan Diskominfo yang sudah selesai penuh
     pe['DISKOMINFO_TERJADWAL'] = await this.findOrCreatePengajuan(tx, 'BA-DISKOMINFO-2026-002', {
       opdId: params.opdDiskominfoId,
       jenis: JenisPengajuanEvaluasi.TERJADWAL,
-      status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+      status: StatusPengajuanEvaluasi.SELESAI,
       tanggalPermintaan: new Date('2026-02-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-02-05T00:00:00.000Z'),
-      nilaiOPD: 82,
+      nilaiOPD: 4,
       diverifikasiOlehUserId: params.pjEvaluatorId,
-      ditandatanganiOlehPjPenyusunUserId: null,
-      tanggalTTDBaPjPenyusun: null,
+      ditandatanganiOlehPjPenyusunUserId: params.pjPenyusunDiskominfoId,
+      tanggalTTDBaPjPenyusun: new Date('2026-02-12T00:00:00.000Z'),
       diselesaikanOlehId: params.evaluator1Id,
       tanggalDiselesaikan: new Date('2026-02-10T00:00:00.000Z'),
     });
 
-    // 5. DITANDATANGANI_PJ_PENYUSUN — PJ Penyusun sudah tanda tangan BA
+    // 5. SELESAI - riwayat pengajuan Dinkes yang sudah disahkan Kepala OPD
     pe['DINKES_TERJADWAL'] = await this.findOrCreatePengajuan(tx, 'BA-DINKES-2026-001', {
       opdId: params.opdDinkesId,
       jenis: JenisPengajuanEvaluasi.TERJADWAL,
-      status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+      status: StatusPengajuanEvaluasi.SELESAI,
       tanggalPermintaan: new Date('2026-03-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-03-05T00:00:00.000Z'),
-      nilaiOPD: 87,
+      nilaiOPD: 5,
       diverifikasiOlehUserId: params.pjEvaluatorId,
       ditandatanganiOlehPjPenyusunUserId: params.pjPenyusunDinkesId,
       tanggalTTDBaPjPenyusun: new Date('2026-03-10T00:00:00.000Z'),
@@ -1417,14 +1439,14 @@ export class SeedService {
       tanggalDiselesaikan: new Date('2026-03-08T00:00:00.000Z'),
     });
 
-    // 6. SELESAI — seluruh alur selesai, SOP mendapat status BERLAKU
+    // 6. SELESAI - riwayat revisi PPDB versi baru yang sudah berlaku
     pe['DISDIK_MANDIRI'] = await this.findOrCreatePengajuan(tx, 'BA-DISDIK-2026-002', {
       opdId: params.opdDisdikId,
       jenis: JenisPengajuanEvaluasi.MANDIRI,
       status: StatusPengajuanEvaluasi.SELESAI,
       tanggalPermintaan: new Date('2023-10-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2023-10-15T00:00:00.000Z'),
-      nilaiOPD: 91,
+      nilaiOPD: null,
       diverifikasiOlehUserId: params.pjEvaluatorId,
       ditandatanganiOlehPjPenyusunUserId: params.pjPenyusunDisdikId,
       tanggalTTDBaPjPenyusun: new Date('2023-10-25T00:00:00.000Z'),
@@ -1434,13 +1456,15 @@ export class SeedService {
 
     // ── NilaiEvaluasi (mencakup null, SESUAI, PERLU_PERBAIKAN) ─────────────
 
-    // Pengajuan SEDANG_DIEVALUASI (Dinkes mandiri): nilai belum ada (null)
+    // Pengajuan SEDANG_DIEVALUASI (Dinkes mandiri): SOP revisi dengan umpan balik TERBUKA
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DINKES_MANDIRI'].pengajuanEvaluasiId,
-      detailSopId: d['DINKES_005_V1'].detailSopId,
-      hasil: null,
-      catatan: null,
-      dinilaiOlehId: null,
+      detailSopId: d['DINKES_006_V1'].detailSopId,
+      hasil: HasilEvaluasi.PERLU_PERBAIKAN,
+      catatan:
+        'Lengkapi prosedur distribusi obat dengan SLA dan bukti serah terima yang dapat diaudit.',
+      dinilaiOlehId: params.evaluator1Id,
+      statusTindakLanjut: StatusKomentar.TERBUKA,
     });
 
     // Pengajuan SEDANG_DIEVALUASI: sebagian terisi
@@ -1452,12 +1476,12 @@ export class SeedService {
       dinilaiOlehId: null,
     });
 
-    // Pengajuan SELESAI_DIEVALUASI: semua terisi
+    // Pengajuan SELESAI_DIEVALUASI: akreditasi (SOP terpisah dari batch PPDB selesai)
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
-      detailSopId: d['DISDIK_001_V1'].detailSopId,
+      detailSopId: d['DISDIK_002_V1'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
-      catatan: 'Dokumen PPDB versi lama lengkap dan sesuai regulasi saat itu.',
+      catatan: 'Dokumen PPDB lengkap dan sesuai regulasi zonasi terkini.',
       dinilaiOlehId: params.evaluator2Id,
     });
 
@@ -1470,23 +1494,23 @@ export class SeedService {
       dinilaiOlehId: params.evaluator1Id,
     });
 
-    // Pengajuan DITANDATANGANI (Dinkes V1 SESUAI, V2 PERLU_PERBAIKAN)
+    // Pengajuan DITANDATANGANI — dua SOP berbeda (bukan V1+V2 satu induk SOP)
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
-      detailSopId: d['DINKES_001_V1'].detailSopId,
+      detailSopId: d['DINKES_004_V1'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
-      catatan: 'Dokumen lengkap dan implementasi konsisten di lapangan.',
+      catatan: 'SOP penanganan gizi buruk sesuai standar pelayanan.',
       dinilaiOlehId: params.evaluator1Id,
     });
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
-      detailSopId: d['DINKES_001_V2'].detailSopId,
-      hasil: HasilEvaluasi.PERLU_PERBAIKAN,
-      catatan: 'Perlu perjelas SLA pada langkah keputusan dan kapasitas dokter.',
+      detailSopId: d['DINKES_005_V1'].detailSopId,
+      hasil: HasilEvaluasi.SESUAI,
+      catatan: 'SOP rawat inap lengkap dan dapat diimplementasikan.',
       dinilaiOlehId: params.evaluator1Id,
     });
 
-    // Pengajuan SELESAI (Disdik V2 SESUAI — SOP mendapat status BERLAKU)
+    // Pengajuan SELESAI (Disdik V2 SESUAI - versi baru sudah berlaku)
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
       detailSopId: d['DISDIK_001_V2'].detailSopId,
@@ -1495,7 +1519,349 @@ export class SeedService {
       dinilaiOlehId: params.evaluator1Id,
     });
 
+    const peTambahan = await this.seedPengajuanEvaluasiTambahan(tx, {
+      d,
+      params,
+    });
+    return { ...pe, ...peTambahan };
+  }
+
+  /** 8 pengajuan sintetis agar daftar evaluator/PJ evaluator > 10 baris (pagination). */
+  private async seedPengajuanEvaluasiTambahan(
+    tx: Prisma.TransactionClient,
+    input: {
+      d: Record<string, { detailSopId: string }>;
+      params: {
+        opdDinkesId: string;
+        opdDiskominfoId: string;
+        opdDisdikId: string;
+        evaluator1Id: string;
+        evaluator2Id: string;
+        pjEvaluatorId: string;
+        pjPenyusunDinkesId: string;
+        pjPenyusunDiskominfoId: string;
+        pjPenyusunDisdikId: string;
+      };
+    },
+  ): Promise<Record<string, { pengajuanEvaluasiId: string }>> {
+    const { d, params } = input;
+    const pe: Record<string, { pengajuanEvaluasiId: string }> = {};
+    type OpdKey = 'dinkes' | 'diskominfo' | 'disdik';
+    const opdByKey: Record<OpdKey, string> = {
+      dinkes: params.opdDinkesId,
+      diskominfo: params.opdDiskominfoId,
+      disdik: params.opdDisdikId,
+    };
+    const pjPenyusunByKey: Record<OpdKey, string> = {
+      dinkes: params.pjPenyusunDinkesId,
+      diskominfo: params.pjPenyusunDiskominfoId,
+      disdik: params.pjPenyusunDisdikId,
+    };
+    const baris: ReadonlyArray<{
+      key: string;
+      nomorBA: string;
+      opdKey: OpdKey;
+      jenis: JenisPengajuanEvaluasi;
+      status: StatusPengajuanEvaluasi;
+      detailKey: string;
+      hasil: HasilEvaluasi | null;
+      nilaiOPD: number | null;
+      evaluatorId: string | null;
+    }> = [
+      {
+        key: 'SYNTH_01',
+        nomorBA: 'BA-SYNTH-2026-001',
+        opdKey: 'dinkes',
+        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DINKES_001_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: null,
+        evaluatorId: params.evaluator1Id,
+      },
+      {
+        key: 'SYNTH_02',
+        nomorBA: 'BA-SYNTH-2026-002',
+        opdKey: 'dinkes',
+        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DINKES_004_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: null,
+        evaluatorId: params.evaluator1Id,
+      },
+      {
+        key: 'SYNTH_03',
+        nomorBA: 'BA-SYNTH-2026-003',
+        opdKey: 'dinkes',
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DINKES_005_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: 4,
+        evaluatorId: params.evaluator1Id,
+      },
+      {
+        key: 'SYNTH_04',
+        nomorBA: 'BA-SYNTH-2026-004',
+        opdKey: 'dinkes',
+        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DINKES_001_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: null,
+        evaluatorId: params.evaluator2Id,
+      },
+      {
+        key: 'SYNTH_05',
+        nomorBA: 'BA-SYNTH-2026-005',
+        opdKey: 'diskominfo',
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DISKOMINFO_002_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: 5,
+        evaluatorId: params.evaluator2Id,
+      },
+      {
+        key: 'SYNTH_06',
+        nomorBA: 'BA-SYNTH-2026-006',
+        opdKey: 'disdik',
+        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DISDIK_001_V2',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: null,
+        evaluatorId: params.evaluator1Id,
+      },
+      {
+        key: 'SYNTH_07',
+        nomorBA: 'BA-SYNTH-2026-007',
+        opdKey: 'dinkes',
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DINKES_004_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: 4,
+        evaluatorId: params.evaluator1Id,
+      },
+      {
+        key: 'SYNTH_08',
+        nomorBA: 'BA-SYNTH-2026-008',
+        opdKey: 'diskominfo',
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        detailKey: 'DISKOMINFO_002_V1',
+        hasil: HasilEvaluasi.SESUAI,
+        nilaiOPD: 5,
+        evaluatorId: params.evaluator2Id,
+      },
+    ];
+    let offsetHari = 0;
+    for (const row of baris) {
+      offsetHari += 3;
+      const tanggal = new Date(`2026-05-${String(1 + offsetHari).padStart(2, '0')}T00:00:00.000Z`);
+      const selesai =
+        row.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI
+          ? new Date(tanggal.getTime() + 5 * 24 * 60 * 60 * 1000)
+          : null;
+      pe[row.key] = await this.findOrCreatePengajuan(tx, row.nomorBA, {
+        opdId: opdByKey[row.opdKey],
+        jenis: row.jenis,
+        status: row.status,
+        tanggalPermintaan: tanggal,
+        tanggalEvaluasi: tanggal,
+        nilaiOPD: row.nilaiOPD,
+        diverifikasiOlehUserId:
+          row.status === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI ? null : params.pjEvaluatorId,
+        ditandatanganiOlehPjPenyusunUserId:
+          row.status === StatusPengajuanEvaluasi.SELESAI ? pjPenyusunByKey[row.opdKey] : null,
+        tanggalTTDBaPjPenyusun:
+          row.status === StatusPengajuanEvaluasi.SELESAI
+            ? new Date(tanggal.getTime() + 7 * 24 * 60 * 60 * 1000)
+            : null,
+        diselesaikanOlehId: row.evaluatorId,
+        tanggalDiselesaikan: selesai,
+      });
+      await tx.nilaiEvaluasi.deleteMany({
+        where: {
+          pengajuanEvaluasiId: pe[row.key].pengajuanEvaluasiId,
+          detailSopId: { not: d[row.detailKey].detailSopId },
+        },
+      });
+      await this.upsertNilai(tx, {
+        pengajuanEvaluasiId: pe[row.key].pengajuanEvaluasiId,
+        detailSopId: d[row.detailKey].detailSopId,
+        hasil: row.hasil,
+        catatan: row.hasil === HasilEvaluasi.SESUAI ? 'Sesuai (seed sintetis).' : null,
+        dinilaiOlehId: row.evaluatorId,
+      });
+    }
     return pe;
+  }
+
+  /** Selaraskan status semua DetailSOP anggota batch dengan status pengajuan. */
+  private async syncSemuaStatusDetailSopPengajuan(
+    tx: Prisma.TransactionClient,
+    pe: Record<string, { pengajuanEvaluasiId: string }>,
+  ): Promise<void> {
+    for (const { pengajuanEvaluasiId } of Object.values(pe)) {
+      const pengajuan = await tx.pengajuanEvaluasi.findUnique({
+        where: { pengajuanEvaluasiId },
+        select: { status: true },
+      });
+      if (pengajuan === null) {
+        continue;
+      }
+      await this.syncStatusDetailSopDalamPengajuan(
+        tx,
+        pengajuanEvaluasiId,
+        pengajuan.status,
+      );
+    }
+  }
+
+  private async syncStatusDetailSopDalamPengajuan(
+    tx: Prisma.TransactionClient,
+    pengajuanEvaluasiId: string,
+    statusPengajuan: StatusPengajuanEvaluasi,
+  ): Promise<void> {
+    const statusSop = mapStatusSopUntukPengajuan(statusPengajuan);
+    const nilai = await tx.nilaiEvaluasi.findMany({
+      where: { pengajuanEvaluasiId },
+      select: { detailSopId: true, hasil: true, statusTindakLanjut: true },
+    });
+    if (nilai.length === 0) {
+      return;
+    }
+    for (const n of nilai) {
+      const statusDetail =
+        statusPengajuan === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI &&
+        n.hasil === HasilEvaluasi.PERLU_PERBAIKAN &&
+        n.statusTindakLanjut === StatusKomentar.TERBUKA
+          ? StatusSOP.REVISI_DARI_EVALUATOR
+          : statusSop;
+      await tx.detailSOP.update({
+        where: { detailSopId: n.detailSopId },
+        data: { status: statusDetail },
+      });
+    }
+  }
+
+  /** Pastikan setiap DetailSOP yang masuk evaluasi punya ≥2 pelaksana dan ≥3 langkah. */
+  private async ensureProsedurUntukSemuaNilaiEvaluasi(
+    tx: Prisma.TransactionClient,
+    pel: Record<string, { pelaksanaId: string }>,
+    opdIds: { opdDinkesId: string; opdDiskominfoId: string; opdDisdikId: string },
+  ): Promise<void> {
+    const barisNilai = await tx.nilaiEvaluasi.groupBy({
+      by: ['detailSopId'],
+    });
+    for (const baris of barisNilai) {
+      const detail = await tx.detailSOP.findUniqueOrThrow({
+        where: { detailSopId: baris.detailSopId },
+        select: { sop: { select: { opdId: true } } },
+      });
+      const opdId = detail.sop.opdId;
+      const [pelaksanaUtamaId, pelaksanaSekunderId] = this.resolveDuaPelaksanaSeed(
+        opdId,
+        pel,
+        opdIds,
+      );
+      await this.ensureProsedurMinimal(
+        tx,
+        baris.detailSopId,
+        pelaksanaUtamaId,
+        pelaksanaSekunderId,
+      );
+    }
+  }
+
+  private resolveDuaPelaksanaSeed(
+    opdId: string,
+    pel: Record<string, { pelaksanaId: string }>,
+    opdIds: { opdDinkesId: string; opdDiskominfoId: string; opdDisdikId: string },
+  ): [string, string] {
+    if (opdId === opdIds.opdDinkesId) {
+      return [pel['FRONT_OFFICE_DINKES'].pelaksanaId, pel['KASUBAG_DINKES'].pelaksanaId];
+    }
+    if (opdId === opdIds.opdDiskominfoId) {
+      return [
+        pel['TIM_LAYANAN_DISKOMINFO'].pelaksanaId,
+        pel['TIM_MEDIA_DISKOMINFO'].pelaksanaId,
+      ];
+    }
+    return [pel['TIM_PPDB_DISDIK'].pelaksanaId, pel['SEKSI_AKREDITASI_DISDIK'].pelaksanaId];
+  }
+
+  private async ensureProsedurMinimal(
+    tx: Prisma.TransactionClient,
+    detailSopId: string,
+    pelaksanaUtamaId: string,
+    pelaksanaSekunderId: string,
+  ): Promise<void> {
+    const swimlaneCount = await tx.detailSOPPelaksana.count({
+      where: { detailSopId },
+    });
+    const langkahCount = await tx.langkahSOP.count({
+      where: { detailSopId },
+    });
+    if (swimlaneCount >= 2 && langkahCount >= 3) {
+      return;
+    }
+    if (swimlaneCount < 1) {
+      await this.upsertSwimlane(tx, detailSopId, pelaksanaUtamaId, 1);
+    }
+    if (swimlaneCount < 2) {
+      await this.upsertSwimlane(tx, detailSopId, pelaksanaSekunderId, 2);
+    }
+    if (langkahCount >= 3) {
+      return;
+    }
+    const lStart = await this.upsertLangkah(tx, {
+      detailSopId,
+      kegiatan: 'Mulai: Memulai pelaksanaan prosedur.',
+      jenis: JenisLangkahProsedur.AWAL_AKHIR,
+      urutan: 1,
+      kelengkapan: '-',
+      keluaran: 'Alur dimulai',
+      waktu: 15,
+      satuanWaktu: SatuanWaktu.m,
+      keterangan: 'Langkah awal (seed minimal).',
+      pelaksanaId: pelaksanaUtamaId,
+    });
+    const lKegiatan = await this.upsertLangkah(tx, {
+      detailSopId,
+      kegiatan: 'Melaksanakan kegiatan inti sesuai SOP.',
+      jenis: JenisLangkahProsedur.KEGIATAN,
+      urutan: 2,
+      kelengkapan: 'Dokumen dan peralatan standar',
+      keluaran: 'Kegiatan selesai',
+      waktu: 1,
+      satuanWaktu: SatuanWaktu.h,
+      keterangan: 'Kegiatan utama (seed minimal).',
+      pelaksanaId: pelaksanaSekunderId,
+    });
+    const lEnd = await this.upsertLangkah(tx, {
+      detailSopId,
+      kegiatan: 'Selesai: Menutup pelaksanaan prosedur.',
+      jenis: JenisLangkahProsedur.AWAL_AKHIR,
+      urutan: 3,
+      kelengkapan: 'Keluaran kegiatan inti',
+      keluaran: 'Prosedur selesai',
+      waktu: 30,
+      satuanWaktu: SatuanWaktu.m,
+      keterangan: 'Langkah akhir (seed minimal).',
+      pelaksanaId: pelaksanaUtamaId,
+    });
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lStart.langkahSopId },
+      data: { langkahSelanjutnyaYaId: lKegiatan.langkahSopId },
+    });
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lKegiatan.langkahSopId },
+      data: { langkahSelanjutnyaYaId: lEnd.langkahSopId },
+    });
   }
 
   private async upsertNilai(
@@ -1506,8 +1872,18 @@ export class SeedService {
       hasil: HasilEvaluasi | null;
       catatan: string | null;
       dinilaiOlehId: string | null;
+      statusTindakLanjut?: StatusKomentar | null;
     },
   ): Promise<void> {
+    const statusTindakLanjut =
+      data.statusTindakLanjut ??
+      (data.hasil === HasilEvaluasi.PERLU_PERBAIKAN ? StatusKomentar.TERBUKA : null);
+    const payload = {
+      hasil: data.hasil,
+      catatan: data.catatan,
+      dinilaiOlehId: data.dinilaiOlehId,
+      statusTindakLanjut,
+    };
     await tx.nilaiEvaluasi.upsert({
       where: {
         pengajuanEvaluasiId_detailSopId: {
@@ -1515,8 +1891,8 @@ export class SeedService {
           detailSopId: data.detailSopId,
         },
       },
-      create: data,
-      update: { hasil: data.hasil, catatan: data.catatan, dinilaiOlehId: data.dinilaiOlehId },
+      create: { ...data, statusTindakLanjut },
+      update: payload,
     });
   }
 
@@ -1542,6 +1918,76 @@ export class SeedService {
     });
   }
 
+  private async validateSeedEvaluationBusinessRules(
+    tx: Prisma.TransactionClient,
+  ): Promise<void> {
+    const pengajuan = await tx.pengajuanEvaluasi.findMany({
+      select: {
+        pengajuanEvaluasiId: true,
+        nomorBA: true,
+        opdId: true,
+        status: true,
+        nilaiEvaluasi: {
+          select: {
+            detailSopId: true,
+            hasil: true,
+            statusTindakLanjut: true,
+            detailSop: { select: { status: true } },
+          },
+        },
+      },
+    });
+    const activeByOpd = new Map<string, string[]>();
+    const activeByDetail = new Map<string, string[]>();
+    for (const row of pengajuan) {
+      const isAktif = STATUS_PENGAJUAN_AKTIF_SEED.includes(row.status);
+      if (isAktif) {
+        const opdRows = activeByOpd.get(row.opdId) ?? [];
+        opdRows.push(row.nomorBA ?? row.pengajuanEvaluasiId);
+        activeByOpd.set(row.opdId, opdRows);
+        for (const nilai of row.nilaiEvaluasi) {
+          const detailRows = activeByDetail.get(nilai.detailSopId) ?? [];
+          detailRows.push(row.nomorBA ?? row.pengajuanEvaluasiId);
+          activeByDetail.set(nilai.detailSopId, detailRows);
+        }
+      }
+      if (row.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
+        const invalidNilai = row.nilaiEvaluasi.find((n) => n.hasil !== HasilEvaluasi.SESUAI);
+        if (invalidNilai !== undefined) {
+          throw new Error(
+            `Seed invalid: pengajuan ${row.nomorBA ?? row.pengajuanEvaluasiId} sudah melewati evaluasi tetapi masih memiliki nilai selain SESUAI.`,
+          );
+        }
+      }
+      for (const nilai of row.nilaiEvaluasi) {
+        if (
+          row.status === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI &&
+          nilai.hasil === HasilEvaluasi.PERLU_PERBAIKAN &&
+          nilai.statusTindakLanjut === StatusKomentar.TERBUKA &&
+          nilai.detailSop.status !== StatusSOP.REVISI_DARI_EVALUATOR
+        ) {
+          throw new Error(
+            `Seed invalid: nilai PERLU_PERBAIKAN aktif pada ${row.nomorBA ?? row.pengajuanEvaluasiId} harus membuat DetailSOP REVISI_DARI_EVALUATOR.`,
+          );
+        }
+      }
+    }
+    for (const [opdId, rows] of activeByOpd) {
+      if (rows.length > 1) {
+        throw new Error(
+          `Seed invalid: OPD ${opdId} memiliki lebih dari satu pengajuan aktif (${rows.join(', ')}).`,
+        );
+      }
+    }
+    for (const [detailSopId, rows] of activeByDetail) {
+      if (rows.length > 1) {
+        throw new Error(
+          `Seed invalid: DetailSOP ${detailSopId} masuk lebih dari satu pengajuan aktif (${rows.join(', ')}).`,
+        );
+      }
+    }
+  }
+
   private async seedLogNilaiEvaluasi(
     tx: Prisma.TransactionClient,
     params: {
@@ -1563,38 +2009,27 @@ export class SeedService {
 
     await tx.logNilaiEvaluasi.createMany({
       data: [
-        // Dinkes Terjadwal: V1 — null → SESUAI
+        // Dinkes Terjadwal: SOP penanganan gizi — null → SESUAI
         {
           pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
-          detailSopId: d['DINKES_001_V1'].detailSopId,
+          detailSopId: d['DINKES_004_V1'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:00.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
-          catatanSesudah: 'Dokumen lengkap dan implementasi konsisten di lapangan.',
+          catatanSesudah: 'SOP penanganan gizi buruk sesuai standar pelayanan.',
         },
-        // Dinkes Terjadwal: V2 — null → PERLU_PERBAIKAN
+        // Dinkes Terjadwal: SOP rawat inap — null → SESUAI
         {
           pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
-          detailSopId: d['DINKES_001_V2'].detailSopId,
+          detailSopId: d['DINKES_005_V1'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:01.000Z'),
           hasilSebelum: null,
-          hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
+          hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
-          catatanSesudah: 'Perlu perjelas SLA pada langkah keputusan dan kapasitas dokter.',
-        },
-        // Dinkes Terjadwal: V2 — koreksi dari PERLU_PERBAIKAN tetap PERLU_PERBAIKAN (dengan catatan diperbarui)
-        {
-          pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
-          detailSopId: d['DINKES_001_V2'].detailSopId,
-          penggunaId: evaluator1Id,
-          createdAt: new Date('2025-06-01T10:00:02.000Z'),
-          hasilSebelum: HasilEvaluasi.PERLU_PERBAIKAN,
-          hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
-          catatanSebelum: 'Perlu perjelas SLA pada langkah keputusan dan kapasitas dokter.',
-          catatanSesudah: 'SLA perlu diperjelas; kapasitas dokter dan jadwal pemeriksaan harus dicantumkan.',
+          catatanSesudah: 'SOP rawat inap lengkap dan dapat diimplementasikan.',
         },
         // Diskominfo Mandiri: belum dinilai (null → null, log awal penugasan)
         {
@@ -1607,16 +2042,16 @@ export class SeedService {
           catatanSebelum: null,
           catatanSesudah: null,
         },
-        // Disdik Terjadwal: V1 SESUAI
+        // Disdik Terjadwal: akreditasi — null → SESUAI
         {
           pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
-          detailSopId: d['DISDIK_001_V1'].detailSopId,
+          detailSopId: d['DISDIK_002_V1'].detailSopId,
           penggunaId: evaluator2Id,
           createdAt: new Date('2025-06-01T10:00:04.000Z'),
           hasilSebelum: null,
           hasilSesudah: HasilEvaluasi.SESUAI,
           catatanSebelum: null,
-          catatanSesudah: 'Dokumen PPDB versi lama lengkap dan sesuai regulasi saat itu.',
+          catatanSesudah: 'Dokumen PPDB lengkap dan sesuai regulasi zonasi terkini.',
         },
         // Diskominfo Terjadwal: V2 SESUAI
         {
@@ -1759,6 +2194,7 @@ export class SeedService {
     params: {
       u: Record<string, SeedUserRecord>;
       dok: Record<string, { dokumenTteId: string }>;
+      ttePinHash: string;
       pjPenyusunDinkesId: string;
       kepalaDinkesId: string;
       pjPenyusunDiskominfoId: string;
@@ -1766,24 +2202,28 @@ export class SeedService {
       pjPenyusunDisdikId: string;
       kepalaDisdikId: string;
       pjEvaluatorId: string;
+      evaluator1Id: string;
+      evaluator2Id: string;
     },
   ): Promise<void> {
     const { dok } = params;
     const tteSekarang = new Date('2026-01-15T10:00:00.000Z');
 
-    const pinUsers: Array<{ userId: string; hashPin: string }> = [
-      { userId: params.pjPenyusunDinkesId, hashPin: 'bcrypt-hash-pin-pj-penyusun-dinkes' },
-      { userId: params.kepalaDinkesId, hashPin: 'bcrypt-hash-pin-kepala-dinkes' },
-      { userId: params.pjPenyusunDiskominfoId, hashPin: 'bcrypt-hash-pin-pj-penyusun-diskominfo' },
-      { userId: params.kepalaDiskominfoId, hashPin: 'bcrypt-hash-pin-kepala-diskominfo' },
-      { userId: params.pjEvaluatorId, hashPin: 'bcrypt-hash-pin-pj-evaluator' },
-      { userId: params.kepalaDisdikId, hashPin: 'bcrypt-hash-pin-kepala-disdik' },
-      { userId: params.pjPenyusunDisdikId, hashPin: 'bcrypt-hash-pin-pj-penyusun-disdik' },
+    const pinUserIds: readonly string[] = [
+      params.pjPenyusunDinkesId,
+      params.kepalaDinkesId,
+      params.pjPenyusunDiskominfoId,
+      params.kepalaDiskominfoId,
+      params.pjEvaluatorId,
+      params.kepalaDisdikId,
+      params.pjPenyusunDisdikId,
+      params.evaluator1Id,
+      params.evaluator2Id,
     ];
-    for (const u of pinUsers) {
+    for (const userId of pinUserIds) {
       await tx.pengguna.update({
-        where: { penggunaId: u.userId },
-        data: { ttePinHash: u.hashPin, ttePinSetAt: tteSekarang },
+        where: { penggunaId: userId },
+        data: { ttePinHash: params.ttePinHash, ttePinSetAt: tteSekarang },
       });
     }
 
@@ -1821,18 +2261,7 @@ export class SeedService {
         certSubject: 'Kepala Dinas Kesehatan Provinsi',
         ditandatanganiPada: new Date('2026-03-10T09:00:00.000Z'),
       },
-      // SOP Berlaku Disdik: ditanda tangani Kepala OPD
-      {
-        userId: params.kepalaDisdikId,
-        dokumenTteId: dok['SOP_BERLAKU_DISDIK'].dokumenTteId,
-        peran: PeranPengguna.KEPALA_OPD,
-        signatureValue: 'sig-kepala-disdik-sop-berlaku-2024',
-        keyId: 'key-kepala-disdik',
-        certSerialNumber: 'SERIAL-KEPALA-DISDIK-001',
-        certSubject: 'Kepala Dinas Pendidikan Provinsi',
-        ditandatanganiPada: new Date('2024-06-01T11:00:00.000Z'),
-      },
-      // BA Evaluasi Disdik: ditanda tangani PJ Evaluator
+      // BA Evaluasi Disdik: ditanda tangani PJ Evaluator (SOP V2 belum ditandatangani Kepala OPD)
       {
         userId: params.pjEvaluatorId,
         dokumenTteId: dok['BA_EVALUASI_DISDIK'].dokumenTteId,

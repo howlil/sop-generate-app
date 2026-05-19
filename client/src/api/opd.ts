@@ -4,6 +4,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { readApiData, unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
 import { queryKeys } from '@/config/query-keys'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { STALE_TIME } from '@/utils/constants'
@@ -17,24 +18,13 @@ import type {
   UpdateOpdMutationDto,
 } from '@/types/dto/opd.dto'
 
-async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise
-  return envelope.data
-}
-
-/** Respons bisa berupa array langsung (legacy) atau bungkus ApiSuccessResponse — penting untuk cache lama. */
+/** Respons bisa berupa array langsung (legacy) atau bungkus ApiSuccessResponse - penting untuk cache lama. */
 function coerceOpdRingkasList(raw: unknown): OpdRingkas[] {
   if (Array.isArray(raw)) {
     return raw as OpdRingkas[]
   }
-  if (
-    raw !== null &&
-    typeof raw === 'object' &&
-    'data' in raw &&
-    Array.isArray((raw as ApiSuccessResponse<OpdRingkas[]>).data)
-  ) {
-    return (raw as ApiSuccessResponse<OpdRingkas[]>).data
-  }
+  const data = readApiData<OpdRingkas[]>(raw)
+  if (Array.isArray(data)) return data
   return []
 }
 
@@ -49,15 +39,15 @@ export const opdApi = {
 
   /** Buat OPD (PJ_EVALUATOR). */
   create: (payload: CreateOpdDto): Promise<OpdMutasi> =>
-    unwrap(apiClient.post<ApiSuccessResponse<OpdMutasi>>('/opd', payload)),
+    unwrapApiData(apiClient.post<ApiSuccessResponse<OpdMutasi>>('/opd', payload)),
 
   /** Perbarui nama OPD (PJ_EVALUATOR). */
   update: (id: string, payload: UpdateOpdDto): Promise<OpdMutasi> =>
-    unwrap(apiClient.patch<ApiSuccessResponse<OpdMutasi>>(`/opd/${id}`, payload)),
+    unwrapApiData(apiClient.patch<ApiSuccessResponse<OpdMutasi>>(`/opd/${id}`, payload)),
 
   /** Soft-delete OPD (PJ_EVALUATOR). */
   delete: async (id: string): Promise<void> => {
-    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/opd/${id}`))
+    await unwrapApiVoid(apiClient.delete<ApiSuccessResponse<null>>(`/opd/${id}`))
   },
 
   /** GET `/opd/evaluasi-ringkas` — peran EVALUATOR / PJ_EVALUATOR. */
@@ -66,7 +56,7 @@ export const opdApi = {
   }): Promise<OpdEvaluasiRingkas[]> => {
     const s = params?.search?.trim()
     const qs = buildQueryString(s ? { search: s } : undefined)
-    return unwrap(
+    return unwrapApiData(
       apiClient.get<ApiSuccessResponse<OpdEvaluasiRingkas[]>>(
         `/opd/evaluasi-ringkas${qs}`,
       ),

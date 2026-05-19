@@ -11,8 +11,8 @@
 
 export type Side = 'top' | 'right' | 'bottom' | 'left'
 
-interface Point { x: number; y: number }
-interface Rect { left: number; top: number; width: number; height: number }
+export interface Point { x: number; y: number }
+export interface Rect { left: number; top: number; width: number; height: number }
 
 export interface ConnectorPoint {
   shape: Rect
@@ -25,6 +25,18 @@ export interface OccupiedSegment {
   x2: number; y2: number
 }
 
+export interface PortConstraint {
+  exitX?: number
+  exitY?: number
+  entryX?: number
+  entryY?: number
+  exitDx?: number
+  exitDy?: number
+  entryDx?: number
+  entryDy?: number
+  portConstraint?: 'north' | 'south' | 'east' | 'west' | 'horizontal' | 'vertical'
+}
+
 export interface RouteOptions {
   pointA: ConnectorPoint
   pointB: ConnectorPoint
@@ -33,6 +45,12 @@ export interface RouteOptions {
   globalBounds?: Rect
   globalBoundsMargin?: number
   occupiedSegments?: OccupiedSegment[]
+  sourcePort?: PortConstraint
+  targetPort?: PortConstraint
+  jettySize?: number
+  sourceJettySize?: number
+  targetJettySize?: number
+  preferSimple?: boolean
 }
 
 /* ── Penalties ────────────────────────────────────────────────── */
@@ -368,18 +386,36 @@ function buildAdj(spots: Point[], obs: R[]): Map<number, AdjEntry[]> {
 
 /* ── Helpers ──────────────────────────────────────────────────── */
 
-function connPt(cp: ConnectorPoint): Point {
+function axisValue(side: Side, port: PortConstraint | undefined, isSource: boolean, fallback: number): number {
+  if (!port) return fallback
+  const raw = side === 'top' || side === 'bottom'
+    ? (isSource ? port.exitX : port.entryX)
+    : (isSource ? port.exitY : port.entryY)
+  return raw == null ? fallback : Math.max(0, Math.min(1, raw))
+}
+
+function axisOffset(side: Side, port: PortConstraint | undefined, isSource: boolean): Point {
+  if (!port) return { x: 0, y: 0 }
+  const dx = isSource ? (port.exitDx ?? 0) : (port.entryDx ?? 0)
+  const dy = isSource ? (port.exitDy ?? 0) : (port.entryDy ?? 0)
+  if (side === 'top' || side === 'bottom') return { x: dx, y: dy }
+  return { x: dx, y: dy }
+}
+
+function connPt(cp: ConnectorPoint, port?: PortConstraint, isSource = true): Point {
   const s = R.of(cp.shape)
+  const dist = axisValue(cp.side, port, isSource, cp.distance)
+  const offset = axisOffset(cp.side, port, isSource)
   switch (cp.side) {
-    case 'top':    return { x: s.l + s.w * cp.distance, y: s.t }
-    case 'bottom': return { x: s.l + s.w * cp.distance, y: s.b }
-    case 'left':   return { x: s.l, y: s.t + s.h * cp.distance }
-    case 'right':  return { x: s.r, y: s.t + s.h * cp.distance }
+    case 'top':    return { x: s.l + s.w * dist + offset.x, y: s.t + offset.y }
+    case 'bottom': return { x: s.l + s.w * dist + offset.x, y: s.b + offset.y }
+    case 'left':   return { x: s.l + offset.x, y: s.t + s.h * dist + offset.y }
+    case 'right':  return { x: s.r + offset.x, y: s.t + s.h * dist + offset.y }
   }
 }
 
-function extrudePt(cp: ConnectorPoint, margin: number): Point {
-  const { x, y } = connPt(cp)
+function extrudePt(cp: ConnectorPoint, margin: number, port?: PortConstraint, isSource = true): Point {
+  const { x, y } = connPt(cp, port, isSource)
   switch (cp.side) {
     case 'top':    return { x, y: y - margin }
     case 'bottom': return { x, y: y + margin }
@@ -395,10 +431,173 @@ function simplify(pts: Point[]): Point[] {
   const out = [pts[0]]
   for (let i = 1; i < pts.length - 1; i++) {
     const a = pts[i - 1], b = pts[i], c = pts[i + 1]
-    if (!(a.x === b.x && b.x === c.x) && !(a.y === b.y && b.y === c.y)) out.push(b)
+    const isAnchorExtrusion = i === 1 || i === pts.length - 2
+    if (isAnchorExtrusion || (!(a.x === b.x && b.x === c.x) && !(a.y === b.y && b.y === c.y))) out.push(b)
   }
   out.push(pts[pts.length - 1])
   return out
+}
+
+function clonePoint(p: Point): Point {
+  return { x: Math.round(p.x), y: Math.round(p.y) }
+}
+
+function manhattanDistance(a: Point, b: Point): number {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+}
+
+function dedupeConsecutivePoints(points: Point[]): Point[] {
+  if (points.length <= 1) return points.map(clonePoint)
+  const out: Point[] = []
+  for (const point of points) {
+    const next = clonePoint(point)
+    const prev = out[out.length - 1]
+    if (!prev || prev.x !== next.x || prev.y !== next.y) out.push(next)
+  }
+  return out
+}
+
+function pointInRect(p: Point, rect: Rect): boolean {
+  return p.x >= rect.left
+    && p.x <= rect.left + rect.width
+    && p.y >= rect.top
+    && p.y <= rect.top + rect.height
+}
+
+export function isOrthogonalPath(path: Point[]): boolean {
+  if (path.length < 2) return false
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i]
+    const b = path[i + 1]
+    if (a.x !== b.x && a.y !== b.y) return false
+  }
+  return true
+}
+
+export function assertOrthogonalPath(path: Point[], context = 'path'): Point[] {
+  if (!isOrthogonalPath(path)) {
+    throw new Error(`${context} must be orthogonal`)
+  }
+  return path
+}
+
+interface NormalizeOrthogonalPathOptions {
+  preserveTerminalJetty?: boolean
+  bounds?: Rect | null
+}
+
+function chooseElbow(a: Point, b: Point, bounds: Rect | null | undefined): Point {
+  const elbows = [
+    { x: a.x, y: b.y },
+    { x: b.x, y: a.y },
+  ]
+  if (!bounds) return elbows[0]
+  const scored = elbows.map((elbow, index) => ({
+    elbow,
+    score: (pointInRect(elbow, bounds) ? 0 : 10_000) + index,
+  }))
+  scored.sort((left, right) => left.score - right.score)
+  return scored[0].elbow
+}
+
+/**
+ * Routing invariant for flowchart arrows:
+ * every stored/rendered path must consist only of orthogonal segments.
+ * This normalizer removes duplicates, converts any diagonal legacy/manual
+ * segment into a deterministic elbow, and trims redundant collinear points
+ * without stripping the terminal jetty points by default.
+ */
+export function normalizeOrthogonalPath(
+  path: Point[],
+  options: NormalizeOrthogonalPathOptions = {},
+): Point[] {
+  const { preserveTerminalJetty = true, bounds = null } = options
+  if (path.length === 0) return []
+
+  const deduped = dedupeConsecutivePoints(path)
+  if (deduped.length <= 1) return deduped
+
+  const expanded: Point[] = [deduped[0]]
+  for (let i = 0; i < deduped.length - 1; i++) {
+    const a = expanded[expanded.length - 1]
+    const b = deduped[i + 1]
+    if (a.x === b.x || a.y === b.y) {
+      expanded.push(clonePoint(b))
+      continue
+    }
+    const elbow = chooseElbow(a, b, bounds)
+    if (a.x !== elbow.x || a.y !== elbow.y) expanded.push(elbow)
+    expanded.push(clonePoint(b))
+  }
+
+  const clean = dedupeConsecutivePoints(expanded)
+  if (clean.length <= 2) return clean
+
+  const out: Point[] = [clean[0]]
+  const TERMINAL_JETTY_KEEP_MAX = 32
+  for (let i = 1; i < clean.length - 1; i++) {
+    const prev = out[out.length - 1]
+    const cur = clean[i]
+    const next = clean[i + 1]
+    const keepJetty = preserveTerminalJetty && (
+      (i === 1 && manhattanDistance(clean[0], cur) <= TERMINAL_JETTY_KEEP_MAX) ||
+      (i === clean.length - 2 && manhattanDistance(cur, clean[clean.length - 1]) <= TERMINAL_JETTY_KEEP_MAX)
+    )
+    const collinear =
+      (prev.x === cur.x && cur.x === next.x) ||
+      (prev.y === cur.y && cur.y === next.y)
+    if (keepJetty || !collinear) out.push(cur)
+  }
+  out.push(clean[clean.length - 1])
+
+  return dedupeConsecutivePoints(out)
+}
+
+function pointInsideBounds(p: Point, bounds: R): boolean {
+  return p.x >= bounds.l && p.x <= bounds.r && p.y >= bounds.t && p.y <= bounds.b
+}
+
+function segmentHitsObstacle(
+  a: Point,
+  b: Point,
+  obs: R[],
+  skipA: R | null,
+  skipB: R | null,
+): boolean {
+  if (a.x !== b.x && a.y !== b.y) return true
+  for (const o of obs) {
+    if ((skipA && o === skipA) || (skipB && o === skipB)) continue
+    if (!edgeClear(a.x, a.y, b.x, b.y, [o])) return true
+  }
+  return false
+}
+
+function pathClear(path: Point[], obs: R[], sourceObs: R, targetObs: R, bounds: R): boolean {
+  if (path.length < 2) return false
+  for (const p of path) {
+    if (!pointInsideBounds(p, bounds)) return false
+  }
+  for (let i = 0; i < path.length - 1; i++) {
+    const skipA = i === 0 ? sourceObs : null
+    const skipB = i === path.length - 2 ? targetObs : null
+    if (segmentHitsObstacle(path[i], path[i + 1], obs, skipA, skipB)) return false
+  }
+  return true
+}
+
+function buildSimplePathCandidates(
+  start: Point,
+  extA: Point,
+  extB: Point,
+  end: Point,
+): Point[][] {
+  const paths: Point[][] = []
+  if (extA.x === extB.x || extA.y === extB.y) {
+    paths.push([start, extA, extB, end])
+  }
+  paths.push([start, extA, { x: extB.x, y: extA.y }, extB, end])
+  paths.push([start, extA, { x: extA.x, y: extB.y }, extB, end])
+  return paths.map((path) => simplify(path))
 }
 
 /* ── Post-process nudging ─────────────────────────────────────── */
@@ -453,13 +652,14 @@ function nudgeSegments(pts: Point[], obs: R[], occupied: OccupiedSegment[]): Poi
 /* ── Score a path ─────────────────────────────────────────────── */
 
 export function scorePath(path: Point[], occupied: OccupiedSegment[]): number {
-  if (path.length < 2) return Infinity
+  const normalized = normalizeOrthogonalPath(path)
+  if (normalized.length < 2 || !isOrthogonalPath(normalized)) return Infinity
   let score = 0
-  for (let i = 0; i < path.length - 1; i++) {
-    const dx = path[i + 1].x - path[i].x
-    const dy = path[i + 1].y - path[i].y
-    score += Math.abs(dx) + Math.abs(dy) // Manhattan distance — avoids sqrt
-    const seg = { x1: path[i].x, y1: path[i].y, x2: path[i + 1].x, y2: path[i + 1].y }
+  for (let i = 0; i < normalized.length - 1; i++) {
+    const dx = normalized[i + 1].x - normalized[i].x
+    const dy = normalized[i + 1].y - normalized[i].y
+    score += Math.abs(dx) + Math.abs(dy) // Manhattan distance - avoids sqrt
+    const seg = { x1: normalized[i].x, y1: normalized[i].y, x2: normalized[i + 1].x, y2: normalized[i + 1].y }
     for (let j = 0; j < occupied.length; j++) {
       const occ = occupied[j]
       if (segmentsOverlap(seg, occ)) score += OVERLAP_PENALTY
@@ -467,14 +667,61 @@ export function scorePath(path: Point[], occupied: OccupiedSegment[]): number {
       else if (segmentsNearby(seg, occ, NEAR_THRESHOLD)) score += NEAR_PENALTY
     }
   }
-  score += Math.max(0, path.length - 2) * 100
+  score += Math.max(0, normalized.length - 2) * 100
   return score
 }
 
+export function pathOverlapsSegments(
+  path: Point[],
+  occupied: OccupiedSegment[],
+  options: { includeCross?: boolean; nearbyThreshold?: number } = {},
+): boolean {
+  if (occupied.length === 0) return false
+  const { includeCross = false, nearbyThreshold = 0 } = options
+  const normalized = normalizeOrthogonalPath(path)
+  if (normalized.length < 2 || !isOrthogonalPath(normalized)) return true
+
+  for (let i = 0; i < normalized.length - 1; i++) {
+    const seg = {
+      x1: normalized[i].x,
+      y1: normalized[i].y,
+      x2: normalized[i + 1].x,
+      y2: normalized[i + 1].y,
+    }
+    for (const occ of occupied) {
+      if (segmentsOverlap(seg, occ)) return true
+      if (includeCross && segmentsCross(seg, occ)) return true
+      if (nearbyThreshold > 0 && segmentsNearby(seg, occ, nearbyThreshold)) return true
+    }
+  }
+
+  return false
+}
+
+export function pathIntersectsRectangles(
+  path: Point[],
+  rectangles: Rect[],
+  clearance = 0,
+): boolean {
+  if (rectangles.length === 0) return false
+  const obs = rectangles.map((rect) => R.of(rect).inflate(clearance, clearance))
+  const normalized = normalizeOrthogonalPath(path)
+  if (normalized.length < 2 || !isOrthogonalPath(normalized)) return true
+
+  for (let i = 0; i < normalized.length - 1; i++) {
+    const a = normalized[i]
+    const b = normalized[i + 1]
+    if (!edgeClear(a.x, a.y, b.x, b.y, obs)) return true
+  }
+
+  return false
+}
+
 export function pathToSegments(path: Point[]): OccupiedSegment[] {
+  const normalized = assertOrthogonalPath(normalizeOrthogonalPath(path), 'pathToSegments input')
   const segs: OccupiedSegment[] = []
-  for (let i = 0; i < path.length - 1; i++)
-    segs.push({ x1: path[i].x, y1: path[i].y, x2: path[i + 1].x, y2: path[i + 1].y })
+  for (let i = 0; i < normalized.length - 1; i++)
+    segs.push({ x1: normalized[i].x, y1: normalized[i].y, x2: normalized[i + 1].x, y2: normalized[i + 1].y })
   return segs
 }
 
@@ -503,6 +750,11 @@ export interface CorridorRouteOptions {
   pointB: ConnectorPoint
   shapeMargin?: number
   occupiedSegments?: OccupiedSegment[]
+  sourcePort?: PortConstraint
+  targetPort?: PortConstraint
+  jettySize?: number
+  sourceJettySize?: number
+  targetJettySize?: number
 }
 
 /** Lebar obstacle virtual di tepi cell agar path tidak menimpa garis border box tabel */
@@ -631,12 +883,19 @@ export function routeOnCorridor(opts: CorridorRouteOptions): Point[] {
     pointB,
     shapeMargin: margin = 10,
     occupiedSegments = [],
+    sourcePort,
+    targetPort,
+    jettySize,
+    sourceJettySize,
+    targetJettySize,
   } = opts
 
-  const oA = connPt(pointA)
-  const oB = connPt(pointB)
-  const extA = { x: Math.round(extrudePt(pointA, margin).x), y: Math.round(extrudePt(pointA, margin).y) }
-  const extB = { x: Math.round(extrudePt(pointB, margin).x), y: Math.round(extrudePt(pointB, margin).y) }
+  const sourceJetty = sourceJettySize ?? jettySize ?? margin
+  const targetJetty = targetJettySize ?? jettySize ?? margin
+  const oA = connPt(pointA, sourcePort, true)
+  const oB = connPt(pointB, targetPort, false)
+  const extA = { x: Math.round(extrudePt(pointA, sourceJetty, sourcePort, true).x), y: Math.round(extrudePt(pointA, sourceJetty, sourcePort, true).y) }
+  const extB = { x: Math.round(extrudePt(pointB, targetJetty, targetPort, false).x), y: Math.round(extrudePt(pointB, targetJetty, targetPort, false).y) }
 
   const kA = pkp(extA)
   const kB = pkp(extB)
@@ -699,7 +958,10 @@ export function routeOnCorridor(opts: CorridorRouteOptions): Point[] {
   const path = astar(adj, extA, extB, occupiedSegments)
   if (path.length === 0) return []
 
-  return simplify([oA, ...path, oB])
+  return assertOrthogonalPath(
+    normalizeOrthogonalPath(simplify([oA, ...path, oB])),
+    'routeOnCorridor result',
+  )
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -714,6 +976,12 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     globalBounds: gb,
     globalBoundsMargin: gbm = 20,
     occupiedSegments = [],
+    sourcePort,
+    targetPort,
+    jettySize,
+    sourceJettySize,
+    targetJettySize,
+    preferSimple = true,
   } = opts
 
   const shA = R.of(pointA.shape)
@@ -746,7 +1014,7 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     hs.push(o.t, o.b)
   }
 
-  const oA = connPt(pointA), oB = connPt(pointB)
+  const oA = connPt(pointA, sourcePort, true), oB = connPt(pointB, targetPort, false)
   if (isVert(pointA.side)) vs.push(oA.x); else hs.push(oA.y)
   if (isVert(pointB.side)) vs.push(oB.x); else hs.push(oB.y)
 
@@ -766,8 +1034,43 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
 
   const spots = buildSpots(finalVs, finalHs, bounds, allObs)
 
-  const extA = extrudePt(pointA, margin)
-  const extB = extrudePt(pointB, margin)
+  const sourceJetty = sourceJettySize ?? jettySize ?? margin
+  const targetJetty = targetJettySize ?? jettySize ?? margin
+  const extA = extrudePt(pointA, sourceJetty, sourcePort, true)
+  const extB = extrudePt(pointB, targetJetty, targetPort, false)
+
+  if (preferSimple) {
+    const simpleCandidates = buildSimplePathCandidates(oA, extA, extB, oB)
+    let bestSimple: Point[] | null = null
+    let bestSimpleScore = Infinity
+    for (const candidate of simpleCandidates) {
+      const normalizedCandidate = normalizeOrthogonalPath(candidate)
+      if (!isOrthogonalPath(normalizedCandidate)) continue
+      if (!pathClear(normalizedCandidate, allObs, infA, infB, bounds)) continue
+      if (pathOverlapsSegments(normalizedCandidate, occupiedSegments, { includeCross: true })) continue
+      const score = scorePath(normalizedCandidate, occupiedSegments)
+      if (score < bestSimpleScore) {
+        bestSimple = normalizedCandidate
+        bestSimpleScore = score
+      }
+    }
+    if (bestSimple) {
+      const nudged = normalizeOrthogonalPath(nudgeSegments(bestSimple, allObs, occupiedSegments))
+      const finalPath = pathClear(nudged, allObs, infA, infB, bounds) &&
+        !pathOverlapsSegments(nudged, occupiedSegments, { includeCross: true })
+        ? nudged
+        : bestSimple
+      if (!pathClear(finalPath, allObs, infA, infB, bounds) ||
+        pathOverlapsSegments(finalPath, occupiedSegments, { includeCross: true })) {
+        return []
+      }
+      return assertOrthogonalPath(
+        finalPath,
+        'routeOrthogonal simple result',
+      )
+    }
+  }
+
   spots.push(extA, extB)
 
   const adj = buildAdj(spots, allObs)
@@ -775,6 +1078,18 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
 
   if (path.length === 0) return []
 
-  const simplified = simplify([oA, ...path, oB])
-  return nudgeSegments(simplified, allObs, occupiedSegments)
+  const simplified = normalizeOrthogonalPath(simplify([oA, ...path, oB]))
+  const nudged = normalizeOrthogonalPath(nudgeSegments(simplified, allObs, occupiedSegments))
+  const finalPath = pathClear(nudged, allObs, infA, infB, bounds) &&
+    !pathOverlapsSegments(nudged, occupiedSegments, { includeCross: true })
+    ? nudged
+    : simplified
+  if (!pathClear(finalPath, allObs, infA, infB, bounds) ||
+    pathOverlapsSegments(finalPath, occupiedSegments, { includeCross: true })) {
+    return []
+  }
+  return assertOrthogonalPath(
+    finalPath,
+    'routeOrthogonal result',
+  )
 }

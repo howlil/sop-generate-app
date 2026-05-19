@@ -2,12 +2,22 @@ import type { PenyusunWorkbenchData } from "./sop.dto";
 import type { TTESignaturePayload } from "./tte.dto";
 
 export type StatusHasilEvaluasi = "SESUAI" | "PERLU_PERBAIKAN";
+
+/** Status tindak lanjut umpan balik evaluasi (selaras enum StatusKomentar di server). */
+export type StatusTindakLanjut = "TERBUKA" | "SELESAI";
+
+/** Turunan API saat belum ada hasil di DB. */
+export type HasilEvaluasiDisplay = StatusHasilEvaluasi | "BELUM_DINILAI";
 export const STATUS_HASIL_EVALUASI = {
   SESUAI: "SESUAI",
   PERLU_PERBAIKAN: "PERLU_PERBAIKAN",
 } as const;
 
-export interface EvaluasiBatchSubmitError {
+/** Skor evaluasi tingkat OPD (pengajuan terjadwal) — selaras server `SelesaiEvaluasiDto`. */
+export const NILAI_OPD_SKOR_MIN = 1;
+export const NILAI_OPD_SKOR_MAX = 5;
+
+export interface PengajuanEvaluasiSubmitError {
   kind: "none" | "no_selection" | "incomplete" | "blocked";
   items: { id: string; judul: string; nomorSOP: string }[];
   sopId?: string;
@@ -57,6 +67,7 @@ export interface PengajuanEvaluasi {
   opdNama?: string;
   jenis: JenisPengajuanEvaluasi;
   status: StatusPengajuanEvaluasi;
+  statusLabel?: string;
   nomorBA?: string;
   tanggalPermintaan?: string;
   tanggalEvaluasi?: string;
@@ -88,7 +99,9 @@ export interface PengajuanEvaluasi {
     nama: string;
     nomorSOP: string;
     status: string;
-    hasil?: StatusHasilEvaluasi;
+    statusLabel?: string;
+    hasil?: HasilEvaluasiDisplay;
+    hasilLabel?: string;
   }>;
   riwayatEvaluasi?: Array<{
     id: string;
@@ -114,14 +127,16 @@ export function buildNilaiEvaluasiClientId(
   return `${pengajuanEvaluasiId}:${detailSopId}`;
 }
 
-/** Satu baris daftar SOP dalam batch — GET `/evaluasi/pengajuan/:id` (`sopItems`). */
+/** Satu baris daftar SOP dalam pengajuan evaluasi — GET `/evaluasi/pengajuan/:id` (`sopItems`). */
 export interface PengajuanSopItemShell {
   detailSopId: string;
   sopId: string;
   judul: string;
   nomorSOP: string;
   statusDetailSop: string;
-  hasilEvaluasi?: string;
+  statusDetailSopLabel: string;
+  hasilEvaluasi: string;
+  hasilEvaluasiLabel: string;
   catatanRingkas?: string;
   evaluatorTerakhir?: { id: string; nama: string };
 }
@@ -151,6 +166,7 @@ export interface PengajuanEvaluasiShell {
   opdNama: string;
   jenis: string;
   status: string;
+  statusLabel: string;
   version: number;
   nomorBA?: string;
   tanggalPermintaan?: string;
@@ -183,7 +199,8 @@ export interface PengajuanSopWorkbenchResponse {
 export interface BeritaAcaraHasilPerSopRow {
   nomorSOP: string;
   judul: string;
-  hasilEvaluasi?: string;
+  hasilEvaluasi: string;
+  hasilEvaluasiLabel: string;
   ringkasanCatatanEvaluator?: string;
 }
 
@@ -209,6 +226,21 @@ export interface BeritaAcaraEvaluasiView {
   };
 }
 
+/** GET `/evaluasi/umpan-balik/detail/:detailSopId` */
+export interface UmpanBalikEvaluasiDetail {
+  pengajuanEvaluasiId: string;
+  detailSopId: string;
+  hasil: string;
+  hasilLabel: string;
+  catatan: string | null;
+  statusTindakLanjut: StatusTindakLanjut | null;
+  statusTindakLanjutLabel: string | null;
+  ditindaklanjutiPada: string | null;
+  version: number;
+  dinilaiOleh?: { id: string; nama: string };
+  ditindaklanjutiOleh?: { id: string; nama: string };
+}
+
 export interface NilaiEvaluasi {
   /** Gabungan `pengajuanEvaluasiId:detailSopId` (bukan UUID surrogate DB). */
   id: string;
@@ -216,6 +248,9 @@ export interface NilaiEvaluasi {
   sopDetailId: string;
   hasil?: StatusHasilEvaluasi;
   catatan?: string;
+  statusTindakLanjut?: StatusTindakLanjut;
+  statusTindakLanjutLabel?: string;
+  ditindaklanjutiPada?: string;
   version: number;
   dinilaiOlehId?: string;
   dinilaiOleh?: {
@@ -244,7 +279,7 @@ export interface LogNilaiEvaluasi {
   createdAt: string;
 }
 
-export interface BatchListSopItem {
+export interface PengajuanEvaluasiListSopItem {
   id: string;
   sopDetailId: string;
   judul: string;
@@ -295,11 +330,11 @@ export interface EvaluasiListQueryParams {
   jenis?: string;
 }
 
-/** Meta pagination — selaras server `toPaginatedData`. */
+/** Meta pagination — selaras server `toPaginatedData` (`pagination` di dalam `data`). */
 export interface PaginationMetaDto {
   page: number;
   limit: number;
-  total: number;
+  totalItems: number;
   totalPages: number;
 }
 
@@ -310,6 +345,7 @@ export interface PengajuanEvaluasiRingkasRow {
   opdNama: string;
   jenis: string;
   status: string;
+  statusLabel: string;
   tanggalEvaluasi?: string;
   createdAt: string;
   jumlahSop: number;
@@ -319,7 +355,7 @@ export interface PengajuanEvaluasiRingkasRow {
 
 export interface PengajuanEvaluasiRingkasPage {
   items: PengajuanEvaluasiRingkasRow[];
-  meta: PaginationMetaDto;
+  pagination: PaginationMetaDto;
 }
 
 /** Query GET `/evaluasi/ringkas`. */
@@ -352,14 +388,21 @@ export type EvaluasiWorkspaceTampilanAlur =
 
 export interface EvaluasiWorkspaceNilaiPerDetail {
   detailSopId: string;
-  hasil: StatusHasilEvaluasi | null;
+  hasil: HasilEvaluasiDisplay;
+  hasilLabel: string;
   catatan: string | null;
+  statusTindakLanjut: StatusTindakLanjut | null;
+  statusTindakLanjutLabel: string | null;
   version: number;
+  ditindaklanjutiPada: string | null;
+  versi: number;
+  detailUpdatedAt: string;
 }
 
 export interface EvaluasiWorkspacePengajuanAktif {
   id: string;
   status: string;
+  statusLabel: string;
   jenis: JenisPengajuanEvaluasi;
   nilaiPerDetail: EvaluasiWorkspaceNilaiPerDetail[];
 }
@@ -370,7 +413,16 @@ export interface EvaluasiWorkspaceDaftarSopRow {
   judul: string;
   nomorSOP: string;
   statusDetail: string;
+  statusDetailLabel: string;
+  hasilEvaluasi: HasilEvaluasiDisplay;
+  hasilEvaluasiLabel: string;
   tampilanAlur: EvaluasiWorkspaceTampilanAlur;
+  tampilanAlurLabel: string;
+  statusTindakLanjut?: StatusTindakLanjut | null;
+  statusTindakLanjutLabel?: string | null;
+  versi: number;
+  detailUpdatedAt: string;
+  ditindaklanjutiPada: string | null;
   evaluatorTerakhir: { nama: string; pada: string } | null;
 }
 
@@ -378,14 +430,6 @@ export interface EvaluasiWorkspaceRiwayatOpdEntry {
   tanggal: string;
   evaluatorNama: string;
   nilaiOPD?: number | null;
-  pengajuanEvaluasiId: string;
-}
-
-export interface EvaluasiWorkspaceRiwayatNilaiEntry {
-  tanggal: string;
-  evaluatorNama: string;
-  hasil: StatusHasilEvaluasi;
-  catatan?: string | null;
   pengajuanEvaluasiId: string;
 }
 
@@ -400,7 +444,7 @@ export interface EvaluasiWorkspaceOpdResponse {
   daftarSop: EvaluasiWorkspaceDaftarSopRow[];
   riwayatOpd: EvaluasiWorkspaceRiwayatOpdEntry[];
   preview: EvaluasiWorkspacePreview | null;
-  riwayatNilaiSopTerpilih: EvaluasiWorkspaceRiwayatNilaiEntry[];
+  logNilaiSopTerpilih: PengajuanTimelineNilaiEntry[];
 }
 
 export interface EvaluasiWorkspaceQueryParams {

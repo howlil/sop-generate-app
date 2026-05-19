@@ -5,6 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
 import { queryKeys } from '@/config/query-keys'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { STALE_TIME } from '@/utils/constants'
@@ -17,14 +18,9 @@ import type {
   UpdatePeraturanMutationDto,
 } from '@/types/dto/peraturan.dto'
 
-async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise
-  return envelope.data as T
-}
-
 export const peraturanApi = {
   findAll: (params?: PeraturanListQueryParams): Promise<PeraturanResponse[]> =>
-    unwrap(
+    unwrapApiData(
       apiClient.get<ApiSuccessResponse<PeraturanResponse[]>>(
         `/peraturan${buildQueryString(params as Record<string, unknown> | undefined)}`,
       ),
@@ -32,13 +28,13 @@ export const peraturanApi = {
 
   /** Buat master peraturan + tautan ke OPD pengguna (opdId dari JWT di server). */
   create: (payload: CreatePeraturanDto): Promise<PeraturanResponse> =>
-    unwrap(apiClient.post<ApiSuccessResponse<PeraturanResponse>>('/peraturan', payload)),
+    unwrapApiData(apiClient.post<ApiSuccessResponse<PeraturanResponse>>('/peraturan', payload)),
 
   update: (id: string, payload: UpdatePeraturanDto): Promise<PeraturanResponse> =>
-    unwrap(apiClient.patch<ApiSuccessResponse<PeraturanResponse>>(`/peraturan/${id}`, payload)),
+    unwrapApiData(apiClient.patch<ApiSuccessResponse<PeraturanResponse>>(`/peraturan/${id}`, payload)),
 
   delete: async (id: string): Promise<void> => {
-    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/peraturan/${id}`))
+    await unwrapApiVoid(apiClient.delete<ApiSuccessResponse<null>>(`/peraturan/${id}`))
   },
 }
 

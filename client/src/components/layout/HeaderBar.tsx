@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { CircleUserRound, LogOut } from "lucide-react";
 import { ROUTES } from "@/utils/constants";
+import { getMeRoute } from "@/utils/role-routing";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -77,6 +78,19 @@ export function HeaderBar() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {getMeRoute(role) ? (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onSelect={() => {
+                  const mePath = getMeRoute(role);
+                  if (mePath) {
+                    navigate({ to: mePath });
+                  }
+                }}
+              >
+                Profil Saya
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem
               className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
               onSelect={() => {

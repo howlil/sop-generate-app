@@ -9,7 +9,7 @@ export class PengajuanShellOpdDto {
   readonly nama!: string;
 }
 
-/** Satu baris SOP dalam batch evaluasi (panel kiri; tanpa isi dokumen). */
+/** Satu baris SOP dalam pengajuan evaluasi (panel kiri; tanpa isi dokumen). */
 export class PengajuanSopItemShellDto {
   @ApiProperty({ format: 'uuid' })
   readonly detailSopId!: string;
@@ -26,8 +26,14 @@ export class PengajuanSopItemShellDto {
   @ApiProperty()
   readonly statusDetailSop!: string;
 
-  @ApiPropertyOptional()
-  readonly hasilEvaluasi?: string;
+  @ApiProperty()
+  readonly statusDetailSopLabel!: string;
+
+  @ApiProperty()
+  readonly hasilEvaluasi!: string;
+
+  @ApiProperty()
+  readonly hasilEvaluasiLabel!: string;
 
   @ApiPropertyOptional()
   readonly catatanRingkas?: string;
@@ -55,6 +61,15 @@ export class PengajuanNilaiEvaluasiShellDto {
 
   @ApiPropertyOptional()
   readonly catatan?: string;
+
+  @ApiPropertyOptional({ enum: ['TERBUKA', 'SELESAI'] })
+  readonly statusTindakLanjut?: string;
+
+  @ApiPropertyOptional()
+  readonly statusTindakLanjutLabel?: string;
+
+  @ApiPropertyOptional()
+  readonly ditindaklanjutiPada?: string;
 
   @ApiProperty()
   readonly version!: number;
@@ -121,6 +136,9 @@ export class PengajuanEvaluasiShellDto {
 
   @ApiProperty()
   readonly status!: string;
+
+  @ApiProperty()
+  readonly statusLabel!: string;
 
   @ApiProperty()
   readonly version!: number;

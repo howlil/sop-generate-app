@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Send, List, Printer } from "lucide-react";
 import { SOPPreviewTemplate } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
+import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-evaluasi-status-header";
 import { SOPListCard } from "@/pages/penyusun/sop/components/SOPListCard";
 import { Button } from "@/components/ui/button";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
@@ -18,16 +19,15 @@ import {
   buildAjukanEvaluasiSnapshotRows,
   getAjukanEvaluasiBlockingReason,
 } from "@/api/evaluasi";
+import { deriveTahapPenilaianSop } from "@/lib/evaluasi/evaluasi-domain";
 import { ApiError } from "@/lib/api/api-client";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
 import { useCollapsiblePanels } from "@/hooks/useCollapsiblePanels";
-import { useAppRole } from "@/hooks/useAppRole";
 import { formatDateId } from "@/utils/format-date";
 import type {
-  EvaluasiWorkspaceTampilanAlur,
   EvaluasiWorkspacePengajuanAktif,
   StatusHasilEvaluasi,
-  EvaluasiBatchSubmitError,
+  PengajuanEvaluasiSubmitError,
 } from "@/types/dto/evaluasi.dto";
 
 import { DetailEvaluasiOPDSubmitDialog } from "./components/DetailEvaluasiOPDSubmitDialog";
@@ -51,22 +51,8 @@ export type EvaluasiWorkspacePageProps =
       listHref: string;
     };
 
-function alurToDisplayLabel(
-  alur: EvaluasiWorkspaceTampilanAlur,
-): "Diajukan Evaluasi" | "Sedang Dievaluasi" | "Selesai Evaluasi" {
-  switch (alur) {
-    case "perlu_evaluasi":
-      return "Diajukan Evaluasi";
-    case "sedang_dievaluasi":
-      return "Sedang Dievaluasi";
-    case "selesai_pengajuan_ini":
-      return "Selesai Evaluasi";
-  }
-}
-
 export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
   const navigate = useNavigate();
-  const { getRoleUserName } = useAppRole();
   const preferredSopId = props.preferredSopId;
   const listHref = props.listHref;
 
@@ -74,13 +60,6 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     preferredSopId ?? null,
   );
   const preferredSopAppliedRef = useRef(false);
-
-  interface EvaluasiRecord {
-    evaluatorName: string;
-    date: string;
-  }
-  type EvaluasiRecordMap = Record<string, EvaluasiRecord>;
-  const [lastEvaluatedBy, setLastEvaluatedBy] = useState<EvaluasiRecordMap>({});
 
   const workspaceQueryParams = useMemo(
     () => ({
@@ -108,6 +87,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     props.mode === "opd" ? wOpd.data : wPeng.data;
   const isLoadingWorkspace =
     props.mode === "opd" ? wOpd.isLoading : wPeng.isLoading;
+  const isFetchingWorkspace =
+    props.mode === "opd" ? wOpd.isFetching : wPeng.isFetching;
   const workspaceError =
     props.mode === "opd" ? wOpd.error : wPeng.error;
 
@@ -137,18 +118,42 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     return {
       id: fp.id,
       status: fp.status,
+      statusLabel: fp.statusLabel ?? fp.status,
       jenis: fp.jenis ?? "TERJADWAL",
-      nilaiPerDetail: fp.nilaiEvaluasi.map((n) => ({
-        detailSopId: n.sopDetailId,
-        hasil: (n.hasil ?? null) as StatusHasilEvaluasi | null,
-        catatan: n.catatan ?? null,
-        version: n.version,
-      })),
+      nilaiPerDetail: fp.nilaiEvaluasi.map((n) => {
+        const hasil =
+          n.hasil === "SESUAI" || n.hasil === "PERLU_PERBAIKAN"
+            ? n.hasil
+            : ("BELUM_DINILAI" as const);
+        return {
+          detailSopId: n.sopDetailId,
+          hasil,
+          hasilLabel:
+            n.hasil === "SESUAI"
+              ? "Sesuai"
+              : n.hasil === "PERLU_PERBAIKAN"
+                ? "Perlu perbaikan"
+                : "Belum dinilai",
+          catatan: n.catatan ?? null,
+          version: n.version,
+          statusTindakLanjut: n.statusTindakLanjut ?? null,
+          statusTindakLanjutLabel: n.statusTindakLanjutLabel ?? null,
+          ditindaklanjutiPada: null,
+          versi: 1,
+          detailUpdatedAt: new Date(0).toISOString(),
+        };
+      }),
     };
   }, [workspace, pengajuanFallbackState.pengajuan]);
 
-  /** Pengajuan terjadwal (batch PJ) memakai skor OPD; mandiri hanya per dokumen SOP. */
+  /** Pengajuan terjadwal memakai skor OPD; mandiri hanya per dokumen SOP. */
   const requiresNilaiOpd = pengajuanAktifEffektif?.jenis !== "MANDIRI";
+
+  /** Hanya pengajuan SEDANG_DIEVALUASI yang boleh diedit / diajukan. */
+  const isPengajuanReadOnly =
+    pengajuanAktifEffektif !== undefined &&
+    pengajuanAktifEffektif !== null &&
+    pengajuanAktifEffektif.status !== "SEDANG_DIEVALUASI";
 
   const opdIdUntukDraft =
     workspace?.opd.id ?? (props.mode === "opd" ? props.opdId : undefined);
@@ -162,7 +167,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     };
   }, [workspace]);
 
-  /** Satu baris per DetailSOP dalam batch / pipeline evaluasi (server). */
+  /** Satu baris per DetailSOP dalam pengajuan evaluasi / pipeline (server). */
   const sopsForOpd = useMemo(() => {
     if (!workspace) return [];
     return workspace.daftarSop.map((row) => ({
@@ -174,43 +179,30 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     }));
   }, [workspace]);
 
-  const hasilEvaluasiByDetailId = useMemo(() => {
-    const m = new Map<string, StatusHasilEvaluasi | null>();
-    if (pengajuanAktifEffektif === undefined || pengajuanAktifEffektif === null) {
-      return m;
-    }
-    for (const row of pengajuanAktifEffektif.nilaiPerDetail) {
-      m.set(row.detailSopId, row.hasil);
-    }
-    return m;
-  }, [pengajuanAktifEffektif]);
+  const listItems = useMemo(() => {
+    if (!workspace) return [];
+    return workspace.daftarSop.map((row) => {
+      const tahapPenilaian = deriveTahapPenilaianSop({
+        hasil: row.hasilEvaluasi,
+        statusTindakLanjut: row.statusTindakLanjut ?? null,
+        statusDetail: row.statusDetail,
+      });
+      return {
+        id: row.detailSopId,
+        nama: row.judul,
+        nomor: row.nomorSOP,
+        statusDokumen: row.statusDetail,
+        statusDokumenLabel: row.statusDetailLabel,
+        hasilEvaluasi: row.hasilEvaluasi,
+        hasilEvaluasiLabel: row.hasilEvaluasiLabel,
+        statusTindakLanjut: row.statusTindakLanjut ?? null,
+        statusTindakLanjutLabel: row.statusTindakLanjutLabel ?? null,
+        tahapPenilaian,
+      };
+    });
+  }, [workspace]);
 
-  /** Status tampilan untuk filter/badge: server `tampilanAlur` + override lokal setelah kirim. */
-  const sopsForOpdWithDisplayStatus = useMemo(
-    () =>
-      sopsForOpd.map((s) => {
-        if (lastEvaluatedBy[s.id]) {
-          return {
-            ...s,
-            displayStatus: "Selesai Evaluasi" as const,
-          };
-        }
-        const hasil = hasilEvaluasiByDetailId.get(s.id) ?? null;
-        if (s.status === "REVISI_DARI_EVALUATOR" && hasil === "PERLU_PERBAIKAN") {
-          return { ...s, displayStatus: "Menunggu revisi OPD" as const };
-        }
-        if (s.status === "DIAJUKAN_EVALUASI" && hasil === "PERLU_PERBAIKAN") {
-          return { ...s, displayStatus: "Menunggu evaluasi ulang" as const };
-        }
-        return {
-          ...s,
-          displayStatus: alurToDisplayLabel(s.alur),
-        };
-      }),
-    [sopsForOpd, lastEvaluatedBy, hasilEvaluasiByDetailId],
-  );
-
-  const firstSopId = sopsForOpdWithDisplayStatus[0]?.id ?? null;
+  const firstSopId = sopsForOpd[0]?.id ?? null;
 
   useEffect(() => {
     if (!workspace?.daftarSop.length) return;
@@ -220,6 +212,42 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
 
   const effectiveSopId = selectedSopId ?? firstSopId;
   const selectedSop = sopsForOpd.find((s) => s.id === effectiveSopId);
+
+  const nilaiSopTerpilih = useMemo(() => {
+    if (!effectiveSopId || !pengajuanAktifEffektif) return null;
+    return (
+      pengajuanAktifEffektif.nilaiPerDetail.find(
+        (r) => r.detailSopId === effectiveSopId,
+      ) ?? null
+    );
+  }, [effectiveSopId, pengajuanAktifEffektif]);
+
+  const selectedDaftarRow = useMemo(
+    () =>
+      workspace?.daftarSop.find((row) => row.detailSopId === effectiveSopId) ??
+      null,
+    [workspace?.daftarSop, effectiveSopId],
+  );
+
+  const tahapPenilaianSop = useMemo(() => {
+    if (!selectedDaftarRow) return "belum_dinilai" as const;
+    return deriveTahapPenilaianSop({
+      hasil: selectedDaftarRow.hasilEvaluasi,
+      statusTindakLanjut: selectedDaftarRow.statusTindakLanjut ?? null,
+      statusDetail: selectedDaftarRow.statusDetail,
+    });
+  }, [selectedDaftarRow]);
+
+  /** Form SOP hanya dikunci bila pengajuan sudah keluar dari tahap penilaian aktif. */
+  const isSopReadOnly = isPengajuanReadOnly;
+
+  const nilaiOpdTersimpan = useMemo(() => {
+    if (!pengajuanAktifEffektif) return null;
+    const dariRiwayat = workspace?.riwayatOpd.find(
+      (r) => r.pengajuanEvaluasiId === pengajuanAktifEffektif.id,
+    );
+    return dariRiwayat?.nilaiOPD ?? null;
+  }, [workspace?.riwayatOpd, pengajuanAktifEffektif]);
 
   /* Terapkan sopId dari URL search sekali saat daftar SOP siap (bukan fetch). */
   useEffect(() => {
@@ -232,15 +260,15 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
 
   /* Jaga selectedSopId konsisten saat daftar SOP berubah (bukan fetch). */
   useEffect(() => {
-    const stillInList = sopsForOpdWithDisplayStatus.some(
-      (s) => s.id === effectiveSopId,
-    );
-    if (!stillInList && sopsForOpdWithDisplayStatus.length > 0) {
-      setSelectedSopId(sopsForOpdWithDisplayStatus[0].id);
+    const stillInList = sopsForOpd.some((s) => s.id === effectiveSopId);
+    if (!stillInList && sopsForOpd.length > 0) {
+      setSelectedSopId(sopsForOpd[0].id);
     } else if (!stillInList) {
       setSelectedSopId(null);
     }
-  }, [sopsForOpdWithDisplayStatus, effectiveSopId]);
+  }, [sopsForOpd, effectiveSopId]);
+
+  const draftReadOnly = isPengajuanReadOnly || isSopReadOnly;
 
   const {
     komentarEvaluasi,
@@ -252,6 +280,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     opdIdUntukDraft,
     effectiveSopId ?? undefined,
     workspace === undefined ? undefined : pengajuanAktifEffektif,
+    draftReadOnly,
+    tahapPenilaianSop,
   );
 
   const handleSelectSop = useCallback(
@@ -281,6 +311,12 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     }
   }, [requiresNilaiOpd, activeFormTab]);
 
+  useEffect(() => {
+    if (isPengajuanReadOnly && nilaiOpdTersimpan != null) {
+      setRatingOPD(nilaiOpdTersimpan);
+    }
+  }, [isPengajuanReadOnly, nilaiOpdTersimpan]);
+
   const judulByDetailId = useMemo(() => {
     const m = new Map<string, { judul: string; nomorSOP: string }>();
     for (const row of workspace?.daftarSop ?? []) {
@@ -294,15 +330,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
       getAjukanEvaluasiBlockingReason(
         pengajuanAktifEffektif,
         ratingOPD,
-        effectiveSopId,
-        statusEvaluasi,
       ),
-    [
-      pengajuanAktifEffektif,
-      ratingOPD,
-      effectiveSopId,
-      statusEvaluasi,
-    ],
+    [pengajuanAktifEffektif, ratingOPD],
   );
 
   const canAjukan = blockingAjukan === null;
@@ -312,34 +341,20 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
       buildAjukanEvaluasiSnapshotRows(
         pengajuanAktifEffektif ?? null,
         judulByDetailId,
-        effectiveSopId,
-        statusEvaluasi,
       ),
-    [
-      pengajuanAktifEffektif,
-      judulByDetailId,
-      effectiveSopId,
-      statusEvaluasi,
-    ],
+    [pengajuanAktifEffektif, judulByDetailId],
   );
 
-  const detailIdsInPengajuan = useMemo(
-    () =>
-      pengajuanAktifEffektif?.nilaiPerDetail.map((r) => r.detailSopId) ??
-      [],
-    [pengajuanAktifEffektif],
-  );
+  const logNilaiSopTerpilih = workspace?.logNilaiSopTerpilih ?? [];
 
-  const namaEvaluator = getRoleUserName();
-
-  const lastEvaluatedEntry = effectiveSopId
-    ? lastEvaluatedBy[effectiveSopId]
-    : undefined;
-  const tanggalTerakhirEvaluasi = lastEvaluatedEntry
-    ? lastEvaluatedEntry.date
-    : null;
-  /** Evaluator yang terakhir mengevaluasi SOP terpilih (per SOP bisa beda) */
-  const evaluatorSopTerpilih = lastEvaluatedEntry?.evaluatorName ?? null;
+  const evaluatorSopTerpilih =
+    selectedDaftarRow?.evaluatorTerakhir?.nama ??
+    logNilaiSopTerpilih[0]?.evaluatorNama ??
+    null;
+  const tanggalTerakhirEvaluasi =
+    selectedDaftarRow?.evaluatorTerakhir?.pada ??
+    logNilaiSopTerpilih[0]?.createdAt ??
+    null;
 
   const {
     leftCollapsed: leftPanelCollapsed,
@@ -357,11 +372,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     pengajuanAktifId: pengajuanAktifEffektif?.id,
     ratingOPD,
     requiresNilaiOpd,
-    detailIdsInPengajuan,
     canSubmit: canAjukan,
     blockingMessage: blockingAjukan,
-    namaEvaluator,
-    setLastEvaluatedBy,
     onSuccess: () => {
       setIsSubmitOpen(false);
       setTimeout(
@@ -372,16 +384,6 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
   });
 
   useDocumentTitle(opd ? `Evaluasi SOP — ${opd.nama}` : undefined);
-
-  const riwayatSop = useMemo(() => {
-    if (!workspace?.riwayatNilaiSopTerpilih?.length) return [];
-    return workspace.riwayatNilaiSopTerpilih.map((r) => ({
-      tanggal: r.tanggal,
-      evaluator: r.evaluatorNama,
-      hasil: r.hasil,
-      catatan: r.catatan ?? "",
-    }));
-  }, [workspace]);
 
   const riwayatOpd = useMemo(() => {
     if (!workspace?.riwayatOpd?.length) return [];
@@ -404,8 +406,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
   const resourceNotFound =
     workspaceError instanceof ApiError && workspaceError.status === 404;
 
-  /** Convert string error to EvaluasiBatchSubmitError shape */
-  const submitErrorObj = useMemo((): EvaluasiBatchSubmitError => {
+  /** Convert string error to PengajuanEvaluasiSubmitError shape */
+  const submitErrorObj = useMemo((): PengajuanEvaluasiSubmitError => {
     if (!terjadwalSubmitError) return { kind: "none", items: [] };
     return {
       kind: "blocked",
@@ -485,28 +487,11 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     );
   }
 
-  /** Sedang Dievaluasi = SOP terpilih yang punya isian form (draft). Selesai Evaluasi tetap dikunci. */
-  const listItems = sopsForOpdWithDisplayStatus.map((s) => {
-    const isSelectedWithDraft =
-      s.id === effectiveSopId &&
-      (statusEvaluasi != null || (komentarEvaluasi?.trim() ?? "") !== "");
-    const displayStatus =
-      s.displayStatus === "Selesai Evaluasi"
-        ? "Selesai Evaluasi"
-        : isSelectedWithDraft
-          ? "Sedang Dievaluasi"
-          : s.displayStatus;
-    return {
-      id: s.id,
-      nama: s.judul,
-      nomor: s.nomorSOP,
-      status: displayStatus,
-    };
-  });
-
   return (
     <>
-      {pengajuanAktifEffektif && ajukanSnapshotRows.length > 0 && (
+      {pengajuanAktifEffektif &&
+        !isPengajuanReadOnly &&
+        ajukanSnapshotRows.length > 0 && (
         <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50/95 px-3 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-blue-950">
           <span>
             {canAjukan ? (
@@ -546,7 +531,11 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
           { label: opd.nama },
         ]}
         title={`Evaluasi SOP — ${opd.nama}`}
-        description="Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
+        description={
+          isPengajuanReadOnly
+            ? "Mode baca — pengajuan evaluasi ini sudah selesai. Lihat hasil dan riwayat di panel kanan."
+            : "Pilih SOP di daftar kiri, isi form evaluasi di panel kanan."
+        }
         backTo={listHref}
         backSize="icon"
         header={
@@ -564,18 +553,28 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                 >
                   <Printer className="w-3.5 h-3.5" /> Print SOP
                 </Button>
-                <Button
-                  size="sm"
-                  className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-50"
-                  onClick={() => {
-                    clearTerjadwalSubmitError();
-                    setIsSubmitOpen(true);
-                  }}
-                >
-                  <Send className="w-3.5 h-3.5" /> Kirim Hasil Evaluasi
-                </Button>
+                {!isPengajuanReadOnly ? (
+                  <Button
+                    size="sm"
+                    className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-50"
+                    onClick={() => {
+                      clearTerjadwalSubmitError();
+                      setIsSubmitOpen(true);
+                    }}
+                  >
+                    <Send className="w-3.5 h-3.5" /> Kirim Hasil Evaluasi
+                  </Button>
+                ) : null}
               </div>
             </div>
+            {pengajuanAktifEffektif?.status ? (
+              <PengajuanEvaluasiStatusHeader
+                status={pengajuanAktifEffektif.status}
+                statusLabel={pengajuanAktifEffektif.statusLabel}
+                role="EVALUATOR"
+                className="pt-1"
+              />
+            ) : null}
             <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-gray-700">
               <span>
                 <span className="text-gray-500">Evaluator (SOP ini):</span>{" "}
@@ -604,6 +603,9 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
             collapseButtonIcon={<List className="w-5 h-5" />}
           >
             <div className="flex flex-col h-full min-h-0">
+              <p className="px-2 pb-2 text-[10px] text-gray-500 leading-snug shrink-0">
+                Dokumen = status SOP di sistem; Penilaian = hasil evaluasi Anda per dokumen.
+              </p>
               <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
                 <SOPListCard
                   items={listItems}
@@ -657,15 +659,39 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
             }}
             sopForm={{
               effectiveSopId,
-              lastEvaluatedBy,
+              readOnly: isSopReadOnly,
+              tahapPenilaian: tahapPenilaianSop,
+              versi:
+                selectedDaftarRow?.versi ?? nilaiSopTerpilih?.versi ?? undefined,
+              detailUpdatedAt:
+                selectedDaftarRow?.detailUpdatedAt ??
+                nilaiSopTerpilih?.detailUpdatedAt ??
+                null,
+              ditindaklanjutiPada:
+                selectedDaftarRow?.ditindaklanjutiPada ??
+                nilaiSopTerpilih?.ditindaklanjutiPada ??
+                null,
+              nilaiTersimpan: nilaiSopTerpilih
+                ? {
+                    hasil:
+                      nilaiSopTerpilih.hasil === "SESUAI" ||
+                      nilaiSopTerpilih.hasil === "PERLU_PERBAIKAN"
+                        ? nilaiSopTerpilih.hasil
+                        : null,
+                    catatan: nilaiSopTerpilih.catatan,
+                  }
+                : null,
               statusEvaluasi,
               setStatusEvaluasi: handleSetStatusEvaluasi,
               komentarEvaluasi: komentarEvaluasi ?? "",
               setKomentarEvaluasi,
-              riwayatSop,
+              logNilaiEntries: logNilaiSopTerpilih,
+              isLogNilaiLoading: isFetchingWorkspace,
             }}
             opdForm={{
               opd,
+              readOnly: isPengajuanReadOnly,
+              nilaiOpdTersimpan,
               riwayatOpd,
               ratingOPD,
               setRatingOPD,

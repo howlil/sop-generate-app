@@ -1,0 +1,283 @@
+import { describe, expect, it } from 'vitest'
+import {
+  routeOrthogonal,
+  normalizeOrthogonalPath,
+  pathIntersectsRectangles,
+  pathOverlapsSegments,
+} from '../orthogonalRouter'
+import { selectSidePairs, type ElemPos, type FlowchartConnectionForSidePairs } from '../selectSidePairs'
+import { normalizeConnectorPath } from '../../shapes/FlowchartArrowConnector'
+
+function rect(left: number, top: number, width: number, height: number): ElemPos {
+  return {
+    left,
+    top,
+    width,
+    height,
+    right: left + width,
+    bottom: top + height,
+  }
+}
+
+function conn(overrides: Partial<FlowchartConnectionForSidePairs> = {}): FlowchartConnectionForSidePairs {
+  return {
+    id: 'c1',
+    from: 'a',
+    to: 'b',
+    label: null,
+    sourceType: 'flowchart-process',
+    targetType: 'flowchart-process',
+    ...overrides,
+  }
+}
+
+function expectOrthogonal(path: { x: number; y: number }[]) {
+  expect(path.length).toBeGreaterThanOrEqual(2)
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i]
+    const b = path[i + 1]
+    expect(a.x === b.x || a.y === b.y).toBe(true)
+  }
+}
+
+describe('flowchart route candidate selection', () => {
+  it('prefers bottom-to-top for Ya branch below with south/north constraints', () => {
+    const candidates = selectSidePairs(
+      conn({ sourceType: 'flowchart-decision', label: 'Ya' }),
+      rect(100, 100, 80, 80),
+      rect(100, 260, 80, 80),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'bottom',
+      eSide: 'top',
+      sourcePort: { portConstraint: 'south', exitX: 0.5 },
+      targetPort: { portConstraint: 'north', entryX: 0.5 },
+      preferSimple: true,
+    })
+  })
+
+  it('prefers left-left loop-back when Tidak target is above and to the left', () => {
+    const candidates = selectSidePairs(
+      conn({ sourceType: 'flowchart-decision', label: 'Tidak' }),
+      rect(220, 220, 80, 80),
+      rect(100, 40, 80, 80),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'left',
+      eSide: 'left',
+      preferSimple: false,
+    })
+    expect(candidates[0]?.jettySize).toBeGreaterThan(16)
+  })
+
+  it('prefers right-right loop-back when Tidak target is above and to the right', () => {
+    const candidates = selectSidePairs(
+      conn({ sourceType: 'flowchart-decision', label: 'Tidak' }),
+      rect(100, 220, 80, 80),
+      rect(220, 40, 80, 80),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'right',
+      eSide: 'right',
+      preferSimple: false,
+    })
+  })
+
+  it('prefers bottom-right for Ya when target is below and to the left', () => {
+    const candidates = selectSidePairs(
+      conn({ sourceType: 'flowchart-decision', label: 'Ya' }),
+      rect(220, 100, 80, 80),
+      rect(100, 260, 80, 80),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'bottom',
+      eSide: 'right',
+    })
+  })
+
+  it('assigns opc routes a larger jetty', () => {
+    const candidates = selectSidePairs(
+      conn({ targetType: 'flowchart-opc' }),
+      rect(100, 100, 80, 60),
+      rect(100, 260, 80, 60),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'bottom',
+      eSide: 'top',
+      jettySize: 18,
+    })
+  })
+})
+
+describe('routeOrthogonal', () => {
+  it('preserves jetty segments on simple same-column routing', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 100, top: 100, width: 80, height: 40 }, side: 'bottom', distance: 0.5 },
+      pointB: { shape: { left: 100, top: 240, width: 80, height: 40 }, side: 'top', distance: 0.5 },
+      jettySize: 20,
+      preferSimple: true,
+      globalBounds: { left: 0, top: 0, width: 400, height: 400 },
+    })
+
+    expect(path).toEqual([
+      { x: 140, y: 140 },
+      { x: 140, y: 160 },
+      { x: 140, y: 220 },
+      { x: 140, y: 240 },
+    ])
+    expectOrthogonal(path)
+  })
+
+  it('keeps same-row routing purely horizontal at endpoints', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 40, top: 80, width: 60, height: 40 }, side: 'right', distance: 0.5 },
+      pointB: { shape: { left: 220, top: 80, width: 60, height: 40 }, side: 'left', distance: 0.5 },
+      jettySize: 16,
+      preferSimple: true,
+      globalBounds: { left: 0, top: 0, width: 360, height: 220 },
+    })
+
+    expect(path[0].y).toBe(path[path.length - 1].y)
+    expectOrthogonal(path)
+  })
+
+  it('normalizes any diagonal simple candidate into elbows', () => {
+    const path = normalizeOrthogonalPath([
+      { x: 10, y: 10 },
+      { x: 60, y: 60 },
+      { x: 100, y: 60 },
+    ])
+
+    expect(path).toEqual([
+      { x: 10, y: 10 },
+      { x: 10, y: 60 },
+      { x: 100, y: 60 },
+    ])
+    expectOrthogonal(path)
+  })
+
+  it('falls back to multi-bend routing when the direct simple elbow is blocked', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 40, top: 80, width: 60, height: 40 }, side: 'right', distance: 0.5 },
+      pointB: { shape: { left: 240, top: 80, width: 60, height: 40 }, side: 'left', distance: 0.5 },
+      jettySize: 16,
+      preferSimple: true,
+      obstacles: [{ left: 145, top: 60, width: 40, height: 80 }],
+      globalBounds: { left: 0, top: 0, width: 360, height: 220 },
+    })
+
+    expect(path.length).toBeGreaterThanOrEqual(4)
+    expect(path[0]).toEqual({ x: 100, y: 100 })
+    expect(path[path.length - 1]).toEqual({ x: 240, y: 100 })
+    expect(path.some((p) => p.y < 60 || p.y > 140)).toBe(true)
+    expectOrthogonal(path)
+  })
+
+  it('keeps a Tidak decision loop-back orthogonal', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 100, top: 220, width: 80, height: 80 }, side: 'right', distance: 0.5 },
+      pointB: { shape: { left: 100, top: 40, width: 80, height: 80 }, side: 'right', distance: 0.5 },
+      jettySize: 22,
+      preferSimple: false,
+      globalBounds: { left: 0, top: 0, width: 320, height: 360 },
+    })
+
+    expect(path[0]).toEqual({ x: 180, y: 260 })
+    expect(path[path.length - 1]).toEqual({ x: 180, y: 80 })
+    expectOrthogonal(path)
+  })
+
+  it('keeps OPC routing orthogonal', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 100, top: 100, width: 80, height: 60 }, side: 'bottom', distance: 0.5 },
+      pointB: { shape: { left: 100, top: 260, width: 80, height: 60 }, side: 'top', distance: 0.5 },
+      jettySize: 18,
+      preferSimple: true,
+      globalBounds: { left: 0, top: 0, width: 360, height: 420 },
+    })
+
+    expectOrthogonal(path)
+  })
+})
+
+describe('flowchart path safety', () => {
+  it('detects occupied segment overlap and crossing', () => {
+    const occupied = [{ x1: 20, y1: 40, x2: 120, y2: 40 }]
+
+    expect(pathOverlapsSegments([
+      { x: 10, y: 40 },
+      { x: 80, y: 40 },
+    ], occupied)).toBe(true)
+
+    expect(pathOverlapsSegments([
+      { x: 60, y: 10 },
+      { x: 60, y: 80 },
+    ], occupied, { includeCross: true })).toBe(true)
+  })
+
+  it('detects path intersection with shape rectangles using clearance', () => {
+    expect(pathIntersectsRectangles([
+      { x: 10, y: 50 },
+      { x: 120, y: 50 },
+    ], [{ left: 40, top: 30, width: 40, height: 40 }], 2)).toBe(true)
+  })
+})
+
+describe('connector path normalization', () => {
+  it('normalizes a manual diagonal path into elbows', () => {
+    const path = normalizeConnectorPath([
+      { x: 10, y: 10 },
+      { x: 50, y: 50 },
+      { x: 90, y: 50 },
+    ], null)
+
+    expect(path).toEqual([
+      { x: 10, y: 10 },
+      { x: 10, y: 50 },
+      { x: 90, y: 50 },
+    ])
+    expectOrthogonal(path)
+  })
+
+  it('normalizes cached legacy diagonal points before render', () => {
+    const path = normalizeConnectorPath([
+      { x: 120, y: 90 },
+      { x: 180, y: 140 },
+      { x: 220, y: 140 },
+    ], {
+      left: 80,
+      top: 40,
+      right: 260,
+      bottom: 240,
+    })
+
+    expect(path[0]).toEqual({ x: 120, y: 90 })
+    expect(path[path.length - 1]).toEqual({ x: 220, y: 140 })
+    expectOrthogonal(path)
+  })
+})

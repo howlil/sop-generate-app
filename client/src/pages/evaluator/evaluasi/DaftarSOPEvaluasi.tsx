@@ -6,6 +6,7 @@ import { useNavigate, useSearch } from '@tanstack/react-router'
 import { Building2, ChevronDown, ChevronRight, Eye, X } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
+import { PengajuanStatusBadge } from '@/components/status/pengajuan-status-badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
@@ -19,6 +20,7 @@ import {
   usePengajuanEvaluasiRingkas,
 } from '@/api/evaluasi'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
+import { readPaginationMeta } from '@/lib/api/pagination'
 import { DEFAULT_PAGE_SIZE } from '@/utils/constants'
 import { formatDateId } from '@/utils/format-date'
 import type { PengajuanEvaluasiRingkasRow } from '@/types/dto/evaluasi.dto'
@@ -29,17 +31,6 @@ type PengajuanGroupByOpd = {
   opdNama: string
   rows: PengajuanEvaluasiRingkasRow[]
   latestRequestAt: number
-}
-
-function labelStatus(status: string): string {
-  const map: Record<string, string> = {
-    SEDANG_DIEVALUASI: 'Sedang dievaluasi',
-    SELESAI_DIEVALUASI: 'Selesai dievaluasi',
-    DIVERIFIKASI_PJ_EVALUATOR: 'Diverifikasi PJ',
-    DITANDATANGANI_PJ_PENYUSUN: 'Ditandatangani PJ Penyusun',
-    SELESAI: 'Selesai',
-  }
-  return map[status] ?? status
 }
 
 function labelJenis(jenis: string): string {
@@ -82,8 +73,8 @@ export function DaftarSOPEvaluasi() {
   }, [filterTab, debouncedSearch, opdIdFilter])
 
   const items = data?.items ?? []
-  const meta = data?.meta
-  const totalItems = meta?.total ?? 0
+  const pagination = readPaginationMeta(data)
+  const totalItems = pagination?.totalItems ?? 0
 
   const filterTabs: { id: FilterTab; label: string }[] = [
     { id: 'pengajuan', label: 'Pengajuan' },
@@ -147,7 +138,7 @@ export function DaftarSOPEvaluasi() {
     <ListPageLayout
       breadcrumb={[{ label: 'Evaluasi SOP' }]}
       title="Evaluasi SOP"
-      description="Pilih satu pengajuan evaluasi untuk membuka workspace (daftar SOP dalam batch tersebut)."
+      description="Pilih satu pengajuan evaluasi untuk membuka workspace (daftar SOP dalam pengajuan tersebut)."
       toolbar={
         <div className="flex flex-col gap-3 w-full">
           <SearchToolbar
@@ -247,7 +238,7 @@ export function DaftarSOPEvaluasi() {
                       <span className="font-semibold text-sm text-gray-900 truncate">
                         {group.opdNama}
                       </span>
-                      <Badge variant="outline" className="text-[11px] font-normal">
+                      <Badge variant="default" className="text-[11px] font-medium shrink-0">
                         {group.rows.length} pengajuan
                       </Badge>
                     </div>
@@ -264,7 +255,7 @@ export function DaftarSOPEvaluasi() {
                     <thead>
                       <Table.HeadRow>
                         <Table.Th>Jenis</Table.Th>
-                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Status pengajuan</Table.Th>
                         <Table.Th>Tanggal</Table.Th>
                         <Table.Th>Progres</Table.Th>
                         <Table.Th align="center">Aksi</Table.Th>
@@ -277,9 +268,11 @@ export function DaftarSOPEvaluasi() {
                             {labelJenis(row.jenis)}
                           </Table.Td>
                           <Table.Td>
-                            <Badge variant="outline" className="text-xs font-normal">
-                              {labelStatus(row.status)}
-                            </Badge>
+                            <PengajuanStatusBadge
+                              status={row.status}
+                              label={row.statusLabel}
+                              showDomain={false}
+                            />
                           </Table.Td>
                           <Table.Td className="text-gray-600 whitespace-nowrap">
                             {row.createdAt
@@ -312,13 +305,13 @@ export function DaftarSOPEvaluasi() {
             )
           })
         )}
-        {meta ? (
+        {pagination ? (
           <div className="bg-white rounded-lg border border-gray-200">
             <Pagination
               totalItems={totalItems}
-              currentPage={meta.page}
+              currentPage={pagination.page}
               onPageChange={setPage}
-              pageSize={meta.limit}
+              pageSize={pagination.limit}
               label="pengajuan"
             />
           </div>

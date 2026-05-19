@@ -137,7 +137,7 @@ export function KomentarPanel({
         {loading ? (
           <p className="text-xs text-gray-500">Memuat komentar...</p>
         ) : sortedItems.length === 0 ? (
-          <p className="text-xs text-gray-500">Belum ada komentar dari Tim Evaluasi.</p>
+          <p className="text-xs text-gray-500">Belum ada komentar kolaborasi untuk dokumen ini.</p>
         ) : (
           sortedItems.map((komentar) => {
             const isOpen = komentar.status === 'TERBUKA'

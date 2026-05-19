@@ -31,7 +31,23 @@ export class PenyusunWorkbenchDetailDto {
   readonly status!: string;
 
   @ApiProperty()
+  readonly statusLabel!: string;
+
+  @ApiProperty()
   readonly versi!: number;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    nullable: true,
+    description: 'DetailSOP sumber saat versi ini dibuat dari SOP BERLAKU',
+  })
+  readonly revisiDariDetailSopId?: string | null;
+
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Nomor versi sumber revisi',
+  })
+  readonly revisiDariVersi?: number | null;
 
   @ApiProperty()
   readonly nomorSOP!: string;

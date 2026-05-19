@@ -3,9 +3,11 @@
  */
 
 import { apiClient } from "@/lib/api/api-client";
+import { unwrapApiData } from "@/lib/api/response";
 import type { ApiSuccessResponse } from "@/types/dto/auth.dto";
 import type {
   RegisterTteDto,
+  UpdateTtePinDto,
   RiwayatTandaTangan,
   TtePengesahanPublic,
   TteProfil,
@@ -18,51 +20,51 @@ import type {
   TandaTanganiSopMutationDto,
 } from "@/types/dto/tte.dto";
 
-async function unwrapTte<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise;
-  return envelope.data as T;
-}
-
 export const tteApi = {
   getProfil: () =>
-    unwrapTte<TteProfil | null>(
+    unwrapApiData<TteProfil | null>(
       apiClient.get<ApiSuccessResponse<TteProfil | null>>("/tte/profil"),
     ),
 
   registerProfil: (payload: RegisterTteDto) =>
-    unwrapTte<TteProfil>(
+    unwrapApiData<TteProfil>(
       apiClient.post<ApiSuccessResponse<TteProfil>>("/tte/profil", payload),
     ),
 
+  updateProfilPin: (payload: UpdateTtePinDto) =>
+    unwrapApiData<TteProfil>(
+      apiClient.patch<ApiSuccessResponse<TteProfil>>("/tte/profil/pin", payload),
+    ),
+
   mintTokenVerifikasi: () =>
-    unwrapTte<{ token: string }>(
+    unwrapApiData<{ token: string }>(
       apiClient.post<ApiSuccessResponse<{ token: string }>>(
         "/tte/profil/verifikasi-email",
       ),
     ),
 
   konfirmasiEmail: (token: string) =>
-    unwrapTte<{ message: string }>(
+    unwrapApiData<{ message: string }>(
       apiClient.get<ApiSuccessResponse<{ message: string }>>(
         `/tte/profil/verifikasi-email?token=${encodeURIComponent(token)}`,
       ),
     ),
 
   getSigningHistory: () =>
-    unwrapTte<RiwayatTandaTangan[]>(
+    unwrapApiData<RiwayatTandaTangan[]>(
       apiClient.get<ApiSuccessResponse<RiwayatTandaTangan[]>>("/tte/riwayat"),
     ),
 
   /** Verifikasi pengesahan (publik, tanpa login). */
   getPengesahanPublic: (dokumenTteId: string, userId: string) =>
-    unwrapTte<TtePengesahanPublic>(
+    unwrapApiData<TtePengesahanPublic>(
       apiClient.get<ApiSuccessResponse<TtePengesahanPublic>>(
         `/tte/public/pengesahan/${encodeURIComponent(dokumenTteId)}/${encodeURIComponent(userId)}`,
       ),
     ),
 
   tandaTanganiBA: (pengajuanId: string, payload: TandaTanganiBaDto) =>
-    unwrapTte<RiwayatTandaTangan>(
+    unwrapApiData<RiwayatTandaTangan>(
       apiClient.post<ApiSuccessResponse<RiwayatTandaTangan>>(
         `/tte/tanda-tangani/ba/${pengajuanId}`,
         payload,
@@ -70,7 +72,7 @@ export const tteApi = {
     ),
 
   tandaTanganiSOP: (sopDetailId: string, payload: TandaTanganiSopDto) =>
-    unwrapTte<RiwayatTandaTangan>(
+    unwrapApiData<RiwayatTandaTangan>(
       apiClient.post<ApiSuccessResponse<RiwayatTandaTangan>>(
         `/tte/tanda-tangani/sop/${sopDetailId}`,
         payload,
@@ -81,7 +83,7 @@ export const tteApi = {
     pengajuanId: string,
     payload: TandaTanganiSopPengajuanDto,
   ) =>
-    unwrapTte<TandaTanganiSopPengajuanResponse>(
+    unwrapApiData<TandaTanganiSopPengajuanResponse>(
       apiClient.post<ApiSuccessResponse<TandaTanganiSopPengajuanResponse>>(
         `/tte/tanda-tangani/pengajuan/${pengajuanId}/sop-semua`,
         payload,
@@ -98,12 +100,13 @@ import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { STALE_TIME } from "@/utils/constants";
 
-export function useTTEProfil() {
+export function useTTEProfil(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: queryKeys.tteProfil,
     queryFn: () => tteApi.getProfil(),
     staleTime: STALE_TIME.MEDIUM,
     retry: false,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -116,13 +119,31 @@ export function useTtePengesahanPublic(dokumenTteId: string, userId: string) {
   });
 }
 
+export function useTTERiwayat() {
+  return useQuery({
+    queryKey: queryKeys.tteRiwayat,
+    queryFn: () => tteApi.getSigningHistory(),
+    staleTime: STALE_TIME.MEDIUM,
+  });
+}
+
 export function useRegisterTTE() {
   return useMutationWithToast({
     mutationFn: (payload: RegisterTteDto) => tteApi.registerProfil(payload),
-    invalidateKeys: [queryKeys.tteProfil, queryKeys.tteRiwayat],
-    successMessage: "Kredensial TTE berhasil didaftarkan",
+    invalidateKeys: [queryKeys.tteProfil, queryKeys.tteRiwayat, queryKeys.auth],
+    successMessage: "PIN TTE berhasil diatur",
     useDetailedErrors: true,
-    errorMessagePrefix: "Gagal mendaftarkan kredensial TTE",
+    errorMessagePrefix: "Gagal mengatur PIN TTE",
+  });
+}
+
+export function useUpdateTTEPin() {
+  return useMutationWithToast({
+    mutationFn: (payload: UpdateTtePinDto) => tteApi.updateProfilPin(payload),
+    invalidateKeys: [queryKeys.tteProfil, queryKeys.auth],
+    successMessage: "PIN TTE berhasil diperbarui",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal memperbarui PIN TTE",
   });
 }
 

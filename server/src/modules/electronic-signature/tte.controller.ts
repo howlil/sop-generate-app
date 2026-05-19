@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -20,6 +21,7 @@ import type { JwtAccessPayload } from '../../common/types/jwt-access-payload.typ
 import { PeranPengguna } from '../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME } from '../core/auth/helpers/auth.shared';
 import { RegisterTteDto } from './register-tte.dto';
+import { UpdateTtePinDto } from './update-tte-pin.dto';
 import { TandaTanganiDto } from './tanda-tangani.dto';
 import {
   TteService,
@@ -57,9 +59,9 @@ export class TteController {
   @Post('profil')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Daftar atau ubah PIN TTE',
+    summary: 'Atur PIN TTE pertama kali',
     description:
-      'Simulasi BSRE: tidak ada layanan pihak ketiga; PIN di-hash (bcrypt) dan disimpan pada data pengguna.',
+      'Hanya jika PIN belum pernah diatur. Untuk ubah PIN gunakan PATCH /tte/profil/pin.',
   })
   async registerProfil(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -67,7 +69,25 @@ export class TteController {
   ): Promise<ApiSuccessResponse<TteProfilResponse>> {
     const data = await this.tteService.registerProfil(req.user, dto);
     return {
-      message: 'Kredensial TTE berhasil disimpan',
+      message: 'PIN TTE berhasil diatur',
+      success: true,
+      data,
+    };
+  }
+
+  @Patch('profil/pin')
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Ubah PIN TTE',
+    description: 'Wajib mengirim PIN lama yang valid beserta PIN baru.',
+  })
+  async updateProfilPin(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: UpdateTtePinDto,
+  ): Promise<ApiSuccessResponse<TteProfilResponse>> {
+    const data = await this.tteService.updateProfilPin(req.user, dto);
+    return {
+      message: 'PIN TTE berhasil diperbarui',
       success: true,
       data,
     };

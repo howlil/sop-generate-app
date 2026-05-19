@@ -4,10 +4,21 @@ export function buildQueryString(
   params: Record<string, unknown> | undefined,
 ): string {
   if (!params) return ''
-  const entries = Object.entries(params)
-    .filter(([, v]) => v != null)
-    .map(([k, v]) => [k, String(v)])
-  return entries.length ? '?' + new URLSearchParams(entries).toString() : ''
+  const searchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value == null) continue
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item != null) searchParams.append(key, String(item))
+      }
+      continue
+    }
+    searchParams.set(key, String(value))
+  }
+
+  const query = searchParams.toString()
+  return query ? `?${query}` : ''
 }
 
 const API_BASE_URL = clientEnv.VITE_API_BASE_URL
@@ -204,18 +215,22 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
     clearTimeout(timeoutId)
   }
 
+  const isAuthSessionEndpoint =
+    endpoint === '/auth/login' ||
+    endpoint === '/auth/refresh' ||
+    endpoint.startsWith('/auth/login?')
+
   // Handle 401 Unauthorized - attempt token refresh
-  if (response.status === 401 && retryCount === 0) {
-    const refreshed = await waitForRefresh()
-
-    if (refreshed) {
-      // Retry the original request with refreshed token
-      return request<T>(endpoint, options, retryCount + 1)
+  if (response.status === 401 && !isAuthSessionEndpoint) {
+    if (retryCount === 0) {
+      const refreshed = await waitForRefresh()
+      if (refreshed) {
+        return request<T>(endpoint, options, retryCount + 1)
+      }
     }
-
-    // Refresh failed - clear auth state and let route guard handle redirect
-    const { useAuthStore } = await import('@/stores/authStore')
-    useAuthStore.getState().logout()
+    const { handleUnauthorizedSession } = await import('@/stores/authStore')
+    handleUnauthorizedSession()
+    throw new ApiError(401, 'Sesi berakhir. Silakan login kembali.')
   }
 
   if (!response.ok) {

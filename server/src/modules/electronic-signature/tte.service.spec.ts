@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -50,7 +51,8 @@ describe('TteService', () => {
     return {
       findPenggunaAktif: jest.fn(),
       findKredensial: jest.fn(),
-      upsertKredensialPin: jest.fn(),
+      createKredensialPin: jest.fn(),
+      updateKredensialPinHash: jest.fn(),
       findRiwayatUser: jest.fn(),
       findRiwayatPengesahanByUserAndDokumen: jest.fn(),
       assertRiwayatBelumAda: jest.fn(),
@@ -272,6 +274,68 @@ describe('TteService', () => {
       dokumenTteId,
       hashDokumen: 'deadbeef',
     });
+  });
+
+  const mockPengguna = {
+    penggunaId: evaluatorUser.sub,
+    email: evaluatorUser.email,
+    nama: 'Eva',
+    nip: '1',
+    jabatan: 'PJ',
+    pangkat: 'A',
+    peran: PeranPengguna.PJ_EVALUATOR,
+    opdId: 'opd-1',
+  };
+
+  it('should_create_pin_when_registerProfil_and_none_exists', async () => {
+    const repo = createRepoMock({
+      findPenggunaAktif: jest.fn().mockResolvedValue(mockPengguna),
+      findKredensial: jest.fn().mockResolvedValue(null),
+      createKredensialPin: jest.fn().mockResolvedValue(mockTtePinRow),
+    });
+    const service = new TteService(repo, config());
+    const actual = await service.registerProfil(evaluatorUser, { pin: '1234' });
+    expect(actual.userId).toBe(evaluatorUser.sub);
+    expect(repo.createKredensialPin).toHaveBeenCalled();
+  });
+
+  it('should_throw_conflict_when_registerProfil_but_pin_already_exists', async () => {
+    const repo = createRepoMock({
+      findPenggunaAktif: jest.fn().mockResolvedValue(mockPengguna),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
+    });
+    const service = new TteService(repo, config());
+    await expect(service.registerProfil(evaluatorUser, { pin: '1234' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
+  it('should_update_pin_when_pin_lama_valid', async () => {
+    const repo = createRepoMock({
+      findPenggunaAktif: jest.fn().mockResolvedValue(mockPengguna),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
+      updateKredensialPinHash: jest.fn().mockResolvedValue(mockTtePinRow),
+    });
+    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+    const service = new TteService(repo, config());
+    const actual = await service.updateProfilPin(evaluatorUser, {
+      pinLama: '1234',
+      pinBaru: '5678',
+    });
+    expect(actual.userId).toBe(evaluatorUser.sub);
+    expect(repo.updateKredensialPinHash).toHaveBeenCalled();
+  });
+
+  it('should_throw_unauthorized_when_updateProfilPin_with_wrong_pin_lama', async () => {
+    const repo = createRepoMock({
+      findPenggunaAktif: jest.fn().mockResolvedValue(mockPengguna),
+      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
+    });
+    (bcrypt.compare as jest.Mock).mockResolvedValue(false);
+    const service = new TteService(repo, config());
+    await expect(
+      service.updateProfilPin(evaluatorUser, { pinLama: 'wrong', pinBaru: '5678' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
   it('should_show_detail_status_context_when_batch_sign_has_non_eligible_sop', async () => {

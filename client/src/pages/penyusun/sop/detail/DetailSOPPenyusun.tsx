@@ -1,11 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useParams, useNavigate, useLocation } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useParams, useNavigate } from '@tanstack/react-router'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { useAppRole } from '@/hooks/useAppRole'
 import { useToast } from '@/hooks/useToast'
-import type { StatusSOP } from "@/types/dto/sop.dto";
 import { ROUTES } from '@/utils/constants'
-import { useDetailSopPenyusun, useResolveSopKomentar, useSopKomentar } from '@/api/sop'
+import { useUmpanBalikEvaluasi } from '@/api/evaluasi'
+import { getKirimUlangBlockingReason } from '@/lib/evaluasi/evaluasi-domain'
+import {
+  useBuatVersiBaru,
+  useDetailSopPenyusun,
+  useResolveSopKomentar,
+  useRiwayatVersi,
+  useSopKomentar,
+} from '@/api/sop'
+import { BuatVersiBaruDialog } from '@/pages/penyusun/sop/components/BuatVersiBaruDialog'
+import { getBuatVersiBaruBlockingReason } from '@/lib/sop/sop-version-domain'
+import type { StatusSOP } from '@/types/dto/sop.dto'
 import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
 import type { SopProsedurAutosaveStatus } from '@/hooks/useSopProsedurAutosave'
 import { DetailSOPPenyusunHeader } from './components/DetailSopPenyusunHeader'
@@ -34,9 +44,7 @@ export function DetailSOPPenyusun() {
   const { role } = useAppRole()
   const { id } = useParams({ from: '/penyusun/sop/$id' })
   const navigate = useNavigate()
-  const location = useLocation()
   const { showToast } = useToast()
-  const detailMetaState = location.state as { sopStatus?: StatusSOP } | undefined
 
   const {
     metadata,
@@ -60,6 +68,7 @@ export function DetailSOPPenyusun() {
     peraturanList,
     auditLogs,
     currentSopStatus,
+    currentSopStatusLabel,
     isRevisionFlow,
     primaryActionLabel,
     handleMetadataChange,
@@ -72,7 +81,7 @@ export function DetailSOPPenyusun() {
     prosedurAutosaveError,
     flushProsedurAutosave,
     canEditDetail,
-  } = useDetailSopPenyusun(id, detailMetaState?.sopStatus, undefined)
+  } = useDetailSopPenyusun(id, undefined, undefined)
 
   const isReadOnly = !canEditDetail
 
@@ -85,7 +94,45 @@ export function DetailSOPPenyusun() {
      bentuknya dengan tipe context — alias ini hanya untuk memenuhi naming convention. */
   const setMetadata = _setMetadata
 
-  const { data: komentarList, isLoading: isKomentarLoading } = useSopKomentar(id)
+  const { data: umpanBalik, isLoading: isUmpanBalikLoading } = useUmpanBalikEvaluasi(
+    id,
+    isRevisionFlow || currentSopStatus === 'REVISI_DARI_EVALUATOR',
+  )
+  const kirimUlangBlockingReason = isRevisionFlow
+    ? getKirimUlangBlockingReason(umpanBalik ?? null)
+    : null
+
+  const sopHeaderId = metadata.sopId
+  const { data: riwayatVersi = [] } = useRiwayatVersi(sopHeaderId)
+  const { mutateAsync: buatVersiBaru, isPending: isBuatVersiBaruPending } = useBuatVersiBaru()
+  const [isBuatVersiDialogOpen, setIsBuatVersiDialogOpen] = useState(false)
+  const terminalStatuses: StatusSOP[] = ['BERLAKU', 'DIGANTIKAN', 'DICABUT']
+  const hasRevisiInFlight = riwayatVersi.some(
+    (row) => !terminalStatuses.includes(row.status as StatusSOP),
+  )
+  const canBuatVersiBaru =
+    currentSopStatus === 'BERLAKU' && !hasRevisiInFlight
+  const buatVersiBaruBlockingReason = canBuatVersiBaru
+    ? null
+    : getBuatVersiBaruBlockingReason({
+        id: sopHeaderId ?? '',
+        opdId: '',
+        detailSopId: id,
+        judul: metadata.nama ?? '',
+        nomorSop: metadata.nomorSOP ?? null,
+        pembuat: null,
+        terakhirDiedit: { nama: null, waktu: null },
+        status: currentSopStatus,
+        statusLabel: currentSopStatusLabel,
+        peraturanId: null,
+        terakhirDiperbarui: null,
+        versiBerlaku: { detailSopId: id, versi: metadata.version ?? 1, nomorSop: metadata.nomorSOP ?? '', status: 'BERLAKU', statusLabel: 'Berlaku' },
+        canBuatVersiBaru: false,
+      })
+
+  const { data: komentarList, isLoading: isKomentarLoading } = useSopKomentar(
+    isRevisionFlow ? undefined : id,
+  )
   const { mutateAsync: resolveKomentarAsync, isPending: isResolvingKomentar } =
     useResolveSopKomentar(id)
 
@@ -220,6 +267,7 @@ export function DetailSOPPenyusun() {
           <DetailSOPPenyusunHeader
             metadata={metadata}
             currentSopStatus={currentSopStatus}
+            currentSopStatusLabel={currentSopStatusLabel}
             isRevisionFlow={isRevisionFlow}
             primaryActionLabel={primaryActionLabel}
             autosaveStatus={combinedAutosaveStatus}
@@ -228,6 +276,13 @@ export function DetailSOPPenyusun() {
             onPrint={() => window.print()}
             isReadOnly={isReadOnly}
             isPrimaryActionPending={isKirimUlangKeEvaluatorPending}
+            kirimUlangBlockingReason={kirimUlangBlockingReason}
+            canBuatVersiBaru={canBuatVersiBaru}
+            buatVersiBaruBlockingReason={
+              currentSopStatus === 'BERLAKU' ? buatVersiBaruBlockingReason : null
+            }
+            onBuatVersiBaru={() => setIsBuatVersiDialogOpen(true)}
+            isBuatVersiBaruPending={isBuatVersiBaruPending}
           />
         }
         main={
@@ -248,8 +303,29 @@ export function DetailSOPPenyusun() {
             onTabChange={setRightPanelTab}
             auditEntries={auditLogs ?? []}
             editTabLabel={isReadOnly ? 'Informasi' : 'Edit'}
+            isRevisionFlow={isRevisionFlow}
+            umpanBalik={umpanBalik ?? null}
+            isUmpanBalikLoading={isUmpanBalikLoading}
+            isReadOnly={isReadOnly}
+            detailSopId={id}
+            sopId={sopHeaderId}
           />
         }
+      />
+      <BuatVersiBaruDialog
+        open={isBuatVersiDialogOpen}
+        onOpenChange={setIsBuatVersiDialogOpen}
+        judulSop={metadata.nama ?? metadata.judul ?? 'SOP'}
+        versiSaatIni={metadata.version ?? 1}
+        isPending={isBuatVersiBaruPending}
+        onConfirm={async () => {
+          const workbench = await buatVersiBaru(id)
+          setIsBuatVersiDialogOpen(false)
+          void navigate({
+            to: ROUTES.PENYUSUN.DETAIL_SOP,
+            params: { id: workbench.detail.id },
+          })
+        }}
       />
     </SopEditorProvider>
   )

@@ -15,6 +15,7 @@ import {
   segmentsOverlap,
   segmentsNearby,
   scorePath,
+  pathOverlapsSegments,
 } from './orthogonalRouter'
 
 export type Side = 'top' | 'right' | 'bottom' | 'left'
@@ -68,6 +69,14 @@ export interface BpmnConnectionMeta {
   toCol: number
 }
 
+export interface BpmnRouteCandidate {
+  sSide: Side
+  eSide: Side
+  sourceJettySize?: number
+  targetJettySize?: number
+  preferSimple?: boolean
+}
+
 /* ── Used-sides bookkeeping (same as FlowchartArrowConnector) ── */
 
 export type UsedSides = Record<
@@ -97,7 +106,7 @@ export function selectBpmnSidePairs(
   _fromRect: Rect,
   _toRect: Rect,
   usedSides: UsedSides,
-): Array<[Side, Side]> {
+): BpmnRouteCandidate[] {
   const sameLane = conn.fromLane === conn.toLane
   const targetRight = conn.toCol > conn.fromCol
   const targetLeft = conn.toCol < conn.fromCol
@@ -115,111 +124,145 @@ export function selectBpmnSidePairs(
   const dstInBusy = (s: Side) =>
     (usedSides[conn.to]?.in?.[s] ?? []).some(id => id !== conn.id)
 
-  const pairs: Array<[Side, Side]> = []
+  const pairs: BpmnRouteCandidate[] = []
+  const push = (
+    sSide: Side,
+    eSide: Side,
+    overrides: Partial<BpmnRouteCandidate> = {},
+  ) => {
+    pairs.push({
+      sSide,
+      eSide,
+      sourceJettySize: SHAPE_MARGIN,
+      targetJettySize: SHAPE_MARGIN,
+      preferSimple: true,
+      ...overrides,
+    })
+  }
 
   if (isStartTerm) {
     if (sameLane) {
-      pairs.push(['right', 'left'])
+      push('right', 'left', { sourceJettySize: 28, targetJettySize: 20 })
     } else if (targetBelow) {
-      if (targetRight) pairs.push(['right', 'left'])
-      pairs.push(['bottom', 'top'])
+      if (targetRight) push('right', 'left', { sourceJettySize: 28 })
+      push('bottom', 'top', { sourceJettySize: 28, targetJettySize: 20 })
     } else if (targetAbove) {
-      if (targetRight) pairs.push(['right', 'left'])
-      pairs.push(['top', 'bottom'])
+      if (targetRight) push('right', 'left', { sourceJettySize: 28 })
+      push('top', 'bottom', { sourceJettySize: 28, targetJettySize: 20 })
     } else {
-      pairs.push(['right', 'left'])
+      push('right', 'left', { sourceJettySize: 28, targetJettySize: 20 })
     }
   }
 
   if (isDecSrc && (isYa || isTidak)) {
     if (isYa) {
       if (sameLane && targetRight) {
-        pairs.push(['right', 'left'])
-        pairs.push(['bottom', 'left'])
+        push('right', 'left', { sourceJettySize: 20, targetJettySize: 20 })
+        push('bottom', 'left', { sourceJettySize: 18, preferSimple: false })
       } else if (sameLane && targetLeft) {
-        if (!srcOutBusy('bottom') && !dstInBusy('bottom')) pairs.push(['bottom', 'bottom'])
-        pairs.push(['bottom', 'right'], ['left', 'right'])
+        if (!srcOutBusy('bottom') && !dstInBusy('bottom')) push('bottom', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+        push('bottom', 'right', { sourceJettySize: 18, preferSimple: false })
+        push('left', 'right', { preferSimple: false })
       } else if (targetBelow && targetLeft) {
-        pairs.push(['bottom', 'right'], ['bottom', 'top'])
-        pairs.push(['left', 'top'])
+        push('bottom', 'right', { sourceJettySize: 18, preferSimple: false })
+        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+        push('left', 'top', { preferSimple: false })
       } else if (targetBelow) {
-        pairs.push(['bottom', 'top'])
-        if (targetRight) pairs.push(['bottom', 'left'])
+        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+        if (targetRight) push('bottom', 'left', { sourceJettySize: 18, preferSimple: false })
       } else if (targetAbove && targetLeft) {
-        pairs.push(['top', 'right'], ['top', 'bottom'])
+        push('top', 'right', { sourceJettySize: 18, preferSimple: false })
+        push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
       } else if (targetAbove) {
-        pairs.push(['top', 'bottom'])
-        if (targetRight) pairs.push(['right', 'left'])
+        push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+        if (targetRight) push('right', 'left')
       } else {
-        pairs.push(['bottom', 'top'], ['right', 'left'])
+        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+        push('right', 'left')
       }
     }
 
     if (isTidak) {
       if (sameLane && targetRight) {
-        pairs.push(['top', 'left'])
-        pairs.push(['right', 'left'])
+        push('top', 'left', { sourceJettySize: 20, preferSimple: false })
+        push('right', 'left')
       } else if (sameLane && targetLeft) {
-        if (!srcOutBusy('top') && !dstInBusy('top')) pairs.push(['top', 'top'])
-        pairs.push(['top', 'right'], ['left', 'right'])
+        if (!srcOutBusy('top') && !dstInBusy('top')) push('top', 'top', { sourceJettySize: 22, targetJettySize: 22, preferSimple: false })
+        push('top', 'right', { sourceJettySize: 22, preferSimple: false })
+        push('left', 'right', { preferSimple: false })
       } else if (targetBelow) {
-        pairs.push(['bottom', 'top'])
-        if (targetRight) pairs.push(['right', 'top'])
+        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+        if (targetRight) push('right', 'top', { preferSimple: false })
       } else if (targetAbove && targetLeft) {
-        pairs.push(['top', 'left'])
-        pairs.push(['top', 'right'], ['top', 'bottom'])
-        pairs.push(['left', 'right'])
+        push('top', 'left', { sourceJettySize: 22, preferSimple: false })
+        push('top', 'right', { sourceJettySize: 22, preferSimple: false })
+        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
+        push('left', 'right', { preferSimple: false })
       } else if (targetAbove && sameCol) {
         // Loop-back ke step di atas tapi sejajar kolom:
         // arahkan keluar dari atas gateway lalu masuk ke sisi kiri target
         // supaya panah "Tidak" tidak menembus langsung ke bawah.
-        pairs.push(['top', 'left'])
-        pairs.push(['top', 'bottom'])
+        push('top', 'left', { sourceJettySize: 22, preferSimple: false })
+        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
       } else if (targetAbove) {
-        pairs.push(['top', 'bottom'])
-        if (targetRight) pairs.push(['right', 'bottom'])
+        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
+        if (targetRight) push('right', 'bottom', { preferSimple: false })
       } else {
-        pairs.push(['top', 'bottom'], ['top', 'left'])
+        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
+        push('top', 'left', { sourceJettySize: 22, preferSimple: false })
       }
     }
   }
 
   else if (!isStartTerm) {
     if (sameLane && targetRight) {
-      pairs.push(['right', 'left'])
+      push('right', 'left')
       if (srcOutBusy('right') || dstInBusy('left')) {
-        pairs.push(['bottom', 'left'], ['top', 'left'])
+        push('bottom', 'left', { preferSimple: false })
+        push('top', 'left', { preferSimple: false })
       }
     } else if (sameLane && targetLeft) {
-      if (!srcOutBusy('top') && !dstInBusy('top')) pairs.push(['top', 'top'])
-      if (!srcOutBusy('bottom') && !dstInBusy('bottom')) pairs.push(['bottom', 'bottom'])
-      pairs.push(['left', 'right'])
+      if (!srcOutBusy('top') && !dstInBusy('top')) push('top', 'top', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
+      if (!srcOutBusy('bottom') && !dstInBusy('bottom')) push('bottom', 'bottom', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
+      push('left', 'right', { preferSimple: false })
     } else if (sameLane && sameCol) {
-      pairs.push(['right', 'left'], ['bottom', 'top'])
+      push('right', 'left')
+      push('bottom', 'top', { preferSimple: false })
     } else if (targetBelow && (targetRight || sameCol)) {
-      pairs.push(['bottom', 'top'])
-      if (targetRight) pairs.push(['right', 'left'], ['bottom', 'left'])
+      push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+      if (targetRight) {
+        push('right', 'left')
+        push('bottom', 'left', { preferSimple: false })
+      }
     } else if (targetAbove && (targetRight || sameCol)) {
-      pairs.push(['top', 'bottom'])
-      if (targetRight) pairs.push(['right', 'left'])
+      push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+      if (targetRight) push('right', 'left')
     } else if (targetBelow && targetLeft) {
-      pairs.push(['bottom', 'right'], ['bottom', 'top'], ['left', 'top'])
+      push('bottom', 'right', { preferSimple: false })
+      push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+      push('left', 'top', { preferSimple: false })
     } else if (targetAbove && targetLeft) {
-      pairs.push(['top', 'right'], ['top', 'bottom'], ['left', 'bottom'])
+      push('top', 'right', { preferSimple: false })
+      push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+      push('left', 'bottom', { preferSimple: false })
     }
   }
 
-  pairs.push(
-    ['right', 'left'], ['left', 'right'],
-    ['bottom', 'top'], ['top', 'bottom'],
-    ['right', 'top'], ['right', 'bottom'],
-    ['left', 'top'], ['left', 'bottom'],
-    ['bottom', 'left'], ['bottom', 'right'],
-    ['top', 'left'], ['top', 'right'],
-  )
+  push('right', 'left')
+  push('left', 'right', { preferSimple: false })
+  push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+  push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+  push('right', 'top', { preferSimple: false })
+  push('right', 'bottom', { preferSimple: false })
+  push('left', 'top', { preferSimple: false })
+  push('left', 'bottom', { preferSimple: false })
+  push('bottom', 'left', { preferSimple: false })
+  push('bottom', 'right', { preferSimple: false })
+  push('top', 'left', { preferSimple: false })
+  push('top', 'right', { preferSimple: false })
 
   const seen = new Set<string>()
-  const filtered = pairs.filter(([s, e]) => {
+  const filtered = pairs.filter(({ sSide: s, eSide: e }) => {
     // Untuk gateway sebagai sumber: hindari kombinasi top↔bottom
     // supaya tidak ada path yang menembus diamond secara vertikal.
     if (isDecSrc && (
@@ -270,6 +313,9 @@ export interface BpmnRouteOptions {
   obstacles: Rect[]
   occupiedSegments: OccupiedSegment[]
   globalBounds?: Rect
+  sourceJettySize?: number
+  targetJettySize?: number
+  gridClearance?: number
 }
 
 /** Diamond hanya punya 4 vertex; pakai 0.5 agar titik selalu di vertex, bukan di tepi rect. */
@@ -441,6 +487,7 @@ function findColumnPipeX(
 
 /** Inset dari garis border lane agar path tidak menimpa garis box tabel. */
 const LANE_BORDER_INSET = 12
+const BPMN_GRID_CLEARANCE = 6
 
 function findLanePipeY(
   layout: BpmnLaneLayout,
@@ -465,6 +512,58 @@ function findLanePipeY(
   return Math.round(pipeY)
 }
 
+function rangesIntersect(a1: number, a2: number, b1: number, b2: number): boolean {
+  const aMin = Math.min(a1, a2)
+  const aMax = Math.max(a1, a2)
+  const bMin = Math.min(b1, b2)
+  const bMax = Math.max(b1, b2)
+  return aMin < bMax && bMin < aMax
+}
+
+function pathRunsAlongBpmnGrid(
+  path: Point[],
+  layout: BpmnLaneLayout,
+  clearance = BPMN_GRID_CLEARANCE,
+): boolean {
+  if (path.length < 2) return false
+
+  const verticalGridLines = new Set<number>()
+  layout.columnStartXs.forEach((x, index) => {
+    verticalGridLines.add(Math.round(x))
+    const width = layout.columnWidths[index]
+    if (width != null) verticalGridLines.add(Math.round(x + width))
+  })
+
+  const horizontalGridLines = new Set<number>()
+  layout.lanes.forEach((lane) => {
+    horizontalGridLines.add(Math.round(lane.top))
+    horizontalGridLines.add(Math.round(lane.top + lane.height))
+  })
+  if (verticalGridLines.size === 0 || horizontalGridLines.size === 0) return false
+
+  const minGridX = Math.min(...layout.columnStartXs)
+  const maxGridX = Math.max(...layout.columnStartXs.map((x, index) => x + (layout.columnWidths[index] ?? 0)))
+  const minGridY = Math.min(...layout.lanes.map((lane) => lane.top))
+  const maxGridY = Math.max(...layout.lanes.map((lane) => lane.top + lane.height))
+
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i]
+    const b = path[i + 1]
+    if (a.y === b.y && a.x !== b.x) {
+      for (const y of horizontalGridLines) {
+        if (Math.abs(a.y - y) <= clearance && rangesIntersect(a.x, b.x, minGridX, maxGridX)) return true
+      }
+    }
+    if (a.x === b.x && a.y !== b.y) {
+      for (const x of verticalGridLines) {
+        if (Math.abs(a.x - x) <= clearance && rangesIntersect(a.y, b.y, minGridY, maxGridY)) return true
+      }
+    }
+  }
+
+  return false
+}
+
 /* ═══════════════════════════════════════════════════════════════════
  *  buildBpmnWaypoints — the main routing logic
  * ═══════════════════════════════════════════════════════════════════ */
@@ -477,13 +576,19 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
     obstacles, occupiedSegments,
   } = opts
 
+  const sourceJetty = opts.sourceJettySize ?? SHAPE_MARGIN
+  const targetJetty = opts.targetJettySize ?? SHAPE_MARGIN
   const start = connPoint(fromShape, fromSide, fromDistance, fromIsDiamond)
   const end = connPoint(toShape, toSide, toDistance, toIsDiamond)
-  const extStart = extrudePoint(fromShape, fromSide, fromDistance, SHAPE_MARGIN, fromIsDiamond)
-  const extEnd = extrudePoint(toShape, toSide, toDistance, SHAPE_MARGIN, toIsDiamond)
+  const extStart = extrudePoint(fromShape, fromSide, fromDistance, sourceJetty, fromIsDiamond)
+  const extEnd = extrudePoint(toShape, toSide, toDistance, targetJetty, toIsDiamond)
 
   // Pre-filter obstacles once — O(N) instead of O(P*N) per pathHitsObstacle call
   const fObs = filterObstacles(obstacles, fromShape, toShape)
+  const isUsablePath = (path: Point[]) =>
+    !pathHitsObstacle(path, fObs, fromShape, toShape) &&
+    !pathOverlapsSegments(path, occupiedSegments, { includeCross: true }) &&
+    !pathRunsAlongBpmnGrid(path, layout, opts.gridClearance)
 
   const sameLane = fromLane === toLane
   const isHorizExit = fromSide === 'left' || fromSide === 'right'
@@ -494,7 +599,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
   /* ── Case 1: Same lane, right→left (orthogonal: horizontal lalu vertikal, bukan diagonal) ── */
   if (sameLane && fromSide === 'right' && toSide === 'left' && extStart.x < extEnd.x) {
     const orthogonalL = [start, extStart, { x: extEnd.x, y: extStart.y }, extEnd, end]
-    if (!pathHitsObstacle(orthogonalL, fObs, fromShape, toShape)) {
+    if (isUsablePath(orthogonalL)) {
       return orthogonalL
     }
     const lane = layout.lanes[fromLane]
@@ -505,7 +610,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       const belowPipe = fromLane < layout.lanes.length - 1 ? findLanePipeY(layout, fromLane, fromLane + 1) : belowY
       for (const uY of [abovePipe, belowPipe, aboveY, belowY]) {
         const path = [start, extStart, { x: extStart.x, y: uY }, { x: extEnd.x, y: uY }, extEnd, end]
-        if (!pathHitsObstacle(path, fObs, fromShape, toShape)) return path
+        if (isUsablePath(path)) return path
       }
     }
   }
@@ -531,7 +636,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
         { x: extEnd.x, y: baseY + trackOffset },
         extEnd, end,
       ]
-      if (!pathHitsObstacle(path, fObs, fromShape, toShape)) return path
+      if (isUsablePath(path)) return path
     }
   }
 
@@ -554,11 +659,11 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
 
     if (useStraight) {
       const straight = [start, extStart, extEnd, end]
-      if (!pathHitsObstacle(straight, fObs, fromShape, toShape)) return straight
+      if (isUsablePath(straight)) return straight
 
       const midY = (extStart.y + extEnd.y) / 2
       const zPath = [start, extStart, { x: extStart.x, y: midY }, { x: extEnd.x, y: midY }, extEnd, end]
-      if (!pathHitsObstacle(zPath, fObs, fromShape, toShape)) return zPath
+      if (isUsablePath(zPath)) return zPath
     }
 
     const laneGapIdx = goingDown ? fromLane : toLane
@@ -569,7 +674,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       { x: extEnd.x, y: lanePipeY },
       extEnd, end,
     ]
-    if (!pathHitsObstacle(zPath, fObs, fromShape, toShape)) return zPath
+    if (isUsablePath(zPath)) return zPath
 
     // If Z-shape hits obstacles, use a column-pipe for vertical travel
     const preferredGap = Math.min(fromCenterCol, toCenterCol)
@@ -580,13 +685,13 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       { x: vX, y: extEnd.y },
       extEnd, end,
     ]
-    if (!pathHitsObstacle(colPipePath, fObs, fromShape, toShape)) return colPipePath
+    if (isUsablePath(colPipePath)) return colPipePath
   }
 
   /* ── Case 4: Cross-lane, horiz exit + vert entry ────────── */
   if (!sameLane && isHorizExit && isVertEntry) {
     const lPath = [start, extStart, { x: extEnd.x, y: extStart.y }, extEnd, end]
-    if (!pathHitsObstacle(lPath, fObs, fromShape, toShape)) return lPath
+    if (isUsablePath(lPath)) return lPath
 
     const preferredGap = Math.max(0, Math.min(opts.fromCol, opts.toCol))
     const vX = findColumnPipeX(layout, preferredGap, extStart.y, extEnd.y, fObs, occupiedSegments)
@@ -596,13 +701,13 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       { x: vX, y: extEnd.y },
       extEnd, end,
     ]
-    if (!pathHitsObstacle(colPath, fObs, fromShape, toShape)) return colPath
+    if (isUsablePath(colPath)) return colPath
   }
 
   /* ── Case 5: Cross-lane, vert exit + horiz entry ────────── */
   if (!sameLane && isVertExit && isHorizEntry) {
     const lPath = [start, extStart, { x: extStart.x, y: extEnd.y }, extEnd, end]
-    if (!pathHitsObstacle(lPath, fObs, fromShape, toShape)) return lPath
+    if (isUsablePath(lPath)) return lPath
 
     const goingDown = toLane > fromLane
     const laneGapIdx = goingDown ? fromLane : toLane
@@ -618,7 +723,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
         { x: vX, y: extEnd.y },
         extEnd, end,
       ]
-      if (!pathHitsObstacle(path, fObs, fromShape, toShape)) return path
+      if (isUsablePath(path)) return path
     }
 
     const fallback = [
@@ -627,7 +732,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       { x: extEnd.x, y: lanePipeY },
       extEnd, end,
     ]
-    if (!pathHitsObstacle(fallback, fObs, fromShape, toShape)) return fallback
+    if (isUsablePath(fallback)) return fallback
     // lPath mungkin menembus shape; jangan return tanpa cek. Fall through ke fallback umum.
   }
 
@@ -647,7 +752,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
           { x: extEnd.x, y: uY },
           extEnd, end,
         ]
-        if (!pathHitsObstacle(path, fObs, fromShape, toShape)) return path
+        if (isUsablePath(path)) return path
       }
     }
   }
@@ -657,9 +762,9 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
     const direct = [start, extStart, { x: extEnd.x, y: extStart.y }, extEnd, end]
     if (Math.abs(extStart.y - extEnd.y) < 3) {
       const simpleDirect = [start, extStart, extEnd, end]
-      if (!pathHitsObstacle(simpleDirect, fObs, fromShape, toShape)) return simpleDirect
+      if (isUsablePath(simpleDirect)) return simpleDirect
     }
-    if (!pathHitsObstacle(direct, fObs, fromShape, toShape)) return direct
+    if (isUsablePath(direct)) return direct
   }
 
   /* ── Case 8: Horiz exit + horiz entry, cross-lane ──────── */
@@ -672,27 +777,27 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       { x: vX, y: extEnd.y },
       extEnd, end,
     ]
-    if (!pathHitsObstacle(path, fObs, fromShape, toShape)) return path
+    if (isUsablePath(path)) return path
   }
 
   /* ── Fallback: L-shape or Z-shape — hanya return jika tidak menembus shape ── */
   if (isVertExit && isVertEntry) {
     const midY = (extStart.y + extEnd.y) / 2
     const p = [start, extStart, { x: extStart.x, y: midY }, { x: extEnd.x, y: midY }, extEnd, end]
-    if (!pathHitsObstacle(p, fObs, fromShape, toShape)) return p
+    if (isUsablePath(p)) return p
   }
   if (isVertExit) {
     const p = [start, extStart, { x: extStart.x, y: extEnd.y }, extEnd, end]
-    if (!pathHitsObstacle(p, fObs, fromShape, toShape)) return p
+    if (isUsablePath(p)) return p
   }
   if (isVertEntry) {
     const p = [start, extStart, { x: extEnd.x, y: extStart.y }, extEnd, end]
-    if (!pathHitsObstacle(p, fObs, fromShape, toShape)) return p
+    if (isUsablePath(p)) return p
   }
   // Both horizontal
   const midX = (extStart.x + extEnd.x) / 2
   const p = [start, extStart, { x: midX, y: extStart.y }, { x: midX, y: extEnd.y }, extEnd, end]
-  if (!pathHitsObstacle(p, fObs, fromShape, toShape)) return p
+  if (isUsablePath(p)) return p
 
   // Semua kandidat menembus shape; kembalikan kosong agar connector coba side pair lain.
   return []
@@ -786,10 +891,23 @@ export function routeBpmn(opts: BpmnRouteOptions): Point[] {
   if (opts.globalBounds && path.length > 0) {
     path = clampPathToBounds(path, opts.globalBounds)
   }
-  return simplifyPath(path)
+  path = simplifyPath(path)
+  if (path.length < 2) return []
+  if (pathHitsObstacle(path, opts.obstacles, opts.fromShape, opts.toShape)) return []
+  if (pathOverlapsSegments(path, opts.occupiedSegments, { includeCross: true })) return []
+  if (pathRunsAlongBpmnGrid(path, opts.layout, opts.gridClearance)) return []
+  return path
 }
 
-export { scorePath, type OccupiedSegment }
+export function scoreBpmnRouteCandidate(candidate: BpmnRouteCandidate): number {
+  let score = 0
+  if (candidate.preferSimple === false) score += 200
+  if (candidate.sSide === 'top' || candidate.sSide === 'bottom') score += 25
+  if (candidate.eSide === 'top' || candidate.eSide === 'bottom') score += 25
+  return score
+}
+
+export { scorePath, pathOverlapsSegments, type OccupiedSegment }
 
 /** Untuk connector: pastikan path tidak menembus shape. Prioritas di atas rute terpendek. */
 export function bpmnPathHitsObstacle(

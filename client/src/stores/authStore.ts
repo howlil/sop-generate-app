@@ -23,7 +23,11 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { apiClient } from "@/lib/api/api-client";
-import type { LoginApiResponse, PublicPenggunaLoginData } from "@/types/dto/auth.dto";
+import type {
+  LoginApiResponse,
+  PublicPenggunaLoginData,
+  PublicPenggunaTteStatus,
+} from "@/types/dto/auth.dto";
 import type { User } from "@/types/dto/users.dto";
 import { ROUTES } from "@/utils/constants";
 import { toNavigationRole } from "@/utils/role-key";
@@ -33,7 +37,13 @@ import { toNavigationRole } from "@/utils/role-key";
  * The full User type (with pangkat, nohp, createdAt, updatedAt) is defined
  * in @/types/dto/users.dto.ts — import that when extra fields are needed.
  */
-type AuthUser = Pick<User, "id" | "email" | "nama" | "peran" | "opdId" | "nip" | "jabatan">;
+export type AuthUser = Pick<
+  User,
+  "id" | "email" | "nama" | "peran" | "opdId" | "nip" | "jabatan"
+> & {
+  pangkat: string;
+  tte: PublicPenggunaTteStatus;
+};
 
 interface AuthState {
   user: AuthUser | null;
@@ -68,7 +78,7 @@ export const useAuthStore = create<AuthState>()(
  */
 let hydrationPromise: Promise<void> | null = null;
 
-function mapPublicDataToAuthUser(u: PublicPenggunaLoginData): AuthUser {
+export function mapPublicDataToAuthUser(u: PublicPenggunaLoginData): AuthUser {
   return {
     id: u.penggunaId,
     email: u.email,
@@ -77,6 +87,8 @@ function mapPublicDataToAuthUser(u: PublicPenggunaLoginData): AuthUser {
     opdId: u.opdId,
     nip: u.nip,
     jabatan: u.jabatan,
+    pangkat: u.pangkat,
+    tte: u.tte,
   };
 }
 
@@ -84,6 +96,28 @@ function mapPublicDataToAuthUser(u: PublicPenggunaLoginData): AuthUser {
  * Mengisi store dari cookie sesi (GET /auth/me + credentials).
  * Dipakai setelah refresh: cookie HttpOnly tidak bisa dibaca JS; tanpa ini guard hanya melihat localStorage.
  */
+/**
+ * Arahkan ke halaman login (full navigation agar state & cache query ikut reset).
+ * Tidak melakukan apa-apa jika sudah di `/login`.
+ */
+export function redirectToLogin(redirectHref?: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  if (window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
+    return;
+  }
+  const href = redirectHref ?? window.location.href;
+  const search = new URLSearchParams({ redirect: href });
+  window.location.assign(`${ROUTES.AUTH.LOGIN}?${search.toString()}`);
+}
+
+/** Kosongkan sesi klien lalu redirect ke login. */
+export function handleUnauthorizedSession(redirectHref?: string): void {
+  useAuthStore.getState().logout();
+  redirectToLogin(redirectHref);
+}
+
 export async function syncAuthFromCookie(): Promise<boolean> {
   if (typeof window === "undefined") {
     return false;
@@ -93,6 +127,7 @@ export async function syncAuthFromCookie(): Promise<boolean> {
     useAuthStore.getState().setUser(mapPublicDataToAuthUser(res.data));
     return true;
   } catch {
+    useAuthStore.getState().logout();
     return false;
   }
 }
@@ -139,14 +174,22 @@ export function getRole(): string | undefined {
  * Usage in route file: beforeLoad: requireRoles(['PJ_EVALUATOR'])
  */
 export function requireRoles(roles: string[]) {
-  return async () => {
-    // Skip during SSR — no localStorage available
-    if (typeof window === "undefined") return;
-
+  return async ({ location }: { location: { href: string } }) => {
+    if (typeof window === "undefined") {
+      return;
+    }
     await ensureAuthHydrated();
+    await syncAuthFromCookie();
     const user = useAuthStore.getState().user;
-    const navRole = user ? toNavigationRole(user.peran) : undefined;
-    if (!user || navRole === undefined || !roles.includes(navRole)) {
+    if (!user) {
+      const { redirect } = await import("@tanstack/react-router");
+      throw redirect({
+        to: ROUTES.AUTH.LOGIN,
+        search: { redirect: location.href },
+      });
+    }
+    const navRole = toNavigationRole(user.peran);
+    if (navRole === undefined || !roles.includes(navRole)) {
       const { redirect } = await import("@tanstack/react-router");
       throw redirect({ to: ROUTES.HOME });
     }

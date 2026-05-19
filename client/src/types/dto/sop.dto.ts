@@ -8,6 +8,7 @@ export type StatusSOP =
   | "SIAP_DIVERIFIKASI"
   | "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI"
   | "BERLAKU"
+  | "DIGANTIKAN"
   | "DICABUT";
 
 export type JenisLangkahProsedur = "AWAL_AKHIR" | "KEGIATAN" | "KEPUTUSAN";
@@ -21,17 +22,42 @@ export interface TerakhirDieditRingkas {
   waktu: string | null;
 }
 
+export interface SopDaftarVersiSlice {
+  detailSopId: string;
+  versi: number;
+  nomorSop: string;
+  status: string;
+  statusLabel: string;
+}
+
 export interface SopDaftarRow {
   id: string;
   opdId: string;
   detailSopId: string | null;
   judul: string;
   nomorSop: string | null;
+  /** Nomor versi DetailSOP terbaru (selaras GET /sop). */
+  versi?: number | null;
   pembuat: string | null;
   terakhirDiedit: TerakhirDieditRingkas;
   status: string;
+  statusLabel: string;
   peraturanId: string | null;
   terakhirDiperbarui: string | null;
+  versiBerlaku?: SopDaftarVersiSlice | null;
+  canBuatVersiBaru?: boolean;
+}
+
+export interface SopRiwayatVersiRow {
+  detailSopId: string;
+  versi: number;
+  nomorSOP: string;
+  status: string;
+  statusLabel: string;
+  revisiDariDetailSopId: string | null;
+  revisiDariVersi: number | null;
+  updatedAt: string;
+  canHapusDraft: boolean;
 }
 
 /** Header SOP + meta legacy (POST/PATCH detail, mock); daftar penyusun memakai `SopDaftarRow`. */
@@ -60,7 +86,10 @@ export interface SopDetail {
   id: string;
   sopId: string;
   status: StatusSOP;
+  statusLabel?: string;
   versi: number;
+  revisiDariDetailSopId?: string | null;
+  revisiDariVersi?: number | null;
   nomorSOP: string;
   tanggalPembuatan: string;
   tanggalRevisi?: string;
@@ -350,25 +379,5 @@ export interface UpdatePelaksanaMutationDto {
   id: string;
   namaPelaksana: string;
 }
-
-export const SOP_STATUS_FILTER_OPTIONS = [
-  { value: "all" as const, label: "Semua Status" },
-  { value: "DRAFT" as const, label: "DRAFT" },
-  { value: "SEDANG_DISUSUN" as const, label: "SEDANG_DISUSUN" },
-  { value: "SIAP_DIEVALUASI" as const, label: "SIAP_DIEVALUASI" },
-  { value: "DIAJUKAN_EVALUASI" as const, label: "DIAJUKAN_EVALUASI" },
-  { value: "SEDANG_DIEVALUASI" as const, label: "SEDANG_DIEVALUASI" },
-  {
-    value: "REVISI_DARI_EVALUATOR" as const,
-    label: "Perlu revisi (evaluator)",
-  },
-  { value: "SIAP_DIVERIFIKASI" as const, label: "SIAP_DIVERIFIKASI" },
-  {
-    value: "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI" as const,
-    label: "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI",
-  },
-  { value: "BERLAKU" as const, label: "BERLAKU" },
-  { value: "DICABUT" as const, label: "DICABUT" },
-] as const;
 
 export const DEFAULT_SOP_STATUS = "DRAFT";

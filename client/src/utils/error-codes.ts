@@ -65,9 +65,24 @@ export function getUserFriendlyMessage(error: unknown): string {
         return apiError.message || 'Terjadi kesalahan. Silakan coba lagi.';
     }
   }
+
+  if (apiError?.message) {
+    if (apiError.message.includes('Nomor dokumen sudah digunakan')) {
+      return 'Nomor dokumen sudah digunakan. Gunakan nomor dokumen lain.';
+    }
+    if (apiError.message.includes('Langkah tujuan harus berada dalam DetailSOP yang sama')) {
+      return 'Langkah tujuan harus berada dalam SOP yang sama.';
+    }
+  }
   
   // Fallback to error message if it's a regular Error object
   if (error instanceof Error) {
+    if (error.message.includes('Nomor dokumen sudah digunakan')) {
+      return 'Nomor dokumen sudah digunakan. Gunakan nomor dokumen lain.';
+    }
+    if (error.message.includes('Langkah tujuan harus berada dalam DetailSOP yang sama')) {
+      return 'Langkah tujuan harus berada dalam SOP yang sama.';
+    }
     return error.message;
   }
   

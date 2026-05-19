@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, type JwtModuleOptions } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
+import { ChangePasswordController } from './change-password.controller';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
 import { resolveAccessTokenExpiry } from './helpers/auth.shared';
@@ -25,7 +26,7 @@ import { JwtAccessStrategy } from './helpers/jwt-access.strategy';
       },
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ChangePasswordController],
   providers: [AuthService, AuthRepository, JwtAccessStrategy],
   exports: [AuthService, JwtModule, JwtAccessStrategy],
 })

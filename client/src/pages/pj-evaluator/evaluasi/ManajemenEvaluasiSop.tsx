@@ -8,12 +8,14 @@ import {
 import type { PengajuanEvaluasiRingkasRow } from '@/types/dto/evaluasi.dto'
 import { Table } from '@/components/ui/data-table'
 import { Badge } from '@/components/ui/badge'
+import { PengajuanStatusBadge } from '@/components/status/pengajuan-status-badge'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Pagination } from '@/components/ui/pagination'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { readPaginationMeta } from '@/lib/api/pagination'
 import { ROUTES, IA, DEFAULT_PAGE_SIZE } from '@/utils/constants'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
@@ -25,17 +27,6 @@ type PengajuanGroupByOpd = {
   opdNama: string
   rows: PengajuanEvaluasiRingkasRow[]
   latestRequestAt: number
-}
-
-function labelStatus(status: string): string {
-  const map: Record<string, string> = {
-    SEDANG_DIEVALUASI: 'Sedang dievaluasi',
-    SELESAI_DIEVALUASI: 'Selesai dievaluasi',
-    DIVERIFIKASI_PJ_EVALUATOR: 'Diverifikasi PJ',
-    DITANDATANGANI_PJ_PENYUSUN: 'Ditandatangani PJ Penyusun',
-    SELESAI: 'Selesai',
-  }
-  return map[status] ?? status
 }
 
 function labelJenis(jenis: string): string {
@@ -69,8 +60,8 @@ export function ManajemenEvaluasiSop() {
   }, [filterTab, debouncedSearch])
 
   const items = data?.items ?? []
-  const meta = data?.meta
-  const totalItems = meta?.total ?? 0
+  const pagination = readPaginationMeta(data)
+  const totalItems = pagination?.totalItems ?? 0
 
   const filterTabs: { id: FilterTab; label: string }[] = [
     { id: 'pengajuan', label: 'Pengajuan' },
@@ -134,7 +125,7 @@ export function ManajemenEvaluasiSop() {
     <ListPageLayout
       breadcrumb={[{ label: IA.NAV_BIRO_BATCH_BA }]}
       title={IA.NAV_BIRO_BATCH_BA}
-      description={`${IA.BATCH_EVALUASI_OPD} per OPD. Buka detail untuk ${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}.`}
+      description={`${IA.PENGAJUAN_EVALUASI_OPD} per OPD. Buka detail untuk ${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}.`}
       toolbar={
         <div className="flex flex-col gap-3 w-full">
           <SearchToolbar
@@ -142,13 +133,13 @@ export function ManajemenEvaluasiSop() {
             searchValue={searchQuery}
             onSearchChange={(e) => setSearchQuery(e.target.value)}
           />
-          <div className="flex flex-wrap items-center gap-2 w-full justify-between">
+          <div className="w-full">
             <Tabs
-              className="w-full sm:w-auto sm:flex-1 min-w-0"
+              className="w-full"
               value={filterTab}
               onValueChange={(value) => setFilterTab(value as FilterTab)}
             >
-              <TabsList className="h-8 p-0.5 w-full grid grid-cols-2 sm:max-w-xs">
+              <TabsList className="h-8 p-0.5 w-full grid grid-cols-2">
                 {filterTabs.map((t) => (
                   <TabsTrigger key={t.id} value={t.id} className="h-7 text-xs">
                     {t.label}
@@ -212,7 +203,7 @@ export function ManajemenEvaluasiSop() {
                       <span className="font-semibold text-sm text-gray-900 truncate">
                         {group.opdNama}
                       </span>
-                      <Badge variant="outline" className="text-[11px] font-normal">
+                      <Badge variant="default" className="text-[11px] font-medium shrink-0">
                         {group.rows.length} pengajuan
                       </Badge>
                     </div>
@@ -229,7 +220,7 @@ export function ManajemenEvaluasiSop() {
                     <thead>
                       <Table.HeadRow>
                         <Table.Th>Jenis</Table.Th>
-                        <Table.Th>Status</Table.Th>
+                        <Table.Th>Status pengajuan</Table.Th>
                         <Table.Th>Tanggal</Table.Th>
                         <Table.Th>Progres</Table.Th>
                         <Table.Th align="center">Aksi</Table.Th>
@@ -242,9 +233,11 @@ export function ManajemenEvaluasiSop() {
                             {labelJenis(row.jenis)}
                           </Table.Td>
                           <Table.Td>
-                            <Badge variant="outline" className="text-xs font-normal">
-                              {labelStatus(row.status)}
-                            </Badge>
+                            <PengajuanStatusBadge
+                              status={row.status}
+                              label={row.statusLabel}
+                              showDomain={false}
+                            />
                           </Table.Td>
                           <Table.Td className="text-gray-600 whitespace-nowrap">
                             {row.createdAt
@@ -277,13 +270,13 @@ export function ManajemenEvaluasiSop() {
             )
           })
         )}
-        {meta ? (
+        {pagination ? (
           <div className="bg-white rounded-lg border border-gray-200">
             <Pagination
               totalItems={totalItems}
-              currentPage={meta.page}
+              currentPage={pagination.page}
               onPageChange={setPage}
-              pageSize={meta.limit}
+              pageSize={pagination.limit}
               label="pengajuan"
             />
           </div>

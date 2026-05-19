@@ -72,6 +72,25 @@ describe('EvaluasiGrafikService', () => {
     expect(findAgregasi).toHaveBeenCalledWith(2024, 2024);
   });
 
+  it('should_ignore_nilai_opd_outside_scale_1_to_5', async () => {
+    const repo = createRepoMock({
+      findDaftarOpdAktif: jest.fn().mockResolvedValue([{ opdId: 'a', nama: 'OPD A' }]),
+      findAgregasiPerTahunOpd: jest.fn().mockResolvedValue([
+        {
+          tahun: 2025,
+          opdId: 'a',
+          opdNama: 'OPD A',
+          jumlahEvaluasi: 2,
+          rataRataSkor: null,
+        },
+      ]),
+    });
+    const service = new EvaluasiGrafikService(repo);
+    const actual = await service.getGrafikTahunan({ tahunDari: 2025, tahunSampai: 2025 });
+    expect(actual.ringkasanPerTahun[0]?.rataRataSkorOpd).toBeNull();
+    expect(actual.ringkasanPerTahun[0]?.perOpd[0]?.rataRataSkor).toBeNull();
+  });
+
   it('should_use_null_kpi_when_no_opd_has_score', async () => {
     const repo = createRepoMock({
       findDaftarOpdAktif: jest.fn().mockResolvedValue([{ opdId: 'a', nama: 'OPD A' }]),

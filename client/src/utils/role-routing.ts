@@ -28,6 +28,37 @@ const ROLE_ROUTE_PREFIXES: { prefix: string; roles: RoleKey[] }[] = [
   { prefix: '/evaluator', roles: ['EVALUATOR'] },
 ];
 
+/** Peran yang boleh mengatur PIN / memanggil API `/tte` (selaras server `TteController`). */
+export const ROLES_DENGAN_TTE = [
+  'PJ_EVALUATOR',
+  'PJ_PENYUSUN',
+  'KEPALA_OPD',
+] as const satisfies readonly RoleKey[];
+
+export function roleMendukungTte(role: RoleKey | undefined): boolean {
+  if (role === undefined) {
+    return false;
+  }
+  return (ROLES_DENGAN_TTE as readonly RoleKey[]).includes(role);
+}
+
+/** Route halaman profil akun (`/me`) per peran navigasi; `undefined` jika peran tidak punya halaman profil. */
+export function getMeRoute(role: RoleKey | undefined): string | undefined {
+  switch (role) {
+    case 'PJ_EVALUATOR':
+      return ROUTES.PJ_EVALUATOR.ME;
+    case 'KEPALA_OPD':
+      return ROUTES.KEPALA_OPD.ME;
+    case 'PENYUSUN':
+    case 'PJ_PENYUSUN':
+      return ROUTES.PENYUSUN.ME;
+    case 'EVALUATOR':
+      return ROUTES.EVALUATOR.ME;
+    default:
+      return undefined;
+  }
+}
+
 export function getRoleDefaultLandingPath(peran: string): string | undefined {
   const navRole = toNavigationRole(peran);
   if (navRole === undefined) {

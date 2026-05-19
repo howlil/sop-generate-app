@@ -8,8 +8,11 @@ export class BeritaAcaraHasilPerSopDto {
   @ApiProperty()
   readonly judul!: string;
 
-  @ApiPropertyOptional()
-  readonly hasilEvaluasi?: string;
+  @ApiProperty()
+  readonly hasilEvaluasi!: string;
+
+  @ApiProperty()
+  readonly hasilEvaluasiLabel!: string;
 
   @ApiPropertyOptional()
   readonly ringkasanCatatanEvaluator?: string;

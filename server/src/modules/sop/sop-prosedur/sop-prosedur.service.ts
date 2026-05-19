@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { assertDetailSopEditable } from '../../../common/status/sop-editable.util';
 import type { JwtAccessPayload } from '../../../common';
 import {
   JenisLangkahProsedur,
@@ -45,6 +46,11 @@ export class SopProsedurService {
     }
 
     await this.assertPenyusunOpdAccess(user, resolved.sopOpdId);
+    const detailStatus = await this.sopProsedurRepository.findDetailStatus(resolved.detailSopId);
+    if (detailStatus === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    assertDetailSopEditable(detailStatus);
 
     const changedFields = this.collectChangedFields(dto);
     if (changedFields.length === 0) {
@@ -71,6 +77,12 @@ export class SopProsedurService {
         if (err.code === 'P2003' || err.code === 'P2025') {
           throw new BadRequestException('Referensi tidak valid pada payload');
         }
+      }
+      const message = err instanceof Error ? err.message : '';
+      if (message.includes('Langkah tujuan cabang')) {
+        throw new BadRequestException(
+          'Langkah tujuan harus berada dalam DetailSOP yang sama',
+        );
       }
       throw err;
     }

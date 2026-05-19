@@ -1,8 +1,9 @@
 /**
- * Side-pair selection for arrow connectors.
- * Implements the arrow connector algorithm for flowchart routing.
+ * Flowchart route candidate selection.
+ * Centralizes side-pair preference plus draw.io-style port and jetty hints.
  */
 
+import type { PortConstraint } from './orthogonalRouter'
 import { isYaLabel, isTidakLabel } from './sopDiagramTypes'
 
 export type Side = 'top' | 'bottom' | 'left' | 'right'
@@ -33,9 +34,64 @@ export type UsedSides = Record<
   }
 >
 
+export interface FlowchartRouteCandidate {
+  sSide: Side
+  eSide: Side
+  sourcePort?: PortConstraint
+  targetPort?: PortConstraint
+  jettySize?: number
+  sourceJettySize?: number
+  targetJettySize?: number
+  preferSimple?: boolean
+}
+
+const DEFAULT_JETTY = 16
+const LOOPBACK_JETTY = 22
+const OPC_JETTY = 18
+
+function sideToPortConstraint(side: Side): NonNullable<PortConstraint['portConstraint']> {
+  switch (side) {
+    case 'top':
+      return 'north'
+    case 'bottom':
+      return 'south'
+    case 'left':
+      return 'west'
+    case 'right':
+      return 'east'
+  }
+}
+
+function makeSourcePort(side: Side): PortConstraint {
+  return { portConstraint: sideToPortConstraint(side) }
+}
+
+function makeTargetPort(side: Side): PortConstraint {
+  return { portConstraint: sideToPortConstraint(side) }
+}
+
+function makeCandidate(
+  sSide: Side,
+  eSide: Side,
+  overrides: Partial<FlowchartRouteCandidate> = {},
+): FlowchartRouteCandidate {
+  return {
+    sSide,
+    eSide,
+    sourcePort: makeSourcePort(sSide),
+    targetPort: makeTargetPort(eSide),
+    jettySize: DEFAULT_JETTY,
+    preferSimple: true,
+    ...overrides,
+  }
+}
+
 /**
- * Select preferred [tail-side, head-side] pairs for arrow routing.
- * Used by FlowchartArrowConnector.
+ * Select preferred route candidates for flowchart connectors.
+ * Candidates retain the legacy side ordering but also carry port/jetty hints.
+ * Geometry must already be plausible as an orthogonal route on its own;
+ * caller-side normalization may clean legacy diagonals, but candidate ranking
+ * must not depend on a later "snap to orthogonal" rescue step.
  */
 export function selectSidePairs(
   conn: FlowchartConnectionForSidePairs,
@@ -45,7 +101,7 @@ export function selectSidePairs(
   reservedSides: Map<string, Set<string>> | undefined,
   toId: string,
   connectionId: string,
-): Array<[Side, Side]> {
+): FlowchartRouteCandidate[] {
   const dx = (to.left + to.width / 2) - (from.left + from.width / 2)
   const dy = (to.top + to.height / 2) - (from.top + from.height / 2)
 
@@ -67,124 +123,165 @@ export function selectSidePairs(
   const dstInBusy = (s: Side) =>
     (usedSides[conn.to]?.in?.[s] ?? []).some((id) => id !== conn.id)
 
-  const pairs: Array<[Side, Side]> = []
+  const candidates: FlowchartRouteCandidate[] = []
 
-  /* ── Off-page connector ──────────────────────────────────── */
+  const push = (sSide: Side, eSide: Side, overrides: Partial<FlowchartRouteCandidate> = {}) => {
+    candidates.push(makeCandidate(sSide, eSide, overrides))
+  }
+
   const isToOpc = conn.targetType === 'flowchart-opc'
   const isFromOpc = conn.sourceType === 'flowchart-opc'
   if (isToOpc) {
-    if (!srcOutBusy('bottom')) pairs.push(['bottom', 'top'])
+    if (!srcOutBusy('bottom')) push('bottom', 'top', { jettySize: OPC_JETTY })
     if (destRight) {
-      if (!srcOutBusy('right')) pairs.push(['right', 'top'])
+      if (!srcOutBusy('right')) push('right', 'top', { jettySize: OPC_JETTY, preferSimple: false })
     } else if (destLeft) {
-      if (!srcOutBusy('left')) pairs.push(['left', 'top'])
+      if (!srcOutBusy('left')) push('left', 'top', { jettySize: OPC_JETTY, preferSimple: false })
     } else {
-      pairs.push(['right', 'top'], ['left', 'top'])
+      push('right', 'top', { jettySize: OPC_JETTY, preferSimple: false })
+      push('left', 'top', { jettySize: OPC_JETTY, preferSimple: false })
     }
   }
   if (isFromOpc) {
-    if (!dstInBusy('top')) pairs.push(['bottom', 'top'])
+    if (!dstInBusy('top')) push('bottom', 'top', { jettySize: OPC_JETTY })
     if (destRight) {
-      pairs.push(['bottom', 'right'], ['bottom', 'left'])
+      push('bottom', 'right', { jettySize: OPC_JETTY, preferSimple: false })
+      push('bottom', 'left', { jettySize: OPC_JETTY, preferSimple: false })
     } else if (destLeft) {
-      pairs.push(['bottom', 'left'], ['bottom', 'right'])
+      push('bottom', 'left', { jettySize: OPC_JETTY, preferSimple: false })
+      push('bottom', 'right', { jettySize: OPC_JETTY, preferSimple: false })
     } else {
-      pairs.push(['bottom', 'left'], ['bottom', 'right'])
+      push('bottom', 'left', { jettySize: OPC_JETTY, preferSimple: false })
+      push('bottom', 'right', { jettySize: OPC_JETTY, preferSimple: false })
     }
   }
   if (isToOpc || isFromOpc) {
-    pairs.push(['right', 'top'], ['left', 'top'], ['bottom', 'left'], ['bottom', 'right'])
+    push('right', 'top', { jettySize: OPC_JETTY, preferSimple: false })
+    push('left', 'top', { jettySize: OPC_JETTY, preferSimple: false })
+    push('bottom', 'left', { jettySize: OPC_JETTY, preferSimple: false })
+    push('bottom', 'right', { jettySize: OPC_JETTY, preferSimple: false })
   }
 
-  /* ── Case 0: Start (terminator) → next task ───────────────── */
   if (isStartTerminator && destBelow) {
     if (destRight) {
-      if (!srcOutBusy('right')) pairs.push(['right', 'top'])
-      pairs.push(['bottom', 'top'])
+      push('bottom', 'top')
+      if (!srcOutBusy('right')) push('right', 'top', { preferSimple: false })
     } else if (destLeft) {
-      if (!srcOutBusy('left')) pairs.push(['left', 'top'])
-      pairs.push(['bottom', 'top'])
+      push('bottom', 'top')
+      if (!srcOutBusy('left')) push('left', 'top', { preferSimple: false })
     } else {
-      pairs.push(['bottom', 'top'])
+      push('bottom', 'top')
     }
   }
 
-  /* ── Case 3: Decision source with branching ───────────────── */
-  if (isDecSrc && (isYa || isTidak)) {
+  if (isDecSrc && isYa) {
+    if (destBelow) {
+      if (sameCol) {
+        push('bottom', 'top', {
+          sourcePort: { ...makeSourcePort('bottom'), exitX: 0.5 },
+          targetPort: { ...makeTargetPort('top'), entryX: 0.5 },
+        })
+      } else if (destLeft) {
+        push('bottom', 'right', { preferSimple: false })
+        push('left', 'top', { preferSimple: false })
+      } else if (destRight) {
+        push('bottom', 'left', { preferSimple: false })
+        push('right', 'top', { preferSimple: false })
+      } else {
+        push('bottom', 'top')
+      }
+    } else if (destAbove) {
+      if (destLeft) {
+        push('top', 'right', { preferSimple: false })
+        push('left', 'bottom', { preferSimple: false })
+      } else if (destRight) {
+        push('top', 'left', { preferSimple: false })
+        push('right', 'bottom', { preferSimple: false })
+      } else {
+        push('top', 'bottom', { preferSimple: false })
+      }
+    }
+  } else if (isDecSrc && isTidak) {
+    const isTargetDecision = conn.targetType === 'flowchart-decision'
     if (destAbove) {
-      if (!srcOutBusy('right') && !dstInBusy('right')) pairs.push(['right', 'right'])
-      if (!srcOutBusy('left') && !dstInBusy('left')) pairs.push(['left', 'left'])
-      pairs.push(['right', 'top'], ['left', 'top'])
-    } else if (isYa) {
-      if (sameCol && destBelow) {
-        pairs.push(['bottom', 'top'])
+      const loopOpts = { jettySize: LOOPBACK_JETTY, preferSimple: false }
+      if (destLeft) {
+        if (!srcOutBusy('left') && !dstInBusy('left')) push('left', 'left', loopOpts)
+        if (!srcOutBusy('right') && !dstInBusy('right')) push('right', 'right', loopOpts)
       } else if (destRight) {
-        pairs.push(['bottom', 'left'], ['right', 'top'])
-      } else if (destLeft) {
-        pairs.push(['bottom', 'right'], ['left', 'top'])
+        if (!srcOutBusy('right') && !dstInBusy('right')) push('right', 'right', loopOpts)
+        if (!srcOutBusy('left') && !dstInBusy('left')) push('left', 'left', loopOpts)
       } else {
-        pairs.push(['bottom', 'top'])
+        if (!srcOutBusy('left') && !dstInBusy('left')) push('left', 'left', loopOpts)
+        if (!srcOutBusy('right') && !dstInBusy('right')) push('right', 'right', loopOpts)
       }
-    } else if (isTidak) {
-      if (sameCol && destBelow) {
-        if (!srcOutBusy('right')) pairs.push(['right', 'top'])
-        if (!srcOutBusy('left')) pairs.push(['left', 'top'])
-        pairs.push(['right', 'top'], ['left', 'top'])
-      } else if (destRight) {
-        pairs.push(['right', 'top'], ['bottom', 'left'])
-      } else if (destLeft) {
-        pairs.push(['left', 'top'], ['bottom', 'right'])
-      } else {
-        pairs.push(['right', 'top'], ['left', 'top'])
-      }
-    }
-  }
-
-  /* ── Non-decision loop-back ───────────────────────────────── */
-  else if (destAbove) {
-    if (sameCol) {
-      if (!srcOutBusy('right') && !dstInBusy('right')) pairs.push(['right', 'right'])
-      if (!srcOutBusy('left') && !dstInBusy('left')) pairs.push(['left', 'left'])
-      pairs.push(['top', 'bottom'])
+    } else if (destBelow && isTargetDecision) {
+      if (!srcOutBusy('right') && !dstInBusy('right')) push('right', 'right', { preferSimple: false })
+      if (!srcOutBusy('right') && !dstInBusy('left')) push('right', 'left', { preferSimple: false })
+      if (!srcOutBusy('left') && !dstInBusy('right')) push('left', 'right', { preferSimple: false })
+      if (!srcOutBusy('left') && !dstInBusy('left')) push('left', 'left', { preferSimple: false })
+    } else if (sameCol && destBelow) {
+      if (!srcOutBusy('right')) push('right', 'top', { preferSimple: false })
+      if (!srcOutBusy('left')) push('left', 'top', { preferSimple: false })
     } else if (destRight) {
-      pairs.push(['right', 'bottom'], ['top', 'right'])
+      push('right', 'top', { preferSimple: false })
+      push('bottom', 'left', { preferSimple: false })
+    } else if (destLeft) {
+      push('left', 'top', { preferSimple: false })
+      push('bottom', 'right', { preferSimple: false })
     } else {
-      pairs.push(['left', 'bottom'], ['top', 'left'])
+      push('right', 'top', { preferSimple: false })
+      push('left', 'top', { preferSimple: false })
+    }
+  } else if (destAbove) {
+    if (sameCol) {
+      if (!srcOutBusy('right') && !dstInBusy('right')) {
+        push('right', 'right', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+      }
+      if (!srcOutBusy('left') && !dstInBusy('left')) {
+        push('left', 'left', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+      }
+      push('top', 'bottom', { preferSimple: false })
+    } else if (destRight) {
+      push('right', 'bottom', { preferSimple: false })
+      push('top', 'right', { preferSimple: false })
+    } else {
+      push('left', 'bottom', { preferSimple: false })
+      push('top', 'left', { preferSimple: false })
+    }
+  } else if (sameCol) {
+    if (destBelow) push('bottom', 'top')
+    else push('top', 'bottom')
+  } else if (destRight) {
+    if (srcOutBusy('bottom') || dstInBusy('left')) {
+      push('right', 'top')
+      push('bottom', 'left')
+    } else {
+      push('bottom', 'left')
+      push('right', 'top')
+    }
+  } else if (destLeft) {
+    if (srcOutBusy('bottom') || dstInBusy('right')) {
+      push('left', 'top')
+      push('bottom', 'right')
+    } else {
+      push('bottom', 'right')
+      push('left', 'top')
     }
   }
 
-  /* ── Case 1: Same column ─────────────────────────────────── */
-  else if (sameCol) {
-    if (destBelow) pairs.push(['bottom', 'top'])
-    else pairs.push(['top', 'bottom'])
-  }
-
-  /* ── Case 2: Different columns ────────────────────────────── */
-  else if (destRight) {
-    if (srcOutBusy('bottom') || dstInBusy('left'))
-      pairs.push(['right', 'top'], ['bottom', 'left'])
-    else pairs.push(['bottom', 'left'], ['right', 'top'])
-  } else if (destLeft) {
-    if (srcOutBusy('bottom') || dstInBusy('right'))
-      pairs.push(['left', 'top'], ['bottom', 'right'])
-    else pairs.push(['bottom', 'right'], ['left', 'top'])
-  }
-
-  /* ── General fallbacks ────────────────────────────────────── */
-  pairs.push(
-    ['bottom', 'top'],
-    ['top', 'bottom'],
-    ['right', 'left'],
-    ['left', 'right'],
-    ['bottom', 'left'],
-    ['bottom', 'right'],
-    ['right', 'top'],
-    ['left', 'top'],
-  )
+  push('bottom', 'top')
+  push('top', 'bottom')
+  push('right', 'left')
+  push('left', 'right')
+  push('bottom', 'left')
+  push('bottom', 'right')
+  push('right', 'top')
+  push('left', 'top')
 
   const seen = new Set<string>()
-  let deduped = pairs.filter(([s, e]) => {
-    const k = `${s}-${e}`
+  let deduped = candidates.filter((candidate) => {
+    const k = `${candidate.sSide}-${candidate.eSide}`
     if (seen.has(k)) return false
     seen.add(k)
     return true
@@ -192,21 +289,20 @@ export function selectSidePairs(
 
   if (isDecSrc && isSameColumnLoopBack) {
     deduped = deduped.filter(
-      ([s, e]) => !(s === 'top' && e === 'bottom') && !(s === 'bottom' && e === 'top'),
+      ({ sSide, eSide }) => !(sSide === 'top' && eSide === 'bottom') && !(sSide === 'bottom' && eSide === 'top'),
     )
   }
 
   if (!reservedSides || reservedSides.size === 0) return deduped
 
   const baseId = connectionId.replace(/__in$/, '')
-  const preferred: Array<[Side, Side]> = []
-  const reservedForOthers: Array<[Side, Side]> = []
-  for (const pair of deduped) {
-    const [, endSide] = pair
-    const ownerSet = reservedSides.get(`${toId}-${endSide}`)
+  const preferred: FlowchartRouteCandidate[] = []
+  const reservedForOthers: FlowchartRouteCandidate[] = []
+  for (const candidate of deduped) {
+    const ownerSet = reservedSides.get(`${toId}-${candidate.eSide}`)
     const isOwner = ownerSet && (ownerSet.has(connectionId) || ownerSet.has(baseId))
-    if (ownerSet && !isOwner) reservedForOthers.push(pair)
-    else preferred.push(pair)
+    if (ownerSet && !isOwner) reservedForOthers.push(candidate)
+    else preferred.push(candidate)
   }
   return [...preferred, ...reservedForOthers]
 }

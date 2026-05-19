@@ -1,10 +1,16 @@
-import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { JwtAccessPayload } from '../../../common';
 import {
   JenisLangkahProsedur,
   PeranPengguna,
   SatuanWaktu,
+  StatusSOP,
 } from '../../../generated/prisma';
 import { SopCatalogService } from '../sop-catalog/sop-catalog.service';
 import type { PenyusunWorkbenchDataDto } from '../sop-catalog/dto/penyusun-workbench-data.dto';
@@ -21,6 +27,7 @@ describe('SopProsedurService', () => {
       | 'findOpdIdByPenggunaId'
       | 'findPelaksanaIdsByOpd'
       | 'findExistingSwimlanePelaksanaIds'
+      | 'findDetailStatus'
       | 'updateProsedurTransaction'
     >
   > = {
@@ -28,6 +35,7 @@ describe('SopProsedurService', () => {
     findOpdIdByPenggunaId: jest.fn(),
     findPelaksanaIdsByOpd: jest.fn(),
     findExistingSwimlanePelaksanaIds: jest.fn(),
+    findDetailStatus: jest.fn(),
     updateProsedurTransaction: jest.fn(),
   };
 
@@ -44,6 +52,7 @@ describe('SopProsedurService', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks();
+    repoMock.findDetailStatus.mockResolvedValue(StatusSOP.SEDANG_DISUSUN);
     catalogMock.getPenyusunWorkbench.mockResolvedValue(fakeWorkbench);
     const moduleRef: TestingModule = await Test.createTestingModule({
       providers: [
@@ -97,6 +106,21 @@ describe('SopProsedurService', () => {
       );
       expect(repoMock.updateProsedurTransaction).not.toHaveBeenCalled();
       expect(out).toBe(fakeWorkbench);
+    });
+
+    it('should_throw_conflict_when_detail_berlaku', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findDetailStatus.mockResolvedValueOnce(StatusSOP.BERLAKU);
+      await expect(
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
+          pelaksana: [{ pelaksanaId: 'p-1' }],
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
+      expect(repoMock.updateProsedurTransaction).not.toHaveBeenCalled();
     });
 
     it('should_throw_bad_request_when_pelaksana_duplicate_in_dto', async () => {

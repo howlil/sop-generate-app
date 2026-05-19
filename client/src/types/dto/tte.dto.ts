@@ -88,6 +88,11 @@ export interface RegisterTteDto {
   pin: string;
 }
 
+export interface UpdateTtePinDto {
+  pinLama: string;
+  pinBaru: string;
+}
+
 export interface TandaTanganiBaDto {
   pin: string;
   nomorDokumen: string;

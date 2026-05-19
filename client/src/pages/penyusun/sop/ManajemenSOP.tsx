@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
 import { formatDateIdLong } from "@/utils/format-date";
@@ -191,6 +191,7 @@ export function ManajemenSOP() {
                 <Table.HeadRow>
                   <Table.Th>Judul SOP</Table.Th>
                   <Table.Th>Nomor SOP</Table.Th>
+                  <Table.Th>Versi</Table.Th>
                   <Table.Th>Pembuat</Table.Th>
                   <Table.Th>Terakhir diedit</Table.Th>
                   <Table.Th>Status</Table.Th>
@@ -218,6 +219,11 @@ export function ManajemenSOP() {
                         </p>
                       </Table.Td>
                       <Table.Td>
+                        <p className="font-mono text-gray-700 text-sm tabular-nums">
+                          {sop.versi != null ? `V${sop.versi}` : "—"}
+                        </p>
+                      </Table.Td>
+                      <Table.Td>
                         <p className="text-gray-700">{sop.pembuat ?? "—"}</p>
                       </Table.Td>
                       <Table.Td>
@@ -237,7 +243,11 @@ export function ManajemenSOP() {
                         )}
                       </Table.Td>
                       <Table.Td>
-                        <StatusBadge status={sop.status ?? "DRAFT"} />
+                        <SopStatusBadge
+                          status={sop.status}
+                          label={sop.statusLabel}
+                          showDomain={false}
+                        />
                       </Table.Td>
                       <Table.Td>
                         <div className="flex items-center justify-center gap-1">
@@ -246,10 +256,6 @@ export function ManajemenSOP() {
                               icon={Edit}
                               to={ROUTES.PENYUSUN.DETAIL_SOP}
                               params={{ id: sop.detailSopId ?? sop.id }}
-                              state={{
-                                sopStatus: sop.status,
-                                detailSopId: sop.detailSopId ?? undefined,
-                              }}
                               title="Edit"
                             />
                           ) : (
@@ -257,10 +263,6 @@ export function ManajemenSOP() {
                               icon={Eye}
                               to={ROUTES.PENYUSUN.DETAIL_SOP}
                               params={{ id: sop.detailSopId ?? sop.id }}
-                              state={{
-                                sopStatus: sop.status,
-                                detailSopId: sop.detailSopId ?? undefined,
-                              }}
                               title="Lihat"
                               variant="outline"
                             />

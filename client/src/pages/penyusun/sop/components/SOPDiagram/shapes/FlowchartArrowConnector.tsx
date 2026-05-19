@@ -1,22 +1,25 @@
 import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
 import type { ArrowConnectionConfig, ArrowPathPoint, FlowchartConnection } from '../logic/sopDiagramTypes'
-import { routeOrthogonal, scorePath, pathToSegments, type OccupiedSegment, type CorridorGraph } from '../logic/orthogonalRouter'
+import {
+  routeOnCorridor,
+  routeOrthogonal,
+  scorePath,
+  pathToSegments,
+  pathIntersectsRectangles,
+  pathOverlapsSegments,
+  normalizeOrthogonalPath,
+  assertOrthogonalPath,
+  type OccupiedSegment,
+  type CorridorGraph,
+} from '../logic/orthogonalRouter'
+import { selectSidePairs as selectFlowchartRouteCandidates, type Side, type UsedSides } from '../logic/selectSidePairs'
 
 /* ───────────────────────── Public types (re-export for consumers) ─────────────────────────── */
 
 export type { FlowchartConnection } from '../logic/sopDiagramTypes'
+export type { UsedSides } from '../logic/selectSidePairs'
 
 export interface ArrowObstacle { id: string }
-
-export type UsedSides = Record<
-  string,
-  {
-    in?: Partial<Record<Side, string[]>>
-    out?: Partial<Record<Side, string[]>>
-  }
->
-
-type Side = 'top' | 'bottom' | 'left' | 'right'
 
 /**
  * Konvensi arah panah:
@@ -105,6 +108,8 @@ interface FlowchartArrowConnectorProps {
   reservedSidesRef?: MutableRefObject<Map<string, Set<string>>>
   /** Pre-built corridor graph from scan phase for obstacle-aware routing */
   corridorGraph?: CorridorGraph | null
+  connectionIndex?: number
+  allConnections?: FlowchartConnection[]
 }
 
 /* ───────────────────────── Helpers ─────────────────────────── */
@@ -152,22 +157,70 @@ function pathToD(points: { x: number; y: number }[]): string {
   return d
 }
 
-/** Self-healing: hapus titik tengah yang koliner dan duplikat berurutan agar path terstruktur. */
-function simplifyPathCollinear(points: { x: number; y: number }[]): { x: number; y: number }[] {
-  if (points.length <= 2) return points
-  const out = [points[0]]
-  for (let i = 1; i < points.length - 1; i++) {
-    const prev = out[out.length - 1]
-    const cur = points[i]
-    const next = points[i + 1]
-    const duplicate = prev.x === cur.x && prev.y === cur.y
-    const collinear =
-      (prev.x === cur.x && cur.x === next.x) || (prev.y === cur.y && cur.y === next.y)
-    if (!duplicate && !collinear) out.push(cur)
+function toRouterBounds(bounds: BoundsRect | null | undefined) {
+  if (!bounds) return null
+  return {
+    left: bounds.left,
+    top: bounds.top,
+    width: Math.max(0, bounds.right - bounds.left),
+    height: Math.max(0, bounds.bottom - bounds.top),
   }
-  const last = points[points.length - 1]
-  if (out[out.length - 1].x !== last.x || out[out.length - 1].y !== last.y) out.push(last)
-  return out.length >= 2 ? out : [points[0], points[points.length - 1]]
+}
+
+function clampPathToBounds(
+  points: { x: number; y: number }[],
+  bounds: BoundsRect | null | undefined,
+): { x: number; y: number }[] {
+  if (!bounds) return points.map((point) => ({ x: Math.round(point.x), y: Math.round(point.y) }))
+  return points.map((point) => ({
+    x: Math.round(Math.max(bounds.left, Math.min(bounds.right, point.x))),
+    y: Math.round(Math.max(bounds.top, Math.min(bounds.bottom, point.y))),
+  }))
+}
+
+export function normalizeConnectorPath(
+  points: { x: number; y: number }[],
+  bounds: BoundsRect | null | undefined,
+): { x: number; y: number }[] {
+  const normalized = normalizeOrthogonalPath(clampPathToBounds(points, bounds), {
+    bounds: toRouterBounds(bounds),
+  })
+  return assertOrthogonalPath(normalized, 'FlowchartArrowConnector path')
+}
+
+function tryNormalizeConnectorPath(
+  points: { x: number; y: number }[],
+  bounds: BoundsRect | null | undefined,
+): { x: number; y: number }[] | null {
+  try {
+    return normalizeConnectorPath(points, bounds)
+  } catch {
+    return null
+  }
+}
+
+function buildUltimateOrthogonalFallback(
+  fromPos: ElemPos,
+  toPos: ElemPos,
+  bounds: BoundsRect | null | undefined,
+): { x: number; y: number }[] {
+  const left = bounds?.left ?? 0
+  const right = bounds?.right ?? Math.max(fromPos.right, toPos.right)
+  const top = bounds?.top ?? 0
+  const bottom = bounds?.bottom ?? Math.max(fromPos.bottom, toPos.bottom)
+  const clampX = (x: number) => Math.round(Math.max(left, Math.min(right, x)))
+  const clampY = (y: number) => Math.round(Math.max(top, Math.min(bottom, y)))
+  const x1 = clampX(fromPos.left + fromPos.width / 2)
+  const x2 = clampX(toPos.left + toPos.width / 2)
+  const y1 = clampY(fromPos.bottom)
+  const y2 = clampY(toPos.top)
+  const xMid = clampX((x1 + x2) / 2)
+  return normalizeConnectorPath([
+    { x: x1, y: y1 },
+    { x: xMid, y: y1 },
+    { x: xMid, y: y2 },
+    { x: x2, y: y2 },
+  ], bounds)
 }
 
 function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boolean {
@@ -204,7 +257,7 @@ function isTidakLabel(lbl: string): boolean {
   return /^(tidak|no|n)$/.test((lbl ?? '').trim().toLowerCase())
 }
 
-function selectSidePairs(
+export function legacySelectSidePairs(
   conn: FlowchartConnection,
   from: ElemPos,
   to: ElemPos,
@@ -420,6 +473,8 @@ export function FlowchartArrowConnector({
   routedSegmentsRef,
   reservedSidesRef,
   corridorGraph,
+  connectionIndex = 0,
+  allConnections = [],
 }: FlowchartArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
@@ -438,25 +493,28 @@ export function FlowchartArrowConnector({
     /* ── Manual path ─────────────────────────────────────────── */
     if (isValidManualConfig(manualConfig) && manualConfig!.startPoint && manualConfig!.endPoint) {
       const { startPoint, endPoint, bendPoints = [] } = manualConfig!
-      setPathData(pathToD([startPoint, ...bendPoints, endPoint]))
+      const manualPath = tryNormalizeConnectorPath([startPoint, ...bendPoints, endPoint], constraintRect)
+      if (manualPath) {
+        setPathData(pathToD(manualPath))
 
-      const lp = connection.label
-        ? manualLabelPosition ?? getFixedDistancePoint(startPoint, bendPoints[0] ?? endPoint, 30, 19)
-        : null
-      setLabelPos(lp)
+        const lp = connection.label
+          ? manualLabelPosition ?? getFixedDistancePoint(manualPath[0], manualPath[1] ?? manualPath[manualPath.length - 1], 30, 19)
+          : null
+        setLabelPos(lp)
 
-      if (onPathUpdated && !emittedRef.current) {
-        onPathUpdated({
-          connectionId: connection.id, from: connection.from, to: connection.to,
-          sSide: manualConfig!.sSide, eSide: manualConfig!.eSide,
-          startPoint: { ...startPoint }, endPoint: { ...endPoint },
-          bendPoints: bendPoints.map(p => ({ ...p })),
-          label: connection.label ?? undefined,
-          labelPosition: lp ?? undefined,
-        })
-        emittedRef.current = true
+        if (onPathUpdated && !emittedRef.current) {
+          onPathUpdated({
+            connectionId: connection.id, from: connection.from, to: connection.to,
+            sSide: manualConfig!.sSide, eSide: manualConfig!.eSide,
+            startPoint: { ...manualPath[0] }, endPoint: { ...manualPath[manualPath.length - 1] },
+            bendPoints: manualPath.slice(1, -1).map(p => ({ ...p })),
+            label: connection.label ?? undefined,
+            labelPosition: lp ?? undefined,
+          })
+          emittedRef.current = true
+        }
+        return
       }
-      return
     }
 
     emittedRef.current = false
@@ -466,42 +524,7 @@ export function FlowchartArrowConnector({
     const toPos = getElementPosition(connection.to, container)
     if (!fromPos || !toPos) { setPathData(''); setLabelPos(null); return }
 
-    // OPTIMIZATION #3: Check cache first before routing
     const cacheKey = makeCacheKey(connection, fromPos, toPos, obstacles)
-    const cached = pathCache.get(cacheKey)
-    
-    if (cached) {
-      // Use cached path - no need to re-route
-      setPathData(pathToD(cached.path))
-      
-      if (connection.label) {
-        const lp = manualLabelPosition ?? getFixedDistancePoint(
-          cached.path[0],
-          cached.path[cached.path.length - 1] ?? cached.path[0],
-          30,
-          19
-        )
-        setLabelPos(lp)
-        
-        if (onPathUpdated && !emittedRef.current) {
-          onPathUpdated({
-            connectionId: connection.id,
-            from: connection.from,
-            to: connection.to,
-            sSide: cached.sSide,
-            eSide: cached.eSide,
-            startPoint: { ...cached.path[0] },
-            endPoint: { ...cached.path[cached.path.length - 1] },
-            bendPoints: cached.path.slice(1, -1).map(p => ({ ...p })),
-            label: connection.label,
-            labelPosition: lp,
-          })
-          emittedRef.current = true
-        }
-      }
-      
-      return
-    }
 
     const isOpcConnection =
       connection.sourceType === 'flowchart-opc' || connection.targetType === 'flowchart-opc'
@@ -557,6 +580,14 @@ export function FlowchartArrowConnector({
           width: container.scrollWidth,
           height: container.scrollHeight,
         }
+    const effectiveBounds: BoundsRect | null = pathAllowedBounds
+      ? {
+          left: pathAllowedBounds.left,
+          top: pathAllowedBounds.top,
+          right: pathAllowedBounds.left + pathAllowedBounds.width,
+          bottom: pathAllowedBounds.top + pathAllowedBounds.height,
+        }
+      : constraintRect
 
     const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
     const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
@@ -571,7 +602,7 @@ export function FlowchartArrowConnector({
       : (canvasW > 0 ? Math.min(28, Math.max(18, Math.round(canvasW * 0.022))) : BOUNDS_MARGIN)
 
     const reservedSides = reservedSidesRef?.current
-    const sidePairs = selectSidePairs(
+    const routeCandidates = selectFlowchartRouteCandidates(
       connection,
       fromPos,
       toPos,
@@ -590,7 +621,63 @@ export function FlowchartArrowConnector({
     }
 
     const used = usedSidesRef.current
-    const anchorDistance = (count: number) => (count + 1) / (count + 2)
+    const anchorSlots = [0.5, 0.28, 0.72, 0.18, 0.82, 0.4, 0.6]
+    const anchorDistance = (count: number) => anchorSlots[count % anchorSlots.length]
+    const usedAnchorCount = (shapeId: string, side: Side) => {
+      const sideUsage = used[shapeId]
+      const incoming = (sideUsage?.in?.[side] ?? []).filter((id) => id !== connection.id).length
+      const outgoing = (sideUsage?.out?.[side] ?? []).filter((id) => id !== connection.id).length
+      return incoming + outgoing
+    }
+    const priorShapeUseCount = (shapeId: string) =>
+      allConnections.filter((item, index) =>
+        index < connectionIndex &&
+        item.id !== connection.id &&
+        (item.from === shapeId || item.to === shapeId)
+      ).length
+
+    const isSafePath = (path: { x: number; y: number }[]) => {
+      if (path.length < 2) return false
+      if (pathIntersectsRectangles(path, obsRects, 2)) return false
+      if (pathOverlapsSegments(path, occupied, { includeCross: true })) return false
+      return true
+    }
+
+    const cached = pathCache.get(cacheKey)
+    if (cached) {
+      const cachedPath = tryNormalizeConnectorPath(cached.path, effectiveBounds)
+      if (cachedPath && isSafePath(cachedPath)) {
+        setPathData(pathToD(cachedPath))
+
+        const lp = connection.label
+          ? manualLabelPosition ?? getFixedDistancePoint(
+              cachedPath[0],
+              cachedPath[1] ?? cachedPath[cachedPath.length - 1],
+              30,
+              19,
+            )
+          : null
+        setLabelPos(lp)
+
+        if (onPathUpdated && !emittedRef.current) {
+          onPathUpdated({
+            connectionId: connection.id,
+            from: connection.from,
+            to: connection.to,
+            sSide: cached.sSide,
+            eSide: cached.eSide,
+            startPoint: { ...cachedPath[0] },
+            endPoint: { ...cachedPath[cachedPath.length - 1] },
+            bendPoints: cachedPath.slice(1, -1).map(p => ({ ...p })),
+            label: connection.label ?? undefined,
+            labelPosition: lp ?? undefined,
+          })
+          emittedRef.current = true
+        }
+        return
+      }
+      pathCache.delete(cacheKey)
+    }
 
     const runRouting = () => {
     let bestPath: { x: number; y: number }[] | null = null
@@ -604,28 +691,59 @@ export function FlowchartArrowConnector({
     const preferOpcStraight =
       destBelow && (connection.targetType === 'flowchart-opc' || connection.sourceType === 'flowchart-opc')
 
-    for (const [sSide, eSide] of sidePairs.slice(0, MAX_TRIES)) {
-      const outCount = (used[connection.from]?.out?.[sSide] ?? []).filter((id) => id !== connection.id).length
-      const inCount = (used[connection.to]?.in?.[eSide] ?? []).filter((id) => id !== connection.id).length
-      const distA = anchorDistance(outCount)
-      const distB = anchorDistance(inCount)
+    for (const candidate of routeCandidates.slice(0, MAX_TRIES)) {
+      const { sSide, eSide } = candidate
+      const distA = anchorDistance(Math.max(
+        usedAnchorCount(connection.from, sSide),
+        priorShapeUseCount(connection.from),
+      ))
+      const distB = anchorDistance(Math.max(
+        usedAnchorCount(connection.to, eSide),
+        priorShapeUseCount(connection.to),
+      ))
 
-      const path = routeOrthogonal({
-        pointA: { shape: fromShape, side: sSide, distance: distA },
-        pointB: { shape: toShape, side: eSide, distance: distB },
+      const pointA = { shape: fromShape, side: sSide, distance: distA }
+      const pointB = { shape: toShape, side: eSide, distance: distB }
+      const corridorPath = corridorGraph
+        ? routeOnCorridor({
+            graph: corridorGraph,
+            pointA,
+            pointB,
+            shapeMargin: SHAPE_MARGIN,
+            occupiedSegments: occupied,
+            sourcePort: candidate.sourcePort,
+            targetPort: candidate.targetPort,
+            jettySize: candidate.jettySize,
+            sourceJettySize: candidate.sourceJettySize,
+            targetJettySize: candidate.targetJettySize,
+          })
+        : []
+
+      const path = corridorPath.length >= 2 ? corridorPath : routeOrthogonal({
+        pointA,
+        pointB,
         obstacles: obsRects,
         shapeMargin: SHAPE_MARGIN,
         globalBounds,
         globalBoundsMargin: boundsMargin,
         occupiedSegments: occupied,
+        sourcePort: candidate.sourcePort,
+        targetPort: candidate.targetPort,
+        jettySize: candidate.jettySize,
+        sourceJettySize: candidate.sourceJettySize,
+        targetJettySize: candidate.targetJettySize,
+        preferSimple: candidate.preferSimple,
       })
 
       if (path.length < 2) continue
-      let score = scorePath(path, occupied)
+      const normalizedPath = tryNormalizeConnectorPath(path, effectiveBounds)
+      if (!normalizedPath) continue
+      if (!isSafePath(normalizedPath)) continue
+      let score = scorePath(normalizedPath, occupied)
 
       // Kurangi path "ruwet": penalisasi rentang horizontal lebar agar path tidak memanjang ke samping tidak perlu
-      const pathMinX = Math.min(...path.map((p) => p.x))
-      const pathMaxX = Math.max(...path.map((p) => p.x))
+      const pathMinX = Math.min(...normalizedPath.map((p) => p.x))
+      const pathMaxX = Math.max(...normalizedPath.map((p) => p.x))
       score += (pathMaxX - pathMinX) * HORIZONTAL_SPAN_PENALTY_PER_PX
 
       // Untuk decision Tidak loop-back, paksa prioritas tinggi ke anchor horizontal (right→right / left→left)
@@ -633,11 +751,24 @@ export function FlowchartArrowConnector({
       if (preferHorizontalLoopback) {
         const isHorizontal = (sSide === eSide) && (sSide === 'left' || sSide === 'right')
         if (!isHorizontal) score += 10_000
+        const fromCx = fromPos.left + fromPos.width / 2
+        const toCx = toPos.left + toPos.width / 2
+        if (toCx < fromCx - 8) {
+          if (sSide !== 'left' || eSide !== 'left') score += 4_000
+        } else if (toCx > fromCx + 8) {
+          if (sSide !== 'right' || eSide !== 'right') score += 4_000
+        }
       }
 
       // Untuk decision Ya ke bawah: tail harus dari bottom agar tidak bersilangan dengan
       // linear atau branch lain. Contoh: 8 Ya → 9, tail dari bottom 8.
-      if (preferYaBottomTail && sSide !== 'bottom') score += 8_000
+      if (preferYaBottomTail) {
+        if (sSide !== 'bottom') score += 8_000
+        const fromCx = fromPos.left + fromPos.width / 2
+        const toCx = toPos.left + toPos.width / 2
+        if (toCx < fromCx - 8 && eSide !== 'right') score += 3_000
+        if (toCx > fromCx + 8 && eSide !== 'left') score += 3_000
+      }
 
       // OPC: Step → OPC-out lurus ke bawah (tail bottom, head top); OPC-in → Step keluar bottom.
       if (preferOpcStraight) {
@@ -646,13 +777,15 @@ export function FlowchartArrowConnector({
       }
 
       if (score < bestScore) {
-        bestPath = path; bestSides = [sSide, eSide]; bestScore = score
+        bestPath = normalizedPath; bestSides = [sSide, eSide]; bestScore = score
         if (score <= GOOD_SCORE_LIMIT) break
       }
     }
 
     if (!bestPath || !bestSides) {
-      const [sSide, eSide] = sidePairs[0] ?? ['bottom', 'top']
+      const fallbackCandidate = routeCandidates[0]
+      const sSide = fallbackCandidate?.sSide ?? 'bottom'
+      const eSide = fallbackCandidate?.eSide ?? 'top'
       const fallbackPath = routeOrthogonal({
         pointA: { shape: fromShape, side: sSide, distance: 0.5 },
         pointB: { shape: toShape, side: eSide, distance: 0.5 },
@@ -661,50 +794,37 @@ export function FlowchartArrowConnector({
         globalBounds,
         globalBoundsMargin: boundsMargin,
         occupiedSegments: [],
+        sourcePort: fallbackCandidate?.sourcePort,
+        targetPort: fallbackCandidate?.targetPort,
+        jettySize: fallbackCandidate?.jettySize,
+        sourceJettySize: fallbackCandidate?.sourceJettySize,
+        targetJettySize: fallbackCandidate?.targetJettySize,
+        preferSimple: fallbackCandidate?.preferSimple ?? true,
       })
       if (fallbackPath.length >= 2) {
-        bestPath = fallbackPath
+        bestPath = tryNormalizeConnectorPath(fallbackPath, effectiveBounds)
         bestSides = [sSide, eSide]
-      } else {
-        // Ultimate fallback: orthogonal path inside globalBounds (no diagonal, stay in pelaksana column)
-        const xLeft = globalBounds.left
-        const xRight = globalBounds.left + globalBounds.width
-        const clampX = (x: number) => Math.round(Math.max(xLeft, Math.min(xRight, x)))
-        const fromCenterX = fromPos.left + fromPos.width / 2
-        const toCenterX = toPos.left + toPos.width / 2
-        const x1 = clampX(fromCenterX)
-        const x2 = clampX(toCenterX)
-        const xCor = Math.round((x1 + x2) / 2)
-        bestPath = [
-          { x: x1, y: fromPos.bottom },
-          { x: xCor, y: fromPos.bottom },
-          { x: xCor, y: toPos.top },
-          { x: x2, y: toPos.top },
-        ]
+      }
+      if (bestPath && !isSafePath(bestPath)) bestPath = null
+      if (!bestPath) {
+        bestPath = buildUltimateOrthogonalFallback(fromPos, toPos, effectiveBounds)
         bestSides = ['bottom', 'top']
       }
     }
 
-    // Self-healing: clamp SEMUA waypoint ke koridor agar path tidak pernah keluar (border/horizontal/vertikal)
-    if (pathAllowedBounds && bestPath.length >= 2) {
-      const xL = pathAllowedBounds.left
-      const xR = pathAllowedBounds.left + pathAllowedBounds.width
-      const yT = pathAllowedBounds.top
-      const yB = pathAllowedBounds.top + pathAllowedBounds.height
-      bestPath = bestPath.map((p) => ({
-        x: Math.round(Math.max(xL, Math.min(xR, p.x))),
-        y: Math.round(Math.max(yT, Math.min(yB, p.y))),
-      }))
+    bestPath = normalizeConnectorPath(bestPath, effectiveBounds)
+    if (!isSafePath(bestPath)) {
+      setPathData('')
+      setLabelPos(null)
+      return
     }
-
-    // Path terstruktur: buang titik koliner (redundan) agar path lebih rapi dan kurang ruwet
-    bestPath = simplifyPathCollinear(bestPath)
+    const resolvedSides: [Side, Side] = bestSides ?? ['bottom', 'top']
 
     // OPTIMIZATION #3: Save to cache after successful routing
     pathCache.set(cacheKey, {
       path: bestPath,
-      sSide: bestSides[0],
-      eSide: bestSides[1],
+      sSide: resolvedSides[0],
+      eSide: resolvedSides[1],
       score: bestScore,
       fromPosHash: `${fromPos.left}-${fromPos.top}-${fromPos.width}-${fromPos.height}`,
       toPosHash: `${toPos.left}-${toPos.top}-${toPos.width}-${toPos.height}`,
@@ -723,7 +843,7 @@ export function FlowchartArrowConnector({
     }
     setLabelPos(lp)
 
-    const [sSide, eSide] = bestSides
+    const [sSide, eSide] = resolvedSides
     const payload: PathUpdatedPayload = {
       connectionId: connection.id, from: connection.from, to: connection.to,
       sSide, eSide,
@@ -752,6 +872,7 @@ export function FlowchartArrowConnector({
   }, [
     idcontainer, connection.id, connection.from, connection.to,
     connection.label, connection.sourceType, connection.targetType,
+    connectionIndex, allConnections,
     manualConfig, manualLabelPosition, obstacles, onPathUpdated, constraintRect,
     // usedSides DIHAPUS dari dependency — dibaca via usedSidesRef.current (ref), tidak perlu trigger re-run.
     // Menambah usedSides di sini menyebabkan cascade: tiap connector update usedSides → semua effect re-run.

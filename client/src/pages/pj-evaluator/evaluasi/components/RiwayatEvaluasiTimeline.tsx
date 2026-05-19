@@ -1,96 +1,199 @@
 /**
+
  * Timeline component for evaluation history (riwayat evaluasi).
+
  * Displays audit trail from LogNilaiEvaluasi.
+
  */
+
 import { History, MessageSquare, CheckCircle, XCircle } from "lucide-react"
+
 import { formatDateId } from "@/utils/format-date"
+
 import type { LogNilaiEvaluasi } from "@/types/dto/evaluasi.dto"
 
+
+
 export interface RiwayatEvaluasiTimelineProps {
+
   logs: LogNilaiEvaluasi[]
+
   className?: string
+
 }
+
+
 
 function HasilBadge({ hasil }: { hasil?: string | null }) {
+
   if (!hasil) return <span className="text-gray-400 text-xs">Belum dinilai</span>
+
   if (hasil === "SESUAI") {
+
     return (
+
       <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full font-medium">
+
         <CheckCircle className="w-3 h-3" />
+
         Sesuai
+
       </span>
+
     )
+
   }
+
   if (hasil === "PERLU_PERBAIKAN") {
+
     return (
+
       <span className="inline-flex items-center gap-1 text-xs text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full font-medium">
+
         <XCircle className="w-3 h-3" />
+
         Perlu Perbaikan
+
       </span>
+
     )
+
   }
+
   return (
+
     <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded-full font-medium">
+
       {hasil}
+
     </span>
+
   )
+
 }
+
+
 
 export function RiwayatEvaluasiTimeline({ logs, className = "" }: RiwayatEvaluasiTimelineProps) {
+
   if (logs.length === 0) {
+
     return (
+
       <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+
         <History className="w-10 h-10 mb-2 opacity-50" />
+
         <p className="text-xs text-center">Belum ada riwayat evaluasi</p>
+
         <p className="text-[10px] text-center mt-1 text-gray-300">Perubahan hasil evaluasi akan tercatat di sini</p>
+
       </div>
+
     )
+
   }
 
+
+
   return (
+
     <div className={`space-y-2 ${className}`}>
-      {logs.map((log) => (
-        <div
-          key={log.id}
-          className="relative space-y-1.5 rounded-lg border border-gray-200 bg-gray-50 p-2.5 shadow-sm"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-[10px] font-semibold text-blue-700">
-                  {log.evaluatorNama?.charAt(0) ?? "E"}
-                </span>
+
+      {logs.map((log) => {
+
+        const hasPerubahanHasil =
+
+          (log.hasilSebelum ?? null) !== (log.hasilSesudah ?? null)
+
+        return (
+
+          <div
+
+            key={log.id}
+
+            className="relative space-y-1.5 rounded-lg border border-gray-200 bg-gray-50 p-2.5 shadow-sm"
+
+          >
+
+            <div className="flex items-center justify-between gap-2">
+
+              <div className="flex items-center gap-2">
+
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+
+                  <span className="text-[10px] font-semibold text-blue-700">
+
+                    {log.evaluatorNama?.charAt(0) ?? "E"}
+
+                  </span>
+
+                </div>
+
+                <div>
+
+                  <p className="text-xs font-medium text-gray-900">{log.evaluatorNama ?? "Evaluator"}</p>
+
+                  <p className="text-[10px] text-gray-500">{formatDateId(log.createdAt)}</p>
+
+                </div>
+
               </div>
-              <div>
-                <p className="text-xs font-medium text-gray-900">{log.evaluatorNama ?? "Evaluator"}</p>
-                <p className="text-[10px] text-gray-500">{formatDateId(log.createdAt)}</p>
+
+              {!hasPerubahanHasil ? (
+
+                <div className="flex items-center gap-1">
+
+                  <HasilBadge hasil={log.hasilSesudah} />
+
+                </div>
+
+              ) : null}
+
+            </div>
+
+
+
+            {hasPerubahanHasil ? (
+
+              <div className="flex flex-wrap items-center gap-2 text-[11px]">
+
+                <span className="text-gray-500">Perubahan:</span>
+
+                <HasilBadge hasil={log.hasilSebelum} />
+
+                <span className="text-gray-400">→</span>
+
+                <HasilBadge hasil={log.hasilSesudah} />
+
               </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <HasilBadge hasil={log.hasilSesudah} />
-            </div>
+
+            ) : null}
+
+
+
+            {log.catatanSesudah ? (
+
+              <div className="flex items-start gap-1.5 rounded border border-gray-100 bg-white p-1.5 text-xs text-gray-600">
+
+                <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-gray-400" />
+
+                <p className="whitespace-pre-wrap">{log.catatanSesudah}</p>
+
+              </div>
+
+            ) : null}
+
           </div>
 
-          {/* Perubahan */}
-          {(log.hasilSebelum !== log.hasilSesudah) && (
-            <div className="flex items-center gap-2 text-[11px]">
-              <span className="text-gray-500">Perubahan:</span>
-              <HasilBadge hasil={log.hasilSebelum} />
-              <span className="text-gray-400">→</span>
-              <HasilBadge hasil={log.hasilSesudah} />
-            </div>
-          )}
+        )
 
-          {/* Catatan */}
-          {log.catatanSesudah && (
-            <div className="flex items-start gap-1.5 rounded border border-gray-100 bg-white p-1.5 text-xs text-gray-600">
-              <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-gray-400" />
-              <p className="whitespace-pre-wrap">{log.catatanSesudah}</p>
-            </div>
-          )}
-        </div>
-      ))}
+      })}
+
     </div>
+
   )
+
 }
+
+

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { HasilEvaluasi } from '../../../generated/prisma';
+import { HasilEvaluasi, StatusKomentar } from '../../../generated/prisma';
 
 /** Respons mutasi nilai — selaras field yang dipakai klien (`sopDetailId`). */
 export class NilaiEvaluasiPatchResponseDto {
@@ -20,6 +20,15 @@ export class NilaiEvaluasiPatchResponseDto {
 
   @ApiPropertyOptional({ nullable: true })
   readonly catatan?: string | null;
+
+  @ApiPropertyOptional({ enum: StatusKomentar, nullable: true })
+  readonly statusTindakLanjut?: StatusKomentar | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  readonly statusTindakLanjutLabel?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  readonly ditindaklanjutiPada?: string | null;
 
   @ApiProperty()
   readonly version!: number;

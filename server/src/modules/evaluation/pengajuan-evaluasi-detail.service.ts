@@ -5,6 +5,12 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../common';
 import {
+  displayHasilEvaluasi,
+  displayStatusPengajuan,
+  displayStatusSop,
+  displayStatusTindakLanjut,
+} from '../../common/status/status-display';
+import {
   HasilEvaluasi,
   PeranPengguna,
   StatusPengajuanEvaluasi,
@@ -64,7 +70,10 @@ export class PengajuanEvaluasiDetailService {
       throw new ForbiddenException('Detail SOP ini tidak termasuk pengajuan evaluasi');
     }
     const limit = logsLimit ?? DEFAULT_LOGS_LIMIT;
-    const workbench = await this.sopCatalogService.getPenyusunWorkbench(user, detailSopId, limit);
+    const workbench = await this.sopCatalogService.getPenyusunWorkbenchForEvaluasiContext(
+      detailSopId,
+      limit,
+    );
     return { detailSopId, workbench };
   }
 
@@ -85,12 +94,16 @@ export class PengajuanEvaluasiDetailService {
       row.nomorBA ??
       (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
     const hasilPerSop = [...row.nilaiEvaluasi]
-      .map((n) => ({
-        nomorSOP: n.detailSop.nomorSOP,
-        judul: n.detailSop.sop.judul,
-        hasilEvaluasi: PengajuanEvaluasiDetailService.stringifyHasil(n.hasil),
-        ringkasanCatatanEvaluator: n.catatan ?? undefined,
-      }))
+      .map((n) => {
+        const hasilDisplay = displayHasilEvaluasi(n.hasil);
+        return {
+          nomorSOP: n.detailSop.nomorSOP,
+          judul: n.detailSop.sop.judul,
+          hasilEvaluasi: hasilDisplay.value,
+          hasilEvaluasiLabel: hasilDisplay.label,
+          ringkasanCatatanEvaluator: n.catatan ?? undefined,
+        };
+      })
       .sort((a, b) => a.nomorSOP.localeCompare(b.nomorSOP, 'id', { numeric: true }));
     const namaEvaluatorSet = new Set<string>();
     for (const n of row.nilaiEvaluasi) {
@@ -186,47 +199,52 @@ export class PengajuanEvaluasiDetailService {
     };
   }
 
-  private static stringifyHasil(v: HasilEvaluasi | null | undefined): string | undefined {
-    if (v === null || v === undefined) {
-      return undefined;
-    }
-    return String(v);
-  }
-
   private static mapRowToShell(row: PengajuanEvaluasiDetailRow): PengajuanEvaluasiShellDto {
     const dokBa = row.dokumenTte[0];
     const nomorBA =
       row.nomorBA ??
       (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
-    const sopItems = row.nilaiEvaluasi.map((n) => ({
-      detailSopId: n.detailSopId,
-      sopId: n.detailSop.sop.sopId,
-      judul: n.detailSop.sop.judul,
-      nomorSOP: n.detailSop.nomorSOP,
-      statusDetailSop: String(n.detailSop.status),
-      hasilEvaluasi: PengajuanEvaluasiDetailService.stringifyHasil(n.hasil),
-      catatanRingkas: n.catatan ?? undefined,
-      evaluatorTerakhir:
-        n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
-          ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
-          : undefined,
-    }));
-    const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => ({
-      id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
-      pengajuanEvaluasiId: row.pengajuanEvaluasiId,
-      sopDetailId: n.detailSopId,
-      hasil: PengajuanEvaluasiDetailService.stringifyHasil(n.hasil),
-      catatan: n.catatan ?? undefined,
-      version: n.version,
-      dinilaiOlehId: n.dinilaiOlehId ?? undefined,
-      dinilaiOleh:
-        n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
-          ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
-          : undefined,
-      sopDetail: { id: n.detailSopId },
-      createdAt: n.createdAt.toISOString(),
-      updatedAt: n.updatedAt.toISOString(),
-    }));
+    const sopItems = row.nilaiEvaluasi.map((n) => {
+      const statusDisplay = displayStatusSop(n.detailSop.status);
+      const hasilDisplay = displayHasilEvaluasi(n.hasil);
+      return {
+        detailSopId: n.detailSopId,
+        sopId: n.detailSop.sop.sopId,
+        judul: n.detailSop.sop.judul,
+        nomorSOP: n.detailSop.nomorSOP,
+        statusDetailSop: statusDisplay.value,
+        statusDetailSopLabel: statusDisplay.label,
+        hasilEvaluasi: hasilDisplay.value,
+        hasilEvaluasiLabel: hasilDisplay.label,
+        catatanRingkas: n.catatan ?? undefined,
+        evaluatorTerakhir:
+          n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
+            ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
+            : undefined,
+      };
+    });
+    const nilaiEvaluasi = row.nilaiEvaluasi.map((n) => {
+      const tindakDisplay = displayStatusTindakLanjut(n.statusTindakLanjut);
+      return {
+        id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, n.detailSopId),
+        pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+        sopDetailId: n.detailSopId,
+        hasil: displayHasilEvaluasi(n.hasil).value,
+        catatan: n.catatan ?? undefined,
+        statusTindakLanjut: tindakDisplay?.value,
+        statusTindakLanjutLabel: tindakDisplay?.label,
+        ditindaklanjutiPada: n.ditindaklanjutiPada?.toISOString(),
+        version: n.version,
+        dinilaiOlehId: n.dinilaiOlehId ?? undefined,
+        dinilaiOleh:
+          n.dinilaiOleh !== null && n.dinilaiOleh !== undefined
+            ? { id: n.dinilaiOleh.penggunaId, nama: n.dinilaiOleh.nama }
+            : undefined,
+        sopDetail: { id: n.detailSopId },
+        createdAt: n.createdAt.toISOString(),
+        updatedAt: n.updatedAt.toISOString(),
+      };
+    });
     const timelineNilai = row.logNilaiEvaluasi.map((log) => ({
       id: encodeLogNilaiEvaluasiClientId(
         log.pengajuanEvaluasiId,
@@ -237,8 +255,14 @@ export class PengajuanEvaluasiDetailService {
       sopDetailId: log.detailSopId,
       evaluatorId: log.penggunaId,
       evaluatorNama: log.pengguna.nama,
-      hasilSebelum: PengajuanEvaluasiDetailService.stringifyHasil(log.hasilSebelum),
-      hasilSesudah: PengajuanEvaluasiDetailService.stringifyHasil(log.hasilSesudah),
+      hasilSebelum:
+        log.hasilSebelum === null || log.hasilSebelum === undefined
+          ? undefined
+          : displayHasilEvaluasi(log.hasilSebelum).value,
+      hasilSesudah:
+        log.hasilSesudah === null || log.hasilSesudah === undefined
+          ? undefined
+          : displayHasilEvaluasi(log.hasilSesudah).value,
       catatanSebelum: log.catatanSebelum ?? undefined,
       catatanSesudah: log.catatanSesudah ?? undefined,
       createdAt: log.createdAt.toISOString(),
@@ -246,12 +270,14 @@ export class PengajuanEvaluasiDetailService {
     const tanggalVerifikasi = STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI.has(row.status)
       ? row.updatedAt.toISOString()
       : undefined;
+    const statusDisplay = displayStatusPengajuan(row.status);
     return {
       id: row.pengajuanEvaluasiId,
       opdId: row.opdId,
       opdNama: row.opd.nama,
       jenis: String(row.jenis),
-      status: String(row.status),
+      status: statusDisplay.value,
+      statusLabel: statusDisplay.label,
       version: row.version,
       nomorBA,
       tanggalPermintaan: row.tanggalPermintaan?.toISOString(),

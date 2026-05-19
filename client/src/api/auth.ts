@@ -1,6 +1,11 @@
 
 import { apiClient } from '@/lib/api/api-client'
-import type { ChangePasswordDto, LoginApiResponse, LoginRequestDto } from '@/types/dto/auth.dto'
+import type {
+  ApiSuccessResponse,
+  ChangePasswordDto,
+  LoginApiResponse,
+  LoginRequestDto,
+} from '@/types/dto/auth.dto'
 
 export const authApi = {
 
@@ -25,7 +30,7 @@ export const authApi = {
    * AUTH-06: Change password for logged-in user
    */
   changePassword: (payload: ChangePasswordDto) =>
-    apiClient.patch<{ message: string }>('/change-password', payload),
+    apiClient.patch<ApiSuccessResponse<{ success: true }>>('/change-password', payload),
 
   /**
    * Logout - calls server to clear HttpOnly cookies
@@ -42,7 +47,11 @@ export const authApi = {
 
 import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/config/query-client";
-import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
+import {
+  useAuthStore,
+  ensureAuthHydrated,
+  mapPublicDataToAuthUser,
+} from "@/stores/authStore";
 import { useToast, showErrorMessages } from "@/hooks/useToast";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { navigateToAppPath, resolvePostLoginPath } from "@/utils/role-routing";
@@ -59,15 +68,7 @@ export function useAuth() {
     mutationFn: (payload: LoginRequestDto) => authApi.login(payload),
     onSuccess: async (response) => {
       const u = response.data;
-      setUser({
-        id: u.penggunaId,
-        email: u.email,
-        nama: u.nama,
-        peran: u.peran,
-        opdId: u.opdId,
-        nip: u.nip,
-        jabatan: u.jabatan,
-      });
+      setUser(mapPublicDataToAuthUser(u));
 
       showToast(`Selamat datang, ${u.nama}!`, "success");
 

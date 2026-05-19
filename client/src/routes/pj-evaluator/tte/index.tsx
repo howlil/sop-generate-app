@@ -1,14 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { TTDElektronikPage } from '@/pages/pj-evaluator/tte/TTDElektronikPage'
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { ROUTES } from "@/utils/constants";
 
-export const Route = createFileRoute('/pj-evaluator/tte/')({
-  component: PjEvaluatorTTEPage,
-})
-
-function PjEvaluatorTTEPage() {
-  return (
-    <TTDElektronikPage
-      role="pj-evaluator"
-    />
-  )
-}
+export const Route = createFileRoute("/pj-evaluator/tte/")({
+  beforeLoad: () => {
+    throw redirect({ to: ROUTES.PJ_EVALUATOR.ME });
+  },
+});

@@ -128,6 +128,27 @@ describe('PenyusunService', () => {
     expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
+  it('should_throw_conflict_when_aktifkan_pj_but_slot_taken', async () => {
+    penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+      penggunaId: 'pj-inaktif',
+      email: 'pj@x.id',
+      nip: '7',
+      opdId: 'opd-1',
+      peran: PeranPengguna.PJ_PENYUSUN,
+      nama: 'PJ',
+      pangkat: 'IV/a',
+      jabatan: 'J',
+      nohp: '0',
+      deletedAt: new Date(),
+    } as Pengguna);
+    prismaMock.pengguna.findFirst.mockResolvedValueOnce({
+      penggunaId: 'pj-aktif-lain',
+      peran: PeranPengguna.PJ_PENYUSUN,
+    });
+    await expect(service.aktifkan('pj-inaktif')).rejects.toBeInstanceOf(ConflictException);
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
+  });
+
   it('should_throw_conflict_when_pindah_pj_to_opd_that_already_has_pj', async () => {
     penyusunRepoMock.findPenyusunAktifById.mockResolvedValueOnce({
       penggunaId: 'pj-move',

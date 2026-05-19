@@ -1,7 +1,7 @@
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { JwtAccessPayload } from '../../../common';
-import { PeranPengguna, StatusKomentar } from '../../../generated/prisma';
+import { PeranPengguna, StatusKomentar, StatusSOP } from '../../../generated/prisma';
 import type { KomentarWithUser } from './sop-comment.repository';
 import { SopCommentRepository } from './sop-comment.repository';
 import { SopCommentService } from './sop-comment.service';
@@ -132,7 +132,7 @@ describe('SopCommentService', () => {
     it('should_throw_conflict_when_already_selesai', async () => {
       repoMock.findKomentarById.mockResolvedValueOnce({
         ...fakeKomentar({ status: StatusKomentar.SELESAI }),
-        detailSop: { sop: { opdId: 'opd-1' } },
+        detailSop: { status: StatusSOP.SEDANG_DISUSUN, sop: { opdId: 'opd-1' } },
       } as never);
       await expect(
         service.resolveKomentar(makeUser(PeranPengguna.PENYUSUN), 'kom-1'),
@@ -142,7 +142,7 @@ describe('SopCommentService', () => {
     it('should_throw_forbidden_when_role_not_penyusun', async () => {
       repoMock.findKomentarById.mockResolvedValueOnce({
         ...fakeKomentar(),
-        detailSop: { sop: { opdId: 'opd-1' } },
+        detailSop: { status: StatusSOP.SEDANG_DISUSUN, sop: { opdId: 'opd-1' } },
       } as never);
       await expect(
         service.resolveKomentar(makeUser(PeranPengguna.EVALUATOR), 'kom-1'),
@@ -152,7 +152,7 @@ describe('SopCommentService', () => {
     it('should_throw_forbidden_when_opd_mismatch', async () => {
       repoMock.findKomentarById.mockResolvedValueOnce({
         ...fakeKomentar(),
-        detailSop: { sop: { opdId: 'opd-1' } },
+        detailSop: { status: StatusSOP.SEDANG_DISUSUN, sop: { opdId: 'opd-1' } },
       } as never);
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-2');
       await expect(
@@ -163,7 +163,7 @@ describe('SopCommentService', () => {
     it('should_resolve_and_return_response_when_penyusun_owner', async () => {
       repoMock.findKomentarById.mockResolvedValueOnce({
         ...fakeKomentar(),
-        detailSop: { sop: { opdId: 'opd-1' } },
+        detailSop: { status: StatusSOP.SEDANG_DISUSUN, sop: { opdId: 'opd-1' } },
       } as never);
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
       repoMock.resolveKomentarWithLog.mockResolvedValueOnce(

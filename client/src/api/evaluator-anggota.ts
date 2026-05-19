@@ -4,6 +4,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
 import { queryKeys } from '@/config/query-keys'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { STALE_TIME } from '@/utils/constants'
@@ -16,28 +17,23 @@ import type {
   UpdateEvaluatorAnggotaMutationDto,
 } from '@/types/dto/tim.dto'
 
-async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise
-  return envelope.data as T
-}
-
 export const evaluatorAnggotaApi = {
   findAll: async (params?: { search?: string }): Promise<EvaluatorAnggota[]> => {
     const s = params?.search?.trim()
     const qs = buildQueryString(s ? { search: s } : undefined)
-    const grup = await unwrap(
+    const grup = await unwrapApiData(
       apiClient.get<ApiSuccessResponse<EvaluatorOpdGrup[]>>(`/evaluator${qs}`),
     )
     return grup.flatMap((g) => g.evaluator)
   },
 
   tambah: (payload: CreateEvaluatorAnggotaDto) =>
-    unwrap(
+    unwrapApiData(
       apiClient.post<ApiSuccessResponse<EvaluatorAnggota>>('/evaluator', payload),
     ),
 
   update: (id: string, payload: UpdateEvaluatorAnggotaDto) =>
-    unwrap(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<EvaluatorAnggota>>(
         `/evaluator/${id}`,
         payload,
@@ -45,7 +41,7 @@ export const evaluatorAnggotaApi = {
     ),
 
   hapus: async (id: string): Promise<void> => {
-    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/evaluator/${id}`))
+    await unwrapApiVoid(apiClient.delete<ApiSuccessResponse<null>>(`/evaluator/${id}`))
   },
 }
 

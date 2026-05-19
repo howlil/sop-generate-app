@@ -2,8 +2,10 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
@@ -13,8 +15,13 @@ import {
   StatusSOP,
 } from '../../../generated/prisma';
 import { buildNilaiEvaluasiClientId } from '../../evaluation/nilai-evaluasi-client-id';
+import { EvaluasiNilaiService } from '../../evaluation/evaluasi-nilai.service';
 import type { CreateSopDto } from './dto/create-sop.dto';
 import type { PenyusunWorkbenchDataDto } from './dto/penyusun-workbench-data.dto';
+import { displayStatusSop } from '../../../common/status/status-display';
+import { assertDetailSopEditable, hasRevisiInFlight } from '../../../common/status/sop-editable.util';
+import type { SopRiwayatVersiRowDto } from './dto/sop-riwayat-versi-row.dto';
+import type { SopDaftarVersiSliceDto } from './dto/sop-daftar-versi-slice.dto';
 import type { SopDaftarRowDto } from './dto/sop-daftar-row.dto';
 import type { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import type { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
@@ -33,7 +40,11 @@ const MAX_WORKBENCH_LOG_LIMIT = 500;
 
 @Injectable()
 export class SopCatalogService {
-  constructor(private readonly sopCatalogRepository: SopCatalogRepository) {}
+  constructor(
+    private readonly sopCatalogRepository: SopCatalogRepository,
+    @Inject(forwardRef(() => EvaluasiNilaiService))
+    private readonly evaluasiNilaiService: EvaluasiNilaiService,
+  ) {}
 
   private clampLogsLimit(raw: number | undefined): number {
     if (raw === undefined || Number.isNaN(raw)) {
@@ -171,11 +182,15 @@ export class SopCatalogService {
     const kp = row.sop.opd?.pengguna[0];
     const kepalaOpd: PenyusunWorkbenchDataDto['detail']['kepalaOpd'] =
       kp === null || kp === undefined ? null : { nama: kp.nama ?? null, nip: kp.nip ?? null };
+    const statusDisplay = displayStatusSop(row.status);
     const detail: PenyusunWorkbenchDataDto['detail'] = {
       id: detailId,
       sopId: row.sopId,
-      status: String(row.status),
+      status: statusDisplay.value,
+      statusLabel: statusDisplay.label,
       versi: row.versi,
+      revisiDariDetailSopId: row.revisiDariDetailSopId,
+      revisiDariVersi: row.revisiDari?.versi ?? null,
       nomorSOP: row.nomorSOP,
       tanggalPembuatan: this.toIso(row.tanggalPembuatan),
       tanggalRevisi: row.tanggalRevisi === null ? null : this.toIso(row.tanggalRevisi),
@@ -265,6 +280,26 @@ export class SopCatalogService {
   }
 
   /**
+   * Workbench untuk pratinjau SOP dalam konteks pengajuan evaluasi (batch).
+   * Keanggotaan batch dan akses pengajuan sudah divalidasi di modul evaluation;
+   * tanpa assert OPD agar PJ/Evaluator lintas OPD dapat memuat dokumen lengkap.
+   */
+  async getPenyusunWorkbenchForEvaluasiContext(
+    detailSopId: string,
+    logsLimitRaw?: number,
+  ): Promise<PenyusunWorkbenchDataDto> {
+    const logsLimit = this.clampLogsLimit(logsLimitRaw);
+    const row = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
+      detailSopId,
+      logsLimit,
+    );
+    if (row === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    return this.mapWorkbenchPayload(row);
+  }
+
+  /**
    * Validasi transisi status DetailSOP per peran; loncat status tidak diizinkan.
    */
   private assertAllowedStatusTransition(
@@ -304,19 +339,9 @@ export class SopCatalogService {
       return;
     }
     if (target === StatusSOP.BERLAKU) {
-      const allowedFrom = new Set<StatusSOP>([
-        StatusSOP.SIAP_DIVERIFIKASI,
-        StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
-      ]);
-      if (!allowedFrom.has(current)) {
-        throw new ConflictException(
-          `Tidak dapat mengesahkan SOP (BERLAKU) dari status ${String(current)}`,
-        );
-      }
-      if (role !== PeranPengguna.KEPALA_OPD) {
-        throw new ForbiddenException('Hanya Kepala OPD yang dapat mengesahkan SOP menjadi berlaku');
-      }
-      return;
+      throw new ConflictException(
+        'Pengesahan SOP menjadi BERLAKU wajib melalui endpoint TTE Kepala OPD',
+      );
     }
     if (target === StatusSOP.DICABUT) {
       if (current !== StatusSOP.BERLAKU) {
@@ -487,6 +512,7 @@ export class SopCatalogService {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
     this.assertWorkbenchCompleteForSiapDievaluasi(draftPayload);
+    await this.evaluasiNilaiService.assertBolehKirimUlangSetelahRevisi(ctx.detailSopId);
     await this.sopCatalogRepository.transitionDetailSopRevisiToDiajukanEvaluasi({
       detailSopId: ctx.detailSopId,
       userId: user.sub,
@@ -554,6 +580,7 @@ export class SopCatalogService {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
     await this.assertOpdAccessForWorkbench(user, existing.sop.opdId);
+    assertDetailSopEditable(existing.status);
     const changedFields = this.collectChangedHeaderFields(dto);
     if (changedFields.length > 0) {
       try {
@@ -581,37 +608,67 @@ export class SopCatalogService {
     return this.mapWorkbenchPayload(refreshed);
   }
 
+  private mapVersiSlice(slice: {
+    detailSopId: string;
+    versi: number;
+    nomorSOP: string;
+    status: string;
+  }): SopDaftarVersiSliceDto {
+    const statusDisplay = displayStatusSop(slice.status);
+    return {
+      detailSopId: slice.detailSopId,
+      versi: slice.versi,
+      nomorSop: slice.nomorSOP,
+      status: statusDisplay.value,
+      statusLabel: statusDisplay.label,
+    };
+  }
+
   private mapRow(row: SopDaftarDbRow): SopDaftarRowDto {
     const d = row.detail;
+    const hasBerlaku = row.versiBerlaku !== null;
+    const inFlight = hasRevisiInFlight(row.allStatuses);
+    const canBuatVersiBaru = hasBerlaku && !inFlight;
     if (d === undefined) {
+      const statusDisplay = displayStatusSop('DRAFT');
       return {
         id: row.sopId,
         opdId: row.opdId,
         detailSopId: null,
         judul: row.judul,
         nomorSop: null,
+        versi: null,
         pembuat: null,
         terakhirDiedit: { nama: null, waktu: null },
-        status: 'DRAFT',
+        status: statusDisplay.value,
+        statusLabel: statusDisplay.label,
         peraturanId: null,
         terakhirDiperbarui: null,
+        versiBerlaku: null,
+        canBuatVersiBaru: false,
       };
     }
     const waktuIso = d.updatedAt.toISOString();
+    const statusDisplay = displayStatusSop(d.status);
     return {
       id: row.sopId,
       opdId: row.opdId,
       detailSopId: d.detailSopId,
       judul: row.judul,
       nomorSop: d.nomorSOP,
+      versi: d.versi,
       pembuat: d.pembuatNama,
       terakhirDiedit: {
         nama: d.editorNama,
         waktu: waktuIso,
       },
-      status: d.status,
+      status: statusDisplay.value,
+      statusLabel: statusDisplay.label,
       peraturanId: d.peraturanId,
       terakhirDiperbarui: waktuIso,
+      versiBerlaku:
+        row.versiBerlaku === null ? null : this.mapVersiSlice(row.versiBerlaku),
+      canBuatVersiBaru,
     };
   }
 
@@ -675,5 +732,83 @@ export class SopCatalogService {
       }
       throw err;
     }
+  }
+
+  private assertPenyusunOrPj(user: JwtAccessPayload): void {
+    if (user.peran !== PeranPengguna.PENYUSUN && user.peran !== PeranPengguna.PJ_PENYUSUN) {
+      throw new ForbiddenException('Hanya Penyusun atau PJ Penyusun yang dapat melakukan aksi ini');
+    }
+  }
+
+  async buatVersiBaruDariBerlaku(
+    user: JwtAccessPayload,
+    detailOrSopId: string,
+    logsLimitRaw?: number,
+  ): Promise<PenyusunWorkbenchDataDto> {
+    this.assertPenyusunOrPj(user);
+    const resolved = await this.sopCatalogRepository.findDetailIdByDetailOrSopId(detailOrSopId);
+    if (resolved === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    const source = await this.sopCatalogRepository.findLatestDetailStatusContext(resolved.detailSopId);
+    if (source === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    await this.assertOpdAccessForWorkbench(user, source.sopOpdId);
+    if (source.status !== StatusSOP.BERLAKU) {
+      const berlakuRow = await this.sopCatalogRepository.findRiwayatVersiBySopId(source.sopId);
+      const berlaku = berlakuRow.find((r) => r.status === StatusSOP.BERLAKU);
+      if (berlaku === undefined) {
+        throw new ConflictException('SOP ini belum memiliki versi BERLAKU');
+      }
+      const cloned = await this.sopCatalogRepository.cloneDetailSopFromBerlaku({
+        sourceDetailSopId: berlaku.detailSopId,
+        penggunaId: user.sub,
+      });
+      return this.getPenyusunWorkbench(user, cloned.detailSopId, logsLimitRaw);
+    }
+    const cloned = await this.sopCatalogRepository.cloneDetailSopFromBerlaku({
+      sourceDetailSopId: source.detailSopId,
+      penggunaId: user.sub,
+    });
+    return this.getPenyusunWorkbench(user, cloned.detailSopId, logsLimitRaw);
+  }
+
+  async getRiwayatVersi(
+    user: JwtAccessPayload,
+    sopId: string,
+  ): Promise<SopRiwayatVersiRowDto[]> {
+    const header = await this.sopCatalogRepository.findDetailIdByDetailOrSopId(sopId);
+    const resolvedSopId = header?.sopId ?? sopId;
+    const firstDetail = await this.sopCatalogRepository.findLatestDetailStatusContext(resolvedSopId);
+    if (firstDetail === null) {
+      throw new NotFoundException('SOP tidak ditemukan');
+    }
+    await this.assertOpdAccessForWorkbench(user, firstDetail.sopOpdId);
+    const rows = await this.sopCatalogRepository.findRiwayatVersiBySopId(resolvedSopId);
+    return rows.map((r) => {
+      const statusDisplay = displayStatusSop(r.status);
+      return {
+        detailSopId: r.detailSopId,
+        versi: r.versi,
+        nomorSOP: r.nomorSOP,
+        status: statusDisplay.value,
+        statusLabel: statusDisplay.label,
+        revisiDariDetailSopId: r.revisiDariDetailSopId,
+        revisiDariVersi: r.revisiDariVersi,
+        updatedAt: r.updatedAt.toISOString(),
+        canHapusDraft: r.canHapusDraft,
+      };
+    });
+  }
+
+  async hapusVersiDraft(user: JwtAccessPayload, detailSopId: string): Promise<void> {
+    this.assertPenyusunOrPj(user);
+    const ctx = await this.sopCatalogRepository.findLatestDetailStatusContext(detailSopId);
+    if (ctx === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    await this.assertOpdAccessForWorkbench(user, ctx.sopOpdId);
+    await this.sopCatalogRepository.deleteVersiDraft(ctx.detailSopId);
   }
 }

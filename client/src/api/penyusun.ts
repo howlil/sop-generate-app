@@ -4,6 +4,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
 import { queryKeys } from '@/config/query-keys'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { STALE_TIME } from '@/utils/constants'
@@ -19,35 +20,30 @@ import type {
   UpdatePenggunaPenyusunDto,
 } from '@/types/dto/tim.dto'
 
-async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise
-  return envelope.data as T
-}
-
 export const penyusunApi = {
   findAllGrup: (params?: { search?: string }): Promise<TimPenyusunOpdGrup[]> => {
     const s = params?.search?.trim()
     const qs = buildQueryString(s ? { search: s } : undefined)
-    return unwrap(
+    return unwrapApiData(
       apiClient.get<ApiSuccessResponse<TimPenyusunOpdGrup[]>>(`/penyusun${qs}`),
     )
   },
 
   create: (payload: CreatePenggunaPenyusunDto): Promise<PenyusunPublikItem> =>
-    unwrap(apiClient.post<ApiSuccessResponse<PenyusunPublikItem>>('/penyusun', payload)),
+    unwrapApiData(apiClient.post<ApiSuccessResponse<PenyusunPublikItem>>('/penyusun', payload)),
 
   update: (id: string, payload: UpdatePenggunaPenyusunDto): Promise<PenyusunPublikItem> =>
-    unwrap(apiClient.patch<ApiSuccessResponse<PenyusunPublikItem>>(`/penyusun/${id}`, payload)),
+    unwrapApiData(apiClient.patch<ApiSuccessResponse<PenyusunPublikItem>>(`/penyusun/${id}`, payload)),
 
   nonaktifkan: async (id: string): Promise<void> => {
-    await unwrap(apiClient.patch<ApiSuccessResponse<null>>(`/penyusun/${id}/nonaktifkan`))
+    await unwrapApiVoid(apiClient.patch<ApiSuccessResponse<null>>(`/penyusun/${id}/nonaktifkan`))
   },
 
   aktifkan: (id: string): Promise<PenyusunPublikItem> =>
-    unwrap(apiClient.patch<ApiSuccessResponse<PenyusunPublikItem>>(`/penyusun/${id}/aktifkan`)),
+    unwrapApiData(apiClient.patch<ApiSuccessResponse<PenyusunPublikItem>>(`/penyusun/${id}/aktifkan`)),
 
   pindah: (id: string, payload: PindahTimPenyusunDto): Promise<PenyusunPublikItem> =>
-    unwrap(
+    unwrapApiData(
       apiClient.patch<ApiSuccessResponse<PenyusunPublikItem>>(
         `/penyusun/${id}/pindah`,
         payload,
@@ -55,11 +51,11 @@ export const penyusunApi = {
     ),
 
   hapusPermanen: async (id: string): Promise<void> => {
-    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/penyusun/${id}`))
+    await unwrapApiVoid(apiClient.delete<ApiSuccessResponse<null>>(`/penyusun/${id}`))
   },
 
   getRiwayatOpd: (id: string): Promise<RiwayatOpdPenyusunItem[]> =>
-    unwrap(
+    unwrapApiData(
       apiClient.get<ApiSuccessResponse<RiwayatOpdPenyusunItem[]>>(
         `/penyusun/${id}/riwayat-opd`,
       ),

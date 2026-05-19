@@ -20,6 +20,52 @@ describe('EvaluasiWorkspaceService', () => {
 
   const detailId = '11111111-1111-1111-1111-111111111111';
   const sopId = '22222222-2222-2222-2222-222222222222';
+  const detailMeta = {
+    versi: 1,
+    detailUpdatedAt: new Date('2026-05-01T08:00:00.000Z'),
+  };
+
+  function pipelineRow(
+    overrides: Partial<{
+      detailSopId: string;
+      sopId: string;
+      judul: string;
+      nomorSOP: string;
+      statusDetail: StatusSOP;
+    }> = {},
+  ) {
+    return {
+      detailSopId: detailId,
+      sopId,
+      judul: 'SOP A',
+      nomorSOP: '001',
+      statusDetail: StatusSOP.DIAJUKAN_EVALUASI,
+      ...detailMeta,
+      ...overrides,
+    };
+  }
+
+  function nilaiEvaluasiRow(
+    overrides: Partial<{
+      detailSopId: string;
+      hasil: string | null;
+      catatan: string | null;
+      version: number;
+      statusTindakLanjut: string | null;
+      ditindaklanjutiPada: Date | null;
+    }> = {},
+  ) {
+    return {
+      detailSopId: detailId,
+      hasil: null,
+      catatan: null,
+      version: 0,
+      statusTindakLanjut: null,
+      ditindaklanjutiPada: null,
+      ...detailMeta,
+      ...overrides,
+    };
+  }
 
   function createRepoMock(partial: Partial<jest.Mocked<EvaluasiWorkspaceRepository>>): jest.Mocked<EvaluasiWorkspaceRepository> {
     return {
@@ -27,9 +73,9 @@ describe('EvaluasiWorkspaceService', () => {
       findDaftarDetailPipeline: jest.fn(),
       findPengajuanAktif: jest.fn(),
       findRiwayatOpdSelesai: jest.fn(),
-      findRiwayatNilaiUntukDetail: jest.fn(),
+      findLogNilaiUntukDetailWorkspace: jest.fn(),
       detailMilikiOpd: jest.fn(),
-      evaluatorTerakhirBatch: jest.fn(),
+      evaluatorTerakhirUntukDetailSop: jest.fn(),
       findPengajuanBundleForWorkspace: jest.fn(),
       ...partial,
     } as jest.Mocked<EvaluasiWorkspaceRepository>;
@@ -70,15 +116,7 @@ describe('EvaluasiWorkspaceService', () => {
   it('should_call_bootstrap_then_reload_pengajuan_when_evaluator_and_awalnya_null', async () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
-      findDaftarDetailPipeline: jest.fn().mockResolvedValue([
-        {
-          detailSopId: detailId,
-          sopId,
-          judul: 'SOP A',
-          nomorSOP: '001',
-          statusDetail: StatusSOP.DIAJUKAN_EVALUASI,
-        },
-      ]),
+      findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
       findPengajuanAktif: jest
         .fn()
         .mockResolvedValueOnce(null)
@@ -86,18 +124,11 @@ describe('EvaluasiWorkspaceService', () => {
           pengajuanEvaluasiId: 'p-new',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
           jenis: JenisPengajuanEvaluasi.MANDIRI,
-          nilaiEvaluasi: [
-            {
-              detailSopId: detailId,
-              hasil: null,
-              catatan: null,
-              version: 0,
-            },
-          ],
+          nilaiEvaluasi: [nilaiEvaluasiRow()],
         }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
     const pastikan = createPastikanMock();
@@ -128,19 +159,11 @@ describe('EvaluasiWorkspaceService', () => {
     };
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
-      findDaftarDetailPipeline: jest.fn().mockResolvedValue([
-        {
-          detailSopId: detailId,
-          sopId,
-          judul: 'SOP A',
-          nomorSOP: '001',
-          statusDetail: StatusSOP.DIAJUKAN_EVALUASI,
-        },
-      ]),
+      findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
       findPengajuanAktif: jest.fn().mockResolvedValue(null),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
     const pastikan = createPastikanMock();
@@ -160,43 +183,32 @@ describe('EvaluasiWorkspaceService', () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findDaftarDetailPipeline: jest.fn().mockResolvedValue([
-        {
-          detailSopId: detailId,
-          sopId,
-          judul: 'SOP A',
-          nomorSOP: '001',
-          statusDetail: StatusSOP.SEDANG_DIEVALUASI,
-        },
-        {
+        pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI }),
+        pipelineRow({
           detailSopId: detailOther,
           sopId: '44444444-4444-4444-4444-444444444444',
           judul: 'SOP B',
           nomorSOP: '002',
           statusDetail: StatusSOP.SEDANG_DIEVALUASI,
-        },
+        }),
       ]),
       findPengajuanAktif: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
         jenis: JenisPengajuanEvaluasi.TERJADWAL,
         nilaiEvaluasi: [
-          {
-            detailSopId: detailId,
-            hasil: null,
-            catatan: null,
-            version: 0,
-          },
-          {
+          nilaiEvaluasiRow(),
+          nilaiEvaluasiRow({
             detailSopId: detailOther,
             hasil: 'SESUAI',
             catatan: 'ok',
             version: 1,
-          },
+          }),
         ],
       }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
     const pastikan = createPastikanMock();
@@ -220,20 +232,12 @@ describe('EvaluasiWorkspaceService', () => {
   it('should_fill_preview_only_when_expand_preview_and_allowed_detail', async () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
-      findDaftarDetailPipeline: jest.fn().mockResolvedValue([
-        {
-          detailSopId: detailId,
-          sopId,
-          judul: 'SOP A',
-          nomorSOP: '001',
-          statusDetail: StatusSOP.DIAJUKAN_EVALUASI,
-        },
-      ]),
+      findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
       findPengajuanAktif: jest.fn().mockResolvedValue(null),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
       detailMilikiOpd: jest.fn().mockResolvedValue(true),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const getWorkbench = jest.fn().mockResolvedValue(mockWorkbench);
     const sopCatalog = { getPenyusunWorkbench: getWorkbench } as unknown as SopCatalogService;
@@ -263,9 +267,9 @@ describe('EvaluasiWorkspaceService', () => {
       findDaftarDetailPipeline: jest.fn().mockResolvedValue([]),
       findPengajuanAktif: jest.fn().mockResolvedValue(null),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
       detailMilikiOpd: jest.fn().mockResolvedValue(true),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const getWorkbench = jest.fn().mockResolvedValue(mockWorkbench);
     const sopCatalog = { getPenyusunWorkbench: getWorkbench } as unknown as SopCatalogService;
@@ -308,28 +312,15 @@ describe('EvaluasiWorkspaceService', () => {
         opdId: 'opd-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
         jenis: JenisPengajuanEvaluasi.TERJADWAL,
-        nilaiEvaluasi: [
-          {
-            detailSopId: detailId,
-            hasil: null,
-            catatan: null,
-            version: 0,
-          },
-        ],
+        nilaiEvaluasi: [nilaiEvaluasiRow()],
         daftarRows: [
-          {
-            detailSopId: detailId,
-            sopId,
-            judul: 'SOP A',
-            nomorSOP: '001',
-            statusDetail: StatusSOP.SEDANG_DIEVALUASI,
-          },
+          pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI }),
         ],
       }),
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
     const pastikan = createPastikanMock();
@@ -348,6 +339,54 @@ describe('EvaluasiWorkspaceService', () => {
     expect(actual.opd.id).toBe('opd-1');
   });
 
+  it('should_return_log_nilai_sop_terpilih_for_active_pengajuan_when_detail_sop_set', async () => {
+    const createdAt = new Date('2026-05-19T10:00:00.000Z');
+    const findLogNilai = jest.fn().mockResolvedValue([
+      {
+        pengajuanEvaluasiId: 'peng-1',
+        detailSopId: detailId,
+        penggunaId: 'eval-1',
+        evaluatorNama: 'Budi Evaluator',
+        hasilSebelum: null,
+        hasilSesudah: 'SESUAI',
+        catatanSebelum: null,
+        catatanSesudah: 'Sesuai standar',
+        createdAt,
+      },
+    ]);
+    const repo = createRepoMock({
+      findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+      findDaftarDetailPipeline: jest.fn().mockResolvedValue([
+        pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI }),
+      ]),
+      findPengajuanAktif: jest.fn().mockResolvedValue({
+        pengajuanEvaluasiId: 'peng-1',
+        status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        nilaiEvaluasi: [
+          nilaiEvaluasiRow({ hasil: 'SESUAI', version: 1 }),
+        ],
+      }),
+      findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+      findLogNilaiUntukDetailWorkspace: findLogNilai,
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+    });
+    const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+    const pastikan = createPastikanMock();
+    const service = new EvaluasiWorkspaceService(
+      repo,
+      sopCatalog,
+      pastikan as unknown as PengajuanEvaluasiService,
+    );
+    const actual = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
+      detailSopId: detailId,
+    });
+    expect(findLogNilai).toHaveBeenCalledWith('peng-1', detailId, 30);
+    expect(actual.logNilaiSopTerpilih).toHaveLength(1);
+    expect(actual.logNilaiSopTerpilih[0]?.evaluatorNama).toBe('Budi Evaluator');
+    expect(actual.logNilaiSopTerpilih[0]?.hasilSesudah).toBe('SESUAI');
+  });
+
   it('should_keep_pengajuan_status_visible_for_late_jobdesk_stage', async () => {
     const repo = createRepoMock({
       findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
@@ -356,27 +395,18 @@ describe('EvaluasiWorkspaceService', () => {
         status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
         jenis: JenisPengajuanEvaluasi.TERJADWAL,
         nilaiEvaluasi: [
-          {
-            detailSopId: detailId,
-            hasil: 'SESUAI',
-            catatan: null,
-            version: 2,
-          },
+          nilaiEvaluasiRow({ hasil: 'SESUAI', version: 2 }),
         ],
         daftarRows: [
-          {
-            detailSopId: detailId,
-            sopId,
-            judul: 'SOP A',
-            nomorSOP: '001',
+          pipelineRow({
             statusDetail: StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
-          },
+          }),
         ],
       }),
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
-      findRiwayatNilaiUntukDetail: jest.fn().mockResolvedValue([]),
-      evaluatorTerakhirBatch: jest.fn().mockResolvedValue(new Map()),
+      findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+      evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
     });
     const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
     const pastikan = createPastikanMock();

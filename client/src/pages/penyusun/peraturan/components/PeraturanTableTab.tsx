@@ -2,7 +2,6 @@ import { Edit, Trash2, FileText } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
 import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
 import type { Peraturan } from "@/types/dto/peraturan.dto";
@@ -56,12 +55,10 @@ export function PeraturanTableTab({
             <tbody>
               {pageData.map((peraturan) => (
                 <Table.BodyRow key={peraturan.id}>
-                  <Table.Td>
-                    <Badge variant="outline" className="text-xs">
-                      {peraturan.namaPeraturan}
-                    </Badge>
+                  <Table.Td className="text-gray-900">
+                    {peraturan.namaPeraturan}
                   </Table.Td>
-                  <Table.Td className="font-mono text-gray-700">
+                  <Table.Td className="text-gray-900">
                     No. {peraturan.nomor}/{peraturan.tahun}
                   </Table.Td>
                   <Table.Td className="text-gray-900">{peraturan.tentang}</Table.Td>

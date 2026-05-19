@@ -4,7 +4,6 @@ import {
   BarChart3,
   Building2,
   FileCheck,
-  PenLine,
   UserPlus,
   Users,
   BookOpen,
@@ -55,11 +54,6 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
       label: "Manajemen Evaluasi SOP",
       icon: FileCheck,
     },
-    {
-      to: ROUTES.PJ_EVALUATOR.TTE,
-      label: "TTD Elektronik",
-      icon: PenLine,
-    },
   ],
   PENYUSUN: [
     {
@@ -99,11 +93,6 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
       label: "Berita Acara PJ Penyusun",
       icon: FileSignature,
     },
-    {
-      to: ROUTES.PENYUSUN.PJ_PENYUSUN_TTE,
-      label: "TTD Elektronik",
-      icon: PenLine,
-    },
   ],
   KEPALA_OPD: [
     { to: ROUTES.KEPALA_OPD.SOP, label: "Pantau SOP", icon: FileText },
@@ -111,11 +100,6 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
       to: ROUTES.KEPALA_OPD.PENGAJUAN,
       label: "Pengajuan SOP",
       icon: FileCheck,
-    },
-    {
-      to: ROUTES.KEPALA_OPD.TTE,
-      label: "TTD Elektronik",
-      icon: PenLine,
     },
   ],
   EVALUATOR: [

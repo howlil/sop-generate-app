@@ -117,9 +117,9 @@ describe('PengajuanEvaluasiDetailService', () => {
     expect(pengSvc.assertUserCanAccessPengajuan).not.toHaveBeenCalled();
   });
 
-  it('should_throw_forbidden_sop_when_detail_bukan_anggota_batch', async () => {
+  it('should_throw_forbidden_sop_when_detail_bukan_anggota_pengajuan', async () => {
     const row = buildMinimalRow();
-    const luarBatch = '99999999-9999-4999-8999-999999999999';
+    const luarPengajuan = '99999999-9999-4999-8999-999999999999';
     const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
     const detailRepo = {
       existsNilaiUntukDetail: jest.fn().mockResolvedValue(false),
@@ -128,15 +128,15 @@ describe('PengajuanEvaluasiDetailService', () => {
     const pengSvc = {
       assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
     } as unknown as PengajuanEvaluasiService;
-    const sop = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+    const sop = { getPenyusunWorkbenchForEvaluasiContext: jest.fn() } as unknown as SopCatalogService;
     const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-    await expect(service.getSopDokumen(userPj, pengajuanId, luarBatch)).rejects.toBeInstanceOf(
+    await expect(service.getSopDokumen(userPj, pengajuanId, luarPengajuan)).rejects.toBeInstanceOf(
       ForbiddenException,
     );
-    expect(sop.getPenyusunWorkbench).not.toHaveBeenCalled();
+    expect(sop.getPenyusunWorkbenchForEvaluasiContext).not.toHaveBeenCalled();
   });
 
-  it('should_return_workbench_when_detail_anggota_batch', async () => {
+  it('should_return_workbench_when_detail_anggota_pengajuan', async () => {
     const row = buildMinimalRow();
     const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
     const detailRepo = {
@@ -152,13 +152,13 @@ describe('PengajuanEvaluasiDetailService', () => {
       logEdit: [],
     };
     const sop = {
-      getPenyusunWorkbench: jest.fn().mockResolvedValue(workbenchDummy),
+      getPenyusunWorkbenchForEvaluasiContext: jest.fn().mockResolvedValue(workbenchDummy),
     } as unknown as SopCatalogService;
     const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
     const actual = await service.getSopDokumen(userPj, pengajuanId, detailSopA, 50);
     expect(actual.detailSopId).toBe(detailSopA);
     expect(actual.workbench).toEqual(workbenchDummy);
-    expect(sop.getPenyusunWorkbench).toHaveBeenCalledWith(userPj, detailSopA, 50);
+    expect(sop.getPenyusunWorkbenchForEvaluasiContext).toHaveBeenCalledWith(detailSopA, 50);
   });
 
   it('shell_should_have_sopItems_timelineNilai_dan_preserves_nilai_evaluasi', async () => {

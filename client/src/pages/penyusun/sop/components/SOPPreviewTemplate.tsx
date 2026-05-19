@@ -42,6 +42,11 @@ interface SopPreviewDiagramState {
   onActiveTabChange?: (v: "flowchart" | "bpmn") => void;
 }
 
+type SopPreviewMetadata = Partial<
+  Omit<SOPHeaderInfoProps, "implementQualification" | "equipment" | "recordData">
+> &
+  Partial<SOPDetailMetadata> & { name?: string };
+
 export interface SOPPreviewTemplateProps {
   /** Override nama SOP (default: Percobaan) */
   name?: string;
@@ -50,8 +55,7 @@ export interface SOPPreviewTemplateProps {
   /** TTE signature payload jika SOP sudah disahkan */
   tteSignaturePayload?: TTESignaturePayload | null;
   /** Metadata lengkap (jika ada, dipakai untuk header; jika tidak, pakai seed + name/number) */
-  metadata?: Partial<SOPHeaderInfoProps> &
-    Partial<SOPDetailMetadata> & { name: string };
+  metadata?: SopPreviewMetadata;
   /** Prosedur rows (jika tidak ada, pakai seed) */
   prosedurRows?: ProsedurRow[];
   /** Implementers (jika tidak ada, pakai seed) */
@@ -119,6 +123,23 @@ export function SOPPreviewTemplate({
     ...(nameOverride != null && { name: nameOverride }),
     ...(numberOverride != null && { number: numberOverride }),
     ...metadataOverride,
+    implementQualification:
+      typeof metadataOverride?.implementQualification === "string"
+        ? [metadataOverride.implementQualification]
+        : metadataOverride?.implementQualification ??
+          (Array.isArray(DEFAULT_METADATA.implementQualification)
+            ? DEFAULT_METADATA.implementQualification
+            : []),
+    equipment:
+      typeof metadataOverride?.equipment === "string"
+        ? [metadataOverride.equipment]
+        : metadataOverride?.equipment ??
+          (Array.isArray(DEFAULT_METADATA.equipment) ? DEFAULT_METADATA.equipment : []),
+    recordData:
+      typeof metadataOverride?.recordData === "string"
+        ? [metadataOverride.recordData]
+        : metadataOverride?.recordData ??
+          (Array.isArray(DEFAULT_METADATA.recordData) ? DEFAULT_METADATA.recordData : []),
     ...(metadataOverride &&
     metadataOverride.tanggalPembuatan != null &&
     String(metadataOverride.tanggalPembuatan).trim() !== ""

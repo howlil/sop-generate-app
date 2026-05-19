@@ -21,7 +21,7 @@ import { BackButton } from "@/components/ui/back-button";
 import { NotFoundWithBack } from "@/components/ui/not-found";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
 import { CollapsibleSidePanel } from "@/components/ui/collapsible-side-panel";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-evaluasi-status-header";
 import { InfoField } from "@/components/ui/info-field";
 import { BeritaAcaraTemplate } from "@/pages/penyusun/koordinator/berita-acara/components/BeritaAcaraTemplate";
 import { InfoCard } from "@/components/ui/info-card";
@@ -167,9 +167,6 @@ export function DetailPengajuanEvaluasi() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
               <InfoField label="OPD">{pengajuan.opdNama}</InfoField>
               <InfoField label="Jenis">{pengajuan.jenis}</InfoField>
-              <InfoField label="Status">
-                <StatusBadge status={pengajuan.status} />
-              </InfoField>
               <InfoField label="Tanggal Evaluasi">
                 {pengajuan.tanggalEvaluasi
                   ? formatDateId(pengajuan.tanggalEvaluasi)
@@ -181,7 +178,11 @@ export function DetailPengajuanEvaluasi() {
                 </InfoField>
               )}
             </div>
-
+            <PengajuanEvaluasiStatusHeader
+              status={pengajuan.status}
+              statusLabel={pengajuan.statusLabel ?? pengajuan.status}
+              role="PJ_EVALUATOR"
+            />
             {isVerified && (
               <InfoCard
                 variant="success"
@@ -208,10 +209,10 @@ export function DetailPengajuanEvaluasi() {
                 id: sop.sopDetailId,
                 nama: sop.nama,
                 nomor: sop.nomor,
-                status:
-                  sop.hasil === "SESUAI"
-                    ? "SIAP_DIVERIFIKASI"
-                    : "REVISI_DARI_TIM_EVALUASI",
+                statusDokumen: sop.status,
+                statusDokumenLabel: sop.statusLabel ?? sop.status,
+                hasilEvaluasi: sop.hasil,
+                hasilEvaluasiLabel: sop.hasilLabel,
               }))}
               selectedId={effectiveSopDetailId}
               onSelect={setSelectedSopId}

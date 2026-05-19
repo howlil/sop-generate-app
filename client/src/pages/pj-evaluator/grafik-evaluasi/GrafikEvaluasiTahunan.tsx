@@ -7,14 +7,13 @@ import {
   Target,
   ArrowUpRight,
   ArrowDownRight,
-  Search,
   ChevronDown,
 } from 'lucide-react'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { Input } from '@/components/ui/input'
 import { GrafikEvaluasiTahunPicker } from '@/pages/pj-evaluator/grafik-evaluasi/grafik-evaluasi-tahun-picker'
 import { useEvaluasiGrafikTahunan } from "@/api/evaluasi";
 import type { EvaluasiGrafikTahunanQueryParams } from '@/types/dto/evaluasi.dto'
+import { NILAI_OPD_SKOR_MAX } from '@/types/dto/evaluasi.dto'
 
 interface DetailOpdPerTahun {
   tahun: string
@@ -32,7 +31,9 @@ function delta(a: number, b: number): number | null {
 }
 
 function formatSkor(skor: number): string {
-  return skor > 0 ? skor.toFixed(1) : '—'
+  if (skor <= 0) return '—'
+  const clamped = Math.min(skor, NILAI_OPD_SKOR_MAX)
+  return `${clamped.toFixed(1)}/${NILAI_OPD_SKOR_MAX}`
 }
 
 function skorColor(skor: number): string {
@@ -64,7 +65,6 @@ export function GrafikEvaluasiTahunan() {
   const [filterTahun, setFilterTahun] = useState<string>('')
   const [selectedYear, setSelectedYear] = useState(() => clampYear(new Date().getFullYear()))
   const [pickerOpen, setPickerOpen] = useState(false)
-  const [searchOPD, setSearchOPD] = useState('')
   const [rankBy, setRankBy] = useState<'skor' | 'evaluasi'>('skor')
   const [showAll, setShowAll] = useState(false)
 
@@ -151,28 +151,25 @@ export function GrafikEvaluasiTahunan() {
       return { tahun: filterTahun, opdId: opd.id, opdNama: opd.nama, jumlahEvaluasi: 0, rataRataSkor: 0 }
     })
 
-    let filtered = allRows
-    if (searchOPD) {
-      const q = searchOPD.toLowerCase()
-      filtered = filtered.filter((r) => r.opdNama.toLowerCase().includes(q))
-    }
-
+    const sorted = [...allRows]
     if (rankBy === 'skor') {
-      filtered.sort((a, b) => b.rataRataSkor - a.rataRataSkor || b.jumlahEvaluasi - a.jumlahEvaluasi)
+      sorted.sort((a, b) => b.rataRataSkor - a.rataRataSkor || b.jumlahEvaluasi - a.jumlahEvaluasi)
     } else {
-      filtered.sort((a, b) => b.jumlahEvaluasi - a.jumlahEvaluasi || b.rataRataSkor - a.rataRataSkor)
+      sorted.sort((a, b) => b.jumlahEvaluasi - a.jumlahEvaluasi || b.rataRataSkor - a.rataRataSkor)
     }
 
-    return filtered
-  }, [filterTahun, detailByTahun, opdList, searchOPD, rankBy])
+    return sorted
+  }, [filterTahun, detailByTahun, opdList, rankBy])
 
-  const maxRankedValue = useMemo(
-    () => Math.max(1, ...rankedData.map((r) => (rankBy === 'skor' ? r.rataRataSkor : r.jumlahEvaluasi))),
-    [rankedData, rankBy],
-  )
+  const maxRankedValue = useMemo(() => {
+    if (rankBy === 'evaluasi') {
+      return Math.max(1, ...rankedData.map((r) => r.jumlahEvaluasi))
+    }
+    return NILAI_OPD_SKOR_MAX
+  }, [rankedData, rankBy])
 
-  const displayedData = showAll || searchOPD ? rankedData : rankedData.slice(0, INITIAL_SHOW)
-  const hasMore = rankedData.length > INITIAL_SHOW && !searchOPD
+  const displayedData = showAll ? rankedData : rankedData.slice(0, INITIAL_SHOW)
+  const hasMore = rankedData.length > INITIAL_SHOW
 
   /* analitik */
   const analytics = useMemo(() => {
@@ -203,7 +200,7 @@ export function GrafikEvaluasiTahunan() {
     <ListPageLayout
       breadcrumb={[{ label: 'Grafik Evaluasi Tahunan' }]}
       title="Grafik Evaluasi Tahunan"
-      description="Analitik penilaian OPD per tahun. Satu OPD dapat dievaluasi lebih dari sekali dalam setahun."
+      description={`Analitik penilaian OPD per tahun (skor ${NILAI_OPD_SKOR_MAX} poin). Satu OPD dapat dievaluasi lebih dari sekali dalam setahun.`}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -255,6 +252,7 @@ export function GrafikEvaluasiTahunan() {
               <KPICard
                 label="Rata-rata Skor"
                 value={currentYear?.rataRataNilai ?? 0}
+                suffix={`/ ${NILAI_OPD_SKOR_MAX}`}
                 isDecimal
                 delta={deltaSkor}
                 icon={<Target className="w-4 h-4 text-emerald-600" />}
@@ -300,7 +298,7 @@ export function GrafikEvaluasiTahunan() {
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium text-gray-900 truncate">{analytics.topOPD.opdNama}</span>
                         <span className={`text-sm font-bold tabular-nums ${skorColor(analytics.topOPD.rataRataSkor)}`}>
-                          {analytics.topOPD.rataRataSkor.toFixed(1)}
+                          {formatSkor(analytics.topOPD.rataRataSkor)}
                         </span>
                       </div>
                     </div>
@@ -325,33 +323,21 @@ export function GrafikEvaluasiTahunan() {
                   <h2 className="text-sm font-semibold text-gray-900">
                     Peringkat OPD — {filterTahun}
                   </h2>
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
-                      <Input
-                        placeholder="Cari OPD..."
-                        value={searchOPD}
-                        onChange={(e) => setSearchOPD(e.target.value)}
-                        className="h-7 text-xs pl-7 w-36"
-                        aria-label="Cari OPD"
-                      />
-                    </div>
-                    <div className="flex items-center rounded-md border border-gray-200 overflow-hidden">
-                      {(['skor', 'evaluasi'] as const).map((key) => (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setRankBy(key)}
-                          className={`px-2.5 py-1 text-[11px] font-medium transition-all ${
-                            rankBy === key
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-500 hover:bg-gray-50'
-                          }`}
-                        >
-                          {key === 'skor' ? 'Skor' : 'Jumlah'}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="flex items-center rounded-md border border-gray-200 overflow-hidden">
+                    {(['skor', 'evaluasi'] as const).map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setRankBy(key)}
+                        className={`px-2.5 py-1 text-[11px] font-medium transition-all ${
+                          rankBy === key
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {key === 'skor' ? 'Skor' : 'Jumlah'}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -404,7 +390,7 @@ export function GrafikEvaluasiTahunan() {
                           <span className="w-8 text-right text-[10px] text-gray-400 tabular-nums shrink-0">
                             {rankBy === 'skor'
                               ? (row.jumlahEvaluasi > 0 ? `${row.jumlahEvaluasi}×` : '')
-                              : (row.rataRataSkor > 0 ? row.rataRataSkor.toFixed(0) : '')
+                              : (row.rataRataSkor > 0 ? formatSkor(row.rataRataSkor) : '')
                             }
                           </span>
                         </div>

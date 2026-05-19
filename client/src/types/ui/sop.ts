@@ -1,5 +1,6 @@
 export interface SOPDetailMetadata {
   id?: string;
+  sopId?: string;
   judul?: string;
   nomor?: string;
   nomorSOP?: string;
@@ -14,6 +15,8 @@ export interface SOPDetailMetadata {
   /** ISO 8601 dari API (`tanggalPembuatan` DetailSOP). */
   tanggalPembuatan?: string;
   version?: number;
+  revisiDariDetailSopId?: string | null;
+  revisiDariVersi?: number | null;
   name?: string;
   number?: string;
   institutionLogo?: string;

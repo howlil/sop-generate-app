@@ -22,13 +22,19 @@ export type EvaluasiWorkspaceDaftarRowRepo = {
   readonly judul: string;
   readonly nomorSOP: string;
   readonly statusDetail: StatusSOP;
+  readonly versi: number;
+  readonly detailUpdatedAt: Date;
 };
 
 export type EvaluasiWorkspaceNilaiRepo = {
   readonly detailSopId: string;
   readonly hasil: string | null;
   readonly catatan: string | null;
+  readonly statusTindakLanjut: string | null;
   readonly version: number;
+  readonly ditindaklanjutiPada: Date | null;
+  readonly versi: number;
+  readonly detailUpdatedAt: Date;
 };
 
 export type EvaluasiWorkspacePengajuanAktifRepo = {
@@ -45,12 +51,16 @@ export type EvaluasiWorkspaceRiwayatOpdRepoRow = {
   readonly evaluatorNama: string;
 };
 
-export type EvaluasiWorkspaceRiwayatNilaiRepoRow = {
+export type EvaluasiWorkspaceLogNilaiRepoRow = {
   readonly pengajuanEvaluasiId: string;
-  readonly tanggalDiselesaikan: Date | null;
+  readonly detailSopId: string;
+  readonly penggunaId: string;
   readonly evaluatorNama: string;
-  readonly hasil: string;
-  readonly catatan: string | null;
+  readonly hasilSebelum: string | null;
+  readonly hasilSesudah: string | null;
+  readonly catatanSebelum: string | null;
+  readonly catatanSesudah: string | null;
+  readonly createdAt: Date;
 };
 
 /** Bundle pengajuan + nilai beserta detail SOP untuk workspace per pengajuan. */
@@ -93,6 +103,8 @@ export class EvaluasiWorkspaceRepository {
             detailSopId: true,
             nomorSOP: true,
             status: true,
+            versi: true,
+            updatedAt: true,
           },
         },
       },
@@ -113,6 +125,8 @@ export class EvaluasiWorkspaceRepository {
         judul: row.judul,
         nomorSOP: d.nomorSOP,
         statusDetail: d.status,
+        versi: d.versi,
+        detailUpdatedAt: d.updatedAt,
       });
     }
     return out;
@@ -120,7 +134,7 @@ export class EvaluasiWorkspaceRepository {
 
   /**
    * Muat satu pengajuan beserta nilai dan metadata DetailSOP/SOP untuk daftar workspace.
-   * Daftar SOP = persis anggota batch (`NilaiEvaluasi` pengajuan ini).
+   * Daftar SOP = persis anggota pengajuan evaluasi (`NilaiEvaluasi` pengajuan ini).
    */
   async findPengajuanBundleForWorkspace(
     pengajuanEvaluasiId: string,
@@ -137,11 +151,15 @@ export class EvaluasiWorkspaceRepository {
             detailSopId: true,
             hasil: true,
             catatan: true,
+            statusTindakLanjut: true,
             version: true,
+            ditindaklanjutiPada: true,
             detailSop: {
               select: {
                 status: true,
                 nomorSOP: true,
+                versi: true,
+                updatedAt: true,
                 sop: { select: { sopId: true, judul: true } },
               },
             },
@@ -156,7 +174,14 @@ export class EvaluasiWorkspaceRepository {
       detailSopId: n.detailSopId,
       hasil: n.hasil === null || n.hasil === undefined ? null : String(n.hasil),
       catatan: n.catatan ?? null,
+      statusTindakLanjut:
+        n.statusTindakLanjut === null || n.statusTindakLanjut === undefined
+          ? null
+          : String(n.statusTindakLanjut),
       version: n.version,
+      ditindaklanjutiPada: n.ditindaklanjutiPada,
+      versi: n.detailSop.versi,
+      detailUpdatedAt: n.detailSop.updatedAt,
     }));
     const daftarRows: EvaluasiWorkspaceDaftarRowRepo[] = row.nilaiEvaluasi.map((n) => ({
       detailSopId: n.detailSopId,
@@ -164,6 +189,8 @@ export class EvaluasiWorkspaceRepository {
       judul: n.detailSop.sop.judul,
       nomorSOP: n.detailSop.nomorSOP,
       statusDetail: n.detailSop.status,
+      versi: n.detailSop.versi,
+      detailUpdatedAt: n.detailSop.updatedAt,
     }));
     daftarRows.sort((a, b) => a.judul.localeCompare(b.judul, 'id'));
     return {
@@ -194,7 +221,12 @@ export class EvaluasiWorkspaceRepository {
             detailSopId: true,
             hasil: true,
             catatan: true,
+            statusTindakLanjut: true,
             version: true,
+            ditindaklanjutiPada: true,
+            detailSop: {
+              select: { versi: true, updatedAt: true },
+            },
           },
         },
       },
@@ -210,7 +242,14 @@ export class EvaluasiWorkspaceRepository {
         detailSopId: n.detailSopId,
         hasil: n.hasil === null || n.hasil === undefined ? null : String(n.hasil),
         catatan: n.catatan ?? null,
+        statusTindakLanjut:
+          n.statusTindakLanjut === null || n.statusTindakLanjut === undefined
+            ? null
+            : String(n.statusTindakLanjut),
         version: n.version,
+        ditindaklanjutiPada: n.ditindaklanjutiPada,
+        versi: n.detailSop.versi,
+        detailUpdatedAt: n.detailSop.updatedAt,
       })),
     };
   }
@@ -238,43 +277,39 @@ export class EvaluasiWorkspaceRepository {
     }));
   }
 
-  async findRiwayatNilaiUntukDetail(
+  /** Log penilaian per DetailSOP dalam satu pengajuan (untuk workspace aktif). */
+  async findLogNilaiUntukDetailWorkspace(
+    pengajuanEvaluasiId: string,
     detailSopId: string,
     limit: number,
-  ): Promise<EvaluasiWorkspaceRiwayatNilaiRepoRow[]> {
-    const rows = await this.prisma.pengajuanEvaluasi.findMany({
-      where: {
-        status: StatusPengajuanEvaluasi.SELESAI,
-        nilaiEvaluasi: { some: { detailSopId } },
-      },
-      orderBy: [{ tanggalDiselesaikan: 'desc' }, { updatedAt: 'desc' }],
+  ): Promise<EvaluasiWorkspaceLogNilaiRepoRow[]> {
+    const rows = await this.prisma.logNilaiEvaluasi.findMany({
+      where: { pengajuanEvaluasiId, detailSopId },
+      orderBy: { createdAt: 'desc' },
       take: limit,
       select: {
         pengajuanEvaluasiId: true,
-        tanggalDiselesaikan: true,
-        diselesaikanOleh: { select: { nama: true } },
-        nilaiEvaluasi: {
-          where: { detailSopId },
-          take: 1,
-          select: { hasil: true, catatan: true },
-        },
+        detailSopId: true,
+        penggunaId: true,
+        createdAt: true,
+        hasilSebelum: true,
+        hasilSesudah: true,
+        catatanSebelum: true,
+        catatanSesudah: true,
+        pengguna: { select: { nama: true } },
       },
     });
-    const out: EvaluasiWorkspaceRiwayatNilaiRepoRow[] = [];
-    for (const r of rows) {
-      const n = r.nilaiEvaluasi[0];
-      if (n === undefined || n.hasil === null || n.hasil === undefined) {
-        continue;
-      }
-      out.push({
-        pengajuanEvaluasiId: r.pengajuanEvaluasiId,
-        tanggalDiselesaikan: r.tanggalDiselesaikan,
-        evaluatorNama: r.diselesaikanOleh?.nama ?? '—',
-        hasil: String(n.hasil),
-        catatan: n.catatan ?? null,
-      });
-    }
-    return out;
+    return rows.map((log) => ({
+      pengajuanEvaluasiId: log.pengajuanEvaluasiId,
+      detailSopId: log.detailSopId,
+      penggunaId: log.penggunaId,
+      evaluatorNama: log.pengguna.nama,
+      hasilSebelum: log.hasilSebelum === null ? null : String(log.hasilSebelum),
+      hasilSesudah: log.hasilSesudah === null ? null : String(log.hasilSesudah),
+      catatanSebelum: log.catatanSebelum,
+      catatanSesudah: log.catatanSesudah,
+      createdAt: log.createdAt,
+    }));
   }
 
   async detailMilikiOpd(detailSopId: string, opdId: string): Promise<boolean> {
@@ -285,7 +320,7 @@ export class EvaluasiWorkspaceRepository {
     return row !== null;
   }
 
-  async evaluatorTerakhirBatch(detailSopIds: string[]): Promise<Map<string, { nama: string; pada: string }>> {
+  async evaluatorTerakhirUntukDetailSop(detailSopIds: string[]): Promise<Map<string, { nama: string; pada: string }>> {
     const map = new Map<string, { nama: string; pada: string }>();
     if (detailSopIds.length === 0) {
       return map;

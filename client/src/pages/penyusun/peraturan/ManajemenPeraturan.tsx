@@ -10,6 +10,9 @@ import { usePeraturan } from "@/api/peraturan";
 import { useAuthStore } from '@/stores/authStore'
 import { useToast } from "@/hooks/useToast"
 import { PeraturanTableTab } from './components/PeraturanTableTab'
+import { hasRequiredStringFields } from '@/lib/forms/validation'
+
+const REQUIRED_PERATURAN_FIELDS = ['peraturan', 'nomor', 'tahun', 'tentang'] as const
 
 export function ManajemenPeraturan() {
   const { showToast } = useToast()
@@ -34,6 +37,10 @@ export function ManajemenPeraturan() {
     tahun: '',
     tentang: '',
   })
+  const isPeraturanFormValid = hasRequiredStringFields(
+    peraturanFormData,
+    REQUIRED_PERATURAN_FIELDS,
+  )
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: string; id: string } | null>(null)
 
   const filteredPeraturan = useMemo(() => {
@@ -71,10 +78,7 @@ export function ManajemenPeraturan() {
 
   const handleSavePeraturan = async () => {
     if (
-      !peraturanFormData.peraturan ||
-      !peraturanFormData.nomor ||
-      !peraturanFormData.tahun ||
-      !peraturanFormData.tentang
+      !isPeraturanFormValid
     ) {
       showToast('Semua field wajib diisi', 'error')
       return
@@ -179,10 +183,7 @@ export function ManajemenPeraturan() {
         onSavePeraturan={handleSavePeraturan}
         onDeletePeraturan={handleDeletePeraturan}
         confirmDisabled={
-          !peraturanFormData.peraturan ||
-          !peraturanFormData.nomor ||
-          !peraturanFormData.tahun ||
-          !peraturanFormData.tentang
+          !isPeraturanFormValid
         }
       />
       )}

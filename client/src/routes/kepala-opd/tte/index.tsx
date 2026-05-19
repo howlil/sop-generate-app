@@ -1,14 +1,8 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { TTDElektronikPage } from "@/pages/pj-evaluator/tte/TTDElektronikPage";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { ROUTES } from "@/utils/constants";
 
-export const Route = createFileRoute('/kepala-opd/tte/')({
-  component: KepalaOpdTTEPage,
-})
-
-function KepalaOpdTTEPage() {
-  return (
-    <TTDElektronikPage
-      role="kepala-opd"
-    />
-  )
-}
+export const Route = createFileRoute("/kepala-opd/tte/")({
+  beforeLoad: () => {
+    throw redirect({ to: ROUTES.KEPALA_OPD.ME });
+  },
+});

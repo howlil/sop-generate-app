@@ -23,6 +23,40 @@ import { EvaluasiWorkspaceService } from './evaluasi-workspace.service';
 export class EvaluasiWorkspaceController {
   constructor(private readonly evaluasiWorkspaceService: EvaluasiWorkspaceService) {}
 
+  @Get('opd-saya')
+  @Roles(PeranPengguna.PJ_PENYUSUN, PeranPengguna.KEPALA_OPD)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Workspace evaluasi OPD pengguna (tanpa param opdId)',
+    description:
+      'OPD diambil dari akun JWT. Dipakai dialog buka pengajuan PJ Penyusun dan layar terkait Kepala OPD.',
+  })
+  @ApiQuery({ name: 'detailSopId', required: false, format: 'uuid' })
+  @ApiQuery({
+    name: 'expand',
+    required: false,
+    description: 'Contoh: `preview` (butuh detailSopId)',
+  })
+  @ApiQuery({
+    name: 'riwayatLimit',
+    required: false,
+    description: '1–50, default 30',
+    schema: { default: 30, minimum: 1, maximum: 50 },
+  })
+  @ApiResponse({ status: 200, type: EvaluasiWorkspaceOpdResponseDto })
+  @ApiForbiddenResponse({ description: 'Bukan PJ_PENYUSUN/KEPALA_OPD atau OPD tidak ditemukan' })
+  async getWorkspaceOpdSaya(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Query() query: EvaluasiWorkspaceQueryDto,
+  ): Promise<ApiSuccessResponse<EvaluasiWorkspaceOpdResponseDto>> {
+    const data = await this.evaluasiWorkspaceService.getWorkspaceOpdSaya(req.user, query);
+    return {
+      message: 'Data workspace evaluasi berhasil diambil',
+      success: true,
+      data,
+    };
+  }
+
   @Get('opd/:opdId')
   @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR, PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
@@ -64,7 +98,7 @@ export class EvaluasiWorkspaceController {
   @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Workspace evaluasi untuk satu pengajuan (daftar SOP = anggota batch)',
+    summary: 'Workspace evaluasi untuk satu pengajuan (daftar SOP = anggota pengajuan evaluasi)',
     description:
       'Sama bentuk respons dengan GET `.../workspace/opd/:opdId`, tetapi `daftarSop` dan `pengajuanAktif` selalu terikat pada `pengajuanEvaluasiId` yang diminta.',
   })

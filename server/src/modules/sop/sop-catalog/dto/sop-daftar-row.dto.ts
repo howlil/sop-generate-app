@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { SopDaftarVersiSliceDto } from './sop-daftar-versi-slice.dto';
 import { TerakhirDieditDto } from './terakhir-diedit.dto';
 
 /** Satu baris daftar SOP (header + versi DetailSOP terbaru) untuk UI Manajemen SOP penyusun. */
@@ -21,6 +22,13 @@ export class SopDaftarRowDto {
   @ApiPropertyOptional({ description: 'Nomor SOP pada versi terakhir', nullable: true })
   readonly nomorSop!: string | null;
 
+  @ApiPropertyOptional({
+    description: 'Nomor versi DetailSOP terbaru',
+    nullable: true,
+    example: 2,
+  })
+  readonly versi!: number | null;
+
   @ApiPropertyOptional({ description: 'Nama pembuat versi terakhir', nullable: true })
   readonly pembuat!: string | null;
 
@@ -29,6 +37,9 @@ export class SopDaftarRowDto {
 
   @ApiProperty({ description: 'Status DetailSOP versi terakhir' })
   readonly status!: string;
+
+  @ApiProperty({ description: 'Label UI status dokumen (Bahasa Indonesia)' })
+  readonly statusLabel!: string;
 
   @ApiPropertyOptional({
     description: 'ID peraturan pertama (dasar hukum) untuk filter UI',
@@ -41,4 +52,16 @@ export class SopDaftarRowDto {
     nullable: true,
   })
   readonly terakhirDiperbarui!: string | null;
+
+  @ApiPropertyOptional({
+    type: () => SopDaftarVersiSliceDto,
+    nullable: true,
+    description: 'Versi yang sedang BERLAKU (resmi), bila berbeda dari versi terbaru',
+  })
+  readonly versiBerlaku!: SopDaftarVersiSliceDto | null;
+
+  @ApiProperty({
+    description: 'Tombol buat versi baru dari SOP BERLAKU dapat dipakai',
+  })
+  readonly canBuatVersiBaru!: boolean;
 }

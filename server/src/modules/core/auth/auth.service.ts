@@ -3,7 +3,10 @@ import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { AuthRepository, type PenggunaAuthRecord } from './auth.repository';
+import type { ChangePasswordDto } from './change-password.dto';
 import type { LoginDto } from './login.dto';
+
+const BCRYPT_SALT_ROUNDS = 10;
 import {
   resolveAccessTokenExpiry,
   type JwtAccessPayload,
@@ -68,6 +71,22 @@ export class AuthService {
   /**
    * Menerbitkan ulang JWT akses dengan klaim yang sama (token masih valid).
    */
+  /**
+   * Ubah kata sandi pengguna yang sedang login; wajib kata sandi lama valid.
+   */
+  async changePassword(penggunaId: string, dto: ChangePasswordDto): Promise<void> {
+    const row = await this.authRepository.findActivePenggunaById(penggunaId);
+    if (row === null) {
+      throw new NotFoundException('Pengguna tidak ditemukan');
+    }
+    const isMatch = await bcrypt.compare(dto.kataSandiLama, row.kataSandi);
+    if (!isMatch) {
+      throw new UnauthorizedException('Kata sandi lama tidak valid');
+    }
+    const kataSandiHash = await bcrypt.hash(dto.kataSandiBaru, BCRYPT_SALT_ROUNDS);
+    await this.authRepository.updateKataSandi(penggunaId, kataSandiHash);
+  }
+
   async refreshAccessToken(payload: JwtAccessPayload): Promise<{
     accessToken: string;
     cookieMaxAgeMs: number;
@@ -86,6 +105,7 @@ export class AuthService {
   }
 
   private mapToPublicPengguna(row: PenggunaAuthRecord): PublicPengguna {
+    const configured = row.ttePinHash !== null && row.ttePinSetAt !== null;
     return {
       penggunaId: row.penggunaId,
       email: row.email,
@@ -96,6 +116,12 @@ export class AuthService {
       jabatan: row.jabatan,
       pangkat: row.pangkat,
       nohp: row.nohp,
+      tte: {
+        configured,
+        ...(configured && row.ttePinSetAt !== null
+          ? { pinSetAt: row.ttePinSetAt.toISOString() }
+          : {}),
+      },
     };
   }
 }

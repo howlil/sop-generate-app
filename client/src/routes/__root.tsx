@@ -36,13 +36,9 @@ export const Route = createRootRoute({
     }
 
     await ensureAuthHydrated();
+    await syncAuthFromCookie();
 
-    let store = useAuthStore.getState();
-    if (!store.user) {
-      await syncAuthFromCookie();
-      store = useAuthStore.getState();
-    }
-
+    const store = useAuthStore.getState();
     if (!store.user) {
       throw redirect({
         to: ROUTES.AUTH.LOGIN,

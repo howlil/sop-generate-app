@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { displayStatusPengajuan } from '../../common/status/status-display';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JenisDokumenTte, Prisma } from '../../generated/prisma';
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
@@ -45,7 +46,7 @@ export type PengajuanEvaluasiDetailRow = Prisma.PengajuanEvaluasiGetPayload<{
 export class PengajuanEvaluasiRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Menjalankan transaksi Prisma (alur create batch di service). */
+  /** Menjalankan transaksi Prisma (alur create pengajuan evaluasi di service). */
   async runTransaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
     return this.prisma.$transaction(fn);
   }
@@ -140,6 +141,7 @@ export class PengajuanEvaluasiRepository {
       opdNama: string;
       jenis: string;
       status: string;
+      statusLabel: string;
       tanggalEvaluasi?: string;
       createdAt: string;
       nilaiOPD?: number;
@@ -184,17 +186,21 @@ export class PengajuanEvaluasiRepository {
     ]);
     const totalMap = new Map(totals.map((t) => [t.pengajuanEvaluasiId, t._count._all]));
     const filledMap = new Map(filled.map((t) => [t.pengajuanEvaluasiId, t._count._all]));
-    return rows.map((r) => ({
+    return rows.map((r) => {
+      const statusDisplay = displayStatusPengajuan(r.status);
+      return {
       pengajuanEvaluasiId: r.pengajuanEvaluasiId,
       opdId: r.opdId,
       opdNama: r.opd.nama,
       jenis: String(r.jenis),
-      status: String(r.status),
+      status: statusDisplay.value,
+      statusLabel: statusDisplay.label,
       tanggalEvaluasi: r.tanggalEvaluasi?.toISOString(),
       createdAt: r.createdAt.toISOString(),
       nilaiOPD: r.nilaiOPD ?? undefined,
       jumlahSop: totalMap.get(r.pengajuanEvaluasiId) ?? 0,
       jumlahSudahDinilai: filledMap.get(r.pengajuanEvaluasiId) ?? 0,
-    }));
+    };
+    });
   }
 }

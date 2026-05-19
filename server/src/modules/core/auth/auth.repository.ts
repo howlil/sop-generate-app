@@ -32,4 +32,12 @@ export class AuthRepository {
       },
     });
   }
+
+  /** Memperbarui hash kata sandi pengguna aktif. */
+  async updateKataSandi(penggunaId: string, kataSandiHash: string): Promise<void> {
+    await this.prisma.pengguna.update({
+      where: { penggunaId },
+      data: { kataSandi: kataSandiHash },
+    });
+  }
 }

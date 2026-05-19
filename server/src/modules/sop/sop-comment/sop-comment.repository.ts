@@ -46,14 +46,14 @@ export class SopCommentRepository {
   }
 
   async findKomentarById(komentarId: string): Promise<
-    | (KomentarWithUser & { detailSop: { sop: { opdId: string } } })
+    | (KomentarWithUser & { detailSop: { status: import('../../../generated/prisma').StatusSOP; sop: { opdId: string } } })
     | null
   > {
     return this.prisma.komentar.findUnique({
       where: { komentarId },
       include: {
         user: { select: { penggunaId: true, nama: true, email: true, peran: true } },
-        detailSop: { select: { sop: { select: { opdId: true } } } },
+        detailSop: { select: { status: true, sop: { select: { opdId: true } } } },
       },
     });
   }

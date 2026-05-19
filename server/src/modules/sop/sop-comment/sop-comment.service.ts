@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import { PeranPengguna, StatusKomentar } from '../../../generated/prisma';
+import { assertDetailSopEditable } from '../../../common/status/sop-editable.util';
 import type { KomentarResponseDto } from './dto/komentar-response.dto';
 import type { KomentarWithUser } from './sop-comment.repository';
 import { SopCommentRepository } from './sop-comment.repository';
@@ -91,6 +92,7 @@ export class SopCommentService {
       throw new ForbiddenException('Hanya Penyusun OPD yang dapat menutup komentar');
     }
     await this.assertOpdScope(user, existing.detailSop.sop.opdId);
+    assertDetailSopEditable(existing.detailSop.status);
     const updated = await this.sopCommentRepository.resolveKomentarWithLog({
       komentarId,
       detailSopId: existing.detailSopId,

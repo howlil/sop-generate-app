@@ -17,11 +17,42 @@ export class EvaluasiWorkspaceDaftarSopRowDto {
   @ApiProperty({ description: 'Status DetailSOP terbaru (enum StatusSOP)' })
   readonly statusDetail!: string;
 
+  @ApiProperty()
+  readonly statusDetailLabel!: string;
+
+  @ApiProperty()
+  readonly hasilEvaluasi!: string;
+
+  @ApiProperty()
+  readonly hasilEvaluasiLabel!: string;
+
   @ApiProperty({
     enum: ['perlu_evaluasi', 'sedang_dievaluasi', 'selesai_pengajuan_ini'],
     description: 'Normalisasi alur untuk badge/filter UI',
   })
   readonly tampilanAlur!: 'perlu_evaluasi' | 'sedang_dievaluasi' | 'selesai_pengajuan_ini';
+
+  @ApiProperty()
+  readonly tampilanAlurLabel!: string;
+
+  @ApiPropertyOptional({ enum: ['TERBUKA', 'SELESAI'], nullable: true })
+  readonly statusTindakLanjut?: string | null;
+
+  @ApiPropertyOptional({ nullable: true })
+  readonly statusTindakLanjutLabel?: string | null;
+
+  @ApiProperty({ description: 'Versi DetailSOP saat ini' })
+  readonly versi!: number;
+
+  @ApiProperty({ format: 'date-time', description: 'Waktu terakhir dokumen diubah' })
+  readonly detailUpdatedAt!: string;
+
+  @ApiPropertyOptional({
+    format: 'date-time',
+    nullable: true,
+    description: 'Waktu penyusun menandai tindak lanjut umpan balik selesai',
+  })
+  readonly ditindaklanjutiPada!: string | null;
 
   @ApiPropertyOptional({
     nullable: true,

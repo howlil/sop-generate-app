@@ -2,7 +2,7 @@ import { Eye, FileSignature } from "lucide-react";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IconActionButton } from "@/components/ui/icon-action-button";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { PengajuanStatusBadge } from "@/components/status/pengajuan-status-badge";
 import { Table } from "@/components/ui/data-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useKepalaOpdPengajuan } from "@/api/evaluasi";
@@ -68,7 +68,11 @@ export function PengajuanSOPPage() {
                   <Table.BodyRow key={item.id}>
                     <Table.Td className="text-gray-700">{item.jenis}</Table.Td>
                     <Table.Td>
-                      <StatusBadge status={item.status} />
+                      <PengajuanStatusBadge
+                        status={item.status}
+                        label={item.statusLabel ?? item.status}
+                        showDomain={false}
+                      />
                     </Table.Td>
                     <Table.Td className="font-mono text-[11px] text-gray-700">
                       {item.nomorBA?.trim() || "—"}

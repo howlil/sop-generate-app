@@ -192,6 +192,7 @@ exports.Prisma.DetailSOPScalarFieldEnum = {
   namaLembaga: 'namaLembaga',
   dibuatOlehId: 'dibuatOlehId',
   terakhirDieditOlehId: 'terakhirDieditOlehId',
+  revisiDariDetailSopId: 'revisiDariDetailSopId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -329,6 +330,9 @@ exports.Prisma.NilaiEvaluasiScalarFieldEnum = {
   detailSopId: 'detailSopId',
   hasil: 'hasil',
   catatan: 'catatan',
+  statusTindakLanjut: 'statusTindakLanjut',
+  ditindaklanjutiPada: 'ditindaklanjutiPada',
+  ditindaklanjutiOlehId: 'ditindaklanjutiOlehId',
   version: 'version',
   dinilaiOlehId: 'dinilaiOlehId',
   createdAt: 'createdAt',
@@ -435,7 +439,8 @@ exports.Prisma.DetailSOPOrderByRelevanceFieldEnum = {
   nomorSOP: 'nomorSOP',
   namaLembaga: 'namaLembaga',
   dibuatOlehId: 'dibuatOlehId',
-  terakhirDieditOlehId: 'terakhirDieditOlehId'
+  terakhirDieditOlehId: 'terakhirDieditOlehId',
+  revisiDariDetailSopId: 'revisiDariDetailSopId'
 };
 
 exports.Prisma.LampiranPeringatanOrderByRelevanceFieldEnum = {
@@ -528,6 +533,7 @@ exports.Prisma.NilaiEvaluasiOrderByRelevanceFieldEnum = {
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   detailSopId: 'detailSopId',
   catatan: 'catatan',
+  ditindaklanjutiOlehId: 'ditindaklanjutiOlehId',
   dinilaiOlehId: 'dinilaiOlehId'
 };
 

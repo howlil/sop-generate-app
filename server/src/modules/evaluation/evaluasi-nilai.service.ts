@@ -1,16 +1,23 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../common';
 import {
+  displayHasilEvaluasi,
+  displayStatusTindakLanjut,
+} from '../../common/status/status-display';
+import {
   HasilEvaluasi,
   JenisPengajuanEvaluasi,
   NilaiEvaluasi,
   PengajuanEvaluasi,
+  PeranPengguna,
   Prisma,
+  StatusKomentar,
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
@@ -20,18 +27,19 @@ import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
 import type { PengajuanEvaluasiSelesaiResponseDto } from './dto/pengajuan-evaluasi-selesai-response.dto';
 import { SelesaiEvaluasiDto } from './dto/selesai-evaluasi.dto';
 import { EvaluasiNilaiRepository } from './evaluasi-nilai.repository';
-import { SopCommentRepository } from '../sop/sop-comment/sop-comment.repository';
+import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 
 /**
  * Kebijakan mutasi evaluasi:
- * - `isiNilai`: pengajuan harus `SEDANG_DIEVALUASI`; `PERLU_PERBAIKAN` wajib `catatan` non-kosong; catatan disalin ke `Komentar`; `DetailSOP` → `REVISI_DARI_EVALUATOR` jika status ∈ `DIAJUKAN_EVALUASI`|`SEDANG_DIEVALUASI`.
- * - `selesai`: setiap baris harus `hasil === SESUAI`; pengajuan TERJADWAL wajib skor `nilaiOPD` 1–5; pengajuan MANDIRI tidak memakai skor OPD (`nilaiOPD` null); pengajuan → `SELESAI_DIEVALUASI`; `DetailSOP` terkait → `SIAP_DIVERIFIKASI`.
+ * - `isiNilai`: pengajuan `SEDANG_DIEVALUASI`; `PERLU_PERBAIKAN` wajib catatan + `statusTindakLanjut` TERBUKA; `DetailSOP` → REVISI.
+ * - `tandaiTindakLanjutSelesai`: penyusun/PJ menandai umpan balik sudah ditindaklanjuti (SELESAI).
+ * - `selesai`: semua baris `SESUAI`; pengajuan evaluasi → SELESAI_DIEVALUASI; dokumen → SIAP_DIVERIFIKASI.
  */
 @Injectable()
 export class EvaluasiNilaiService {
   constructor(
     private readonly evaluasiNilaiRepository: EvaluasiNilaiRepository,
-    private readonly sopCommentRepository: SopCommentRepository,
+    private readonly pengajuanEvaluasiRepository: PengajuanEvaluasiRepository,
   ) {}
 
   /** Menyimpan satu nilai SOP dalam pengajuan aktif dan mencatat `LogNilaiEvaluasi`. */
@@ -53,7 +61,6 @@ export class EvaluasiNilaiService {
         'Catatan wajib diisi jika hasil Perlu Perbaikan',
       );
     }
-
     const barisAkhir = await this.evaluasiNilaiRepository.runTransaction(
       async (tx: Prisma.TransactionClient): Promise<NilaiEvaluasi> => {
         const pengajuan = await tx.pengajuanEvaluasi.findUnique({
@@ -65,9 +72,7 @@ export class EvaluasiNilaiService {
             'Pengajuan evaluasi tidak ditemukan atau tidak aktif untuk diisi nilai',
           );
         }
-        const bolehIsiNilai =
-          pengajuan.status === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI;
-        if (!bolehIsiNilai) {
+        if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
           throw new NotFoundException(
             'Pengajuan evaluasi tidak ditemukan atau tidak aktif untuk diisi nilai',
           );
@@ -103,6 +108,18 @@ export class EvaluasiNilaiService {
             catatanSesudah: catatanNorm,
           },
         });
+        const tindakLanjutData =
+          hasil === HasilEvaluasi.PERLU_PERBAIKAN
+            ? {
+                statusTindakLanjut: StatusKomentar.TERBUKA,
+                ditindaklanjutiPada: null,
+                ditindaklanjutiOlehId: null,
+              }
+            : {
+                statusTindakLanjut: null,
+                ditindaklanjutiPada: null,
+                ditindaklanjutiOlehId: null,
+              };
         const sesudah = await tx.nilaiEvaluasi.update({
           where: {
             pengajuanEvaluasiId_detailSopId: {
@@ -115,14 +132,10 @@ export class EvaluasiNilaiService {
             catatan: catatanNorm,
             version: { increment: 1 },
             dinilaiOlehId: evaluatorId,
+            ...tindakLanjutData,
           },
         });
-        if (hasil === HasilEvaluasi.PERLU_PERBAIKAN && catatanNorm !== null) {
-          await this.sopCommentRepository.createKomentarWithLogTx(tx, {
-            detailSopId,
-            userId: evaluatorId,
-            isi: `[Evaluasi] ${catatanNorm}`,
-          });
+        if (hasil === HasilEvaluasi.PERLU_PERBAIKAN) {
           await tx.detailSOP.updateMany({
             where: {
               detailSopId,
@@ -141,6 +154,102 @@ export class EvaluasiNilaiService {
     return EvaluasiNilaiService.keResponseNilaiDto(barisAkhir);
   }
 
+  /** Penyusun / PJ: tandai catatan evaluasi sudah ditindaklanjuti sebelum kirim ulang. */
+  async tandaiTindakLanjutSelesai(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+    detailSopId: string,
+  ): Promise<NilaiEvaluasiPatchResponseDto> {
+    if (user.peran !== PeranPengguna.PENYUSUN && user.peran !== PeranPengguna.PJ_PENYUSUN) {
+      throw new ForbiddenException(
+        'Hanya penyusun atau PJ Penyusun yang dapat menandai tindak lanjut evaluasi',
+      );
+    }
+    const opdId = await this.pengajuanEvaluasiRepository.findOpdIdPengguna(user.sub);
+    if (opdId === null) {
+      throw new ForbiddenException('OPD pengguna tidak ditemukan');
+    }
+    const barisAkhir = await this.evaluasiNilaiRepository.runTransaction(
+      async (tx: Prisma.TransactionClient): Promise<NilaiEvaluasi> => {
+        const pengajuan = await tx.pengajuanEvaluasi.findUnique({
+          where: { pengajuanEvaluasiId },
+          select: { status: true, opdId: true },
+        });
+        if (pengajuan === null || pengajuan.opdId !== opdId) {
+          throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
+        }
+        if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
+          throw new BadRequestException(
+            'Pengajuan tidak dalam status evaluasi aktif',
+          );
+        }
+        const detail = await tx.detailSOP.findFirst({
+          where: { detailSopId, sop: { opdId } },
+          select: { status: true },
+        });
+        if (detail === null) {
+          throw new NotFoundException('Detail SOP tidak ditemukan');
+        }
+        if (detail.status !== StatusSOP.REVISI_DARI_EVALUATOR) {
+          throw new ConflictException(
+            'Hanya dokumen berstatus revisi dari evaluator yang dapat ditandai tindak lanjut',
+          );
+        }
+        const nilai = await tx.nilaiEvaluasi.findUnique({
+          where: {
+            pengajuanEvaluasiId_detailSopId: {
+              pengajuanEvaluasiId,
+              detailSopId,
+            },
+          },
+        });
+        if (nilai === null) {
+          throw new NotFoundException('Baris nilai evaluasi tidak ditemukan');
+        }
+        if (nilai.hasil !== HasilEvaluasi.PERLU_PERBAIKAN) {
+          throw new BadRequestException(
+            'Hanya umpan balik Perlu perbaikan yang memerlukan tindak lanjut',
+          );
+        }
+        if (nilai.statusTindakLanjut === StatusKomentar.SELESAI) {
+          throw new ConflictException('Umpan balik evaluasi sudah ditandai selesai');
+        }
+        if (nilai.statusTindakLanjut !== StatusKomentar.TERBUKA) {
+          throw new BadRequestException('Tidak ada umpan balik evaluasi yang menunggu tindak lanjut');
+        }
+        const sekarang = new Date();
+        return tx.nilaiEvaluasi.update({
+          where: {
+            pengajuanEvaluasiId_detailSopId: {
+              pengajuanEvaluasiId,
+              detailSopId,
+            },
+          },
+          data: {
+            statusTindakLanjut: StatusKomentar.SELESAI,
+            ditindaklanjutiPada: sekarang,
+            ditindaklanjutiOlehId: user.sub,
+            version: { increment: 1 },
+          },
+        });
+      },
+    );
+    return EvaluasiNilaiService.keResponseNilaiDto(barisAkhir);
+  }
+
+  /** Validasi guard kirim ulang: wajib status tindak lanjut SELESAI bila hasil perlu perbaikan. */
+  async assertBolehKirimUlangSetelahRevisi(detailSopId: string): Promise<void> {
+    const nilai = await this.evaluasiNilaiRepository.findNilaiRevisiAktifForDetail(detailSopId);
+    if (nilai === null) {
+      return;
+    }
+    if (nilai.statusTindakLanjut !== StatusKomentar.SELESAI) {
+      throw new BadRequestException(
+        'Tandai umpan balik evaluasi sebagai selesai sebelum mengirim ulang ke evaluator',
+      );
+    }
+  }
+
   /** Mengakhiri siklus evaluasi pengajuan (menuju PJ) hanya jika tiap dokumen SESUAI dan skor OPD terisi. */
   async selesai(
     user: JwtAccessPayload,
@@ -148,7 +257,6 @@ export class EvaluasiNilaiService {
     dto: SelesaiEvaluasiDto,
   ): Promise<PengajuanEvaluasiSelesaiResponseDto> {
     const evaluatorId = user.sub;
-
     const yangDiupdate = await this.evaluasiNilaiRepository.runTransaction(
       async (
         tx: Prisma.TransactionClient,
@@ -233,6 +341,7 @@ export class EvaluasiNilaiService {
   }
 
   private static keResponseNilaiDto(row: NilaiEvaluasi): NilaiEvaluasiPatchResponseDto {
+    const tindakDisplay = displayStatusTindakLanjut(row.statusTindakLanjut);
     return {
       id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, row.detailSopId),
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
@@ -242,6 +351,9 @@ export class EvaluasiNilaiService {
           ? undefined
           : (row.hasil as HasilEvaluasi),
       catatan: row.catatan ?? null,
+      statusTindakLanjut: row.statusTindakLanjut ?? null,
+      statusTindakLanjutLabel: tindakDisplay?.label ?? null,
+      ditindaklanjutiPada: row.ditindaklanjutiPada?.toISOString() ?? null,
       version: row.version,
       dinilaiOlehId: row.dinilaiOlehId ?? null,
       createdAt: row.createdAt.toISOString(),

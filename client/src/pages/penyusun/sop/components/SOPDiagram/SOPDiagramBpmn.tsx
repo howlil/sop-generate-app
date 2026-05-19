@@ -502,6 +502,22 @@ export function SOPDiagramBpmn({
     return laneLayouts.reduce((sum, l) => sum + l.height, 0)
   }, [laneLayouts])
 
+  const measureBpmnContainerSize = useCallback(() => {
+    const container = document.getElementById('bpmn-container')
+    if (!container) return { width: 0, height: 0 }
+    const containerRect = container.getBoundingClientRect()
+    const w = Math.round(containerRect.width)
+    const h = Math.round(Math.max(containerRect.height, totalDiagramHeight))
+    bpmnBoundsRef.current = {
+      left: 0,
+      top: 0,
+      right: w,
+      bottom: h,
+    }
+    setContainerSize({ width: w, height: h })
+    return { width: w, height: h }
+  }, [totalDiagramHeight])
+
   const charWidth = 9
   const rowHeight = 120
   const safetyFactor = 1
@@ -526,27 +542,25 @@ export function SOPDiagramBpmn({
         if (cancelled) return
         requestAnimationFrame(() => {
           if (cancelled) return
-          const container = document.getElementById('bpmn-container')
-          if (container) {
-            const containerRect = container.getBoundingClientRect()
-            bpmnBoundsRef.current = {
-              left: 0,
-              top: 0,
-              right: containerRect.width,
-              bottom: containerRect.height,
-            }
-            setContainerSize({
-              width: Math.round(containerRect.width),
-              height: Math.round(containerRect.height),
-            })
-          }
+          measureBpmnContainerSize()
           setArrowsReady(true)
         })
       })
     }
     run()
     return () => { cancelled = true }
-  }, [processedSteps.length, laneLayouts.length, diagramWidth, dynamicTitleWidth])
+  }, [processedSteps.length, laneLayouts.length, diagramWidth, dynamicTitleWidth, measureBpmnContainerSize, bpmnConnections.length, bpmnConnectionsMeta.length])
+
+  useEffect(() => {
+    if (processedSteps.length === 0 || laneLayouts.length === 0) return
+    const container = document.getElementById('bpmn-container')
+    if (!container || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => {
+      measureBpmnContainerSize()
+    })
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [processedSteps.length, laneLayouts.length, measureBpmnContainerSize])
 
   const measureLayoutContentOrigin = useCallback((): { x: number; y: number } => {
     const container = document.getElementById('bpmn-container')
@@ -599,7 +613,9 @@ export function SOPDiagramBpmn({
     })
     const filtered = rects.filter((r): r is NonNullable<typeof r> => r != null)
     obstacleRectsRef.current = filtered.length > 0 ? filtered : null
-    setLayoutContentOrigin(measureLayoutContentOrigin())
+    measureBpmnContainerSize()
+    const origin = measureLayoutContentOrigin()
+    setLayoutContentOrigin(origin)
     setLayoutMeasureVersion((v) => v + 1)
   }, [
     pathLayoutSeed,
@@ -608,9 +624,19 @@ export function SOPDiagramBpmn({
     arrowsReady,
     diagramWidth,
     measureLayoutContentOrigin,
+    measureBpmnContainerSize,
+    bpmnConnections.length,
   ])
 
   const arrowRerouteVersion = pathLayoutSeed + layoutMeasureVersion
+  const arrowOverlayWidth = Math.max(containerSize.width, diagramWidth, 1)
+  const arrowOverlayHeight = Math.max(containerSize.height, totalDiagramHeight, 1)
+  const layoutMeasured = layoutMeasureVersion > 0
+  const showArrowLayer =
+    arrowsReady &&
+    layoutMeasured &&
+    bpmnConnections.length > 0 &&
+    (arrowOverlayWidth > 0 || arrowOverlayHeight > 0)
 
   const decisionTextPositions = labelConfig?.positions ?? {}
   const handleDecisionTextDrag = useCallback(
@@ -784,11 +810,11 @@ export function SOPDiagramBpmn({
           </svg>
         )}
 
-        {arrowsReady && containerSize.width > 0 && bpmnConnections.length > 0 && (
+        {showArrowLayer && (
           <svg
             className="pointer-events-none absolute left-0 top-0 z-40 overflow-visible"
-            width={containerSize.width}
-            height={containerSize.height}
+            width={arrowOverlayWidth}
+            height={arrowOverlayHeight}
           >
             {bpmnConnections.map((conn, idx) => {
               const meta = bpmnConnectionsMeta[idx]
@@ -827,6 +853,8 @@ export function SOPDiagramBpmn({
                   idarrow={`bpmn-${idx}-${conn.id}`}
                   obstacles={obstacles}
                   usedSides={usedSides}
+                  connectionIndex={idx}
+                  allConnections={bpmnConnections}
                   manualConfig={effectiveArrowConfig[conn.id]}
                   manualLabelPosition={labelConfig?.positions?.[conn.id]}
                   onPathUpdated={onPathUpdated}

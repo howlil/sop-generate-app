@@ -9,87 +9,107 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import type { RegisterTteDto, TteProfil } from "@/types/dto/tte.dto";
+import type { RegisterTteDto, TteProfil, UpdateTtePinDto } from "@/types/dto/tte.dto";
 import { showErrorMessages } from "@/hooks/useToast";
 
-export interface TTEBuatDialogProps {
+export type TtePinDialogMode = "create" | "update";
+
+export interface TtePinDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Nama/NIP dari sesi login atau profil API — hanya tampilan, tidak dikirim ke server. */
+  mode: TtePinDialogMode;
   namaRingkas: string;
   nipRingkas: string;
   profile?: TteProfil | null;
   onRegisterTTE: (payload: RegisterTteDto) => Promise<unknown>;
+  onUpdateTTEPin: (payload: UpdateTtePinDto) => Promise<unknown>;
 }
 
-export function TTEBuatDialog({
+export function TtePinDialog({
   open,
   onOpenChange,
+  mode,
   namaRingkas,
   nipRingkas,
   profile,
   onRegisterTTE,
-}: TTEBuatDialogProps) {
+  onUpdateTTEPin,
+}: TtePinDialogProps) {
+  const [pinLama, setPinLama] = useState("");
   const [pin, setPin] = useState("");
   const [pinConfirm, setPinConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
+      setPinLama("");
       setPin("");
       setPinConfirm("");
       setError(null);
     }
-  }, [open]);
+  }, [open, mode]);
 
   const displayNama = profile?.user?.nama ?? namaRingkas;
   const displayNip = profile?.user?.nip ?? nipRingkas;
+  const title = mode === "create" ? "Atur PIN TTE" : "Ubah PIN TTE";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (mode === "update" && pinLama.length < 4) {
+      setError("PIN lama minimal 4 karakter.");
+      return;
+    }
     if (pin.length < 4) {
       setError("PIN minimal 4 karakter.");
       return;
     }
     if (pin !== pinConfirm) {
-      setError("PIN dan Konfirmasi PIN tidak sama.");
+      setError("PIN dan konfirmasi PIN tidak sama.");
       return;
     }
-
     try {
-      const payload: RegisterTteDto = { pin };
-      await onRegisterTTE(payload);
-      setPin("");
-      setPinConfirm("");
+      if (mode === "create") {
+        await onRegisterTTE({ pin });
+      } else {
+        await onUpdateTTEPin({ pinLama, pinBaru: pin });
+      }
       onOpenChange(false);
-    } catch (error: unknown) {
-      showErrorMessages(error, "Gagal mendaftarkan TTE");
-      setError(error instanceof Error ? error.message : "Gagal mendaftarkan TTE");
+    } catch (err: unknown) {
+      showErrorMessages(err, mode === "create" ? "Gagal mengatur PIN TTE" : "Gagal mengubah PIN TTE");
+      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     }
-  };
-
-  const handleClose = () => {
-    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && handleClose()}>
+    <Dialog open={open} onOpenChange={(next) => !next && onOpenChange(false)}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-sm">Buat PIN TTE</DialogTitle>
+          <DialogTitle className="text-sm">{title}</DialogTitle>
         </DialogHeader>
 
-        <div className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-xs space-y-0.5">
-          <p className="font-medium text-gray-900">{displayNama || "—"}</p>
-          <p className="text-gray-600">NIP. {displayNip || "—"}</p>
-          {profile?.user?.email ? (
-            <p className="text-gray-500">{profile.user.email}</p>
-          ) : null}
-        </div>
+        <UserSummary
+          displayNama={displayNama}
+          displayNip={displayNip}
+          email={profile?.user?.email}
+        />
 
         <form onSubmit={handleSubmit} className="space-y-3 mt-2">
-          <FormField label="PIN TTE">
+          {mode === "update" ? (
+            <FormField label="PIN lama">
+              <Input
+                type="password"
+                inputMode="numeric"
+                autoComplete="current-password"
+                className="h-9 text-xs"
+                value={pinLama}
+                onChange={(e) => setPinLama(e.target.value)}
+                placeholder="PIN saat ini"
+                maxLength={32}
+              />
+            </FormField>
+          ) : null}
+          <FormField label={mode === "create" ? "PIN TTE" : "PIN baru"}>
             <Input
               type="password"
               inputMode="numeric"
@@ -113,23 +133,41 @@ export function TTEBuatDialog({
               maxLength={32}
             />
           </FormField>
-          {error && <p className="text-xs text-red-600">{error}</p>}
+          {error ? <p className="text-xs text-red-600">{error}</p> : null}
           <DialogFooter className="gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="h-8 text-xs"
-              onClick={handleClose}
+              onClick={() => onOpenChange(false)}
             >
               Batal
             </Button>
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Simpan PIN
+              Simpan
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function UserSummary({
+  displayNama,
+  displayNip,
+  email,
+}: {
+  displayNama: string;
+  displayNip: string;
+  email?: string;
+}) {
+  return (
+    <div className="rounded-md border border-gray-100 bg-gray-50 px-3 py-2 text-xs space-y-0.5">
+      <p className="font-medium text-gray-900">{displayNama || "—"}</p>
+      <p className="text-gray-600">NIP. {displayNip || "—"}</p>
+      {email ? <p className="text-gray-500">{email}</p> : null}
+    </div>
   );
 }

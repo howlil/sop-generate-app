@@ -8,7 +8,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, errorMessage, ...props }, ref) => {
-    const errorId = errorMessage ? `input-error-${React.useId()}` : undefined
+    const generatedId = React.useId()
+    const errorId = errorMessage ? `input-error-${generatedId}` : undefined
 
     return (
       <input

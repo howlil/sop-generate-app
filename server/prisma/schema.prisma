@@ -33,6 +33,7 @@ model Pengguna {
   logEditSop                      LogEditSOP[]
   logNilaiEvaluasi                LogNilaiEvaluasi[]
   nilaiEvaluasiDiisi              NilaiEvaluasi[]      @relation("NilaiDiisiOleh")
+  nilaiEvaluasiDitindaklanjuti    NilaiEvaluasi[]      @relation("NilaiDitindaklanjutiOleh")
   pengajuanEvaluasiDiselesaikan   PengajuanEvaluasi[]  @relation("PengajuanDiselesaikanOleh")
   pengajuanEvaluasiDitandatangani PengajuanEvaluasi[]  @relation("PengajuanDitandatanganiOlehPjPenyusun")
   pengajuanEvaluasiDiverifikasi   PengajuanEvaluasi[]  @relation("PengajuanDiverifikasiOleh")
@@ -43,47 +44,46 @@ model Pengguna {
 }
 
 model OPD {
-  opdId                String               @id @default(uuid())
-  nama                 String
-  deletedAt            DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  pelaksana            Pelaksana[]
-  pengajuanEvaluasi    PengajuanEvaluasi[]
-  pengguna             Pengguna[]
-  riwayatOpdPengguna   RiwayatOpdPengguna[]
-  opdPeraturan         OPDPeraturan[]
-  sop                  SOP[]
+  opdId              String               @id @default(uuid())
+  nama               String
+  deletedAt          DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  pelaksana          Pelaksana[]
+  pengajuanEvaluasi  PengajuanEvaluasi[]
+  pengguna           Pengguna[]
+  riwayatOpdPengguna RiwayatOpdPengguna[]
+  opdPeraturan       OPDPeraturan[]
+  sop                SOP[]
 }
 
 model RiwayatOpdPengguna {
-  penggunaId           String
-  opdId                String
-  isAktif              Boolean   @default(false)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  opd                  OPD       @relation(fields: [opdId], references: [opdId], onDelete: Restrict)
-  pengguna             Pengguna  @relation(fields: [penggunaId], references: [penggunaId], onDelete: Cascade)
+  penggunaId String
+  opdId      String
+  isAktif    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  opd        OPD      @relation(fields: [opdId], references: [opdId], onDelete: Restrict)
+  pengguna   Pengguna @relation(fields: [penggunaId], references: [penggunaId], onDelete: Cascade)
 
   @@id([penggunaId, opdId])
-
 }
 
 /// =========================
 /// MODUL 1 — MASTER & AKSES (REGULASI)
 /// =========================
 model Peraturan {
-  peraturanId String         @id @default(uuid())
-  nama        String
-  nomor       String
-  tahun       Int
-  tentang     String
+  peraturanId    String         @id @default(uuid())
+  nama           String
+  nomor          String
+  tahun          Int
+  tentang        String
   lastEditedById String?
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  dasarHukum  DasarHukum[]
-  opdPemakai  OPDPeraturan[]
-  lastEditedBy Pengguna?     @relation("PeraturanTerakhirDiedit", fields: [lastEditedById], references: [penggunaId], onDelete: SetNull)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  dasarHukum     DasarHukum[]
+  opdPemakai     OPDPeraturan[]
+  lastEditedBy   Pengguna?      @relation("PeraturanTerakhirDiedit", fields: [lastEditedById], references: [penggunaId], onDelete: SetNull)
 
   @@unique([nomor, tahun])
   @@index([lastEditedById])
@@ -111,83 +111,92 @@ model SOP {
   updatedAt  DateTime    @updatedAt
   detailSops DetailSOP[]
   opd        OPD         @relation(fields: [opdId], references: [opdId])
+
+  @@index([opdId])
 }
 
 model DetailSOP {
   detailSopId String @id @default(uuid())
   sopId       String
 
-  status                 StatusSOP            @default(DRAFT)
-  versi                  Int                  @default(1)
-  nomorSOP               String               @unique
-  tanggalPembuatan       DateTime             @default(now())
-  tanggalRevisi          DateTime?
-  tanggalEfektif         DateTime?
-  namaLembaga            String               @db.Text
-  dibuatOlehId           String?
-  terakhirDieditOlehId   String?
-  createdAt              DateTime             @default(now())
-  updatedAt              DateTime             @updatedAt
-  dasarHukum             DasarHukum[]
-  dibuatOleh             Pengguna?            @relation("SOPDibuatOleh", fields: [dibuatOlehId], references: [penggunaId], onDelete: Restrict)
-  sop                    SOP                  @relation(fields: [sopId], references: [sopId], onDelete: Cascade)
-  terakhirDieditOleh     Pengguna?            @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [penggunaId], onDelete: Restrict)
-  swimlanes              DetailSOPPelaksana[]
-  komentar               Komentar[]
-  lampiranPeringatan               LampiranPeringatan[]
-  lampiranKualifikasiPelaksanaan   LampiranKualifikasiPelaksanaan[]
-  lampiranPeralatanPerlengkapan    LampiranPeralatanPerlengkapan[]
-  lampiranPencatatanPendataan      LampiranPencatatanPendataan[]
-  langkahSOP             LangkahSOP[]
-  logEditSop             LogEditSOP[]
-  nilaiEvaluasi          NilaiEvaluasi[]
-  relasiSopKeluar        SopTerkait[]         @relation("RelasiSOP")
-  relasiSopMasuk         SopTerkait[]         @relation("RelasiSOPTerkait")
-  dokumenTte             DokumenTte[]
+  status                         StatusSOP                        @default(DRAFT)
+  versi                          Int                              @default(1)
+  nomorSOP                       String                           @unique
+  tanggalPembuatan               DateTime                         @default(now())
+  tanggalRevisi                  DateTime?
+  tanggalEfektif                 DateTime?
+  namaLembaga                    String                           @db.Text
+  dibuatOlehId                   String?
+  terakhirDieditOlehId           String?
+  /// Versi sumber saat dibuat dari SOP BERLAKU (revisi resmi).
+  revisiDariDetailSopId          String?
+  createdAt                      DateTime                         @default(now())
+  updatedAt                      DateTime                         @updatedAt
+  revisiDari                     DetailSOP?                       @relation("RevisiDariVersiBerlaku", fields: [revisiDariDetailSopId], references: [detailSopId], onDelete: Restrict)
+  revisiMenjadi                   DetailSOP[]                      @relation("RevisiDariVersiBerlaku")
+  dasarHukum                     DasarHukum[]
+  dibuatOleh                     Pengguna?                        @relation("SOPDibuatOleh", fields: [dibuatOlehId], references: [penggunaId], onDelete: Restrict)
+  sop                            SOP                              @relation(fields: [sopId], references: [sopId], onDelete: Cascade)
+  terakhirDieditOleh             Pengguna?                        @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [penggunaId], onDelete: Restrict)
+  swimlanes                      DetailSOPPelaksana[]
+  komentar                       Komentar[]
+  lampiranPeringatan             LampiranPeringatan[]
+  lampiranKualifikasiPelaksanaan LampiranKualifikasiPelaksanaan[]
+  lampiranPeralatanPerlengkapan  LampiranPeralatanPerlengkapan[]
+  lampiranPencatatanPendataan    LampiranPencatatanPendataan[]
+  langkahSOP                     LangkahSOP[]
+  logEditSop                     LogEditSOP[]
+  nilaiEvaluasi                  NilaiEvaluasi[]
+  relasiSopKeluar                SopTerkait[]                     @relation("RelasiSOP")
+  relasiSopMasuk                 SopTerkait[]                     @relation("RelasiSOPTerkait")
+  dokumenTte                     DokumenTte[]
 
   @@unique([sopId, versi])
+  @@index([sopId, status])
+  @@index([status, updatedAt])
+  @@index([revisiDariDetailSopId])
 }
 
 /// Lampiran PERINGATAN (ambil teks terbaru untuk tampilan dokumen).
 model LampiranPeringatan {
-  lampiranPeringatanId String   @id @default(uuid())
-  detailSopId    String
-  teks           String        @db.Text
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  detailSop      DetailSOP     @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  lampiranPeringatanId String    @id @default(uuid())
+  detailSopId          String
+  teks                 String    @db.Text
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  detailSop            DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@index([detailSopId, createdAt])
 }
 
 model LampiranKualifikasiPelaksanaan {
-  lampiranKualifikasiPelaksanaanId String   @id @default(uuid())
+  lampiranKualifikasiPelaksanaanId String    @id @default(uuid())
   detailSopId                      String
-  teks                             String   @db.Text
-  createdAt                        DateTime @default(now())
-  updatedAt                        DateTime @updatedAt
+  teks                             String    @db.Text
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime  @updatedAt
   detailSop                        DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@index([detailSopId, createdAt])
 }
 
 model LampiranPeralatanPerlengkapan {
-  lampiranPeralatanPerlengkapanId String   @id @default(uuid())
+  lampiranPeralatanPerlengkapanId String    @id @default(uuid())
   detailSopId                     String
-  teks                            String   @db.Text
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
+  teks                            String    @db.Text
+  createdAt                       DateTime  @default(now())
+  updatedAt                       DateTime  @updatedAt
   detailSop                       DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@index([detailSopId, createdAt])
 }
 
 model LampiranPencatatanPendataan {
-  lampiranPencatatanPendataanId String   @id @default(uuid())
+  lampiranPencatatanPendataanId String    @id @default(uuid())
   detailSopId                   String
-  teks                          String   @db.Text
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
+  teks                          String    @db.Text
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime  @updatedAt
   detailSop                     DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@index([detailSopId, createdAt])
@@ -245,14 +254,14 @@ model LangkahSOP {
 }
 
 model Pelaksana {
-  pelaksanaId   String               @id @default(uuid())
-  opdId         String
-  nama String
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  sopDetails    DetailSOPPelaksana[]
-  langkahSOP    LangkahSOP[]
-  opd           OPD                  @relation(fields: [opdId], references: [opdId])
+  pelaksanaId String               @id @default(uuid())
+  opdId       String
+  nama        String
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  sopDetails  DetailSOPPelaksana[]
+  langkahSOP  LangkahSOP[]
+  opd         OPD                  @relation(fields: [opdId], references: [opdId])
 }
 
 /// Swimlane: `pelaksanaId` harus master `Pelaksana` dengan `opdId` sama seperti `SOP` pemilik `DetailSOP` (trigger DB).
@@ -268,28 +277,28 @@ model DetailSOPPelaksana {
   @@id([detailSopId, pelaksanaId])
 }
 
-  
 /// =========================
 /// MODUL 3 — KOLABORASI SOP
 /// =========================
 
 /// Log aktivitas edit per DetailSOP (kunci alami sesi: detail + pengguna + waktu mulai).
+//Menyimpan 1 kejadian atau 1 sesi perubahan SOP. 
 model LogEditSOP {
   detailSopId     String
   penggunaId      String
-  createdAt       DateTime               @default(now()) @db.DateTime(3)
-  bagian          BagianSOP              @default(HEADER)
+  createdAt       DateTime                @default(now()) @db.DateTime(3)
+  bagian          BagianSOP               @default(HEADER)
   /// Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK. Null bila tidak relevan.
   targetEntityId  String?
   /// Ringkasan human-readable yang sudah memuat label bagian + field yang berubah.
-  keterangan      String?                @db.Text
+  keterangan      String?                 @db.Text
   /// Jumlah event yang digabung dalam sesi (bekas `meta.count`).
-  sesiChangeCount Int                    @default(1)
+  sesiChangeCount Int                     @default(1)
   /// Sesi dianggap selesai bila tidak null. Sesi terbuka (null) bisa di-merge dengan edit lanjutan dalam idle window.
-  closedAt        DateTime?              @db.DateTime(3)
-  updatedAt       DateTime               @updatedAt @db.DateTime(3)
-  detailSop       DetailSOP              @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
-  pengguna        Pengguna               @relation(fields: [penggunaId], references: [penggunaId])
+  closedAt        DateTime?               @db.DateTime(3)
+  updatedAt       DateTime                @updatedAt @db.DateTime(3)
+  detailSop       DetailSOP               @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  pengguna        Pengguna                @relation(fields: [penggunaId], references: [penggunaId])
   domainFields    LogEditSopDomainField[]
 
   @@id([detailSopId, penggunaId, createdAt])
@@ -298,12 +307,13 @@ model LogEditSOP {
 }
 
 /// Field domain yang berubah dalam satu sesi log (normalisasi bekas `meta.fields`).
+//detail field yang berubah 
 model LogEditSopDomainField {
-  detailSopId   String
-  penggunaId    String
-  logCreatedAt  DateTime    @db.DateTime(3)
-  domainField   String      @db.VarChar(191)
-  logEditSop    LogEditSOP  @relation(fields: [detailSopId, penggunaId, logCreatedAt], references: [detailSopId, penggunaId, createdAt], onDelete: Cascade)
+  detailSopId  String
+  penggunaId   String
+  logCreatedAt DateTime   @db.DateTime(3)
+  domainField  String     @db.VarChar(191)
+  logEditSop   LogEditSOP @relation(fields: [detailSopId, penggunaId, logCreatedAt], references: [detailSopId, penggunaId, createdAt], onDelete: Cascade)
 
   @@id([detailSopId, penggunaId, logCreatedAt, domainField])
 }
@@ -320,55 +330,62 @@ model Komentar {
   user        Pengguna       @relation(fields: [userId], references: [penggunaId])
 }
 
-
 /// =========================
 /// MODUL 5 — PENGAJUAN & EVALUASI SOP
 /// ======================= ==
 model PengajuanEvaluasi {
-  pengajuanEvaluasiId                 String                  @id @default(uuid())
-  opdId                               String
-  jenis                               JenisPengajuanEvaluasi
-  status                              StatusPengajuanEvaluasi @default(SEDANG_DIEVALUASI)
-  nomorBA                             String?
-  tanggalPermintaan                   DateTime?
-  tanggalEvaluasi                     DateTime?
-  nilaiOPD                            Int?
-  diverifikasiOlehUserId              String?
-  ditandatanganiOlehPjPenyusunUserId  String?
-  tanggalTTDBaPjPenyusun              DateTime?
+  pengajuanEvaluasiId                String                  @id @default(uuid())
+  opdId                              String
+  jenis                              JenisPengajuanEvaluasi
+  status                             StatusPengajuanEvaluasi @default(SEDANG_DIEVALUASI)
+  nomorBA                            String?
+  tanggalPermintaan                  DateTime?
+  tanggalEvaluasi                    DateTime?
+  nilaiOPD                           Int?
+  diverifikasiOlehUserId             String?
+  ditandatanganiOlehPjPenyusunUserId String?
+  tanggalTTDBaPjPenyusun             DateTime?
   /// Evaluator yang men-trigger "selesai evaluasi" → kirim ke PJ Evaluator Organisasi.
   /// Syarat: semua NilaiEvaluasi dalam pengajuan ini sudah terisi hasil.
-  diselesaikanOlehId                  String?
-  tanggalDiselesaikan                 DateTime?
+  diselesaikanOlehId                 String?
+  tanggalDiselesaikan                DateTime?
   /// Versi untuk optimistic locking — increment di setiap update status.
   /// Service: UPDATE ... SET status = ?, version = version + 1 WHERE id = ? AND version = ?
-  version                             Int                     @default(0)
-  createdAt                           DateTime                @default(now())
-  updatedAt                           DateTime                @updatedAt
-  logNilaiEvaluasi                    LogNilaiEvaluasi[]
-  nilaiEvaluasi                       NilaiEvaluasi[]
-  diselesaikanOleh                    Pengguna?               @relation("PengajuanDiselesaikanOleh", fields: [diselesaikanOlehId], references: [penggunaId])
-  ditandatanganiOlehPjPenyusunUser    Pengguna?               @relation("PengajuanDitandatanganiOlehPjPenyusun", fields: [ditandatanganiOlehPjPenyusunUserId], references: [penggunaId], onDelete: Restrict)
-  diverifikasiOlehUser                Pengguna?               @relation("PengajuanDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [penggunaId], onDelete: Restrict)
-  dokumenTte                          DokumenTte[]
-  opd                                 OPD                     @relation(fields: [opdId], references: [opdId])
+  version                            Int                     @default(0)
+  createdAt                          DateTime                @default(now())
+  updatedAt                          DateTime                @updatedAt
+  logNilaiEvaluasi                   LogNilaiEvaluasi[]
+  nilaiEvaluasi                      NilaiEvaluasi[]
+  diselesaikanOleh                   Pengguna?               @relation("PengajuanDiselesaikanOleh", fields: [diselesaikanOlehId], references: [penggunaId])
+  ditandatanganiOlehPjPenyusunUser   Pengguna?               @relation("PengajuanDitandatanganiOlehPjPenyusun", fields: [ditandatanganiOlehPjPenyusunUserId], references: [penggunaId], onDelete: Restrict)
+  diverifikasiOlehUser               Pengguna?               @relation("PengajuanDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [penggunaId], onDelete: Restrict)
+  dokumenTte                         DokumenTte[]
+  opd                                OPD                     @relation(fields: [opdId], references: [opdId])
+
+  @@index([opdId, status, createdAt])
 }
 
 model NilaiEvaluasi {
-  pengajuanEvaluasiId String
-  detailSopId         String
-  hasil               HasilEvaluasi?
-  catatan             String?           @db.Text
-  version             Int               @default(0)
-  dinilaiOlehId       String?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  dinilaiOleh         Pengguna?         @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
-  pengajuanEvaluasi   PengajuanEvaluasi @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
-  detailSop           DetailSOP         @relation(fields: [detailSopId], references: [detailSopId])
-  logNilaiEvaluasi    LogNilaiEvaluasi[]
+  pengajuanEvaluasiId   String
+  detailSopId           String
+  hasil                 HasilEvaluasi?
+  catatan               String?            @db.Text
+  /// TERBUKA saat PERLU_PERBAIKAN menunggu tindak lanjut penyusun; SELESAI setelah ditandai; null jika tidak perlu.
+  statusTindakLanjut    StatusKomentar?
+  ditindaklanjutiPada   DateTime?
+  ditindaklanjutiOlehId String?
+  version               Int                @default(0)
+  dinilaiOlehId         String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  dinilaiOleh           Pengguna?          @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
+  ditindaklanjutiOleh   Pengguna?          @relation("NilaiDitindaklanjutiOleh", fields: [ditindaklanjutiOlehId], references: [penggunaId])
+  pengajuanEvaluasi     PengajuanEvaluasi  @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
+  detailSop             DetailSOP          @relation(fields: [detailSopId], references: [detailSopId])
+  logNilaiEvaluasi      LogNilaiEvaluasi[]
 
   @@id([pengajuanEvaluasiId, detailSopId])
+  @@index([detailSopId])
 }
 
 model LogNilaiEvaluasi {
@@ -394,19 +411,19 @@ model LogNilaiEvaluasi {
 /// Wajib tepat satu parent: `detailSopId` XOR `pengajuanEvaluasiId` (CHECK MySQL, lihat migrasi invariant).
 
 model DokumenTte {
-  dokumenTteId         String             @id @default(uuid())
-  nomorDokumen         String
+  dokumenTteId         String               @id @default(uuid())
+  nomorDokumen         String               @unique
   jenisDokumen         JenisDokumenTte
   judulDokumen         String
   hashDokumen          String
-  versiDokumen         Int                @default(1)
+  versiDokumen         Int                  @default(1)
   metodeKanonikalisasi String?
   detailSopId          String?
   pengajuanEvaluasiId  String?
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  detailSop            DetailSOP?         @relation(fields: [detailSopId], references: [detailSopId], onDelete: Restrict)
-  pengajuanEvaluasi    PengajuanEvaluasi? @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Restrict)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  detailSop            DetailSOP?           @relation(fields: [detailSopId], references: [detailSopId], onDelete: Restrict)
+  pengajuanEvaluasi    PengajuanEvaluasi?   @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Restrict)
   riwayatTandaTangan   RiwayatTandaTangan[]
 
   @@unique([detailSopId])
@@ -414,22 +431,22 @@ model DokumenTte {
 }
 
 model RiwayatTandaTangan {
-  userId               String
-  dokumenTteId         String
-  peran                PeranPengguna
-  signatureValue       String?            @db.LongText
-  signatureAlgorithm   String?
-  signatureFormat      String?
-  keyId                String?
-  certSerialNumber     String?
-  certIssuer           String?
-  certSubject          String?
-  certFingerprint      String?
-  certValidFrom        DateTime?
-  certValidTo          DateTime?
-  ditandatanganiPada   DateTime           @default(now())
-  dokumenTte           DokumenTte         @relation(fields: [dokumenTteId], references: [dokumenTteId], onDelete: Restrict)
-  user                 Pengguna           @relation(fields: [userId], references: [penggunaId])
+  userId             String
+  dokumenTteId       String
+  peran              PeranPengguna
+  signatureValue     String?       @db.LongText
+  signatureAlgorithm String?
+  signatureFormat    String?
+  keyId              String?
+  certSerialNumber   String?
+  certIssuer         String?
+  certSubject        String?
+  certFingerprint    String?
+  certValidFrom      DateTime?
+  certValidTo        DateTime?
+  ditandatanganiPada DateTime      @default(now())
+  dokumenTte         DokumenTte    @relation(fields: [dokumenTteId], references: [dokumenTteId], onDelete: Restrict)
+  user               Pengguna      @relation(fields: [userId], references: [penggunaId])
 
   @@id([userId, dokumenTteId])
   @@unique([dokumenTteId, peran])
@@ -513,4 +530,3 @@ enum BagianSOP {
   KOMENTAR
   EVALUASI
 }
-

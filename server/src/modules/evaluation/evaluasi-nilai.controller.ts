@@ -31,7 +31,7 @@ export class EvaluasiNilaiController {
   @ApiOperation({
     summary: 'Isi / ubah nilai evaluasi untuk satu DetailSOP dalam pengajuan aktif',
     description:
-      'Pengajuan harus berstatus SEDANG_DIEVALUASI. Hasil Perlu perbaikan wajib disertai catatan; catatan disalin ke umpan balik penyusun (Komentar); status dokumen diarahkan ke REVISI_DARI_EVALUATOR.',
+      'Pengajuan harus berstatus SEDANG_DIEVALUASI. Hasil Perlu perbaikan wajib catatan; status tindak lanjut TERBUKA; status dokumen → REVISI_DARI_EVALUATOR.',
   })
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiParam({ name: 'detailSopId', format: 'uuid' })
@@ -53,6 +53,37 @@ export class EvaluasiNilaiController {
     );
     return {
       message: 'Nilai evaluasi berhasil disimpan',
+      success: true,
+      data,
+    };
+  }
+
+  @Patch(':pengajuanEvaluasiId/nilai/:detailSopId/tindak-lanjut-selesai')
+  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Tandai umpan balik evaluasi sudah ditindaklanjuti (penyusun / PJ Penyusun)',
+    description:
+      'Wajib sebelum kirim ulang ke evaluator. Hanya untuk DetailSOP REVISI_DARI_EVALUATOR dengan hasil Perlu perbaikan dan status tindak lanjut TERBUKA.',
+  })
+  @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
+  @ApiParam({ name: 'detailSopId', format: 'uuid' })
+  @ApiResponse({ status: 200, type: NilaiEvaluasiPatchResponseDto })
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  @ApiConflictResponse()
+  async tandaiTindakLanjutSelesai(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('pengajuanEvaluasiId', ParseUUIDPipe) pengajuanEvaluasiId: string,
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+  ): Promise<ApiSuccessResponse<NilaiEvaluasiPatchResponseDto>> {
+    const data = await this.evaluasiNilaiService.tandaiTindakLanjutSelesai(
+      req.user,
+      pengajuanEvaluasiId,
+      detailSopId,
+    );
+    return {
+      message: 'Umpan balik evaluasi ditandai selesai',
       success: true,
       data,
     };

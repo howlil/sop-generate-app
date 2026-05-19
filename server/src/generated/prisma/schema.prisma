@@ -33,6 +33,7 @@ model Pengguna {
   logEditSop                      LogEditSOP[]
   logNilaiEvaluasi                LogNilaiEvaluasi[]
   nilaiEvaluasiDiisi              NilaiEvaluasi[]      @relation("NilaiDiisiOleh")
+  nilaiEvaluasiDitindaklanjuti    NilaiEvaluasi[]      @relation("NilaiDitindaklanjutiOleh")
   pengajuanEvaluasiDiselesaikan   PengajuanEvaluasi[]  @relation("PengajuanDiselesaikanOleh")
   pengajuanEvaluasiDitandatangani PengajuanEvaluasi[]  @relation("PengajuanDitandatanganiOlehPjPenyusun")
   pengajuanEvaluasiDiverifikasi   PengajuanEvaluasi[]  @relation("PengajuanDiverifikasiOleh")
@@ -110,6 +111,8 @@ model SOP {
   updatedAt  DateTime    @updatedAt
   detailSops DetailSOP[]
   opd        OPD         @relation(fields: [opdId], references: [opdId])
+
+  @@index([opdId])
 }
 
 model DetailSOP {
@@ -125,8 +128,12 @@ model DetailSOP {
   namaLembaga                    String                           @db.Text
   dibuatOlehId                   String?
   terakhirDieditOlehId           String?
+  /// Versi sumber saat dibuat dari SOP BERLAKU (revisi resmi).
+  revisiDariDetailSopId          String?
   createdAt                      DateTime                         @default(now())
   updatedAt                      DateTime                         @updatedAt
+  revisiDari                     DetailSOP?                       @relation("RevisiDariVersiBerlaku", fields: [revisiDariDetailSopId], references: [detailSopId], onDelete: Restrict)
+  revisiMenjadi                  DetailSOP[]                      @relation("RevisiDariVersiBerlaku")
   dasarHukum                     DasarHukum[]
   dibuatOleh                     Pengguna?                        @relation("SOPDibuatOleh", fields: [dibuatOlehId], references: [penggunaId], onDelete: Restrict)
   sop                            SOP                              @relation(fields: [sopId], references: [sopId], onDelete: Cascade)
@@ -145,6 +152,9 @@ model DetailSOP {
   dokumenTte                     DokumenTte[]
 
   @@unique([sopId, versi])
+  @@index([sopId, status])
+  @@index([status, updatedAt])
+  @@index([revisiDariDetailSopId])
 }
 
 /// Lampiran PERINGATAN (ambil teks terbaru untuk tampilan dokumen).
@@ -349,23 +359,31 @@ model PengajuanEvaluasi {
   diverifikasiOlehUser               Pengguna?               @relation("PengajuanDiverifikasiOleh", fields: [diverifikasiOlehUserId], references: [penggunaId], onDelete: Restrict)
   dokumenTte                         DokumenTte[]
   opd                                OPD                     @relation(fields: [opdId], references: [opdId])
+
+  @@index([opdId, status, createdAt])
 }
 
 model NilaiEvaluasi {
-  pengajuanEvaluasiId String
-  detailSopId         String
-  hasil               HasilEvaluasi?
-  catatan             String?            @db.Text
-  version             Int                @default(0)
-  dinilaiOlehId       String?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  dinilaiOleh         Pengguna?          @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
-  pengajuanEvaluasi   PengajuanEvaluasi  @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
-  detailSop           DetailSOP          @relation(fields: [detailSopId], references: [detailSopId])
-  logNilaiEvaluasi    LogNilaiEvaluasi[]
+  pengajuanEvaluasiId   String
+  detailSopId           String
+  hasil                 HasilEvaluasi?
+  catatan               String?            @db.Text
+  /// TERBUKA saat PERLU_PERBAIKAN menunggu tindak lanjut penyusun; SELESAI setelah ditandai; null jika tidak perlu.
+  statusTindakLanjut    StatusKomentar?
+  ditindaklanjutiPada   DateTime?
+  ditindaklanjutiOlehId String?
+  version               Int                @default(0)
+  dinilaiOlehId         String?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  dinilaiOleh           Pengguna?          @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
+  ditindaklanjutiOleh   Pengguna?          @relation("NilaiDitindaklanjutiOleh", fields: [ditindaklanjutiOlehId], references: [penggunaId])
+  pengajuanEvaluasi     PengajuanEvaluasi  @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
+  detailSop             DetailSOP          @relation(fields: [detailSopId], references: [detailSopId])
+  logNilaiEvaluasi      LogNilaiEvaluasi[]
 
   @@id([pengajuanEvaluasiId, detailSopId])
+  @@index([detailSopId])
 }
 
 model LogNilaiEvaluasi {
@@ -392,7 +410,7 @@ model LogNilaiEvaluasi {
 
 model DokumenTte {
   dokumenTteId         String               @id @default(uuid())
-  nomorDokumen         String
+  nomorDokumen         String               @unique
   jenisDokumen         JenisDokumenTte
   judulDokumen         String
   hashDokumen          String

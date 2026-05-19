@@ -1,5 +1,6 @@
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
 import { queryKeys } from '@/config/query-keys'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { STALE_TIME } from '@/utils/constants'
@@ -11,27 +12,25 @@ import type {
   UpdateKepalaOpdDto,
 } from '@/types/dto/kepala-opd.dto'
 
-async function unwrap<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise
-  return envelope.data as T
-}
-
 export const kepalaOpdApi = {
-  findAll: (): Promise<KepalaOpdDto[]> =>
-    unwrap(apiClient.get<ApiSuccessResponse<KepalaOpdDto[]>>('/kepala-opd')),
+  findAll: (params?: { search?: string }): Promise<KepalaOpdDto[]> => {
+    const search = params?.search?.trim()
+    const qs = buildQueryString(search ? { search } : undefined)
+    return unwrapApiData(apiClient.get<ApiSuccessResponse<KepalaOpdDto[]>>(`/kepala-opd${qs}`))
+  },
 
   create: (payload: CreateKepalaOpdDto): Promise<KepalaOpdDto> =>
-    unwrap(apiClient.post<ApiSuccessResponse<KepalaOpdDto>>('/kepala-opd', payload)),
+    unwrapApiData(apiClient.post<ApiSuccessResponse<KepalaOpdDto>>('/kepala-opd', payload)),
 
   update: (id: string, payload: UpdateKepalaOpdDto): Promise<KepalaOpdDto> =>
-    unwrap(apiClient.patch<ApiSuccessResponse<KepalaOpdDto>>(`/kepala-opd/${id}`, payload)),
+    unwrapApiData(apiClient.patch<ApiSuccessResponse<KepalaOpdDto>>(`/kepala-opd/${id}`, payload)),
 
   remove: async (id: string): Promise<void> => {
-    await unwrap(apiClient.delete<ApiSuccessResponse<null>>(`/kepala-opd/${id}`))
+    await unwrapApiVoid(apiClient.delete<ApiSuccessResponse<null>>(`/kepala-opd/${id}`))
   },
 
   riwayatOpd: (id: string): Promise<KepalaOpdRiwayatItemDto[]> =>
-    unwrap(
+    unwrapApiData(
       apiClient.get<ApiSuccessResponse<KepalaOpdRiwayatItemDto[]>>(
         `/kepala-opd/${id}/riwayat-opd`,
       ),

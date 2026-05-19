@@ -1,0 +1,108 @@
+import { Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { HasilEvaluasiBadge } from '@/components/status/hasil-evaluasi-badge'
+import { useTandaiTindakLanjutSelesai } from '@/api/evaluasi'
+import type { UmpanBalikEvaluasiDetail } from '@/types/dto/evaluasi.dto'
+
+export interface UmpanBalikEvaluasiPanelProps {
+  detailSopId: string
+  umpanBalik: UmpanBalikEvaluasiDetail | null | undefined
+  isLoading?: boolean
+  isReadOnly?: boolean
+}
+
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return iso
+  }
+}
+
+export function UmpanBalikEvaluasiPanel({
+  detailSopId,
+  umpanBalik,
+  isLoading = false,
+  isReadOnly = false,
+}: UmpanBalikEvaluasiPanelProps) {
+  const { mutateAsync: tandaiSelesai, isPending: isMarking } =
+    useTandaiTindakLanjutSelesai(detailSopId)
+
+  if (isLoading) {
+    return <p className="p-3 text-xs text-gray-500">Memuat umpan balik evaluasi…</p>
+  }
+
+  if (!umpanBalik) {
+    return (
+      <p className="p-3 text-xs text-gray-500">
+        Tidak ada umpan balik evaluasi aktif untuk dokumen ini.
+      </p>
+    )
+  }
+
+  const umpanBalikData = umpanBalik
+  const isTerbuka = umpanBalikData.statusTindakLanjut === 'TERBUKA'
+  const isSelesai = umpanBalikData.statusTindakLanjut === 'SELESAI'
+
+  async function handleMarkSelesai() {
+    await tandaiSelesai({
+      pengajuanEvaluasiId: umpanBalikData.pengajuanEvaluasiId,
+      detailSopId: umpanBalikData.detailSopId,
+    })
+  }
+
+  return (
+    <div className="p-3 space-y-3">
+      <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-xs space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <HasilEvaluasiBadge hasil={umpanBalikData.hasil} label={umpanBalikData.hasilLabel} />
+          {isTerbuka ? (
+            <Badge className="bg-blue-600 text-white border-0 text-xs">Menunggu tindak lanjut</Badge>
+          ) : null}
+          {isSelesai ? (
+            <Badge className="bg-green-600 text-white border-0 text-xs inline-flex items-center gap-0.5">
+              <Check className="w-3 h-3" aria-hidden />
+              Sudah ditindaklanjuti
+            </Badge>
+          ) : null}
+        </div>
+        {umpanBalikData.dinilaiOleh ? (
+          <p className="text-gray-600">
+            Evaluator: <span className="font-medium text-gray-900">{umpanBalikData.dinilaiOleh.nama}</span>
+          </p>
+        ) : null}
+        <p className="text-gray-900 whitespace-pre-wrap break-words">{umpanBalikData.catatan ?? '—'}</p>
+        {umpanBalikData.ditindaklanjutiPada && umpanBalikData.ditindaklanjutiOleh ? (
+          <p className="text-[10px] text-gray-500">
+            Ditandai selesai oleh {umpanBalikData.ditindaklanjutiOleh.nama} pada{' '}
+            {formatDate(umpanBalikData.ditindaklanjutiPada)}
+          </p>
+        ) : null}
+      </div>
+      {!isReadOnly && isTerbuka ? (
+        <Button
+          type="button"
+          size="sm"
+          className="w-full h-8 text-xs gap-1.5"
+          disabled={isMarking}
+          onClick={() => void handleMarkSelesai()}
+        >
+          <Check className="w-3.5 h-3.5" aria-hidden />
+          {isMarking ? 'Menyimpan…' : 'Tandai sudah ditindaklanjuti'}
+        </Button>
+      ) : null}
+      {!isReadOnly && isSelesai ? (
+        <p className="text-xs text-green-800 bg-green-50 border border-green-200 rounded-md px-2 py-1.5">
+          Anda dapat mengirim ulang ke evaluator setelah memastikan semua perbaikan tersimpan.
+        </p>
+      ) : null}
+    </div>
+  )
+}

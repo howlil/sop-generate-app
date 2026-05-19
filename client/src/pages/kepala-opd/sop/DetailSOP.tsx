@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
 import {
   SOPPreviewTemplate,
@@ -40,6 +40,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
 
   const sopStatus: StatusSOP =
     (workbench?.detail.status as StatusSOP | undefined) ?? DEFAULT_SOP_STATUS;
+  const sopStatusLabel = workbench?.detail.statusLabel ?? sopStatus;
   const sopName = previewProps?.name ?? "";
   const sopNumber = previewProps?.number ?? "";
 
@@ -52,7 +53,12 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const workspaceHeaderToolbar = (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
-        <StatusBadge status={sopStatus} className="text-xs border-0" />
+        <SopStatusBadge
+          status={sopStatus}
+          label={sopStatusLabel}
+          showDomain={false}
+          className="text-xs"
+        />
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         <Button

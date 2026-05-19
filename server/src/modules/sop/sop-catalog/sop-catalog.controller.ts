@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -31,6 +32,7 @@ import { CreateSopDto } from './dto/create-sop.dto';
 import { ListSopQueryDto } from './dto/list-sop-query.dto';
 import { PenyusunWorkbenchDataDto } from './dto/penyusun-workbench-data.dto';
 import { SopDaftarRowDto } from './dto/sop-daftar-row.dto';
+import { SopRiwayatVersiRowDto } from './dto/sop-riwayat-versi-row.dto';
 import { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
 import { SopCatalogService } from './sop-catalog.service';
@@ -235,6 +237,89 @@ export class SopCatalogController {
       message: 'Header SOP berhasil diperbarui',
       success: true,
       data,
+    };
+  }
+
+  @Post(':detailSopId/buat-versi-baru')
+  @HttpCode(201)
+  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Buat versi baru dari DetailSOP BERLAKU (clone isi dokumen, status DRAFT)',
+    description:
+      'Param boleh detailSopId atau sopId. Jika bukan BERLAKU, server memakai versi BERLAKU pada SOP yang sama bila ada.',
+  })
+  @ApiQuery({
+    name: 'logsLimit',
+    required: false,
+    schema: { default: 100, minimum: 1, maximum: 500 },
+  })
+  @ApiResponse({ status: 201, type: PenyusunWorkbenchDataDto })
+  @ApiConflictResponse({ description: 'Bukan BERLAKU atau masih ada revisi in-flight' })
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  async buatVersiBaru(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+    @Query('logsLimit', new DefaultValuePipe(100), ParseIntPipe) logsLimit: number,
+  ): Promise<ApiSuccessResponse<PenyusunWorkbenchDataDto>> {
+    const data = await this.sopCatalogService.buatVersiBaruDariBerlaku(
+      req.user,
+      detailSopId,
+      logsLimit,
+    );
+    return {
+      message: 'Versi baru SOP berhasil dibuat',
+      success: true,
+      data,
+    };
+  }
+
+  @Get(':sopId/riwayat-versi')
+  @Roles(
+    PeranPengguna.PENYUSUN,
+    PeranPengguna.PJ_PENYUSUN,
+    PeranPengguna.KEPALA_OPD,
+    PeranPengguna.EVALUATOR,
+    PeranPengguna.PJ_EVALUATOR,
+  )
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({ summary: 'Riwayat semua versi DetailSOP pada satu header SOP' })
+  @ApiResponse({ status: 200, type: [SopRiwayatVersiRowDto] })
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  async riwayatVersi(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('sopId', ParseUUIDPipe) sopId: string,
+  ): Promise<ApiSuccessResponse<SopRiwayatVersiRowDto[]>> {
+    const data = await this.sopCatalogService.getRiwayatVersi(req.user, sopId);
+    return {
+      message: 'Riwayat versi SOP berhasil diambil',
+      success: true,
+      data,
+    };
+  }
+
+  @Delete(':detailSopId/versi-draft')
+  @HttpCode(200)
+  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Hapus versi DRAFT hasil revisi dari BERLAKU (belum masuk evaluasi)',
+  })
+  @ApiResponse({ status: 200, description: 'Versi draft dihapus' })
+  @ApiConflictResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  async hapusVersiDraft(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+  ): Promise<ApiSuccessResponse<null>> {
+    await this.sopCatalogService.hapusVersiDraft(req.user, detailSopId);
+    return {
+      message: 'Versi draft berhasil dihapus',
+      success: true,
+      data: null,
     };
   }
 }

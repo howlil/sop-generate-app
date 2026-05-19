@@ -10,11 +10,7 @@ import { JenisPengajuanEvaluasi } from '../../../generated/prisma';
 
 /** Body POST `/evaluasi` — buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD (PJ Evaluator). */
 export class CreatePengajuanEvaluasiDto {
-  @ApiProperty({
-    enum: JenisPengajuanEvaluasi,
-    description:
-      'TERJADWAL: batch resmi; evaluator mengisi skor OPD saat menyelesaikan pengajuan. MANDIRI: hanya penilaian per dokumen SOP (tanpa skor OPD tingkat pengajuan).',
-  })
+  @ApiProperty({ enum: JenisPengajuanEvaluasi })
   @IsEnum(JenisPengajuanEvaluasi)
   readonly jenis!: JenisPengajuanEvaluasi;
 

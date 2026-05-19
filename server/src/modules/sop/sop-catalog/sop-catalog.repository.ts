@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { TERMINAL_DETAIL_STATUSES } from '../../../common/status/sop-editable.util';
 import type { Prisma } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { BagianSOP, PeranPengguna, StatusSOP } from '../../../generated/prisma';
@@ -38,6 +39,7 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
     };
     dibuatOleh: { select: { penggunaId: true; nama: true } };
     terakhirDieditOleh: { select: { penggunaId: true; nama: true } };
+    revisiDari: { select: { detailSopId: true; versi: true } };
     lampiranPeringatan: true;
     lampiranKualifikasiPelaksanaan: true;
     lampiranPeralatanPerlengkapan: true;
@@ -69,21 +71,38 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
   };
 }>;
 
+export type SopDaftarDetailSlice = {
+  detailSopId: string;
+  nomorSOP: string;
+  status: string;
+  versi: number;
+  updatedAt: Date;
+  pembuatNama: string | null;
+  editorNama: string | null;
+  peraturanId: string | null;
+};
+
 export type SopDaftarDbRow = {
   sopId: string;
   opdId: string;
   judul: string;
-  detail:
-    | {
-        detailSopId: string;
-        nomorSOP: string;
-        status: string;
-        updatedAt: Date;
-        pembuatNama: string | null;
-        editorNama: string | null;
-        peraturanId: string | null;
-      }
-    | undefined;
+  /** Versi terbaru (urutan versi desc). */
+  detail: SopDaftarDetailSlice | undefined;
+  /** Versi yang sedang BERLAKU, bila ada. */
+  versiBerlaku: SopDaftarDetailSlice | null;
+  /** Semua status DetailSOP pada header (untuk deteksi revisi in-flight). */
+  allStatuses: StatusSOP[];
+};
+
+export type SopRiwayatVersiDbRow = {
+  detailSopId: string;
+  versi: number;
+  nomorSOP: string;
+  status: StatusSOP;
+  revisiDariDetailSopId: string | null;
+  revisiDariVersi: number | null;
+  updatedAt: Date;
+  canHapusDraft: boolean;
 };
 
 /** Filter daftar SOP (DetailSOP terbaru): status dan/atau rentang tanggal `updatedAt` (YYYY-MM-DD, UTC). */
@@ -185,20 +204,82 @@ export class SopCatalogRepository {
       return { sop, detail };
     });
     const d = created.detail;
+    const slice: SopDaftarDetailSlice = {
+      detailSopId: d.detailSopId,
+      nomorSOP: d.nomorSOP,
+      status: d.status,
+      versi: d.versi,
+      updatedAt: d.updatedAt,
+      pembuatNama: d.dibuatOleh?.nama ?? null,
+      editorNama: d.terakhirDieditOleh?.nama ?? null,
+      peraturanId: null,
+    };
     return {
       sopId: created.sop.sopId,
       opdId: created.sop.opdId,
       judul: created.sop.judul,
-      detail: {
-        detailSopId: d.detailSopId,
-        nomorSOP: d.nomorSOP,
-        status: d.status,
-        updatedAt: d.updatedAt,
-        pembuatNama: d.dibuatOleh?.nama ?? null,
-        editorNama: d.terakhirDieditOleh?.nama ?? null,
-        peraturanId: null,
-      },
+      detail: slice,
+      versiBerlaku: null,
+      allStatuses: [d.status],
     };
+  }
+
+  private mapDetailSlice(
+    d: {
+      detailSopId: string;
+      nomorSOP: string;
+      status: StatusSOP;
+      versi: number;
+      updatedAt: Date;
+      dibuatOleh: { nama: string } | null;
+      terakhirDieditOleh: { nama: string } | null;
+      dasarHukum: { peraturanId: string }[];
+    },
+  ): SopDaftarDetailSlice {
+    return {
+      detailSopId: d.detailSopId,
+      nomorSOP: d.nomorSOP,
+      status: d.status,
+      versi: d.versi,
+      updatedAt: d.updatedAt,
+      pembuatNama: d.dibuatOleh?.nama ?? null,
+      editorNama: d.terakhirDieditOleh?.nama ?? null,
+      peraturanId: d.dasarHukum[0]?.peraturanId ?? null,
+    };
+  }
+
+  private mapSopDaftarRow(r: {
+    sopId: string;
+    opdId: string;
+    judul: string;
+    detailSops: {
+      detailSopId: string;
+      nomorSOP: string;
+      status: StatusSOP;
+      versi: number;
+      updatedAt: Date;
+      dibuatOleh: { nama: string } | null;
+      terakhirDieditOleh: { nama: string } | null;
+      dasarHukum: { peraturanId: string }[];
+    }[];
+  }): SopDaftarDbRow {
+    const sorted = [...r.detailSops].sort((a, b) => b.versi - a.versi);
+    const latest = sorted[0];
+    const berlaku = sorted.find((d) => d.status === StatusSOP.BERLAKU);
+    return {
+      sopId: r.sopId,
+      opdId: r.opdId,
+      judul: r.judul,
+      detail: latest === undefined ? undefined : this.mapDetailSlice(latest),
+      versiBerlaku: berlaku === undefined ? null : this.mapDetailSlice(berlaku),
+      allStatuses: sorted.map((d) => d.status),
+    };
+  }
+
+  private static deriveNomorSopVersiBaru(nomorLama: string, versiBaru: number): string {
+    const match = nomorLama.match(/^(.+)-V\d+$/i);
+    const base = match !== null ? match[1]! : nomorLama;
+    return `${base}-V${versiBaru}`;
   }
 
   async findDaftarByOpdId(opdId: string, filters: SopDaftarListFilters = {}): Promise<SopDaftarDbRow[]> {
@@ -211,11 +292,11 @@ export class SopCatalogRepository {
         judul: true,
         detailSops: {
           orderBy: { versi: 'desc' },
-          take: 1,
           select: {
             detailSopId: true,
             nomorSOP: true,
             status: true,
+            versi: true,
             updatedAt: true,
             dibuatOleh: { select: { nama: true } },
             terakhirDieditOleh: { select: { nama: true } },
@@ -228,29 +309,7 @@ export class SopCatalogRepository {
         },
       },
     });
-    const mappedByOpd = rows.map((r) => {
-      const d = r.detailSops[0];
-      if (d === undefined) {
-        return { sopId: r.sopId, opdId: r.opdId, judul: r.judul, detail: undefined };
-      }
-      const pembuatNama = d.dibuatOleh?.nama ?? null;
-      const editorNama = d.terakhirDieditOleh?.nama ?? null;
-      const peraturanId = d.dasarHukum[0]?.peraturanId ?? null;
-      return {
-        sopId: r.sopId,
-        opdId: r.opdId,
-        judul: r.judul,
-        detail: {
-          detailSopId: d.detailSopId,
-          nomorSOP: d.nomorSOP,
-          status: d.status,
-          updatedAt: d.updatedAt,
-          pembuatNama,
-          editorNama,
-          peraturanId,
-        },
-      };
-    });
+    const mappedByOpd = rows.map((r) => this.mapSopDaftarRow(r));
     return this.applyDaftarFilters(mappedByOpd, filters);
   }
 
@@ -282,6 +341,7 @@ export class SopCatalogRepository {
         },
         dibuatOleh: { select: { penggunaId: true, nama: true } },
         terakhirDieditOleh: { select: { penggunaId: true, nama: true } },
+        revisiDari: { select: { detailSopId: true, versi: true } },
         lampiranPeringatan: true,
         lampiranKualifikasiPelaksanaan: true,
         lampiranPeralatanPerlengkapan: true,
@@ -615,11 +675,11 @@ export class SopCatalogRepository {
         judul: true,
         detailSops: {
           orderBy: { versi: 'desc' },
-          take: 1,
           select: {
             detailSopId: true,
             nomorSOP: true,
             status: true,
+            versi: true,
             updatedAt: true,
             dibuatOleh: { select: { nama: true } },
             terakhirDieditOleh: { select: { nama: true } },
@@ -632,29 +692,232 @@ export class SopCatalogRepository {
         },
       },
     });
-    const mapped = rows.map((r) => {
-      const d = r.detailSops[0];
-      if (d === undefined) {
-        return { sopId: r.sopId, opdId: r.opdId, judul: r.judul, detail: undefined };
-      }
-      const pembuatNama = d.dibuatOleh?.nama ?? null;
-      const editorNama = d.terakhirDieditOleh?.nama ?? null;
-      const peraturanId = d.dasarHukum[0]?.peraturanId ?? null;
-      return {
-        sopId: r.sopId,
-        opdId: r.opdId,
-        judul: r.judul,
-        detail: {
-          detailSopId: d.detailSopId,
-          nomorSOP: d.nomorSOP,
-          status: d.status,
-          updatedAt: d.updatedAt,
-          pembuatNama,
-          editorNama,
-          peraturanId,
-        },
-      };
-    });
+    const mapped = rows.map((r) => this.mapSopDaftarRow(r));
     return this.applyDaftarFilters(mapped, filters);
+  }
+
+  async findRiwayatVersiBySopId(sopId: string): Promise<SopRiwayatVersiDbRow[]> {
+    const rows = await this.prisma.detailSOP.findMany({
+      where: { sopId },
+      orderBy: { versi: 'asc' },
+      select: {
+        detailSopId: true,
+        versi: true,
+        nomorSOP: true,
+        status: true,
+        revisiDariDetailSopId: true,
+        updatedAt: true,
+        revisiDari: { select: { versi: true } },
+        _count: { select: { nilaiEvaluasi: true } },
+      },
+    });
+    return rows.map((r) => ({
+      detailSopId: r.detailSopId,
+      versi: r.versi,
+      nomorSOP: r.nomorSOP,
+      status: r.status,
+      revisiDariDetailSopId: r.revisiDariDetailSopId,
+      revisiDariVersi: r.revisiDari?.versi ?? null,
+      updatedAt: r.updatedAt,
+      canHapusDraft:
+        r.status === StatusSOP.DRAFT &&
+        r.revisiDariDetailSopId !== null &&
+        r._count.nilaiEvaluasi === 0,
+    }));
+  }
+
+  /**
+   * Clone DetailSOP BERLAKU menjadi versi baru (DRAFT).
+   * @throws NotFoundException | ConflictException
+   */
+  async cloneDetailSopFromBerlaku(params: {
+    sourceDetailSopId: string;
+    penggunaId: string;
+  }): Promise<{ detailSopId: string; versi: number }> {
+    const source = await this.prisma.detailSOP.findUnique({
+      where: { detailSopId: params.sourceDetailSopId },
+      include: {
+        lampiranPeringatan: true,
+        lampiranKualifikasiPelaksanaan: true,
+        lampiranPeralatanPerlengkapan: true,
+        lampiranPencatatanPendataan: true,
+        dasarHukum: true,
+        swimlanes: true,
+        relasiSopKeluar: true,
+        relasiSopMasuk: true,
+        langkahSOP: { orderBy: { urutan: 'asc' } },
+      },
+    });
+    if (source === null) {
+      throw new NotFoundException('DetailSOP sumber tidak ditemukan');
+    }
+    if (source.status !== StatusSOP.BERLAKU) {
+      throw new ConflictException('Hanya DetailSOP berstatus BERLAKU yang dapat dibuat versi barunya');
+    }
+    const siblings = await this.prisma.detailSOP.findMany({
+      where: { sopId: source.sopId },
+      select: { status: true, versi: true },
+    });
+    const hasInFlight = siblings.some((s) => !TERMINAL_DETAIL_STATUSES.has(s.status));
+    if (hasInFlight) {
+      throw new ConflictException(
+        'Masih ada versi revisi yang belum selesai. Selesaikan atau batalkan revisi tersebut terlebih dahulu.',
+      );
+    }
+    const maxVersi = siblings.reduce((max, s) => Math.max(max, s.versi), 0);
+    const versiBaru = maxVersi + 1;
+    const nomorSOP = SopCatalogRepository.deriveNomorSopVersiBaru(source.nomorSOP, versiBaru);
+    const now = new Date();
+    return this.prisma.$transaction(async (tx) => {
+      const created = await tx.detailSOP.create({
+        data: {
+          sopId: source.sopId,
+          versi: versiBaru,
+          status: StatusSOP.DRAFT,
+          nomorSOP,
+          namaLembaga: source.namaLembaga,
+          tanggalPembuatan: now,
+          tanggalRevisi: now,
+          tanggalEfektif: null,
+          dibuatOlehId: params.penggunaId,
+          terakhirDieditOlehId: params.penggunaId,
+          revisiDariDetailSopId: source.detailSopId,
+        },
+      });
+      const newDetailId = created.detailSopId;
+      if (source.lampiranPeringatan.length > 0) {
+        await tx.lampiranPeringatan.createMany({
+          data: source.lampiranPeringatan.map((l) => ({
+            detailSopId: newDetailId,
+            teks: l.teks,
+          })),
+        });
+      }
+      if (source.lampiranKualifikasiPelaksanaan.length > 0) {
+        await tx.lampiranKualifikasiPelaksanaan.createMany({
+          data: source.lampiranKualifikasiPelaksanaan.map((l) => ({
+            detailSopId: newDetailId,
+            teks: l.teks,
+          })),
+        });
+      }
+      if (source.lampiranPeralatanPerlengkapan.length > 0) {
+        await tx.lampiranPeralatanPerlengkapan.createMany({
+          data: source.lampiranPeralatanPerlengkapan.map((l) => ({
+            detailSopId: newDetailId,
+            teks: l.teks,
+          })),
+        });
+      }
+      if (source.lampiranPencatatanPendataan.length > 0) {
+        await tx.lampiranPencatatanPendataan.createMany({
+          data: source.lampiranPencatatanPendataan.map((l) => ({
+            detailSopId: newDetailId,
+            teks: l.teks,
+          })),
+        });
+      }
+      if (source.dasarHukum.length > 0) {
+        await tx.dasarHukum.createMany({
+          data: source.dasarHukum.map((d) => ({
+            detailSopId: newDetailId,
+            peraturanId: d.peraturanId,
+          })),
+        });
+      }
+      if (source.swimlanes.length > 0) {
+        await tx.detailSOPPelaksana.createMany({
+          data: source.swimlanes.map((s) => ({
+            detailSopId: newDetailId,
+            pelaksanaId: s.pelaksanaId,
+            urutan: s.urutan,
+          })),
+        });
+      }
+      for (const rel of source.relasiSopKeluar) {
+        await tx.sopTerkait.create({
+          data: {
+            detailSopId: newDetailId,
+            detailSopTerkaitId: rel.detailSopTerkaitId,
+          },
+        });
+      }
+      for (const rel of source.relasiSopMasuk) {
+        await tx.sopTerkait.create({
+          data: {
+            detailSopId: rel.detailSopId,
+            detailSopTerkaitId: newDetailId,
+          },
+        });
+      }
+      const langkahIdMap = new Map<string, string>();
+      for (const step of source.langkahSOP) {
+        const createdStep = await tx.langkahSOP.create({
+          data: {
+            detailSopId: newDetailId,
+            urutan: step.urutan,
+            kegiatan: step.kegiatan,
+            jenis: step.jenis,
+            kelengkapan: step.kelengkapan,
+            keluaran: step.keluaran,
+            waktu: step.waktu,
+            satuanWaktu: step.satuanWaktu,
+            keterangan: step.keterangan,
+            pelaksanaId: step.pelaksanaId,
+          },
+        });
+        langkahIdMap.set(step.langkahSopId, createdStep.langkahSopId);
+      }
+      for (const step of source.langkahSOP) {
+        const newId = langkahIdMap.get(step.langkahSopId);
+        if (newId === undefined) {
+          continue;
+        }
+        const yaId =
+          step.langkahSelanjutnyaYaId === null
+            ? null
+            : (langkahIdMap.get(step.langkahSelanjutnyaYaId) ?? null);
+        const tidakId =
+          step.langkahSelanjutnyaTidakId === null
+            ? null
+            : (langkahIdMap.get(step.langkahSelanjutnyaTidakId) ?? null);
+        if (step.langkahSelanjutnyaYaId !== null || step.langkahSelanjutnyaTidakId !== null) {
+          await tx.langkahSOP.update({
+            where: { langkahSopId: newId },
+            data: {
+              langkahSelanjutnyaYaId: yaId,
+              langkahSelanjutnyaTidakId: tidakId,
+            },
+          });
+        }
+      }
+      return { detailSopId: newDetailId, versi: versiBaru };
+    });
+  }
+
+  async deleteVersiDraft(detailSopId: string): Promise<void> {
+    const row = await this.prisma.detailSOP.findUnique({
+      where: { detailSopId },
+      select: {
+        status: true,
+        revisiDariDetailSopId: true,
+        _count: { select: { nilaiEvaluasi: true } },
+      },
+    });
+    if (row === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    if (row.status !== StatusSOP.DRAFT) {
+      throw new ConflictException('Hanya versi berstatus DRAFT yang dapat dihapus');
+    }
+    if (row.revisiDariDetailSopId === null) {
+      throw new ConflictException('Hanya versi revisi dari SOP berlaku yang dapat dihapus lewat endpoint ini');
+    }
+    if (row._count.nilaiEvaluasi > 0) {
+      throw new ConflictException(
+        'Versi tidak dapat dihapus karena sudah terikat data evaluasi',
+      );
+    }
+    await this.prisma.detailSOP.delete({ where: { detailSopId } });
   }
 }

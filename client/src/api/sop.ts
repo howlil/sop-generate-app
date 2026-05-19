@@ -7,8 +7,10 @@ import { useAuthStore } from "@/stores/authStore";
 import { useToast } from "@/hooks/useToast";
 import { buildSopHeaderSnapshot, useSopHeaderAutosave, type SopHeaderAutosaveStatus } from "@/hooks/useSopHeaderAutosave";
 import { buildSopProsedurSnapshot, useSopProsedurAutosave, type SopProsedurAutosaveStatus } from "@/hooks/useSopProsedurAutosave";
-import { STALE_TIME, ROUTES, ROLES } from "@/utils/constants";
+import { STALE_TIME, ROUTES } from "@/utils/constants";
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
+import { unwrapApiData } from '@/lib/api/response'
+import { canEditSop } from '@/lib/sop/sop-permissions'
 import { usePeraturan } from "@/api/peraturan";
 import { transformLangkahToProsedurRow, transformSopDetailToMetadata } from "@/lib/sop/detailSop.mappers";
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
@@ -22,6 +24,7 @@ import type {
   CreatePelaksanaDto,
   CreateSopRequestDto,
   SopListQueryParams,
+  SopRiwayatVersiRow,
   SetSopStatusOverrideMutationDto,
   CreatePelaksanaMutationDto,
   UpdatePelaksanaMutationDto,
@@ -36,48 +39,51 @@ import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type { KomentarItem } from '@/types/dto/komentar.dto'
 import type { ProsedurRow, SOPDetailMetadata } from "@/types/ui/sop";
 
+export {
+  canBuatVersiBaru,
+  canEditSop,
+  canHapusVersiDraft,
+  canKepalaOpdSignSop,
+  canPjPenyusunRunCoordinatorActions,
+  isSopEligibleForSigning,
+} from '@/lib/sop/sop-permissions'
+
 /** Master pelaksana (`GET/POST/PATCH/DELETE /pelaksana`) memakai bungkus API Nest. */
 async function unwrapPelaksanaMaster<T>(promise: Promise<ApiSuccessResponse<T>>): Promise<T> {
-  const envelope = await promise
-  return envelope.data as T
+  return unwrapApiData(promise)
 }
 
 /** Daftar SOP (`GET /sop`) memakai bungkus ApiSuccessResponse. */
 async function unwrapSopListEnvelope(
   promise: Promise<ApiSuccessResponse<SopDaftarRow[]>>,
 ): Promise<SopDaftarRow[]> {
-  const envelope = await promise
-  return envelope.data as SopDaftarRow[]
+  return unwrapApiData(promise)
 }
 
 /** Daftar Komentar SOP — bungkus ApiSuccessResponse. */
 async function unwrapKomentarListEnvelope(
   promise: Promise<ApiSuccessResponse<KomentarItem[]>>,
 ): Promise<KomentarItem[]> {
-  const envelope = await promise
-  return envelope.data as KomentarItem[]
+  return unwrapApiData(promise)
 }
 
 /** Satu item Komentar SOP — bungkus ApiSuccessResponse. */
 async function unwrapKomentarItemEnvelope(
   promise: Promise<ApiSuccessResponse<KomentarItem>>,
 ): Promise<KomentarItem> {
-  const envelope = await promise
-  return envelope.data as KomentarItem
+  return unwrapApiData(promise)
 }
 
 async function unwrapSopCreateEnvelope(
   promise: Promise<ApiSuccessResponse<SopDaftarRow>>,
 ): Promise<SopDaftarRow> {
-  const envelope = await promise
-  return envelope.data as SopDaftarRow
+  return unwrapApiData(promise)
 }
 
 async function unwrapPenyusunWorkbench(
   promise: Promise<ApiSuccessResponse<PenyusunWorkbenchData>>,
 ): Promise<PenyusunWorkbenchData> {
-  const envelope = await promise
-  return envelope.data as PenyusunWorkbenchData
+  return unwrapApiData(promise)
 }
 
 export const sopApi = {
@@ -132,7 +138,7 @@ export const sopApi = {
    * PATCH status DetailSOP (`/sop/status/:id`). Param boleh detailSopId atau sopId header.
    * Mengembalikan workbench terbaru (transisi divalidasi di server).
    *
-   * Pengajuan evaluasi batch ke Biro: gunakan `POST /evaluasi` (modul evaluation), bukan
+   * Pengajuan evaluasi ke Biro: gunakan `POST /evaluasi` (modul evaluation), bukan
    * PATCH `DIAJUKAN_EVALUASI` per baris dari UI penyusun.
    */
   updateStatus: (id: string, payload: UpdateStatusDto) =>
@@ -152,6 +158,25 @@ export const sopApi = {
       ),
     )
   },
+
+  buatVersiBaru: (detailSopId: string, params?: PenyusunWorkbenchQueryParams) => {
+    const query = buildQueryString(params as Record<string, unknown> | undefined)
+    return unwrapPenyusunWorkbench(
+      apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(
+        `/sop/${detailSopId}/buat-versi-baru${query}`,
+      ),
+    )
+  },
+
+  getRiwayatVersi: (sopId: string) =>
+    unwrapApiData(
+      apiClient.get<ApiSuccessResponse<SopRiwayatVersiRow[]>>(`/sop/${sopId}/riwayat-versi`),
+    ),
+
+  hapusVersiDraft: (detailSopId: string) =>
+    unwrapApiData(
+      apiClient.delete<ApiSuccessResponse<null>>(`/sop/${detailSopId}/versi-draft`),
+    ),
 
   // ================= Pelaksana (master per OPD) =================
 
@@ -192,32 +217,7 @@ export const sopApi = {
  * useSop hook - TanStack Query
  */
 
-// ==================== SOP Domain Logic ====================
 /** Status yang mengizinkan penyuntingan dokumen (selaras BUSINESS-SPEC §5.2). */
-export function canEditSop(status: StatusSOP): boolean {
-  return (
-    status === "DRAFT" ||
-    status === "SEDANG_DISUSUN" ||
-    status === "REVISI_DARI_EVALUATOR"
-  );
-}
-
-export function canKepalaOpdSignSop(status: string): boolean {
-  return status === "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI";
-}
-
-/** Masih dalam pipeline pengesahan (belum tentu boleh tombol tanda tangan Kepala). */
-export function isSopEligibleForSigning(sop: { status: string }): boolean {
-  return (
-    sop.status === "SIAP_DIVERIFIKASI" || sop.status === "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI"
-  );
-}
-
-// ==================== Penyusun (PJ koordinator) — akses UI ====================
-export function canPjPenyusunRunCoordinatorActions(role: string): boolean {
-  return role === ROLES.PJ_PENYUSUN;
-}
-
 function sopListQueryOptions(params?: SopListQueryParams) {
   return {
     queryKey: queryKeys.sopList(params),
@@ -403,6 +403,43 @@ export function usePenyusunWorkbench(detailSopId: string | undefined) {
   });
 }
 
+export function useRiwayatVersi(sopId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.sopRiwayatVersi(sopId ?? ''),
+    queryFn: () => sopApi.getRiwayatVersi(sopId!),
+    enabled: !!sopId,
+    staleTime: STALE_TIME.SHORT,
+  });
+}
+
+export function useBuatVersiBaru() {
+  const queryClient = useQueryClient();
+  return useMutationWithToast({
+    mutationFn: (detailSopId: string) => sopApi.buatVersiBaru(detailSopId),
+    invalidateKeys: [queryKeys.sop],
+    successMessage: 'Versi baru berhasil dibuat',
+    useDetailedErrors: true,
+    errorMessagePrefix: 'Gagal membuat versi baru',
+    onSuccess: (data, detailSopId) => {
+      queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+      queryClient.invalidateQueries({ queryKey: queryKeys.sopRiwayatVersi(data.detail.sopId) });
+      if (data.detail.id !== detailSopId) {
+        queryClient.setQueryData(queryKeys.penyusunWorkbench(detailSopId), data);
+      }
+    },
+  });
+}
+
+export function useHapusVersiDraft(sopId: string) {
+  return useMutationWithToast({
+    mutationFn: (detailSopId: string) => sopApi.hapusVersiDraft(detailSopId),
+    invalidateKeys: [queryKeys.sop, queryKeys.sopRiwayatVersi(sopId)],
+    successMessage: 'Versi draft dihapus',
+    useDetailedErrors: true,
+    errorMessagePrefix: 'Gagal menghapus versi draft',
+  });
+}
+
 /**
  * Mutation autosave PATCH header SOP. Tidak memunculkan toast (silent autosave),
  * tidak meng-invalidate cache; sebagai gantinya `setQueryData` workbench dengan response
@@ -480,8 +517,10 @@ export function useDetailSopPenyusunActions({
     errorMessagePrefix: "Gagal mengirim ulang ke evaluator",
     onSuccess: (data, sopOrDetailId) => {
       queryClient.setQueryData(queryKeys.penyusunWorkbench(sopOrDetailId), data);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiUmpanBalik(sopOrDetailId) });
       if (data.detail.id !== sopOrDetailId) {
         queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+        void queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiUmpanBalik(data.detail.id) });
       }
     },
   });
@@ -553,8 +592,10 @@ export interface UseDetailSopPenyusunDataResult {
   setIsEditingSteps: React.Dispatch<React.SetStateAction<boolean>>;
   isEditPanelCollapsed: boolean;
   setIsEditPanelCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
-  rightPanelTab: "edit" | "komentar" | "aktivitas";
-  setRightPanelTab: React.Dispatch<React.SetStateAction<"edit" | "komentar" | "aktivitas">>;
+  rightPanelTab: "edit" | "komentar" | "versi" | "aktivitas";
+  setRightPanelTab: React.Dispatch<
+    React.SetStateAction<"edit" | "komentar" | "versi" | "aktivitas">
+  >;
   isLoading: boolean;
   masterPelaksanaOptions: { id: string; name: string }[];
   relatedPosOptions: string[];
@@ -562,6 +603,7 @@ export interface UseDetailSopPenyusunDataResult {
   relatedSopOptions: { id: string; label: string }[];
   peraturanList: Peraturan[];
   currentSopStatus: StatusSOP;
+  currentSopStatusLabel: string;
   isRevisionFlow: boolean;
   primaryActionLabel: string;
   setSopStatusOverrideAsync: ReturnType<typeof useSopStatus>["setSopStatusOverrideAsync"];
@@ -605,7 +647,9 @@ export function useDetailSopPenyusunData(
   const [activeTab, setActiveTab] = useState<"flowchart" | "bpmn">("flowchart");
   const [isEditingSteps, setIsEditingSteps] = useState(false);
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false);
-  const [rightPanelTab, setRightPanelTab] = useState<"edit" | "komentar" | "aktivitas">("edit");
+  const [rightPanelTab, setRightPanelTab] = useState<
+    "edit" | "komentar" | "versi" | "aktivitas"
+  >("edit");
 
   const sopDetail = workbench?.detail;
   const langkahList = workbench?.langkah ?? [];
@@ -710,6 +754,8 @@ export function useDetailSopPenyusunData(
   );
 
   const currentSopStatus: StatusSOP = resolvedStatusForEdit;
+  const currentSopStatusLabel =
+    workbench?.detail.statusLabel ?? currentSopStatus;
   const isRevisionFlow = currentSopStatus === "REVISI_DARI_EVALUATOR";
   const primaryActionLabel = isRevisionFlow ? "Kirim ulang ke evaluator" : "Selesai";
   const isLoading = isLoadingWorkbench;
@@ -738,6 +784,7 @@ export function useDetailSopPenyusunData(
     relatedSopOptions,
     peraturanList,
     currentSopStatus,
+    currentSopStatusLabel,
     isRevisionFlow,
     primaryActionLabel,
     setSopStatusOverrideAsync,
@@ -767,8 +814,10 @@ export interface UseDetailSopPenyusunReturn {
   setIsEditingSteps: React.Dispatch<React.SetStateAction<boolean>>;
   isEditPanelCollapsed: boolean;
   setIsEditPanelCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
-  rightPanelTab: "edit" | "komentar" | "aktivitas";
-  setRightPanelTab: React.Dispatch<React.SetStateAction<"edit" | "komentar" | "aktivitas">>;
+  rightPanelTab: "edit" | "komentar" | "versi" | "aktivitas";
+  setRightPanelTab: React.Dispatch<
+    React.SetStateAction<"edit" | "komentar" | "versi" | "aktivitas">
+  >;
   isLoading: boolean;
   masterPelaksanaOptions: { id: string; name: string }[];
   relatedPosOptions: string[];
@@ -776,6 +825,7 @@ export interface UseDetailSopPenyusunReturn {
   relatedSopOptions: { id: string; label: string }[];
   peraturanList: Peraturan[];
   currentSopStatus: StatusSOP;
+  currentSopStatusLabel: string;
   isRevisionFlow: boolean;
   primaryActionLabel: string;
   handleMetadataChange: <K extends keyof SOPDetailMetadata>(
@@ -852,6 +902,7 @@ export function useDetailSopPenyusun(
     relatedSopOptions: data.relatedSopOptions,
     peraturanList: data.peraturanList,
     currentSopStatus: data.currentSopStatus,
+    currentSopStatusLabel: data.currentSopStatusLabel,
     isRevisionFlow: data.isRevisionFlow,
     primaryActionLabel: data.primaryActionLabel,
     handleMetadataChange,

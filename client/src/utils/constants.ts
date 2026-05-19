@@ -5,8 +5,14 @@
  */
 
 import type { RoleKey } from "@/types/dto/access.dto";
-import type { StatusSOP } from "@/types/dto/sop.dto";
 import type { StatusBadgeConfig } from "@/types/ui/shared";
+import {
+  getHasilEvaluasiColors,
+  getPengajuanStatusColors,
+  getSopStatusColors,
+  SOP_STATUS_FILTER_OPTIONS,
+  STATUS_BADGE_COLORS_DEFAULT,
+} from "@/lib/status";
 
 // ==================== CONSTANTS ====================
 
@@ -49,32 +55,39 @@ export const ROUTES = {
     LOGIN: "/login",
   },
   PENYUSUN: {
+    ME: "/penyusun/me",
     SOP: "/penyusun/sop",
     DETAIL_SOP: "/penyusun/sop/$id",
     PELAKSANA: "/penyusun/pelaksana",
     PERATURAN: "/penyusun/peraturan",
+    /** @deprecated redirect ke ME */
     PJ_PENYUSUN_TTE: "/penyusun/pj-penyusun/tte",
     PJ_PENYUSUN_BERITA_ACARA: "/penyusun/pj-penyusun/berita-acara",
     DETAIL_BERITA_ACARA: "/penyusun/pj-penyusun/berita-acara/$id",
   },
   KEPALA_OPD: {
+    ME: "/kepala-opd/me",
     SOP: "/kepala-opd/sop",
     DETAIL_SOP: "/kepala-opd/sop/$id",
     PENGAJUAN: "/kepala-opd/pengajuan",
     DETAIL_PENGAJUAN: "/kepala-opd/pengajuan/$id",
+    /** @deprecated redirect ke ME */
     TTE: "/kepala-opd/tte",
   },
   PJ_EVALUATOR: {
+    ME: "/pj-evaluator/me",
     GRAFIK_EVALUASI: "/pj-evaluator/grafik-evaluasi",
     OPD: "/pj-evaluator/opd",
     PENYUSUN: "/pj-evaluator/penyusun",
     EVALUATOR: "/pj-evaluator/evaluator",
     EVALUASI: "/pj-evaluator/evaluasi",
     DETAIL_EVALUASI: "/pj-evaluator/evaluasi/$id",
+    /** @deprecated redirect ke ME */
     TTE: "/pj-evaluator/tte",
   },
   /** Workspace peran EVALUATOR (bukan PJ dashboard). */
   EVALUATOR: {
+    ME: "/evaluator/me",
     EVALUASI: "/evaluator/evaluasi",
     /** Bookmark lama (opdId) — redirect ke pengajuan aktif atau daftar terfilter. */
     DETAIL_EVALUASI_OPD: "/evaluator/evaluasi/$id",
@@ -95,7 +108,7 @@ export const IA = {
   NAV_KO_BA_PENGESAHAN: "Berita Acara Pengesahan",
   NAV_TE_EVALUASI: "Evaluasi SOP",
   BERITA_ACARA: "Berita Acara",
-  BATCH_EVALUASI_OPD: "Batch Evaluasi OPD",
+  PENGAJUAN_EVALUASI_OPD: "Pengajuan evaluasi OPD",
   TERJADWAL_EVALUASI_OPD: "Terjadwal Evaluasi OPD",
   VERIFIKASI_BA_BIRO: "Verifikasi Berita Acara oleh PJ Evaluator",
   VERIFIKASI_BA_KOORDINATOR: "Verifikasi Berita Acara oleh PJ Penyusun",
@@ -103,78 +116,11 @@ export const IA = {
 } as const;
 
 export const STATUS_BADGE_CONFIG = {
-  DRAFT: { label: "Draft", color: "text-gray-700", bgColor: "bg-gray-100" },
-  SEDANG_DISUSUN: {
-    label: "Sedang Disusun",
-    color: "text-indigo-700",
-    bgColor: "bg-indigo-100",
-  },
-  SIAP_DIEVALUASI: {
-    label: "Siap Dievaluasi",
-    color: "text-cyan-800",
-    bgColor: "bg-cyan-100",
-  },
-  DIAJUKAN_EVALUASI: {
-    label: "Diajukan Evaluasi",
-    color: "text-blue-700",
-    bgColor: "bg-blue-100",
-  },
-  SEDANG_DIEVALUASI: {
-    label: "Sedang Dievaluasi",
-    color: "text-amber-800",
-    bgColor: "bg-amber-100",
-  },
-  REVISI_DARI_EVALUATOR: {
-    label: "Perlu revisi (evaluator)",
-    color: "text-orange-700",
-    bgColor: "bg-orange-100",
-  },
-  SIAP_DIVERIFIKASI: {
-    label: "Siap Diverifikasi",
-    color: "text-teal-800",
-    bgColor: "bg-teal-100",
-  },
-  DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: {
-    label: "Diverifikasi PJ Evaluator",
-    color: "text-green-700",
-    bgColor: "bg-green-100",
-  },
-  BERLAKU: {
-    label: "Berlaku",
-    color: "text-emerald-800",
-    bgColor: "bg-emerald-100",
-  },
-  DICABUT: {
-    label: "Dicabut",
-    color: "text-rose-800",
-    bgColor: "bg-rose-100",
-  },
   AKTIF: { label: "Aktif", color: "text-green-700", bgColor: "bg-green-100" },
   NONAKTIF: {
     label: "Nonaktif",
     color: "text-gray-700",
     bgColor: "bg-gray-100",
-  },
-  /** Status Berita Acara PJ Penyusun (bukan enum StatusSOP). */
-  DIVERIFIKASI_PJ_EVALUATOR: {
-    label: "Diverifikasi PJ Evaluator",
-    color: "text-orange-700",
-    bgColor: "bg-orange-100",
-  },
-  DITANDATANGANI_PJ_PENYUSUN: {
-    label: "Ditandatangani PJ Penyusun",
-    color: "text-green-700",
-    bgColor: "bg-green-100",
-  },
-  SELESAI_DIEVALUASI: {
-    label: "Selesai Dievaluasi",
-    color: "text-green-700",
-    bgColor: "bg-green-100",
-  },
-  SELESAI: {
-    label: "Selesai",
-    color: "text-emerald-800",
-    bgColor: "bg-emerald-100",
   },
   DISETUJAI: {
     label: "Disetujui",
@@ -186,30 +132,24 @@ export const STATUS_BADGE_CONFIG = {
     color: "text-rose-800",
     bgColor: "bg-rose-100",
   },
-  /** Label workspace evaluator (bukan enum StatusSOP). */
-  "Diajukan Evaluasi": {
-    label: "Diajukan Evaluasi",
-    color: "text-blue-700",
-    bgColor: "bg-blue-100",
-  },
-  "Sedang Dievaluasi": {
-    label: "Sedang Dievaluasi",
-    color: "text-amber-800",
-    bgColor: "bg-amber-100",
-  },
-  "Selesai Evaluasi": {
-    label: "Selesai Evaluasi",
-    color: "text-green-700",
-    bgColor: "bg-green-100",
-  },
-  default: { label: "Unknown", color: "text-gray-700", bgColor: "bg-gray-100" },
 } as const satisfies Record<string, StatusBadgeConfig>;
 
-export function getStatusBadgeConfig(
-  status: StatusSOP | "AKTIF" | "NONAKTIF" | string,
-): StatusBadgeConfig {
-  return (
-    STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG] ||
-    STATUS_BADGE_CONFIG["default"]
-  );
+/** Lookup gabungan (legacy); utamakan badge per domain. */
+export function getStatusBadgeColors(status: string) {
+  const misc = STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG]
+  if (misc) return { color: misc.color, bgColor: misc.bgColor }
+  const pengajuan = getPengajuanStatusColors(status)
+  if (pengajuan !== STATUS_BADGE_COLORS_DEFAULT) return pengajuan
+  const sop = getSopStatusColors(status)
+  if (sop !== STATUS_BADGE_COLORS_DEFAULT) return sop
+  return getHasilEvaluasiColors(status)
 }
+
+export function getStatusBadgeConfig(status: string): StatusBadgeConfig {
+  const misc = STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG]
+  if (misc) return misc
+  const colors = getStatusBadgeColors(status)
+  return { label: status, ...colors }
+}
+
+export { SOP_STATUS_FILTER_OPTIONS };
