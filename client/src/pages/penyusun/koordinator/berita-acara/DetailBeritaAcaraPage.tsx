@@ -5,12 +5,13 @@ import {
   usePengajuanEvaluasiDetail,
   usePengajuanSopDokumenWorkbench,
 } from '@/api/evaluasi'
-import { PinVerificationDialog } from '@/pages/pj-evaluator/tte/components/PinVerificationDialog'
+import { PinVerificationDialog } from '@/components/tte/pin-verification-dialog'
 import { createPinConfirmHandler, useTandaTanganiBA } from '@/api/tte'
-import { BeritaAcaraTemplate } from '@/pages/penyusun/koordinator/berita-acara/components/BeritaAcaraTemplate'
-import { SOPListCard } from '@/pages/penyusun/sop/components/SOPListCard'
-import { SOPPreviewTemplate } from '@/pages/penyusun/sop/components/SOPPreviewTemplate'
-import type { SOPPreviewTemplateProps } from '@/pages/penyusun/sop/components/SOPPreviewTemplate'
+import { BeritaAcaraPreviewPane } from '@/components/pengajuan/berita-acara-preview-pane'
+import { DocumentPreviewTabs } from '@/components/pengajuan/document-preview-tabs'
+import { SopDocumentPreviewPane } from '@/components/pengajuan/sop-document-preview-pane'
+import { mapBeritaAcaraTemplateProps } from '@/lib/pengajuan/map-berita-acara-template-props'
+import { SOPListCard } from '@/components/sop/sop-list-card'
 import { DetailPageLayout } from '@/components/layout/DetailPageLayout'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/ui/back-button'
@@ -18,19 +19,26 @@ import { NotFoundWithBack } from '@/components/ui/not-found'
 import { PengajuanEvaluasiStatusHeader } from '@/components/evaluasi/pengajuan-evaluasi-status-header'
 import { InfoCard } from '@/components/ui/info-card'
 import { InfoField } from '@/components/ui/info-field'
-import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  CollapsedStripButton,
+  CollapsibleSidePanel,
+  CollapsibleSidePanelContent,
+  CollapsibleSidePanelHeader,
+  SimplePanelHeader,
+} from '@/components/ui/collapsible-side-panel'
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
 import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
-import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, CheckCircle, FileText, Loader2 } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
 import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCetakArsipButtons'
 import {
   PengajuanSemuaSopPrintStack,
   type PengajuanSemuaSopPrintItem,
 } from '@/components/pengajuan/PengajuanSemuaSopPrintStack'
-import { usePengajuanCetakArsip } from '@/hooks/use-pengajuan-cetak-arsip'
-import { canCetakArsipPengajuan } from '@/lib/print/pengajuan-print'
+import { PengajuanBeritaAcaraPrintLayer } from '@/components/pengajuan/pengajuan-berita-acara-print-layer'
+import { PengajuanSopPrintLayer } from '@/components/pengajuan/pengajuan-sop-print-layer'
+import { usePengajuanCetakArsip } from '@/components/pengajuan/hooks/use-pengajuan-cetak-arsip'
+import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from '@/lib/print/pengajuan-print'
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return ''
@@ -69,9 +77,9 @@ export function DetailBeritaAcaraPage() {
 
   const isReadyForSignature = pengajuan?.status === 'DIVERIFIKASI_PJ_EVALUATOR'
   const isAlreadySigned = pengajuan?.status === 'DITANDATANGANI_PJ_PENYUSUN'
-  const isSelesai = pengajuan?.status === 'SELESAI'
   const sopList = pengajuan?.sopList ?? []
-  const canCetak = canCetakArsipPengajuan(pengajuan?.status)
+  const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuan?.status)
+  const canCetakSopArsip = canCetakSopArsipPengajuan(pengajuan?.status)
   const sopPrintItems = useMemo<PengajuanSemuaSopPrintItem[]>(
     () =>
       sopList.map((item) => ({
@@ -89,11 +97,10 @@ export function DetailBeritaAcaraPage() {
     pengajuanId: id,
     effectiveSopDetailId,
     semuaSopReady,
-    setPreviewMainTab,
   })
 
   const sopWorkbenchEnabled = Boolean(
-    effectiveSopDetailId && (previewMainTab === 'sop' || canCetak),
+    effectiveSopDetailId && (previewMainTab === 'sop' || canCetakSopArsip),
   )
   const {
     data: sopDokumen,
@@ -116,9 +123,25 @@ export function DetailBeritaAcaraPage() {
   )
 
   const isSopPreviewLoading = sopWorkbenchEnabled && sopPreviewProps === null && sopWorkbenchLoading
-  const { data: baView } = usePengajuanBeritaAcaraView(id, {
-    enabled: Boolean(pengajuan && (previewMainTab === 'ba' || canCetak)),
+  const { data: baView, isFetching: baViewLoading } = usePengajuanBeritaAcaraView(id, {
+    enabled: Boolean(pengajuan && (previewMainTab === 'ba' || canCetakBa)),
   })
+
+  const baTemplateProps = useMemo(
+    () =>
+      pengajuan != null
+        ? mapBeritaAcaraTemplateProps({
+            pengajuan,
+            baView,
+            overrides: {
+              opd: pengajuan.opdNama ?? pengajuan.opd?.nama ?? '',
+              namaPjPenyusun:
+                pengajuan.namaPjPenyusun ?? pengajuan.opdNama ?? 'PJ Penyusun OPD',
+            },
+          })
+        : null,
+    [pengajuan, baView],
+  )
 
   if (isLoading && pengajuan === null) {
     return (
@@ -159,6 +182,7 @@ export function DetailBeritaAcaraPage() {
               <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <PengajuanCetakArsipButtons
+                  printScope="pj-penyusun-kepala-opd"
                   pengajuanStatus={pengajuan.status}
                   effectiveSopDetailId={effectiveSopDetailId}
                   sopCount={sopList.length}
@@ -218,118 +242,106 @@ export function DetailBeritaAcaraPage() {
                 Kepala OPD.
               </InfoCard>
             )}
-            {isSelesai && (
-              <InfoCard variant="success" icon={<CheckCircle />} title="Pengajuan evaluasi selesai">
-                Seluruh SOP dalam pengajuan ini telah ditandatangani Kepala OPD. Berita Acara dapat dicetak
-                sebagai arsip.
-              </InfoCard>
-            )}
           </div>
         }
         leftPanel={
           <CollapsibleSidePanel
             side="left"
             collapsed={leftPanelCollapsed}
-            onCollapsedChange={setLeftPanelCollapsed}
             widthCollapsed="w-10"
             widthExpanded="w-[min(300px,36vw)]"
-            title="Daftar SOP"
           >
-            <SOPListCard
-              items={sopList.map((sop) => ({
-                id: sop.sopDetailId,
-                nama: sop.nama,
-                nomor: sop.nomor,
-                statusDokumen: sop.status,
-                statusDokumenLabel: sop.statusLabel ?? sop.status,
-                hasilEvaluasi: sop.hasil,
-                hasilEvaluasiLabel: sop.hasilLabel,
-              }))}
-              selectedId={effectiveSopDetailId}
-              onSelect={setSelectedSopId}
-            />
+            {leftPanelCollapsed ? (
+              <CollapsedStripButton
+                label="SOP"
+                icon={<FileText className="w-4 h-4" />}
+                onClick={() => setLeftPanelCollapsed(false)}
+              />
+            ) : (
+              <>
+                <CollapsibleSidePanelHeader
+                  side="left"
+                  onCollapse={() => setLeftPanelCollapsed(true)}
+                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                >
+                  <SimplePanelHeader title="Daftar SOP" />
+                </CollapsibleSidePanelHeader>
+                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
+                  <SOPListCard
+                    items={sopList.map((sop) => ({
+                      id: sop.sopDetailId,
+                      nama: sop.nama,
+                      nomor: sop.nomor,
+                      statusDokumen: sop.status,
+                      statusDokumenLabel: sop.statusLabel ?? sop.status,
+                      hasilEvaluasi: sop.hasil,
+                      hasilEvaluasiLabel: sop.hasilLabel,
+                    }))}
+                    selectedId={effectiveSopDetailId}
+                    onSelect={setSelectedSopId}
+                  />
+                </CollapsibleSidePanelContent>
+              </>
+            )}
           </CollapsibleSidePanel>
         }
       >
         <div className="flex h-full min-h-0 min-w-0 flex-col">
-          <Tabs
+          <DocumentPreviewTabs
             value={previewMainTab}
-            onValueChange={(value) => setPreviewMainTab(value as 'sop' | 'ba')}
-            className="flex h-full min-h-0 flex-col"
-          >
-            <div data-print-hide className="border-b border-gray-200 px-2 py-2">
-              <TabsList className="h-8 bg-transparent p-0 gap-2">
-                <TabsTrigger value="sop" className="h-8 text-xs">
-                  Pratinjau SOP
-                </TabsTrigger>
-                <TabsTrigger value="ba" className="h-8 text-xs">
-                  Berita Acara
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="sop" className="mt-3 flex min-h-0 flex-1 flex-col overflow-auto px-2 pb-2">
-              {selectedSop !== null ? (
-                isSopPreviewLoading ? (
-                  <div className="flex flex-col items-center justify-center gap-2 py-16 text-gray-500 text-sm">
-                    <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
-                    Memuat dokumen SOP…
-                  </div>
-                ) : sopPreviewProps !== null ? (
-                  <div data-print-area="sop">
-                    <SOPPreviewTemplate
-                      name={sopPreviewProps.name}
-                      number={sopPreviewProps.number}
-                      metadata={sopPreviewProps.metadata as SOPPreviewTemplateProps['metadata']}
-                      prosedurRows={sopPreviewProps.prosedurRows}
-                      implementers={sopPreviewProps.implementers}
-                      tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
-                      previewOptions={{ editable: false, showScrollbar: true }}
+            onValueChange={setPreviewMainTab}
+            tabs={[
+              {
+                value: 'sop',
+                label: 'Pratinjau SOP',
+                contentClassName:
+                  'mt-3 flex min-h-0 flex-1 flex-col overflow-auto px-2 pb-2',
+                content: (
+                  <SopDocumentPreviewPane
+                    selectedSop={selectedSop}
+                    isLoading={isSopPreviewLoading}
+                    sopPreviewProps={sopPreviewProps}
+                    tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
+                    loadingMessage="Memuat dokumen SOP…"
+                    errorMessage={
+                      sopWorkbenchError
+                        ? 'Dokumen lengkap SOP dalam pengajuan evaluasi tidak dapat dimuat.'
+                        : undefined
+                    }
+                    onRetry={
+                      sopWorkbenchError ? () => void refetchSopDokumen() : undefined
+                    }
+                  />
+                ),
+              },
+              {
+                value: 'ba',
+                label: 'Berita Acara',
+                contentClassName:
+                  'mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2',
+                content:
+                  baTemplateProps != null ? (
+                    <BeritaAcaraPreviewPane
+                      isLoading={baViewLoading && baTemplateProps == null}
+                      templateProps={baTemplateProps}
                     />
-                  </div>
-                ) : sopWorkbenchError ? (
-                  <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-                    <AlertCircle className="h-10 w-10 text-red-500" aria-hidden />
-                    <p className="max-w-md text-sm text-gray-600">
-                      Dokumen lengkap SOP dalam pengajuan evaluasi tidak dapat dimuat.
-                    </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => void refetchSopDokumen()}
-                    >
-                      Coba lagi
-                    </Button>
-                  </div>
-                ) : null
-              ) : (
-                <div className="flex h-full min-h-[240px] items-center justify-center rounded-lg border border-dashed border-gray-300 bg-white text-sm text-gray-500">
-                  Tidak ada SOP untuk ditampilkan.
-                </div>
-              )}
-            </TabsContent>
-            <TabsContent value="ba" className="mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2">
-              <div data-print-area="ba" className="w-full">
-                <BeritaAcaraTemplate
-                  forPrint
-                  opd={pengajuan.opdNama ?? pengajuan.opd?.nama ?? ''}
-                  nomorBA={baView?.nomorBA ?? pengajuan.nomorBA}
-                  tanggalVerifikasi={baView?.tanggalVerifikasiPjEvaluator ?? pengajuan.tanggalVerifikasi}
-                  namaBiro={pengajuan.namaPjEvaluator}
-                  namaPjPenyusun={pengajuan.namaPjPenyusun ?? pengajuan.opdNama ?? 'PJ Penyusun OPD'}
-                  tteSignaturePayloadPjEvaluator={baView?.tteBeritaAcara?.payloadPjEvaluator}
-                  tteSignaturePayloadPjPenyusun={baView?.tteBeritaAcara?.payloadPjPenyusun}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
+                  ) : null,
+              },
+            ]}
+          />
         </div>
       </DetailPageLayout>
 
+      <PengajuanBeritaAcaraPrintLayer templateProps={baTemplateProps} />
+      <PengajuanSopPrintLayer
+        previewProps={sopPreviewProps}
+        tteSignaturePayload={tteSignaturePayloadKepalaOpd}
+        fallbackSop={selectedSop}
+      />
       <PengajuanSemuaSopPrintStack
         pengajuanId={id}
         sopItems={sopPrintItems}
-        prefetchEnabled={canCetak}
+        prefetchEnabled={canCetakSopArsip}
         onAllLoadedChange={setSemuaSopReady}
       />
 

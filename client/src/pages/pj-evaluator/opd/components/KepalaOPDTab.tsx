@@ -2,8 +2,13 @@ import { useState } from 'react'
 import { Edit, History, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { StatusBadge } from '@/components/ui/status-badge'
 import { RowActions } from '@/components/data/row-actions'
+import {
+  PersonMonoCell,
+  PersonNameCell,
+  PersonStatusCell,
+  PersonTextCell,
+} from '@/components/person/person-table-cells'
 import { KepalaOpdManageDialog } from './KepalaOpdManageDialog'
 import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
 import { KepalaOpdRiwayatDialog } from './KepalaOpdRiwayatDialog'
@@ -199,13 +204,21 @@ export function KepalaOPDTab({
               {!isLoading &&
                 pageData.map((k) => (
                   <Table.BodyRow key={k.id}>
-                    <Table.Td className="font-medium text-gray-900">{k.nama}</Table.Td>
-                    <Table.Td className="text-gray-600 font-mono text-xs">{k.nip}</Table.Td>
-                    <Table.Td className="text-gray-600">{k.email}</Table.Td>
+                    <Table.Td>
+                      <PersonNameCell name={k.nama} avatarText={k.nama[0]} />
+                    </Table.Td>
+                    <Table.Td>
+                      <PersonMonoCell value={k.nip} />
+                    </Table.Td>
+                    <Table.Td>
+                      <PersonTextCell value={k.email} className="text-sm" />
+                    </Table.Td>
                     <Table.Td>{k.namaOpd}</Table.Td>
-                    <Table.Td className="text-gray-700 max-w-[140px] truncate">{k.jabatan}</Table.Td>
+                    <Table.Td className="max-w-[140px] truncate">
+                      <PersonTextCell value={k.jabatan} className="text-sm text-gray-700" />
+                    </Table.Td>
                     <Table.Td className="text-center">
-                      <StatusBadge status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
+                      <PersonStatusCell status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                     </Table.Td>
                     <Table.Td>
                       <RowActions

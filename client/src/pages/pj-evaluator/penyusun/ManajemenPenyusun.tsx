@@ -1,24 +1,29 @@
-import { Fragment, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import {
   Plus,
   Edit,
-  ChevronRight,
   Trash2,
   History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
-import { IconActionButton } from "@/components/ui/icon-action-button";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
+import { RowActions } from "@/components/data/row-actions";
+import { ExpandableGroupedTable } from "@/components/data/expandable-grouped-table";
+import {
+  PersonMonoCell,
+  PersonNameCell,
+  PersonStatusCell,
+  PersonTextCell,
+} from "@/components/person/person-table-cells";
 import { useOpd } from "@/api/opd";
 import { usePenyusun } from "@/api/penyusun";
 import { PenyusunFormDialog } from "./components/PenyusunFormDialog";
 import { RiwayatOpdPenyusunDialog } from "./components/RiwayatOpdPenyusunDialog";
 import type { PenyusunFormData } from "./components/PenyusunFormDialog";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { ROUTES } from "@/utils/constants";
 import type { PenyusunPublikItem, TimPenyusunOpdGrup } from "@/types/dto/tim.dto";
@@ -71,9 +76,6 @@ export function ManajemenPenyusun() {
   const [editingOpdId, setEditingOpdId] = useState<string | null>(null);
   const [opdTujuanId, setOpdTujuanId] = useState("");
   const [createOpdId, setCreateOpdId] = useState<string | undefined>();
-  const [expandedOpdIds, setExpandedOpdIds] = useState<Record<string, boolean>>(
-    {},
-  );
   const [formData, setFormData] = useState<PenyusunFormData>(emptyForm());
 
   const barisFlat = useMemo(() => flattenGrup(grup), [grup]);
@@ -212,126 +214,83 @@ export function ManajemenPenyusun() {
         </div>
       ) : (
         <>
-          <Table.Table>
-            <thead>
-              <Table.HeadRow>
-                <Table.Th>OPD / Penyusun</Table.Th>
-                <Table.Th>NIP</Table.Th>
-                <Table.Th>Jabatan</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>No. HP</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {grup.map((g) => {
-                const isExpanded = expandedOpdIds[g.opdId] ?? false;
-                return (
-                  <Fragment key={g.opdId}>
-                    <Table.BodyRow
-                      className="bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
-                      onClick={() =>
-                        setExpandedOpdIds((prev) => ({
-                          ...prev,
-                          [g.opdId]: !isExpanded,
-                        }))
-                      }
-                    >
-                      <Table.Td colSpan={7}>
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-gray-700"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setExpandedOpdIds((prev) => ({
-                                  ...prev,
-                                  [g.opdId]: !isExpanded,
-                                }));
-                              }}
-                              aria-label={
-                                isExpanded
-                                  ? "Tutup daftar penyusun"
-                                  : "Lihat daftar penyusun"
-                              }
-                            >
-                              <ChevronRight
-                                className={`w-3.5 h-3.5 transition-transform ${
-                                  isExpanded ? "rotate-90" : ""
-                                }`}
-                              />
-                            </button>
-                            <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center shrink-0">
-                              <span className="text-[11px] font-semibold text-blue-700">
-                                {g.namaOpd[0] ?? "O"}
-                              </span>
-                            </div>
-                            <p className="font-medium text-gray-900 text-xs md:text-sm truncate">
-                              {g.namaOpd}
-                            </p>
-                          </div>
-                          <span className="text-[11px] text-gray-500">
-                            {g.penyusun.length} penyusun
-                          </span>
-                        </div>
-                      </Table.Td>
-                    </Table.BodyRow>
-                    {isExpanded &&
-                      g.penyusun.map((p) => {
-                        const row: PenyusunBaris = { ...p, opdId: g.opdId };
-                        return (
-                          <Table.BodyRow key={p.id}>
-                            <Table.Td>
-                              <div className="flex flex-col gap-0.5">
-                                <p className="font-medium text-gray-900">
-                                  {p.nama}
-                                </p>
-                                <Badge variant="outline" className="text-[10px] w-fit">
-                                  {p.peran === "PJ_PENYUSUN"
-                                    ? "PJ Penyusun"
-                                    : "Penyusun"}
-                                </Badge>
-                              </div>
-                            </Table.Td>
-                            <Table.Td className="font-mono text-gray-600 text-[11px]">
-                              {p.nip}
-                            </Table.Td>
-                            <Table.Td className="text-gray-600">{p.jabatan}</Table.Td>
-                            <Table.Td className="text-gray-600">{p.email}</Table.Td>
-                            <Table.Td className="text-gray-600">{p.nohp}</Table.Td>
-                            <Table.Td>
-                              <StatusBadge status={p.status} />
-                            </Table.Td>
-                            <Table.Td>
-                              <div className="flex flex-wrap items-center justify-center gap-1">
-                                <IconActionButton
-                                  icon={History}
-                                  title="Riwayat OPD"
-                                  onClick={() => setRiwayatFor(row)}
-                                />
-                                <IconActionButton
-                                  icon={Edit}
-                                  title="Edit"
-                                  onClick={() => openEdit(row)}
-                                />
-                                <IconActionButton
-                                  icon={Trash2}
-                                  title="Hapus permanen"
-                                  destructive
-                                  onClick={() => setHapusPermanenId(p.id)}
-                                />
-                              </div>
-                            </Table.Td>
-                          </Table.BodyRow>
-                        );
-                      })}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </Table.Table>
+          <ExpandableGroupedTable
+            groups={grup}
+            getGroupId={(g) => g.opdId}
+            renderGroupTitle={(g) => g.namaOpd}
+            renderGroupMeta={(g) => `${g.penyusun.length} penyusun`}
+            renderRows={(g) => (
+              <Table.Table>
+                <thead>
+                  <Table.HeadRow>
+                    <Table.Th>OPD / Penyusun</Table.Th>
+                    <Table.Th>NIP</Table.Th>
+                    <Table.Th>Jabatan</Table.Th>
+                    <Table.Th>Email</Table.Th>
+                    <Table.Th>No. HP</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.Th align="center">Aksi</Table.Th>
+                  </Table.HeadRow>
+                </thead>
+                <tbody>
+                  {g.penyusun.map((p) => {
+                    const row: PenyusunBaris = { ...p, opdId: g.opdId };
+                    return (
+                      <Table.BodyRow key={p.id}>
+                        <Table.Td>
+                          <PersonNameCell name={p.nama} avatarText={p.nama[0]}>
+                            <Badge variant="outline" className="text-[10px] w-fit">
+                              {p.peran === "PJ_PENYUSUN"
+                                ? "PJ Penyusun"
+                                : "Penyusun"}
+                            </Badge>
+                          </PersonNameCell>
+                        </Table.Td>
+                        <Table.Td>
+                          <PersonMonoCell value={p.nip} />
+                        </Table.Td>
+                        <Table.Td>
+                          <PersonTextCell value={p.jabatan} className="text-sm" />
+                        </Table.Td>
+                        <Table.Td>
+                          <PersonTextCell value={p.email} className="text-sm" />
+                        </Table.Td>
+                        <Table.Td>
+                          <PersonTextCell value={p.nohp} className="text-sm" />
+                        </Table.Td>
+                        <Table.Td>
+                          <PersonStatusCell status={p.status} />
+                        </Table.Td>
+                        <Table.Td>
+                          <RowActions
+                            wrap
+                            actions={[
+                              {
+                                icon: History,
+                                title: "Riwayat OPD",
+                                onClick: () => setRiwayatFor(row),
+                              },
+                              {
+                                icon: Edit,
+                                title: "Edit",
+                                onClick: () => openEdit(row),
+                              },
+                              {
+                                icon: Trash2,
+                                title: "Hapus permanen",
+                                destructive: true,
+                                onClick: () => setHapusPermanenId(p.id),
+                              },
+                            ]}
+                          />
+                        </Table.Td>
+                      </Table.BodyRow>
+                    );
+                  })}
+                </tbody>
+              </Table.Table>
+            )}
+          />
 
           {barisFlat.length === 0 && (
             <div className="py-8 text-center text-gray-500 text-sm">

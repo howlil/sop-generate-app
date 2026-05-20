@@ -2,7 +2,7 @@ import { MoreHorizontal, Settings2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { useProsedurEditor } from '@/hooks/useProsedurEditor'
+import { useProsedurEditor } from '@/pages/penyusun/sop/hooks/use-prosedur-editor'
 import { useToast } from '@/hooks/useToast'
 import {
   KegiatanCell,

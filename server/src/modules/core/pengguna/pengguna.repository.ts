@@ -1,16 +1,7 @@
-import {
-  BadRequestException,
-  Injectable,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import type { Pengguna, Prisma } from '../../../generated/prisma';
 import { PeranPengguna } from '../../../generated/prisma';
-
-const BIRO_BELUM_DIKONFIGURASI_MESSAGE =
-  'OPD PJ Evaluator Organisasi belum dikonfigurasi. Hubungi administrator sistem.' as const;
-const EVALUATOR_HARUS_DARI_BIRO_MESSAGE =
-  'Evaluator hanya boleh ditambahkan pada OPD Biro Organisasi' as const;
 
 @Injectable()
 export class PenggunaRepository {
@@ -101,36 +92,8 @@ export class PenggunaRepository {
     });
   }
 
-  async createEvaluator(
-    data: Omit<Prisma.PenggunaCreateInput, 'opd'> & { opd?: Prisma.PenggunaCreateInput['opd'] },
-  ): Promise<Pengguna> {
-    const biroOpdId = await this.findPjEvaluatorOrganisasiOpdId();
-    if (biroOpdId === null) {
-      throw new ServiceUnavailableException(BIRO_BELUM_DIKONFIGURASI_MESSAGE);
-    }
-    const requestedOpdId = this.resolveOpdIdFromCreateInput(data);
-    if (requestedOpdId !== null && requestedOpdId !== biroOpdId) {
-      throw new BadRequestException(EVALUATOR_HARUS_DARI_BIRO_MESSAGE);
-    }
-    const createData: Prisma.PenggunaCreateInput =
-      requestedOpdId === null
-        ? { ...data, opd: { connect: { opdId: biroOpdId } } }
-        : (data as Prisma.PenggunaCreateInput);
-    return this.prisma.pengguna.create({ data: createData });
-  }
-
-  private resolveOpdIdFromCreateInput(
-    data: Omit<Prisma.PenggunaCreateInput, 'opd'> & { opd?: Prisma.PenggunaCreateInput['opd'] },
-  ): string | null {
-    const opd = data.opd;
-    if (opd === undefined || opd === null) {
-      return null;
-    }
-    if ('connect' in opd && opd.connect !== undefined && 'opdId' in opd.connect) {
-      const opdId = opd.connect.opdId;
-      return opdId ?? null;
-    }
-    return null;
+  async createPengguna(data: Prisma.PenggunaCreateInput): Promise<Pengguna> {
+    return this.prisma.pengguna.create({ data });
   }
 
   async updateEvaluator(penggunaId: string, data: Prisma.PenggunaUpdateInput): Promise<Pengguna> {

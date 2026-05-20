@@ -8,11 +8,15 @@ import type { JwtAccessPayload } from '../../../common';
 import type { CreatePelaksanaDto } from './dto/create-pelaksana.dto';
 import type { UpdatePelaksanaDto } from './dto/update-pelaksana.dto';
 import type { PelaksanaResponseDto } from './dto/pelaksana-response.dto';
+import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { PelaksanaRepository, type PelaksanaRow } from './pelaksana.repository';
 
 @Injectable()
 export class PelaksanaService {
-  constructor(private readonly pelaksanaRepository: PelaksanaRepository) {}
+  constructor(
+    private readonly pelaksanaRepository: PelaksanaRepository,
+    private readonly userOpdAccessService: UserOpdAccessService,
+  ) {}
 
   private mapRow(row: PelaksanaRow): PelaksanaResponseDto {
     return {
@@ -28,14 +32,10 @@ export class PelaksanaService {
     user: JwtAccessPayload,
     bodyOrQueryOpdId?: string,
   ): Promise<string> {
-    const ownOpdId = await this.pelaksanaRepository.findOpdIdByPenggunaId(user.sub);
-    if (ownOpdId === null) {
-      throw new ForbiddenException('Pengguna tidak terikat OPD');
-    }
-    if (bodyOrQueryOpdId !== undefined && bodyOrQueryOpdId !== '' && bodyOrQueryOpdId !== ownOpdId) {
-      throw new ForbiddenException('Tidak dapat mengakses OPD lain');
-    }
-    return ownOpdId;
+    return this.userOpdAccessService.resolveOwnOpdAllowingOptionalQuery(
+      user.sub,
+      bodyOrQueryOpdId,
+    );
   }
 
   async list(user: JwtAccessPayload, queryOpdId?: string): Promise<PelaksanaResponseDto[]> {

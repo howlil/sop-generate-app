@@ -5,7 +5,7 @@ import { queryKeys } from '@/config/query-keys'
 import { STALE_TIME } from '@/utils/constants'
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
 import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
-import { SOPPreviewTemplate, type SOPPreviewTemplateProps } from '@/pages/penyusun/sop/components/SOPPreviewTemplate'
+import { SOPPreviewTemplate, type SOPPreviewTemplateProps } from '@/components/sop/sop-preview-template'
 
 const WORKBENCH_LOGS_LIMIT = 100
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Check, CloudOff, CloudUpload, GitBranchPlus, Printer, RefreshCcw, Save } from 'lucide-react'
+import { AlertTriangle, Check, CloudOff, CloudUpload, GitBranchPlus, RefreshCcw, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
@@ -7,7 +7,7 @@ import { SopStatusBadge } from '@/components/status/sop-status-badge'
 import { cn } from '@/utils/cn'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
-import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
+import type { SopHeaderAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-header-autosave'
 
 export interface DetailSOPPenyusunHeaderProps {
   metadata: SOPDetailMetadata
@@ -25,7 +25,6 @@ export interface DetailSOPPenyusunHeaderProps {
   /** Handler untuk mencoba ulang autosave saat status `error`. */
   onRetryAutosave?: () => void | Promise<void>
   onComplete: () => void
-  onPrint: () => void
   /** Menonaktifkan tombol aksi utama (mis. saat POST kirim ulang evaluasi). */
   isPrimaryActionPending?: boolean
   /** Mode lihat: sembunyikan autosave, Selesai, dan retry. */
@@ -87,7 +86,6 @@ export function DetailSOPPenyusunHeader({
   autosaveStatus = 'idle',
   onRetryAutosave,
   onComplete,
-  onPrint,
   isPrimaryActionPending = false,
   isReadOnly = false,
   kirimUlangBlockingReason = null,
@@ -145,14 +143,6 @@ export function DetailSOPPenyusunHeader({
               Coba lagi
             </Button>
           ) : null}
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
-            onClick={onPrint}
-          >
-            <Printer className="w-3.5 h-3.5" /> Print SOP
-          </Button>
           {canBuatVersiBaru && onBuatVersiBaru ? (
             <Button
               size="sm"

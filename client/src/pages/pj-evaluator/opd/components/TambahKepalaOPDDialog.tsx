@@ -1,6 +1,5 @@
-import { FormDialog } from '@/components/ui/form-dialog'
+import { PersonFormDialog } from '@/components/forms/person-form-dialog'
 import { OpdSelectField } from '@/components/forms/opd-select-field'
-import { PersonIdentityFields } from '@/components/forms/person-identity-fields'
 import type { FormTambahKepalaState } from '@/types/ui/organisasi'
 
 interface OPD {
@@ -35,7 +34,7 @@ export function TambahKepalaOPDDialog({
     form.nohp.trim()
 
   return (
-    <FormDialog
+    <PersonFormDialog
       open={open}
       onOpenChange={onOpenChange}
       title="Tambah Kepala OPD"
@@ -45,24 +44,23 @@ export function TambahKepalaOPDDialog({
       onConfirm={onConfirm}
       confirmDisabled={!valid}
       size="md"
-    >
-      <OpdSelectField
-        value={form.opdId}
-        onValueChange={(opdId) => setForm((f) => ({ ...f, opdId }))}
-        options={opdList}
-      />
-      <PersonIdentityFields
-        value={form}
-        onChange={setForm}
-        labels={{ name: 'Nama lengkap', pangkat: 'Pangkat / golongan' }}
-        placeholders={{
-          name: 'Contoh: Dr. Ahmad Pratama, S.Sos',
-          nip: 'NIP 18 digit',
-          email: 'email@pemda.go.id',
-          jabatan: 'Contoh: Kepala Dinas',
-          phone: '081234567890',
-        }}
-      />
-    </FormDialog>
+      beforeFields={
+        <OpdSelectField
+          value={form.opdId}
+          onValueChange={(opdId) => setForm((f) => ({ ...f, opdId }))}
+          options={opdList}
+        />
+      }
+      value={form}
+      onChange={setForm}
+      labels={{ name: 'Nama lengkap', pangkat: 'Pangkat / golongan' }}
+      placeholders={{
+        name: 'Contoh: Dr. Ahmad Pratama, S.Sos',
+        nip: 'NIP 18 digit',
+        email: 'email@pemda.go.id',
+        jabatan: 'Contoh: Kepala Dinas',
+        phone: '081234567890',
+      }}
+    />
   )
 }

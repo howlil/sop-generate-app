@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Building2, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { Input } from '@/components/ui/input'
-import { FormDialog } from '@/components/ui/form-dialog'
-import { FormField } from '@/components/ui/form-field'
+import { SingleTextFieldDialog } from '@/components/forms/single-text-field-dialog'
 import { RowActions } from '@/components/data/row-actions'
 import type { OPDUI as OPD } from '@/types/ui/organisasi'
 
@@ -111,7 +109,7 @@ export function OPDTab({
         )}
       </Table.Paginated>
 
-      <FormDialog
+      <SingleTextFieldDialog
         open={dialogState.isCreateOpen}
         onOpenChange={(open) =>
           setDialogState((prev) => ({ ...prev, isCreateOpen: open }))
@@ -123,18 +121,13 @@ export function OPDTab({
         onConfirm={handleConfirmCreate}
         confirmDisabled={!formData.name}
         size="md"
-      >
-        <FormField label="Nama OPD" required>
-          <Input
-            className="h-9 text-xs"
-            placeholder="Contoh: Dinas Pendidikan"
-            value={formData.name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-          />
-        </FormField>
-      </FormDialog>
+        label="Nama OPD"
+        placeholder="Contoh: Dinas Pendidikan"
+        value={formData.name}
+        onValueChange={(name) => setFormData((prev) => ({ ...prev, name }))}
+      />
 
-      <FormDialog
+      <SingleTextFieldDialog
         open={dialogState.isEditOpen}
         onOpenChange={(open) =>
           setDialogState((prev) => ({ ...prev, isEditOpen: open }))
@@ -146,15 +139,10 @@ export function OPDTab({
         onConfirm={handleConfirmEdit}
         confirmDisabled={!formData.name}
         size="md"
-      >
-        <FormField label="Nama OPD" required>
-          <Input
-            className="h-9 text-xs"
-            value={formData.name}
-            onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-          />
-        </FormField>
-      </FormDialog>
+        label="Nama OPD"
+        value={formData.name}
+        onValueChange={(name) => setFormData((prev) => ({ ...prev, name }))}
+      />
     </>
   )
 }

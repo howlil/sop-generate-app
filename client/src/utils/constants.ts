@@ -5,14 +5,7 @@
  */
 
 import type { RoleKey } from "@/types/dto/access.dto";
-import type { StatusBadgeConfig } from "@/types/ui/shared";
-import {
-  getHasilEvaluasiColors,
-  getPengajuanStatusColors,
-  getSopStatusColors,
-  SOP_STATUS_FILTER_OPTIONS,
-  STATUS_BADGE_COLORS_DEFAULT,
-} from "@/lib/status";
+import { SOP_STATUS_FILTER_OPTIONS } from "@/lib/status";
 
 // ==================== CONSTANTS ====================
 
@@ -107,42 +100,5 @@ export const IA = {
   VERIFIKASI_BA_KOORDINATOR: "Verifikasi Berita Acara oleh PJ Penyusun",
   PENGESAHAN_SOP: "Pengesahan SOP",
 } as const;
-
-export const STATUS_BADGE_CONFIG = {
-  AKTIF: { label: "Aktif", color: "text-green-700", bgColor: "bg-green-100" },
-  NONAKTIF: {
-    label: "Nonaktif",
-    color: "text-gray-700",
-    bgColor: "bg-gray-100",
-  },
-  DISETUJAI: {
-    label: "Disetujui",
-    color: "text-emerald-800",
-    bgColor: "bg-emerald-100",
-  },
-  DITOLAK: {
-    label: "Ditolak",
-    color: "text-rose-800",
-    bgColor: "bg-rose-100",
-  },
-} as const satisfies Record<string, StatusBadgeConfig>;
-
-/** Lookup gabungan (legacy); utamakan badge per domain. */
-export function getStatusBadgeColors(status: string) {
-  const misc = STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG]
-  if (misc) return { color: misc.color, bgColor: misc.bgColor }
-  const pengajuan = getPengajuanStatusColors(status)
-  if (pengajuan !== STATUS_BADGE_COLORS_DEFAULT) return pengajuan
-  const sop = getSopStatusColors(status)
-  if (sop !== STATUS_BADGE_COLORS_DEFAULT) return sop
-  return getHasilEvaluasiColors(status)
-}
-
-export function getStatusBadgeConfig(status: string): StatusBadgeConfig {
-  const misc = STATUS_BADGE_CONFIG[status as keyof typeof STATUS_BADGE_CONFIG]
-  if (misc) return misc
-  const colors = getStatusBadgeColors(status)
-  return { label: status, ...colors }
-}
 
 export { SOP_STATUS_FILTER_OPTIONS };

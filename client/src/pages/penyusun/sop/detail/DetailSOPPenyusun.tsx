@@ -15,8 +15,8 @@ import {
 import { BuatVersiBaruDialog } from '@/pages/penyusun/sop/components/BuatVersiBaruDialog'
 import { getBuatVersiBaruBlockingReason } from '@/lib/sop/sop-version-domain'
 import type { StatusSOP } from '@/types/dto/sop.dto'
-import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
-import type { SopProsedurAutosaveStatus } from '@/hooks/useSopProsedurAutosave'
+import type { SopHeaderAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-header-autosave'
+import type { SopProsedurAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-prosedur-autosave'
 import { DetailSOPPenyusunHeader } from './components/DetailSopPenyusunHeader'
 import { DetailSOPPenyusunMain } from './components/DetailSopPenyusunMain'
 import { DetailSOPPenyusunSidePanel } from './components/DetailSopPenyusunSidePanel'
@@ -249,7 +249,6 @@ export function DetailSOPPenyusun() {
         description={metadata.nama ?? metadata.judul ?? ''}
         backTo={ROUTES.PENYUSUN.SOP}
         backSize="icon"
-        workspaceClassName="print:hidden"
         header={
           <DetailSOPPenyusunHeader
             metadata={metadata}
@@ -261,7 +260,6 @@ export function DetailSOPPenyusun() {
             autosaveStatus={combinedAutosaveStatus}
             onRetryAutosave={combinedFlushAutosave}
             onComplete={() => handleComplete(id, role ?? null, navigate)}
-            onPrint={() => window.print()}
             isReadOnly={isReadOnly}
             isPrimaryActionPending={isKirimUlangKeEvaluatorPending}
             kirimUlangBlockingReason={kirimUlangBlockingReason}

@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { JwtAuthGuard, type ApiSuccessResponse } from '../../../common';
 import { AuthService } from './auth.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { LoginDto } from './dto/login.dto';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
   buildAccessTokenCookieOptions,
@@ -11,7 +13,6 @@ import {
   type JwtAccessPayload,
   type PublicPengguna,
 } from './helpers/auth.shared';
-import { LoginDto } from './login.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -107,6 +108,28 @@ export class AuthController {
     );
     return {
       message: 'Logout berhasil',
+      success: true,
+      data: { success: true },
+    };
+  }
+
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Ubah kata sandi',
+    description: 'Membutuhkan cookie JWT akses. Kata sandi lama harus valid.',
+  })
+  @ApiResponse({ status: 200, description: 'Kata sandi berhasil diubah' })
+  @ApiResponse({ status: 401, description: 'Kata sandi lama tidak valid atau tidak terautentikasi' })
+  @ApiResponse({ status: 404, description: 'Pengguna tidak ditemukan' })
+  async changePassword(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: ChangePasswordDto,
+  ): Promise<ApiSuccessResponse<{ success: true }>> {
+    await this.authService.changePassword(req.user.sub, dto);
+    return {
+      message: 'Kata sandi berhasil diubah',
       success: true,
       data: { success: true },
     };

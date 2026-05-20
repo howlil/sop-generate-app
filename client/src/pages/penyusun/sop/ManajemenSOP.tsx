@@ -1,32 +1,30 @@
 import { useState, useMemo } from "react";
 import {
-  Filter,
   Eye,
   Edit,
   Send,
   Plus,
   FileText,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
-import { IconActionButton } from "@/components/ui/icon-action-button";
-import { Input } from "@/components/ui/input";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
-import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
-import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { FormField } from "@/components/ui/form-field";
-import { formatDateIdLong } from "@/utils/format-date";
+import { FilterDropdownButton } from "@/components/data/filter-dropdown-button";
+import { DateRangeFilterFields } from "@/pages/penyusun/sop/components/date-range-filter-fields";
+import { RowActions } from "@/components/data/row-actions";
+import {
+  SopNumberCell,
+  SopPrimaryCell,
+  SopStatusCell,
+  SopUpdatedByCell,
+  SopVersionCell,
+} from "@/components/sop/sop-table-cells";
 import { ROUTES } from "@/utils/constants";
 import type { StatusSOP } from "@/types/dto/sop.dto";
-import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatusFilterSelect";
+import { SOPStatusFilterSelect } from "@/components/sop/sop-status-filter-select";
 import { BuatSOPDialog } from "@/pages/penyusun/sop/components/BuatSOPDialog";
 import { BukaPengajuanEvaluasiDialog } from "@/pages/penyusun/sop/components/BukaPengajuanEvaluasiDialog";
 import {
@@ -36,7 +34,7 @@ import {
   useSopSuspense,
 } from "@/api/sop";
 import type { SopListQueryParams } from "@/types/dto/sop.dto";
-import { useDaftarSopFilters } from "@/hooks/useDaftarSOPFilters";
+import { useDaftarSopFilters } from "@/pages/penyusun/sop/hooks/use-daftar-sop-filters";
 import { useAppRole } from "@/hooks/useAppRole";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 
@@ -80,87 +78,46 @@ export function ManajemenSOP() {
           searchValue={filters.searchQuery}
           onSearchChange={(e) => filters.setSearchQuery(e.target.value)}
         >
-          <DropdownMenu
+          <FilterDropdownButton
             open={filters.isFilterOpen}
             onOpenChange={filters.setIsFilterOpen}
+            activeCount={filters.activeFilterCount}
           >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs gap-1.5"
-              >
-                <Filter className="w-3.5 h-3.5" />
-                Filter
+            <div className="space-y-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-gray-900">
+                  Filter SOP
+                </p>
                 {filters.activeFilterCount > 0 && (
-                  <Badge className="bg-blue-600 text-white text-xs px-1.5 py-0 h-4 min-w-[16px] border-0">
-                    {filters.activeFilterCount}
-                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-xs text-blue-600"
+                    onClick={filters.clearFilters}
+                  >
+                    Reset
+                  </Button>
                 )}
-                <ChevronDown className="w-3.5 h-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 p-3">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-semibold text-gray-900">
-                    Filter SOP
-                  </p>
-                  {filters.activeFilterCount > 0 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 text-xs text-blue-600"
-                      onClick={filters.clearFilters}
-                    >
-                      Reset
-                    </Button>
-                  )}
-                </div>
-                <FormField label="Status" htmlFor={filterStatusId}>
-                  <SOPStatusFilterSelect
-                    id={filterStatusId}
-                    value={filters.filterStatus ?? "all"}
-                    onValueChange={filters.setStatusFilter}
-                  />
-                </FormField>
-                <FormField label="Terakhir diperbarui">
-                  <div className="grid grid-cols-2 gap-2">
-                    <FormField
-                      label="Dari"
-                      variant="muted"
-                      htmlFor={filterTanggalDariId}
-                    >
-                      <Input
-                        id={filterTanggalDariId}
-                        type="date"
-                        className="h-9 text-xs"
-                        value={filters.filterTanggalDari ?? ""}
-                        onChange={(e) =>
-                          filters.setFilterTanggalDari(e.target.value)
-                        }
-                      />
-                    </FormField>
-                    <FormField
-                      label="Sampai"
-                      variant="muted"
-                      htmlFor={filterTanggalSampaiId}
-                    >
-                      <Input
-                        id={filterTanggalSampaiId}
-                        type="date"
-                        className="h-9 text-xs"
-                        value={filters.filterTanggalSampai ?? ""}
-                        onChange={(e) =>
-                          filters.setFilterTanggalSampai(e.target.value)
-                        }
-                      />
-                    </FormField>
-                  </div>
-                </FormField>
               </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <FormField label="Status" htmlFor={filterStatusId}>
+                <SOPStatusFilterSelect
+                  id={filterStatusId}
+                  value={filters.filterStatus ?? "all"}
+                  onValueChange={filters.setStatusFilter}
+                />
+              </FormField>
+              <FormField label="Terakhir diperbarui">
+                <DateRangeFilterFields
+                  fromId={filterTanggalDariId}
+                  toId={filterTanggalSampaiId}
+                  fromValue={filters.filterTanggalDari ?? ""}
+                  toValue={filters.filterTanggalSampai ?? ""}
+                  onFromChange={filters.setFilterTanggalDari}
+                  onToChange={filters.setFilterTanggalSampai}
+                />
+              </FormField>
+            </div>
+          </FilterDropdownButton>
           {canPjPenyusunRunCoordinatorActions(role ?? "") && (
             <Button
               variant="outline"
@@ -211,63 +168,48 @@ export function ManajemenSOP() {
                   pageData.map((sop) => (
                     <Table.BodyRow key={sop.id}>
                       <Table.Td>
-                        <p className="font-medium text-gray-900">{sop.judul}</p>
+                        <SopPrimaryCell title={sop.judul} />
                       </Table.Td>
                       <Table.Td>
-                        <p className="font-mono text-gray-700 text-[11px]">
-                          {sop.nomorSop ?? "—"}
-                        </p>
+                        <SopNumberCell value={sop.nomorSop} />
                       </Table.Td>
                       <Table.Td>
-                        <p className="font-mono text-gray-700 text-sm tabular-nums">
-                          {sop.versi != null ? `V${sop.versi}` : "—"}
-                        </p>
+                        <SopVersionCell value={sop.versi} />
                       </Table.Td>
                       <Table.Td>
                         <p className="text-gray-700">{sop.pembuat ?? "—"}</p>
                       </Table.Td>
                       <Table.Td>
-                        {sop.terakhirDiedit.nama != null || sop.terakhirDiedit.waktu != null ? (
-                          <div>
-                            <p className="text-gray-800 text-sm">
-                              {sop.terakhirDiedit.nama ?? "—"}
-                            </p>
-                            {sop.terakhirDiedit.waktu ? (
-                              <p className="text-gray-400 text-xs mt-0.5">
-                                {formatDateIdLong(sop.terakhirDiedit.waktu)}
-                              </p>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <p className="text-gray-400 text-xs">—</p>
-                        )}
-                      </Table.Td>
-                      <Table.Td>
-                        <SopStatusBadge
-                          status={sop.status}
-                          label={sop.statusLabel}
-                          showDomain={false}
+                        <SopUpdatedByCell
+                          name={sop.terakhirDiedit.nama}
+                          date={sop.terakhirDiedit.waktu}
                         />
                       </Table.Td>
                       <Table.Td>
-                        <div className="flex items-center justify-center gap-1">
-                          {sop.status && canEditSop(sop.status as StatusSOP) ? (
-                            <IconActionButton
-                              icon={Edit}
-                              to={ROUTES.PENYUSUN.DETAIL_SOP}
-                              params={{ id: sop.detailSopId ?? sop.id }}
-                              title="Edit"
-                            />
-                          ) : (
-                            <IconActionButton
-                              icon={Eye}
-                              to={ROUTES.PENYUSUN.DETAIL_SOP}
-                              params={{ id: sop.detailSopId ?? sop.id }}
-                              title="Lihat"
-                              variant="outline"
-                            />
-                          )}
-                        </div>
+                        <SopStatusCell
+                          status={sop.status}
+                          label={sop.statusLabel}
+                        />
+                      </Table.Td>
+                      <Table.Td>
+                        <RowActions
+                          actions={[
+                            sop.status && canEditSop(sop.status as StatusSOP)
+                              ? {
+                                  icon: Edit,
+                                  to: ROUTES.PENYUSUN.DETAIL_SOP,
+                                  params: { id: sop.detailSopId ?? sop.id },
+                                  title: "Edit",
+                                }
+                              : {
+                                  icon: Eye,
+                                  to: ROUTES.PENYUSUN.DETAIL_SOP,
+                                  params: { id: sop.detailSopId ?? sop.id },
+                                  title: "Lihat",
+                                  variant: "outline",
+                                },
+                          ]}
+                        />
                       </Table.Td>
                     </Table.BodyRow>
                   ))

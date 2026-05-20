@@ -64,6 +64,25 @@ export interface ProsedurRow {
   pelaksanaMapping?: Record<string, string>;
 }
 
+export interface SopEditorImplementer {
+  id: string;
+  name: string;
+}
+
+export interface SopEditorMasterPelaksana {
+  id: string;
+  name: string;
+  jabatan?: string;
+  pangkat?: string;
+  email?: string;
+  nohp?: string;
+}
+
+export interface SopEditorRelatedSopOption {
+  id: string;
+  label: string;
+}
+
 export interface SopItem {
   id: string;
   judul: string;

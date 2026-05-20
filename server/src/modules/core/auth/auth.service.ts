@@ -2,11 +2,10 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { BCRYPT_SALT_ROUNDS } from '../../../common/auth/password.constants';
 import { AuthRepository, type PenggunaAuthRecord } from './auth.repository';
-import type { ChangePasswordDto } from './change-password.dto';
-import type { LoginDto } from './login.dto';
-
-const BCRYPT_SALT_ROUNDS = 10;
+import type { ChangePasswordDto } from './dto/change-password.dto';
+import type { LoginDto } from './dto/login.dto';
 import {
   resolveAccessTokenExpiry,
   type JwtAccessPayload,

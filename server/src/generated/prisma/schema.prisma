@@ -463,9 +463,7 @@ enum StatusSOP {
   REVISI_DARI_EVALUATOR
   SIAP_DIVERIFIKASI
   DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI
-  /// Versi aktif yang sah — hanya 1 versi BERLAKU per SOP (enforce via trigger, lihat SCHEMA-CONSTRAINTS.md)
   BERLAKU
-  /// Versi lama yang digantikan versi baru. Set otomatis saat versi baru menjadi BERLAKU.
   DIGANTIKAN
   DICABUT
 }

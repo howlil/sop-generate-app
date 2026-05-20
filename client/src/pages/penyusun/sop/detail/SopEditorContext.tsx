@@ -15,27 +15,15 @@ import {
   type ReactNode,
 } from 'react'
 import type { Peraturan } from '@/types/dto/peraturan.dto'
-import type { ProsedurRow, SOPDetailMetadata } from '@/types/ui/sop'
-import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
-import type { SopProsedurAutosaveStatus } from '@/hooks/useSopProsedurAutosave'
-export interface SopEditorImplementer {
-  id: string
-  name: string
-}
-
-export interface SopEditorMasterPelaksana {
-  id: string
-  name: string
-  jabatan?: string
-  pangkat?: string
-  email?: string
-  nohp?: string
-}
-
-export interface SopEditorRelatedSopOption {
-  id: string
-  label: string
-}
+import type {
+  ProsedurRow,
+  SOPDetailMetadata,
+  SopEditorImplementer,
+  SopEditorMasterPelaksana,
+  SopEditorRelatedSopOption,
+} from '@/types/ui/sop'
+import type { SopHeaderAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-header-autosave'
+import type { SopProsedurAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-prosedur-autosave'
 
 export interface SopEditorContextValue {
   /** ID DetailSOP atau header SOP yang sedang diedit (bisa undefined sebelum siap). */

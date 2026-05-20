@@ -1,0 +1,84 @@
+import { AlertCircle, Loader2 } from 'lucide-react'
+import { DocumentPreviewEmptyState } from '@/components/pengajuan/document-preview-empty-state'
+import {
+  SOPPreviewTemplate,
+  type SOPPreviewTemplateProps,
+} from '@/components/sop/sop-preview-template'
+import type { TTESignaturePayload } from '@/types/dto/tte.dto'
+import { Button } from '@/components/ui/button'
+
+export interface SopPreviewWorkbenchProps {
+  name?: string
+  number?: string
+  metadata: SOPPreviewTemplateProps['metadata']
+  prosedurRows: SOPPreviewTemplateProps['prosedurRows']
+  implementers: SOPPreviewTemplateProps['implementers']
+}
+
+export interface SopDocumentPreviewPaneProps {
+  selectedSop: { nama: string; nomor: string } | null | undefined
+  isLoading: boolean
+  sopPreviewProps: SopPreviewWorkbenchProps | null
+  tteSignaturePayload?: TTESignaturePayload | null
+  loadingMessage?: string
+  errorMessage?: string
+  onRetry?: () => void
+}
+
+export function SopDocumentPreviewPane({
+  selectedSop,
+  isLoading,
+  sopPreviewProps,
+  tteSignaturePayload = null,
+  loadingMessage = 'Memuat dokumen SOP...',
+  errorMessage,
+  onRetry,
+}: SopDocumentPreviewPaneProps) {
+  if (selectedSop == null) {
+    return <DocumentPreviewEmptyState />
+  }
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2 py-16 text-gray-500 text-sm">
+        <Loader2 className="h-8 w-8 animate-spin" aria-hidden />
+        {loadingMessage}
+      </div>
+    )
+  }
+  if (errorMessage != null && onRetry != null && sopPreviewProps === null) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+        <AlertCircle className="h-10 w-10 text-red-500" aria-hidden />
+        <p className="max-w-md text-sm text-gray-600">{errorMessage}</p>
+        <Button type="button" variant="outline" size="sm" onClick={onRetry}>
+          Coba lagi
+        </Button>
+      </div>
+    )
+  }
+  if (sopPreviewProps !== null) {
+    return (
+      <div>
+        <SOPPreviewTemplate
+          name={sopPreviewProps.name}
+          number={sopPreviewProps.number}
+          metadata={sopPreviewProps.metadata}
+          prosedurRows={sopPreviewProps.prosedurRows}
+          implementers={sopPreviewProps.implementers}
+          tteSignaturePayload={tteSignaturePayload}
+          previewOptions={{ editable: false, showScrollbar: true }}
+        />
+      </div>
+    )
+  }
+  return (
+    <div>
+      <SOPPreviewTemplate
+        name={selectedSop.nama}
+        number={selectedSop.nomor}
+        tteSignaturePayload={tteSignaturePayload}
+        previewOptions={{ editable: false, showScrollbar: true }}
+      />
+    </div>
+  )
+}

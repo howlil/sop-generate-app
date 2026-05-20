@@ -1,7 +1,13 @@
 import { Activity, FileText, Building2, PanelsTopLeft } from "lucide-react";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
-import { CollapsibleSidePanel } from "@/components/ui/collapsible-side-panel";
+import {
+  CollapsedStripButton,
+  CollapsibleSidePanel,
+  CollapsibleSidePanelContent,
+  CollapsibleSidePanelHeader,
+  PanelTabStrip,
+} from "@/components/ui/collapsible-side-panel";
 import { InfoCard } from "@/components/ui/info-card";
 import { RiwayatCardList } from "@/pages/evaluator/evaluasi/components/RiwayatCardList";
 import { EvaluasiKeputusanSebelumnyaCard } from "@/pages/evaluator/evaluasi/components/EvaluasiKeputusanSebelumnyaCard";
@@ -110,17 +116,30 @@ export function DetailEvaluasiOPDFormPanel({
     <CollapsibleSidePanel
       side="right"
       collapsed={panelState.collapsed}
-      onCollapsedChange={panelState.onCollapsedChange}
       widthExpanded="w-full"
-      tabs={formTabs}
-      activeTab={activeTabResolved}
-      onTabChange={(id) => {
-        panelState.onTabChange(id as DetailEvaluasiActiveTab);
-      }}
-      collapseButtonLabel="Form"
-      collapseButtonIcon={<PanelsTopLeft className="w-5 h-5" />}
     >
-      <div className="p-3 space-y-4">
+      {panelState.collapsed ? (
+        <CollapsedStripButton
+          label="Form"
+          icon={<PanelsTopLeft className="w-5 h-5" />}
+          onClick={() => panelState.onCollapsedChange(false)}
+        />
+      ) : (
+        <>
+          <CollapsibleSidePanelHeader
+            side="right"
+            onCollapse={() => panelState.onCollapsedChange(true)}
+          >
+            <PanelTabStrip
+              tabs={formTabs}
+              activeTab={activeTabResolved}
+              onTabChange={(id) => {
+                panelState.onTabChange(id as DetailEvaluasiActiveTab);
+              }}
+            />
+          </CollapsibleSidePanelHeader>
+          <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
+            <div className="p-3 space-y-4">
         {activeTabResolved === "sop" && (
           <>
             {!sopForm.effectiveSopId ? (
@@ -283,7 +302,10 @@ export function DetailEvaluasiOPDFormPanel({
             )}
           </>
         )}
-      </div>
+            </div>
+          </CollapsibleSidePanelContent>
+        </>
+      )}
     </CollapsibleSidePanel>
   );
 }

@@ -13,6 +13,7 @@ export interface RowAction {
   disabled?: boolean
   destructive?: boolean
   variant?: 'ghost' | 'outline'
+  className?: string
 }
 
 export interface RowActionsProps {
@@ -56,6 +57,7 @@ export function RowActions({
           disabled={action.disabled}
           destructive={action.destructive}
           variant={action.variant}
+          className={action.className}
         />
       ))}
     </div>

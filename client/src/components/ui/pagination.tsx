@@ -10,16 +10,18 @@ export interface PaginationProps {
   currentPage: number
   /** Callback saat halaman berubah */
   onPageChange: (page: number) => void
-  /** Jumlah per halaman. Default 10. Pagination hanya tampil jika totalItems > pageSize. */
+  /** Jumlah per halaman. Default 10. */
   pageSize?: number
   /** Label entitas (opsional), e.g. "SOP" untuk "1–10 dari 24 SOP" */
   label?: string
+  /** Tampilkan ringkasan jumlah saat hanya ada satu halaman. */
+  showSinglePageSummary?: boolean
   className?: string
 }
 
 /**
  * Pagination compact: info "X–Y dari Z" + tombol Sebelumnya / nomor halaman / Selanjutnya.
- * Hanya di-render jika totalItems > pageSize (default 10). Sesuai design style guide (text-xs, h-8).
+ * Default-nya hanya render jika totalItems > pageSize; gunakan showSinglePageSummary untuk ringkasan satu halaman.
  */
 export function Pagination({
   totalItems,
@@ -27,15 +29,25 @@ export function Pagination({
   onPageChange,
   pageSize = DEFAULT_PAGE_SIZE,
   label = '',
+  showSinglePageSummary = false,
   className,
 }: PaginationProps) {
-  if (totalItems <= pageSize) return null
-
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize))
   const safePage = Math.min(Math.max(1, currentPage), totalPages)
   const start = (safePage - 1) * pageSize + 1
   const end = Math.min(safePage * pageSize, totalItems)
   const labelText = label ? ` ${label}` : ''
+
+  if (totalItems <= pageSize) {
+    if (!showSinglePageSummary) return null
+
+    return (
+      <p className={cn('text-center text-sm text-slate-500', className)} aria-live="polite">
+        {totalItems}
+        {labelText}
+      </p>
+    )
+  }
 
   const canPrev = safePage > 1
   const canNext = safePage < totalPages

@@ -1,4 +1,5 @@
 import type { ProsedurRow } from '@/types/ui/sop'
+import { resolveProsedurPelaksanaId } from '@/lib/sop/resolve-prosedur-implementer'
 
 export interface ProsedurRowsValidationResult {
   valid: boolean
@@ -7,15 +8,6 @@ export interface ProsedurRowsValidationResult {
 
 function isNonEmpty(value: string | undefined | null): boolean {
   return (value ?? '').trim().length > 0
-}
-
-function resolvePelaksanaId(row: ProsedurRow): string {
-  const fromField = (row.pelaksana ?? '').trim()
-  if (fromField.length > 0) return fromField
-  const fromMapping = Object.keys(row.pelaksanaMapping ?? {}).find((key) =>
-    Boolean(row.pelaksanaMapping?.[key]),
-  )
-  return fromMapping?.trim() ?? ''
 }
 
 function pickKelengkapan(row: ProsedurRow): string {
@@ -68,7 +60,7 @@ export function validateProsedurRows(
     if (!isNonEmpty(row.keterangan)) {
       errors.push(`${prefix}: keterangan wajib diisi`)
     }
-    if (!resolvePelaksanaId(row)) {
+    if (!resolveProsedurPelaksanaId(row)) {
       errors.push(`${prefix}: pelaksana wajib dipilih`)
     }
     if (row.type === 'decision') {

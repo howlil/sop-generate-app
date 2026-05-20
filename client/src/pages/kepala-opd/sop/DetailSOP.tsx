@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { AlertTriangle, Ban, Printer } from "lucide-react";
+import { AlertTriangle, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
@@ -8,7 +8,7 @@ import { CabutSopDialog } from "@/components/sop/CabutSopDialog";
 import {
   SOPPreviewTemplate,
   type SOPPreviewTemplateProps,
-} from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
+} from "@/components/sop/sop-preview-template";
 import { useCabutSop, usePenyusunWorkbench, useSop } from "@/api/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
@@ -28,7 +28,7 @@ export interface DetailSOPProps {
 }
 
 /**
- * Halaman detail SOP untuk Kepala OPD: pratinjau, cetak, dan cabut versi BERLAKU.
+ * Halaman detail SOP untuk Kepala OPD: pratinjau dan cabut versi BERLAKU.
  */
 export function DetailSOP(props: DetailSOPProps = {}) {
   const { breadcrumb, backTo } = props;
@@ -84,7 +84,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   }
 
   const workspaceHeaderToolbar = (
-    <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
         <SopStatusBadge
           status={sopStatus}
@@ -107,14 +107,6 @@ export function DetailSOP(props: DetailSOPProps = {}) {
             {isCabutPending ? "Mencabut…" : "Cabut SOP"}
           </Button>
         ) : null}
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-8 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
-          onClick={() => window.print()}
-        >
-          <Printer className="w-3.5 h-3.5" /> Print SOP
-        </Button>
       </div>
     </div>
   );
@@ -138,11 +130,12 @@ export function DetailSOP(props: DetailSOPProps = {}) {
               </div>
             ) : null}
             {hasRevisiInFlightBlock ? (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 print:hidden">
                 <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
                 {cabutBlockingReason}
               </div>
             ) : null}
+            <div data-print-area="sop">
             <SOPPreviewTemplate
               name={sopName}
               number={sopNumber}
@@ -158,10 +151,10 @@ export function DetailSOP(props: DetailSOPProps = {}) {
                 onActiveTabChange: setActiveTab,
               }}
             />
+            </div>
           </div>
         }
         rightPanel={null}
-        workspaceClassName="print:hidden"
       />
       <CabutSopDialog
         open={cabutDialogOpen}

@@ -2,11 +2,9 @@ import { useMemo, useState } from "react";
 import { UserCog, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
-import { Input } from "@/components/ui/input";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
-import { FormDialog } from "@/components/ui/form-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { FormField } from "@/components/ui/form-field";
+import { SingleTextFieldDialog } from "@/components/forms/single-text-field-dialog";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RowActions } from "@/components/data/row-actions";
@@ -199,7 +197,7 @@ export function PelaksanaSOP() {
         )}
       </Table.Paginated>
 
-      <FormDialog
+      <SingleTextFieldDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         title="Tambah Pelaksana SOP"
@@ -209,20 +207,13 @@ export function PelaksanaSOP() {
         onConfirm={handleCreate}
         confirmDisabled={!isFormValid}
         size="lg"
-      >
-        <FormField label="Nama Pelaksana" required>
-          <Input
-            className="h-9 text-xs"
-            placeholder="Contoh: Staf Administrasi"
-            value={formData.namaPelaksana}
-            onChange={(e) =>
-              setFormData({ ...formData, namaPelaksana: e.target.value })
-            }
-          />
-        </FormField>
-      </FormDialog>
+        label="Nama Pelaksana"
+        placeholder="Contoh: Staf Administrasi"
+        value={formData.namaPelaksana}
+        onValueChange={(namaPelaksana) => setFormData({ ...formData, namaPelaksana })}
+      />
 
-      <FormDialog
+      <SingleTextFieldDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         title="Edit Pelaksana SOP"
@@ -232,17 +223,10 @@ export function PelaksanaSOP() {
         onConfirm={handleEdit}
         confirmDisabled={!isFormValid}
         size="lg"
-      >
-        <FormField label="Nama Pelaksana" required>
-          <Input
-            className="h-9 text-xs"
-            value={formData.namaPelaksana}
-            onChange={(e) =>
-              setFormData({ ...formData, namaPelaksana: e.target.value })
-            }
-          />
-        </FormField>
-      </FormDialog>
+        label="Nama Pelaksana"
+        value={formData.namaPelaksana}
+        onValueChange={(namaPelaksana) => setFormData({ ...formData, namaPelaksana })}
+      />
 
       <ConfirmDialog
         open={deleteId != null}

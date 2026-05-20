@@ -4,16 +4,20 @@ import { Users, Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
-import { FormDialog } from '@/components/ui/form-dialog'
+import { PersonFormDialog } from '@/components/forms/person-form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useEvaluatorAnggota } from '@/api/evaluator-anggota'
 import type { EvaluatorAnggota, StatusTim } from '@/types/dto/tim.dto'
-import { StatusBadge } from '@/components/ui/status-badge'
 import { RowActions } from '@/components/data/row-actions'
-import { PersonIdentityFields } from '@/components/forms/person-identity-fields'
+import {
+  PersonMonoCell,
+  PersonNameCell,
+  PersonStatusCell,
+  PersonTextCell,
+} from '@/components/person/person-table-cells'
 import { formatDateId } from '@/utils/format-date'
 import { hasRequiredStringFields } from '@/lib/forms/validation'
 
@@ -195,35 +199,30 @@ export function ManajemenEvaluator() {
                 pageData.map((tim) => (
                   <Table.BodyRow key={tim.id}>
                     <Table.Td>
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-blue-100 rounded-md flex items-center justify-center">
-                          <Users className="w-3.5 h-3.5 text-blue-600" />
-                        </div>
-                        <p className="font-medium text-gray-900">{tim.user?.nama ?? '—'}</p>
-                      </div>
+                      <PersonNameCell name={tim.user?.nama} icon={Users} />
                     </Table.Td>
-                    <Table.Td className="text-gray-600 font-mono text-xs">{tim.user?.nip ?? '—'}</Table.Td>
+                    <Table.Td>
+                      <PersonMonoCell value={tim.user?.nip} />
+                    </Table.Td>
                     <Table.Td>
                       <Badge variant="outline" className="text-xs">
-                        {tim.user?.jabatan ?? '—'}
+                        {tim.user?.jabatan ?? '-'}
                       </Badge>
                     </Table.Td>
-                    <Table.Td className="text-gray-600 text-xs">
-                      {tim.user?.pangkat ?? '—'}
-                    </Table.Td>
-                    <Table.Td className="text-gray-600 text-xs">{tim.user?.email ?? '—'}</Table.Td>
-                    <Table.Td className="text-gray-600 text-xs">
-                      {tim.user?.nohp ?? '—'}
+                    <Table.Td>
+                      <PersonTextCell value={tim.user?.pangkat} />
                     </Table.Td>
                     <Table.Td>
-                      <div className="flex flex-col gap-0.5">
-                        <StatusBadge status={tim.status} />
-                        {tim.berakhirPada && (
-                          <span className="text-[10px] text-gray-500">
-                            Selesai: {formatDateId(tim.berakhirPada)}
-                          </span>
-                        )}
-                      </div>
+                      <PersonTextCell value={tim.user?.email} />
+                    </Table.Td>
+                    <Table.Td>
+                      <PersonTextCell value={tim.user?.nohp} />
+                    </Table.Td>
+                    <Table.Td>
+                      <PersonStatusCell
+                        status={tim.status}
+                        subtext={tim.berakhirPada ? `Selesai: ${formatDateId(tim.berakhirPada)}` : undefined}
+                      />
                     </Table.Td>
                     <Table.Td className="text-center">
                       <div className="flex flex-wrap items-center justify-center gap-1">
@@ -257,7 +256,7 @@ export function ManajemenEvaluator() {
         )}
       </Table.Paginated>
 
-      <FormDialog
+      <PersonFormDialog
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         title="Tambah Evaluator"
@@ -267,16 +266,13 @@ export function ManajemenEvaluator() {
         onConfirm={handleCreateSubmit}
         confirmDisabled={!isFormValid || isAdding}
         size="md"
-      >
-        <PersonIdentityFields
-          value={formData}
-          onChange={setFormData}
-          labels={{ jabatan: 'Jabatan di Instansi' }}
-          placeholders={{ jabatan: 'Contoh: Analis Kebijakan' }}
-        />
-      </FormDialog>
+        value={formData}
+        onChange={setFormData}
+        labels={{ jabatan: 'Jabatan di Instansi' }}
+        placeholders={{ jabatan: 'Contoh: Analis Kebijakan' }}
+      />
 
-      <FormDialog
+      <PersonFormDialog
         open={isEditDialogOpen}
         onOpenChange={(open) => {
           setIsEditDialogOpen(open)
@@ -289,15 +285,12 @@ export function ManajemenEvaluator() {
         onConfirm={handleEditSubmit}
         confirmDisabled={!isFormValid || isUpdating}
         size="md"
-      >
-        <PersonIdentityFields
-          value={formData}
-          onChange={setFormData}
-          showStatus
-          labels={{ jabatan: 'Jabatan di Instansi' }}
-          placeholders={{ jabatan: 'Contoh: Analis Kebijakan' }}
-        />
-      </FormDialog>
+        value={formData}
+        onChange={setFormData}
+        showStatus
+        labels={{ jabatan: 'Jabatan di Instansi' }}
+        placeholders={{ jabatan: 'Contoh: Analis Kebijakan' }}
+      />
 
       <ConfirmDialog
         open={deleteTimId != null}

@@ -154,6 +154,18 @@ describe('AuthService', () => {
     expect(authRepository.updateKataSandi).not.toHaveBeenCalled();
   });
 
+  it('should_refresh_access_token_with_same_claims', async () => {
+    const payload = {
+      sub: sampleRow.penggunaId,
+      email: sampleRow.email,
+      peran: sampleRow.peran,
+    };
+    const actual = await service.refreshAccessToken(payload);
+    expect(actual.accessToken).toBe('signed-jwt');
+    expect(actual.cookieMaxAgeMs).toBeGreaterThan(0);
+    expect(jwtService.signAsync).toHaveBeenCalledWith(payload, { expiresIn: 900 });
+  });
+
   it('should_throw_not_found_when_changePassword_pengguna_missing', async () => {
     authRepository.findActivePenggunaById.mockResolvedValue(null);
     await expect(

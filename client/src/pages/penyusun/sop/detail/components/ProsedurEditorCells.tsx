@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import type { ProsedurRow } from '@/types/ui/sop'
+import { resolveProsedurPelaksanaIdOrFallback } from '@/lib/sop/resolve-prosedur-implementer'
 
 // ==================== Kegiatan Cell ====================
 
@@ -175,19 +176,7 @@ export interface ImplementerCellProps {
 }
 
 export function ImplementerCell({ row, implementers, onImplementerChange }: ImplementerCellProps) {
-  /** `pelaksana` dari API / autosave adalah **string** `pelaksanaId`. Fallback ke
-   *  `pelaksanaMapping` (checkbox-style) bila legacy; jangan default ke `implementers[0]`
-   *  saat string ada — itu yang bikin semua baris tampil sebagai aktor pertama (order 0). */
-  const selectedId = (() => {
-    const p = row.pelaksana
-    if (typeof p === 'string' && p.length > 0) {
-      return p
-    }
-    const map = row.pelaksanaMapping ?? {}
-    const fromMap = Object.keys(map).find((k) => Boolean(map[k]))
-    if (fromMap) return fromMap
-    return implementers[0]?.id ?? ''
-  })()
+  const selectedId = resolveProsedurPelaksanaIdOrFallback(row, implementers[0]?.id ?? '')
 
   return (
     <select

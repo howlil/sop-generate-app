@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { ListTree, RefreshCw } from 'lucide-react'
-import { SOPPreviewTemplate } from '@/pages/penyusun/sop/components/SOPPreviewTemplate'
+import { SOPPreviewTemplate } from '@/components/sop/sop-preview-template'
 import { DetailSOPProsedurEditor } from './DetailSopProsedurEditor'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
 import { namaLembagaToInstitutionLines } from '@/lib/sop/detailSop.mappers'
@@ -101,16 +101,19 @@ export function DetailSOPPenyusunMain({
           )
   const diagramAlternate =
     !isReadOnly && isEditingSteps ? (
-            <DetailSOPProsedurEditor
-              prosedurRows={prosedurRows}
-              setProsedurRows={setProsedurRows}
-              implementers={implementers}
-              onDone={() => setIsEditingSteps(false)}
-            />
+            <div className="print:hidden">
+              <DetailSOPProsedurEditor
+                prosedurRows={prosedurRows}
+                setProsedurRows={setProsedurRows}
+                implementers={implementers}
+                onDone={() => setIsEditingSteps(false)}
+              />
+            </div>
           ) : undefined
   return (
     <div className="flex-1 overflow-auto p-4">
-      <SOPPreviewTemplate
+      <div data-print-area="sop">
+        <SOPPreviewTemplate
         metadata={previewMetadata}
         prosedurRows={prosedurRows}
         implementers={implementers}
@@ -124,6 +127,7 @@ export function DetailSOPPenyusunMain({
           diagramAlternate,
         }}
       />
+      </div>
     </div>
   )
 }

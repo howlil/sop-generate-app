@@ -2,14 +2,18 @@
 import { useMemo, useState } from "react";
 import { Eye, Ban, FileText } from "lucide-react";
 import { Table } from "@/components/ui/data-table";
-import { IconActionButton } from "@/components/ui/icon-action-button";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
-import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatusFilterSelect";
+import { SOPStatusFilterSelect } from "@/components/sop/sop-status-filter-select";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
-import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { CabutSopDialog } from "@/components/sop/CabutSopDialog";
-import { formatDateIdLong } from "@/utils/format-date";
+import { RowActions } from "@/components/data/row-actions";
+import {
+  SopDateCell,
+  SopNumberCell,
+  SopPrimaryCell,
+  SopStatusCell,
+} from "@/components/sop/sop-table-cells";
 import { ROUTES } from "@/utils/constants";
 import { useAuthStore } from "@/stores/authStore";
 import { useCabutSop, useSop } from "@/api/sop";
@@ -24,8 +28,7 @@ export function PantauSOP() {
   const opdName = opd?.nama ?? "OPD";
 
   const [filterStatus, setFilterStatus] = useState("all");
-  const { list: sopListRaw } = useSop();
-  const mergedList = sopListRaw as unknown as SopDaftarRow[];
+  const { list: mergedList } = useSop();
   const { cabutSopAsync, isCabutPending } = useCabutSop();
   const [cabutTarget, setCabutTarget] = useState<SopDaftarRow | null>(null);
 
@@ -101,45 +104,44 @@ export function PantauSOP() {
                       return (
                         <Table.BodyRow key={sop.id}>
                           <Table.Td>
-                            <p className="font-medium text-gray-900">{sop.judul}</p>
+                            <SopPrimaryCell title={sop.judul} />
                           </Table.Td>
                           <Table.Td>
-                            <p className="font-mono text-gray-700 text-[11px]">
-                              {sop.nomorSop ?? "—"}
-                            </p>
+                            <SopNumberCell value={sop.nomorSop} />
                           </Table.Td>
                           <Table.Td>
-                            <p className="text-gray-700">
-                              {sop.terakhirDiperbarui
-                                ? formatDateIdLong(sop.terakhirDiperbarui)
-                                : "—"}
-                            </p>
+                            <SopDateCell date={sop.terakhirDiperbarui} />
                           </Table.Td>
                           <Table.Td>
-                            <SopStatusBadge
+                            <SopStatusCell
                               status={sop.status}
                               label={sop.statusLabel}
-                              showDomain={false}
                             />
                           </Table.Td>
                           <Table.Td>
-                            <div className="flex items-center gap-1">
-                              <IconActionButton
-                                icon={Eye}
-                                to={ROUTES.KEPALA_OPD.DETAIL_SOP}
-                                params={{ id: sop.id }}
-                                title="Lihat detail"
-                              />
-                              {showCabut ? (
-                                <IconActionButton
-                                  icon={Ban}
-                                  title={cabutBlockReason ?? "Cabut SOP"}
-                                  disabled={isCabutPending || cabutBlockReason != null}
-                                  onClick={() => setCabutTarget(sop)}
-                                  className="text-rose-700 hover:text-rose-800 hover:bg-rose-50"
-                                />
-                              ) : null}
-                            </div>
+                            <RowActions
+                              align="start"
+                              actions={[
+                                {
+                                  icon: Eye,
+                                  to: ROUTES.KEPALA_OPD.DETAIL_SOP,
+                                  params: { id: sop.id },
+                                  title: "Lihat detail",
+                                },
+                                ...(showCabut
+                                  ? [
+                                      {
+                                        icon: Ban,
+                                        title: cabutBlockReason ?? "Cabut SOP",
+                                        disabled: isCabutPending || cabutBlockReason != null,
+                                        onClick: () => setCabutTarget(sop),
+                                        className:
+                                          "text-rose-700 hover:text-rose-800 hover:bg-rose-50",
+                                      },
+                                    ]
+                                  : []),
+                              ]}
+                            />
                           </Table.Td>
                         </Table.BodyRow>
                       );

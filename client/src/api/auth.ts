@@ -30,7 +30,7 @@ export const authApi = {
    * AUTH-06: Change password for logged-in user
    */
   changePassword: (payload: ChangePasswordDto) =>
-    apiClient.patch<ApiSuccessResponse<{ success: true }>>('/change-password', payload),
+    apiClient.patch<ApiSuccessResponse<{ success: true }>>('/auth/change-password', payload),
 
   /**
    * Logout - calls server to clear HttpOnly cookies

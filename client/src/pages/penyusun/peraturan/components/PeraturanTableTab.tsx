@@ -1,10 +1,16 @@
 import { Edit, Trash2, FileText } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
-import { Input } from '@/components/ui/input'
-import { FormDialog } from '@/components/ui/form-dialog'
-import { FormField } from '@/components/ui/form-field'
 import { RowActions } from '@/components/data/row-actions'
+import { PeraturanFormDialog } from '@/pages/penyusun/peraturan/components/PeraturanFormDialog'
+import { EmptyState } from '@/components/ui/empty-state'
 import type { Peraturan } from "@/types/dto/peraturan.dto";
+
+type PeraturanFormData = {
+  peraturan: string
+  nomor: string
+  tahun: string
+  tentang: string
+}
 
 export interface PeraturanTableTabProps {
   filteredPeraturan: Peraturan[]
@@ -12,13 +18,8 @@ export interface PeraturanTableTabProps {
   isPeraturanDialogOpen: boolean
   setIsPeraturanDialogOpen: (open: boolean) => void
   editingPeraturan: Peraturan | null
-  peraturanFormData: {
-    peraturan: string
-    nomor: string
-    tahun: string
-    tentang: string
-  }
-  setPeraturanFormData: React.Dispatch<React.SetStateAction<PeraturanTableTabProps['peraturanFormData']>>
+  peraturanFormData: PeraturanFormData
+  setPeraturanFormData: React.Dispatch<React.SetStateAction<PeraturanFormData>>
   onOpenPeraturanDialog: (peraturan?: Peraturan) => void
   onSavePeraturan: () => void
   onDeletePeraturan: (id: string) => void
@@ -113,14 +114,16 @@ export function PeraturanTableTab({
         )}
       </Table.Paginated>
       {filteredPeraturan.length === 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-          <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-sm text-gray-600">Tidak ada peraturan ditemukan</p>
+        <div className="rounded-lg border border-gray-200 bg-white">
+          <EmptyState
+            icon={<FileText />}
+            title="Tidak ada peraturan ditemukan"
+            className="p-8"
+          />
         </div>
       )}
 
-      {/* Peraturan Form Dialog */}
-      <FormDialog
+      <PeraturanFormDialog
         open={isPeraturanDialogOpen}
         onOpenChange={setIsPeraturanDialogOpen}
         title={editingPeraturan ? 'Edit Peraturan' : 'Tambah Peraturan'}
@@ -130,55 +133,11 @@ export function PeraturanTableTab({
             : 'Tambahkan peraturan baru ke database'
         }
         confirmLabel={editingPeraturan ? 'Perbarui' : 'Tambah'}
-        cancelLabel="Batal"
+        value={peraturanFormData}
+        onChange={setPeraturanFormData}
         onConfirm={onSavePeraturan}
         confirmDisabled={confirmDisabled}
-        size="md"
-      >
-        <FormField label="Peraturan" required>
-          <Input
-            className="h-9 text-xs"
-            placeholder="Contoh: Permendikbud, Perda, SK Kadis"
-            value={peraturanFormData.peraturan}
-            onChange={(e) =>
-              setPeraturanFormData((prev) => ({ ...prev, peraturan: e.target.value }))
-            }
-          />
-        </FormField>
-        <div className="grid grid-cols-2 gap-3">
-          <FormField label="Nomor" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: 1"
-              value={peraturanFormData.nomor}
-              onChange={(e) =>
-                setPeraturanFormData((prev) => ({ ...prev, nomor: e.target.value }))
-              }
-            />
-          </FormField>
-          <FormField label="Tahun" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="2026"
-              value={peraturanFormData.tahun}
-              onChange={(e) =>
-                setPeraturanFormData((prev) => ({ ...prev, tahun: e.target.value }))
-              }
-              maxLength={4}
-            />
-          </FormField>
-        </div>
-        <FormField label="Tentang" required>
-          <Input
-            className="h-9 text-xs"
-            placeholder="Contoh: Penerimaan Peserta Didik Baru"
-            value={peraturanFormData.tentang}
-            onChange={(e) =>
-              setPeraturanFormData((prev) => ({ ...prev, tentang: e.target.value }))
-            }
-          />
-        </FormField>
-      </FormDialog>
+      />
     </>
   )
 }

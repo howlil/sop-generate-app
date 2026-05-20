@@ -128,7 +128,6 @@ export function SetPageHeader({
     return () => {
       setHeaderRef.current?.(null)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [breadcrumbKey, title, description])
 
   return null

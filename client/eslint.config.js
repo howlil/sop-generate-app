@@ -68,4 +68,25 @@ export default [
       'no-var': 'error',
     },
   },
+  {
+    files: [
+      'src/components/**/*.{ts,tsx}',
+      'src/lib/**/*.{ts,tsx}',
+      'src/hooks/**/*.{ts,tsx}',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/pages/*'],
+              message:
+                'Shared components and lib modules must not import from pages. Move reusable code into components/* or lib/*.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]

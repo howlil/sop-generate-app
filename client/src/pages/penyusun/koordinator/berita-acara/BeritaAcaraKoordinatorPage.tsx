@@ -1,14 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useBeritaAcaraPjPenyusun } from '@/api/evaluasi'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
-import { EmptyState } from '@/components/ui/empty-state'
+import { RowActions } from '@/components/data/row-actions'
+import {
+  PengajuanBaNumberCell,
+  PengajuanDateCell,
+  PengajuanTabbedTable,
+} from '@/components/pengajuan/pengajuan-tabbed-table'
 import { PengajuanStatusBadge } from '@/components/status/pengajuan-status-badge'
 import { Button } from '@/components/ui/button'
-import { Table } from '@/components/ui/data-table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FileText, Eye, AlertCircle, RefreshCw } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
-import type { PengajuanEvaluasi } from '@/types/dto/evaluasi.dto'
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—'
@@ -22,97 +24,6 @@ function formatDate(dateStr: string | null | undefined): string {
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
   const { perluTindakan, riwayat, isLoading, error } = useBeritaAcaraPjPenyusun()
-
-  const renderBeritaAcaraTable = (
-    data: PengajuanEvaluasi[],
-    emptyTitle: string,
-    emptyDescription: string,
-  ) => (
-    <Table.Paginated data={data} pageSize={15} label="berita acara">
-      {(pageData) => (
-        <Table.Root>
-          <Table.Table>
-            <thead>
-              <Table.HeadRow>
-                <Table.Th>OPD</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Nomor BA</Table.Th>
-                <Table.Th>Tanggal Evaluasi</Table.Th>
-                <Table.Th>Evaluator</Table.Th>
-                <Table.Th align="center">Aksi</Table.Th>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                [...Array.from({ length: 5 }).keys()].map((row) => (
-                  <Table.BodyRow key={`sk-${row}`}>
-                    {[...Array.from({ length: 6 }).keys()].map((col) => (
-                      <Table.Td key={`sk-${row}-${col}`}>
-                        <div className="h-3 animate-pulse rounded bg-gray-200" />
-                      </Table.Td>
-                    ))}
-                  </Table.BodyRow>
-                ))
-              ) : pageData.length === 0 ? (
-                <EmptyState
-                  asTableRow
-                  colSpan={6}
-                  icon={<FileText />}
-                  title={emptyTitle}
-                  description={emptyDescription}
-                />
-              ) : (
-                pageData.map((pengajuan) => (
-                  <Table.BodyRow key={pengajuan.id}>
-                    <Table.Td className="max-w-[200px]">
-                      <span className="font-medium text-gray-900">
-                        {pengajuan.opdNama ?? pengajuan.opd?.nama ?? '—'}
-                      </span>
-                    </Table.Td>
-                    <Table.Td>
-                      <PengajuanStatusBadge
-                        status={pengajuan.status}
-                        label={pengajuan.statusLabel ?? pengajuan.status}
-                        showDomain={false}
-                      />
-                    </Table.Td>
-                    <Table.Td>
-                      <span className="font-mono text-gray-900">
-                        {pengajuan.nomorBA?.trim() || '—'}
-                      </span>
-                    </Table.Td>
-                    <Table.Td className="whitespace-nowrap text-gray-700">
-                      {formatDate(pengajuan.tanggalVerifikasi)}
-                    </Table.Td>
-                    <Table.Td className="max-w-[280px] text-gray-700">
-                      {pengajuan.timEvaluasi ?? '—'}
-                    </Table.Td>
-                    <Table.Td className="text-center">
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          navigate({
-                            to: ROUTES.PENYUSUN.DETAIL_BERITA_ACARA,
-                            params: { id: pengajuan.id },
-                          })
-                        }
-                        size="icon"
-                        className="h-8 w-8"
-                        aria-label="Lihat Detail Berita Acara"
-                        title="Lihat Detail"
-                      >
-                        <Eye className="size-3.5" />
-                      </Button>
-                    </Table.Td>
-                  </Table.BodyRow>
-                ))
-              )}
-            </tbody>
-          </Table.Table>
-        </Table.Root>
-      )}
-    </Table.Paginated>
-  )
 
   return (
     <ListPageLayout
@@ -136,30 +47,90 @@ export function BeritaAcaraKoordinatorPage() {
         )}
 
         {!error && (
-          <Tabs defaultValue="perlu" className="space-y-3">
-            <TabsList className="h-9 w-full grid grid-cols-2">
-              <TabsTrigger value="perlu" className="text-xs w-full">
-                Perlu Tanda Tangan ({perluTindakan.length})
-              </TabsTrigger>
-              <TabsTrigger value="riwayat" className="text-xs w-full">
-                Riwayat ({riwayat.length})
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="perlu" className="mt-0">
-              {renderBeritaAcaraTable(
-                perluTindakan,
-                'Belum ada BA menunggu tanda tangan',
-                'Berita Acara akan muncul setelah PJ Evaluator memverifikasi evaluasi.',
-              )}
-            </TabsContent>
-            <TabsContent value="riwayat" className="mt-0">
-              {renderBeritaAcaraTable(
-                riwayat,
-                'Belum ada riwayat Berita Acara',
-                'BA yang sudah Anda tandatangani atau pengajuan evaluasi yang sudah selesai total akan tampil di sini.',
-              )}
-            </TabsContent>
-          </Tabs>
+          <PengajuanTabbedTable
+            defaultValue="perlu"
+            label="berita acara"
+            pageSize={15}
+            isLoading={isLoading}
+            loadingRows={5}
+            emptyIcon={<FileText />}
+            tabs={[
+              {
+                value: 'perlu',
+                label: 'Perlu Tanda Tangan',
+                rows: perluTindakan,
+                emptyTitle: 'Belum ada BA menunggu tanda tangan',
+                emptyDescription:
+                  'Berita Acara akan muncul setelah PJ Evaluator memverifikasi evaluasi.',
+              },
+              {
+                value: 'riwayat',
+                label: 'Riwayat',
+                rows: riwayat,
+                emptyTitle: 'Belum ada riwayat Berita Acara',
+                emptyDescription:
+                  'BA yang sudah Anda tandatangani atau pengajuan evaluasi yang sudah selesai total akan tampil di sini.',
+              },
+            ]}
+            columns={[
+              {
+                id: 'opd',
+                header: 'OPD',
+                className: 'max-w-[200px]',
+                render: (pengajuan) => (
+                  <span className="font-medium text-gray-900">
+                    {pengajuan.opdNama ?? pengajuan.opd?.nama ?? '-'}
+                  </span>
+                ),
+              },
+              {
+                id: 'status',
+                header: 'Status',
+                render: (pengajuan) => (
+                  <PengajuanStatusBadge
+                    status={pengajuan.status}
+                    label={pengajuan.statusLabel ?? pengajuan.status}
+                    showDomain={false}
+                  />
+                ),
+              },
+              {
+                id: 'nomor-ba',
+                header: 'Nomor BA',
+                render: (pengajuan) => <PengajuanBaNumberCell value={pengajuan.nomorBA} />,
+              },
+              {
+                id: 'tanggal-evaluasi',
+                header: 'Tanggal Evaluasi',
+                render: (pengajuan) => (
+                  <PengajuanDateCell value={pengajuan.tanggalVerifikasi} formatter={formatDate} />
+                ),
+              },
+              {
+                id: 'evaluator',
+                header: 'Evaluator',
+                className: 'max-w-[280px] text-gray-700',
+                render: (pengajuan) => pengajuan.timEvaluasi ?? '-',
+              },
+            ]}
+            getRowId={(pengajuan) => pengajuan.id}
+            renderAction={(pengajuan) => (
+              <RowActions
+                actions={[
+                  {
+                    icon: Eye,
+                    title: 'Lihat Detail',
+                    onClick: () =>
+                      navigate({
+                        to: ROUTES.PENYUSUN.DETAIL_BERITA_ACARA,
+                        params: { id: pengajuan.id },
+                      }),
+                    variant: 'outline',
+                  },
+                ]}
+              />
+            )}
+          />
         )}
       </div>
     </ListPageLayout>

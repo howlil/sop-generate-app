@@ -3,13 +3,19 @@
  */
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Send, List, Printer } from "lucide-react";
-import { SOPPreviewTemplate } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
+import { Send, List } from "lucide-react";
+import { SOPPreviewTemplate } from "@/components/sop/sop-preview-template";
 import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-evaluasi-status-header";
-import { SOPListCard } from "@/pages/penyusun/sop/components/SOPListCard";
+import { SOPListCard } from "@/components/sop/sop-list-card";
 import { Button } from "@/components/ui/button";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
-import { CollapsibleSidePanel } from "@/components/ui/collapsible-side-panel";
+import {
+  CollapsedStripButton,
+  CollapsibleSidePanel,
+  CollapsibleSidePanelContent,
+  CollapsibleSidePanelHeader,
+  SimplePanelHeader,
+} from "@/components/ui/collapsible-side-panel";
 import {
   useEvaluasiDraft,
   useEvaluasiSubmit,
@@ -22,7 +28,7 @@ import {
 import { deriveTahapPenilaianSop } from "@/lib/evaluasi/evaluasi-domain";
 import { ApiError } from "@/lib/api/api-client";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
-import { useCollapsiblePanels } from "@/hooks/useCollapsiblePanels";
+import { useCollapsiblePanels } from "@/pages/evaluator/evaluasi/hooks/use-collapsible-panels";
 import { formatDateId } from "@/utils/format-date";
 import type {
   EvaluasiWorkspacePengajuanAktif,
@@ -545,14 +551,6 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                 Workspace Evaluasi SOP
               </h2>
               <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 hover:bg-gray-50"
-                  onClick={() => window.print()}
-                >
-                  <Printer className="w-3.5 h-3.5" /> Print SOP
-                </Button>
                 {!isPengajuanReadOnly ? (
                   <Button
                     size="sm"
@@ -595,31 +593,48 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
           <CollapsibleSidePanel
             side="left"
             collapsed={leftPanelCollapsed}
-            onCollapsedChange={setLeftPanelCollapsed}
             widthExpanded="w-full"
-            title="Daftar SOP"
-            subtitle={`${listItems.length} dokumen`}
-            collapseButtonLabel="Daftar"
-            collapseButtonIcon={<List className="w-5 h-5" />}
           >
-            <div className="flex flex-col h-full min-h-0">
-              <p className="px-2 pb-2 text-[10px] text-gray-500 leading-snug shrink-0">
-                Dokumen = status SOP di sistem; Penilaian = hasil evaluasi Anda per dokumen.
-              </p>
-              <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
-                <SOPListCard
-                  items={listItems}
-                  selectedId={effectiveSopId}
-                  onSelect={handleSelectSop}
-                  variant="compact"
-                />
-              </div>
-            </div>
+            {leftPanelCollapsed ? (
+              <CollapsedStripButton
+                label="Daftar"
+                icon={<List className="w-5 h-5" />}
+                onClick={() => setLeftPanelCollapsed(false)}
+              />
+            ) : (
+              <>
+                <CollapsibleSidePanelHeader
+                  side="left"
+                  onCollapse={() => setLeftPanelCollapsed(true)}
+                  className="border-gray-100 bg-gray-50/90 px-2 py-1.5 sm:px-2.5"
+                >
+                  <SimplePanelHeader
+                    title="Daftar SOP"
+                    subtitle={`${listItems.length} dokumen`}
+                  />
+                </CollapsibleSidePanelHeader>
+                <CollapsibleSidePanelContent className="px-2 pb-2 pt-1 sm:px-2">
+                  <div className="flex flex-col h-full min-h-0">
+                    <p className="px-2 pb-2 text-[10px] text-gray-500 leading-snug shrink-0">
+                      Dokumen = status SOP di sistem; Penilaian = hasil evaluasi Anda per dokumen.
+                    </p>
+                    <div className="flex-1 min-h-0 overflow-auto scrollbar-hide">
+                      <SOPListCard
+                        items={listItems}
+                        selectedId={effectiveSopId}
+                        onSelect={handleSelectSop}
+                        variant="compact"
+                      />
+                    </div>
+                  </div>
+                </CollapsibleSidePanelContent>
+              </>
+            )}
           </CollapsibleSidePanel>
         }
         main={
           <div className="flex flex-col h-full">
-            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+            <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 print:hidden">
               <h3 className="text-xs font-semibold text-gray-700">
                 Preview SOP
               </h3>
@@ -627,6 +642,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
             <div className="flex-1 min-h-0 flex flex-col">
               {selectedSop ? (
                 previewProps ? (
+                  <div data-print-area="sop">
                   <SOPPreviewTemplate
                     metadata={previewProps.metadata}
                     prosedurRows={previewProps.prosedurRows}
@@ -634,11 +650,14 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                     name={previewProps.name}
                     number={previewProps.number}
                   />
+                  </div>
                 ) : (
+                  <div data-print-area="sop">
                   <SOPPreviewTemplate
                     name={selectedSop.judul}
                     number={selectedSop.nomorSOP}
                   />
+                  </div>
                 )
               ) : (
                 <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
