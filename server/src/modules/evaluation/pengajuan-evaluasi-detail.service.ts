@@ -18,7 +18,10 @@ import {
 import { encodeLogNilaiEvaluasiClientId } from './log-nilai-evaluasi-client-id';
 import { buildNilaiEvaluasiClientId } from './nilai-evaluasi-client-id';
 import { SopCatalogService } from '../sop/sop-catalog/sop-catalog.service';
-import type { BeritaAcaraEvaluasiViewDto } from './dto/berita-acara-evaluasi-view.dto';
+import type {
+  BeritaAcaraEvaluasiViewDto,
+  BeritaAcaraTteSignaturePayloadDto,
+} from './dto/berita-acara-evaluasi-view.dto';
 import type { PengajuanEvaluasiShellDto } from './dto/pengajuan-evaluasi-shell.dto';
 import type { PengajuanSopWorkbenchResponseDto } from './dto/pengajuan-sop-workbench-response.dto';
 import { PengajuanEvaluasiDetailRepository } from './pengajuan-evaluasi-detail.repository';
@@ -56,12 +59,14 @@ export class PengajuanEvaluasiDetailService {
     pengajuanEvaluasiId: string,
     detailSopId: string,
     logsLimit?: number,
+    arsip?: boolean,
   ): Promise<PengajuanSopWorkbenchResponseDto> {
     const row = await this.pengajuanEvaluasiRepository.findByIdFull(pengajuanEvaluasiId);
     if (row === null) {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }
     await this.pengajuanEvaluasiService.assertUserCanAccessPengajuan(user, row.opdId);
+    PengajuanEvaluasiDetailService.assertArsipCetakJikaDiminta(row, arsip);
     const anggota = await this.pengajuanEvaluasiDetailRepository.existsNilaiUntukDetail(
       pengajuanEvaluasiId,
       detailSopId,
@@ -74,18 +79,51 @@ export class PengajuanEvaluasiDetailService {
       detailSopId,
       limit,
     );
-    return { detailSopId, workbench };
+    const dokSop = await this.pengajuanEvaluasiDetailRepository.findDokumenSopBerlaku(detailSopId);
+    let tteSignaturePayloadKepalaOpd: BeritaAcaraTteSignaturePayloadDto | undefined;
+    if (dokSop !== null) {
+      for (const rt of dokSop.riwayatTandaTangan) {
+        if (rt.peran !== PeranPengguna.KEPALA_OPD) {
+          continue;
+        }
+        if (rt.user === undefined || rt.user === null) {
+          continue;
+        }
+        tteSignaturePayloadKepalaOpd = PengajuanEvaluasiDetailService.mapRiwayatToSignaturePayload(rt);
+        break;
+      }
+    }
+    return { detailSopId, workbench, tteSignaturePayloadKepalaOpd };
+  }
+
+  private static mapRiwayatToSignaturePayload(rt: {
+    userId: string;
+    dokumenTteId: string;
+    ditandatanganiPada: Date;
+    user: { nama: string; nip: string; jabatan: string };
+  }): BeritaAcaraTteSignaturePayloadDto {
+    return {
+      id: `${rt.dokumenTteId}:${rt.userId}`,
+      dokumenTteId: rt.dokumenTteId,
+      userId: rt.userId,
+      nip: rt.user.nip,
+      namaLengkap: rt.user.nama,
+      jabatan: rt.user.jabatan,
+      signedAt: rt.ditandatanganiPada.toISOString(),
+    };
   }
 
   async getBeritaAcaraView(
     user: JwtAccessPayload,
     pengajuanEvaluasiId: string,
+    arsip?: boolean,
   ): Promise<BeritaAcaraEvaluasiViewDto> {
     const row = await this.pengajuanEvaluasiRepository.findByIdFull(pengajuanEvaluasiId);
     if (row === null) {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }
     await this.pengajuanEvaluasiService.assertUserCanAccessPengajuan(user, row.opdId);
+    PengajuanEvaluasiDetailService.assertArsipCetakJikaDiminta(row, arsip);
     const dokTte = await this.pengajuanEvaluasiDetailRepository.findDokumenBeritaAcara(
       pengajuanEvaluasiId,
     );
@@ -147,26 +185,10 @@ export class PengajuanEvaluasiDetailService {
           continue;
         }
         if (rt.peran === PeranPengguna.PJ_EVALUATOR && payloadPjEvaluator === undefined) {
-          payloadPjEvaluator = {
-            id: `${rt.dokumenTteId}:${rt.userId}`,
-            dokumenTteId: rt.dokumenTteId,
-            userId: rt.userId,
-            nip: rt.user.nip,
-            namaLengkap: rt.user.nama,
-            jabatan: rt.user.jabatan,
-            signedAt: rt.ditandatanganiPada.toISOString(),
-          };
+          payloadPjEvaluator = PengajuanEvaluasiDetailService.mapRiwayatToSignaturePayload(rt);
         }
         if (rt.peran === PeranPengguna.PJ_PENYUSUN && payloadPjPenyusun === undefined) {
-          payloadPjPenyusun = {
-            id: `${rt.dokumenTteId}:${rt.userId}`,
-            dokumenTteId: rt.dokumenTteId,
-            userId: rt.userId,
-            nip: rt.user.nip,
-            namaLengkap: rt.user.nama,
-            jabatan: rt.user.jabatan,
-            signedAt: rt.ditandatanganiPada.toISOString(),
-          };
+          payloadPjPenyusun = PengajuanEvaluasiDetailService.mapRiwayatToSignaturePayload(rt);
         }
       }
       tteBeritaAcara = {
@@ -303,5 +325,19 @@ export class PengajuanEvaluasiDetailService {
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };
+  }
+
+  private static assertArsipCetakJikaDiminta(
+    row: PengajuanEvaluasiDetailRow,
+    arsip?: boolean,
+  ): void {
+    if (arsip !== true) {
+      return;
+    }
+    if (row.status !== StatusPengajuanEvaluasi.SELESAI) {
+      throw new ForbiddenException(
+        'Cetak arsip hanya tersedia setelah seluruh SOP ditandatangani Kepala OPD (status pengajuan selesai).',
+      );
+    }
   }
 }

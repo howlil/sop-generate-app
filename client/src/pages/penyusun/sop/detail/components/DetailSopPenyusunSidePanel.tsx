@@ -1,6 +1,5 @@
 import { PenLine, MessageSquare, Activity, History } from 'lucide-react'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
-import { KomentarPanel } from '@/pages/penyusun/sop/components/KomentarPanel'
 import { UmpanBalikEvaluasiPanel } from '@/pages/penyusun/sop/components/UmpanBalikEvaluasiPanel'
 import type { UmpanBalikEvaluasiDetail } from '@/types/dto/evaluasi.dto'
 import { RiwayatStatusPanel } from '@/pages/penyusun/sop/components/RiwayatStatusPanel'
@@ -16,7 +15,6 @@ export interface DetailSOPPenyusunSidePanelProps {
   auditEntries: PenyusunWorkbenchLogEdit[];
   /** Label tab pertama (Edit vs Informasi saat mode lihat). */
   editTabLabel?: string;
-  isRevisionFlow?: boolean;
   umpanBalik?: UmpanBalikEvaluasiDetail | null;
   isUmpanBalikLoading?: boolean;
   isReadOnly?: boolean;
@@ -31,14 +29,12 @@ export function DetailSOPPenyusunSidePanel({
   onTabChange,
   auditEntries = [],
   editTabLabel = 'Edit',
-  isRevisionFlow = false,
   umpanBalik = null,
   isUmpanBalikLoading = false,
   isReadOnly = false,
   detailSopId,
   sopId,
 }: DetailSOPPenyusunSidePanelProps) {
-  const showUmpanBalikEvaluasi = isRevisionFlow || umpanBalik != null
   return (
     <CollapsibleSidePanel
       side="right"
@@ -48,7 +44,7 @@ export function DetailSOPPenyusunSidePanel({
       widthExpanded="w-full"
       tabs={[
         { id: 'edit', label: editTabLabel, icon: <PenLine className="w-3.5 h-3.5" /> },
-        { id: 'komentar', label: 'Umpan balik', icon: <MessageSquare className="w-3.5 h-3.5" /> },
+        { id: 'komentar', label: 'Komentar evaluasi', icon: <MessageSquare className="w-3.5 h-3.5" /> },
         { id: 'versi', label: 'Versi', icon: <History className="w-3.5 h-3.5" /> },
         { id: 'aktivitas', label: 'Aktivitas', icon: <Activity className="w-3.5 h-3.5" /> },
       ]}
@@ -59,16 +55,12 @@ export function DetailSOPPenyusunSidePanel({
       {rightPanelTab === 'komentar' && (
         <div className="flex flex-col min-h-0 flex-1">
           <div className="flex-1 min-h-0 overflow-auto">
-            {showUmpanBalikEvaluasi ? (
-              <UmpanBalikEvaluasiPanel
-                detailSopId={detailSopId}
-                umpanBalik={umpanBalik}
-                isLoading={isUmpanBalikLoading}
-                isReadOnly={isReadOnly}
-              />
-            ) : (
-              <KomentarPanel />
-            )}
+            <UmpanBalikEvaluasiPanel
+              detailSopId={detailSopId}
+              umpanBalik={umpanBalik}
+              isLoading={isUmpanBalikLoading}
+              isReadOnly={isReadOnly}
+            />
           </div>
         </div>
       )}

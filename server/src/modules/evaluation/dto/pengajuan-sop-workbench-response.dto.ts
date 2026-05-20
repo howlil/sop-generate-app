@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PenyusunWorkbenchDataDto } from '../../sop/sop-catalog/dto/penyusun-workbench-data.dto';
+import { BeritaAcaraTteSignaturePayloadDto } from './berita-acara-evaluasi-view.dto';
 
 /** Respons GET `/evaluasi/pengajuan/:pengajuanId/sop-dokumen/:detailSopId`. */
 export class PengajuanSopWorkbenchResponseDto {
@@ -8,4 +9,10 @@ export class PengajuanSopWorkbenchResponseDto {
 
   @ApiProperty({ type: () => PenyusunWorkbenchDataDto })
   readonly workbench!: PenyusunWorkbenchDataDto;
+
+  @ApiPropertyOptional({
+    type: () => BeritaAcaraTteSignaturePayloadDto,
+    description: 'Payload QR TTE Kepala OPD bila SOP sudah ditandatangani',
+  })
+  readonly tteSignaturePayloadKepalaOpd?: BeritaAcaraTteSignaturePayloadDto;
 }

@@ -271,11 +271,6 @@ export class TteService {
     return { message: 'Verifikasi tidak diperlukan pada mode simulasi TTE' };
   }
 
-  async listRiwayat(user: JwtAccessPayload): Promise<TteRiwayatResponse[]> {
-    const rows = await this.tteRepository.findRiwayatUser(user.sub);
-    return rows.map((r) => this.mapRiwayat(r));
-  }
-
   /**
    * Verifikasi publik: data pengesahan berdasarkan pasangan junction `(userId, dokumenTteId)` (nilai di URL/QR).
    * Tidak memerlukan autentikasi.
@@ -483,71 +478,6 @@ export class TteService {
     throw new ForbiddenException('Hanya PJ Evaluator atau PJ Penyusun yang dapat menandatangani Berita Acara');
   }
 
-  async tandaTanganiSop(
-    user: JwtAccessPayload,
-    detailSopId: string,
-    dto: TandaTanganiDto,
-  ): Promise<TteRiwayatResponse> {
-    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
-    if (pengguna === null) {
-      throw new NotFoundException('Pengguna tidak ditemukan');
-    }
-    if (pengguna.peran !== PeranPengguna.KEPALA_OPD) {
-      throw new ForbiddenException('Hanya Kepala OPD yang dapat mengesahkan SOP');
-    }
-    await this.assertPinValid(user.sub, dto.pin);
-    const hashDokumen = this.hashDokumenKanonik({
-      jenis: JenisDokumenTte.SOP_BERLAKU,
-      nomorDokumen: dto.nomorDokumen,
-      judulDokumen: dto.judulDokumen,
-      refId: detailSopId,
-    });
-    const signedAt = new Date();
-    const signatureFields = this.buildSignatureMetadata({
-      hashDokumen,
-      userId: user.sub,
-      peran: PeranPengguna.KEPALA_OPD,
-      signedAt,
-      nama: pengguna.nama,
-      nip: pengguna.nip,
-    });
-    const result = await this.runTteRepositoryMutation(() =>
-      this.tteRepository.transaksiTandaTanganiSop({
-        detailSopId,
-        userId: user.sub,
-        userOpdId: pengguna.opdId,
-        peran: PeranPengguna.KEPALA_OPD,
-        hashDokumen,
-        nomorDokumen: dto.nomorDokumen,
-        judulDokumen: dto.judulDokumen,
-        signatureFields,
-      }),
-    );
-    if (result.error === 'NOT_FOUND') {
-      throw new NotFoundException('Detail SOP tidak ditemukan');
-    }
-    if (result.error === 'FORBIDDEN_OPD') {
-      throw new ForbiddenException('SOP tidak termasuk OPD Anda');
-    }
-    if (result.error === 'BAD_SOP_STATUS') {
-      throw new ConflictException(
-        `Tidak dapat mengesahkan SOP dari status ${String((result as { status?: StatusSOP }).status)}`,
-      );
-    }
-    if (result.error === 'ALREADY_SIGNED') {
-      throw new ConflictException('SOP sudah ditandatangani oleh Kepala OPD');
-    }
-    if (result.error === 'INVALID_DOC_PARENT') {
-      throw new ConflictException(
-        'Data dokumen TTE tidak konsisten: wajib tepat satu referensi parent (DetailSOP atau PengajuanEvaluasi)',
-      );
-    }
-    if (!result.ok || result.riwayat === null || result.riwayat === undefined) {
-      throw new ConflictException('Gagal menyelesaikan penandatanganan');
-    }
-    return this.mapRiwayat(result.riwayat);
-  }
-
   async tandaTanganiSemuaSopPengajuan(
     user: JwtAccessPayload,
     pengajuanEvaluasiId: string,
@@ -582,6 +512,7 @@ export class TteService {
         userId: user.sub,
         userOpdId: pengguna.opdId,
         peran: PeranPengguna.KEPALA_OPD,
+        signedAt,
         hashDokumen,
         nomorDokumen: dto.nomorDokumen,
         judulDokumen: dto.judulDokumen,

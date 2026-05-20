@@ -150,6 +150,74 @@ describe('SopCatalogService', () => {
     });
   });
 
+  it('should_set_canCabutSop_when_berlaku_without_in_flight', async () => {
+    const t = new Date('2026-01-15T10:00:00.000Z');
+    const row: SopDaftarDbRow = {
+      sopId: 'sop-berlaku',
+      opdId: 'opd-1',
+      judul: 'SOP Berlaku',
+      detail: {
+        detailSopId: 'det-berlaku',
+        nomorSOP: '001/2026',
+        status: StatusSOP.BERLAKU,
+        versi: 1,
+        updatedAt: t,
+        pembuatNama: 'Budi',
+        editorNama: 'Budi',
+        peraturanId: 'per-1',
+      },
+      versiBerlaku: {
+        detailSopId: 'det-berlaku',
+        nomorSOP: '001/2026',
+        status: StatusSOP.BERLAKU,
+        versi: 1,
+        updatedAt: t,
+        pembuatNama: 'Budi',
+        editorNama: 'Budi',
+        peraturanId: 'per-1',
+      },
+      allStatuses: [StatusSOP.BERLAKU],
+    };
+    repoMock.findDaftarByOpdId.mockResolvedValue([row]);
+    const actual = await service.listForCurrentUser(user);
+    expect(actual[0]?.canCabutSop).toBe(true);
+    expect(actual[0]?.canBuatVersiBaru).toBe(true);
+  });
+
+  it('should_clear_canCabutSop_when_revisi_in_flight', async () => {
+    const t = new Date('2026-01-15T10:00:00.000Z');
+    const row: SopDaftarDbRow = {
+      sopId: 'sop-revisi',
+      opdId: 'opd-1',
+      judul: 'SOP Revisi',
+      detail: {
+        detailSopId: 'det-draft',
+        nomorSOP: '002/2026',
+        status: StatusSOP.DRAFT,
+        versi: 2,
+        updatedAt: t,
+        pembuatNama: 'Budi',
+        editorNama: 'Budi',
+        peraturanId: 'per-1',
+      },
+      versiBerlaku: {
+        detailSopId: 'det-berlaku',
+        nomorSOP: '001/2026',
+        status: StatusSOP.BERLAKU,
+        versi: 1,
+        updatedAt: t,
+        pembuatNama: 'Budi',
+        editorNama: 'Budi',
+        peraturanId: 'per-1',
+      },
+      allStatuses: [StatusSOP.DRAFT, StatusSOP.BERLAKU],
+    };
+    repoMock.findDaftarByOpdId.mockResolvedValue([row]);
+    const actual = await service.listForCurrentUser(user);
+    expect(actual[0]?.canCabutSop).toBe(false);
+    expect(actual[0]?.canBuatVersiBaru).toBe(false);
+  });
+
   it('should_use_findDaftarAll_for_evaluator', async () => {
     const evaluatorUser: JwtAccessPayload = {
       sub: 'ev-1',
@@ -1182,36 +1250,25 @@ describe('SopCatalogService', () => {
     });
 
     it('should_throw_conflict_when_bukan_revisi', async () => {
+      const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-rev',
         sopId: 'sop-rev',
         status: StatusSOP.DRAFT,
         sopOpdId: 'opd-1',
       });
-      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev')).rejects.toBeInstanceOf(
+      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev')).rejects.toBeInstanceOf(
         ConflictException,
       );
       expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
     });
 
-    it('should_apply_transaction_and_return_diajukan_for_penyusun', async () => {
-      repoMock.findLatestDetailStatusContext.mockResolvedValue({
-        detailSopId: 'det-rev',
-        sopId: 'sop-rev',
-        status: StatusSOP.REVISI_DARI_EVALUATOR,
-        sopOpdId: 'opd-1',
-      });
-      const lengkap = minimalRevisiWorkbench();
-      const refreshed = { ...lengkap, status: 'DIAJUKAN_EVALUASI' } as unknown as SopWorkbenchDbPayload;
-      repoMock.findWorkbenchPayloadByDetailOrSopId
-        .mockResolvedValueOnce(lengkap)
-        .mockResolvedValueOnce(refreshed);
-      const actual = await service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev');
-      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).toHaveBeenCalledWith({
-        detailSopId: 'det-rev',
-        userId: 'pengguna-1',
-      });
-      expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');
+    it('should_forbid_penyusun', async () => {
+      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev')).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(repoMock.findLatestDetailStatusContext).not.toHaveBeenCalled();
+      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
     });
 
     it('should_allow_pj_penyusun', async () => {
@@ -1236,18 +1293,20 @@ describe('SopCatalogService', () => {
     });
 
     it('should_reject_kirim_ulang_when_umpan_balik_belum_selesai', async () => {
+      const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-rev',
         sopId: 'sop-rev',
         status: StatusSOP.REVISI_DARI_EVALUATOR,
         sopOpdId: 'opd-1',
       });
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(minimalRevisiWorkbench());
       evaluasiNilaiServiceMock.assertBolehKirimUlangSetelahRevisi.mockRejectedValueOnce(
         new BadRequestException(
           'Tandai umpan balik evaluasi sebagai selesai sebelum mengirim ulang ke evaluator',
         ),
       );
-      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev')).rejects.toBeInstanceOf(
+      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev')).rejects.toBeInstanceOf(
         BadRequestException,
       );
       expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
@@ -1324,6 +1383,204 @@ describe('SopCatalogService', () => {
       await expect(service.buatVersiBaruDariBerlaku(evaluator, 'det-v1')).rejects.toBeInstanceOf(
         ForbiddenException,
       );
+    });
+  });
+
+  describe('cabutSopBerlaku', () => {
+    const kepalaUser: JwtAccessPayload = {
+      sub: 'kepala-1',
+      email: 'kepala@b.c',
+      peran: PeranPengguna.KEPALA_OPD,
+    };
+    const t = new Date('2026-05-01T08:00:00.000Z');
+
+    function stubBerlakuWorkbench(status: string): SopWorkbenchDbPayload {
+      return {
+        detailSopId: 'det-berlaku',
+        sopId: 'sop-cabut',
+        status,
+        versi: 1,
+        nomorSOP: 'CAB/1',
+        tanggalPembuatan: t,
+        tanggalRevisi: null,
+        tanggalEfektif: t,
+        namaLembaga: 'Lembaga',
+        dibuatOlehId: 'p1',
+        terakhirDieditOlehId: null,
+        createdAt: t,
+        updatedAt: t,
+        sop: {
+          sopId: 'sop-cabut',
+          opdId: 'opd-1',
+          judul: 'SOP Cabut',
+          createdAt: t,
+          updatedAt: t,
+          opd: { opdId: 'opd-1', nama: 'OPD Satu', pengguna: [] },
+        },
+        dibuatOleh: { penggunaId: 'p1', nama: 'Budi' },
+        terakhirDieditOleh: null,
+        lampiranPeringatan: [],
+        lampiranKualifikasiPelaksanaan: [],
+        lampiranPeralatanPerlengkapan: [],
+        lampiranPencatatanPendataan: [],
+        dasarHukum: [],
+        relasiSopKeluar: [],
+        relasiSopMasuk: [],
+        swimlanes: [],
+        nilaiEvaluasi: [],
+        langkahSOP: [],
+        logEditSop: [],
+      } as unknown as SopWorkbenchDbPayload;
+    }
+
+    beforeEach(() => {
+      repoMock.findOpdIdByPenggunaId.mockResolvedValue('opd-1');
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValue({
+        detailSopId: 'det-berlaku',
+        sopId: 'sop-cabut',
+      });
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-berlaku',
+        sopId: 'sop-cabut',
+        status: StatusSOP.BERLAKU,
+        sopOpdId: 'opd-1',
+      });
+    });
+
+    it('should_cabut_berlaku_version_and_return_workbench', async () => {
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-berlaku',
+          versi: 1,
+          nomorSOP: 'CAB/1',
+          status: StatusSOP.BERLAKU,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+      ]);
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValue(
+        stubBerlakuWorkbench('DICABUT'),
+      );
+      const actual = await service.cabutSopBerlaku(kepalaUser, 'sop-cabut');
+      expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
+        detailSopId: 'det-berlaku',
+        status: StatusSOP.DICABUT,
+        userId: 'kepala-1',
+      });
+      expect(actual.detail.status).toBe('DICABUT');
+    });
+
+    it('should_cabut_berlaku_when_param_is_sop_header_and_latest_is_draft', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-draft',
+        sopId: 'sop-cabut',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-berlaku',
+          versi: 1,
+          nomorSOP: 'CAB/1',
+          status: StatusSOP.BERLAKU,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+      ]);
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValue(
+        stubBerlakuWorkbench('DICABUT'),
+      );
+      await service.cabutSopBerlaku(kepalaUser, 'sop-cabut');
+      expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
+        detailSopId: 'det-berlaku',
+        status: StatusSOP.DICABUT,
+        userId: 'kepala-1',
+      });
+    });
+
+    it('should_reject_cabut_for_non_kepala_opd', async () => {
+      await expect(service.cabutSopBerlaku(user, 'sop-cabut')).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_reject_cabut_when_no_berlaku_version', async () => {
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-draft',
+          versi: 1,
+          nomorSOP: 'CAB/1',
+          status: StatusSOP.DRAFT,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+      ]);
+      await expect(service.cabutSopBerlaku(kepalaUser, 'sop-cabut')).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_reject_cabut_when_revisi_in_flight', async () => {
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-berlaku',
+          versi: 1,
+          nomorSOP: 'CAB/1',
+          status: StatusSOP.BERLAKU,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+        {
+          detailSopId: 'det-draft',
+          versi: 2,
+          nomorSOP: 'CAB/2',
+          status: StatusSOP.DRAFT,
+          revisiDariDetailSopId: 'det-berlaku',
+          revisiDariVersi: 1,
+          updatedAt: t,
+          canHapusDraft: true,
+        },
+      ]);
+      await expect(service.cabutSopBerlaku(kepalaUser, 'sop-cabut')).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
+    });
+
+    it('should_delegate_dicabut_from_transitionDetailSopStatus', async () => {
+      repoMock.findRiwayatVersiBySopId.mockResolvedValue([
+        {
+          detailSopId: 'det-berlaku',
+          versi: 1,
+          nomorSOP: 'CAB/1',
+          status: StatusSOP.BERLAKU,
+          revisiDariDetailSopId: null,
+          revisiDariVersi: null,
+          updatedAt: t,
+          canHapusDraft: false,
+        },
+      ]);
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValue(
+        stubBerlakuWorkbench('DICABUT'),
+      );
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.DICABUT };
+      const actual = await service.transitionDetailSopStatus(kepalaUser, 'sop-cabut', dto);
+      expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
+        detailSopId: 'det-berlaku',
+        status: StatusSOP.DICABUT,
+        userId: 'kepala-1',
+      });
+      expect(actual.detail.status).toBe('DICABUT');
     });
   });
 

@@ -15,6 +15,8 @@ export interface DetailSOPPenyusunHeaderProps {
   currentSopStatusLabel: string
   isRevisionFlow: boolean
   primaryActionLabel: string
+  /** Di alur revisi: hanya PJ Penyusun yang melihat tombol kirim ulang. */
+  canShowKirimUlangAction?: boolean
   /**
    * Status autosave gabungan (header + prosedur) — ditampilkan sebagai indikator
    * kecil di kanan tombol aksi.
@@ -81,6 +83,7 @@ export function DetailSOPPenyusunHeader({
   currentSopStatusLabel,
   isRevisionFlow,
   primaryActionLabel,
+  canShowKirimUlangAction = true,
   autosaveStatus = 'idle',
   onRetryAutosave,
   onComplete,
@@ -163,7 +166,7 @@ export function DetailSOPPenyusunHeader({
               {isBuatVersiBaruPending ? 'Membuat…' : 'Buat versi baru'}
             </Button>
           ) : null}
-          {!isReadOnly ? (
+          {!isReadOnly && (!isRevisionFlow || canShowKirimUlangAction) ? (
           <Button
             size="sm"
             className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-60"
@@ -205,6 +208,12 @@ export function DetailSOPPenyusunHeader({
           <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
           {kirimUlangBlockingReason ? (
             kirimUlangBlockingReason
+          ) : !canShowKirimUlangAction ? (
+            <>
+              SOP ini dikembalikan oleh evaluator untuk revisi. Selesaikan perbaikan dan tandai umpan
+              balik di tab <span className="font-semibold">Umpan balik</span>, lalu minta{' '}
+              <span className="font-semibold">PJ Penyusun</span> mengirim ulang ke evaluator.
+            </>
           ) : (
             <>
               SOP ini dikembalikan oleh evaluator untuk revisi. Tandai umpan balik selesai di tab

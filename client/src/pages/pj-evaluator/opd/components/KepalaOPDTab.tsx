@@ -3,7 +3,7 @@ import { Edit, History, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { IconActionButton } from '@/components/ui/icon-action-button'
+import { RowActions } from '@/components/data/row-actions'
 import { KepalaOpdManageDialog } from './KepalaOpdManageDialog'
 import { TambahKepalaOPDDialog } from './TambahKepalaOPDDialog'
 import { KepalaOpdRiwayatDialog } from './KepalaOpdRiwayatDialog'
@@ -208,32 +208,33 @@ export function KepalaOPDTab({
                       <StatusBadge status={k.isActive ? 'AKTIF' : 'NONAKTIF'} />
                     </Table.Td>
                     <Table.Td>
-                      <div className="flex gap-1 justify-center flex-wrap">
-                        <IconActionButton
-                          icon={History}
-                          title="Riwayat penugasan OPD"
-                          onClick={() => {
-                            setRiwayatForId(k.id)
-                            setRiwayatNama(k.nama)
-                          }}
-                        />
-                        <IconActionButton
-                          icon={Edit}
-                          title="Ubah data / pindah OPD"
-                          onClick={() => openManageDialog(k)}
-                        />
-                        <IconActionButton
-                          icon={Trash2}
-                          title={
-                            canDeleteKepala(k)
+                      <RowActions
+                        wrap
+                        actions={[
+                          {
+                            icon: History,
+                            title: 'Riwayat penugasan OPD',
+                            onClick: () => {
+                              setRiwayatForId(k.id)
+                              setRiwayatNama(k.nama)
+                            },
+                          },
+                          {
+                            icon: Edit,
+                            title: 'Ubah data / pindah OPD',
+                            onClick: () => openManageDialog(k),
+                          },
+                          {
+                            icon: Trash2,
+                            title: canDeleteKepala(k)
                               ? 'Hapus Kepala OPD (belum ada SOP terkait)'
-                              : 'Tidak dapat dihapus: masih ada SOP yang dibuat'
-                          }
-                          destructive
-                          disabled={!canDeleteKepala(k)}
-                          onClick={() => onDeleteRequest(k.id)}
-                        />
-                      </div>
+                              : 'Tidak dapat dihapus: masih ada SOP yang dibuat',
+                            destructive: true,
+                            disabled: !canDeleteKepala(k),
+                            onClick: () => onDeleteRequest(k.id),
+                          },
+                        ]}
+                      />
                     </Table.Td>
                   </Table.BodyRow>
                 ))}

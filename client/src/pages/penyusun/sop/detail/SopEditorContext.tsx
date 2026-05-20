@@ -18,8 +18,6 @@ import type { Peraturan } from '@/types/dto/peraturan.dto'
 import type { ProsedurRow, SOPDetailMetadata } from '@/types/ui/sop'
 import type { SopHeaderAutosaveStatus } from '@/hooks/useSopHeaderAutosave'
 import type { SopProsedurAutosaveStatus } from '@/hooks/useSopProsedurAutosave'
-import type { KomentarItem } from '@/types/dto/komentar.dto'
-
 export interface SopEditorImplementer {
   id: string
   name: string
@@ -77,14 +75,6 @@ export interface SopEditorContextValue {
   flushProsedurAutosave: () => Promise<void>
   /** Dokumen hanya untuk dibaca (status tidak mengizinkan penyuntingan). */
   isReadOnly: boolean
-  /** Daftar komentar SOP (evaluator → penyusun). */
-  komentarList: KomentarItem[]
-  /** True saat fetching daftar komentar (untuk skeleton/empty state). */
-  isKomentarLoading: boolean
-  /** Tandai komentar sebagai SELESAI (hanya berlaku untuk PENYUSUN/PJ_PENYUSUN). */
-  resolveKomentar: (komentarId: string) => Promise<unknown>
-  /** True saat resolve komentar sedang diproses. */
-  isResolvingKomentar: boolean
 }
 
 const SopEditorContext = createContext<SopEditorContextValue | null>(null)
@@ -117,10 +107,6 @@ export function SopEditorProvider({ value, children }: SopEditorProviderProps) {
       value.prosedurAutosaveStatus,
       value.prosedurAutosaveError,
       value.flushProsedurAutosave,
-      value.komentarList,
-      value.isKomentarLoading,
-      value.resolveKomentar,
-      value.isResolvingKomentar,
       value.isReadOnly,
     ],
   )

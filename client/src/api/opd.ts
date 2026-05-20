@@ -4,37 +4,25 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
-import { readApiData, unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
+import { unwrapApiData, unwrapApiVoid } from '@/lib/api/response'
 import { queryKeys } from '@/config/query-keys'
 import { useMutationWithToast } from '@/hooks/useMutationWithToast'
 import { STALE_TIME } from '@/utils/constants'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   CreateOpdDto,
-  OpdEvaluasiRingkas,
   OpdMutasi,
   OpdRingkas,
   UpdateOpdDto,
   UpdateOpdMutationDto,
 } from '@/types/dto/opd.dto'
 
-/** Respons bisa berupa array langsung (legacy) atau bungkus ApiSuccessResponse - penting untuk cache lama. */
-function coerceOpdRingkasList(raw: unknown): OpdRingkas[] {
-  if (Array.isArray(raw)) {
-    return raw as OpdRingkas[]
-  }
-  const data = readApiData<OpdRingkas[]>(raw)
-  if (Array.isArray(data)) return data
-  return []
-}
-
 export const opdApi = {
   /** Daftar OPD ringkas (peran menentukan ruang lingkup). */
   findAll: async (params?: { search?: string }): Promise<OpdRingkas[]> => {
     const s = params?.search?.trim()
     const qs = buildQueryString(s ? { search: s } : undefined)
-    const raw = await apiClient.get<unknown>(`/opd${qs}`)
-    return coerceOpdRingkasList(raw)
+    return unwrapApiData(apiClient.get<ApiSuccessResponse<OpdRingkas[]>>(`/opd${qs}`))
   },
 
   /** Buat OPD (PJ_EVALUATOR). */
@@ -50,40 +38,11 @@ export const opdApi = {
     await unwrapApiVoid(apiClient.delete<ApiSuccessResponse<null>>(`/opd/${id}`))
   },
 
-  /** GET `/opd/evaluasi-ringkas` — peran EVALUATOR / PJ_EVALUATOR. */
-  findEvaluasiRingkas: async (params?: {
-    search?: string
-  }): Promise<OpdEvaluasiRingkas[]> => {
-    const s = params?.search?.trim()
-    const qs = buildQueryString(s ? { search: s } : undefined)
-    return unwrapApiData(
-      apiClient.get<ApiSuccessResponse<OpdEvaluasiRingkas[]>>(
-        `/opd/evaluasi-ringkas${qs}`,
-      ),
-    )
-  },
 }
 
 export interface UseOpdOptions {
   /** Filter nama OPD (substring); relevan untuk PJ_EVALUATOR. */
   readonly search?: string
-}
-
-export function useOpdEvaluasiRingkas(search?: string) {
-  const searchKey = search?.trim() ?? ''
-  const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.opdEvaluasiRingkas(searchKey || undefined),
-    queryFn: () =>
-      opdApi.findEvaluasiRingkas(
-        searchKey ? { search: searchKey } : undefined,
-      ),
-    staleTime: STALE_TIME.MEDIUM,
-  })
-  return {
-    list: data ?? [],
-    isLoading,
-    error,
-  }
 }
 
 export function useOpd(options?: UseOpdOptions) {
@@ -94,8 +53,7 @@ export function useOpd(options?: UseOpdOptions) {
       opdApi.findAll(searchKey ? { search: searchKey } : undefined),
     staleTime: STALE_TIME.MEDIUM,
   })
-  /** Normalisasi jika cache masih menyimpan envelope penuh dari queryFn versi lama. */
-  const list = coerceOpdRingkasList(data)
+  const list = data ?? []
 
   const createMutation = useMutationWithToast({
     mutationFn: (payload: CreateOpdDto) => opdApi.create(payload),

@@ -1,9 +1,9 @@
 import { Edit, Trash2, FileText } from 'lucide-react'
 import { Table } from '@/components/ui/data-table'
-import { IconActionButton } from '@/components/ui/icon-action-button'
 import { Input } from '@/components/ui/input'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
+import { RowActions } from '@/components/data/row-actions'
 import type { Peraturan } from "@/types/dto/peraturan.dto";
 
 export interface PeraturanTableTabProps {
@@ -80,31 +80,31 @@ export function PeraturanTableTab({
                     )}
                   </Table.Td>
                   <Table.Td className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <IconActionButton
-                        icon={Edit}
-                        title={
-                          !canEditPeraturan(peraturan)
+                    <RowActions
+                      actions={[
+                        {
+                          icon: Edit,
+                          title: !canEditPeraturan(peraturan)
                             ? 'Hanya peraturan yang Anda buat yang dapat diedit'
-                            : 'Edit'
-                        }
-                        onClick={() => onOpenPeraturanDialog(peraturan)}
-                        disabled={!canEditPeraturan(peraturan)}
-                      />
-                      <IconActionButton
-                        icon={Trash2}
-                        title={
-                          !canEditPeraturan(peraturan)
+                            : 'Edit',
+                          onClick: () => onOpenPeraturanDialog(peraturan),
+                          disabled: !canEditPeraturan(peraturan),
+                        },
+                        {
+                          icon: Trash2,
+                          title: !canEditPeraturan(peraturan)
                             ? 'Hanya peraturan yang Anda buat yang dapat dihapus'
                             : (peraturan.digunakan ?? 0) > 0
                               ? 'Tidak dapat dihapus: sudah ada SOP yang mengait'
-                              : 'Hapus'
-                        }
-                        destructive
-                        onClick={() => onDeletePeraturan(peraturan.id)}
-                        disabled={!canEditPeraturan(peraturan) || (peraturan.digunakan ?? 0) > 0}
-                      />
-                    </div>
+                              : 'Hapus',
+                          destructive: true,
+                          onClick: () => onDeletePeraturan(peraturan.id),
+                          disabled:
+                            !canEditPeraturan(peraturan) ||
+                            (peraturan.digunakan ?? 0) > 0,
+                        },
+                      ]}
+                    />
                   </Table.Td>
                 </Table.BodyRow>
               ))}

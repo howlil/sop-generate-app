@@ -1,6 +1,6 @@
 
 import { useMemo, useState } from "react";
-import { Eye, FileText } from "lucide-react";
+import { Eye, Ban, FileText } from "lucide-react";
 import { Table } from "@/components/ui/data-table";
 import { IconActionButton } from "@/components/ui/icon-action-button";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
@@ -8,11 +8,13 @@ import { SOPStatusFilterSelect } from "@/pages/penyusun/sop/components/SOPStatus
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SopStatusBadge } from "@/components/status/sop-status-badge";
+import { CabutSopDialog } from "@/components/sop/CabutSopDialog";
 import { formatDateIdLong } from "@/utils/format-date";
 import { ROUTES } from "@/utils/constants";
 import { useAuthStore } from "@/stores/authStore";
-import { useSop } from "@/api/sop";
+import { useCabutSop, useSop } from "@/api/sop";
 import type { SopDaftarRow } from "@/types/dto/sop.dto";
+import { canShowCabutSopAction, getCabutSopBlockingReason } from "@/lib/sop/cabut-sop.util";
 import { useOpd } from "@/api/opd";
 
 export function PantauSOP() {
@@ -24,6 +26,8 @@ export function PantauSOP() {
   const [filterStatus, setFilterStatus] = useState("all");
   const { list: sopListRaw } = useSop();
   const mergedList = sopListRaw as unknown as SopDaftarRow[];
+  const { cabutSopAsync, isCabutPending } = useCabutSop();
+  const [cabutTarget, setCabutTarget] = useState<SopDaftarRow | null>(null);
 
   const listByStatus = useMemo(
     () =>
@@ -42,88 +46,121 @@ export function PantauSOP() {
     );
   }, [listByStatus, searchQuery]);
 
+  async function handleConfirmCabutFromList() {
+    if (cabutTarget == null) return;
+    await cabutSopAsync(cabutTarget.id);
+    setCabutTarget(null);
+  }
+
   return (
-    <ListPageLayout
-      breadcrumb={[{ label: "SOP" }]}
-      title="SOP"
-      description={`Daftar semua SOP di ${opdName}. Hanya menampilkan SOP yang tercatat untuk OPD Anda.`}
-      toolbar={
-        <SearchToolbar
-          searchPlaceholder="Cari judul atau nomor SOP..."
-          searchValue={searchQuery}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
-        >
-          <SOPStatusFilterSelect
-            value={filterStatus}
-            onValueChange={setFilterStatus}
-            className="h-9 w-[200px]"
-          />
-        </SearchToolbar>
-      }
-    >
-      <Table.Paginated data={filteredList} label="SOP">
-        {(pageData) => (
-          <Table.Root>
-            <Table.Table>
-              <thead>
-                <Table.HeadRow>
-                  <Table.Th>Judul SOP</Table.Th>
-                  <Table.Th>Nomor SOP</Table.Th>
-                  <Table.Th>Terakhir diperbarui</Table.Th>
-                  <Table.Th>Status</Table.Th>
-                  <Table.Th>Aksi</Table.Th>
-                </Table.HeadRow>
-              </thead>
-              <tbody>
-                {pageData.length === 0 ? (
-                  <EmptyState
-                    asTableRow
-                    colSpan={5}
-                    icon={<FileText />}
-                    title="Tidak ada SOP ditemukan"
-                    description="Tidak ada SOP untuk OPD Anda atau tidak cocok dengan pencarian."
-                  />
-                ) : (
-                  pageData.map((sop) => (
-                    <Table.BodyRow key={sop.id}>
-                      <Table.Td>
-                        <p className="font-medium text-gray-900">{sop.judul}</p>
-                      </Table.Td>
-                      <Table.Td>
-                        <p className="font-mono text-gray-700 text-[11px]">
-                          {sop.nomorSop ?? "—"}
-                        </p>
-                      </Table.Td>
-                      <Table.Td>
-                        <p className="text-gray-700">
-                          {sop.terakhirDiperbarui
-                            ? formatDateIdLong(sop.terakhirDiperbarui)
-                            : "—"}
-                        </p>
-                      </Table.Td>
-                      <Table.Td>
-                        <SopStatusBadge
-                          status={sop.status}
-                          label={sop.statusLabel}
-                          showDomain={false}
-                        />
-                      </Table.Td>
-                      <Table.Td>
-                        <IconActionButton
-                          icon={Eye}
-                          to={ROUTES.KEPALA_OPD.DETAIL_SOP}
-                          params={{ id: sop.id }}
-                          title="Lihat detail"
-                        />
-                      </Table.Td>
-                    </Table.BodyRow>
-                  ))
-                )}
-              </tbody>
-            </Table.Table>
-          </Table.Root>
-        )}
-      </Table.Paginated>
-    </ListPageLayout>
+    <>
+      <ListPageLayout
+        breadcrumb={[{ label: "SOP" }]}
+        title="SOP"
+        description={`Daftar semua SOP di ${opdName}. Hanya menampilkan SOP yang tercatat untuk OPD Anda.`}
+        toolbar={
+          <SearchToolbar
+            searchPlaceholder="Cari judul atau nomor SOP..."
+            searchValue={searchQuery}
+            onSearchChange={(e) => setSearchQuery(e.target.value)}
+          >
+            <SOPStatusFilterSelect
+              value={filterStatus}
+              onValueChange={setFilterStatus}
+              className="h-9 w-[200px]"
+            />
+          </SearchToolbar>
+        }
+      >
+        <Table.Paginated data={filteredList} label="SOP">
+          {(pageData) => (
+            <Table.Root>
+              <Table.Table>
+                <thead>
+                  <Table.HeadRow>
+                    <Table.Th>Judul SOP</Table.Th>
+                    <Table.Th>Nomor SOP</Table.Th>
+                    <Table.Th>Terakhir diperbarui</Table.Th>
+                    <Table.Th>Status</Table.Th>
+                    <Table.Th>Aksi</Table.Th>
+                  </Table.HeadRow>
+                </thead>
+                <tbody>
+                  {pageData.length === 0 ? (
+                    <EmptyState
+                      asTableRow
+                      colSpan={5}
+                      icon={<FileText />}
+                      title="Tidak ada SOP ditemukan"
+                      description="Tidak ada SOP untuk OPD Anda atau tidak cocok dengan pencarian."
+                    />
+                  ) : (
+                    pageData.map((sop) => {
+                      const showCabut = canShowCabutSopAction(sop) && sop.versiBerlaku?.status !== "DICABUT";
+                      const cabutBlockReason = getCabutSopBlockingReason(sop);
+                      return (
+                        <Table.BodyRow key={sop.id}>
+                          <Table.Td>
+                            <p className="font-medium text-gray-900">{sop.judul}</p>
+                          </Table.Td>
+                          <Table.Td>
+                            <p className="font-mono text-gray-700 text-[11px]">
+                              {sop.nomorSop ?? "—"}
+                            </p>
+                          </Table.Td>
+                          <Table.Td>
+                            <p className="text-gray-700">
+                              {sop.terakhirDiperbarui
+                                ? formatDateIdLong(sop.terakhirDiperbarui)
+                                : "—"}
+                            </p>
+                          </Table.Td>
+                          <Table.Td>
+                            <SopStatusBadge
+                              status={sop.status}
+                              label={sop.statusLabel}
+                              showDomain={false}
+                            />
+                          </Table.Td>
+                          <Table.Td>
+                            <div className="flex items-center gap-1">
+                              <IconActionButton
+                                icon={Eye}
+                                to={ROUTES.KEPALA_OPD.DETAIL_SOP}
+                                params={{ id: sop.id }}
+                                title="Lihat detail"
+                              />
+                              {showCabut ? (
+                                <IconActionButton
+                                  icon={Ban}
+                                  title={cabutBlockReason ?? "Cabut SOP"}
+                                  disabled={isCabutPending || cabutBlockReason != null}
+                                  onClick={() => setCabutTarget(sop)}
+                                  className="text-rose-700 hover:text-rose-800 hover:bg-rose-50"
+                                />
+                              ) : null}
+                            </div>
+                          </Table.Td>
+                        </Table.BodyRow>
+                      );
+                    })
+                  )}
+                </tbody>
+              </Table.Table>
+            </Table.Root>
+          )}
+        </Table.Paginated>
+      </ListPageLayout>
+      <CabutSopDialog
+        open={cabutTarget != null}
+        onOpenChange={(open) => {
+          if (!open) setCabutTarget(null);
+        }}
+        sopJudul={cabutTarget?.judul ?? ""}
+        nomorSop={cabutTarget?.versiBerlaku?.nomorSop ?? cabutTarget?.nomorSop ?? ""}
+        onConfirm={() => void handleConfirmCabutFromList()}
+        isPending={isCabutPending}
+      />
+    </>
   );
 }

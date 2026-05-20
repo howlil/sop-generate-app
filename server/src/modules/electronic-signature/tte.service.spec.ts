@@ -53,12 +53,10 @@ describe('TteService', () => {
       findKredensial: jest.fn(),
       createKredensialPin: jest.fn(),
       updateKredensialPinHash: jest.fn(),
-      findRiwayatUser: jest.fn(),
       findRiwayatPengesahanByUserAndDokumen: jest.fn(),
       assertRiwayatBelumAda: jest.fn(),
       transaksiTandaTanganiBaEvaluator: jest.fn(),
       transaksiTandaTanganiBaKoordinator: jest.fn(),
-      transaksiTandaTanganiSop: jest.fn(),
       transaksiTandaTanganiSemuaSopPengajuan: jest.fn(),
       ...partial,
     } as unknown as jest.Mocked<TteRepository>;
@@ -177,31 +175,6 @@ describe('TteService', () => {
     expect(actual.id).toBe('doc-1:user-eval');
     expect(actual.peran).toBe('PJ_EVALUATOR');
     expect(actual.nomorDokumen).toBe('BA-1');
-  });
-
-  it('should_forbid_penyusun_on_sop_sign', async () => {
-    const repo = createRepoMock({
-      findPenggunaAktif: jest.fn().mockResolvedValue({
-        penggunaId: penyusunUser.sub,
-        email: penyusunUser.email,
-        nama: 'P',
-        nip: '2',
-        jabatan: 'PJ',
-        pangkat: 'B',
-        peran: PeranPengguna.PJ_PENYUSUN,
-        opdId: 'opd-1',
-      }),
-      findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
-    });
-    (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-    const service = new TteService(repo, config());
-    await expect(
-      service.tandaTanganiSop(penyusunUser, 'det-1', {
-        pin: '1234',
-        nomorDokumen: 'SOP-1',
-        judulDokumen: 'Judul',
-      }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('should_throw_when_mint_token_without_credential', async () => {

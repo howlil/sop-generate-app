@@ -51,6 +51,12 @@ export const ROUTES = {
   VALIDASI: {
     PENGESAHAN_PREFIX: "/validasi/pengesahan",
   },
+  /** Arsip SOP berlaku — akses tanpa login. */
+  ARSIP: {
+    PREFIX: "/arsip",
+    OPD: "/arsip/$opdId",
+    DOKUMEN: "/arsip/$opdId/$detailSopId",
+  },
   AUTH: {
     LOGIN: "/login",
   },
@@ -60,8 +66,6 @@ export const ROUTES = {
     DETAIL_SOP: "/penyusun/sop/$id",
     PELAKSANA: "/penyusun/pelaksana",
     PERATURAN: "/penyusun/peraturan",
-    /** @deprecated redirect ke ME */
-    PJ_PENYUSUN_TTE: "/penyusun/pj-penyusun/tte",
     PJ_PENYUSUN_BERITA_ACARA: "/penyusun/pj-penyusun/berita-acara",
     DETAIL_BERITA_ACARA: "/penyusun/pj-penyusun/berita-acara/$id",
   },
@@ -71,8 +75,6 @@ export const ROUTES = {
     DETAIL_SOP: "/kepala-opd/sop/$id",
     PENGAJUAN: "/kepala-opd/pengajuan",
     DETAIL_PENGAJUAN: "/kepala-opd/pengajuan/$id",
-    /** @deprecated redirect ke ME */
-    TTE: "/kepala-opd/tte",
   },
   PJ_EVALUATOR: {
     ME: "/pj-evaluator/me",
@@ -82,23 +84,14 @@ export const ROUTES = {
     EVALUATOR: "/pj-evaluator/evaluator",
     EVALUASI: "/pj-evaluator/evaluasi",
     DETAIL_EVALUASI: "/pj-evaluator/evaluasi/$id",
-    /** @deprecated redirect ke ME */
-    TTE: "/pj-evaluator/tte",
   },
   /** Workspace peran EVALUATOR (bukan PJ dashboard). */
   EVALUATOR: {
     ME: "/evaluator/me",
     EVALUASI: "/evaluator/evaluasi",
-    /** Bookmark lama (opdId) — redirect ke pengajuan aktif atau daftar terfilter. */
-    DETAIL_EVALUASI_OPD: "/evaluator/evaluasi/$id",
     DETAIL_EVALUASI_PENGAJUAN: "/evaluator/evaluasi/pengajuan/$id",
   },
 } as const;
-
-export const EVALUASI_DISPLAY_STATUS_OPTIONS = [
-  { value: "SESUAI", label: "Sesuai" },
-  { value: "PERLU_PERBAIKAN", label: "Perlu Perbaikan" },
-] as const;
 
 export const IA = {
   NAV_BIRO_EVALUASI_TERJADWAL: "Evaluasi Terjadwal",

@@ -220,8 +220,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
     endpoint === '/auth/refresh' ||
     endpoint.startsWith('/auth/login?')
 
+  const isPublicApiEndpoint =
+    endpoint.startsWith('/tte/public/') || endpoint.startsWith('/sop/public/')
+
   // Handle 401 Unauthorized - attempt token refresh
-  if (response.status === 401 && !isAuthSessionEndpoint) {
+  if (response.status === 401 && !isAuthSessionEndpoint && !isPublicApiEndpoint) {
     if (retryCount === 0) {
       const refreshed = await waitForRefresh()
       if (refreshed) {

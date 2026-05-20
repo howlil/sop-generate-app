@@ -80,13 +80,13 @@ export class SopCatalogController {
 
   @Post('penyusun-workbench/:detailSopId/kirim-ulang-evaluasi')
   @HttpCode(200)
-  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
+  @Roles(PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary:
-      'Kirim ulang ke evaluator setelah revisi (satu aksi: SIAP_DIEVALUASI lalu DIAJUKAN_EVALUASI dalam transaksi)',
+      'PJ Penyusun: kirim ulang ke evaluator setelah revisi (satu aksi: SIAP_DIEVALUASI lalu DIAJUKAN_EVALUASI dalam transaksi)',
     description:
-      'Hanya untuk DetailSOP berstatus REVISI_DARI_EVALUATOR. Memvalidasi kelengkapan dokumen seperti tombol Selesai/Siap dievaluasi, lalu mengajukan kembali ke evaluator tanpa langkah terpisah di Manajemen SOP. Param :detailSopId boleh ID DetailSOP atau ID header SOP.',
+      'Hanya PJ Penyusun. Untuk DetailSOP berstatus REVISI_DARI_EVALUATOR setelah perbaikan penyusun. Memvalidasi kelengkapan dokumen seperti tombol Selesai/Siap dievaluasi, lalu mengajukan kembali ke evaluator. Param :detailSopId boleh ID DetailSOP atau ID header SOP.',
   })
   @ApiQuery({
     name: 'logsLimit',
@@ -166,6 +166,40 @@ export class SopCatalogController {
     const data = await this.sopCatalogService.createForPenyusun(req.user, dto);
     return {
       message: 'SOP berhasil dibuat',
+      success: true,
+      data,
+    };
+  }
+
+  @Post('cabut/:detailOrSopId')
+  @HttpCode(200)
+  @Roles(PeranPengguna.KEPALA_OPD)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Cabut versi BERLAKU SOP (Kepala OPD)',
+    description:
+      'Mengubah status versi BERLAKU menjadi DICABUT. Param :detailOrSopId boleh ID DetailSOP atau ID header SOP. Ditolak bila masih ada revisi in-flight.',
+  })
+  @ApiQuery({
+    name: 'logsLimit',
+    required: false,
+    description: 'Jumlah maksimum entri logEdit pada response workbench (1–500, default 100)',
+    schema: { default: 100, minimum: 1, maximum: 500 },
+  })
+  @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
+  @ApiConflictResponse({
+    description: 'Tidak ada versi BERLAKU atau masih ada revisi in-flight',
+  })
+  @ApiForbiddenResponse({ description: 'Bukan Kepala OPD atau akses OPD ditolak' })
+  @ApiNotFoundResponse({ description: 'SOP tidak ditemukan' })
+  async cabutSopBerlaku(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('detailOrSopId', ParseUUIDPipe) detailOrSopId: string,
+    @Query('logsLimit', new DefaultValuePipe(100), ParseIntPipe) logsLimit: number,
+  ): Promise<ApiSuccessResponse<PenyusunWorkbenchDataDto>> {
+    const data = await this.sopCatalogService.cabutSopBerlaku(req.user, detailOrSopId, logsLimit);
+    return {
+      message: 'SOP berhasil dicabut',
       success: true,
       data,
     };

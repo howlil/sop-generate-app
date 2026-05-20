@@ -21,10 +21,16 @@ import { InfoField } from '@/components/ui/info-field'
 import { CollapsibleSidePanel } from '@/components/ui/collapsible-side-panel'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
-import { AlertCircle, CheckCircle, Loader2, Printer } from 'lucide-react'
+import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
+import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
-
-const PRINT_DELAY_MS = 150
+import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCetakArsipButtons'
+import {
+  PengajuanSemuaSopPrintStack,
+  type PengajuanSemuaSopPrintItem,
+} from '@/components/pengajuan/PengajuanSemuaSopPrintStack'
+import { usePengajuanCetakArsip } from '@/hooks/use-pengajuan-cetak-arsip'
+import { canCetakArsipPengajuan } from '@/lib/print/pengajuan-print'
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return ''
@@ -41,6 +47,7 @@ export function DetailBeritaAcaraPage() {
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('ba')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
+  const [semuaSopReady, setSemuaSopReady] = useState(false)
   const { pengajuan, loading: isLoading } = usePengajuanEvaluasiDetail(id)
 
   useEffect(() => {
@@ -64,11 +71,30 @@ export function DetailBeritaAcaraPage() {
   const isAlreadySigned = pengajuan?.status === 'DITANDATANGANI_PJ_PENYUSUN'
   const isSelesai = pengajuan?.status === 'SELESAI'
   const sopList = pengajuan?.sopList ?? []
+  const canCetak = canCetakArsipPengajuan(pengajuan?.status)
+  const sopPrintItems = useMemo<PengajuanSemuaSopPrintItem[]>(
+    () =>
+      sopList.map((item) => ({
+        sopDetailId: item.sopDetailId,
+        nama: item.nama,
+        nomor: item.nomor,
+      })),
+    [sopList],
+  )
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId
   const selectedSop = sopList.find((sop) => sop.sopDetailId === effectiveSopDetailId) ?? null
 
-  const sopWorkbenchEnabled = Boolean(previewMainTab === 'sop' && effectiveSopDetailId)
+  const { handleCetak, cetakLoading, semuaSopLoading } = usePengajuanCetakArsip({
+    pengajuanId: id,
+    effectiveSopDetailId,
+    semuaSopReady,
+    setPreviewMainTab,
+  })
+
+  const sopWorkbenchEnabled = Boolean(
+    effectiveSopDetailId && (previewMainTab === 'sop' || canCetak),
+  )
   const {
     data: sopDokumen,
     isFetching: sopWorkbenchLoading,
@@ -84,8 +110,15 @@ export function DetailBeritaAcaraPage() {
     return mapPenyusunWorkbenchToPreviewProps(wb)
   }, [sopDokumen])
 
+  const tteSignaturePayloadKepalaOpd = useMemo(
+    () => parseTTESignaturePayload(sopDokumen?.tteSignaturePayloadKepalaOpd),
+    [sopDokumen?.tteSignaturePayloadKepalaOpd],
+  )
+
   const isSopPreviewLoading = sopWorkbenchEnabled && sopPreviewProps === null && sopWorkbenchLoading
-  const { data: baView } = usePengajuanBeritaAcaraView(id, { enabled: true })
+  const { data: baView } = usePengajuanBeritaAcaraView(id, {
+    enabled: Boolean(pengajuan && (previewMainTab === 'ba' || canCetak)),
+  })
 
   if (isLoading && pengajuan === null) {
     return (
@@ -125,18 +158,14 @@ export function DetailBeritaAcaraPage() {
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
               <div className="flex items-center gap-2 flex-wrap">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5"
-                  onClick={() => {
-                    setPreviewMainTab('ba')
-                    setTimeout(() => window.print(), PRINT_DELAY_MS)
-                  }}
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  Cetak BA
-                </Button>
+                <PengajuanCetakArsipButtons
+                  pengajuanStatus={pengajuan.status}
+                  effectiveSopDetailId={effectiveSopDetailId}
+                  sopCount={sopList.length}
+                  cetakLoading={cetakLoading}
+                  semuaSopLoading={semuaSopLoading}
+                  onCetak={handleCetak}
+                />
                 {isReadyForSignature && (
                   <Button
                     size="sm"
@@ -228,7 +257,7 @@ export function DetailBeritaAcaraPage() {
             onValueChange={(value) => setPreviewMainTab(value as 'sop' | 'ba')}
             className="flex h-full min-h-0 flex-col"
           >
-            <div className="border-b border-gray-200 px-2 py-2">
+            <div data-print-hide className="border-b border-gray-200 px-2 py-2">
               <TabsList className="h-8 bg-transparent p-0 gap-2">
                 <TabsTrigger value="sop" className="h-8 text-xs">
                   Pratinjau SOP
@@ -246,14 +275,17 @@ export function DetailBeritaAcaraPage() {
                     Memuat dokumen SOP…
                   </div>
                 ) : sopPreviewProps !== null ? (
-                  <SOPPreviewTemplate
-                    name={sopPreviewProps.name}
-                    number={sopPreviewProps.number}
-                    metadata={sopPreviewProps.metadata as SOPPreviewTemplateProps['metadata']}
-                    prosedurRows={sopPreviewProps.prosedurRows}
-                    implementers={sopPreviewProps.implementers}
-                    previewOptions={{ editable: false, showScrollbar: true }}
-                  />
+                  <div data-print-area="sop">
+                    <SOPPreviewTemplate
+                      name={sopPreviewProps.name}
+                      number={sopPreviewProps.number}
+                      metadata={sopPreviewProps.metadata as SOPPreviewTemplateProps['metadata']}
+                      prosedurRows={sopPreviewProps.prosedurRows}
+                      implementers={sopPreviewProps.implementers}
+                      tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
+                      previewOptions={{ editable: false, showScrollbar: true }}
+                    />
+                  </div>
                 ) : sopWorkbenchError ? (
                   <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
                     <AlertCircle className="h-10 w-10 text-red-500" aria-hidden />
@@ -277,8 +309,9 @@ export function DetailBeritaAcaraPage() {
               )}
             </TabsContent>
             <TabsContent value="ba" className="mt-2 flex min-h-0 flex-1 flex-col overflow-auto px-1 pb-1 sm:px-2">
-              <div className="w-full">
+              <div data-print-area="ba" className="w-full">
                 <BeritaAcaraTemplate
+                  forPrint
                   opd={pengajuan.opdNama ?? pengajuan.opd?.nama ?? ''}
                   nomorBA={baView?.nomorBA ?? pengajuan.nomorBA}
                   tanggalVerifikasi={baView?.tanggalVerifikasiPjEvaluator ?? pengajuan.tanggalVerifikasi}
@@ -292,6 +325,13 @@ export function DetailBeritaAcaraPage() {
           </Tabs>
         </div>
       </DetailPageLayout>
+
+      <PengajuanSemuaSopPrintStack
+        pengajuanId={id}
+        sopItems={sopPrintItems}
+        prefetchEnabled={canCetak}
+        onAllLoadedChange={setSemuaSopReady}
+      />
 
       <PinVerificationDialog
         open={tteDialogOpen}

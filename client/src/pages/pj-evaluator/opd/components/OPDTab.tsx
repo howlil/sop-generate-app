@@ -5,7 +5,7 @@ import { Table } from '@/components/ui/data-table'
 import { Input } from '@/components/ui/input'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
-import { IconActionButton } from '@/components/ui/icon-action-button'
+import { RowActions } from '@/components/data/row-actions'
 import type { OPDUI as OPD } from '@/types/ui/organisasi'
 
 interface OpdDialogState {
@@ -83,20 +83,25 @@ export function OPDTab({
                       </div>
                     </Table.Td>
                     <Table.Td className="text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end gap-1">
-                        <IconActionButton
-                          icon={Edit}
-                          title="Edit OPD"
-                          onClick={() => openEditDialog(opd)}
-                        />
-                        <IconActionButton
-                          icon={Trash2}
-                          title={hasRelasiData(opd) ? 'Hapus (ditolak: ada SOP)' : 'Hapus OPD'}
-                          destructive
-                          onClick={() => onDelete(opd.id)}
-                          disabled={hasRelasiData(opd)}
-                        />
-                      </div>
+                      <RowActions
+                        align="end"
+                        actions={[
+                          {
+                            icon: Edit,
+                            title: 'Edit OPD',
+                            onClick: () => openEditDialog(opd),
+                          },
+                          {
+                            icon: Trash2,
+                            title: hasRelasiData(opd)
+                              ? 'Hapus (ditolak: ada SOP)'
+                              : 'Hapus OPD',
+                            destructive: true,
+                            onClick: () => onDelete(opd.id),
+                            disabled: hasRelasiData(opd),
+                          },
+                        ]}
+                      />
                     </Table.Td>
                   </Table.BodyRow>
                 ))}

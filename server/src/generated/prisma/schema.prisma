@@ -29,7 +29,6 @@ model Pengguna {
   updatedAt                       DateTime             @updatedAt
   detailSopDibuat                 DetailSOP[]          @relation("SOPDibuatOleh")
   detailSopDiedit                 DetailSOP[]          @relation("SOPDieditOleh")
-  komentar                        Komentar[]
   logEditSop                      LogEditSOP[]
   logNilaiEvaluasi                LogNilaiEvaluasi[]
   nilaiEvaluasiDiisi              NilaiEvaluasi[]      @relation("NilaiDiisiOleh")
@@ -124,6 +123,7 @@ model DetailSOP {
   nomorSOP                       String                           @unique
   tanggalPembuatan               DateTime                         @default(now())
   tanggalRevisi                  DateTime?
+  /// Diisi otomatis saat status menjadi BERLAKU via TTE Kepala OPD (tanggal kalender pengesahan, WIB).
   tanggalEfektif                 DateTime?
   namaLembaga                    String                           @db.Text
   dibuatOlehId                   String?
@@ -139,7 +139,6 @@ model DetailSOP {
   sop                            SOP                              @relation(fields: [sopId], references: [sopId], onDelete: Cascade)
   terakhirDieditOleh             Pengguna?                        @relation("SOPDieditOleh", fields: [terakhirDieditOlehId], references: [penggunaId], onDelete: Restrict)
   swimlanes                      DetailSOPPelaksana[]
-  komentar                       Komentar[]
   lampiranPeringatan             LampiranPeringatan[]
   lampiranKualifikasiPelaksanaan LampiranKualifikasiPelaksanaan[]
   lampiranPeralatanPerlengkapan  LampiranPeralatanPerlengkapan[]
@@ -282,6 +281,7 @@ model DetailSOPPelaksana {
 /// =========================
 
 /// Log aktivitas edit per DetailSOP (kunci alami sesi: detail + pengguna + waktu mulai).
+//Menyimpan 1 kejadian atau 1 sesi perubahan SOP. 
 model LogEditSOP {
   detailSopId     String
   penggunaId      String
@@ -306,6 +306,7 @@ model LogEditSOP {
 }
 
 /// Field domain yang berubah dalam satu sesi log (normalisasi bekas `meta.fields`).
+//detail field yang berubah 
 model LogEditSopDomainField {
   detailSopId  String
   penggunaId   String
@@ -314,18 +315,6 @@ model LogEditSopDomainField {
   logEditSop   LogEditSOP @relation(fields: [detailSopId, penggunaId, logCreatedAt], references: [detailSopId, penggunaId, createdAt], onDelete: Cascade)
 
   @@id([detailSopId, penggunaId, logCreatedAt, domainField])
-}
-
-model Komentar {
-  komentarId  String         @id @default(uuid())
-  detailSopId String
-  userId      String
-  isi         String         @db.Text
-  status      StatusKomentar @default(TERBUKA)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  detailSop   DetailSOP      @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
-  user        Pengguna       @relation(fields: [userId], references: [penggunaId])
 }
 
 /// =========================
@@ -363,12 +352,16 @@ model PengajuanEvaluasi {
   @@index([opdId, status, createdAt])
 }
 
+/// Hasil penilaian per DetailSOP dalam satu pengajuan evaluasi.
+/// Umpan balik evaluasi resmi = catatan + statusTindakLanjut pada baris ini (bukan tabel Komentar).
 model NilaiEvaluasi {
   pengajuanEvaluasiId   String
   detailSopId           String
   hasil                 HasilEvaluasi?
+  /// Catatan formal evaluator; wajib jika hasil PERLU_PERBAIKAN.
   catatan               String?            @db.Text
-  /// TERBUKA saat PERLU_PERBAIKAN menunggu tindak lanjut penyusun; SELESAI setelah ditandai; null jika tidak perlu.
+  /// Status tindak lanjut / resolve umpan balik: TERBUKA (belum) | SELESAI (sudah ditandai penyusun).
+  /// Memakai enum StatusKomentar hanya untuk nilai TERBUKA/SELESAI — bukan relasi ke model Komentar.
   statusTindakLanjut    StatusKomentar?
   ditindaklanjutiPada   DateTime?
   ditindaklanjutiOlehId String?

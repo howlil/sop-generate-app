@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { JenisPengajuanEvaluasi, StatusPengajuanEvaluasi, StatusSOP } from '../../generated/prisma';
 import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
-/** Selaras pipeline evaluasi pada `OpdRepository.findEvaluasiRingkas`. */
+
 const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,

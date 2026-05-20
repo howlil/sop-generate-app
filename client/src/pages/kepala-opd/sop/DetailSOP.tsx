@@ -1,17 +1,23 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { Printer } from "lucide-react";
+import { AlertTriangle, Ban, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SopStatusBadge } from "@/components/status/sop-status-badge";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
+import { CabutSopDialog } from "@/components/sop/CabutSopDialog";
 import {
   SOPPreviewTemplate,
   type SOPPreviewTemplateProps,
 } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
-import { usePenyusunWorkbench } from "@/api/sop";
+import { useCabutSop, usePenyusunWorkbench, useSop } from "@/api/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
+import {
+  canShowCabutSopAction,
+  getCabutSopBlockingReason,
+  resolveKepalaOpdWorkbenchId,
+} from "@/lib/sop/cabut-sop.util";
 import { ROUTES } from "@/utils/constants";
 
 export interface DetailSOPProps {
@@ -22,7 +28,7 @@ export interface DetailSOPProps {
 }
 
 /**
- * Halaman detail SOP untuk Kepala OPD: hanya pantau (pratinjau + cetak), tanpa aksi pengesahan atau verifikasi.
+ * Halaman detail SOP untuk Kepala OPD: pratinjau, cetak, dan cabut versi BERLAKU.
  */
 export function DetailSOP(props: DetailSOPProps = {}) {
   const { breadcrumb, backTo } = props;
@@ -30,8 +36,21 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const id = "id" in params ? params.id : undefined;
 
   const [activeTab, setActiveTab] = useState<"flowchart" | "bpmn">("flowchart");
+  const [cabutDialogOpen, setCabutDialogOpen] = useState(false);
 
-  const { data: workbench } = usePenyusunWorkbench(id);
+  const { list: sopList } = useSop();
+  const sopRow = useMemo(
+    () => sopList.find((row) => row.id === id) ?? null,
+    [sopList, id],
+  );
+
+  const workbenchId = useMemo(
+    () => (id != null ? resolveKepalaOpdWorkbenchId(id, sopRow) : undefined),
+    [id, sopRow],
+  );
+
+  const { data: workbench } = usePenyusunWorkbench(workbenchId);
+  const { cabutSopAsync, isCabutPending } = useCabutSop();
 
   const previewProps = useMemo(
     () => (workbench ? mapPenyusunWorkbenchToPreviewProps(workbench) : null),
@@ -41,14 +60,28 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const sopStatus: StatusSOP =
     (workbench?.detail.status as StatusSOP | undefined) ?? DEFAULT_SOP_STATUS;
   const sopStatusLabel = workbench?.detail.statusLabel ?? sopStatus;
-  const sopName = previewProps?.name ?? "";
-  const sopNumber = previewProps?.number ?? "";
+  const sopName = previewProps?.name ?? sopRow?.judul ?? "";
+  const sopNumber = previewProps?.number ?? sopRow?.nomorSop ?? "";
+
+  const isDicabut = sopStatus === "DICABUT";
+  const showCabutAction = canShowCabutSopAction(sopRow) && !isDicabut;
+  const cabutBlockingReason = getCabutSopBlockingReason(sopRow);
+  const hasRevisiInFlightBlock =
+    sopRow?.versiBerlaku?.status === "BERLAKU" &&
+    sopRow?.canCabutSop !== true &&
+    cabutBlockingReason != null;
 
   const effectiveBreadcrumb = breadcrumb ?? [
     { label: "SOP", to: ROUTES.KEPALA_OPD.SOP },
     { label: "Detail SOP" },
   ];
   const effectiveBackTo = backTo ?? ROUTES.KEPALA_OPD.SOP;
+
+  async function handleConfirmCabut() {
+    if (id == null) return;
+    await cabutSopAsync(id);
+    setCabutDialogOpen(false);
+  }
 
   const workspaceHeaderToolbar = (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -61,6 +94,19 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         />
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
+        {showCabutAction ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs gap-1.5 rounded-md border-rose-200 text-rose-700 hover:bg-rose-50 hover:text-rose-800"
+            disabled={isCabutPending || cabutBlockingReason != null}
+            title={cabutBlockingReason ?? undefined}
+            onClick={() => setCabutDialogOpen(true)}
+          >
+            <Ban className="w-3.5 h-3.5" />
+            {isCabutPending ? "Mencabut…" : "Cabut SOP"}
+          </Button>
+        ) : null}
         <Button
           size="sm"
           variant="outline"
@@ -74,35 +120,57 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   );
 
   return (
-    <DetailPageLayout
-      breadcrumb={effectiveBreadcrumb}
-      title="Detail Dokumen SOP"
-      description={sopName}
-      backTo={effectiveBackTo}
-      backSize="icon"
-      actions={null}
-      header={workspaceHeaderToolbar}
-      main={
-        <div className="flex flex-col h-full p-4">
-          <SOPPreviewTemplate
-            name={sopName}
-            number={sopNumber}
-            metadata={
-              previewProps?.metadata as SOPPreviewTemplateProps["metadata"]
-            }
-            prosedurRows={previewProps?.prosedurRows ?? []}
-            implementers={previewProps?.implementers ?? []}
-            tteSignaturePayload={undefined}
-            previewOptions={{ editable: false }}
-            diagramState={{
-              activeTab,
-              onActiveTabChange: setActiveTab,
-            }}
-          />
-        </div>
-      }
-      rightPanel={null}
-      workspaceClassName="print:hidden"
-    />
+    <>
+      <DetailPageLayout
+        breadcrumb={effectiveBreadcrumb}
+        title="Detail Dokumen SOP"
+        description={sopName}
+        backTo={effectiveBackTo}
+        backSize="icon"
+        actions={null}
+        header={workspaceHeaderToolbar}
+        main={
+          <div className="flex flex-col h-full p-4 gap-3">
+            {isDicabut ? (
+              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
+                <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
+                SOP ini telah dicabut dan hanya tersedia untuk kebutuhan riwayat dan audit.
+              </div>
+            ) : null}
+            {hasRevisiInFlightBlock ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
+                {cabutBlockingReason}
+              </div>
+            ) : null}
+            <SOPPreviewTemplate
+              name={sopName}
+              number={sopNumber}
+              metadata={
+                previewProps?.metadata as SOPPreviewTemplateProps["metadata"]
+              }
+              prosedurRows={previewProps?.prosedurRows ?? []}
+              implementers={previewProps?.implementers ?? []}
+              tteSignaturePayload={undefined}
+              previewOptions={{ editable: false }}
+              diagramState={{
+                activeTab,
+                onActiveTabChange: setActiveTab,
+              }}
+            />
+          </div>
+        }
+        rightPanel={null}
+        workspaceClassName="print:hidden"
+      />
+      <CabutSopDialog
+        open={cabutDialogOpen}
+        onOpenChange={setCabutDialogOpen}
+        sopJudul={sopName}
+        nomorSop={sopNumber}
+        onConfirm={() => void handleConfirmCabut()}
+        isPending={isCabutPending}
+      />
+    </>
   );
 }

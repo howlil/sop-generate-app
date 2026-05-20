@@ -26,6 +26,7 @@ import {
   Award,
   ChevronDown,
   Shield,
+  Archive,
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { Card } from '@/components/ui/card'
@@ -410,6 +411,15 @@ export function LandingPage() {
               Mulai Sekarang
             </button>
           </Link>
+          <Link to={ROUTES.ARSIP.PREFIX}>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-full border border-white/40 px-6 py-3 text-white transition hover:bg-white/10"
+            >
+              <Archive className="h-4 w-4" aria-hidden />
+              Lihat Arsip SOP
+            </button>
+          </Link>
           <a href="#cara-kerja">
             <button className="flex items-center gap-2 border border-white/40 hover:bg-white/10 rounded-full px-6 py-3 text-white">
               <span>Lihat Cara Kerja</span>
@@ -612,12 +622,23 @@ export function LandingPage() {
             Mulai gunakan platform ini untuk menyusun, mengevaluasi, dan mengesahkan SOP secara digital.
             Hubungi admin PJ Evaluator Organisasi untuk pembuatan akun.
           </p>
-          <Link to={ROUTES.AUTH.LOGIN}>
-            <button className="bg-white text-blue-700 hover:bg-blue-50 h-11 px-6 rounded-full text-sm font-medium inline-flex items-center gap-2 transition-all">
-              Masuk ke Sistem
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </Link>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link to={ROUTES.ARSIP.PREFIX}>
+              <button
+                type="button"
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-white/40 px-6 text-sm font-medium text-white transition hover:bg-white/10"
+              >
+                <Archive className="h-4 w-4" aria-hidden />
+                Lihat Arsip SOP
+              </button>
+            </Link>
+            <Link to={ROUTES.AUTH.LOGIN}>
+              <button className="inline-flex h-11 items-center gap-2 rounded-full bg-white px-6 text-sm font-medium text-blue-700 transition hover:bg-blue-50">
+                Masuk ke Sistem
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 

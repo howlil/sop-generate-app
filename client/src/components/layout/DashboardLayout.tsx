@@ -128,6 +128,7 @@ export function DashboardLayout() {
 
       {/* Mobile nav */}
       <nav
+        data-print-hide
         className="md:hidden flex shrink-0 items-stretch gap-0 border-b border-gray-200 bg-white px-2 py-2"
         aria-label="Navigasi utama"
       >
@@ -154,7 +155,10 @@ export function DashboardLayout() {
       </nav>
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-14 bg-white border-r border-gray-200 flex-col flex-shrink-0">
+      <aside
+        data-print-hide
+        className="hidden md:flex w-14 bg-white border-r border-gray-200 flex-col flex-shrink-0"
+      >
         <div className="p-2 flex flex-col items-center">
           <img src={logoSvg} alt="Logo" className="w-9 h-9" />
         </div>

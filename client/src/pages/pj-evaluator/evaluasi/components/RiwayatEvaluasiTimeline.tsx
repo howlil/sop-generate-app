@@ -6,11 +6,12 @@
 
  */
 
-import { History, MessageSquare, CheckCircle, XCircle } from "lucide-react"
+import { History, MessageSquare } from "lucide-react"
 
 import { formatDateId } from "@/utils/format-date"
 
 import type { LogNilaiEvaluasi } from "@/types/dto/evaluasi.dto"
+import { HasilEvaluasiBadge } from "@/components/status/hasil-evaluasi-badge"
 
 
 
@@ -28,47 +29,14 @@ function HasilBadge({ hasil }: { hasil?: string | null }) {
 
   if (!hasil) return <span className="text-gray-400 text-xs">Belum dinilai</span>
 
-  if (hasil === "SESUAI") {
+  const label =
+    hasil === "SESUAI"
+      ? "Sesuai"
+      : hasil === "PERLU_PERBAIKAN"
+        ? "Perlu Perbaikan"
+        : hasil
 
-    return (
-
-      <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full font-medium">
-
-        <CheckCircle className="w-3 h-3" />
-
-        Sesuai
-
-      </span>
-
-    )
-
-  }
-
-  if (hasil === "PERLU_PERBAIKAN") {
-
-    return (
-
-      <span className="inline-flex items-center gap-1 text-xs text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full font-medium">
-
-        <XCircle className="w-3 h-3" />
-
-        Perlu Perbaikan
-
-      </span>
-
-    )
-
-  }
-
-  return (
-
-    <span className="inline-flex items-center gap-1 text-xs text-gray-600 bg-gray-50 border border-gray-200 px-1.5 py-0.5 rounded-full font-medium">
-
-      {hasil}
-
-    </span>
-
-  )
+  return <HasilEvaluasiBadge hasil={hasil} label={label} showDomain={false} />
 
 }
 

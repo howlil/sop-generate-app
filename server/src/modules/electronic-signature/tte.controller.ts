@@ -127,24 +127,6 @@ export class TteController {
     };
   }
 
-  @Get('riwayat')
-  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({
-    summary: 'Riwayat tanda tangan pengguna saat ini',
-    description:
-      'Setiap item menyertakan `dokumenTteId`, `hashDokumen`, `qrPayload` (string untuk di-encode ke QR), dan `qrVerificationUrl` bila `PUBLIC_TTE_VERIFY_BASE_URL` diset — tanpa kolom DB tambahan.',
-  })
-  async listRiwayat(
-    @Req() req: Request & { user: JwtAccessPayload },
-  ): Promise<ApiSuccessResponse<TteRiwayatResponse[]>> {
-    const data = await this.tteService.listRiwayat(req.user);
-    return {
-      message: 'Riwayat tanda tangan berhasil diambil',
-      success: true,
-      data,
-    };
-  }
-
   @Post('tanda-tangani/ba/:pengajuanId')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
@@ -161,26 +143,6 @@ export class TteController {
     const data = await this.tteService.tandaTanganiBa(req.user, pengajuanId, dto);
     return {
       message: 'Berita Acara berhasil ditandatangani',
-      success: true,
-      data,
-    };
-  }
-
-  @Post('tanda-tangani/sop/:sopDetailId')
-  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({
-    summary: 'Tanda tangani SOP (Kepala OPD)',
-    description:
-      'Hanya dari status DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI (setelah BA ditandatangani PJ Penyusun) menjadi BERLAKU.',
-  })
-  async tandaTanganiSop(
-    @Req() req: Request & { user: JwtAccessPayload },
-    @Param('sopDetailId', ParseUUIDPipe) sopDetailId: string,
-    @Body() dto: TandaTanganiDto,
-  ): Promise<ApiSuccessResponse<TteRiwayatResponse>> {
-    const data = await this.tteService.tandaTanganiSop(req.user, sopDetailId, dto);
-    return {
-      message: 'SOP berhasil disahkan dengan TTE simulasi',
       success: true,
       data,
     };

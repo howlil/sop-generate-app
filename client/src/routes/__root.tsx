@@ -23,7 +23,8 @@ export const Route = createRootRoute({
     const isPublic =
       location.pathname === ROUTES.HOME ||
       location.pathname.startsWith(ROUTES.AUTH.LOGIN) ||
-      location.pathname.startsWith(ROUTES.VALIDASI.PENGESAHAN_PREFIX);
+      location.pathname.startsWith(ROUTES.VALIDASI.PENGESAHAN_PREFIX) ||
+      location.pathname.startsWith(ROUTES.ARSIP.PREFIX);
     if (isPublic) return;
 
     /** Lewati guard di SSR: persist & sesi JS hanya di browser (sama seperti requireRoles). */

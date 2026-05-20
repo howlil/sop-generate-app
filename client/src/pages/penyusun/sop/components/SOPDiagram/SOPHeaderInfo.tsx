@@ -192,16 +192,7 @@ export function SOPHeaderInfo({
                 </td>
                 <td className="border-2 border-r-0 py-0.5 px-2 border-black text-center">:</td>
                 <td className="border-2 border-l-0 py-0.5 px-2 border-black min-w-0 break-words">
-                  {editable ? (
-                    <Input
-                      type="date"
-                      className="h-6 text-xs border-0 p-0 min-h-0 w-full bg-transparent"
-                      value={headerDateInputValue(effectiveDate)}
-                      onChange={(e) => handleChange('effectiveDate', e.target.value)}
-                    />
-                  ) : (
-                    headerDisplayDate(effectiveDate)
-                  )}
+                  {effectiveDate.trim() !== '' ? headerDisplayDate(effectiveDate) : '—'}
                 </td>
               </tr>
               <tr>
@@ -214,8 +205,10 @@ export function SOPHeaderInfo({
                     {tteSignaturePayload ? (
                       <TTESignatureBlock
                         payload={tteSignaturePayload}
-                        roleLabel={picRole}
                         qrSize={72}
+                        showRoleLabel={false}
+                        showCaption={false}
+                        showSignedDate={false}
                       />
                     ) : (
                       <>

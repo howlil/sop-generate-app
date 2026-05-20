@@ -1,7 +1,6 @@
 import { FormDialog } from '@/components/ui/form-dialog'
-import { FormField } from '@/components/ui/form-field'
-import { Input } from '@/components/ui/input'
-import { Select } from '@/components/ui/select'
+import { OpdSelectField } from '@/components/forms/opd-select-field'
+import { PersonIdentityFields } from '@/components/forms/person-identity-fields'
 import type { FormTambahKepalaState } from '@/types/ui/organisasi'
 
 interface OPD {
@@ -47,63 +46,23 @@ export function TambahKepalaOPDDialog({
       confirmDisabled={!valid}
       size="md"
     >
-      <FormField label="OPD" required>
-        <Select
-          value={form.opdId}
-          onValueChange={(opdId) => setForm((f) => ({ ...f, opdId }))}
-          placeholder="Pilih OPD"
-          options={opdList.map((opd) => ({ value: opd.id, label: opd.name }))}
-        />
-      </FormField>
-      <FormField label="Nama lengkap" required>
-        <Input
-          className="h-9 text-xs"
-          value={form.nama}
-          onChange={(e) => setForm((f) => ({ ...f, nama: e.target.value }))}
-          placeholder="Contoh: Dr. Ahmad Pratama, S.Sos"
-        />
-      </FormField>
-      <FormField label="NIP" required>
-        <Input
-          className="h-9 text-xs font-mono"
-          value={form.nip}
-          onChange={(e) => setForm((f) => ({ ...f, nip: e.target.value }))}
-          placeholder="NIP 18 digit"
-        />
-      </FormField>
-      <FormField label="Email" required>
-        <Input
-          type="email"
-          className="h-9 text-xs"
-          value={form.email}
-          onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-          placeholder="email@pemda.go.id"
-        />
-      </FormField>
-      <FormField label="Jabatan" required>
-        <Input
-          className="h-9 text-xs"
-          value={form.jabatan}
-          onChange={(e) => setForm((f) => ({ ...f, jabatan: e.target.value }))}
-          placeholder="Contoh: Kepala Dinas"
-        />
-      </FormField>
-      <FormField label="Pangkat / golongan" required>
-        <Input
-          className="h-9 text-xs"
-          value={form.pangkat}
-          onChange={(e) => setForm((f) => ({ ...f, pangkat: e.target.value }))}
-          placeholder="Contoh: IV/a"
-        />
-      </FormField>
-      <FormField label="No. HP" required>
-        <Input
-          className="h-9 text-xs"
-          value={form.nohp}
-          onChange={(e) => setForm((f) => ({ ...f, nohp: e.target.value }))}
-          placeholder="081234567890"
-        />
-      </FormField>
+      <OpdSelectField
+        value={form.opdId}
+        onValueChange={(opdId) => setForm((f) => ({ ...f, opdId }))}
+        options={opdList}
+      />
+      <PersonIdentityFields
+        value={form}
+        onChange={setForm}
+        labels={{ name: 'Nama lengkap', pangkat: 'Pangkat / golongan' }}
+        placeholders={{
+          name: 'Contoh: Dr. Ahmad Pratama, S.Sos',
+          nip: 'NIP 18 digit',
+          email: 'email@pemda.go.id',
+          jabatan: 'Contoh: Kepala Dinas',
+          phone: '081234567890',
+        }}
+      />
     </FormDialog>
   )
 }

@@ -10,7 +10,12 @@ import { buildSopProsedurSnapshot, useSopProsedurAutosave, type SopProsedurAutos
 import { STALE_TIME, ROUTES } from "@/utils/constants";
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
 import { unwrapApiData } from '@/lib/api/response'
-import { canEditSop } from '@/lib/sop/sop-permissions'
+import {
+  canEditSop,
+  canKirimUlangKeEvaluatorAfterRevisi,
+  getKirimUlangRoleBlockingReason,
+} from '@/lib/sop/sop-permissions'
+import { useAppRole } from '@/hooks/useAppRole'
 import { usePeraturan } from "@/api/peraturan";
 import { transformLangkahToProsedurRow, transformSopDetailToMetadata } from "@/lib/sop/detailSop.mappers";
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
@@ -36,7 +41,6 @@ import type {
   PenyusunWorkbenchQueryParams,
 } from '@/types/dto/sop.dto'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
-import type { KomentarItem } from '@/types/dto/komentar.dto'
 import type { ProsedurRow, SOPDetailMetadata } from "@/types/ui/sop";
 
 export {
@@ -57,20 +61,6 @@ async function unwrapPelaksanaMaster<T>(promise: Promise<ApiSuccessResponse<T>>)
 async function unwrapSopListEnvelope(
   promise: Promise<ApiSuccessResponse<SopDaftarRow[]>>,
 ): Promise<SopDaftarRow[]> {
-  return unwrapApiData(promise)
-}
-
-/** Daftar Komentar SOP — bungkus ApiSuccessResponse. */
-async function unwrapKomentarListEnvelope(
-  promise: Promise<ApiSuccessResponse<KomentarItem[]>>,
-): Promise<KomentarItem[]> {
-  return unwrapApiData(promise)
-}
-
-/** Satu item Komentar SOP — bungkus ApiSuccessResponse. */
-async function unwrapKomentarItemEnvelope(
-  promise: Promise<ApiSuccessResponse<KomentarItem>>,
-): Promise<KomentarItem> {
   return unwrapApiData(promise)
 }
 
@@ -147,6 +137,17 @@ export const sopApi = {
     ),
 
   /**
+   * POST cabut versi BERLAKU (`/sop/cabut/:id`). Param boleh detailSopId atau sopId header.
+   * Hanya Kepala OPD; ditolak bila masih ada revisi in-flight.
+   */
+  cabutSop: (id: string, params?: PenyusunWorkbenchQueryParams) => {
+    const query = buildQueryString(params as Record<string, unknown> | undefined)
+    return unwrapPenyusunWorkbench(
+      apiClient.post<ApiSuccessResponse<PenyusunWorkbenchData>>(`/sop/cabut/${id}${query}`),
+    )
+  },
+
+  /**
    * POST setelah revisi evaluator: transaksi server SIAP_DIEVALUASI → DIAJUKAN_EVALUASI.
    * Param boleh detailSopId atau sopId header (sama seperti workbench).
    */
@@ -196,21 +197,6 @@ export const sopApi = {
   deletePelaksana: (id: string) =>
     unwrapPelaksanaMaster(apiClient.delete<ApiSuccessResponse<null>>(`/pelaksana/${id}`)),
 
-  // ================= Komentar SOP =================
-
-  /** GET `/sop/komentar/:detailSopId` — daftar komentar urut terbaru. */
-  listKomentar: (detailSopId: string) =>
-    unwrapKomentarListEnvelope(
-      apiClient.get<ApiSuccessResponse<KomentarItem[]>>(`/sop/komentar/${detailSopId}`),
-    ),
-
-  /** PATCH `/sop/komentar/:komentarId/selesai` — penyusun menandai komentar selesai. */
-  resolveKomentar: (komentarId: string) =>
-    unwrapKomentarItemEnvelope(
-      apiClient.patch<ApiSuccessResponse<KomentarItem>>(
-        `/sop/komentar/${komentarId}/selesai`,
-      ),
-    ),
 }
 
 /**
@@ -306,10 +292,11 @@ export function useSopStatus() {
 
     /**
      * Cabut SOP via endpoint khusus (status DICABUT)
-     * @param sopId - SOP Detail ID
+     * @param sopId - SOP Detail ID atau sopId header
+     * @deprecated Prefer `useCabutSop().cabutSopAsync`
      */
     cabutSopAsync: (sopId: string) => {
-      return updateStatusMutation.mutateAsync({ sopId, status: 'DICABUT' });
+      return sopApi.cabutSop(sopId);
     },
 
     /**
@@ -328,6 +315,30 @@ export function useSopStatus() {
      * Error from last status update attempt
      */
     error: updateStatusMutation.error,
+  };
+}
+
+/**
+ * Hook untuk mencabut SOP BERLAKU (Kepala OPD).
+ */
+export function useCabutSop() {
+  const queryClient = useQueryClient();
+  const mutation = useMutationWithToast({
+    mutationFn: (sopOrDetailId: string) => sopApi.cabutSop(sopOrDetailId),
+    invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
+    onSuccess: (data, sopOrDetailId) => {
+      queryClient.setQueryData(queryKeys.penyusunWorkbench(sopOrDetailId), data);
+      queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+    },
+    successMessage: 'SOP berhasil dicabut',
+    useDetailedErrors: true,
+    errorMessagePrefix: 'Gagal mencabut SOP',
+  });
+  return {
+    cabutSop: mutation.mutate,
+    cabutSopAsync: mutation.mutateAsync,
+    isCabutPending: mutation.isPending,
+    error: mutation.error,
   };
 }
 
@@ -483,6 +494,7 @@ interface UseDetailSopPenyusunActionsParams {
   }) => Promise<unknown>;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
   isRevisionFlow: boolean;
+  canKirimUlangKeEvaluator: boolean;
   /** Flush autosave header SOP sebelum aksi besar (selesai) agar tidak ada perubahan tertinggal. */
   flushHeaderAutosave: () => Promise<void>;
   /** Flush autosave prosedur (swimlane + langkah) sebelum aksi besar. */
@@ -497,6 +509,7 @@ export function useDetailSopPenyusunActions({
   setSopStatusOverrideAsync,
   showToast,
   isRevisionFlow,
+  canKirimUlangKeEvaluator,
   flushHeaderAutosave,
   flushProsedurAutosave,
 }: UseDetailSopPenyusunActionsParams) {
@@ -547,6 +560,11 @@ export function useDetailSopPenyusunActions({
       }
       try {
         if (isRevisionFlow) {
+          if (!canKirimUlangKeEvaluator) {
+            const roleBlock = getKirimUlangRoleBlockingReason(role);
+            showToast(roleBlock ?? 'Anda tidak berhak mengirim ulang ke evaluator', 'error');
+            return;
+          }
           await kirimUlangKeEvaluatorMutation.mutateAsync(id);
         } else {
           await setSopStatusOverrideAsync({ sopId: id, status: "SIAP_DIEVALUASI" });
@@ -564,6 +582,7 @@ export function useDetailSopPenyusunActions({
     [
       flushAll,
       isRevisionFlow,
+      canKirimUlangKeEvaluator,
       kirimUlangKeEvaluatorMutation,
       setSopStatusOverrideAsync,
       showToast,
@@ -606,6 +625,7 @@ export interface UseDetailSopPenyusunDataResult {
   currentSopStatusLabel: string;
   isRevisionFlow: boolean;
   primaryActionLabel: string;
+  canKirimUlangKeEvaluator: boolean;
   setSopStatusOverrideAsync: ReturnType<typeof useSopStatus>["setSopStatusOverrideAsync"];
   /** Paksa flush autosave header SOP (mis. sebelum aksi besar / pindah halaman). */
   flushHeaderAutosave: () => Promise<void>;
@@ -626,6 +646,7 @@ export interface UseDetailSopPenyusunDataResult {
 export function useDetailSopPenyusunData(
   sopDetailId: string | undefined,
   sopStatusOverride: StatusSOP | undefined,
+  role: string | null | undefined,
 ): UseDetailSopPenyusunDataResult {
   const { setSopStatusOverrideAsync } = useSopStatus();
   const { list: sopList } = useSop();
@@ -757,7 +778,9 @@ export function useDetailSopPenyusunData(
   const currentSopStatusLabel =
     workbench?.detail.statusLabel ?? currentSopStatus;
   const isRevisionFlow = currentSopStatus === "REVISI_DARI_EVALUATOR";
-  const primaryActionLabel = isRevisionFlow ? "Kirim ulang ke evaluator" : "Selesai";
+  const canKirimUlangKeEvaluator = canKirimUlangKeEvaluatorAfterRevisi(role);
+  const primaryActionLabel =
+    isRevisionFlow && canKirimUlangKeEvaluator ? "Kirim ulang ke evaluator" : "Selesai";
   const isLoading = isLoadingWorkbench;
 
   return {
@@ -787,6 +810,7 @@ export function useDetailSopPenyusunData(
     currentSopStatusLabel,
     isRevisionFlow,
     primaryActionLabel,
+    canKirimUlangKeEvaluator,
     setSopStatusOverrideAsync,
     flushHeaderAutosave: headerAutosave.flush,
     flushProsedurAutosave: prosedurAutosave.flush,
@@ -828,6 +852,7 @@ export interface UseDetailSopPenyusunReturn {
   currentSopStatusLabel: string;
   isRevisionFlow: boolean;
   primaryActionLabel: string;
+  canKirimUlangKeEvaluator: boolean;
   handleMetadataChange: <K extends keyof SOPDetailMetadata>(
     field: K,
     value: SOPDetailMetadata[K],
@@ -861,12 +886,14 @@ export function useDetailSopPenyusun(
   _isRevisionFlowOverride?: boolean,
 ): UseDetailSopPenyusunReturn {
   const { showToast } = useToast();
-  const data = useDetailSopPenyusunData(sopDetailId, sopStatusOverride);
+  const { role } = useAppRole();
+  const data = useDetailSopPenyusunData(sopDetailId, sopStatusOverride, role);
 
   const { handleComplete, isKirimUlangPending } = useDetailSopPenyusunActions({
     setSopStatusOverrideAsync: data.setSopStatusOverrideAsync,
     showToast,
     isRevisionFlow: data.isRevisionFlow,
+    canKirimUlangKeEvaluator: data.canKirimUlangKeEvaluator,
     flushHeaderAutosave: data.flushHeaderAutosave,
     flushProsedurAutosave: data.flushProsedurAutosave,
   });
@@ -905,6 +932,7 @@ export function useDetailSopPenyusun(
     currentSopStatusLabel: data.currentSopStatusLabel,
     isRevisionFlow: data.isRevisionFlow,
     primaryActionLabel: data.primaryActionLabel,
+    canKirimUlangKeEvaluator: data.canKirimUlangKeEvaluator,
     handleMetadataChange,
     handleComplete,
     isKirimUlangKeEvaluatorPending: isKirimUlangPending,
@@ -940,25 +968,3 @@ export function useDaftarSopData(params: UseDaftarSopDataParams) {
   return { filteredList };
 }
 
-/* =====================================================
-   Komentar SOP — Hooks (TanStack Query)
-   ===================================================== */
-
-/** Daftar komentar SOP untuk satu DetailSOP (urut terbaru). */
-export function useSopKomentar(detailSopId: string | undefined) {
-  return useQuery({
-    queryKey: queryKeys.sopKomentar(detailSopId ?? ""),
-    queryFn: () => sopApi.listKomentar(detailSopId as string),
-    enabled: Boolean(detailSopId),
-    staleTime: STALE_TIME.SHORT,
-  });
-}
-
-export function useResolveSopKomentar(detailSopId: string | undefined) {
-  return useMutationWithToast({
-    mutationFn: (komentarId: string) => sopApi.resolveKomentar(komentarId),
-    invalidateKeys: [queryKeys.sopKomentar(detailSopId ?? "")],
-    successMessage: "Komentar ditandai selesai",
-    errorMessagePrefix: "Gagal menandai komentar selesai",
-  });
-}

@@ -27,6 +27,7 @@ import type { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dt
 import type { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
 import type { ListSopQueryDto } from './dto/list-sop-query.dto';
 import { encodeLogEditSopClientId } from '../sop-collaboration/log-edit-session.helper';
+import type { PublicSopDokumenDto } from '../sop-public/dto/public-sop-dokumen.dto';
 import {
   SopCatalogRepository,
   type SopDaftarDbRow,
@@ -300,6 +301,34 @@ export class SopCatalogService {
   }
 
   /**
+   * Dokumen SOP berlaku untuk arsip publik (tanpa log audit dan umpan balik evaluasi).
+   */
+  async getPublicDokumenBerlaku(detailSopId: string): Promise<PublicSopDokumenDto> {
+    const row = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
+      detailSopId,
+      0,
+    );
+    if (row === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    if (row.status !== StatusSOP.BERLAKU) {
+      throw new NotFoundException('Hanya dokumen SOP berstatus berlaku yang dapat diakses publik');
+    }
+    const workbench = this.mapWorkbenchPayload(row);
+    return {
+      opd: {
+        id: row.sop.opdId,
+        nama: row.sop.opd.nama,
+      },
+      detail: {
+        ...workbench.detail,
+        nilaiEvaluasi: [],
+      },
+      langkah: workbench.langkah,
+    };
+  }
+
+  /**
    * Validasi transisi status DetailSOP per peran; loncat status tidak diizinkan.
    */
   private assertAllowedStatusTransition(
@@ -437,6 +466,54 @@ export class SopCatalogService {
   }
 
   /**
+   * Kepala OPD: cabut versi BERLAKU SOP (bukan versi terbaru bila ada revisi in-flight).
+   * Ditolak bila masih ada revisi yang sedang berjalan pada header SOP yang sama.
+   */
+  async cabutSopBerlaku(
+    user: JwtAccessPayload,
+    detailOrSopId: string,
+    logsLimitRaw?: number,
+  ): Promise<PenyusunWorkbenchDataDto> {
+    if (user.peran !== PeranPengguna.KEPALA_OPD) {
+      throw new ForbiddenException('Hanya Kepala OPD yang dapat mencabut SOP');
+    }
+    const resolved = await this.sopCatalogRepository.findDetailIdByDetailOrSopId(detailOrSopId);
+    if (resolved === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    const ctx = await this.sopCatalogRepository.findLatestDetailStatusContext(resolved.sopId);
+    if (ctx === null) {
+      throw new NotFoundException('SOP tidak ditemukan');
+    }
+    await this.assertOpdAccessForWorkbench(user, ctx.sopOpdId);
+    const riwayat = await this.sopCatalogRepository.findRiwayatVersiBySopId(resolved.sopId);
+    const allStatuses = riwayat.map((r) => r.status);
+    if (hasRevisiInFlight(allStatuses)) {
+      throw new ConflictException(
+        'Tidak dapat mencabut SOP karena masih ada revisi yang sedang berjalan. Selesaikan atau batalkan revisi terlebih dahulu.',
+      );
+    }
+    const berlaku = riwayat.find((r) => r.status === StatusSOP.BERLAKU);
+    if (berlaku === undefined) {
+      throw new ConflictException('SOP tidak memiliki versi berlaku yang dapat dicabut');
+    }
+    const logsLimit = this.clampLogsLimit(logsLimitRaw);
+    await this.sopCatalogRepository.updateDetailSopStatus({
+      detailSopId: berlaku.detailSopId,
+      status: StatusSOP.DICABUT,
+      userId: user.sub,
+    });
+    const refreshed = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
+      berlaku.detailSopId,
+      logsLimit,
+    );
+    if (refreshed === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan setelah pencabutan');
+    }
+    return this.mapWorkbenchPayload(refreshed);
+  }
+
+  /**
    * Ubah status DetailSOP terbaru (param boleh detailSopId atau sopId header).
    * Mengembalikan workbench penyusun terbaru.
    */
@@ -446,6 +523,9 @@ export class SopCatalogService {
     dto: UpdateDetailSopStatusDto,
     logsLimitRaw?: number,
   ): Promise<PenyusunWorkbenchDataDto> {
+    if (dto.status === StatusSOP.DICABUT) {
+      return this.cabutSopBerlaku(user, detailOrSopId, logsLimitRaw);
+    }
     const ctx = await this.sopCatalogRepository.findLatestDetailStatusContext(detailOrSopId);
     if (ctx === null) {
       throw new NotFoundException('DetailSOP tidak ditemukan');
@@ -479,7 +559,7 @@ export class SopCatalogService {
   }
 
   /**
-   * Penyusun / PJ Penyusun: satu aksi dari `REVISI_DARI_EVALUATOR` setelah perbaikan —
+   * PJ Penyusun: satu aksi dari `REVISI_DARI_EVALUATOR` setelah perbaikan penyusun —
    * validasi kelengkapan seperti Siap Dievaluasi, lalu transaksi SIAP_DIEVALUASI → DIAJUKAN_EVALUASI.
    * Berbeda dari `PATCH /sop/status` ke `DIAJUKAN_EVALUASI` yang hanya untuk PJ pada SOP sudah SIAP.
    */
@@ -488,9 +568,9 @@ export class SopCatalogService {
     detailOrSopId: string,
     logsLimitRaw?: number,
   ): Promise<PenyusunWorkbenchDataDto> {
-    if (user.peran !== PeranPengguna.PENYUSUN && user.peran !== PeranPengguna.PJ_PENYUSUN) {
+    if (user.peran !== PeranPengguna.PJ_PENYUSUN) {
       throw new ForbiddenException(
-        'Hanya penyusun atau PJ Penyusun yang dapat mengirim ulang ke evaluator setelah revisi',
+        'Hanya PJ Penyusun yang dapat mengirim ulang ke evaluator setelah revisi',
       );
     }
     const ctx = await this.sopCatalogRepository.findLatestDetailStatusContext(detailOrSopId);
@@ -629,6 +709,10 @@ export class SopCatalogService {
     const hasBerlaku = row.versiBerlaku !== null;
     const inFlight = hasRevisiInFlight(row.allStatuses);
     const canBuatVersiBaru = hasBerlaku && !inFlight;
+    const canCabutSop =
+      row.versiBerlaku !== null &&
+      row.versiBerlaku.status === StatusSOP.BERLAKU &&
+      !inFlight;
     if (d === undefined) {
       const statusDisplay = displayStatusSop('DRAFT');
       return {
@@ -646,6 +730,7 @@ export class SopCatalogService {
         terakhirDiperbarui: null,
         versiBerlaku: null,
         canBuatVersiBaru: false,
+        canCabutSop: false,
       };
     }
     const waktuIso = d.updatedAt.toISOString();
@@ -669,6 +754,7 @@ export class SopCatalogService {
       versiBerlaku:
         row.versiBerlaku === null ? null : this.mapVersiSlice(row.versiBerlaku),
       canBuatVersiBaru,
+      canCabutSop,
     };
   }
 

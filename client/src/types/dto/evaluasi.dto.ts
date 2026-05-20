@@ -108,8 +108,8 @@ export interface PengajuanEvaluasi {
     sopDetailId: string;
     evaluatorId: string;
     evaluatorNama: string;
-    hasilSebelum?: StatusHasilEvaluasi;
-    hasilSesudah?: StatusHasilEvaluasi;
+    hasilSebelum?: HasilEvaluasiDisplay;
+    hasilSesudah?: HasilEvaluasiDisplay;
     catatanSebelum?: string;
     catatanSesudah?: string;
     createdAt: string;
@@ -147,8 +147,8 @@ export interface PengajuanTimelineNilaiEntry {
   sopDetailId: string;
   evaluatorId: string;
   evaluatorNama: string;
-  hasilSebelum?: StatusHasilEvaluasi;
-  hasilSesudah?: StatusHasilEvaluasi;
+  hasilSebelum?: HasilEvaluasiDisplay;
+  hasilSesudah?: HasilEvaluasiDisplay;
   catatanSebelum?: string;
   catatanSesudah?: string;
   createdAt: string;
@@ -194,6 +194,8 @@ export interface PengajuanEvaluasiShell {
 export interface PengajuanSopWorkbenchResponse {
   detailSopId: string;
   workbench: PenyusunWorkbenchData;
+  /** Payload QR TTE Kepala OPD bila SOP sudah ditandatangani. */
+  tteSignaturePayloadKepalaOpd?: TTESignaturePayload;
 }
 
 export interface BeritaAcaraHasilPerSopRow {
@@ -272,8 +274,8 @@ export interface LogNilaiEvaluasi {
   /** Nilai sama dengan `penggunaId` evaluator di server (nama field tetap untuk kompatibilitas API). */
   evaluatorId: string;
   evaluatorNama?: string;
-  hasilSebelum?: StatusHasilEvaluasi;
-  hasilSesudah?: StatusHasilEvaluasi;
+  hasilSebelum?: HasilEvaluasiDisplay;
+  hasilSesudah?: HasilEvaluasiDisplay;
   catatanSebelum?: string;
   catatanSesudah?: string;
   createdAt: string;
@@ -369,18 +371,7 @@ export interface EvaluasiRingkasQueryParams {
   search?: string;
 }
 
-export interface IsiNilaiEvaluasiMutationDto {
-  pengajuanEvaluasiId: string;
-  sopDetailId: string;
-  payload: IsiNilaiEvaluasiDto;
-}
-
-export interface SelesaiEvaluasiMutationDto {
-  pengajuanEvaluasiId: string;
-  payload: SelesaiEvaluasiDto;
-}
-
-/** GET `/evaluasi/workspace/opd/:opdId` — agregat halaman workspace evaluator. */
+/** GET `/evaluasi/workspace/opd/:opdId` - agregat halaman workspace evaluator. */
 export type EvaluasiWorkspaceTampilanAlur =
   | "perlu_evaluasi"
   | "sedang_dievaluasi"

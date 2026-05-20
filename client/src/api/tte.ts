@@ -13,11 +13,9 @@ import type {
   TteProfil,
   TandaTanganiBaDto,
   TandaTanganiBaMutationDto,
-  TandaTanganiSopDto,
   TandaTanganiSopPengajuanDto,
   TandaTanganiSopPengajuanMutationDto,
   TandaTanganiSopPengajuanResponse,
-  TandaTanganiSopMutationDto,
 } from "@/types/dto/tte.dto";
 
 export const tteApi = {
@@ -50,11 +48,6 @@ export const tteApi = {
       ),
     ),
 
-  getSigningHistory: () =>
-    unwrapApiData<RiwayatTandaTangan[]>(
-      apiClient.get<ApiSuccessResponse<RiwayatTandaTangan[]>>("/tte/riwayat"),
-    ),
-
   /** Verifikasi pengesahan (publik, tanpa login). */
   getPengesahanPublic: (dokumenTteId: string, userId: string) =>
     unwrapApiData<TtePengesahanPublic>(
@@ -67,14 +60,6 @@ export const tteApi = {
     unwrapApiData<RiwayatTandaTangan>(
       apiClient.post<ApiSuccessResponse<RiwayatTandaTangan>>(
         `/tte/tanda-tangani/ba/${pengajuanId}`,
-        payload,
-      ),
-    ),
-
-  tandaTanganiSOP: (sopDetailId: string, payload: TandaTanganiSopDto) =>
-    unwrapApiData<RiwayatTandaTangan>(
-      apiClient.post<ApiSuccessResponse<RiwayatTandaTangan>>(
-        `/tte/tanda-tangani/sop/${sopDetailId}`,
         payload,
       ),
     ),
@@ -119,18 +104,10 @@ export function useTtePengesahanPublic(dokumenTteId: string, userId: string) {
   });
 }
 
-export function useTTERiwayat() {
-  return useQuery({
-    queryKey: queryKeys.tteRiwayat,
-    queryFn: () => tteApi.getSigningHistory(),
-    staleTime: STALE_TIME.MEDIUM,
-  });
-}
-
 export function useRegisterTTE() {
   return useMutationWithToast({
     mutationFn: (payload: RegisterTteDto) => tteApi.registerProfil(payload),
-    invalidateKeys: [queryKeys.tteProfil, queryKeys.tteRiwayat, queryKeys.auth],
+    invalidateKeys: [queryKeys.tteProfil, queryKeys.auth],
     successMessage: "PIN TTE berhasil diatur",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal mengatur PIN TTE",
@@ -163,28 +140,11 @@ export function useTandaTanganiBA(options?: {
       tteApi.tandaTanganiBA(pengajuanId, payload),
     invalidateKeys: [
       queryKeys.evaluasi,
-      queryKeys.tteRiwayat,
       queryKeys.evaluasiWorkspaceOpdAll,
     ],
     successMessage,
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menandatangani Berita Acara",
-  });
-}
-
-export function useTandaTanganiSOP() {
-  return useMutationWithToast({
-    mutationFn: ({ sopDetailId, payload }: TandaTanganiSopMutationDto) =>
-      tteApi.tandaTanganiSOP(sopDetailId, payload),
-    invalidateKeys: [
-      queryKeys.sop,
-      queryKeys.evaluasi,
-      queryKeys.tteRiwayat,
-      queryKeys.detailSop,
-    ],
-    successMessage: "SOP berhasil disahkan (TTE simulasi / format selaras BSRE).",
-    useDetailedErrors: true,
-    errorMessagePrefix: "Gagal mengesahkan SOP",
   });
 }
 
@@ -195,7 +155,6 @@ export function useTandaTanganiSopPengajuan() {
     invalidateKeys: [
       queryKeys.sop,
       queryKeys.evaluasi,
-      queryKeys.tteRiwayat,
       queryKeys.detailSop,
       queryKeys.evaluasiWorkspaceOpdAll,
     ],

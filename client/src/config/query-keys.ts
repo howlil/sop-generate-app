@@ -51,10 +51,6 @@ export const queryKeys = {
   /** v2: invalidasi cache setelah respons API memakai bungkus { data } konsisten */
   /** GET `/opd` — termasuk query `search` (PJ_EVALUATOR) */
   opdList: (search?: string) => ['opd', 'list', 'v2', search ?? ''] as const,
-  /** GET `/opd/evaluasi-ringkas` — evaluator / PJ evaluator */
-  opdEvaluasiRingkas: (search?: string) =>
-    ['opd', 'evaluasiRingkas', search ?? ''] as const,
-
   /** Manajemen penyusun Biro (GET /api/v1/penyusun — grup per OPD) */
   penyusun: ['penyusun'] as const,
   penyusunGrup: (search?: string) => ['penyusun', 'grup', 'v1', search ?? ''] as const,
@@ -83,7 +79,6 @@ export const queryKeys = {
       params?.jenis,
       params?.statusIn?.length ? [...params.statusIn].slice().sort().join(',') : '',
     ] as const,
-  evaluasiById: (id: string) => ['evaluasi', 'byId', id] as const,
   evaluasiPengajuanShell: (id: string) => ['evaluasi', 'pengajuan', 'shell', id] as const,
   evaluasiPengajuanSopDokumen: (
     pengajuanId: string,
@@ -116,15 +111,23 @@ export const queryKeys = {
   // TTE
   tte: ['tte'] as const,
   tteProfil: ['tte', 'profil'] as const,
-  tteRiwayat: ['tte', 'riwayat'] as const,
   /** GET `/tte/public/pengesahan/:dokumenTteId/:userId` — verifikasi publik (tanpa sesi). */
   ttePengesahanPublic: (dokumenTteId: string, userId: string) =>
     ['tte', 'pengesahan-public', dokumenTteId, userId] as const,
 
-  /** Komentar SOP (kolaborasi fase penyusunan). */
-  sopKomentar: (detailSopId: string) => ['sop', 'komentar', detailSopId] as const,
-
   /** GET `/evaluasi/umpan-balik/detail/:detailSopId` */
   evaluasiUmpanBalik: (detailSopId: string) =>
     ['evaluasi', 'umpan-balik', detailSopId] as const,
+
+  /** Arsip SOP publik — GET `/sop/public/...` */
+  sopPublicOpdList: (params?: { page?: number; limit?: number; search?: string }) =>
+    ['sop', 'public', 'opd', params ?? {}] as const,
+  sopPublicSopList: (
+    opdId: string,
+    params?: { page?: number; limit?: number; search?: string },
+  ) => ['sop', 'public', 'opd', opdId, 'sop', params ?? {}] as const,
+  sopPublicSopGlobal: (params?: { page?: number; limit?: number; search?: string }) =>
+    ['sop', 'public', 'sop', params ?? {}] as const,
+  sopPublicDokumen: (detailSopId: string) =>
+    ['sop', 'public', 'dokumen', detailSopId] as const,
 }

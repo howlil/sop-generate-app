@@ -296,16 +296,6 @@ exports.Prisma.LogEditSopDomainFieldScalarFieldEnum = {
   domainField: 'domainField'
 };
 
-exports.Prisma.KomentarScalarFieldEnum = {
-  komentarId: 'komentarId',
-  detailSopId: 'detailSopId',
-  userId: 'userId',
-  isi: 'isi',
-  status: 'status',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.PengajuanEvaluasiScalarFieldEnum = {
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   opdId: 'opdId',
@@ -513,13 +503,6 @@ exports.Prisma.LogEditSopDomainFieldOrderByRelevanceFieldEnum = {
   domainField: 'domainField'
 };
 
-exports.Prisma.KomentarOrderByRelevanceFieldEnum = {
-  komentarId: 'komentarId',
-  detailSopId: 'detailSopId',
-  userId: 'userId',
-  isi: 'isi'
-};
-
 exports.Prisma.PengajuanEvaluasiOrderByRelevanceFieldEnum = {
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   opdId: 'opdId',
@@ -612,11 +595,6 @@ exports.BagianSOP = exports.$Enums.BagianSOP = {
   EVALUASI: 'EVALUASI'
 };
 
-exports.StatusKomentar = exports.$Enums.StatusKomentar = {
-  TERBUKA: 'TERBUKA',
-  SELESAI: 'SELESAI'
-};
-
 exports.JenisPengajuanEvaluasi = exports.$Enums.JenisPengajuanEvaluasi = {
   TERJADWAL: 'TERJADWAL',
   MANDIRI: 'MANDIRI'
@@ -633,6 +611,11 @@ exports.StatusPengajuanEvaluasi = exports.$Enums.StatusPengajuanEvaluasi = {
 exports.HasilEvaluasi = exports.$Enums.HasilEvaluasi = {
   SESUAI: 'SESUAI',
   PERLU_PERBAIKAN: 'PERLU_PERBAIKAN'
+};
+
+exports.StatusKomentar = exports.$Enums.StatusKomentar = {
+  TERBUKA: 'TERBUKA',
+  SELESAI: 'SELESAI'
 };
 
 exports.JenisDokumenTte = exports.$Enums.JenisDokumenTte = {
@@ -659,7 +642,6 @@ exports.Prisma.ModelName = {
   DetailSOPPelaksana: 'DetailSOPPelaksana',
   LogEditSOP: 'LogEditSOP',
   LogEditSopDomainField: 'LogEditSopDomainField',
-  Komentar: 'Komentar',
   PengajuanEvaluasi: 'PengajuanEvaluasi',
   NilaiEvaluasi: 'NilaiEvaluasi',
   LogNilaiEvaluasi: 'LogNilaiEvaluasi',

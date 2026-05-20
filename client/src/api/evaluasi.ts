@@ -27,10 +27,8 @@ import type {
   EvaluasiWorkspacePengajuanAktif,
   EvaluasiWorkspaceQueryParams,
   IsiNilaiEvaluasiDto,
-  IsiNilaiEvaluasiMutationDto,
   JenisPengajuanEvaluasi,
   SelesaiEvaluasiDto,
-  SelesaiEvaluasiMutationDto,
   StatusHasilEvaluasi,
   UmpanBalikEvaluasiDetail,
 } from '@/types/dto/evaluasi.dto'
@@ -126,24 +124,31 @@ export const evaluasiApi = {
     pengajuanId: string,
     detailSopId: string,
     logsLimit?: number,
+    opts?: { arsip?: boolean },
   ) => {
-    const qs =
-      logsLimit !== undefined
-        ? `?${new URLSearchParams({ logsLimit: String(logsLimit) }).toString()}`
-        : ''
+    const params = new URLSearchParams()
+    if (logsLimit !== undefined) {
+      params.set('logsLimit', String(logsLimit))
+    }
+    if (opts?.arsip === true) {
+      params.set('arsip', 'true')
+    }
+    const qs = params.toString()
     return unwrapEvaluasiEnvelope(
       apiClient.get<ApiSuccessResponse<PengajuanSopWorkbenchResponse>>(
-        `/evaluasi/pengajuan/${pengajuanId}/sop-dokumen/${detailSopId}${qs}`,
+        `/evaluasi/pengajuan/${pengajuanId}/sop-dokumen/${detailSopId}${qs ? `?${qs}` : ''}`,
       ),
     )
   },
 
-  findPengajuanBeritaAcara: (pengajuanId: string) =>
-    unwrapEvaluasiEnvelope(
+  findPengajuanBeritaAcara: (pengajuanId: string, opts?: { arsip?: boolean }) => {
+    const qs = opts?.arsip === true ? '?arsip=true' : ''
+    return unwrapEvaluasiEnvelope(
       apiClient.get<ApiSuccessResponse<BeritaAcaraEvaluasiView>>(
-        `/evaluasi/pengajuan/${pengajuanId}/berita-acara`,
+        `/evaluasi/pengajuan/${pengajuanId}/berita-acara${qs}`,
       ),
-    ),
+    )
+  },
 
   create: (payload: CreatePengajuanEvaluasiDto) =>
     unwrapEvaluasiEnvelope(
@@ -187,10 +192,7 @@ export const evaluasiApi = {
       ),
     ),
 
-  update: (id: string, payload: Partial<PengajuanEvaluasi>) =>
-    apiClient.patch<PengajuanEvaluasi>(`/evaluasi/${id}`, payload),
-
-  /** GET `/evaluasi/laporan/grafik-tahunan` — dasbor PJ evaluator (bungkus API). */
+  /** GET `/evaluasi/laporan/grafik-tahunan` - dasbor PJ evaluator (bungkus API). */
   grafikTahunan: async (params?: EvaluasiGrafikTahunanQueryParams) => {
     const envelope = await apiClient.get<ApiSuccessResponse<EvaluasiGrafikTahunanData>>(
       `/evaluasi/laporan/grafik-tahunan${buildQueryString(params as Record<string, unknown> | undefined)}`,
@@ -495,50 +497,6 @@ export function usePengajuanEvaluasiRingkas(
     queryFn: () => evaluasiApi.findRingkas(ringkasParams),
     staleTime: STALE_TIME.SHORT,
     enabled,
-  });
-}
-
-export function useEvaluasiDetail(id: string) {
-  return useQuery({
-    queryKey: queryKeys.evaluasiById(id),
-    queryFn: () => evaluasiApi.findById(id),
-    enabled: !!id,
-    staleTime: STALE_TIME.MEDIUM,
-  });
-}
-
-export function useIsiNilaiEvaluasi() {
-  return useMutationWithToast({
-    mutationFn: ({
-      pengajuanEvaluasiId,
-      sopDetailId,
-      payload,
-    }: IsiNilaiEvaluasiMutationDto) =>
-      evaluasiApi.isiNilai(pengajuanEvaluasiId, sopDetailId, payload),
-    invalidateKeys: [
-      queryKeys.evaluasi,
-      queryKeys.evaluasiWorkspaceOpdAll,
-      queryKeys.evaluasiWorkspacePengajuanAll,
-      queryKeys.evaluasiRingkasAll,
-    ],
-    successMessage: "Hasil evaluasi berhasil disimpan",
-    errorMessagePrefix: "Gagal menyimpan hasil evaluasi",
-  });
-}
-
-export function useSelesaiEvaluasi() {
-  return useMutationWithToast({
-    mutationFn: ({ pengajuanEvaluasiId, payload }: SelesaiEvaluasiMutationDto) =>
-      evaluasiApi.selesai(pengajuanEvaluasiId, payload),
-    invalidateKeys: [
-      queryKeys.evaluasi,
-      queryKeys.evaluasiWorkspaceOpdAll,
-      queryKeys.evaluasiWorkspacePengajuanAll,
-      queryKeys.evaluasiRingkasAll,
-      queryKeys.evaluasiGrafikTahunan(undefined),
-    ],
-    successMessage: "Evaluasi berhasil diselesaikan",
-    errorMessagePrefix: "Gagal menyelesaikan evaluasi",
   });
 }
 
@@ -975,68 +933,6 @@ export interface RiwayatEvaluasiEntry {
   hasil?: string;
   catatan?: string;
   nilaiOPD?: number;
-}
-
-/**
- * Hook to fetch evaluation history for a specific SOP.
- * Uses existing evaluasiApi.findAll to find completed evaluations.
- */
-export function useRiwayatEvaluasiSop(sopDetailId: string): {
-  data: RiwayatEvaluasiEntry[];
-  isLoading: boolean;
-} {
-  const { list: pengajuanList, isLoading } = useEvaluasi({
-    statusIn: [...STATUS_RIWAYAT_FINAL_EVALUASI],
-  });
-
-  const riwayat = useMemo(() => {
-    if (!pengajuanList) return [];
-    const entries: RiwayatEvaluasiEntry[] = [];
-    for (const p of pengajuanList) {
-      if (p.nilaiEvaluasi?.some((n) => n.sopDetailId === sopDetailId)) {
-        const nilai = p.nilaiEvaluasi.find(
-          (n) => n.sopDetailId === sopDetailId,
-        );
-        entries.push({
-          tanggal: p.tanggalDiselesaikan ?? p.updatedAt,
-          evaluator: p.diselesaikanOleh?.nama ?? "Unknown",
-          hasil: nilai?.hasil ?? "SESUAI",
-          catatan: nilai?.catatan ?? "",
-        });
-      }
-    }
-    return entries.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
-  }, [pengajuanList, sopDetailId]);
-
-  return { data: riwayat, isLoading };
-}
-
-/**
- * Hook to fetch evaluation history for a specific OPD.
- * Uses existing evaluasiApi.findAll to find completed evaluations for the OPD.
- */
-export function useRiwayatEvaluasiOpd(opdId: string): {
-  data: RiwayatEvaluasiEntry[];
-  isLoading: boolean;
-} {
-  const { list: pengajuanList, isLoading } = useEvaluasi({
-    opdId,
-    statusIn: [...STATUS_RIWAYAT_FINAL_EVALUASI],
-  });
-
-  const riwayat = useMemo(() => {
-    if (!pengajuanList) return [];
-    return pengajuanList
-      .map((p) => ({
-        tanggal: p.tanggalDiselesaikan ?? p.updatedAt,
-        evaluator: p.diselesaikanOleh?.nama ?? "Unknown",
-        hasil: "SESUAI" as const,
-        nilaiOPD: p.nilaiOPD,
-      }))
-      .sort((a, b) => b.tanggal.localeCompare(a.tanggal));
-  }, [pengajuanList]);
-
-  return { data: riwayat, isLoading };
 }
 
 /**

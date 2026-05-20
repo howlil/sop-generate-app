@@ -64,4 +64,9 @@ export class SopDaftarRowDto {
     description: 'Tombol buat versi baru dari SOP BERLAKU dapat dipakai',
   })
   readonly canBuatVersiBaru!: boolean;
+
+  @ApiProperty({
+    description: 'Kepala OPD dapat mencabut versi BERLAKU (tanpa revisi in-flight)',
+  })
+  readonly canCabutSop!: boolean;
 }

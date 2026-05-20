@@ -46,6 +46,7 @@ export interface SopDaftarRow {
   terakhirDiperbarui: string | null;
   versiBerlaku?: SopDaftarVersiSlice | null;
   canBuatVersiBaru?: boolean;
+  canCabutSop?: boolean;
 }
 
 export interface SopRiwayatVersiRow {

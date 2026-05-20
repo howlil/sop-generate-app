@@ -65,7 +65,7 @@ tolong deseignkan best practinya secara komprehensif baik client maupun server
 │  ┌────────────┐   ┌────────────┐   ┌────────────────────────┐  │
 │  │  MODUL 1   │   │  MODUL 2   │   │       MODUL 3          │  │
 │  │ Master &   │──▶│ Authoring  │──▶│  Kolaborasi SOP        │  │
-│  │  Akses     │   │    SOP     │   │ (Komentar, Log Edit)   │  │
+│  │  Akses     │   │    SOP     │   │ (Log Edit)             │  │
 │  └────────────┘   └─────┬──────┘   └────────────────────────┘  │
 │       │                 │                                       │
 │  ┌────┴───────┐         ▼                                       │
@@ -125,16 +125,15 @@ Sistem memakai **dua enum status** yang saling terhubung:
 |---|---|---|
 | `DRAFT` | **Edit** | Susun header, langkah, lampiran, dasar hukum, SOP terkait |
 | `SEDANG_DISUSUN` | **Edit** | Sama seperti `DRAFT` |
-| `REVISI_DARI_EVALUATOR` | **Edit** | Perbaiki sesuai catatan evaluator; lalu **kirim ulang** ke evaluator (endpoint khusus: `REVISI` → `SIAP_DIEVALUASI` → `DIAJUKAN_EVALUASI` dalam satu transaksi) |
+| `REVISI_DARI_EVALUATOR` | **Edit** | Perbaiki sesuai catatan evaluator; tandai umpan balik selesai; **kirim ulang** ke evaluator hanya oleh PJ Penyusun (endpoint khusus: `REVISI` → `SIAP_DIEVALUASI` → `DIAJUKAN_EVALUASI` dalam satu transaksi) |
 | `SIAP_DIEVALUASI` | Lihat | Bisa menandai siap evaluasi (bersama PJ) — transisi dari `DRAFT` / `SEDANG_DISUSUN` / `REVISI` |
-| `DIAJUKAN_EVALUASI` … `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` | **Read-only** | Hanya baca + tanggapi komentar yang sudah ada |
+| `DIAJUKAN_EVALUASI` … `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` | **Read-only** | Hanya baca + tindak lanjuti umpan balik evaluasi (`NilaiEvaluasi`) |
 | `BERLAKU`, `DICABUT`, `DIGANTIKAN` | **Read-only** | Arsip / versi sah |
 
 **Transisi yang dapat dipicu penyusun (server):**
 
-- `→ SIAP_DIEVALUASI` dari `DRAFT` | `SEDANG_DISUSUN` | `REVISI_DARI_EVALUATOR` (guard: dokumen lengkap, tidak ada komentar `TERBUKA`).
-- `→ DIAJUKAN_EVALUASI` hanya lewat **kirim ulang setelah revisi** (bukan PATCH status biasa untuk PJ).
-- **Tidak bisa:** ajukan evaluasi awal (`DIAJUKAN_EVALUASI` — khusus PJ Penyusun), isi nilai evaluasi, verifikasi BA, TTE.
+- `→ SIAP_DIEVALUASI` dari `DRAFT` | `SEDANG_DISUSUN` | `REVISI_DARI_EVALUATOR` (guard: dokumen lengkap).
+- **Tidak bisa:** kirim ulang ke evaluator setelah revisi (khusus PJ Penyusun), ajukan evaluasi awal (`DIAJUKAN_EVALUASI`), isi nilai evaluasi, verifikasi BA, TTE.
 
 **Status pengajuan evaluasi:** tidak mengelola pengajuan evaluasi; hanya terdampak ketika SOP masuk/keluar pipeline evaluasi.
 
@@ -142,7 +141,8 @@ Sistem memakai **dua enum status** yang saling terhubung:
 flowchart LR
   D[DRAFT] --> SD[SEDANG_DISUSUN]
   SD --> SDE[SIAP_DIEVALUASI]
-  R[REVISI_DARI_EVALUATOR] -->|edit + kirim ulang| DAE[DIAJUKAN_EVALUASI]
+  R[REVISI_DARI_EVALUATOR] -->|edit + tandai selesai| R
+  R -->|PJ kirim ulang| DAE[DIAJUKAN_EVALUASI]
   SD --> SDE
   R --> SDE
 ```
@@ -157,7 +157,8 @@ Mewarisi hak **edit SOP** penyusun (`DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVAL
 
 | Status SOP | Aksi PJ Penyusun |
 |---|---|
-| `SIAP_DIEVALUASI` | **Ajukan ke evaluasi** → `DIAJUKAN_EVALUASI` (guard: tidak ada komentar `TERBUKA`, min. 3 langkah) |
+| `REVISI_DARI_EVALUATOR` | **Kirim ulang ke evaluator** → `DIAJUKAN_EVALUASI` (guard: umpan balik `SELESAI`, dokumen lengkap; endpoint khusus, bukan PATCH status) |
+| `SIAP_DIEVALUASI` | **Ajukan ke evaluasi** → `DIAJUKAN_EVALUASI` (guard: dokumen lengkap, min. 3 langkah) |
 | `SIAP_DIEVALUASI` … `DIAJUKAN_EVALUASI` | Bisa **buka pengajuan evaluasi** (`POST` pengajuan): semua SOP eligibel → `SEDANG_DIEVALUASI` |
 | `SIAP_DIVERIFIKASI` | Setelah evaluator selesai & PJ Evaluator verifikasi BA — menunggu TTE PJ Penyusun |
 | `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` | Setelah TTE BA PJ Penyusun — menunggu pengesahan Kepala OPD |
@@ -215,7 +216,7 @@ Mewarisi hak **edit SOP** penyusun (`DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVAL
 
 1. Evaluator isi SOP-A = `PERLU_PERBAIKAN` + catatan → A menjadi `REVISI_DARI_EVALUATOR`; baris `NilaiEvaluasi` mendapat `statusTindakLanjut = TERBUKA`; pengajuan evaluasi tetap `SEDANG_DIEVALUASI`.
 2. SOP-B…E bisa tetap dinilai `SESUAI`.
-3. Penyusun/PJ memperbaiki A → **tandai tindak lanjut SELESAI** pada umpan balik → **kirim ulang** (ditolak jika masih `TERBUKA`) → A kembali `DIAJUKAN_EVALUASI` / `SEDANG_DIEVALUASI`.
+3. Penyusun memperbaiki A → **tandai tindak lanjut SELESAI** pada umpan balik → **PJ Penyusun kirim ulang** (ditolak jika masih `TERBUKA` atau bukan PJ) → A kembali `DIAJUKAN_EVALUASI` / `SEDANG_DIEVALUASI`.
 4. Evaluator **tidak bisa** menekan “Selesai” selama masih ada baris ≠ `SESUAI`.
 5. Setelah A juga `SESUAI`, evaluator selesaikan → pengajuan evaluasi `SELESAI_DIEVALUASI`, semua dokumen `SIAP_DIVERIFIKASI`.
 
@@ -257,7 +258,7 @@ Mewarisi hak **edit SOP** penyusun (`DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVAL
 |---|---|---|
 | `DRAFT` … `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` | Lihat / pantau | Tidak mengedit isi SOP |
 | **`DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI`** | **TTE pengesahan** | `→ BERLAKU` (per dokumen atau seluruh SOP dalam pengajuan evaluasi) |
-| `BERLAKU` | Lihat | Bisa **`→ DICABUT`** (PATCH status) |
+| `BERLAKU` | Lihat | Bisa **`→ DICABUT`** (`POST /sop/cabut/:id`; versi BERLAKU, tanpa revisi in-flight) |
 | `DICABUT`, `DIGANTIKAN` | Arsip | — |
 
 **Status `PengajuanEvaluasi` (OPD sendiri):**
@@ -272,6 +273,8 @@ Mewarisi hak **edit SOP** penyusun (`DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVAL
 1. PJ Penyusun selesai TTE BA → pengajuan `DITANDATANGANI_PJ_PENYUSUN`, SOP `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI`.
 2. Kepala OPD `POST …/sop-semua` atau per `sopDetailId` → setiap SOP `BERLAKU`, pengajuan → **`SELESAI`**.
 
+**Cetak arsip (setelah `SELESAI`):** pengguna berwenang (PJ Evaluator, PJ Penyusun, Kepala OPD) dapat mencetak **Berita Acara** (A4 portrait) dan **SOP** (A4 landscape) dari halaman detail pengajuan. Tombol cetak hanya aktif jika `PengajuanEvaluasi.status === SELESAI`. Data cetak diambil dari API `GET …/berita-acara?arsip=true` dan `GET …/sop-dokumen/:detailSopId?arsip=true` (server menolak jika status ≠ `SELESAI`). Opsi **cetak semua SOP** memuat tiap dokumen lewat API lalu menggabungkannya dalam satu job cetak browser (satu halaman per SOP).
+
 **Halaman pengajuan SOP:** hanya menampilkan SOP dengan `status === DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` untuk penandatanganan.
 
 ---
@@ -285,7 +288,7 @@ Mewarisi hak **edit SOP** penyusun (`DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVAL
 
 [Evaluator] isi nilai
   PERLU_PERBAIKAN → DetailSOP: REVISI_DARI_EVALUATOR (per dokumen)
-  [Penyusun/PJ] revisi + kirim ulang → DIAJUKAN_EVALUASI / SEDANG_DIEVALUASI
+  [Penyusun] revisi + tandai SELESAI → [PJ Penyusun] kirim ulang → DIAJUKAN_EVALUASI / SEDANG_DIEVALUASI
 
 [Evaluator] selesai (semua SESUAI)
   Pengajuan: SELESAI_DIEVALUASI
@@ -391,13 +394,7 @@ Selama status ∈ {DRAFT, SEDANG_DISUSUN, REVISI_DARI_EVALUATOR}:
         │
 [Penyusun] ──▶ Attach SopTerkait (relasi ke DetailSOP lain)
         │
-[Evaluator/PJ] ──▶ Tulis Komentar kolaborasi (penyusunan)
-        │            → Komentar.status = TERBUKA
-        │
-[Penyusun] ──▶ Selesaikan Komentar kolaborasi
-                → Komentar.status = SELESAI
-
-(Umpan balik evaluasi **bukan** `Komentar` — lihat §5.5 dan §7.2.)
+(Umpan balik evaluasi **bukan** `Komentar` — hanya `NilaiEvaluasi`; lihat §7.1.1.)
 ```
 
 ### 5.3 Log Edit dengan Merge Window
@@ -419,7 +416,7 @@ Background job (atau lazy-close):
 [PJ Penyusun] ──▶ Ajukan SOP ke Evaluasi
         │
         ├── GUARD: status harus SIAP_DIEVALUASI
-        ├── GUARD: tidak boleh ada Komentar.status = TERBUKA
+        ├── GUARD: dokumen lengkap (header, langkah, lampiran, dll.)
         ├── GUARD: minimal 3 LangkahSOP harus ada
         └── Transisi: status → DIAJUKAN_EVALUASI
 ```
@@ -436,7 +433,8 @@ Background job (atau lazy-close):
         │
 [Penyusun/PJ] ──▶ PATCH tindak-lanjut-selesai → statusTindakLanjut = SELESAI
         │
-[Penyusun/PJ] ──▶ Kirim ulang ke evaluator (GUARD: statusTindakLanjut = SELESAI)
+[Penyusun] ──▶ Tandai tindak lanjut SELESAI
+[PJ Penyusun] ──▶ Kirim ulang ke evaluator (GUARD: statusTindakLanjut = SELESAI)
         └── Transaksi: REVISI → SIAP_DIEVALUASI → DIAJUKAN_EVALUASI
 ```
 
@@ -453,7 +451,7 @@ Background job (atau lazy-close):
 
 1. SOP memiliki DetailSOP dengan status `BERLAKU` (versi resmi).
 2. Penyusun/PJ memanggil `POST /sop/:detailSopId/buat-versi-baru` — deep clone ke versi baru (`DRAFT`, `revisiDariDetailSopId` terisi).
-3. Versi lama tetap `BERLAKU` dan **read-only** (server menolak PATCH header/prosedur/komentar).
+3. Versi lama tetap `BERLAKU` dan **read-only** (server menolak PATCH header/prosedur).
 4. Penyusun mengedit versi baru hingga siap evaluasi (alur evaluasi existing).
 5. Pipeline evaluasi + tindak lanjut umpan balik (modul evaluasi existing, termasuk `statusTindakLanjut` pada `NilaiEvaluasi`).
 6. Setelah disetujui, pengajuan TTE Kepala OPD pada versi baru.
@@ -468,15 +466,17 @@ Background job (atau lazy-close):
 
 - **AC-SOP-V01:** Buat versi baru hanya dari DetailSOP `BERLAKU`.
 - **AC-SOP-V02:** Tolak buat versi jika sudah ada revisi in-flight pada SOP yang sama.
-- **AC-SOP-V03:** DetailSOP `BERLAKU` / `DIGANTIKAN` / `DICABUT` tidak dapat di-PATCH (header, prosedur, resolve komentar).
+- **AC-SOP-V03:** DetailSOP `BERLAKU` / `DIGANTIKAN` / `DICABUT` tidak dapat di-PATCH (header, prosedur).
 - **AC-SOP-V04:** Hapus versi draft hanya untuk `DRAFT` + `revisiDariDetailSopId` + tanpa nilai evaluasi.
-- **AC-SOP-V05:** Daftar SOP menampilkan versi terbaru dan versi berlaku (`versiBerlaku`, `canBuatVersiBaru`).
+- **AC-SOP-V05:** Daftar SOP menampilkan versi terbaru dan versi berlaku (`versiBerlaku`, `canBuatVersiBaru`, `canCabutSop`).
+- **AC-SOP-V06:** Kepala OPD dapat mencabut versi BERLAKU via `POST /sop/cabut/:detailOrSopId`; ditolak bila bukan KEPALA_OPD, tidak ada versi BERLAKU, atau masih ada revisi in-flight pada header SOP yang sama.
 
-Saat DetailSOP baru menjadi BERLAKU (TTE):
+Saat DetailSOP baru menjadi BERLAKU (TTE Kepala OPD):
 
 ```
     ├── DetailSOP versi sebelumnya yang BERLAKU → DIGANTIKAN
-    └── Maksimal 1 versi BERLAKU per SOP (enforce via trigger MySQL)
+    ├── Maksimal 1 versi BERLAKU per SOP (enforce via trigger MySQL)
+    └── tanggalEfektif = tanggal kalender pengesahan (Asia/Jakarta, 00:00 WIB); tidak diisi penyusun saat draft/evaluasi
 ```
 
 ---
@@ -509,7 +509,7 @@ SEDANG_DIEVALUASI
   ▼                    ▼
 SIAP_DIVERIFIKASI   REVISI_DARI_EVALUATOR
   │                    │
-  │               (penyusun revisi + ajukan ulang)
+  │               (penyusun revisi; PJ ajukan ulang)
   │                    └────────────────────────▶ DIAJUKAN_EVALUASI
   │ (PJ Evaluator verifikasi)
   ▼
@@ -527,15 +527,15 @@ DICABUT
 | Dari | Ke | Aktor | Guard |
 |---|---|---|---|
 | DRAFT | SEDANG_DISUSUN | PENYUSUN | Ada minimal 1 LangkahSOP (implisit saat mulai edit) |
-| DRAFT / SEDANG_DISUSUN / REVISI | SIAP_DIEVALUASI | PENYUSUN atau PJ_PENYUSUN | Dokumen lengkap; tidak ada komentar TERBUKA |
-| SIAP_DIEVALUASI | DIAJUKAN_EVALUASI | PJ_PENYUSUN | Min. 3 langkah; tidak ada komentar TERBUKA |
-| REVISI_DARI_EVALUATOR | DIAJUKAN_EVALUASI | PENYUSUN atau PJ_PENYUSUN | Kirim ulang setelah perbaikan (transaksi gabung) |
+| DRAFT / SEDANG_DISUSUN / REVISI | SIAP_DIEVALUASI | PENYUSUN atau PJ_PENYUSUN | Dokumen lengkap |
+| SIAP_DIEVALUASI | DIAJUKAN_EVALUASI | PJ_PENYUSUN | Min. 3 langkah; dokumen lengkap |
+| REVISI_DARI_EVALUATOR | DIAJUKAN_EVALUASI | PJ_PENYUSUN | Kirim ulang setelah perbaikan penyusun (transaksi gabung; guard umpan balik SELESAI) |
 | DIAJUKAN_EVALUASI / SIAP_DIEVALUASI / REVISI | SEDANG_DIEVALUASI | PJ_PENYUSUN atau EVALUATOR | SOP masuk pengajuan evaluasi `PengajuanEvaluasi` |
 | SEDANG_DIEVALUASI | SIAP_DIVERIFIKASI | EVALUATOR | Semua `NilaiEvaluasi.hasil = SESUAI`; aksi **selesai** pengajuan evaluasi |
 | DIAJUKAN / SEDANG_DIEVALUASI | REVISI_DARI_EVALUATOR | EVALUATOR | `NilaiEvaluasi.hasil = PERLU_PERBAIKAN` (+ catatan wajib) |
 | SIAP_DIVERIFIKASI | DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI | PJ_PENYUSUN | TTE Berita Acara (pengajuan evaluasi) |
 | DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI | BERLAKU | KEPALA_OPD | TTE SOP (`SOP_BERLAKU`) per item atau massal |
-| BERLAKU | DICABUT | KEPALA_OPD | — |
+| BERLAKU | DICABUT | KEPALA_OPD | Tidak ada revisi in-flight; menarget versi BERLAKU (bukan versi terbaru bila berbeda) |
 | BERLAKU | DIGANTIKAN | SYSTEM | Versi baru menjadi BERLAKU (trigger DB) |
 
 ---
@@ -569,6 +569,53 @@ DICABUT
 - Jika ada race condition dua request membuat pengajuan aktif untuk OPD yang sama, salah satu wajib gagal dengan `409 Conflict`.
 - Setelah pengajuan mencapai `SELESAI`, OPD boleh membuat siklus pengajuan baru.
 
+### 7.1.1 Komentar evaluasi → disimpan di `NilaiEvaluasi` (bukan tabel `Komentar`)
+
+**Komentar/umpan balik evaluator tetap ada** di alur bisnis (evaluator menulis catatan, penyusun menindaklanjuti, resolve, kirim ulang). Yang berubah hanya **penyimpanan data**: tidak memakai baris tabel `Komentar`, melainkan field pada baris `NilaiEvaluasi` untuk pasangan `(pengajuanEvaluasiId, detailSopId)`.
+
+**Sumber kebenaran (MODUL 5):**
+
+| Field | Peran |
+|-------|--------|
+| `NilaiEvaluasi.catatan` | Catatan formal evaluator (wajib jika `hasil = PERLU_PERBAIKAN`) |
+| `NilaiEvaluasi.statusTindakLanjut` | Status tindak lanjut / “resolve” umpan balik (enum `StatusKomentar`, **bukan** FK ke tabel `Komentar`) |
+| `NilaiEvaluasi.ditindaklanjutiPada` | Waktu penyusun/PJ menandai tindak lanjut selesai |
+| `NilaiEvaluasi.ditindaklanjutiOlehId` | Pengguna yang menandai selesai |
+| `NilaiEvaluasi.dinilaiOlehId` | Evaluator yang mengisi nilai terakhir |
+
+**Pemetaan `statusTindakLanjut` (satu umpan balik per SOP per pengajuan):**
+
+| Nilai | Arti bisnis | Label UI (server) | Peran penyusun | Peran evaluator |
+|-------|-------------|-------------------|----------------|-----------------|
+| `null` | Bukan `PERLU_PERBAIKAN` atau belum ada tindak lanjut | — | — | — |
+| `TERBUKA` | Belum ditindaklanjuti (belum “resolve”) | Menunggu tindak lanjut OPD | Tandai sudah ditindaklanjuti | Menunggu perbaikan OPD |
+| `SELESAI` | Sudah ditandai selesai; boleh kirim ulang ke evaluator | Siap dinilai ulang | Kirim ulang (setelah perbaikan tersimpan) | Siap tinjau ulang |
+
+**Alur ringkas:**
+
+1. Evaluator: `PERLU_PERBAIKAN` + `catatan` → `statusTindakLanjut = TERBUKA`; `DetailSOP → REVISI_DARI_EVALUATOR`.
+2. Penyusun/PJ: perbaiki dokumen, baca `catatan` di tab **Umpan balik evaluasi**.
+3. Penyusun/PJ: `PATCH .../tindak-lanjut-selesai` → `SELESAI` (+ `ditindaklanjutiPada` / `ditindaklanjutiOlehId`).
+4. PJ Penyusun: kirim ulang (guard: `SELESAI`) → evaluator nilai ulang (lihat §5.5, §7.2, tahap `tinjauan_ulang` di UI workspace). Penyusun hanya edit + tandai tindak lanjut selesai.
+
+**Kapan cukup `NilaiEvaluasi` (desain saat ini):**
+
+- Satu catatan resmi per SOP per pengajuan evaluasi.
+- Tidak perlu banyak komentar, balasan, resolve per item, mention, atau lampiran pada umpan balik evaluasi.
+
+**Pemetaan istilah (UI ↔ database):**
+
+| Istilah di UI | Field / tabel |
+|---------------|----------------|
+| Komentar / catatan evaluator | `NilaiEvaluasi.catatan` |
+| Belum / sudah ditindaklanjuti (resolve) | `NilaiEvaluasi.statusTindakLanjut` (`TERBUKA` / `SELESAI`) |
+| Siapa & kapan menandai selesai | `ditindaklanjutiOlehId`, `ditindaklanjutiPada` |
+
+**Invariant:**
+
+- Modul evaluasi menyimpan umpan balik hanya pada `NilaiEvaluasi` (lihat AC-EVL-06).
+- `hasil` di DB **tidak** di-reset saat kirim ulang; evaluator menetapkan hasil baru secara eksplisit saat tinjauan ulang.
+
 ### 7.2 Proses Evaluasi
 
 ```
@@ -585,7 +632,7 @@ DICABUT
         │
         └── PATCH .../tindak-lanjut-selesai → statusTindakLanjut = SELESAI
 
-[Penyusun/PJ] ──▶ Kirim ulang setelah revisi
+[PJ Penyusun] ──▶ Kirim ulang setelah revisi
         │
         ├── GUARD: NilaiEvaluasi aktif PERLU_PERBAIKAN harus statusTindakLanjut = SELESAI
         └── Transisi gabung ke DIAJUKAN_EVALUASI (lihat §5.5)
@@ -849,7 +896,7 @@ export const TRANSISI_STATUS_PENGAJUAN: Record<StatusPengajuanEvaluasi, StatusPe
 // Guards wajib di setiap service sebelum transisi status
 
 // SOP: SEDANG_DISUSUN → SIAP_DIEVALUASI
-// GUARD: tidak ada Komentar status = TERBUKA pada detailSopId
+// GUARD: dokumen lengkap (header, langkah, lampiran, dll.)
 // GUARD: ada minimal 1 LangkahSOP
 
 // SOP: DIAJUKAN_EVALUASI → SEDANG_DIEVALUASI
@@ -949,13 +996,13 @@ Then: Response 409 Conflict
   And: { success: false, message: "Urutan langkah sudah digunakan" }
 ```
 
-**AC-SOP-04: Submit SOP dengan komentar terbuka ditolak**
+**AC-SOP-04: Submit SOP dengan dokumen tidak lengkap ditolak**
 ```
 Given: DetailSOP status SEDANG_DISUSUN
-  And: Ada 1 Komentar status TERBUKA
-When: PJ Penyusun PATCH /sop/:id/status { status: "SIAP_DIEVALUASI" }
-Then: Response 422
-  And: { success: false, message: "Selesaikan semua komentar sebelum mengajukan SOP" }
+  And: Header atau prosedur belum lengkap
+When: PATCH /sop/:id/status { status: "SIAP_DIEVALUASI" }
+Then: Response 400 Bad Request
+  And: pesan validasi kelengkapan dokumen
 ```
 
 **AC-SOP-05: Transisi status tidak valid ditolak**
@@ -1044,7 +1091,7 @@ When: Evaluator PATCH nilai dengan { hasil: "PERLU_PERBAIKAN", catatan: "Perbaik
 Then: NilaiEvaluasi.catatan = "Perbaiki SLA"
   And: NilaiEvaluasi.statusTindakLanjut = TERBUKA
   And: DetailSOP.status = REVISI_DARI_EVALUATOR
-  And: Tidak ada Komentar baru yang dibuat otomatis dari catatan evaluasi
+  And: Umpan balik hanya tersimpan pada NilaiEvaluasi (bukan tabel terpisah)
 ```
 
 **AC-EVL-07: Kirim ulang ditolak jika umpan balik belum SELESAI**
@@ -1052,9 +1099,18 @@ Then: NilaiEvaluasi.catatan = "Perbaiki SLA"
 Given: DetailSOP.status = REVISI_DARI_EVALUATOR
   And: NilaiEvaluasi.hasil = PERLU_PERBAIKAN
   And: NilaiEvaluasi.statusTindakLanjut = TERBUKA
-When: Penyusun POST kirim ulang ke evaluator
+When: PJ Penyusun POST kirim ulang ke evaluator
 Then: Response 400 Bad Request
   And: { success: false, message: "Tandai umpan balik evaluasi sebagai selesai sebelum mengirim ulang ke evaluator" }
+```
+
+**AC-EVL-07b: Penyusun ditolak saat kirim ulang**
+```
+Given: DetailSOP.status = REVISI_DARI_EVALUATOR
+  And: NilaiEvaluasi.statusTindakLanjut = SELESAI
+When: Penyusun POST kirim ulang ke evaluator
+Then: Response 403 Forbidden
+  And: { success: false, message: "Hanya PJ Penyusun yang dapat mengirim ulang ke evaluator setelah revisi" }
 ```
 
 **AC-EVL-08: Tandai tindak lanjut lalu kirim ulang berhasil**
@@ -1063,7 +1119,7 @@ Given: DetailSOP.status = REVISI_DARI_EVALUATOR
   And: NilaiEvaluasi.statusTindakLanjut = TERBUKA
 When: Penyusun PATCH .../tindak-lanjut-selesai
 Then: NilaiEvaluasi.statusTindakLanjut = SELESAI
-When: Penyusun kirim ulang ke evaluator
+When: PJ Penyusun kirim ulang ke evaluator
 Then: DetailSOP.status = DIAJUKAN_EVALUASI
 ```
 
@@ -1220,6 +1276,31 @@ Then: Response 201
 | 409 | Duplikat data, race condition (optimistic lock), constraint unik |
 | 422 | Guard bisnis gagal (transisi tidak valid, komentar terbuka, dll) |
 | 500 | Kesalahan sistem tidak terduga |
+
+---
+
+## Arsip SOP Publik (tanpa login)
+
+Pengunjung dapat membuka halaman **`/arsip`** untuk menelusuri SOP yang sudah **disahkan** (`DetailSOP.status = BERLAKU`) tanpa autentikasi.
+
+**Hierarki UI (full-width, tanpa halaman detail):** Satu halaman hub `/arsip` — workspace menyatu tanpa gap: **kiri OPD** | **tengah pratinjau** | **kanan daftar SOP** (panel kiri/kanan bisa di-collapse). Klik baris SOP di kanan memuat pratinjau di tengah; query `detailSopId` untuk URL yang bisa dibagikan. Mobile: stack OPD → daftar SOP → overlay pratinjau. Pencarian global (`q`) menyembunyikan panel OPD. URL lama `/arsip/{opdId}` dan `/arsip/{opdId}/{detailSopId}` diarahkan ke `/arsip?opdId=…&detailSopId=…`.
+
+**API publik** (prefix `/api/sop/public`, tanpa cookie sesi):
+
+| Method | Path | Data |
+|---|---|---|
+| GET | `/sop/public/opd` | OPD aktif dengan ≥1 SOP BERLAKU (`search`, pagination) |
+| GET | `/sop/public/sop` | Cari SOP BERLAKU lintas OPD (`search` judul/nomor/nama OPD, pagination) |
+| GET | `/sop/public/opd/:opdId/sop` | SOP BERLAKU per OPD + meta `{ opd: { opdId, nama } }` |
+| GET | `/sop/public/dokumen/:detailSopId` | Header + langkah prosedur (tanpa `logEdit`, tanpa umpan balik evaluasi) |
+
+**Tidak dipublikasikan:** `DRAFT`, revisi in-flight, `DICABUT`, `DIGANTIKAN`, log audit, catatan evaluasi internal.
+
+**AC-ARSIP-01:** Pengunjung anonim membuka `/arsip` → workspace 3 panel (OPD | pratinjau | daftar SOP); memilih OPD mengisi daftar kanan; memilih SOP menampilkan pratinjau di tengah tanpa pindah halaman.
+
+**AC-ARSIP-02:** Pencarian global (`q`) menampilkan SOP lintas OPD; filter nama OPD di sidebar berfungsi; daftar per OPD mendukung pagination.
+
+**AC-ARSIP-03:** Pilih SOP → pratinjau inline di halaman yang sama (tanpa navigasi ke route detail); cetak dari panel pratinjau. `GET /sop/public/dokumen/{id}` untuk status non-BERLAKU → 404.
 
 ---
 

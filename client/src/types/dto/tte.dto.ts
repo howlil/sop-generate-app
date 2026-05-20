@@ -99,20 +99,9 @@ export interface TandaTanganiBaDto {
   judulDokumen: string;
 }
 
-export interface TandaTanganiSopDto {
-  pin: string;
-  nomorDokumen: string;
-  judulDokumen: string;
-}
-
 export interface TandaTanganiBaMutationDto {
   pengajuanId: string;
   payload: TandaTanganiBaDto;
-}
-
-export interface TandaTanganiSopMutationDto {
-  sopDetailId: string;
-  payload: TandaTanganiSopDto;
 }
 
 export interface TandaTanganiSopPengajuanDto {

@@ -15,6 +15,7 @@ import { PeranPengguna } from '../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../core/auth/helpers/auth.shared';
 import { BeritaAcaraEvaluasiViewDto } from './dto/berita-acara-evaluasi-view.dto';
 import { PengajuanEvaluasiShellDto } from './dto/pengajuan-evaluasi-shell.dto';
+import { PengajuanArsipQueryDto } from './dto/pengajuan-arsip-query.dto';
 import { PengajuanSopDokumenQueryDto } from './dto/pengajuan-sop-dokumen-query.dto';
 import { PengajuanSopWorkbenchResponseDto } from './dto/pengajuan-sop-workbench-response.dto';
 import { PengajuanEvaluasiDetailService } from './pengajuan-evaluasi-detail.service';
@@ -45,6 +46,12 @@ export class PengajuanEvaluasiDetailController {
     required: false,
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
+  @ApiQuery({
+    name: 'arsip',
+    required: false,
+    type: Boolean,
+    description: 'Jika true, hanya untuk cetak arsip (wajib status SELESAI).',
+  })
   @ApiResponse({ status: 200, type: PengajuanSopWorkbenchResponseDto })
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
@@ -60,6 +67,7 @@ export class PengajuanEvaluasiDetailController {
       pengajuanId,
       detailSopId,
       logsLimit,
+      query.arsip,
     );
     return {
       message: 'Dokumen SOP pengajuan evaluasi berhasil diambil',
@@ -82,14 +90,25 @@ export class PengajuanEvaluasiDetailController {
       'Agregasi nomor BA, tanggal, hasil per SOP, skor OPD, tim evaluator, dan metadata TTE (tanpa blob tanda tangan).',
   })
   @ApiParam({ name: 'pengajuanId', format: 'uuid' })
+  @ApiQuery({
+    name: 'arsip',
+    required: false,
+    type: Boolean,
+    description: 'Jika true, hanya untuk cetak arsip (wajib status SELESAI).',
+  })
   @ApiResponse({ status: 200, type: BeritaAcaraEvaluasiViewDto })
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
   async getBeritaAcara(
     @Req() req: Request & { user: JwtAccessPayload },
     @Param('pengajuanId', ParseUUIDPipe) pengajuanId: string,
+    @Query() query: PengajuanArsipQueryDto,
   ): Promise<ApiSuccessResponse<BeritaAcaraEvaluasiViewDto>> {
-    const data = await this.pengajuanEvaluasiDetailService.getBeritaAcaraView(req.user, pengajuanId);
+    const data = await this.pengajuanEvaluasiDetailService.getBeritaAcaraView(
+      req.user,
+      pengajuanId,
+      query.arsip,
+    );
     return {
       message: 'Data Berita Acara evaluasi berhasil diambil',
       success: true,

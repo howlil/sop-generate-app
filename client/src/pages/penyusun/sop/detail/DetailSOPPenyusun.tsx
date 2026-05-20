@@ -6,12 +6,11 @@ import { useToast } from '@/hooks/useToast'
 import { ROUTES } from '@/utils/constants'
 import { useUmpanBalikEvaluasi } from '@/api/evaluasi'
 import { getKirimUlangBlockingReason } from '@/lib/evaluasi/evaluasi-domain'
+import { getKirimUlangRoleBlockingReason } from '@/lib/sop/sop-permissions'
 import {
   useBuatVersiBaru,
   useDetailSopPenyusun,
-  useResolveSopKomentar,
   useRiwayatVersi,
-  useSopKomentar,
 } from '@/api/sop'
 import { BuatVersiBaruDialog } from '@/pages/penyusun/sop/components/BuatVersiBaruDialog'
 import { getBuatVersiBaruBlockingReason } from '@/lib/sop/sop-version-domain'
@@ -71,6 +70,7 @@ export function DetailSOPPenyusun() {
     currentSopStatusLabel,
     isRevisionFlow,
     primaryActionLabel,
+    canKirimUlangKeEvaluator,
     handleMetadataChange,
     handleComplete,
     isKirimUlangKeEvaluatorPending,
@@ -96,10 +96,11 @@ export function DetailSOPPenyusun() {
 
   const { data: umpanBalik, isLoading: isUmpanBalikLoading } = useUmpanBalikEvaluasi(
     id,
-    isRevisionFlow || currentSopStatus === 'REVISI_DARI_EVALUATOR',
+    Boolean(id),
   )
   const kirimUlangBlockingReason = isRevisionFlow
-    ? getKirimUlangBlockingReason(umpanBalik ?? null)
+    ? getKirimUlangBlockingReason(umpanBalik ?? null) ??
+      getKirimUlangRoleBlockingReason(role)
     : null
 
   const sopHeaderId = metadata.sopId
@@ -129,12 +130,6 @@ export function DetailSOPPenyusun() {
         versiBerlaku: { detailSopId: id, versi: metadata.version ?? 1, nomorSop: metadata.nomorSOP ?? '', status: 'BERLAKU', statusLabel: 'Berlaku' },
         canBuatVersiBaru: false,
       })
-
-  const { data: komentarList, isLoading: isKomentarLoading } = useSopKomentar(
-    isRevisionFlow ? undefined : id,
-  )
-  const { mutateAsync: resolveKomentarAsync, isPending: isResolvingKomentar } =
-    useResolveSopKomentar(id)
 
   /* Toast error autosave sekali per error reference (hindari spam saat re-render). */
   const lastHeaderErrorRef = useRef<Error | null>(null)
@@ -209,10 +204,6 @@ export function DetailSOPPenyusun() {
       prosedurAutosaveStatus,
       prosedurAutosaveError,
       flushProsedurAutosave,
-      komentarList: komentarList ?? [],
-      isKomentarLoading,
-      resolveKomentar: resolveKomentarAsync,
-      isResolvingKomentar,
       isReadOnly,
     }),
     [
@@ -233,10 +224,6 @@ export function DetailSOPPenyusun() {
       prosedurAutosaveStatus,
       prosedurAutosaveError,
       flushProsedurAutosave,
-      komentarList,
-      isKomentarLoading,
-      resolveKomentarAsync,
-      isResolvingKomentar,
       isReadOnly,
     ],
   )
@@ -270,6 +257,7 @@ export function DetailSOPPenyusun() {
             currentSopStatusLabel={currentSopStatusLabel}
             isRevisionFlow={isRevisionFlow}
             primaryActionLabel={primaryActionLabel}
+            canShowKirimUlangAction={!isRevisionFlow || canKirimUlangKeEvaluator}
             autosaveStatus={combinedAutosaveStatus}
             onRetryAutosave={combinedFlushAutosave}
             onComplete={() => handleComplete(id, role ?? null, navigate)}
@@ -303,7 +291,6 @@ export function DetailSOPPenyusun() {
             onTabChange={setRightPanelTab}
             auditEntries={auditLogs ?? []}
             editTabLabel={isReadOnly ? 'Informasi' : 'Edit'}
-            isRevisionFlow={isRevisionFlow}
             umpanBalik={umpanBalik ?? null}
             isUmpanBalikLoading={isUmpanBalikLoading}
             isReadOnly={isReadOnly}

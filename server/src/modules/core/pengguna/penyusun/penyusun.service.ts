@@ -266,7 +266,6 @@ export class PenyusunService {
           select: {
             detailSopDibuat: true,
             detailSopDiedit: true,
-            komentar: true,
             logEditSop: true,
             logNilaiEvaluasi: true,
             nilaiEvaluasiDiisi: true,
@@ -286,7 +285,6 @@ export class PenyusunService {
     const sum =
       c.detailSopDibuat +
       c.detailSopDiedit +
-      c.komentar +
       c.logEditSop +
       c.logNilaiEvaluasi +
       c.nilaiEvaluasiDiisi +
@@ -297,7 +295,7 @@ export class PenyusunService {
       c.tandaTangan;
     if (sum > 0 || row.ttePinHash !== null) {
       throw new ConflictException(
-        'Tidak dapat menghapus pengguna: masih ada data yang terikat (SOP, komentar, evaluasi, atau jabatan OPD).',
+        'Tidak dapat menghapus pengguna: masih ada data yang terikat (SOP, evaluasi, atau jabatan OPD).',
       );
     }
     if (row.peran === PeranPengguna.PJ_PENYUSUN) {

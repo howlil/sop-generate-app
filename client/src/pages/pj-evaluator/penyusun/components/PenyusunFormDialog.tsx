@@ -1,19 +1,13 @@
 import { useEffect, useState } from 'react'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { FormField } from '@/components/ui/form-field'
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { cn } from '@/utils/cn'
+import {
+  ManageAssignmentDialog,
+  type AssignmentDialogTab,
+} from '@/components/organisasi/manage-assignment-dialog'
+import { OpdSelectField } from '@/components/forms/opd-select-field'
+import { PersonIdentityFields } from '@/components/forms/person-identity-fields'
 import type { StatusTim } from '@/types/dto/tim.dto'
 
 interface OPD {
@@ -36,8 +30,6 @@ export interface PenyusunFormData {
 }
 
 export type PenyusunFormDialogMode = 'create' | 'edit'
-
-type EditDialogTab = 'data' | 'pindah'
 
 export interface PenyusunFormDialogProps {
   mode: PenyusunFormDialogMode
@@ -65,10 +57,6 @@ const PERAN_OPTIONS: { value: PeranPenyusunApi; label: string }[] = [
   { value: 'PJ_PENYUSUN', label: 'PJ Penyusun' },
 ]
 
-/** Selaras design-style-guide: input compact, border gray-200 */
-const inputFieldClass =
-  'h-9 border-gray-200 text-xs placeholder:text-gray-400 focus:ring-1 focus:ring-blue-500'
-
 export function PenyusunFormDialog({
   mode,
   open,
@@ -89,11 +77,11 @@ export function PenyusunFormDialog({
   pindahConfirmDisabled = false,
 }: PenyusunFormDialogProps) {
   const isCreate = mode === 'create'
-  const [editTab, setEditTab] = useState<EditDialogTab>('data')
+  const [editTab, setEditTab] = useState<AssignmentDialogTab>('edit')
 
   useEffect(() => {
     if (open && !isCreate) {
-      setEditTab('data')
+      setEditTab('edit')
     }
   }, [open, isCreate])
 
@@ -101,7 +89,7 @@ export function PenyusunFormDialog({
 
   useEffect(() => {
     if (!canPindahTab && editTab === 'pindah') {
-      setEditTab('data')
+      setEditTab('edit')
     }
   }, [canPindahTab, editTab])
 
@@ -109,23 +97,50 @@ export function PenyusunFormDialog({
     .filter((opd) => opd.id !== editingOpdId)
     .map((opd) => ({ value: opd.id, label: opd.name }))
 
+  const personFieldsValue = {
+    namaLengkap: formData.namaLengkap,
+    nip: formData.nip,
+    jabatan: formData.jabatan,
+    pangkat: formData.pangkat,
+    email: formData.email,
+    nohp: formData.nohp,
+    status: formData.statusAkun ?? 'AKTIF',
+  }
+
+  const setPersonFieldsValue: React.Dispatch<React.SetStateAction<typeof personFieldsValue>> = (
+    action,
+  ) => {
+    setFormData((prev) => {
+      const current = {
+        namaLengkap: prev.namaLengkap,
+        nip: prev.nip,
+        jabatan: prev.jabatan,
+        pangkat: prev.pangkat,
+        email: prev.email,
+        nohp: prev.nohp,
+        status: prev.statusAkun ?? 'AKTIF',
+      }
+      const next = typeof action === 'function' ? action(current) : action
+      return {
+        ...prev,
+        namaLengkap: next.namaLengkap,
+        nip: next.nip,
+        jabatan: next.jabatan,
+        pangkat: next.pangkat,
+        email: next.email,
+        nohp: next.nohp,
+        statusAkun: next.status as StatusTim,
+      }
+    })
+  }
+
   const fieldsSection = (
     <>
-      {!isCreate && (
-        <FormField label="Status akun" required>
-          <Select
-            value={formData.statusAkun ?? 'AKTIF'}
-            onValueChange={(v) =>
-              setFormData((prev) => ({ ...prev, statusAkun: v as StatusTim }))
-            }
-            options={[
-              { value: 'AKTIF', label: 'Aktif' },
-              { value: 'NONAKTIF', label: 'Nonaktif' },
-            ]}
-            placeholder="Pilih status"
-          />
-        </FormField>
-      )}
+      <PersonIdentityFields
+        value={personFieldsValue}
+        onChange={setPersonFieldsValue}
+        showStatus={!isCreate}
+      />
       <FormField label="Peran" required>
         <Select
           value={formData.peranTim}
@@ -136,68 +151,12 @@ export function PenyusunFormDialog({
           placeholder="Pilih peran"
         />
       </FormField>
-      <FormField label="Nama Lengkap" required>
-        <Input
-          className={inputFieldClass}
-          placeholder="Contoh: Ahmad Pratama, S.Sos"
-          value={formData.namaLengkap}
-          onChange={(e) => setFormData((prev) => ({ ...prev, namaLengkap: e.target.value }))}
-        />
-      </FormField>
-      <FormField label="NIP" required>
-        <Input
-          className={cn(inputFieldClass, 'font-mono')}
-          placeholder="Contoh: 199203152020121001"
-          value={formData.nip}
-          onChange={(e) => setFormData((prev) => ({ ...prev, nip: e.target.value }))}
-        />
-      </FormField>
-      <FormField label="Jabatan" required>
-        <Input
-          className={inputFieldClass}
-          placeholder="Contoh: Kepala Seksi Organisasi"
-          value={formData.jabatan}
-          onChange={(e) => setFormData((prev) => ({ ...prev, jabatan: e.target.value }))}
-        />
-      </FormField>
-      <FormField label="Pangkat / Golongan" required>
-        <Input
-          className={inputFieldClass}
-          placeholder="Contoh: IV/a"
-          value={formData.pangkat}
-          onChange={(e) => setFormData((prev) => ({ ...prev, pangkat: e.target.value }))}
-        />
-      </FormField>
-      <FormField label="Email" required>
-        <Input
-          type="email"
-          className={inputFieldClass}
-          placeholder="Contoh: ahmad@disdik.go.id"
-          value={formData.email}
-          onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-        />
-      </FormField>
-      <FormField label="No. HP" required>
-        <Input
-          className={inputFieldClass}
-          placeholder="Contoh: 081234567890"
-          value={formData.nohp}
-          onChange={(e) => setFormData((prev) => ({ ...prev, nohp: e.target.value }))}
-        />
-      </FormField>
     </>
   )
 
   const createForm = (
     <div className="space-y-3">
-      <FormField label="OPD" required>
-        <Select
-          value={createOpdId}
-          onValueChange={setCreateOpdId}
-          options={opdList.map((o) => ({ value: o.id, label: o.name }))}
-          placeholder="Pilih OPD"
-        />
-      </FormField>
+      <OpdSelectField value={createOpdId} onValueChange={setCreateOpdId} options={opdList} />
       {fieldsSection}
     </div>
   )
@@ -222,82 +181,29 @@ export function PenyusunFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto scrollbar-hide">
-        <DialogHeader>
-          <DialogTitle className="text-sm">Edit data penyusun</DialogTitle>
-          <DialogDescription className="text-xs">
-            Perbarui data, status akun, atau mutasi ke OPD lain (satu akun yang sama).
-          </DialogDescription>
-        </DialogHeader>
-
-        <Tabs
-          value={editTab}
-          onValueChange={(v) => setEditTab(v as EditDialogTab)}
-          className="w-full"
-        >
-          <TabsList className="grid w-full grid-cols-2 h-9">
-            <TabsTrigger value="data" className="text-xs">
-              Edit data
-            </TabsTrigger>
-            <TabsTrigger value="pindah" className="text-xs" disabled={!canPindahTab}>
-              Pindah OPD
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="data" className="space-y-3 mt-3">
-            {fieldsSection}
-          </TabsContent>
-
-          <TabsContent value="pindah" className="space-y-3 mt-3">
-            {canPindahTab ? (
-              <FormField label="OPD tujuan" required>
-                <Select
-                  value={opdTujuanId}
-                  onValueChange={(v) => setOpdTujuanId?.(v)}
-                  placeholder="Pilih OPD"
-                  options={pindahOptions}
-                />
-              </FormField>
-            ) : (
-              <div className="rounded-lg border border-orange-200 bg-orange-100 px-3 py-2.5 text-xs text-orange-800">
-                Penyusun nonaktif tidak dapat dipindahkan. Set status ke Aktif di tab{' '}
-                <span className="font-medium text-orange-900">Edit data</span> lalu simpan.
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        <DialogFooter className="gap-2 sm:justify-end pt-3">
-          <Button type="button" variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-            Batal
-          </Button>
-          {editTab === 'data' ? (
-            <Button
-              type="button"
-              size="sm"
-              disabled={!isFormValid || confirmDisabled}
-              onClick={onConfirm}
-            >
-              {confirmLabel ?? 'Simpan Perubahan'}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              size="sm"
-              disabled={
-                !canPindahTab ||
-                !opdTujuanId ||
-                pindahConfirmDisabled ||
-                onConfirmPindah == null
-              }
-              onClick={() => onConfirmPindah?.()}
-            >
-              Pindahkan
-            </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ManageAssignmentDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      entityLabel="data penyusun"
+      description="Perbarui data, status akun, atau mutasi ke OPD lain (satu akun yang sama)."
+      tab={editTab}
+      onTabChange={setEditTab}
+      canMove={canPindahTab}
+      moveDisabledMessage={
+        <>
+          Penyusun nonaktif tidak dapat dipindahkan. Set status ke Aktif di tab{' '}
+          <span className="font-medium text-orange-900">Edit data</span> lalu simpan.
+        </>
+      }
+      opdTujuanId={opdTujuanId}
+      onOpdTujuanChange={(value) => setOpdTujuanId?.(value)}
+      opdOptions={pindahOptions.map((item) => ({ id: item.value, name: String(item.label) }))}
+      editContent={<div className="space-y-3">{fieldsSection}</div>}
+      editConfirmDisabled={!isFormValid || confirmDisabled}
+      moveConfirmDisabled={pindahConfirmDisabled || onConfirmPindah == null}
+      editConfirmLabel={confirmLabel ?? 'Simpan Perubahan'}
+      onConfirmEdit={onConfirm}
+      onConfirmMove={() => onConfirmPindah?.()}
+    />
   )
 }

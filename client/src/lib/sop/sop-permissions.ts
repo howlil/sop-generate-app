@@ -33,3 +33,19 @@ export function canHapusVersiDraft(
 ): boolean {
   return status === 'DRAFT' && canHapusDraft === true
 }
+
+/** Kirim ulang ke evaluator setelah revisi evaluator — hanya PJ Penyusun. */
+export function canKirimUlangKeEvaluatorAfterRevisi(
+  role: string | null | undefined,
+): boolean {
+  return role === ROLES.PJ_PENYUSUN
+}
+
+export function getKirimUlangRoleBlockingReason(
+  role: string | null | undefined,
+): string | null {
+  if (canKirimUlangKeEvaluatorAfterRevisi(role)) {
+    return null
+  }
+  return 'Hanya PJ Penyusun yang dapat mengirim ulang ke evaluator. Hubungi PJ Penyusun OPD Anda.'
+}

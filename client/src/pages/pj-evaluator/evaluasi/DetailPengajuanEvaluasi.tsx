@@ -1,6 +1,13 @@
 import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
-import { CheckCircle, Printer, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2 } from "lucide-react";
+import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
+import {
+  PengajuanSemuaSopPrintStack,
+  type PengajuanSemuaSopPrintItem,
+} from "@/components/pengajuan/PengajuanSemuaSopPrintStack";
+import { usePengajuanCetakArsip } from "@/hooks/use-pengajuan-cetak-arsip";
+import { canCetakArsipPengajuan } from "@/lib/print/pengajuan-print";
 import { SOPPreviewTemplate } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
 import type { SOPPreviewTemplateProps } from "@/pages/penyusun/sop/components/SOPPreviewTemplate";
 import { SOPListCard } from "@/pages/penyusun/sop/components/SOPListCard";
@@ -14,6 +21,7 @@ import {
   usePengajuanSopDokumenWorkbench,
 } from "@/api/evaluasi";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
+import { parseTTESignaturePayload } from "@/lib/tte/parse-tte-signature-payload";
 import { RiwayatEvaluasiTimeline } from "@/pages/pj-evaluator/evaluasi/components/RiwayatEvaluasiTimeline";
 import { ROUTES } from "@/utils/constants";
 import { Button } from "@/components/ui/button";
@@ -29,8 +37,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { IA } from "@/utils/constants";
 
-const PRINT_DELAY_MS = 150;
-
 export function DetailPengajuanEvaluasi() {
   const { id } = useParams({
     from: "/pj-evaluator/evaluasi/$id",
@@ -41,6 +47,7 @@ export function DetailPengajuanEvaluasi() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [tteDialogOpen, setTteDialogOpen] = useState(false);
+  const [semuaSopReady, setSemuaSopReady] = useState(false);
 
   const tandaTanganiBA = useTandaTanganiBA({
     successMessage:
@@ -60,14 +67,31 @@ export function DetailPengajuanEvaluasi() {
   );
 
   const sopList = pengajuan?.sopList ?? [];
+  const canCetak = canCetakArsipPengajuan(pengajuan?.status);
+  const sopPrintItems = useMemo<PengajuanSemuaSopPrintItem[]>(
+    () =>
+      sopList.map((item) => ({
+        sopDetailId: item.sopDetailId,
+        nama: item.nama,
+        nomor: item.nomor,
+      })),
+    [sopList],
+  );
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null;
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId;
   const displaySop = sopList.find(
     (s) => s.sopDetailId === effectiveSopDetailId,
   );
 
+  const { handleCetak, cetakLoading, semuaSopLoading } = usePengajuanCetakArsip({
+    pengajuanId: id,
+    effectiveSopDetailId,
+    semuaSopReady,
+    setPreviewMainTab,
+  });
+
   const sopWorkbenchEnabled = Boolean(
-    pengajuan && previewMainTab === "sop" && effectiveSopDetailId,
+    pengajuan && effectiveSopDetailId && (previewMainTab === "sop" || canCetak),
   );
   const { data: sopDokumen, isFetching: sopWorkbenchLoading } =
     usePengajuanSopDokumenWorkbench(id, effectiveSopDetailId, {
@@ -81,6 +105,11 @@ export function DetailPengajuanEvaluasi() {
     }
     return mapPenyusunWorkbenchToPreviewProps(wb);
   }, [sopDokumen]);
+
+  const tteSignaturePayloadKepalaOpd = useMemo(
+    () => parseTTESignaturePayload(sopDokumen?.tteSignaturePayloadKepalaOpd),
+    [sopDokumen?.tteSignaturePayloadKepalaOpd],
+  );
 
   const baViewEnabled = Boolean(pengajuan && previewMainTab === "ba");
   const { data: baView, isFetching: baViewLoading } = usePengajuanBeritaAcaraView(
@@ -137,19 +166,14 @@ export function DetailPengajuanEvaluasi() {
                 Informasi OPD & Evaluasi
               </h2>
               <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 text-xs gap-1.5"
-                  onClick={() => {
-                    setPreviewMainTab("ba");
-                    setTimeout(() => window.print(), PRINT_DELAY_MS);
-                  }}
-                  title="Cetak Berita Acara"
-                >
-                  <Printer className="w-3.5 h-3.5" />
-                  Cetak BA
-                </Button>
+                <PengajuanCetakArsipButtons
+                  pengajuanStatus={pengajuan.status}
+                  effectiveSopDetailId={effectiveSopDetailId}
+                  sopCount={sopList.length}
+                  cetakLoading={cetakLoading}
+                  semuaSopLoading={semuaSopLoading}
+                  onCetak={handleCetak}
+                />
                 {canVerify && (
                   <Button
                     variant="default"
@@ -237,7 +261,7 @@ export function DetailPengajuanEvaluasi() {
           onValueChange={(value) => setPreviewMainTab(value as "sop" | "ba")}
           className="flex h-full min-h-0 flex-col"
         >
-          <div className="border-b border-gray-200 px-0 py-1">
+          <div data-print-hide className="border-b border-gray-200 px-0 py-1">
             <TabsList className="h-7 gap-1 bg-transparent p-0" aria-label="Pratinjau dokumen">
               <TabsTrigger value="sop" className="h-7 px-2.5 text-xs">
                 Pratinjau SOP
@@ -262,22 +286,28 @@ export function DetailPengajuanEvaluasi() {
                 Memuat dokumen SOP…
               </div>
             ) : sopPreviewProps !== null ? (
-              <SOPPreviewTemplate
-                name={sopPreviewProps.name}
-                number={sopPreviewProps.number}
-                metadata={
-                  sopPreviewProps.metadata as SOPPreviewTemplateProps["metadata"]
-                }
-                prosedurRows={sopPreviewProps.prosedurRows}
-                implementers={sopPreviewProps.implementers}
-                previewOptions={{ editable: false, showScrollbar: true }}
-              />
+              <div data-print-area="sop">
+                <SOPPreviewTemplate
+                  name={sopPreviewProps.name}
+                  number={sopPreviewProps.number}
+                  metadata={
+                    sopPreviewProps.metadata as SOPPreviewTemplateProps["metadata"]
+                  }
+                  prosedurRows={sopPreviewProps.prosedurRows}
+                  implementers={sopPreviewProps.implementers}
+                  tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
+                  previewOptions={{ editable: false, showScrollbar: true }}
+                />
+              </div>
             ) : (
-              <SOPPreviewTemplate
-                name={displaySop.nama}
-                number={displaySop.nomor}
-                previewOptions={{ editable: false, showScrollbar: true }}
-              />
+              <div data-print-area="sop">
+                <SOPPreviewTemplate
+                  name={displaySop.nama}
+                  number={displaySop.nomor}
+                  tteSignaturePayload={tteSignaturePayloadKepalaOpd ?? null}
+                  previewOptions={{ editable: false, showScrollbar: true }}
+                />
+              </div>
             )}
           </TabsContent>
 
@@ -291,8 +321,9 @@ export function DetailPengajuanEvaluasi() {
                 Memuat Berita Acara…
               </div>
             ) : (
-              <div className="w-full">
+              <div data-print-area="ba" className="w-full">
                 <BeritaAcaraTemplate
+                  forPrint
                   opd={baView?.namaOpd ?? pengajuan.opdNama ?? ""}
                   nomorBA={baView?.nomorBA ?? pengajuan.nomorBA}
                   tanggalVerifikasi={
@@ -317,6 +348,13 @@ export function DetailPengajuanEvaluasi() {
           </TabsContent>
         </Tabs>
       </DetailPageLayout>
+
+      <PengajuanSemuaSopPrintStack
+        pengajuanId={id}
+        sopItems={sopPrintItems}
+        prefetchEnabled={canCetak}
+        onAllLoadedChange={setSemuaSopReady}
+      />
 
       <PinVerificationDialog
         open={tteDialogOpen}

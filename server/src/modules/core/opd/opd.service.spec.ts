@@ -16,7 +16,6 @@ describe('OpdService', () => {
       | 'update'
       | 'softDelete'
       | 'summarizeBlockingRelations'
-      | 'findEvaluasiRingkas'
       | 'countPenggunaStrukturalAktifByOpdId'
     >
   >;
@@ -31,7 +30,6 @@ describe('OpdService', () => {
       update: jest.fn(),
       softDelete: jest.fn(),
       summarizeBlockingRelations: jest.fn(),
-      findEvaluasiRingkas: jest.fn(),
       countPenggunaStrukturalAktifByOpdId: jest.fn(),
     };
 
@@ -87,24 +85,4 @@ describe('OpdService', () => {
     expect(opdRepository.softDelete).not.toHaveBeenCalled();
   });
 
-  it('should_map_evaluasi_ringkas_rows_to_response_dto', async () => {
-    opdRepository.findEvaluasiRingkas.mockResolvedValue([
-      {
-        opdId: '11111111-1111-1111-1111-111111111111',
-        nama: 'Dinas Contoh',
-        jumlahSop: 3,
-        jumlahSopBaru: 1,
-      },
-    ]);
-    const actual = await service.listEvaluasiRingkas('Contoh');
-    expect(opdRepository.findEvaluasiRingkas).toHaveBeenCalledWith('Contoh');
-    expect(actual).toEqual([
-      {
-        id: '11111111-1111-1111-1111-111111111111',
-        nama: 'Dinas Contoh',
-        jumlahSop: 3,
-        jumlahSopBaru: 1,
-      },
-    ]);
-  });
 });

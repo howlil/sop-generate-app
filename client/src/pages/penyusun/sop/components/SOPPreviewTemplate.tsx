@@ -26,13 +26,8 @@ const DEFAULT_IMPLEMENTERS = getInitialSopDetailImplementers().map((p) => ({
 interface SopPreviewOptions {
   hideDiagramTabs?: boolean;
   editable?: boolean;
-  /** Kontrol tambahan di samping tab Flowchart/BPMN (bukan pengganti tab). */
   toolbar?: ReactNode;
   diagramAlternate?: ReactNode;
-  /**
-   * Tampilkan scrollbar internal pratinjau. Default `false` (mengikuti tampilan A4 cetak).
-   * Set `true` di konteks read-only/verifikasi agar pengguna sadar konten dapat di-scroll.
-   */
   showScrollbar?: boolean;
 }
 
@@ -48,22 +43,14 @@ type SopPreviewMetadata = Partial<
   Partial<SOPDetailMetadata> & { name?: string };
 
 export interface SOPPreviewTemplateProps {
-  /** Override nama SOP (default: Percobaan) */
   name?: string;
-  /** Override nomor SOP */
   number?: string;
-  /** TTE signature payload jika SOP sudah disahkan */
   tteSignaturePayload?: TTESignaturePayload | null;
-  /** Metadata lengkap (jika ada, dipakai untuk header; jika tidak, pakai seed + name/number) */
   metadata?: SopPreviewMetadata;
-  /** Prosedur rows (jika tidak ada, pakai seed) */
   prosedurRows?: ProsedurRow[];
-  /** Implementers (jika tidak ada, pakai seed) */
   implementers?: { id: string; name: string }[];
   onMetadataChange?: (field: string, value: unknown) => void;
-  /** Grouped options for view behavior */
   previewOptions?: SopPreviewOptions;
-  /** Grouped options for diagram state */
   diagramState?: SopPreviewDiagramState;
 }
 

@@ -36,7 +36,10 @@ export function HeaderBar() {
   const nip = getRoleNip();
 
   return (
-    <header className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0 gap-4">
+    <header
+      data-print-hide
+      className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0 gap-4"
+    >
       <div className="flex items-center gap-2 min-w-0 flex-1">
         {headerContent ? (
           <>

@@ -20,10 +20,6 @@ const ROLE_ROUTE_PREFIXES: { prefix: string; roles: RoleKey[] }[] = [
     prefix: '/penyusun',
     roles: ['PENYUSUN', 'PJ_PENYUSUN'],
   },
-  {
-    prefix: '/tim-penyusun',
-    roles: ['PENYUSUN', 'PJ_PENYUSUN'],
-  },
   { prefix: '/kepala-opd', roles: ['KEPALA_OPD'] },
   { prefix: '/evaluator', roles: ['EVALUATOR'] },
 ];

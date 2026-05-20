@@ -117,6 +117,29 @@ describe('PengajuanEvaluasiDetailService', () => {
     expect(pengSvc.assertUserCanAccessPengajuan).not.toHaveBeenCalled();
   });
 
+  it('should_throw_forbidden_arsip_when_pengajuan_belum_selesai', async () => {
+    const row = buildMinimalRow({
+      status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+    });
+    const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+    const detailRepo = {
+      existsNilaiUntukDetail: jest.fn(),
+      findDokumenBeritaAcara: jest.fn(),
+    } as unknown as PengajuanEvaluasiDetailRepository;
+    const pengSvc = {
+      assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PengajuanEvaluasiService;
+    const sop = { getPenyusunWorkbenchForEvaluasiContext: jest.fn() } as unknown as SopCatalogService;
+    const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
+    await expect(
+      service.getSopDokumen(userPj, pengajuanId, detailSopA, 100, true),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.getBeritaAcaraView(userPj, pengajuanId, true)).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
+    expect(sop.getPenyusunWorkbenchForEvaluasiContext).not.toHaveBeenCalled();
+  });
+
   it('should_throw_forbidden_sop_when_detail_bukan_anggota_pengajuan', async () => {
     const row = buildMinimalRow();
     const luarPengajuan = '99999999-9999-4999-8999-999999999999';
@@ -142,6 +165,7 @@ describe('PengajuanEvaluasiDetailService', () => {
     const detailRepo = {
       existsNilaiUntukDetail: jest.fn().mockResolvedValue(true),
       findDokumenBeritaAcara: jest.fn(),
+      findDokumenSopBerlaku: jest.fn().mockResolvedValue(null),
     } as unknown as PengajuanEvaluasiDetailRepository;
     const pengSvc = {
       assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
@@ -158,7 +182,51 @@ describe('PengajuanEvaluasiDetailService', () => {
     const actual = await service.getSopDokumen(userPj, pengajuanId, detailSopA, 50);
     expect(actual.detailSopId).toBe(detailSopA);
     expect(actual.workbench).toEqual(workbenchDummy);
+    expect(actual.tteSignaturePayloadKepalaOpd).toBeUndefined();
     expect(sop.getPenyusunWorkbenchForEvaluasiContext).toHaveBeenCalledWith(detailSopA, 50);
+    expect(detailRepo.findDokumenSopBerlaku).toHaveBeenCalledWith(detailSopA);
+  });
+
+  it('should_include_tte_payload_kepala_opd_when_sop_sudah_ditandatangani', async () => {
+    const row = buildMinimalRow();
+    const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+    const signedAt = new Date('2026-05-19T10:00:00.000Z');
+    const dokumenTteId = '33333333-3333-4333-8333-333333333331';
+    const kepalaUserId = '44444444-4444-4444-8444-444444444441';
+    const detailRepo = {
+      existsNilaiUntukDetail: jest.fn().mockResolvedValue(true),
+      findDokumenBeritaAcara: jest.fn(),
+      findDokumenSopBerlaku: jest.fn().mockResolvedValue({
+        dokumenTteId,
+        riwayatTandaTangan: [
+          {
+            peran: PeranPengguna.KEPALA_OPD,
+            userId: kepalaUserId,
+            dokumenTteId,
+            ditandatanganiPada: signedAt,
+            user: { nama: 'Dr. Kepala', nip: '198001012010011001', jabatan: 'Kepala Dinkes' },
+          },
+        ],
+      }),
+    } as unknown as PengajuanEvaluasiDetailRepository;
+    const pengSvc = {
+      assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PengajuanEvaluasiService;
+    const workbenchDummy = { detail: { id: detailSopA }, langkah: [], logEdit: [] };
+    const sop = {
+      getPenyusunWorkbenchForEvaluasiContext: jest.fn().mockResolvedValue(workbenchDummy),
+    } as unknown as SopCatalogService;
+    const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
+    const actual = await service.getSopDokumen(userPj, pengajuanId, detailSopA);
+    expect(actual.tteSignaturePayloadKepalaOpd).toEqual({
+      id: `${dokumenTteId}:${kepalaUserId}`,
+      dokumenTteId,
+      userId: kepalaUserId,
+      nip: '198001012010011001',
+      namaLengkap: 'Dr. Kepala',
+      jabatan: 'Kepala Dinkes',
+      signedAt: signedAt.toISOString(),
+    });
   });
 
   it('shell_should_have_sopItems_timelineNilai_dan_preserves_nilai_evaluasi', async () => {

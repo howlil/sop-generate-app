@@ -3,19 +3,17 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { Users, Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Table } from '@/components/ui/data-table'
-import { IconActionButton } from '@/components/ui/icon-action-button'
-import { Input } from '@/components/ui/input'
 import { SearchToolbar } from '@/components/ui/search-toolbar'
 import { FormDialog } from '@/components/ui/form-dialog'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { FormField } from '@/components/ui/form-field'
 import { Badge } from '@/components/ui/badge'
 import { ListPageLayout } from '@/components/layout/ListPageLayout'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useEvaluatorAnggota } from '@/api/evaluator-anggota'
 import type { EvaluatorAnggota, StatusTim } from '@/types/dto/tim.dto'
-import { Select } from '@/components/ui/select'
 import { StatusBadge } from '@/components/ui/status-badge'
+import { RowActions } from '@/components/data/row-actions'
+import { PersonIdentityFields } from '@/components/forms/person-identity-fields'
 import { formatDateId } from '@/utils/format-date'
 import { hasRequiredStringFields } from '@/lib/forms/validation'
 
@@ -229,15 +227,26 @@ export function ManajemenEvaluator() {
                     </Table.Td>
                     <Table.Td className="text-center">
                       <div className="flex flex-wrap items-center justify-center gap-1">
-                        <IconActionButton icon={Edit} title="Edit" onClick={() => openEditDialog(tim)} />
-                        {tim.status === 'AKTIF' && (
-                          <IconActionButton
-                            icon={Trash2}
-                            title="Nonaktifkan"
-                            destructive
-                            onClick={() => setDeleteTimId(tim.id)}
-                          />
-                        )}
+                        <RowActions
+                          wrap
+                          actions={[
+                            {
+                              icon: Edit,
+                              title: 'Edit',
+                              onClick: () => openEditDialog(tim),
+                            },
+                            ...(tim.status === 'AKTIF'
+                              ? [
+                                  {
+                                    icon: Trash2,
+                                    title: 'Nonaktifkan',
+                                    destructive: true,
+                                    onClick: () => setDeleteTimId(tim.id),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
                       </div>
                     </Table.Td>
                   </Table.BodyRow>
@@ -259,53 +268,12 @@ export function ManajemenEvaluator() {
         confirmDisabled={!isFormValid || isAdding}
         size="md"
       >
-        <div className="space-y-3">
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.namaLengkap}
-              onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
-            />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan di Instansi" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Analis Kebijakan"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat / Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: IV/a"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              type="email"
-              className="h-9 text-xs"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="No. HP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nohp}
-              onChange={(e) => setFormData({ ...formData, nohp: e.target.value })}
-            />
-          </FormField>
-        </div>
+        <PersonIdentityFields
+          value={formData}
+          onChange={setFormData}
+          labels={{ jabatan: 'Jabatan di Instansi' }}
+          placeholders={{ jabatan: 'Contoh: Analis Kebijakan' }}
+        />
       </FormDialog>
 
       <FormDialog
@@ -322,66 +290,13 @@ export function ManajemenEvaluator() {
         confirmDisabled={!isFormValid || isUpdating}
         size="md"
       >
-        <div className="space-y-3">
-          <FormField label="Status akun" required>
-            <Select
-              value={formData.status}
-              onValueChange={(v) =>
-                setFormData({ ...formData, status: v as StatusTim })
-              }
-              options={[
-                { value: 'AKTIF', label: 'Aktif' },
-                { value: 'NONAKTIF', label: 'Nonaktif' },
-              ]}
-              placeholder="Pilih status"
-            />
-          </FormField>
-          <FormField label="Nama Lengkap" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.namaLengkap}
-              onChange={(e) => setFormData({ ...formData, namaLengkap: e.target.value })}
-            />
-          </FormField>
-          <FormField label="NIP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nip}
-              onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Jabatan di Instansi" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: Analis Kebijakan"
-              value={formData.jabatan}
-              onChange={(e) => setFormData({ ...formData, jabatan: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Pangkat / Golongan" required>
-            <Input
-              className="h-9 text-xs"
-              placeholder="Contoh: IV/a"
-              value={formData.pangkat}
-              onChange={(e) => setFormData({ ...formData, pangkat: e.target.value })}
-            />
-          </FormField>
-          <FormField label="Email" required>
-            <Input
-              type="email"
-              className="h-9 text-xs"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            />
-          </FormField>
-          <FormField label="No. HP" required>
-            <Input
-              className="h-9 text-xs"
-              value={formData.nohp}
-              onChange={(e) => setFormData({ ...formData, nohp: e.target.value })}
-            />
-          </FormField>
-        </div>
+        <PersonIdentityFields
+          value={formData}
+          onChange={setFormData}
+          showStatus
+          labels={{ jabatan: 'Jabatan di Instansi' }}
+          placeholders={{ jabatan: 'Contoh: Analis Kebijakan' }}
+        />
       </FormDialog>
 
       <ConfirmDialog

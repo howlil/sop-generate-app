@@ -8,7 +8,7 @@ import type { BreadcrumbItem } from '@/components/ui/breadcrumb'
 // DetailWorkspace (internal)
 // ========================
 
-export interface DetailWorkspaceProps {
+interface DetailWorkspaceProps {
   /** Tambahan class untuk root (e.g. print:hidden) */
   className?: string
   /** Optional: header/toolbar atau blok info di atas (border-b) */
@@ -37,13 +37,19 @@ function DetailWorkspace({
       )}
     >
       {header != null && (
-        <div className="flex-shrink-0 border-b border-slate-200/80 bg-white/70 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        <div
+          data-print-hide
+          className="flex-shrink-0 border-b border-slate-200/80 bg-white/70 px-4 py-2.5 sm:px-5 sm:py-3 backdrop-blur supports-[backdrop-filter]:bg-white/60"
+        >
           {header}
         </div>
       )}
       <div className="flex flex-1 min-h-0 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
         {leftPanel != null && (
-          <div className="border-b border-slate-200/80 bg-slate-50/60 lg:border-b-0 lg:border-r lg:max-w-[min(300px,30vw)] shrink-0 max-h-[min(46vh,340px)] lg:max-h-none overflow-auto">
+          <div
+            data-print-hide
+            className="border-b border-slate-200/80 bg-slate-50/60 lg:border-b-0 lg:border-r lg:max-w-[min(300px,30vw)] shrink-0 max-h-[min(46vh,340px)] lg:max-h-none overflow-auto"
+          >
             {leftPanel}
           </div>
         )}
@@ -51,7 +57,10 @@ function DetailWorkspace({
           {main}
         </div>
         {rightPanel != null && (
-          <div className="border-t border-slate-200/80 bg-slate-50/60 lg:border-t-0 lg:border-l lg:max-w-[min(340px,28vw)] shrink-0 max-h-[min(52vh,440px)] lg:max-h-none overflow-auto">
+          <div
+            data-print-hide
+            className="border-t border-slate-200/80 bg-slate-50/60 lg:border-t-0 lg:border-l lg:max-w-[min(340px,28vw)] shrink-0 max-h-[min(52vh,440px)] lg:max-h-none overflow-auto"
+          >
             {rightPanel}
           </div>
         )}
@@ -112,7 +121,7 @@ export interface DetailPageLayoutProps {
  *   title="Detail SOP"
  *   backTo="/sop-saya"
  *   main={<SOPPreview />}
- *   rightPanel={<KomentarPanel />}
+ *   rightPanel={<ActivityPanel />}
  * />
  * ```
  */
@@ -134,6 +143,7 @@ export function DetailPageLayout({
   const mainContent = main ?? children
   return (
     <div className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-2 sm:gap-3'}>
+      <div data-print-hide>
       <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}
@@ -147,6 +157,7 @@ export function DetailPageLayout({
         }
         actions={actions}
       />
+      </div>
       <DetailWorkspace
         className={workspaceClassName}
         header={header}
@@ -158,5 +169,3 @@ export function DetailPageLayout({
   )
 }
 
-/** Re-export for backward compatibility — old imports still work */
-export { DetailWorkspace }

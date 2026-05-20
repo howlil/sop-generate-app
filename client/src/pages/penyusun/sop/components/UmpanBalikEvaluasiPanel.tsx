@@ -2,6 +2,10 @@ import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { HasilEvaluasiBadge } from '@/components/status/hasil-evaluasi-badge'
+import {
+  getStatusTindakLanjutBadgeClass,
+  getStatusTindakLanjutLabel,
+} from '@/lib/status'
 import { useTandaiTindakLanjutSelesai } from '@/api/evaluasi'
 import type { UmpanBalikEvaluasiDetail } from '@/types/dto/evaluasi.dto'
 
@@ -36,13 +40,13 @@ export function UmpanBalikEvaluasiPanel({
     useTandaiTindakLanjutSelesai(detailSopId)
 
   if (isLoading) {
-    return <p className="p-3 text-xs text-gray-500">Memuat umpan balik evaluasi…</p>
+    return <p className="p-3 text-xs text-gray-500">Memuat komentar evaluasi…</p>
   }
 
   if (!umpanBalik) {
     return (
       <p className="p-3 text-xs text-gray-500">
-        Tidak ada umpan balik evaluasi aktif untuk dokumen ini.
+        Belum ada komentar evaluasi (catatan evaluator) untuk dokumen ini.
       </p>
     )
   }
@@ -50,6 +54,10 @@ export function UmpanBalikEvaluasiPanel({
   const umpanBalikData = umpanBalik
   const isTerbuka = umpanBalikData.statusTindakLanjut === 'TERBUKA'
   const isSelesai = umpanBalikData.statusTindakLanjut === 'SELESAI'
+  const tindakLanjutLabel = getStatusTindakLanjutLabel(
+    umpanBalikData.statusTindakLanjut,
+    umpanBalikData.statusTindakLanjutLabel,
+  )
 
   async function handleMarkSelesai() {
     await tandaiSelesai({
@@ -60,25 +68,31 @@ export function UmpanBalikEvaluasiPanel({
 
   return (
     <div className="p-3 space-y-3">
+      <p className="text-[10px] text-gray-500 leading-snug">
+        Komentar evaluator disimpan pada nilai evaluasi (bukan tabel komentar terpisah). Tandai
+        selesai setelah perbaikan Anda selesai.
+      </p>
       <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-xs space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <HasilEvaluasiBadge hasil={umpanBalikData.hasil} label={umpanBalikData.hasilLabel} />
-          {isTerbuka ? (
-            <Badge className="bg-blue-600 text-white border-0 text-xs">Menunggu tindak lanjut</Badge>
-          ) : null}
-          {isSelesai ? (
-            <Badge className="bg-green-600 text-white border-0 text-xs inline-flex items-center gap-0.5">
-              <Check className="w-3 h-3" aria-hidden />
-              Sudah ditindaklanjuti
+          {tindakLanjutLabel && (isTerbuka || isSelesai) ? (
+            <Badge
+              className={`text-xs inline-flex items-center gap-0.5 ${getStatusTindakLanjutBadgeClass(umpanBalikData.statusTindakLanjut)}`}
+            >
+              {isSelesai ? <Check className="w-3 h-3" aria-hidden /> : null}
+              {tindakLanjutLabel}
             </Badge>
           ) : null}
         </div>
         {umpanBalikData.dinilaiOleh ? (
           <p className="text-gray-600">
-            Evaluator: <span className="font-medium text-gray-900">{umpanBalikData.dinilaiOleh.nama}</span>
+            Evaluator:{' '}
+            <span className="font-medium text-gray-900">{umpanBalikData.dinilaiOleh.nama}</span>
           </p>
         ) : null}
-        <p className="text-gray-900 whitespace-pre-wrap break-words">{umpanBalikData.catatan ?? '—'}</p>
+        <p className="text-gray-900 whitespace-pre-wrap break-words">
+          {umpanBalikData.catatan ?? '—'}
+        </p>
         {umpanBalikData.ditindaklanjutiPada && umpanBalikData.ditindaklanjutiOleh ? (
           <p className="text-[10px] text-gray-500">
             Ditandai selesai oleh {umpanBalikData.ditindaklanjutiOleh.nama} pada{' '}

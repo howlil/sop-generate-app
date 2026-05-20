@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { UserCog, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
-import { IconActionButton } from "@/components/ui/icon-action-button";
 import { Input } from "@/components/ui/input";
 import { SearchToolbar } from "@/components/ui/search-toolbar";
 import { FormDialog } from "@/components/ui/form-dialog";
@@ -10,6 +9,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { FormField } from "@/components/ui/form-field";
 import { ListPageLayout } from "@/components/layout/ListPageLayout";
 import { EmptyState } from "@/components/ui/empty-state";
+import { RowActions } from "@/components/data/row-actions";
 import type { Pelaksana } from "@/types/dto/sop.dto";
 import { usePelaksana } from "@/api/sop";
 import { useAuthStore } from "@/stores/authStore";
@@ -179,19 +179,17 @@ export function PelaksanaSOP() {
                       </div>
                     </Table.Td>
                     <Table.Td className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <IconActionButton
-                          icon={Edit}
-                          title="Edit"
-                          onClick={() => openEdit(p)}
-                        />
-                        <IconActionButton
-                          icon={Trash2}
-                          title="Hapus"
-                          destructive
-                          onClick={() => setDeleteId(p.id)}
-                        />
-                      </div>
+                      <RowActions
+                        actions={[
+                          { icon: Edit, title: "Edit", onClick: () => openEdit(p) },
+                          {
+                            icon: Trash2,
+                            title: "Hapus",
+                            destructive: true,
+                            onClick: () => setDeleteId(p.id),
+                          },
+                        ]}
+                      />
                     </Table.Td>
                   </Table.BodyRow>
                 ))

@@ -111,11 +111,6 @@ export type LogEditSOP = $Result.DefaultSelection<Prisma.$LogEditSOPPayload>
  */
 export type LogEditSopDomainField = $Result.DefaultSelection<Prisma.$LogEditSopDomainFieldPayload>
 /**
- * Model Komentar
- * 
- */
-export type Komentar = $Result.DefaultSelection<Prisma.$KomentarPayload>
-/**
  * Model PengajuanEvaluasi
  * =========================
  * MODUL 5 — PENGAJUAN & EVALUASI SOP
@@ -124,7 +119,8 @@ export type Komentar = $Result.DefaultSelection<Prisma.$KomentarPayload>
 export type PengajuanEvaluasi = $Result.DefaultSelection<Prisma.$PengajuanEvaluasiPayload>
 /**
  * Model NilaiEvaluasi
- * 
+ * Hasil penilaian per DetailSOP dalam satu pengajuan evaluasi.
+ * Umpan balik evaluasi resmi = catatan + statusTindakLanjut pada baris ini (bukan tabel Komentar).
  */
 export type NilaiEvaluasi = $Result.DefaultSelection<Prisma.$NilaiEvaluasiPayload>
 /**
@@ -591,16 +587,6 @@ export class PrismaClient<
     * ```
     */
   get logEditSopDomainField(): Prisma.LogEditSopDomainFieldDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.komentar`: Exposes CRUD operations for the **Komentar** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more Komentars
-    * const komentars = await prisma.komentar.findMany()
-    * ```
-    */
-  get komentar(): Prisma.KomentarDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.pengajuanEvaluasi`: Exposes CRUD operations for the **PengajuanEvaluasi** model.
@@ -1103,7 +1089,6 @@ export namespace Prisma {
     DetailSOPPelaksana: 'DetailSOPPelaksana',
     LogEditSOP: 'LogEditSOP',
     LogEditSopDomainField: 'LogEditSopDomainField',
-    Komentar: 'Komentar',
     PengajuanEvaluasi: 'PengajuanEvaluasi',
     NilaiEvaluasi: 'NilaiEvaluasi',
     LogNilaiEvaluasi: 'LogNilaiEvaluasi',
@@ -1124,7 +1109,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranPeringatan" | "lampiranKualifikasiPelaksanaan" | "lampiranPeralatanPerlengkapan" | "lampiranPencatatanPendataan" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "logEditSopDomainField" | "komentar" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "dokumenTte" | "riwayatTandaTangan"
+      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranPeringatan" | "lampiranKualifikasiPelaksanaan" | "lampiranPeralatanPerlengkapan" | "lampiranPencatatanPendataan" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "logEditSopDomainField" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "dokumenTte" | "riwayatTandaTangan"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2316,72 +2301,6 @@ export namespace Prisma {
           }
         }
       }
-      Komentar: {
-        payload: Prisma.$KomentarPayload<ExtArgs>
-        fields: Prisma.KomentarFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.KomentarFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.KomentarFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
-          }
-          findFirst: {
-            args: Prisma.KomentarFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.KomentarFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
-          }
-          findMany: {
-            args: Prisma.KomentarFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>[]
-          }
-          create: {
-            args: Prisma.KomentarCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
-          }
-          createMany: {
-            args: Prisma.KomentarCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          delete: {
-            args: Prisma.KomentarDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
-          }
-          update: {
-            args: Prisma.KomentarUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
-          }
-          deleteMany: {
-            args: Prisma.KomentarDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.KomentarUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          upsert: {
-            args: Prisma.KomentarUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$KomentarPayload>
-          }
-          aggregate: {
-            args: Prisma.KomentarAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateKomentar>
-          }
-          groupBy: {
-            args: Prisma.KomentarGroupByArgs<ExtArgs>
-            result: $Utils.Optional<KomentarGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.KomentarCountArgs<ExtArgs>
-            result: $Utils.Optional<KomentarCountAggregateOutputType> | number
-          }
-        }
-      }
       PengajuanEvaluasi: {
         payload: Prisma.$PengajuanEvaluasiPayload<ExtArgs>
         fields: Prisma.PengajuanEvaluasiFieldRefs
@@ -2838,7 +2757,6 @@ export namespace Prisma {
     detailSOPPelaksana?: DetailSOPPelaksanaOmit
     logEditSOP?: LogEditSOPOmit
     logEditSopDomainField?: LogEditSopDomainFieldOmit
-    komentar?: KomentarOmit
     pengajuanEvaluasi?: PengajuanEvaluasiOmit
     nilaiEvaluasi?: NilaiEvaluasiOmit
     logNilaiEvaluasi?: LogNilaiEvaluasiOmit
@@ -2926,7 +2844,6 @@ export namespace Prisma {
   export type PenggunaCountOutputType = {
     detailSopDibuat: number
     detailSopDiedit: number
-    komentar: number
     logEditSop: number
     logNilaiEvaluasi: number
     nilaiEvaluasiDiisi: number
@@ -2942,7 +2859,6 @@ export namespace Prisma {
   export type PenggunaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSopDibuat?: boolean | PenggunaCountOutputTypeCountDetailSopDibuatArgs
     detailSopDiedit?: boolean | PenggunaCountOutputTypeCountDetailSopDieditArgs
-    komentar?: boolean | PenggunaCountOutputTypeCountKomentarArgs
     logEditSop?: boolean | PenggunaCountOutputTypeCountLogEditSopArgs
     logNilaiEvaluasi?: boolean | PenggunaCountOutputTypeCountLogNilaiEvaluasiArgs
     nilaiEvaluasiDiisi?: boolean | PenggunaCountOutputTypeCountNilaiEvaluasiDiisiArgs
@@ -2978,13 +2894,6 @@ export namespace Prisma {
    */
   export type PenggunaCountOutputTypeCountDetailSopDieditArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DetailSOPWhereInput
-  }
-
-  /**
-   * PenggunaCountOutputType without action
-   */
-  export type PenggunaCountOutputTypeCountKomentarArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: KomentarWhereInput
   }
 
   /**
@@ -3213,7 +3122,6 @@ export namespace Prisma {
     revisiMenjadi: number
     dasarHukum: number
     swimlanes: number
-    komentar: number
     lampiranPeringatan: number
     lampiranKualifikasiPelaksanaan: number
     lampiranPeralatanPerlengkapan: number
@@ -3230,7 +3138,6 @@ export namespace Prisma {
     revisiMenjadi?: boolean | DetailSOPCountOutputTypeCountRevisiMenjadiArgs
     dasarHukum?: boolean | DetailSOPCountOutputTypeCountDasarHukumArgs
     swimlanes?: boolean | DetailSOPCountOutputTypeCountSwimlanesArgs
-    komentar?: boolean | DetailSOPCountOutputTypeCountKomentarArgs
     lampiranPeringatan?: boolean | DetailSOPCountOutputTypeCountLampiranPeringatanArgs
     lampiranKualifikasiPelaksanaan?: boolean | DetailSOPCountOutputTypeCountLampiranKualifikasiPelaksanaanArgs
     lampiranPeralatanPerlengkapan?: boolean | DetailSOPCountOutputTypeCountLampiranPeralatanPerlengkapanArgs
@@ -3273,13 +3180,6 @@ export namespace Prisma {
    */
   export type DetailSOPCountOutputTypeCountSwimlanesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DetailSOPPelaksanaWhereInput
-  }
-
-  /**
-   * DetailSOPCountOutputType without action
-   */
-  export type DetailSOPCountOutputTypeCountKomentarArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: KomentarWhereInput
   }
 
   /**
@@ -3825,7 +3725,6 @@ export namespace Prisma {
     updatedAt?: boolean
     detailSopDibuat?: boolean | Pengguna$detailSopDibuatArgs<ExtArgs>
     detailSopDiedit?: boolean | Pengguna$detailSopDieditArgs<ExtArgs>
-    komentar?: boolean | Pengguna$komentarArgs<ExtArgs>
     logEditSop?: boolean | Pengguna$logEditSopArgs<ExtArgs>
     logNilaiEvaluasi?: boolean | Pengguna$logNilaiEvaluasiArgs<ExtArgs>
     nilaiEvaluasiDiisi?: boolean | Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs>
@@ -3864,7 +3763,6 @@ export namespace Prisma {
   export type PenggunaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSopDibuat?: boolean | Pengguna$detailSopDibuatArgs<ExtArgs>
     detailSopDiedit?: boolean | Pengguna$detailSopDieditArgs<ExtArgs>
-    komentar?: boolean | Pengguna$komentarArgs<ExtArgs>
     logEditSop?: boolean | Pengguna$logEditSopArgs<ExtArgs>
     logNilaiEvaluasi?: boolean | Pengguna$logNilaiEvaluasiArgs<ExtArgs>
     nilaiEvaluasiDiisi?: boolean | Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs>
@@ -3884,7 +3782,6 @@ export namespace Prisma {
     objects: {
       detailSopDibuat: Prisma.$DetailSOPPayload<ExtArgs>[]
       detailSopDiedit: Prisma.$DetailSOPPayload<ExtArgs>[]
-      komentar: Prisma.$KomentarPayload<ExtArgs>[]
       logEditSop: Prisma.$LogEditSOPPayload<ExtArgs>[]
       logNilaiEvaluasi: Prisma.$LogNilaiEvaluasiPayload<ExtArgs>[]
       nilaiEvaluasiDiisi: Prisma.$NilaiEvaluasiPayload<ExtArgs>[]
@@ -4255,7 +4152,6 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     detailSopDibuat<T extends Pengguna$detailSopDibuatArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$detailSopDibuatArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DetailSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     detailSopDiedit<T extends Pengguna$detailSopDieditArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$detailSopDieditArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DetailSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    komentar<T extends Pengguna$komentarArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$komentarArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     logEditSop<T extends Pengguna$logEditSopArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$logEditSopArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LogEditSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     logNilaiEvaluasi<T extends Pengguna$logNilaiEvaluasiArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$logNilaiEvaluasiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LogNilaiEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     nilaiEvaluasiDiisi<T extends Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs> = {}>(args?: Subset<T, Pengguna$nilaiEvaluasiDiisiArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NilaiEvaluasiPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4704,30 +4600,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DetailSOPScalarFieldEnum | DetailSOPScalarFieldEnum[]
-  }
-
-  /**
-   * Pengguna.komentar
-   */
-  export type Pengguna$komentarArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    where?: KomentarWhereInput
-    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
-    cursor?: KomentarWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
   }
 
   /**
@@ -10273,7 +10145,6 @@ export namespace Prisma {
     sop?: boolean | SOPDefaultArgs<ExtArgs>
     terakhirDieditOleh?: boolean | DetailSOP$terakhirDieditOlehArgs<ExtArgs>
     swimlanes?: boolean | DetailSOP$swimlanesArgs<ExtArgs>
-    komentar?: boolean | DetailSOP$komentarArgs<ExtArgs>
     lampiranPeringatan?: boolean | DetailSOP$lampiranPeringatanArgs<ExtArgs>
     lampiranKualifikasiPelaksanaan?: boolean | DetailSOP$lampiranKualifikasiPelaksanaanArgs<ExtArgs>
     lampiranPeralatanPerlengkapan?: boolean | DetailSOP$lampiranPeralatanPerlengkapanArgs<ExtArgs>
@@ -10315,7 +10186,6 @@ export namespace Prisma {
     sop?: boolean | SOPDefaultArgs<ExtArgs>
     terakhirDieditOleh?: boolean | DetailSOP$terakhirDieditOlehArgs<ExtArgs>
     swimlanes?: boolean | DetailSOP$swimlanesArgs<ExtArgs>
-    komentar?: boolean | DetailSOP$komentarArgs<ExtArgs>
     lampiranPeringatan?: boolean | DetailSOP$lampiranPeringatanArgs<ExtArgs>
     lampiranKualifikasiPelaksanaan?: boolean | DetailSOP$lampiranKualifikasiPelaksanaanArgs<ExtArgs>
     lampiranPeralatanPerlengkapan?: boolean | DetailSOP$lampiranPeralatanPerlengkapanArgs<ExtArgs>
@@ -10339,7 +10209,6 @@ export namespace Prisma {
       sop: Prisma.$SOPPayload<ExtArgs>
       terakhirDieditOleh: Prisma.$PenggunaPayload<ExtArgs> | null
       swimlanes: Prisma.$DetailSOPPelaksanaPayload<ExtArgs>[]
-      komentar: Prisma.$KomentarPayload<ExtArgs>[]
       lampiranPeringatan: Prisma.$LampiranPeringatanPayload<ExtArgs>[]
       lampiranKualifikasiPelaksanaan: Prisma.$LampiranKualifikasiPelaksanaanPayload<ExtArgs>[]
       lampiranPeralatanPerlengkapan: Prisma.$LampiranPeralatanPerlengkapanPayload<ExtArgs>[]
@@ -10359,6 +10228,9 @@ export namespace Prisma {
       nomorSOP: string
       tanggalPembuatan: Date
       tanggalRevisi: Date | null
+      /**
+       * Diisi otomatis saat status menjadi BERLAKU via TTE Kepala OPD (tanggal kalender pengesahan, WIB).
+       */
       tanggalEfektif: Date | null
       namaLembaga: string
       dibuatOlehId: string | null
@@ -10716,7 +10588,6 @@ export namespace Prisma {
     sop<T extends SOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SOPDefaultArgs<ExtArgs>>): Prisma__SOPClient<$Result.GetResult<Prisma.$SOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     terakhirDieditOleh<T extends DetailSOP$terakhirDieditOlehArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$terakhirDieditOlehArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     swimlanes<T extends DetailSOP$swimlanesArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$swimlanesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DetailSOPPelaksanaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    komentar<T extends DetailSOP$komentarArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$komentarArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lampiranPeringatan<T extends DetailSOP$lampiranPeringatanArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$lampiranPeringatanArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LampiranPeringatanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lampiranKualifikasiPelaksanaan<T extends DetailSOP$lampiranKualifikasiPelaksanaanArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$lampiranKualifikasiPelaksanaanArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LampiranKualifikasiPelaksanaanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     lampiranPeralatanPerlengkapan<T extends DetailSOP$lampiranPeralatanPerlengkapanArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$lampiranPeralatanPerlengkapanArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LampiranPeralatanPerlengkapanPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11244,30 +11115,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DetailSOPPelaksanaScalarFieldEnum | DetailSOPPelaksanaScalarFieldEnum[]
-  }
-
-  /**
-   * DetailSOP.komentar
-   */
-  export type DetailSOP$komentarArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    where?: KomentarWhereInput
-    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
-    cursor?: KomentarWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
   }
 
   /**
@@ -22255,966 +22102,6 @@ export namespace Prisma {
 
 
   /**
-   * Model Komentar
-   */
-
-  export type AggregateKomentar = {
-    _count: KomentarCountAggregateOutputType | null
-    _min: KomentarMinAggregateOutputType | null
-    _max: KomentarMaxAggregateOutputType | null
-  }
-
-  export type KomentarMinAggregateOutputType = {
-    komentarId: string | null
-    detailSopId: string | null
-    userId: string | null
-    isi: string | null
-    status: $Enums.StatusKomentar | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type KomentarMaxAggregateOutputType = {
-    komentarId: string | null
-    detailSopId: string | null
-    userId: string | null
-    isi: string | null
-    status: $Enums.StatusKomentar | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type KomentarCountAggregateOutputType = {
-    komentarId: number
-    detailSopId: number
-    userId: number
-    isi: number
-    status: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type KomentarMinAggregateInputType = {
-    komentarId?: true
-    detailSopId?: true
-    userId?: true
-    isi?: true
-    status?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type KomentarMaxAggregateInputType = {
-    komentarId?: true
-    detailSopId?: true
-    userId?: true
-    isi?: true
-    status?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type KomentarCountAggregateInputType = {
-    komentarId?: true
-    detailSopId?: true
-    userId?: true
-    isi?: true
-    status?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type KomentarAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Komentar to aggregate.
-     */
-    where?: KomentarWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Komentars to fetch.
-     */
-    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: KomentarWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Komentars from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Komentars.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned Komentars
-    **/
-    _count?: true | KomentarCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: KomentarMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: KomentarMaxAggregateInputType
-  }
-
-  export type GetKomentarAggregateType<T extends KomentarAggregateArgs> = {
-        [P in keyof T & keyof AggregateKomentar]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateKomentar[P]>
-      : GetScalarType<T[P], AggregateKomentar[P]>
-  }
-
-
-
-
-  export type KomentarGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: KomentarWhereInput
-    orderBy?: KomentarOrderByWithAggregationInput | KomentarOrderByWithAggregationInput[]
-    by: KomentarScalarFieldEnum[] | KomentarScalarFieldEnum
-    having?: KomentarScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: KomentarCountAggregateInputType | true
-    _min?: KomentarMinAggregateInputType
-    _max?: KomentarMaxAggregateInputType
-  }
-
-  export type KomentarGroupByOutputType = {
-    komentarId: string
-    detailSopId: string
-    userId: string
-    isi: string
-    status: $Enums.StatusKomentar
-    createdAt: Date
-    updatedAt: Date
-    _count: KomentarCountAggregateOutputType | null
-    _min: KomentarMinAggregateOutputType | null
-    _max: KomentarMaxAggregateOutputType | null
-  }
-
-  type GetKomentarGroupByPayload<T extends KomentarGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<KomentarGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof KomentarGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], KomentarGroupByOutputType[P]>
-            : GetScalarType<T[P], KomentarGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type KomentarSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    komentarId?: boolean
-    detailSopId?: boolean
-    userId?: boolean
-    isi?: boolean
-    status?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
-    user?: boolean | PenggunaDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["komentar"]>
-
-
-
-  export type KomentarSelectScalar = {
-    komentarId?: boolean
-    detailSopId?: boolean
-    userId?: boolean
-    isi?: boolean
-    status?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type KomentarOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"komentarId" | "detailSopId" | "userId" | "isi" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["komentar"]>
-  export type KomentarInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
-    user?: boolean | PenggunaDefaultArgs<ExtArgs>
-  }
-
-  export type $KomentarPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "Komentar"
-    objects: {
-      detailSop: Prisma.$DetailSOPPayload<ExtArgs>
-      user: Prisma.$PenggunaPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      komentarId: string
-      detailSopId: string
-      userId: string
-      isi: string
-      status: $Enums.StatusKomentar
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["komentar"]>
-    composites: {}
-  }
-
-  type KomentarGetPayload<S extends boolean | null | undefined | KomentarDefaultArgs> = $Result.GetResult<Prisma.$KomentarPayload, S>
-
-  type KomentarCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<KomentarFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: KomentarCountAggregateInputType | true
-    }
-
-  export interface KomentarDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Komentar'], meta: { name: 'Komentar' } }
-    /**
-     * Find zero or one Komentar that matches the filter.
-     * @param {KomentarFindUniqueArgs} args - Arguments to find a Komentar
-     * @example
-     * // Get one Komentar
-     * const komentar = await prisma.komentar.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends KomentarFindUniqueArgs>(args: SelectSubset<T, KomentarFindUniqueArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one Komentar that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {KomentarFindUniqueOrThrowArgs} args - Arguments to find a Komentar
-     * @example
-     * // Get one Komentar
-     * const komentar = await prisma.komentar.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends KomentarFindUniqueOrThrowArgs>(args: SelectSubset<T, KomentarFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Komentar that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarFindFirstArgs} args - Arguments to find a Komentar
-     * @example
-     * // Get one Komentar
-     * const komentar = await prisma.komentar.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends KomentarFindFirstArgs>(args?: SelectSubset<T, KomentarFindFirstArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first Komentar that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarFindFirstOrThrowArgs} args - Arguments to find a Komentar
-     * @example
-     * // Get one Komentar
-     * const komentar = await prisma.komentar.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends KomentarFindFirstOrThrowArgs>(args?: SelectSubset<T, KomentarFindFirstOrThrowArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more Komentars that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all Komentars
-     * const komentars = await prisma.komentar.findMany()
-     * 
-     * // Get first 10 Komentars
-     * const komentars = await prisma.komentar.findMany({ take: 10 })
-     * 
-     * // Only select the `komentarId`
-     * const komentarWithKomentarIdOnly = await prisma.komentar.findMany({ select: { komentarId: true } })
-     * 
-     */
-    findMany<T extends KomentarFindManyArgs>(args?: SelectSubset<T, KomentarFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a Komentar.
-     * @param {KomentarCreateArgs} args - Arguments to create a Komentar.
-     * @example
-     * // Create one Komentar
-     * const Komentar = await prisma.komentar.create({
-     *   data: {
-     *     // ... data to create a Komentar
-     *   }
-     * })
-     * 
-     */
-    create<T extends KomentarCreateArgs>(args: SelectSubset<T, KomentarCreateArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many Komentars.
-     * @param {KomentarCreateManyArgs} args - Arguments to create many Komentars.
-     * @example
-     * // Create many Komentars
-     * const komentar = await prisma.komentar.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends KomentarCreateManyArgs>(args?: SelectSubset<T, KomentarCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Delete a Komentar.
-     * @param {KomentarDeleteArgs} args - Arguments to delete one Komentar.
-     * @example
-     * // Delete one Komentar
-     * const Komentar = await prisma.komentar.delete({
-     *   where: {
-     *     // ... filter to delete one Komentar
-     *   }
-     * })
-     * 
-     */
-    delete<T extends KomentarDeleteArgs>(args: SelectSubset<T, KomentarDeleteArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one Komentar.
-     * @param {KomentarUpdateArgs} args - Arguments to update one Komentar.
-     * @example
-     * // Update one Komentar
-     * const komentar = await prisma.komentar.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends KomentarUpdateArgs>(args: SelectSubset<T, KomentarUpdateArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more Komentars.
-     * @param {KomentarDeleteManyArgs} args - Arguments to filter Komentars to delete.
-     * @example
-     * // Delete a few Komentars
-     * const { count } = await prisma.komentar.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends KomentarDeleteManyArgs>(args?: SelectSubset<T, KomentarDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more Komentars.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many Komentars
-     * const komentar = await prisma.komentar.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends KomentarUpdateManyArgs>(args: SelectSubset<T, KomentarUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create or update one Komentar.
-     * @param {KomentarUpsertArgs} args - Arguments to update or create a Komentar.
-     * @example
-     * // Update or create a Komentar
-     * const komentar = await prisma.komentar.upsert({
-     *   create: {
-     *     // ... data to create a Komentar
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the Komentar we want to update
-     *   }
-     * })
-     */
-    upsert<T extends KomentarUpsertArgs>(args: SelectSubset<T, KomentarUpsertArgs<ExtArgs>>): Prisma__KomentarClient<$Result.GetResult<Prisma.$KomentarPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of Komentars.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarCountArgs} args - Arguments to filter Komentars to count.
-     * @example
-     * // Count the number of Komentars
-     * const count = await prisma.komentar.count({
-     *   where: {
-     *     // ... the filter for the Komentars we want to count
-     *   }
-     * })
-    **/
-    count<T extends KomentarCountArgs>(
-      args?: Subset<T, KomentarCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], KomentarCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a Komentar.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends KomentarAggregateArgs>(args: Subset<T, KomentarAggregateArgs>): Prisma.PrismaPromise<GetKomentarAggregateType<T>>
-
-    /**
-     * Group by Komentar.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {KomentarGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends KomentarGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: KomentarGroupByArgs['orderBy'] }
-        : { orderBy?: KomentarGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, KomentarGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKomentarGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the Komentar model
-   */
-  readonly fields: KomentarFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for Komentar.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__KomentarClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    detailSop<T extends DetailSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOPDefaultArgs<ExtArgs>>): Prisma__DetailSOPClient<$Result.GetResult<Prisma.$DetailSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user<T extends PenggunaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PenggunaDefaultArgs<ExtArgs>>): Prisma__PenggunaClient<$Result.GetResult<Prisma.$PenggunaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the Komentar model
-   */
-  interface KomentarFieldRefs {
-    readonly komentarId: FieldRef<"Komentar", 'String'>
-    readonly detailSopId: FieldRef<"Komentar", 'String'>
-    readonly userId: FieldRef<"Komentar", 'String'>
-    readonly isi: FieldRef<"Komentar", 'String'>
-    readonly status: FieldRef<"Komentar", 'StatusKomentar'>
-    readonly createdAt: FieldRef<"Komentar", 'DateTime'>
-    readonly updatedAt: FieldRef<"Komentar", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * Komentar findUnique
-   */
-  export type KomentarFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * Filter, which Komentar to fetch.
-     */
-    where: KomentarWhereUniqueInput
-  }
-
-  /**
-   * Komentar findUniqueOrThrow
-   */
-  export type KomentarFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * Filter, which Komentar to fetch.
-     */
-    where: KomentarWhereUniqueInput
-  }
-
-  /**
-   * Komentar findFirst
-   */
-  export type KomentarFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * Filter, which Komentar to fetch.
-     */
-    where?: KomentarWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Komentars to fetch.
-     */
-    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Komentars.
-     */
-    cursor?: KomentarWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Komentars from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Komentars.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Komentars.
-     */
-    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
-  }
-
-  /**
-   * Komentar findFirstOrThrow
-   */
-  export type KomentarFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * Filter, which Komentar to fetch.
-     */
-    where?: KomentarWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Komentars to fetch.
-     */
-    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for Komentars.
-     */
-    cursor?: KomentarWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Komentars from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Komentars.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Komentars.
-     */
-    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
-  }
-
-  /**
-   * Komentar findMany
-   */
-  export type KomentarFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * Filter, which Komentars to fetch.
-     */
-    where?: KomentarWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of Komentars to fetch.
-     */
-    orderBy?: KomentarOrderByWithRelationInput | KomentarOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing Komentars.
-     */
-    cursor?: KomentarWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` Komentars from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` Komentars.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of Komentars.
-     */
-    distinct?: KomentarScalarFieldEnum | KomentarScalarFieldEnum[]
-  }
-
-  /**
-   * Komentar create
-   */
-  export type KomentarCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * The data needed to create a Komentar.
-     */
-    data: XOR<KomentarCreateInput, KomentarUncheckedCreateInput>
-  }
-
-  /**
-   * Komentar createMany
-   */
-  export type KomentarCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many Komentars.
-     */
-    data: KomentarCreateManyInput | KomentarCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * Komentar update
-   */
-  export type KomentarUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * The data needed to update a Komentar.
-     */
-    data: XOR<KomentarUpdateInput, KomentarUncheckedUpdateInput>
-    /**
-     * Choose, which Komentar to update.
-     */
-    where: KomentarWhereUniqueInput
-  }
-
-  /**
-   * Komentar updateMany
-   */
-  export type KomentarUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update Komentars.
-     */
-    data: XOR<KomentarUpdateManyMutationInput, KomentarUncheckedUpdateManyInput>
-    /**
-     * Filter which Komentars to update
-     */
-    where?: KomentarWhereInput
-    /**
-     * Limit how many Komentars to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * Komentar upsert
-   */
-  export type KomentarUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * The filter to search for the Komentar to update in case it exists.
-     */
-    where: KomentarWhereUniqueInput
-    /**
-     * In case the Komentar found by the `where` argument doesn't exist, create a new Komentar with this data.
-     */
-    create: XOR<KomentarCreateInput, KomentarUncheckedCreateInput>
-    /**
-     * In case the Komentar was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<KomentarUpdateInput, KomentarUncheckedUpdateInput>
-  }
-
-  /**
-   * Komentar delete
-   */
-  export type KomentarDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-    /**
-     * Filter which Komentar to delete.
-     */
-    where: KomentarWhereUniqueInput
-  }
-
-  /**
-   * Komentar deleteMany
-   */
-  export type KomentarDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which Komentars to delete
-     */
-    where?: KomentarWhereInput
-    /**
-     * Limit how many Komentars to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * Komentar without action
-   */
-  export type KomentarDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Komentar
-     */
-    select?: KomentarSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Komentar
-     */
-    omit?: KomentarOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: KomentarInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Model PengajuanEvaluasi
    */
 
@@ -24763,9 +23650,13 @@ export namespace Prisma {
       pengajuanEvaluasiId: string
       detailSopId: string
       hasil: $Enums.HasilEvaluasi | null
+      /**
+       * Catatan formal evaluator; wajib jika hasil PERLU_PERBAIKAN.
+       */
       catatan: string | null
       /**
-       * TERBUKA saat PERLU_PERBAIKAN menunggu tindak lanjut penyusun; SELESAI setelah ditandai; null jika tidak perlu.
+       * Status tindak lanjut / resolve umpan balik: TERBUKA (belum) | SELESAI (sudah ditandai penyusun).
+       * Memakai enum StatusKomentar hanya untuk nilai TERBUKA/SELESAI — bukan relasi ke model Komentar.
        */
       statusTindakLanjut: $Enums.StatusKomentar | null
       ditindaklanjutiPada: Date | null
@@ -28949,19 +27840,6 @@ export namespace Prisma {
   export type LogEditSopDomainFieldScalarFieldEnum = (typeof LogEditSopDomainFieldScalarFieldEnum)[keyof typeof LogEditSopDomainFieldScalarFieldEnum]
 
 
-  export const KomentarScalarFieldEnum: {
-    komentarId: 'komentarId',
-    detailSopId: 'detailSopId',
-    userId: 'userId',
-    isi: 'isi',
-    status: 'status',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type KomentarScalarFieldEnum = (typeof KomentarScalarFieldEnum)[keyof typeof KomentarScalarFieldEnum]
-
-
   export const PengajuanEvaluasiScalarFieldEnum: {
     pengajuanEvaluasiId: 'pengajuanEvaluasiId',
     opdId: 'opdId',
@@ -29244,16 +28122,6 @@ export namespace Prisma {
   export type LogEditSopDomainFieldOrderByRelevanceFieldEnum = (typeof LogEditSopDomainFieldOrderByRelevanceFieldEnum)[keyof typeof LogEditSopDomainFieldOrderByRelevanceFieldEnum]
 
 
-  export const KomentarOrderByRelevanceFieldEnum: {
-    komentarId: 'komentarId',
-    detailSopId: 'detailSopId',
-    userId: 'userId',
-    isi: 'isi'
-  };
-
-  export type KomentarOrderByRelevanceFieldEnum = (typeof KomentarOrderByRelevanceFieldEnum)[keyof typeof KomentarOrderByRelevanceFieldEnum]
-
-
   export const PengajuanEvaluasiOrderByRelevanceFieldEnum: {
     pengajuanEvaluasiId: 'pengajuanEvaluasiId',
     opdId: 'opdId',
@@ -29386,13 +28254,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'StatusKomentar'
-   */
-  export type EnumStatusKomentarFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusKomentar'>
-    
-
-
-  /**
    * Reference to a field of type 'JenisPengajuanEvaluasi'
    */
   export type EnumJenisPengajuanEvaluasiFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisPengajuanEvaluasi'>
@@ -29410,6 +28271,13 @@ export namespace Prisma {
    * Reference to a field of type 'HasilEvaluasi'
    */
   export type EnumHasilEvaluasiFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HasilEvaluasi'>
+    
+
+
+  /**
+   * Reference to a field of type 'StatusKomentar'
+   */
+  export type EnumStatusKomentarFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusKomentar'>
     
 
 
@@ -29451,7 +28319,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Pengguna"> | Date | string
     detailSopDibuat?: DetailSOPListRelationFilter
     detailSopDiedit?: DetailSOPListRelationFilter
-    komentar?: KomentarListRelationFilter
     logEditSop?: LogEditSOPListRelationFilter
     logNilaiEvaluasi?: LogNilaiEvaluasiListRelationFilter
     nilaiEvaluasiDiisi?: NilaiEvaluasiListRelationFilter
@@ -29483,7 +28350,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
     detailSopDibuat?: DetailSOPOrderByRelationAggregateInput
     detailSopDiedit?: DetailSOPOrderByRelationAggregateInput
-    komentar?: KomentarOrderByRelationAggregateInput
     logEditSop?: LogEditSOPOrderByRelationAggregateInput
     logNilaiEvaluasi?: LogNilaiEvaluasiOrderByRelationAggregateInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiOrderByRelationAggregateInput
@@ -29519,7 +28385,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Pengguna"> | Date | string
     detailSopDibuat?: DetailSOPListRelationFilter
     detailSopDiedit?: DetailSOPListRelationFilter
-    komentar?: KomentarListRelationFilter
     logEditSop?: LogEditSOPListRelationFilter
     logNilaiEvaluasi?: LogNilaiEvaluasiListRelationFilter
     nilaiEvaluasiDiisi?: NilaiEvaluasiListRelationFilter
@@ -29925,7 +28790,6 @@ export namespace Prisma {
     sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
     terakhirDieditOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     swimlanes?: DetailSOPPelaksanaListRelationFilter
-    komentar?: KomentarListRelationFilter
     lampiranPeringatan?: LampiranPeringatanListRelationFilter
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanListRelationFilter
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanListRelationFilter
@@ -29960,7 +28824,6 @@ export namespace Prisma {
     sop?: SOPOrderByWithRelationInput
     terakhirDieditOleh?: PenggunaOrderByWithRelationInput
     swimlanes?: DetailSOPPelaksanaOrderByRelationAggregateInput
-    komentar?: KomentarOrderByRelationAggregateInput
     lampiranPeringatan?: LampiranPeringatanOrderByRelationAggregateInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanOrderByRelationAggregateInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanOrderByRelationAggregateInput
@@ -30000,7 +28863,6 @@ export namespace Prisma {
     sop?: XOR<SOPScalarRelationFilter, SOPWhereInput>
     terakhirDieditOleh?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     swimlanes?: DetailSOPPelaksanaListRelationFilter
-    komentar?: KomentarListRelationFilter
     lampiranPeringatan?: LampiranPeringatanListRelationFilter
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanListRelationFilter
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanListRelationFilter
@@ -30774,75 +29636,6 @@ export namespace Prisma {
     domainField?: StringWithAggregatesFilter<"LogEditSopDomainField"> | string
   }
 
-  export type KomentarWhereInput = {
-    AND?: KomentarWhereInput | KomentarWhereInput[]
-    OR?: KomentarWhereInput[]
-    NOT?: KomentarWhereInput | KomentarWhereInput[]
-    komentarId?: StringFilter<"Komentar"> | string
-    detailSopId?: StringFilter<"Komentar"> | string
-    userId?: StringFilter<"Komentar"> | string
-    isi?: StringFilter<"Komentar"> | string
-    status?: EnumStatusKomentarFilter<"Komentar"> | $Enums.StatusKomentar
-    createdAt?: DateTimeFilter<"Komentar"> | Date | string
-    updatedAt?: DateTimeFilter<"Komentar"> | Date | string
-    detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
-    user?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
-  }
-
-  export type KomentarOrderByWithRelationInput = {
-    komentarId?: SortOrder
-    detailSopId?: SortOrder
-    userId?: SortOrder
-    isi?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    detailSop?: DetailSOPOrderByWithRelationInput
-    user?: PenggunaOrderByWithRelationInput
-    _relevance?: KomentarOrderByRelevanceInput
-  }
-
-  export type KomentarWhereUniqueInput = Prisma.AtLeast<{
-    komentarId?: string
-    AND?: KomentarWhereInput | KomentarWhereInput[]
-    OR?: KomentarWhereInput[]
-    NOT?: KomentarWhereInput | KomentarWhereInput[]
-    detailSopId?: StringFilter<"Komentar"> | string
-    userId?: StringFilter<"Komentar"> | string
-    isi?: StringFilter<"Komentar"> | string
-    status?: EnumStatusKomentarFilter<"Komentar"> | $Enums.StatusKomentar
-    createdAt?: DateTimeFilter<"Komentar"> | Date | string
-    updatedAt?: DateTimeFilter<"Komentar"> | Date | string
-    detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
-    user?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
-  }, "komentarId">
-
-  export type KomentarOrderByWithAggregationInput = {
-    komentarId?: SortOrder
-    detailSopId?: SortOrder
-    userId?: SortOrder
-    isi?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: KomentarCountOrderByAggregateInput
-    _max?: KomentarMaxOrderByAggregateInput
-    _min?: KomentarMinOrderByAggregateInput
-  }
-
-  export type KomentarScalarWhereWithAggregatesInput = {
-    AND?: KomentarScalarWhereWithAggregatesInput | KomentarScalarWhereWithAggregatesInput[]
-    OR?: KomentarScalarWhereWithAggregatesInput[]
-    NOT?: KomentarScalarWhereWithAggregatesInput | KomentarScalarWhereWithAggregatesInput[]
-    komentarId?: StringWithAggregatesFilter<"Komentar"> | string
-    detailSopId?: StringWithAggregatesFilter<"Komentar"> | string
-    userId?: StringWithAggregatesFilter<"Komentar"> | string
-    isi?: StringWithAggregatesFilter<"Komentar"> | string
-    status?: EnumStatusKomentarWithAggregatesFilter<"Komentar"> | $Enums.StatusKomentar
-    createdAt?: DateTimeWithAggregatesFilter<"Komentar"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"Komentar"> | Date | string
-  }
-
   export type PengajuanEvaluasiWhereInput = {
     AND?: PengajuanEvaluasiWhereInput | PengajuanEvaluasiWhereInput[]
     OR?: PengajuanEvaluasiWhereInput[]
@@ -31370,7 +30163,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -31402,7 +30194,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -31432,7 +30223,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -31464,7 +30254,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -31872,7 +30661,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -31903,7 +30691,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -31934,7 +30721,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -31965,7 +30751,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -32714,74 +31499,6 @@ export namespace Prisma {
     domainField?: StringFieldUpdateOperationsInput | string
   }
 
-  export type KomentarCreateInput = {
-    komentarId?: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    detailSop: DetailSOPCreateNestedOneWithoutKomentarInput
-    user: PenggunaCreateNestedOneWithoutKomentarInput
-  }
-
-  export type KomentarUncheckedCreateInput = {
-    komentarId?: string
-    detailSopId: string
-    userId: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type KomentarUpdateInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    detailSop?: DetailSOPUpdateOneRequiredWithoutKomentarNestedInput
-    user?: PenggunaUpdateOneRequiredWithoutKomentarNestedInput
-  }
-
-  export type KomentarUncheckedUpdateInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type KomentarCreateManyInput = {
-    komentarId?: string
-    detailSopId: string
-    userId: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type KomentarUpdateManyMutationInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type KomentarUncheckedUpdateManyInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type PengajuanEvaluasiCreateInput = {
     pengajuanEvaluasiId?: string
     jenis: $Enums.JenisPengajuanEvaluasi
@@ -33377,12 +32094,6 @@ export namespace Prisma {
     none?: DetailSOPWhereInput
   }
 
-  export type KomentarListRelationFilter = {
-    every?: KomentarWhereInput
-    some?: KomentarWhereInput
-    none?: KomentarWhereInput
-  }
-
   export type LogEditSOPListRelationFilter = {
     every?: LogEditSOPWhereInput
     some?: LogEditSOPWhereInput
@@ -33436,10 +32147,6 @@ export namespace Prisma {
   }
 
   export type DetailSOPOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type KomentarOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -34569,59 +33276,6 @@ export namespace Prisma {
     domainField?: SortOrder
   }
 
-  export type EnumStatusKomentarFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusKomentar[]
-    notIn?: $Enums.StatusKomentar[]
-    not?: NestedEnumStatusKomentarFilter<$PrismaModel> | $Enums.StatusKomentar
-  }
-
-  export type KomentarOrderByRelevanceInput = {
-    fields: KomentarOrderByRelevanceFieldEnum | KomentarOrderByRelevanceFieldEnum[]
-    sort: SortOrder
-    search: string
-  }
-
-  export type KomentarCountOrderByAggregateInput = {
-    komentarId?: SortOrder
-    detailSopId?: SortOrder
-    userId?: SortOrder
-    isi?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type KomentarMaxOrderByAggregateInput = {
-    komentarId?: SortOrder
-    detailSopId?: SortOrder
-    userId?: SortOrder
-    isi?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type KomentarMinOrderByAggregateInput = {
-    komentarId?: SortOrder
-    detailSopId?: SortOrder
-    userId?: SortOrder
-    isi?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type EnumStatusKomentarWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusKomentar[]
-    notIn?: $Enums.StatusKomentar[]
-    not?: NestedEnumStatusKomentarWithAggregatesFilter<$PrismaModel> | $Enums.StatusKomentar
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumStatusKomentarFilter<$PrismaModel>
-    _max?: NestedEnumStatusKomentarFilter<$PrismaModel>
-  }
-
   export type EnumJenisPengajuanEvaluasiFilter<$PrismaModel = never> = {
     equals?: $Enums.JenisPengajuanEvaluasi | EnumJenisPengajuanEvaluasiFieldRefInput<$PrismaModel>
     in?: $Enums.JenisPengajuanEvaluasi[]
@@ -35071,13 +33725,6 @@ export namespace Prisma {
     connect?: DetailSOPWhereUniqueInput | DetailSOPWhereUniqueInput[]
   }
 
-  export type KomentarCreateNestedManyWithoutUserInput = {
-    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
-    createMany?: KomentarCreateManyUserInputEnvelope
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-  }
-
   export type LogEditSOPCreateNestedManyWithoutPenggunaInput = {
     create?: XOR<LogEditSOPCreateWithoutPenggunaInput, LogEditSOPUncheckedCreateWithoutPenggunaInput> | LogEditSOPCreateWithoutPenggunaInput[] | LogEditSOPUncheckedCreateWithoutPenggunaInput[]
     connectOrCreate?: LogEditSOPCreateOrConnectWithoutPenggunaInput | LogEditSOPCreateOrConnectWithoutPenggunaInput[]
@@ -35166,13 +33813,6 @@ export namespace Prisma {
     connectOrCreate?: DetailSOPCreateOrConnectWithoutTerakhirDieditOlehInput | DetailSOPCreateOrConnectWithoutTerakhirDieditOlehInput[]
     createMany?: DetailSOPCreateManyTerakhirDieditOlehInputEnvelope
     connect?: DetailSOPWhereUniqueInput | DetailSOPWhereUniqueInput[]
-  }
-
-  export type KomentarUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
-    createMany?: KomentarCreateManyUserInputEnvelope
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
   }
 
   export type LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput = {
@@ -35291,20 +33931,6 @@ export namespace Prisma {
     update?: DetailSOPUpdateWithWhereUniqueWithoutTerakhirDieditOlehInput | DetailSOPUpdateWithWhereUniqueWithoutTerakhirDieditOlehInput[]
     updateMany?: DetailSOPUpdateManyWithWhereWithoutTerakhirDieditOlehInput | DetailSOPUpdateManyWithWhereWithoutTerakhirDieditOlehInput[]
     deleteMany?: DetailSOPScalarWhereInput | DetailSOPScalarWhereInput[]
-  }
-
-  export type KomentarUpdateManyWithoutUserNestedInput = {
-    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
-    upsert?: KomentarUpsertWithWhereUniqueWithoutUserInput | KomentarUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: KomentarCreateManyUserInputEnvelope
-    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    update?: KomentarUpdateWithWhereUniqueWithoutUserInput | KomentarUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: KomentarUpdateManyWithWhereWithoutUserInput | KomentarUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
   }
 
   export type LogEditSOPUpdateManyWithoutPenggunaNestedInput = {
@@ -35481,20 +34107,6 @@ export namespace Prisma {
     update?: DetailSOPUpdateWithWhereUniqueWithoutTerakhirDieditOlehInput | DetailSOPUpdateWithWhereUniqueWithoutTerakhirDieditOlehInput[]
     updateMany?: DetailSOPUpdateManyWithWhereWithoutTerakhirDieditOlehInput | DetailSOPUpdateManyWithWhereWithoutTerakhirDieditOlehInput[]
     deleteMany?: DetailSOPScalarWhereInput | DetailSOPScalarWhereInput[]
-  }
-
-  export type KomentarUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput> | KomentarCreateWithoutUserInput[] | KomentarUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutUserInput | KomentarCreateOrConnectWithoutUserInput[]
-    upsert?: KomentarUpsertWithWhereUniqueWithoutUserInput | KomentarUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: KomentarCreateManyUserInputEnvelope
-    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    update?: KomentarUpdateWithWhereUniqueWithoutUserInput | KomentarUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: KomentarUpdateManyWithWhereWithoutUserInput | KomentarUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
   }
 
   export type LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput = {
@@ -36158,13 +34770,6 @@ export namespace Prisma {
     connect?: DetailSOPPelaksanaWhereUniqueInput | DetailSOPPelaksanaWhereUniqueInput[]
   }
 
-  export type KomentarCreateNestedManyWithoutDetailSopInput = {
-    create?: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput> | KomentarCreateWithoutDetailSopInput[] | KomentarUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutDetailSopInput | KomentarCreateOrConnectWithoutDetailSopInput[]
-    createMany?: KomentarCreateManyDetailSopInputEnvelope
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-  }
-
   export type LampiranPeringatanCreateNestedManyWithoutDetailSopInput = {
     create?: XOR<LampiranPeringatanCreateWithoutDetailSopInput, LampiranPeringatanUncheckedCreateWithoutDetailSopInput> | LampiranPeringatanCreateWithoutDetailSopInput[] | LampiranPeringatanUncheckedCreateWithoutDetailSopInput[]
     connectOrCreate?: LampiranPeringatanCreateOrConnectWithoutDetailSopInput | LampiranPeringatanCreateOrConnectWithoutDetailSopInput[]
@@ -36254,13 +34859,6 @@ export namespace Prisma {
     connectOrCreate?: DetailSOPPelaksanaCreateOrConnectWithoutDetailSopInput | DetailSOPPelaksanaCreateOrConnectWithoutDetailSopInput[]
     createMany?: DetailSOPPelaksanaCreateManyDetailSopInputEnvelope
     connect?: DetailSOPPelaksanaWhereUniqueInput | DetailSOPPelaksanaWhereUniqueInput[]
-  }
-
-  export type KomentarUncheckedCreateNestedManyWithoutDetailSopInput = {
-    create?: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput> | KomentarCreateWithoutDetailSopInput[] | KomentarUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutDetailSopInput | KomentarCreateOrConnectWithoutDetailSopInput[]
-    createMany?: KomentarCreateManyDetailSopInputEnvelope
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
   }
 
   export type LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput = {
@@ -36415,20 +35013,6 @@ export namespace Prisma {
     update?: DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput | DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput[]
     updateMany?: DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput | DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput[]
     deleteMany?: DetailSOPPelaksanaScalarWhereInput | DetailSOPPelaksanaScalarWhereInput[]
-  }
-
-  export type KomentarUpdateManyWithoutDetailSopNestedInput = {
-    create?: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput> | KomentarCreateWithoutDetailSopInput[] | KomentarUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutDetailSopInput | KomentarCreateOrConnectWithoutDetailSopInput[]
-    upsert?: KomentarUpsertWithWhereUniqueWithoutDetailSopInput | KomentarUpsertWithWhereUniqueWithoutDetailSopInput[]
-    createMany?: KomentarCreateManyDetailSopInputEnvelope
-    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    update?: KomentarUpdateWithWhereUniqueWithoutDetailSopInput | KomentarUpdateWithWhereUniqueWithoutDetailSopInput[]
-    updateMany?: KomentarUpdateManyWithWhereWithoutDetailSopInput | KomentarUpdateManyWithWhereWithoutDetailSopInput[]
-    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
   }
 
   export type LampiranPeringatanUpdateManyWithoutDetailSopNestedInput = {
@@ -36611,20 +35195,6 @@ export namespace Prisma {
     update?: DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput | DetailSOPPelaksanaUpdateWithWhereUniqueWithoutDetailSopInput[]
     updateMany?: DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput | DetailSOPPelaksanaUpdateManyWithWhereWithoutDetailSopInput[]
     deleteMany?: DetailSOPPelaksanaScalarWhereInput | DetailSOPPelaksanaScalarWhereInput[]
-  }
-
-  export type KomentarUncheckedUpdateManyWithoutDetailSopNestedInput = {
-    create?: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput> | KomentarCreateWithoutDetailSopInput[] | KomentarUncheckedCreateWithoutDetailSopInput[]
-    connectOrCreate?: KomentarCreateOrConnectWithoutDetailSopInput | KomentarCreateOrConnectWithoutDetailSopInput[]
-    upsert?: KomentarUpsertWithWhereUniqueWithoutDetailSopInput | KomentarUpsertWithWhereUniqueWithoutDetailSopInput[]
-    createMany?: KomentarCreateManyDetailSopInputEnvelope
-    set?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    disconnect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    delete?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    connect?: KomentarWhereUniqueInput | KomentarWhereUniqueInput[]
-    update?: KomentarUpdateWithWhereUniqueWithoutDetailSopInput | KomentarUpdateWithWhereUniqueWithoutDetailSopInput[]
-    updateMany?: KomentarUpdateManyWithWhereWithoutDetailSopInput | KomentarUpdateManyWithWhereWithoutDetailSopInput[]
-    deleteMany?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
   }
 
   export type LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput = {
@@ -37243,38 +35813,6 @@ export namespace Prisma {
     upsert?: LogEditSOPUpsertWithoutDomainFieldsInput
     connect?: LogEditSOPWhereUniqueInput
     update?: XOR<XOR<LogEditSOPUpdateToOneWithWhereWithoutDomainFieldsInput, LogEditSOPUpdateWithoutDomainFieldsInput>, LogEditSOPUncheckedUpdateWithoutDomainFieldsInput>
-  }
-
-  export type DetailSOPCreateNestedOneWithoutKomentarInput = {
-    create?: XOR<DetailSOPCreateWithoutKomentarInput, DetailSOPUncheckedCreateWithoutKomentarInput>
-    connectOrCreate?: DetailSOPCreateOrConnectWithoutKomentarInput
-    connect?: DetailSOPWhereUniqueInput
-  }
-
-  export type PenggunaCreateNestedOneWithoutKomentarInput = {
-    create?: XOR<PenggunaCreateWithoutKomentarInput, PenggunaUncheckedCreateWithoutKomentarInput>
-    connectOrCreate?: PenggunaCreateOrConnectWithoutKomentarInput
-    connect?: PenggunaWhereUniqueInput
-  }
-
-  export type EnumStatusKomentarFieldUpdateOperationsInput = {
-    set?: $Enums.StatusKomentar
-  }
-
-  export type DetailSOPUpdateOneRequiredWithoutKomentarNestedInput = {
-    create?: XOR<DetailSOPCreateWithoutKomentarInput, DetailSOPUncheckedCreateWithoutKomentarInput>
-    connectOrCreate?: DetailSOPCreateOrConnectWithoutKomentarInput
-    upsert?: DetailSOPUpsertWithoutKomentarInput
-    connect?: DetailSOPWhereUniqueInput
-    update?: XOR<XOR<DetailSOPUpdateToOneWithWhereWithoutKomentarInput, DetailSOPUpdateWithoutKomentarInput>, DetailSOPUncheckedUpdateWithoutKomentarInput>
-  }
-
-  export type PenggunaUpdateOneRequiredWithoutKomentarNestedInput = {
-    create?: XOR<PenggunaCreateWithoutKomentarInput, PenggunaUncheckedCreateWithoutKomentarInput>
-    connectOrCreate?: PenggunaCreateOrConnectWithoutKomentarInput
-    upsert?: PenggunaUpsertWithoutKomentarInput
-    connect?: PenggunaWhereUniqueInput
-    update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutKomentarInput, PenggunaUpdateWithoutKomentarInput>, PenggunaUncheckedUpdateWithoutKomentarInput>
   }
 
   export type LogNilaiEvaluasiCreateNestedManyWithoutPengajuanEvaluasiInput = {
@@ -38002,23 +36540,6 @@ export namespace Prisma {
     _max?: NestedEnumBagianSOPFilter<$PrismaModel>
   }
 
-  export type NestedEnumStatusKomentarFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusKomentar[]
-    notIn?: $Enums.StatusKomentar[]
-    not?: NestedEnumStatusKomentarFilter<$PrismaModel> | $Enums.StatusKomentar
-  }
-
-  export type NestedEnumStatusKomentarWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel>
-    in?: $Enums.StatusKomentar[]
-    notIn?: $Enums.StatusKomentar[]
-    not?: NestedEnumStatusKomentarWithAggregatesFilter<$PrismaModel> | $Enums.StatusKomentar
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumStatusKomentarFilter<$PrismaModel>
-    _max?: NestedEnumStatusKomentarFilter<$PrismaModel>
-  }
-
   export type NestedEnumJenisPengajuanEvaluasiFilter<$PrismaModel = never> = {
     equals?: $Enums.JenisPengajuanEvaluasi | EnumJenisPengajuanEvaluasiFieldRefInput<$PrismaModel>
     in?: $Enums.JenisPengajuanEvaluasi[]
@@ -38148,7 +36669,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -38178,7 +36698,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -38218,7 +36737,6 @@ export namespace Prisma {
     dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -38248,7 +36766,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -38268,34 +36785,6 @@ export namespace Prisma {
 
   export type DetailSOPCreateManyTerakhirDieditOlehInputEnvelope = {
     data: DetailSOPCreateManyTerakhirDieditOlehInput | DetailSOPCreateManyTerakhirDieditOlehInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type KomentarCreateWithoutUserInput = {
-    komentarId?: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    detailSop: DetailSOPCreateNestedOneWithoutKomentarInput
-  }
-
-  export type KomentarUncheckedCreateWithoutUserInput = {
-    komentarId?: string
-    detailSopId: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type KomentarCreateOrConnectWithoutUserInput = {
-    where: KomentarWhereUniqueInput
-    create: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput>
-  }
-
-  export type KomentarCreateManyUserInputEnvelope = {
-    data: KomentarCreateManyUserInput | KomentarCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -38778,35 +37267,6 @@ export namespace Prisma {
     data: XOR<DetailSOPUpdateManyMutationInput, DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehInput>
   }
 
-  export type KomentarUpsertWithWhereUniqueWithoutUserInput = {
-    where: KomentarWhereUniqueInput
-    update: XOR<KomentarUpdateWithoutUserInput, KomentarUncheckedUpdateWithoutUserInput>
-    create: XOR<KomentarCreateWithoutUserInput, KomentarUncheckedCreateWithoutUserInput>
-  }
-
-  export type KomentarUpdateWithWhereUniqueWithoutUserInput = {
-    where: KomentarWhereUniqueInput
-    data: XOR<KomentarUpdateWithoutUserInput, KomentarUncheckedUpdateWithoutUserInput>
-  }
-
-  export type KomentarUpdateManyWithWhereWithoutUserInput = {
-    where: KomentarScalarWhereInput
-    data: XOR<KomentarUpdateManyMutationInput, KomentarUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type KomentarScalarWhereInput = {
-    AND?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
-    OR?: KomentarScalarWhereInput[]
-    NOT?: KomentarScalarWhereInput | KomentarScalarWhereInput[]
-    komentarId?: StringFilter<"Komentar"> | string
-    detailSopId?: StringFilter<"Komentar"> | string
-    userId?: StringFilter<"Komentar"> | string
-    isi?: StringFilter<"Komentar"> | string
-    status?: EnumStatusKomentarFilter<"Komentar"> | $Enums.StatusKomentar
-    createdAt?: DateTimeFilter<"Komentar"> | Date | string
-    updatedAt?: DateTimeFilter<"Komentar"> | Date | string
-  }
-
   export type LogEditSOPUpsertWithWhereUniqueWithoutPenggunaInput = {
     where: LogEditSOPWhereUniqueInput
     update: XOR<LogEditSOPUpdateWithoutPenggunaInput, LogEditSOPUncheckedUpdateWithoutPenggunaInput>
@@ -39214,7 +37674,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -39244,7 +37703,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -39536,7 +37994,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -39567,7 +38024,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -39649,7 +38105,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -39680,7 +38135,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -39753,7 +38207,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -39784,7 +38237,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -39871,7 +38323,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -39902,7 +38353,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -40063,7 +38513,6 @@ export namespace Prisma {
     dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -40093,7 +38542,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -40217,7 +38665,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -40247,7 +38694,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -40282,7 +38728,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -40312,7 +38757,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -40373,7 +38817,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -40404,7 +38847,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -40459,7 +38901,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -40490,7 +38931,6 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -40529,34 +38969,6 @@ export namespace Prisma {
 
   export type DetailSOPPelaksanaCreateManyDetailSopInputEnvelope = {
     data: DetailSOPPelaksanaCreateManyDetailSopInput | DetailSOPPelaksanaCreateManyDetailSopInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type KomentarCreateWithoutDetailSopInput = {
-    komentarId?: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: PenggunaCreateNestedOneWithoutKomentarInput
-  }
-
-  export type KomentarUncheckedCreateWithoutDetailSopInput = {
-    komentarId?: string
-    userId: string
-    isi: string
-    status?: $Enums.StatusKomentar
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type KomentarCreateOrConnectWithoutDetailSopInput = {
-    where: KomentarWhereUniqueInput
-    create: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput>
-  }
-
-  export type KomentarCreateManyDetailSopInputEnvelope = {
-    data: KomentarCreateManyDetailSopInput | KomentarCreateManyDetailSopInput[]
     skipDuplicates?: boolean
   }
 
@@ -40886,7 +39298,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -40916,7 +39327,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -40988,7 +39398,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -41019,7 +39428,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -41086,7 +39494,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -41117,7 +39524,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -41155,22 +39561,6 @@ export namespace Prisma {
     urutan?: IntFilter<"DetailSOPPelaksana"> | number
     createdAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
     updatedAt?: DateTimeFilter<"DetailSOPPelaksana"> | Date | string
-  }
-
-  export type KomentarUpsertWithWhereUniqueWithoutDetailSopInput = {
-    where: KomentarWhereUniqueInput
-    update: XOR<KomentarUpdateWithoutDetailSopInput, KomentarUncheckedUpdateWithoutDetailSopInput>
-    create: XOR<KomentarCreateWithoutDetailSopInput, KomentarUncheckedCreateWithoutDetailSopInput>
-  }
-
-  export type KomentarUpdateWithWhereUniqueWithoutDetailSopInput = {
-    where: KomentarWhereUniqueInput
-    data: XOR<KomentarUpdateWithoutDetailSopInput, KomentarUncheckedUpdateWithoutDetailSopInput>
-  }
-
-  export type KomentarUpdateManyWithWhereWithoutDetailSopInput = {
-    where: KomentarScalarWhereInput
-    data: XOR<KomentarUpdateManyMutationInput, KomentarUncheckedUpdateManyWithoutDetailSopInput>
   }
 
   export type LampiranPeringatanUpsertWithWhereUniqueWithoutDetailSopInput = {
@@ -41443,7 +39833,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanCreateNestedManyWithoutDetailSopInput
@@ -41473,7 +39862,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -41519,7 +39907,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUpdateManyWithoutDetailSopNestedInput
@@ -41549,7 +39936,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -41579,7 +39965,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanCreateNestedManyWithoutDetailSopInput
@@ -41609,7 +39994,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -41655,7 +40039,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUpdateManyWithoutDetailSopNestedInput
@@ -41685,7 +40068,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -41715,7 +40097,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanCreateNestedManyWithoutDetailSopInput
@@ -41745,7 +40126,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -41791,7 +40171,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUpdateManyWithoutDetailSopNestedInput
@@ -41821,7 +40200,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -41851,7 +40229,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -41881,7 +40258,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -41927,7 +40303,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -41957,7 +40332,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -42015,7 +40389,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -42045,7 +40418,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -42126,7 +40498,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -42156,7 +40527,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -42187,7 +40557,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -42217,7 +40586,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -42252,7 +40620,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -42282,7 +40649,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -42328,7 +40694,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -42358,7 +40723,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -42399,7 +40763,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -42429,7 +40792,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -42664,7 +41026,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -42694,7 +41055,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -42899,7 +41259,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -42929,7 +41288,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -43153,7 +41511,6 @@ export namespace Prisma {
     dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -43183,7 +41540,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -43258,7 +41614,6 @@ export namespace Prisma {
     dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -43288,7 +41643,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -43319,7 +41673,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -43349,7 +41702,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -43383,7 +41735,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
@@ -43414,7 +41765,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
@@ -43478,7 +41828,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -43508,7 +41857,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -43548,7 +41896,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
@@ -43579,7 +41926,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
@@ -43681,278 +42027,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type DetailSOPCreateWithoutKomentarInput = {
-    detailSopId?: string
-    status?: $Enums.StatusSOP
-    versi?: number
-    nomorSOP: string
-    tanggalPembuatan?: Date | string
-    tanggalRevisi?: Date | string | null
-    tanggalEfektif?: Date | string | null
-    namaLembaga: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    revisiDari?: DetailSOPCreateNestedOneWithoutRevisiMenjadiInput
-    revisiMenjadi?: DetailSOPCreateNestedManyWithoutRevisiDariInput
-    dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
-    dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
-    sop: SOPCreateNestedOneWithoutDetailSopsInput
-    terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
-    swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
-    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
-    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
-    lampiranPencatatanPendataan?: LampiranPencatatanPendataanCreateNestedManyWithoutDetailSopInput
-    langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
-    logEditSop?: LogEditSOPCreateNestedManyWithoutDetailSopInput
-    nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutDetailSopInput
-    relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
-    relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
-    dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
-  }
-
-  export type DetailSOPUncheckedCreateWithoutKomentarInput = {
-    detailSopId?: string
-    sopId: string
-    status?: $Enums.StatusSOP
-    versi?: number
-    nomorSOP: string
-    tanggalPembuatan?: Date | string
-    tanggalRevisi?: Date | string | null
-    tanggalEfektif?: Date | string | null
-    namaLembaga: string
-    dibuatOlehId?: string | null
-    terakhirDieditOlehId?: string | null
-    revisiDariDetailSopId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
-    dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
-    swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
-    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
-    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
-    lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedCreateNestedManyWithoutDetailSopInput
-    langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
-    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutDetailSopInput
-    nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDetailSopInput
-    relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
-    relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
-    dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
-  }
-
-  export type DetailSOPCreateOrConnectWithoutKomentarInput = {
-    where: DetailSOPWhereUniqueInput
-    create: XOR<DetailSOPCreateWithoutKomentarInput, DetailSOPUncheckedCreateWithoutKomentarInput>
-  }
-
-  export type PenggunaCreateWithoutKomentarInput = {
-    penggunaId?: string
-    email: string
-    nama: string
-    kataSandi: string
-    peran: $Enums.PeranPengguna
-    nip: string
-    jabatan: string
-    pangkat: string
-    nohp: string
-    ttePinHash?: string | null
-    ttePinSetAt?: Date | string | null
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
-    detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
-    logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
-    nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
-    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
-    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiCreateNestedManyWithoutDiselesaikanOlehInput
-    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
-    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiCreateNestedManyWithoutDiverifikasiOlehUserInput
-    peraturanTerakhirDiedit?: PeraturanCreateNestedManyWithoutLastEditedByInput
-    opd: OPDCreateNestedOneWithoutPenggunaInput
-    riwayatOpd?: RiwayatOpdPenggunaCreateNestedManyWithoutPenggunaInput
-    tandaTangan?: RiwayatTandaTanganCreateNestedManyWithoutUserInput
-  }
-
-  export type PenggunaUncheckedCreateWithoutKomentarInput = {
-    penggunaId?: string
-    email: string
-    opdId: string
-    nama: string
-    kataSandi: string
-    peran: $Enums.PeranPengguna
-    nip: string
-    jabatan: string
-    pangkat: string
-    nohp: string
-    ttePinHash?: string | null
-    ttePinSetAt?: Date | string | null
-    deletedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
-    detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
-    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
-    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
-    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
-    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiselesaikanOlehInput
-    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDitandatanganiOlehPjPenyusunUserInput
-    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedCreateNestedManyWithoutDiverifikasiOlehUserInput
-    peraturanTerakhirDiedit?: PeraturanUncheckedCreateNestedManyWithoutLastEditedByInput
-    riwayatOpd?: RiwayatOpdPenggunaUncheckedCreateNestedManyWithoutPenggunaInput
-    tandaTangan?: RiwayatTandaTanganUncheckedCreateNestedManyWithoutUserInput
-  }
-
-  export type PenggunaCreateOrConnectWithoutKomentarInput = {
-    where: PenggunaWhereUniqueInput
-    create: XOR<PenggunaCreateWithoutKomentarInput, PenggunaUncheckedCreateWithoutKomentarInput>
-  }
-
-  export type DetailSOPUpsertWithoutKomentarInput = {
-    update: XOR<DetailSOPUpdateWithoutKomentarInput, DetailSOPUncheckedUpdateWithoutKomentarInput>
-    create: XOR<DetailSOPCreateWithoutKomentarInput, DetailSOPUncheckedCreateWithoutKomentarInput>
-    where?: DetailSOPWhereInput
-  }
-
-  export type DetailSOPUpdateToOneWithWhereWithoutKomentarInput = {
-    where?: DetailSOPWhereInput
-    data: XOR<DetailSOPUpdateWithoutKomentarInput, DetailSOPUncheckedUpdateWithoutKomentarInput>
-  }
-
-  export type DetailSOPUpdateWithoutKomentarInput = {
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
-    versi?: IntFieldUpdateOperationsInput | number
-    nomorSOP?: StringFieldUpdateOperationsInput | string
-    tanggalPembuatan?: DateTimeFieldUpdateOperationsInput | Date | string
-    tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    namaLembaga?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    revisiDari?: DetailSOPUpdateOneWithoutRevisiMenjadiNestedInput
-    revisiMenjadi?: DetailSOPUpdateManyWithoutRevisiDariNestedInput
-    dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
-    dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
-    sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
-    terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
-    swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
-    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
-    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
-    lampiranPencatatanPendataan?: LampiranPencatatanPendataanUpdateManyWithoutDetailSopNestedInput
-    langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
-    logEditSop?: LogEditSOPUpdateManyWithoutDetailSopNestedInput
-    nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutDetailSopNestedInput
-    relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
-    relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
-    dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
-  }
-
-  export type DetailSOPUncheckedUpdateWithoutKomentarInput = {
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    sopId?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
-    versi?: IntFieldUpdateOperationsInput | number
-    nomorSOP?: StringFieldUpdateOperationsInput | string
-    tanggalPembuatan?: DateTimeFieldUpdateOperationsInput | Date | string
-    tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    namaLembaga?: StringFieldUpdateOperationsInput | string
-    dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
-    terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
-    revisiDariDetailSopId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
-    dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
-    swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
-    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
-    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
-    lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedUpdateManyWithoutDetailSopNestedInput
-    langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
-    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutDetailSopNestedInput
-    nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
-    relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
-    relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
-    dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
-  }
-
-  export type PenggunaUpsertWithoutKomentarInput = {
-    update: XOR<PenggunaUpdateWithoutKomentarInput, PenggunaUncheckedUpdateWithoutKomentarInput>
-    create: XOR<PenggunaCreateWithoutKomentarInput, PenggunaUncheckedCreateWithoutKomentarInput>
-    where?: PenggunaWhereInput
-  }
-
-  export type PenggunaUpdateToOneWithWhereWithoutKomentarInput = {
-    where?: PenggunaWhereInput
-    data: XOR<PenggunaUpdateWithoutKomentarInput, PenggunaUncheckedUpdateWithoutKomentarInput>
-  }
-
-  export type PenggunaUpdateWithoutKomentarInput = {
-    penggunaId?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    nama?: StringFieldUpdateOperationsInput | string
-    kataSandi?: StringFieldUpdateOperationsInput | string
-    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
-    nip?: StringFieldUpdateOperationsInput | string
-    jabatan?: StringFieldUpdateOperationsInput | string
-    pangkat?: StringFieldUpdateOperationsInput | string
-    nohp?: StringFieldUpdateOperationsInput | string
-    ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    ttePinSetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
-    detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
-    logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
-    nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
-    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
-    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUpdateManyWithoutDiselesaikanOlehNestedInput
-    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
-    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUpdateManyWithoutDiverifikasiOlehUserNestedInput
-    peraturanTerakhirDiedit?: PeraturanUpdateManyWithoutLastEditedByNestedInput
-    opd?: OPDUpdateOneRequiredWithoutPenggunaNestedInput
-    riwayatOpd?: RiwayatOpdPenggunaUpdateManyWithoutPenggunaNestedInput
-    tandaTangan?: RiwayatTandaTanganUpdateManyWithoutUserNestedInput
-  }
-
-  export type PenggunaUncheckedUpdateWithoutKomentarInput = {
-    penggunaId?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    opdId?: StringFieldUpdateOperationsInput | string
-    nama?: StringFieldUpdateOperationsInput | string
-    kataSandi?: StringFieldUpdateOperationsInput | string
-    peran?: EnumPeranPenggunaFieldUpdateOperationsInput | $Enums.PeranPengguna
-    nip?: StringFieldUpdateOperationsInput | string
-    jabatan?: StringFieldUpdateOperationsInput | string
-    pangkat?: StringFieldUpdateOperationsInput | string
-    nohp?: StringFieldUpdateOperationsInput | string
-    ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
-    ttePinSetAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
-    detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
-    logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
-    nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
-    nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
-    pengajuanEvaluasiDiselesaikan?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiselesaikanOlehNestedInput
-    pengajuanEvaluasiDitandatangani?: PengajuanEvaluasiUncheckedUpdateManyWithoutDitandatanganiOlehPjPenyusunUserNestedInput
-    pengajuanEvaluasiDiverifikasi?: PengajuanEvaluasiUncheckedUpdateManyWithoutDiverifikasiOlehUserNestedInput
-    peraturanTerakhirDiedit?: PeraturanUncheckedUpdateManyWithoutLastEditedByNestedInput
-    riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
-    tandaTangan?: RiwayatTandaTanganUncheckedUpdateManyWithoutUserNestedInput
-  }
-
   export type LogNilaiEvaluasiCreateWithoutPengajuanEvaluasiInput = {
     hasilSebelum?: $Enums.HasilEvaluasi | null
     hasilSesudah?: $Enums.HasilEvaluasi | null
@@ -44038,7 +42112,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -44069,7 +42142,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -44103,7 +42175,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -44134,7 +42205,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -44168,7 +42238,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -44199,7 +42268,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -44345,7 +42413,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -44376,7 +42443,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -44416,7 +42482,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -44447,7 +42512,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -44487,7 +42551,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -44518,7 +42581,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -44600,7 +42662,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
@@ -44631,7 +42692,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
@@ -44665,7 +42725,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -44696,7 +42755,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -44778,7 +42836,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -44808,7 +42865,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -44882,7 +42938,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
@@ -44913,7 +42968,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
@@ -44953,7 +43007,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -44984,7 +43037,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -45078,7 +43130,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -45108,7 +43159,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -45153,7 +43203,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiCreateNestedManyWithoutDitindaklanjutiOlehInput
@@ -45184,7 +43233,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDitindaklanjutiOlehInput
@@ -45309,7 +43357,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUpdateManyWithoutDitindaklanjutiOlehNestedInput
@@ -45340,7 +43387,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
     nilaiEvaluasiDitindaklanjuti?: NilaiEvaluasiUncheckedUpdateManyWithoutDitindaklanjutiOlehNestedInput
@@ -45462,7 +43508,6 @@ export namespace Prisma {
     sop: SOPCreateNestedOneWithoutDetailSopsInput
     terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
     swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
@@ -45492,7 +43537,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
     dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
     swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
@@ -45627,7 +43671,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -45657,7 +43700,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -45788,7 +43830,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiCreateNestedManyWithoutDinilaiOlehInput
@@ -45819,7 +43860,6 @@ export namespace Prisma {
     updatedAt?: Date | string
     detailSopDibuat?: DetailSOPUncheckedCreateNestedManyWithoutDibuatOlehInput
     detailSopDiedit?: DetailSOPUncheckedCreateNestedManyWithoutTerakhirDieditOlehInput
-    komentar?: KomentarUncheckedCreateNestedManyWithoutUserInput
     logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutPenggunaInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedCreateNestedManyWithoutPenggunaInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDinilaiOlehInput
@@ -45903,7 +43943,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -45934,7 +43973,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -45974,15 +44012,6 @@ export namespace Prisma {
     namaLembaga: string
     dibuatOlehId?: string | null
     revisiDariDetailSopId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type KomentarCreateManyUserInput = {
-    komentarId?: string
-    detailSopId: string
-    isi: string
-    status?: $Enums.StatusKomentar
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -46138,7 +44167,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -46168,7 +44196,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -46214,7 +44241,6 @@ export namespace Prisma {
     dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -46244,7 +44270,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -46269,33 +44294,6 @@ export namespace Prisma {
     namaLembaga?: StringFieldUpdateOperationsInput | string
     dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     revisiDariDetailSopId?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type KomentarUpdateWithoutUserInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    detailSop?: DetailSOPUpdateOneRequiredWithoutKomentarNestedInput
-  }
-
-  export type KomentarUncheckedUpdateWithoutUserInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type KomentarUncheckedUpdateManyWithoutUserInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    detailSopId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -46894,7 +44892,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUpdateManyWithoutDinilaiOlehNestedInput
@@ -46924,7 +44921,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSopDibuat?: DetailSOPUncheckedUpdateManyWithoutDibuatOlehNestedInput
     detailSopDiedit?: DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutUserNestedInput
     logEditSop?: LogEditSOPUncheckedUpdateManyWithoutPenggunaNestedInput
     logNilaiEvaluasi?: LogNilaiEvaluasiUncheckedUpdateManyWithoutPenggunaNestedInput
     nilaiEvaluasiDiisi?: NilaiEvaluasiUncheckedUpdateManyWithoutDinilaiOlehNestedInput
@@ -47097,7 +45093,6 @@ export namespace Prisma {
     dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -47127,7 +45122,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -47181,15 +45175,6 @@ export namespace Prisma {
   export type DetailSOPPelaksanaCreateManyDetailSopInput = {
     pelaksanaId: string
     urutan?: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type KomentarCreateManyDetailSopInput = {
-    komentarId?: string
-    userId: string
-    isi: string
-    status?: $Enums.StatusKomentar
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -47305,7 +45290,6 @@ export namespace Prisma {
     sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
     terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
     swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
@@ -47335,7 +45319,6 @@ export namespace Prisma {
     revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
     dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
     swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
-    komentar?: KomentarUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
     lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
@@ -47399,33 +45382,6 @@ export namespace Prisma {
   export type DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopInput = {
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     urutan?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type KomentarUpdateWithoutDetailSopInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: PenggunaUpdateOneRequiredWithoutKomentarNestedInput
-  }
-
-  export type KomentarUncheckedUpdateWithoutDetailSopInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type KomentarUncheckedUpdateManyWithoutDetailSopInput = {
-    komentarId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isi?: StringFieldUpdateOperationsInput | string
-    status?: EnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
