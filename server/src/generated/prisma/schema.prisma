@@ -149,6 +149,7 @@ model DetailSOP {
   relasiSopKeluar                SopTerkait[]                     @relation("RelasiSOP")
   relasiSopMasuk                 SopTerkait[]                     @relation("RelasiSOPTerkait")
   dokumenTte                     DokumenTte[]
+  konfigurasiDiagram             KonfigurasiDiagramSOP[]
 
   @@unique([sopId, versi])
   @@index([sopId, status])
@@ -227,27 +228,29 @@ model SopTerkait {
 
 /// `pelaksanaId` harus dari OPD yang sama dengan SOP pemilik `detailSopId` (trigger DB + validasi prosedur).
 model LangkahSOP {
-  langkahSopId              String               @id @default(uuid())
-  detailSopId               String
-  kegiatan                  String               @db.Text
-  jenis                     JenisLangkahProsedur @default(KEGIATAN)
-  urutan                    Int
-  kelengkapan               String
-  keluaran                  String
-  waktu                     Int
-  satuanWaktu               SatuanWaktu
-  keterangan                String               @db.Text
-  pelaksanaId               String
-  langkahSelanjutnyaYaId    String?
-  langkahSelanjutnyaTidakId String?
-  createdAt                 DateTime             @default(now())
-  updatedAt                 DateTime             @updatedAt
-  langkahTidak              LangkahSOP?          @relation("LangkahTidak", fields: [langkahSelanjutnyaTidakId], references: [langkahSopId])
-  langkahSebelumTidak       LangkahSOP[]         @relation("LangkahTidak")
-  langkahYa                 LangkahSOP?          @relation("LangkahYa", fields: [langkahSelanjutnyaYaId], references: [langkahSopId])
-  langkahSebelumYa          LangkahSOP[]         @relation("LangkahYa")
-  pelaksana                 Pelaksana            @relation(fields: [pelaksanaId], references: [pelaksanaId])
-  detailSop                 DetailSOP            @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+  langkahSopId               String                    @id @default(uuid())
+  detailSopId                String
+  kegiatan                   String                    @db.Text
+  jenis                      JenisLangkahProsedur      @default(KEGIATAN)
+  urutan                     Int
+  kelengkapan                String
+  keluaran                   String
+  waktu                      Int
+  satuanWaktu                SatuanWaktu
+  keterangan                 String                    @db.Text
+  pelaksanaId                String
+  langkahSelanjutnyaYaId     String?
+  langkahSelanjutnyaTidakId  String?
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+  langkahTidak               LangkahSOP?               @relation("LangkahTidak", fields: [langkahSelanjutnyaTidakId], references: [langkahSopId])
+  langkahSebelumTidak        LangkahSOP[]              @relation("LangkahTidak")
+  langkahYa                  LangkahSOP?               @relation("LangkahYa", fields: [langkahSelanjutnyaYaId], references: [langkahSopId])
+  langkahSebelumYa           LangkahSOP[]              @relation("LangkahYa")
+  overridePanahSebagaiSumber OverridePanahDiagramSOP[] @relation("OverridePanahDariLangkah")
+  overridePanahSebagaiTujuan OverridePanahDiagramSOP[] @relation("OverridePanahKeLangkah")
+  pelaksana                  Pelaksana                 @relation(fields: [pelaksanaId], references: [pelaksanaId])
+  detailSop                  DetailSOP                 @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@unique([detailSopId, urutan])
 }
@@ -518,4 +521,92 @@ enum BagianSOP {
   STATUS
   KOMENTAR
   EVALUASI
+}
+
+/// Jenis diagram SOP (flowchart cetak / BPMN pratinjau).
+enum JenisDiagram {
+  FLOWCHART
+  BPMN
+}
+
+enum CabangDiagram {
+  UTAMA
+  YA
+  TIDAK
+}
+
+enum SisiPanahDiagram {
+  top
+  bottom
+  left
+  right
+}
+
+/// Override path panah manual per DetailSOP (layout otomatis tetap di klien).
+model KonfigurasiDiagramSOP {
+  detailSopId   String
+  jenis         JenisDiagram
+  layoutSeed    Int                       @default(0)
+  updatedAt     DateTime                  @updatedAt
+  overridePanah OverridePanahDiagramSOP[]
+  overrideLabel OverrideLabelDiagramSOP[]
+
+  detailSop DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
+
+  @@id([detailSopId, jenis])
+  @@index([detailSopId])
+}
+
+model OverridePanahDiagramSOP {
+  detailSopId      String
+  jenis            JenisDiagram
+  dariLangkahSopId String
+  keLangkahSopId   String
+  cabang           CabangDiagram
+  sSide            SisiPanahDiagram
+  eSide            SisiPanahDiagram
+  startX           Float
+  startY           Float
+  endX             Float
+  endY             Float
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  konfigurasiDiagram KonfigurasiDiagramSOP       @relation(fields: [detailSopId, jenis], references: [detailSopId, jenis], onDelete: Cascade)
+  dariLangkah        LangkahSOP                  @relation("OverridePanahDariLangkah", fields: [dariLangkahSopId], references: [langkahSopId], onDelete: Cascade)
+  keLangkah          LangkahSOP                  @relation("OverridePanahKeLangkah", fields: [keLangkahSopId], references: [langkahSopId], onDelete: Cascade)
+  titikTekuk         TitikTekukPanahDiagramSOP[]
+
+  @@id([detailSopId, jenis, dariLangkahSopId, keLangkahSopId, cabang])
+  @@index([dariLangkahSopId])
+  @@index([keLangkahSopId])
+}
+
+model TitikTekukPanahDiagramSOP {
+  detailSopId      String
+  jenis            JenisDiagram
+  dariLangkahSopId String
+  keLangkahSopId   String
+  cabang           CabangDiagram
+  urutan           Int
+  x                Float
+  y                Float
+
+  overridePanah OverridePanahDiagramSOP @relation(fields: [detailSopId, jenis, dariLangkahSopId, keLangkahSopId, cabang], references: [detailSopId, jenis, dariLangkahSopId, keLangkahSopId, cabang], onDelete: Cascade)
+
+  @@id([detailSopId, jenis, dariLangkahSopId, keLangkahSopId, cabang, urutan])
+}
+
+model OverrideLabelDiagramSOP {
+  detailSopId String
+  jenis       JenisDiagram
+  kunciLabel  String
+  posisiX     Float
+  posisiY     Float
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  konfigurasiDiagram KonfigurasiDiagramSOP @relation(fields: [detailSopId, jenis], references: [detailSopId, jenis], onDelete: Cascade)
+
+  @@id([detailSopId, jenis, kunciLabel])
 }

@@ -16,6 +16,7 @@ import {
 import type { JwtAccessPayload } from '../../common/types/jwt-access-payload.type';
 import type { TteRepository } from './tte.repository';
 import { TtePenandatangananService } from './tte-penandatanganan.service';
+import type { TtePdfSigningService } from './tte-pdf-signing.service';
 import { TteProfilService } from './tte-profil.service';
 import { TteService } from './tte.service';
 import { TteVerifikasiService } from './tte-verifikasi.service';
@@ -36,12 +37,6 @@ describe('TteService', () => {
     sub: 'user-eval',
     email: 'e@test.id',
     peran: PeranPengguna.PJ_EVALUATOR,
-  };
-
-  const penyusunUser: JwtAccessPayload = {
-    sub: 'user-pj',
-    email: 'p@test.id',
-    peran: PeranPengguna.PJ_PENYUSUN,
   };
 
   const kepalaUser: JwtAccessPayload = {
@@ -83,7 +78,10 @@ describe('TteService', () => {
     const profilService = new TteProfilService(repo);
     const penandatangananService = new TtePenandatangananService(repo, cfg);
     const verifikasiService = new TteVerifikasiService(repo, cfg);
-    return new TteService(profilService, penandatangananService, verifikasiService);
+    const pdfSigningService = {
+      signPdf: jest.fn(),
+    } as unknown as TtePdfSigningService;
+    return new TteService(profilService, penandatangananService, verifikasiService, pdfSigningService);
   }
 
   it('should_throw_when_evaluator_signs_ba_with_wrong_status', async () => {

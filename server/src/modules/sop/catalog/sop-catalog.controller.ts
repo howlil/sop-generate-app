@@ -54,7 +54,9 @@ export class SopCatalogController {
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary:
-      'Workbench penyusun: detail DetailSOP + langkah + log edit (satu response). Param :detailSopId boleh berupa ID DetailSOP atau ID header SOP (sopId); jika sopId, dipakai versi DetailSOP terbaru.',
+      'Area kerja penyusun: detail DetailSOP + semua langkah + log edit (satu respons). Param :detailSopId boleh berupa ID DetailSOP atau ID header SOP (sopId); jika sopId, dipakai versi DetailSOP terbaru.',
+    description:
+      'Daftar langkah prosedur selalu dikirim lengkap dan berurutan tanpa pagination. Query logsLimit hanya membatasi logEdit.',
   })
   @ApiQuery({
     name: 'logsLimit',
@@ -72,7 +74,7 @@ export class SopCatalogController {
   ): Promise<ApiSuccessResponse<PenyusunWorkbenchDataDto>> {
     const data = await this.sopCatalogService.getPenyusunWorkbench(req.user, detailSopId, logsLimit);
     return {
-      message: 'Data workbench penyusun berhasil diambil',
+      message: 'Data area kerja penyusun berhasil diambil',
       success: true,
       data,
     };
@@ -91,7 +93,7 @@ export class SopCatalogController {
   @ApiQuery({
     name: 'logsLimit',
     required: false,
-    description: 'Jumlah maksimum entri logEdit pada response workbench (1–500, default 100)',
+    description: 'Jumlah maksimum entri logEdit pada respons area kerja (1–500, default 100)',
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
@@ -178,17 +180,17 @@ export class SopCatalogController {
   @ApiOperation({
     summary: 'Cabut versi BERLAKU SOP (Kepala OPD)',
     description:
-      'Mengubah status versi BERLAKU menjadi DICABUT. Param :detailOrSopId boleh ID DetailSOP atau ID header SOP. Ditolak bila masih ada revisi in-flight.',
+      'Mengubah status versi BERLAKU menjadi DICABUT. Param :detailOrSopId boleh ID DetailSOP atau ID header SOP. Ditolak bila masih ada revisi yang sedang berjalan.',
   })
   @ApiQuery({
     name: 'logsLimit',
     required: false,
-    description: 'Jumlah maksimum entri logEdit pada response workbench (1–500, default 100)',
+    description: 'Jumlah maksimum entri logEdit pada respons area kerja (1–500, default 100)',
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
   @ApiConflictResponse({
-    description: 'Tidak ada versi BERLAKU atau masih ada revisi in-flight',
+    description: 'Tidak ada versi BERLAKU atau masih ada revisi yang sedang berjalan',
   })
   @ApiForbiddenResponse({ description: 'Bukan Kepala OPD atau akses OPD ditolak' })
   @ApiNotFoundResponse({ description: 'SOP tidak ditemukan' })
@@ -215,7 +217,7 @@ export class SopCatalogController {
   @ApiQuery({
     name: 'logsLimit',
     required: false,
-    description: 'Jumlah maksimum entri logEdit pada response workbench (1–500, default 100)',
+    description: 'Jumlah maksimum entri logEdit pada respons area kerja (1–500, default 100)',
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
@@ -242,12 +244,12 @@ export class SopCatalogController {
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary:
-      'PATCH header SOP penyusun (judul, nomor, nama lembaga, dasar hukum, keterkaitan SOP, peringatan, kualifikasi, peralatan, pencatatan). Param :detailSopId boleh DetailSOP atau SOP header (versi terbaru dipakai). Hanya field yang dikirim yang diperbarui (autosave-friendly).',
+      'PATCH header SOP penyusun (judul, nomor, nama lembaga, dasar hukum, keterkaitan SOP, peringatan, kualifikasi, peralatan, pencatatan). Param :detailSopId boleh DetailSOP atau SOP header (versi terbaru dipakai). Hanya field yang dikirim yang diperbarui (ramah simpan otomatis).',
   })
   @ApiQuery({
     name: 'logsLimit',
     required: false,
-    description: 'Jumlah maksimum entri logEdit pada response refresh (1–500, default 100)',
+    description: 'Jumlah maksimum entri logEdit pada respons penyegaran (1–500, default 100)',
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })
@@ -279,7 +281,7 @@ export class SopCatalogController {
   @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Buat versi baru dari DetailSOP BERLAKU (clone isi dokumen, status DRAFT)',
+    summary: 'Buat versi baru dari DetailSOP BERLAKU (salin isi dokumen, status DRAFT)',
     description:
       'Param boleh detailSopId atau sopId. Jika bukan BERLAKU, server memakai versi BERLAKU pada SOP yang sama bila ada.',
   })
@@ -289,7 +291,7 @@ export class SopCatalogController {
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 201, type: PenyusunWorkbenchDataDto })
-  @ApiConflictResponse({ description: 'Bukan BERLAKU atau masih ada revisi in-flight' })
+  @ApiConflictResponse({ description: 'Bukan BERLAKU atau masih ada revisi yang sedang berjalan' })
   @ApiForbiddenResponse()
   @ApiNotFoundResponse()
   async buatVersiBaru(

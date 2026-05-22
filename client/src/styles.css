@@ -112,13 +112,7 @@ body {
     margin: 10mm 15mm;
   }
 
-  body.print-mode-ba @page {
-    size: A4 portrait;
-    margin: 15mm;
-  }
-
-  body.print-mode-sop @page,
-  body.print-mode-sop-all @page {
+  body.print-mode-sop @page {
     size: A4 landscape;
     margin: 10mm 15mm;
   }
@@ -138,31 +132,7 @@ body {
     display: none !important;
   }
 
-  body.print-mode-ba [data-print-area='ba'] {
-    display: block !important;
-  }
-
-  /* Isolasi cetak BA: hanya dokumen BA yang terlihat */
-  body.print-mode-ba #root,
-  body.print-mode-ba #root * {
-    visibility: hidden;
-  }
-
-  body.print-mode-ba [data-print-area='ba'],
-  body.print-mode-ba [data-print-area='ba'] * {
-    visibility: visible;
-  }
-
-  body.print-mode-ba [data-print-area='ba'] {
-    position: static;
-    width: 100%;
-  }
-
   body.print-mode-sop [data-print-area='sop'] {
-    display: block !important;
-  }
-
-  body.print-mode-sop-all [data-print-area='sop-all'] {
     display: block !important;
   }
 
@@ -178,21 +148,6 @@ body {
   }
 
   body.print-mode-sop [data-print-area='sop'] {
-    position: static;
-    width: 100%;
-  }
-
-  body.print-mode-sop-all #root,
-  body.print-mode-sop-all #root * {
-    visibility: hidden;
-  }
-
-  body.print-mode-sop-all [data-print-area='sop-all'],
-  body.print-mode-sop-all [data-print-area='sop-all'] * {
-    visibility: visible;
-  }
-
-  body.print-mode-sop-all [data-print-area='sop-all'] {
     position: static;
     width: 100%;
   }

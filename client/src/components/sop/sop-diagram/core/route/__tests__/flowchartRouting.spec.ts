@@ -6,7 +6,8 @@ import {
   pathOverlapsSegments,
 } from '../orthogonalRouter'
 import { selectSidePairs, type ElemPos, type FlowchartConnectionForSidePairs } from '../selectSidePairs'
-import { normalizeConnectorPath } from '../../../shapes/FlowchartArrowConnector'
+import { buildUltimateOrthogonalFallback, normalizeConnectorPath } from '../../../shapes/FlowchartArrowConnector'
+import { buildSideAnchoredFallbackPath } from '../../../shapes/BpmnArrowConnector'
 
 function rect(left: number, top: number, width: number, height: number): ElemPos {
   return {
@@ -41,6 +42,44 @@ function expectOrthogonal(path: { x: number; y: number }[]) {
 }
 
 describe('flowchart route candidate selection', () => {
+  it('prefers bottom-to-top for same-column process below target', () => {
+    const candidates = selectSidePairs(
+      conn(),
+      rect(100, 100, 80, 40),
+      rect(100, 240, 80, 40),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'bottom',
+      eSide: 'top',
+      preferSimple: true,
+      sourcePort: { portConstraint: 'south', exitX: 0.5 },
+      targetPort: { portConstraint: 'north', entryX: 0.5 },
+    })
+  })
+
+  it('prefers bottom-to-top for Tidak same-column below non-decision target', () => {
+    const candidates = selectSidePairs(
+      conn({ sourceType: 'flowchart-decision', label: 'Tidak', targetType: 'flowchart-process' }),
+      rect(100, 100, 80, 80),
+      rect(100, 260, 80, 80),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'bottom',
+      eSide: 'top',
+      preferSimple: true,
+    })
+  })
+
   it('prefers bottom-to-top for Ya branch below with south/north constraints', () => {
     const candidates = selectSidePairs(
       conn({ sourceType: 'flowchart-decision', label: 'Ya' }),
@@ -278,6 +317,49 @@ describe('connector path normalization', () => {
 
     expect(path[0]).toEqual({ x: 120, y: 90 })
     expect(path[path.length - 1]).toEqual({ x: 220, y: 140 })
+    expectOrthogonal(path)
+  })
+})
+
+describe('manual path override priority', () => {
+  it('preserves stored bend points when normalizing manual orthogonal path', () => {
+    const path = normalizeConnectorPath(
+      [
+        { x: 100, y: 200 },
+        { x: 150, y: 300 },
+        { x: 100, y: 400 },
+      ],
+      null,
+    )
+    expect(path.length).toBeGreaterThanOrEqual(3)
+    expectOrthogonal(path)
+    expect(path.some((p) => p.x === 150 && p.y === 300)).toBe(true)
+  })
+})
+
+describe('connector emergency fallbacks', () => {
+  it('builds a visible orthogonal fallback path for flowchart connector', () => {
+    const path = buildUltimateOrthogonalFallback(
+      rect(120, 80, 60, 40),
+      rect(120, 220, 60, 40),
+      { left: 80, top: 40, right: 260, bottom: 320 },
+    )
+
+    expect(path.length).toBeGreaterThanOrEqual(2)
+    expectOrthogonal(path)
+  })
+
+  it('builds a visible orthogonal fallback path for bpmn connector', () => {
+    const path = buildSideAnchoredFallbackPath(
+      { left: 100, top: 80, width: 80, height: 40 },
+      { left: 260, top: 220, width: 80, height: 40 },
+      'right',
+      'left',
+      false,
+      false,
+    )
+
+    expect(path.length).toBeGreaterThanOrEqual(2)
     expectOrthogonal(path)
   })
 })

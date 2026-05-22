@@ -37,7 +37,7 @@ export class PengajuanEvaluasiDetailController {
   @ApiOperation({
     summary: 'Dokumen SOP lengkap dalam konteks pengajuan evaluasi',
     description:
-      'Workbench penyusun (detail + langkah + log) hanya untuk DetailSOP yang termasuk pengajuan. Mencegah akses dokumen luar pengajuan evaluasi dengan menebak UUID.',
+      'Area kerja penyusun (detail + langkah + log) hanya untuk DetailSOP yang termasuk pengajuan. Mencegah akses dokumen luar pengajuan evaluasi dengan menebak UUID.',
   })
   @ApiParam({ name: 'pengajuanId', format: 'uuid' })
   @ApiParam({ name: 'detailSopId', format: 'uuid' })
@@ -85,9 +85,9 @@ export class PengajuanEvaluasiDetailController {
   )
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Read-model Berita Acara evaluasi',
+    summary: 'Model baca Berita Acara evaluasi',
     description:
-      'Agregasi nomor BA, tanggal, hasil per SOP, skor OPD, tim evaluator, dan metadata TTE (tanpa blob tanda tangan).',
+      'Agregasi nomor BA, tanggal, hasil per SOP, skor OPD, tim evaluator, dan metadata TTE (tanpa data biner tanda tangan).',
   })
   @ApiParam({ name: 'pengajuanId', format: 'uuid' })
   @ApiQuery({
@@ -125,9 +125,9 @@ export class PengajuanEvaluasiDetailController {
   )
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Shell pengajuan evaluasi (ringkas)',
+    summary: 'Ringkasan pengajuan evaluasi',
     description:
-      'Metadata pengajuan, daftar SOP dalam pengajuan evaluasi, nilai per baris, dan timeline tanpa isi dokumen besar.',
+      'Metadata pengajuan, daftar SOP dalam pengajuan evaluasi, nilai per baris, dan lini masa tanpa isi dokumen besar.',
   })
   @ApiParam({ name: 'pengajuanId', format: 'uuid' })
   @ApiResponse({ status: 200, type: PengajuanEvaluasiShellDto })

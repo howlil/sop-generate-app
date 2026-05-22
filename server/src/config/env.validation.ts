@@ -1,8 +1,26 @@
 import { z } from 'zod';
 
+const envBoolean = (defaultValue: boolean) =>
+  z.preprocess((val) => {
+    if (typeof val !== 'string') {
+      return val;
+    }
+    const normalized = val.trim().toLowerCase();
+    if (normalized === '') {
+      return undefined;
+    }
+    if (['true', '1', 'yes', 'on'].includes(normalized)) {
+      return true;
+    }
+    if (['false', '0', 'no', 'off'].includes(normalized)) {
+      return false;
+    }
+    return val;
+  }, z.boolean().default(defaultValue));
+
 /**
  * Skema env: `TTE_SIGNING_SECRET` wajib dan panjang di production (HMAC penandatanganan server).
- * Di development/test boleh kosong — `TteService` memakai fallback dev yang tidak dipakai di production.
+ * Di development/test boleh kosong — `TteService` memakai nilai cadangan dev yang tidak dipakai di production.
  */
 const envSchema = z
   .object({
@@ -31,8 +49,25 @@ const envSchema = z
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().url().optional(),
     ),
+    PDF_SIGNING_ENABLED: envBoolean(false),
+    PDF_SIGNING_P12_BASE64: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+      z.string().optional(),
+    ),
+    PDF_SIGNING_P12_PASSPHRASE: z.string().default(''),
+    PDF_SIGNING_REASON: z.string().default('Pengesahan dokumen SOP'),
+    PDF_SIGNING_LOCATION: z.string().default('Indonesia'),
+    PDF_SIGNING_CONTACT: z.string().default(''),
   })
   .superRefine((data, ctx) => {
+    if (data.PDF_SIGNING_ENABLED && data.PDF_SIGNING_P12_BASE64 === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'PDF_SIGNING_P12_BASE64 wajib jika PDF_SIGNING_ENABLED=true. Isi dengan file .p12/.pfx yang di-encode base64.',
+        path: ['PDF_SIGNING_P12_BASE64'],
+      });
+    }
     if (data.NODE_ENV !== 'production') {
       return;
     }

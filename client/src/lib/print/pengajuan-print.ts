@@ -1,8 +1,11 @@
-export type PengajuanPrintTarget = 'ba' | 'sop' | 'sop-all'
+/** Target aksi arsip pengajuan: unduh BA (PDF) atau cetak SOP (browser). */
+export type PengajuanPrintTarget = 'ba' | 'sop'
 
 export const PRINT_DELAY_MS = 150
 
 import { SOP_BEFORE_PRINT_EVENT } from './sop-print-events'
+import { printSopPdfDocument, type SopPdfPrintOptions } from './print-sop-pdf'
+import type { SopPdfDocumentProps } from '@/components/sop/sop-pdf-document'
 export { SOP_BEFORE_PRINT_EVENT }
 
 export const CETAK_ARSIP_DISABLED_TITLE =
@@ -11,7 +14,7 @@ export const CETAK_ARSIP_DISABLED_TITLE =
 export const CETAK_BA_DISABLED_TITLE =
   'Tersedia setelah Berita Acara ditandatangani PJ Evaluator dan PJ Penyusun.'
 
-/** Cetak Berita Acara arsip — setelah kedua PJ menandatangani BA. */
+/** Unduh Berita Acara arsip — setelah kedua PJ menandatangani BA. */
 export function canCetakBeritaAcaraPengajuan(status: string | undefined): boolean {
   return status === 'DITANDATANGANI_PJ_PENYUSUN' || status === 'SELESAI'
 }
@@ -26,35 +29,46 @@ export function canCetakArsipPengajuan(status: string | undefined): boolean {
   return canCetakSopArsipPengajuan(status)
 }
 
-function getPrintModeClass(target: PengajuanPrintTarget): string {
-  if (target === 'ba') return 'print-mode-ba'
-  if (target === 'sop-all') return 'print-mode-sop-all'
-  return 'print-mode-sop'
-}
-
-export function triggerPengajuanPrint(target: PengajuanPrintTarget): void {
-  document.body.classList.remove('print-mode-ba', 'print-mode-sop', 'print-mode-sop-all')
-  const mode = getPrintModeClass(target)
-  document.body.classList.add(mode)
+export function triggerSopPrint(): void {
+  document.body.classList.remove('print-mode-sop')
+  document.body.classList.add('print-mode-sop')
   const cleanup = () => {
-    document.body.classList.remove(mode)
+    document.body.classList.remove('print-mode-sop')
     window.removeEventListener('afterprint', cleanup)
   }
   window.addEventListener('afterprint', cleanup)
-  if (target === 'sop' || target === 'sop-all') {
-    window.dispatchEvent(new Event(SOP_BEFORE_PRINT_EVENT))
-  }
+  window.dispatchEvent(new Event(SOP_BEFORE_PRINT_EVENT))
   window.print()
 }
 
 export function schedulePengajuanPrint(
-  target: PengajuanPrintTarget,
+  target: 'sop',
+  props: SopPdfDocumentProps,
   delayMs: number = PRINT_DELAY_MS,
-): void {
-  window.setTimeout(() => triggerPengajuanPrint(target), delayMs)
+  options?: SopPdfPrintOptions,
+): Promise<void> {
+  if (target !== 'sop') {
+    return Promise.resolve()
+  }
+  return new Promise((resolve, reject) => {
+    window.setTimeout(() => {
+      printSopPdfDocument(props, options).then(resolve, reject)
+    }, delayMs)
+  })
 }
 
-/** Cetak dokumen SOP (header + diagram langkah) — isolasi via `print-mode-sop`. */
-export function scheduleSopDocumentPrint(delayMs: number = PRINT_DELAY_MS): void {
-  schedulePengajuanPrint('sop', delayMs)
+/** Cetak dokumen SOP PDF-native (header + langkah) memakai `@react-pdf/renderer`. */
+export function scheduleSopDocumentPrint(
+  props: SopPdfDocumentProps,
+  delayMs: number = PRINT_DELAY_MS,
+  options?: SopPdfPrintOptions,
+): Promise<void> {
+  return schedulePengajuanPrint('sop', props, delayMs, options)
+}
+
+/** @deprecated Gunakan triggerSopPrint */
+export function triggerPengajuanPrint(target: PengajuanPrintTarget): void {
+  if (target === 'sop') {
+    triggerSopPrint()
+  }
 }

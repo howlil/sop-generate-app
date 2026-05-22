@@ -11,7 +11,6 @@ import {
   displayStatusTindakLanjut,
 } from '../../../common/status/status-display';
 import {
-  HasilEvaluasi,
   PeranPengguna,
   StatusPengajuanEvaluasi,
 } from '../../../generated/prisma';

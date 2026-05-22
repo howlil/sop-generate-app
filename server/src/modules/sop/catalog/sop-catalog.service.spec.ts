@@ -8,12 +8,10 @@ import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { EvaluasiNilaiService } from '../../evaluation/nilai/evaluasi-nilai.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-  HasilEvaluasi,
   JenisLangkahProsedur,
   PeranPengguna,
   Prisma,
   SatuanWaktu,
-  StatusKomentar,
   StatusSOP,
 } from '../../../generated/prisma';
 import type { JwtAccessPayload } from '../../../common';

@@ -1,6 +1,6 @@
 import type { PeranPengguna } from '../../generated/prisma';
 
-/** Isi payload JWT akses (sesuai yang di-sign di auth service). */
+/** Isi muatan data JWT akses (sesuai yang ditandatangani di layanan auth). */
 export type JwtAccessPayload = {
   readonly sub: string;
   readonly email: string;

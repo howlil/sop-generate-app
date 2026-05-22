@@ -81,7 +81,7 @@ export class OpdRepository {
   }
 
   /**
-   * Menghitung relasi yang menghalangi penghapusan (soft delete) OPD.
+   * Menghitung relasi yang menghalangi penonaktifan OPD.
    */
   async summarizeBlockingRelations(opdId: string): Promise<{
     readonly pengguna: number;

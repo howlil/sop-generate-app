@@ -1,7 +1,6 @@
 import {
   HasilEvaluasi,
   JenisLangkahProsedur,
-  PeranPengguna,
   SatuanWaktu,
   StatusSOP,
 } from '../../../generated/prisma';

@@ -1,13 +1,18 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { AlertCircle, CheckCircle2, Home, Loader2, Shield } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, Home, Loader2, Shield } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { usePublicSopDokumen } from "@/api/sop-public";
 import { useTtePengesahanPublic } from "@/api/tte";
+import { PengajuanSopPrintLayer } from "@/components/pengajuan/pengajuan-sop-print-layer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InfoCard } from "@/components/ui/info-card";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { ApiError } from "@/lib/api/api-client";
+import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
+import { scheduleSopDocumentPrint } from "@/lib/print/pengajuan-print";
 import { ROLE_LABELS, ROUTES } from "@/utils/constants";
-import type { PeranTTE } from "@/types/dto/tte.dto";
+import type { PeranTTE, TTESignaturePayload } from "@/types/dto/tte.dto";
 import { formatDateIdLong } from "@/utils/format-date";
 
 function truncateHash(hex: string, head = 18, tail = 8): string {
@@ -19,9 +24,68 @@ function labelPeran(peran: PeranTTE): string {
   return ROLE_LABELS[peran] ?? peran;
 }
 
+function waitForPrintPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => resolve());
+    });
+  });
+}
+
 export function ValidasiPengesahanPage() {
   const { dokumenTteId, userId } = useParams({ from: "/validasi/pengesahan/$dokumenTteId/$userId" });
   const query = useTtePengesahanPublic(dokumenTteId, userId);
+  const [unduhLoading, setUnduhLoading] = useState(false);
+
+  const sopDetailId = query.data?.dokumen.sopDetailId;
+  const sopQuery = usePublicSopDokumen(sopDetailId);
+
+  const sopPreviewProps = useMemo(() => {
+    if (!sopQuery.data) {
+      return null;
+    }
+    return mapPenyusunWorkbenchToPreviewProps({
+      detail: sopQuery.data.detail,
+      langkah: sopQuery.data.langkah,
+      logEdit: [],
+      diagramKonfigurasi: sopQuery.data.diagramKonfigurasi,
+    });
+  }, [sopQuery.data]);
+
+  const tteSignaturePayload = useMemo<TTESignaturePayload | null>(() => {
+    if (!query.isSuccess) {
+      return null;
+    }
+    return {
+      id: `${query.data.dokumenTteId}:${query.data.userId}`,
+      dokumenTteId: query.data.dokumenTteId,
+      userId: query.data.userId,
+      nip: query.data.penandatangan.nip,
+      namaLengkap: query.data.penandatangan.nama,
+      jabatan: query.data.penandatangan.jabatan,
+      signedAt: query.data.ditandatanganiPada,
+    };
+  }, [query.data, query.isSuccess]);
+
+  const handleUnduhSop = useCallback(async () => {
+    if (!sopPreviewProps) {
+      return;
+    }
+    setUnduhLoading(true);
+    try {
+      await waitForPrintPaint();
+      await scheduleSopDocumentPrint({
+        ...sopPreviewProps,
+        tteSignaturePayload,
+      }, undefined, { signPdf: false });
+    } finally {
+      setUnduhLoading(false);
+    }
+  }, [sopPreviewProps, tteSignaturePayload]);
+
+  const isSopDocument = Boolean(sopDetailId);
+  const sopUnduhDisabled =
+    unduhLoading || sopQuery.isLoading || sopQuery.isError || !sopPreviewProps;
 
   useDocumentTitle(
     query.isSuccess ? "Verifikasi pengesahan — Sistem Informasi SOP" : "Verifikasi pengesahan",
@@ -128,6 +192,31 @@ export function ValidasiPengesahanPage() {
                     {truncateHash(query.data.dokumen.hashDokumen)}
                   </span>
                 </div>
+                {isSopDocument ? (
+                  <div className="space-y-2 border-t border-slate-100 pt-4">
+                    {sopQuery.isError ? (
+                      <p className="text-sm text-amber-800">
+                        Dokumen SOP tidak dapat dimuat. Pastikan SOP masih berstatus Berlaku.
+                      </p>
+                    ) : null}
+                    <Button
+                      type="button"
+                      className="gap-2"
+                      disabled={sopUnduhDisabled}
+                      onClick={() => void handleUnduhSop()}
+                    >
+                      {unduhLoading || sopQuery.isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                      ) : (
+                        <Download className="h-4 w-4" aria-hidden />
+                      )}
+                      Unduh SOP
+                    </Button>
+                    <p className="text-xs text-slate-500">
+                      Membuka dialog cetak browser — pilih &quot;Simpan sebagai PDF&quot; untuk mengunduh.
+                    </p>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
 
@@ -155,6 +244,13 @@ export function ValidasiPengesahanPage() {
             </Link>
           </Button>
         </div>
+
+        {isSopDocument ? (
+          <PengajuanSopPrintLayer
+            previewProps={sopPreviewProps}
+            tteSignaturePayload={tteSignaturePayload}
+          />
+        ) : null}
       </div>
     </div>
   );

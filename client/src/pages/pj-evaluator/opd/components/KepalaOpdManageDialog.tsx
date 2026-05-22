@@ -44,7 +44,7 @@ export function KepalaOpdManageDialog({
         form.email.trim() &&
         form.jabatan.trim() &&
         form.pangkat.trim() &&
-        form.phone.trim(),
+        form.nohp.trim(),
     )
   const canPindah = editingSource?.isActive === true
   const pindahValid = Boolean(pindahForm.opdId && canPindah)

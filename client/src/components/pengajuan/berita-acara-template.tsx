@@ -1,8 +1,12 @@
-/**
- * Template Berita Acara resmi (format Pemerintah Provinsi Sumatera Barat).
- * Layout: kop surat, judul, isi (paragraf + poin), penutup, blok tanda tangan.
- */
 import { TTESignatureBlock } from "@/components/tte/tte-signature-block";
+import {
+  BERITA_ACARA_KOP,
+  BERITA_ACARA_LABEL_BIRO,
+  BERITA_ACARA_LOKASI,
+  BERITA_ACARA_PARAGRAF,
+  BERITA_ACARA_PENUTUP,
+  BERITA_ACARA_POIN_EVALUASI,
+} from "@/lib/pengajuan/berita-acara-static-content";
 import { formatTempatTanggal } from "@/utils/format-date";
 import type { TTESignaturePayload } from "@/types/dto/tte.dto";
 import { SOP_INSTITUTION_LOGO_URL } from "@/lib/sop/sop-institution-logo";
@@ -49,13 +53,14 @@ export function BeritaAcaraTemplate({
     tanggalVerifikasi ?? new Date().toISOString().slice(0, 10),
   );
   const wrapperClass = forPrint
-    ? "mx-auto box-border w-[210mm] min-h-[297mm] bg-white text-black font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm]"
-    : "mx-auto box-border w-full max-w-[210mm] min-h-[297mm] bg-white text-gray-900 font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm] rounded-lg border border-gray-300 shadow-sm print:w-[210mm] print:min-h-[297mm] print:rounded-none print:border-none print:shadow-none print:px-[3cm] print:pt-[3cm] print:pb-[2.5cm]";
+    ? "mx-auto box-border flex min-h-[297mm] w-[210mm] max-w-[210mm] flex-col bg-white text-black font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm]"
+    : "mx-auto box-border flex min-h-[297mm] w-full max-w-[210mm] flex-col bg-white text-gray-900 font-serif text-[11pt] px-[3cm] pt-[3cm] pb-[2.5cm] rounded-lg border border-gray-300 shadow-sm";
+  const blockGap = forPrint ? "mb-4" : "mb-6";
+  const dateGap = forPrint ? "mb-6" : "mb-12";
 
   return (
     <article className={wrapperClass}>
-      {/* Kop */}
-      <header className="border-b-2 border-black pb-3 mb-6">
+      <header className={`border-b-2 border-black pb-3 ${blockGap}`}>
         <div className="flex items-start gap-4">
           <img
             src={SOP_INSTITUTION_LOGO_URL}
@@ -64,91 +69,47 @@ export function BeritaAcaraTemplate({
           />
           <div className="flex-1 text-center">
             <p className="text-base font-bold uppercase leading-tight">
-              Pemerintah Provinsi Sumatera Barat
+              {BERITA_ACARA_KOP.provinsi}
             </p>
             <p className="text-sm font-bold uppercase leading-tight mt-0.5">
-              Sekretariat Daerah
+              {BERITA_ACARA_KOP.lembaga}
             </p>
-            <p className="text-[10pt] mt-1 text-gray-700">
-              Jalan Jenderal Sudirman No. 51 Telp. 31401-31402-34425 Padang
-            </p>
-            <p className="text-[10pt] text-gray-600">
-              http://www.sumbarprov.go.id
-            </p>
+            <p className="text-[10pt] mt-1 text-gray-700">{BERITA_ACARA_KOP.alamat}</p>
+            <p className="text-[10pt] text-gray-600">{BERITA_ACARA_KOP.website}</p>
           </div>
         </div>
       </header>
 
-      {/* Judul */}
-      <div className="text-center mb-6">
+      <div className={`text-center ${blockGap}`}>
         <h1 className="text-base font-bold uppercase mb-2">Berita Acara</h1>
         <h2 className="text-sm font-bold uppercase leading-snug mb-1">
           Pelaksanaan Verifikasi dan Evaluasi Standar Operasional Prosedur (SOP)
           pada {opd} Provinsi Sumatera Barat
         </h2>
         {nomorBA && <p className="text-xs mt-1">Nomor: {nomorBA}</p>}
-        <p className="text-xs mt-2">
-          Bertempat di Ruang Rapat PJ Evaluator Organisasi Lt. III Escape Building
-        </p>
+        <p className="text-xs mt-2">{BERITA_ACARA_LOKASI}</p>
       </div>
 
-      {/* Isi */}
-      <div className="text-justify leading-relaxed space-y-3 mb-6">
-        <p>
-          Dalam rangka pelaksanaan kegiatan Evaluasi Standar Operasional
-          Prosedur (SOP) pada Perangkat Daerah, UPTD, dan Unit Layanan di
-          lingkungan Pemerintah Provinsi Sumatera Barat, PJ Evaluator Organisasi telah
-          melaksanakan verifikasi dan evaluasi SOP pada sejumlah perangkat
-          daerah.
-        </p>
-        <p>
-          Pelaksanaan evaluasi ini dilakukan oleh Tim Verifikasi dan Evaluasi
-          berdasarkan Keputusan Gubernur Sumatera Barat Nomor 065-277-2025
-          tentang Pembentukan Tim Evaluasi Penyusunan dan Penerapan Standar
-          Operasional Prosedur pada Organisasi Perangkat Daerah di Lingkungan
-          Pemerintah Provinsi Sumatera Barat.
-        </p>
-        <p>
-          Proses verifikasi dan pemberian saran perbaikan dilaksanakan mengacu
-          pada Pedoman Evaluasi Dokumen SOP sebagaimana diatur dalam Peraturan
-          Menteri Pendayagunaan Aparatur Negara dan Reformasi Birokrasi Nomor 35
-          Tahun 2012 tentang Pedoman Penyusunan Standar Operasional Prosedur
-          Administrasi Pemerintahan, dengan ketentuan sebagai berikut:
-        </p>
+      <div className={`text-justify leading-relaxed space-y-3 ${blockGap}`}>
+        {BERITA_ACARA_PARAGRAF.map((paragraph) => (
+          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+        ))}
         <ol className="list-decimal list-inside pl-2 space-y-1 text-justify">
-          <li>Mampu mendorong peningkatan kinerja Organisasi dan ASN;</li>
-          <li>Mudah dipahami oleh ASN selaku pelaksana;</li>
-          <li>Mudah untuk dilaksanakan dalam pekerjaan;</li>
-          <li>
-            Semua orang dapat menjalankan perannya masing-masing sesuai uraian
-            tugas;
-          </li>
-          <li>
-            Mampu mengatasi masalah permasalahan yang berkaitan dengan proses;
-          </li>
-          <li>Mampu menjawab peningkatan kinerja organisasi;</li>
-          <li>
-            Sinergi yang maksimal antara semua pelaksana sehingga tidak ada
-            uraian tugas yang tumpang tindih antara satu dengan yang lainnya.
-          </li>
+          {BERITA_ACARA_POIN_EVALUASI.map((item) => (
+            <li key={item.slice(0, 20)}>{item}</li>
+          ))}
         </ol>
-        {/* Template ringkas: skor agregat dan tabel ringkasan dihilangkan sesuai permintaan UI terbaru */}
-        <p>
-          Demikian Berita Acara Pelaksanaan Verifikasi dan Evaluasi Standar
-          Operasional Prosedur (SOP) di Lingkup Pemerintah Provinsi Sumatera
-          Barat ini dibuat, untuk dipergunakan sebagaimana mestinya.
-        </p>
+        <p>{BERITA_ACARA_PENUTUP}</p>
       </div>
 
-      {/* Tempat, tanggal */}
-      <div className="text-right mb-12">
-        <p className="text-sm">{dateLine}</p>
-      </div>
+      <div className="mt-auto">
+        <div className={`text-right ${dateGap}`}>
+          <p className="text-sm">{dateLine}</p>
+        </div>
 
-      {/* Blok tanda tangan */}
-      <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-2 gap-8">
         <div className="border border-gray-800 p-4 text-center">
-          <p className="text-xs font-bold uppercase mb-2">Biro Organisasi</p>
+          <p className="text-xs font-bold uppercase mb-2">{BERITA_ACARA_LABEL_BIRO}</p>
           {tteSignaturePayloadPjEvaluator ? (
             <TTESignatureBlock
               payload={tteSignaturePayloadPjEvaluator}
@@ -184,6 +145,7 @@ export function BeritaAcaraTemplate({
               <p className="text-sm font-bold">{namaPjPenyusun ?? "—"}</p>
             </>
           )}
+        </div>
         </div>
       </div>
     </article>

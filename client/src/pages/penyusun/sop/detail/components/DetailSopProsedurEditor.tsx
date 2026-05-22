@@ -89,121 +89,118 @@ export function DetailSOPProsedurEditor({
       <div className="mb-2 flex items-center justify-between">
         <p className="text-[11px] text-gray-500">No akan otomatis mengikuti urutan baris.</p>
       </div>
-      <Table.Paginated data={prosedurRows} label="langkah" className="border border-gray-200 rounded-lg">
-        {(pageData, startIndex) => (
-          <Table.Table>
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <Table.HeadRow>
-                <Table.Th className="px-1 py-1 w-10">No</Table.Th>
-                <Table.Th className="px-1 py-1 w-[28%]">Kegiatan</Table.Th>
-                <Table.Th className="px-1 py-1 w-[12%]">Tipe</Table.Th>
-                <Table.Th className="px-1 py-1 w-[14%]">Pelaksana</Table.Th>
-                <Table.Th className="px-1 py-1 w-[13%]">Kelengkapan</Table.Th>
-                <Table.Th className="px-1 py-1 w-[8%]">Waktu</Table.Th>
-                <Table.Th className="px-1 py-1 w-[12%]">Output</Table.Th>
-                <Table.Th className="px-1 py-1 w-[23%]">Keterangan</Table.Th>
-                <Table.Th align="center" className="px-0.5 py-1 w-10">Aksi</Table.Th>
-              </Table.HeadRow>
-            </thead>
-            <tbody>
-              {pageData.map((row, localIdx) => {
-                const realIdx = startIndex + localIdx
-                return (
-                  <Table.BodyRow key={row.id} className="align-top">
-                    <Table.Td className="px-1 py-1 text-center align-middle">{realIdx + 1}</Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <KegiatanCell
-                        value={row.kegiatan}
-                        onChange={(value) => handleKegiatanChange(realIdx, value)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <TypeCell
-                        row={row}
-                        index={realIdx}
-                        totalRows={prosedurRows.length}
-                        stepOrderById={stepOrderById}
-                        onTypeChange={(type, role) => handleTypeChange(realIdx, type, role)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <ImplementerCell
-                        row={row}
-                        implementers={implementers}
-                        onImplementerChange={(id) => handlePelaksanaChange(realIdx, id, implementers)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <MutuKelengkapanCell
-                        value={row.mutu_kelengkapan ?? ''}
-                        onChange={(value) => handleMutuKelengkapanChange(realIdx, value)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <MutuWaktuCell
-                        value={row.mutu_waktu ?? ''}
-                        onChange={(amount, unit) => handleMutuWaktuChange(realIdx, amount, unit)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <OutputCell
-                        value={row.output ?? ''}
-                        onChange={(value) => handleOutputChange(realIdx, value)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-1 py-1">
-                      <KeteranganCell
-                        value={row.keterangan ?? ''}
-                        onChange={(value) => handleKeteranganChange(realIdx, value)}
-                      />
-                    </Table.Td>
-                    <Table.Td className="px-0.5 py-1 text-center align-middle">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                            title="Aksi langkah"
-                          >
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="min-w-[9rem]">
-                          {row.type === 'decision' && (
-                            <DropdownMenuItem
-                              onClick={() => handleDecisionConfig(realIdx, row.id_next_step_if_yes || '', row.id_next_step_if_no || '')}
-                            >
-                              <Settings2 className="w-3 h-3 mr-1.5 text-gray-500" />
-                              <span>Atur cabang decision</span>
-                            </DropdownMenuItem>
-                          )}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+        <Table.Table>
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <Table.HeadRow>
+              <Table.Th className="px-1 py-1 w-10">No</Table.Th>
+              <Table.Th className="px-1 py-1 w-[28%]">Kegiatan</Table.Th>
+              <Table.Th className="px-1 py-1 w-[12%]">Tipe</Table.Th>
+              <Table.Th className="px-1 py-1 w-[14%]">Pelaksana</Table.Th>
+              <Table.Th className="px-1 py-1 w-[13%]">Kelengkapan</Table.Th>
+              <Table.Th className="px-1 py-1 w-[8%]">Waktu</Table.Th>
+              <Table.Th className="px-1 py-1 w-[12%]">Output</Table.Th>
+              <Table.Th className="px-1 py-1 w-[23%]">Keterangan</Table.Th>
+              <Table.Th align="center" className="px-0.5 py-1 w-10">Aksi</Table.Th>
+            </Table.HeadRow>
+          </thead>
+          <tbody>
+            {prosedurRows.map((row, realIdx) => {
+              return (
+                <Table.BodyRow key={row.id} className="align-top">
+                  <Table.Td className="px-1 py-1 text-center align-middle">{realIdx + 1}</Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <KegiatanCell
+                      value={row.kegiatan}
+                      onChange={(value) => handleKegiatanChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <TypeCell
+                      row={row}
+                      index={realIdx}
+                      totalRows={prosedurRows.length}
+                      stepOrderById={stepOrderById}
+                      onTypeChange={(type, role) => handleTypeChange(realIdx, type, role)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <ImplementerCell
+                      row={row}
+                      implementers={implementers}
+                      onImplementerChange={(id) => handlePelaksanaChange(realIdx, id, implementers)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <MutuKelengkapanCell
+                      value={row.mutu_kelengkapan ?? ''}
+                      onChange={(value) => handleMutuKelengkapanChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <MutuWaktuCell
+                      value={row.mutu_waktu ?? ''}
+                      onChange={(amount, unit) => handleMutuWaktuChange(realIdx, amount, unit)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <OutputCell
+                      value={row.output ?? ''}
+                      onChange={(value) => handleOutputChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-1 py-1">
+                    <KeteranganCell
+                      value={row.keterangan ?? ''}
+                      onChange={(value) => handleKeteranganChange(realIdx, value)}
+                    />
+                  </Table.Td>
+                  <Table.Td className="px-0.5 py-1 text-center align-middle">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                          title="Aksi langkah"
+                        >
+                          <MoreHorizontal className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="min-w-[9rem]">
+                        {row.type === 'decision' && (
                           <DropdownMenuItem
-                            onClick={() => guardedAddRow(realIdx)}
+                            onClick={() => handleDecisionConfig(realIdx, row.id_next_step_if_yes || '', row.id_next_step_if_no || '')}
                           >
-                            <span className="mr-1.5 text-blue-600">+</span>
-                            <span>Tambah langkah setelah ini</span>
+                            <Settings2 className="w-3 h-3 mr-1.5 text-gray-500" />
+                            <span>Atur cabang decision</span>
                           </DropdownMenuItem>
-                          {prosedurRows.length > 1 ? (
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteRow(realIdx)}
-                              className="text-red-600 focus:text-red-600"
-                              title="Hapus langkah"
-                            >
-                              <X className="w-3 h-3 mr-1.5 shrink-0" aria-hidden />
-                              <span>Hapus langkah</span>
-                            </DropdownMenuItem>
-                          ) : null}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </Table.Td>
-                  </Table.BodyRow>
-                )
-              })}
-            </tbody>
-          </Table.Table>
-        )}
-      </Table.Paginated>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() => guardedAddRow(realIdx)}
+                        >
+                          <span className="mr-1.5 text-blue-600">+</span>
+                          <span>Tambah langkah setelah ini</span>
+                        </DropdownMenuItem>
+                        {prosedurRows.length > 1 ? (
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteRow(realIdx)}
+                            className="text-red-600 focus:text-red-600"
+                            title="Hapus langkah"
+                          >
+                            <X className="w-3 h-3 mr-1.5 shrink-0" aria-hidden />
+                            <span>Hapus langkah</span>
+                          </DropdownMenuItem>
+                        ) : null}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </Table.Td>
+                </Table.BodyRow>
+              )
+            })}
+          </tbody>
+        </Table.Table>
+      </div>
       <div className="flex justify-between items-center mt-2">
         <Button
           variant="outline"

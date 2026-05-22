@@ -15,7 +15,7 @@ const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
   StatusPengajuanEvaluasi.SELESAI,
 ]);
 
-/** Payload selaras kebutuhan client (`PengajuanEvaluasi` di `evaluasi.dto.ts`). */
+/** Muatan data selaras kebutuhan klien (`PengajuanEvaluasi` di `evaluasi.dto.ts`). */
 export type PengajuanEvaluasiApiPayload = Record<string, unknown>;
 
 export function mapPengajuanEvaluasiRow(row: PengajuanEvaluasiDetailRow): PengajuanEvaluasiApiPayload {

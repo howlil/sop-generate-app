@@ -52,8 +52,6 @@ export function DetailSOPPenyusun() {
     setProsedurRows,
     implementers,
     setImplementers,
-    diagramVersion,
-    setDiagramVersion,
     activeTab,
     setActiveTab,
     isEditingSteps,
@@ -277,8 +275,6 @@ export function DetailSOPPenyusun() {
             onActiveTabChange={setActiveTab}
             isEditingSteps={isEditingSteps}
             setIsEditingSteps={setIsEditingSteps}
-            diagramVersion={diagramVersion}
-            onDiagramVersionChange={() => setDiagramVersion((v) => v + 1)}
           />
         }
         rightPanel={

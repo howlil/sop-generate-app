@@ -28,6 +28,7 @@ import {
 import { deriveTahapPenilaianSop } from "@/lib/evaluasi/evaluasi-domain";
 import { ApiError } from "@/lib/api/api-client";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
+import { useSopPreviewDiagramState } from "@/hooks/use-sop-preview-diagram-state";
 import { useCollapsiblePanels } from "@/pages/evaluator/evaluasi/hooks/use-collapsible-panels";
 import { formatDateId } from "@/utils/format-date";
 import type {
@@ -307,6 +308,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
   );
 
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+  const [diagramPreviewTab, setDiagramPreviewTab] = useState<"flowchart" | "bpmn">("flowchart");
   const [activeFormTab, setActiveFormTab] =
     useState<DetailEvaluasiActiveTab>("sop");
   const [ratingOPD, setRatingOPD] = useState<number | null>(null);
@@ -408,6 +410,17 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
       return null;
     }
   }, [workspace]);
+
+  const diagramRenderState = useSopPreviewDiagramState(
+    previewProps
+      ? {
+          diagramKonfigurasi: previewProps.diagramKonfigurasi,
+          prosedurRows: previewProps.prosedurRows,
+          implementers: previewProps.implementers,
+        }
+      : null,
+    diagramPreviewTab,
+  );
 
   const resourceNotFound =
     workspaceError instanceof ApiError && workspaceError.status === 404;
@@ -649,6 +662,11 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                     implementers={previewProps.implementers}
                     name={previewProps.name}
                     number={previewProps.number}
+                    diagramState={{
+                      activeTab: diagramPreviewTab,
+                      onActiveTabChange: setDiagramPreviewTab,
+                      ...diagramRenderState,
+                    }}
                   />
                   </div>
                 ) : (

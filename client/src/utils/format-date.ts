@@ -58,10 +58,18 @@ export function formatDateIdLong(value: DateInput): string {
     : '—'
 }
 
+/** Format lengkap: 20 Februari 2026 */
+export function formatDateIdFull(value: DateInput, fallback: string = '—'): string {
+  const d = toDate(value)
+  return d
+    ? d.toLocaleDateString(LOCALE_ID, { day: 'numeric', month: 'long', year: 'numeric' })
+    : fallback
+}
+
 /** Format tempat & tanggal: "Padang, 20 Februari 2026" */
 export function formatTempatTanggal(value: DateInput, tempat: string = 'Padang'): string {
   const d = toDate(value)
   if (!d) return '—'
-  const formattedDate = d.toLocaleDateString(LOCALE_ID, { day: 'numeric', month: 'long', year: 'numeric' })
+  const formattedDate = formatDateIdFull(d)
   return `${tempat}, ${formattedDate}`
 }

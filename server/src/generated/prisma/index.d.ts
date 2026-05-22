@@ -138,6 +138,26 @@ export type DokumenTte = $Result.DefaultSelection<Prisma.$DokumenTtePayload>
  * 
  */
 export type RiwayatTandaTangan = $Result.DefaultSelection<Prisma.$RiwayatTandaTanganPayload>
+/**
+ * Model KonfigurasiDiagramSOP
+ * Override path panah manual per DetailSOP (layout otomatis tetap di klien).
+ */
+export type KonfigurasiDiagramSOP = $Result.DefaultSelection<Prisma.$KonfigurasiDiagramSOPPayload>
+/**
+ * Model OverridePanahDiagramSOP
+ * 
+ */
+export type OverridePanahDiagramSOP = $Result.DefaultSelection<Prisma.$OverridePanahDiagramSOPPayload>
+/**
+ * Model TitikTekukPanahDiagramSOP
+ * 
+ */
+export type TitikTekukPanahDiagramSOP = $Result.DefaultSelection<Prisma.$TitikTekukPanahDiagramSOPPayload>
+/**
+ * Model OverrideLabelDiagramSOP
+ * 
+ */
+export type OverrideLabelDiagramSOP = $Result.DefaultSelection<Prisma.$OverrideLabelDiagramSOPPayload>
 
 /**
  * Enums
@@ -245,6 +265,33 @@ export const BagianSOP: {
 
 export type BagianSOP = (typeof BagianSOP)[keyof typeof BagianSOP]
 
+
+export const JenisDiagram: {
+  FLOWCHART: 'FLOWCHART',
+  BPMN: 'BPMN'
+};
+
+export type JenisDiagram = (typeof JenisDiagram)[keyof typeof JenisDiagram]
+
+
+export const CabangDiagram: {
+  UTAMA: 'UTAMA',
+  YA: 'YA',
+  TIDAK: 'TIDAK'
+};
+
+export type CabangDiagram = (typeof CabangDiagram)[keyof typeof CabangDiagram]
+
+
+export const SisiPanahDiagram: {
+  top: 'top',
+  bottom: 'bottom',
+  left: 'left',
+  right: 'right'
+};
+
+export type SisiPanahDiagram = (typeof SisiPanahDiagram)[keyof typeof SisiPanahDiagram]
+
 }
 
 export type PeranPengguna = $Enums.PeranPengguna
@@ -286,6 +333,18 @@ export const StatusKomentar: typeof $Enums.StatusKomentar
 export type BagianSOP = $Enums.BagianSOP
 
 export const BagianSOP: typeof $Enums.BagianSOP
+
+export type JenisDiagram = $Enums.JenisDiagram
+
+export const JenisDiagram: typeof $Enums.JenisDiagram
+
+export type CabangDiagram = $Enums.CabangDiagram
+
+export const CabangDiagram: typeof $Enums.CabangDiagram
+
+export type SisiPanahDiagram = $Enums.SisiPanahDiagram
+
+export const SisiPanahDiagram: typeof $Enums.SisiPanahDiagram
 
 /**
  * ##  Prisma Client ʲˢ
@@ -637,6 +696,46 @@ export class PrismaClient<
     * ```
     */
   get riwayatTandaTangan(): Prisma.RiwayatTandaTanganDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.konfigurasiDiagramSOP`: Exposes CRUD operations for the **KonfigurasiDiagramSOP** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KonfigurasiDiagramSOPS
+    * const konfigurasiDiagramSOPS = await prisma.konfigurasiDiagramSOP.findMany()
+    * ```
+    */
+  get konfigurasiDiagramSOP(): Prisma.KonfigurasiDiagramSOPDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.overridePanahDiagramSOP`: Exposes CRUD operations for the **OverridePanahDiagramSOP** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OverridePanahDiagramSOPS
+    * const overridePanahDiagramSOPS = await prisma.overridePanahDiagramSOP.findMany()
+    * ```
+    */
+  get overridePanahDiagramSOP(): Prisma.OverridePanahDiagramSOPDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.titikTekukPanahDiagramSOP`: Exposes CRUD operations for the **TitikTekukPanahDiagramSOP** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TitikTekukPanahDiagramSOPS
+    * const titikTekukPanahDiagramSOPS = await prisma.titikTekukPanahDiagramSOP.findMany()
+    * ```
+    */
+  get titikTekukPanahDiagramSOP(): Prisma.TitikTekukPanahDiagramSOPDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.overrideLabelDiagramSOP`: Exposes CRUD operations for the **OverrideLabelDiagramSOP** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more OverrideLabelDiagramSOPS
+    * const overrideLabelDiagramSOPS = await prisma.overrideLabelDiagramSOP.findMany()
+    * ```
+    */
+  get overrideLabelDiagramSOP(): Prisma.OverrideLabelDiagramSOPDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1093,7 +1192,11 @@ export namespace Prisma {
     NilaiEvaluasi: 'NilaiEvaluasi',
     LogNilaiEvaluasi: 'LogNilaiEvaluasi',
     DokumenTte: 'DokumenTte',
-    RiwayatTandaTangan: 'RiwayatTandaTangan'
+    RiwayatTandaTangan: 'RiwayatTandaTangan',
+    KonfigurasiDiagramSOP: 'KonfigurasiDiagramSOP',
+    OverridePanahDiagramSOP: 'OverridePanahDiagramSOP',
+    TitikTekukPanahDiagramSOP: 'TitikTekukPanahDiagramSOP',
+    OverrideLabelDiagramSOP: 'OverrideLabelDiagramSOP'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1109,7 +1212,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranPeringatan" | "lampiranKualifikasiPelaksanaan" | "lampiranPeralatanPerlengkapan" | "lampiranPencatatanPendataan" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "logEditSopDomainField" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "dokumenTte" | "riwayatTandaTangan"
+      modelProps: "pengguna" | "oPD" | "riwayatOpdPengguna" | "peraturan" | "oPDPeraturan" | "sOP" | "detailSOP" | "lampiranPeringatan" | "lampiranKualifikasiPelaksanaan" | "lampiranPeralatanPerlengkapan" | "lampiranPencatatanPendataan" | "dasarHukum" | "sopTerkait" | "langkahSOP" | "pelaksana" | "detailSOPPelaksana" | "logEditSOP" | "logEditSopDomainField" | "pengajuanEvaluasi" | "nilaiEvaluasi" | "logNilaiEvaluasi" | "dokumenTte" | "riwayatTandaTangan" | "konfigurasiDiagramSOP" | "overridePanahDiagramSOP" | "titikTekukPanahDiagramSOP" | "overrideLabelDiagramSOP"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2631,6 +2734,270 @@ export namespace Prisma {
           }
         }
       }
+      KonfigurasiDiagramSOP: {
+        payload: Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>
+        fields: Prisma.KonfigurasiDiagramSOPFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KonfigurasiDiagramSOPFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KonfigurasiDiagramSOPFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>
+          }
+          findFirst: {
+            args: Prisma.KonfigurasiDiagramSOPFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KonfigurasiDiagramSOPFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>
+          }
+          findMany: {
+            args: Prisma.KonfigurasiDiagramSOPFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>[]
+          }
+          create: {
+            args: Prisma.KonfigurasiDiagramSOPCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>
+          }
+          createMany: {
+            args: Prisma.KonfigurasiDiagramSOPCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.KonfigurasiDiagramSOPDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>
+          }
+          update: {
+            args: Prisma.KonfigurasiDiagramSOPUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>
+          }
+          deleteMany: {
+            args: Prisma.KonfigurasiDiagramSOPDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KonfigurasiDiagramSOPUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.KonfigurasiDiagramSOPUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KonfigurasiDiagramSOPPayload>
+          }
+          aggregate: {
+            args: Prisma.KonfigurasiDiagramSOPAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKonfigurasiDiagramSOP>
+          }
+          groupBy: {
+            args: Prisma.KonfigurasiDiagramSOPGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KonfigurasiDiagramSOPGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KonfigurasiDiagramSOPCountArgs<ExtArgs>
+            result: $Utils.Optional<KonfigurasiDiagramSOPCountAggregateOutputType> | number
+          }
+        }
+      }
+      OverridePanahDiagramSOP: {
+        payload: Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>
+        fields: Prisma.OverridePanahDiagramSOPFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OverridePanahDiagramSOPFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OverridePanahDiagramSOPFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>
+          }
+          findFirst: {
+            args: Prisma.OverridePanahDiagramSOPFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OverridePanahDiagramSOPFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>
+          }
+          findMany: {
+            args: Prisma.OverridePanahDiagramSOPFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>[]
+          }
+          create: {
+            args: Prisma.OverridePanahDiagramSOPCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>
+          }
+          createMany: {
+            args: Prisma.OverridePanahDiagramSOPCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.OverridePanahDiagramSOPDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>
+          }
+          update: {
+            args: Prisma.OverridePanahDiagramSOPUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>
+          }
+          deleteMany: {
+            args: Prisma.OverridePanahDiagramSOPDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OverridePanahDiagramSOPUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.OverridePanahDiagramSOPUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverridePanahDiagramSOPPayload>
+          }
+          aggregate: {
+            args: Prisma.OverridePanahDiagramSOPAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOverridePanahDiagramSOP>
+          }
+          groupBy: {
+            args: Prisma.OverridePanahDiagramSOPGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OverridePanahDiagramSOPGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OverridePanahDiagramSOPCountArgs<ExtArgs>
+            result: $Utils.Optional<OverridePanahDiagramSOPCountAggregateOutputType> | number
+          }
+        }
+      }
+      TitikTekukPanahDiagramSOP: {
+        payload: Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>
+        fields: Prisma.TitikTekukPanahDiagramSOPFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TitikTekukPanahDiagramSOPFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TitikTekukPanahDiagramSOPFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>
+          }
+          findFirst: {
+            args: Prisma.TitikTekukPanahDiagramSOPFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TitikTekukPanahDiagramSOPFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>
+          }
+          findMany: {
+            args: Prisma.TitikTekukPanahDiagramSOPFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>[]
+          }
+          create: {
+            args: Prisma.TitikTekukPanahDiagramSOPCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>
+          }
+          createMany: {
+            args: Prisma.TitikTekukPanahDiagramSOPCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.TitikTekukPanahDiagramSOPDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>
+          }
+          update: {
+            args: Prisma.TitikTekukPanahDiagramSOPUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>
+          }
+          deleteMany: {
+            args: Prisma.TitikTekukPanahDiagramSOPDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TitikTekukPanahDiagramSOPUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.TitikTekukPanahDiagramSOPUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TitikTekukPanahDiagramSOPPayload>
+          }
+          aggregate: {
+            args: Prisma.TitikTekukPanahDiagramSOPAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTitikTekukPanahDiagramSOP>
+          }
+          groupBy: {
+            args: Prisma.TitikTekukPanahDiagramSOPGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TitikTekukPanahDiagramSOPGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TitikTekukPanahDiagramSOPCountArgs<ExtArgs>
+            result: $Utils.Optional<TitikTekukPanahDiagramSOPCountAggregateOutputType> | number
+          }
+        }
+      }
+      OverrideLabelDiagramSOP: {
+        payload: Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>
+        fields: Prisma.OverrideLabelDiagramSOPFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.OverrideLabelDiagramSOPFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.OverrideLabelDiagramSOPFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>
+          }
+          findFirst: {
+            args: Prisma.OverrideLabelDiagramSOPFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.OverrideLabelDiagramSOPFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>
+          }
+          findMany: {
+            args: Prisma.OverrideLabelDiagramSOPFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>[]
+          }
+          create: {
+            args: Prisma.OverrideLabelDiagramSOPCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>
+          }
+          createMany: {
+            args: Prisma.OverrideLabelDiagramSOPCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.OverrideLabelDiagramSOPDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>
+          }
+          update: {
+            args: Prisma.OverrideLabelDiagramSOPUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>
+          }
+          deleteMany: {
+            args: Prisma.OverrideLabelDiagramSOPDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.OverrideLabelDiagramSOPUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.OverrideLabelDiagramSOPUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$OverrideLabelDiagramSOPPayload>
+          }
+          aggregate: {
+            args: Prisma.OverrideLabelDiagramSOPAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateOverrideLabelDiagramSOP>
+          }
+          groupBy: {
+            args: Prisma.OverrideLabelDiagramSOPGroupByArgs<ExtArgs>
+            result: $Utils.Optional<OverrideLabelDiagramSOPGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.OverrideLabelDiagramSOPCountArgs<ExtArgs>
+            result: $Utils.Optional<OverrideLabelDiagramSOPCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2762,6 +3129,10 @@ export namespace Prisma {
     logNilaiEvaluasi?: LogNilaiEvaluasiOmit
     dokumenTte?: DokumenTteOmit
     riwayatTandaTangan?: RiwayatTandaTanganOmit
+    konfigurasiDiagramSOP?: KonfigurasiDiagramSOPOmit
+    overridePanahDiagramSOP?: OverridePanahDiagramSOPOmit
+    titikTekukPanahDiagramSOP?: TitikTekukPanahDiagramSOPOmit
+    overrideLabelDiagramSOP?: OverrideLabelDiagramSOPOmit
   }
 
   /* Types for Logging */
@@ -3132,6 +3503,7 @@ export namespace Prisma {
     relasiSopKeluar: number
     relasiSopMasuk: number
     dokumenTte: number
+    konfigurasiDiagram: number
   }
 
   export type DetailSOPCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3148,6 +3520,7 @@ export namespace Prisma {
     relasiSopKeluar?: boolean | DetailSOPCountOutputTypeCountRelasiSopKeluarArgs
     relasiSopMasuk?: boolean | DetailSOPCountOutputTypeCountRelasiSopMasukArgs
     dokumenTte?: boolean | DetailSOPCountOutputTypeCountDokumenTteArgs
+    konfigurasiDiagram?: boolean | DetailSOPCountOutputTypeCountKonfigurasiDiagramArgs
   }
 
   // Custom InputTypes
@@ -3252,6 +3625,13 @@ export namespace Prisma {
     where?: DokumenTteWhereInput
   }
 
+  /**
+   * DetailSOPCountOutputType without action
+   */
+  export type DetailSOPCountOutputTypeCountKonfigurasiDiagramArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KonfigurasiDiagramSOPWhereInput
+  }
+
 
   /**
    * Count Type LangkahSOPCountOutputType
@@ -3260,11 +3640,15 @@ export namespace Prisma {
   export type LangkahSOPCountOutputType = {
     langkahSebelumTidak: number
     langkahSebelumYa: number
+    overridePanahSebagaiSumber: number
+    overridePanahSebagaiTujuan: number
   }
 
   export type LangkahSOPCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     langkahSebelumTidak?: boolean | LangkahSOPCountOutputTypeCountLangkahSebelumTidakArgs
     langkahSebelumYa?: boolean | LangkahSOPCountOutputTypeCountLangkahSebelumYaArgs
+    overridePanahSebagaiSumber?: boolean | LangkahSOPCountOutputTypeCountOverridePanahSebagaiSumberArgs
+    overridePanahSebagaiTujuan?: boolean | LangkahSOPCountOutputTypeCountOverridePanahSebagaiTujuanArgs
   }
 
   // Custom InputTypes
@@ -3290,6 +3674,20 @@ export namespace Prisma {
    */
   export type LangkahSOPCountOutputTypeCountLangkahSebelumYaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LangkahSOPWhereInput
+  }
+
+  /**
+   * LangkahSOPCountOutputType without action
+   */
+  export type LangkahSOPCountOutputTypeCountOverridePanahSebagaiSumberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OverridePanahDiagramSOPWhereInput
+  }
+
+  /**
+   * LangkahSOPCountOutputType without action
+   */
+  export type LangkahSOPCountOutputTypeCountOverridePanahSebagaiTujuanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OverridePanahDiagramSOPWhereInput
   }
 
 
@@ -3472,6 +3870,77 @@ export namespace Prisma {
    */
   export type DokumenTteCountOutputTypeCountRiwayatTandaTanganArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RiwayatTandaTanganWhereInput
+  }
+
+
+  /**
+   * Count Type KonfigurasiDiagramSOPCountOutputType
+   */
+
+  export type KonfigurasiDiagramSOPCountOutputType = {
+    overridePanah: number
+    overrideLabel: number
+  }
+
+  export type KonfigurasiDiagramSOPCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    overridePanah?: boolean | KonfigurasiDiagramSOPCountOutputTypeCountOverridePanahArgs
+    overrideLabel?: boolean | KonfigurasiDiagramSOPCountOutputTypeCountOverrideLabelArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * KonfigurasiDiagramSOPCountOutputType without action
+   */
+  export type KonfigurasiDiagramSOPCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOPCountOutputType
+     */
+    select?: KonfigurasiDiagramSOPCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * KonfigurasiDiagramSOPCountOutputType without action
+   */
+  export type KonfigurasiDiagramSOPCountOutputTypeCountOverridePanahArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OverridePanahDiagramSOPWhereInput
+  }
+
+  /**
+   * KonfigurasiDiagramSOPCountOutputType without action
+   */
+  export type KonfigurasiDiagramSOPCountOutputTypeCountOverrideLabelArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OverrideLabelDiagramSOPWhereInput
+  }
+
+
+  /**
+   * Count Type OverridePanahDiagramSOPCountOutputType
+   */
+
+  export type OverridePanahDiagramSOPCountOutputType = {
+    titikTekuk: number
+  }
+
+  export type OverridePanahDiagramSOPCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    titikTekuk?: boolean | OverridePanahDiagramSOPCountOutputTypeCountTitikTekukArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * OverridePanahDiagramSOPCountOutputType without action
+   */
+  export type OverridePanahDiagramSOPCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOPCountOutputType
+     */
+    select?: OverridePanahDiagramSOPCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * OverridePanahDiagramSOPCountOutputType without action
+   */
+  export type OverridePanahDiagramSOPCountOutputTypeCountTitikTekukArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TitikTekukPanahDiagramSOPWhereInput
   }
 
 
@@ -10155,6 +10624,7 @@ export namespace Prisma {
     relasiSopKeluar?: boolean | DetailSOP$relasiSopKeluarArgs<ExtArgs>
     relasiSopMasuk?: boolean | DetailSOP$relasiSopMasukArgs<ExtArgs>
     dokumenTte?: boolean | DetailSOP$dokumenTteArgs<ExtArgs>
+    konfigurasiDiagram?: boolean | DetailSOP$konfigurasiDiagramArgs<ExtArgs>
     _count?: boolean | DetailSOPCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["detailSOP"]>
 
@@ -10196,6 +10666,7 @@ export namespace Prisma {
     relasiSopKeluar?: boolean | DetailSOP$relasiSopKeluarArgs<ExtArgs>
     relasiSopMasuk?: boolean | DetailSOP$relasiSopMasukArgs<ExtArgs>
     dokumenTte?: boolean | DetailSOP$dokumenTteArgs<ExtArgs>
+    konfigurasiDiagram?: boolean | DetailSOP$konfigurasiDiagramArgs<ExtArgs>
     _count?: boolean | DetailSOPCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -10219,6 +10690,7 @@ export namespace Prisma {
       relasiSopKeluar: Prisma.$SopTerkaitPayload<ExtArgs>[]
       relasiSopMasuk: Prisma.$SopTerkaitPayload<ExtArgs>[]
       dokumenTte: Prisma.$DokumenTtePayload<ExtArgs>[]
+      konfigurasiDiagram: Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       detailSopId: string
@@ -10598,6 +11070,7 @@ export namespace Prisma {
     relasiSopKeluar<T extends DetailSOP$relasiSopKeluarArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$relasiSopKeluarArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SopTerkaitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     relasiSopMasuk<T extends DetailSOP$relasiSopMasukArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$relasiSopMasukArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SopTerkaitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dokumenTte<T extends DetailSOP$dokumenTteArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$dokumenTteArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DokumenTtePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    konfigurasiDiagram<T extends DetailSOP$konfigurasiDiagramArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOP$konfigurasiDiagramArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11355,6 +11828,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DokumenTteScalarFieldEnum | DokumenTteScalarFieldEnum[]
+  }
+
+  /**
+   * DetailSOP.konfigurasiDiagram
+   */
+  export type DetailSOP$konfigurasiDiagramArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    where?: KonfigurasiDiagramSOPWhereInput
+    orderBy?: KonfigurasiDiagramSOPOrderByWithRelationInput | KonfigurasiDiagramSOPOrderByWithRelationInput[]
+    cursor?: KonfigurasiDiagramSOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: KonfigurasiDiagramSOPScalarFieldEnum | KonfigurasiDiagramSOPScalarFieldEnum[]
   }
 
   /**
@@ -17252,6 +17749,8 @@ export namespace Prisma {
     langkahSebelumTidak?: boolean | LangkahSOP$langkahSebelumTidakArgs<ExtArgs>
     langkahYa?: boolean | LangkahSOP$langkahYaArgs<ExtArgs>
     langkahSebelumYa?: boolean | LangkahSOP$langkahSebelumYaArgs<ExtArgs>
+    overridePanahSebagaiSumber?: boolean | LangkahSOP$overridePanahSebagaiSumberArgs<ExtArgs>
+    overridePanahSebagaiTujuan?: boolean | LangkahSOP$overridePanahSebagaiTujuanArgs<ExtArgs>
     pelaksana?: boolean | PelaksanaDefaultArgs<ExtArgs>
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
     _count?: boolean | LangkahSOPCountOutputTypeDefaultArgs<ExtArgs>
@@ -17283,6 +17782,8 @@ export namespace Prisma {
     langkahSebelumTidak?: boolean | LangkahSOP$langkahSebelumTidakArgs<ExtArgs>
     langkahYa?: boolean | LangkahSOP$langkahYaArgs<ExtArgs>
     langkahSebelumYa?: boolean | LangkahSOP$langkahSebelumYaArgs<ExtArgs>
+    overridePanahSebagaiSumber?: boolean | LangkahSOP$overridePanahSebagaiSumberArgs<ExtArgs>
+    overridePanahSebagaiTujuan?: boolean | LangkahSOP$overridePanahSebagaiTujuanArgs<ExtArgs>
     pelaksana?: boolean | PelaksanaDefaultArgs<ExtArgs>
     detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
     _count?: boolean | LangkahSOPCountOutputTypeDefaultArgs<ExtArgs>
@@ -17295,6 +17796,8 @@ export namespace Prisma {
       langkahSebelumTidak: Prisma.$LangkahSOPPayload<ExtArgs>[]
       langkahYa: Prisma.$LangkahSOPPayload<ExtArgs> | null
       langkahSebelumYa: Prisma.$LangkahSOPPayload<ExtArgs>[]
+      overridePanahSebagaiSumber: Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>[]
+      overridePanahSebagaiTujuan: Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>[]
       pelaksana: Prisma.$PelaksanaPayload<ExtArgs>
       detailSop: Prisma.$DetailSOPPayload<ExtArgs>
     }
@@ -17658,6 +18161,8 @@ export namespace Prisma {
     langkahSebelumTidak<T extends LangkahSOP$langkahSebelumTidakArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$langkahSebelumTidakArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     langkahYa<T extends LangkahSOP$langkahYaArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$langkahYaArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     langkahSebelumYa<T extends LangkahSOP$langkahSebelumYaArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$langkahSebelumYaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    overridePanahSebagaiSumber<T extends LangkahSOP$overridePanahSebagaiSumberArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$overridePanahSebagaiSumberArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    overridePanahSebagaiTujuan<T extends LangkahSOP$overridePanahSebagaiTujuanArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOP$overridePanahSebagaiTujuanArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     pelaksana<T extends PelaksanaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PelaksanaDefaultArgs<ExtArgs>>): Prisma__PelaksanaClient<$Result.GetResult<Prisma.$PelaksanaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     detailSop<T extends DetailSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOPDefaultArgs<ExtArgs>>): Prisma__DetailSOPClient<$Result.GetResult<Prisma.$DetailSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -18135,6 +18640,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LangkahSOPScalarFieldEnum | LangkahSOPScalarFieldEnum[]
+  }
+
+  /**
+   * LangkahSOP.overridePanahSebagaiSumber
+   */
+  export type LangkahSOP$overridePanahSebagaiSumberArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    where?: OverridePanahDiagramSOPWhereInput
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OverridePanahDiagramSOPScalarFieldEnum | OverridePanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * LangkahSOP.overridePanahSebagaiTujuan
+   */
+  export type LangkahSOP$overridePanahSebagaiTujuanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    where?: OverridePanahDiagramSOPWhereInput
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OverridePanahDiagramSOPScalarFieldEnum | OverridePanahDiagramSOPScalarFieldEnum[]
   }
 
   /**
@@ -27597,6 +28150,4130 @@ export namespace Prisma {
 
 
   /**
+   * Model KonfigurasiDiagramSOP
+   */
+
+  export type AggregateKonfigurasiDiagramSOP = {
+    _count: KonfigurasiDiagramSOPCountAggregateOutputType | null
+    _avg: KonfigurasiDiagramSOPAvgAggregateOutputType | null
+    _sum: KonfigurasiDiagramSOPSumAggregateOutputType | null
+    _min: KonfigurasiDiagramSOPMinAggregateOutputType | null
+    _max: KonfigurasiDiagramSOPMaxAggregateOutputType | null
+  }
+
+  export type KonfigurasiDiagramSOPAvgAggregateOutputType = {
+    layoutSeed: number | null
+  }
+
+  export type KonfigurasiDiagramSOPSumAggregateOutputType = {
+    layoutSeed: number | null
+  }
+
+  export type KonfigurasiDiagramSOPMinAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    layoutSeed: number | null
+    updatedAt: Date | null
+  }
+
+  export type KonfigurasiDiagramSOPMaxAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    layoutSeed: number | null
+    updatedAt: Date | null
+  }
+
+  export type KonfigurasiDiagramSOPCountAggregateOutputType = {
+    detailSopId: number
+    jenis: number
+    layoutSeed: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type KonfigurasiDiagramSOPAvgAggregateInputType = {
+    layoutSeed?: true
+  }
+
+  export type KonfigurasiDiagramSOPSumAggregateInputType = {
+    layoutSeed?: true
+  }
+
+  export type KonfigurasiDiagramSOPMinAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    layoutSeed?: true
+    updatedAt?: true
+  }
+
+  export type KonfigurasiDiagramSOPMaxAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    layoutSeed?: true
+    updatedAt?: true
+  }
+
+  export type KonfigurasiDiagramSOPCountAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    layoutSeed?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type KonfigurasiDiagramSOPAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KonfigurasiDiagramSOP to aggregate.
+     */
+    where?: KonfigurasiDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KonfigurasiDiagramSOPS to fetch.
+     */
+    orderBy?: KonfigurasiDiagramSOPOrderByWithRelationInput | KonfigurasiDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KonfigurasiDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KonfigurasiDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KonfigurasiDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned KonfigurasiDiagramSOPS
+    **/
+    _count?: true | KonfigurasiDiagramSOPCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: KonfigurasiDiagramSOPAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: KonfigurasiDiagramSOPSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KonfigurasiDiagramSOPMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KonfigurasiDiagramSOPMaxAggregateInputType
+  }
+
+  export type GetKonfigurasiDiagramSOPAggregateType<T extends KonfigurasiDiagramSOPAggregateArgs> = {
+        [P in keyof T & keyof AggregateKonfigurasiDiagramSOP]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKonfigurasiDiagramSOP[P]>
+      : GetScalarType<T[P], AggregateKonfigurasiDiagramSOP[P]>
+  }
+
+
+
+
+  export type KonfigurasiDiagramSOPGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KonfigurasiDiagramSOPWhereInput
+    orderBy?: KonfigurasiDiagramSOPOrderByWithAggregationInput | KonfigurasiDiagramSOPOrderByWithAggregationInput[]
+    by: KonfigurasiDiagramSOPScalarFieldEnum[] | KonfigurasiDiagramSOPScalarFieldEnum
+    having?: KonfigurasiDiagramSOPScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KonfigurasiDiagramSOPCountAggregateInputType | true
+    _avg?: KonfigurasiDiagramSOPAvgAggregateInputType
+    _sum?: KonfigurasiDiagramSOPSumAggregateInputType
+    _min?: KonfigurasiDiagramSOPMinAggregateInputType
+    _max?: KonfigurasiDiagramSOPMaxAggregateInputType
+  }
+
+  export type KonfigurasiDiagramSOPGroupByOutputType = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    layoutSeed: number
+    updatedAt: Date
+    _count: KonfigurasiDiagramSOPCountAggregateOutputType | null
+    _avg: KonfigurasiDiagramSOPAvgAggregateOutputType | null
+    _sum: KonfigurasiDiagramSOPSumAggregateOutputType | null
+    _min: KonfigurasiDiagramSOPMinAggregateOutputType | null
+    _max: KonfigurasiDiagramSOPMaxAggregateOutputType | null
+  }
+
+  type GetKonfigurasiDiagramSOPGroupByPayload<T extends KonfigurasiDiagramSOPGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KonfigurasiDiagramSOPGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KonfigurasiDiagramSOPGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KonfigurasiDiagramSOPGroupByOutputType[P]>
+            : GetScalarType<T[P], KonfigurasiDiagramSOPGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KonfigurasiDiagramSOPSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    detailSopId?: boolean
+    jenis?: boolean
+    layoutSeed?: boolean
+    updatedAt?: boolean
+    overridePanah?: boolean | KonfigurasiDiagramSOP$overridePanahArgs<ExtArgs>
+    overrideLabel?: boolean | KonfigurasiDiagramSOP$overrideLabelArgs<ExtArgs>
+    detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
+    _count?: boolean | KonfigurasiDiagramSOPCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["konfigurasiDiagramSOP"]>
+
+
+
+  export type KonfigurasiDiagramSOPSelectScalar = {
+    detailSopId?: boolean
+    jenis?: boolean
+    layoutSeed?: boolean
+    updatedAt?: boolean
+  }
+
+  export type KonfigurasiDiagramSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "jenis" | "layoutSeed" | "updatedAt", ExtArgs["result"]["konfigurasiDiagramSOP"]>
+  export type KonfigurasiDiagramSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    overridePanah?: boolean | KonfigurasiDiagramSOP$overridePanahArgs<ExtArgs>
+    overrideLabel?: boolean | KonfigurasiDiagramSOP$overrideLabelArgs<ExtArgs>
+    detailSop?: boolean | DetailSOPDefaultArgs<ExtArgs>
+    _count?: boolean | KonfigurasiDiagramSOPCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $KonfigurasiDiagramSOPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KonfigurasiDiagramSOP"
+    objects: {
+      overridePanah: Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>[]
+      overrideLabel: Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>[]
+      detailSop: Prisma.$DetailSOPPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      detailSopId: string
+      jenis: $Enums.JenisDiagram
+      layoutSeed: number
+      updatedAt: Date
+    }, ExtArgs["result"]["konfigurasiDiagramSOP"]>
+    composites: {}
+  }
+
+  type KonfigurasiDiagramSOPGetPayload<S extends boolean | null | undefined | KonfigurasiDiagramSOPDefaultArgs> = $Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload, S>
+
+  type KonfigurasiDiagramSOPCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KonfigurasiDiagramSOPFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KonfigurasiDiagramSOPCountAggregateInputType | true
+    }
+
+  export interface KonfigurasiDiagramSOPDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KonfigurasiDiagramSOP'], meta: { name: 'KonfigurasiDiagramSOP' } }
+    /**
+     * Find zero or one KonfigurasiDiagramSOP that matches the filter.
+     * @param {KonfigurasiDiagramSOPFindUniqueArgs} args - Arguments to find a KonfigurasiDiagramSOP
+     * @example
+     * // Get one KonfigurasiDiagramSOP
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KonfigurasiDiagramSOPFindUniqueArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPFindUniqueArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KonfigurasiDiagramSOP that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KonfigurasiDiagramSOPFindUniqueOrThrowArgs} args - Arguments to find a KonfigurasiDiagramSOP
+     * @example
+     * // Get one KonfigurasiDiagramSOP
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KonfigurasiDiagramSOPFindUniqueOrThrowArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KonfigurasiDiagramSOP that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPFindFirstArgs} args - Arguments to find a KonfigurasiDiagramSOP
+     * @example
+     * // Get one KonfigurasiDiagramSOP
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KonfigurasiDiagramSOPFindFirstArgs>(args?: SelectSubset<T, KonfigurasiDiagramSOPFindFirstArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KonfigurasiDiagramSOP that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPFindFirstOrThrowArgs} args - Arguments to find a KonfigurasiDiagramSOP
+     * @example
+     * // Get one KonfigurasiDiagramSOP
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KonfigurasiDiagramSOPFindFirstOrThrowArgs>(args?: SelectSubset<T, KonfigurasiDiagramSOPFindFirstOrThrowArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KonfigurasiDiagramSOPS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KonfigurasiDiagramSOPS
+     * const konfigurasiDiagramSOPS = await prisma.konfigurasiDiagramSOP.findMany()
+     * 
+     * // Get first 10 KonfigurasiDiagramSOPS
+     * const konfigurasiDiagramSOPS = await prisma.konfigurasiDiagramSOP.findMany({ take: 10 })
+     * 
+     * // Only select the `detailSopId`
+     * const konfigurasiDiagramSOPWithDetailSopIdOnly = await prisma.konfigurasiDiagramSOP.findMany({ select: { detailSopId: true } })
+     * 
+     */
+    findMany<T extends KonfigurasiDiagramSOPFindManyArgs>(args?: SelectSubset<T, KonfigurasiDiagramSOPFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KonfigurasiDiagramSOP.
+     * @param {KonfigurasiDiagramSOPCreateArgs} args - Arguments to create a KonfigurasiDiagramSOP.
+     * @example
+     * // Create one KonfigurasiDiagramSOP
+     * const KonfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.create({
+     *   data: {
+     *     // ... data to create a KonfigurasiDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    create<T extends KonfigurasiDiagramSOPCreateArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPCreateArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KonfigurasiDiagramSOPS.
+     * @param {KonfigurasiDiagramSOPCreateManyArgs} args - Arguments to create many KonfigurasiDiagramSOPS.
+     * @example
+     * // Create many KonfigurasiDiagramSOPS
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KonfigurasiDiagramSOPCreateManyArgs>(args?: SelectSubset<T, KonfigurasiDiagramSOPCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a KonfigurasiDiagramSOP.
+     * @param {KonfigurasiDiagramSOPDeleteArgs} args - Arguments to delete one KonfigurasiDiagramSOP.
+     * @example
+     * // Delete one KonfigurasiDiagramSOP
+     * const KonfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.delete({
+     *   where: {
+     *     // ... filter to delete one KonfigurasiDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KonfigurasiDiagramSOPDeleteArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPDeleteArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KonfigurasiDiagramSOP.
+     * @param {KonfigurasiDiagramSOPUpdateArgs} args - Arguments to update one KonfigurasiDiagramSOP.
+     * @example
+     * // Update one KonfigurasiDiagramSOP
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KonfigurasiDiagramSOPUpdateArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPUpdateArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KonfigurasiDiagramSOPS.
+     * @param {KonfigurasiDiagramSOPDeleteManyArgs} args - Arguments to filter KonfigurasiDiagramSOPS to delete.
+     * @example
+     * // Delete a few KonfigurasiDiagramSOPS
+     * const { count } = await prisma.konfigurasiDiagramSOP.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KonfigurasiDiagramSOPDeleteManyArgs>(args?: SelectSubset<T, KonfigurasiDiagramSOPDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KonfigurasiDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KonfigurasiDiagramSOPS
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KonfigurasiDiagramSOPUpdateManyArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one KonfigurasiDiagramSOP.
+     * @param {KonfigurasiDiagramSOPUpsertArgs} args - Arguments to update or create a KonfigurasiDiagramSOP.
+     * @example
+     * // Update or create a KonfigurasiDiagramSOP
+     * const konfigurasiDiagramSOP = await prisma.konfigurasiDiagramSOP.upsert({
+     *   create: {
+     *     // ... data to create a KonfigurasiDiagramSOP
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KonfigurasiDiagramSOP we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KonfigurasiDiagramSOPUpsertArgs>(args: SelectSubset<T, KonfigurasiDiagramSOPUpsertArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KonfigurasiDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPCountArgs} args - Arguments to filter KonfigurasiDiagramSOPS to count.
+     * @example
+     * // Count the number of KonfigurasiDiagramSOPS
+     * const count = await prisma.konfigurasiDiagramSOP.count({
+     *   where: {
+     *     // ... the filter for the KonfigurasiDiagramSOPS we want to count
+     *   }
+     * })
+    **/
+    count<T extends KonfigurasiDiagramSOPCountArgs>(
+      args?: Subset<T, KonfigurasiDiagramSOPCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KonfigurasiDiagramSOPCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KonfigurasiDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KonfigurasiDiagramSOPAggregateArgs>(args: Subset<T, KonfigurasiDiagramSOPAggregateArgs>): Prisma.PrismaPromise<GetKonfigurasiDiagramSOPAggregateType<T>>
+
+    /**
+     * Group by KonfigurasiDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KonfigurasiDiagramSOPGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KonfigurasiDiagramSOPGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KonfigurasiDiagramSOPGroupByArgs['orderBy'] }
+        : { orderBy?: KonfigurasiDiagramSOPGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KonfigurasiDiagramSOPGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKonfigurasiDiagramSOPGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KonfigurasiDiagramSOP model
+   */
+  readonly fields: KonfigurasiDiagramSOPFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KonfigurasiDiagramSOP.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KonfigurasiDiagramSOPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    overridePanah<T extends KonfigurasiDiagramSOP$overridePanahArgs<ExtArgs> = {}>(args?: Subset<T, KonfigurasiDiagramSOP$overridePanahArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    overrideLabel<T extends KonfigurasiDiagramSOP$overrideLabelArgs<ExtArgs> = {}>(args?: Subset<T, KonfigurasiDiagramSOP$overrideLabelArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    detailSop<T extends DetailSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DetailSOPDefaultArgs<ExtArgs>>): Prisma__DetailSOPClient<$Result.GetResult<Prisma.$DetailSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KonfigurasiDiagramSOP model
+   */
+  interface KonfigurasiDiagramSOPFieldRefs {
+    readonly detailSopId: FieldRef<"KonfigurasiDiagramSOP", 'String'>
+    readonly jenis: FieldRef<"KonfigurasiDiagramSOP", 'JenisDiagram'>
+    readonly layoutSeed: FieldRef<"KonfigurasiDiagramSOP", 'Int'>
+    readonly updatedAt: FieldRef<"KonfigurasiDiagramSOP", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * KonfigurasiDiagramSOP findUnique
+   */
+  export type KonfigurasiDiagramSOPFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which KonfigurasiDiagramSOP to fetch.
+     */
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * KonfigurasiDiagramSOP findUniqueOrThrow
+   */
+  export type KonfigurasiDiagramSOPFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which KonfigurasiDiagramSOP to fetch.
+     */
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * KonfigurasiDiagramSOP findFirst
+   */
+  export type KonfigurasiDiagramSOPFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which KonfigurasiDiagramSOP to fetch.
+     */
+    where?: KonfigurasiDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KonfigurasiDiagramSOPS to fetch.
+     */
+    orderBy?: KonfigurasiDiagramSOPOrderByWithRelationInput | KonfigurasiDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KonfigurasiDiagramSOPS.
+     */
+    cursor?: KonfigurasiDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KonfigurasiDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KonfigurasiDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KonfigurasiDiagramSOPS.
+     */
+    distinct?: KonfigurasiDiagramSOPScalarFieldEnum | KonfigurasiDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * KonfigurasiDiagramSOP findFirstOrThrow
+   */
+  export type KonfigurasiDiagramSOPFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which KonfigurasiDiagramSOP to fetch.
+     */
+    where?: KonfigurasiDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KonfigurasiDiagramSOPS to fetch.
+     */
+    orderBy?: KonfigurasiDiagramSOPOrderByWithRelationInput | KonfigurasiDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KonfigurasiDiagramSOPS.
+     */
+    cursor?: KonfigurasiDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KonfigurasiDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KonfigurasiDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KonfigurasiDiagramSOPS.
+     */
+    distinct?: KonfigurasiDiagramSOPScalarFieldEnum | KonfigurasiDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * KonfigurasiDiagramSOP findMany
+   */
+  export type KonfigurasiDiagramSOPFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which KonfigurasiDiagramSOPS to fetch.
+     */
+    where?: KonfigurasiDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KonfigurasiDiagramSOPS to fetch.
+     */
+    orderBy?: KonfigurasiDiagramSOPOrderByWithRelationInput | KonfigurasiDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing KonfigurasiDiagramSOPS.
+     */
+    cursor?: KonfigurasiDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KonfigurasiDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KonfigurasiDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KonfigurasiDiagramSOPS.
+     */
+    distinct?: KonfigurasiDiagramSOPScalarFieldEnum | KonfigurasiDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * KonfigurasiDiagramSOP create
+   */
+  export type KonfigurasiDiagramSOPCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to create a KonfigurasiDiagramSOP.
+     */
+    data: XOR<KonfigurasiDiagramSOPCreateInput, KonfigurasiDiagramSOPUncheckedCreateInput>
+  }
+
+  /**
+   * KonfigurasiDiagramSOP createMany
+   */
+  export type KonfigurasiDiagramSOPCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KonfigurasiDiagramSOPS.
+     */
+    data: KonfigurasiDiagramSOPCreateManyInput | KonfigurasiDiagramSOPCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KonfigurasiDiagramSOP update
+   */
+  export type KonfigurasiDiagramSOPUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to update a KonfigurasiDiagramSOP.
+     */
+    data: XOR<KonfigurasiDiagramSOPUpdateInput, KonfigurasiDiagramSOPUncheckedUpdateInput>
+    /**
+     * Choose, which KonfigurasiDiagramSOP to update.
+     */
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * KonfigurasiDiagramSOP updateMany
+   */
+  export type KonfigurasiDiagramSOPUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KonfigurasiDiagramSOPS.
+     */
+    data: XOR<KonfigurasiDiagramSOPUpdateManyMutationInput, KonfigurasiDiagramSOPUncheckedUpdateManyInput>
+    /**
+     * Filter which KonfigurasiDiagramSOPS to update
+     */
+    where?: KonfigurasiDiagramSOPWhereInput
+    /**
+     * Limit how many KonfigurasiDiagramSOPS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KonfigurasiDiagramSOP upsert
+   */
+  export type KonfigurasiDiagramSOPUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The filter to search for the KonfigurasiDiagramSOP to update in case it exists.
+     */
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+    /**
+     * In case the KonfigurasiDiagramSOP found by the `where` argument doesn't exist, create a new KonfigurasiDiagramSOP with this data.
+     */
+    create: XOR<KonfigurasiDiagramSOPCreateInput, KonfigurasiDiagramSOPUncheckedCreateInput>
+    /**
+     * In case the KonfigurasiDiagramSOP was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KonfigurasiDiagramSOPUpdateInput, KonfigurasiDiagramSOPUncheckedUpdateInput>
+  }
+
+  /**
+   * KonfigurasiDiagramSOP delete
+   */
+  export type KonfigurasiDiagramSOPDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter which KonfigurasiDiagramSOP to delete.
+     */
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * KonfigurasiDiagramSOP deleteMany
+   */
+  export type KonfigurasiDiagramSOPDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KonfigurasiDiagramSOPS to delete
+     */
+    where?: KonfigurasiDiagramSOPWhereInput
+    /**
+     * Limit how many KonfigurasiDiagramSOPS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KonfigurasiDiagramSOP.overridePanah
+   */
+  export type KonfigurasiDiagramSOP$overridePanahArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    where?: OverridePanahDiagramSOPWhereInput
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OverridePanahDiagramSOPScalarFieldEnum | OverridePanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * KonfigurasiDiagramSOP.overrideLabel
+   */
+  export type KonfigurasiDiagramSOP$overrideLabelArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    where?: OverrideLabelDiagramSOPWhereInput
+    orderBy?: OverrideLabelDiagramSOPOrderByWithRelationInput | OverrideLabelDiagramSOPOrderByWithRelationInput[]
+    cursor?: OverrideLabelDiagramSOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: OverrideLabelDiagramSOPScalarFieldEnum | OverrideLabelDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * KonfigurasiDiagramSOP without action
+   */
+  export type KonfigurasiDiagramSOPDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KonfigurasiDiagramSOP
+     */
+    select?: KonfigurasiDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KonfigurasiDiagramSOP
+     */
+    omit?: KonfigurasiDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: KonfigurasiDiagramSOPInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model OverridePanahDiagramSOP
+   */
+
+  export type AggregateOverridePanahDiagramSOP = {
+    _count: OverridePanahDiagramSOPCountAggregateOutputType | null
+    _avg: OverridePanahDiagramSOPAvgAggregateOutputType | null
+    _sum: OverridePanahDiagramSOPSumAggregateOutputType | null
+    _min: OverridePanahDiagramSOPMinAggregateOutputType | null
+    _max: OverridePanahDiagramSOPMaxAggregateOutputType | null
+  }
+
+  export type OverridePanahDiagramSOPAvgAggregateOutputType = {
+    startX: number | null
+    startY: number | null
+    endX: number | null
+    endY: number | null
+  }
+
+  export type OverridePanahDiagramSOPSumAggregateOutputType = {
+    startX: number | null
+    startY: number | null
+    endX: number | null
+    endY: number | null
+  }
+
+  export type OverridePanahDiagramSOPMinAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    dariLangkahSopId: string | null
+    keLangkahSopId: string | null
+    cabang: $Enums.CabangDiagram | null
+    sSide: $Enums.SisiPanahDiagram | null
+    eSide: $Enums.SisiPanahDiagram | null
+    startX: number | null
+    startY: number | null
+    endX: number | null
+    endY: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OverridePanahDiagramSOPMaxAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    dariLangkahSopId: string | null
+    keLangkahSopId: string | null
+    cabang: $Enums.CabangDiagram | null
+    sSide: $Enums.SisiPanahDiagram | null
+    eSide: $Enums.SisiPanahDiagram | null
+    startX: number | null
+    startY: number | null
+    endX: number | null
+    endY: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OverridePanahDiagramSOPCountAggregateOutputType = {
+    detailSopId: number
+    jenis: number
+    dariLangkahSopId: number
+    keLangkahSopId: number
+    cabang: number
+    sSide: number
+    eSide: number
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type OverridePanahDiagramSOPAvgAggregateInputType = {
+    startX?: true
+    startY?: true
+    endX?: true
+    endY?: true
+  }
+
+  export type OverridePanahDiagramSOPSumAggregateInputType = {
+    startX?: true
+    startY?: true
+    endX?: true
+    endY?: true
+  }
+
+  export type OverridePanahDiagramSOPMinAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    dariLangkahSopId?: true
+    keLangkahSopId?: true
+    cabang?: true
+    sSide?: true
+    eSide?: true
+    startX?: true
+    startY?: true
+    endX?: true
+    endY?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OverridePanahDiagramSOPMaxAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    dariLangkahSopId?: true
+    keLangkahSopId?: true
+    cabang?: true
+    sSide?: true
+    eSide?: true
+    startX?: true
+    startY?: true
+    endX?: true
+    endY?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OverridePanahDiagramSOPCountAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    dariLangkahSopId?: true
+    keLangkahSopId?: true
+    cabang?: true
+    sSide?: true
+    eSide?: true
+    startX?: true
+    startY?: true
+    endX?: true
+    endY?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type OverridePanahDiagramSOPAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OverridePanahDiagramSOP to aggregate.
+     */
+    where?: OverridePanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverridePanahDiagramSOPS to fetch.
+     */
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverridePanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverridePanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OverridePanahDiagramSOPS
+    **/
+    _count?: true | OverridePanahDiagramSOPCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: OverridePanahDiagramSOPAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: OverridePanahDiagramSOPSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OverridePanahDiagramSOPMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OverridePanahDiagramSOPMaxAggregateInputType
+  }
+
+  export type GetOverridePanahDiagramSOPAggregateType<T extends OverridePanahDiagramSOPAggregateArgs> = {
+        [P in keyof T & keyof AggregateOverridePanahDiagramSOP]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOverridePanahDiagramSOP[P]>
+      : GetScalarType<T[P], AggregateOverridePanahDiagramSOP[P]>
+  }
+
+
+
+
+  export type OverridePanahDiagramSOPGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OverridePanahDiagramSOPWhereInput
+    orderBy?: OverridePanahDiagramSOPOrderByWithAggregationInput | OverridePanahDiagramSOPOrderByWithAggregationInput[]
+    by: OverridePanahDiagramSOPScalarFieldEnum[] | OverridePanahDiagramSOPScalarFieldEnum
+    having?: OverridePanahDiagramSOPScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OverridePanahDiagramSOPCountAggregateInputType | true
+    _avg?: OverridePanahDiagramSOPAvgAggregateInputType
+    _sum?: OverridePanahDiagramSOPSumAggregateInputType
+    _min?: OverridePanahDiagramSOPMinAggregateInputType
+    _max?: OverridePanahDiagramSOPMaxAggregateInputType
+  }
+
+  export type OverridePanahDiagramSOPGroupByOutputType = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt: Date
+    updatedAt: Date
+    _count: OverridePanahDiagramSOPCountAggregateOutputType | null
+    _avg: OverridePanahDiagramSOPAvgAggregateOutputType | null
+    _sum: OverridePanahDiagramSOPSumAggregateOutputType | null
+    _min: OverridePanahDiagramSOPMinAggregateOutputType | null
+    _max: OverridePanahDiagramSOPMaxAggregateOutputType | null
+  }
+
+  type GetOverridePanahDiagramSOPGroupByPayload<T extends OverridePanahDiagramSOPGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OverridePanahDiagramSOPGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OverridePanahDiagramSOPGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OverridePanahDiagramSOPGroupByOutputType[P]>
+            : GetScalarType<T[P], OverridePanahDiagramSOPGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OverridePanahDiagramSOPSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    detailSopId?: boolean
+    jenis?: boolean
+    dariLangkahSopId?: boolean
+    keLangkahSopId?: boolean
+    cabang?: boolean
+    sSide?: boolean
+    eSide?: boolean
+    startX?: boolean
+    startY?: boolean
+    endX?: boolean
+    endY?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    konfigurasiDiagram?: boolean | KonfigurasiDiagramSOPDefaultArgs<ExtArgs>
+    dariLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
+    keLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
+    titikTekuk?: boolean | OverridePanahDiagramSOP$titikTekukArgs<ExtArgs>
+    _count?: boolean | OverridePanahDiagramSOPCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["overridePanahDiagramSOP"]>
+
+
+
+  export type OverridePanahDiagramSOPSelectScalar = {
+    detailSopId?: boolean
+    jenis?: boolean
+    dariLangkahSopId?: boolean
+    keLangkahSopId?: boolean
+    cabang?: boolean
+    sSide?: boolean
+    eSide?: boolean
+    startX?: boolean
+    startY?: boolean
+    endX?: boolean
+    endY?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type OverridePanahDiagramSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "jenis" | "dariLangkahSopId" | "keLangkahSopId" | "cabang" | "sSide" | "eSide" | "startX" | "startY" | "endX" | "endY" | "createdAt" | "updatedAt", ExtArgs["result"]["overridePanahDiagramSOP"]>
+  export type OverridePanahDiagramSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    konfigurasiDiagram?: boolean | KonfigurasiDiagramSOPDefaultArgs<ExtArgs>
+    dariLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
+    keLangkah?: boolean | LangkahSOPDefaultArgs<ExtArgs>
+    titikTekuk?: boolean | OverridePanahDiagramSOP$titikTekukArgs<ExtArgs>
+    _count?: boolean | OverridePanahDiagramSOPCountOutputTypeDefaultArgs<ExtArgs>
+  }
+
+  export type $OverridePanahDiagramSOPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OverridePanahDiagramSOP"
+    objects: {
+      konfigurasiDiagram: Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>
+      dariLangkah: Prisma.$LangkahSOPPayload<ExtArgs>
+      keLangkah: Prisma.$LangkahSOPPayload<ExtArgs>
+      titikTekuk: Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      detailSopId: string
+      jenis: $Enums.JenisDiagram
+      dariLangkahSopId: string
+      keLangkahSopId: string
+      cabang: $Enums.CabangDiagram
+      sSide: $Enums.SisiPanahDiagram
+      eSide: $Enums.SisiPanahDiagram
+      startX: number
+      startY: number
+      endX: number
+      endY: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["overridePanahDiagramSOP"]>
+    composites: {}
+  }
+
+  type OverridePanahDiagramSOPGetPayload<S extends boolean | null | undefined | OverridePanahDiagramSOPDefaultArgs> = $Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload, S>
+
+  type OverridePanahDiagramSOPCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OverridePanahDiagramSOPFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OverridePanahDiagramSOPCountAggregateInputType | true
+    }
+
+  export interface OverridePanahDiagramSOPDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OverridePanahDiagramSOP'], meta: { name: 'OverridePanahDiagramSOP' } }
+    /**
+     * Find zero or one OverridePanahDiagramSOP that matches the filter.
+     * @param {OverridePanahDiagramSOPFindUniqueArgs} args - Arguments to find a OverridePanahDiagramSOP
+     * @example
+     * // Get one OverridePanahDiagramSOP
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OverridePanahDiagramSOPFindUniqueArgs>(args: SelectSubset<T, OverridePanahDiagramSOPFindUniqueArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OverridePanahDiagramSOP that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OverridePanahDiagramSOPFindUniqueOrThrowArgs} args - Arguments to find a OverridePanahDiagramSOP
+     * @example
+     * // Get one OverridePanahDiagramSOP
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OverridePanahDiagramSOPFindUniqueOrThrowArgs>(args: SelectSubset<T, OverridePanahDiagramSOPFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OverridePanahDiagramSOP that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPFindFirstArgs} args - Arguments to find a OverridePanahDiagramSOP
+     * @example
+     * // Get one OverridePanahDiagramSOP
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OverridePanahDiagramSOPFindFirstArgs>(args?: SelectSubset<T, OverridePanahDiagramSOPFindFirstArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OverridePanahDiagramSOP that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPFindFirstOrThrowArgs} args - Arguments to find a OverridePanahDiagramSOP
+     * @example
+     * // Get one OverridePanahDiagramSOP
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OverridePanahDiagramSOPFindFirstOrThrowArgs>(args?: SelectSubset<T, OverridePanahDiagramSOPFindFirstOrThrowArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OverridePanahDiagramSOPS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OverridePanahDiagramSOPS
+     * const overridePanahDiagramSOPS = await prisma.overridePanahDiagramSOP.findMany()
+     * 
+     * // Get first 10 OverridePanahDiagramSOPS
+     * const overridePanahDiagramSOPS = await prisma.overridePanahDiagramSOP.findMany({ take: 10 })
+     * 
+     * // Only select the `detailSopId`
+     * const overridePanahDiagramSOPWithDetailSopIdOnly = await prisma.overridePanahDiagramSOP.findMany({ select: { detailSopId: true } })
+     * 
+     */
+    findMany<T extends OverridePanahDiagramSOPFindManyArgs>(args?: SelectSubset<T, OverridePanahDiagramSOPFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OverridePanahDiagramSOP.
+     * @param {OverridePanahDiagramSOPCreateArgs} args - Arguments to create a OverridePanahDiagramSOP.
+     * @example
+     * // Create one OverridePanahDiagramSOP
+     * const OverridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.create({
+     *   data: {
+     *     // ... data to create a OverridePanahDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    create<T extends OverridePanahDiagramSOPCreateArgs>(args: SelectSubset<T, OverridePanahDiagramSOPCreateArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OverridePanahDiagramSOPS.
+     * @param {OverridePanahDiagramSOPCreateManyArgs} args - Arguments to create many OverridePanahDiagramSOPS.
+     * @example
+     * // Create many OverridePanahDiagramSOPS
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OverridePanahDiagramSOPCreateManyArgs>(args?: SelectSubset<T, OverridePanahDiagramSOPCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a OverridePanahDiagramSOP.
+     * @param {OverridePanahDiagramSOPDeleteArgs} args - Arguments to delete one OverridePanahDiagramSOP.
+     * @example
+     * // Delete one OverridePanahDiagramSOP
+     * const OverridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.delete({
+     *   where: {
+     *     // ... filter to delete one OverridePanahDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OverridePanahDiagramSOPDeleteArgs>(args: SelectSubset<T, OverridePanahDiagramSOPDeleteArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OverridePanahDiagramSOP.
+     * @param {OverridePanahDiagramSOPUpdateArgs} args - Arguments to update one OverridePanahDiagramSOP.
+     * @example
+     * // Update one OverridePanahDiagramSOP
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OverridePanahDiagramSOPUpdateArgs>(args: SelectSubset<T, OverridePanahDiagramSOPUpdateArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OverridePanahDiagramSOPS.
+     * @param {OverridePanahDiagramSOPDeleteManyArgs} args - Arguments to filter OverridePanahDiagramSOPS to delete.
+     * @example
+     * // Delete a few OverridePanahDiagramSOPS
+     * const { count } = await prisma.overridePanahDiagramSOP.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OverridePanahDiagramSOPDeleteManyArgs>(args?: SelectSubset<T, OverridePanahDiagramSOPDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OverridePanahDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OverridePanahDiagramSOPS
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OverridePanahDiagramSOPUpdateManyArgs>(args: SelectSubset<T, OverridePanahDiagramSOPUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one OverridePanahDiagramSOP.
+     * @param {OverridePanahDiagramSOPUpsertArgs} args - Arguments to update or create a OverridePanahDiagramSOP.
+     * @example
+     * // Update or create a OverridePanahDiagramSOP
+     * const overridePanahDiagramSOP = await prisma.overridePanahDiagramSOP.upsert({
+     *   create: {
+     *     // ... data to create a OverridePanahDiagramSOP
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OverridePanahDiagramSOP we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OverridePanahDiagramSOPUpsertArgs>(args: SelectSubset<T, OverridePanahDiagramSOPUpsertArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OverridePanahDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPCountArgs} args - Arguments to filter OverridePanahDiagramSOPS to count.
+     * @example
+     * // Count the number of OverridePanahDiagramSOPS
+     * const count = await prisma.overridePanahDiagramSOP.count({
+     *   where: {
+     *     // ... the filter for the OverridePanahDiagramSOPS we want to count
+     *   }
+     * })
+    **/
+    count<T extends OverridePanahDiagramSOPCountArgs>(
+      args?: Subset<T, OverridePanahDiagramSOPCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OverridePanahDiagramSOPCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OverridePanahDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OverridePanahDiagramSOPAggregateArgs>(args: Subset<T, OverridePanahDiagramSOPAggregateArgs>): Prisma.PrismaPromise<GetOverridePanahDiagramSOPAggregateType<T>>
+
+    /**
+     * Group by OverridePanahDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverridePanahDiagramSOPGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OverridePanahDiagramSOPGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OverridePanahDiagramSOPGroupByArgs['orderBy'] }
+        : { orderBy?: OverridePanahDiagramSOPGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OverridePanahDiagramSOPGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOverridePanahDiagramSOPGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OverridePanahDiagramSOP model
+   */
+  readonly fields: OverridePanahDiagramSOPFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OverridePanahDiagramSOP.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OverridePanahDiagramSOPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    konfigurasiDiagram<T extends KonfigurasiDiagramSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KonfigurasiDiagramSOPDefaultArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    dariLangkah<T extends LangkahSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOPDefaultArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    keLangkah<T extends LangkahSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LangkahSOPDefaultArgs<ExtArgs>>): Prisma__LangkahSOPClient<$Result.GetResult<Prisma.$LangkahSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    titikTekuk<T extends OverridePanahDiagramSOP$titikTekukArgs<ExtArgs> = {}>(args?: Subset<T, OverridePanahDiagramSOP$titikTekukArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OverridePanahDiagramSOP model
+   */
+  interface OverridePanahDiagramSOPFieldRefs {
+    readonly detailSopId: FieldRef<"OverridePanahDiagramSOP", 'String'>
+    readonly jenis: FieldRef<"OverridePanahDiagramSOP", 'JenisDiagram'>
+    readonly dariLangkahSopId: FieldRef<"OverridePanahDiagramSOP", 'String'>
+    readonly keLangkahSopId: FieldRef<"OverridePanahDiagramSOP", 'String'>
+    readonly cabang: FieldRef<"OverridePanahDiagramSOP", 'CabangDiagram'>
+    readonly sSide: FieldRef<"OverridePanahDiagramSOP", 'SisiPanahDiagram'>
+    readonly eSide: FieldRef<"OverridePanahDiagramSOP", 'SisiPanahDiagram'>
+    readonly startX: FieldRef<"OverridePanahDiagramSOP", 'Float'>
+    readonly startY: FieldRef<"OverridePanahDiagramSOP", 'Float'>
+    readonly endX: FieldRef<"OverridePanahDiagramSOP", 'Float'>
+    readonly endY: FieldRef<"OverridePanahDiagramSOP", 'Float'>
+    readonly createdAt: FieldRef<"OverridePanahDiagramSOP", 'DateTime'>
+    readonly updatedAt: FieldRef<"OverridePanahDiagramSOP", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OverridePanahDiagramSOP findUnique
+   */
+  export type OverridePanahDiagramSOPFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverridePanahDiagramSOP to fetch.
+     */
+    where: OverridePanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverridePanahDiagramSOP findUniqueOrThrow
+   */
+  export type OverridePanahDiagramSOPFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverridePanahDiagramSOP to fetch.
+     */
+    where: OverridePanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverridePanahDiagramSOP findFirst
+   */
+  export type OverridePanahDiagramSOPFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverridePanahDiagramSOP to fetch.
+     */
+    where?: OverridePanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverridePanahDiagramSOPS to fetch.
+     */
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OverridePanahDiagramSOPS.
+     */
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverridePanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverridePanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OverridePanahDiagramSOPS.
+     */
+    distinct?: OverridePanahDiagramSOPScalarFieldEnum | OverridePanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverridePanahDiagramSOP findFirstOrThrow
+   */
+  export type OverridePanahDiagramSOPFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverridePanahDiagramSOP to fetch.
+     */
+    where?: OverridePanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverridePanahDiagramSOPS to fetch.
+     */
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OverridePanahDiagramSOPS.
+     */
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverridePanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverridePanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OverridePanahDiagramSOPS.
+     */
+    distinct?: OverridePanahDiagramSOPScalarFieldEnum | OverridePanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverridePanahDiagramSOP findMany
+   */
+  export type OverridePanahDiagramSOPFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverridePanahDiagramSOPS to fetch.
+     */
+    where?: OverridePanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverridePanahDiagramSOPS to fetch.
+     */
+    orderBy?: OverridePanahDiagramSOPOrderByWithRelationInput | OverridePanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OverridePanahDiagramSOPS.
+     */
+    cursor?: OverridePanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverridePanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverridePanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OverridePanahDiagramSOPS.
+     */
+    distinct?: OverridePanahDiagramSOPScalarFieldEnum | OverridePanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverridePanahDiagramSOP create
+   */
+  export type OverridePanahDiagramSOPCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to create a OverridePanahDiagramSOP.
+     */
+    data: XOR<OverridePanahDiagramSOPCreateInput, OverridePanahDiagramSOPUncheckedCreateInput>
+  }
+
+  /**
+   * OverridePanahDiagramSOP createMany
+   */
+  export type OverridePanahDiagramSOPCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OverridePanahDiagramSOPS.
+     */
+    data: OverridePanahDiagramSOPCreateManyInput | OverridePanahDiagramSOPCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OverridePanahDiagramSOP update
+   */
+  export type OverridePanahDiagramSOPUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to update a OverridePanahDiagramSOP.
+     */
+    data: XOR<OverridePanahDiagramSOPUpdateInput, OverridePanahDiagramSOPUncheckedUpdateInput>
+    /**
+     * Choose, which OverridePanahDiagramSOP to update.
+     */
+    where: OverridePanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverridePanahDiagramSOP updateMany
+   */
+  export type OverridePanahDiagramSOPUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OverridePanahDiagramSOPS.
+     */
+    data: XOR<OverridePanahDiagramSOPUpdateManyMutationInput, OverridePanahDiagramSOPUncheckedUpdateManyInput>
+    /**
+     * Filter which OverridePanahDiagramSOPS to update
+     */
+    where?: OverridePanahDiagramSOPWhereInput
+    /**
+     * Limit how many OverridePanahDiagramSOPS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OverridePanahDiagramSOP upsert
+   */
+  export type OverridePanahDiagramSOPUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The filter to search for the OverridePanahDiagramSOP to update in case it exists.
+     */
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    /**
+     * In case the OverridePanahDiagramSOP found by the `where` argument doesn't exist, create a new OverridePanahDiagramSOP with this data.
+     */
+    create: XOR<OverridePanahDiagramSOPCreateInput, OverridePanahDiagramSOPUncheckedCreateInput>
+    /**
+     * In case the OverridePanahDiagramSOP was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OverridePanahDiagramSOPUpdateInput, OverridePanahDiagramSOPUncheckedUpdateInput>
+  }
+
+  /**
+   * OverridePanahDiagramSOP delete
+   */
+  export type OverridePanahDiagramSOPDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter which OverridePanahDiagramSOP to delete.
+     */
+    where: OverridePanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverridePanahDiagramSOP deleteMany
+   */
+  export type OverridePanahDiagramSOPDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OverridePanahDiagramSOPS to delete
+     */
+    where?: OverridePanahDiagramSOPWhereInput
+    /**
+     * Limit how many OverridePanahDiagramSOPS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OverridePanahDiagramSOP.titikTekuk
+   */
+  export type OverridePanahDiagramSOP$titikTekukArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    orderBy?: TitikTekukPanahDiagramSOPOrderByWithRelationInput | TitikTekukPanahDiagramSOPOrderByWithRelationInput[]
+    cursor?: TitikTekukPanahDiagramSOPWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TitikTekukPanahDiagramSOPScalarFieldEnum | TitikTekukPanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverridePanahDiagramSOP without action
+   */
+  export type OverridePanahDiagramSOPDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverridePanahDiagramSOP
+     */
+    select?: OverridePanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverridePanahDiagramSOP
+     */
+    omit?: OverridePanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverridePanahDiagramSOPInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TitikTekukPanahDiagramSOP
+   */
+
+  export type AggregateTitikTekukPanahDiagramSOP = {
+    _count: TitikTekukPanahDiagramSOPCountAggregateOutputType | null
+    _avg: TitikTekukPanahDiagramSOPAvgAggregateOutputType | null
+    _sum: TitikTekukPanahDiagramSOPSumAggregateOutputType | null
+    _min: TitikTekukPanahDiagramSOPMinAggregateOutputType | null
+    _max: TitikTekukPanahDiagramSOPMaxAggregateOutputType | null
+  }
+
+  export type TitikTekukPanahDiagramSOPAvgAggregateOutputType = {
+    urutan: number | null
+    x: number | null
+    y: number | null
+  }
+
+  export type TitikTekukPanahDiagramSOPSumAggregateOutputType = {
+    urutan: number | null
+    x: number | null
+    y: number | null
+  }
+
+  export type TitikTekukPanahDiagramSOPMinAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    dariLangkahSopId: string | null
+    keLangkahSopId: string | null
+    cabang: $Enums.CabangDiagram | null
+    urutan: number | null
+    x: number | null
+    y: number | null
+  }
+
+  export type TitikTekukPanahDiagramSOPMaxAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    dariLangkahSopId: string | null
+    keLangkahSopId: string | null
+    cabang: $Enums.CabangDiagram | null
+    urutan: number | null
+    x: number | null
+    y: number | null
+  }
+
+  export type TitikTekukPanahDiagramSOPCountAggregateOutputType = {
+    detailSopId: number
+    jenis: number
+    dariLangkahSopId: number
+    keLangkahSopId: number
+    cabang: number
+    urutan: number
+    x: number
+    y: number
+    _all: number
+  }
+
+
+  export type TitikTekukPanahDiagramSOPAvgAggregateInputType = {
+    urutan?: true
+    x?: true
+    y?: true
+  }
+
+  export type TitikTekukPanahDiagramSOPSumAggregateInputType = {
+    urutan?: true
+    x?: true
+    y?: true
+  }
+
+  export type TitikTekukPanahDiagramSOPMinAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    dariLangkahSopId?: true
+    keLangkahSopId?: true
+    cabang?: true
+    urutan?: true
+    x?: true
+    y?: true
+  }
+
+  export type TitikTekukPanahDiagramSOPMaxAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    dariLangkahSopId?: true
+    keLangkahSopId?: true
+    cabang?: true
+    urutan?: true
+    x?: true
+    y?: true
+  }
+
+  export type TitikTekukPanahDiagramSOPCountAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    dariLangkahSopId?: true
+    keLangkahSopId?: true
+    cabang?: true
+    urutan?: true
+    x?: true
+    y?: true
+    _all?: true
+  }
+
+  export type TitikTekukPanahDiagramSOPAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TitikTekukPanahDiagramSOP to aggregate.
+     */
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TitikTekukPanahDiagramSOPS to fetch.
+     */
+    orderBy?: TitikTekukPanahDiagramSOPOrderByWithRelationInput | TitikTekukPanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TitikTekukPanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TitikTekukPanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TitikTekukPanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TitikTekukPanahDiagramSOPS
+    **/
+    _count?: true | TitikTekukPanahDiagramSOPCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TitikTekukPanahDiagramSOPAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TitikTekukPanahDiagramSOPSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TitikTekukPanahDiagramSOPMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TitikTekukPanahDiagramSOPMaxAggregateInputType
+  }
+
+  export type GetTitikTekukPanahDiagramSOPAggregateType<T extends TitikTekukPanahDiagramSOPAggregateArgs> = {
+        [P in keyof T & keyof AggregateTitikTekukPanahDiagramSOP]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTitikTekukPanahDiagramSOP[P]>
+      : GetScalarType<T[P], AggregateTitikTekukPanahDiagramSOP[P]>
+  }
+
+
+
+
+  export type TitikTekukPanahDiagramSOPGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    orderBy?: TitikTekukPanahDiagramSOPOrderByWithAggregationInput | TitikTekukPanahDiagramSOPOrderByWithAggregationInput[]
+    by: TitikTekukPanahDiagramSOPScalarFieldEnum[] | TitikTekukPanahDiagramSOPScalarFieldEnum
+    having?: TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TitikTekukPanahDiagramSOPCountAggregateInputType | true
+    _avg?: TitikTekukPanahDiagramSOPAvgAggregateInputType
+    _sum?: TitikTekukPanahDiagramSOPSumAggregateInputType
+    _min?: TitikTekukPanahDiagramSOPMinAggregateInputType
+    _max?: TitikTekukPanahDiagramSOPMaxAggregateInputType
+  }
+
+  export type TitikTekukPanahDiagramSOPGroupByOutputType = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    urutan: number
+    x: number
+    y: number
+    _count: TitikTekukPanahDiagramSOPCountAggregateOutputType | null
+    _avg: TitikTekukPanahDiagramSOPAvgAggregateOutputType | null
+    _sum: TitikTekukPanahDiagramSOPSumAggregateOutputType | null
+    _min: TitikTekukPanahDiagramSOPMinAggregateOutputType | null
+    _max: TitikTekukPanahDiagramSOPMaxAggregateOutputType | null
+  }
+
+  type GetTitikTekukPanahDiagramSOPGroupByPayload<T extends TitikTekukPanahDiagramSOPGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TitikTekukPanahDiagramSOPGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TitikTekukPanahDiagramSOPGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TitikTekukPanahDiagramSOPGroupByOutputType[P]>
+            : GetScalarType<T[P], TitikTekukPanahDiagramSOPGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TitikTekukPanahDiagramSOPSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    detailSopId?: boolean
+    jenis?: boolean
+    dariLangkahSopId?: boolean
+    keLangkahSopId?: boolean
+    cabang?: boolean
+    urutan?: boolean
+    x?: boolean
+    y?: boolean
+    overridePanah?: boolean | OverridePanahDiagramSOPDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["titikTekukPanahDiagramSOP"]>
+
+
+
+  export type TitikTekukPanahDiagramSOPSelectScalar = {
+    detailSopId?: boolean
+    jenis?: boolean
+    dariLangkahSopId?: boolean
+    keLangkahSopId?: boolean
+    cabang?: boolean
+    urutan?: boolean
+    x?: boolean
+    y?: boolean
+  }
+
+  export type TitikTekukPanahDiagramSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "jenis" | "dariLangkahSopId" | "keLangkahSopId" | "cabang" | "urutan" | "x" | "y", ExtArgs["result"]["titikTekukPanahDiagramSOP"]>
+  export type TitikTekukPanahDiagramSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    overridePanah?: boolean | OverridePanahDiagramSOPDefaultArgs<ExtArgs>
+  }
+
+  export type $TitikTekukPanahDiagramSOPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TitikTekukPanahDiagramSOP"
+    objects: {
+      overridePanah: Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      detailSopId: string
+      jenis: $Enums.JenisDiagram
+      dariLangkahSopId: string
+      keLangkahSopId: string
+      cabang: $Enums.CabangDiagram
+      urutan: number
+      x: number
+      y: number
+    }, ExtArgs["result"]["titikTekukPanahDiagramSOP"]>
+    composites: {}
+  }
+
+  type TitikTekukPanahDiagramSOPGetPayload<S extends boolean | null | undefined | TitikTekukPanahDiagramSOPDefaultArgs> = $Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload, S>
+
+  type TitikTekukPanahDiagramSOPCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TitikTekukPanahDiagramSOPFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TitikTekukPanahDiagramSOPCountAggregateInputType | true
+    }
+
+  export interface TitikTekukPanahDiagramSOPDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TitikTekukPanahDiagramSOP'], meta: { name: 'TitikTekukPanahDiagramSOP' } }
+    /**
+     * Find zero or one TitikTekukPanahDiagramSOP that matches the filter.
+     * @param {TitikTekukPanahDiagramSOPFindUniqueArgs} args - Arguments to find a TitikTekukPanahDiagramSOP
+     * @example
+     * // Get one TitikTekukPanahDiagramSOP
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TitikTekukPanahDiagramSOPFindUniqueArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPFindUniqueArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TitikTekukPanahDiagramSOP that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TitikTekukPanahDiagramSOPFindUniqueOrThrowArgs} args - Arguments to find a TitikTekukPanahDiagramSOP
+     * @example
+     * // Get one TitikTekukPanahDiagramSOP
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TitikTekukPanahDiagramSOPFindUniqueOrThrowArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TitikTekukPanahDiagramSOP that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPFindFirstArgs} args - Arguments to find a TitikTekukPanahDiagramSOP
+     * @example
+     * // Get one TitikTekukPanahDiagramSOP
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TitikTekukPanahDiagramSOPFindFirstArgs>(args?: SelectSubset<T, TitikTekukPanahDiagramSOPFindFirstArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TitikTekukPanahDiagramSOP that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPFindFirstOrThrowArgs} args - Arguments to find a TitikTekukPanahDiagramSOP
+     * @example
+     * // Get one TitikTekukPanahDiagramSOP
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TitikTekukPanahDiagramSOPFindFirstOrThrowArgs>(args?: SelectSubset<T, TitikTekukPanahDiagramSOPFindFirstOrThrowArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TitikTekukPanahDiagramSOPS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TitikTekukPanahDiagramSOPS
+     * const titikTekukPanahDiagramSOPS = await prisma.titikTekukPanahDiagramSOP.findMany()
+     * 
+     * // Get first 10 TitikTekukPanahDiagramSOPS
+     * const titikTekukPanahDiagramSOPS = await prisma.titikTekukPanahDiagramSOP.findMany({ take: 10 })
+     * 
+     * // Only select the `detailSopId`
+     * const titikTekukPanahDiagramSOPWithDetailSopIdOnly = await prisma.titikTekukPanahDiagramSOP.findMany({ select: { detailSopId: true } })
+     * 
+     */
+    findMany<T extends TitikTekukPanahDiagramSOPFindManyArgs>(args?: SelectSubset<T, TitikTekukPanahDiagramSOPFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TitikTekukPanahDiagramSOP.
+     * @param {TitikTekukPanahDiagramSOPCreateArgs} args - Arguments to create a TitikTekukPanahDiagramSOP.
+     * @example
+     * // Create one TitikTekukPanahDiagramSOP
+     * const TitikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.create({
+     *   data: {
+     *     // ... data to create a TitikTekukPanahDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    create<T extends TitikTekukPanahDiagramSOPCreateArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPCreateArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TitikTekukPanahDiagramSOPS.
+     * @param {TitikTekukPanahDiagramSOPCreateManyArgs} args - Arguments to create many TitikTekukPanahDiagramSOPS.
+     * @example
+     * // Create many TitikTekukPanahDiagramSOPS
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TitikTekukPanahDiagramSOPCreateManyArgs>(args?: SelectSubset<T, TitikTekukPanahDiagramSOPCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a TitikTekukPanahDiagramSOP.
+     * @param {TitikTekukPanahDiagramSOPDeleteArgs} args - Arguments to delete one TitikTekukPanahDiagramSOP.
+     * @example
+     * // Delete one TitikTekukPanahDiagramSOP
+     * const TitikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.delete({
+     *   where: {
+     *     // ... filter to delete one TitikTekukPanahDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TitikTekukPanahDiagramSOPDeleteArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPDeleteArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TitikTekukPanahDiagramSOP.
+     * @param {TitikTekukPanahDiagramSOPUpdateArgs} args - Arguments to update one TitikTekukPanahDiagramSOP.
+     * @example
+     * // Update one TitikTekukPanahDiagramSOP
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TitikTekukPanahDiagramSOPUpdateArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPUpdateArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TitikTekukPanahDiagramSOPS.
+     * @param {TitikTekukPanahDiagramSOPDeleteManyArgs} args - Arguments to filter TitikTekukPanahDiagramSOPS to delete.
+     * @example
+     * // Delete a few TitikTekukPanahDiagramSOPS
+     * const { count } = await prisma.titikTekukPanahDiagramSOP.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TitikTekukPanahDiagramSOPDeleteManyArgs>(args?: SelectSubset<T, TitikTekukPanahDiagramSOPDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TitikTekukPanahDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TitikTekukPanahDiagramSOPS
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TitikTekukPanahDiagramSOPUpdateManyArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one TitikTekukPanahDiagramSOP.
+     * @param {TitikTekukPanahDiagramSOPUpsertArgs} args - Arguments to update or create a TitikTekukPanahDiagramSOP.
+     * @example
+     * // Update or create a TitikTekukPanahDiagramSOP
+     * const titikTekukPanahDiagramSOP = await prisma.titikTekukPanahDiagramSOP.upsert({
+     *   create: {
+     *     // ... data to create a TitikTekukPanahDiagramSOP
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TitikTekukPanahDiagramSOP we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TitikTekukPanahDiagramSOPUpsertArgs>(args: SelectSubset<T, TitikTekukPanahDiagramSOPUpsertArgs<ExtArgs>>): Prisma__TitikTekukPanahDiagramSOPClient<$Result.GetResult<Prisma.$TitikTekukPanahDiagramSOPPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TitikTekukPanahDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPCountArgs} args - Arguments to filter TitikTekukPanahDiagramSOPS to count.
+     * @example
+     * // Count the number of TitikTekukPanahDiagramSOPS
+     * const count = await prisma.titikTekukPanahDiagramSOP.count({
+     *   where: {
+     *     // ... the filter for the TitikTekukPanahDiagramSOPS we want to count
+     *   }
+     * })
+    **/
+    count<T extends TitikTekukPanahDiagramSOPCountArgs>(
+      args?: Subset<T, TitikTekukPanahDiagramSOPCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TitikTekukPanahDiagramSOPCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TitikTekukPanahDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TitikTekukPanahDiagramSOPAggregateArgs>(args: Subset<T, TitikTekukPanahDiagramSOPAggregateArgs>): Prisma.PrismaPromise<GetTitikTekukPanahDiagramSOPAggregateType<T>>
+
+    /**
+     * Group by TitikTekukPanahDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TitikTekukPanahDiagramSOPGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TitikTekukPanahDiagramSOPGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TitikTekukPanahDiagramSOPGroupByArgs['orderBy'] }
+        : { orderBy?: TitikTekukPanahDiagramSOPGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TitikTekukPanahDiagramSOPGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTitikTekukPanahDiagramSOPGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TitikTekukPanahDiagramSOP model
+   */
+  readonly fields: TitikTekukPanahDiagramSOPFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TitikTekukPanahDiagramSOP.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TitikTekukPanahDiagramSOPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    overridePanah<T extends OverridePanahDiagramSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OverridePanahDiagramSOPDefaultArgs<ExtArgs>>): Prisma__OverridePanahDiagramSOPClient<$Result.GetResult<Prisma.$OverridePanahDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TitikTekukPanahDiagramSOP model
+   */
+  interface TitikTekukPanahDiagramSOPFieldRefs {
+    readonly detailSopId: FieldRef<"TitikTekukPanahDiagramSOP", 'String'>
+    readonly jenis: FieldRef<"TitikTekukPanahDiagramSOP", 'JenisDiagram'>
+    readonly dariLangkahSopId: FieldRef<"TitikTekukPanahDiagramSOP", 'String'>
+    readonly keLangkahSopId: FieldRef<"TitikTekukPanahDiagramSOP", 'String'>
+    readonly cabang: FieldRef<"TitikTekukPanahDiagramSOP", 'CabangDiagram'>
+    readonly urutan: FieldRef<"TitikTekukPanahDiagramSOP", 'Int'>
+    readonly x: FieldRef<"TitikTekukPanahDiagramSOP", 'Float'>
+    readonly y: FieldRef<"TitikTekukPanahDiagramSOP", 'Float'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TitikTekukPanahDiagramSOP findUnique
+   */
+  export type TitikTekukPanahDiagramSOPFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which TitikTekukPanahDiagramSOP to fetch.
+     */
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP findUniqueOrThrow
+   */
+  export type TitikTekukPanahDiagramSOPFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which TitikTekukPanahDiagramSOP to fetch.
+     */
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP findFirst
+   */
+  export type TitikTekukPanahDiagramSOPFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which TitikTekukPanahDiagramSOP to fetch.
+     */
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TitikTekukPanahDiagramSOPS to fetch.
+     */
+    orderBy?: TitikTekukPanahDiagramSOPOrderByWithRelationInput | TitikTekukPanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TitikTekukPanahDiagramSOPS.
+     */
+    cursor?: TitikTekukPanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TitikTekukPanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TitikTekukPanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TitikTekukPanahDiagramSOPS.
+     */
+    distinct?: TitikTekukPanahDiagramSOPScalarFieldEnum | TitikTekukPanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP findFirstOrThrow
+   */
+  export type TitikTekukPanahDiagramSOPFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which TitikTekukPanahDiagramSOP to fetch.
+     */
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TitikTekukPanahDiagramSOPS to fetch.
+     */
+    orderBy?: TitikTekukPanahDiagramSOPOrderByWithRelationInput | TitikTekukPanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TitikTekukPanahDiagramSOPS.
+     */
+    cursor?: TitikTekukPanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TitikTekukPanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TitikTekukPanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TitikTekukPanahDiagramSOPS.
+     */
+    distinct?: TitikTekukPanahDiagramSOPScalarFieldEnum | TitikTekukPanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP findMany
+   */
+  export type TitikTekukPanahDiagramSOPFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which TitikTekukPanahDiagramSOPS to fetch.
+     */
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TitikTekukPanahDiagramSOPS to fetch.
+     */
+    orderBy?: TitikTekukPanahDiagramSOPOrderByWithRelationInput | TitikTekukPanahDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TitikTekukPanahDiagramSOPS.
+     */
+    cursor?: TitikTekukPanahDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TitikTekukPanahDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TitikTekukPanahDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TitikTekukPanahDiagramSOPS.
+     */
+    distinct?: TitikTekukPanahDiagramSOPScalarFieldEnum | TitikTekukPanahDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP create
+   */
+  export type TitikTekukPanahDiagramSOPCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TitikTekukPanahDiagramSOP.
+     */
+    data: XOR<TitikTekukPanahDiagramSOPCreateInput, TitikTekukPanahDiagramSOPUncheckedCreateInput>
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP createMany
+   */
+  export type TitikTekukPanahDiagramSOPCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TitikTekukPanahDiagramSOPS.
+     */
+    data: TitikTekukPanahDiagramSOPCreateManyInput | TitikTekukPanahDiagramSOPCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP update
+   */
+  export type TitikTekukPanahDiagramSOPUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TitikTekukPanahDiagramSOP.
+     */
+    data: XOR<TitikTekukPanahDiagramSOPUpdateInput, TitikTekukPanahDiagramSOPUncheckedUpdateInput>
+    /**
+     * Choose, which TitikTekukPanahDiagramSOP to update.
+     */
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP updateMany
+   */
+  export type TitikTekukPanahDiagramSOPUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TitikTekukPanahDiagramSOPS.
+     */
+    data: XOR<TitikTekukPanahDiagramSOPUpdateManyMutationInput, TitikTekukPanahDiagramSOPUncheckedUpdateManyInput>
+    /**
+     * Filter which TitikTekukPanahDiagramSOPS to update
+     */
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    /**
+     * Limit how many TitikTekukPanahDiagramSOPS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP upsert
+   */
+  export type TitikTekukPanahDiagramSOPUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TitikTekukPanahDiagramSOP to update in case it exists.
+     */
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+    /**
+     * In case the TitikTekukPanahDiagramSOP found by the `where` argument doesn't exist, create a new TitikTekukPanahDiagramSOP with this data.
+     */
+    create: XOR<TitikTekukPanahDiagramSOPCreateInput, TitikTekukPanahDiagramSOPUncheckedCreateInput>
+    /**
+     * In case the TitikTekukPanahDiagramSOP was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TitikTekukPanahDiagramSOPUpdateInput, TitikTekukPanahDiagramSOPUncheckedUpdateInput>
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP delete
+   */
+  export type TitikTekukPanahDiagramSOPDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter which TitikTekukPanahDiagramSOP to delete.
+     */
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP deleteMany
+   */
+  export type TitikTekukPanahDiagramSOPDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TitikTekukPanahDiagramSOPS to delete
+     */
+    where?: TitikTekukPanahDiagramSOPWhereInput
+    /**
+     * Limit how many TitikTekukPanahDiagramSOPS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TitikTekukPanahDiagramSOP without action
+   */
+  export type TitikTekukPanahDiagramSOPDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TitikTekukPanahDiagramSOP
+     */
+    select?: TitikTekukPanahDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TitikTekukPanahDiagramSOP
+     */
+    omit?: TitikTekukPanahDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TitikTekukPanahDiagramSOPInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model OverrideLabelDiagramSOP
+   */
+
+  export type AggregateOverrideLabelDiagramSOP = {
+    _count: OverrideLabelDiagramSOPCountAggregateOutputType | null
+    _avg: OverrideLabelDiagramSOPAvgAggregateOutputType | null
+    _sum: OverrideLabelDiagramSOPSumAggregateOutputType | null
+    _min: OverrideLabelDiagramSOPMinAggregateOutputType | null
+    _max: OverrideLabelDiagramSOPMaxAggregateOutputType | null
+  }
+
+  export type OverrideLabelDiagramSOPAvgAggregateOutputType = {
+    posisiX: number | null
+    posisiY: number | null
+  }
+
+  export type OverrideLabelDiagramSOPSumAggregateOutputType = {
+    posisiX: number | null
+    posisiY: number | null
+  }
+
+  export type OverrideLabelDiagramSOPMinAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    kunciLabel: string | null
+    posisiX: number | null
+    posisiY: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OverrideLabelDiagramSOPMaxAggregateOutputType = {
+    detailSopId: string | null
+    jenis: $Enums.JenisDiagram | null
+    kunciLabel: string | null
+    posisiX: number | null
+    posisiY: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type OverrideLabelDiagramSOPCountAggregateOutputType = {
+    detailSopId: number
+    jenis: number
+    kunciLabel: number
+    posisiX: number
+    posisiY: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type OverrideLabelDiagramSOPAvgAggregateInputType = {
+    posisiX?: true
+    posisiY?: true
+  }
+
+  export type OverrideLabelDiagramSOPSumAggregateInputType = {
+    posisiX?: true
+    posisiY?: true
+  }
+
+  export type OverrideLabelDiagramSOPMinAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    kunciLabel?: true
+    posisiX?: true
+    posisiY?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OverrideLabelDiagramSOPMaxAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    kunciLabel?: true
+    posisiX?: true
+    posisiY?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type OverrideLabelDiagramSOPCountAggregateInputType = {
+    detailSopId?: true
+    jenis?: true
+    kunciLabel?: true
+    posisiX?: true
+    posisiY?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type OverrideLabelDiagramSOPAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OverrideLabelDiagramSOP to aggregate.
+     */
+    where?: OverrideLabelDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverrideLabelDiagramSOPS to fetch.
+     */
+    orderBy?: OverrideLabelDiagramSOPOrderByWithRelationInput | OverrideLabelDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: OverrideLabelDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverrideLabelDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverrideLabelDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned OverrideLabelDiagramSOPS
+    **/
+    _count?: true | OverrideLabelDiagramSOPCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: OverrideLabelDiagramSOPAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: OverrideLabelDiagramSOPSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: OverrideLabelDiagramSOPMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: OverrideLabelDiagramSOPMaxAggregateInputType
+  }
+
+  export type GetOverrideLabelDiagramSOPAggregateType<T extends OverrideLabelDiagramSOPAggregateArgs> = {
+        [P in keyof T & keyof AggregateOverrideLabelDiagramSOP]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateOverrideLabelDiagramSOP[P]>
+      : GetScalarType<T[P], AggregateOverrideLabelDiagramSOP[P]>
+  }
+
+
+
+
+  export type OverrideLabelDiagramSOPGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: OverrideLabelDiagramSOPWhereInput
+    orderBy?: OverrideLabelDiagramSOPOrderByWithAggregationInput | OverrideLabelDiagramSOPOrderByWithAggregationInput[]
+    by: OverrideLabelDiagramSOPScalarFieldEnum[] | OverrideLabelDiagramSOPScalarFieldEnum
+    having?: OverrideLabelDiagramSOPScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: OverrideLabelDiagramSOPCountAggregateInputType | true
+    _avg?: OverrideLabelDiagramSOPAvgAggregateInputType
+    _sum?: OverrideLabelDiagramSOPSumAggregateInputType
+    _min?: OverrideLabelDiagramSOPMinAggregateInputType
+    _max?: OverrideLabelDiagramSOPMaxAggregateInputType
+  }
+
+  export type OverrideLabelDiagramSOPGroupByOutputType = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt: Date
+    updatedAt: Date
+    _count: OverrideLabelDiagramSOPCountAggregateOutputType | null
+    _avg: OverrideLabelDiagramSOPAvgAggregateOutputType | null
+    _sum: OverrideLabelDiagramSOPSumAggregateOutputType | null
+    _min: OverrideLabelDiagramSOPMinAggregateOutputType | null
+    _max: OverrideLabelDiagramSOPMaxAggregateOutputType | null
+  }
+
+  type GetOverrideLabelDiagramSOPGroupByPayload<T extends OverrideLabelDiagramSOPGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<OverrideLabelDiagramSOPGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof OverrideLabelDiagramSOPGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], OverrideLabelDiagramSOPGroupByOutputType[P]>
+            : GetScalarType<T[P], OverrideLabelDiagramSOPGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type OverrideLabelDiagramSOPSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    detailSopId?: boolean
+    jenis?: boolean
+    kunciLabel?: boolean
+    posisiX?: boolean
+    posisiY?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    konfigurasiDiagram?: boolean | KonfigurasiDiagramSOPDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["overrideLabelDiagramSOP"]>
+
+
+
+  export type OverrideLabelDiagramSOPSelectScalar = {
+    detailSopId?: boolean
+    jenis?: boolean
+    kunciLabel?: boolean
+    posisiX?: boolean
+    posisiY?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type OverrideLabelDiagramSOPOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"detailSopId" | "jenis" | "kunciLabel" | "posisiX" | "posisiY" | "createdAt" | "updatedAt", ExtArgs["result"]["overrideLabelDiagramSOP"]>
+  export type OverrideLabelDiagramSOPInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    konfigurasiDiagram?: boolean | KonfigurasiDiagramSOPDefaultArgs<ExtArgs>
+  }
+
+  export type $OverrideLabelDiagramSOPPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "OverrideLabelDiagramSOP"
+    objects: {
+      konfigurasiDiagram: Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      detailSopId: string
+      jenis: $Enums.JenisDiagram
+      kunciLabel: string
+      posisiX: number
+      posisiY: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["overrideLabelDiagramSOP"]>
+    composites: {}
+  }
+
+  type OverrideLabelDiagramSOPGetPayload<S extends boolean | null | undefined | OverrideLabelDiagramSOPDefaultArgs> = $Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload, S>
+
+  type OverrideLabelDiagramSOPCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<OverrideLabelDiagramSOPFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: OverrideLabelDiagramSOPCountAggregateInputType | true
+    }
+
+  export interface OverrideLabelDiagramSOPDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['OverrideLabelDiagramSOP'], meta: { name: 'OverrideLabelDiagramSOP' } }
+    /**
+     * Find zero or one OverrideLabelDiagramSOP that matches the filter.
+     * @param {OverrideLabelDiagramSOPFindUniqueArgs} args - Arguments to find a OverrideLabelDiagramSOP
+     * @example
+     * // Get one OverrideLabelDiagramSOP
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends OverrideLabelDiagramSOPFindUniqueArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPFindUniqueArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one OverrideLabelDiagramSOP that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {OverrideLabelDiagramSOPFindUniqueOrThrowArgs} args - Arguments to find a OverrideLabelDiagramSOP
+     * @example
+     * // Get one OverrideLabelDiagramSOP
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends OverrideLabelDiagramSOPFindUniqueOrThrowArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPFindUniqueOrThrowArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OverrideLabelDiagramSOP that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPFindFirstArgs} args - Arguments to find a OverrideLabelDiagramSOP
+     * @example
+     * // Get one OverrideLabelDiagramSOP
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends OverrideLabelDiagramSOPFindFirstArgs>(args?: SelectSubset<T, OverrideLabelDiagramSOPFindFirstArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first OverrideLabelDiagramSOP that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPFindFirstOrThrowArgs} args - Arguments to find a OverrideLabelDiagramSOP
+     * @example
+     * // Get one OverrideLabelDiagramSOP
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends OverrideLabelDiagramSOPFindFirstOrThrowArgs>(args?: SelectSubset<T, OverrideLabelDiagramSOPFindFirstOrThrowArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more OverrideLabelDiagramSOPS that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all OverrideLabelDiagramSOPS
+     * const overrideLabelDiagramSOPS = await prisma.overrideLabelDiagramSOP.findMany()
+     * 
+     * // Get first 10 OverrideLabelDiagramSOPS
+     * const overrideLabelDiagramSOPS = await prisma.overrideLabelDiagramSOP.findMany({ take: 10 })
+     * 
+     * // Only select the `detailSopId`
+     * const overrideLabelDiagramSOPWithDetailSopIdOnly = await prisma.overrideLabelDiagramSOP.findMany({ select: { detailSopId: true } })
+     * 
+     */
+    findMany<T extends OverrideLabelDiagramSOPFindManyArgs>(args?: SelectSubset<T, OverrideLabelDiagramSOPFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a OverrideLabelDiagramSOP.
+     * @param {OverrideLabelDiagramSOPCreateArgs} args - Arguments to create a OverrideLabelDiagramSOP.
+     * @example
+     * // Create one OverrideLabelDiagramSOP
+     * const OverrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.create({
+     *   data: {
+     *     // ... data to create a OverrideLabelDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    create<T extends OverrideLabelDiagramSOPCreateArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPCreateArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many OverrideLabelDiagramSOPS.
+     * @param {OverrideLabelDiagramSOPCreateManyArgs} args - Arguments to create many OverrideLabelDiagramSOPS.
+     * @example
+     * // Create many OverrideLabelDiagramSOPS
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends OverrideLabelDiagramSOPCreateManyArgs>(args?: SelectSubset<T, OverrideLabelDiagramSOPCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a OverrideLabelDiagramSOP.
+     * @param {OverrideLabelDiagramSOPDeleteArgs} args - Arguments to delete one OverrideLabelDiagramSOP.
+     * @example
+     * // Delete one OverrideLabelDiagramSOP
+     * const OverrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.delete({
+     *   where: {
+     *     // ... filter to delete one OverrideLabelDiagramSOP
+     *   }
+     * })
+     * 
+     */
+    delete<T extends OverrideLabelDiagramSOPDeleteArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPDeleteArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one OverrideLabelDiagramSOP.
+     * @param {OverrideLabelDiagramSOPUpdateArgs} args - Arguments to update one OverrideLabelDiagramSOP.
+     * @example
+     * // Update one OverrideLabelDiagramSOP
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends OverrideLabelDiagramSOPUpdateArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPUpdateArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more OverrideLabelDiagramSOPS.
+     * @param {OverrideLabelDiagramSOPDeleteManyArgs} args - Arguments to filter OverrideLabelDiagramSOPS to delete.
+     * @example
+     * // Delete a few OverrideLabelDiagramSOPS
+     * const { count } = await prisma.overrideLabelDiagramSOP.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends OverrideLabelDiagramSOPDeleteManyArgs>(args?: SelectSubset<T, OverrideLabelDiagramSOPDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more OverrideLabelDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many OverrideLabelDiagramSOPS
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends OverrideLabelDiagramSOPUpdateManyArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one OverrideLabelDiagramSOP.
+     * @param {OverrideLabelDiagramSOPUpsertArgs} args - Arguments to update or create a OverrideLabelDiagramSOP.
+     * @example
+     * // Update or create a OverrideLabelDiagramSOP
+     * const overrideLabelDiagramSOP = await prisma.overrideLabelDiagramSOP.upsert({
+     *   create: {
+     *     // ... data to create a OverrideLabelDiagramSOP
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the OverrideLabelDiagramSOP we want to update
+     *   }
+     * })
+     */
+    upsert<T extends OverrideLabelDiagramSOPUpsertArgs>(args: SelectSubset<T, OverrideLabelDiagramSOPUpsertArgs<ExtArgs>>): Prisma__OverrideLabelDiagramSOPClient<$Result.GetResult<Prisma.$OverrideLabelDiagramSOPPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of OverrideLabelDiagramSOPS.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPCountArgs} args - Arguments to filter OverrideLabelDiagramSOPS to count.
+     * @example
+     * // Count the number of OverrideLabelDiagramSOPS
+     * const count = await prisma.overrideLabelDiagramSOP.count({
+     *   where: {
+     *     // ... the filter for the OverrideLabelDiagramSOPS we want to count
+     *   }
+     * })
+    **/
+    count<T extends OverrideLabelDiagramSOPCountArgs>(
+      args?: Subset<T, OverrideLabelDiagramSOPCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], OverrideLabelDiagramSOPCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a OverrideLabelDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends OverrideLabelDiagramSOPAggregateArgs>(args: Subset<T, OverrideLabelDiagramSOPAggregateArgs>): Prisma.PrismaPromise<GetOverrideLabelDiagramSOPAggregateType<T>>
+
+    /**
+     * Group by OverrideLabelDiagramSOP.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {OverrideLabelDiagramSOPGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends OverrideLabelDiagramSOPGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: OverrideLabelDiagramSOPGroupByArgs['orderBy'] }
+        : { orderBy?: OverrideLabelDiagramSOPGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, OverrideLabelDiagramSOPGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetOverrideLabelDiagramSOPGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the OverrideLabelDiagramSOP model
+   */
+  readonly fields: OverrideLabelDiagramSOPFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for OverrideLabelDiagramSOP.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__OverrideLabelDiagramSOPClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    konfigurasiDiagram<T extends KonfigurasiDiagramSOPDefaultArgs<ExtArgs> = {}>(args?: Subset<T, KonfigurasiDiagramSOPDefaultArgs<ExtArgs>>): Prisma__KonfigurasiDiagramSOPClient<$Result.GetResult<Prisma.$KonfigurasiDiagramSOPPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the OverrideLabelDiagramSOP model
+   */
+  interface OverrideLabelDiagramSOPFieldRefs {
+    readonly detailSopId: FieldRef<"OverrideLabelDiagramSOP", 'String'>
+    readonly jenis: FieldRef<"OverrideLabelDiagramSOP", 'JenisDiagram'>
+    readonly kunciLabel: FieldRef<"OverrideLabelDiagramSOP", 'String'>
+    readonly posisiX: FieldRef<"OverrideLabelDiagramSOP", 'Float'>
+    readonly posisiY: FieldRef<"OverrideLabelDiagramSOP", 'Float'>
+    readonly createdAt: FieldRef<"OverrideLabelDiagramSOP", 'DateTime'>
+    readonly updatedAt: FieldRef<"OverrideLabelDiagramSOP", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * OverrideLabelDiagramSOP findUnique
+   */
+  export type OverrideLabelDiagramSOPFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverrideLabelDiagramSOP to fetch.
+     */
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverrideLabelDiagramSOP findUniqueOrThrow
+   */
+  export type OverrideLabelDiagramSOPFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverrideLabelDiagramSOP to fetch.
+     */
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverrideLabelDiagramSOP findFirst
+   */
+  export type OverrideLabelDiagramSOPFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverrideLabelDiagramSOP to fetch.
+     */
+    where?: OverrideLabelDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverrideLabelDiagramSOPS to fetch.
+     */
+    orderBy?: OverrideLabelDiagramSOPOrderByWithRelationInput | OverrideLabelDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OverrideLabelDiagramSOPS.
+     */
+    cursor?: OverrideLabelDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverrideLabelDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverrideLabelDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OverrideLabelDiagramSOPS.
+     */
+    distinct?: OverrideLabelDiagramSOPScalarFieldEnum | OverrideLabelDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverrideLabelDiagramSOP findFirstOrThrow
+   */
+  export type OverrideLabelDiagramSOPFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverrideLabelDiagramSOP to fetch.
+     */
+    where?: OverrideLabelDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverrideLabelDiagramSOPS to fetch.
+     */
+    orderBy?: OverrideLabelDiagramSOPOrderByWithRelationInput | OverrideLabelDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for OverrideLabelDiagramSOPS.
+     */
+    cursor?: OverrideLabelDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverrideLabelDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverrideLabelDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OverrideLabelDiagramSOPS.
+     */
+    distinct?: OverrideLabelDiagramSOPScalarFieldEnum | OverrideLabelDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverrideLabelDiagramSOP findMany
+   */
+  export type OverrideLabelDiagramSOPFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter, which OverrideLabelDiagramSOPS to fetch.
+     */
+    where?: OverrideLabelDiagramSOPWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of OverrideLabelDiagramSOPS to fetch.
+     */
+    orderBy?: OverrideLabelDiagramSOPOrderByWithRelationInput | OverrideLabelDiagramSOPOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing OverrideLabelDiagramSOPS.
+     */
+    cursor?: OverrideLabelDiagramSOPWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` OverrideLabelDiagramSOPS from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` OverrideLabelDiagramSOPS.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OverrideLabelDiagramSOPS.
+     */
+    distinct?: OverrideLabelDiagramSOPScalarFieldEnum | OverrideLabelDiagramSOPScalarFieldEnum[]
+  }
+
+  /**
+   * OverrideLabelDiagramSOP create
+   */
+  export type OverrideLabelDiagramSOPCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to create a OverrideLabelDiagramSOP.
+     */
+    data: XOR<OverrideLabelDiagramSOPCreateInput, OverrideLabelDiagramSOPUncheckedCreateInput>
+  }
+
+  /**
+   * OverrideLabelDiagramSOP createMany
+   */
+  export type OverrideLabelDiagramSOPCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many OverrideLabelDiagramSOPS.
+     */
+    data: OverrideLabelDiagramSOPCreateManyInput | OverrideLabelDiagramSOPCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * OverrideLabelDiagramSOP update
+   */
+  export type OverrideLabelDiagramSOPUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The data needed to update a OverrideLabelDiagramSOP.
+     */
+    data: XOR<OverrideLabelDiagramSOPUpdateInput, OverrideLabelDiagramSOPUncheckedUpdateInput>
+    /**
+     * Choose, which OverrideLabelDiagramSOP to update.
+     */
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverrideLabelDiagramSOP updateMany
+   */
+  export type OverrideLabelDiagramSOPUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update OverrideLabelDiagramSOPS.
+     */
+    data: XOR<OverrideLabelDiagramSOPUpdateManyMutationInput, OverrideLabelDiagramSOPUncheckedUpdateManyInput>
+    /**
+     * Filter which OverrideLabelDiagramSOPS to update
+     */
+    where?: OverrideLabelDiagramSOPWhereInput
+    /**
+     * Limit how many OverrideLabelDiagramSOPS to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * OverrideLabelDiagramSOP upsert
+   */
+  export type OverrideLabelDiagramSOPUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * The filter to search for the OverrideLabelDiagramSOP to update in case it exists.
+     */
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+    /**
+     * In case the OverrideLabelDiagramSOP found by the `where` argument doesn't exist, create a new OverrideLabelDiagramSOP with this data.
+     */
+    create: XOR<OverrideLabelDiagramSOPCreateInput, OverrideLabelDiagramSOPUncheckedCreateInput>
+    /**
+     * In case the OverrideLabelDiagramSOP was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<OverrideLabelDiagramSOPUpdateInput, OverrideLabelDiagramSOPUncheckedUpdateInput>
+  }
+
+  /**
+   * OverrideLabelDiagramSOP delete
+   */
+  export type OverrideLabelDiagramSOPDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+    /**
+     * Filter which OverrideLabelDiagramSOP to delete.
+     */
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+  }
+
+  /**
+   * OverrideLabelDiagramSOP deleteMany
+   */
+  export type OverrideLabelDiagramSOPDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which OverrideLabelDiagramSOPS to delete
+     */
+    where?: OverrideLabelDiagramSOPWhereInput
+    /**
+     * Limit how many OverrideLabelDiagramSOPS to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * OverrideLabelDiagramSOP without action
+   */
+  export type OverrideLabelDiagramSOPDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the OverrideLabelDiagramSOP
+     */
+    select?: OverrideLabelDiagramSOPSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the OverrideLabelDiagramSOP
+     */
+    omit?: OverrideLabelDiagramSOPOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OverrideLabelDiagramSOPInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -27930,6 +32607,62 @@ export namespace Prisma {
   export type RiwayatTandaTanganScalarFieldEnum = (typeof RiwayatTandaTanganScalarFieldEnum)[keyof typeof RiwayatTandaTanganScalarFieldEnum]
 
 
+  export const KonfigurasiDiagramSOPScalarFieldEnum: {
+    detailSopId: 'detailSopId',
+    jenis: 'jenis',
+    layoutSeed: 'layoutSeed',
+    updatedAt: 'updatedAt'
+  };
+
+  export type KonfigurasiDiagramSOPScalarFieldEnum = (typeof KonfigurasiDiagramSOPScalarFieldEnum)[keyof typeof KonfigurasiDiagramSOPScalarFieldEnum]
+
+
+  export const OverridePanahDiagramSOPScalarFieldEnum: {
+    detailSopId: 'detailSopId',
+    jenis: 'jenis',
+    dariLangkahSopId: 'dariLangkahSopId',
+    keLangkahSopId: 'keLangkahSopId',
+    cabang: 'cabang',
+    sSide: 'sSide',
+    eSide: 'eSide',
+    startX: 'startX',
+    startY: 'startY',
+    endX: 'endX',
+    endY: 'endY',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type OverridePanahDiagramSOPScalarFieldEnum = (typeof OverridePanahDiagramSOPScalarFieldEnum)[keyof typeof OverridePanahDiagramSOPScalarFieldEnum]
+
+
+  export const TitikTekukPanahDiagramSOPScalarFieldEnum: {
+    detailSopId: 'detailSopId',
+    jenis: 'jenis',
+    dariLangkahSopId: 'dariLangkahSopId',
+    keLangkahSopId: 'keLangkahSopId',
+    cabang: 'cabang',
+    urutan: 'urutan',
+    x: 'x',
+    y: 'y'
+  };
+
+  export type TitikTekukPanahDiagramSOPScalarFieldEnum = (typeof TitikTekukPanahDiagramSOPScalarFieldEnum)[keyof typeof TitikTekukPanahDiagramSOPScalarFieldEnum]
+
+
+  export const OverrideLabelDiagramSOPScalarFieldEnum: {
+    detailSopId: 'detailSopId',
+    jenis: 'jenis',
+    kunciLabel: 'kunciLabel',
+    posisiX: 'posisiX',
+    posisiY: 'posisiY',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type OverrideLabelDiagramSOPScalarFieldEnum = (typeof OverrideLabelDiagramSOPScalarFieldEnum)[keyof typeof OverrideLabelDiagramSOPScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -28185,6 +32918,39 @@ export namespace Prisma {
   export type RiwayatTandaTanganOrderByRelevanceFieldEnum = (typeof RiwayatTandaTanganOrderByRelevanceFieldEnum)[keyof typeof RiwayatTandaTanganOrderByRelevanceFieldEnum]
 
 
+  export const KonfigurasiDiagramSOPOrderByRelevanceFieldEnum: {
+    detailSopId: 'detailSopId'
+  };
+
+  export type KonfigurasiDiagramSOPOrderByRelevanceFieldEnum = (typeof KonfigurasiDiagramSOPOrderByRelevanceFieldEnum)[keyof typeof KonfigurasiDiagramSOPOrderByRelevanceFieldEnum]
+
+
+  export const OverridePanahDiagramSOPOrderByRelevanceFieldEnum: {
+    detailSopId: 'detailSopId',
+    dariLangkahSopId: 'dariLangkahSopId',
+    keLangkahSopId: 'keLangkahSopId'
+  };
+
+  export type OverridePanahDiagramSOPOrderByRelevanceFieldEnum = (typeof OverridePanahDiagramSOPOrderByRelevanceFieldEnum)[keyof typeof OverridePanahDiagramSOPOrderByRelevanceFieldEnum]
+
+
+  export const TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum: {
+    detailSopId: 'detailSopId',
+    dariLangkahSopId: 'dariLangkahSopId',
+    keLangkahSopId: 'keLangkahSopId'
+  };
+
+  export type TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum = (typeof TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum)[keyof typeof TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum]
+
+
+  export const OverrideLabelDiagramSOPOrderByRelevanceFieldEnum: {
+    detailSopId: 'detailSopId',
+    kunciLabel: 'kunciLabel'
+  };
+
+  export type OverrideLabelDiagramSOPOrderByRelevanceFieldEnum = (typeof OverrideLabelDiagramSOPOrderByRelevanceFieldEnum)[keyof typeof OverrideLabelDiagramSOPOrderByRelevanceFieldEnum]
+
+
   /**
    * Field references
    */
@@ -28285,6 +33051,27 @@ export namespace Prisma {
    * Reference to a field of type 'JenisDokumenTte'
    */
   export type EnumJenisDokumenTteFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisDokumenTte'>
+    
+
+
+  /**
+   * Reference to a field of type 'JenisDiagram'
+   */
+  export type EnumJenisDiagramFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'JenisDiagram'>
+    
+
+
+  /**
+   * Reference to a field of type 'CabangDiagram'
+   */
+  export type EnumCabangDiagramFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CabangDiagram'>
+    
+
+
+  /**
+   * Reference to a field of type 'SisiPanahDiagram'
+   */
+  export type EnumSisiPanahDiagramFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SisiPanahDiagram'>
     
 
 
@@ -28800,6 +33587,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitListRelationFilter
     relasiSopMasuk?: SopTerkaitListRelationFilter
     dokumenTte?: DokumenTteListRelationFilter
+    konfigurasiDiagram?: KonfigurasiDiagramSOPListRelationFilter
   }
 
   export type DetailSOPOrderByWithRelationInput = {
@@ -28834,6 +33622,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitOrderByRelationAggregateInput
     relasiSopMasuk?: SopTerkaitOrderByRelationAggregateInput
     dokumenTte?: DokumenTteOrderByRelationAggregateInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPOrderByRelationAggregateInput
     _relevance?: DetailSOPOrderByRelevanceInput
   }
 
@@ -28873,6 +33662,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitListRelationFilter
     relasiSopMasuk?: SopTerkaitListRelationFilter
     dokumenTte?: DokumenTteListRelationFilter
+    konfigurasiDiagram?: KonfigurasiDiagramSOPListRelationFilter
   }, "detailSopId" | "nomorSOP" | "sopId_versi">
 
   export type DetailSOPOrderByWithAggregationInput = {
@@ -29274,6 +34064,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPListRelationFilter
     langkahYa?: XOR<LangkahSOPNullableScalarRelationFilter, LangkahSOPWhereInput> | null
     langkahSebelumYa?: LangkahSOPListRelationFilter
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPListRelationFilter
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPListRelationFilter
     pelaksana?: XOR<PelaksanaScalarRelationFilter, PelaksanaWhereInput>
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }
@@ -29298,6 +34090,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPOrderByRelationAggregateInput
     langkahYa?: LangkahSOPOrderByWithRelationInput
     langkahSebelumYa?: LangkahSOPOrderByRelationAggregateInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPOrderByRelationAggregateInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPOrderByRelationAggregateInput
     pelaksana?: PelaksanaOrderByWithRelationInput
     detailSop?: DetailSOPOrderByWithRelationInput
     _relevance?: LangkahSOPOrderByRelevanceInput
@@ -29327,6 +34121,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPListRelationFilter
     langkahYa?: XOR<LangkahSOPNullableScalarRelationFilter, LangkahSOPWhereInput> | null
     langkahSebelumYa?: LangkahSOPListRelationFilter
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPListRelationFilter
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPListRelationFilter
     pelaksana?: XOR<PelaksanaScalarRelationFilter, PelaksanaWhereInput>
     detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
   }, "langkahSopId" | "detailSopId_urutan">
@@ -30146,6 +34942,317 @@ export namespace Prisma {
     ditandatanganiPada?: DateTimeWithAggregatesFilter<"RiwayatTandaTangan"> | Date | string
   }
 
+  export type KonfigurasiDiagramSOPWhereInput = {
+    AND?: KonfigurasiDiagramSOPWhereInput | KonfigurasiDiagramSOPWhereInput[]
+    OR?: KonfigurasiDiagramSOPWhereInput[]
+    NOT?: KonfigurasiDiagramSOPWhereInput | KonfigurasiDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"KonfigurasiDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"KonfigurasiDiagramSOP"> | $Enums.JenisDiagram
+    layoutSeed?: IntFilter<"KonfigurasiDiagramSOP"> | number
+    updatedAt?: DateTimeFilter<"KonfigurasiDiagramSOP"> | Date | string
+    overridePanah?: OverridePanahDiagramSOPListRelationFilter
+    overrideLabel?: OverrideLabelDiagramSOPListRelationFilter
+    detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
+  }
+
+  export type KonfigurasiDiagramSOPOrderByWithRelationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    layoutSeed?: SortOrder
+    updatedAt?: SortOrder
+    overridePanah?: OverridePanahDiagramSOPOrderByRelationAggregateInput
+    overrideLabel?: OverrideLabelDiagramSOPOrderByRelationAggregateInput
+    detailSop?: DetailSOPOrderByWithRelationInput
+    _relevance?: KonfigurasiDiagramSOPOrderByRelevanceInput
+  }
+
+  export type KonfigurasiDiagramSOPWhereUniqueInput = Prisma.AtLeast<{
+    detailSopId_jenis?: KonfigurasiDiagramSOPDetailSopIdJenisCompoundUniqueInput
+    AND?: KonfigurasiDiagramSOPWhereInput | KonfigurasiDiagramSOPWhereInput[]
+    OR?: KonfigurasiDiagramSOPWhereInput[]
+    NOT?: KonfigurasiDiagramSOPWhereInput | KonfigurasiDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"KonfigurasiDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"KonfigurasiDiagramSOP"> | $Enums.JenisDiagram
+    layoutSeed?: IntFilter<"KonfigurasiDiagramSOP"> | number
+    updatedAt?: DateTimeFilter<"KonfigurasiDiagramSOP"> | Date | string
+    overridePanah?: OverridePanahDiagramSOPListRelationFilter
+    overrideLabel?: OverrideLabelDiagramSOPListRelationFilter
+    detailSop?: XOR<DetailSOPScalarRelationFilter, DetailSOPWhereInput>
+  }, "detailSopId_jenis">
+
+  export type KonfigurasiDiagramSOPOrderByWithAggregationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    layoutSeed?: SortOrder
+    updatedAt?: SortOrder
+    _count?: KonfigurasiDiagramSOPCountOrderByAggregateInput
+    _avg?: KonfigurasiDiagramSOPAvgOrderByAggregateInput
+    _max?: KonfigurasiDiagramSOPMaxOrderByAggregateInput
+    _min?: KonfigurasiDiagramSOPMinOrderByAggregateInput
+    _sum?: KonfigurasiDiagramSOPSumOrderByAggregateInput
+  }
+
+  export type KonfigurasiDiagramSOPScalarWhereWithAggregatesInput = {
+    AND?: KonfigurasiDiagramSOPScalarWhereWithAggregatesInput | KonfigurasiDiagramSOPScalarWhereWithAggregatesInput[]
+    OR?: KonfigurasiDiagramSOPScalarWhereWithAggregatesInput[]
+    NOT?: KonfigurasiDiagramSOPScalarWhereWithAggregatesInput | KonfigurasiDiagramSOPScalarWhereWithAggregatesInput[]
+    detailSopId?: StringWithAggregatesFilter<"KonfigurasiDiagramSOP"> | string
+    jenis?: EnumJenisDiagramWithAggregatesFilter<"KonfigurasiDiagramSOP"> | $Enums.JenisDiagram
+    layoutSeed?: IntWithAggregatesFilter<"KonfigurasiDiagramSOP"> | number
+    updatedAt?: DateTimeWithAggregatesFilter<"KonfigurasiDiagramSOP"> | Date | string
+  }
+
+  export type OverridePanahDiagramSOPWhereInput = {
+    AND?: OverridePanahDiagramSOPWhereInput | OverridePanahDiagramSOPWhereInput[]
+    OR?: OverridePanahDiagramSOPWhereInput[]
+    NOT?: OverridePanahDiagramSOPWhereInput | OverridePanahDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    keLangkahSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    startX?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    startY?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    endX?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    endY?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    createdAt?: DateTimeFilter<"OverridePanahDiagramSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"OverridePanahDiagramSOP"> | Date | string
+    konfigurasiDiagram?: XOR<KonfigurasiDiagramSOPScalarRelationFilter, KonfigurasiDiagramSOPWhereInput>
+    dariLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
+    keLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
+    titikTekuk?: TitikTekukPanahDiagramSOPListRelationFilter
+  }
+
+  export type OverridePanahDiagramSOPOrderByWithRelationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    sSide?: SortOrder
+    eSide?: SortOrder
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    konfigurasiDiagram?: KonfigurasiDiagramSOPOrderByWithRelationInput
+    dariLangkah?: LangkahSOPOrderByWithRelationInput
+    keLangkah?: LangkahSOPOrderByWithRelationInput
+    titikTekuk?: TitikTekukPanahDiagramSOPOrderByRelationAggregateInput
+    _relevance?: OverridePanahDiagramSOPOrderByRelevanceInput
+  }
+
+  export type OverridePanahDiagramSOPWhereUniqueInput = Prisma.AtLeast<{
+    detailSopId_jenis_dariLangkahSopId_keLangkahSopId_cabang?: OverridePanahDiagramSOPDetailSopIdJenisDariLangkahSopIdKeLangkahSopIdCabangCompoundUniqueInput
+    AND?: OverridePanahDiagramSOPWhereInput | OverridePanahDiagramSOPWhereInput[]
+    OR?: OverridePanahDiagramSOPWhereInput[]
+    NOT?: OverridePanahDiagramSOPWhereInput | OverridePanahDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    keLangkahSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    startX?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    startY?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    endX?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    endY?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    createdAt?: DateTimeFilter<"OverridePanahDiagramSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"OverridePanahDiagramSOP"> | Date | string
+    konfigurasiDiagram?: XOR<KonfigurasiDiagramSOPScalarRelationFilter, KonfigurasiDiagramSOPWhereInput>
+    dariLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
+    keLangkah?: XOR<LangkahSOPScalarRelationFilter, LangkahSOPWhereInput>
+    titikTekuk?: TitikTekukPanahDiagramSOPListRelationFilter
+  }, "detailSopId_jenis_dariLangkahSopId_keLangkahSopId_cabang">
+
+  export type OverridePanahDiagramSOPOrderByWithAggregationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    sSide?: SortOrder
+    eSide?: SortOrder
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: OverridePanahDiagramSOPCountOrderByAggregateInput
+    _avg?: OverridePanahDiagramSOPAvgOrderByAggregateInput
+    _max?: OverridePanahDiagramSOPMaxOrderByAggregateInput
+    _min?: OverridePanahDiagramSOPMinOrderByAggregateInput
+    _sum?: OverridePanahDiagramSOPSumOrderByAggregateInput
+  }
+
+  export type OverridePanahDiagramSOPScalarWhereWithAggregatesInput = {
+    AND?: OverridePanahDiagramSOPScalarWhereWithAggregatesInput | OverridePanahDiagramSOPScalarWhereWithAggregatesInput[]
+    OR?: OverridePanahDiagramSOPScalarWhereWithAggregatesInput[]
+    NOT?: OverridePanahDiagramSOPScalarWhereWithAggregatesInput | OverridePanahDiagramSOPScalarWhereWithAggregatesInput[]
+    detailSopId?: StringWithAggregatesFilter<"OverridePanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramWithAggregatesFilter<"OverridePanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringWithAggregatesFilter<"OverridePanahDiagramSOP"> | string
+    keLangkahSopId?: StringWithAggregatesFilter<"OverridePanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramWithAggregatesFilter<"OverridePanahDiagramSOP"> | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramWithAggregatesFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramWithAggregatesFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    startX?: FloatWithAggregatesFilter<"OverridePanahDiagramSOP"> | number
+    startY?: FloatWithAggregatesFilter<"OverridePanahDiagramSOP"> | number
+    endX?: FloatWithAggregatesFilter<"OverridePanahDiagramSOP"> | number
+    endY?: FloatWithAggregatesFilter<"OverridePanahDiagramSOP"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"OverridePanahDiagramSOP"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"OverridePanahDiagramSOP"> | Date | string
+  }
+
+  export type TitikTekukPanahDiagramSOPWhereInput = {
+    AND?: TitikTekukPanahDiagramSOPWhereInput | TitikTekukPanahDiagramSOPWhereInput[]
+    OR?: TitikTekukPanahDiagramSOPWhereInput[]
+    NOT?: TitikTekukPanahDiagramSOPWhereInput | TitikTekukPanahDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"TitikTekukPanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    keLangkahSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramFilter<"TitikTekukPanahDiagramSOP"> | $Enums.CabangDiagram
+    urutan?: IntFilter<"TitikTekukPanahDiagramSOP"> | number
+    x?: FloatFilter<"TitikTekukPanahDiagramSOP"> | number
+    y?: FloatFilter<"TitikTekukPanahDiagramSOP"> | number
+    overridePanah?: XOR<OverridePanahDiagramSOPScalarRelationFilter, OverridePanahDiagramSOPWhereInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPOrderByWithRelationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+    overridePanah?: OverridePanahDiagramSOPOrderByWithRelationInput
+    _relevance?: TitikTekukPanahDiagramSOPOrderByRelevanceInput
+  }
+
+  export type TitikTekukPanahDiagramSOPWhereUniqueInput = Prisma.AtLeast<{
+    detailSopId_jenis_dariLangkahSopId_keLangkahSopId_cabang_urutan?: TitikTekukPanahDiagramSOPDetailSopIdJenisDariLangkahSopIdKeLangkahSopIdCabangUrutanCompoundUniqueInput
+    AND?: TitikTekukPanahDiagramSOPWhereInput | TitikTekukPanahDiagramSOPWhereInput[]
+    OR?: TitikTekukPanahDiagramSOPWhereInput[]
+    NOT?: TitikTekukPanahDiagramSOPWhereInput | TitikTekukPanahDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"TitikTekukPanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    keLangkahSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramFilter<"TitikTekukPanahDiagramSOP"> | $Enums.CabangDiagram
+    urutan?: IntFilter<"TitikTekukPanahDiagramSOP"> | number
+    x?: FloatFilter<"TitikTekukPanahDiagramSOP"> | number
+    y?: FloatFilter<"TitikTekukPanahDiagramSOP"> | number
+    overridePanah?: XOR<OverridePanahDiagramSOPScalarRelationFilter, OverridePanahDiagramSOPWhereInput>
+  }, "detailSopId_jenis_dariLangkahSopId_keLangkahSopId_cabang_urutan">
+
+  export type TitikTekukPanahDiagramSOPOrderByWithAggregationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+    _count?: TitikTekukPanahDiagramSOPCountOrderByAggregateInput
+    _avg?: TitikTekukPanahDiagramSOPAvgOrderByAggregateInput
+    _max?: TitikTekukPanahDiagramSOPMaxOrderByAggregateInput
+    _min?: TitikTekukPanahDiagramSOPMinOrderByAggregateInput
+    _sum?: TitikTekukPanahDiagramSOPSumOrderByAggregateInput
+  }
+
+  export type TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput = {
+    AND?: TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput | TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput[]
+    OR?: TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput[]
+    NOT?: TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput | TitikTekukPanahDiagramSOPScalarWhereWithAggregatesInput[]
+    detailSopId?: StringWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | string
+    keLangkahSopId?: StringWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | $Enums.CabangDiagram
+    urutan?: IntWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | number
+    x?: FloatWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | number
+    y?: FloatWithAggregatesFilter<"TitikTekukPanahDiagramSOP"> | number
+  }
+
+  export type OverrideLabelDiagramSOPWhereInput = {
+    AND?: OverrideLabelDiagramSOPWhereInput | OverrideLabelDiagramSOPWhereInput[]
+    OR?: OverrideLabelDiagramSOPWhereInput[]
+    NOT?: OverrideLabelDiagramSOPWhereInput | OverrideLabelDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"OverrideLabelDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"OverrideLabelDiagramSOP"> | $Enums.JenisDiagram
+    kunciLabel?: StringFilter<"OverrideLabelDiagramSOP"> | string
+    posisiX?: FloatFilter<"OverrideLabelDiagramSOP"> | number
+    posisiY?: FloatFilter<"OverrideLabelDiagramSOP"> | number
+    createdAt?: DateTimeFilter<"OverrideLabelDiagramSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"OverrideLabelDiagramSOP"> | Date | string
+    konfigurasiDiagram?: XOR<KonfigurasiDiagramSOPScalarRelationFilter, KonfigurasiDiagramSOPWhereInput>
+  }
+
+  export type OverrideLabelDiagramSOPOrderByWithRelationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    kunciLabel?: SortOrder
+    posisiX?: SortOrder
+    posisiY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    konfigurasiDiagram?: KonfigurasiDiagramSOPOrderByWithRelationInput
+    _relevance?: OverrideLabelDiagramSOPOrderByRelevanceInput
+  }
+
+  export type OverrideLabelDiagramSOPWhereUniqueInput = Prisma.AtLeast<{
+    detailSopId_jenis_kunciLabel?: OverrideLabelDiagramSOPDetailSopIdJenisKunciLabelCompoundUniqueInput
+    AND?: OverrideLabelDiagramSOPWhereInput | OverrideLabelDiagramSOPWhereInput[]
+    OR?: OverrideLabelDiagramSOPWhereInput[]
+    NOT?: OverrideLabelDiagramSOPWhereInput | OverrideLabelDiagramSOPWhereInput[]
+    detailSopId?: StringFilter<"OverrideLabelDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"OverrideLabelDiagramSOP"> | $Enums.JenisDiagram
+    kunciLabel?: StringFilter<"OverrideLabelDiagramSOP"> | string
+    posisiX?: FloatFilter<"OverrideLabelDiagramSOP"> | number
+    posisiY?: FloatFilter<"OverrideLabelDiagramSOP"> | number
+    createdAt?: DateTimeFilter<"OverrideLabelDiagramSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"OverrideLabelDiagramSOP"> | Date | string
+    konfigurasiDiagram?: XOR<KonfigurasiDiagramSOPScalarRelationFilter, KonfigurasiDiagramSOPWhereInput>
+  }, "detailSopId_jenis_kunciLabel">
+
+  export type OverrideLabelDiagramSOPOrderByWithAggregationInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    kunciLabel?: SortOrder
+    posisiX?: SortOrder
+    posisiY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: OverrideLabelDiagramSOPCountOrderByAggregateInput
+    _avg?: OverrideLabelDiagramSOPAvgOrderByAggregateInput
+    _max?: OverrideLabelDiagramSOPMaxOrderByAggregateInput
+    _min?: OverrideLabelDiagramSOPMinOrderByAggregateInput
+    _sum?: OverrideLabelDiagramSOPSumOrderByAggregateInput
+  }
+
+  export type OverrideLabelDiagramSOPScalarWhereWithAggregatesInput = {
+    AND?: OverrideLabelDiagramSOPScalarWhereWithAggregatesInput | OverrideLabelDiagramSOPScalarWhereWithAggregatesInput[]
+    OR?: OverrideLabelDiagramSOPScalarWhereWithAggregatesInput[]
+    NOT?: OverrideLabelDiagramSOPScalarWhereWithAggregatesInput | OverrideLabelDiagramSOPScalarWhereWithAggregatesInput[]
+    detailSopId?: StringWithAggregatesFilter<"OverrideLabelDiagramSOP"> | string
+    jenis?: EnumJenisDiagramWithAggregatesFilter<"OverrideLabelDiagramSOP"> | $Enums.JenisDiagram
+    kunciLabel?: StringWithAggregatesFilter<"OverrideLabelDiagramSOP"> | string
+    posisiX?: FloatWithAggregatesFilter<"OverrideLabelDiagramSOP"> | number
+    posisiY?: FloatWithAggregatesFilter<"OverrideLabelDiagramSOP"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"OverrideLabelDiagramSOP"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"OverrideLabelDiagramSOP"> | Date | string
+  }
+
   export type PenggunaCreateInput = {
     penggunaId?: string
     email: string
@@ -30671,6 +35778,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateInput = {
@@ -30701,6 +35809,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUpdateInput = {
@@ -30731,6 +35840,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateInput = {
@@ -30761,6 +35871,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPCreateManyInput = {
@@ -31140,6 +36251,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
     detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
   }
@@ -31162,6 +36275,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPUpdateInput = {
@@ -31180,6 +36295,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
@@ -31202,6 +36319,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPCreateManyInput = {
@@ -32029,6 +37148,302 @@ export namespace Prisma {
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type KonfigurasiDiagramSOPCreateInput = {
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overridePanah?: OverridePanahDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput
+    overrideLabel?: OverrideLabelDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput
+    detailSop: DetailSOPCreateNestedOneWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedCreateInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overridePanah?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput
+    overrideLabel?: OverrideLabelDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPUpdateInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overridePanah?: OverridePanahDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput
+    overrideLabel?: OverrideLabelDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput
+    detailSop?: DetailSOPUpdateOneRequiredWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedUpdateInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overridePanah?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput
+    overrideLabel?: OverrideLabelDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPCreateManyInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+  }
+
+  export type KonfigurasiDiagramSOPUpdateManyMutationInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedUpdateManyInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverridePanahDiagramSOPCreateInput = {
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    konfigurasiDiagram: KonfigurasiDiagramSOPCreateNestedOneWithoutOverridePanahInput
+    dariLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiSumberInput
+    keLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiTujuanInput
+    titikTekuk?: TitikTekukPanahDiagramSOPCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPUpdateInput = {
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverridePanahNestedInput
+    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiSumberNestedInput
+    keLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiTujuanNestedInput
+    titikTekuk?: TitikTekukPanahDiagramSOPUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPCreateManyInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverridePanahDiagramSOPUpdateManyMutationInput = {
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateInput = {
+    urutan: number
+    x: number
+    y: number
+    overridePanah: OverridePanahDiagramSOPCreateNestedOneWithoutTitikTekukInput
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedCreateInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    urutan: number
+    x: number
+    y: number
+  }
+
+  export type TitikTekukPanahDiagramSOPUpdateInput = {
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
+    overridePanah?: OverridePanahDiagramSOPUpdateOneRequiredWithoutTitikTekukNestedInput
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedUpdateInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateManyInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    urutan: number
+    x: number
+    y: number
+  }
+
+  export type TitikTekukPanahDiagramSOPUpdateManyMutationInput = {
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedUpdateManyInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
+  }
+
+  export type OverrideLabelDiagramSOPCreateInput = {
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    konfigurasiDiagram: KonfigurasiDiagramSOPCreateNestedOneWithoutOverrideLabelInput
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedCreateInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUpdateInput = {
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverrideLabelNestedInput
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedUpdateInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverrideLabelDiagramSOPCreateManyInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUpdateManyMutationInput = {
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedUpdateManyInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -32661,6 +38076,12 @@ export namespace Prisma {
     none?: DokumenTteWhereInput
   }
 
+  export type KonfigurasiDiagramSOPListRelationFilter = {
+    every?: KonfigurasiDiagramSOPWhereInput
+    some?: KonfigurasiDiagramSOPWhereInput
+    none?: KonfigurasiDiagramSOPWhereInput
+  }
+
   export type DetailSOPPelaksanaOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -32690,6 +38111,10 @@ export namespace Prisma {
   }
 
   export type DokumenTteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KonfigurasiDiagramSOPOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -32981,9 +38406,19 @@ export namespace Prisma {
     isNot?: LangkahSOPWhereInput | null
   }
 
+  export type OverridePanahDiagramSOPListRelationFilter = {
+    every?: OverridePanahDiagramSOPWhereInput
+    some?: OverridePanahDiagramSOPWhereInput
+    none?: OverridePanahDiagramSOPWhereInput
+  }
+
   export type PelaksanaScalarRelationFilter = {
     is?: PelaksanaWhereInput
     isNot?: PelaksanaWhereInput
+  }
+
+  export type OverridePanahDiagramSOPOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type LangkahSOPOrderByRelevanceInput = {
@@ -33709,6 +39144,347 @@ export namespace Prisma {
     certValidFrom?: SortOrder
     certValidTo?: SortOrder
     ditandatanganiPada?: SortOrder
+  }
+
+  export type EnumJenisDiagramFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisDiagram | EnumJenisDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisDiagram[]
+    notIn?: $Enums.JenisDiagram[]
+    not?: NestedEnumJenisDiagramFilter<$PrismaModel> | $Enums.JenisDiagram
+  }
+
+  export type OverrideLabelDiagramSOPListRelationFilter = {
+    every?: OverrideLabelDiagramSOPWhereInput
+    some?: OverrideLabelDiagramSOPWhereInput
+    none?: OverrideLabelDiagramSOPWhereInput
+  }
+
+  export type OverrideLabelDiagramSOPOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type KonfigurasiDiagramSOPOrderByRelevanceInput = {
+    fields: KonfigurasiDiagramSOPOrderByRelevanceFieldEnum | KonfigurasiDiagramSOPOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type KonfigurasiDiagramSOPDetailSopIdJenisCompoundUniqueInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+  }
+
+  export type KonfigurasiDiagramSOPCountOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    layoutSeed?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KonfigurasiDiagramSOPAvgOrderByAggregateInput = {
+    layoutSeed?: SortOrder
+  }
+
+  export type KonfigurasiDiagramSOPMaxOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    layoutSeed?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KonfigurasiDiagramSOPMinOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    layoutSeed?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type KonfigurasiDiagramSOPSumOrderByAggregateInput = {
+    layoutSeed?: SortOrder
+  }
+
+  export type EnumJenisDiagramWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisDiagram | EnumJenisDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisDiagram[]
+    notIn?: $Enums.JenisDiagram[]
+    not?: NestedEnumJenisDiagramWithAggregatesFilter<$PrismaModel> | $Enums.JenisDiagram
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumJenisDiagramFilter<$PrismaModel>
+    _max?: NestedEnumJenisDiagramFilter<$PrismaModel>
+  }
+
+  export type EnumCabangDiagramFilter<$PrismaModel = never> = {
+    equals?: $Enums.CabangDiagram | EnumCabangDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.CabangDiagram[]
+    notIn?: $Enums.CabangDiagram[]
+    not?: NestedEnumCabangDiagramFilter<$PrismaModel> | $Enums.CabangDiagram
+  }
+
+  export type EnumSisiPanahDiagramFilter<$PrismaModel = never> = {
+    equals?: $Enums.SisiPanahDiagram | EnumSisiPanahDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.SisiPanahDiagram[]
+    notIn?: $Enums.SisiPanahDiagram[]
+    not?: NestedEnumSisiPanahDiagramFilter<$PrismaModel> | $Enums.SisiPanahDiagram
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type KonfigurasiDiagramSOPScalarRelationFilter = {
+    is?: KonfigurasiDiagramSOPWhereInput
+    isNot?: KonfigurasiDiagramSOPWhereInput
+  }
+
+  export type LangkahSOPScalarRelationFilter = {
+    is?: LangkahSOPWhereInput
+    isNot?: LangkahSOPWhereInput
+  }
+
+  export type TitikTekukPanahDiagramSOPListRelationFilter = {
+    every?: TitikTekukPanahDiagramSOPWhereInput
+    some?: TitikTekukPanahDiagramSOPWhereInput
+    none?: TitikTekukPanahDiagramSOPWhereInput
+  }
+
+  export type TitikTekukPanahDiagramSOPOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type OverridePanahDiagramSOPOrderByRelevanceInput = {
+    fields: OverridePanahDiagramSOPOrderByRelevanceFieldEnum | OverridePanahDiagramSOPOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type OverridePanahDiagramSOPDetailSopIdJenisDariLangkahSopIdKeLangkahSopIdCabangCompoundUniqueInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+  }
+
+  export type OverridePanahDiagramSOPCountOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    sSide?: SortOrder
+    eSide?: SortOrder
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OverridePanahDiagramSOPAvgOrderByAggregateInput = {
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+  }
+
+  export type OverridePanahDiagramSOPMaxOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    sSide?: SortOrder
+    eSide?: SortOrder
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OverridePanahDiagramSOPMinOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    sSide?: SortOrder
+    eSide?: SortOrder
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OverridePanahDiagramSOPSumOrderByAggregateInput = {
+    startX?: SortOrder
+    startY?: SortOrder
+    endX?: SortOrder
+    endY?: SortOrder
+  }
+
+  export type EnumCabangDiagramWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CabangDiagram | EnumCabangDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.CabangDiagram[]
+    notIn?: $Enums.CabangDiagram[]
+    not?: NestedEnumCabangDiagramWithAggregatesFilter<$PrismaModel> | $Enums.CabangDiagram
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCabangDiagramFilter<$PrismaModel>
+    _max?: NestedEnumCabangDiagramFilter<$PrismaModel>
+  }
+
+  export type EnumSisiPanahDiagramWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SisiPanahDiagram | EnumSisiPanahDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.SisiPanahDiagram[]
+    notIn?: $Enums.SisiPanahDiagram[]
+    not?: NestedEnumSisiPanahDiagramWithAggregatesFilter<$PrismaModel> | $Enums.SisiPanahDiagram
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSisiPanahDiagramFilter<$PrismaModel>
+    _max?: NestedEnumSisiPanahDiagramFilter<$PrismaModel>
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type OverridePanahDiagramSOPScalarRelationFilter = {
+    is?: OverridePanahDiagramSOPWhereInput
+    isNot?: OverridePanahDiagramSOPWhereInput
+  }
+
+  export type TitikTekukPanahDiagramSOPOrderByRelevanceInput = {
+    fields: TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum | TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type TitikTekukPanahDiagramSOPDetailSopIdJenisDariLangkahSopIdKeLangkahSopIdCabangUrutanCompoundUniqueInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    urutan: number
+  }
+
+  export type TitikTekukPanahDiagramSOPCountOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+  }
+
+  export type TitikTekukPanahDiagramSOPAvgOrderByAggregateInput = {
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+  }
+
+  export type TitikTekukPanahDiagramSOPMaxOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+  }
+
+  export type TitikTekukPanahDiagramSOPMinOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    dariLangkahSopId?: SortOrder
+    keLangkahSopId?: SortOrder
+    cabang?: SortOrder
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+  }
+
+  export type TitikTekukPanahDiagramSOPSumOrderByAggregateInput = {
+    urutan?: SortOrder
+    x?: SortOrder
+    y?: SortOrder
+  }
+
+  export type OverrideLabelDiagramSOPOrderByRelevanceInput = {
+    fields: OverrideLabelDiagramSOPOrderByRelevanceFieldEnum | OverrideLabelDiagramSOPOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type OverrideLabelDiagramSOPDetailSopIdJenisKunciLabelCompoundUniqueInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    kunciLabel: string
+  }
+
+  export type OverrideLabelDiagramSOPCountOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    kunciLabel?: SortOrder
+    posisiX?: SortOrder
+    posisiY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OverrideLabelDiagramSOPAvgOrderByAggregateInput = {
+    posisiX?: SortOrder
+    posisiY?: SortOrder
+  }
+
+  export type OverrideLabelDiagramSOPMaxOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    kunciLabel?: SortOrder
+    posisiX?: SortOrder
+    posisiY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OverrideLabelDiagramSOPMinOrderByAggregateInput = {
+    detailSopId?: SortOrder
+    jenis?: SortOrder
+    kunciLabel?: SortOrder
+    posisiX?: SortOrder
+    posisiY?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type OverrideLabelDiagramSOPSumOrderByAggregateInput = {
+    posisiX?: SortOrder
+    posisiY?: SortOrder
   }
 
   export type DetailSOPCreateNestedManyWithoutDibuatOlehInput = {
@@ -34840,6 +40616,13 @@ export namespace Prisma {
     connect?: DokumenTteWhereUniqueInput | DokumenTteWhereUniqueInput[]
   }
 
+  export type KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput> | KonfigurasiDiagramSOPCreateWithoutDetailSopInput[] | KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput[]
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput | KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput[]
+    createMany?: KonfigurasiDiagramSOPCreateManyDetailSopInputEnvelope
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+  }
+
   export type DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput = {
     create?: XOR<DetailSOPCreateWithoutRevisiDariInput, DetailSOPUncheckedCreateWithoutRevisiDariInput> | DetailSOPCreateWithoutRevisiDariInput[] | DetailSOPUncheckedCreateWithoutRevisiDariInput[]
     connectOrCreate?: DetailSOPCreateOrConnectWithoutRevisiDariInput | DetailSOPCreateOrConnectWithoutRevisiDariInput[]
@@ -34929,6 +40712,13 @@ export namespace Prisma {
     connectOrCreate?: DokumenTteCreateOrConnectWithoutDetailSopInput | DokumenTteCreateOrConnectWithoutDetailSopInput[]
     createMany?: DokumenTteCreateManyDetailSopInputEnvelope
     connect?: DokumenTteWhereUniqueInput | DokumenTteWhereUniqueInput[]
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput> | KonfigurasiDiagramSOPCreateWithoutDetailSopInput[] | KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput[]
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput | KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput[]
+    createMany?: KonfigurasiDiagramSOPCreateManyDetailSopInputEnvelope
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
   }
 
   export type EnumStatusSOPFieldUpdateOperationsInput = {
@@ -35155,6 +40945,20 @@ export namespace Prisma {
     deleteMany?: DokumenTteScalarWhereInput | DokumenTteScalarWhereInput[]
   }
 
+  export type KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput> | KonfigurasiDiagramSOPCreateWithoutDetailSopInput[] | KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput[]
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput | KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput[]
+    upsert?: KonfigurasiDiagramSOPUpsertWithWhereUniqueWithoutDetailSopInput | KonfigurasiDiagramSOPUpsertWithWhereUniqueWithoutDetailSopInput[]
+    createMany?: KonfigurasiDiagramSOPCreateManyDetailSopInputEnvelope
+    set?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    disconnect?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    delete?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    update?: KonfigurasiDiagramSOPUpdateWithWhereUniqueWithoutDetailSopInput | KonfigurasiDiagramSOPUpdateWithWhereUniqueWithoutDetailSopInput[]
+    updateMany?: KonfigurasiDiagramSOPUpdateManyWithWhereWithoutDetailSopInput | KonfigurasiDiagramSOPUpdateManyWithWhereWithoutDetailSopInput[]
+    deleteMany?: KonfigurasiDiagramSOPScalarWhereInput | KonfigurasiDiagramSOPScalarWhereInput[]
+  }
+
   export type DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput = {
     create?: XOR<DetailSOPCreateWithoutRevisiDariInput, DetailSOPUncheckedCreateWithoutRevisiDariInput> | DetailSOPCreateWithoutRevisiDariInput[] | DetailSOPUncheckedCreateWithoutRevisiDariInput[]
     connectOrCreate?: DetailSOPCreateOrConnectWithoutRevisiDariInput | DetailSOPCreateOrConnectWithoutRevisiDariInput[]
@@ -35337,6 +41141,20 @@ export namespace Prisma {
     deleteMany?: DokumenTteScalarWhereInput | DokumenTteScalarWhereInput[]
   }
 
+  export type KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput> | KonfigurasiDiagramSOPCreateWithoutDetailSopInput[] | KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput[]
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput | KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput[]
+    upsert?: KonfigurasiDiagramSOPUpsertWithWhereUniqueWithoutDetailSopInput | KonfigurasiDiagramSOPUpsertWithWhereUniqueWithoutDetailSopInput[]
+    createMany?: KonfigurasiDiagramSOPCreateManyDetailSopInputEnvelope
+    set?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    disconnect?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    delete?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput | KonfigurasiDiagramSOPWhereUniqueInput[]
+    update?: KonfigurasiDiagramSOPUpdateWithWhereUniqueWithoutDetailSopInput | KonfigurasiDiagramSOPUpdateWithWhereUniqueWithoutDetailSopInput[]
+    updateMany?: KonfigurasiDiagramSOPUpdateManyWithWhereWithoutDetailSopInput | KonfigurasiDiagramSOPUpdateManyWithWhereWithoutDetailSopInput[]
+    deleteMany?: KonfigurasiDiagramSOPScalarWhereInput | KonfigurasiDiagramSOPScalarWhereInput[]
+  }
+
   export type DetailSOPCreateNestedOneWithoutLampiranPeringatanInput = {
     create?: XOR<DetailSOPCreateWithoutLampiranPeringatanInput, DetailSOPUncheckedCreateWithoutLampiranPeringatanInput>
     connectOrCreate?: DetailSOPCreateOrConnectWithoutLampiranPeringatanInput
@@ -35475,6 +41293,20 @@ export namespace Prisma {
     connect?: LangkahSOPWhereUniqueInput | LangkahSOPWhereUniqueInput[]
   }
 
+  export type OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput> | OverridePanahDiagramSOPCreateWithoutDariLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyDariLangkahInputEnvelope
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+  }
+
+  export type OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput> | OverridePanahDiagramSOPCreateWithoutKeLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKeLangkahInputEnvelope
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+  }
+
   export type PelaksanaCreateNestedOneWithoutLangkahSOPInput = {
     create?: XOR<PelaksanaCreateWithoutLangkahSOPInput, PelaksanaUncheckedCreateWithoutLangkahSOPInput>
     connectOrCreate?: PelaksanaCreateOrConnectWithoutLangkahSOPInput
@@ -35499,6 +41331,20 @@ export namespace Prisma {
     connectOrCreate?: LangkahSOPCreateOrConnectWithoutLangkahYaInput | LangkahSOPCreateOrConnectWithoutLangkahYaInput[]
     createMany?: LangkahSOPCreateManyLangkahYaInputEnvelope
     connect?: LangkahSOPWhereUniqueInput | LangkahSOPWhereUniqueInput[]
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput> | OverridePanahDiagramSOPCreateWithoutDariLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyDariLangkahInputEnvelope
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput> | OverridePanahDiagramSOPCreateWithoutKeLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKeLangkahInputEnvelope
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
   }
 
   export type EnumJenisLangkahProsedurFieldUpdateOperationsInput = {
@@ -35557,6 +41403,34 @@ export namespace Prisma {
     deleteMany?: LangkahSOPScalarWhereInput | LangkahSOPScalarWhereInput[]
   }
 
+  export type OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput> | OverridePanahDiagramSOPCreateWithoutDariLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput[]
+    upsert?: OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutDariLangkahInput | OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutDariLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyDariLangkahInputEnvelope
+    set?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    disconnect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    delete?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    update?: OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutDariLangkahInput | OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutDariLangkahInput[]
+    updateMany?: OverridePanahDiagramSOPUpdateManyWithWhereWithoutDariLangkahInput | OverridePanahDiagramSOPUpdateManyWithWhereWithoutDariLangkahInput[]
+    deleteMany?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+  }
+
+  export type OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput> | OverridePanahDiagramSOPCreateWithoutKeLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput[]
+    upsert?: OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKeLangkahInput | OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKeLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKeLangkahInputEnvelope
+    set?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    disconnect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    delete?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    update?: OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKeLangkahInput | OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKeLangkahInput[]
+    updateMany?: OverridePanahDiagramSOPUpdateManyWithWhereWithoutKeLangkahInput | OverridePanahDiagramSOPUpdateManyWithWhereWithoutKeLangkahInput[]
+    deleteMany?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+  }
+
   export type PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput = {
     create?: XOR<PelaksanaCreateWithoutLangkahSOPInput, PelaksanaUncheckedCreateWithoutLangkahSOPInput>
     connectOrCreate?: PelaksanaCreateOrConnectWithoutLangkahSOPInput
@@ -35599,6 +41473,34 @@ export namespace Prisma {
     update?: LangkahSOPUpdateWithWhereUniqueWithoutLangkahYaInput | LangkahSOPUpdateWithWhereUniqueWithoutLangkahYaInput[]
     updateMany?: LangkahSOPUpdateManyWithWhereWithoutLangkahYaInput | LangkahSOPUpdateManyWithWhereWithoutLangkahYaInput[]
     deleteMany?: LangkahSOPScalarWhereInput | LangkahSOPScalarWhereInput[]
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput> | OverridePanahDiagramSOPCreateWithoutDariLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput[]
+    upsert?: OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutDariLangkahInput | OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutDariLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyDariLangkahInputEnvelope
+    set?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    disconnect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    delete?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    update?: OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutDariLangkahInput | OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutDariLangkahInput[]
+    updateMany?: OverridePanahDiagramSOPUpdateManyWithWhereWithoutDariLangkahInput | OverridePanahDiagramSOPUpdateManyWithWhereWithoutDariLangkahInput[]
+    deleteMany?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput> | OverridePanahDiagramSOPCreateWithoutKeLangkahInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput | OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput[]
+    upsert?: OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKeLangkahInput | OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKeLangkahInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKeLangkahInputEnvelope
+    set?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    disconnect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    delete?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    update?: OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKeLangkahInput | OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKeLangkahInput[]
+    updateMany?: OverridePanahDiagramSOPUpdateManyWithWhereWithoutKeLangkahInput | OverridePanahDiagramSOPUpdateManyWithWhereWithoutKeLangkahInput[]
+    deleteMany?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
   }
 
   export type DetailSOPPelaksanaCreateNestedManyWithoutPelaksanaInput = {
@@ -36277,6 +42179,236 @@ export namespace Prisma {
     update?: XOR<XOR<PenggunaUpdateToOneWithWhereWithoutTandaTanganInput, PenggunaUpdateWithoutTandaTanganInput>, PenggunaUncheckedUpdateWithoutTandaTanganInput>
   }
 
+  export type OverridePanahDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+  }
+
+  export type OverrideLabelDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput = {
+    create?: XOR<OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    createMany?: OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    connect?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+  }
+
+  export type DetailSOPCreateNestedOneWithoutKonfigurasiDiagramInput = {
+    create?: XOR<DetailSOPCreateWithoutKonfigurasiDiagramInput, DetailSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+    connectOrCreate?: DetailSOPCreateOrConnectWithoutKonfigurasiDiagramInput
+    connect?: DetailSOPWhereUniqueInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput = {
+    create?: XOR<OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    createMany?: OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    connect?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+  }
+
+  export type EnumJenisDiagramFieldUpdateOperationsInput = {
+    set?: $Enums.JenisDiagram
+  }
+
+  export type OverridePanahDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    upsert?: OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    set?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    disconnect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    delete?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    update?: OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    updateMany?: OverridePanahDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput[]
+    deleteMany?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+  }
+
+  export type OverrideLabelDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput = {
+    create?: XOR<OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    upsert?: OverrideLabelDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    createMany?: OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    set?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    disconnect?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    delete?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    connect?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    update?: OverrideLabelDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    updateMany?: OverrideLabelDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput[]
+    deleteMany?: OverrideLabelDiagramSOPScalarWhereInput | OverrideLabelDiagramSOPScalarWhereInput[]
+  }
+
+  export type DetailSOPUpdateOneRequiredWithoutKonfigurasiDiagramNestedInput = {
+    create?: XOR<DetailSOPCreateWithoutKonfigurasiDiagramInput, DetailSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+    connectOrCreate?: DetailSOPCreateOrConnectWithoutKonfigurasiDiagramInput
+    upsert?: DetailSOPUpsertWithoutKonfigurasiDiagramInput
+    connect?: DetailSOPWhereUniqueInput
+    update?: XOR<XOR<DetailSOPUpdateToOneWithWhereWithoutKonfigurasiDiagramInput, DetailSOPUpdateWithoutKonfigurasiDiagramInput>, DetailSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    upsert?: OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    createMany?: OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    set?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    disconnect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    delete?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    connect?: OverridePanahDiagramSOPWhereUniqueInput | OverridePanahDiagramSOPWhereUniqueInput[]
+    update?: OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    updateMany?: OverridePanahDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput | OverridePanahDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput[]
+    deleteMany?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput = {
+    create?: XOR<OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput> | OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput[] | OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput[]
+    connectOrCreate?: OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput[]
+    upsert?: OverrideLabelDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    createMany?: OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope
+    set?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    disconnect?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    delete?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    connect?: OverrideLabelDiagramSOPWhereUniqueInput | OverrideLabelDiagramSOPWhereUniqueInput[]
+    update?: OverrideLabelDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput[]
+    updateMany?: OverrideLabelDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput | OverrideLabelDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput[]
+    deleteMany?: OverrideLabelDiagramSOPScalarWhereInput | OverrideLabelDiagramSOPScalarWhereInput[]
+  }
+
+  export type KonfigurasiDiagramSOPCreateNestedOneWithoutOverridePanahInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutOverridePanahInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverridePanahInput>
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutOverridePanahInput
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput
+  }
+
+  export type LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiSumberInput = {
+    create?: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiSumberInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiSumberInput>
+    connectOrCreate?: LangkahSOPCreateOrConnectWithoutOverridePanahSebagaiSumberInput
+    connect?: LangkahSOPWhereUniqueInput
+  }
+
+  export type LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiTujuanInput = {
+    create?: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiTujuanInput>
+    connectOrCreate?: LangkahSOPCreateOrConnectWithoutOverridePanahSebagaiTujuanInput
+    connect?: LangkahSOPWhereUniqueInput
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateNestedManyWithoutOverridePanahInput = {
+    create?: XOR<TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput> | TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput[] | TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput[]
+    connectOrCreate?: TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput | TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput[]
+    createMany?: TitikTekukPanahDiagramSOPCreateManyOverridePanahInputEnvelope
+    connect?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedCreateNestedManyWithoutOverridePanahInput = {
+    create?: XOR<TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput> | TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput[] | TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput[]
+    connectOrCreate?: TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput | TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput[]
+    createMany?: TitikTekukPanahDiagramSOPCreateManyOverridePanahInputEnvelope
+    connect?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+  }
+
+  export type EnumCabangDiagramFieldUpdateOperationsInput = {
+    set?: $Enums.CabangDiagram
+  }
+
+  export type EnumSisiPanahDiagramFieldUpdateOperationsInput = {
+    set?: $Enums.SisiPanahDiagram
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverridePanahNestedInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutOverridePanahInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverridePanahInput>
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutOverridePanahInput
+    upsert?: KonfigurasiDiagramSOPUpsertWithoutOverridePanahInput
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput
+    update?: XOR<XOR<KonfigurasiDiagramSOPUpdateToOneWithWhereWithoutOverridePanahInput, KonfigurasiDiagramSOPUpdateWithoutOverridePanahInput>, KonfigurasiDiagramSOPUncheckedUpdateWithoutOverridePanahInput>
+  }
+
+  export type LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiSumberNestedInput = {
+    create?: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiSumberInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiSumberInput>
+    connectOrCreate?: LangkahSOPCreateOrConnectWithoutOverridePanahSebagaiSumberInput
+    upsert?: LangkahSOPUpsertWithoutOverridePanahSebagaiSumberInput
+    connect?: LangkahSOPWhereUniqueInput
+    update?: XOR<XOR<LangkahSOPUpdateToOneWithWhereWithoutOverridePanahSebagaiSumberInput, LangkahSOPUpdateWithoutOverridePanahSebagaiSumberInput>, LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiSumberInput>
+  }
+
+  export type LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiTujuanNestedInput = {
+    create?: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiTujuanInput>
+    connectOrCreate?: LangkahSOPCreateOrConnectWithoutOverridePanahSebagaiTujuanInput
+    upsert?: LangkahSOPUpsertWithoutOverridePanahSebagaiTujuanInput
+    connect?: LangkahSOPWhereUniqueInput
+    update?: XOR<XOR<LangkahSOPUpdateToOneWithWhereWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUpdateWithoutOverridePanahSebagaiTujuanInput>, LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiTujuanInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPUpdateManyWithoutOverridePanahNestedInput = {
+    create?: XOR<TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput> | TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput[] | TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput[]
+    connectOrCreate?: TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput | TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput[]
+    upsert?: TitikTekukPanahDiagramSOPUpsertWithWhereUniqueWithoutOverridePanahInput | TitikTekukPanahDiagramSOPUpsertWithWhereUniqueWithoutOverridePanahInput[]
+    createMany?: TitikTekukPanahDiagramSOPCreateManyOverridePanahInputEnvelope
+    set?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    disconnect?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    delete?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    connect?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    update?: TitikTekukPanahDiagramSOPUpdateWithWhereUniqueWithoutOverridePanahInput | TitikTekukPanahDiagramSOPUpdateWithWhereUniqueWithoutOverridePanahInput[]
+    updateMany?: TitikTekukPanahDiagramSOPUpdateManyWithWhereWithoutOverridePanahInput | TitikTekukPanahDiagramSOPUpdateManyWithWhereWithoutOverridePanahInput[]
+    deleteMany?: TitikTekukPanahDiagramSOPScalarWhereInput | TitikTekukPanahDiagramSOPScalarWhereInput[]
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahNestedInput = {
+    create?: XOR<TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput> | TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput[] | TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput[]
+    connectOrCreate?: TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput | TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput[]
+    upsert?: TitikTekukPanahDiagramSOPUpsertWithWhereUniqueWithoutOverridePanahInput | TitikTekukPanahDiagramSOPUpsertWithWhereUniqueWithoutOverridePanahInput[]
+    createMany?: TitikTekukPanahDiagramSOPCreateManyOverridePanahInputEnvelope
+    set?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    disconnect?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    delete?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    connect?: TitikTekukPanahDiagramSOPWhereUniqueInput | TitikTekukPanahDiagramSOPWhereUniqueInput[]
+    update?: TitikTekukPanahDiagramSOPUpdateWithWhereUniqueWithoutOverridePanahInput | TitikTekukPanahDiagramSOPUpdateWithWhereUniqueWithoutOverridePanahInput[]
+    updateMany?: TitikTekukPanahDiagramSOPUpdateManyWithWhereWithoutOverridePanahInput | TitikTekukPanahDiagramSOPUpdateManyWithWhereWithoutOverridePanahInput[]
+    deleteMany?: TitikTekukPanahDiagramSOPScalarWhereInput | TitikTekukPanahDiagramSOPScalarWhereInput[]
+  }
+
+  export type OverridePanahDiagramSOPCreateNestedOneWithoutTitikTekukInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutTitikTekukInput, OverridePanahDiagramSOPUncheckedCreateWithoutTitikTekukInput>
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutTitikTekukInput
+    connect?: OverridePanahDiagramSOPWhereUniqueInput
+  }
+
+  export type OverridePanahDiagramSOPUpdateOneRequiredWithoutTitikTekukNestedInput = {
+    create?: XOR<OverridePanahDiagramSOPCreateWithoutTitikTekukInput, OverridePanahDiagramSOPUncheckedCreateWithoutTitikTekukInput>
+    connectOrCreate?: OverridePanahDiagramSOPCreateOrConnectWithoutTitikTekukInput
+    upsert?: OverridePanahDiagramSOPUpsertWithoutTitikTekukInput
+    connect?: OverridePanahDiagramSOPWhereUniqueInput
+    update?: XOR<XOR<OverridePanahDiagramSOPUpdateToOneWithWhereWithoutTitikTekukInput, OverridePanahDiagramSOPUpdateWithoutTitikTekukInput>, OverridePanahDiagramSOPUncheckedUpdateWithoutTitikTekukInput>
+  }
+
+  export type KonfigurasiDiagramSOPCreateNestedOneWithoutOverrideLabelInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutOverrideLabelInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverrideLabelInput>
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutOverrideLabelInput
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput
+  }
+
+  export type KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverrideLabelNestedInput = {
+    create?: XOR<KonfigurasiDiagramSOPCreateWithoutOverrideLabelInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverrideLabelInput>
+    connectOrCreate?: KonfigurasiDiagramSOPCreateOrConnectWithoutOverrideLabelInput
+    upsert?: KonfigurasiDiagramSOPUpsertWithoutOverrideLabelInput
+    connect?: KonfigurasiDiagramSOPWhereUniqueInput
+    update?: XOR<XOR<KonfigurasiDiagramSOPUpdateToOneWithWhereWithoutOverrideLabelInput, KonfigurasiDiagramSOPUpdateWithoutOverrideLabelInput>, KonfigurasiDiagramSOPUncheckedUpdateWithoutOverrideLabelInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[]
@@ -36652,6 +42784,73 @@ export namespace Prisma {
     _max?: NestedEnumJenisDokumenTteFilter<$PrismaModel>
   }
 
+  export type NestedEnumJenisDiagramFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisDiagram | EnumJenisDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisDiagram[]
+    notIn?: $Enums.JenisDiagram[]
+    not?: NestedEnumJenisDiagramFilter<$PrismaModel> | $Enums.JenisDiagram
+  }
+
+  export type NestedEnumJenisDiagramWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.JenisDiagram | EnumJenisDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.JenisDiagram[]
+    notIn?: $Enums.JenisDiagram[]
+    not?: NestedEnumJenisDiagramWithAggregatesFilter<$PrismaModel> | $Enums.JenisDiagram
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumJenisDiagramFilter<$PrismaModel>
+    _max?: NestedEnumJenisDiagramFilter<$PrismaModel>
+  }
+
+  export type NestedEnumCabangDiagramFilter<$PrismaModel = never> = {
+    equals?: $Enums.CabangDiagram | EnumCabangDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.CabangDiagram[]
+    notIn?: $Enums.CabangDiagram[]
+    not?: NestedEnumCabangDiagramFilter<$PrismaModel> | $Enums.CabangDiagram
+  }
+
+  export type NestedEnumSisiPanahDiagramFilter<$PrismaModel = never> = {
+    equals?: $Enums.SisiPanahDiagram | EnumSisiPanahDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.SisiPanahDiagram[]
+    notIn?: $Enums.SisiPanahDiagram[]
+    not?: NestedEnumSisiPanahDiagramFilter<$PrismaModel> | $Enums.SisiPanahDiagram
+  }
+
+  export type NestedEnumCabangDiagramWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CabangDiagram | EnumCabangDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.CabangDiagram[]
+    notIn?: $Enums.CabangDiagram[]
+    not?: NestedEnumCabangDiagramWithAggregatesFilter<$PrismaModel> | $Enums.CabangDiagram
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumCabangDiagramFilter<$PrismaModel>
+    _max?: NestedEnumCabangDiagramFilter<$PrismaModel>
+  }
+
+  export type NestedEnumSisiPanahDiagramWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.SisiPanahDiagram | EnumSisiPanahDiagramFieldRefInput<$PrismaModel>
+    in?: $Enums.SisiPanahDiagram[]
+    notIn?: $Enums.SisiPanahDiagram[]
+    not?: NestedEnumSisiPanahDiagramWithAggregatesFilter<$PrismaModel> | $Enums.SisiPanahDiagram
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumSisiPanahDiagramFilter<$PrismaModel>
+    _max?: NestedEnumSisiPanahDiagramFilter<$PrismaModel>
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
   export type DetailSOPCreateWithoutDibuatOlehInput = {
     detailSopId?: string
     status?: $Enums.StatusSOP
@@ -36679,6 +42878,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutDibuatOlehInput = {
@@ -36708,6 +42908,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutDibuatOlehInput = {
@@ -36747,6 +42948,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutTerakhirDieditOlehInput = {
@@ -36776,6 +42978,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutTerakhirDieditOlehInput = {
@@ -38523,6 +44726,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutSopInput = {
@@ -38552,6 +44756,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutSopInput = {
@@ -38675,6 +44880,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutRevisiMenjadiInput = {
@@ -38704,6 +44910,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutRevisiMenjadiInput = {
@@ -38738,6 +44945,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutRevisiDariInput = {
@@ -38767,6 +44975,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutRevisiDariInput = {
@@ -39084,6 +45293,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
   }
 
@@ -39104,6 +45315,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPCreateOrConnectWithoutDetailSopInput = {
@@ -39270,6 +45483,32 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type KonfigurasiDiagramSOPCreateWithoutDetailSopInput = {
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overridePanah?: OverridePanahDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput
+    overrideLabel?: OverrideLabelDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput = {
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overridePanah?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput
+    overrideLabel?: OverrideLabelDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPCreateOrConnectWithoutDetailSopInput = {
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+    create: XOR<KonfigurasiDiagramSOPCreateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput>
+  }
+
+  export type KonfigurasiDiagramSOPCreateManyDetailSopInputEnvelope = {
+    data: KonfigurasiDiagramSOPCreateManyDetailSopInput | KonfigurasiDiagramSOPCreateManyDetailSopInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DetailSOPUpsertWithoutRevisiMenjadiInput = {
     update: XOR<DetailSOPUpdateWithoutRevisiMenjadiInput, DetailSOPUncheckedUpdateWithoutRevisiMenjadiInput>
     create: XOR<DetailSOPCreateWithoutRevisiMenjadiInput, DetailSOPUncheckedCreateWithoutRevisiMenjadiInput>
@@ -39308,6 +45547,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutRevisiMenjadiInput = {
@@ -39337,6 +45577,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUpsertWithWhereUniqueWithoutRevisiDariInput = {
@@ -39815,6 +46056,32 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"DokumenTte"> | Date | string
   }
 
+  export type KonfigurasiDiagramSOPUpsertWithWhereUniqueWithoutDetailSopInput = {
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+    update: XOR<KonfigurasiDiagramSOPUpdateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedUpdateWithoutDetailSopInput>
+    create: XOR<KonfigurasiDiagramSOPCreateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedCreateWithoutDetailSopInput>
+  }
+
+  export type KonfigurasiDiagramSOPUpdateWithWhereUniqueWithoutDetailSopInput = {
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+    data: XOR<KonfigurasiDiagramSOPUpdateWithoutDetailSopInput, KonfigurasiDiagramSOPUncheckedUpdateWithoutDetailSopInput>
+  }
+
+  export type KonfigurasiDiagramSOPUpdateManyWithWhereWithoutDetailSopInput = {
+    where: KonfigurasiDiagramSOPScalarWhereInput
+    data: XOR<KonfigurasiDiagramSOPUpdateManyMutationInput, KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopInput>
+  }
+
+  export type KonfigurasiDiagramSOPScalarWhereInput = {
+    AND?: KonfigurasiDiagramSOPScalarWhereInput | KonfigurasiDiagramSOPScalarWhereInput[]
+    OR?: KonfigurasiDiagramSOPScalarWhereInput[]
+    NOT?: KonfigurasiDiagramSOPScalarWhereInput | KonfigurasiDiagramSOPScalarWhereInput[]
+    detailSopId?: StringFilter<"KonfigurasiDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"KonfigurasiDiagramSOP"> | $Enums.JenisDiagram
+    layoutSeed?: IntFilter<"KonfigurasiDiagramSOP"> | number
+    updatedAt?: DateTimeFilter<"KonfigurasiDiagramSOP"> | Date | string
+  }
+
   export type DetailSOPCreateWithoutLampiranPeringatanInput = {
     detailSopId?: string
     status?: $Enums.StatusSOP
@@ -39842,6 +46109,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutLampiranPeringatanInput = {
@@ -39871,6 +46139,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutLampiranPeringatanInput = {
@@ -39916,6 +46185,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutLampiranPeringatanInput = {
@@ -39945,6 +46215,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPCreateWithoutLampiranKualifikasiPelaksanaanInput = {
@@ -39974,6 +46245,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutLampiranKualifikasiPelaksanaanInput = {
@@ -40003,6 +46275,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutLampiranKualifikasiPelaksanaanInput = {
@@ -40048,6 +46321,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutLampiranKualifikasiPelaksanaanInput = {
@@ -40077,6 +46351,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPCreateWithoutLampiranPeralatanPerlengkapanInput = {
@@ -40106,6 +46381,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutLampiranPeralatanPerlengkapanInput = {
@@ -40135,6 +46411,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutLampiranPeralatanPerlengkapanInput = {
@@ -40180,6 +46457,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutLampiranPeralatanPerlengkapanInput = {
@@ -40209,6 +46487,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPCreateWithoutLampiranPencatatanPendataanInput = {
@@ -40238,6 +46517,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutLampiranPencatatanPendataanInput = {
@@ -40267,6 +46547,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutLampiranPencatatanPendataanInput = {
@@ -40312,6 +46593,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutLampiranPencatatanPendataanInput = {
@@ -40341,6 +46623,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type PeraturanCreateWithoutDasarHukumInput = {
@@ -40399,6 +46682,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutDasarHukumInput = {
@@ -40428,6 +46712,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutDasarHukumInput = {
@@ -40508,6 +46793,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutDasarHukumInput = {
@@ -40537,6 +46823,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPCreateWithoutRelasiSopKeluarInput = {
@@ -40566,6 +46853,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutDetailSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutRelasiSopKeluarInput = {
@@ -40595,6 +46883,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDetailSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutRelasiSopKeluarInput = {
@@ -40629,6 +46918,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutDetailSopInput
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutRelasiSopMasukInput = {
@@ -40658,6 +46948,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDetailSopInput
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutRelasiSopMasukInput = {
@@ -40703,6 +46994,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutDetailSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutRelasiSopKeluarInput = {
@@ -40732,6 +47024,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUpsertWithoutRelasiSopMasukInput = {
@@ -40772,6 +47065,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutDetailSopNestedInput
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutRelasiSopMasukInput = {
@@ -40801,6 +47095,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type LangkahSOPCreateWithoutLangkahSebelumTidakInput = {
@@ -40818,6 +47113,8 @@ export namespace Prisma {
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
     detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
   }
@@ -40839,6 +47136,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPCreateOrConnectWithoutLangkahSebelumTidakInput = {
@@ -40861,6 +47160,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
     detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
   }
@@ -40882,6 +47183,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPCreateOrConnectWithoutLangkahTidakInput = {
@@ -40909,6 +47212,8 @@ export namespace Prisma {
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
     detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
   }
@@ -40930,6 +47235,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPCreateOrConnectWithoutLangkahSebelumYaInput = {
@@ -40952,6 +47259,8 @@ export namespace Prisma {
     langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
     detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
   }
@@ -40973,6 +47282,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPCreateOrConnectWithoutLangkahYaInput = {
@@ -40982,6 +47293,88 @@ export namespace Prisma {
 
   export type LangkahSOPCreateManyLangkahYaInputEnvelope = {
     data: LangkahSOPCreateManyLangkahYaInput | LangkahSOPCreateManyLangkahYaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OverridePanahDiagramSOPCreateWithoutDariLangkahInput = {
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    konfigurasiDiagram: KonfigurasiDiagramSOPCreateNestedOneWithoutOverridePanahInput
+    keLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiTujuanInput
+    titikTekuk?: TitikTekukPanahDiagramSOPCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPCreateOrConnectWithoutDariLangkahInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    create: XOR<OverridePanahDiagramSOPCreateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPCreateManyDariLangkahInputEnvelope = {
+    data: OverridePanahDiagramSOPCreateManyDariLangkahInput | OverridePanahDiagramSOPCreateManyDariLangkahInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OverridePanahDiagramSOPCreateWithoutKeLangkahInput = {
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    konfigurasiDiagram: KonfigurasiDiagramSOPCreateNestedOneWithoutOverridePanahInput
+    dariLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiSumberInput
+    titikTekuk?: TitikTekukPanahDiagramSOPCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPCreateOrConnectWithoutKeLangkahInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    create: XOR<OverridePanahDiagramSOPCreateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPCreateManyKeLangkahInputEnvelope = {
+    data: OverridePanahDiagramSOPCreateManyKeLangkahInput | OverridePanahDiagramSOPCreateManyKeLangkahInput[]
     skipDuplicates?: boolean
   }
 
@@ -41035,6 +47428,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutLangkahSOPInput = {
@@ -41064,6 +47458,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutLangkahSOPInput = {
@@ -41097,6 +47492,8 @@ export namespace Prisma {
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
@@ -41118,6 +47515,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPUpsertWithWhereUniqueWithoutLangkahTidakInput = {
@@ -41162,6 +47561,8 @@ export namespace Prisma {
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
@@ -41183,6 +47584,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPUpsertWithWhereUniqueWithoutLangkahYaInput = {
@@ -41199,6 +47602,57 @@ export namespace Prisma {
   export type LangkahSOPUpdateManyWithWhereWithoutLangkahYaInput = {
     where: LangkahSOPScalarWhereInput
     data: XOR<LangkahSOPUpdateManyMutationInput, LangkahSOPUncheckedUpdateManyWithoutLangkahYaInput>
+  }
+
+  export type OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutDariLangkahInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    update: XOR<OverridePanahDiagramSOPUpdateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedUpdateWithoutDariLangkahInput>
+    create: XOR<OverridePanahDiagramSOPCreateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutDariLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutDariLangkahInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    data: XOR<OverridePanahDiagramSOPUpdateWithoutDariLangkahInput, OverridePanahDiagramSOPUncheckedUpdateWithoutDariLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateManyWithWhereWithoutDariLangkahInput = {
+    where: OverridePanahDiagramSOPScalarWhereInput
+    data: XOR<OverridePanahDiagramSOPUpdateManyMutationInput, OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPScalarWhereInput = {
+    AND?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+    OR?: OverridePanahDiagramSOPScalarWhereInput[]
+    NOT?: OverridePanahDiagramSOPScalarWhereInput | OverridePanahDiagramSOPScalarWhereInput[]
+    detailSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    keLangkahSopId?: StringFilter<"OverridePanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFilter<"OverridePanahDiagramSOP"> | $Enums.SisiPanahDiagram
+    startX?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    startY?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    endX?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    endY?: FloatFilter<"OverridePanahDiagramSOP"> | number
+    createdAt?: DateTimeFilter<"OverridePanahDiagramSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"OverridePanahDiagramSOP"> | Date | string
+  }
+
+  export type OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKeLangkahInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    update: XOR<OverridePanahDiagramSOPUpdateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedUpdateWithoutKeLangkahInput>
+    create: XOR<OverridePanahDiagramSOPCreateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedCreateWithoutKeLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKeLangkahInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    data: XOR<OverridePanahDiagramSOPUpdateWithoutKeLangkahInput, OverridePanahDiagramSOPUncheckedUpdateWithoutKeLangkahInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateManyWithWhereWithoutKeLangkahInput = {
+    where: OverridePanahDiagramSOPScalarWhereInput
+    data: XOR<OverridePanahDiagramSOPUpdateManyMutationInput, OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahInput>
   }
 
   export type PelaksanaUpsertWithoutLangkahSOPInput = {
@@ -41268,6 +47722,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutLangkahSOPInput = {
@@ -41297,6 +47752,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPPelaksanaCreateWithoutPelaksanaInput = {
@@ -41339,6 +47795,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
     langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
     langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
     detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
   }
 
@@ -41359,6 +47817,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
     langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
   }
 
   export type LangkahSOPCreateOrConnectWithoutPelaksanaInput = {
@@ -41521,6 +47981,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutSwimlanesInput = {
@@ -41550,6 +48011,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutSwimlanesInput = {
@@ -41624,6 +48086,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutSwimlanesInput = {
@@ -41653,6 +48116,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPCreateWithoutLogEditSopInput = {
@@ -41682,6 +48146,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutLogEditSopInput = {
@@ -41711,6 +48176,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutLogEditSopInput = {
@@ -41837,6 +48303,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutLogEditSopInput = {
@@ -41866,6 +48333,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type PenggunaUpsertWithoutLogEditSopInput = {
@@ -42845,6 +49313,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutNilaiEvaluasiInput = {
@@ -42874,6 +49343,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
     dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutNilaiEvaluasiInput = {
@@ -43139,6 +49609,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutNilaiEvaluasiInput = {
@@ -43168,6 +49639,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type LogNilaiEvaluasiUpsertWithWhereUniqueWithoutNilaiEvaluasiInput = {
@@ -43517,6 +49989,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutDetailSopInput
     relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPUncheckedCreateWithoutDokumenTteInput = {
@@ -43546,6 +50019,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDetailSopInput
     relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
     relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedCreateNestedManyWithoutDetailSopInput
   }
 
   export type DetailSOPCreateOrConnectWithoutDokumenTteInput = {
@@ -43680,6 +50154,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutDetailSopNestedInput
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutDokumenTteInput = {
@@ -43709,6 +50184,7 @@ export namespace Prisma {
     nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type PengajuanEvaluasiUpsertWithoutDokumenTteInput = {
@@ -43984,6 +50460,679 @@ export namespace Prisma {
     riwayatOpd?: RiwayatOpdPenggunaUncheckedUpdateManyWithoutPenggunaNestedInput
   }
 
+  export type OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput = {
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    dariLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiSumberInput
+    keLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiTujuanInput
+    titikTekuk?: TitikTekukPanahDiagramSOPCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput = {
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedCreateNestedManyWithoutOverridePanahInput
+  }
+
+  export type OverridePanahDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    create: XOR<OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope = {
+    data: OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInput | OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput = {
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput = {
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverrideLabelDiagramSOPCreateOrConnectWithoutKonfigurasiDiagramInput = {
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+    create: XOR<OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInputEnvelope = {
+    data: OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInput | OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DetailSOPCreateWithoutKonfigurasiDiagramInput = {
+    detailSopId?: string
+    status?: $Enums.StatusSOP
+    versi?: number
+    nomorSOP: string
+    tanggalPembuatan?: Date | string
+    tanggalRevisi?: Date | string | null
+    tanggalEfektif?: Date | string | null
+    namaLembaga: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    revisiDari?: DetailSOPCreateNestedOneWithoutRevisiMenjadiInput
+    revisiMenjadi?: DetailSOPCreateNestedManyWithoutRevisiDariInput
+    dasarHukum?: DasarHukumCreateNestedManyWithoutDetailSopInput
+    dibuatOleh?: PenggunaCreateNestedOneWithoutDetailSopDibuatInput
+    sop: SOPCreateNestedOneWithoutDetailSopsInput
+    terakhirDieditOleh?: PenggunaCreateNestedOneWithoutDetailSopDieditInput
+    swimlanes?: DetailSOPPelaksanaCreateNestedManyWithoutDetailSopInput
+    lampiranPeringatan?: LampiranPeringatanCreateNestedManyWithoutDetailSopInput
+    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanCreateNestedManyWithoutDetailSopInput
+    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanCreateNestedManyWithoutDetailSopInput
+    lampiranPencatatanPendataan?: LampiranPencatatanPendataanCreateNestedManyWithoutDetailSopInput
+    langkahSOP?: LangkahSOPCreateNestedManyWithoutDetailSopInput
+    logEditSop?: LogEditSOPCreateNestedManyWithoutDetailSopInput
+    nilaiEvaluasi?: NilaiEvaluasiCreateNestedManyWithoutDetailSopInput
+    relasiSopKeluar?: SopTerkaitCreateNestedManyWithoutSopInput
+    relasiSopMasuk?: SopTerkaitCreateNestedManyWithoutSopTerkaitInput
+    dokumenTte?: DokumenTteCreateNestedManyWithoutDetailSopInput
+  }
+
+  export type DetailSOPUncheckedCreateWithoutKonfigurasiDiagramInput = {
+    detailSopId?: string
+    sopId: string
+    status?: $Enums.StatusSOP
+    versi?: number
+    nomorSOP: string
+    tanggalPembuatan?: Date | string
+    tanggalRevisi?: Date | string | null
+    tanggalEfektif?: Date | string | null
+    namaLembaga: string
+    dibuatOlehId?: string | null
+    terakhirDieditOlehId?: string | null
+    revisiDariDetailSopId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    revisiMenjadi?: DetailSOPUncheckedCreateNestedManyWithoutRevisiDariInput
+    dasarHukum?: DasarHukumUncheckedCreateNestedManyWithoutDetailSopInput
+    swimlanes?: DetailSOPPelaksanaUncheckedCreateNestedManyWithoutDetailSopInput
+    lampiranPeringatan?: LampiranPeringatanUncheckedCreateNestedManyWithoutDetailSopInput
+    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedCreateNestedManyWithoutDetailSopInput
+    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedCreateNestedManyWithoutDetailSopInput
+    lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedCreateNestedManyWithoutDetailSopInput
+    langkahSOP?: LangkahSOPUncheckedCreateNestedManyWithoutDetailSopInput
+    logEditSop?: LogEditSOPUncheckedCreateNestedManyWithoutDetailSopInput
+    nilaiEvaluasi?: NilaiEvaluasiUncheckedCreateNestedManyWithoutDetailSopInput
+    relasiSopKeluar?: SopTerkaitUncheckedCreateNestedManyWithoutSopInput
+    relasiSopMasuk?: SopTerkaitUncheckedCreateNestedManyWithoutSopTerkaitInput
+    dokumenTte?: DokumenTteUncheckedCreateNestedManyWithoutDetailSopInput
+  }
+
+  export type DetailSOPCreateOrConnectWithoutKonfigurasiDiagramInput = {
+    where: DetailSOPWhereUniqueInput
+    create: XOR<DetailSOPCreateWithoutKonfigurasiDiagramInput, DetailSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverridePanahDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    update: XOR<OverridePanahDiagramSOPUpdateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+    create: XOR<OverridePanahDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    data: XOR<OverridePanahDiagramSOPUpdateWithoutKonfigurasiDiagramInput, OverridePanahDiagramSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput = {
+    where: OverridePanahDiagramSOPScalarWhereInput
+    data: XOR<OverridePanahDiagramSOPUpdateManyMutationInput, OverridePanahDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverrideLabelDiagramSOPUpsertWithWhereUniqueWithoutKonfigurasiDiagramInput = {
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+    update: XOR<OverrideLabelDiagramSOPUpdateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+    create: XOR<OverrideLabelDiagramSOPCreateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverrideLabelDiagramSOPUpdateWithWhereUniqueWithoutKonfigurasiDiagramInput = {
+    where: OverrideLabelDiagramSOPWhereUniqueInput
+    data: XOR<OverrideLabelDiagramSOPUpdateWithoutKonfigurasiDiagramInput, OverrideLabelDiagramSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverrideLabelDiagramSOPUpdateManyWithWhereWithoutKonfigurasiDiagramInput = {
+    where: OverrideLabelDiagramSOPScalarWhereInput
+    data: XOR<OverrideLabelDiagramSOPUpdateManyMutationInput, OverrideLabelDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramInput>
+  }
+
+  export type OverrideLabelDiagramSOPScalarWhereInput = {
+    AND?: OverrideLabelDiagramSOPScalarWhereInput | OverrideLabelDiagramSOPScalarWhereInput[]
+    OR?: OverrideLabelDiagramSOPScalarWhereInput[]
+    NOT?: OverrideLabelDiagramSOPScalarWhereInput | OverrideLabelDiagramSOPScalarWhereInput[]
+    detailSopId?: StringFilter<"OverrideLabelDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"OverrideLabelDiagramSOP"> | $Enums.JenisDiagram
+    kunciLabel?: StringFilter<"OverrideLabelDiagramSOP"> | string
+    posisiX?: FloatFilter<"OverrideLabelDiagramSOP"> | number
+    posisiY?: FloatFilter<"OverrideLabelDiagramSOP"> | number
+    createdAt?: DateTimeFilter<"OverrideLabelDiagramSOP"> | Date | string
+    updatedAt?: DateTimeFilter<"OverrideLabelDiagramSOP"> | Date | string
+  }
+
+  export type DetailSOPUpsertWithoutKonfigurasiDiagramInput = {
+    update: XOR<DetailSOPUpdateWithoutKonfigurasiDiagramInput, DetailSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+    create: XOR<DetailSOPCreateWithoutKonfigurasiDiagramInput, DetailSOPUncheckedCreateWithoutKonfigurasiDiagramInput>
+    where?: DetailSOPWhereInput
+  }
+
+  export type DetailSOPUpdateToOneWithWhereWithoutKonfigurasiDiagramInput = {
+    where?: DetailSOPWhereInput
+    data: XOR<DetailSOPUpdateWithoutKonfigurasiDiagramInput, DetailSOPUncheckedUpdateWithoutKonfigurasiDiagramInput>
+  }
+
+  export type DetailSOPUpdateWithoutKonfigurasiDiagramInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    versi?: IntFieldUpdateOperationsInput | number
+    nomorSOP?: StringFieldUpdateOperationsInput | string
+    tanggalPembuatan?: DateTimeFieldUpdateOperationsInput | Date | string
+    tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    namaLembaga?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    revisiDari?: DetailSOPUpdateOneWithoutRevisiMenjadiNestedInput
+    revisiMenjadi?: DetailSOPUpdateManyWithoutRevisiDariNestedInput
+    dasarHukum?: DasarHukumUpdateManyWithoutDetailSopNestedInput
+    dibuatOleh?: PenggunaUpdateOneWithoutDetailSopDibuatNestedInput
+    sop?: SOPUpdateOneRequiredWithoutDetailSopsNestedInput
+    terakhirDieditOleh?: PenggunaUpdateOneWithoutDetailSopDieditNestedInput
+    swimlanes?: DetailSOPPelaksanaUpdateManyWithoutDetailSopNestedInput
+    lampiranPeringatan?: LampiranPeringatanUpdateManyWithoutDetailSopNestedInput
+    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUpdateManyWithoutDetailSopNestedInput
+    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUpdateManyWithoutDetailSopNestedInput
+    lampiranPencatatanPendataan?: LampiranPencatatanPendataanUpdateManyWithoutDetailSopNestedInput
+    langkahSOP?: LangkahSOPUpdateManyWithoutDetailSopNestedInput
+    logEditSop?: LogEditSOPUpdateManyWithoutDetailSopNestedInput
+    nilaiEvaluasi?: NilaiEvaluasiUpdateManyWithoutDetailSopNestedInput
+    relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
+    relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
+    dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+  }
+
+  export type DetailSOPUncheckedUpdateWithoutKonfigurasiDiagramInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    sopId?: StringFieldUpdateOperationsInput | string
+    status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
+    versi?: IntFieldUpdateOperationsInput | number
+    nomorSOP?: StringFieldUpdateOperationsInput | string
+    tanggalPembuatan?: DateTimeFieldUpdateOperationsInput | Date | string
+    tanggalRevisi?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tanggalEfektif?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    namaLembaga?: StringFieldUpdateOperationsInput | string
+    dibuatOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    terakhirDieditOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    revisiDariDetailSopId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    revisiMenjadi?: DetailSOPUncheckedUpdateManyWithoutRevisiDariNestedInput
+    dasarHukum?: DasarHukumUncheckedUpdateManyWithoutDetailSopNestedInput
+    swimlanes?: DetailSOPPelaksanaUncheckedUpdateManyWithoutDetailSopNestedInput
+    lampiranPeringatan?: LampiranPeringatanUncheckedUpdateManyWithoutDetailSopNestedInput
+    lampiranKualifikasiPelaksanaan?: LampiranKualifikasiPelaksanaanUncheckedUpdateManyWithoutDetailSopNestedInput
+    lampiranPeralatanPerlengkapan?: LampiranPeralatanPerlengkapanUncheckedUpdateManyWithoutDetailSopNestedInput
+    lampiranPencatatanPendataan?: LampiranPencatatanPendataanUncheckedUpdateManyWithoutDetailSopNestedInput
+    langkahSOP?: LangkahSOPUncheckedUpdateManyWithoutDetailSopNestedInput
+    logEditSop?: LogEditSOPUncheckedUpdateManyWithoutDetailSopNestedInput
+    nilaiEvaluasi?: NilaiEvaluasiUncheckedUpdateManyWithoutDetailSopNestedInput
+    relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
+    relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
+    dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPCreateWithoutOverridePanahInput = {
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overrideLabel?: OverrideLabelDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput
+    detailSop: DetailSOPCreateNestedOneWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedCreateWithoutOverridePanahInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overrideLabel?: OverrideLabelDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPCreateOrConnectWithoutOverridePanahInput = {
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+    create: XOR<KonfigurasiDiagramSOPCreateWithoutOverridePanahInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverridePanahInput>
+  }
+
+  export type LangkahSOPCreateWithoutOverridePanahSebagaiSumberInput = {
+    langkahSopId?: string
+    kegiatan: string
+    jenis?: $Enums.JenisLangkahProsedur
+    urutan: number
+    kelengkapan: string
+    keluaran: string
+    waktu: number
+    satuanWaktu: $Enums.SatuanWaktu
+    keterangan: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
+    langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
+    langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
+    langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPCreateNestedManyWithoutKeLangkahInput
+    pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
+    detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
+  }
+
+  export type LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiSumberInput = {
+    langkahSopId?: string
+    detailSopId: string
+    kegiatan: string
+    jenis?: $Enums.JenisLangkahProsedur
+    urutan: number
+    kelengkapan: string
+    keluaran: string
+    waktu: number
+    satuanWaktu: $Enums.SatuanWaktu
+    keterangan: string
+    pelaksanaId: string
+    langkahSelanjutnyaYaId?: string | null
+    langkahSelanjutnyaTidakId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
+    langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKeLangkahInput
+  }
+
+  export type LangkahSOPCreateOrConnectWithoutOverridePanahSebagaiSumberInput = {
+    where: LangkahSOPWhereUniqueInput
+    create: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiSumberInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiSumberInput>
+  }
+
+  export type LangkahSOPCreateWithoutOverridePanahSebagaiTujuanInput = {
+    langkahSopId?: string
+    kegiatan: string
+    jenis?: $Enums.JenisLangkahProsedur
+    urutan: number
+    kelengkapan: string
+    keluaran: string
+    waktu: number
+    satuanWaktu: $Enums.SatuanWaktu
+    keterangan: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    langkahTidak?: LangkahSOPCreateNestedOneWithoutLangkahSebelumTidakInput
+    langkahSebelumTidak?: LangkahSOPCreateNestedManyWithoutLangkahTidakInput
+    langkahYa?: LangkahSOPCreateNestedOneWithoutLangkahSebelumYaInput
+    langkahSebelumYa?: LangkahSOPCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPCreateNestedManyWithoutDariLangkahInput
+    pelaksana: PelaksanaCreateNestedOneWithoutLangkahSOPInput
+    detailSop: DetailSOPCreateNestedOneWithoutLangkahSOPInput
+  }
+
+  export type LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiTujuanInput = {
+    langkahSopId?: string
+    detailSopId: string
+    kegiatan: string
+    jenis?: $Enums.JenisLangkahProsedur
+    urutan: number
+    kelengkapan: string
+    keluaran: string
+    waktu: number
+    satuanWaktu: $Enums.SatuanWaktu
+    keterangan: string
+    pelaksanaId: string
+    langkahSelanjutnyaYaId?: string | null
+    langkahSelanjutnyaTidakId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    langkahSebelumTidak?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahTidakInput
+    langkahSebelumYa?: LangkahSOPUncheckedCreateNestedManyWithoutLangkahYaInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutDariLangkahInput
+  }
+
+  export type LangkahSOPCreateOrConnectWithoutOverridePanahSebagaiTujuanInput = {
+    where: LangkahSOPWhereUniqueInput
+    create: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiTujuanInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput = {
+    urutan: number
+    x: number
+    y: number
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput = {
+    urutan: number
+    x: number
+    y: number
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateOrConnectWithoutOverridePanahInput = {
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+    create: XOR<TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateManyOverridePanahInputEnvelope = {
+    data: TitikTekukPanahDiagramSOPCreateManyOverridePanahInput | TitikTekukPanahDiagramSOPCreateManyOverridePanahInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type KonfigurasiDiagramSOPUpsertWithoutOverridePanahInput = {
+    update: XOR<KonfigurasiDiagramSOPUpdateWithoutOverridePanahInput, KonfigurasiDiagramSOPUncheckedUpdateWithoutOverridePanahInput>
+    create: XOR<KonfigurasiDiagramSOPCreateWithoutOverridePanahInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverridePanahInput>
+    where?: KonfigurasiDiagramSOPWhereInput
+  }
+
+  export type KonfigurasiDiagramSOPUpdateToOneWithWhereWithoutOverridePanahInput = {
+    where?: KonfigurasiDiagramSOPWhereInput
+    data: XOR<KonfigurasiDiagramSOPUpdateWithoutOverridePanahInput, KonfigurasiDiagramSOPUncheckedUpdateWithoutOverridePanahInput>
+  }
+
+  export type KonfigurasiDiagramSOPUpdateWithoutOverridePanahInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideLabel?: OverrideLabelDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput
+    detailSop?: DetailSOPUpdateOneRequiredWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedUpdateWithoutOverridePanahInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overrideLabel?: OverrideLabelDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type LangkahSOPUpsertWithoutOverridePanahSebagaiSumberInput = {
+    update: XOR<LangkahSOPUpdateWithoutOverridePanahSebagaiSumberInput, LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiSumberInput>
+    create: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiSumberInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiSumberInput>
+    where?: LangkahSOPWhereInput
+  }
+
+  export type LangkahSOPUpdateToOneWithWhereWithoutOverridePanahSebagaiSumberInput = {
+    where?: LangkahSOPWhereInput
+    data: XOR<LangkahSOPUpdateWithoutOverridePanahSebagaiSumberInput, LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiSumberInput>
+  }
+
+  export type LangkahSOPUpdateWithoutOverridePanahSebagaiSumberInput = {
+    langkahSopId?: StringFieldUpdateOperationsInput | string
+    kegiatan?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
+    urutan?: IntFieldUpdateOperationsInput | number
+    kelengkapan?: StringFieldUpdateOperationsInput | string
+    keluaran?: StringFieldUpdateOperationsInput | string
+    waktu?: IntFieldUpdateOperationsInput | number
+    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
+    keterangan?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
+    langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
+    langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
+    langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
+    pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
+    detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
+  }
+
+  export type LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiSumberInput = {
+    langkahSopId?: StringFieldUpdateOperationsInput | string
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    kegiatan?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
+    urutan?: IntFieldUpdateOperationsInput | number
+    kelengkapan?: StringFieldUpdateOperationsInput | string
+    keluaran?: StringFieldUpdateOperationsInput | string
+    waktu?: IntFieldUpdateOperationsInput | number
+    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
+    keterangan?: StringFieldUpdateOperationsInput | string
+    pelaksanaId?: StringFieldUpdateOperationsInput | string
+    langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
+    langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
+    langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
+  }
+
+  export type LangkahSOPUpsertWithoutOverridePanahSebagaiTujuanInput = {
+    update: XOR<LangkahSOPUpdateWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiTujuanInput>
+    create: XOR<LangkahSOPCreateWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUncheckedCreateWithoutOverridePanahSebagaiTujuanInput>
+    where?: LangkahSOPWhereInput
+  }
+
+  export type LangkahSOPUpdateToOneWithWhereWithoutOverridePanahSebagaiTujuanInput = {
+    where?: LangkahSOPWhereInput
+    data: XOR<LangkahSOPUpdateWithoutOverridePanahSebagaiTujuanInput, LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiTujuanInput>
+  }
+
+  export type LangkahSOPUpdateWithoutOverridePanahSebagaiTujuanInput = {
+    langkahSopId?: StringFieldUpdateOperationsInput | string
+    kegiatan?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
+    urutan?: IntFieldUpdateOperationsInput | number
+    kelengkapan?: StringFieldUpdateOperationsInput | string
+    keluaran?: StringFieldUpdateOperationsInput | string
+    waktu?: IntFieldUpdateOperationsInput | number
+    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
+    keterangan?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
+    langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
+    langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
+    langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
+    detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
+  }
+
+  export type LangkahSOPUncheckedUpdateWithoutOverridePanahSebagaiTujuanInput = {
+    langkahSopId?: StringFieldUpdateOperationsInput | string
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    kegiatan?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisLangkahProsedurFieldUpdateOperationsInput | $Enums.JenisLangkahProsedur
+    urutan?: IntFieldUpdateOperationsInput | number
+    kelengkapan?: StringFieldUpdateOperationsInput | string
+    keluaran?: StringFieldUpdateOperationsInput | string
+    waktu?: IntFieldUpdateOperationsInput | number
+    satuanWaktu?: EnumSatuanWaktuFieldUpdateOperationsInput | $Enums.SatuanWaktu
+    keterangan?: StringFieldUpdateOperationsInput | string
+    pelaksanaId?: StringFieldUpdateOperationsInput | string
+    langkahSelanjutnyaYaId?: NullableStringFieldUpdateOperationsInput | string | null
+    langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
+    langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+  }
+
+  export type TitikTekukPanahDiagramSOPUpsertWithWhereUniqueWithoutOverridePanahInput = {
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+    update: XOR<TitikTekukPanahDiagramSOPUpdateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedUpdateWithoutOverridePanahInput>
+    create: XOR<TitikTekukPanahDiagramSOPCreateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedCreateWithoutOverridePanahInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPUpdateWithWhereUniqueWithoutOverridePanahInput = {
+    where: TitikTekukPanahDiagramSOPWhereUniqueInput
+    data: XOR<TitikTekukPanahDiagramSOPUpdateWithoutOverridePanahInput, TitikTekukPanahDiagramSOPUncheckedUpdateWithoutOverridePanahInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPUpdateManyWithWhereWithoutOverridePanahInput = {
+    where: TitikTekukPanahDiagramSOPScalarWhereInput
+    data: XOR<TitikTekukPanahDiagramSOPUpdateManyMutationInput, TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahInput>
+  }
+
+  export type TitikTekukPanahDiagramSOPScalarWhereInput = {
+    AND?: TitikTekukPanahDiagramSOPScalarWhereInput | TitikTekukPanahDiagramSOPScalarWhereInput[]
+    OR?: TitikTekukPanahDiagramSOPScalarWhereInput[]
+    NOT?: TitikTekukPanahDiagramSOPScalarWhereInput | TitikTekukPanahDiagramSOPScalarWhereInput[]
+    detailSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    jenis?: EnumJenisDiagramFilter<"TitikTekukPanahDiagramSOP"> | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    keLangkahSopId?: StringFilter<"TitikTekukPanahDiagramSOP"> | string
+    cabang?: EnumCabangDiagramFilter<"TitikTekukPanahDiagramSOP"> | $Enums.CabangDiagram
+    urutan?: IntFilter<"TitikTekukPanahDiagramSOP"> | number
+    x?: FloatFilter<"TitikTekukPanahDiagramSOP"> | number
+    y?: FloatFilter<"TitikTekukPanahDiagramSOP"> | number
+  }
+
+  export type OverridePanahDiagramSOPCreateWithoutTitikTekukInput = {
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    konfigurasiDiagram: KonfigurasiDiagramSOPCreateNestedOneWithoutOverridePanahInput
+    dariLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiSumberInput
+    keLangkah: LangkahSOPCreateNestedOneWithoutOverridePanahSebagaiTujuanInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedCreateWithoutTitikTekukInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverridePanahDiagramSOPCreateOrConnectWithoutTitikTekukInput = {
+    where: OverridePanahDiagramSOPWhereUniqueInput
+    create: XOR<OverridePanahDiagramSOPCreateWithoutTitikTekukInput, OverridePanahDiagramSOPUncheckedCreateWithoutTitikTekukInput>
+  }
+
+  export type OverridePanahDiagramSOPUpsertWithoutTitikTekukInput = {
+    update: XOR<OverridePanahDiagramSOPUpdateWithoutTitikTekukInput, OverridePanahDiagramSOPUncheckedUpdateWithoutTitikTekukInput>
+    create: XOR<OverridePanahDiagramSOPCreateWithoutTitikTekukInput, OverridePanahDiagramSOPUncheckedCreateWithoutTitikTekukInput>
+    where?: OverridePanahDiagramSOPWhereInput
+  }
+
+  export type OverridePanahDiagramSOPUpdateToOneWithWhereWithoutTitikTekukInput = {
+    where?: OverridePanahDiagramSOPWhereInput
+    data: XOR<OverridePanahDiagramSOPUpdateWithoutTitikTekukInput, OverridePanahDiagramSOPUncheckedUpdateWithoutTitikTekukInput>
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithoutTitikTekukInput = {
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverridePanahNestedInput
+    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiSumberNestedInput
+    keLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiTujuanNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateWithoutTitikTekukInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KonfigurasiDiagramSOPCreateWithoutOverrideLabelInput = {
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overridePanah?: OverridePanahDiagramSOPCreateNestedManyWithoutKonfigurasiDiagramInput
+    detailSop: DetailSOPCreateNestedOneWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedCreateWithoutOverrideLabelInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+    overridePanah?: OverridePanahDiagramSOPUncheckedCreateNestedManyWithoutKonfigurasiDiagramInput
+  }
+
+  export type KonfigurasiDiagramSOPCreateOrConnectWithoutOverrideLabelInput = {
+    where: KonfigurasiDiagramSOPWhereUniqueInput
+    create: XOR<KonfigurasiDiagramSOPCreateWithoutOverrideLabelInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverrideLabelInput>
+  }
+
+  export type KonfigurasiDiagramSOPUpsertWithoutOverrideLabelInput = {
+    update: XOR<KonfigurasiDiagramSOPUpdateWithoutOverrideLabelInput, KonfigurasiDiagramSOPUncheckedUpdateWithoutOverrideLabelInput>
+    create: XOR<KonfigurasiDiagramSOPCreateWithoutOverrideLabelInput, KonfigurasiDiagramSOPUncheckedCreateWithoutOverrideLabelInput>
+    where?: KonfigurasiDiagramSOPWhereInput
+  }
+
+  export type KonfigurasiDiagramSOPUpdateToOneWithWhereWithoutOverrideLabelInput = {
+    where?: KonfigurasiDiagramSOPWhereInput
+    data: XOR<KonfigurasiDiagramSOPUpdateWithoutOverrideLabelInput, KonfigurasiDiagramSOPUncheckedUpdateWithoutOverrideLabelInput>
+  }
+
+  export type KonfigurasiDiagramSOPUpdateWithoutOverrideLabelInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overridePanah?: OverridePanahDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput
+    detailSop?: DetailSOPUpdateOneRequiredWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedUpdateWithoutOverrideLabelInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overridePanah?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput
+  }
+
   export type DetailSOPCreateManyDibuatOlehInput = {
     detailSopId?: string
     sopId: string
@@ -44177,6 +51326,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutDibuatOlehInput = {
@@ -44206,6 +51356,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateManyWithoutDibuatOlehInput = {
@@ -44251,6 +51402,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutTerakhirDieditOlehInput = {
@@ -44280,6 +51432,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateManyWithoutTerakhirDieditOlehInput = {
@@ -45103,6 +52256,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutSopInput = {
@@ -45132,6 +52286,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateManyWithoutSopInput = {
@@ -45273,6 +52428,12 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type KonfigurasiDiagramSOPCreateManyDetailSopInput = {
+    jenis: $Enums.JenisDiagram
+    layoutSeed?: number
+    updatedAt?: Date | string
+  }
+
   export type DetailSOPUpdateWithoutRevisiDariInput = {
     detailSopId?: StringFieldUpdateOperationsInput | string
     status?: EnumStatusSOPFieldUpdateOperationsInput | $Enums.StatusSOP
@@ -45300,6 +52461,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateWithoutRevisiDariInput = {
@@ -45329,6 +52491,7 @@ export namespace Prisma {
     relasiSopKeluar?: SopTerkaitUncheckedUpdateManyWithoutSopNestedInput
     relasiSopMasuk?: SopTerkaitUncheckedUpdateManyWithoutSopTerkaitNestedInput
     dokumenTte?: DokumenTteUncheckedUpdateManyWithoutDetailSopNestedInput
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopNestedInput
   }
 
   export type DetailSOPUncheckedUpdateManyWithoutRevisiDariInput = {
@@ -45486,6 +52649,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
 
@@ -45506,6 +52671,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPUncheckedUpdateManyWithoutDetailSopInput = {
@@ -45678,6 +52845,28 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type KonfigurasiDiagramSOPUpdateWithoutDetailSopInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overridePanah?: OverridePanahDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput
+    overrideLabel?: OverrideLabelDiagramSOPUpdateManyWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedUpdateWithoutDetailSopInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    overridePanah?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput
+    overrideLabel?: OverrideLabelDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramNestedInput
+  }
+
+  export type KonfigurasiDiagramSOPUncheckedUpdateManyWithoutDetailSopInput = {
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    layoutSeed?: IntFieldUpdateOperationsInput | number
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LangkahSOPCreateManyLangkahTidakInput = {
     langkahSopId?: string
     detailSopId: string
@@ -45712,6 +52901,36 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type OverridePanahDiagramSOPCreateManyDariLangkahInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverridePanahDiagramSOPCreateManyKeLangkahInput = {
+    detailSopId: string
+    jenis: $Enums.JenisDiagram
+    dariLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type LangkahSOPUpdateWithoutLangkahTidakInput = {
     langkahSopId?: StringFieldUpdateOperationsInput | string
     kegiatan?: StringFieldUpdateOperationsInput | string
@@ -45727,6 +52946,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
@@ -45748,6 +52969,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPUncheckedUpdateManyWithoutLangkahTidakInput = {
@@ -45782,6 +53005,8 @@ export namespace Prisma {
     langkahTidak?: LangkahSOPUpdateOneWithoutLangkahSebelumTidakNestedInput
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     pelaksana?: PelaksanaUpdateOneRequiredWithoutLangkahSOPNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
@@ -45803,6 +53028,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPUncheckedUpdateManyWithoutLangkahYaInput = {
@@ -45818,6 +53045,98 @@ export namespace Prisma {
     keterangan?: StringFieldUpdateOperationsInput | string
     pelaksanaId?: StringFieldUpdateOperationsInput | string
     langkahSelanjutnyaTidakId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithoutDariLangkahInput = {
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverridePanahNestedInput
+    keLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiTujuanNestedInput
+    titikTekuk?: TitikTekukPanahDiagramSOPUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateWithoutDariLangkahInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithoutKeLangkahInput = {
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    konfigurasiDiagram?: KonfigurasiDiagramSOPUpdateOneRequiredWithoutOverridePanahNestedInput
+    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiSumberNestedInput
+    titikTekuk?: TitikTekukPanahDiagramSOPUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateWithoutKeLangkahInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahInput = {
+    detailSopId?: StringFieldUpdateOperationsInput | string
+    jenis?: EnumJenisDiagramFieldUpdateOperationsInput | $Enums.JenisDiagram
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45883,6 +53202,8 @@ export namespace Prisma {
     langkahSebelumTidak?: LangkahSOPUpdateManyWithoutLangkahTidakNestedInput
     langkahYa?: LangkahSOPUpdateOneWithoutLangkahSebelumYaNestedInput
     langkahSebelumYa?: LangkahSOPUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUpdateManyWithoutKeLangkahNestedInput
     detailSop?: DetailSOPUpdateOneRequiredWithoutLangkahSOPNestedInput
   }
 
@@ -45903,6 +53224,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     langkahSebelumTidak?: LangkahSOPUncheckedUpdateManyWithoutLangkahTidakNestedInput
     langkahSebelumYa?: LangkahSOPUncheckedUpdateManyWithoutLangkahYaNestedInput
+    overridePanahSebagaiSumber?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutDariLangkahNestedInput
+    overridePanahSebagaiTujuan?: OverridePanahDiagramSOPUncheckedUpdateManyWithoutKeLangkahNestedInput
   }
 
   export type LangkahSOPUncheckedUpdateManyWithoutPelaksanaInput = {
@@ -46185,6 +53508,120 @@ export namespace Prisma {
     certValidFrom?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     certValidTo?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditandatanganiPada?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverridePanahDiagramSOPCreateManyKonfigurasiDiagramInput = {
+    dariLangkahSopId: string
+    keLangkahSopId: string
+    cabang: $Enums.CabangDiagram
+    sSide: $Enums.SisiPanahDiagram
+    eSide: $Enums.SisiPanahDiagram
+    startX: number
+    startY: number
+    endX: number
+    endY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverrideLabelDiagramSOPCreateManyKonfigurasiDiagramInput = {
+    kunciLabel: string
+    posisiX: number
+    posisiY: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type OverridePanahDiagramSOPUpdateWithoutKonfigurasiDiagramInput = {
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dariLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiSumberNestedInput
+    keLangkah?: LangkahSOPUpdateOneRequiredWithoutOverridePanahSebagaiTujuanNestedInput
+    titikTekuk?: TitikTekukPanahDiagramSOPUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateWithoutKonfigurasiDiagramInput = {
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    titikTekuk?: TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahNestedInput
+  }
+
+  export type OverridePanahDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramInput = {
+    dariLangkahSopId?: StringFieldUpdateOperationsInput | string
+    keLangkahSopId?: StringFieldUpdateOperationsInput | string
+    cabang?: EnumCabangDiagramFieldUpdateOperationsInput | $Enums.CabangDiagram
+    sSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    eSide?: EnumSisiPanahDiagramFieldUpdateOperationsInput | $Enums.SisiPanahDiagram
+    startX?: FloatFieldUpdateOperationsInput | number
+    startY?: FloatFieldUpdateOperationsInput | number
+    endX?: FloatFieldUpdateOperationsInput | number
+    endY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUpdateWithoutKonfigurasiDiagramInput = {
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedUpdateWithoutKonfigurasiDiagramInput = {
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type OverrideLabelDiagramSOPUncheckedUpdateManyWithoutKonfigurasiDiagramInput = {
+    kunciLabel?: StringFieldUpdateOperationsInput | string
+    posisiX?: FloatFieldUpdateOperationsInput | number
+    posisiY?: FloatFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TitikTekukPanahDiagramSOPCreateManyOverridePanahInput = {
+    urutan: number
+    x: number
+    y: number
+  }
+
+  export type TitikTekukPanahDiagramSOPUpdateWithoutOverridePanahInput = {
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedUpdateWithoutOverridePanahInput = {
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
+  }
+
+  export type TitikTekukPanahDiagramSOPUncheckedUpdateManyWithoutOverridePanahInput = {
+    urutan?: IntFieldUpdateOperationsInput | number
+    x?: FloatFieldUpdateOperationsInput | number
+    y?: FloatFieldUpdateOperationsInput | number
   }
 
 

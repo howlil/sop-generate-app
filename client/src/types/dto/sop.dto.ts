@@ -151,6 +151,43 @@ export interface PenyusunWorkbenchData {
   detail: SopDetail;
   langkah: LangkahSOP[];
   logEdit: PenyusunWorkbenchLogEdit[];
+  diagramKonfigurasi?: PenyusunWorkbenchDiagramKonfigurasi;
+}
+
+export type JenisDiagram = 'FLOWCHART' | 'BPMN';
+
+export interface DiagramPathPointDto {
+  x: number;
+  y: number;
+}
+
+export interface DiagramArrowConnectionDto {
+  sSide: 'top' | 'bottom' | 'left' | 'right';
+  eSide: 'top' | 'bottom' | 'left' | 'right';
+  startPoint: DiagramPathPointDto;
+  endPoint: DiagramPathPointDto;
+  bendPoints: DiagramPathPointDto[];
+}
+
+export interface DiagramPathOverridesDto {
+  edges?: Record<string, DiagramArrowConnectionDto>;
+  labels?: Record<string, { x: number; y: number }>;
+}
+
+export interface PenyusunWorkbenchDiagramSlice {
+  layoutSeed: number;
+  pathOverrides: DiagramPathOverridesDto | null;
+}
+
+export interface PenyusunWorkbenchDiagramKonfigurasi {
+  flowchart?: PenyusunWorkbenchDiagramSlice;
+  bpmn?: PenyusunWorkbenchDiagramSlice;
+}
+
+export interface UpdateSopDiagramDto {
+  jenis: JenisDiagram;
+  layoutSeed?: number;
+  pathOverrides?: DiagramPathOverridesDto | null;
 }
 
 export interface PenyusunWorkbenchQueryParams {

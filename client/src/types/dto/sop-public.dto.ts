@@ -42,6 +42,7 @@ export interface PublicSopDokumen {
   opd: { id: string; nama: string }
   detail: SopDetail
   langkah: LangkahSOP[]
+  diagramKonfigurasi?: PenyusunWorkbenchData['diagramKonfigurasi']
 }
 
 /** Alias agar mapper pratinjau dapat memakai PenyusunWorkbenchData. */

@@ -39,12 +39,12 @@ export class SopProsedurController {
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary:
-      'PATCH prosedur SOP penyusun (swimlane DetailSOPPelaksana + LangkahSOP). Param :detailSopId boleh DetailSOP atau SOP header (versi terbaru dipakai). Replace-all per section bila dikirim; aman untuk autosave debounced.',
+      'PATCH prosedur SOP penyusun (jalur pelaksana DetailSOPPelaksana + LangkahSOP). Param :detailSopId boleh DetailSOP atau SOP header (versi terbaru dipakai). Ganti semua per bagian bila dikirim; aman untuk simpan otomatis tertunda.',
   })
   @ApiQuery({
     name: 'logsLimit',
     required: false,
-    description: 'Jumlah maksimum entri logEdit pada response refresh (1-500, default 100)',
+    description: 'Jumlah maksimum entri logEdit pada respons penyegaran (1-500, default 100)',
     schema: { default: 100, minimum: 1, maximum: 500 },
   })
   @ApiResponse({ status: 200, type: PenyusunWorkbenchDataDto })

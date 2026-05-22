@@ -10,14 +10,14 @@ import {
 } from 'class-validator';
 import { JenisLangkahProsedur, SatuanWaktu } from '../../../../generated/prisma';
 
-/**
+ /**
  * Satu langkah prosedur. `tempId` adalah ID stabil di seluruh body PATCH (cukup
- * unik di payload tsb) untuk merujuk relasi cabang Ya/Tidak antar entri.
+ * unik di muatan data tsb) untuk merujuk relasi cabang Ya/Tidak antar entri.
  */
 export class LangkahPatchItem {
   @ApiProperty({
     description:
-      'ID stabil di payload (boleh existing UUID langkahSopId atau client-generated). Dipakai untuk relasi cabang antar item.',
+      'ID stabil di muatan data (boleh UUID langkahSopId yang ada atau dibuat klien). Dipakai untuk relasi cabang antar item.',
   })
   @IsString()
   @MaxLength(255)
@@ -63,7 +63,7 @@ export class LangkahPatchItem {
 
   @ApiPropertyOptional({
     description:
-      'ID master Pelaksana yang menjalankan langkah ini. Harus muncul di `pelaksana[]` payload (atau di swimlane existing bila pelaksana tidak diset).',
+      'ID master Pelaksana yang menjalankan langkah ini. Harus muncul di `pelaksana[]` muatan data (atau di jalur pelaksana yang ada bila pelaksana tidak diset).',
     format: 'uuid',
   })
   @IsOptional()

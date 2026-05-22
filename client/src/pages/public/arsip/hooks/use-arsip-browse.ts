@@ -14,6 +14,7 @@ import {
 } from '../arsip-search-schema'
 
 const arsipRoute = getRouteApi('/arsip/')
+const EMPTY_PUBLIC_SOP_ITEMS: PublicSopItem[] = []
 
 export interface ArsipBrowseMobileState {
   showOpd: boolean
@@ -104,9 +105,13 @@ export function useArsipBrowse() {
   const selectedOpdName =
     sopByOpdQuery.data?.opd.nama ?? opdItems.find((o) => o.opdId === opdId)?.nama
 
-  const sopItems = isGlobalMode
-    ? (globalSopQuery.data?.items ?? [])
-    : (sopByOpdQuery.data?.items ?? [])
+  const sopItems = useMemo(
+    () =>
+      isGlobalMode
+        ? (globalSopQuery.data?.items ?? EMPTY_PUBLIC_SOP_ITEMS)
+        : (sopByOpdQuery.data?.items ?? EMPTY_PUBLIC_SOP_ITEMS),
+    [globalSopQuery.data?.items, isGlobalMode, sopByOpdQuery.data?.items],
+  )
 
   const sopPagination = isGlobalMode
     ? globalSopQuery.data?.pagination

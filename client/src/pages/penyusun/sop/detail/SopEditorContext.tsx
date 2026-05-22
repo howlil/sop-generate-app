@@ -76,7 +76,26 @@ export function SopEditorProvider({ value, children }: SopEditorProviderProps) {
   /* Memoize agar consumer tidak ikut re-render saat parent re-render
      selama nilai-nilai di dalamnya secara reference tidak berubah. */
   const memoized = useMemo<SopEditorContextValue>(
-    () => value,
+    () => ({
+      sopDetailId: value.sopDetailId,
+      metadata: value.metadata,
+      setMetadata: value.setMetadata,
+      handleMetadataChange: value.handleMetadataChange,
+      implementers: value.implementers,
+      setImplementers: value.setImplementers,
+      masterPelaksanaOptions: value.masterPelaksanaOptions,
+      peraturanList: value.peraturanList,
+      relatedSopOptions: value.relatedSopOptions,
+      prosedurRows: value.prosedurRows,
+      setProsedurRows: value.setProsedurRows,
+      autosaveStatus: value.autosaveStatus,
+      autosaveError: value.autosaveError,
+      flushHeaderAutosave: value.flushHeaderAutosave,
+      prosedurAutosaveStatus: value.prosedurAutosaveStatus,
+      prosedurAutosaveError: value.prosedurAutosaveError,
+      flushProsedurAutosave: value.flushProsedurAutosave,
+      isReadOnly: value.isReadOnly,
+    }),
     [
       value.sopDetailId,
       value.metadata,

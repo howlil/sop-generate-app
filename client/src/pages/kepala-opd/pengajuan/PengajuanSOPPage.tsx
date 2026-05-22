@@ -10,15 +10,7 @@ import { PengajuanStatusBadge } from "@/components/status/pengajuan-status-badge
 import { useKepalaOpdPengajuan } from "@/api/evaluasi";
 import { useAuthStore } from "@/stores/authStore";
 import { ROUTES } from "@/utils/constants";
-
-function formatTanggal(value: string | null | undefined): string {
-  if (value === null || value === undefined || value.trim() === "") return "—";
-  return new Date(value).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
+import { formatDateIdFull } from "@/utils/format-date";
 
 export function PengajuanSOPPage() {
   const opdId = useAuthStore((state) => state.user?.opdId ?? "");
@@ -87,7 +79,7 @@ export function PengajuanSOPPage() {
             render: (item) => (
               <PengajuanDateCell
                 value={item.tanggalTTDBaPjPenyusun ?? item.updatedAt}
-                formatter={formatTanggal}
+                formatter={formatDateIdFull}
               />
             ),
           },

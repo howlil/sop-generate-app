@@ -120,7 +120,7 @@ export class PengajuanTimelineNilaiDto {
   readonly createdAt!: string;
 }
 
-/** Shell GET `/evaluasi/pengajuan/:id` — ringkas, tanpa langkah/workflow teks besar. */
+/** Ringkasan GET `/evaluasi/pengajuan/:id` — tanpa langkah/alur kerja teks besar. */
 export class PengajuanEvaluasiShellDto {
   @ApiProperty({ format: 'uuid' })
   readonly id!: string;

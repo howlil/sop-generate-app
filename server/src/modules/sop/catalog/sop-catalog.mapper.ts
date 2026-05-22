@@ -7,6 +7,7 @@ import type { PenyusunWorkbenchDataDto } from './dto/penyusun-workbench-data.dto
 import type { SopDaftarRowDto } from './dto/sop-daftar-row.dto';
 import type { SopDaftarVersiSliceDto } from './dto/sop-daftar-versi-slice.dto';
 import type { SopDaftarDbRow, SopWorkbenchDbPayload } from './sop-catalog.repository';
+import { mapDiagramConfigsToWorkbenchDto } from '../diagram/diagram-workbench.mapper';
 
 export function toIso(d: Date): string {
   return d.toISOString();
@@ -197,7 +198,12 @@ export function mapWorkbenchPayload(row: SopWorkbenchDbPayload): PenyusunWorkben
       },
     };
   });
-  return { detail, langkah, logEdit };
+  return {
+    detail,
+    langkah,
+    logEdit,
+    diagramKonfigurasi: mapDiagramConfigsToWorkbenchDto(row.konfigurasiDiagram),
+  };
 }
 
 export function mapVersiSlice(slice: {

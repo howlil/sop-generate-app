@@ -13,6 +13,11 @@ import {
   type CorridorGraph,
 } from '../core/route/orthogonalRouter'
 import { selectSidePairs as selectFlowchartRouteCandidates, type Side, type UsedSides } from '../core/route/selectSidePairs'
+import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
+import { simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
+import type { DiagramPathAnchor } from '../edit/anchor-snap.util'
+import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
+import type { Rect } from '../core/route/orthogonalRouter'
 
 /* ───────────────────────── Public types (re-export for consumers) ─────────────────────────── */
 
@@ -101,6 +106,10 @@ interface FlowchartArrowConnectorProps {
   manualConfig?: ArrowConnectionConfig | null
   manualLabelPosition?: { x: number; y: number } | null
   onPathUpdated?: (payload: PathUpdatedPayload) => void
+  onManualChange?: (payload: PathUpdatedPayload) => void
+  editMode?: boolean
+  isSelected?: boolean
+  onSelect?: (connectionId: string) => void
   constraintRect?: BoundsRect | null
   /** Shared ref for cross-arrow overlap avoidance */
   routedSegmentsRef?: RoutedPathsRef
@@ -117,6 +126,48 @@ interface FlowchartArrowConnectorProps {
 type ElemPos = {
   left: number; top: number; width: number; height: number
   right: number; bottom: number
+}
+
+function sidePointOfRect(pos: ElemPos, side: Side): { x: number; y: number } {
+  switch (side) {
+    case 'top':
+      return { x: Math.round(pos.left + pos.width / 2), y: pos.top }
+    case 'bottom':
+      return { x: Math.round(pos.left + pos.width / 2), y: pos.bottom }
+    case 'left':
+      return { x: pos.left, y: Math.round(pos.top + pos.height / 2) }
+    case 'right':
+      return { x: pos.right, y: Math.round(pos.top + pos.height / 2) }
+  }
+}
+
+function buildConnectorAnchors(
+  connectionId: string,
+  fromPos: ElemPos,
+  toPos: ElemPos,
+): DiagramPathAnchor[] {
+  const sides: Side[] = ['top', 'right', 'bottom', 'left']
+  const startAnchors = sides.map((side) => {
+    const point = sidePointOfRect(fromPos, side)
+    return {
+      id: `${connectionId}-start-${side}`,
+      x: point.x,
+      y: point.y,
+      side,
+      kind: 'start' as const,
+    }
+  })
+  const endAnchors = sides.map((side) => {
+    const point = sidePointOfRect(toPos, side)
+    return {
+      id: `${connectionId}-end-${side}`,
+      x: point.x,
+      y: point.y,
+      side,
+      kind: 'end' as const,
+    }
+  })
+  return [...startAnchors, ...endAnchors]
 }
 
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
@@ -185,7 +236,8 @@ export function normalizeConnectorPath(
   const normalized = normalizeOrthogonalPath(clampPathToBounds(points, bounds), {
     bounds: toRouterBounds(bounds),
   })
-  return assertOrthogonalPath(normalized, 'FlowchartArrowConnector path')
+  const simplified = simplifyOrthogonalPath(normalized)
+  return assertOrthogonalPath(simplified, 'FlowchartArrowConnector path')
 }
 
 function tryNormalizeConnectorPath(
@@ -199,7 +251,7 @@ function tryNormalizeConnectorPath(
   }
 }
 
-function buildUltimateOrthogonalFallback(
+export function buildUltimateOrthogonalFallback(
   fromPos: ElemPos,
   toPos: ElemPos,
   bounds: BoundsRect | null | undefined,
@@ -287,6 +339,10 @@ export function FlowchartArrowConnector({
   manualConfig,
   manualLabelPosition,
   onPathUpdated,
+  onManualChange,
+  editMode = false,
+  isSelected = false,
+  onSelect,
   constraintRect = null,
   routedSegmentsRef,
   reservedSidesRef,
@@ -296,53 +352,49 @@ export function FlowchartArrowConnector({
 }: FlowchartArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
+  const [resolvedSides, setResolvedSides] = useState<[Side, Side]>(['bottom', 'top'])
+  const [resolvedPath, setResolvedPath] = useState<ArrowPathPoint[]>([])
+  const [editableAnchors, setEditableAnchors] = useState<DiagramPathAnchor[]>([])
+  const routingGuardRef = useRef<{
+    obsRects: Rect[]
+    fromShape: Rect
+    toShape: Rect
+    globalBounds: Rect
+    boundsMargin: number
+  } | null>(null)
   const emittedRef = useRef(false)
   const lastAutoSigRef = useRef<string | null>(null)
 
-  // Store usedSides in a ref so it's always fresh inside the effect
-  // without being a dependency (prevents infinite setState loops).
+  // Store mutable props in refs so the effect always reads fresh values
+  // without needing them as dependencies (prevents cascade re-routing).
   const usedSidesRef = useRef(usedSides)
   usedSidesRef.current = usedSides
+  const onPathUpdatedRef = useRef(onPathUpdated)
+  onPathUpdatedRef.current = onPathUpdated
+  const onManualChangeRef = useRef(onManualChange)
+  onManualChangeRef.current = onManualChange
+  const onSelectRef = useRef(onSelect)
+  onSelectRef.current = onSelect
 
   useLayoutEffect(() => {
     const container = document.getElementById(idcontainer)
-    if (!container) { setPathData(''); setLabelPos(null); return }
-
-    /* ── Manual path ─────────────────────────────────────────── */
-    if (isValidManualConfig(manualConfig) && manualConfig!.startPoint && manualConfig!.endPoint) {
-      const { startPoint, endPoint, bendPoints = [] } = manualConfig!
-      const manualPath = tryNormalizeConnectorPath([startPoint, ...bendPoints, endPoint], constraintRect)
-      if (manualPath) {
-        setPathData(pathToD(manualPath))
-
-        const lp = connection.label
-          ? manualLabelPosition ?? getFixedDistancePoint(manualPath[0], manualPath[1] ?? manualPath[manualPath.length - 1], 30, 19)
-          : null
-        setLabelPos(lp)
-
-        if (onPathUpdated && !emittedRef.current) {
-          onPathUpdated({
-            connectionId: connection.id, from: connection.from, to: connection.to,
-            sSide: manualConfig!.sSide, eSide: manualConfig!.eSide,
-            startPoint: { ...manualPath[0] }, endPoint: { ...manualPath[manualPath.length - 1] },
-            bendPoints: manualPath.slice(1, -1).map(p => ({ ...p })),
-            label: connection.label ?? undefined,
-            labelPosition: lp ?? undefined,
-          })
-          emittedRef.current = true
-        }
-        return
-      }
+    if (!container) {
+      setPathData('')
+      setLabelPos(null)
+      setEditableAnchors([])
+      routingGuardRef.current = null
+      return
     }
-
-    emittedRef.current = false
-
-    /* ── Auto-routing (Grid + Dijkstra) ──────────────────────── */
     const fromPos = getElementPosition(connection.from, container)
     const toPos = getElementPosition(connection.to, container)
-    if (!fromPos || !toPos) { setPathData(''); setLabelPos(null); return }
-
-    const cacheKey = makeCacheKey(connection, fromPos, toPos, obstacles)
+    if (!fromPos || !toPos) {
+      setPathData('')
+      setLabelPos(null)
+      setEditableAnchors([])
+      routingGuardRef.current = null
+      return
+    }
+    setEditableAnchors(buildConnectorAnchors(connection.id, fromPos, toPos))
 
     const isOpcConnection =
       connection.sourceType === 'flowchart-opc' || connection.targetType === 'flowchart-opc'
@@ -366,10 +418,7 @@ export function FlowchartArrowConnector({
         }
         return rect
       })
-      .filter((r): r is { left: number; top: number; width: number; height: number } => r != null)
-
-    // Path must stay strictly inside pelaksana column (no Kegiatan/Mutu Baku/KET).
-    // Use pelaksana horizontal bounds + full container height; inset so path does not touch vertical borders.
+      .filter((r): r is Rect => r != null)
     const pathAllowedBounds = constraintRect
       ? (() => {
           const left = Math.round(constraintRect.left + PATH_COLUMN_INSET)
@@ -377,12 +426,7 @@ export function FlowchartArrowConnector({
           const w = Math.max(20, right - left)
           const top = PATH_VERTICAL_INSET
           const height = Math.max(40, container.scrollHeight - 2 * PATH_VERTICAL_INSET)
-          return {
-            left,
-            top,
-            width: w,
-            height,
-          }
+          return { left, top, width: w, height }
         })()
       : null
     const globalBounds = pathAllowedBounds
@@ -398,6 +442,51 @@ export function FlowchartArrowConnector({
           width: container.scrollWidth,
           height: container.scrollHeight,
         }
+    const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
+    const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
+    const canvasW = pathAllowedBounds ? pathAllowedBounds.width : (constraintRect ? constraintRect.right - constraintRect.left : 0)
+    const boundsMargin = canvasW > 0 ? Math.min(28, Math.max(18, Math.round(canvasW * 0.022))) : BOUNDS_MARGIN
+    routingGuardRef.current = {
+      obsRects,
+      fromShape,
+      toShape,
+      globalBounds,
+      boundsMargin,
+    }
+
+    /* ── Manual path ─────────────────────────────────────────── */
+    if (isValidManualConfig(manualConfig) && manualConfig!.startPoint && manualConfig!.endPoint) {
+      const { startPoint, endPoint, bendPoints = [] } = manualConfig!
+      const manualPath = tryNormalizeConnectorPath([startPoint, ...bendPoints, endPoint], constraintRect)
+      if (manualPath) {
+        setPathData(pathToD(manualPath))
+        setResolvedPath(manualPath.map((p) => ({ ...p })))
+        setResolvedSides([manualConfig!.sSide, manualConfig!.eSide])
+
+        const lp = connection.label
+          ? manualLabelPosition ?? getFixedDistancePoint(manualPath[0], manualPath[1] ?? manualPath[manualPath.length - 1], 30, 19)
+          : null
+        setLabelPos(lp)
+
+        if (onPathUpdatedRef.current && !emittedRef.current) {
+          onPathUpdatedRef.current({
+            connectionId: connection.id, from: connection.from, to: connection.to,
+            sSide: manualConfig!.sSide, eSide: manualConfig!.eSide,
+            startPoint: { ...manualPath[0] }, endPoint: { ...manualPath[manualPath.length - 1] },
+            bendPoints: manualPath.slice(1, -1).map(p => ({ ...p })),
+            label: connection.label ?? undefined,
+            labelPosition: lp ?? undefined,
+          })
+          emittedRef.current = true
+        }
+        return
+      }
+    }
+
+    emittedRef.current = false
+
+    /* ── Auto-routing (Grid + Dijkstra) ──────────────────────── */
+    const cacheKey = makeCacheKey(connection, fromPos, toPos, obstacles)
     const effectiveBounds: BoundsRect | null = pathAllowedBounds
       ? {
           left: pathAllowedBounds.left,
@@ -407,17 +496,20 @@ export function FlowchartArrowConnector({
         }
       : constraintRect
 
-    const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
-    const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
-
     const dy = (toPos.top + toPos.height / 2) - (fromPos.top + fromPos.height / 2)
+    const dx = (toPos.left + toPos.width / 2) - (fromPos.left + fromPos.width / 2)
     const destAbove = dy < -10
     const destBelow = dy > 10
+    const colThreshold = Math.max(fromPos.width, toPos.width) * 0.5
+    const sameCol = Math.abs(dx) < colThreshold
+    const isSameColumnLoopBack = destAbove && sameCol
     const isLoopBack = destAbove && connection.sourceType === 'flowchart-decision'
-    const canvasW = pathAllowedBounds ? pathAllowedBounds.width : (constraintRect ? constraintRect.right - constraintRect.left : 0)
-    const boundsMargin = isLoopBack
+    const loopbackBoundsMargin = isLoopBack
       ? (canvasW > 0 ? Math.min(60, Math.max(32, Math.round(canvasW * 0.05))) : 36)
-      : (canvasW > 0 ? Math.min(28, Math.max(18, Math.round(canvasW * 0.022))) : BOUNDS_MARGIN)
+      : boundsMargin
+    if (routingGuardRef.current) {
+      routingGuardRef.current.boundsMargin = loopbackBoundsMargin
+    }
 
     const reservedSides = reservedSidesRef?.current
     const routeCandidates = selectFlowchartRouteCandidates(
@@ -465,6 +557,8 @@ export function FlowchartArrowConnector({
     if (cached) {
       const cachedPath = tryNormalizeConnectorPath(cached.path, effectiveBounds)
       if (cachedPath && isSafePath(cachedPath)) {
+        setResolvedPath(cachedPath.map((point) => ({ ...point })))
+        setResolvedSides([cached.sSide, cached.eSide])
         setPathData(pathToD(cachedPath))
 
         const lp = connection.label
@@ -477,8 +571,8 @@ export function FlowchartArrowConnector({
           : null
         setLabelPos(lp)
 
-        if (onPathUpdated && !emittedRef.current) {
-          onPathUpdated({
+        if (onPathUpdatedRef.current && !emittedRef.current) {
+          onPathUpdatedRef.current({
             connectionId: connection.id,
             from: connection.from,
             to: connection.to,
@@ -543,7 +637,7 @@ export function FlowchartArrowConnector({
         obstacles: obsRects,
         shapeMargin: SHAPE_MARGIN,
         globalBounds,
-        globalBoundsMargin: boundsMargin,
+        globalBoundsMargin: loopbackBoundsMargin,
         occupiedSegments: occupied,
         sourcePort: candidate.sourcePort,
         targetPort: candidate.targetPort,
@@ -558,6 +652,7 @@ export function FlowchartArrowConnector({
       if (!normalizedPath) continue
       if (!isSafePath(normalizedPath)) continue
       let score = scorePath(normalizedPath, occupied)
+      score += Math.max(0, normalizedPath.length - 2) * 40
 
       // Kurangi path "ruwet": penalisasi rentang horizontal lebar agar path tidak memanjang ke samping tidak perlu
       const pathMinX = Math.min(...normalizedPath.map((p) => p.x))
@@ -594,6 +689,15 @@ export function FlowchartArrowConnector({
         if (connection.sourceType === 'flowchart-opc' && sSide !== 'bottom') score += 6_000
       }
 
+      if (sameCol && destBelow && !isSameColumnLoopBack) {
+        if (sSide === 'bottom' && eSide === 'top') score -= 6_000
+        else score += 8_000
+      }
+      if (sameCol && destAbove && !isSameColumnLoopBack) {
+        if (sSide === 'top' && eSide === 'bottom') score -= 6_000
+        else score += 8_000
+      }
+
       if (score < bestScore) {
         bestPath = normalizedPath; bestSides = [sSide, eSide]; bestScore = score
         if (score <= GOOD_SCORE_LIMIT) break
@@ -610,7 +714,7 @@ export function FlowchartArrowConnector({
         obstacles: [],
         shapeMargin: SHAPE_MARGIN,
         globalBounds,
-        globalBoundsMargin: boundsMargin,
+        globalBoundsMargin: loopbackBoundsMargin,
         occupiedSegments: [],
         sourcePort: fallbackCandidate?.sourcePort,
         targetPort: fallbackCandidate?.targetPort,
@@ -632,17 +736,19 @@ export function FlowchartArrowConnector({
 
     bestPath = normalizeConnectorPath(bestPath, effectiveBounds)
     if (!isSafePath(bestPath)) {
-      setPathData('')
-      setLabelPos(null)
-      return
+      const emergencyPath = buildUltimateOrthogonalFallback(fromPos, toPos, effectiveBounds)
+      bestPath = emergencyPath
+      bestSides = bestSides ?? ['bottom', 'top']
     }
-    const resolvedSides: [Side, Side] = bestSides ?? ['bottom', 'top']
+    const resolvedSidesFinal: [Side, Side] = bestSides ?? ['bottom', 'top']
+    setResolvedSides(resolvedSidesFinal)
+    setResolvedPath(bestPath.map((p) => ({ ...p })))
 
     // OPTIMIZATION #3: Save to cache after successful routing
     pathCache.set(cacheKey, {
       path: bestPath,
-      sSide: resolvedSides[0],
-      eSide: resolvedSides[1],
+      sSide: resolvedSidesFinal[0],
+      eSide: resolvedSidesFinal[1],
       score: bestScore,
       fromPosHash: `${fromPos.left}-${fromPos.top}-${fromPos.width}-${fromPos.height}`,
       toPosHash: `${toPos.left}-${toPos.top}-${toPos.width}-${toPos.height}`,
@@ -661,7 +767,7 @@ export function FlowchartArrowConnector({
     }
     setLabelPos(lp)
 
-    const [sSide, eSide] = resolvedSides
+    const [sSide, eSide] = resolvedSidesFinal
     const payload: PathUpdatedPayload = {
       connectionId: connection.id, from: connection.from, to: connection.to,
       sSide, eSide,
@@ -672,54 +778,160 @@ export function FlowchartArrowConnector({
       labelPosition: lp ?? undefined,
     }
     const sig = `${connection.id}:${sSide}:${eSide}:${JSON.stringify(bestPath)}`
-    if (onPathUpdated && lastAutoSigRef.current !== sig) {
+    if (onPathUpdatedRef.current && lastAutoSigRef.current !== sig) {
       lastAutoSigRef.current = sig
-      onPathUpdated(payload)
+      onPathUpdatedRef.current(payload)
     }
+    }
+
+    if (editMode && isValidManualConfig(manualConfig)) {
+      return
     }
 
     const useIdle = typeof requestIdleCallback !== 'undefined'
     const scheduleId = useIdle
       ? requestIdleCallback(runRouting, { timeout: ROUTING_IDLE_TIMEOUT_MS })
       : requestAnimationFrame(runRouting)
+    const capturedRoutedSegments = routedSegmentsRef?.current
     return () => {
       if (useIdle) cancelIdleCallback(scheduleId)
       else cancelAnimationFrame(scheduleId)
-      routedSegmentsRef?.current.delete(connection.id)
+      capturedRoutedSegments?.delete(connection.id)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks via refs; obstacles via layout reads
   }, [
     idcontainer, connection.id, connection.from, connection.to,
     connection.label, connection.sourceType, connection.targetType,
     connectionIndex, allConnections,
-    manualConfig, manualLabelPosition, obstacles, onPathUpdated, constraintRect,
-    // usedSides DIHAPUS dari dependency — dibaca via usedSidesRef.current (ref), tidak perlu trigger re-run.
-    // Menambah usedSides di sini menyebabkan cascade: tiap connector update usedSides → semua effect re-run.
+    manualConfig, manualLabelPosition, obstacles, constraintRect, editMode,
     routedSegmentsRef, reservedSidesRef,
-    corridorGraph,  // DITAMBAHKAN — perlu re-route saat corridorGraph tersedia setelah graphReady
+    corridorGraph,
   ])
 
   if (!pathData) return null
   const effectiveLabelPos = manualLabelPosition ?? labelPos
+  const markerId = `arrowhead-flow-${idarrow}`
+
+  if (editMode && isSelected && resolvedPath.length >= 2) {
+    const guardCtx = routingGuardRef.current
+    const shapeGuard: PathShapeGuardConfig | null = guardCtx
+      ? {
+          check: {
+            kind: 'flowchart',
+            path: resolvedPath,
+            obstacles: guardCtx.obsRects,
+            fromShape: guardCtx.fromShape,
+            toShape: guardCtx.toShape,
+          },
+          repair: {
+            kind: 'flowchart',
+            startPoint: { ...resolvedPath[0]! },
+            endPoint: { ...resolvedPath[resolvedPath.length - 1]! },
+            sSide: resolvedSides[0],
+            eSide: resolvedSides[1],
+            fromShape: guardCtx.fromShape,
+            toShape: guardCtx.toShape,
+            obstacles: guardCtx.obsRects,
+            flowchart: {
+              globalBounds: guardCtx.globalBounds,
+              globalBoundsMargin: guardCtx.boundsMargin,
+              corridorGraph: corridorGraph ?? null,
+            },
+          },
+        }
+      : null
+    return (
+      <g>
+        <defs>
+          <marker id={markerId} markerWidth="10" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="black" />
+          </marker>
+        </defs>
+        <EditableOrthogonalPath
+          path={resolvedPath}
+          sSide={resolvedSides[0]}
+          eSide={resolvedSides[1]}
+          anchors={editableAnchors}
+          shapeGuard={shapeGuard}
+          connectionId={connection.id}
+          isSelected={isSelected}
+          markerEndId={markerId}
+          onSelect={onSelectRef.current ?? (() => {})}
+          onChange={(payload) => {
+            setResolvedPath([payload.startPoint, ...payload.bendPoints, payload.endPoint])
+            setResolvedSides([payload.sSide, payload.eSide])
+            setPathData(pathToD([payload.startPoint, ...payload.bendPoints, payload.endPoint]))
+            onManualChangeRef.current?.({
+              connectionId: connection.id,
+              from: connection.from,
+              to: connection.to,
+              ...payload,
+              label: connection.label ?? undefined,
+              labelPosition: effectiveLabelPos ?? undefined,
+            })
+          }}
+          onDeleteSelected={() => onManualChangeRef.current?.({
+            connectionId: connection.id,
+            from: connection.from,
+            to: connection.to,
+            sSide: resolvedSides[0],
+            eSide: resolvedSides[1],
+            startPoint: resolvedPath[0]!,
+            endPoint: resolvedPath[resolvedPath.length - 1]!,
+            bendPoints: [],
+            label: connection.label ?? undefined,
+          })}
+        />
+        {connection.label && effectiveLabelPos && (
+          <text
+            x={effectiveLabelPos.x} y={effectiveLabelPos.y}
+            textAnchor="middle" dominantBaseline="middle"
+            fontSize="11" fontFamily="Arial" fill="black"
+            style={{ pointerEvents: 'none' }}
+          >
+            {connection.label}
+          </text>
+        )}
+      </g>
+    )
+  }
 
   return (
     <g>
       <defs>
         <marker
-          id={`arrowhead-flow-${idarrow}`}
+          id={markerId}
           markerWidth="10" markerHeight="8" refX="7" refY="4" orient="auto"
         >
           <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="black" />
         </marker>
       </defs>
       <path
-        d={pathData} fill="none" stroke="black" strokeWidth="2"
-        markerEnd={`url(#arrowhead-flow-${idarrow})`}
+        d={pathData}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={editMode ? 14 : 2}
+        style={editMode ? { pointerEvents: 'stroke', cursor: 'pointer' } : { pointerEvents: 'none' }}
+        onClick={
+          editMode
+            ? (e) => {
+                e.stopPropagation()
+                onSelectRef.current?.(connection.id)
+              }
+            : undefined
+        }
+      />
+      <path
+        d={pathData} fill="none" stroke="black" strokeWidth={2}
+        markerEnd={`url(#${markerId})`}
+        style={{ pointerEvents: 'none' }}
       />
       {connection.label && effectiveLabelPos && (
         <text
           x={effectiveLabelPos.x} y={effectiveLabelPos.y}
           textAnchor="middle" dominantBaseline="middle"
           fontSize="11" fontFamily="Arial" fill="black"
+          style={{ pointerEvents: 'none' }}
         >
           {connection.label}
         </text>

@@ -9,6 +9,8 @@ import type {
   RegisterTteDto,
   UpdateTtePinDto,
   RiwayatTandaTangan,
+  SignPdfDto,
+  SignPdfResponse,
   TtePengesahanPublic,
   TteProfil,
   TandaTanganiBaDto,
@@ -46,6 +48,11 @@ export const tteApi = {
       apiClient.get<ApiSuccessResponse<{ message: string }>>(
         `/tte/profil/verifikasi-email?token=${encodeURIComponent(token)}`,
       ),
+    ),
+
+  signPdf: (payload: SignPdfDto) =>
+    unwrapApiData<SignPdfResponse>(
+      apiClient.post<ApiSuccessResponse<SignPdfResponse>>("/tte/pdf/sign", payload),
     ),
 
   /** Verifikasi pengesahan (publik, tanpa login). */

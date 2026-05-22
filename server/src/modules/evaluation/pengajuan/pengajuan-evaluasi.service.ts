@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
-  HasilEvaluasi,
   JenisPengajuanEvaluasi,
   PeranPengguna,
   Prisma,
@@ -20,16 +19,12 @@ import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
 import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
 import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from './pengajuan-evaluasi-status.constants';
-import type { PengajuanEvaluasiDetailRow } from './pengajuan-evaluasi.repository';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 
 /** Detail SOP yang boleh dimasukkan pengajuan evaluasi baru (alur penyusun → evaluator). */
 const STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.SIAP_DIEVALUASI,
-  StatusSOP.DIAJUKAN_EVALUASI,
-  StatusSOP.SEDANG_DIEVALUASI,
-  StatusSOP.REVISI_DARI_EVALUATOR,
 ] as const;
 
 const statusSiapPengajuanEvaluasiSet = new Set<string>(STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI);
@@ -136,13 +131,18 @@ export class PengajuanEvaluasiService {
         },
         select: { pengajuanEvaluasiId: true },
       });
-      await tx.detailSOP.updateMany({
+      const promoted = await tx.detailSOP.updateMany({
         where: {
           detailSopId: { in: dto.sopDetailIds },
           status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
         },
         data: { status: StatusSOP.SEDANG_DIEVALUASI },
       });
+      if (promoted.count !== dto.sopDetailIds.length) {
+        throw new ConflictException(
+          'Sebagian SOP tidak lagi berstatus SIAP_DIEVALUASI. Muat ulang daftar SOP lalu coba lagi.',
+        );
+      }
       return dibuat.pengajuanEvaluasiId;
     });
     const created = await this.pengajuanEvaluasiRepository.findByIdFull(idBaru);
@@ -214,13 +214,18 @@ export class PengajuanEvaluasiService {
         },
         select: { pengajuanEvaluasiId: true },
       });
-      await tx.detailSOP.updateMany({
+      const promoted = await tx.detailSOP.updateMany({
         where: {
           detailSopId: { in: sopDetailIds },
           status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
         },
         data: { status: StatusSOP.SEDANG_DIEVALUASI },
       });
+      if (promoted.count !== sopDetailIds.length) {
+        throw new ConflictException(
+          'Sebagian SOP tidak lagi berstatus SIAP_DIEVALUASI. Muat ulang workspace lalu coba lagi.',
+        );
+      }
     });
   }
 

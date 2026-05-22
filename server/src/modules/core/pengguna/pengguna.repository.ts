@@ -46,7 +46,7 @@ export class PenggunaRepository {
   }
 
   /**
-   * Semua pengguna peran EVALUATOR di OPD (termasuk yang sudah dinonaktifkan / soft delete).
+   * Semua pengguna peran EVALUATOR di OPD (termasuk yang sudah dinonaktifkan).
    */
   async findEvaluatorsByOpd(opdId: string, search?: string): Promise<Pengguna[]> {
     const trimmed = search?.trim();

@@ -24,7 +24,7 @@ export function BeritaAcaraPreviewPane({
     )
   }
   return (
-    <div className="w-full">
+    <div className="flex w-full justify-center">
       <BeritaAcaraTemplate {...templateProps} forPrint />
     </div>
   )

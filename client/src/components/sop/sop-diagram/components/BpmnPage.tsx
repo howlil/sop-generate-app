@@ -83,10 +83,13 @@ export interface BpmnPageProps {
     arrowConfig?: ArrowConfig
     labelConfig?: LabelConfig
     editMode?: boolean
+    selectedConnectionId?: string | null
   }
   events?: {
     onManualEdit?: (config: unknown) => void
     onLabelEdit?: (config: unknown) => void
+    onManualChange?: (payload: PathUpdatedPayload) => void
+    onSelectConnection?: (connectionId: string | null) => void
   }
 }
 
@@ -106,6 +109,9 @@ export function BpmnPage({
   const arrowConfig = config?.arrowConfig
   const labelConfig = config?.labelConfig
   const editMode = config?.editMode ?? false
+  const selectedConnectionId = config?.selectedConnectionId ?? null
+  const onManualChangeProp = events?.onManualChange
+  const onSelectConnectionProp = events?.onSelectConnection
   const onManualEdit = events?.onManualEdit
   const [arrowConfigs, setArrowConfigs] = useState<Record<string, ArrowConnectionConfig>>({})
   const [usedSides, setUsedSides] = useState<UsedSides>({})
@@ -240,16 +246,18 @@ export function BpmnPage({
   }, [bpmnConnections, laneLayouts])
 
   const onPathUpdated = useCallback((payload: PathUpdatedPayload) => {
-    setArrowConfigs((prev) => ({
-      ...prev,
-      [payload.connectionId]: {
-        sSide: payload.sSide,
-        eSide: payload.eSide,
-        startPoint: payload.startPoint,
-        endPoint: payload.endPoint,
-        bendPoints: payload.bendPoints,
-      },
-    }))
+    if (!onManualChangeProp) {
+      setArrowConfigs((prev) => ({
+        ...prev,
+        [payload.connectionId]: {
+          sSide: payload.sSide,
+          eSide: payload.eSide,
+          startPoint: payload.startPoint,
+          endPoint: payload.endPoint,
+          bendPoints: payload.bendPoints,
+        },
+      }))
+    }
     setUsedSides((prev) => {
       const fromId = payload.from
       const toId = payload.to
@@ -271,7 +279,7 @@ export function BpmnPage({
       }
       return next
     })
-  }, [])
+  }, [onManualChangeProp])
 
   const calculateGlobalLayout = useCallback(() => {
     if (processedSteps.length === 0) return
@@ -537,7 +545,7 @@ export function BpmnPage({
       x: Math.round(shapeRect.left - containerRect.left - layoutLeft),
       y: Math.round(shapeRect.top - containerRect.top - layoutTop),
     }
-  }, [laneLayouts])
+  }, [containerId, laneLayouts])
 
   const routerLaneLayout = useMemo((): BpmnLaneLayout | null => {
     if (!bpmnLaneLayoutForRouter) return null
@@ -585,6 +593,7 @@ export function BpmnPage({
     measureLayoutContentOrigin,
     measureBpmnContainerSize,
     bpmnConnections.length,
+    containerId,
   ])
 
   const arrowRerouteVersion = pathLayoutSeed + layoutMeasureVersion
@@ -774,9 +783,10 @@ export function BpmnPage({
 
         {showArrowLayer && (
           <svg
-            className="pointer-events-none absolute left-0 top-0 z-40 overflow-visible"
+            className={`absolute left-0 top-0 z-40 overflow-visible ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
             width={arrowOverlayWidth}
             height={arrowOverlayHeight}
+            onClick={() => onSelectConnectionProp?.(null)}
           >
             {bpmnConnections.map((conn, idx) => {
               const meta = bpmnConnectionsMeta[idx]
@@ -800,6 +810,10 @@ export function BpmnPage({
                     manualConfig={effectiveArrowConfig[conn.id]}
                     manualLabelPosition={labelConfig?.positions?.[conn.id]}
                     onPathUpdated={onPathUpdated}
+                    onManualChange={onManualChangeProp}
+                    editMode={editMode}
+                    isSelected={selectedConnectionId === conn.id}
+                    onSelect={(id) => onSelectConnectionProp?.(id)}
                     constraintRect={bpmnBoundsRef.current}
                     routedSegmentsRef={routedSegmentsRef}
                     rerouteVersion={arrowRerouteVersion}
@@ -820,6 +834,10 @@ export function BpmnPage({
                   manualConfig={effectiveArrowConfig[conn.id]}
                   manualLabelPosition={labelConfig?.positions?.[conn.id]}
                   onPathUpdated={onPathUpdated}
+                  onManualChange={onManualChangeProp}
+                  editMode={editMode}
+                  isSelected={selectedConnectionId === conn.id}
+                  onSelect={(id) => onSelectConnectionProp?.(id)}
                   constraintRect={bpmnBoundsRef.current}
                   routedSegmentsRef={routedSegmentsRef}
                 />

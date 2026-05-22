@@ -33,7 +33,7 @@ export class TtePenandatangananService {
 
   constructor(
     private readonly tteRepository: TteRepository,
-    private readonly configService: ConfigService,
+    configService: ConfigService,
   ) {
     this.signingSecret = resolveTteSigningSecret(configService);
     this.publicTteVerifyBaseUrl = configService.get<string>('PUBLIC_TTE_VERIFY_BASE_URL');

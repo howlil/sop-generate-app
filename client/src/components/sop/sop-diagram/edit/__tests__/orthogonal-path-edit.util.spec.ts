@@ -1,0 +1,127 @@
+import { describe, expect, it } from 'vitest'
+import {
+  insertWaypointAtSegmentMidpoint,
+  removeWaypoint,
+  dragSegmentFromOrigin,
+  dragWaypointFromOrigin,
+  dragWaypointOrthogonal,
+  simplifyOrthogonalPath,
+} from '../orthogonal-path-edit.util'
+
+describe('orthogonal-path-edit.util', () => {
+  const basePath = [
+    { x: 0, y: 0 },
+    { x: 0, y: 100 },
+    { x: 200, y: 100 },
+    { x: 200, y: 200 },
+  ]
+
+  it('should_insert_waypoint_on_segment', () => {
+    const next = insertWaypointAtSegmentMidpoint(basePath, 2)
+    expect(next.length).toBeGreaterThanOrEqual(basePath.length)
+  })
+
+  it('should_remove_internal_waypoint', () => {
+    const next = removeWaypoint(basePath, 2)
+    expect(next.length).toBe(basePath.length - 1)
+  })
+
+  it('should_drag_waypoint_with_orthogonal_constraint', () => {
+    const next = dragWaypointOrthogonal(basePath, 2, 0, 10)
+    expect(next[2]?.y).not.toBe(basePath[2]?.y)
+  })
+
+  it('should_drag_segment_horizontally_without_normalize_jitter', () => {
+    const path = [
+      { x: 0, y: 0 },
+      { x: 0, y: 100 },
+      { x: 200, y: 100 },
+    ]
+    const moved = dragSegmentFromOrigin(path, 1, 0, 12, { normalize: false })
+    expect(moved[1]?.y).toBe(112)
+    expect(moved[2]?.y).toBe(112)
+    expect(moved[1]?.x).toBe(0)
+    expect(moved[2]?.x).toBe(200)
+  })
+
+  it('should_drag_waypoint_from_origin_with_stable_delta', () => {
+    const path = [
+      { x: 100, y: 100 },
+      { x: 100, y: 200 },
+      { x: 200, y: 200 },
+    ]
+    const moved = dragWaypointFromOrigin(path, 1, 0, 16, { normalize: false })
+    expect(moved[1]?.y).toBe(216)
+    expect(moved[1]?.x).toBe(100)
+  })
+
+  it('should_simplify_collinear_middle_points', () => {
+    const zigZag = [
+      { x: 0, y: 0 },
+      { x: 0, y: 50 },
+      { x: 0, y: 100 },
+      { x: 200, y: 100 },
+    ]
+    const simplified = simplifyOrthogonalPath(zigZag)
+    expect(simplified.length).toBeLessThan(zigZag.length)
+  })
+
+  it('should_remove_small_horizontal_notch_on_vertical_spine', () => {
+    const withNotch = [
+      { x: 100, y: 0 },
+      { x: 100, y: 40 },
+      { x: 120, y: 40 },
+      { x: 120, y: 60 },
+      { x: 100, y: 60 },
+      { x: 100, y: 100 },
+    ]
+    const simplified = simplifyOrthogonalPath(withNotch)
+    expect(simplified.length).toBeLessThanOrEqual(4)
+    expect(simplified[0]).toEqual({ x: 100, y: 0 })
+    expect(simplified[simplified.length - 1]).toEqual({ x: 100, y: 100 })
+  })
+
+  it('should_collapse_small_rectangle_detour', () => {
+    const smallNotch = [
+      { x: 0, y: 0 },
+      { x: 0, y: 50 },
+      { x: 12, y: 50 },
+      { x: 12, y: 58 },
+      { x: 0, y: 58 },
+      { x: 0, y: 100 },
+    ]
+    const simplified = simplifyOrthogonalPath(smallNotch)
+    expect(simplified.length).toBeLessThan(smallNotch.length)
+    expect(simplified[0]).toEqual({ x: 0, y: 0 })
+    expect(simplified[simplified.length - 1]).toEqual({ x: 0, y: 100 })
+  })
+
+  it('should_remove_large_horizontal_notch_on_vertical_spine', () => {
+    const wideNotch = [
+      { x: 100, y: 0 },
+      { x: 100, y: 40 },
+      { x: 132, y: 40 },
+      { x: 132, y: 60 },
+      { x: 100, y: 60 },
+      { x: 100, y: 100 },
+    ]
+    const simplified = simplifyOrthogonalPath(wideNotch)
+    expect(simplified.length).toBeLessThanOrEqual(4)
+    expect(simplified[0]).toEqual({ x: 100, y: 0 })
+    expect(simplified[simplified.length - 1]).toEqual({ x: 100, y: 100 })
+    expect(simplified.every((p) => p.x === 100 || p.y === 0 || p.y === 100)).toBe(true)
+  })
+
+  it('should_not_remove_wide_detour_that_does_not_return_to_spine', () => {
+    const offSpineJog = [
+      { x: 0, y: 0 },
+      { x: 0, y: 50 },
+      { x: 80, y: 50 },
+      { x: 80, y: 100 },
+      { x: 200, y: 100 },
+    ]
+    const simplified = simplifyOrthogonalPath(offSpineJog)
+    expect(simplified.length).toBeGreaterThanOrEqual(4)
+    expect(simplified.some((p) => p.x === 80)).toBe(true)
+  })
+})

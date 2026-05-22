@@ -9,23 +9,20 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import {
-  ApiCookieAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../common';
 import type { JwtAccessPayload } from '../../common/types/jwt-access-payload.type';
 import { PeranPengguna } from '../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME } from '../core/auth/helpers/auth.shared';
 import { RegisterTteDto } from './dto/register-tte.dto';
+import { SignPdfDto } from './dto/sign-pdf.dto';
 import { TandaTanganiDto } from './dto/tanda-tangani.dto';
 import { UpdateTtePinDto } from './dto/update-tte-pin.dto';
 import {
   TteService,
   type TteBatchSignSopPengajuanResponse,
+  type SignPdfResponse,
   type TteProfilResponse,
   type TteRiwayatResponse,
 } from './tte.service';
@@ -49,8 +46,7 @@ export class TteController {
   ): Promise<ApiSuccessResponse<TteProfilResponse | null>> {
     const data = await this.tteService.getProfil(req.user);
     return {
-      message:
-        data === null ? 'Kredensial TTE belum ada' : 'Profil TTE berhasil diambil',
+      message: data === null ? 'Kredensial TTE belum ada' : 'Profil TTE berhasil diambil',
       success: true,
       data,
     };
@@ -96,7 +92,7 @@ export class TteController {
   @Post('profil/verifikasi-email')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Token verifikasi email (placeholder)',
+    summary: 'Token verifikasi email (simulasi)',
     description: 'Mode simulasi: tidak mengirim email; kompatibilitas klien lama.',
   })
   async mintVerifikasiEmail(
@@ -104,7 +100,7 @@ export class TteController {
   ): Promise<ApiSuccessResponse<{ token: string }>> {
     const data = await this.tteService.mintTokenVerifikasi(req.user);
     return {
-      message: 'Token placeholder dibuat',
+      message: 'Token simulasi dibuat',
       success: true,
       data,
     };
@@ -113,7 +109,7 @@ export class TteController {
   @Get('profil/verifikasi-email')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Konfirmasi verifikasi email (noop)',
+    summary: 'Konfirmasi verifikasi email tanpa perubahan status',
     description: 'Mode simulasi — tidak mengubah status.',
   })
   async konfirmasiEmail(
@@ -153,7 +149,7 @@ export class TteController {
   @ApiOperation({
     summary: 'Tanda tangani seluruh SOP dalam satu pengajuan (Kepala OPD)',
     description:
-      'Atomic all-or-nothing: semua SOP yang eligible dalam pengajuan ditandatangani sekaligus. Jika satu gagal, seluruh transaksi dibatalkan.',
+      'Transaksi utuh: semua SOP yang memenuhi syarat dalam pengajuan ditandatangani sekaligus. Jika satu gagal, seluruh transaksi dibatalkan.',
   })
   async tandaTanganiSemuaSopPengajuan(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -163,6 +159,25 @@ export class TteController {
     const data = await this.tteService.tandaTanganiSemuaSopPengajuan(req.user, pengajuanId, dto);
     return {
       message: 'Seluruh SOP dalam pengajuan berhasil ditandatangani',
+      success: true,
+      data,
+    };
+  }
+
+  @Post('pdf/sign')
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Sisipkan tanda tangan digital PKCS#7 ke PDF',
+    description:
+      'Menandatangani PDF dengan sertifikat P12 server. Sertifikat harus dikonfigurasi lewat env; kunci privat tidak pernah dikirim ke klien.',
+  })
+  async signPdf(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: SignPdfDto,
+  ): Promise<ApiSuccessResponse<SignPdfResponse>> {
+    const data = await this.tteService.signPdf(req.user, dto);
+    return {
+      message: data.signed ? 'PDF berhasil ditandatangani' : 'Penandatanganan PDF server dinonaktifkan',
       success: true,
       data,
     };

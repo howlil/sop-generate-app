@@ -2,11 +2,6 @@ import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle, FileText, Loader2 } from "lucide-react";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
-import {
-  PengajuanSemuaSopPrintStack,
-  type PengajuanSemuaSopPrintItem,
-} from "@/components/pengajuan/PengajuanSemuaSopPrintStack";
-import { PengajuanBeritaAcaraPrintLayer } from "@/components/pengajuan/pengajuan-berita-acara-print-layer";
 import { PengajuanSopPrintLayer } from "@/components/pengajuan/pengajuan-sop-print-layer";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
@@ -35,17 +30,12 @@ import { mapBeritaAcaraTemplateProps } from "@/lib/pengajuan/map-berita-acara-te
 import { PinVerificationDialog } from "@/components/tte/pin-verification-dialog";
 import { SOPListCard } from "@/components/sop/sop-list-card";
 import { ROUTES } from "@/utils/constants";
+import { formatDateIdFull } from "@/utils/format-date";
 
 const STATUS_SOP_SIAP_TTD_KEPALA_OPD = "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI";
-
-function formatDate(value: string | undefined | null): string {
-  if (value == null || value.trim() === "") return "—";
-  return new Date(value).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
+type PengajuanDetail = NonNullable<ReturnType<typeof usePengajuanEvaluasiDetail>["pengajuan"]>;
+type PengajuanSopList = NonNullable<PengajuanDetail["sopList"]>;
+const EMPTY_SOP_LIST: PengajuanSopList = [];
 
 export function DetailPengajuanSOPPage() {
   const { id } = useParams({ from: "/kepala-opd/pengajuan/$id" });
@@ -55,20 +45,10 @@ export function DetailPengajuanSOPPage() {
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [previewMainTab, setPreviewMainTab] = useState<"sop" | "ba">("sop");
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
-  const [semuaSopReady, setSemuaSopReady] = useState(false);
 
-  const allSopList = pengajuan?.sopList ?? [];
+  const allSopList = pengajuan?.sopList ?? EMPTY_SOP_LIST;
   const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuan?.status);
   const canCetakSopArsip = canCetakSopArsipPengajuan(pengajuan?.status);
-  const sopPrintItems = useMemo<PengajuanSemuaSopPrintItem[]>(
-    () =>
-      allSopList.map((item) => ({
-        sopDetailId: item.sopDetailId,
-        nama: item.nama,
-        nomor: item.nomor,
-      })),
-    [allSopList],
-  );
   const canSignAll = pengajuan?.status === "DITANDATANGANI_PJ_PENYUSUN";
   const isSudahBerlaku = pengajuan?.status === "SELESAI";
   const sopList = useMemo(
@@ -82,12 +62,6 @@ export function DetailPengajuanSOPPage() {
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null;
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId;
   const selectedSop = sopList.find((item) => item.sopDetailId === effectiveSopDetailId) ?? null;
-
-  const { handleCetak, cetakLoading, semuaSopLoading } = usePengajuanCetakArsip({
-    pengajuanId: id,
-    effectiveSopDetailId,
-    semuaSopReady,
-  });
 
   const sopWorkbenchEnabled = Boolean(
     effectiveSopDetailId && (previewMainTab === "sop" || canCetakSopArsip),
@@ -120,6 +94,12 @@ export function DetailPengajuanSOPPage() {
         : null,
     [pengajuan, baView],
   );
+
+  const { handleCetak, cetakLoading } = usePengajuanCetakArsip({
+    pengajuanId: id,
+    effectiveSopDetailId,
+    baTemplateProps,
+  });
 
   const tandaTanganiSemuaSop = useTandaTanganiSopPengajuan();
   const handlePinConfirm = createPinConfirmHandler(
@@ -178,7 +158,6 @@ export function DetailPengajuanSOPPage() {
                   effectiveSopDetailId={effectiveSopDetailId}
                   sopCount={allSopList.length}
                   cetakLoading={cetakLoading}
-                  semuaSopLoading={semuaSopLoading}
                   onCetak={handleCetak}
                 />
                 {canSignAll && (
@@ -210,7 +189,7 @@ export function DetailPengajuanSOPPage() {
                 <span className="font-mono">{pengajuan.nomorBA ?? "—"}</span>
               </InfoField>
               <InfoField label="Tanggal BA Ditandatangani PJ Penyusun">
-                {formatDate(pengajuan.tanggalTTDBaPjPenyusun)}
+                {formatDateIdFull(pengajuan.tanggalTTDBaPjPenyusun)}
               </InfoField>
               <InfoField label="Jumlah SOP">{`${sopList.length} dokumen`}</InfoField>
             </div>
@@ -307,17 +286,10 @@ export function DetailPengajuanSOPPage() {
         />
       </DetailPageLayout>
 
-      <PengajuanBeritaAcaraPrintLayer templateProps={baTemplateProps} />
       <PengajuanSopPrintLayer
         previewProps={sopPreviewProps}
         tteSignaturePayload={tteSignaturePayloadKepalaOpd}
         fallbackSop={selectedSop}
-      />
-      <PengajuanSemuaSopPrintStack
-        pengajuanId={id}
-        sopItems={sopPrintItems}
-        prefetchEnabled={canCetakSopArsip}
-        onAllLoadedChange={setSemuaSopReady}
       />
 
       <PinVerificationDialog

@@ -371,6 +371,50 @@ exports.Prisma.RiwayatTandaTanganScalarFieldEnum = {
   ditandatanganiPada: 'ditandatanganiPada'
 };
 
+exports.Prisma.KonfigurasiDiagramSOPScalarFieldEnum = {
+  detailSopId: 'detailSopId',
+  jenis: 'jenis',
+  layoutSeed: 'layoutSeed',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OverridePanahDiagramSOPScalarFieldEnum = {
+  detailSopId: 'detailSopId',
+  jenis: 'jenis',
+  dariLangkahSopId: 'dariLangkahSopId',
+  keLangkahSopId: 'keLangkahSopId',
+  cabang: 'cabang',
+  sSide: 'sSide',
+  eSide: 'eSide',
+  startX: 'startX',
+  startY: 'startY',
+  endX: 'endX',
+  endY: 'endY',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TitikTekukPanahDiagramSOPScalarFieldEnum = {
+  detailSopId: 'detailSopId',
+  jenis: 'jenis',
+  dariLangkahSopId: 'dariLangkahSopId',
+  keLangkahSopId: 'keLangkahSopId',
+  cabang: 'cabang',
+  urutan: 'urutan',
+  x: 'x',
+  y: 'y'
+};
+
+exports.Prisma.OverrideLabelDiagramSOPScalarFieldEnum = {
+  detailSopId: 'detailSopId',
+  jenis: 'jenis',
+  kunciLabel: 'kunciLabel',
+  posisiX: 'posisiX',
+  posisiY: 'posisiY',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -550,6 +594,27 @@ exports.Prisma.RiwayatTandaTanganOrderByRelevanceFieldEnum = {
   certSubject: 'certSubject',
   certFingerprint: 'certFingerprint'
 };
+
+exports.Prisma.KonfigurasiDiagramSOPOrderByRelevanceFieldEnum = {
+  detailSopId: 'detailSopId'
+};
+
+exports.Prisma.OverridePanahDiagramSOPOrderByRelevanceFieldEnum = {
+  detailSopId: 'detailSopId',
+  dariLangkahSopId: 'dariLangkahSopId',
+  keLangkahSopId: 'keLangkahSopId'
+};
+
+exports.Prisma.TitikTekukPanahDiagramSOPOrderByRelevanceFieldEnum = {
+  detailSopId: 'detailSopId',
+  dariLangkahSopId: 'dariLangkahSopId',
+  keLangkahSopId: 'keLangkahSopId'
+};
+
+exports.Prisma.OverrideLabelDiagramSOPOrderByRelevanceFieldEnum = {
+  detailSopId: 'detailSopId',
+  kunciLabel: 'kunciLabel'
+};
 exports.PeranPengguna = exports.$Enums.PeranPengguna = {
   PJ_EVALUATOR: 'PJ_EVALUATOR',
   EVALUATOR: 'EVALUATOR',
@@ -623,6 +688,24 @@ exports.JenisDokumenTte = exports.$Enums.JenisDokumenTte = {
   SOP_BERLAKU: 'SOP_BERLAKU'
 };
 
+exports.JenisDiagram = exports.$Enums.JenisDiagram = {
+  FLOWCHART: 'FLOWCHART',
+  BPMN: 'BPMN'
+};
+
+exports.CabangDiagram = exports.$Enums.CabangDiagram = {
+  UTAMA: 'UTAMA',
+  YA: 'YA',
+  TIDAK: 'TIDAK'
+};
+
+exports.SisiPanahDiagram = exports.$Enums.SisiPanahDiagram = {
+  top: 'top',
+  bottom: 'bottom',
+  left: 'left',
+  right: 'right'
+};
+
 exports.Prisma.ModelName = {
   Pengguna: 'Pengguna',
   OPD: 'OPD',
@@ -646,7 +729,11 @@ exports.Prisma.ModelName = {
   NilaiEvaluasi: 'NilaiEvaluasi',
   LogNilaiEvaluasi: 'LogNilaiEvaluasi',
   DokumenTte: 'DokumenTte',
-  RiwayatTandaTangan: 'RiwayatTandaTangan'
+  RiwayatTandaTangan: 'RiwayatTandaTangan',
+  KonfigurasiDiagramSOP: 'KonfigurasiDiagramSOP',
+  OverridePanahDiagramSOP: 'OverridePanahDiagramSOP',
+  TitikTekukPanahDiagramSOP: 'TitikTekukPanahDiagramSOP',
+  OverrideLabelDiagramSOP: 'OverrideLabelDiagramSOP'
 };
 
 /**

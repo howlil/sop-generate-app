@@ -62,7 +62,6 @@ function mapLogNilaiRepoRows(
 }
 
 function computeTampilanAlur(
-  detailSopId: string,
   nilaiUntukDetail: { hasil: string | null } | undefined,
 ): 'perlu_evaluasi' | 'sedang_dievaluasi' | 'selesai_pengajuan_ini' {
   if (nilaiUntukDetail === undefined) {
@@ -101,7 +100,7 @@ function mapWorkspaceDaftarSopRow(
       ? null
       : (nilaiRow.hasil as HasilEvaluasi),
   );
-  const tampilanAlur = computeTampilanAlur(row.detailSopId, nilaiRow);
+  const tampilanAlur = computeTampilanAlur(nilaiRow);
   const alurDisplay = displayTampilanAlur(tampilanAlur);
   const tindakDisplay = displayStatusTindakLanjut(nilaiRow?.statusTindakLanjut ?? null);
   return {

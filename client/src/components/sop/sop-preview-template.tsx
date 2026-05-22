@@ -23,6 +23,9 @@ const DEFAULT_IMPLEMENTERS = getInitialSopDetailImplementers().map((p) => ({
   name: p.nama,
 }));
 
+import type { ArrowConfig, LabelConfig } from "@/components/sop/sop-diagram/core/sopDiagramTypes";
+import type { PathUpdatedPayload } from "@/components/sop/sop-diagram/shapes/FlowchartArrowConnector";
+
 interface SopPreviewOptions {
   hideDiagramTabs?: boolean;
   editable?: boolean;
@@ -35,6 +38,13 @@ interface SopPreviewDiagramState {
   pathLayoutSeed?: number;
   activeTab?: "flowchart" | "bpmn";
   onActiveTabChange?: (v: "flowchart" | "bpmn") => void;
+  editMode?: boolean;
+  arrowConfig?: ArrowConfig;
+  labelConfig?: LabelConfig;
+  selectedConnectionId?: string | null;
+  onSelectConnection?: (connectionId: string | null) => void;
+  onManualPathChange?: (payload: PathUpdatedPayload) => void;
+  onResetSelectedPath?: () => void;
 }
 
 type SopPreviewMetadata = Partial<
@@ -72,10 +82,17 @@ export function SOPPreviewTemplate({
     diagramAlternate: previewOptions.diagramAlternate ?? null,
     showScrollbar: previewOptions.showScrollbar ?? false,
   };
-  const effectiveDiagramState: Required<SopPreviewDiagramState> = {
+  const effectiveDiagramState = {
     pathLayoutSeed: diagramState.pathLayoutSeed ?? 0,
     activeTab: diagramState.activeTab ?? "flowchart",
     onActiveTabChange: diagramState.onActiveTabChange ?? (() => {}),
+    editMode: diagramState.editMode ?? false,
+    arrowConfig: diagramState.arrowConfig ?? {},
+    labelConfig: diagramState.labelConfig ?? {},
+    selectedConnectionId: diagramState.selectedConnectionId ?? null,
+    onSelectConnection: diagramState.onSelectConnection ?? (() => {}),
+    onManualPathChange: diagramState.onManualPathChange,
+    onResetSelectedPath: diagramState.onResetSelectedPath,
   };
 
   const [internalActiveTab, setInternalActiveTab] = useState<
@@ -245,6 +262,14 @@ export function SOPPreviewTemplate({
                         }}
                         config={{
                           pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+                          arrowConfig: effectiveDiagramState.arrowConfig,
+                          labelConfig: effectiveDiagramState.labelConfig,
+                          editMode: effectiveDiagramState.editMode,
+                          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
+                        }}
+                        events={{
+                          onManualChange: effectiveDiagramState.onManualPathChange,
+                          onSelectConnection: effectiveDiagramState.onSelectConnection,
                         }}
                       />
                     </div>
@@ -259,6 +284,14 @@ export function SOPPreviewTemplate({
                         }}
                         config={{
                           pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+                          arrowConfig: effectiveDiagramState.arrowConfig,
+                          labelConfig: effectiveDiagramState.labelConfig,
+                          editMode: effectiveDiagramState.editMode,
+                          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
+                        }}
+                        events={{
+                          onManualChange: effectiveDiagramState.onManualPathChange,
+                          onSelectConnection: effectiveDiagramState.onSelectConnection,
                         }}
                       />
                     </div>
@@ -272,6 +305,14 @@ export function SOPPreviewTemplate({
                         }}
                         config={{
                           pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+                          arrowConfig: effectiveDiagramState.arrowConfig,
+                          labelConfig: effectiveDiagramState.labelConfig,
+                          editMode: effectiveDiagramState.editMode,
+                          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
+                        }}
+                        events={{
+                          onManualChange: effectiveDiagramState.onManualPathChange,
+                          onSelectConnection: effectiveDiagramState.onSelectConnection,
                         }}
                       />
                     </div>

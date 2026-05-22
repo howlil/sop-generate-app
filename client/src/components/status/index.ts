@@ -1,7 +1,0 @@
-export { DomainStatusBadge } from './domain-status-badge'
-export { AccountStatusBadge } from './account-status-badge'
-export { SopStatusBadge } from './sop-status-badge'
-export { PengajuanStatusBadge } from './pengajuan-status-badge'
-export { HasilEvaluasiBadge } from './hasil-evaluasi-badge'
-export { SopEvaluasiStatusGroup } from './sop-evaluasi-status-group'
-export { EvaluasiStatusLegend } from './evaluasi-status-legend'

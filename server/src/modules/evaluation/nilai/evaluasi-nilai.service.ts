@@ -7,7 +7,6 @@ import {
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
-  displayHasilEvaluasi,
   displayStatusTindakLanjut,
 } from '../../../common/status/status-display';
 import {

@@ -16,10 +16,13 @@ export interface SOPDiagramBpmnProps {
     arrowConfig?: ArrowConfig
     labelConfig?: LabelConfig
     editMode?: boolean
+    selectedConnectionId?: string | null
   }
   events?: {
     onManualEdit?: (config: unknown) => void
     onLabelEdit?: (config: unknown) => void
+    onManualChange?: (payload: import('../shapes/FlowchartArrowConnector').PathUpdatedPayload) => void
+    onSelectConnection?: (connectionId: string | null) => void
   }
 }
 

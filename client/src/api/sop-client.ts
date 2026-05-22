@@ -12,6 +12,7 @@ import type {
   SopRiwayatVersiRow,
   UpdateSopHeaderDto,
   UpdateSopProsedurDto,
+  UpdateSopDiagramDto,
   UpdateStatusDto,
 } from '@/types/dto/sop.dto'
 
@@ -71,6 +72,14 @@ export const sopApi = {
     unwrapPenyusunWorkbench(
       apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(
         `/sop/langkah/${detailSopId}`,
+        payload,
+      ),
+    ),
+
+  updateSopDiagram: (detailSopId: string, payload: UpdateSopDiagramDto) =>
+    unwrapPenyusunWorkbench(
+      apiClient.patch<ApiSuccessResponse<PenyusunWorkbenchData>>(
+        `/sop/diagram/${detailSopId}`,
         payload,
       ),
     ),

@@ -1,4 +1,4 @@
-import { Loader2, MoreVertical, Printer } from 'lucide-react'
+import { Download, Loader2, MoreVertical, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -22,7 +22,6 @@ interface PengajuanCetakArsipButtonsProps {
   effectiveSopDetailId: string | null
   sopCount: number
   cetakLoading?: boolean
-  semuaSopLoading?: boolean
   onCetak: (target: PengajuanPrintTarget) => void | Promise<void>
 }
 
@@ -32,7 +31,6 @@ export function PengajuanCetakArsipButtons({
   effectiveSopDetailId,
   sopCount,
   cetakLoading = false,
-  semuaSopLoading = false,
   onCetak,
 }: PengajuanCetakArsipButtonsProps) {
   const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuanStatus)
@@ -49,8 +47,6 @@ export function PengajuanCetakArsipButtons({
       : effectiveSopDetailId === null
         ? 'Pilih SOP untuk dicetak'
         : undefined
-  const semuaSopItemDisabled =
-    !canCetakSopArsip || sopCount === 0 || semuaSopLoading || cetakLoading
   const hasAnyEnabledItem =
     canCetakBa || (showSopItems && canCetakSopArsip && sopCount > 0)
   const triggerDisabled = !hasAnyEnabledItem || cetakLoading
@@ -74,7 +70,7 @@ export function PengajuanCetakArsipButtons({
             className="h-8 w-8 p-0"
             disabled={triggerDisabled}
             title={triggerTitle}
-            aria-label="Cetak arsip"
+            aria-label="Arsip dokumen pengajuan"
           >
             {cetakLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
@@ -89,32 +85,18 @@ export function PengajuanCetakArsipButtons({
             title={baDisabledTitle}
             onClick={() => handleSelect('ba')}
           >
-            <Printer className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-            Cetak BA
+            <Download className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+            Unduh BA (PDF)
           </DropdownMenuItem>
           {showSopItems ? (
-            <>
-              <DropdownMenuItem
-                disabled={sopItemDisabled}
-                title={sopItemTitle}
-                onClick={() => handleSelect('sop')}
-              >
-                <Printer className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-                Cetak SOP
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={semuaSopItemDisabled}
-                title={sopDisabledTitle}
-                onClick={() => handleSelect('sop-all')}
-              >
-                {semuaSopLoading ? (
-                  <Loader2 className="mr-2 h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
-                ) : (
-                  <Printer className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-                )}
-                Cetak semua SOP
-              </DropdownMenuItem>
-            </>
+            <DropdownMenuItem
+              disabled={sopItemDisabled}
+              title={sopItemTitle}
+              onClick={() => handleSelect('sop')}
+            >
+              <Printer className="mr-2 h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+              Cetak SOP
+            </DropdownMenuItem>
           ) : null}
         </DropdownMenuContent>
       </DropdownMenu>

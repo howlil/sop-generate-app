@@ -117,11 +117,12 @@ export class SopCatalogService {
         nilaiEvaluasi: [],
       },
       langkah: workbench.langkah,
+      diagramKonfigurasi: workbench.diagramKonfigurasi,
     };
   }
 
   /**
-   * Kepala OPD: cabut versi BERLAKU SOP (bukan versi terbaru bila ada revisi in-flight).
+   * Kepala OPD: cabut versi BERLAKU SOP (bukan versi terbaru bila ada revisi yang sedang berjalan).
    * Ditolak bila masih ada revisi yang sedang berjalan pada header SOP yang sama.
    */
   async cabutSopBerlaku(
@@ -170,7 +171,7 @@ export class SopCatalogService {
 
   /**
    * Ubah status DetailSOP terbaru (param boleh detailSopId atau sopId header).
-   * Mengembalikan workbench penyusun terbaru.
+   * Mengembalikan area kerja penyusun terbaru.
    */
   async transitionDetailSopStatus(
     user: JwtAccessPayload,
@@ -294,7 +295,7 @@ export class SopCatalogService {
   /**
    * PATCH header SOP untuk panel kanan editor penyusun. Param `detailOrSopId`
    * boleh berupa `detailSopId` atau `sopId` (header) — versi terbaru dipakai bila header.
-   * Mengembalikan workbench terbaru sehingga klien bisa `setQueryData` tanpa GET ulang.
+   * Mengembalikan area kerja terbaru sehingga klien bisa `setQueryData` tanpa GET ulang.
    */
   async updatePenyusunHeader(
     user: JwtAccessPayload,

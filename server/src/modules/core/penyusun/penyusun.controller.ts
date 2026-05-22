@@ -93,7 +93,7 @@ export class PenyusunController {
 
   @Patch(':id/nonaktifkan')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Nonaktifkan penyusun (soft delete)' })
+  @ApiOperation({ summary: 'Nonaktifkan penyusun' })
   @ApiParam({ name: 'id', format: 'uuid' })
   async nonaktifkan(@Param('id', ParseUUIDPipe) id: string): Promise<ApiSuccessResponse<null>> {
     await this.penyusunService.nonaktifkan(id);

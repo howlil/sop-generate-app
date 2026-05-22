@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { KepalaOpdRingkasDto } from './kepala-opd-ringkas.dto';
 
-/** Header SOP ringkas di dalam detail workbench. */
+/** Header SOP ringkas di dalam detail area kerja. */
 export class PenyusunWorkbenchSopHeaderDto {
   @ApiProperty()
   readonly id!: string;
@@ -61,7 +61,7 @@ export class PenyusunWorkbenchDetailDto {
   @ApiPropertyOptional({ nullable: true })
   readonly tanggalEfektif?: string | null;
 
-  @ApiProperty({ description: 'URL/logo instansi (placeholder bila belum diisi)' })
+  @ApiProperty({ description: 'URL/logo instansi (nilai pengganti bila belum diisi)' })
   readonly logoInstansi!: string;
 
   @ApiProperty()
@@ -134,6 +134,6 @@ export class PenyusunWorkbenchDetailDto {
   })
   readonly sopTerkaitDetailIds?: string[];
 
-  // Catatan: field legacy `peringatan/kualifikasiPelaksanaan/peralatanPerlengkapan/pencatatanPendataan`
+  // Catatan: field kompatibilitas lama `peringatan/kualifikasiPelaksanaan/peralatanPerlengkapan/pencatatanPendataan`
   // diganti menjadi `lampiran` struktur baru.
 }

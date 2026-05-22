@@ -17,7 +17,7 @@ function normalizeStatusInQueryValues(value: unknown): string[] | undefined {
 }
 
 function mapLegacyStatusPengajuanEvaluasi(raw: string): string {
-  // Back-compat transisi: terima nilai lama dari client lama.
+  // Kompatibilitas transisi: terima nilai lama dari klien lama.
   if (raw === 'DIVERIFIKASI_BIRO') return 'DIVERIFIKASI_PJ_EVALUATOR';
   if (raw === 'DITANDATANGANI_KOORDINATOR') return 'DITANDATANGANI_PJ_PENYUSUN';
   return raw;

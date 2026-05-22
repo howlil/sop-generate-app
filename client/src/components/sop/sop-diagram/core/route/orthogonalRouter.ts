@@ -1,3 +1,5 @@
+import { simplifyOrthogonalPath } from '@/components/sop/sop-diagram/edit/orthogonal-path-edit.util'
+
 /**
  * Orthogonal Router v3 — A* with binary-heap open list
  *
@@ -585,6 +587,13 @@ function pathClear(path: Point[], obs: R[], sourceObs: R, targetObs: R, bounds: 
   return true
 }
 
+const COLUMN_ALIGN_PX = 2
+const ROUTE_GRID_SNAP = 4
+
+function snapRouteGrid(value: number): number {
+  return Math.round(value / ROUTE_GRID_SNAP) * ROUTE_GRID_SNAP
+}
+
 function buildSimplePathCandidates(
   start: Point,
   extA: Point,
@@ -592,11 +601,28 @@ function buildSimplePathCandidates(
   end: Point,
 ): Point[][] {
   const paths: Point[][] = []
-  if (extA.x === extB.x || extA.y === extB.y) {
-    paths.push([start, extA, extB, end])
+  const dx = Math.abs(extA.x - extB.x)
+  const dy = Math.abs(extA.y - extB.y)
+  const sameColumn = dx <= COLUMN_ALIGN_PX
+  const sameRow = dy <= COLUMN_ALIGN_PX
+  const spineX = snapRouteGrid((extA.x + extB.x) / 2)
+  const spineY = snapRouteGrid((extA.y + extB.y) / 2)
+  const alignedA = sameColumn ? { x: spineX, y: extA.y } : extA
+  const alignedB = sameColumn ? { x: spineX, y: extB.y } : extB
+  if (sameColumn || sameRow) {
+    paths.push([start, alignedA, alignedB, end])
   }
-  paths.push([start, extA, { x: extB.x, y: extA.y }, extB, end])
-  paths.push([start, extA, { x: extA.x, y: extB.y }, extB, end])
+  if (sameColumn && !sameRow) {
+    const midY = snapRouteGrid((extA.y + extB.y) / 2)
+    paths.push([start, alignedA, { x: spineX, y: midY }, alignedB, end])
+  } else if (sameRow && !sameColumn) {
+    const midX = snapRouteGrid((extA.x + extB.x) / 2)
+    paths.push([start, extA, { x: midX, y: spineY }, extB, end])
+  }
+  if (!sameColumn) {
+    paths.push([start, extA, { x: extB.x, y: extA.y }, extB, end])
+    paths.push([start, extA, { x: extA.x, y: extB.y }, extB, end])
+  }
   return paths.map((path) => simplify(path))
 }
 
@@ -667,7 +693,13 @@ export function scorePath(path: Point[], occupied: OccupiedSegment[]): number {
       else if (segmentsNearby(seg, occ, NEAR_THRESHOLD)) score += NEAR_PENALTY
     }
   }
-  score += Math.max(0, normalized.length - 2) * 100
+  score += Math.max(0, normalized.length - 2) * 140
+  for (let i = 0; i < normalized.length - 1; i += 1) {
+    const len =
+      Math.abs(normalized[i + 1]!.x - normalized[i]!.x) +
+      Math.abs(normalized[i + 1]!.y - normalized[i]!.y)
+    if (len > 0 && len < 14) score += 35
+  }
   return score
 }
 
@@ -958,10 +990,9 @@ export function routeOnCorridor(opts: CorridorRouteOptions): Point[] {
   const path = astar(adj, extA, extB, occupiedSegments)
   if (path.length === 0) return []
 
-  return assertOrthogonalPath(
-    normalizeOrthogonalPath(simplify([oA, ...path, oB])),
-    'routeOnCorridor result',
-  )
+  const raw = simplify([oA, ...path, oB])
+  const cleaned = simplifyOrthogonalPath(normalizeOrthogonalPath(raw))
+  return assertOrthogonalPath(cleaned, 'routeOnCorridor result')
 }
 
 /* ═══════════════════════════════════════════════════════════════════

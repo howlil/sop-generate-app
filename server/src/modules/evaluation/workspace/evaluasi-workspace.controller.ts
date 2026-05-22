@@ -63,7 +63,7 @@ export class EvaluasiWorkspaceController {
   @ApiOperation({
     summary: 'Workspace evaluasi per OPD (agregat untuk halaman evaluator)',
     description:
-      'Menggabungkan OPD, daftar SOP pipeline evaluasi, pengajuan aktif, riwayat terbatas, dan opsional preview workbench saat `expand=preview` + `detailSopId`. PJ Penyusun hanya dapat membuka workspace OPD sendiri.',
+      'Menggabungkan OPD, daftar SOP alur evaluasi, pengajuan aktif, riwayat terbatas, dan pratinjau area kerja opsional saat `expand=preview` + `detailSopId`. PJ Penyusun hanya dapat membuka area kerja OPD sendiri.',
   })
   @ApiParam({ name: 'opdId', format: 'uuid' })
   @ApiQuery({ name: 'detailSopId', required: false, format: 'uuid' })

@@ -2,11 +2,6 @@ import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { CheckCircle, FileText, History, Loader2 } from "lucide-react";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
-import {
-  PengajuanSemuaSopPrintStack,
-  type PengajuanSemuaSopPrintItem,
-} from "@/components/pengajuan/PengajuanSemuaSopPrintStack";
-import { PengajuanBeritaAcaraPrintLayer } from "@/components/pengajuan/pengajuan-berita-acara-print-layer";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
 import { BeritaAcaraPreviewPane } from "@/components/pengajuan/berita-acara-preview-pane";
@@ -53,7 +48,6 @@ export function DetailPengajuanEvaluasi() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [tteDialogOpen, setTteDialogOpen] = useState(false);
-  const [semuaSopReady, setSemuaSopReady] = useState(false);
 
   const tandaTanganiBA = useTandaTanganiBA({
     successMessage:
@@ -75,26 +69,11 @@ export function DetailPengajuanEvaluasi() {
   const sopList = pengajuan?.sopList ?? [];
   const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuan?.status);
   const canCetakSopArsip = canCetakSopArsipPengajuan(pengajuan?.status);
-  const sopPrintItems = useMemo<PengajuanSemuaSopPrintItem[]>(
-    () =>
-      sopList.map((item) => ({
-        sopDetailId: item.sopDetailId,
-        nama: item.nama,
-        nomor: item.nomor,
-      })),
-    [sopList],
-  );
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null;
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId;
   const displaySop = sopList.find(
     (s) => s.sopDetailId === effectiveSopDetailId,
   );
-
-  const { handleCetak, cetakLoading, semuaSopLoading } = usePengajuanCetakArsip({
-    pengajuanId: id,
-    effectiveSopDetailId,
-    semuaSopReady,
-  });
 
   const sopWorkbenchEnabled = Boolean(
     pengajuan && effectiveSopDetailId && (previewMainTab === "sop" || canCetakSopArsip),
@@ -130,6 +109,12 @@ export function DetailPengajuanEvaluasi() {
         : null,
     [pengajuan, baView],
   );
+
+  const { handleCetak, cetakLoading } = usePengajuanCetakArsip({
+    pengajuanId: id,
+    effectiveSopDetailId,
+    baTemplateProps,
+  });
 
   useDocumentTitle(
     pengajuan
@@ -186,7 +171,6 @@ export function DetailPengajuanEvaluasi() {
                   effectiveSopDetailId={effectiveSopDetailId}
                   sopCount={sopList.length}
                   cetakLoading={cetakLoading}
-                  semuaSopLoading={semuaSopLoading}
                   onCetak={handleCetak}
                 />
                 {canVerify && (
@@ -334,14 +318,6 @@ export function DetailPengajuanEvaluasi() {
           ]}
         />
       </DetailPageLayout>
-
-      <PengajuanBeritaAcaraPrintLayer templateProps={baTemplateProps} />
-      <PengajuanSemuaSopPrintStack
-        pengajuanId={id}
-        sopItems={sopPrintItems}
-        prefetchEnabled={canCetakSopArsip}
-        onAllLoadedChange={setSemuaSopReady}
-      />
 
       <PinVerificationDialog
         open={tteDialogOpen}

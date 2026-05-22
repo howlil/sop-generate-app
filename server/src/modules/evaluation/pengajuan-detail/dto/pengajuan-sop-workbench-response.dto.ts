@@ -12,7 +12,7 @@ export class PengajuanSopWorkbenchResponseDto {
 
   @ApiPropertyOptional({
     type: () => BeritaAcaraTteSignaturePayloadDto,
-    description: 'Payload QR TTE Kepala OPD bila SOP sudah ditandatangani',
+    description: 'Muatan data QR TTE Kepala OPD bila SOP sudah ditandatangani',
   })
   readonly tteSignaturePayloadKepalaOpd?: BeritaAcaraTteSignaturePayloadDto;
 }

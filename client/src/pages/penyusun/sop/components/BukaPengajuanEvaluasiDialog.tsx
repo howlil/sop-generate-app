@@ -32,6 +32,8 @@ const JENIS_OPTIONS: ReadonlyArray<{
   { value: "MANDIRI", label: "Mandiri" },
 ];
 
+const STATUS_DETAIL_SIAP_DIAJUKAN_EVALUASI = "SIAP_DIEVALUASI";
+
 export function BukaPengajuanEvaluasiDialog({
   open,
   onOpenChange,
@@ -56,6 +58,10 @@ export function BukaPengajuanEvaluasiDialog({
 
   const hasBlockingPengajuan = workspace?.pengajuanAktif != null;
   const workspaceBusy = isLoadingWorkspace || isFetchingWorkspace;
+  const sopSiapDievaluasi =
+    workspace?.daftarSop.filter(
+      (row) => row.statusDetail === STATUS_DETAIL_SIAP_DIAJUKAN_EVALUASI,
+    ) ?? [];
 
   const handleConfirm = useCallback(() => {
     if (selectedDetailIds.size === 0 || hasBlockingPengajuan) {
@@ -107,13 +113,13 @@ export function BukaPengajuanEvaluasiDialog({
         <Label required>Dokumen SOP</Label>
         {workspaceBusy ? (
           <p className="text-xs text-gray-500">Memuat daftar SOP...</p>
-        ) : (workspace?.daftarSop.length ?? 0) === 0 ? (
+        ) : sopSiapDievaluasi.length === 0 ? (
           <p className="text-xs text-gray-500">
-            Tidak ada SOP dalam pipeline evaluasi.
+            Tidak ada SOP yang siap dievaluasi.
           </p>
         ) : (
           <ul className="max-h-56 overflow-y-auto rounded-md border border-gray-200 divide-y divide-gray-100">
-            {workspace?.daftarSop.map((row) => {
+            {sopSiapDievaluasi.map((row) => {
               const checked = selectedDetailIds.has(row.detailSopId);
               return (
                 <li key={row.detailSopId}>

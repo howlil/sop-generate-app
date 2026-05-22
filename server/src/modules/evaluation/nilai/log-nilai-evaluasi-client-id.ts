@@ -1,4 +1,4 @@
-/** Id stabil untuk payload JSON timeline (bukan UUID); PK komposit dipisah unit separator. */
+/** Id stabil untuk muatan data JSON lini masa (bukan UUID); PK komposit dipisah unit separator. */
 export function encodeLogNilaiEvaluasiClientId(
   pengajuanEvaluasiId: string,
   detailSopId: string,

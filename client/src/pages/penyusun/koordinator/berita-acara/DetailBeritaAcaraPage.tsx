@@ -31,23 +31,14 @@ import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
 import { AlertCircle, CheckCircle, FileText, Loader2 } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
 import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCetakArsipButtons'
-import {
-  PengajuanSemuaSopPrintStack,
-  type PengajuanSemuaSopPrintItem,
-} from '@/components/pengajuan/PengajuanSemuaSopPrintStack'
-import { PengajuanBeritaAcaraPrintLayer } from '@/components/pengajuan/pengajuan-berita-acara-print-layer'
 import { PengajuanSopPrintLayer } from '@/components/pengajuan/pengajuan-sop-print-layer'
 import { usePengajuanCetakArsip } from '@/components/pengajuan/hooks/use-pengajuan-cetak-arsip'
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from '@/lib/print/pengajuan-print'
+import { formatDateIdFull } from '@/utils/format-date'
 
-function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
+type PengajuanDetail = NonNullable<ReturnType<typeof usePengajuanEvaluasiDetail>['pengajuan']>
+type PengajuanSopList = NonNullable<PengajuanDetail['sopList']>
+const EMPTY_SOP_LIST: PengajuanSopList = []
 
 export function DetailBeritaAcaraPage() {
   const { id } = useParams({ from: '/penyusun/pj-penyusun/berita-acara/$id' })
@@ -55,7 +46,6 @@ export function DetailBeritaAcaraPage() {
   const [previewMainTab, setPreviewMainTab] = useState<'sop' | 'ba'>('ba')
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
-  const [semuaSopReady, setSemuaSopReady] = useState(false)
   const { pengajuan, loading: isLoading } = usePengajuanEvaluasiDetail(id)
 
   useEffect(() => {
@@ -77,27 +67,12 @@ export function DetailBeritaAcaraPage() {
 
   const isReadyForSignature = pengajuan?.status === 'DIVERIFIKASI_PJ_EVALUATOR'
   const isAlreadySigned = pengajuan?.status === 'DITANDATANGANI_PJ_PENYUSUN'
-  const sopList = pengajuan?.sopList ?? []
+  const sopList = pengajuan?.sopList ?? EMPTY_SOP_LIST
   const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuan?.status)
   const canCetakSopArsip = canCetakSopArsipPengajuan(pengajuan?.status)
-  const sopPrintItems = useMemo<PengajuanSemuaSopPrintItem[]>(
-    () =>
-      sopList.map((item) => ({
-        sopDetailId: item.sopDetailId,
-        nama: item.nama,
-        nomor: item.nomor,
-      })),
-    [sopList],
-  )
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId
   const selectedSop = sopList.find((sop) => sop.sopDetailId === effectiveSopDetailId) ?? null
-
-  const { handleCetak, cetakLoading, semuaSopLoading } = usePengajuanCetakArsip({
-    pengajuanId: id,
-    effectiveSopDetailId,
-    semuaSopReady,
-  })
 
   const sopWorkbenchEnabled = Boolean(
     effectiveSopDetailId && (previewMainTab === 'sop' || canCetakSopArsip),
@@ -143,6 +118,12 @@ export function DetailBeritaAcaraPage() {
     [pengajuan, baView],
   )
 
+  const { handleCetak, cetakLoading } = usePengajuanCetakArsip({
+    pengajuanId: id,
+    effectiveSopDetailId,
+    baTemplateProps,
+  })
+
   if (isLoading && pengajuan === null) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 min-h-[320px] text-gray-600 text-sm">
@@ -187,7 +168,6 @@ export function DetailBeritaAcaraPage() {
                   effectiveSopDetailId={effectiveSopDetailId}
                   sopCount={sopList.length}
                   cetakLoading={cetakLoading}
-                  semuaSopLoading={semuaSopLoading}
                   onCetak={handleCetak}
                 />
                 {isReadyForSignature && (
@@ -217,7 +197,7 @@ export function DetailBeritaAcaraPage() {
               <InfoField label="Nomor BA">
                 <span className="font-mono">{pengajuan.nomorBA ?? '-'}</span>
               </InfoField>
-              <InfoField label="Tanggal Verifikasi">{formatDate(pengajuan.tanggalVerifikasi)}</InfoField>
+              <InfoField label="Tanggal Verifikasi">{formatDateIdFull(pengajuan.tanggalVerifikasi, '')}</InfoField>
               <InfoField label="Evaluator">{pengajuan.timEvaluasi ?? '-'}</InfoField>
               <InfoField label="Jumlah SOP">{`${sopList.length} dokumen`}</InfoField>
             </div>
@@ -238,7 +218,7 @@ export function DetailBeritaAcaraPage() {
             )}
             {isAlreadySigned && (
               <InfoCard variant="success" icon={<CheckCircle />} title="Berita Acara telah ditandatangani">
-                Ditandatangani pada {formatDate(pengajuan.tanggalTTDBaPjPenyusun)}. Menunggu pengesahan
+                Ditandatangani pada {formatDateIdFull(pengajuan.tanggalTTDBaPjPenyusun, '')}. Menunggu pengesahan
                 Kepala OPD.
               </InfoCard>
             )}
@@ -332,17 +312,10 @@ export function DetailBeritaAcaraPage() {
         </div>
       </DetailPageLayout>
 
-      <PengajuanBeritaAcaraPrintLayer templateProps={baTemplateProps} />
       <PengajuanSopPrintLayer
         previewProps={sopPreviewProps}
         tteSignaturePayload={tteSignaturePayloadKepalaOpd}
         fallbackSop={selectedSop}
-      />
-      <PengajuanSemuaSopPrintStack
-        pengajuanId={id}
-        sopItems={sopPrintItems}
-        prefetchEnabled={canCetakSopArsip}
-        onAllLoadedChange={setSemuaSopReady}
       />
 
       <PinVerificationDialog

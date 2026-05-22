@@ -24,7 +24,7 @@ export interface UpdateSopHeaderRepoInput {
   };
 }
 
-/** Payload mentah workbench penyususun (DetailSOP + langkah + log) untuk dipetakan di service. */
+/** Muatan data mentah area kerja penyusun (DetailSOP + langkah + log) untuk dipetakan di service. */
 export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
   include: {
     sop: {
@@ -73,6 +73,18 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
         pengguna: { select: { penggunaId: true; nama: true; email: true; peran: true } };
       };
     };
+    konfigurasiDiagram: {
+      include: {
+        overridePanah: {
+          include: {
+            titikTekuk: {
+              orderBy: { urutan: 'asc' };
+            };
+          };
+        };
+        overrideLabel: true;
+      };
+    };
   };
 }>;
 
@@ -95,7 +107,7 @@ export type SopDaftarDbRow = {
   detail: SopDaftarDetailSlice | undefined;
   /** Versi yang sedang BERLAKU, bila ada. */
   versiBerlaku: SopDaftarDetailSlice | null;
-  /** Semua status DetailSOP pada header (untuk deteksi revisi in-flight). */
+  /** Semua status DetailSOP pada header (untuk deteksi revisi yang sedang berjalan). */
   allStatuses: StatusSOP[];
 };
 
@@ -320,7 +332,7 @@ export class SopCatalogRepository {
 
   /** Daftar semua SOP (untuk peran evaluasi yang membutuhkan agregasi lintas OPD). */
   /**
-   * Satu query DetailSOP lengkap untuk halaman workbench penyusun (tanpa duplikasi fetch).
+   * Satu query DetailSOP lengkap untuk halaman area kerja penyusun (tanpa duplikasi fetch).
    */
   async findWorkbenchPayload(
     detailSopId: string,
@@ -375,6 +387,18 @@ export class SopCatalogRepository {
             pengguna: { select: { penggunaId: true, nama: true, email: true, peran: true } },
           },
         },
+        konfigurasiDiagram: {
+          include: {
+            overridePanah: {
+              include: {
+                titikTekuk: {
+                  orderBy: { urutan: 'asc' },
+                },
+              },
+            },
+            overrideLabel: true,
+          },
+        },
       },
     });
     return row;
@@ -382,7 +406,7 @@ export class SopCatalogRepository {
 
   /**
    * Workbench: `id` boleh berupa `detailSopId` atau `sopId` (header).
-   * UI daftar memakai `sop.id` pada rute edit; fallback ke DetailSOP versi terbaru per header.
+   * UI daftar memakai `sop.id` pada rute edit; cadangan ke DetailSOP versi terbaru per header.
    */
   async findWorkbenchPayloadByDetailOrSopId(
     detailOrSopId: string,
@@ -907,6 +931,77 @@ export class SopCatalogRepository {
               langkahSelanjutnyaTidakId: tidakId,
             },
           });
+        }
+      }
+      const sourceDiagramConfigs = await tx.konfigurasiDiagramSOP.findMany({
+        where: { detailSopId: params.sourceDetailSopId },
+        include: {
+          overridePanah: {
+            include: {
+              titikTekuk: {
+                orderBy: { urutan: 'asc' },
+              },
+            },
+          },
+          overrideLabel: true,
+        },
+      });
+      if (sourceDiagramConfigs.length > 0) {
+        for (const cfg of sourceDiagramConfigs) {
+          await tx.konfigurasiDiagramSOP.create({
+            data: {
+              detailSopId: newDetailId,
+              jenis: cfg.jenis,
+              layoutSeed: cfg.layoutSeed,
+            },
+          });
+          for (const edge of cfg.overridePanah) {
+            const newFrom = langkahIdMap.get(edge.dariLangkahSopId);
+            const newTo = langkahIdMap.get(edge.keLangkahSopId);
+            if (newFrom === undefined || newTo === undefined) {
+              continue;
+            }
+            await tx.overridePanahDiagramSOP.create({
+              data: {
+                detailSopId: newDetailId,
+                jenis: cfg.jenis,
+                dariLangkahSopId: newFrom,
+                keLangkahSopId: newTo,
+                cabang: edge.cabang,
+                sSide: edge.sSide,
+                eSide: edge.eSide,
+                startX: edge.startX,
+                startY: edge.startY,
+                endX: edge.endX,
+                endY: edge.endY,
+              },
+            });
+            if (edge.titikTekuk.length > 0) {
+              await tx.titikTekukPanahDiagramSOP.createMany({
+                data: edge.titikTekuk.map((point) => ({
+                  detailSopId: newDetailId,
+                  jenis: cfg.jenis,
+                  dariLangkahSopId: newFrom,
+                  keLangkahSopId: newTo,
+                  cabang: edge.cabang,
+                  urutan: point.urutan,
+                  x: point.x,
+                  y: point.y,
+                })),
+              });
+            }
+          }
+          if (cfg.overrideLabel.length > 0) {
+            await tx.overrideLabelDiagramSOP.createMany({
+              data: cfg.overrideLabel.map((label) => ({
+                detailSopId: newDetailId,
+                jenis: cfg.jenis,
+                kunciLabel: label.kunciLabel,
+                posisiX: label.posisiX,
+                posisiY: label.posisiY,
+              })),
+            });
+          }
         }
       }
       return { detailSopId: newDetailId, versi: versiBaru };

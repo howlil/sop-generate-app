@@ -1453,7 +1453,7 @@ export class SeedService {
       penyusunDiskominfoId: string;
     },
   ): Promise<void> {
-    const { d, evaluator1Id, evaluator2Id, penyusunDinkesId, pjPenyusunDinkesId, penyusunDiskominfoId } = params;
+    const { d, evaluator1Id, penyusunDinkesId, pjPenyusunDinkesId, penyusunDiskominfoId } = params;
     const targetIds = [
       d['DINKES_001_V1'].detailSopId,
       d['DINKES_001_V2'].detailSopId,

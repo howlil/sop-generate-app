@@ -138,8 +138,6 @@ export interface UseDetailSopPenyusunDataResult {
   implementers: SopEditorImplementer[];
   setImplementers: React.Dispatch<React.SetStateAction<SopEditorImplementer[]>>;
   auditLogs: PenyusunWorkbenchLogEdit[];
-  diagramVersion: number;
-  setDiagramVersion: React.Dispatch<React.SetStateAction<number>>;
   activeTab: "flowchart" | "bpmn";
   setActiveTab: React.Dispatch<React.SetStateAction<"flowchart" | "bpmn">>;
   isEditingSteps: boolean;
@@ -194,7 +192,6 @@ export function useDetailSopPenyusunData(
   const [metadata, setMetadata] = useState<SOPDetailMetadata>({});
   const [prosedurRows, setProsedurRows] = useState<ProsedurRow[]>([]);
   const [implementers, setImplementers] = useState<SopEditorImplementer[]>([]);
-  const [diagramVersion, setDiagramVersion] = useState(0);
   const [activeTab, setActiveTab] = useState<"flowchart" | "bpmn">("flowchart");
   const [isEditingSteps, setIsEditingSteps] = useState(false);
   const [isEditPanelCollapsed, setIsEditPanelCollapsed] = useState(false);
@@ -235,6 +232,11 @@ export function useDetailSopPenyusunData(
     enabled: Boolean(sopDetailId) && Boolean(sopDetail) && canEditDetail,
   });
 
+  const resetHeaderBaselineRef = useRef(headerAutosave.resetBaseline)
+  resetHeaderBaselineRef.current = headerAutosave.resetBaseline
+  const resetProsedurBaselineRef = useRef(prosedurAutosave.resetBaseline)
+  resetProsedurBaselineRef.current = prosedurAutosave.resetBaseline
+
   useEffect(() => {
     if (!sopDetail) {
       return;
@@ -247,7 +249,7 @@ export function useDetailSopPenyusunData(
     lastSyncedDetailIdRef.current = sopDetail.id;
     const nextMetadata = transformSopDetailToMetadata(sopDetail);
     setMetadata(nextMetadata);
-    headerAutosave.resetBaseline(buildSopHeaderSnapshot(nextMetadata));
+    resetHeaderBaselineRef.current(buildSopHeaderSnapshot(nextMetadata));
     let nextRows: ProsedurRow[] = [];
     if (langkahList.length > 0) {
       nextRows = [...langkahList]
@@ -278,8 +280,8 @@ export function useDetailSopPenyusunData(
     }
     setProsedurRows(nextRows);
     setImplementers(nextImplementers);
-    prosedurAutosave.resetBaseline(buildSopProsedurSnapshot(nextImplementers, nextRows));
-  }, [sopDetail, langkahList, pelaksanaList, headerAutosave, prosedurAutosave]);
+    resetProsedurBaselineRef.current(buildSopProsedurSnapshot(nextImplementers, nextRows));
+  }, [sopDetail, langkahList, pelaksanaList]);
 
   const masterPelaksanaOptions = useMemo(
     () =>
@@ -321,8 +323,6 @@ export function useDetailSopPenyusunData(
     implementers,
     setImplementers,
     auditLogs,
-    diagramVersion,
-    setDiagramVersion,
     activeTab,
     setActiveTab,
     isEditingSteps,
@@ -360,8 +360,6 @@ export interface UseDetailSopPenyusunReturn {
   implementers: SopEditorImplementer[];
   setImplementers: React.Dispatch<React.SetStateAction<SopEditorImplementer[]>>;
   auditLogs: PenyusunWorkbenchLogEdit[];
-  diagramVersion: number;
-  setDiagramVersion: React.Dispatch<React.SetStateAction<number>>;
   activeTab: "flowchart" | "bpmn";
   setActiveTab: React.Dispatch<React.SetStateAction<"flowchart" | "bpmn">>;
   isEditingSteps: boolean;
@@ -444,8 +442,6 @@ export function useDetailSopPenyusun(
     implementers: data.implementers,
     setImplementers: data.setImplementers,
     auditLogs: data.auditLogs,
-    diagramVersion: data.diagramVersion,
-    setDiagramVersion: data.setDiagramVersion,
     activeTab: data.activeTab,
     setActiveTab: data.setActiveTab,
     isEditingSteps: data.isEditingSteps,

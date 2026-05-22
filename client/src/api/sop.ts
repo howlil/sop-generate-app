@@ -16,6 +16,7 @@ export {
   useHapusVersiDraft,
   useUpdateSopHeader,
   useUpdateSopProsedur,
+  useUpdateSopDiagram,
 } from "@/api/sop-mutations";
 export {
   useDetailSopPenyusunActions,

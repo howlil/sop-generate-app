@@ -13,6 +13,7 @@ import { useCabutSop, usePenyusunWorkbench, useSop } from "@/api/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
+import { useSopPreviewDiagramState } from "@/hooks/use-sop-preview-diagram-state";
 import {
   canShowCabutSopAction,
   getCabutSopBlockingReason,
@@ -55,6 +56,17 @@ export function DetailSOP(props: DetailSOPProps = {}) {
   const previewProps = useMemo(
     () => (workbench ? mapPenyusunWorkbenchToPreviewProps(workbench) : null),
     [workbench],
+  );
+
+  const diagramRenderState = useSopPreviewDiagramState(
+    previewProps
+      ? {
+          diagramKonfigurasi: previewProps.diagramKonfigurasi,
+          prosedurRows: previewProps.prosedurRows,
+          implementers: previewProps.implementers,
+        }
+      : null,
+    activeTab,
   );
 
   const sopStatus: StatusSOP =
@@ -149,6 +161,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
               diagramState={{
                 activeTab,
                 onActiveTabChange: setActiveTab,
+                ...diagramRenderState,
               }}
             />
             </div>

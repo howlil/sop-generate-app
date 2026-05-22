@@ -97,7 +97,7 @@ export class OpdController {
   @Delete(':id')
   @Roles(PeranPengguna.PJ_EVALUATOR)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Nonaktifkan OPD — soft delete (Biro Organisasi)' })
+  @ApiOperation({ summary: 'Nonaktifkan OPD (Biro Organisasi)' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, description: 'Berhasil dinonaktifkan' })
   @ApiResponse({ status: 409, description: 'Konflik data terkait' })

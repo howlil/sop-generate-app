@@ -10,10 +10,16 @@ import {
   type BpmnConnectionMeta,
   type BpmnLaneLayout,
   type BpmnRouteCandidate,
+  type BpmnRouteOptions,
   type UsedSides,
   type Side,
   type OccupiedSegment,
 } from '../core/route/bpmnRouter'
+import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
+import { pathToD as pathToDUtil, simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
+import type { DiagramPathAnchor } from '../edit/anchor-snap.util'
+import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
+import type { Rect } from '../core/route/orthogonalRouter'
 
 /* ───────────────────────── Public types ─────────────────────────── */
 
@@ -48,6 +54,10 @@ interface BpmnArrowConnectorProps {
   manualConfig?: ArrowConnectionConfig | null
   manualLabelPosition?: { x: number; y: number } | null
   onPathUpdated?: (payload: PathUpdatedPayload) => void
+  onManualChange?: (payload: PathUpdatedPayload) => void
+  editMode?: boolean
+  isSelected?: boolean
+  onSelect?: (connectionId: string) => void
   constraintRect?: { left: number; top: number; right: number; bottom: number } | null
   routedSegmentsRef?: RoutedPathsRef
   rerouteVersion?: number
@@ -60,6 +70,48 @@ interface BpmnArrowConnectorProps {
 type ElemPos = {
   left: number; top: number; width: number; height: number
   right: number; bottom: number
+}
+
+function sidePointOfRect(pos: ElemPos, side: Side): { x: number; y: number } {
+  switch (side) {
+    case 'top':
+      return { x: Math.round(pos.left + pos.width / 2), y: pos.top }
+    case 'bottom':
+      return { x: Math.round(pos.left + pos.width / 2), y: pos.bottom }
+    case 'left':
+      return { x: pos.left, y: Math.round(pos.top + pos.height / 2) }
+    case 'right':
+      return { x: pos.right, y: Math.round(pos.top + pos.height / 2) }
+  }
+}
+
+function buildConnectorAnchors(
+  connectionId: string,
+  fromPos: ElemPos,
+  toPos: ElemPos,
+): DiagramPathAnchor[] {
+  const sides: Side[] = ['top', 'right', 'bottom', 'left']
+  const startAnchors = sides.map((side) => {
+    const point = sidePointOfRect(fromPos, side)
+    return {
+      id: `${connectionId}-start-${side}`,
+      x: point.x,
+      y: point.y,
+      side,
+      kind: 'start' as const,
+    }
+  })
+  const endAnchors = sides.map((side) => {
+    const point = sidePointOfRect(toPos, side)
+    return {
+      id: `${connectionId}-end-${side}`,
+      x: point.x,
+      y: point.y,
+      side,
+      kind: 'end' as const,
+    }
+  })
+  return [...startAnchors, ...endAnchors]
 }
 
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
@@ -160,7 +212,7 @@ function snapToOrthogonal(points: { x: number; y: number }[]): { x: number; y: n
     }
   }
 
-  return out
+  return simplifyOrthogonalPath(out)
 }
 
 function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boolean {
@@ -208,7 +260,7 @@ function bpmnEdgePoint(
   }
 }
 
-function buildSideAnchoredFallbackPath(
+export function buildSideAnchoredFallbackPath(
   fromShape: ShapeRect,
   toShape: ShapeRect,
   sSide: Side,
@@ -222,6 +274,44 @@ function buildSideAnchoredFallbackPath(
     return [start, { x: end.x, y: start.y }, end]
   }
   return [start, { x: start.x, y: end.y }, end]
+}
+
+function ensureRenderableFallbackPath(
+  fromShape: ShapeRect,
+  toShape: ShapeRect,
+  candidate: BpmnRouteCandidate,
+  connection: BpmnConnectionMeta,
+): { x: number; y: number }[] {
+  const orthogonal = snapToOrthogonal(
+    buildSideAnchoredFallbackPath(
+      fromShape,
+      toShape,
+      candidate.sSide,
+      candidate.eSide,
+      connection.sourceType === 'flowchart-decision',
+      connection.targetType === 'flowchart-decision',
+    ),
+  )
+  if (orthogonal.length >= 2) return orthogonal
+  const start = bpmnEdgePoint(
+    fromShape,
+    candidate.sSide,
+    0.5,
+    connection.sourceType === 'flowchart-decision',
+  )
+  const end = bpmnEdgePoint(
+    toShape,
+    candidate.eSide,
+    0.5,
+    connection.targetType === 'flowchart-decision',
+  )
+  if (start.x === end.x && start.y === end.y) {
+    return [
+      start,
+      { x: end.x, y: end.y + 1 },
+    ]
+  }
+  return [start, end]
 }
 
 /* ───────────────────────── Constants ─────────────────────────── */
@@ -243,6 +333,10 @@ export function BpmnArrowConnector({
   manualConfig,
   manualLabelPosition,
   onPathUpdated,
+  onManualChange,
+  editMode = false,
+  isSelected = false,
+  onSelect,
   constraintRect = null,
   routedSegmentsRef,
   rerouteVersion = 0,
@@ -250,6 +344,18 @@ export function BpmnArrowConnector({
 }: BpmnArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
+  const [resolvedSides, setResolvedSides] = useState<[Side, Side]>(['bottom', 'top'])
+  const [resolvedPath, setResolvedPath] = useState<ArrowPathPoint[]>([])
+  const [editableAnchors, setEditableAnchors] = useState<DiagramPathAnchor[]>([])
+  const routingGuardRef = useRef<{
+    obsRects: Rect[]
+    routingObstacles: Rect[]
+    fromShape: Rect
+    toShape: Rect
+    globalBounds: Rect
+    hasDomLayout: boolean
+    bpmnRepairBase: BpmnRouteOptions | null
+  } | null>(null)
   const emittedRef = useRef(false)
   const lastAutoSigRef = useRef<string | null>(null)
 
@@ -261,6 +367,10 @@ export function BpmnArrowConnector({
   obstaclesRef.current = obstacles
   const onPathUpdatedRef = useRef(onPathUpdated)
   onPathUpdatedRef.current = onPathUpdated
+  const onManualChangeRef = useRef(onManualChange)
+  onManualChangeRef.current = onManualChange
+  const onSelectRef = useRef(onSelect)
+  onSelectRef.current = onSelect
   const laneLayoutRef = useRef(laneLayout)
   laneLayoutRef.current = laneLayout
   const constraintRectRef = useRef(constraintRect)
@@ -274,13 +384,95 @@ export function BpmnArrowConnector({
     const capturedRoutedSegs = routedSegmentsRefRef.current
 
     const container = document.getElementById(idcontainer)
-    if (!container) { setPathData(''); setLabelPos(null); return }
+    if (!container) {
+      setPathData('')
+      setLabelPos(null)
+      setEditableAnchors([])
+      routingGuardRef.current = null
+      return
+    }
+    const fromPos = getElementPosition(connection.from, container)
+    const toPos = getElementPosition(connection.to, container)
+    if (!fromPos || !toPos) {
+      setPathData('')
+      setLabelPos(null)
+      setEditableAnchors([])
+      routingGuardRef.current = null
+      return
+    }
+    setEditableAnchors(buildConnectorAnchors(connection.id, fromPos, toPos))
+
+    const OBSTACLE_MARGIN = 10
+    const curObstacles = obstaclesRef.current
+    let obsRects: Rect[]
+    const precomputed = obstacleRectsRef?.current
+    if (precomputed != null && precomputed.length > 0) {
+      obsRects = precomputed
+    } else {
+      obsRects = curObstacles
+        .map(o => o.id)
+        .map(id => getElementPosition(id, container))
+        .filter((r): r is ElemPos => r != null)
+        .map(r => ({
+          left: r.left - OBSTACLE_MARGIN,
+          top: r.top - OBSTACLE_MARGIN,
+          width: r.width + OBSTACLE_MARGIN * 2,
+          height: r.height + OBSTACLE_MARGIN * 2,
+        }))
+    }
+    const curConstraint = constraintRectRef.current
+    const globalBounds = curConstraint
+      ? {
+          left: Math.round(curConstraint.left),
+          top: Math.round(curConstraint.top),
+          width: Math.round(curConstraint.right - curConstraint.left),
+          height: Math.round(curConstraint.bottom - curConstraint.top),
+        }
+      : { left: 0, top: 0, width: container.scrollWidth, height: container.scrollHeight }
+    const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
+    const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
+    const routingObstacles = filterRoutingObstacles(obsRects, fromShape, toShape)
+    const curLayout = laneLayoutRef.current
+    const domLayout =
+      curLayout?.lanes != null && curLayout.lanes.length > 0
+        ? translateBpmnLaneLayoutToDom(curLayout)
+        : null
+    routingGuardRef.current = {
+      obsRects,
+      routingObstacles,
+      fromShape,
+      toShape,
+      globalBounds,
+      hasDomLayout: domLayout != null,
+      bpmnRepairBase: domLayout
+        ? {
+            fromShape,
+            toShape,
+            fromSide: 'bottom',
+            toSide: 'top',
+            fromDistance: 0.5,
+            toDistance: 0.5,
+            fromIsDiamond: connection.sourceType === 'flowchart-decision',
+            toIsDiamond: connection.targetType === 'flowchart-decision',
+            layout: domLayout,
+            fromLane: connection.fromLane,
+            toLane: connection.toLane,
+            fromCol: connection.fromCol,
+            toCol: connection.toCol,
+            obstacles: routingObstacles,
+            occupiedSegments: [],
+            globalBounds,
+          }
+        : null,
+    }
 
     /* ── Manual path ─────────────────────────────────────── */
     if (isValidManualConfig(manualConfig) && manualConfig!.startPoint && manualConfig!.endPoint) {
       const { startPoint, endPoint, bendPoints = [] } = manualConfig!
       const snapped = snapToOrthogonal([startPoint, ...bendPoints, endPoint])
       setPathData(pathToD(snapped))
+      setResolvedPath(snapped.map((p) => ({ ...p })))
+      setResolvedSides([manualConfig!.sSide, manualConfig!.eSide])
 
       const lp = connection.label
         ? manualLabelPosition ?? getFixedDistancePoint(startPoint, bendPoints[0] ?? endPoint, 30, 19)
@@ -303,50 +495,13 @@ export function BpmnArrowConnector({
 
     emittedRef.current = false
 
+    if (editMode && isValidManualConfig(manualConfig)) {
+      return () => {
+        capturedRoutedSegs?.current.delete(connection.id)
+      }
+    }
+
     /* ── Auto-routing (BPMN lane-aware) ──────────────────── */
-    const fromPos = getElementPosition(connection.from, container)
-    const toPos = getElementPosition(connection.to, container)
-    if (!fromPos || !toPos) {
-      setPathData('')
-      setLabelPos(null)
-      return
-    }
-
-    // Aturan BPMN: path tidak boleh berada di dalam shape (termasuk shape sumber/target).
-    // Semua shape dipakai sebagai obstacle; segmen pertama diabaikan vs from, segmen terakhir vs to.
-    const OBSTACLE_MARGIN = 10
-    const curObstacles = obstaclesRef.current
-    let obsRects: Array<{ left: number; top: number; width: number; height: number }>
-    const precomputed = obstacleRectsRef?.current
-    if (precomputed != null && precomputed.length > 0) {
-      obsRects = precomputed
-    } else {
-      obsRects = curObstacles
-        .map(o => o.id)
-        .map(id => getElementPosition(id, container))
-        .filter((r): r is ElemPos => r != null)
-        .map(r => ({
-          left: r.left - OBSTACLE_MARGIN,
-          top: r.top - OBSTACLE_MARGIN,
-          width: r.width + OBSTACLE_MARGIN * 2,
-          height: r.height + OBSTACLE_MARGIN * 2,
-        }))
-    }
-
-    const curConstraint = constraintRectRef.current
-    const globalBounds = curConstraint
-      ? {
-          left: Math.round(curConstraint.left),
-          top: Math.round(curConstraint.top),
-          width: Math.round(curConstraint.right - curConstraint.left),
-          height: Math.round(curConstraint.bottom - curConstraint.top),
-        }
-      : { left: 0, top: 0, width: container.scrollWidth, height: container.scrollHeight }
-
-    const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
-    const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
-    const routingObstacles = filterRoutingObstacles(obsRects, fromShape, toShape)
-
     const sidePairs = selectBpmnSidePairs(
       connection,
       fromShape,
@@ -362,7 +517,6 @@ export function BpmnArrowConnector({
       }
     }
 
-    const curLayout = laneLayoutRef.current
     const allMeta = allConnectionsMeta
 
     const anchorSlots = [0.5, 0.28, 0.72, 0.18, 0.82, 0.4, 0.6]
@@ -379,11 +533,6 @@ export function BpmnArrowConnector({
         m.id !== connection.id &&
         (m.from === shapeId || m.to === shapeId)
       ).length
-
-    const hasValidLayout = curLayout?.lanes != null && curLayout.lanes.length > 0
-    const domLayout = hasValidLayout && curLayout
-      ? translateBpmnLaneLayoutToDom(curLayout)
-      : null
 
     let bestPath: { x: number; y: number }[] | null = null
     let bestCandidate: BpmnRouteCandidate | null = null
@@ -443,46 +592,36 @@ export function BpmnArrowConnector({
 
     if (!domLayout) {
       const fc = pickFallbackCandidate()
-      bestPath = buildSideAnchoredFallbackPath(
-        fromShape,
-        toShape,
-        fc.sSide,
-        fc.eSide,
-        connection.sourceType === 'flowchart-decision',
-        connection.targetType === 'flowchart-decision',
-      )
+      bestPath = ensureRenderableFallbackPath(fromShape, toShape, fc, connection)
       bestCandidate = fc
     }
 
     if (!bestPath || !bestCandidate) {
       const fc = pickFallbackCandidate()
-      bestPath = buildSideAnchoredFallbackPath(
-        fromShape,
-        toShape,
-        fc.sSide,
-        fc.eSide,
-        connection.sourceType === 'flowchart-decision',
-        connection.targetType === 'flowchart-decision',
-      )
+      bestPath = ensureRenderableFallbackPath(fromShape, toShape, fc, connection)
       bestCandidate = fc
     }
 
     const finalPath = snapToOrthogonal(bestPath)
     if (finalPath.length < 2) {
-      setPathData('')
-      setLabelPos(null)
-      return
+      const emergencyPath = ensureRenderableFallbackPath(fromShape, toShape, pickFallbackCandidate(), connection)
+      bestPath = emergencyPath
+      bestCandidate = pickFallbackCandidate()
     }
+    const resolvedPathFinal = snapToOrthogonal(bestPath)
+    if (resolvedPathFinal.length < 2) return
 
     if (capturedRoutedSegs) {
-      capturedRoutedSegs.current.set(connection.id, bpmnPathToSegments(finalPath))
+      capturedRoutedSegs.current.set(connection.id, bpmnPathToSegments(resolvedPathFinal))
     }
 
-    setPathData(pathToD(finalPath))
+    setPathData(pathToD(resolvedPathFinal))
+    setResolvedPath(resolvedPathFinal.map((p) => ({ ...p })))
+    setResolvedSides([bestCandidate.sSide, bestCandidate.eSide])
 
     let lp: { x: number; y: number } | null = null
-    if (connection.label && finalPath.length >= 2) {
-      lp = manualLabelPosition ?? getFixedDistancePoint(finalPath[0], finalPath[1], 30, 19)
+    if (connection.label && resolvedPathFinal.length >= 2) {
+      lp = manualLabelPosition ?? getFixedDistancePoint(resolvedPathFinal[0], resolvedPathFinal[1], 30, 19)
     }
     setLabelPos(lp)
 
@@ -490,13 +629,13 @@ export function BpmnArrowConnector({
     const payload: PathUpdatedPayload = {
       connectionId: connection.id, from: connection.from, to: connection.to,
       sSide, eSide,
-      startPoint: { ...finalPath[0] },
-      endPoint: { ...finalPath[finalPath.length - 1] },
-      bendPoints: finalPath.slice(1, -1).map(p => ({ ...p })),
+      startPoint: { ...resolvedPathFinal[0] },
+      endPoint: { ...resolvedPathFinal[resolvedPathFinal.length - 1] },
+      bendPoints: resolvedPathFinal.slice(1, -1).map(p => ({ ...p })),
       label: connection.label ?? undefined,
       labelPosition: lp ?? undefined,
     }
-    const pathSig = finalPath.map(p => `${p.x|0},${p.y|0}`).join(';')
+    const pathSig = resolvedPathFinal.map(p => `${p.x|0},${p.y|0}`).join(';')
     const sig = `${connection.id}:${sSide}:${eSide}:${pathSig}`
     if (onPathUpdatedRef.current && lastAutoSigRef.current !== sig) {
       lastAutoSigRef.current = sig
@@ -515,31 +654,136 @@ export function BpmnArrowConnector({
     connection.label, connection.sourceType, connection.targetType,
     connection.fromLane, connection.toLane, connection.fromCol, connection.toCol,
     connectionIndex, allConnectionsMeta,
-    manualConfig, manualLabelPosition, rerouteVersion,
+    manualConfig, manualLabelPosition, rerouteVersion, editMode,
   ])
 
   if (!pathData) return null
   const effectiveLabelPos = manualLabelPosition ?? labelPos
+  const markerId = `arrowhead-bpmn-${idarrow}`
+
+  if (editMode && isSelected && resolvedPath.length >= 2) {
+    const guardCtx = routingGuardRef.current
+    const shapeGuard: PathShapeGuardConfig | null =
+      guardCtx && guardCtx.bpmnRepairBase
+        ? {
+            check: {
+              kind: 'bpmn',
+              path: resolvedPath,
+              obstacles: guardCtx.obsRects,
+              fromShape: guardCtx.fromShape,
+              toShape: guardCtx.toShape,
+            },
+            repair: {
+              kind: 'bpmn',
+              startPoint: { ...resolvedPath[0]! },
+              endPoint: { ...resolvedPath[resolvedPath.length - 1]! },
+              sSide: resolvedSides[0],
+              eSide: resolvedSides[1],
+              fromShape: guardCtx.fromShape,
+              toShape: guardCtx.toShape,
+              obstacles: guardCtx.obsRects,
+              bpmn: {
+                ...guardCtx.bpmnRepairBase,
+                fromSide: resolvedSides[0],
+                toSide: resolvedSides[1],
+              },
+            },
+          }
+        : null
+    return (
+      <g>
+        <defs>
+          <marker id={markerId} markerWidth="10" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="black" />
+          </marker>
+        </defs>
+        <EditableOrthogonalPath
+          path={resolvedPath}
+          sSide={resolvedSides[0]}
+          eSide={resolvedSides[1]}
+          anchors={editableAnchors}
+          shapeGuard={shapeGuard}
+          connectionId={connection.id}
+          isSelected={isSelected}
+          markerEndId={markerId}
+          strokeWidth={1.5}
+          onSelect={onSelectRef.current ?? (() => {})}
+          onChange={(payload) => {
+            const nextPath = [payload.startPoint, ...payload.bendPoints, payload.endPoint]
+            setResolvedPath(nextPath)
+            setResolvedSides([payload.sSide, payload.eSide])
+            setPathData(pathToDUtil(nextPath))
+            onManualChangeRef.current?.({
+              connectionId: connection.id,
+              from: connection.from,
+              to: connection.to,
+              ...payload,
+              label: connection.label ?? undefined,
+              labelPosition: effectiveLabelPos ?? undefined,
+            })
+          }}
+          onDeleteSelected={() => onManualChangeRef.current?.({
+            connectionId: connection.id,
+            from: connection.from,
+            to: connection.to,
+            sSide: resolvedSides[0],
+            eSide: resolvedSides[1],
+            startPoint: resolvedPath[0]!,
+            endPoint: resolvedPath[resolvedPath.length - 1]!,
+            bendPoints: [],
+            label: connection.label ?? undefined,
+          })}
+        />
+        {connection.label && effectiveLabelPos && (
+          <text
+            x={effectiveLabelPos.x} y={effectiveLabelPos.y}
+            textAnchor="middle" dominantBaseline="middle"
+            fontSize="11" fontFamily="Arial" fill="black"
+            style={{ pointerEvents: 'none' }}
+          >
+            {connection.label}
+          </text>
+        )}
+      </g>
+    )
+  }
 
   return (
     <g>
       <defs>
         <marker
-          id={`arrowhead-bpmn-${idarrow}`}
+          id={markerId}
           markerWidth="10" markerHeight="8" refX="7" refY="4" orient="auto"
         >
           <path d="M0,0 L8,4 L0,8 L2,4 Z" fill="black" />
         </marker>
       </defs>
       <path
-        d={pathData} fill="none" stroke="black" strokeWidth="1.5"
-        markerEnd={`url(#arrowhead-bpmn-${idarrow})`}
+        d={pathData}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={editMode ? 14 : 1.5}
+        style={editMode ? { pointerEvents: 'stroke', cursor: 'pointer' } : { pointerEvents: 'none' }}
+        onClick={
+          editMode
+            ? (e) => {
+                e.stopPropagation()
+                onSelectRef.current?.(connection.id)
+              }
+            : undefined
+        }
+      />
+      <path
+        d={pathData} fill="none" stroke="black" strokeWidth={1.5}
+        markerEnd={`url(#${markerId})`}
+        style={{ pointerEvents: 'none' }}
       />
       {connection.label && effectiveLabelPos && (
         <text
           x={effectiveLabelPos.x} y={effectiveLabelPos.y}
           textAnchor="middle" dominantBaseline="middle"
           fontSize="11" fontFamily="Arial" fill="black"
+          style={{ pointerEvents: 'none' }}
         >
           {connection.label}
         </text>

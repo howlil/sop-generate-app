@@ -9,7 +9,7 @@ export class PengajuanSopDokumenQueryDto extends PengajuanArsipQueryDto {
     default: 100,
     minimum: 1,
     maximum: 500,
-    description: 'Batas entri logEdit workbench (sejajar GET workbench penyusun)',
+    description: 'Batas entri logEdit area kerja (sejajar GET area kerja penyusun)',
   })
   @IsOptional()
   @Type(() => Number)

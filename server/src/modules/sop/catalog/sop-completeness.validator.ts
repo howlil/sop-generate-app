@@ -3,7 +3,7 @@ import { JenisLangkahProsedur } from '../../../generated/prisma';
 import type { SopWorkbenchDbPayload } from './sop-catalog.repository';
 
 /**
- * Mengumpulkan pesan validasi kelengkapan workbench untuk status Siap Dievaluasi.
+ * Mengumpulkan pesan validasi kelengkapan area kerja untuk status Siap Dievaluasi.
  * Tanggal revisi dan tanggal efektif tidak diwajibkan.
  */
 export function collectSopWorkbenchCompletenessIssues(row: SopWorkbenchDbPayload): string[] {
@@ -34,7 +34,7 @@ export function collectSopWorkbenchCompletenessIssues(row: SopWorkbenchDbPayload
   assertMinimalTeks(row.lampiranPeralatanPerlengkapan, 'Peralatan dan perlengkapan');
   assertMinimalTeks(row.lampiranPencatatanPendataan, 'Pencatatan dan pendataan');
   if (row.swimlanes.length === 0) {
-    pesan.push('Minimal satu kolom pelaksana (swimlane) wajib ada');
+    pesan.push('Minimal satu kolom pelaksana wajib ada');
   }
   if (row.langkahSOP.length === 0) {
     pesan.push('Minimal satu langkah prosedur wajib ada');

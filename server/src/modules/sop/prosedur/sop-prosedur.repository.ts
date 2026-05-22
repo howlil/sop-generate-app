@@ -31,8 +31,8 @@ export interface UpdateSopProsedurRepoInput {
   pelaksana?: RepoPelaksanaPatchItem[];
   langkah?: RepoLangkahPatchItem[];
   /**
-   * Pelaksana fallback untuk langkah yang tidak menyetel `pelaksanaId`. Service
-   * sudah memastikan minimal satu sumber tersedia (DTO baru atau swimlane existing).
+   * Pelaksana cadangan untuk langkah yang tidak menyetel `pelaksanaId`. Service
+   * sudah memastikan minimal satu sumber tersedia (DTO baru atau jalur pelaksana yang ada).
    */
   defaultPelaksanaId?: string | null;
 }
@@ -105,9 +105,9 @@ export class SopProsedurRepository {
   }
 
   /**
-   * `pelaksanaId` swimlane existing pada DetailSOP. Dipakai bila `dto.pelaksana`
+   * `pelaksanaId` jalur pelaksana yang ada pada DetailSOP. Dipakai bila `dto.pelaksana`
    * tidak dikirim namun `dto.langkah[].pelaksanaId` perlu divalidasi terhadap
-   * swimlane yang berlaku saat ini.
+   * jalur pelaksana yang berlaku saat ini.
    */
   async findExistingSwimlanePelaksanaIds(detailSopId: string): Promise<string[]> {
     const rows = await this.prisma.detailSOPPelaksana.findMany({
@@ -119,7 +119,7 @@ export class SopProsedurRepository {
   }
 
   /**
-   * Replace-all swimlane + langkah dalam satu transaksi. Operasi disusun agar
+   * Ganti semua jalur pelaksana + langkah dalam satu transaksi. Operasi disusun agar
    * aman terhadap FK self-relasi cabang pada `LangkahSOP`.
    */
   async updateProsedurTransaction(params: {
@@ -130,13 +130,13 @@ export class SopProsedurRepository {
   }): Promise<void> {
     const { detailSopId, userId, input, changedFields } = params;
     await this.prisma.$transaction(async (tx) => {
-      // A. Replace pelaksana (swimlane) bila dikirim
+      // A. Ganti pelaksana (jalur pelaksana) bila dikirim
       if (input.pelaksana !== undefined) {
         await tx.detailSOPPelaksana.deleteMany({ where: { detailSopId } });
         const items = input.pelaksana;
         if (items.length > 0) {
           /* `createMany` aman karena PK komposit (detailSopId, pelaksanaId);
-             duplikat di payload disaring di level service. */
+             duplikat di muatan data disaring di level service. */
           await tx.detailSOPPelaksana.createMany({
             data: items.map((p, i) => ({
               detailSopId,
@@ -175,7 +175,7 @@ export class SopProsedurRepository {
    *   2. Set `langkahSelanjutnyaYaId/TidakId = null` untuk hindari FK restrict
    *      saat delete (self-relasi default Prisma `Restrict`).
    *   3. `deleteMany` langkah existing.
-   *   4. Buat ulang langkah dari payload (urutan = posisi index, langkah1..N).
+   *   4. Buat ulang langkah dari muatan data (urutan = posisi index, langkah1..N).
    *   5. Update relasi cabang dengan resolusi `tempId -> uuid` baru.
    */
   private async replaceLangkahInTx(
@@ -214,7 +214,7 @@ export class SopProsedurRepository {
       if (pelaksanaId === null) {
         /* Service sudah memvalidasi; pengaman runtime saja. */
         throw new Error(
-          'pelaksanaId tidak dapat diresolusi untuk langkah; pastikan swimlane atau pelaksanaId di-set',
+          'pelaksanaId tidak dapat diresolusi untuk langkah; pastikan jalur pelaksana atau pelaksanaId di-set',
         );
       }
       await tx.langkahSOP.create({

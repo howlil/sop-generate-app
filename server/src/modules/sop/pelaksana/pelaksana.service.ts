@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -74,7 +73,7 @@ export class PelaksanaService {
     const swim = await this.pelaksanaRepository.countSwimlaneReferences(id);
     if (langkah > 0 || swim > 0) {
       throw new ConflictException(
-        'Pelaksana masih direferensikan pada langkah atau swimlane SOP',
+        'Pelaksana masih direferensikan pada langkah atau jalur pelaksana SOP',
       );
     }
     await this.pelaksanaRepository.delete(id);

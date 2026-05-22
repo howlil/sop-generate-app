@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../common';
 import { RegisterTteDto } from './dto/register-tte.dto';
+import { SignPdfDto } from './dto/sign-pdf.dto';
 import { TandaTanganiDto } from './dto/tanda-tangani.dto';
 import { UpdateTtePinDto } from './dto/update-tte-pin.dto';
+import { TtePdfSigningService, type SignPdfResponse } from './tte-pdf-signing.service';
 import { TtePenandatangananService } from './tte-penandatanganan.service';
 import { TteProfilService } from './tte-profil.service';
 import { TteVerifikasiService } from './tte-verifikasi.service';
+
+export type { SignPdfResponse } from './tte-pdf-signing.service';
 
 /** Respons profil TTE untuk klien — PIN disimpan di baris `Pengguna`. */
 export type TteProfilResponse = {
@@ -79,6 +83,7 @@ export class TteService {
     private readonly profilService: TteProfilService,
     private readonly penandatangananService: TtePenandatangananService,
     private readonly verifikasiService: TteVerifikasiService,
+    private readonly pdfSigningService: TtePdfSigningService,
   ) {}
 
   getProfil(user: JwtAccessPayload): Promise<TteProfilResponse | null> {
@@ -101,10 +106,7 @@ export class TteService {
     return this.profilService.konfirmasiEmail(token);
   }
 
-  getPengesahanPublic(
-    dokumenTteId: string,
-    userId: string,
-  ): Promise<TtePengesahanPublicResponse> {
+  getPengesahanPublic(dokumenTteId: string, userId: string): Promise<TtePengesahanPublicResponse> {
     return this.verifikasiService.getPengesahanPublic(dokumenTteId, userId);
   }
 
@@ -121,6 +123,14 @@ export class TteService {
     pengajuanEvaluasiId: string,
     dto: TandaTanganiDto,
   ): Promise<TteBatchSignSopPengajuanResponse> {
-    return this.penandatangananService.tandaTanganiSemuaSopPengajuan(user, pengajuanEvaluasiId, dto);
+    return this.penandatangananService.tandaTanganiSemuaSopPengajuan(
+      user,
+      pengajuanEvaluasiId,
+      dto,
+    );
+  }
+
+  signPdf(user: JwtAccessPayload, dto: SignPdfDto): Promise<SignPdfResponse> {
+    return this.pdfSigningService.signPdf(user, dto);
   }
 }

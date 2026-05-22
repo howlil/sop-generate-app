@@ -1,16 +1,22 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { evaluasiApi } from '@/api/evaluasi'
+import type { BeritaAcaraTemplateProps } from '@/components/pengajuan/berita-acara-template'
 import { queryKeys } from '@/config/query-keys'
 import { useToast } from '@/hooks/useToast'
+import { downloadBeritaAcaraPdf } from '@/lib/print/download-berita-acara-pdf'
 import { schedulePengajuanPrint, type PengajuanPrintTarget } from '@/lib/print/pengajuan-print'
+import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
+import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
+import { useAuthStore } from '@/stores/authStore'
+import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 
 const WORKBENCH_LOGS_LIMIT = 100
 
 interface UsePengajuanCetakArsipParams {
   pengajuanId: string
   effectiveSopDetailId: string | null
-  semuaSopReady: boolean
+  baTemplateProps: BeritaAcaraTemplateProps | null
 }
 
 function waitForPrintPaint(): Promise<void> {
@@ -21,20 +27,36 @@ function waitForPrintPaint(): Promise<void> {
   })
 }
 
-async function schedulePengajuanPrintAfterPaint(target: PengajuanPrintTarget): Promise<void> {
+async function scheduleSopPrintAfterPaint(
+  props: Parameters<typeof schedulePengajuanPrint>[1],
+): Promise<void> {
   await waitForPrintPaint()
-  schedulePengajuanPrint(target)
+  await schedulePengajuanPrint('sop', props)
+}
+
+function resolveCurrentUserBaSigningPayload(
+  props: BeritaAcaraTemplateProps | null,
+  userId: string | undefined,
+): TTESignaturePayload | null {
+  if (!props || !userId) {
+    return null
+  }
+  const candidates = [
+    props.tteSignaturePayloadPjEvaluator,
+    props.tteSignaturePayloadPjPenyusun,
+  ]
+  return candidates.find((payload) => payload?.userId === userId) ?? null
 }
 
 export function usePengajuanCetakArsip({
   pengajuanId,
   effectiveSopDetailId,
-  semuaSopReady,
+  baTemplateProps,
 }: UsePengajuanCetakArsipParams) {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
+  const currentUserId = useAuthStore((state) => state.user?.id)
   const [cetakLoading, setCetakLoading] = useState(false)
-  const [pendingSopAll, setPendingSopAll] = useState(false)
 
   const prefetchBeritaAcaraArsip = useCallback(async () => {
     const data = await evaluasiApi.findPengajuanBeritaAcara(pengajuanId, { arsip: true })
@@ -65,26 +87,28 @@ export function usePengajuanCetakArsip({
 
   const handleCetak = useCallback(
     async (target: PengajuanPrintTarget) => {
-      if (target === 'sop-all') {
-        if (!semuaSopReady) {
-          setPendingSopAll(true)
-          return
-        }
-        await schedulePengajuanPrintAfterPaint('sop-all')
-        return
-      }
       setCetakLoading(true)
       try {
         if (target === 'ba') {
           await prefetchBeritaAcaraArsip()
-          await schedulePengajuanPrintAfterPaint('ba')
+          if (baTemplateProps === null) {
+            showToast('Data Berita Acara belum siap untuk diunduh.', 'error')
+            return
+          }
+          await downloadBeritaAcaraPdf(baTemplateProps, {
+            signingPayload: resolveCurrentUserBaSigningPayload(baTemplateProps, currentUserId),
+          })
           return
         }
         if (effectiveSopDetailId === null) {
           return
         }
-        await prefetchSopDokumenArsip(effectiveSopDetailId)
-        await schedulePengajuanPrintAfterPaint('sop')
+        const sopDokumen = await prefetchSopDokumenArsip(effectiveSopDetailId)
+        await scheduleSopPrintAfterPaint({
+          ...mapPenyusunWorkbenchToPreviewProps(sopDokumen.workbench),
+          tteSignaturePayload:
+            parseTTESignaturePayload(sopDokumen.tteSignaturePayloadKepalaOpd) ?? null,
+        })
       } catch (err) {
         const message =
           err instanceof Error ? err.message : 'Gagal memuat dokumen untuk dicetak'
@@ -94,27 +118,17 @@ export function usePengajuanCetakArsip({
       }
     },
     [
+      baTemplateProps,
+      currentUserId,
       effectiveSopDetailId,
       prefetchBeritaAcaraArsip,
       prefetchSopDokumenArsip,
-      semuaSopReady,
       showToast,
     ],
   )
 
-  useEffect(() => {
-    if (!pendingSopAll || !semuaSopReady) {
-      return
-    }
-    setPendingSopAll(false)
-    void schedulePengajuanPrintAfterPaint('sop-all')
-  }, [pendingSopAll, semuaSopReady])
-
-  const semuaSopLoading = pendingSopAll && !semuaSopReady
-
   return {
     handleCetak,
     cetakLoading,
-    semuaSopLoading,
   }
 }

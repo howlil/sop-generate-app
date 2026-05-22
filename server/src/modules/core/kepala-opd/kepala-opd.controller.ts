@@ -92,7 +92,7 @@ export class KepalaOpdController {
 
   @Delete(':id')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Nonaktifkan Kepala OPD (soft delete; tolak jika masih ada SOP dibuat)' })
+  @ApiOperation({ summary: 'Nonaktifkan Kepala OPD (tolak jika masih ada SOP dibuat)' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200 })
   @ApiForbiddenResponse({ description: 'Bukan PJ_EVALUATOR' })

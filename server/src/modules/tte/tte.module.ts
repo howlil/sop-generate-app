@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TteController } from './tte.controller';
+import { TtePdfSigningService } from './tte-pdf-signing.service';
 import { TtePublicController } from './tte-public.controller';
 import { TtePenandatangananService } from './tte-penandatanganan.service';
 import { TteProfilService } from './tte-profil.service';
@@ -12,6 +13,7 @@ import { TteVerifikasiService } from './tte-verifikasi.service';
   providers: [
     TteService,
     TteProfilService,
+    TtePdfSigningService,
     TtePenandatangananService,
     TteVerifikasiService,
     TteRepository,

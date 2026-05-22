@@ -56,5 +56,5 @@ export class UpdateSopHeaderDto {
   @IsUUID('4', { each: true })
   readonly sopTerkaitDetailIds?: string[];
 
-  // Catatan: field legacy lampiran list diganti nested `lampiran`.
+  // Catatan: field kompatibilitas lama untuk daftar lampiran diganti nested `lampiran`.
 }

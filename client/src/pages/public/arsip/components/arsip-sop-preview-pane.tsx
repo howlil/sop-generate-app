@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SopStatusBadge } from '@/components/status/sop-status-badge'
 import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
+import { useSopPreviewDiagramState } from '@/hooks/use-sop-preview-diagram-state'
 import type { PenyusunWorkbenchData } from '@/types/dto/sop.dto'
 import { cn } from '@/utils/cn'
 import { SOPPreviewTemplate } from '@/components/sop/sop-preview-template'
@@ -34,9 +35,20 @@ export function ArsipSopPreviewPane({
       detail: data.detail,
       langkah: data.langkah,
       logEdit: [],
+      diagramKonfigurasi: data.diagramKonfigurasi,
     }
     return mapPenyusunWorkbenchToPreviewProps(workbench)
   }, [data])
+  const diagramRenderState = useSopPreviewDiagramState(
+    previewProps
+      ? {
+          diagramKonfigurasi: previewProps.diagramKonfigurasi,
+          prosedurRows: previewProps.prosedurRows,
+          implementers: previewProps.implementers,
+        }
+      : null,
+    activeTab,
+  )
   const shellClass = cn(
     'flex flex-col bg-white',
     variant === 'overlay' && 'fixed inset-0 z-40 pt-[env(safe-area-inset-top)]',
@@ -58,7 +70,11 @@ export function ArsipSopPreviewPane({
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={() => scheduleSopDocumentPrint()}
+            onClick={() => {
+              if (previewProps) {
+                void scheduleSopDocumentPrint(previewProps)
+              }
+            }}
             disabled={!previewProps}
           >
             <Printer className="h-4 w-4" aria-hidden />
@@ -96,6 +112,7 @@ export function ArsipSopPreviewPane({
               diagramState={{
                 activeTab,
                 onActiveTabChange: setActiveTab,
+                ...diagramRenderState,
               }}
             />
             </div>

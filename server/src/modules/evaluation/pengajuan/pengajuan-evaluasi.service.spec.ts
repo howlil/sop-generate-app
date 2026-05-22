@@ -1,4 +1,4 @@
-import { ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import {
   JenisPengajuanEvaluasi,
   PeranPengguna,
@@ -133,7 +133,7 @@ describe('PengajuanEvaluasiService', () => {
       detailSOP: {
         findFirst: jest
           .fn()
-          .mockResolvedValue({ detailSopId, status: StatusSOP.DIAJUKAN_EVALUASI }),
+          .mockResolvedValue({ detailSopId, status: StatusSOP.SIAP_DIEVALUASI }),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
     };
@@ -204,6 +204,64 @@ describe('PengajuanEvaluasiService', () => {
     expect(actual).toMatchObject({ id: pengajuanId, jenis: String(jenis), opdId });
   });
 
+  it('should_reject_create_when_detail_status_is_not_siap_dievaluasi', async () => {
+    const opdId = '00000000-0000-4000-8000-000000000001';
+    const detailSopId = '00000000-0000-4000-8000-000000000002';
+    const tx = {
+      pengajuanEvaluasi: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn(),
+      },
+      detailSOP: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ detailSopId, status: StatusSOP.SEDANG_DIEVALUASI }),
+        updateMany: jest.fn(),
+      },
+    };
+    const runTransaction = jest.fn(async (cb: (t: typeof tx) => Promise<string>) => cb(tx));
+    const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
+    const getRequiredUserOpdId = jest.fn().mockResolvedValue(opdId);
+    const service = buildService(repo, { getRequiredUserOpdId });
+
+    await expect(
+      service.create(userPjPenyusun, {
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        sopDetailIds: [detailSopId],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(tx.pengajuanEvaluasi.create).not.toHaveBeenCalled();
+    expect(tx.detailSOP.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('should_conflict_create_when_status_changes_before_promote', async () => {
+    const opdId = '00000000-0000-4000-8000-000000000001';
+    const detailSopId = '00000000-0000-4000-8000-000000000002';
+    const tx = {
+      pengajuanEvaluasi: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn().mockResolvedValue({ pengajuanEvaluasiId: 'p1' }),
+      },
+      detailSOP: {
+        findFirst: jest
+          .fn()
+          .mockResolvedValue({ detailSopId, status: StatusSOP.SIAP_DIEVALUASI }),
+        updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+      },
+    };
+    const runTransaction = jest.fn(async (cb: (t: typeof tx) => Promise<string>) => cb(tx));
+    const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
+    const getRequiredUserOpdId = jest.fn().mockResolvedValue(opdId);
+    const service = buildService(repo, { getRequiredUserOpdId });
+
+    await expect(
+      service.create(userPjPenyusun, {
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        sopDetailIds: [detailSopId],
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
   it('should_noop_pastikan_mandiri_when_bukan_evaluator', async () => {
     const runTransaction = jest.fn();
     const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
@@ -211,7 +269,7 @@ describe('PengajuanEvaluasiService', () => {
     await service.pastikanPengajuanMandiriUntukEvaluator(
       { sub: 'x', email: 'e', peran: PeranPengguna.PJ_EVALUATOR },
       '00000000-0000-4000-8000-000000000001',
-      [{ detailSopId: '00000000-0000-4000-8000-000000000002', statusDetail: StatusSOP.DIAJUKAN_EVALUASI }],
+      [{ detailSopId: '00000000-0000-4000-8000-000000000002', statusDetail: StatusSOP.SIAP_DIEVALUASI }],
     );
     expect(runTransaction).not.toHaveBeenCalled();
   });
@@ -224,6 +282,18 @@ describe('PengajuanEvaluasiService', () => {
       { sub: 'x', email: 'e', peran: PeranPengguna.EVALUATOR },
       '00000000-0000-4000-8000-000000000001',
       [{ detailSopId: '00000000-0000-4000-8000-000000000002', statusDetail: StatusSOP.SIAP_DIVERIFIKASI }],
+    );
+    expect(runTransaction).not.toHaveBeenCalled();
+  });
+
+  it('should_noop_pastikan_mandiri_when_status_sudah_diajukan_evaluasi', async () => {
+    const runTransaction = jest.fn();
+    const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
+    const service = buildService(repo);
+    await service.pastikanPengajuanMandiriUntukEvaluator(
+      { sub: 'x', email: 'e', peran: PeranPengguna.EVALUATOR },
+      '00000000-0000-4000-8000-000000000001',
+      [{ detailSopId: '00000000-0000-4000-8000-000000000002', statusDetail: StatusSOP.DIAJUKAN_EVALUASI }],
     );
     expect(runTransaction).not.toHaveBeenCalled();
   });
@@ -248,7 +318,7 @@ describe('PengajuanEvaluasiService', () => {
     await service.pastikanPengajuanMandiriUntukEvaluator(
       { sub: 'x', email: 'e', peran: PeranPengguna.EVALUATOR },
       '00000000-0000-4000-8000-000000000001',
-      [{ detailSopId, statusDetail: StatusSOP.DIAJUKAN_EVALUASI }],
+      [{ detailSopId, statusDetail: StatusSOP.SIAP_DIEVALUASI }],
     );
     expect(tx.pengajuanEvaluasi.create).not.toHaveBeenCalled();
     expect(tx.detailSOP.updateMany).not.toHaveBeenCalled();
@@ -272,7 +342,7 @@ describe('PengajuanEvaluasiService', () => {
     await service.pastikanPengajuanMandiriUntukEvaluator(
       { sub: 'x', email: 'e', peran: PeranPengguna.EVALUATOR },
       '00000000-0000-4000-8000-000000000001',
-      [{ detailSopId: '00000000-0000-4000-8000-000000000002', statusDetail: StatusSOP.DIAJUKAN_EVALUASI }],
+      [{ detailSopId: '00000000-0000-4000-8000-000000000002', statusDetail: StatusSOP.SIAP_DIEVALUASI }],
     );
     expect(tx.pengajuanEvaluasi.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -293,7 +363,7 @@ describe('PengajuanEvaluasiService', () => {
       detailSOP: {
         findFirst: jest
           .fn()
-          .mockResolvedValue({ detailSopId, status: StatusSOP.DIAJUKAN_EVALUASI }),
+          .mockResolvedValue({ detailSopId, status: StatusSOP.SIAP_DIEVALUASI }),
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
     };
@@ -305,7 +375,7 @@ describe('PengajuanEvaluasiService', () => {
     await service.pastikanPengajuanMandiriUntukEvaluator(
       { sub: 'x', email: 'e', peran: PeranPengguna.EVALUATOR },
       '00000000-0000-4000-8000-000000000001',
-      [{ detailSopId, statusDetail: StatusSOP.DIAJUKAN_EVALUASI }],
+      [{ detailSopId, statusDetail: StatusSOP.SIAP_DIEVALUASI }],
     );
     expect(tx.pengajuanEvaluasi.create).toHaveBeenCalledWith(
       expect.objectContaining({

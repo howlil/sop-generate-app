@@ -36,7 +36,7 @@ export class PengajuanEvaluasiController {
     description:
       'PJ Evaluator dan Evaluator melihat seluruh pengajuan (dapat difilter). PJ Penyusun dan Kepala OPD hanya melihat pengajuan untuk OPD-nya. Filter beberapa status pakai query `statusIn` (diulang per nilai atau koma); bila digunakan, lebih diutamakan daripada `status` tunggal.',
   })
-  @ApiResponse({ status: 200, description: 'Daftar payload pengajuan selaras kontrak front-end' })
+  @ApiResponse({ status: 200, description: 'Daftar muatan data pengajuan selaras kontrak klien' })
   @ApiForbiddenResponse({ description: 'Peran tidak diizinkan' })
   async findAll(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -108,7 +108,7 @@ export class PengajuanEvaluasiController {
   @ApiOperation({
     summary: 'Buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD',
     description:
-      'Hanya PJ Penyusun OPD. OPD diambil otomatis dari akun login. Body wajib `jenis`: TERJADWAL (pengajuan evaluasi terjadwal; evaluator wajib mengisi skor OPD 1-5 saat PATCH selesai) atau MANDIRI (tanpa penilaian OPD tingkat pengajuan). Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI bila memenuhi pipeline.',
+      'Hanya PJ Penyusun OPD. OPD diambil otomatis dari akun login. Body wajib `jenis`: TERJADWAL (pengajuan evaluasi terjadwal; evaluator wajib mengisi skor OPD 1-5 saat PATCH selesai) atau MANDIRI (tanpa penilaian OPD tingkat pengajuan). Hanya DetailSOP berstatus SIAP_DIEVALUASI yang dapat diajukan. Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI.',
   })
   @ApiResponse({ status: 201 })
   @ApiForbiddenResponse({ description: 'Bukan PJ Penyusun atau OPD tidak sesuai' })

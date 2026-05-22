@@ -55,6 +55,32 @@ export interface TTESignaturePayload {
   signedAt?: string;
 }
 
+export type JenisDokumenTte = "BERITA_ACARA_EVALUASI" | "SOP_BERLAKU";
+
+export interface SignPdfDto {
+  dokumenTteId: string;
+  userId: string;
+  jenisDokumen: JenisDokumenTte;
+  pdfBase64: string;
+}
+
+export interface PdfCertificateInfo {
+  subject: string;
+  issuer: string;
+  serialNumber: string;
+  fingerprint: string;
+  validFrom: string;
+  validTo: string;
+}
+
+export interface SignPdfResponse {
+  signed: boolean;
+  signedPdfBase64: string;
+  sha256SignedPdf: string;
+  signatureFormat: "PKCS7_DETACHED" | "UNSIGNED_DISABLED";
+  certificate: PdfCertificateInfo | null;
+}
+
 /** Respons GET publik verifikasi pengesahan (`/tte/public/pengesahan/:dokumenTteId/:userId`). */
 export interface TtePengesahanPublic {
   userId: string;

@@ -5,16 +5,16 @@ import { LangkahPatchItem } from './langkah-patch-item.dto';
 import { PelaksanaPatchItem } from './pelaksana-patch-item.dto';
 
 /**
- * Payload PATCH prosedur SOP — semua field opsional, autosave-friendly.
- * - `pelaksana` (jika diset) replace-all swimlane (DetailSOPPelaksana).
- * - `langkah` (jika diset) replace-all langkah prosedur (LangkahSOP) beserta
+ * Muatan data PATCH prosedur SOP — semua field opsional, ramah simpan otomatis.
+ * - `pelaksana` (jika diset) mengganti semua jalur pelaksana (DetailSOPPelaksana).
+ * - `langkah` (jika diset) mengganti semua langkah prosedur (LangkahSOP) beserta
  *   relasi cabang Ya/Tidak via `tempId` antar entri.
  */
 export class UpdateSopProsedurDto {
   @ApiPropertyOptional({
     type: [PelaksanaPatchItem],
     description:
-      'Daftar pelaksana di swimlane (replace-all). Urutan = posisi index di array.',
+      'Daftar pelaksana di jalur pelaksana (ganti semua). Urutan = posisi index di array.',
   })
   @IsOptional()
   @IsArray()
@@ -25,7 +25,7 @@ export class UpdateSopProsedurDto {
   @ApiPropertyOptional({
     type: [LangkahPatchItem],
     description:
-      'Daftar langkah prosedur (replace-all). Urutan = posisi index di array.',
+      'Daftar langkah prosedur (ganti semua). Urutan = posisi index di array.',
   })
   @IsOptional()
   @IsArray()

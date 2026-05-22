@@ -92,7 +92,7 @@ export class EvaluatorController {
 
   @Delete(':id')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({ summary: 'Nonaktifkan evaluator (soft delete)' })
+  @ApiOperation({ summary: 'Nonaktifkan evaluator' })
   @ApiParam({ name: 'id', format: 'uuid' })
   async remove(@Param('id', ParseUUIDPipe) id: string): Promise<ApiSuccessResponse<null>> {
     await this.evaluatorService.softDeleteAnggota(id);

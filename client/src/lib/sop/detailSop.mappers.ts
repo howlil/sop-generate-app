@@ -2,6 +2,7 @@ import type {
   JenisLangkahProsedur,
   LangkahSOP,
   PenyusunWorkbenchData,
+  PenyusunWorkbenchDiagramKonfigurasi,
   SopDetail,
 } from "@/types/dto/sop.dto";
 import type { ProsedurRow, SOPDetailMetadata } from "@/types/ui/sop";
@@ -121,6 +122,7 @@ export function mapPenyusunWorkbenchToPreviewProps(data: PenyusunWorkbenchData):
   implementers: { id: string; name: string }[];
   name?: string;
   number?: string;
+  diagramKonfigurasi?: PenyusunWorkbenchDiagramKonfigurasi;
 } {
   const detail = data.detail as SopDetail;
   const metadata = transformSopDetailToMetadata(detail);
@@ -138,5 +140,6 @@ export function mapPenyusunWorkbenchToPreviewProps(data: PenyusunWorkbenchData):
     metadata,
     prosedurRows,
     implementers,
+    diagramKonfigurasi: data.diagramKonfigurasi,
   };
 }

@@ -72,7 +72,10 @@ export class TteRepository {
     };
   }
 
-  async createKredensialPin(params: { userId: string; hashPin: string }): Promise<TteKredensialRow> {
+  async createKredensialPin(params: {
+    userId: string;
+    hashPin: string;
+  }): Promise<TteKredensialRow> {
     const sekarang = new Date();
     const row = await this.prisma.pengguna.update({
       where: { penggunaId: params.userId },
@@ -89,7 +92,10 @@ export class TteRepository {
     };
   }
 
-  async updateKredensialPinHash(params: { userId: string; hashPin: string }): Promise<TteKredensialRow> {
+  async updateKredensialPinHash(params: {
+    userId: string;
+    hashPin: string;
+  }): Promise<TteKredensialRow> {
     const row = await this.prisma.pengguna.update({
       where: { penggunaId: params.userId },
       data: { ttePinHash: params.hashPin },
@@ -129,6 +135,34 @@ export class TteRepository {
         },
         user: {
           select: { penggunaId: true, nama: true, nip: true, jabatan: true },
+        },
+      },
+    });
+  }
+
+  async findRiwayatForPdfSigning(userId: string, dokumenTteId: string) {
+    return this.prisma.riwayatTandaTangan.findUnique({
+      where: { userId_dokumenTteId: { userId, dokumenTteId } },
+      select: {
+        userId: true,
+        dokumenTteId: true,
+        peran: true,
+        ditandatanganiPada: true,
+        dokumenTte: {
+          select: {
+            dokumenTteId: true,
+            nomorDokumen: true,
+            judulDokumen: true,
+            jenisDokumen: true,
+          },
+        },
+        user: {
+          select: {
+            penggunaId: true,
+            nama: true,
+            nip: true,
+            jabatan: true,
+          },
         },
       },
     });

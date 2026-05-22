@@ -1,4 +1,4 @@
-/** Identifier stabil untuk payload JSON (bukan kolom DB). */
+/** Identifier stabil untuk muatan data JSON (bukan kolom DB). */
 export function buildNilaiEvaluasiClientId(
   pengajuanEvaluasiId: string,
   detailSopId: string,

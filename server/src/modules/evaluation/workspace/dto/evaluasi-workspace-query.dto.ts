@@ -13,7 +13,7 @@ export class EvaluasiWorkspaceQueryDto {
   readonly detailSopId?: string;
 
   @ApiPropertyOptional({
-    description: 'Gunakan `preview` untuk menyertakan payload workbench ringkas (butuh detailSopId)',
+    description: 'Gunakan `preview` untuk menyertakan muatan data area kerja ringkas (butuh detailSopId)',
     example: 'preview',
   })
   @IsOptional()

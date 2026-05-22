@@ -11,15 +11,7 @@ import { PengajuanStatusBadge } from '@/components/status/pengajuan-status-badge
 import { Button } from '@/components/ui/button'
 import { FileText, Eye, AlertCircle, RefreshCw } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
-
-function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return '—'
-  return new Date(dateStr).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
+import { formatDateIdFull } from '@/utils/format-date'
 
 export function BeritaAcaraKoordinatorPage() {
   const navigate = useNavigate()
@@ -103,7 +95,7 @@ export function BeritaAcaraKoordinatorPage() {
                 id: 'tanggal-evaluasi',
                 header: 'Tanggal Evaluasi',
                 render: (pengajuan) => (
-                  <PengajuanDateCell value={pengajuan.tanggalVerifikasi} formatter={formatDate} />
+                  <PengajuanDateCell value={pengajuan.tanggalVerifikasi} formatter={formatDateIdFull} />
                 ),
               },
               {

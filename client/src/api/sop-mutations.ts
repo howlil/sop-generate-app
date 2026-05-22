@@ -11,6 +11,7 @@ import type {
   UpdatePelaksanaMutationDto,
   UpdateSopHeaderDto,
   UpdateSopProsedurDto,
+  UpdateSopDiagramDto,
 } from "@/types/dto/sop.dto";
 /**
  * useSopStatus hook - TanStack Query
@@ -204,6 +205,19 @@ export function useUpdateSopProsedur(detailSopId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: UpdateSopProsedurDto) => sopApi.updateSopProsedur(detailSopId, payload),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.penyusunWorkbench(detailSopId), data);
+      if (data.detail.id !== detailSopId) {
+        queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+      }
+    },
+  });
+}
+
+export function useUpdateSopDiagram(detailSopId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: UpdateSopDiagramDto) => sopApi.updateSopDiagram(detailSopId, payload),
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.penyusunWorkbench(detailSopId), data);
       if (data.detail.id !== detailSopId) {

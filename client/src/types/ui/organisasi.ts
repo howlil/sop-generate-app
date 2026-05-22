@@ -35,7 +35,7 @@ export interface KepalaFormState {
   name: string;
   nip: string;
   email: string;
-  phone: string;
+  nohp: string;
   jabatan: string;
   pangkat: string;
   status: 'AKTIF' | 'NONAKTIF';

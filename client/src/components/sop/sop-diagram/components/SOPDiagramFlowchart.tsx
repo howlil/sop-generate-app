@@ -55,10 +55,14 @@ export interface SOPDiagramFlowchartProps {
     labelConfig?: LabelConfig
     /** Seed untuk urutan koneksi; nilai berbeda mencoba kemungkinan layout path lain */
     pathLayoutSeed?: number
+    editMode?: boolean
+    selectedConnectionId?: string | null
   }
   events?: {
     onPathUpdated?: (payload: PathUpdatedPayload) => void
-  }
+    onManualChange?: (payload: PathUpdatedPayload) => void
+  onSelectConnection?: (connectionId: string | null) => void
+}
 }
 
 /* ───────────────────────── Helpers ─────────────────────────── */
@@ -101,7 +105,11 @@ export function SOPDiagramFlowchart({
   const arrowConfig = flowchartConfig?.arrowConfig
   const labelConfig = flowchartConfig?.labelConfig
   const pathLayoutSeed = flowchartConfig?.pathLayoutSeed ?? 0
+  const editMode = flowchartConfig?.editMode ?? false
+  const selectedConnectionId = flowchartConfig?.selectedConnectionId ?? null
   const onPathUpdatedProp = events?.onPathUpdated
+  const onManualChangeProp = events?.onManualChange
+  const onSelectConnectionProp = events?.onSelectConnection
   const config = { ...DEFAULT_LAYOUT, ...layoutConfig }
   const sortedSteps = useMemo(() => [...steps].sort((a, b) => a.seq_number - b.seq_number), [steps])
   const MIN_PELAKSANA_COL_WIDTH = 10
@@ -375,7 +383,11 @@ export function SOPDiagramFlowchart({
             arrowsReady={arrowsReady}
             arrowConfig={arrowConfig}
             labelConfig={labelConfig}
+            editMode={editMode}
+            selectedConnectionId={selectedConnectionId}
             onPathUpdated={onPathUpdated}
+            onManualChange={onManualChangeProp}
+            onSelectConnection={onSelectConnectionProp}
             pelaksanaBounds={pelaksanaBoundsRef.current[pageIndex] ?? null}
             isLastPage={pageIndex === allPages.length - 1}
             routedSegmentsRef={routedSegmentsRef}
@@ -408,7 +420,12 @@ interface FlowchartPageProps {
   arrowsReady: boolean
   arrowConfig?: ArrowConfig
   labelConfig?: LabelConfig
+  editMode?: boolean
+  selectedConnectionId?: string | null
   onPathUpdated: (payload: PathUpdatedPayload) => void
+  onManualChange?: (payload: PathUpdatedPayload) => void
+  onSelectConnection?: (connectionId: string | null) => void
+  onResetSelectedPath?: () => void
   pelaksanaBounds: { left: number; top: number; right: number; bottom: number } | null
   isLastPage: boolean
   routedSegmentsRef: RoutedPathsRef
@@ -535,7 +552,11 @@ function FlowchartPage({
   arrowsReady,
   arrowConfig,
   labelConfig,
+  editMode = false,
+  selectedConnectionId = null,
   onPathUpdated,
+  onManualChange,
+  onSelectConnection,
   pelaksanaBounds,
   isLastPage,
   routedSegmentsRef,
@@ -761,8 +782,9 @@ function FlowchartPage({
 
         {arrowsReady && graphReady && connections.length > 0 && (
           <svg
-            className="absolute inset-0 w-full h-full pointer-events-none z-20 print:break-inside-avoid"
-            aria-hidden
+            className={`absolute inset-0 w-full h-full z-20 print:break-inside-avoid ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            aria-hidden={!editMode}
+            onClick={() => onSelectConnection?.(null)}
           >
             {connections.map((conn, idx) => (
               <FlowchartArrowConnector
@@ -777,6 +799,10 @@ function FlowchartPage({
                 manualConfig={arrowConfig?.[conn.id]}
                 manualLabelPosition={labelConfig?.positions?.[conn.id]}
                 onPathUpdated={onPathUpdated}
+                onManualChange={onManualChange}
+                editMode={editMode}
+                isSelected={selectedConnectionId === conn.id}
+                onSelect={(id) => onSelectConnection?.(id)}
                 constraintRect={pelaksanaBounds}
                 routedSegmentsRef={routedSegmentsRef}
                 reservedSidesRef={reservedSidesRef}

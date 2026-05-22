@@ -20,6 +20,7 @@ import { PengajuanEvaluasiDetailModule } from './modules/evaluation/pengajuan-de
 import { PengajuanEvaluasiModule } from './modules/evaluation/pengajuan/pengajuan-evaluasi.module';
 import { SopCatalogModule } from './modules/sop/catalog/sop-catalog.module';
 import { SopProsedurModule } from './modules/sop/prosedur/sop-prosedur.module';
+import { SopDiagramModule } from './modules/sop/diagram/sop-diagram.module';
 import { SopPublicModule } from './modules/sop/public/sop-public.module';
 import { PelaksanaModule } from './modules/sop/pelaksana/pelaksana.module';
 import { TteModule } from './modules/tte/tte.module';
@@ -44,6 +45,7 @@ import { TteModule } from './modules/tte/tte.module';
     SopCatalogModule,
     SopPublicModule,
     SopProsedurModule,
+    SopDiagramModule,
     PeraturanModule,
     PelaksanaModule,
     EvaluasiNilaiModule,

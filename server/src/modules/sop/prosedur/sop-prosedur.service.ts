@@ -33,7 +33,7 @@ export class SopProsedurService {
 
   /**
    * PATCH prosedur SOP. `detailOrSopId` boleh `detailSopId` atau `sopId` (versi terbaru dipakai).
-   * Mengembalikan workbench terbaru (response = full payload, autosave-friendly setQueryData).
+   * Mengembalikan area kerja terbaru (respons = muatan data lengkap, ramah simpan otomatis setQueryData).
    */
   async updateProsedur(
     user: JwtAccessPayload,
@@ -56,9 +56,9 @@ export class SopProsedurService {
 
     const changedFields = this.collectChangedFields(dto);
     if (changedFields.length === 0) {
-      /* Tidak ada perubahan domain — langsung kembalikan workbench saat ini agar
-         klien tetap menerima response konsisten (autosave debounced kadang
-         men-trigger PATCH kosong saat user batal mengetik). */
+      /* Tidak ada perubahan domain — langsung kembalikan area kerja saat ini agar
+         klien tetap menerima respons konsisten (simpan otomatis tertunda kadang
+         memicu PATCH kosong saat pengguna batal mengetik). */
       return this.sopCatalogService.getPenyusunWorkbench(user, resolved.detailSopId, logsLimit);
     }
 
@@ -74,10 +74,10 @@ export class SopProsedurService {
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         if (err.code === 'P2002') {
-          throw new ConflictException('Konflik unik pada langkah/swimlane');
+          throw new ConflictException('Konflik unik pada langkah/jalur pelaksana');
         }
         if (err.code === 'P2003' || err.code === 'P2025') {
-          throw new BadRequestException('Referensi tidak valid pada payload');
+          throw new BadRequestException('Referensi tidak valid pada muatan data');
         }
       }
       const message = err instanceof Error ? err.message : '';
@@ -116,14 +116,14 @@ export class SopProsedurService {
 
   /**
    * Validasi referensial DTO + bentuk input untuk repository:
-   * - Duplikat `pelaksanaId` di swimlane payload dilarang.
+   * - Duplikat `pelaksanaId` di muatan data jalur pelaksana dilarang.
    * - Setiap `pelaksanaId` master harus berasal dari OPD pemilik SOP.
-   * - Setiap `tempId` unik di payload langkah; `langkahSelanjutnya*TempId` harus
+   * - Setiap `tempId` unik di muatan data langkah; `langkahSelanjutnya*TempId` harus
    *   merujuk `tempId` yang ada.
    * - Untuk jenis `KEPUTUSAN`, minimal satu cabang (Ya/Tidak) harus diset.
    * - Untuk jenis non-KEPUTUSAN, cabang otomatis diabaikan (di-set null).
-   * - `pelaksanaId` per langkah (bila diset) harus muncul di swimlane payload (jika diset)
-   *   atau swimlane existing.
+   * - `pelaksanaId` per langkah (bila diset) harus muncul di muatan data jalur pelaksana
+   *   (jika diset) atau jalur pelaksana yang ada.
    */
   private async buildRepoInput(
     dto: UpdateSopProsedurDto,
@@ -140,7 +140,7 @@ export class SopProsedurService {
       for (const p of dto.pelaksana) {
         if (seen.has(p.pelaksanaId)) {
           throw new BadRequestException(
-            `Pelaksana duplikat di swimlane: ${p.pelaksanaId}`,
+            `Pelaksana duplikat di jalur pelaksana: ${p.pelaksanaId}`,
           );
         }
         seen.add(p.pelaksanaId);
@@ -154,7 +154,7 @@ export class SopProsedurService {
         for (const p of dedup) {
           if (!valid.has(p.pelaksanaId)) {
             throw new BadRequestException(
-              `Pelaksana ${p.pelaksanaId} harus dari OPD yang sama dengan SOP (swimlane)`,
+              `Pelaksana ${p.pelaksanaId} harus dari OPD yang sama dengan SOP (jalur pelaksana)`,
             );
           }
         }
@@ -175,7 +175,7 @@ export class SopProsedurService {
 
       /* Resolusi pelaksana yang valid:
          - jika dto.pelaksana di-set: pakai itu sebagai allowed
-         - jika tidak: cek terhadap swimlane existing di DB */
+         - jika tidak: cek terhadap jalur pelaksana yang ada di DB */
       let allowedForLangkah = allowedPelaksanaIds;
       if (allowedForLangkah === null) {
         const existing =
@@ -184,8 +184,8 @@ export class SopProsedurService {
       }
 
       /* `defaultPelaksanaId` dipakai bila langkah tidak set `pelaksanaId` — diambil
-         dari swimlane index 0 sebagai fallback yang masuk akal (LangkahSOP.pelaksanaId
-         required di DB). */
+         dari jalur pelaksana index 0 sebagai nilai cadangan yang masuk akal
+         (LangkahSOP.pelaksanaId wajib di DB). */
       const defaultPelaksanaId =
         out.pelaksana !== undefined && out.pelaksana.length > 0
           ? out.pelaksana[0].pelaksanaId
@@ -210,7 +210,7 @@ export class SopProsedurService {
   ): RepoLangkahPatchItem {
     if (item.pelaksanaId !== undefined && !allowedPelaksanaIds.has(item.pelaksanaId)) {
       throw new BadRequestException(
-        `pelaksanaId ${item.pelaksanaId} pada langkah '${item.tempId}' harus dari OPD yang sama dengan SOP (tidak ada di swimlane)`,
+        `pelaksanaId ${item.pelaksanaId} pada langkah '${item.tempId}' harus dari OPD yang sama dengan SOP (tidak ada di jalur pelaksana)`,
       );
     }
 
@@ -240,12 +240,12 @@ export class SopProsedurService {
       tidakTempId = item.langkahSelanjutnyaTidakTempId ?? null;
     }
 
-    /* Pelaksana fallback: kalau langkah tidak set, ambil default; kalau default null
-       dan langkah juga tidak set, lempar error karena LangkahSOP.pelaksanaId required di DB. */
+    /* Pelaksana cadangan: kalau langkah tidak set, ambil default; kalau default null
+       dan langkah juga tidak set, lempar error karena LangkahSOP.pelaksanaId wajib di DB. */
     const resolvedPelaksana = item.pelaksanaId ?? defaultPelaksanaId;
     if (resolvedPelaksana === null || resolvedPelaksana === undefined) {
       throw new BadRequestException(
-        `Langkah '${item.tempId}' tidak punya pelaksana (swimlane kosong & pelaksanaId tidak diset)`,
+        `Langkah '${item.tempId}' tidak punya pelaksana (jalur pelaksana kosong dan pelaksanaId tidak diset)`,
       );
     }
 

@@ -174,6 +174,18 @@ export function selectSidePairs(
     }
   }
 
+  if (sameCol && destBelow && !isSameColumnLoopBack) {
+    push('bottom', 'top', {
+      preferSimple: true,
+      sourcePort: { ...makeSourcePort('bottom'), exitX: 0.5 },
+      targetPort: { ...makeTargetPort('top'), entryX: 0.5 },
+    })
+    if (srcOutBusy('bottom') || dstInBusy('top')) {
+      if (!srcOutBusy('right')) push('right', 'top', { preferSimple: false })
+      if (!srcOutBusy('left')) push('left', 'top', { preferSimple: false })
+    }
+  }
+
   if (isDecSrc && isYa) {
     if (destBelow) {
       if (sameCol) {
@@ -221,6 +233,11 @@ export function selectSidePairs(
       if (!srcOutBusy('left') && !dstInBusy('right')) push('left', 'right', { preferSimple: false })
       if (!srcOutBusy('left') && !dstInBusy('left')) push('left', 'left', { preferSimple: false })
     } else if (sameCol && destBelow) {
+      push('bottom', 'top', {
+        preferSimple: true,
+        sourcePort: { ...makeSourcePort('bottom'), exitX: 0.5 },
+        targetPort: { ...makeTargetPort('top'), entryX: 0.5 },
+      })
       if (!srcOutBusy('right')) push('right', 'top', { preferSimple: false })
       if (!srcOutBusy('left')) push('left', 'top', { preferSimple: false })
     } else if (destRight) {

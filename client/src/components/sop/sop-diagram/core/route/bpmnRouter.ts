@@ -226,8 +226,9 @@ export function selectBpmnSidePairs(
       if (!srcOutBusy('bottom') && !dstInBusy('bottom')) push('bottom', 'bottom', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
       push('left', 'right', { preferSimple: false })
     } else if (sameLane && sameCol) {
+      push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18, preferSimple: true })
+      push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: true })
       push('right', 'left')
-      push('bottom', 'top', { preferSimple: false })
     } else if (targetBelow && (targetRight || sameCol)) {
       push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
       if (targetRight) {
