@@ -3,7 +3,7 @@ import { PrismaService } from '../../../common/prisma/prisma.service';
 import {
   HasilEvaluasi,
   Prisma,
-  StatusKomentar,
+  StatusTindakLanjut,
   StatusPengajuanEvaluasi,
 } from '../../../generated/prisma';
 
@@ -11,7 +11,7 @@ export type NilaiRevisiAktifRow = Readonly<{
   pengajuanEvaluasiId: string;
   detailSopId: string;
   hasil: HasilEvaluasi | null;
-  statusTindakLanjut: StatusKomentar | null;
+  statusTindakLanjut: StatusTindakLanjut | null;
 }>;
 
 export type UmpanBalikEvaluasiRow = Readonly<{
@@ -19,7 +19,7 @@ export type UmpanBalikEvaluasiRow = Readonly<{
   detailSopId: string;
   hasil: HasilEvaluasi | null;
   catatan: string | null;
-  statusTindakLanjut: StatusKomentar | null;
+  statusTindakLanjut: StatusTindakLanjut | null;
   ditindaklanjutiPada: Date | null;
   version: number;
   dinilaiOleh: { penggunaId: string; nama: string } | null;

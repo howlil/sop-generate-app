@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { HasilEvaluasi, StatusKomentar } from '../../../generated/prisma';
+import { HasilEvaluasi, StatusTindakLanjut } from '../../../generated/prisma';
 import { assertBolehKirimUlangSetelahRevisi } from './evaluasi-revisi.policy';
 
 describe('evaluasi-revisi.policy', () => {
@@ -13,7 +13,7 @@ describe('evaluasi-revisi.policy', () => {
         pengajuanEvaluasiId: 'p1',
         detailSopId: 'd1',
         hasil: HasilEvaluasi.PERLU_PERBAIKAN,
-        statusTindakLanjut: StatusKomentar.TERBUKA,
+        statusTindakLanjut: StatusTindakLanjut.TERBUKA,
       }),
     ).toThrow(BadRequestException);
   });
@@ -24,7 +24,7 @@ describe('evaluasi-revisi.policy', () => {
         pengajuanEvaluasiId: 'p1',
         detailSopId: 'd1',
         hasil: HasilEvaluasi.PERLU_PERBAIKAN,
-        statusTindakLanjut: StatusKomentar.SELESAI,
+        statusTindakLanjut: StatusTindakLanjut.SELESAI,
       }),
     ).not.toThrow();
   });

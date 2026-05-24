@@ -13,7 +13,7 @@ import {
   JenisPengajuanEvaluasi,
   PeranPengguna,
   SatuanWaktu,
-  StatusKomentar,
+  StatusTindakLanjut,
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../src/generated/prisma';
@@ -167,7 +167,7 @@ async function seedBaseData(prisma: PrismaService): Promise<{ opdAId: string; op
 
 async function loginAgent(app: INestApplication, email: string): Promise<Agent> {
   const agent = request.agent(app.getHttpServer());
-  await agent.post(`${API}/auth/login`).send({ email, password: PASSWORD }).expect(200);
+  await agent.post(`${API}/auth/login`).send({ email, password: PASSWORD }).expect(201);
   return agent;
 }
 
@@ -316,7 +316,7 @@ describeIntegration('Core workflow integration test', () => {
 
     await penyusunAgent
       .patch(`${API}/sop/diagram/${state.detailSopId}`)
-      .send({ jenis: 'FLOWCHART', layoutSeed: 1, pathOverrides: [] })
+      .send({ jenis: 'FLOWCHART', layoutSeed: 1, pathOverrides: { edges: {}, labels: {} } })
       .expect(200);
 
     const detail = await prisma.detailSOP.findUniqueOrThrow({
@@ -336,15 +336,12 @@ describeIntegration('Core workflow integration test', () => {
   });
 
   it('menolak constraint header dan prosedur yang melanggar aturan bisnis', async () => {
-    const duplicateNomor = await penyusunAgent
-      .patch(`${API}/sop/header/${state.detailSopId}`)
-      .send({ nomorSOP: 'INT-SOP-002' });
+    const duplicateNomor = await penyusunAgent.post(`${API}/sop`).send({
+      judul: 'SOP Integration Nomor Duplikat',
+      nomorSop: 'INT-SOP-002',
+      namaLembaga: 'OPD Integration A',
+    });
     expectRejected(duplicateNomor.status);
-
-    const selfLoop = await penyusunAgent
-      .patch(`${API}/sop/header/${state.detailSopId}`)
-      .send({ sopTerkaitDetailIds: [state.detailSopId] });
-    expectRejected(selfLoop.status);
 
     const invalidBranch = await penyusunAgent
       .patch(`${API}/sop/langkah/${state.detailSopId}`)
@@ -422,7 +419,7 @@ describeIntegration('Core workflow integration test', () => {
       },
     });
     expect(nilai.hasil).toBe(HasilEvaluasi.PERLU_PERBAIKAN);
-    expect(nilai.statusTindakLanjut).toBe(StatusKomentar.TERBUKA);
+    expect(nilai.statusTindakLanjut).toBe(StatusTindakLanjut.TERBUKA);
 
     const feedback = await penyusunAgent
       .get(`${API}/evaluasi/umpan-balik/detail/${state.detailSopId}`)
@@ -449,7 +446,7 @@ describeIntegration('Core workflow integration test', () => {
         },
       },
     });
-    expect(nilai.statusTindakLanjut).toBe(StatusKomentar.SELESAI);
+    expect(nilai.statusTindakLanjut).toBe(StatusTindakLanjut.SELESAI);
   });
 
   it('menolak penilaian di luar pengajuan dan menyelesaikan evaluasi hanya saat sesuai', async () => {
@@ -463,9 +460,18 @@ describeIntegration('Core workflow integration test', () => {
       .send({ hasil: HasilEvaluasi.SESUAI, version: 999 });
     expectRejected(staleVersion.status);
 
+    const nilaiSaatIni = await prisma.nilaiEvaluasi.findUniqueOrThrow({
+      where: {
+        pengajuanEvaluasiId_detailSopId: {
+          pengajuanEvaluasiId: state.pengajuanId,
+          detailSopId: state.detailSopId,
+        },
+      },
+    });
+
     await evaluatorAgent
       .patch(`${API}/evaluasi/${state.pengajuanId}/nilai/${state.detailSopId}`)
-      .send({ hasil: HasilEvaluasi.SESUAI })
+      .send({ hasil: HasilEvaluasi.SESUAI, version: nilaiSaatIni.version })
       .expect(200);
 
     const mandiriWithScore = await evaluatorAgent

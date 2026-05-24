@@ -56,22 +56,22 @@ export type SOP = $Result.DefaultSelection<Prisma.$SOPPayload>
 export type DetailSOP = $Result.DefaultSelection<Prisma.$DetailSOPPayload>
 /**
  * Model LampiranPeringatan
- * Lampiran PERINGATAN (ambil teks terbaru untuk tampilan dokumen).
+ * Daftar teks lampiran peringatan per versi DetailSOP (replace-all saat simpan; bukan riwayat append-only).
  */
 export type LampiranPeringatan = $Result.DefaultSelection<Prisma.$LampiranPeringatanPayload>
 /**
  * Model LampiranKualifikasiPelaksanaan
- * 
+ * Daftar teks kualifikasi pelaksanaan per versi DetailSOP (replace-all saat simpan).
  */
 export type LampiranKualifikasiPelaksanaan = $Result.DefaultSelection<Prisma.$LampiranKualifikasiPelaksanaanPayload>
 /**
  * Model LampiranPeralatanPerlengkapan
- * 
+ * Daftar teks peralatan/perlengkapan per versi DetailSOP (replace-all saat simpan).
  */
 export type LampiranPeralatanPerlengkapan = $Result.DefaultSelection<Prisma.$LampiranPeralatanPerlengkapanPayload>
 /**
  * Model LampiranPencatatanPendataan
- * 
+ * Daftar teks pencatatan/pendataan per versi DetailSOP (replace-all saat simpan).
  */
 export type LampiranPencatatanPendataan = $Result.DefaultSelection<Prisma.$LampiranPencatatanPendataanPayload>
 /**
@@ -140,22 +140,22 @@ export type DokumenTte = $Result.DefaultSelection<Prisma.$DokumenTtePayload>
 export type RiwayatTandaTangan = $Result.DefaultSelection<Prisma.$RiwayatTandaTanganPayload>
 /**
  * Model KonfigurasiDiagramSOP
- * Override path panah manual per DetailSOP (layout otomatis tetap di klien).
+ * Agregat konfigurasi diagram per DetailSOP (bukan junction M:N). Layout node otomatis di klien.
  */
 export type KonfigurasiDiagramSOP = $Result.DefaultSelection<Prisma.$KonfigurasiDiagramSOPPayload>
 /**
  * Model OverridePanahDiagramSOP
- * 
+ * Override koordinat panah manual (anak `KonfigurasiDiagramSOP`).
  */
 export type OverridePanahDiagramSOP = $Result.DefaultSelection<Prisma.$OverridePanahDiagramSOPPayload>
 /**
  * Model TitikTekukPanahDiagramSOP
- * 
+ * Titik tekuk panah berurutan (anak `OverridePanahDiagramSOP`).
  */
 export type TitikTekukPanahDiagramSOP = $Result.DefaultSelection<Prisma.$TitikTekukPanahDiagramSOPPayload>
 /**
  * Model OverrideLabelDiagramSOP
- * 
+ * Posisi label diagram manual (anak `KonfigurasiDiagramSOP`).
  */
 export type OverrideLabelDiagramSOP = $Result.DefaultSelection<Prisma.$OverrideLabelDiagramSOPPayload>
 
@@ -247,19 +247,19 @@ export const JenisDokumenTte: {
 export type JenisDokumenTte = (typeof JenisDokumenTte)[keyof typeof JenisDokumenTte]
 
 
-export const StatusKomentar: {
+export const StatusTindakLanjut: {
   TERBUKA: 'TERBUKA',
   SELESAI: 'SELESAI'
 };
 
-export type StatusKomentar = (typeof StatusKomentar)[keyof typeof StatusKomentar]
+export type StatusTindakLanjut = (typeof StatusTindakLanjut)[keyof typeof StatusTindakLanjut]
 
 
 export const BagianSOP: {
   HEADER: 'HEADER',
   LANGKAH: 'LANGKAH',
   STATUS: 'STATUS',
-  KOMENTAR: 'KOMENTAR',
+  UMPAN_BALIK: 'UMPAN_BALIK',
   EVALUASI: 'EVALUASI'
 };
 
@@ -326,9 +326,9 @@ export type JenisDokumenTte = $Enums.JenisDokumenTte
 
 export const JenisDokumenTte: typeof $Enums.JenisDokumenTte
 
-export type StatusKomentar = $Enums.StatusKomentar
+export type StatusTindakLanjut = $Enums.StatusTindakLanjut
 
-export const StatusKomentar: typeof $Enums.StatusKomentar
+export const StatusTindakLanjut: typeof $Enums.StatusTindakLanjut
 
 export type BagianSOP = $Enums.BagianSOP
 
@@ -20944,7 +20944,7 @@ export namespace Prisma {
       createdAt: Date
       bagian: $Enums.BagianSOP
       /**
-       * Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK. Null bila tidak relevan.
+       * Pointer longgar ke entitas yang diaudit (mis. id komposit nilai evaluasi); bukan FK.
        */
       targetEntityId: string | null
       /**
@@ -23935,7 +23935,7 @@ export namespace Prisma {
     detailSopId: string | null
     hasil: $Enums.HasilEvaluasi | null
     catatan: string | null
-    statusTindakLanjut: $Enums.StatusKomentar | null
+    statusTindakLanjut: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada: Date | null
     ditindaklanjutiOlehId: string | null
     version: number | null
@@ -23949,7 +23949,7 @@ export namespace Prisma {
     detailSopId: string | null
     hasil: $Enums.HasilEvaluasi | null
     catatan: string | null
-    statusTindakLanjut: $Enums.StatusKomentar | null
+    statusTindakLanjut: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada: Date | null
     ditindaklanjutiOlehId: string | null
     version: number | null
@@ -24116,7 +24116,7 @@ export namespace Prisma {
     detailSopId: string
     hasil: $Enums.HasilEvaluasi | null
     catatan: string | null
-    statusTindakLanjut: $Enums.StatusKomentar | null
+    statusTindakLanjut: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada: Date | null
     ditindaklanjutiOlehId: string | null
     version: number
@@ -24208,10 +24208,9 @@ export namespace Prisma {
        */
       catatan: string | null
       /**
-       * Status tindak lanjut / resolve umpan balik: TERBUKA (belum) | SELESAI (sudah ditandai penyusun).
-       * Memakai enum StatusKomentar hanya untuk nilai TERBUKA/SELESAI — bukan relasi ke model Komentar.
+       * Status tindak lanjut umpan balik: TERBUKA (belum) | SELESAI (sudah ditandai penyusun).
        */
-      statusTindakLanjut: $Enums.StatusKomentar | null
+      statusTindakLanjut: $Enums.StatusTindakLanjut | null
       ditindaklanjutiPada: Date | null
       ditindaklanjutiOlehId: string | null
       version: number
@@ -24596,7 +24595,7 @@ export namespace Prisma {
     readonly detailSopId: FieldRef<"NilaiEvaluasi", 'String'>
     readonly hasil: FieldRef<"NilaiEvaluasi", 'HasilEvaluasi'>
     readonly catatan: FieldRef<"NilaiEvaluasi", 'String'>
-    readonly statusTindakLanjut: FieldRef<"NilaiEvaluasi", 'StatusKomentar'>
+    readonly statusTindakLanjut: FieldRef<"NilaiEvaluasi", 'StatusTindakLanjut'>
     readonly ditindaklanjutiPada: FieldRef<"NilaiEvaluasi", 'DateTime'>
     readonly ditindaklanjutiOlehId: FieldRef<"NilaiEvaluasi", 'String'>
     readonly version: FieldRef<"NilaiEvaluasi", 'Int'>
@@ -33041,9 +33040,9 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'StatusKomentar'
+   * Reference to a field of type 'StatusTindakLanjut'
    */
-  export type EnumStatusKomentarFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusKomentar'>
+  export type EnumStatusTindakLanjutFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusTindakLanjut'>
     
 
 
@@ -34571,7 +34570,7 @@ export namespace Prisma {
     detailSopId?: StringFilter<"NilaiEvaluasi"> | string
     hasil?: EnumHasilEvaluasiNullableFilter<"NilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableFilter<"NilaiEvaluasi"> | string | null
-    statusTindakLanjut?: EnumStatusKomentarNullableFilter<"NilaiEvaluasi"> | $Enums.StatusKomentar | null
+    statusTindakLanjut?: EnumStatusTindakLanjutNullableFilter<"NilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: DateTimeNullableFilter<"NilaiEvaluasi"> | Date | string | null
     ditindaklanjutiOlehId?: StringNullableFilter<"NilaiEvaluasi"> | string | null
     version?: IntFilter<"NilaiEvaluasi"> | number
@@ -34614,7 +34613,7 @@ export namespace Prisma {
     detailSopId?: StringFilter<"NilaiEvaluasi"> | string
     hasil?: EnumHasilEvaluasiNullableFilter<"NilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableFilter<"NilaiEvaluasi"> | string | null
-    statusTindakLanjut?: EnumStatusKomentarNullableFilter<"NilaiEvaluasi"> | $Enums.StatusKomentar | null
+    statusTindakLanjut?: EnumStatusTindakLanjutNullableFilter<"NilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: DateTimeNullableFilter<"NilaiEvaluasi"> | Date | string | null
     ditindaklanjutiOlehId?: StringNullableFilter<"NilaiEvaluasi"> | string | null
     version?: IntFilter<"NilaiEvaluasi"> | number
@@ -34655,7 +34654,7 @@ export namespace Prisma {
     detailSopId?: StringWithAggregatesFilter<"NilaiEvaluasi"> | string
     hasil?: EnumHasilEvaluasiNullableWithAggregatesFilter<"NilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableWithAggregatesFilter<"NilaiEvaluasi"> | string | null
-    statusTindakLanjut?: EnumStatusKomentarNullableWithAggregatesFilter<"NilaiEvaluasi"> | $Enums.StatusKomentar | null
+    statusTindakLanjut?: EnumStatusTindakLanjutNullableWithAggregatesFilter<"NilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: DateTimeNullableWithAggregatesFilter<"NilaiEvaluasi"> | Date | string | null
     ditindaklanjutiOlehId?: StringNullableWithAggregatesFilter<"NilaiEvaluasi"> | string | null
     version?: IntWithAggregatesFilter<"NilaiEvaluasi"> | number
@@ -36762,7 +36761,7 @@ export namespace Prisma {
   export type NilaiEvaluasiCreateInput = {
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -36779,7 +36778,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -36792,7 +36791,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36809,7 +36808,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -36824,7 +36823,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -36836,7 +36835,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateManyMutationInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36848,7 +36847,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -38852,11 +38851,11 @@ export namespace Prisma {
     not?: NestedEnumHasilEvaluasiNullableFilter<$PrismaModel> | $Enums.HasilEvaluasi | null
   }
 
-  export type EnumStatusKomentarNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel> | null
-    in?: $Enums.StatusKomentar[] | null
-    notIn?: $Enums.StatusKomentar[] | null
-    not?: NestedEnumStatusKomentarNullableFilter<$PrismaModel> | $Enums.StatusKomentar | null
+  export type EnumStatusTindakLanjutNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.StatusTindakLanjut | EnumStatusTindakLanjutFieldRefInput<$PrismaModel> | null
+    in?: $Enums.StatusTindakLanjut[] | null
+    notIn?: $Enums.StatusTindakLanjut[] | null
+    not?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel> | $Enums.StatusTindakLanjut | null
   }
 
   export type PengajuanEvaluasiScalarRelationFilter = {
@@ -38935,14 +38934,14 @@ export namespace Prisma {
     _max?: NestedEnumHasilEvaluasiNullableFilter<$PrismaModel>
   }
 
-  export type EnumStatusKomentarNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel> | null
-    in?: $Enums.StatusKomentar[] | null
-    notIn?: $Enums.StatusKomentar[] | null
-    not?: NestedEnumStatusKomentarNullableWithAggregatesFilter<$PrismaModel> | $Enums.StatusKomentar | null
+  export type EnumStatusTindakLanjutNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.StatusTindakLanjut | EnumStatusTindakLanjutFieldRefInput<$PrismaModel> | null
+    in?: $Enums.StatusTindakLanjut[] | null
+    notIn?: $Enums.StatusTindakLanjut[] | null
+    not?: NestedEnumStatusTindakLanjutNullableWithAggregatesFilter<$PrismaModel> | $Enums.StatusTindakLanjut | null
     _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumStatusKomentarNullableFilter<$PrismaModel>
-    _max?: NestedEnumStatusKomentarNullableFilter<$PrismaModel>
+    _min?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel>
+    _max?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel>
   }
 
   export type NilaiEvaluasiScalarRelationFilter = {
@@ -41963,8 +41962,8 @@ export namespace Prisma {
     set?: $Enums.HasilEvaluasi | null
   }
 
-  export type NullableEnumStatusKomentarFieldUpdateOperationsInput = {
-    set?: $Enums.StatusKomentar | null
+  export type NullableEnumStatusTindakLanjutFieldUpdateOperationsInput = {
+    set?: $Enums.StatusTindakLanjut | null
   }
 
   export type PenggunaUpdateOneWithoutNilaiEvaluasiDiisiNestedInput = {
@@ -42740,11 +42739,11 @@ export namespace Prisma {
     not?: NestedEnumHasilEvaluasiNullableFilter<$PrismaModel> | $Enums.HasilEvaluasi | null
   }
 
-  export type NestedEnumStatusKomentarNullableFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel> | null
-    in?: $Enums.StatusKomentar[] | null
-    notIn?: $Enums.StatusKomentar[] | null
-    not?: NestedEnumStatusKomentarNullableFilter<$PrismaModel> | $Enums.StatusKomentar | null
+  export type NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.StatusTindakLanjut | EnumStatusTindakLanjutFieldRefInput<$PrismaModel> | null
+    in?: $Enums.StatusTindakLanjut[] | null
+    notIn?: $Enums.StatusTindakLanjut[] | null
+    not?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel> | $Enums.StatusTindakLanjut | null
   }
 
   export type NestedEnumHasilEvaluasiNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -42757,14 +42756,14 @@ export namespace Prisma {
     _max?: NestedEnumHasilEvaluasiNullableFilter<$PrismaModel>
   }
 
-  export type NestedEnumStatusKomentarNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.StatusKomentar | EnumStatusKomentarFieldRefInput<$PrismaModel> | null
-    in?: $Enums.StatusKomentar[] | null
-    notIn?: $Enums.StatusKomentar[] | null
-    not?: NestedEnumStatusKomentarNullableWithAggregatesFilter<$PrismaModel> | $Enums.StatusKomentar | null
+  export type NestedEnumStatusTindakLanjutNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.StatusTindakLanjut | EnumStatusTindakLanjutFieldRefInput<$PrismaModel> | null
+    in?: $Enums.StatusTindakLanjut[] | null
+    notIn?: $Enums.StatusTindakLanjut[] | null
+    not?: NestedEnumStatusTindakLanjutNullableWithAggregatesFilter<$PrismaModel> | $Enums.StatusTindakLanjut | null
     _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedEnumStatusKomentarNullableFilter<$PrismaModel>
-    _max?: NestedEnumStatusKomentarNullableFilter<$PrismaModel>
+    _min?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel>
+    _max?: NestedEnumStatusTindakLanjutNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumJenisDokumenTteFilter<$PrismaModel = never> = {
@@ -43058,7 +43057,7 @@ export namespace Prisma {
   export type NilaiEvaluasiCreateWithoutDinilaiOlehInput = {
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -43074,7 +43073,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -43096,7 +43095,7 @@ export namespace Prisma {
   export type NilaiEvaluasiCreateWithoutDitindaklanjutiOlehInput = {
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -43112,7 +43111,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     dinilaiOlehId?: string | null
@@ -43555,7 +43554,7 @@ export namespace Prisma {
     detailSopId?: StringFilter<"NilaiEvaluasi"> | string
     hasil?: EnumHasilEvaluasiNullableFilter<"NilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatan?: StringNullableFilter<"NilaiEvaluasi"> | string | null
-    statusTindakLanjut?: EnumStatusKomentarNullableFilter<"NilaiEvaluasi"> | $Enums.StatusKomentar | null
+    statusTindakLanjut?: EnumStatusTindakLanjutNullableFilter<"NilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: DateTimeNullableFilter<"NilaiEvaluasi"> | Date | string | null
     ditindaklanjutiOlehId?: StringNullableFilter<"NilaiEvaluasi"> | string | null
     version?: IntFilter<"NilaiEvaluasi"> | number
@@ -45366,7 +45365,7 @@ export namespace Prisma {
   export type NilaiEvaluasiCreateWithoutDetailSopInput = {
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -45381,7 +45380,7 @@ export namespace Prisma {
     pengajuanEvaluasiId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -48528,7 +48527,7 @@ export namespace Prisma {
   export type NilaiEvaluasiCreateWithoutPengajuanEvaluasiInput = {
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -48543,7 +48542,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -49771,7 +49770,7 @@ export namespace Prisma {
   export type NilaiEvaluasiCreateWithoutLogNilaiEvaluasiInput = {
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     createdAt?: Date | string
@@ -49787,7 +49786,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -49937,7 +49936,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateWithoutLogNilaiEvaluasiInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49953,7 +49952,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -51191,7 +51190,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -51204,7 +51203,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     version?: number
     dinilaiOlehId?: string | null
@@ -51519,7 +51518,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateWithoutDinilaiOlehInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51535,7 +51534,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -51549,7 +51548,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -51560,7 +51559,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateWithoutDitindaklanjutiOlehInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51576,7 +51575,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     dinilaiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -51590,7 +51589,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     dinilaiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -52394,7 +52393,7 @@ export namespace Prisma {
     pengajuanEvaluasiId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -52730,7 +52729,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateWithoutDetailSopInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52745,7 +52744,7 @@ export namespace Prisma {
     pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -52759,7 +52758,7 @@ export namespace Prisma {
     pengajuanEvaluasiId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -53275,7 +53274,7 @@ export namespace Prisma {
     detailSopId: string
     hasil?: $Enums.HasilEvaluasi | null
     catatan?: string | null
-    statusTindakLanjut?: $Enums.StatusKomentar | null
+    statusTindakLanjut?: $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: Date | string | null
     ditindaklanjutiOlehId?: string | null
     version?: number
@@ -53330,7 +53329,7 @@ export namespace Prisma {
   export type NilaiEvaluasiUpdateWithoutPengajuanEvaluasiInput = {
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     version?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53345,7 +53344,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number
@@ -53359,7 +53358,7 @@ export namespace Prisma {
     detailSopId?: StringFieldUpdateOperationsInput | string
     hasil?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatan?: NullableStringFieldUpdateOperationsInput | string | null
-    statusTindakLanjut?: NullableEnumStatusKomentarFieldUpdateOperationsInput | $Enums.StatusKomentar | null
+    statusTindakLanjut?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
     ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
     version?: IntFieldUpdateOperationsInput | number

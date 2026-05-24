@@ -22,11 +22,11 @@ export interface AppendLogParams {
   detailSopId: string;
   penggunaId: string;
   bagian: BagianSOP;
-  /** Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK. */
+  /** Pointer longgar ke entitas yang diaudit (mis. id komposit nilai evaluasi); bukan FK. */
   targetEntityId?: string | null;
   /** Daftar field domain yang baru saja berubah pada satu request. */
   fields: string[];
-  /** Force selalu buat entry baru (untuk event diskrit, mis. KOMENTAR/STATUS). */
+  /** Force selalu buat entry baru (untuk event diskrit, mis. UMPAN_BALIK/STATUS). */
   discrete?: boolean;
   /** Override idle window. Default {@link DEFAULT_LOG_SESSION_IDLE_MS}. */
   idleWindowMs?: number;
@@ -47,8 +47,6 @@ const FIELD_LABEL_ID: Record<string, string> = {
   pelaksana: 'Aktor Pelaksana',
   langkah: 'Daftar Langkah',
   status: 'Status SOP',
-  isi: 'Isi Komentar',
-  resolve: 'Tandai Selesai',
   create: 'Membuat',
   delete: 'Menghapus',
 };
@@ -57,7 +55,7 @@ const BAGIAN_LABEL_ID: Record<BagianSOP, string> = {
   HEADER: 'Header SOP',
   LANGKAH: 'Langkah Prosedur',
   STATUS: 'Status SOP',
-  KOMENTAR: 'Komentar',
+  UMPAN_BALIK: 'Umpan balik evaluasi',
   EVALUASI: 'Evaluasi',
 };
 

@@ -244,7 +244,11 @@ export class PengajuanEvaluasiService {
     if (user.peran === PeranPengguna.PJ_EVALUATOR || user.peran === PeranPengguna.EVALUATOR) {
       return undefined;
     }
-    if (user.peran === PeranPengguna.PJ_PENYUSUN || user.peran === PeranPengguna.KEPALA_OPD) {
+    if (
+      user.peran === PeranPengguna.PENYUSUN ||
+      user.peran === PeranPengguna.PJ_PENYUSUN ||
+      user.peran === PeranPengguna.KEPALA_OPD
+    ) {
       return this.userOpdAccessService.getRequiredUserOpdId(
         user.sub,
         'OPD pengguna tidak ditemukan',
@@ -264,7 +268,11 @@ export class PengajuanEvaluasiService {
     if (user.peran === PeranPengguna.PJ_EVALUATOR || user.peran === PeranPengguna.EVALUATOR) {
       return;
     }
-    if (user.peran === PeranPengguna.PJ_PENYUSUN || user.peran === PeranPengguna.KEPALA_OPD) {
+    if (
+      user.peran === PeranPengguna.PENYUSUN ||
+      user.peran === PeranPengguna.PJ_PENYUSUN ||
+      user.peran === PeranPengguna.KEPALA_OPD
+    ) {
       await this.userOpdAccessService.assertSameOpd(
         user.sub,
         pengajuanOpdId,

@@ -1,4 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import type { JwtAccessPayload } from '../../../common';
 import {
   JenisPengajuanEvaluasi,
   PeranPengguna,
@@ -66,12 +67,22 @@ describe('PengajuanEvaluasiService', () => {
     });
   });
 
-  it('should_forbid_findAll_when_bukan_evaluator_atau_pj_penyusun', async () => {
-    const repo = {} as unknown as PengajuanEvaluasiRepository;
-    const service = buildService(repo);
-    await expect(
-      service.findAll({ sub: 'x', email: 'e', peran: PeranPengguna.PENYUSUN }, {}),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+  it('should_apply_opd_filter_for_penyusun_on_findAll', async () => {
+    const getRequiredUserOpdId = jest.fn().mockResolvedValue('opd-a');
+    const repo = {
+      buildWhereFromQuery: jest.fn().mockReturnValue({ AND: [{ opdId: 'opd-a' }] }),
+      findManyFiltered: jest.fn().mockResolvedValue([]),
+    } as unknown as PengajuanEvaluasiRepository;
+    const service = buildService(repo, { getRequiredUserOpdId });
+    const penyusunUser: JwtAccessPayload = {
+      sub: 'pen-1',
+      email: 'pen@test',
+      peran: PeranPengguna.PENYUSUN,
+    };
+    const actual = await service.findAll(penyusunUser, {});
+    expect(getRequiredUserOpdId).toHaveBeenCalledWith('pen-1', 'OPD pengguna tidak ditemukan');
+    expect(repo.buildWhereFromQuery).toHaveBeenCalledWith(expect.any(Object), 'opd-a');
+    expect(actual).toEqual([]);
   });
 
   it('should_apply_opd_filter_for_pj_penyusun_on_findAll', async () => {

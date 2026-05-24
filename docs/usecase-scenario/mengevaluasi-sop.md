@@ -1,19 +1,44 @@
-# Dokumen Skenario Use Case: Mengevaluasi SOP
+# Skenario UC-11: Mengevaluasi SOP
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Mengevaluasi SOP"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Mengevaluasi SOP** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Mengevaluasi SOP |
-| **ID** | UCM-07 |
-| **Aktor Utama** | Evaluator |
-| **Aktor Terlibat** | Sistem (Audit Trail Nilai) |
-| **Prasyarat** | Pengajuan evaluasi berstatus `SEDANG_DIEVALUASI` untuk OPD bersangkutan tersedia. |
-| **Pemicu** | Evaluator mulai melakukan inspeksi dokumen langkah demi langkah pada SOP yang diajukan. |
-| **Alur Utama** | 1. Evaluator membuka antarmuka pemeriksaan (workbench) untuk satu `DetailSOP` spesifik dari suatu pengajuan.<br>2. Evaluator memberikan status penilaian akhir (`SESUAI`).<br>3. Client mengirim request PATCH ke `/evaluasi/:pengajuanId/nilai/:detailSopId`.<br>4. Server memeriksa `NilaiEvaluasi.version` (Optimistic Locking) untuk mencegah race-condition.<br>5. Server mengubah `NilaiEvaluasi.hasil` menjadi `SESUAI` dan mengosongkan tindak lanjut.<br>6. Server merekam histori ke tabel `LogNilaiEvaluasi`.<br>7. Client menandai SOP tersebut selesai dievaluasi pada UI. |
-| **Alur Alternatif** | - **Locking Conflict:** Jika `version` di database lebih baru (di-edit oleh evaluator lain bersamaan), server me-return HTTP 409 Conflict.<br>- **Semua Selesai:** Jika evaluator menekan "Selesai Evaluasi Pengajuan", server mengecek semua `NilaiEvaluasi` wajib `SESUAI`. Jika terpenuhi, status `PengajuanEvaluasi` di-update jadi `SELESAI_DIEVALUASI`. |
-| **Hasil Akhir** | Status penilaian tersimpan pada tabel `NilaiEvaluasi` dengan integritas concurrent access terjaga. |
+| ID use case | UC-11 |
+| Use case diagram | Mengevaluasi SOP |
+| No requirements | 15 |
+| Nama fungsional requirements | Penilaian Substansi SOP |
+| Aktor utama | Evaluator |
+| Aktor terlibat | Sistem evaluasi SOP |
+
+## Prasyarat
+
+- Evaluator sudah login.
+- Terdapat pengajuan evaluasi berisi SOP yang sedang dievaluasi.
+
+## Pemicu
+
+Evaluator membuka workbench evaluasi untuk menilai substansi SOP.
+
+## Alur utama
+
+1. Evaluator memilih pengajuan evaluasi.
+2. Sistem menampilkan daftar SOP di dalam pengajuan.
+3. Evaluator membuka detail SOP dan memeriksa substansi dokumen.
+4. Evaluator memberikan hasil penilaian untuk SOP.
+5. Sistem menyimpan nilai evaluasi dan audit perubahan.
+6. Setelah seluruh SOP memenuhi kriteria, evaluator menyelesaikan evaluasi pengajuan.
+7. Sistem mengubah status pengajuan menjadi siap untuk proses berita acara.
+
+## Alur alternatif
+
+- Jika SOP belum sesuai, evaluator memilih hasil perlu perbaikan dan UC-12 **Membuat Komentar** berjalan sebagai `<<extend>>`.
+- Jika terjadi konflik versi penilaian, sistem menolak pembaruan agar perubahan evaluator lain tidak tertimpa.
+- Jika belum semua SOP sesuai, sistem menolak penyelesaian pengajuan.
+
+## Hasil akhir
+
+Hasil penilaian substansi tersimpan dan pengajuan dapat dilanjutkan jika seluruh SOP sudah sesuai.
+

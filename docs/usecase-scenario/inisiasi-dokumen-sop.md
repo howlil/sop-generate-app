@@ -1,19 +1,44 @@
-# Dokumen Skenario Use Case: Inisiasi Dokumen SOP
+# Skenario UC-16: Inisiasi Dokumen SOP
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Inisiasi Dokumen SOP"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Inisiasi Dokumen SOP** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Inisiasi Dokumen SOP |
-| **ID** | UCM-16 |
-| **Aktor Utama** | PJ Penyusun, Penyusun |
-| **Aktor Terlibat** | Sistem (Inisialisasi Entity) |
-| **Prasyarat** | Pengguna aktif dan otorisasi authoring divalidasi. |
-| **Pemicu** | Kebutuhan menerbitkan standar prosedural operasi baru di instansi OPD lokal. |
-| **Alur Utama** | 1. Pengguna menekan tombol Buat SOP Baru lewat UI Create SOP.<br>2. Mengisikan parameter esensial: Judul SOP dan Nomor SOP.<br>3. Client melakukan POST ke endpoint `/sop`.<br>4. Server memeriksa field `nomorSOP` agar dipastikan unik secara global di seluruh database (berdasarkan index `nomorSOP @unique`).<br>5. Server membuat objek indukan `SOP` di-assign ke `opdId` terkait, serta membentuk child objek `DetailSOP` berversi awal `versi = 1` dengan `status = DRAFT`.<br>6. Server mengatur nilai `dibuatOlehId` merujuk ke primary key (UUID) pengguna yang memicu.<br>7. Client menerima respons 201 Created dan melakukan navigasi re-routing ke editor workbench SOP tersebut. |
-| **Alur Alternatif** | - **Nomor Duplikat:** Validasi global DB constraint fail (HTTP 409 Conflict). Sistem menampilkan pesan agar pengguna menggunakan identifikasi nomor SOP lain yang belum diregistrasi oleh instansi manapun.<br>- **Revisi Resmi (Versi Baru):** Jika diinisiasi lewat aksi POST `/sop/:id/buat-versi-baru` dari sebuah dokumen `BERLAKU`, sistem melakukan metode deep-copy spesifikasi dokumen lama ke iterasi versi selanjutnya (`versi + 1`), mempertahankan status awal `DRAFT`, dan menyimpan jejak relasional via kolom `revisiDariDetailSopId`. |
-| **Hasil Akhir** | Wadah data arsitektur dokumen (`SOP` dan `DetailSOP`) terinisiasi terpusat dengan kepemilikan mutlak afiliasi unit organisasi bersangkutan. |
+| ID use case | UC-16 |
+| Use case diagram | Inisiasi Dokumen SOP |
+| No requirements | 10 |
+| Nama fungsional requirements | Penyusunan dan Pengelolaan Draft SOP |
+| Aktor utama | PJ Penyusun, Penyusun |
+| Aktor terlibat | Sistem katalog dan versi SOP |
+
+## Prasyarat
+
+- Aktor sudah login sebagai PJ Penyusun atau Penyusun.
+- Aktor memiliki akses pada OPD tempat SOP dibuat.
+
+## Pemicu
+
+Aktor membuat SOP baru atau versi baru dari SOP yang sudah berlaku.
+
+## Alur utama
+
+1. Aktor memilih aksi buat SOP baru.
+2. Sistem menampilkan formulir inisiasi dokumen.
+3. Aktor mengisi data awal, seperti judul, nomor, OPD, dan metadata yang diperlukan.
+4. Sistem memvalidasi data wajib dan keunikan nomor SOP.
+5. Sistem membuat entitas SOP dan detail versi awal.
+6. Sistem menetapkan status awal sebagai draft.
+7. Sistem membuka workbench agar aktor dapat melanjutkan UC-15 Menyusun Draft SOP.
+
+## Alur alternatif
+
+- Jika nomor SOP sudah digunakan, sistem menolak pembuatan.
+- Jika aktor membuat versi baru dari SOP berlaku, sistem menyalin data relevan dari versi lama dan membuat draft versi berikutnya.
+- Jika data wajib belum lengkap, sistem menolak inisiasi.
+
+## Hasil akhir
+
+Wadah dokumen SOP tersedia sebagai draft untuk disusun lebih lanjut.
+

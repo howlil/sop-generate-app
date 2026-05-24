@@ -1,19 +1,43 @@
-# Dokumen Skenario Use Case: Mengelola OPD
+# Skenario UC-05: Mengelola OPD
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Mengelola OPD"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Mengelola OPD** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Mengelola OPD |
-| **ID** | UCM-02 |
-| **Aktor Utama** | PJ Evaluator Organisasi |
-| **Aktor Terlibat** | Sistem (Basis Data OPD) |
-| **Prasyarat** | Pengguna login dengan peran PJ_EVALUATOR. |
-| **Pemicu** | Pengguna ingin menambah, mengubah, atau menghapus (soft-delete) data instansi OPD. |
-| **Alur Utama** | 1. Pengguna membuka menu Manajemen OPD dan menekan tombol Tambah/Ubah.<br>2. Pengguna memasukkan data nama OPD.<br>3. Client mengirim request POST/PATCH ke endpoint OPD server.<br>4. Server memvalidasi payload dan memastikan tidak ada konflik data.<br>5. Server menyimpan/memperbarui record di tabel `OPD`.<br>6. Server merespon status 200/201 sukses.<br>7. Client memperbarui daftar OPD yang ditampilkan. |
-| **Alur Alternatif** | - **Gagal Validasi:** Jika nama OPD kosong, server menolak dengan HTTP 400.<br>- **Hapus Data (Soft-delete):** Jika pengguna memilih hapus, server mengisi field `deletedAt` pada entitas `OPD` alih-alih penghapusan fisik, untuk menjaga integritas relasional. |
-| **Hasil Akhir** | Data OPD di tabel master terbarui secara persisten tanpa merusak relasi historis. |
+| ID use case | UC-05 |
+| Use case diagram | Mengelola OPD |
+| No requirements | 1 |
+| Nama fungsional requirements | Pengelolaan Data OPD |
+| Aktor utama | PJ Evaluator |
+| Aktor terlibat | Sistem master data OPD |
+
+## Prasyarat
+
+- PJ Evaluator sudah login.
+- Data yang dimasukkan mengikuti ketentuan validasi master OPD.
+
+## Pemicu
+
+PJ Evaluator perlu menambah, mengubah, atau menonaktifkan data OPD.
+
+## Alur utama
+
+1. PJ Evaluator membuka menu pengelolaan OPD.
+2. Sistem menampilkan daftar OPD yang sudah terdaftar.
+3. PJ Evaluator memilih aksi tambah atau ubah.
+4. PJ Evaluator mengisi data OPD.
+5. Sistem memvalidasi kelengkapan dan potensi duplikasi.
+6. Sistem menyimpan perubahan.
+7. Sistem memperbarui daftar OPD.
+
+## Alur alternatif
+
+- Jika data wajib belum lengkap, sistem menolak penyimpanan.
+- Jika OPD dinonaktifkan, sistem melakukan soft-delete agar riwayat relasi tetap utuh.
+
+## Hasil akhir
+
+Data master OPD tersimpan secara konsisten dan dapat digunakan oleh use case lain.
+

@@ -3,7 +3,7 @@ import type { TTESignaturePayload } from "./tte.dto";
 
 export type StatusHasilEvaluasi = "SESUAI" | "PERLU_PERBAIKAN";
 
-/** Status tindak lanjut umpan balik evaluasi (selaras enum StatusKomentar di server). */
+/** Status tindak lanjut umpan balik evaluasi (selaras enum StatusTindakLanjut di server). */
 export type StatusTindakLanjut = "TERBUKA" | "SELESAI";
 
 /** Turunan API saat belum ada hasil di DB. */

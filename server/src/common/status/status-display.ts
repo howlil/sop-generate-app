@@ -1,6 +1,6 @@
 import {
   HasilEvaluasi,
-  StatusKomentar,
+  StatusTindakLanjut,
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
@@ -50,9 +50,9 @@ const TAMPILAN_ALUR_LABELS: Record<TampilanAlurEvaluasi, string> = {
   selesai_pengajuan_ini: 'Penilaian selesai (pengajuan ini)',
 };
 
-const STATUS_TINDAK_LANJUT_LABELS: Record<StatusKomentar, string> = {
-  [StatusKomentar.TERBUKA]: 'Menunggu tindak lanjut OPD',
-  [StatusKomentar.SELESAI]: 'Siap dinilai ulang',
+const STATUS_TINDAK_LANJUT_LABELS: Record<StatusTindakLanjut, string> = {
+  [StatusTindakLanjut.TERBUKA]: 'Menunggu tindak lanjut OPD',
+  [StatusTindakLanjut.SELESAI]: 'Siap dinilai ulang',
 };
 
 function resolveEnumLabel<T extends string>(
@@ -105,7 +105,7 @@ export function displayTampilanAlur(alur: TampilanAlurEvaluasi | string): Status
 
 /** Status tindak lanjut umpan balik evaluasi pada baris NilaiEvaluasi. */
 export function displayStatusTindakLanjut(
-  status: StatusKomentar | string | null | undefined,
+  status: StatusTindakLanjut | string | null | undefined,
 ): StatusDisplay | null {
   if (status === null || status === undefined) {
     return null;

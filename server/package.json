@@ -4,6 +4,7 @@
   "description": "",
   "author": "",
   "private": true,
+  "packageManager": "pnpm@10.28.2",
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
@@ -20,6 +21,7 @@
     "test:core-unit": "jest auth.service.spec.ts roles.guard.spec.ts penyusun.service.spec.ts kepala-opd.service.spec.ts evaluator.service.spec.ts pelaksana.service.spec.ts peraturan.service.spec.ts sop-catalog.service.spec.ts sop-prosedur.service.spec.ts sop-diagram.service.spec.ts sop-completeness.validator.spec.ts sop-status-policy.spec.ts pengajuan-evaluasi.service.spec.ts evaluasi-nilai.service.spec.ts evaluasi-umpan-balik.service.spec.ts tte.service.spec.ts tte.repository.spec.ts sop-public.service.spec.ts evaluasi-grafik.service.spec.ts --runInBand",
     "test:evaluasi-sop-unit": "jest sop-catalog.service.spec.ts pengajuan-evaluasi.service.spec.ts evaluasi-nilai.service.spec.ts tte.service.spec.ts sop-public.service.spec.ts --runInBand",
     "test:integration": "jest --config ./test/jest-integration.json --runInBand",
+    "test:integration:docker": "docker compose -f ../docker-compose.test.yml --profile test run --rm sop-integration-test",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -91,6 +93,16 @@
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@prisma/engines",
+      "@scarf/scarf",
+      "bcrypt",
+      "prisma",
+      "unrs-resolver"
+    ]
   },
   "jest": {
     "moduleFileExtensions": [

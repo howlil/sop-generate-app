@@ -1,19 +1,43 @@
-# Dokumen Skenario Use Case: Mengelola Tim Evaluator
+# Skenario UC-06: Mengelola Tim Evaluator
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Mengelola Tim Evaluator"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Mengelola Tim Evaluator** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Mengelola Tim Evaluator |
-| **ID** | UCM-03 |
-| **Aktor Utama** | PJ Evaluator Organisasi |
-| **Aktor Terlibat** | Sistem (Basis Data Pengguna) |
-| **Prasyarat** | Pengguna login dengan peran PJ_EVALUATOR. Data OPD 'Biro Organisasi' sudah ada. |
-| **Pemicu** | Pengguna menambah atau mengatur akun dengan peran EVALUATOR. |
-| **Alur Utama** | 1. Pengguna mengakses menu Manajemen Tim Evaluator.<br>2. Pengguna mengisi NIP, Email, Nama, dan memilih peran `EVALUATOR`.<br>3. Client mengirim payload pembuatan user ke server.<br>4. Server memverifikasi keunikan tabel `Pengguna` untuk field `email` dan `nip`.<br>5. Server memasukkan entri `Pengguna` baru dan mengaitkannya ke `opdId` milik Biro Organisasi.<br>6. Server merespons berhasil. |
-| **Alur Alternatif** | - **Duplikasi Data:** Jika `email` atau `nip` sudah ada, server mengembalikan error HTTP 409 (Conflict). Sistem menampilkan pesan duplikasi.<br>- **Nonaktifkan Evaluator:** Server memperbarui field `deletedAt` untuk akun terkait tanpa menghilangkan riwayat evaluasi yang pernah dinilai. |
-| **Hasil Akhir** | Tim evaluator berhasil diregistrasi/dimodifikasi di dalam sistem dan siap ditugaskan melakukan proses penilaian. |
+| ID use case | UC-06 |
+| Use case diagram | Mengelola Tim Evaluator |
+| No requirements | 2 |
+| Nama fungsional requirements | Pengelolaan Tim Evaluator |
+| Aktor utama | PJ Evaluator |
+| Aktor terlibat | Sistem pengelolaan pengguna |
+
+## Prasyarat
+
+- PJ Evaluator sudah login.
+- Data OPD atau unit evaluator yang diperlukan sudah tersedia.
+
+## Pemicu
+
+PJ Evaluator perlu menambah, memperbarui, atau menonaktifkan akun evaluator.
+
+## Alur utama
+
+1. PJ Evaluator membuka menu tim evaluator.
+2. Sistem menampilkan daftar evaluator aktif dan nonaktif sesuai kebijakan tampilan.
+3. PJ Evaluator memilih tambah atau ubah evaluator.
+4. PJ Evaluator mengisi data akun, identitas, dan penugasan.
+5. Sistem memvalidasi peran evaluator dan keunikan identitas akun.
+6. Sistem menyimpan data pengguna.
+7. Sistem menampilkan daftar tim evaluator terbaru.
+
+## Alur alternatif
+
+- Jika email atau NIP sudah digunakan, sistem menolak penyimpanan.
+- Jika evaluator dinonaktifkan, sistem mempertahankan riwayat evaluasi lama.
+
+## Hasil akhir
+
+Tim evaluator tercatat dan siap digunakan dalam proses evaluasi SOP.
+

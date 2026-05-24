@@ -14,7 +14,7 @@ export type StatusSOP =
 export type JenisLangkahProsedur = "AWAL_AKHIR" | "KEGIATAN" | "KEPUTUSAN";
 export type SatuanWaktu = "m" | "h" | "d" | "w" | "mo" | "y";
 /** Selaras dengan enum `BagianSOP` di server (sumber log aktivitas + komentar). */
-export type BagianSOP = "HEADER" | "LANGKAH" | "STATUS" | "KOMENTAR" | "EVALUASI";
+export type BagianSOP = "HEADER" | "LANGKAH" | "STATUS" | "UMPAN_BALIK" | "EVALUASI";
 
 /** Baris daftar dari GET /sop (versi DetailSOP terbaru per header). */
 export interface TerakhirDieditRingkas {

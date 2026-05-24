@@ -1,19 +1,39 @@
-# Dokumen Skenario Use Case: Logout
+# Skenario UC-02: Logout
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Logout"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Logout** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Logout |
-| **ID** | UCM-13 |
-| **Aktor Utama** | PJ Evaluator Organisasi, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
-| **Aktor Terlibat** | Sistem (Manajer Sesi) |
-| **Prasyarat** | Pengguna memiliki sesi login yang valid (token JWT HttpOnly). |
-| **Pemicu** | Pengguna menekan opsi keluar di antarmuka profil untuk mengakhiri sesi. |
-| **Alur Utama** | 1. Client mengirim command pemutusan sesi/logout ke server.<br>2. Server/Client menghapus/menginvalidasi token cookie kredensial.<br>3. Sistem melakukan redirection UI ke laman Landing Page Publik (Arsip Publik). |
-| **Alur Alternatif** | - |
-| **Hasil Akhir** | Akses privat (privilege context) tercabut, mencegah penyalahgunaan akun pada peramban web yang sama. |
+| ID use case | UC-02 |
+| Use case diagram | Logout |
+| No requirements | Tidak ada oval requirements tersendiri; pendukung No 7 |
+| Nama fungsional requirements | Login |
+| Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
+| Aktor terlibat | Sistem autentikasi dan manajemen sesi |
+
+## Prasyarat
+
+- Pengguna sudah login.
+- Sesi pengguna masih tercatat pada aplikasi.
+
+## Pemicu
+
+Pengguna memilih aksi keluar dari sistem.
+
+## Alur utama
+
+1. Pengguna menekan menu logout.
+2. Sistem menghapus atau membatalkan token sesi pada sisi klien dan/atau server.
+3. Sistem membersihkan konteks pengguna aktif.
+4. Sistem mengarahkan pengguna ke halaman publik atau halaman login.
+
+## Alur alternatif
+
+- Jika sesi sudah kedaluwarsa, sistem tetap membersihkan konteks lokal dan mengarahkan pengguna keluar dari area internal.
+
+## Hasil akhir
+
+Sesi internal pengguna berakhir dan fitur privat tidak dapat diakses tanpa login ulang.
+

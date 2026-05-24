@@ -1,19 +1,44 @@
-# Dokumen Skenario Use Case: Login
+# Skenario UC-01: Login
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Login"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Login** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Login |
-| **ID** | UCM-12 |
-| **Aktor Utama** | PJ Evaluator Organisasi, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
-| **Aktor Terlibat** | Sistem (Manajer Sesi/Autentikasi) |
-| **Prasyarat** | Akun telah dibuat oleh admin/PJ Evaluator dengan state `deletedAt = null`. |
-| **Pemicu** | Akses awal sistem atau expiration sesi. |
-| **Alur Utama** | 1. Input surel/NIP dan kata sandi di formulir aplikasi.<br>2. Server mencari `Pengguna` berdasar identifikasi unik tersebut.<br>3. Server mem-verifikasi hash bcrypt dari kata sandi masukan.<br>4. Server memastikan peran sesuai dan memuat hak akses (RBAC).<br>5. Jika sukses, server menggenerasi JSON Web Token (JWT) yang di dalamnya disematkan klaim utama: `penggunaId`, `opdId`, dan `peran`.<br>6. JWT dibenamkan di response header/cookie pengaman (HttpOnly). |
-| **Alur Alternatif** | - **Invalid Credential:** Bila gagal verifikasi hash, server me-return HTTP 401 Unauthorized. UI memunculkan indikasi kesalahan kredensial.<br>- **Akun Dinonaktifkan:** Jika field `deletedAt` tidak null, autentikasi ditolak dengan notifikasi akun sudah dihapus (soft-delete). |
-| **Hasil Akhir** | Status autentikasi tercapai dan API guard memberikan akses modul sistem sesuai scope peran. |
+| ID use case | UC-01 |
+| Use case diagram | Login |
+| No requirements | 7 |
+| Nama fungsional requirements | Login |
+| Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
+| Aktor terlibat | Sistem autentikasi dan manajemen sesi |
+
+## Prasyarat
+
+- Akun pengguna sudah terdaftar dan belum dinonaktifkan.
+- Pengguna berada pada halaman masuk sistem.
+
+## Pemicu
+
+Pengguna ingin mengakses fitur internal sesuai peran.
+
+## Alur utama
+
+1. Pengguna mengisi identitas akun dan kata sandi.
+2. Sistem memvalidasi format masukan.
+3. Sistem mencari akun pengguna yang masih aktif.
+4. Sistem memverifikasi kata sandi terhadap hash yang tersimpan.
+5. Sistem memuat peran dan ruang lingkup akses pengguna.
+6. Sistem menerbitkan sesi autentikasi.
+7. Sistem mengarahkan pengguna ke dashboard sesuai peran.
+
+## Alur alternatif
+
+- Jika kredensial salah, sistem menolak login dan menampilkan pesan kegagalan.
+- Jika akun sudah dinonaktifkan, sistem menolak akses.
+- Jika sesi lama masih ada, sistem dapat memperbarui sesi yang valid.
+
+## Hasil akhir
+
+Pengguna memiliki sesi aktif dan dapat mengakses use case internal yang diizinkan oleh perannya.
+

@@ -72,7 +72,11 @@ Enum `PeranPengguna`:
 | PJ Penyusun | `PJ_PENYUSUN` | Mengelola pengajuan evaluasi OPD, menandatangani BA dari sisi OPD, dan mengirim ulang revisi. |
 | Penyusun | `PENYUSUN` | Membuat, mengedit, dan menindaklanjuti revisi dokumen SOP. |
 
-### 2.1 Status SOP
+### 2.1 Kebutuhan fungsional resmi
+
+Daftar lengkap No 1–24 (nama fungsional dan deskripsi) ada di [`docs/requirements.md`](requirements.md). Ringkasan use case per peran ada di [`docs/usecase.md`](usecase.md). Skenario detail per fitur di [`docs/usecase-scenario/README.md`](usecase-scenario/README.md).
+
+### 2.2 Status SOP
 
 Enum `StatusSOP`:
 
@@ -164,7 +168,7 @@ SESUAI
 PERLU_PERBAIKAN
 ```
 
-Status tindak lanjut evaluasi memakai enum `StatusKomentar` pada `NilaiEvaluasi.statusTindakLanjut`:
+Status tindak lanjut evaluasi memakai enum `StatusTindakLanjut` pada `NilaiEvaluasi.statusTindakLanjut`:
 
 ```text
 TERBUKA
@@ -279,7 +283,7 @@ Aturan langkah:
 
 `LogEditSOP` mencatat aktivitas perubahan SOP:
 
-- Sumber bagian memakai enum `BagianSOP`: `HEADER`, `LANGKAH`, `STATUS`, `KOMENTAR`, `EVALUASI`.
+- Sumber bagian memakai enum `BagianSOP`: `HEADER`, `LANGKAH`, `STATUS`, `UMPAN_BALIK`, `EVALUASI`.
 - Identitas log client adalah id komposit, bukan UUID surrogate.
 - Server menggabungkan edit berdekatan dalam sesi log sesuai helper `log-edit-session`.
 
@@ -944,6 +948,24 @@ MAX_LIMIT = 100
 
 ### 9.2 Invariant Database
 
+Ringkasan unique constraint dan PK komposit — lihat juga [`server/prisma/DB-INVARIANTS.md`](../server/prisma/DB-INVARIANTS.md) untuk **trigger MySQL aktif** (tidak tercermin di Prisma schema).
+
+#### 9.2.1 Trigger database (MySQL)
+
+| Trigger | Aturan singkat |
+|---------|----------------|
+| `trg_detailsop_one_berlaku_*` | Maksimal satu `DetailSOP` berstatus `BERLAKU` per `sopId` |
+| `trg_langkahsop_cabang_detail_*` | Cabang Ya/Tidak hanya ke langkah dalam `DetailSOP` yang sama |
+| `trg_langkahsop_pelaksana_opd_*` | Pelaksana langkah harus dari OPD yang sama dengan SOP |
+| `trg_detailsoppelaksana_pelaksana_opd_*` | Pelaksana swimlane harus se-OPD dengan SOP |
+| `trg_dokumentte_satu_parent_*` | `DokumenTte`: tepat satu parent (`detailSopId` XOR `pengajuanEvaluasiId`) |
+| `trg_sop_terkait_*` | Relasi SOP terkait tidak boleh self-loop; pasangan dua arah diizinkan |
+| `trg_pengguna_singleton_pj_evaluator_*` | Hanya satu `PJ_EVALUATOR` aktif (`deletedAt IS NULL`) |
+
+Slot Kepala OPD / PJ Penyusun **tidak** lagi disimpan di kolom `OPD`; invariant peran per OPD ditegakkan di aplikasi via `Pengguna.opdId` + `peran`.
+
+#### 9.2.2 Unique index & PK
+
 Invariant penting:
 
 - `Pengguna.email` unik.
@@ -988,7 +1010,7 @@ Invariant bisnis:
 **AC-USR-01: Buat pengguna berhasil**
 
 ```text
-Given pengguna admin/PJ Evaluator berwenang
+Given pengguna PJ Evaluator Organisasi berwenang
 And email dan NIP belum digunakan
 When pengguna dibuat dengan payload valid
 Then response sukses

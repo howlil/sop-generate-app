@@ -12,6 +12,8 @@ import type {
   SelesaiEvaluasiDto,
   StatusHasilEvaluasi,
 } from "@/types/dto/evaluasi.dto";
+import { assertCanMutateEvaluasiNilai } from "@/lib/evaluasi/evaluasi-permissions";
+import { useAuthStore } from "@/stores/authStore";
 
 const AUTO_SAVE_DELAY_MS = 1500;
 
@@ -96,10 +98,10 @@ export function useEvaluasiDraft(
       status: StatusHasilEvaluasi;
       komentar: string;
     }) => {
+      assertCanMutateEvaluasiNilai(useAuthStore.getState().user?.peran);
       if (!pengajuanId || !sopDetailId) {
         throw new Error("Data evaluasi belum tersedia");
       }
-
       const version = getCurrentVersion(sopDetailId);
 
       return evaluasiApi.isiNilai(pengajuanId, sopDetailId, {
@@ -291,6 +293,7 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
     setIsSubmitting(true);
     setTerjadwalSubmitError(null);
     try {
+      assertCanMutateEvaluasiNilai(useAuthStore.getState().user?.peran);
       const payload: SelesaiEvaluasiDto = requiresNilaiOpd
         ? { nilaiOPD: ratingOPD! }
         : {};

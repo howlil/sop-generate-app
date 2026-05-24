@@ -26,7 +26,7 @@ export class EvaluasiNilaiController {
   constructor(private readonly evaluasiNilaiService: EvaluasiNilaiService) {}
 
   @Patch(':pengajuanEvaluasiId/nilai/:detailSopId')
-  @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
+  @Roles(PeranPengguna.EVALUATOR)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Isi / ubah nilai evaluasi untuk satu DetailSOP dalam pengajuan aktif',
@@ -36,7 +36,7 @@ export class EvaluasiNilaiController {
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiParam({ name: 'detailSopId', format: 'uuid' })
   @ApiResponse({ status: 200, type: NilaiEvaluasiPatchResponseDto })
-  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR atau PJ_EVALUATOR' })
+  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR' })
   @ApiNotFoundResponse({ description: 'Pengajuan atau baris nilai tidak ditemukan' })
   @ApiConflictResponse({ description: 'Konflik versi optimistik' })
   async isiNilai(
@@ -90,7 +90,7 @@ export class EvaluasiNilaiController {
   }
 
   @Patch(':pengajuanEvaluasiId/selesai')
-  @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
+  @Roles(PeranPengguna.EVALUATOR)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Selesaikan pengajuan evaluasi (semua SOP harus SESUAI, lalu ajukan ke PJ)',
@@ -99,7 +99,7 @@ export class EvaluasiNilaiController {
   })
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiResponse({ status: 200, type: PengajuanEvaluasiSelesaiResponseDto })
-  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR atau PJ_EVALUATOR' })
+  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR' })
   @ApiNotFoundResponse({ description: 'Pengajuan tidak ditemukan' })
   async selesai(
     @Req() req: Request & { user: JwtAccessPayload },

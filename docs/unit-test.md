@@ -41,15 +41,17 @@ Time:        15.371 s
 
 ## Core Workflow yang Didukung Pengujian Unit
 
-1. Autentikasi dan otorisasi pengguna: login, profil, refresh sesi, ubah password, dan validasi role.
-2. Pengelolaan data master: OPD, Kepala OPD, Evaluator, Penyusun/PJ Penyusun, Pelaksana, dan Peraturan.
-3. Penyusunan SOP: pembuatan SOP, header, dasar hukum, lampiran, pelaksana, langkah/prosedur, diagram, dan log edit.
-4. Validasi kelengkapan dan pengajuan evaluasi: SOP harus lengkap sebelum diajukan, lalu hanya PJ Penyusun yang dapat mengajukan evaluasi.
-5. Evaluasi SOP: Evaluator atau PJ Evaluator memberi hasil `SESUAI` atau `PERLU_PERBAIKAN`; catatan wajib jika hasilnya `PERLU_PERBAIKAN`.
-6. Revisi dan kirim ulang: Penyusun/PJ Penyusun melihat umpan balik, menandai tindak lanjut selesai, lalu PJ Penyusun mengirim ulang evaluasi.
-7. Penyelesaian evaluasi: evaluasi hanya selesai jika seluruh SOP bernilai `SESUAI`; evaluasi `TERJADWAL` wajib memiliki nilai OPD.
-8. Verifikasi dan tanda tangan: PJ Evaluator menandatangani Berita Acara, PJ Penyusun menandatangani Berita Acara, lalu Kepala OPD menandatangani SOP.
-9. Pengesahan, arsip, versi, dan pencabutan: SOP menjadi `BERLAKU`, tampil pada arsip publik, dapat dibuat versi baru, dan dapat dicabut oleh Kepala OPD.
+Pemetaan ke kebutuhan fungsional resmi (`docs/requirements.md`):
+
+1. **No 7–8** — Login, ubah kata sandi, otorisasi peran.
+2. **No 1–6** — Master: OPD, evaluator, penyusun, kepala OPD, peraturan, pelaksana.
+3. **No 10, 15** — Penyusunan draft SOP (header, prosedur, diagram) dan log perubahan.
+4. **No 16** — Pengajuan evaluasi (PJ Penyusun).
+5. **No 19–20** — Penilaian substansi dan catatan evaluasi (Evaluator).
+6. **No 18, 17** — Tindak lanjut revisi dan pengajuan ulang.
+7. Penyelesaian paket evaluasi (langkah teknis server sebelum No 22).
+8. **No 9, 22, 24** — PIN TTE, TTE Berita Acara, pengesahan SOP oleh Kepala OPD.
+9. **No 25, 27–30** — Pencabutan, arsip/cetak, arsip publik, verifikasi TTE/PDF.
 
 ## Tabel Test Case Unit
 

@@ -1,19 +1,46 @@
-# Dokumen Skenario Use Case: Menandatangani Berita Acara
+# Skenario UC-10: Menandatangani Berita Acara
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Menandatangani Berita Acara"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Menandatangani Berita Acara** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Menandatangani Berita Acara |
-| **ID** | UCM-06 |
-| **Aktor Utama** | PJ Evaluator Organisasi |
-| **Aktor Terlibat** | Sistem (Proses Legalisasi) |
-| **Prasyarat** | Terdapat pengajuan evaluasi berstatus `SELESAI_DIEVALUASI`. PJ Evaluator sudah mengatur PIN TTE. |
-| **Pemicu** | Pengajuan yang selesai dievaluasi memerlukan verifikasi administratif (Berita Acara). |
-| **Alur Utama** | 1. Pengguna memilih pengajuan berstatus `SELESAI_DIEVALUASI` dan menekan tombol Tandatangani Berita Acara.<br>2. Pengguna memasukkan PIN TTE miliknya.<br>3. Server memverifikasi input PIN dengan `Pengguna.ttePinHash`.<br>4. Server memastikan invariant: `PengajuanEvaluasi.status` adalah `SELESAI_DIEVALUASI`.<br>5. Dalam satu transaksi DB: Server mengubah status pengajuan menjadi `DIVERIFIKASI_PJ_EVALUATOR`. Server membuat entitas `DokumenTte` jika belum ada, lalu mengisikan record `RiwayatTandaTangan` dengan peran `PJ_EVALUATOR`.<br>6. Status SOP tidak berubah secara individual dalam tahap ini. |
-| **Alur Alternatif** | - **PIN Salah:** Server (endpoint POST `/tte/tanda-tangani/ba`) mengembalikan HTTP 401 Unauthorized.<br>- **Double Sign:** Jika mencoba tanda tangan dua kali untuk peran yang sama, sistem DB menolak karena `@@unique([dokumenTteId, peran])`. |
-| **Hasil Akhir** | Dokumen Berita Acara sah dari sisi Biro Organisasi, pengajuan dilanjutkan ke tahapan tanda tangan PJ Penyusun OPD. |
+| ID use case | UC-10 |
+| Use case diagram | Menandatangani Berita Acara |
+| No requirements | 17 |
+| Nama fungsional requirements | Tanda Tangan Berita Acara Evaluasi |
+| Aktor utama | PJ Evaluator, PJ Penyusun |
+| Aktor terlibat | Sistem TTE dan pengajuan evaluasi |
+
+## Prasyarat
+
+- Pengajuan evaluasi sudah selesai dinilai oleh evaluator.
+- Aktor yang menandatangani sudah memiliki PIN TTE.
+- Tahapan tanda tangan mengikuti urutan PJ Evaluator lalu PJ Penyusun.
+
+## Pemicu
+
+Pengajuan evaluasi perlu disahkan secara administratif melalui berita acara.
+
+## Alur utama
+
+1. PJ Evaluator membuka daftar pengajuan yang siap ditandatangani.
+2. PJ Evaluator memilih pengajuan dan memasukkan PIN TTE.
+3. Sistem memvalidasi PIN dan status pengajuan.
+4. Sistem mencatat tanda tangan PJ Evaluator pada berita acara.
+5. Sistem memindahkan pengajuan ke tahap menunggu tanda tangan PJ Penyusun.
+6. PJ Penyusun membuka pengajuan yang sudah ditandatangani PJ Evaluator.
+7. PJ Penyusun memasukkan PIN TTE.
+8. Sistem mencatat tanda tangan PJ Penyusun dan memindahkan pengajuan ke tahap pra-pengesahan.
+
+## Alur alternatif
+
+- Jika PIN salah, sistem menolak tanda tangan dan tidak mengubah status.
+- Jika urutan tanda tangan tidak sesuai, sistem menolak aksi.
+- Jika aktor yang sama mencoba menandatangani dua kali untuk peran yang sama, sistem menolak duplikasi.
+
+## Hasil akhir
+
+Berita acara evaluasi ditandatangani oleh pihak yang berwenang dan pengajuan dapat berlanjut ke pengesahan dokumen SOP.
+

@@ -1,19 +1,46 @@
-# Dokumen Skenario Use Case: Menyusun Draft SOP
+# Skenario UC-15: Menyusun Draft SOP
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Menyusun Draft SOP"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Menyusun Draft SOP** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Menyusun Draft SOP |
-| **ID** | UCM-14 |
-| **Aktor Utama** | PJ Penyusun, Penyusun |
-| **Aktor Terlibat** | Sistem (Authoring Core) |
-| **Prasyarat** | Sistem memiliki SOP berstatus dapat diedit (`DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVALUATOR`). |
-| **Pemicu** | Pembuatan substansi konten dokumen prosedur secara utuh, perbaikan dari draft kasar, atau menindaklanjuti revisi evaluator. |
-| **Alur Utama** | 1. Pengguna (Penyusun / PJ Penyusun) mengakses workbench authoring (endpoint `/sop/penyusun-workbench/:id`).<br>2. Melakukan modifikasi elemen header, lampiran, perancangan dasar hukum, serta menambahkan array data `LangkahSOP` dan pelaksana (`DetailSOPPelaksana`).<br>3. Client me-replace array keseluruhan dengan mengirim PATCH ke server.<br>4. Server memvalidasi urutan langkah yang dikirim.<br>5. Server memvalidasi invariant langkah khusus: Jenis langkah `KEPUTUSAN` wajib punya relasi pointer ke langkah `Ya` dan `Tidak` dalam dokumen yang sama.<br>6. Transaksi database replace-all langkah berjalan. Tabel `LogEditSOP` mendokumentasikan log audit modifikasi data domain.<br>7. UI diperbarui. Bila telah utuh memanggil trigger status akhir PATCH ke `/sop/status/:detailSopId`.<br>8. Server memverifikasi kelengkapan. Bila valid, server mengalihkan status ke `SIAP_DIEVALUASI`. |
-| **Alur Alternatif** | - **Edit SOP Berlaku:** Jika UI/API dipaksa mengedit SOP yang statusnya `BERLAKU` atau `SEDANG_DIEVALUASI`, server mengembalikan respon HTTP 403 Forbidden. Dokumen sudah frozen.<br>- **Penyusunan Flowchart Diagram:** UI otomatis menggenerasikan konfigurasi node, jika pengguna men-tweak garis diagram, tersimpan di tabel `KonfigurasiDiagramSOP`.<br>- **SOP Inkomplit:** Saat menekan "Tandai Siap Dievaluasi", aplikasi memvalidasi mendalam. Bila teridentifikasi error (langkah kosong, dll), ditolak HTTP 400. Draft batal dinaikkan state-nya. |
-| **Hasil Akhir** | Bentuk teknis prosedur tersimpan akurat dan/atau DetailSOP berganti status menjadi kesiapan pasif (`SIAP_DIEVALUASI`) menunggu aksi pengajuan evaluasi. |
+| ID use case | UC-15 |
+| Use case diagram | Menyusun Draft SOP |
+| No requirements | 10 |
+| Nama fungsional requirements | Penyusunan dan Pengelolaan Draft SOP |
+| Aktor utama | PJ Penyusun, Penyusun |
+| Aktor terlibat | Sistem penyusunan SOP |
+
+## Prasyarat
+
+- Aktor sudah login sebagai PJ Penyusun atau Penyusun.
+- Dokumen SOP sudah diinisiasi atau tersedia sebagai draft.
+- Status dokumen masih dapat diedit.
+
+## Pemicu
+
+Aktor mengisi atau memperbarui substansi SOP.
+
+## Alur utama
+
+1. Aktor membuka workbench penyusunan SOP.
+2. Sistem menampilkan data umum SOP, dasar hukum, pelaksana, langkah, dan diagram.
+3. Aktor mengisi atau memperbarui informasi dokumen.
+4. Aktor menyusun langkah SOP dan relasi alur keputusan jika ada.
+5. Sistem memvalidasi kelengkapan dan konsistensi data.
+6. Sistem menyimpan perubahan dan mencatat riwayat edit.
+7. Jika dokumen sudah lengkap, aktor menandai draft sebagai siap dievaluasi.
+8. Sistem mengubah status SOP menjadi siap dievaluasi.
+
+## Alur alternatif
+
+- Jika status SOP sedang dievaluasi atau sudah berlaku, sistem menolak pengeditan.
+- Jika langkah keputusan tidak memiliki cabang ya dan tidak, sistem menolak penyimpanan atau penandaan siap.
+- Jika draft belum lengkap, sistem menyimpan sebagai draft tetapi menolak status siap dievaluasi.
+
+## Hasil akhir
+
+Draft SOP tersusun dan dapat diajukan untuk evaluasi setelah memenuhi kelengkapan.
+

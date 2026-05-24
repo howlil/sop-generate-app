@@ -27,6 +27,7 @@ export class PengajuanEvaluasiController {
   @Roles(
     PeranPengguna.PJ_EVALUATOR,
     PeranPengguna.EVALUATOR,
+    PeranPengguna.PENYUSUN,
     PeranPengguna.PJ_PENYUSUN,
     PeranPengguna.KEPALA_OPD,
   )
@@ -54,6 +55,7 @@ export class PengajuanEvaluasiController {
   @Roles(
     PeranPengguna.PJ_EVALUATOR,
     PeranPengguna.EVALUATOR,
+    PeranPengguna.PENYUSUN,
     PeranPengguna.PJ_PENYUSUN,
     PeranPengguna.KEPALA_OPD,
   )
@@ -81,6 +83,7 @@ export class PengajuanEvaluasiController {
   @Roles(
     PeranPengguna.PJ_EVALUATOR,
     PeranPengguna.EVALUATOR,
+    PeranPengguna.PENYUSUN,
     PeranPengguna.PJ_PENYUSUN,
     PeranPengguna.KEPALA_OPD,
   )

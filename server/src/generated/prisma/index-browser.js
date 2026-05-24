@@ -656,7 +656,7 @@ exports.BagianSOP = exports.$Enums.BagianSOP = {
   HEADER: 'HEADER',
   LANGKAH: 'LANGKAH',
   STATUS: 'STATUS',
-  KOMENTAR: 'KOMENTAR',
+  UMPAN_BALIK: 'UMPAN_BALIK',
   EVALUASI: 'EVALUASI'
 };
 
@@ -678,7 +678,7 @@ exports.HasilEvaluasi = exports.$Enums.HasilEvaluasi = {
   PERLU_PERBAIKAN: 'PERLU_PERBAIKAN'
 };
 
-exports.StatusKomentar = exports.$Enums.StatusKomentar = {
+exports.StatusTindakLanjut = exports.$Enums.StatusTindakLanjut = {
   TERBUKA: 'TERBUKA',
   SELESAI: 'SELESAI'
 };

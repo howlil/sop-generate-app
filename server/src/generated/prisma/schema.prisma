@@ -8,6 +8,8 @@ datasource db {
   provider = "mysql"
 }
 
+/// Invariant database (trigger, unique): lihat `server/prisma/DB-INVARIANTS.md`.
+
 /// =========================
 /// MODUL 1 — MASTER & AKSES
 /// =========================
@@ -157,7 +159,7 @@ model DetailSOP {
   @@index([revisiDariDetailSopId])
 }
 
-/// Lampiran PERINGATAN (ambil teks terbaru untuk tampilan dokumen).
+/// Daftar teks lampiran peringatan per versi DetailSOP (replace-all saat simpan; bukan riwayat append-only).
 model LampiranPeringatan {
   lampiranPeringatanId String    @id @default(uuid())
   detailSopId          String
@@ -166,9 +168,10 @@ model LampiranPeringatan {
   updatedAt            DateTime  @updatedAt
   detailSop            DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
-  @@index([detailSopId, createdAt])
+  @@index([detailSopId])
 }
 
+/// Daftar teks kualifikasi pelaksanaan per versi DetailSOP (replace-all saat simpan).
 model LampiranKualifikasiPelaksanaan {
   lampiranKualifikasiPelaksanaanId String    @id @default(uuid())
   detailSopId                      String
@@ -177,9 +180,10 @@ model LampiranKualifikasiPelaksanaan {
   updatedAt                        DateTime  @updatedAt
   detailSop                        DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
-  @@index([detailSopId, createdAt])
+  @@index([detailSopId])
 }
 
+/// Daftar teks peralatan/perlengkapan per versi DetailSOP (replace-all saat simpan).
 model LampiranPeralatanPerlengkapan {
   lampiranPeralatanPerlengkapanId String    @id @default(uuid())
   detailSopId                     String
@@ -188,9 +192,10 @@ model LampiranPeralatanPerlengkapan {
   updatedAt                       DateTime  @updatedAt
   detailSop                       DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
-  @@index([detailSopId, createdAt])
+  @@index([detailSopId])
 }
 
+/// Daftar teks pencatatan/pendataan per versi DetailSOP (replace-all saat simpan).
 model LampiranPencatatanPendataan {
   lampiranPencatatanPendataanId String    @id @default(uuid())
   detailSopId                   String
@@ -199,7 +204,7 @@ model LampiranPencatatanPendataan {
   updatedAt                     DateTime  @updatedAt
   detailSop                     DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
-  @@index([detailSopId, createdAt])
+  @@index([detailSopId])
 }
 
 model DasarHukum {
@@ -280,17 +285,16 @@ model DetailSOPPelaksana {
 }
 
 /// =========================
-/// MODUL 3 — KOLABORASI SOP
+/// MODUL 3 — KOLABORASI SOP (log aktivitas; tabel Komentar terpisah sudah dihapus)
 /// =========================
 
 /// Log aktivitas edit per DetailSOP (kunci alami sesi: detail + pengguna + waktu mulai).
-//Menyimpan 1 kejadian atau 1 sesi perubahan SOP. 
 model LogEditSOP {
   detailSopId     String
   penggunaId      String
   createdAt       DateTime                @default(now()) @db.DateTime(3)
   bagian          BagianSOP               @default(HEADER)
-  /// Pointer longgar ke entitas yang diaudit (mis. komentarId); bukan FK. Null bila tidak relevan.
+  /// Pointer longgar ke entitas yang diaudit (mis. id komposit nilai evaluasi); bukan FK.
   targetEntityId  String?
   /// Ringkasan human-readable yang sudah memuat label bagian + field yang berubah.
   keterangan      String?                 @db.Text
@@ -309,7 +313,6 @@ model LogEditSOP {
 }
 
 /// Field domain yang berubah dalam satu sesi log (normalisasi bekas `meta.fields`).
-//detail field yang berubah 
 model LogEditSopDomainField {
   detailSopId  String
   penggunaId   String
@@ -362,23 +365,23 @@ model NilaiEvaluasi {
   detailSopId           String
   hasil                 HasilEvaluasi?
   /// Catatan formal evaluator; wajib jika hasil PERLU_PERBAIKAN.
-  catatan               String?            @db.Text
-  /// Status tindak lanjut / resolve umpan balik: TERBUKA (belum) | SELESAI (sudah ditandai penyusun).
-  /// Memakai enum StatusKomentar hanya untuk nilai TERBUKA/SELESAI — bukan relasi ke model Komentar.
-  statusTindakLanjut    StatusKomentar?
+  catatan               String?             @db.Text
+  /// Status tindak lanjut umpan balik: TERBUKA (belum) | SELESAI (sudah ditandai penyusun).
+  statusTindakLanjut    StatusTindakLanjut?
   ditindaklanjutiPada   DateTime?
   ditindaklanjutiOlehId String?
-  version               Int                @default(0)
+  version               Int                 @default(0)
   dinilaiOlehId         String?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  dinilaiOleh           Pengguna?          @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
-  ditindaklanjutiOleh   Pengguna?          @relation("NilaiDitindaklanjutiOleh", fields: [ditindaklanjutiOlehId], references: [penggunaId])
-  pengajuanEvaluasi     PengajuanEvaluasi  @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
-  detailSop             DetailSOP          @relation(fields: [detailSopId], references: [detailSopId])
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  dinilaiOleh           Pengguna?           @relation("NilaiDiisiOleh", fields: [dinilaiOlehId], references: [penggunaId])
+  ditindaklanjutiOleh   Pengguna?           @relation("NilaiDitindaklanjutiOleh", fields: [ditindaklanjutiOlehId], references: [penggunaId])
+  pengajuanEvaluasi     PengajuanEvaluasi   @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
+  detailSop             DetailSOP           @relation(fields: [detailSopId], references: [detailSopId])
   logNilaiEvaluasi      LogNilaiEvaluasi[]
 
   @@id([pengajuanEvaluasiId, detailSopId])
+  @@index([pengajuanEvaluasiId])
   @@index([detailSopId])
 }
 
@@ -509,17 +512,18 @@ enum JenisDokumenTte {
   SOP_BERLAKU
 }
 
-enum StatusKomentar {
+/// Status penyelesaian umpan balik evaluasi pada `NilaiEvaluasi.statusTindakLanjut`.
+enum StatusTindakLanjut {
   TERBUKA
   SELESAI
 }
 
-/// Kategori bagian SOP yang menjadi sumber log aktivitas / komentar.
+/// Kategori bagian SOP pada log aktivitas edit (`LogEditSOP.bagian`).
 enum BagianSOP {
   HEADER
   LANGKAH
   STATUS
-  KOMENTAR
+  UMPAN_BALIK
   EVALUASI
 }
 
@@ -542,7 +546,7 @@ enum SisiPanahDiagram {
   right
 }
 
-/// Override path panah manual per DetailSOP (layout otomatis tetap di klien).
+/// Agregat konfigurasi diagram per DetailSOP (bukan junction M:N). Layout node otomatis di klien.
 model KonfigurasiDiagramSOP {
   detailSopId   String
   jenis         JenisDiagram
@@ -557,6 +561,7 @@ model KonfigurasiDiagramSOP {
   @@index([detailSopId])
 }
 
+/// Override koordinat panah manual (anak `KonfigurasiDiagramSOP`).
 model OverridePanahDiagramSOP {
   detailSopId      String
   jenis            JenisDiagram
@@ -582,6 +587,7 @@ model OverridePanahDiagramSOP {
   @@index([keLangkahSopId])
 }
 
+/// Titik tekuk panah berurutan (anak `OverridePanahDiagramSOP`).
 model TitikTekukPanahDiagramSOP {
   detailSopId      String
   jenis            JenisDiagram
@@ -597,6 +603,7 @@ model TitikTekukPanahDiagramSOP {
   @@id([detailSopId, jenis, dariLangkahSopId, keLangkahSopId, cabang, urutan])
 }
 
+/// Posisi label diagram manual (anak `KonfigurasiDiagramSOP`).
 model OverrideLabelDiagramSOP {
   detailSopId String
   jenis       JenisDiagram

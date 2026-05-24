@@ -11,7 +11,7 @@ import {
   JenisPengajuanEvaluasi,
   PeranPengguna,
   SatuanWaktu,
-  StatusKomentar,
+  StatusTindakLanjut,
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
@@ -1440,7 +1440,7 @@ export class SeedService {
   // ── MODUL 3: Kolaborasi ─────────────────────────────────────────────────
 
   /**
-   * LogEditSOP — mencakup semua BagianSOP: HEADER, LANGKAH, STATUS, KOMENTAR, EVALUASI
+   * LogEditSOP — mencakup semua BagianSOP: HEADER, LANGKAH, STATUS, UMPAN_BALIK, EVALUASI
    */
   private async seedKolaborasi(
     tx: Prisma.TransactionClient,
@@ -1508,7 +1508,7 @@ export class SeedService {
         createdAt: new Date('2026-03-01T09:30:00.000Z'),
         detailSopId: d['DINKES_001_V1'].detailSopId,
         penggunaId: evaluator1Id,
-        bagian: BagianSOP.KOMENTAR,
+        bagian: BagianSOP.UMPAN_BALIK,
         targetEntityId: null,
         keterangan: 'Menambahkan komentar terkait SLA pada langkah keputusan.',
         sesiChangeCount: 1,
@@ -1691,7 +1691,7 @@ export class SeedService {
       catatan:
         'Lengkapi prosedur distribusi obat dengan SLA dan bukti serah terima yang dapat diaudit.',
       dinilaiOlehId: params.evaluator1Id,
-      statusTindakLanjut: StatusKomentar.TERBUKA,
+      statusTindakLanjut: StatusTindakLanjut.TERBUKA,
     });
 
     // Pengajuan SEDANG_DIEVALUASI: sebagian terisi
@@ -1965,7 +1965,7 @@ export class SeedService {
       const statusDetail =
         statusPengajuan === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI &&
         n.hasil === HasilEvaluasi.PERLU_PERBAIKAN &&
-        n.statusTindakLanjut === StatusKomentar.TERBUKA
+        n.statusTindakLanjut === StatusTindakLanjut.TERBUKA
           ? StatusSOP.REVISI_DARI_EVALUATOR
           : statusSop;
       await tx.detailSOP.update({
@@ -2099,12 +2099,12 @@ export class SeedService {
       hasil: HasilEvaluasi | null;
       catatan: string | null;
       dinilaiOlehId: string | null;
-      statusTindakLanjut?: StatusKomentar | null;
+      statusTindakLanjut?: StatusTindakLanjut | null;
     },
   ): Promise<void> {
     const statusTindakLanjut =
       data.statusTindakLanjut ??
-      (data.hasil === HasilEvaluasi.PERLU_PERBAIKAN ? StatusKomentar.TERBUKA : null);
+      (data.hasil === HasilEvaluasi.PERLU_PERBAIKAN ? StatusTindakLanjut.TERBUKA : null);
     const payload = {
       hasil: data.hasil,
       catatan: data.catatan,
@@ -2190,7 +2190,7 @@ export class SeedService {
         if (
           row.status === StatusPengajuanEvaluasi.SEDANG_DIEVALUASI &&
           nilai.hasil === HasilEvaluasi.PERLU_PERBAIKAN &&
-          nilai.statusTindakLanjut === StatusKomentar.TERBUKA &&
+          nilai.statusTindakLanjut === StatusTindakLanjut.TERBUKA &&
           nilai.detailSop.status !== StatusSOP.REVISI_DARI_EVALUATOR
         ) {
           throw new Error(

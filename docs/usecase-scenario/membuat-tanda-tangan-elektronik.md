@@ -1,19 +1,46 @@
-# Dokumen Skenario Use Case: Membuat Tanda Tangan Elektronik
+# Skenario UC-09: Membuat Tanda Tangan Elektronik
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Membuat Tanda Tangan Elektronik"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Membuat Tanda Tangan Elektronik** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Membuat Tanda Tangan Elektronik |
-| **ID** | UCM-18 |
-| **Aktor Utama** | PJ Evaluator Organisasi, Kepala OPD |
-| **Aktor Terlibat** | Sistem (Kriptografi dan Kredensial) |
-| **Prasyarat** | Pengguna aktif yang memiliki kewenangan legalisasi dokumen TTE. Pengguna belum mengkonfigurasi PIN (atau ingin melakukan pembaruan PIN). |
-| **Pemicu** | Pengguna mengakses sub-menu Profil TTE untuk registrasi atau setup inisial kredensial persetujuan (PIN). |
-| **Alur Utama** | 1. Pengguna membuka form registrasi/pengaturan PIN TTE di halaman profil.<br>2. Pengguna menginputkan PIN sejumlah format digit yang diizinkan sistem beserta input konfirmasi ulang PIN.<br>3. Client mengirim HTTP request (POST/PATCH) ke rute `/tte/profil`.<br>4. Server memverifikasi kecocokan antara kolom PIN awal dengan konfirmasi PIN yang direquest.<br>5. Server mensimulasikan mekanisme komputasi algoritma hashing sandi searah yang dikhususkan pada nilai raw PIN.<br>6. Server menyimpan hash signature yang matang tersebut ke kolom basis data `Pengguna.ttePinHash` dan menetapkan checkpoint log stempel waktu pada atribut `Pengguna.ttePinSetAt` ke zona `DateTime` saat itu juga.<br>7. Server membalas respon HTTP berhasil ke klien aplikasi frontend. |
-| **Alur Alternatif** | - **Gagal Konfirmasi:** Jika data PIN primer dan repetisi konfirmasi memiliki selisih ketidakcocokan (mismatch), server merespons rejection validasi (HTTP 400).<br>- **Ubah/Reset PIN Lama:** Apabila pengguna bertujuan memodifikasi PIN yang sudah ada (status update), sistem akan memaksa pengguna untuk mendeklarasikan input PIN autentik (lama) yang akurat. Server menyelenggarakan *hash comparison* terlebih dahulu terhadap data lama sebelum bisa men-commit penulisan `ttePinHash` substitusi yang baru ke DB. |
-| **Hasil Akhir** | Kredibilitas sandi verifikasi legal penandatanganan elektronik (`TTE PIN`) individu pengguna terjamin asuransinya dengan mekanisme penyediaan persistensi format hash terenkripsi. |
+| ID use case | UC-09 |
+| Use case diagram | Membuat Tanda Tangan Elektronik |
+| No requirements | 9 |
+| Nama fungsional requirements | Pengelolaan PIN TTE |
+| Aktor utama | PJ Evaluator, PJ Penyusun |
+| Aktor terlibat | Sistem TTE dan keamanan kredensial |
+
+## Prasyarat
+
+- Aktor sudah login sebagai peran yang berwenang pada diagram.
+- Aktor belum memiliki PIN TTE atau ingin memperbarui PIN.
+
+## Pemicu
+
+Aktor membuka fitur pengaturan tanda tangan elektronik.
+
+## Alur utama
+
+1. Aktor membuka halaman profil atau pengaturan TTE.
+2. Sistem menampilkan formulir pembuatan atau perubahan PIN TTE.
+3. Aktor mengisi PIN dan konfirmasi PIN.
+4. Sistem memvalidasi format dan kecocokan konfirmasi.
+5. Sistem menyimpan hash PIN TTE, bukan nilai PIN asli.
+6. Sistem menandai bahwa aktor sudah memiliki kredensial TTE.
+
+## Alur alternatif
+
+- Jika konfirmasi PIN tidak cocok, sistem menolak penyimpanan.
+- Jika aktor mengubah PIN lama, sistem dapat meminta PIN lama untuk verifikasi.
+
+## Hasil akhir
+
+Aktor memiliki kredensial TTE yang dapat digunakan pada penandatanganan sesuai kewenangan.
+
+## Catatan traceability
+
+Requirements No 9 juga mencakup Kepala OPD, tetapi pada diagram di [`../usecase.md`](../usecase.md) oval UC-09 hanya dihubungkan ke PJ Evaluator dan PJ Penyusun.
+

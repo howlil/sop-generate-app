@@ -1,19 +1,43 @@
-# Dokumen Skenario Use Case: Mengelola Tim Penyusun SOP
+# Skenario UC-08: Mengelola Tim Penyusun SOP
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Mengelola Tim Penyusun SOP"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Mengelola Tim Penyusun SOP** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Mengelola Tim Penyusun SOP |
-| **ID** | UCM-05 |
-| **Aktor Utama** | PJ Evaluator Organisasi |
-| **Aktor Terlibat** | Sistem (Basis Data Pengguna) |
-| **Prasyarat** | Pengguna login (PJ_EVALUATOR). Data master OPD telah tersedia. |
-| **Pemicu** | Kebutuhan registrasi, pembaruan data (mutasi), atau soft-delete akun dengan peran PENYUSUN atau PJ_PENYUSUN. |
-| **Alur Utama** | 1. Pengguna menavigasi ke menu Manajemen Penyusun.<br>2. Pengguna mengisi data: Nama, NIP, Email, Peran (`PENYUSUN`/`PJ_PENYUSUN`), dan memilih OPD tujuan.<br>3. Server melakukan verifikasi keunikan `email` dan `nip`.<br>4. Jika peran adalah `PJ_PENYUSUN`, server memastikan OPD tidak memiliki PJ Penyusun aktif lainnya (invariant check).<br>5. Server menyimpan entri ke tabel `Pengguna` dan tabel `RiwayatOpdPengguna` dengan transaksi atomik.<br>6. Client mengindikasikan status berhasil. |
-| **Alur Alternatif** | - **Mutasi OPD:** Pengguna mengganti `opdId` suatu penyusun. Server meng-update `Pengguna.opdId`, mengubah `isAktif = false` pada `RiwayatOpdPengguna` lama, dan membuat record aktif untuk OPD baru.<br>- **Invariant PJ Penyusun:** Bila mencoba menambah lebih dari satu `PJ_PENYUSUN` di satu OPD, server membatalkan aksi (rollback). |
-| **Hasil Akhir** | Status dan lokasi penugasan tim penyusun termutakhirkan dengan rekam jejak historis (`RiwayatOpdPengguna`) yang konsisten. |
+| ID use case | UC-08 |
+| Use case diagram | Mengelola Tim Penyusun SOP |
+| No requirements | 3 |
+| Nama fungsional requirements | Pengelolaan Tim Penyusun SOP |
+| Aktor utama | PJ Evaluator |
+| Aktor terlibat | Sistem pengelolaan pengguna dan OPD |
+
+## Prasyarat
+
+- PJ Evaluator sudah login.
+- OPD tujuan sudah terdaftar.
+
+## Pemicu
+
+PJ Evaluator perlu mengatur akun PJ Penyusun atau Penyusun pada OPD.
+
+## Alur utama
+
+1. PJ Evaluator membuka menu tim penyusun SOP.
+2. Sistem menampilkan daftar akun penyusun per OPD.
+3. PJ Evaluator memilih tambah atau ubah akun.
+4. PJ Evaluator mengisi identitas, peran, dan OPD penugasan.
+5. Sistem memvalidasi keunikan akun dan aturan peran.
+6. Jika peran adalah PJ Penyusun, sistem memastikan OPD tidak memiliki PJ Penyusun aktif lain.
+7. Sistem menyimpan data akun dan riwayat penugasan.
+
+## Alur alternatif
+
+- Jika terjadi mutasi OPD, sistem memperbarui penugasan aktif dan menyimpan riwayat.
+- Jika aturan satu PJ Penyusun aktif dilanggar, sistem menolak perubahan.
+
+## Hasil akhir
+
+Tim penyusun SOP pada OPD tercatat dan dapat mengakses use case penyusunan sesuai peran.
+

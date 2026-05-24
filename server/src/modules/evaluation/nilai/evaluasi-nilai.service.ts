@@ -16,7 +16,7 @@ import {
   PengajuanEvaluasi,
   PeranPengguna,
   Prisma,
-  StatusKomentar,
+  StatusTindakLanjut,
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
@@ -42,6 +42,14 @@ export class EvaluasiNilaiService {
     private readonly pengajuanEvaluasiRepository: PengajuanEvaluasiRepository,
   ) {}
 
+  private assertHanyaEvaluator(user: JwtAccessPayload): void {
+    if (user.peran !== PeranPengguna.EVALUATOR) {
+      throw new ForbiddenException(
+        'Hanya evaluator yang dapat menilai dan menyelesaikan pengajuan evaluasi',
+      );
+    }
+  }
+
   /** Menyimpan satu nilai SOP dalam pengajuan aktif dan mencatat `LogNilaiEvaluasi`. */
   async isiNilai(
     user: JwtAccessPayload,
@@ -49,6 +57,7 @@ export class EvaluasiNilaiService {
     detailSopId: string,
     dto: IsiNilaiEvaluasiDto,
   ): Promise<NilaiEvaluasiPatchResponseDto> {
+    this.assertHanyaEvaluator(user);
     const evaluatorId = user.sub;
     const expectedVersion = dto.version ?? 0;
     const hasil = dto.hasil;
@@ -111,7 +120,7 @@ export class EvaluasiNilaiService {
         const tindakLanjutData =
           hasil === HasilEvaluasi.PERLU_PERBAIKAN
             ? {
-                statusTindakLanjut: StatusKomentar.TERBUKA,
+                statusTindakLanjut: StatusTindakLanjut.TERBUKA,
                 ditindaklanjutiPada: null,
                 ditindaklanjutiOlehId: null,
               }
@@ -211,10 +220,10 @@ export class EvaluasiNilaiService {
             'Hanya umpan balik Perlu perbaikan yang memerlukan tindak lanjut',
           );
         }
-        if (nilai.statusTindakLanjut === StatusKomentar.SELESAI) {
+        if (nilai.statusTindakLanjut === StatusTindakLanjut.SELESAI) {
           throw new ConflictException('Umpan balik evaluasi sudah ditandai selesai');
         }
-        if (nilai.statusTindakLanjut !== StatusKomentar.TERBUKA) {
+        if (nilai.statusTindakLanjut !== StatusTindakLanjut.TERBUKA) {
           throw new BadRequestException('Tidak ada umpan balik evaluasi yang menunggu tindak lanjut');
         }
         const sekarang = new Date();
@@ -226,7 +235,7 @@ export class EvaluasiNilaiService {
             },
           },
           data: {
-            statusTindakLanjut: StatusKomentar.SELESAI,
+            statusTindakLanjut: StatusTindakLanjut.SELESAI,
             ditindaklanjutiPada: sekarang,
             ditindaklanjutiOlehId: user.sub,
             version: { increment: 1 },
@@ -260,6 +269,7 @@ export class EvaluasiNilaiService {
     pengajuanEvaluasiId: string,
     dto: SelesaiEvaluasiDto,
   ): Promise<PengajuanEvaluasiSelesaiResponseDto> {
+    this.assertHanyaEvaluator(user);
     const evaluatorId = user.sub;
     const yangDiupdate = await this.evaluasiNilaiRepository.runTransaction(
       async (

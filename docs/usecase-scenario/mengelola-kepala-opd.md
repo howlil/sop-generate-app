@@ -1,19 +1,43 @@
-# Dokumen Skenario Use Case: Mengelola Kepala OPD
+# Skenario UC-07: Mengelola Kepala OPD
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Mengelola Kepala OPD"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Mengelola Kepala OPD** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Mengelola Kepala OPD |
-| **ID** | UCM-04 |
-| **Aktor Utama** | PJ Evaluator Organisasi |
-| **Aktor Terlibat** | Sistem (Validasi Relasi OPD) |
-| **Prasyarat** | Pengguna login dengan peran PJ_EVALUATOR. |
-| **Pemicu** | Pengguna perlu mengatur akun pimpinan/Kepala untuk suatu OPD. |
-| **Alur Utama** | 1. Pengguna membuka antarmuka manajemen Kepala OPD.<br>2. Pengguna menginputkan data Kepala OPD untuk suatu entitas OPD spesifik (peran `KEPALA_OPD`).<br>3. Client mengirimkan payload.<br>4. Server menjalankan validasi bisnis invariant: memastikan tidak ada `Pengguna` lain yang masih aktif (`deletedAt = null`) dengan peran `KEPALA_OPD` untuk `opdId` tersebut.<br>5. Server melakukan operasi penambahan `Pengguna` dan pencatatan awal ke `RiwayatOpdPengguna` secara atomik.<br>6. Client menampilkan notifikasi sukses. |
-| **Alur Alternatif** | - **Pelanggaran Invariant Kepala OPD:** Jika OPD tersebut sudah memiliki Kepala OPD aktif, server menolak request dan membatalkan transaksi untuk mencegah ambiguitas pengesahan dokumen. Pengguna diminta menonaktifkan Kepala OPD lama terlebih dahulu. |
-| **Hasil Akhir** | Akun Kepala OPD terikat dengan aman ke OPD yang bersangkutan tanpa melanggar aturan single-leadership per instansi. |
+| ID use case | UC-07 |
+| Use case diagram | Mengelola Kepala OPD |
+| No requirements | 4 |
+| Nama fungsional requirements | Pengelolaan Kepala OPD |
+| Aktor utama | PJ Evaluator |
+| Aktor terlibat | Sistem pengelolaan pengguna dan OPD |
+
+## Prasyarat
+
+- PJ Evaluator sudah login.
+- OPD tujuan sudah terdaftar.
+
+## Pemicu
+
+PJ Evaluator perlu menetapkan atau memperbarui Kepala OPD aktif.
+
+## Alur utama
+
+1. PJ Evaluator membuka menu Kepala OPD.
+2. Sistem menampilkan daftar Kepala OPD dan OPD terkait.
+3. PJ Evaluator memilih OPD dan mengisi data Kepala OPD.
+4. Sistem memvalidasi identitas akun dan OPD tujuan.
+5. Sistem memastikan aturan satu Kepala OPD aktif untuk satu OPD.
+6. Sistem menyimpan data Kepala OPD.
+7. Sistem menampilkan status Kepala OPD terbaru.
+
+## Alur alternatif
+
+- Jika OPD sudah memiliki Kepala OPD aktif, sistem menolak penambahan sampai data lama dinonaktifkan atau diganti sesuai aturan.
+- Jika identitas akun duplikat, sistem menolak penyimpanan.
+
+## Hasil akhir
+
+Kepala OPD aktif tercatat sebagai pihak yang berwenang pada use case pengesahan dokumen SOP.
+

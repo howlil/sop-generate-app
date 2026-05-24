@@ -24,10 +24,10 @@ export class PenyusunWorkbenchLogEditDto {
   readonly userId!: string;
 
   @ApiProperty({
-    enum: ['HEADER', 'LANGKAH', 'STATUS', 'KOMENTAR', 'EVALUASI'],
+    enum: ['HEADER', 'LANGKAH', 'STATUS', 'UMPAN_BALIK', 'EVALUASI'],
     description: 'Bagian SOP yang disentuh (selaras BagianSOP server).',
   })
-  readonly bagian!: 'HEADER' | 'LANGKAH' | 'STATUS' | 'KOMENTAR' | 'EVALUASI';
+  readonly bagian!: 'HEADER' | 'LANGKAH' | 'STATUS' | 'UMPAN_BALIK' | 'EVALUASI';
 
   @ApiPropertyOptional({
     nullable: true,

@@ -1,19 +1,42 @@
-# Dokumen Skenario Use Case: Mengelola Peraturan SOP
+# Skenario UC-18: Mengelola Peraturan SOP
 
-Berikut adalah skenario penggunaan (use case scenario) untuk fitur **"Mengelola Peraturan SOP"** yang diinisiasi oleh aktor utama pada Sistem Informasi Manajemen dan Evaluasi SOP. Dokumen ini mendeskripsikan spesifikasi alur perilaku sistem secara rinci dan sinkron dengan implementasi model logika server (Prisma dan State Engine API).
+Dokumen ini merinci use case **Mengelola Peraturan SOP** sesuai [`../usecase.md`](../usecase.md).
 
----
-
-### Skenario Use Case
+## Identitas
 
 | Elemen | Deskripsi |
 | :--- | :--- |
-| **Nama Use Case** | Mengelola Peraturan SOP |
-| **ID** | UCM-17 |
-| **Aktor Utama** | PJ Penyusun, Penyusun |
-| **Aktor Terlibat** | Sistem (Master Regulasi) |
-| **Prasyarat** | Pengguna telah masuk sebagai author di modul manajemen peraturan. |
-| **Pemicu** | Pengguna butuh mendaftarkan undang-undang, keputusan direksi, atau dasar regulasi sebagai referensi dasar hukum prosedur. |
-| **Alur Utama** | 1. Pada navigasi Dashboard OPD atau di tab Dasar Hukum editor SOP, pengguna menginputkan pencarian nama, nomor, dan tahun peraturan.<br>2. Client mengirim payload POST data registri dasar hukum ke master `Peraturan`.<br>3. Server menjaga constraint kombinasi unik kolom `nomor` dan `tahun` (`@@unique([nomor, tahun])`).<br>4. Server menyimpan record peraturan dan otomatis membuat skema relasi di tabel `OPDPeraturan` (many-to-many) ke ID OPD terkait.<br>5. Dalam konteks spesifik SOP, server menautkan referensi pada tabel junction sekunder bernama `DasarHukum`. |
-| **Alur Alternatif** | - **Regulasi Shared/Sudah Tersedia:** Jika OPD lain (lintas instansi) telah lebih dahulu mendaftarkan peraturan dengan nomor+tahun yang sama (misal UU Nasional), server hanya akan mengikat relasi ulang di `OPDPeraturan` tanpa melipatgandakan duplikasi record entitas (`reusing existing record`). |
-| **Hasil Akhir** | Integrasi relasi dasar perundang-undangan tersimpan pada layer arsitektur data global secara termormalisasi, dan tereferensi di masing-masing dokumen SOP lokal. |
+| ID use case | UC-18 |
+| Use case diagram | Mengelola Peraturan SOP |
+| No requirements | 5 |
+| Nama fungsional requirements | Pengelolaan Peraturan OPD |
+| Aktor utama | PJ Penyusun, Penyusun |
+| Aktor terlibat | Sistem master peraturan |
+
+## Prasyarat
+
+- Aktor sudah login sebagai PJ Penyusun atau Penyusun.
+- Aktor memiliki akses pada OPD terkait.
+
+## Pemicu
+
+Aktor perlu mencatat dasar hukum atau peraturan yang digunakan pada SOP.
+
+## Alur utama
+
+1. Aktor membuka menu peraturan atau tab dasar hukum pada workbench SOP.
+2. Sistem menampilkan daftar peraturan yang tersedia untuk OPD.
+3. Aktor menambah data peraturan atau memilih peraturan yang sudah ada.
+4. Sistem memvalidasi nomor, tahun, dan data pendukung peraturan.
+5. Sistem menyimpan data peraturan atau menautkan peraturan yang sudah tersedia.
+6. Jika dalam konteks SOP, sistem menghubungkan peraturan sebagai dasar hukum SOP.
+
+## Alur alternatif
+
+- Jika peraturan dengan nomor dan tahun yang sama sudah ada, sistem menggunakan data yang ada dan menambahkan relasi OPD bila diperlukan.
+- Jika data wajib tidak lengkap, sistem menolak penyimpanan.
+
+## Hasil akhir
+
+Dasar hukum SOP tercatat dan dapat digunakan dalam dokumen SOP.
+
