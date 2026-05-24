@@ -136,6 +136,71 @@ export function dragWaypointOrthogonal(
   return dragWaypointFromOrigin(path, index, dx, dy, { normalize: true })
 }
 
+const STRAIGHT_EPS = 1
+const PERPENDICULAR_DRAG_RATIO = 0.55
+const FORK_MIN_DRAG_PX = GRID_SNAP * 2
+
+/** Path hanya start + end pada satu garis horizontal atau vertikal. */
+export function isStraightTwoPointPath(path: Point[]): boolean {
+  if (path.length !== 2) return false
+  const a = path[0]!
+  const b = path[1]!
+  return (
+    Math.abs(a.y - b.y) <= STRAIGHT_EPS || Math.abs(a.x - b.x) <= STRAIGHT_EPS
+  )
+}
+
+/** Drag endpoint cukup tegak lurus terhadap segmen lurus agar membentuk siku. */
+export function isPerpendicularEndpointDrag(
+  path: Point[],
+  dx: number,
+  dy: number,
+): boolean {
+  if (!isStraightTwoPointPath(path)) return false
+  const a = path[0]!
+  const b = path[1]!
+  const horizontal = Math.abs(a.y - b.y) <= STRAIGHT_EPS
+  if (horizontal) {
+    return (
+      Math.abs(dy) > Math.abs(dx) * PERPENDICULAR_DRAG_RATIO &&
+      Math.abs(dy) >= FORK_MIN_DRAG_PX
+    )
+  }
+  return (
+    Math.abs(dx) > Math.abs(dy) * PERPENDICULAR_DRAG_RATIO &&
+    Math.abs(dx) >= FORK_MIN_DRAG_PX
+  )
+}
+
+/**
+ * Ubah path 2 titik lurus menjadi L ortogonal saat ujung ditarik tegak lurus.
+ * Menggunakan originPath + delta agar sudut stabil selama drag.
+ */
+export function forkStraightPathForEndpointDrag(
+  originPath: Point[],
+  index: number,
+  dx: number,
+  dy: number,
+): Point[] | null {
+  if (originPath.length !== 2 || index < 0 || index > 1) return null
+  if (!isPerpendicularEndpointDrag(originPath, dx, dy)) return null
+  const a = originPath[0]!
+  const b = originPath[1]!
+  const horizontal = Math.abs(a.y - b.y) <= STRAIGHT_EPS
+  const dragged =
+    index === 0
+      ? { x: snapToGrid(a.x + dx), y: snapToGrid(a.y + dy) }
+      : { x: snapToGrid(b.x + dx), y: snapToGrid(b.y + dy) }
+  const fixed = index === 0 ? b : a
+  const corner = horizontal
+    ? { x: dragged.x, y: snapToGrid(fixed.y) }
+    : { x: snapToGrid(fixed.x), y: dragged.y }
+  if (index === 0) {
+    return [{ ...dragged }, { ...corner }, { ...fixed }]
+  }
+  return [{ ...fixed }, { ...corner }, { ...dragged }]
+}
+
 function isCollinearMiddle(prev: Point, cur: Point, next: Point): boolean {
   return (prev.x === cur.x && cur.x === next.x) || (prev.y === cur.y && cur.y === next.y)
 }

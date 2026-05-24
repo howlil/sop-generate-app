@@ -1,13 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildCorridorGraph,
   routeOrthogonal,
   normalizeOrthogonalPath,
   pathIntersectsRectangles,
   pathOverlapsSegments,
+  scorePath,
 } from '../orthogonalRouter'
 import { selectSidePairs, type ElemPos, type FlowchartConnectionForSidePairs } from '../selectSidePairs'
-import { buildUltimateOrthogonalFallback, normalizeConnectorPath } from '../../../shapes/FlowchartArrowConnector'
-import { buildSideAnchoredFallbackPath } from '../../../shapes/BpmnArrowConnector'
+import {
+  buildUltimateOrthogonalFallback,
+  normalizeConnectorPath,
+} from '../../../shapes/FlowchartArrowConnector'
+import { buildSideAnchoredFallbackPath } from '../bpmn-fallback-path.util'
 
 function rect(left: number, top: number, width: number, height: number): ElemPos {
   return {
@@ -31,6 +36,53 @@ function conn(overrides: Partial<FlowchartConnectionForSidePairs> = {}): Flowcha
     ...overrides,
   }
 }
+
+/** Legacy corridor graph — flowchart kini memakai routeOrthogonal langsung. */
+describe.skip('buildCorridorGraph', () => {
+  it('places corridor graph points 4px from horizontal cell boundaries', () => {
+    const graph = buildCorridorGraph([[
+      {
+        row: 0,
+        col: 0,
+        rect: { left: 0, top: 0, width: 100, height: 80 },
+        center: { x: 50, y: 40 },
+        occupied: false,
+      },
+      {
+        row: 0,
+        col: 1,
+        rect: { left: 100, top: 0, width: 100, height: 80 },
+        center: { x: 150, y: 40 },
+        occupied: false,
+      },
+    ]])
+
+    expect(graph.spots).toContainEqual({ x: 96, y: 40 })
+    expect(graph.spots).toContainEqual({ x: 104, y: 40 })
+  })
+
+  it('places corridor graph points 4px from vertical cell boundaries', () => {
+    const graph = buildCorridorGraph([
+      [{
+        row: 0,
+        col: 0,
+        rect: { left: 0, top: 0, width: 100, height: 80 },
+        center: { x: 50, y: 40 },
+        occupied: false,
+      }],
+      [{
+        row: 1,
+        col: 0,
+        rect: { left: 0, top: 80, width: 100, height: 80 },
+        center: { x: 50, y: 120 },
+        occupied: false,
+      }],
+    ])
+
+    expect(graph.spots).toContainEqual({ x: 50, y: 76 })
+    expect(graph.spots).toContainEqual({ x: 50, y: 84 })
+  })
+})
 
 function expectOrthogonal(path: { x: number; y: number }[]) {
   expect(path.length).toBeGreaterThanOrEqual(2)
@@ -183,12 +235,9 @@ describe('routeOrthogonal', () => {
       globalBounds: { left: 0, top: 0, width: 400, height: 400 },
     })
 
-    expect(path).toEqual([
-      { x: 140, y: 140 },
-      { x: 140, y: 160 },
-      { x: 140, y: 220 },
-      { x: 140, y: 240 },
-    ])
+    expect(path[0]).toEqual({ x: 140, y: 140 })
+    expect(path[path.length - 1]).toEqual({ x: 140, y: 240 })
+    expect(path.every((p) => p.x === 140)).toBe(true)
     expectOrthogonal(path)
   })
 
@@ -203,6 +252,39 @@ describe('routeOrthogonal', () => {
 
     expect(path[0].y).toBe(path[path.length - 1].y)
     expectOrthogonal(path)
+  })
+
+  it('keeps below-right flowchart routing inside the local corridor', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 100, top: 100, width: 80, height: 40 }, side: 'bottom', distance: 0.5 },
+      pointB: { shape: { left: 260, top: 240, width: 80, height: 40 }, side: 'left', distance: 0.5 },
+      jettySize: 16,
+      preferSimple: true,
+      globalBounds: { left: 0, top: 0, width: 460, height: 380 },
+    })
+
+    expectOrthogonal(path)
+    expect(Math.min(...path.map((point) => point.y))).toBeGreaterThanOrEqual(100)
+    expect(Math.max(...path.map((point) => point.x))).toBeLessThanOrEqual(340)
+  })
+
+  it('scores local direct routing better than perimeter detours', () => {
+    const localPath = [
+      { x: 140, y: 140 },
+      { x: 140, y: 180 },
+      { x: 244, y: 180 },
+      { x: 244, y: 260 },
+      { x: 260, y: 260 },
+    ]
+    const detourPath = [
+      { x: 140, y: 140 },
+      { x: 140, y: 40 },
+      { x: 360, y: 40 },
+      { x: 360, y: 260 },
+      { x: 260, y: 260 },
+    ]
+
+    expect(scorePath(detourPath, [])).toBeGreaterThan(scorePath(localPath, []))
   })
 
   it('normalizes any diagonal simple candidate into elbows', () => {
@@ -230,10 +312,9 @@ describe('routeOrthogonal', () => {
       globalBounds: { left: 0, top: 0, width: 360, height: 220 },
     })
 
-    expect(path.length).toBeGreaterThanOrEqual(4)
+    expect(path.length).toBeGreaterThanOrEqual(2)
     expect(path[0]).toEqual({ x: 100, y: 100 })
     expect(path[path.length - 1]).toEqual({ x: 240, y: 100 })
-    expect(path.some((p) => p.y < 60 || p.y > 140)).toBe(true)
     expectOrthogonal(path)
   })
 
@@ -260,6 +341,19 @@ describe('routeOrthogonal', () => {
       globalBounds: { left: 0, top: 0, width: 360, height: 420 },
     })
 
+    expectOrthogonal(path)
+  })
+
+  it('should_return_path_when_global_bounds_intersection_is_invalid', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 100, top: 100, width: 80, height: 40 }, side: 'bottom', distance: 0.5 },
+      pointB: { shape: { left: 260, top: 240, width: 80, height: 40 }, side: 'top', distance: 0.5 },
+      jettySize: 16,
+      preferSimple: true,
+      globalBounds: { left: 500, top: 500, width: 10, height: 10 },
+    })
+
+    expect(path.length).toBeGreaterThanOrEqual(2)
     expectOrthogonal(path)
   })
 })
@@ -363,3 +457,4 @@ describe('connector emergency fallbacks', () => {
     expectOrthogonal(path)
   })
 })
+

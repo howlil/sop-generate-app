@@ -17,9 +17,20 @@ import {
 } from '../core/route/bpmnRouter'
 import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
 import { pathToD as pathToDUtil, simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
-import type { DiagramPathAnchor } from '../edit/anchor-snap.util'
+import {
+  buildVisualConnectorAnchors,
+  elemPosToShapeRect,
+  preferCenterAnchorDistance,
+  scoreAnchorOffCenter,
+  sideLengthPx,
+  type DiagramPathAnchor,
+  type DiagramShapeSnapTargets,
+} from '../edit/anchor-snap.util'
 import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
 import type { Rect } from '../core/route/orthogonalRouter'
+import { buildSideAnchoredFallbackPath } from '../core/route/bpmn-fallback-path.util'
+import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/path-route-quality.util'
+import { placeEdgeLabel } from '../core/route/edge-label-placement.util'
 
 /* ───────────────────────── Public types ─────────────────────────── */
 
@@ -67,51 +78,34 @@ interface BpmnArrowConnectorProps {
 
 /* ───────────────────────── Helpers ─────────────────────────── */
 
+function samePoint(a: ArrowPathPoint | null | undefined, b: ArrowPathPoint | null | undefined): boolean {
+  if (a == null || b == null) return a === b
+  return a.x === b.x && a.y === b.y
+}
+
+function samePath(a: ArrowPathPoint[], b: ArrowPathPoint[]): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i += 1) {
+    if (!samePoint(a[i], b[i])) return false
+  }
+  return true
+}
+
+function sameSides(a: [Side, Side], b: [Side, Side]): boolean {
+  return a[0] === b[0] && a[1] === b[1]
+}
+
+function sameLabelPosition(
+  a: { x: number; y: number } | null,
+  b: { x: number; y: number } | null,
+): boolean {
+  if (a == null || b == null) return a === b
+  return a.x === b.x && a.y === b.y
+}
+
 type ElemPos = {
   left: number; top: number; width: number; height: number
   right: number; bottom: number
-}
-
-function sidePointOfRect(pos: ElemPos, side: Side): { x: number; y: number } {
-  switch (side) {
-    case 'top':
-      return { x: Math.round(pos.left + pos.width / 2), y: pos.top }
-    case 'bottom':
-      return { x: Math.round(pos.left + pos.width / 2), y: pos.bottom }
-    case 'left':
-      return { x: pos.left, y: Math.round(pos.top + pos.height / 2) }
-    case 'right':
-      return { x: pos.right, y: Math.round(pos.top + pos.height / 2) }
-  }
-}
-
-function buildConnectorAnchors(
-  connectionId: string,
-  fromPos: ElemPos,
-  toPos: ElemPos,
-): DiagramPathAnchor[] {
-  const sides: Side[] = ['top', 'right', 'bottom', 'left']
-  const startAnchors = sides.map((side) => {
-    const point = sidePointOfRect(fromPos, side)
-    return {
-      id: `${connectionId}-start-${side}`,
-      x: point.x,
-      y: point.y,
-      side,
-      kind: 'start' as const,
-    }
-  })
-  const endAnchors = sides.map((side) => {
-    const point = sidePointOfRect(toPos, side)
-    return {
-      id: `${connectionId}-end-${side}`,
-      x: point.x,
-      y: point.y,
-      side,
-      kind: 'end' as const,
-    }
-  })
-  return [...startAnchors, ...endAnchors]
 }
 
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
@@ -152,20 +146,15 @@ function getElementPosition(elementId: string, container: HTMLElement): ElemPos 
   }
 }
 
-function getFixedDistancePoint(
-  start: { x: number; y: number },
-  end: { x: number; y: number },
-  distance: number,
-  offset = 19,
-): { x: number; y: number } {
-  const dx = end.x - start.x
-  const dy = end.y - start.y
-  const len = Math.sqrt(dx * dx + dy * dy)
-  if (len === 0) return { x: start.x, y: start.y }
-  const px = start.x + (dx / len) * distance
-  const py = start.y + (dy / len) * distance
-  if (Math.abs(dx) > Math.abs(dy)) return { x: px, y: py - offset }
-  return { x: px + offset, y: py }
+function resolveConnectorLabelPosition(
+  path: { x: number; y: number }[],
+  label: string | null | undefined,
+  manualLabelPosition: { x: number; y: number } | null | undefined,
+  obstacles: Rect[],
+): { x: number; y: number } | null {
+  if (!label) return null
+  if (manualLabelPosition) return manualLabelPosition
+  return placeEdgeLabel({ path, label, obstacles })
 }
 
 /**
@@ -260,22 +249,6 @@ function bpmnEdgePoint(
   }
 }
 
-export function buildSideAnchoredFallbackPath(
-  fromShape: ShapeRect,
-  toShape: ShapeRect,
-  sSide: Side,
-  eSide: Side,
-  fromIsDiamond: boolean,
-  toIsDiamond: boolean,
-): { x: number; y: number }[] {
-  const start = bpmnEdgePoint(fromShape, sSide, 0.5, fromIsDiamond)
-  const end = bpmnEdgePoint(toShape, eSide, 0.5, toIsDiamond)
-  if (Math.abs(start.x - end.x) > 8) {
-    return [start, { x: end.x, y: start.y }, end]
-  }
-  return [start, { x: start.x, y: end.y }, end]
-}
-
 function ensureRenderableFallbackPath(
   fromShape: ShapeRect,
   toShape: ShapeRect,
@@ -347,6 +320,7 @@ export function BpmnArrowConnector({
   const [resolvedSides, setResolvedSides] = useState<[Side, Side]>(['bottom', 'top'])
   const [resolvedPath, setResolvedPath] = useState<ArrowPathPoint[]>([])
   const [editableAnchors, setEditableAnchors] = useState<DiagramPathAnchor[]>([])
+  const [shapeSnapTargets, setShapeSnapTargets] = useState<DiagramShapeSnapTargets | null>(null)
   const routingGuardRef = useRef<{
     obsRects: Rect[]
     routingObstacles: Rect[]
@@ -388,6 +362,7 @@ export function BpmnArrowConnector({
       setPathData('')
       setLabelPos(null)
       setEditableAnchors([])
+      setShapeSnapTargets(null)
       routingGuardRef.current = null
       return
     }
@@ -397,10 +372,26 @@ export function BpmnArrowConnector({
       setPathData('')
       setLabelPos(null)
       setEditableAnchors([])
+      setShapeSnapTargets(null)
       routingGuardRef.current = null
       return
     }
-    setEditableAnchors(buildConnectorAnchors(connection.id, fromPos, toPos))
+    const fromRect = elemPosToShapeRect(fromPos)
+    const toRect = elemPosToShapeRect(toPos)
+    const fromIsDiamond = connection.sourceType === 'flowchart-decision'
+    const toIsDiamond = connection.targetType === 'flowchart-decision'
+    setEditableAnchors(
+      buildVisualConnectorAnchors(connection.id, fromRect, toRect, { fromIsDiamond, toIsDiamond }),
+    )
+    setShapeSnapTargets({
+      connectionId: connection.id,
+      fromNodeId: connection.from,
+      toNodeId: connection.to,
+      start: fromRect,
+      end: toRect,
+      startIsDiamond: fromIsDiamond,
+      endIsDiamond: toIsDiamond,
+    })
 
     const OBSTACLE_MARGIN = 10
     const curObstacles = obstaclesRef.current
@@ -471,13 +462,19 @@ export function BpmnArrowConnector({
       const { startPoint, endPoint, bendPoints = [] } = manualConfig!
       const snapped = snapToOrthogonal([startPoint, ...bendPoints, endPoint])
       setPathData(pathToD(snapped))
-      setResolvedPath(snapped.map((p) => ({ ...p })))
-      setResolvedSides([manualConfig!.sSide, manualConfig!.eSide])
+      setResolvedPath((prev) => (samePath(prev, snapped) ? prev : snapped.map((p) => ({ ...p }))))
+      setResolvedSides((prev) => {
+        const next: [Side, Side] = [manualConfig!.sSide, manualConfig!.eSide]
+        return sameSides(prev, next) ? prev : next
+      })
 
-      const lp = connection.label
-        ? manualLabelPosition ?? getFixedDistancePoint(startPoint, bendPoints[0] ?? endPoint, 30, 19)
-        : null
-      setLabelPos(lp)
+      const lp = resolveConnectorLabelPosition(
+        snapped,
+        connection.label,
+        manualLabelPosition,
+        routingObstacles,
+      )
+      setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
 
       if (onPathUpdatedRef.current && !emittedRef.current) {
         onPathUpdatedRef.current({
@@ -519,8 +516,15 @@ export function BpmnArrowConnector({
 
     const allMeta = allConnectionsMeta
 
-    const anchorSlots = [0.5, 0.28, 0.72, 0.18, 0.82, 0.4, 0.6]
-    const anchorDistance = (count: number): number => anchorSlots[count % anchorSlots.length]
+    const anchorDistance = (shapeId: string, side: Side, count: number): number => {
+      const shape =
+        shapeId === connection.from
+          ? fromShape
+          : shapeId === connection.to
+            ? toShape
+            : fromShape
+      return preferCenterAnchorDistance(count, sideLengthPx(shape, side))
+    }
     const usedAnchorCount = (shapeId: string, side: Side) => {
       const sideUsage = usedSidesRef.current[shapeId]
       const incoming = (sideUsage?.in?.[side] ?? []).filter((id) => id !== connection.id).length
@@ -537,20 +541,29 @@ export function BpmnArrowConnector({
     let bestPath: { x: number; y: number }[] | null = null
     let bestCandidate: BpmnRouteCandidate | null = null
     let bestScore = Infinity
-    let routedByEngine = false
+
+    const isSafePath = (path: { x: number; y: number }[]) =>
+      isAcceptableRoutedPath(path, createPathSafetyOptions('bpmn', {
+        obstacles: routingObstacles,
+        occupied,
+        fromShape,
+        toShape,
+      }))
 
     const tryRouteCandidates = (obstacleSet: typeof routingObstacles): void => {
       if (!domLayout) return
       for (const candidate of sidePairs.slice(0, MAX_SIDE_PAIRS)) {
         const { sSide, eSide } = candidate
-        const distA = anchorDistance(Math.max(
+        const usageA = Math.max(
           usedAnchorCount(connection.from, sSide),
           priorShapeUseCount(connection.from),
-        ))
-        const distB = anchorDistance(Math.max(
+        )
+        const usageB = Math.max(
           usedAnchorCount(connection.to, eSide),
           priorShapeUseCount(connection.to),
-        ))
+        )
+        const distA = anchorDistance(connection.from, sSide, usageA)
+        const distB = anchorDistance(connection.to, eSide, usageB)
         const path = routeBpmn({
           fromShape,
           toShape,
@@ -572,20 +585,22 @@ export function BpmnArrowConnector({
           targetJettySize: candidate.targetJettySize,
         })
         if (path.length < 2) continue
-        const score = scoreBpmnRouteCandidate(candidate) + scorePath(path, occupied)
+        const orthoPath = snapToOrthogonal(path)
+        if (!isSafePath(orthoPath)) continue
+        const score =
+          scoreBpmnRouteCandidate(candidate) +
+          scorePath(orthoPath, occupied) +
+          scoreAnchorOffCenter(distA) +
+          scoreAnchorOffCenter(distB)
         if (score < bestScore) {
-          bestPath = path
+          bestPath = orthoPath
           bestCandidate = candidate
           bestScore = score
-          routedByEngine = true
         }
       }
     }
 
     tryRouteCandidates(routingObstacles)
-    if (!routedByEngine && routingObstacles.length > 0) {
-      tryRouteCandidates([])
-    }
 
     const pickFallbackCandidate = (): BpmnRouteCandidate =>
       bestCandidate ?? sidePairs[0] ?? { sSide: 'right', eSide: 'left' }
@@ -608,24 +623,47 @@ export function BpmnArrowConnector({
       bestPath = emergencyPath
       bestCandidate = pickFallbackCandidate()
     }
-    const resolvedPathFinal = snapToOrthogonal(bestPath)
-    if (resolvedPathFinal.length < 2) return
+    let resolvedPathFinal = snapToOrthogonal(bestPath)
+    if (resolvedPathFinal.length < 2) {
+      capturedRoutedSegs?.current.delete(connection.id)
+      setPathData('')
+      setResolvedPath((prev) => (prev.length === 0 ? prev : []))
+      setLabelPos((prev) => (prev === null ? prev : null))
+      return
+    }
+    if (!isSafePath(resolvedPathFinal)) {
+      const fc = pickFallbackCandidate()
+      const repaired = ensureRenderableFallbackPath(fromShape, toShape, fc, connection)
+      resolvedPathFinal = snapToOrthogonal(repaired)
+      bestCandidate = fc
+    }
 
     if (capturedRoutedSegs) {
       capturedRoutedSegs.current.set(connection.id, bpmnPathToSegments(resolvedPathFinal))
     }
 
+    const resolvedCandidate = bestCandidate ?? pickFallbackCandidate()
     setPathData(pathToD(resolvedPathFinal))
-    setResolvedPath(resolvedPathFinal.map((p) => ({ ...p })))
-    setResolvedSides([bestCandidate.sSide, bestCandidate.eSide])
+    setResolvedPath((prev) => (
+      samePath(prev, resolvedPathFinal) ? prev : resolvedPathFinal.map((p) => ({ ...p }))
+    ))
+    setResolvedSides((prev) => {
+      const next: [Side, Side] = [resolvedCandidate.sSide, resolvedCandidate.eSide]
+      return sameSides(prev, next) ? prev : next
+    })
 
     let lp: { x: number; y: number } | null = null
     if (connection.label && resolvedPathFinal.length >= 2) {
-      lp = manualLabelPosition ?? getFixedDistancePoint(resolvedPathFinal[0], resolvedPathFinal[1], 30, 19)
+      lp = resolveConnectorLabelPosition(
+        resolvedPathFinal,
+        connection.label,
+        manualLabelPosition,
+        routingObstacles,
+      )
     }
-    setLabelPos(lp)
+    setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
 
-    const { sSide, eSide } = bestCandidate
+    const { sSide, eSide } = resolvedCandidate
     const payload: PathUpdatedPayload = {
       connectionId: connection.id, from: connection.from, to: connection.to,
       sSide, eSide,
@@ -702,6 +740,7 @@ export function BpmnArrowConnector({
           sSide={resolvedSides[0]}
           eSide={resolvedSides[1]}
           anchors={editableAnchors}
+          shapeSnapTargets={shapeSnapTargets}
           shapeGuard={shapeGuard}
           connectionId={connection.id}
           isSelected={isSelected}
@@ -710,8 +749,11 @@ export function BpmnArrowConnector({
           onSelect={onSelectRef.current ?? (() => {})}
           onChange={(payload) => {
             const nextPath = [payload.startPoint, ...payload.bendPoints, payload.endPoint]
-            setResolvedPath(nextPath)
-            setResolvedSides([payload.sSide, payload.eSide])
+            setResolvedPath((prev) => (samePath(prev, nextPath) ? prev : nextPath))
+            setResolvedSides((prev) => {
+              const next: [Side, Side] = [payload.sSide, payload.eSide]
+              return sameSides(prev, next) ? prev : next
+            })
             setPathData(pathToDUtil(nextPath))
             onManualChangeRef.current?.({
               connectionId: connection.id,
@@ -774,7 +816,11 @@ export function BpmnArrowConnector({
         }
       />
       <path
-        d={pathData} fill="none" stroke="black" strokeWidth={1.5}
+        className="sop-connector-stroke"
+        d={pathData}
+        fill="none"
+        stroke="black"
+        strokeWidth={1.5}
         markerEnd={`url(#${markerId})`}
         style={{ pointerEvents: 'none' }}
       />

@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { flushSync } from "react-dom";
+import { SOP_BEFORE_PRINT_EVENT } from "@/lib/print/sop-print-events";
+import {
+  createSopPrintPrepareHandler,
+  registerSopPrintPrepareHandler,
+  suppressBrowserPrintChrome,
+} from "@/lib/print/sop-browser-print";
 import {
   SOPHeaderInfo,
   type SOPHeaderInfoProps,
@@ -15,6 +22,7 @@ import {
   getInitialSopDetailImplementers,
 } from "@/lib/sop/detailSop.initial-state";
 import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from "./sop-diagram";
+import { SopPrintBrandMark } from "./sop-print-brand-mark";
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata();
 const DEFAULT_PROSEDUR_ROWS: ProsedurRow[] = [];
@@ -38,6 +46,9 @@ interface SopPreviewDiagramState {
   pathLayoutSeed?: number;
   activeTab?: "flowchart" | "bpmn";
   onActiveTabChange?: (v: "flowchart" | "bpmn") => void;
+  /** false = tunda mount SOPDiagramFlowchart/BPMN (hindari blok main thread saat buka halaman). */
+  diagramMountEnabled?: boolean;
+  onRequestDiagramMount?: () => void;
   editMode?: boolean;
   arrowConfig?: ArrowConfig;
   labelConfig?: LabelConfig;
@@ -62,6 +73,8 @@ export interface SOPPreviewTemplateProps {
   onMetadataChange?: (field: string, value: unknown) => void;
   previewOptions?: SopPreviewOptions;
   diagramState?: SopPreviewDiagramState;
+  /** false untuk salinan tersembunyi — hindari menimpa handler cetak pratinjau aktif. */
+  registerPrintPrepare?: boolean;
 }
 
 export function SOPPreviewTemplate({
@@ -74,6 +87,7 @@ export function SOPPreviewTemplate({
   onMetadataChange,
   previewOptions = {},
   diagramState = {},
+  registerPrintPrepare = true,
 }: SOPPreviewTemplateProps) {
   const effectiveOptions: Required<SopPreviewOptions> = {
     hideDiagramTabs: previewOptions.hideDiagramTabs ?? false,
@@ -86,6 +100,8 @@ export function SOPPreviewTemplate({
     pathLayoutSeed: diagramState.pathLayoutSeed ?? 0,
     activeTab: diagramState.activeTab ?? "flowchart",
     onActiveTabChange: diagramState.onActiveTabChange ?? (() => {}),
+    diagramMountEnabled: diagramState.diagramMountEnabled ?? true,
+    onRequestDiagramMount: diagramState.onRequestDiagramMount,
     editMode: diagramState.editMode ?? false,
     arrowConfig: diagramState.arrowConfig ?? {},
     labelConfig: diagramState.labelConfig ?? {},
@@ -169,6 +185,169 @@ export function SOPPreviewTemplate({
 
   const hasDiagramToolbar = effectiveOptions.toolbar != null;
 
+  /** Hanya mount diagram yang pernah dibuka — hindari routing ganda flowchart+BPMN sejak load. */
+  const [visitedTabs, setVisitedTabs] = useState<Set<"flowchart" | "bpmn">>(() => {
+    const mountEnabled = diagramState.diagramMountEnabled ?? true;
+    if (!mountEnabled) return new Set();
+    const initialTab = diagramState.activeTab ?? "flowchart";
+    return new Set([initialTab]);
+  });
+  /** Saat cetak: mount flowchart + BPMN meski tab belum pernah dibuka di layar. */
+  const [printPrepared, setPrintPrepared] = useState(false);
+  const restoreBrowserPrintChromeRef = useRef<(() => void) | null>(null);
+
+  const ensureBothDiagramTabs = useCallback(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has("flowchart") && prev.has("bpmn")) return prev;
+      return new Set<"flowchart" | "bpmn">(["flowchart", "bpmn"]);
+    });
+  }, []);
+
+  useEffect(() => {
+    setVisitedTabs((prev) => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!effectiveDiagramState.diagramMountEnabled) return;
+    setVisitedTabs((prev) => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [effectiveDiagramState.diagramMountEnabled, activeTab]);
+
+  /** Pre-warm BPMN off-screen agar routing selesai sebelum cetak pertama. */
+  useEffect(() => {
+    if (!effectiveDiagramState.diagramMountEnabled) return;
+    setVisitedTabs((prev) => {
+      if (prev.has("flowchart") && prev.has("bpmn")) return prev;
+      return new Set<"flowchart" | "bpmn">(["flowchart", "bpmn"]);
+    });
+  }, [effectiveDiagramState.diagramMountEnabled]);
+
+  const handleDiagramTabChange = useCallback(
+    (tab: "flowchart" | "bpmn") => {
+      effectiveDiagramState.onRequestDiagramMount?.();
+      setVisitedTabs((prev) => {
+        if (prev.has(tab)) return prev;
+        const next = new Set(prev);
+        next.add(tab);
+        return next;
+      });
+      setActiveTab(tab);
+    },
+    [effectiveDiagramState.onRequestDiagramMount, setActiveTab],
+  );
+
+  const syncPrintDiagramMount = useCallback(() => {
+    setPrintPrepared(true);
+    ensureBothDiagramTabs();
+  }, [ensureBothDiagramTabs]);
+
+  const prepareForPrint = useCallback(() => {
+    restoreBrowserPrintChromeRef.current = suppressBrowserPrintChrome();
+    document.body.classList.add("print-mode-sop");
+    flushSync(() => {
+      syncPrintDiagramMount();
+    });
+    window.dispatchEvent(new Event(SOP_BEFORE_PRINT_EVENT));
+  }, [syncPrintDiagramMount]);
+
+  const cleanupAfterPrint = useCallback(() => {
+    restoreBrowserPrintChromeRef.current?.();
+    restoreBrowserPrintChromeRef.current = null;
+    document.body.classList.remove("print-mode-sop", "sop-print-preparing");
+    setPrintPrepared(false);
+  }, []);
+
+  useEffect(() => {
+    if (!registerPrintPrepare) return;
+    registerSopPrintPrepareHandler(
+      createSopPrintPrepareHandler(syncPrintDiagramMount),
+    );
+    return () => registerSopPrintPrepareHandler(null);
+  }, [registerPrintPrepare, syncPrintDiagramMount]);
+
+  useEffect(() => {
+    window.addEventListener("beforeprint", prepareForPrint);
+    window.addEventListener("afterprint", cleanupAfterPrint);
+    return () => {
+      window.removeEventListener("beforeprint", prepareForPrint);
+      window.removeEventListener("afterprint", cleanupAfterPrint);
+      document.body.classList.remove("print-mode-sop", "sop-print-preparing");
+    };
+  }, [prepareForPrint, cleanupAfterPrint]);
+
+  const diagramDataProps = useMemo(
+    () => ({
+      flowchart: {
+        data: {
+          rows: prosedurRows,
+          steps: diagramSteps,
+          implementers: safeImplementers,
+        },
+        config: {
+          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+          arrowConfig: effectiveDiagramState.arrowConfig,
+          labelConfig: effectiveDiagramState.labelConfig,
+          editMode: effectiveDiagramState.editMode,
+          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
+        },
+        events: {
+          onManualChange: effectiveDiagramState.onManualPathChange,
+          onSelectConnection: effectiveDiagramState.onSelectConnection,
+        },
+      },
+      bpmn: {
+        data: {
+          name: metadata.name,
+          steps: diagramSteps,
+          implementers: safeImplementers,
+        },
+        config: {
+          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
+          arrowConfig: effectiveDiagramState.arrowConfig,
+          labelConfig: effectiveDiagramState.labelConfig,
+          editMode: effectiveDiagramState.editMode,
+          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
+        },
+        events: {
+          onManualChange: effectiveDiagramState.onManualPathChange,
+          onSelectConnection: effectiveDiagramState.onSelectConnection,
+        },
+      },
+    }),
+    [
+      prosedurRows,
+      diagramSteps,
+      safeImplementers,
+      metadata.name,
+      effectiveDiagramState.pathLayoutSeed,
+      effectiveDiagramState.arrowConfig,
+      effectiveDiagramState.labelConfig,
+      effectiveDiagramState.editMode,
+      effectiveDiagramState.selectedConnectionId,
+      effectiveDiagramState.onManualPathChange,
+      effectiveDiagramState.onSelectConnection,
+    ],
+  );
+
+  const canMountDiagram = effectiveDiagramState.diagramMountEnabled;
+  const mountFlowchartDiagram =
+    canMountDiagram && (visitedTabs.has("flowchart") || printPrepared);
+  const mountBpmnDiagram =
+    canMountDiagram && (visitedTabs.has("bpmn") || printPrepared);
+  const showFlowchartOnScreen =
+    mountFlowchartDiagram && activeTab === "flowchart";
+  const showBpmnOnScreen = mountBpmnDiagram && activeTab === "bpmn";
+  const showDiagramPlaceholder = !canMountDiagram;
+
   return (
     <div
       className={
@@ -178,6 +357,7 @@ export function SOPPreviewTemplate({
       }
     >
       <div className="sop-print-document sop-a4-preview flex flex-col gap-10 p-4 print:gap-0 print:p-0">
+          <SopPrintBrandMark />
           <section className="sop-print-header">
           <SOPHeaderInfo
             {...metadata}
@@ -188,11 +368,11 @@ export function SOPPreviewTemplate({
           </section>
 
           {effectiveOptions.diagramAlternate != null ? (
-            <section className="sop-print-langkah print-break-before-page flex flex-col gap-6 print:gap-0">
+            <section className="sop-print-langkah flex flex-col gap-6 print:gap-0">
             <div className="flex justify-center">{effectiveOptions.diagramAlternate}</div>
             </section>
           ) : (
-            <section className="sop-print-langkah print-break-before-page flex flex-col gap-6 print:gap-0">
+            <section className="sop-print-langkah flex flex-col gap-6 print:gap-0">
             <>
               {!effectiveOptions.hideDiagramTabs && (
                 <div className="flex justify-center px-1 print:hidden">
@@ -219,7 +399,7 @@ export function SOPPreviewTemplate({
                     <Tabs
                       value={activeTab}
                       onValueChange={(v: string) =>
-                        setActiveTab(v as "flowchart" | "bpmn")
+                        handleDiagramTabChange(v as "flowchart" | "bpmn")
                       }
                       className={
                         hasDiagramToolbar
@@ -246,77 +426,35 @@ export function SOPPreviewTemplate({
                 </div>
               )}
 
-              {/* Pratinjau layar: satu diagram aktif; cetak selalu flowchart (kolom KET). */}
               <div className="flex justify-center">
-                <div className="min-w-0 w-full overflow-x-auto px-4 lg:px-0 print:px-0">
-                  {activeTab === 'bpmn' ? (
+                <div className="sop-diagram-print-host min-w-0 w-full overflow-x-auto px-4 lg:px-0 print:overflow-visible print:px-0">
+                  {showDiagramPlaceholder ? (
                     <div
-                      className={`mx-auto hidden print:block ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}
-                      aria-hidden
+                      className="flex min-h-[240px] items-center justify-center text-sm text-gray-500 print:hidden"
+                      role="status"
+                      aria-live="polite"
                     >
-                      <SOPDiagramFlowchart
-                        data={{
-                          rows: prosedurRows,
-                          steps: diagramSteps,
-                          implementers: safeImplementers,
-                        }}
-                        config={{
-                          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
-                          arrowConfig: effectiveDiagramState.arrowConfig,
-                          labelConfig: effectiveDiagramState.labelConfig,
-                          editMode: effectiveDiagramState.editMode,
-                          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
-                        }}
-                        events={{
-                          onManualChange: effectiveDiagramState.onManualPathChange,
-                          onSelectConnection: effectiveDiagramState.onSelectConnection,
-                        }}
-                      />
+                      Menyiapkan diagram…
                     </div>
                   ) : null}
-                  {activeTab === 'flowchart' ? (
-                    <div className={`mx-auto ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
-                      <SOPDiagramFlowchart
-                        data={{
-                          rows: prosedurRows,
-                          steps: diagramSteps,
-                          implementers: safeImplementers,
-                        }}
-                        config={{
-                          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
-                          arrowConfig: effectiveDiagramState.arrowConfig,
-                          labelConfig: effectiveDiagramState.labelConfig,
-                          editMode: effectiveDiagramState.editMode,
-                          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
-                        }}
-                        events={{
-                          onManualChange: effectiveDiagramState.onManualPathChange,
-                          onSelectConnection: effectiveDiagramState.onSelectConnection,
-                        }}
-                      />
+                  {mountFlowchartDiagram ? (
+                    <div
+                      className={`sop-print-diagram-flowchart mx-auto ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS} ${
+                        showFlowchartOnScreen ? "" : "sop-diagram-screen-off"
+                      } print:!block`}
+                    >
+                      <SOPDiagramFlowchart {...diagramDataProps.flowchart} />
                     </div>
-                  ) : (
-                    <div className={`mx-auto ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS} print:hidden`}>
-                      <SOPDiagramBpmn
-                        data={{
-                          name: metadata.name,
-                          steps: diagramSteps,
-                          implementers: safeImplementers,
-                        }}
-                        config={{
-                          pathLayoutSeed: effectiveDiagramState.pathLayoutSeed,
-                          arrowConfig: effectiveDiagramState.arrowConfig,
-                          labelConfig: effectiveDiagramState.labelConfig,
-                          editMode: effectiveDiagramState.editMode,
-                          selectedConnectionId: effectiveDiagramState.selectedConnectionId,
-                        }}
-                        events={{
-                          onManualChange: effectiveDiagramState.onManualPathChange,
-                          onSelectConnection: effectiveDiagramState.onSelectConnection,
-                        }}
-                      />
-                    </div>
-                  )}
+                  ) : null}
+                  {mountBpmnDiagram ? (
+                    <section
+                      className={`sop-print-diagram-bpmn sop-print-bpmn-section mx-auto ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS} ${
+                        showBpmnOnScreen ? "" : "sop-diagram-screen-off"
+                      } print:!block`}
+                    >
+                      <SOPDiagramBpmn {...diagramDataProps.bpmn} />
+                    </section>
+                  ) : null}
                 </div>
               </div>
             </>

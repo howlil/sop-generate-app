@@ -140,6 +140,40 @@ export class TteRepository {
     });
   }
 
+  async findBeritaAcaraArsipForPdfSigning(pengajuanEvaluasiId: string) {
+    const row = await this.prisma.pengajuanEvaluasi.findUnique({
+      where: { pengajuanEvaluasiId },
+      select: {
+        pengajuanEvaluasiId: true,
+        status: true,
+        opdId: true,
+        opd: { select: { nama: true } },
+        dokumenTte: {
+          where: { jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI },
+          take: 1,
+          select: {
+            dokumenTteId: true,
+            jenisDokumen: true,
+            pengajuanEvaluasiId: true,
+            riwayatTandaTangan: {
+              select: { peran: true },
+            },
+          },
+        },
+      },
+    });
+    if (row === null) {
+      return null;
+    }
+    return {
+      pengajuanEvaluasiId: row.pengajuanEvaluasiId,
+      status: row.status,
+      opdId: row.opdId,
+      opd: row.opd,
+      dokumenTte: row.dokumenTte[0] ?? null,
+    };
+  }
+
   async findRiwayatForPdfSigning(userId: string, dokumenTteId: string) {
     return this.prisma.riwayatTandaTangan.findUnique({
       where: { userId_dokumenTteId: { userId, dokumenTteId } },

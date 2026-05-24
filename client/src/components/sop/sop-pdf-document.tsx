@@ -9,15 +9,20 @@ import {
   Text,
   View,
 } from '@react-pdf/renderer'
+import appLogoUrl from '@/assets/logo.svg'
 import { SOP_INSTITUTION_LOGO_URL } from '@/lib/sop/sop-institution-logo'
 import { getInitialSopDetailMetadata } from '@/lib/sop/detailSop.initial-state'
 import { getFullTimeUnit } from '@/components/sop/sop-diagram/core/sopDiagramTypes'
+import type { DiagramPageSnapshot } from '@/lib/print/sop-diagram-export.util'
 import type { SOPPreviewTemplateProps } from '@/components/sop/sop-preview-template'
 import type { ProsedurRow, SOPDetailMetadata } from '@/types/ui/sop'
+import type { PenyusunWorkbenchDiagramKonfigurasi } from '@/types/dto/sop.dto'
 import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 import {
   formatIsoToDdMmYyyyWib,
 } from '@/utils/format-date'
+
+export type SopPdfPrintMode = 'full' | 'steps_only' | 'diagrams_only' | 'steps_and_diagrams'
 
 export interface SopPdfDocumentProps {
   name?: string
@@ -27,6 +32,10 @@ export interface SopPdfDocumentProps {
   implementers?: { id: string; name: string }[]
   tteSignaturePayload?: TTESignaturePayload | null
   qrDataUrlKepalaOpd?: string
+  includeHeader?: boolean
+  printMode?: SopPdfPrintMode
+  diagramSnapshots?: DiagramPageSnapshot[]
+  diagramKonfigurasi?: PenyusunWorkbenchDiagramKonfigurasi
 }
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata()
@@ -135,14 +144,58 @@ const styles = StyleSheet.create({
     fontSize: 7,
     lineHeight: 1.25,
   },
-  pageNumber: {
+  stepSheet: {
+    width: CONTENT_WIDTH,
+  },
+  brandMark: {
     position: 'absolute',
     right: PAGE_PADDING,
+    bottom: 10,
+    width: 24,
+    height: 24,
+    objectFit: 'contain',
+  },
+  pageNumber: {
+    position: 'absolute',
+    left: PAGE_PADDING,
     bottom: 14,
     fontSize: 7,
     color: '#374151',
   },
 })
+
+function SopPdfBrandMark() {
+  return <Image src={appLogoUrl} style={styles.brandMark} />
+}
+
+function resolvePrintSections(props: SopPdfDocumentProps): {
+  showHeader: boolean
+  showSteps: boolean
+  showDiagrams: boolean
+} {
+  const printMode = props.printMode ?? (props.includeHeader === false ? 'diagrams_only' : 'full')
+  const hasDiagrams = (props.diagramSnapshots?.length ?? 0) > 0
+  const showHeader =
+    props.includeHeader !== false &&
+    printMode !== 'diagrams_only' &&
+    printMode !== 'steps_only'
+  const showSteps =
+    printMode === 'full' ||
+    printMode === 'steps_only' ||
+    printMode === 'steps_and_diagrams' ||
+    (printMode === 'diagrams_only' && !hasDiagrams)
+  const showDiagrams =
+    hasDiagrams &&
+    (printMode === 'full' ||
+      printMode === 'diagrams_only' ||
+      printMode === 'steps_and_diagrams')
+  return { showHeader, showSteps, showDiagrams }
+}
+
+function diagramPageLabel(snapshot: DiagramPageSnapshot): string {
+  const kindLabel = snapshot.kind === 'bpmn' ? 'BPMN' : 'Flowchart'
+  return `${kindLabel} ${snapshot.pageIndex + 1}`
+}
 
 function toArrayField(value: string | string[] | undefined): string[] {
   if (Array.isArray(value)) return value.filter((item) => item.trim() !== '')
@@ -367,6 +420,7 @@ function HeaderPage({
           </View>
         </View>
       </View>
+      <SopPdfBrandMark />
     </Page>
   )
 }
@@ -403,23 +457,19 @@ function rowTime(row: ProsedurRow): string {
 function StepsPage({
   rows,
   implementers,
-  pageIndex,
-  totalPages,
-  title,
+  pageLabel,
 }: {
   rows: ProsedurRow[]
   implementers: { id: string; name: string }[]
-  pageIndex: number
-  totalPages: number
-  title: string
+  pageLabel: string
 }) {
   const safeImplementers = implementers.length > 0 ? implementers : [{ id: 'pelaksana-1', name: 'Pelaksana' }]
   const pelaksanaWidth = 24
   const implWidth = pelaksanaWidth / safeImplementers.length
 
   return (
-    <Page size={A4_LANDSCAPE} orientation="landscape" style={styles.page}>
-      <Text style={styles.stepTitle}>{title}</Text>
+    <Page size={A4_LANDSCAPE} orientation="landscape" style={styles.centeredPage}>
+      <View style={styles.stepSheet}>
       <View style={styles.table}>
         <View style={styles.row}>
           <View style={[styles.stepHeaderCell, { width: '5%' }]}>
@@ -489,9 +539,35 @@ function StepsPage({
           </View>
         ))}
       </View>
-      <Text style={styles.pageNumber}>
-        Langkah SOP {pageIndex + 1}/{totalPages}
-      </Text>
+      </View>
+      <Text style={styles.pageNumber}>{pageLabel}</Text>
+      <SopPdfBrandMark />
+    </Page>
+  )
+}
+
+function DiagramImagePage({
+  snapshot,
+  pageLabel,
+}: {
+  snapshot: DiagramPageSnapshot
+  pageLabel: string
+}) {
+  const maxWidth = CONTENT_WIDTH
+  const maxHeight = A4_LANDSCAPE[1] - PAGE_PADDING * 2 - 20
+  const scale = Math.min(maxWidth / snapshot.width, maxHeight / snapshot.height, 1)
+  const renderWidth = snapshot.width * scale
+  const renderHeight = snapshot.height * scale
+  return (
+    <Page size={A4_LANDSCAPE} orientation="landscape" style={styles.centeredPage}>
+      <View style={{ width: renderWidth, height: renderHeight, alignItems: 'center', justifyContent: 'center' }}>
+        <Image
+          src={snapshot.dataUrl}
+          style={{ width: renderWidth, height: renderHeight, objectFit: 'contain' }}
+        />
+      </View>
+      <Text style={styles.pageNumber}>{pageLabel}</Text>
+      <SopPdfBrandMark />
     </Page>
   )
 }
@@ -504,31 +580,72 @@ export function SopPdfDocument({
   implementers = [],
   tteSignaturePayload = null,
   qrDataUrlKepalaOpd,
+  includeHeader,
+  printMode,
+  diagramSnapshots = [],
 }: SopPdfDocumentProps) {
   const metadata = normalizeMetadata(name, number, metadataOverride)
   const normalizedRows = [...prosedurRows].sort(
     (a, b) => (a.no ?? a.urutan) - (b.no ?? b.urutan),
   )
   const stepPages = splitRows(normalizedRows, STEP_ROWS_PER_PAGE)
-  const title = `Langkah SOP${metadata.name ? ` - ${metadata.name}` : ''}`
+  const sections = resolvePrintSections({
+    includeHeader,
+    printMode,
+    diagramSnapshots,
+  })
+  const pageDescriptors: Array<
+    | { type: 'header' }
+    | { type: 'steps'; rows: ProsedurRow[]; index: number }
+    | { type: 'diagram'; snapshot: DiagramPageSnapshot }
+  > = []
+  if (sections.showHeader) {
+    pageDescriptors.push({ type: 'header' })
+  }
+  if (sections.showSteps) {
+    stepPages.forEach((rows, index) => {
+      pageDescriptors.push({ type: 'steps', rows, index })
+    })
+  }
+  if (sections.showDiagrams) {
+    diagramSnapshots.forEach((snapshot) => {
+      pageDescriptors.push({ type: 'diagram', snapshot })
+    })
+  }
+  const totalPages = pageDescriptors.length
 
   return (
     <Document title={`SOP - ${metadata.name || metadata.number || 'Dokumen'}`}>
-      <HeaderPage
-        metadata={metadata}
-        tteSignaturePayload={tteSignaturePayload}
-        qrDataUrlKepalaOpd={qrDataUrlKepalaOpd}
-      />
-      {stepPages.map((rows, index) => (
-        <StepsPage
-          key={`steps-${rows[0]?.id ?? 'empty'}`}
-          rows={rows}
-          implementers={implementers}
-          pageIndex={index}
-          totalPages={stepPages.length}
-          title={title}
-        />
-      ))}
+      {pageDescriptors.map((descriptor, globalIndex) => {
+        const pageLabel = `Halaman ${globalIndex + 1}/${totalPages}`
+        if (descriptor.type === 'header') {
+          return (
+            <HeaderPage
+              key="header"
+              metadata={metadata}
+              tteSignaturePayload={tteSignaturePayload}
+              qrDataUrlKepalaOpd={qrDataUrlKepalaOpd}
+            />
+          )
+        }
+        if (descriptor.type === 'steps') {
+          return (
+            <StepsPage
+              key={`steps-${descriptor.rows[0]?.id ?? descriptor.index}`}
+              rows={descriptor.rows}
+              implementers={implementers}
+              pageLabel={pageLabel}
+            />
+          )
+        }
+        return (
+          <DiagramImagePage
+            key={`diagram-${descriptor.snapshot.kind}-${descriptor.snapshot.pageIndex}`}
+            snapshot={descriptor.snapshot}
+            pageLabel={`${diagramPageLabel(descriptor.snapshot)} · ${pageLabel}`}
+          />
+        )
+      })}
     </Document>
   )
 }

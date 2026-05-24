@@ -1,5 +1,7 @@
-import { useMemo } from 'react'
-import { ListTree, PenLine, RotateCcw } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ListTree, PenLine, Printer, RotateCcw } from 'lucide-react'
+import { printSopFromPreviewProps } from '@/lib/print/pengajuan-print'
+import { useToast } from '@/hooks/useToast'
 import { SOPPreviewTemplate } from '@/components/sop/sop-preview-template'
 import { DetailSOPProsedurEditor } from './DetailSopProsedurEditor'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
@@ -21,6 +23,15 @@ function toArrayField(value: string | string[] | undefined): string[] {
   if (Array.isArray(value)) return value
   if (typeof value === 'string' && value.length > 0) return [value]
   return []
+}
+
+function scheduleDiagramIdleMount(onReady: () => void): () => void {
+  if (typeof requestIdleCallback !== 'undefined') {
+    const id = requestIdleCallback(onReady, { timeout: 3000 })
+    return () => cancelIdleCallback(id)
+  }
+  const id = window.setTimeout(onReady, 200)
+  return () => clearTimeout(id)
 }
 
 function toPreviewMetadata(meta: SOPDetailMetadata) {
@@ -57,17 +68,77 @@ export function DetailSOPPenyusunMain({
 }: DetailSOPPenyusunMainProps) {
   const { sopDetailId, metadata, prosedurRows, setProsedurRows, implementers, isReadOnly } = useSopEditor()
   const { data: workbench, isLoading: isWorkbenchLoading } = usePenyusunWorkbench(sopDetailId)
+  const [allowDiagramRender, setAllowDiagramRender] = useState(false)
+  const isWorkbenchDataReady =
+    Boolean(workbench?.detail.id) && !isWorkbenchLoading
+  useEffect(() => {
+    setAllowDiagramRender(false)
+  }, [sopDetailId])
+  useEffect(() => {
+    if (!isWorkbenchDataReady || allowDiagramRender) return
+    return scheduleDiagramIdleMount(() => setAllowDiagramRender(true))
+  }, [isWorkbenchDataReady, allowDiagramRender])
+  const { showToast } = useToast()
+  const [isPrinting, setIsPrinting] = useState(false)
   const diagramConfig = usePenyusunDiagramConfig({
     detailSopId: sopDetailId,
     workbench,
     prosedurRows,
     implementers,
     activeTab,
-    enabled: !isReadOnly && Boolean(workbench?.detail.id),
+    enabled: !isReadOnly && isWorkbenchDataReady && allowDiagramRender,
   })
   const isDiagramReady =
-    Boolean(workbench?.detail.id) && diagramConfig.isDiagramHydrated && !isWorkbenchLoading
+    isWorkbenchDataReady && diagramConfig.isDiagramHydrated
+  const diagramMountEnabled = allowDiagramRender && isDiagramReady
+  const handleActiveTabChange = useCallback(
+    (tab: 'flowchart' | 'bpmn') => {
+      setAllowDiagramRender(true)
+      onActiveTabChange(tab)
+    },
+    [onActiveTabChange],
+  )
   const previewMetadata = useMemo(() => toPreviewMetadata(metadata), [metadata])
+  const handlePrintSop = useCallback(async () => {
+    if (!diagramMountEnabled) {
+      showToast('Diagram belum siap. Tunggu hingga selesai dimuat, lalu coba cetak lagi.', 'error')
+      return
+    }
+    setIsPrinting(true)
+    try {
+      const previewProps = {
+        name: previewMetadata.name,
+        number: previewMetadata.number,
+        metadata: previewMetadata,
+        prosedurRows,
+        implementers,
+        diagramKonfigurasi: workbench?.diagramKonfigurasi,
+      }
+      const { diagramExportFailed } = await printSopFromPreviewProps(previewProps, null, {
+        includeHeader: true,
+        printMode: 'full',
+        signPdf: false,
+      })
+      if (diagramExportFailed) {
+        showToast(
+          'Beberapa halaman diagram tidak dapat diekspor; PDF tetap dicetak dengan tabel langkah.',
+          'error',
+        )
+      }
+    } catch {
+      showToast('Gagal membuka cetak. Coba muat ulang halaman lalu cetak lagi.', 'error')
+    } finally {
+      setIsPrinting(false)
+    }
+  }, [
+    diagramMountEnabled,
+    implementers,
+    previewMetadata,
+    prosedurRows,
+    showToast,
+    workbench?.diagramKonfigurasi,
+  ])
+
   const handleToggleManualEdit = () => {
     if (isEditingSteps) {
       setIsEditingSteps(false)
@@ -80,60 +151,80 @@ export function DetailSOPPenyusunMain({
     diagramConfig.setSelectedConnectionId(null)
   }
 
-  const toolbar = isReadOnly ? null : (
+  const toolbar = (
     <div
       className="inline-flex max-w-full flex-wrap items-center justify-center gap-0.5 rounded-lg bg-white/55 p-0.5 ring-1 ring-gray-200/70"
       role="group"
-      aria-label="Edit prosedur"
+      aria-label="Kontrol dokumen SOP"
     >
       <Button
         type="button"
         variant="ghost"
         size="sm"
-        className={cn(
-          'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700',
-          isEditingSteps
-            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/90'
-            : 'hover:bg-white/90',
-        )}
+        className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90"
+        onClick={() => void handlePrintSop()}
+        disabled={!diagramMountEnabled || isPrinting}
         title={
-          isEditingSteps
-            ? 'Kembali ke pratinjau diagram'
-            : 'Edit langkah prosedur dalam tabel'
+          diagramMountEnabled
+            ? 'Cetak dokumen SOP sebagai PDF (A4 landscape).'
+            : 'Diagram sedang dimuat'
         }
-        onClick={() => setIsEditingSteps(!isEditingSteps)}
       >
-        <ListTree className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-        {isEditingSteps ? 'Diagram' : 'Langkah'}
+        <Printer className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+        {isPrinting ? 'Menyiapkan…' : 'Cetak SOP'}
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className={cn(
-          'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90',
-          diagramConfig.isEditingDiagramPaths
-            ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/90'
-            : '',
-        )}
-        onClick={handleToggleManualEdit}
-        title="Edit path panah diagram secara manual"
-      >
-        <PenLine className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-        Edit Manual
-      </Button>
-      {diagramConfig.isEditingDiagramPaths ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90"
-          onClick={diagramConfig.handleResetAllPaths}
-          title="Reset semua path ke routing otomatis"
-        >
-          <RotateCcw className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-          Reset semua path
-        </Button>
+      {!isReadOnly ? (
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700',
+              isEditingSteps
+                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/90'
+                : 'hover:bg-white/90',
+            )}
+            title={
+              isEditingSteps
+                ? 'Kembali ke pratinjau diagram'
+                : 'Edit langkah prosedur dalam tabel'
+            }
+            onClick={() => setIsEditingSteps(!isEditingSteps)}
+          >
+            <ListTree className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+            {isEditingSteps ? 'Diagram' : 'Langkah'}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn(
+              'h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90',
+              diagramConfig.isEditingDiagramPaths
+                ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200/90'
+                : '',
+            )}
+            onClick={handleToggleManualEdit}
+            title="Edit path panah diagram secara manual"
+          >
+            <PenLine className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+            Edit Manual
+          </Button>
+          {diagramConfig.isEditingDiagramPaths ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90"
+              onClick={diagramConfig.handleResetAllPaths}
+              title="Reset semua path ke routing otomatis"
+            >
+              <RotateCcw className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
+              Reset semua path
+            </Button>
+          ) : null}
+        </>
       ) : null}
     </div>
   )
@@ -147,14 +238,6 @@ export function DetailSOPPenyusunMain({
           onDone={() => setIsEditingSteps(false)}
         />
       </div>
-    ) : !isDiagramReady ? (
-      <div
-        className="flex min-h-[240px] items-center justify-center text-sm text-gray-500 print:hidden"
-        role="status"
-        aria-live="polite"
-      >
-        Memuat diagram…
-      </div>
     ) : undefined
   return (
     <div className="flex-1 overflow-auto p-4">
@@ -166,7 +249,9 @@ export function DetailSOPPenyusunMain({
           diagramState={{
             pathLayoutSeed: diagramConfig.pathLayoutSeed,
             activeTab,
-            onActiveTabChange,
+            onActiveTabChange: handleActiveTabChange,
+            diagramMountEnabled,
+            onRequestDiagramMount: () => setAllowDiagramRender(true),
             editMode: diagramConfig.isEditingDiagramPaths,
             arrowConfig: diagramConfig.effectiveArrowConfig,
             labelConfig: diagramConfig.labelConfig,

@@ -114,6 +114,8 @@ export const queryKeys = {
   /** GET `/tte/public/pengesahan/:dokumenTteId/:userId` — verifikasi publik (tanpa sesi). */
   ttePengesahanPublic: (dokumenTteId: string, userId: string) =>
     ['tte', 'pengesahan-public', dokumenTteId, userId] as const,
+  /** GET `/tte/public/pdf-signing/status` */
+  ttePdfSigningStatus: ['tte', 'pdf-signing-status'] as const,
 
   /** GET `/evaluasi/umpan-balik/detail/:detailSopId` */
   evaluasiUmpanBalik: (detailSopId: string) =>

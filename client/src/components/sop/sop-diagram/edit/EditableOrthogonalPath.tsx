@@ -5,15 +5,28 @@ import {
   clientToSvgPoint,
   dragSegmentFromOrigin,
   dragWaypointFromOrigin,
+  forkStraightPathForEndpointDrag,
   findNearestSegmentIndex,
   insertWaypointAtSegmentMidpoint,
   pathToD,
   removeWaypoint,
 } from './orthogonal-path-edit.util'
 import {
+  distanceOnShapeEdge,
+  edgeHighlightLine,
+  filterAnchorsForEndpoint,
+  getAllowedShapeForEndpoint,
+  isDiamondSnapEndpoint,
   isEndpointIndex,
-  resolveMagneticAnchorSnap,
+  pointOnShapeEdge,
+  snapDistanceToCenter,
+  sideLengthPx,
+  buildVisualConnectorAnchors,
+  resolvePreferredEndpointSnap,
+  type ActiveEdgeSnapHighlight,
+  type DiagramAnchorKind,
   type DiagramPathAnchor,
+  type DiagramShapeSnapTargets,
 } from './anchor-snap.util'
 import {
   finalizeManualOrthogonalPath,
@@ -36,6 +49,7 @@ interface EditableOrthogonalPathProps {
   sSide: Side
   eSide: Side
   anchors?: DiagramPathAnchor[]
+  shapeSnapTargets?: DiagramShapeSnapTargets | null
   shapeGuard?: PathShapeGuardConfig | null
   connectionId: string
   isSelected: boolean
@@ -46,9 +60,10 @@ interface EditableOrthogonalPathProps {
   onDeleteSelected?: () => void
 }
 
-const SNAP_DISTANCE_PX = 16
-const SNAP_RELEASE_DISTANCE_PX = 24
-const SNAP_HARD_DISTANCE_PX = 5
+const SIDE_LOCK_RELEASE_PX = 48
+const ANCHOR_SNAP_DISTANCE_PX = 24
+const ANCHOR_HARD_SNAP_DISTANCE_PX = 8
+const ROUTE_PREVIEW_MS = 32
 const DRAG_START_THRESHOLD_PX = 3
 
 type DragMode = 'waypoint' | 'segment'
@@ -75,6 +90,7 @@ function EditableOrthogonalPathInner({
   sSide,
   eSide,
   anchors = [],
+  shapeSnapTargets = null,
   shapeGuard = null,
   connectionId,
   isSelected,
@@ -87,16 +103,25 @@ function EditableOrthogonalPathInner({
   const [localPath, setLocalPath] = useState(path)
   const [localSides, setLocalSides] = useState<{ sSide: Side; eSide: Side }>({ sSide, eSide })
   const [activeAnchorId, setActiveAnchorId] = useState<string | null>(null)
+  const [activeEdgeHighlight, setActiveEdgeHighlight] = useState<ActiveEdgeSnapHighlight | null>(
+    null,
+  )
   const [isPathInvalid, setIsPathInvalid] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [draggingEndpointKind, setDraggingEndpointKind] = useState<DiagramAnchorKind | null>(
+    null,
+  )
   const activeAnchorIdRef = useRef<string | null>(null)
   const lastValidPathRef = useRef<ArrowPathPoint[]>(path.map((p) => ({ ...p })))
   const dragSessionRef = useRef<DragSession | null>(null)
   const pendingPathRef = useRef<ArrowPathPoint[] | null>(null)
   const pathRafRef = useRef<number | null>(null)
   const invalidPreviewFrameRef = useRef<number | null>(null)
+  const lastRouteTimeRef = useRef(0)
   const shapeGuardRef = useRef(shapeGuard)
   shapeGuardRef.current = shapeGuard
+  const shapeSnapTargetsRef = useRef(shapeSnapTargets)
+  shapeSnapTargetsRef.current = shapeSnapTargets
   const localSidesRef = useRef(localSides)
   localSidesRef.current = localSides
 
@@ -115,6 +140,7 @@ function EditableOrthogonalPathInner({
     if (!isSelected) {
       setActiveAnchorId(null)
       activeAnchorIdRef.current = null
+      setActiveEdgeHighlight(null)
     }
   }, [isSelected])
 
@@ -173,6 +199,68 @@ function EditableOrthogonalPathInner({
       const aligned = nextPath.map((point) => ({ ...point }))
       aligned[index] = target
       return aligned
+    },
+    [],
+  )
+
+  const pinOppositeEndpoint = useCallback(
+    (
+      nextPath: ArrowPathPoint[],
+      draggedKind: 'start' | 'end',
+      sides: { sSide: Side; eSide: Side },
+    ): ArrowPathPoint[] => {
+      const targets = shapeSnapTargetsRef.current
+      if (!targets) return nextPath
+      const pinned = nextPath.map((point) => ({ ...point }))
+      if (draggedKind === 'end' && targets.start) {
+        const startPoint = pinned[0]
+        if (!startPoint) return pinned
+        const rawDist = distanceOnShapeEdge(targets.start, sides.sSide, startPoint)
+        const dist = targets.startIsDiamond
+          ? 0.5
+          : snapDistanceToCenter(rawDist, sideLengthPx(targets.start, sides.sSide))
+        pinned[0] = pointOnShapeEdge(targets.start, sides.sSide, dist)
+      } else if (draggedKind === 'start' && targets.end) {
+        const endPoint = pinned[pinned.length - 1]
+        if (!endPoint) return pinned
+        const rawEndDist = distanceOnShapeEdge(targets.end, sides.eSide, endPoint)
+        const dist = targets.endIsDiamond
+          ? 0.5
+          : snapDistanceToCenter(rawEndDist, sideLengthPx(targets.end, sides.eSide))
+        pinned[pinned.length - 1] = pointOnShapeEdge(targets.end, sides.eSide, dist)
+      }
+      return pinned
+    },
+    [],
+  )
+
+  const tryLiveReroute = useCallback(
+    (
+      nextPath: ArrowPathPoint[],
+      sides: { sSide: Side; eSide: Side },
+      force = false,
+    ): ArrowPathPoint[] => {
+      const guard = shapeGuardRef.current
+      if (!guard || nextPath.length < 2) return nextPath
+      const now = performance.now()
+      if (!force && now - lastRouteTimeRef.current < ROUTE_PREVIEW_MS) {
+        return nextPath
+      }
+      lastRouteTimeRef.current = now
+      const rebuilt = rebuildPathForAnchorSides(
+        {
+          ...guard.repair,
+          startPoint: { ...nextPath[0]! },
+          endPoint: { ...nextPath[nextPath.length - 1]! },
+          sSide: sides.sSide,
+          eSide: sides.eSide,
+        },
+        { fallbackPath: nextPath },
+      )
+      if (rebuilt && rebuilt.length >= 2) {
+        return rebuilt.map((p) => ({ ...p }))
+      }
+      return nextPath
     },
     [],
   )
@@ -252,39 +340,106 @@ function EditableOrthogonalPathInner({
       })
       const pointKind =
         session.index === 0 ? 'start' : session.index === moved.length - 1 ? 'end' : null
-      if (pointKind) {
-        const endpoint = moved[session.index]
-        if (endpoint) {
-          const magneticSnap = resolveMagneticAnchorSnap({
-            anchors,
-            x: endpoint.x,
-            y: endpoint.y,
-            kind: pointKind,
-            snapDistancePx: SNAP_DISTANCE_PX,
-            releaseDistancePx: SNAP_RELEASE_DISTANCE_PX,
-            hardSnapDistancePx: SNAP_HARD_DISTANCE_PX,
-            lockedAnchorId: activeAnchorIdRef.current,
-          })
-          if (magneticSnap) {
-            const snappedPath = moved.map((point) => ({ ...point }))
-            snappedPath[session.index] = { x: magneticSnap.x, y: magneticSnap.y }
-            activeAnchorIdRef.current = magneticSnap.anchor.id
-            moved = alignEndpointSegment(snappedPath, session.index)
+      if (!pointKind) return moved
+      if (session.originPath.length === 2) {
+        const forked = forkStraightPathForEndpointDrag(
+          session.originPath,
+          session.index,
+          dx,
+          dy,
+        )
+        if (forked) moved = forked
+      }
+      const targets = shapeSnapTargetsRef.current
+      const connId = targets?.connectionId ?? connectionId
+      let nextSides = { ...localSidesRef.current }
+      let edgeHighlight: ActiveEdgeSnapHighlight | null = null
+      const endpoint = moved[session.index]
+      if (!endpoint) return moved
+      const shapeRect = getAllowedShapeForEndpoint(targets, pointKind)
+      if (shapeRect) {
+        const oppositeIndex =
+          session.index === 0 ? moved.length - 1 : 0
+        const oppositePoint = moved[oppositeIndex]
+        const visualAnchors =
+          anchors.length > 0
+            ? anchors
+            : targets?.start && targets.end
+              ? buildVisualConnectorAnchors(connId, targets.start, targets.end, {
+                  fromIsDiamond: targets.startIsDiamond,
+                  toIsDiamond: targets.endIsDiamond,
+                })
+              : []
+        const edgeSnap = resolvePreferredEndpointSnap({
+          connectionId: connId,
+          shape: shapeRect,
+          x: endpoint.x,
+          y: endpoint.y,
+          kind: pointKind,
+          releaseDistancePx: SIDE_LOCK_RELEASE_PX,
+          lockedAnchorId: activeAnchorIdRef.current,
+          oppositePoint: oppositePoint ? { x: oppositePoint.x, y: oppositePoint.y } : null,
+          shapeIsDiamond: isDiamondSnapEndpoint(targets, pointKind),
+          anchors: visualAnchors,
+          snapDistancePx: ANCHOR_SNAP_DISTANCE_PX,
+          hardSnapDistancePx: ANCHOR_HARD_SNAP_DISTANCE_PX,
+        })
+        if (edgeSnap) {
+          const snappedPath = moved.map((point) => ({ ...point }))
+          snappedPath[session.index] = { x: edgeSnap.x, y: edgeSnap.y }
+          activeAnchorIdRef.current = edgeSnap.anchorId
+          if (pointKind === 'start') {
+            nextSides = { ...nextSides, sSide: edgeSnap.side }
           } else {
-            activeAnchorIdRef.current = null
-            moved = alignEndpointSegment(moved, session.index)
+            nextSides = { ...nextSides, eSide: edgeSnap.side }
+          }
+          edgeHighlight = { kind: pointKind, side: edgeSnap.side, rect: shapeRect }
+          moved = alignEndpointSegment(snappedPath, session.index)
+        } else {
+          const fallback = lastValidPathRef.current[session.index]
+          if (fallback) {
+            const snappedPath = moved.map((point) => ({ ...point }))
+            snappedPath[session.index] = { ...fallback }
+            moved = alignEndpointSegment(snappedPath, session.index)
           }
         }
+      } else if (targets) {
+        const fallback = lastValidPathRef.current[session.index]
+        if (fallback) {
+          const snappedPath = moved.map((point) => ({ ...point }))
+          snappedPath[session.index] = { ...fallback }
+          moved = alignEndpointSegment(snappedPath, session.index)
+        }
+      } else {
+        const kindAnchors = filterAnchorsForEndpoint(anchors, pointKind)
+        const nearest = kindAnchors[0]
+        if (nearest) {
+          const snappedPath = moved.map((point) => ({ ...point }))
+          snappedPath[session.index] = { x: nearest.x, y: nearest.y }
+          activeAnchorIdRef.current = nearest.id
+          if (pointKind === 'start') {
+            nextSides = { ...nextSides, sSide: nearest.side }
+          } else {
+            nextSides = { ...nextSides, eSide: nearest.side }
+          }
+          moved = alignEndpointSegment(snappedPath, session.index)
+        }
       }
+      localSidesRef.current = nextSides
+      setLocalSides(nextSides)
+      setActiveEdgeHighlight(edgeHighlight)
+      moved = pinOppositeEndpoint(moved, pointKind, nextSides)
+      moved = tryLiveReroute(moved, nextSides)
       return moved
     },
-    [alignEndpointSegment, anchors],
+    [alignEndpointSegment, anchors, connectionId, pinOppositeEndpoint, tryLiveReroute],
   )
 
   const finishDragSession = useCallback(() => {
     const session = dragSessionRef.current
     dragSessionRef.current = null
     setIsDragging(false)
+    setDraggingEndpointKind(null)
     if (!session?.moved) return
     if (pathRafRef.current !== null) {
       cancelAnimationFrame(pathRafRef.current)
@@ -292,58 +447,18 @@ function EditableOrthogonalPathInner({
     }
     const current = pendingPathRef.current ?? localPath
     pendingPathRef.current = null
-    const kind =
-      session.mode === 'waypoint' && session.index === 0
-        ? 'start'
-        : session.mode === 'waypoint' && session.index === current.length - 1
-          ? 'end'
-          : null
-    const snappedAnchor = kind
-      ? anchors.find((anchor) => anchor.id === activeAnchorIdRef.current && anchor.kind === kind)
-      : null
-    const sidePatch: { sSide?: Side; eSide?: Side } = {}
-    if (snappedAnchor?.kind === 'start') sidePatch.sSide = snappedAnchor.side
-    if (snappedAnchor?.kind === 'end') sidePatch.eSide = snappedAnchor.side
-    const mergedSides = {
-      sSide: sidePatch.sSide ?? localSidesRef.current.sSide,
-      eSide: sidePatch.eSide ?? localSidesRef.current.eSide,
-    }
-    const sidesChanged =
-      (sidePatch.sSide !== undefined && sidePatch.sSide !== localSidesRef.current.sSide) ||
-      (sidePatch.eSide !== undefined && sidePatch.eSide !== localSidesRef.current.eSide)
-    const guard = shapeGuardRef.current
-    if (snappedAnchor && sidesChanged && guard && session.mode === 'waypoint') {
-      const pathWithAnchors = current.map((p) => ({ ...p }))
-      if (snappedAnchor.kind === 'start') {
-        pathWithAnchors[0] = { x: snappedAnchor.x, y: snappedAnchor.y }
-      } else {
-        pathWithAnchors[pathWithAnchors.length - 1] = { x: snappedAnchor.x, y: snappedAnchor.y }
-      }
-      const rebuilt = rebuildPathForAnchorSides(
-        {
-          ...guard.repair,
-          startPoint: { ...pathWithAnchors[0]! },
-          endPoint: { ...pathWithAnchors[pathWithAnchors.length - 1]! },
-          sSide: mergedSides.sSide,
-          eSide: mergedSides.eSide,
-        },
-        { fallbackPath: lastValidPathRef.current },
-      )
-      if (rebuilt && rebuilt.length >= 2) {
-        const committed = commitPath(rebuilt, mergedSides)
-        setLocalPath(committed)
-        setActiveAnchorId(activeAnchorIdRef.current)
-        return
-      }
-    }
-    const normalized =
-      session.mode === 'waypoint'
+    const isEndpointDrag =
+      session.mode === 'waypoint' &&
+      (session.index === 0 || session.index === current.length - 1)
+    const finalPath = isEndpointDrag
+      ? tryLiveReroute(current, localSidesRef.current, true)
+      : session.mode === 'waypoint'
         ? alignEndpointSegment(current, session.index)
         : current
-    const committed = commitPath(normalized, sidePatch)
+    const committed = commitPath(finalPath, localSidesRef.current)
     setLocalPath(committed)
     setActiveAnchorId(activeAnchorIdRef.current)
-  }, [alignEndpointSegment, anchors, commitPath, localPath])
+  }, [alignEndpointSegment, commitPath, localPath, tryLiveReroute])
 
   const handlePointerMove = useCallback(
     (ev: PointerEvent) => {
@@ -403,6 +518,7 @@ function EditableOrthogonalPathInner({
       } catch {
         /* ignore */
       }
+      lastRouteTimeRef.current = 0
       dragSessionRef.current = {
         mode,
         pointerId: e.pointerId,
@@ -416,6 +532,13 @@ function EditableOrthogonalPathInner({
         moved: false,
       }
       setIsDragging(true)
+      setDraggingEndpointKind(
+        mode === 'waypoint' && (index === 0 || index === originPath.length - 1)
+          ? index === 0
+            ? 'start'
+            : 'end'
+          : null,
+      )
       setIsPathInvalid(false)
       window.addEventListener('pointermove', handlePointerMove)
       window.addEventListener('pointerup', handlePointerUp)
@@ -482,6 +605,11 @@ function EditableOrthogonalPathInner({
       : '#2563eb'
     : 'black'
 
+  const isSnapping = activeAnchorId !== null || activeEdgeHighlight !== null
+  const highlightLine = activeEdgeHighlight
+    ? edgeHighlightLine(activeEdgeHighlight.rect, activeEdgeHighlight.side)
+    : null
+
   return (
     <g className="print:hidden">
       <path
@@ -505,43 +633,70 @@ function EditableOrthogonalPathInner({
         markerEnd={`url(#${markerEndId})`}
         style={{ pointerEvents: 'none' }}
       />
+      {isSelected && highlightLine && (
+        <line
+          x1={highlightLine.x1}
+          y1={highlightLine.y1}
+          x2={highlightLine.x2}
+          y2={highlightLine.y2}
+          stroke="#2563eb"
+          strokeWidth={3}
+          strokeLinecap="round"
+          opacity={0.9}
+          style={{ pointerEvents: 'none' }}
+        />
+      )}
       {isSelected &&
         anchors.map((anchor) => {
-          const isActive = anchor.id === activeAnchorId
+          if (draggingEndpointKind !== null && anchor.kind !== draggingEndpointKind) {
+            return null
+          }
+          const isActive =
+            anchor.id === activeAnchorId ||
+            (activeEdgeHighlight?.kind === anchor.kind &&
+              activeEdgeHighlight.side === anchor.side)
           const isStart = anchor.kind === 'start'
+          const isInactiveKind =
+            draggingEndpointKind === null &&
+            activeEdgeHighlight !== null &&
+            anchor.kind !== activeEdgeHighlight.kind
           return (
             <circle
               key={`${connectionId}-anchor-${anchor.id}`}
               cx={anchor.x}
               cy={anchor.y}
-              r={isActive ? 6 : 4}
+              r={isActive ? 5 : 3}
               fill={isActive ? '#2563eb' : isStart ? '#bfdbfe' : '#dbeafe'}
               stroke={isActive ? '#1d4ed8' : '#60a5fa'}
-              strokeWidth={isActive ? 2 : 1.5}
-              opacity={0.8}
+              strokeWidth={isActive ? 2 : 1}
+              opacity={isInactiveKind ? 0.25 : isActive ? 1 : 0.55}
               style={{ pointerEvents: 'none' }}
             />
           )
         })}
       {isSelected &&
-        localPath.map((p, idx) => (
-          <circle
-            key={`${connectionId}-wp-${idx}`}
-            cx={p.x}
-            cy={p.y}
-            r={idx === 0 || idx === localPath.length - 1 ? 5 : 6}
-            fill={idx === 0 || idx === localPath.length - 1 ? '#1d4ed8' : '#ffffff'}
-            stroke={isPathInvalid ? '#ea580c' : '#2563eb'}
-            strokeWidth={2}
-            style={{
-              pointerEvents: 'all',
-              cursor: isDragging ? 'grabbing' : 'grab',
-              touchAction: 'none',
-            }}
-            onPointerDown={(e) => handleHandlePointerDown(idx, e)}
-            onContextMenu={(e) => handleHandleContextMenu(idx, e)}
-          />
-        ))}
+        localPath.map((p, idx) => {
+          const isEndpoint = idx === 0 || idx === localPath.length - 1
+          const endpointSnapping = isEndpoint && isSnapping
+          return (
+            <circle
+              key={`${connectionId}-wp-${idx}`}
+              cx={p.x}
+              cy={p.y}
+              r={isEndpoint ? (endpointSnapping ? 8 : 6) : 6}
+              fill={isEndpoint ? '#1d4ed8' : '#ffffff'}
+              stroke={isPathInvalid ? '#ea580c' : '#2563eb'}
+              strokeWidth={endpointSnapping ? 2.5 : 2}
+              style={{
+                pointerEvents: 'all',
+                cursor: isDragging ? 'grabbing' : 'grab',
+                touchAction: 'none',
+              }}
+              onPointerDown={(e) => handleHandlePointerDown(idx, e)}
+              onContextMenu={(e) => handleHandleContextMenu(idx, e)}
+            />
+          )
+        })}
     </g>
   )
 }

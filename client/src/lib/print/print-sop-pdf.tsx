@@ -4,7 +4,9 @@ import { tteApi } from '@/api/tte'
 import {
   SopPdfDocument,
   type SopPdfDocumentProps,
+  type SopPdfPrintMode,
 } from '@/components/sop/sop-pdf-document'
+import { exportSopDiagramSnapshots } from '@/lib/print/sop-diagram-export.util'
 import { getValidasiPengesahanUrl } from '@/lib/tte/url'
 import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 
@@ -12,6 +14,12 @@ const QR_SIZE = 64
 
 export type SopPdfPrintOptions = {
   signPdf?: boolean
+  skipDiagramExport?: boolean
+}
+
+export interface PrepareSopPdfDocumentPropsResult {
+  props: SopPdfDocumentProps
+  diagramExportFailed: boolean
 }
 
 async function buildQrDataUrl(payload: TTESignaturePayload | null | undefined): Promise<string | undefined> {
@@ -36,11 +44,55 @@ export function sanitizeSopPdfFilename(props: SopPdfDocumentProps): string {
   return `SOP-${sanitized || 'dokumen'}.pdf`
 }
 
-export async function buildSopPdfBlob(props: SopPdfDocumentProps): Promise<Blob> {
-  const qrDataUrlKepalaOpd = await buildQrDataUrl(props.tteSignaturePayload)
+function shouldExportDiagrams(props: SopPdfDocumentProps, options?: SopPdfPrintOptions): boolean {
+  if (options?.skipDiagramExport) {
+    return false
+  }
+  if ((props.diagramSnapshots?.length ?? 0) > 0) {
+    return false
+  }
+  const printMode: SopPdfPrintMode =
+    props.printMode ?? (props.includeHeader === false ? 'diagrams_only' : 'full')
+  return (
+    printMode === 'diagrams_only' ||
+    printMode === 'steps_and_diagrams' ||
+    printMode === 'full'
+  )
+}
+
+/** Siapkan props PDF termasuk ekspor diagram bila diperlukan. */
+export async function prepareSopPdfDocumentProps(
+  props: SopPdfDocumentProps,
+  options?: SopPdfPrintOptions,
+): Promise<PrepareSopPdfDocumentPropsResult> {
+  if (!shouldExportDiagrams(props, options)) {
+    return { props, diagramExportFailed: false }
+  }
+  try {
+    const diagramSnapshots = await exportSopDiagramSnapshots({
+      name: props.name,
+      prosedurRows: props.prosedurRows ?? [],
+      implementers: props.implementers ?? [],
+      diagramKonfigurasi: props.diagramKonfigurasi,
+    })
+    return {
+      props: { ...props, diagramSnapshots },
+      diagramExportFailed: false,
+    }
+  } catch {
+    return { props, diagramExportFailed: true }
+  }
+}
+
+export async function buildSopPdfBlob(
+  props: SopPdfDocumentProps,
+  options?: SopPdfPrintOptions,
+): Promise<Blob> {
+  const { props: resolvedProps } = await prepareSopPdfDocumentProps(props, options)
+  const qrDataUrlKepalaOpd = await buildQrDataUrl(resolvedProps.tteSignaturePayload)
   return pdf(
     <SopPdfDocument
-      {...props}
+      {...resolvedProps}
       qrDataUrlKepalaOpd={qrDataUrlKepalaOpd}
     />,
   ).toBlob()
@@ -84,6 +136,18 @@ async function signSopPdfBlob(
   return base64ToPdfBlob(response.signedPdfBase64)
 }
 
+function triggerBlobDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.rel = 'noopener'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
+}
+
 function printBlob(blob: Blob): Promise<void> {
   return new Promise((resolve) => {
     const url = URL.createObjectURL(blob)
@@ -120,11 +184,40 @@ function printBlob(blob: Blob): Promise<void> {
   })
 }
 
+export interface SopPdfActionResult {
+  diagramExportFailed: boolean
+}
+
+export async function downloadSopPdf(
+  props: SopPdfDocumentProps,
+  options?: SopPdfPrintOptions,
+): Promise<SopPdfActionResult> {
+  const { props: resolvedProps, diagramExportFailed } = await prepareSopPdfDocumentProps(
+    props,
+    options,
+  )
+  const unsignedBlob = await buildSopPdfBlob(resolvedProps, {
+    ...options,
+    skipDiagramExport: true,
+  })
+  const downloadableBlob = await signSopPdfBlob(unsignedBlob, resolvedProps, options)
+  triggerBlobDownload(downloadableBlob, sanitizeSopPdfFilename(resolvedProps))
+  return { diagramExportFailed }
+}
+
 export async function printSopPdfDocument(
   props: SopPdfDocumentProps,
   options?: SopPdfPrintOptions,
-): Promise<void> {
-  const unsignedBlob = await buildSopPdfBlob(props)
-  const printableBlob = await signSopPdfBlob(unsignedBlob, props, options)
+): Promise<SopPdfActionResult> {
+  const { props: resolvedProps, diagramExportFailed } = await prepareSopPdfDocumentProps(
+    props,
+    options,
+  )
+  const unsignedBlob = await buildSopPdfBlob(resolvedProps, {
+    ...options,
+    skipDiagramExport: true,
+  })
+  const printableBlob = await signSopPdfBlob(unsignedBlob, resolvedProps, options)
   await printBlob(printableBlob)
+  return { diagramExportFailed }
 }

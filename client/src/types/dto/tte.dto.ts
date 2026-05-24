@@ -64,6 +64,11 @@ export interface SignPdfDto {
   pdfBase64: string;
 }
 
+export interface SignBeritaAcaraArsipDto {
+  pengajuanEvaluasiId: string;
+  pdfBase64: string;
+}
+
 export interface PdfCertificateInfo {
   subject: string;
   issuer: string;
@@ -79,6 +84,45 @@ export interface SignPdfResponse {
   sha256SignedPdf: string;
   signatureFormat: "PKCS7_DETACHED" | "UNSIGNED_DISABLED";
   certificate: PdfCertificateInfo | null;
+}
+
+export interface PdfSigningStatus {
+  enabled: boolean;
+  trustedCaSubject: string | null;
+  trustedSignerSubject: string | null;
+  verificationPath: string;
+  configError?: string;
+}
+
+export interface PdfSignatureChecks {
+  digestMatch: boolean;
+  chainTrusted: boolean;
+  certificatePeriodValid: boolean;
+}
+
+export interface PdfSignatureVerificationEntry {
+  index: number;
+  valid: boolean;
+  reason: string;
+  signerSubject: string;
+  signerIssuer: string;
+  signedAt: string | null;
+  certificate: {
+    validFrom: string;
+    validTo: string;
+    fingerprint: string;
+    serialNumber: string;
+  };
+  checks: PdfSignatureChecks;
+}
+
+export interface VerifyPdfResponse {
+  pdfSigningEnabled: boolean;
+  trustedCaSubject: string | null;
+  hasSignatures: boolean;
+  allValid: boolean;
+  signatures: PdfSignatureVerificationEntry[];
+  disclaimer: string;
 }
 
 /** Respons GET publik verifikasi pengesahan (`/tte/public/pengesahan/:dokumenTteId/:userId`). */

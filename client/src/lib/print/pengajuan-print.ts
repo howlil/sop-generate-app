@@ -1,12 +1,23 @@
-/** Target aksi arsip pengajuan: unduh BA (PDF) atau cetak SOP (browser). */
+/** Target aksi arsip pengajuan: unduh BA (PDF) atau cetak SOP (PDF). */
 export type PengajuanPrintTarget = 'ba' | 'sop'
 
 export const PRINT_DELAY_MS = 150
 
+import type { SopPreviewWorkbenchProps } from '@/components/pengajuan/sop-document-preview-pane'
+import { printSopDocument } from './sop-browser-print'
 import { SOP_BEFORE_PRINT_EVENT } from './sop-print-events'
-import { printSopPdfDocument, type SopPdfPrintOptions } from './print-sop-pdf'
+import {
+  downloadSopPdf,
+  printSopPdfDocument,
+  type SopPdfPrintOptions,
+} from './print-sop-pdf'
+import { sopPreviewPropsToPdfDocumentProps } from './sop-pdf-props.util'
 import type { SopPdfDocumentProps } from '@/components/sop/sop-pdf-document'
+import type { TTESignaturePayload } from '@/types/dto/tte.dto'
+
 export { SOP_BEFORE_PRINT_EVENT }
+export { printSopDocument } from './sop-browser-print'
+export { downloadSopPdf, printSopPdfDocument } from './print-sop-pdf'
 
 export const CETAK_ARSIP_DISABLED_TITLE =
   'Tersedia setelah seluruh SOP ditandatangani Kepala OPD (status pengajuan selesai).'
@@ -29,16 +40,41 @@ export function canCetakArsipPengajuan(status: string | undefined): boolean {
   return canCetakSopArsipPengajuan(status)
 }
 
-export function triggerSopPrint(): void {
-  document.body.classList.remove('print-mode-sop')
-  document.body.classList.add('print-mode-sop')
-  const cleanup = () => {
-    document.body.classList.remove('print-mode-sop')
-    window.removeEventListener('afterprint', cleanup)
-  }
-  window.addEventListener('afterprint', cleanup)
-  window.dispatchEvent(new Event(SOP_BEFORE_PRINT_EVENT))
-  window.print()
+export interface SopPdfFromPreviewOptions extends SopPdfPrintOptions {
+  includeHeader?: boolean
+  printMode?: SopPdfDocumentProps['printMode']
+}
+
+/** Cetak SOP dari props pratinjau workbench (PDF + diagram). */
+export async function printSopFromPreviewProps(
+  preview: SopPreviewWorkbenchProps,
+  tteSignaturePayload: TTESignaturePayload | null = null,
+  options: SopPdfFromPreviewOptions = {},
+): Promise<{ diagramExportFailed: boolean }> {
+  const pdfProps = sopPreviewPropsToPdfDocumentProps(preview, {
+    includeHeader: options.includeHeader,
+    printMode: options.printMode,
+    tteSignaturePayload,
+  })
+  return printSopPdfDocument(pdfProps, options)
+}
+
+/** Unduh SOP dari props pratinjau workbench (PDF + diagram). */
+export async function downloadSopFromPreviewProps(
+  preview: SopPreviewWorkbenchProps,
+  tteSignaturePayload: TTESignaturePayload | null = null,
+  options: SopPdfFromPreviewOptions = {},
+): Promise<{ diagramExportFailed: boolean }> {
+  const pdfProps = sopPreviewPropsToPdfDocumentProps(preview, {
+    includeHeader: options.includeHeader,
+    printMode: options.printMode,
+    tteSignaturePayload,
+  })
+  return downloadSopPdf(pdfProps, options)
+}
+
+export function triggerSopPrint(props: SopPdfDocumentProps, options?: SopPdfPrintOptions): void {
+  void printSopPdfDocument(props, options)
 }
 
 export function schedulePengajuanPrint(
@@ -46,9 +82,9 @@ export function schedulePengajuanPrint(
   props: SopPdfDocumentProps,
   delayMs: number = PRINT_DELAY_MS,
   options?: SopPdfPrintOptions,
-): Promise<void> {
+): Promise<{ diagramExportFailed: boolean }> {
   if (target !== 'sop') {
-    return Promise.resolve()
+    return Promise.resolve({ diagramExportFailed: false })
   }
   return new Promise((resolve, reject) => {
     window.setTimeout(() => {
@@ -57,18 +93,27 @@ export function schedulePengajuanPrint(
   })
 }
 
-/** Cetak dokumen SOP PDF-native (header + langkah) memakai `@react-pdf/renderer`. */
+/** Cetak dokumen SOP PDF-native memakai `@react-pdf/renderer`. */
 export function scheduleSopDocumentPrint(
   props: SopPdfDocumentProps,
   delayMs: number = PRINT_DELAY_MS,
   options?: SopPdfPrintOptions,
-): Promise<void> {
+): Promise<{ diagramExportFailed: boolean }> {
   return schedulePengajuanPrint('sop', props, delayMs, options)
 }
 
-/** @deprecated Gunakan triggerSopPrint */
-export function triggerPengajuanPrint(target: PengajuanPrintTarget): void {
-  if (target === 'sop') {
-    triggerSopPrint()
+/** @deprecated Gunakan triggerSopPrint dengan props PDF */
+export function triggerPengajuanPrint(
+  target: PengajuanPrintTarget,
+  props?: SopPdfDocumentProps,
+  options?: SopPdfPrintOptions,
+): void {
+  if (target === 'sop' && props != null) {
+    triggerSopPrint(props, options)
   }
+}
+
+/** @deprecated Browser print — gunakan printSopPdfDocument untuk cetak produksi. */
+export function triggerSopBrowserPrint(): void {
+  void printSopDocument()
 }

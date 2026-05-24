@@ -257,9 +257,7 @@ export function finalizeManualOrthogonalPath(
   if (fallbackPath && fallbackPath.length >= 2) {
     const fallback = simplifyOrthogonalPath(normalizeOrthogonalPath(fallbackPath.map((p) => ({ ...p }))))
     if (check(fallback)) return fallback
-    return fallback
   }
 
-  if (repaired && repaired.length >= 2) return repaired
   return next
 }

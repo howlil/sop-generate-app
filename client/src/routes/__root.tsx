@@ -24,6 +24,7 @@ export const Route = createRootRoute({
       location.pathname === ROUTES.HOME ||
       location.pathname.startsWith(ROUTES.AUTH.LOGIN) ||
       location.pathname.startsWith(ROUTES.VALIDASI.PENGESAHAN_PREFIX) ||
+      location.pathname.startsWith(ROUTES.VALIDASI.PDF) ||
       location.pathname.startsWith(ROUTES.ARSIP.PREFIX);
     if (isPublic) return;
 

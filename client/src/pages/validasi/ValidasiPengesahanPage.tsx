@@ -2,7 +2,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle2, Download, Home, Loader2, Shield } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { usePublicSopDokumen } from "@/api/sop-public";
-import { useTtePengesahanPublic } from "@/api/tte";
+import { usePdfSigningStatus, useTtePengesahanPublic } from "@/api/tte";
 import { PengajuanSopPrintLayer } from "@/components/pengajuan/pengajuan-sop-print-layer";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ function waitForPrintPaint(): Promise<void> {
 export function ValidasiPengesahanPage() {
   const { dokumenTteId, userId } = useParams({ from: "/validasi/pengesahan/$dokumenTteId/$userId" });
   const query = useTtePengesahanPublic(dokumenTteId, userId);
+  const pdfSigningStatus = usePdfSigningStatus();
   const [unduhLoading, setUnduhLoading] = useState(false);
 
   const sopDetailId = query.data?.dokumen.sopDetailId;
@@ -77,11 +78,11 @@ export function ValidasiPengesahanPage() {
       await scheduleSopDocumentPrint({
         ...sopPreviewProps,
         tteSignaturePayload,
-      }, undefined, { signPdf: false });
+      }, undefined, { signPdf: pdfSigningStatus.data?.enabled ?? false });
     } finally {
       setUnduhLoading(false);
     }
-  }, [sopPreviewProps, tteSignaturePayload]);
+  }, [sopPreviewProps, tteSignaturePayload, pdfSigningStatus.data?.enabled]);
 
   const isSopDocument = Boolean(sopDetailId);
   const sopUnduhDisabled =
@@ -104,7 +105,11 @@ export function ValidasiPengesahanPage() {
             </h1>
             <p className="mt-1 text-sm text-slate-600">
               Halaman publik untuk memastikan jejak tanda tangan elektronik (simulasi) sesuai data di
-              server.
+              server. Untuk PDF bertanda tangan PKCS#7, gunakan{" "}
+              <Link to={ROUTES.VALIDASI.PDF} className="text-emerald-800 underline underline-offset-2">
+                verifikasi PDF
+              </Link>
+              .
             </p>
           </div>
         </div>

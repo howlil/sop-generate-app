@@ -1,5 +1,8 @@
 import { useMemo } from 'react'
 import {
+  BPMN_TASK_PADDING,
+} from '../../layout/bpmnDiagramMetrics'
+import {
   DIAGRAM_LINE_HEIGHT,
   measureDiagramTextBox,
   wrapDiagramText,
@@ -31,6 +34,8 @@ export function Activity({
       lines: textLines,
       minWidth: width,
       minHeight: height,
+      horizontalPadding: BPMN_TASK_PADDING,
+      verticalPadding: BPMN_TASK_PADDING,
     })
     return { computedWidth: measured.width, computedHeight: measured.height }
   }, [textLines, width, height])

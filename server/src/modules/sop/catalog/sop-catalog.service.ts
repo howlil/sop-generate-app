@@ -8,6 +8,7 @@ import {
 import type { JwtAccessPayload } from '../../../common';
 import { PeranPengguna, Prisma, StatusSOP } from '../../../generated/prisma';
 import { displayStatusSop } from '../../../common/status/status-display';
+import { extractDbInvariantMessage } from '../../../common/prisma/prisma-db-invariant.util';
 import { assertDetailSopEditable, hasRevisiInFlight } from '../../../common/status/sop-editable.util';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { EvaluasiNilaiService } from '../../evaluation/nilai/evaluasi-nilai.service';
@@ -331,6 +332,10 @@ export class SopCatalogService {
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
           throw new ConflictException('Nomor SOP sudah digunakan');
+        }
+        const invariant = extractDbInvariantMessage(err);
+        if (invariant) {
+          throw new BadRequestException(invariant);
         }
         throw err;
       }

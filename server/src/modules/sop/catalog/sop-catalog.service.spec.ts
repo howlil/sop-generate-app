@@ -771,17 +771,24 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_propagate_bad_request_when_repo_rejects_sop_terkait_inverse', async () => {
-      repoMock.updateSopHeaderTransaction.mockResolvedValueOnce({
-        ok: false,
-        reason: 'BAD_REQUEST',
-        message:
-          'SOP terkait bentrok: salah satu target sudah menaut balik ke dokumen ini; hapus relasi terbalik terlebih dahulu.',
+    it('should_throw_bad_request_when_db_sop_terkait_invariant_fails', async () => {
+      const driverError = {
+        name: 'DriverAdapterError',
+        cause: {
+          message:
+            'Relasi SOP terkait sudah ada arah terbalik; hapus pasangan yang ada terlebih dahulu',
+          state: '45000',
+          code: 1644,
+        },
+      };
+      repoMock.updateSopHeaderTransaction.mockRejectedValueOnce(driverError);
+      const dto: UpdateSopHeaderDto = { sopTerkaitDetailIds: ['det-other'] };
+      await expect(service.updatePenyusunHeader(user, 'det-up', dto)).rejects.toMatchObject({
+        response: {
+          message:
+            'Relasi SOP terkait sudah ada arah terbalik; hapus pasangan yang ada terlebih dahulu',
+        },
       });
-      const dto: UpdateSopHeaderDto = { sopTerkaitDetailIds: ['aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'] };
-      await expect(service.updatePenyusunHeader(user, 'det-up', dto)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
     });
 
     it('should_skip_repo_when_dto_has_no_field', async () => {

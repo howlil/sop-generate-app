@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import type { FlowchartConnection } from '../shapes/FlowchartArrowConnector'
 import type { Implementer, SOPStep, ArrowConfig, LabelConfig } from '../core/sopDiagramTypes'
 import { BpmnPage, type ProcessedBpmnStep } from './BpmnPage'
+import { sortConnectionsForRouting } from '../core/route/connection-route-order.util'
 
 const BPMN_SHAPE_PREFIX = 'bpmn-step-'
 
@@ -112,22 +113,7 @@ function buildBpmnConnections(
     }
   })
 
-  const hashId = (seed: number, id: string) =>
-    id.split('').reduce((acc, c, i) => acc + (c.charCodeAt(0) * ((seed + 1) * (i + 31) + seed * 7)), 0) >>> 0
-  list.sort((a, b) => {
-    const labelA = (a.label ?? '').toLowerCase()
-    const labelB = (b.label ?? '').toLowerCase()
-    const orderA = !a.label ? 0 : labelA === 'ya' || labelA === 'yes' ? 1 : 2
-    const orderB = !b.label ? 0 : labelB === 'ya' || labelB === 'yes' ? 1 : 2
-    const diff = orderA - orderB
-    if (diff !== 0) return diff
-    return hashId(pathLayoutSeed, a.id) - hashId(pathLayoutSeed, b.id)
-  })
-  if (list.length > 1 && pathLayoutSeed > 0) {
-    const rot = pathLayoutSeed % list.length
-    if (rot !== 0) return [...list.slice(rot), ...list.slice(0, rot)]
-  }
-  return list
+  return sortConnectionsForRouting(list, pathLayoutSeed)
 }
 
 /** Satu diagram BPMN utuh per SOP (paginasi hanya untuk flowchart cetak). */

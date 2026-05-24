@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useParams } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle, FileText, Loader2 } from "lucide-react";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
-import { PengajuanSopPrintLayer } from "@/components/pengajuan/pengajuan-sop-print-layer";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
 import { usePengajuanBeritaAcaraView, usePengajuanEvaluasiDetail, usePengajuanSopDokumenWorkbench } from "@/api/evaluasi";
@@ -97,8 +96,11 @@ export function DetailPengajuanSOPPage() {
 
   const { handleCetak, cetakLoading } = usePengajuanCetakArsip({
     pengajuanId: id,
+    pengajuan,
     effectiveSopDetailId,
     baTemplateProps,
+    sopPreviewProps,
+    tteSignaturePayload: tteSignaturePayloadKepalaOpd ?? null,
   });
 
   const tandaTanganiSemuaSop = useTandaTanganiSopPengajuan();
@@ -285,12 +287,6 @@ export function DetailPengajuanSOPPage() {
           ]}
         />
       </DetailPageLayout>
-
-      <PengajuanSopPrintLayer
-        previewProps={sopPreviewProps}
-        tteSignaturePayload={tteSignaturePayloadKepalaOpd}
-        fallbackSop={selectedSop}
-      />
 
       <PinVerificationDialog
         open={pinDialogOpen}

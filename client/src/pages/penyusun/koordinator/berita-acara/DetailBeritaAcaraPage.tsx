@@ -31,7 +31,6 @@ import { parseTTESignaturePayload } from '@/lib/tte/parse-tte-signature-payload'
 import { AlertCircle, CheckCircle, FileText, Loader2 } from 'lucide-react'
 import { ROUTES } from '@/utils/constants'
 import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCetakArsipButtons'
-import { PengajuanSopPrintLayer } from '@/components/pengajuan/pengajuan-sop-print-layer'
 import { usePengajuanCetakArsip } from '@/components/pengajuan/hooks/use-pengajuan-cetak-arsip'
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from '@/lib/print/pengajuan-print'
 import { formatDateIdFull } from '@/utils/format-date'
@@ -120,8 +119,11 @@ export function DetailBeritaAcaraPage() {
 
   const { handleCetak, cetakLoading } = usePengajuanCetakArsip({
     pengajuanId: id,
+    pengajuan,
     effectiveSopDetailId,
     baTemplateProps,
+    sopPreviewProps,
+    tteSignaturePayload: tteSignaturePayloadKepalaOpd ?? null,
   })
 
   if (isLoading && pengajuan === null) {
@@ -311,12 +313,6 @@ export function DetailBeritaAcaraPage() {
           />
         </div>
       </DetailPageLayout>
-
-      <PengajuanSopPrintLayer
-        previewProps={sopPreviewProps}
-        tteSignaturePayload={tteSignaturePayloadKepalaOpd}
-        fallbackSop={selectedSop}
-      />
 
       <PinVerificationDialog
         open={tteDialogOpen}

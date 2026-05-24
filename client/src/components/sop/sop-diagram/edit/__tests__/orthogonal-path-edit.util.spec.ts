@@ -5,6 +5,9 @@ import {
   dragSegmentFromOrigin,
   dragWaypointFromOrigin,
   dragWaypointOrthogonal,
+  forkStraightPathForEndpointDrag,
+  isPerpendicularEndpointDrag,
+  isStraightTwoPointPath,
   simplifyOrthogonalPath,
 } from '../orthogonal-path-edit.util'
 
@@ -112,6 +115,21 @@ describe('orthogonal-path-edit.util', () => {
     expect(simplified.every((p) => p.x === 100 || p.y === 0 || p.y === 100)).toBe(true)
   })
 
+  it('should_remove_small_horizontal_jog_on_vertical_spine', () => {
+    const verticalWithJog = [
+      { x: 100, y: 0 },
+      { x: 100, y: 50 },
+      { x: 108, y: 50 },
+      { x: 108, y: 52 },
+      { x: 100, y: 52 },
+      { x: 100, y: 100 },
+    ]
+    const simplified = simplifyOrthogonalPath(verticalWithJog, 12)
+    expect(simplified.length).toBeLessThanOrEqual(4)
+    expect(simplified[0]).toEqual({ x: 100, y: 0 })
+    expect(simplified[simplified.length - 1]).toEqual({ x: 100, y: 100 })
+  })
+
   it('should_not_remove_wide_detour_that_does_not_return_to_spine', () => {
     const offSpineJog = [
       { x: 0, y: 0 },
@@ -123,5 +141,46 @@ describe('orthogonal-path-edit.util', () => {
     const simplified = simplifyOrthogonalPath(offSpineJog)
     expect(simplified.length).toBeGreaterThanOrEqual(4)
     expect(simplified.some((p) => p.x === 80)).toBe(true)
+  })
+
+  it('should_fork_horizontal_when_drag_end_perpendicular_down', () => {
+    const straight = [
+      { x: 0, y: 100 },
+      { x: 200, y: 100 },
+    ]
+    expect(isStraightTwoPointPath(straight)).toBe(true)
+    expect(isPerpendicularEndpointDrag(straight, 0, 80)).toBe(true)
+    const forked = forkStraightPathForEndpointDrag(straight, 1, 0, 80)
+    expect(forked).not.toBeNull()
+    expect(forked).toHaveLength(3)
+    expect(forked![0]).toEqual({ x: 0, y: 100 })
+    expect(forked![1]).toEqual({ x: 200, y: 100 })
+    expect(forked![2]).toEqual({ x: 200, y: 180 })
+    expect(forked![0]!.y).toBe(forked![1]!.y)
+    expect(forked![1]!.x).toBe(forked![2]!.x)
+  })
+
+  it('should_not_fork_when_drag_along_horizontal', () => {
+    const straight = [
+      { x: 0, y: 100 },
+      { x: 200, y: 100 },
+    ]
+    expect(isPerpendicularEndpointDrag(straight, 80, 0)).toBe(false)
+    expect(forkStraightPathForEndpointDrag(straight, 1, 80, 0)).toBeNull()
+  })
+
+  it('should_fork_vertical_when_drag_end_perpendicular_sideways', () => {
+    const straight = [
+      { x: 100, y: 0 },
+      { x: 100, y: 200 },
+    ]
+    expect(isPerpendicularEndpointDrag(straight, 80, 0)).toBe(true)
+    const forked = forkStraightPathForEndpointDrag(straight, 1, 80, 0)
+    expect(forked).toHaveLength(3)
+    expect(forked![0]).toEqual({ x: 100, y: 0 })
+    expect(forked![1]).toEqual({ x: 100, y: 200 })
+    expect(forked![2]).toEqual({ x: 180, y: 200 })
+    expect(forked![0]!.x).toBe(forked![1]!.x)
+    expect(forked![1]!.y).toBe(forked![2]!.y)
   })
 })

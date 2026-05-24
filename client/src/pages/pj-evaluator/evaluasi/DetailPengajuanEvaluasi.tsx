@@ -112,8 +112,11 @@ export function DetailPengajuanEvaluasi() {
 
   const { handleCetak, cetakLoading } = usePengajuanCetakArsip({
     pengajuanId: id,
+    pengajuan,
     effectiveSopDetailId,
     baTemplateProps,
+    sopPreviewProps,
+    tteSignaturePayload: tteSignaturePayloadKepalaOpd ?? null,
   });
 
   useDocumentTitle(

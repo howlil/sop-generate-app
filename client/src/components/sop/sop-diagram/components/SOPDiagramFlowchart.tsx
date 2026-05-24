@@ -1,12 +1,21 @@
-import { useMemo, useState, useEffect, useLayoutEffect, useCallback, useRef, type MutableRefObject } from 'react'
+import {
+  useMemo,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useRef,
+  startTransition,
+  type MutableRefObject,
+} from 'react'
 import {
   FlowchartArrowConnector,
+  clearPathCache,
   type FlowchartConnection,
   type UsedSides,
   type PathUpdatedPayload,
-  type RoutedPathsRef,
 } from '../shapes/FlowchartArrowConnector'
-import { buildCorridorGraph, type OccupiedSegment, type CellInfo, type CorridorGraph } from '../core/route/orthogonalRouter'
+import { type OccupiedSegment } from '../core/route/orthogonalRouter'
 import { FlowchartOffPageConnector } from '../shapes/flowchart/OffPageConnector'
 import type {
   ProsedurRow,
@@ -16,7 +25,7 @@ import type {
   ArrowConfig,
   LabelConfig,
 } from '../core/sopDiagramTypes'
-import { getFullTimeUnit, isYaLabel, isTidakLabel } from '../core/sopDiagramTypes'
+import { getFullTimeUnit, isTidakLabel } from '../core/sopDiagramTypes'
 import {
   splitStepsIntoPages,
   splitCrossPageConnections,
@@ -25,6 +34,12 @@ import {
 } from '../core/route/flowchartPagination'
 import { SOP_DOCUMENT_PAGE_WIDTH_CLASS } from '../layout/sopDocumentLayout'
 import { SOP_BEFORE_PRINT_EVENT } from '@/lib/print/sop-print-events'
+import { useSopDiagramPrintReadyDispatch } from '../hooks/use-sop-diagram-print-ready-dispatch'
+import {
+  findConnectionIdsWithCrossings,
+  sortConnectionsForRouting,
+} from '../core/route/connection-route-order.util'
+import { applyUsedSidePayload } from '../core/route/used-side-usage.util'
 
 /* ───────────────────────── Defaults ─────────────────────────── */
 
@@ -37,6 +52,11 @@ const DEFAULT_LAYOUT = {
   firstPageSteps: 7,
   nextPageSteps: 8,
 }
+const MAX_ROUTING_RECONCILE_PASSES = 4
+const MEASURE_RETRY_MAX_FRAMES = 12
+const MEASURE_RETRY_TIMEOUT_MS = 500
+const GRAPH_BUILD_MAX_FRAMES = 4 // kept for unused reference cleanup
+void GRAPH_BUILD_MAX_FRAMES
 
 /** Lebar tetap A4 content agar konsisten (path/arrow tidak berubah saat resize); scroll horizontal jika viewport sempit */
 const PAGE_WIDTH_CLASS = SOP_DOCUMENT_PAGE_WIDTH_CLASS
@@ -76,6 +96,95 @@ function stepShapeType(step: SOPStep): string {
 function sopAreaId(pageIndex: number) {
   return `main-sop-area-${pageIndex}`
 }
+
+type FlowchartBoundsRect = { left: number; top: number; right: number; bottom: number }
+
+function hasFlowchartMeasureDom(pageCount: number): boolean {
+  for (let pi = 0; pi < pageCount; pi += 1) {
+    const container = document.getElementById(sopAreaId(pi))
+    if (!container) continue
+    if (container.querySelector('td[data-implementer-id]')) return true
+  }
+  return false
+}
+
+function buildPelaksanaBoundsSig(
+  boundsByPage: Record<number, FlowchartBoundsRect>,
+): string {
+  return Object.entries(boundsByPage)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([pi, bounds]) => `${pi}:${bounds.left},${bounds.top},${bounds.right},${bounds.bottom}`)
+    .join('|')
+}
+
+/** Ukur koridor pelaksana per halaman; kembalikan bounds + signature untuk gate layoutMeasured. */
+export function measureFlowchartPelaksanaBounds(
+  pageCount: number,
+  boundsStore: Record<number, FlowchartBoundsRect>,
+): { sig: string; domReady: boolean } {
+  const PAD_LEFT = 8
+  const PAD_RIGHT = 8
+  const PAD_TOP = 4
+  const PAD_BOTTOM = 8
+  let domReady = false
+  for (let pi = 0; pi < pageCount; pi += 1) {
+    const container = document.getElementById(sopAreaId(pi))
+    if (!container) continue
+    domReady = true
+    const containerRect = container.getBoundingClientRect()
+    const implCells = container.querySelectorAll('td[data-implementer-id]')
+    let minLeft = Infinity
+    let maxRight = -Infinity
+    let minTop = Infinity
+    let maxBottom = -Infinity
+    implCells.forEach((cell) => {
+      const rect = cell.getBoundingClientRect()
+      minLeft = Math.min(minLeft, rect.left - containerRect.left)
+      maxRight = Math.max(maxRight, rect.right - containerRect.left)
+      minTop = Math.min(minTop, rect.top - containerRect.top)
+      maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
+    })
+    const opcEls = container.querySelectorAll('[id^="opc-"]')
+    opcEls.forEach((el) => {
+      const rect = el.getBoundingClientRect()
+      minTop = Math.min(minTop, rect.top - containerRect.top)
+      maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
+    })
+    if (minLeft === Infinity) minLeft = 0
+    if (maxRight === -Infinity) maxRight = containerRect.width
+    boundsStore[pi] = {
+      left: Math.max(0, minLeft + PAD_LEFT),
+      top: Math.max(0, minTop + PAD_TOP),
+      right: maxRight - PAD_RIGHT,
+      bottom: maxBottom + PAD_BOTTOM,
+    }
+  }
+  return { sig: buildPelaksanaBoundsSig(boundsStore), domReady }
+}
+
+export function applyFlowchartPelaksanaFallbackBounds(
+  pageCount: number,
+  boundsStore: Record<number, FlowchartBoundsRect>,
+): string {
+  const PAD_LEFT = 8
+  const PAD_RIGHT = 8
+  const PAD_TOP = 4
+  const PAD_BOTTOM = 8
+  for (let pi = 0; pi < pageCount; pi += 1) {
+    const container = document.getElementById(sopAreaId(pi))
+    if (!container) continue
+    const containerRect = container.getBoundingClientRect()
+    boundsStore[pi] = {
+      left: PAD_LEFT,
+      top: PAD_TOP,
+      right: Math.max(PAD_LEFT, containerRect.width - PAD_RIGHT),
+      bottom: Math.max(PAD_TOP, containerRect.height - PAD_BOTTOM),
+    }
+  }
+  return buildPelaksanaBoundsSig(boundsStore)
+}
+
+
 
 /* ───────────────────────── Optimizations ─────────────────────────── */
 
@@ -119,12 +228,56 @@ export function SOPDiagramFlowchart({
 
   const rowIdToSeq = useMemo(() => new Map(rows.map((r) => [r.id, r.no])), [rows])
 
+  const routingPriorityIdsRef = useRef<Set<string>>(new Set())
+  const lastRoutingViolatorSigRef = useRef<string | null>(null)
+  const pageViolatorsRef = useRef<Map<number, string[]>>(new Map())
+  const [routingReconcilePass, setRoutingReconcilePass] = useState(0)
+  useEffect(() => {
+    setRoutingReconcilePass(0)
+    routingPriorityIdsRef.current = new Set()
+    lastRoutingViolatorSigRef.current = null
+    pageViolatorsRef.current = new Map()
+  }, [pathLayoutSeed])
+
+  const handlePageCrossings = useCallback(
+    (pageIndex: number, violators: string[]) => {
+      if (violators.length === 0) {
+        pageViolatorsRef.current.delete(pageIndex)
+        return
+      }
+      pageViolatorsRef.current.set(pageIndex, violators)
+      const merged = new Set<string>()
+      for (const ids of pageViolatorsRef.current.values()) {
+        for (const id of ids) merged.add(id)
+      }
+      const sig = [...merged].sort().join('|')
+      if (lastRoutingViolatorSigRef.current === sig) return
+      if (routingReconcilePass >= MAX_ROUTING_RECONCILE_PASSES) return
+      lastRoutingViolatorSigRef.current = sig
+      routingPriorityIdsRef.current = merged
+      setRoutingReconcilePass((pass) => pass + 1)
+    },
+    [routingReconcilePass],
+  )
+
   /* ── Pagination ─────────────────────────────────── */
 
   const allPages = useMemo(
     () => splitStepsIntoPages(sortedSteps, config.firstPageSteps, config.nextPageSteps),
     [sortedSteps, config.firstPageSteps, config.nextPageSteps],
   )
+  const pageGeomSig = useMemo(
+    () =>
+      allPages
+        .map((page) =>
+          page
+            .map((step) => `${step.seq_number}:${step.id_implementer ?? ''}:${step.type}`)
+            .join(','),
+        )
+        .join('|'),
+    [allPages],
+  )
+  const prevPageGeomSigRef = useRef('')
 
   /* ── Build connections (same logic as before) ───── */
 
@@ -170,32 +323,11 @@ export function SOPDiagramFlowchart({
         })
       }
     }
-    // Route order: Tidak first (needs left/right), then Ya, then linear. Within Tidak: loop-back first.
-    const seqFromId = (id: string) => {
-      const n = id.match(/sop-step-(\d+)/)?.[1]
-      return n != null ? Number(n) : -1
-    }
-    // Hash yang bergantung pada seed sehingga urutan koneksi berubah per klik "Perbaiki diagram"
-    const hashId = (seed: number, id: string) =>
-      (id.split('').reduce((acc, c, i) => acc + (c.charCodeAt(0) * ((seed + 1) * (i + 31) + seed * 7)), 0) >>> 0)
-    list.sort((a, b) => {
-      const orderA = !a.label ? 0 : isYaLabel(a.label) ? 1 : isTidakLabel(a.label) ? 2 : 0
-      const orderB = !b.label ? 0 : isYaLabel(b.label) ? 1 : isTidakLabel(b.label) ? 2 : 0
-      const typeDiff = orderB - orderA
-      if (typeDiff !== 0) return typeDiff
-      if (orderA === 2) {
-        const fromSeqA = seqFromId(a.from), toSeqA = seqFromId(a.to)
-        const fromSeqB = seqFromId(b.from), toSeqB = seqFromId(b.to)
-        const loopBackA = toSeqA >= 0 && fromSeqA >= 0 && toSeqA < fromSeqA ? 0 : 1
-        const loopBackB = toSeqB >= 0 && fromSeqB >= 0 && toSeqB < fromSeqB ? 0 : 1
-        const loopDiff = loopBackA - loopBackB
-        if (loopDiff !== 0) return loopDiff
-      }
-      return hashId(pathLayoutSeed, a.id) - hashId(pathLayoutSeed, b.id)
+    return sortConnectionsForRouting(list, pathLayoutSeed, {
+      priorityIds: routingPriorityIdsRef.current,
+      reconcilePass: routingReconcilePass,
     })
-    return list
-  }, [sortedSteps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed])
-
+  }, [sortedSteps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed, routingReconcilePass])
   /* ── Scan: reserved sides per target (all Tidak to same target get left/right) ── */
   const reservedSidesRef = useRef<Map<string, Set<string>>>(new Map())
   reservedSidesRef.current = useMemo(() => {
@@ -235,34 +367,10 @@ export function SOPDiagramFlowchart({
 
   const [usedSides, setUsedSides] = useState<UsedSides>({})
 
-  /* ── Shared routing context for cross-arrow overlap avoidance ── */
-  const routedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
-  useLayoutEffect(() => {
-    routedSegmentsRef.current = new Map()
-  }, [pathLayoutSeed])
-
   const onPathUpdated = useCallback(
     (payload: PathUpdatedPayload) => {
-      setUsedSides((prev) => {
-        const fromId = payload.from
-        const toId = payload.to
-        const alreadyFrom = fromId && (prev[fromId]?.out?.[payload.sSide] ?? []).includes(payload.connectionId)
-        const alreadyTo = toId && (prev[toId]?.in?.[payload.eSide] ?? []).includes(payload.connectionId)
-        if (alreadyFrom && alreadyTo) return prev
-        const next = { ...prev }
-        if (fromId) {
-          next[fromId] = { ...next[fromId], out: { ...next[fromId]?.out } }
-          const out = next[fromId].out!
-          const arr = out[payload.sSide] ?? []
-          if (!arr.includes(payload.connectionId)) out[payload.sSide] = [...arr, payload.connectionId]
-        }
-        if (toId) {
-          next[toId] = { ...next[toId], in: { ...next[toId]?.in } }
-          const in_ = next[toId].in!
-          const arr = in_[payload.eSide] ?? []
-          if (!arr.includes(payload.connectionId)) in_[payload.eSide] = [...arr, payload.connectionId]
-        }
-        return next
+      startTransition(() => {
+        setUsedSides((prev) => applyUsedSidePayload(prev, payload))
       })
       onPathUpdatedProp?.(payload)
     },
@@ -274,53 +382,100 @@ export function SOPDiagramFlowchart({
   const pelaksanaBoundsRef = useRef<Record<number, { left: number; top: number; right: number; bottom: number }>>({})
 
   const [arrowsReady, setArrowsReady] = useState(false)
-  const [, setBoundsVersion] = useState(0)
+  const [layoutMeasureVersion, setLayoutMeasureVersion] = useState(0)
+  const pelaksanaBoundsSigRef = useRef('')
 
-  const measurePelaksanaBounds = useCallback(() => {
-    for (let pi = 0; pi < allPages.length; pi++) {
-      const container = document.getElementById(sopAreaId(pi))
-      if (!container) continue
-      const containerRect = container.getBoundingClientRect()
+  const commitPelaksanaMeasure = useCallback((nextSig: string, forceVersion = false) => {
+    const changed = forceVersion || nextSig !== pelaksanaBoundsSigRef.current
+    if (!changed) return false
+    pelaksanaBoundsSigRef.current = nextSig
+    setLayoutMeasureVersion((v) => v + 1)
+    return true
+  }, [])
 
-      // Hanya kolom pelaksana (td[data-implementer-id]) — path tidak boleh masuk kolom NO, KEGIATAN, MUTU BAKU, KET
-      const implCells = container.querySelectorAll('td[data-implementer-id]')
-      let minLeft = Infinity, maxRight = -Infinity, minTop = Infinity, maxBottom = -Infinity
-      implCells.forEach((cell) => {
-        const rect = cell.getBoundingClientRect()
-        minLeft = Math.min(minLeft, rect.left - containerRect.left)
-        maxRight = Math.max(maxRight, rect.right - containerRect.left)
-        minTop = Math.min(minTop, rect.top - containerRect.top)
-        maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
-      })
-
-      const opcEls = container.querySelectorAll('[id^="opc-"]')
-      opcEls.forEach((el) => {
-        const rect = el.getBoundingClientRect()
-        minTop = Math.min(minTop, rect.top - containerRect.top)
-        maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
-      })
-
-      if (minLeft === Infinity) minLeft = 0
-      if (maxRight === -Infinity) maxRight = containerRect.width
-      // PAD lebih ketat: path tidak boleh terlalu dekat ke border kolom pelaksana
-      const PAD_LEFT = 8   // padding dari kiri kolom pelaksana pertama
-      const PAD_RIGHT = 8  // padding dari kanan kolom pelaksana terakhir
-      const PAD_TOP = 4    // padding dari atas (header row)
-      const PAD_BOTTOM = 8 // padding dari bawah
-      pelaksanaBoundsRef.current[pi] = {
-        left: Math.max(0, minLeft + PAD_LEFT),
-        top: Math.max(0, minTop + PAD_TOP),
-        right: maxRight - PAD_RIGHT,
-        bottom: maxBottom + PAD_BOTTOM,
-      }
-    }
-    setArrowsReady(true)
-  }, [allPages])
+  const measurePelaksanaBounds = useCallback((): boolean => {
+    const { sig } = measureFlowchartPelaksanaBounds(allPages.length, pelaksanaBoundsRef.current)
+    if (!sig) return false
+    return commitPelaksanaMeasure(sig)
+  }, [allPages.length, commitPelaksanaMeasure])
 
   useEffect(() => {
-    const t = requestAnimationFrame(() => measurePelaksanaBounds())
-    return () => cancelAnimationFrame(t)
-  }, [measurePelaksanaBounds])
+    if (allPages.length === 0) {
+      setArrowsReady(false)
+      prevPageGeomSigRef.current = ''
+      return
+    }
+    const geomUnchanged = pageGeomSig === prevPageGeomSigRef.current
+    prevPageGeomSigRef.current = pageGeomSig
+    if (geomUnchanged) {
+      if (hasFlowchartMeasureDom(allPages.length)) {
+        if (!measurePelaksanaBounds()) {
+          const fallbackSig = applyFlowchartPelaksanaFallbackBounds(
+            allPages.length,
+            pelaksanaBoundsRef.current,
+          )
+          commitPelaksanaMeasure(fallbackSig || 'fallback-empty', true)
+        }
+        setArrowsReady(true)
+      }
+      return
+    }
+    setArrowsReady(false)
+    let cancelled = false
+    let frame = 0
+    let timeoutId: ReturnType<typeof globalThis.setTimeout> | undefined
+
+    const clearScheduledFallback = () => {
+      if (timeoutId !== undefined) {
+        globalThis.clearTimeout(timeoutId)
+        timeoutId = undefined
+      }
+    }
+
+    const finishWithFallback = () => {
+      if (cancelled) return
+      const fallbackSig = applyFlowchartPelaksanaFallbackBounds(
+        allPages.length,
+        pelaksanaBoundsRef.current,
+      )
+      if (fallbackSig) {
+        commitPelaksanaMeasure(fallbackSig, true)
+      } else {
+        commitPelaksanaMeasure('fallback-empty', true)
+      }
+      setArrowsReady(true)
+    }
+
+    const tryMeasure = () => {
+      if (cancelled) return
+      frame += 1
+      if (hasFlowchartMeasureDom(allPages.length)) {
+        clearScheduledFallback()
+        if (!measurePelaksanaBounds()) {
+          const fallbackSig = applyFlowchartPelaksanaFallbackBounds(
+            allPages.length,
+            pelaksanaBoundsRef.current,
+          )
+          commitPelaksanaMeasure(fallbackSig || 'fallback-empty', true)
+        }
+        setArrowsReady(true)
+        return
+      }
+      if (frame >= MEASURE_RETRY_MAX_FRAMES) {
+        finishWithFallback()
+        return
+      }
+      requestAnimationFrame(tryMeasure)
+    }
+
+    requestAnimationFrame(tryMeasure)
+    timeoutId = globalThis.setTimeout(finishWithFallback, MEASURE_RETRY_TIMEOUT_MS)
+
+    return () => {
+      cancelled = true
+      clearScheduledFallback()
+    }
+  }, [allPages.length, pageGeomSig, measurePelaksanaBounds, commitPelaksanaMeasure])
 
   useEffect(() => {
     const onBeforePrint = () => {
@@ -338,7 +493,6 @@ export function SOPDiagramFlowchart({
     const observers: ResizeObserver[] = []
     // OPTIMIZATION #2: Debounce resize events to avoid excessive re-measures
     const debouncedMeasure = debounce(() => {
-      setBoundsVersion((v) => v + 1)
       requestAnimationFrame(() => measurePelaksanaBounds())
     }, 150)
     
@@ -351,6 +505,10 @@ export function SOPDiagramFlowchart({
     }
     return () => observers.forEach((ro) => ro.disconnect())
   }, [allPages.length, measurePelaksanaBounds])
+
+  const arrowRerouteVersion =
+    pathLayoutSeed + layoutMeasureVersion + routingReconcilePass
+  const layoutMeasured = layoutMeasureVersion > 0
 
   /* ── Render ─────────────────────────────────────── */
 
@@ -381,6 +539,7 @@ export function SOPDiagramFlowchart({
             opcBottom={opcBottom}
             usedSides={usedSides}
             arrowsReady={arrowsReady}
+            layoutMeasured={layoutMeasured}
             arrowConfig={arrowConfig}
             labelConfig={labelConfig}
             editMode={editMode}
@@ -390,8 +549,10 @@ export function SOPDiagramFlowchart({
             onSelectConnection={onSelectConnectionProp}
             pelaksanaBounds={pelaksanaBoundsRef.current[pageIndex] ?? null}
             isLastPage={pageIndex === allPages.length - 1}
-            routedSegmentsRef={routedSegmentsRef}
             reservedSidesRef={reservedSidesRef}
+            rerouteVersion={arrowRerouteVersion}
+            routingReconcilePass={routingReconcilePass}
+            onPageCrossings={handlePageCrossings}
           />
         )
       })}
@@ -418,6 +579,7 @@ interface FlowchartPageProps {
   opcBottom: OpcPair[]
   usedSides: UsedSides
   arrowsReady: boolean
+  layoutMeasured?: boolean
   arrowConfig?: ArrowConfig
   labelConfig?: LabelConfig
   editMode?: boolean
@@ -428,113 +590,12 @@ interface FlowchartPageProps {
   onResetSelectedPath?: () => void
   pelaksanaBounds: { left: number; top: number; right: number; bottom: number } | null
   isLastPage: boolean
-  routedSegmentsRef: RoutedPathsRef
   reservedSidesRef: MutableRefObject<Map<string, Set<string>>>
+  rerouteVersion?: number
+  routingReconcilePass?: number
+  onPageCrossings?: (pageIndex: number, violators: string[]) => void
 }
 
-function scanCorridorCells(
-  container: HTMLElement,
-): CellInfo[][] {
-  const cRect = container.getBoundingClientRect()
-  const grid: CellInfo[][] = []
-  const table = container.querySelector('table')
-  if (!table) return grid
-
-  const SHAPE_PAD = 8
-  const HEADER_EXTRA_PAD = 12 // Extra padding untuk header agar path tidak menimpa
-
-  const thead = table.querySelector('thead')
-  if (thead) {
-    const thRect = thead.getBoundingClientRect()
-    const numImplCols = table.querySelectorAll('td[data-implementer-id]').length
-      ? new Set(
-          Array.from(table.querySelectorAll<HTMLElement>('td[data-implementer-id]')).map(
-            (td) => td.dataset.implementerId,
-          ),
-        ).size
-      : 1
-    const headerRow: CellInfo[] = []
-    for (let ci = 0; ci < numImplCols; ci++) {
-      const rect = {
-        left: Math.round(thRect.left - cRect.left),
-        top: Math.round(thRect.top - cRect.top),
-        width: Math.round(thRect.width / numImplCols),
-        height: Math.round(thRect.height) + HEADER_EXTRA_PAD, // Extend header obstacle downward
-      }
-      rect.left += ci * rect.width
-      // shapeRect lebih besar dari rect biasa untuk header
-      const shapeRect = {
-        left: rect.left - SHAPE_PAD,
-        top: rect.top - SHAPE_PAD,
-        width: rect.width + SHAPE_PAD * 2,
-        height: rect.height + SHAPE_PAD * 2,
-      }
-      headerRow.push({
-        row: 0,
-        col: ci,
-        rect,
-        center: { x: Math.round(rect.left + rect.width / 2), y: Math.round(rect.top + rect.height / 2) },
-        occupied: true,
-        shapeRect,
-      })
-    }
-    if (headerRow.length > 0) grid.push(headerRow)
-  }
-
-  const tbody = table.querySelector('tbody')
-  if (!tbody) return grid
-
-  const trs = tbody.querySelectorAll('tr')
-  const headerRows = grid.length
-
-  for (let ri = 0; ri < trs.length; ri++) {
-    const tr = trs[ri]
-    const row: CellInfo[] = []
-    const tds = tr.querySelectorAll<HTMLElement>('td[data-implementer-id]')
-
-    for (let ci = 0; ci < tds.length; ci++) {
-      const td = tds[ci]
-      const tdRect = td.getBoundingClientRect()
-      const rect = {
-        left: Math.round(tdRect.left - cRect.left),
-        top: Math.round(tdRect.top - cRect.top),
-        width: Math.round(tdRect.width),
-        height: Math.round(tdRect.height),
-      }
-
-      const shapeEl = td.querySelector<HTMLElement>('span[id^="sop-step-"], span[id^="opc-"]')
-      let occupied = false
-      let shapeRect: CellInfo['shapeRect']
-
-      if (shapeEl) {
-        const sr = shapeEl.getBoundingClientRect()
-        occupied = true
-        shapeRect = {
-          left: Math.round(sr.left - cRect.left) - SHAPE_PAD,
-          top: Math.round(sr.top - cRect.top) - SHAPE_PAD,
-          width: Math.round(sr.width) + SHAPE_PAD * 2,
-          height: Math.round(sr.height) + SHAPE_PAD * 2,
-        }
-      }
-
-      row.push({
-        row: ri + headerRows,
-        col: ci,
-        rect,
-        center: {
-          x: Math.round(rect.left + rect.width / 2),
-          y: Math.round(rect.top + rect.height / 2),
-        },
-        occupied,
-        shapeRect,
-      })
-    }
-
-    if (row.length > 0) grid.push(row)
-  }
-
-  return grid
-}
 
 function FlowchartPage({
   pageIndex,
@@ -550,6 +611,7 @@ function FlowchartPage({
   opcBottom,
   usedSides,
   arrowsReady,
+  layoutMeasured: _layoutMeasured = false,
   arrowConfig,
   labelConfig,
   editMode = false,
@@ -559,46 +621,52 @@ function FlowchartPage({
   onSelectConnection,
   pelaksanaBounds,
   isLastPage,
-  routedSegmentsRef,
   reservedSidesRef,
+  rerouteVersion = 0,
+  routingReconcilePass = 0,
+  onPageCrossings,
 }: FlowchartPageProps) {
-  const corridorGraphRef = useRef<CorridorGraph | null>(null)
-  const [graphReady, setGraphReady] = useState(false)
+  const pageRoutedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
 
-  // OPTIMIZATION #1: Cache corridor graph per page, rebuild only when structure changes
-  const corridorGraphsRef = useRef<Map<number, CorridorGraph>>(new Map())
-  
+  useLayoutEffect(() => {
+    pageRoutedSegmentsRef.current = new Map()
+  }, [rerouteVersion, connections.length, arrowsReady])
+
   useEffect(() => {
-    if (!arrowsReady) return
-    const container = document.getElementById(areaId)
-    if (!container) return
+    if (!arrowsReady || connections.length === 0) return
+    const timer = window.setTimeout(() => {
+      if (pageRoutedSegmentsRef.current.size < connections.length) return
+      const violators = findConnectionIdsWithCrossings(pageRoutedSegmentsRef.current)
+      onPageCrossings?.(pageIndex, violators)
+    }, 160)
+    return () => window.clearTimeout(timer)
+  }, [
+    arrowsReady,
+    connections.length,
+    rerouteVersion,
+    routingReconcilePass,
+    pageIndex,
+    onPageCrossings,
+  ])
 
-    const frame = requestAnimationFrame(() => {
-      // Check if we have a cached graph for this page
-      let graph = corridorGraphsRef.current.get(pageIndex)
-      
-      if (!graph) {
-        // Build new graph and cache it
-        const cells = scanCorridorCells(container)
-        if (cells.length > 0) {
-          graph = buildCorridorGraph(cells)
-          corridorGraphsRef.current.set(pageIndex, graph)
-        }
-      }
-      
-      if (graph) {
-        corridorGraphRef.current = graph
-      }
-      setGraphReady(true)
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [arrowsReady, areaId, pageSteps.length, implementers.length, pageIndex])
+  useEffect(() => {
+    if (arrowsReady) clearPathCache()
+  }, [arrowsReady, areaId])
+
+  const canRenderArrows = arrowsReady && connections.length > 0
+
+  useSopDiagramPrintReadyDispatch(areaId, arrowsReady, connections.length, rerouteVersion)
 
   return (
     <div
       className={`print-page mx-auto ${PAGE_WIDTH_CLASS} box-border print:my-0 print:mx-auto [print-color-adjust:exact] [-webkit-print-color-adjust:exact] ${isLastPage ? 'print-last-page' : ''}`}
     >
-      <div id={areaId} className="relative">
+      <div
+        id={areaId}
+        className="relative"
+        data-sop-diagram-root
+        data-sop-connection-count={connections.length}
+      >
         {opcTop.length > 0 && (
           <div className={`flex items-end pb-2 ${opcTop.length > 3 ? 'flex-wrap gap-2 justify-start px-4' : 'justify-evenly'}`}>
             {opcTop
@@ -780,9 +848,9 @@ function FlowchartPage({
           </div>
         )}
 
-        {arrowsReady && graphReady && connections.length > 0 && (
+        {canRenderArrows && (
           <svg
-            className={`absolute inset-0 w-full h-full z-20 print:break-inside-avoid ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            className={`sop-diagram-overlay absolute inset-0 z-20 h-full w-full print:break-inside-avoid ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
             aria-hidden={!editMode}
             onClick={() => onSelectConnection?.(null)}
           >
@@ -804,9 +872,9 @@ function FlowchartPage({
                 isSelected={selectedConnectionId === conn.id}
                 onSelect={(id) => onSelectConnection?.(id)}
                 constraintRect={pelaksanaBounds}
-                routedSegmentsRef={routedSegmentsRef}
+                routedSegmentsRef={pageRoutedSegmentsRef}
                 reservedSidesRef={reservedSidesRef}
-                corridorGraph={corridorGraphRef.current}
+                rerouteVersion={rerouteVersion}
               />
             ))}
           </svg>

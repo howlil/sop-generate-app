@@ -26,18 +26,50 @@ import type {
   LabelConfig,
 } from '../core/sopDiagramTypes'
 import { SOP_BEFORE_PRINT_EVENT } from '@/lib/print/sop-print-events'
+import { useSopDiagramPrintReadyDispatch } from '../hooks/use-sop-diagram-print-ready-dispatch'
+import {
+  findConnectionIdsWithCrossings,
+  sortConnectionsForRouting,
+} from '../core/route/connection-route-order.util'
+import { applyUsedSidePayload } from '../core/route/used-side-usage.util'
 import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from '../layout/sopDocumentLayout'
 import {
   BPMN_BASE_ROW_HEIGHT,
-  BPMN_BASE_X,
-  BPMN_COLUMN_SPACING,
-  BPMN_LANE_STEP_PADDING,
+  BPMN_DECISION_TEXT_OFFSET_Y,
   BPMN_RIGHT_MARGIN,
   BPMN_ROW_SPACING,
-  BPMN_TASK_MIN_HEIGHT,
   BPMN_TASK_MIN_WIDTH,
-  getBpmnStepLayoutDimensions,
 } from '../layout/bpmnDiagramMetrics'
+import { computeBpmnLayout } from '../layout/bpmn-layout.engine'
+
+const MAX_ROUTING_RECONCILE_PASSES = 4
+const LAYOUT_ORIGIN_EPS = 2
+const RESIZE_OBSERVER_DEBOUNCE_MS = 120
+
+function originsNearlyEqual(
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+): boolean {
+  return Math.abs(a.x - b.x) <= LAYOUT_ORIGIN_EPS && Math.abs(a.y - b.y) <= LAYOUT_ORIGIN_EPS
+}
+
+function obstacleRectsSignature(
+  rects: Array<{ left: number; top: number; width: number; height: number }> | null,
+): string {
+  if (!rects?.length) return ''
+  return rects.map((r) => `${r.left}|${r.top}|${r.width}|${r.height}`).join(';')
+}
+
+function laneLayoutsGeometrySignature(
+  layouts: Array<{
+    steps: Array<{ id: string; x: number; y: number; width: number; height: number; columnIndex: number }>
+  }>,
+): string {
+  return layouts
+    .flatMap((lane) => lane.steps)
+    .map((s) => `${s.id}:${s.x}:${s.y}:${s.width}:${s.height}:${s.columnIndex}`)
+    .join(';')
+}
 
 export interface ProcessedBpmnStep extends SOPStep {
   id_step: string
@@ -116,9 +148,17 @@ export function BpmnPage({
   const [arrowConfigs, setArrowConfigs] = useState<Record<string, ArrowConnectionConfig>>({})
   const [usedSides, setUsedSides] = useState<UsedSides>({})
   const routedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
+  const routingPriorityIdsRef = useRef<Set<string>>(new Set())
+  const lastRoutingViolatorSigRef = useRef<string | null>(null)
+  const [routingReconcilePass, setRoutingReconcilePass] = useState(0)
   const obstacleRectsRef = useRef<Array<{ left: number; top: number; width: number; height: number }> | null>(null)
   useLayoutEffect(() => {
     routedSegmentsRef.current = new Map()
+  }, [pathLayoutSeed])
+  useEffect(() => {
+    setRoutingReconcilePass(0)
+    routingPriorityIdsRef.current = new Set()
+    lastRoutingViolatorSigRef.current = null
   }, [pathLayoutSeed])
   const [arrowsReady, setArrowsReady] = useState(false)
   const layoutRef = useRef<{
@@ -154,6 +194,7 @@ export function BpmnPage({
         lane: number
         columnIndex: number
         laneHeight: number
+        decisionTextGlobalY?: number
       }>
     }>
   >([])
@@ -214,7 +255,22 @@ export function BpmnPage({
     return result
   }, [pageSteps, pageIndex, isLastPage, maxTaskSeq])
 
-  const bpmnConnections = pageConnections
+  const bpmnConnections = useMemo(
+    () =>
+      sortConnectionsForRouting(pageConnections, pathLayoutSeed, {
+        priorityIds: routingPriorityIdsRef.current,
+        reconcilePass: routingReconcilePass,
+      }),
+    [pageConnections, pathLayoutSeed, routingReconcilePass],
+  )
+  const connectionIdsSig = useMemo(
+    () => [...new Set(bpmnConnections.map((conn) => conn.id))].sort().join('|'),
+    [bpmnConnections],
+  )
+  const routableConnectionCount = bpmnConnections.length
+  useLayoutEffect(() => {
+    routedSegmentsRef.current = new Map()
+  }, [connectionIdsSig])
 
   const obstacles = useMemo(
     () => processedSteps.map((s) => ({ id: `bpmn-step-${s.seq_number}` })),
@@ -258,180 +314,28 @@ export function BpmnPage({
         },
       }))
     }
-    setUsedSides((prev) => {
-      const fromId = payload.from
-      const toId = payload.to
-      const alreadyFrom = fromId && (prev[fromId]?.out?.[payload.sSide] ?? []).includes(payload.connectionId)
-      const alreadyTo = toId && (prev[toId]?.in?.[payload.eSide] ?? []).includes(payload.connectionId)
-      if (alreadyFrom && alreadyTo) return prev
-      const next = { ...prev }
-      if (fromId) {
-        next[fromId] = { ...next[fromId], out: { ...next[fromId]?.out } }
-        const out = next[fromId].out!
-        const arr = out[payload.sSide] ?? []
-        if (!arr.includes(payload.connectionId)) out[payload.sSide] = [...arr, payload.connectionId]
-      }
-      if (toId) {
-        next[toId] = { ...next[toId], in: { ...next[toId]?.in } }
-        const in_ = next[toId].in!
-        const arr = in_[payload.eSide] ?? []
-        if (!arr.includes(payload.connectionId)) in_[payload.eSide] = [...arr, payload.connectionId]
-      }
-      return next
-    })
+    setUsedSides((prev) => applyUsedSidePayload(prev, payload))
   }, [onManualChangeProp])
 
-  const calculateGlobalLayout = useCallback(() => {
-    if (processedSteps.length === 0) return
-    const numLanes = Math.max(1, orderedImplementer.length)
-    const stepDimensionsCache = new Map<string, { width: number; height: number }>()
-    processedSteps.forEach((step) => {
-      stepDimensionsCache.set(step.id_step, getBpmnStepLayoutDimensions(step.name, step.type))
+  const applyBpmnLayout = useCallback(() => {
+    const result = computeBpmnLayout({
+      steps: processedSteps,
+      connections: pageConnections,
+      implementerIds: orderedImplementer.map((impl) => impl.id),
     })
-
-    const stepColumnMap = new Map<string, number>()
-    const laneMaxColumn = new Array(numLanes).fill(-1)
-
-    processedSteps.forEach((step) => {
-      let laneIndex = orderedImplementer.findIndex((i) => i.id === step.id_implementer)
-      if (laneIndex === -1) laneIndex = 0
-
-      const predecessors = processedSteps.filter((pred) =>
-        bpmnConnections.some(
-          (c) => c.to === `bpmn-step-${step.seq_number}` && c.from === `bpmn-step-${pred.seq_number}`
-        )
-      )
-
-      let columnIndex = 0
-      if (predecessors.length > 0) {
-        predecessors.forEach((pred) => {
-          const predCol = stepColumnMap.get(pred.id_step) ?? 0
-          const predLane = orderedImplementer.findIndex((i) => i.id === pred.id_implementer)
-          const predLaneIdx = predLane === -1 ? 0 : predLane
-          if (predLaneIdx === laneIndex) {
-            columnIndex = Math.max(columnIndex, predCol + 1)
-          } else {
-            columnIndex = Math.max(columnIndex, predCol)
-          }
-        })
-      }
-      columnIndex = Math.max(columnIndex, laneMaxColumn[laneIndex] + 1)
-      stepColumnMap.set(step.id_step, columnIndex)
-      laneMaxColumn[laneIndex] = Math.max(laneMaxColumn[laneIndex], columnIndex)
-    })
-
-    const maxColIdx = Math.max(0, ...Array.from(stepColumnMap.values()))
-    const maxColumnWidths = new Array(maxColIdx + 1).fill(0)
-    processedSteps.forEach((step) => {
-      const col = stepColumnMap.get(step.id_step)
-      if (col !== undefined) {
-        const dims = stepDimensionsCache.get(step.id_step)
-        if (dims) maxColumnWidths[col] = Math.max(maxColumnWidths[col], dims.width)
-      }
-    })
-
-    const columnStartXs: number[] = []
-    let curX = BPMN_BASE_X
-    for (let i = 0; i <= maxColIdx; i++) {
-      columnStartXs[i] = curX
-      curX += maxColumnWidths[i] + BPMN_COLUMN_SPACING
+    if (!result) return
+    layoutRef.current = {
+      steps: result.globalSteps,
+      columnStartXs: result.columnStartXs,
+      maxColumnWidths: result.maxColumnWidths,
     }
-
-    const laneMaxHeights = new Array(numLanes).fill(BPMN_BASE_ROW_HEIGHT)
-    processedSteps.forEach((step) => {
-      let laneIdx = orderedImplementer.findIndex((i) => i.id === step.id_implementer)
-      if (laneIdx === -1) laneIdx = 0
-      const dims = stepDimensionsCache.get(step.id_step) ?? {
-        width: BPMN_TASK_MIN_WIDTH,
-        height: BPMN_TASK_MIN_HEIGHT,
-      }
-      laneMaxHeights[laneIdx] = Math.max(laneMaxHeights[laneIdx], dims.height + BPMN_LANE_STEP_PADDING)
-    })
-
-    const laneYPositions: number[] = []
-    let cumulativeY = 0
-    for (let i = 0; i < numLanes; i++) {
-      laneYPositions[i] = cumulativeY + laneMaxHeights[i] / 2
-      cumulativeY += laneMaxHeights[i] + BPMN_ROW_SPACING
-    }
-
-    const globalSteps: Array<{
-      id: string
-      type: string
-      x: number
-      y: number
-      width: number
-      height: number
-      name: string
-      seq: number
-      lane: number
-      columnIndex: number
-      laneHeight: number
-    }> = []
-
-    processedSteps.forEach((step) => {
-      let laneIdx = orderedImplementer.findIndex((i) => i.id === step.id_implementer)
-      if (laneIdx === -1) laneIdx = 0
-      const columnIndex = stepColumnMap.get(step.id_step) ?? 0
-      const dims = stepDimensionsCache.get(step.id_step) ?? {
-        width: BPMN_TASK_MIN_WIDTH,
-        height: BPMN_TASK_MIN_HEIGHT,
-      }
-      const colStart = columnStartXs[columnIndex] ?? BPMN_BASE_X
-      const colWidth = maxColumnWidths[columnIndex] ?? dims.width
-      const x = colStart + colWidth / 2
-      const y = laneYPositions[laneIdx]
-      globalSteps.push({
-        id: step.id_step,
-        type: step.type,
-        x,
-        y,
-        width: dims.width,
-        height: dims.height,
-        name: step.name,
-        seq: step.seq_number,
-        lane: laneIdx,
-        columnIndex,
-        laneHeight: laneMaxHeights[laneIdx],
-      })
-    })
-
-    layoutRef.current = { steps: globalSteps, columnStartXs, maxColumnWidths }
-    const layouts = orderedImplementer.map((imp, index) => {
-      const stepsInLane = globalSteps.filter((s) => s.lane === index)
-      const laneHeight = stepsInLane[0]?.laneHeight ?? BPMN_BASE_ROW_HEIGHT
-      return {
-        impId: imp.id,
-        height: laneHeight,
-        steps: stepsInLane.map((s) => ({
-          ...s,
-          id: `bpmn-step-${s.seq}`,
-          y: laneHeight / 2,
-        })),
-      }
-    })
-    setLaneLayouts(layouts)
-
-    if (layouts.length > 0) {
-      let laneTop = 0
-      const lanes = layouts.map((l, i) => {
-        const info = { index: i, top: laneTop, height: l.height }
-        laneTop += l.height + BPMN_ROW_SPACING
-        return info
-      })
-      setBpmnLaneLayoutForRouter({
-        lanes,
-        columnStartXs,
-        columnWidths: maxColumnWidths,
-      })
-    } else {
-      setBpmnLaneLayoutForRouter(null)
-    }
-  }, [processedSteps, orderedImplementer, bpmnConnections])
+    setLaneLayouts(result.laneLayouts)
+    setBpmnLaneLayoutForRouter(result.bpmnLaneLayoutForRouter)
+  }, [processedSteps, orderedImplementer, pageConnections])
 
   useEffect(() => {
-    calculateGlobalLayout()
-  }, [calculateGlobalLayout])
+    applyBpmnLayout()
+  }, [applyBpmnLayout])
 
   const bpmnBoundsRef = useRef<{ left: number; top: number; right: number; bottom: number } | null>(null)
 
@@ -469,9 +373,20 @@ export function BpmnPage({
       right: w,
       bottom: h,
     }
-    setContainerSize({ width: w, height: h })
+    setContainerSize((prev) => {
+      if (prev.width === w && prev.height === h) return prev
+      return { width: w, height: h }
+    })
     return { width: w, height: h }
   }, [containerId, totalDiagramHeight])
+
+  const laneLayoutGeomSig = useMemo(
+    () => laneLayoutsGeometrySignature(laneLayouts),
+    [laneLayouts],
+  )
+  const prevLaneGeomSigRef = useRef('')
+  const prevLayoutOriginRef = useRef({ x: 0, y: 0 })
+  const prevObstacleSigRef = useRef('')
 
   const charWidth = 9
   const rowHeight = 120
@@ -488,8 +403,12 @@ export function BpmnPage({
   useEffect(() => {
     if (processedSteps.length === 0) {
       setArrowsReady(false)
+      prevLaneGeomSigRef.current = ''
       return
     }
+    const geomUnchanged = laneLayoutGeomSig === prevLaneGeomSigRef.current
+    prevLaneGeomSigRef.current = laneLayoutGeomSig
+    if (geomUnchanged) return
     setArrowsReady(false)
     let cancelled = false
     const run = () => {
@@ -504,7 +423,13 @@ export function BpmnPage({
     }
     run()
     return () => { cancelled = true }
-  }, [processedSteps.length, laneLayouts.length, diagramWidth, dynamicTitleWidth, measureBpmnContainerSize, bpmnConnections.length, bpmnConnectionsMeta.length])
+  }, [
+    processedSteps.length,
+    laneLayoutGeomSig,
+    diagramWidth,
+    dynamicTitleWidth,
+    measureBpmnContainerSize,
+  ])
 
   useEffect(() => {
     const onBeforePrint = () => {
@@ -522,11 +447,19 @@ export function BpmnPage({
     if (processedSteps.length === 0 || laneLayouts.length === 0) return
     const container = document.getElementById(containerId)
     if (!container || typeof ResizeObserver === 'undefined') return
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
     const ro = new ResizeObserver(() => {
-      measureBpmnContainerSize()
+      if (debounceTimer !== null) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null
+        measureBpmnContainerSize()
+      }, RESIZE_OBSERVER_DEBOUNCE_MS)
     })
     ro.observe(container)
-    return () => ro.disconnect()
+    return () => {
+      if (debounceTimer !== null) clearTimeout(debounceTimer)
+      ro.disconnect()
+    }
   }, [processedSteps.length, laneLayouts.length, measureBpmnContainerSize, containerId])
 
   const measureLayoutContentOrigin = useCallback((): { x: number; y: number } => {
@@ -579,24 +512,45 @@ export function BpmnPage({
       }
     })
     const filtered = rects.filter((r): r is NonNullable<typeof r> => r != null)
+    const nextObstacleSig = obstacleRectsSignature(filtered.length > 0 ? filtered : null)
     obstacleRectsRef.current = filtered.length > 0 ? filtered : null
     measureBpmnContainerSize()
     const origin = measureLayoutContentOrigin()
-    setLayoutContentOrigin(origin)
-    setLayoutMeasureVersion((v) => v + 1)
+    const originChanged = !originsNearlyEqual(origin, prevLayoutOriginRef.current)
+    const obstaclesChanged = nextObstacleSig !== prevObstacleSigRef.current
+    setLayoutContentOrigin((prev) => (originsNearlyEqual(prev, origin) ? prev : origin))
+    if (originChanged || obstaclesChanged) {
+      prevLayoutOriginRef.current = origin
+      prevObstacleSigRef.current = nextObstacleSig
+      setLayoutMeasureVersion((v) => v + 1)
+    }
   }, [
     pathLayoutSeed,
     obstacles,
-    laneLayouts.length,
+    laneLayoutGeomSig,
     arrowsReady,
     diagramWidth,
     measureLayoutContentOrigin,
     measureBpmnContainerSize,
-    bpmnConnections.length,
     containerId,
   ])
 
-  const arrowRerouteVersion = pathLayoutSeed + layoutMeasureVersion
+  useEffect(() => {
+    if (!arrowsReady || routingReconcilePass >= MAX_ROUTING_RECONCILE_PASSES) return
+    const timer = window.setTimeout(() => {
+      if (routedSegmentsRef.current.size < routableConnectionCount) return
+      const violators = findConnectionIdsWithCrossings(routedSegmentsRef.current)
+      if (violators.length === 0) return
+      const sig = [...violators].sort().join('|')
+      if (lastRoutingViolatorSigRef.current === sig) return
+      lastRoutingViolatorSigRef.current = sig
+      routingPriorityIdsRef.current = new Set(violators)
+      setRoutingReconcilePass((pass) => pass + 1)
+    }, 160)
+    return () => window.clearTimeout(timer)
+  }, [arrowsReady, routingReconcilePass, pathLayoutSeed, routableConnectionCount])
+
+  const arrowRerouteVersion = pathLayoutSeed + layoutMeasureVersion + routingReconcilePass
   const arrowOverlayWidth = Math.max(containerSize.width, diagramWidth, 1)
   const arrowOverlayHeight = Math.max(containerSize.height, totalDiagramHeight, 1)
   const layoutMeasured = layoutMeasureVersion > 0
@@ -605,6 +559,13 @@ export function BpmnPage({
     layoutMeasured &&
     bpmnConnections.length > 0 &&
     (arrowOverlayWidth > 0 || arrowOverlayHeight > 0)
+
+  useSopDiagramPrintReadyDispatch(
+    containerId,
+    arrowsReady && layoutMeasured,
+    routableConnectionCount,
+    arrowRerouteVersion,
+  )
 
   const decisionTextPositions = labelConfig?.positions ?? {}
   const handleDecisionTextDrag = useCallback(
@@ -629,6 +590,8 @@ export function BpmnPage({
       >
       <div
         id={containerId}
+        data-sop-diagram-root
+        data-sop-connection-count={routableConnectionCount}
         className="diagram-container relative w-full min-w-0 print:origin-top-left"
         style={{
           minHeight: totalDiagramHeight,
@@ -636,7 +599,12 @@ export function BpmnPage({
           printColorAdjust: 'exact',
         }}
       >
-        <table className="border-2 border-black relative z-10 w-full table-fixed my-5">
+        <table
+          className="border-2 border-black relative z-10 w-full table-fixed my-5"
+          style={{
+            minWidth: dynamicTitleWidth + 32 + diagramWidth,
+          }}
+        >
           <tbody>
             <tr>
               {name && (
@@ -671,7 +639,7 @@ export function BpmnPage({
                   />
                   <td className="border-2 border-black p-0 align-top w-full">
                     <div
-                      className="relative w-full overflow-x-auto"
+                      className="relative w-full overflow-visible"
                       style={{ height: laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT }}
                     >
                       <svg
@@ -714,7 +682,7 @@ export function BpmnPage({
               <tr key={lane.impId}>
                 <SwimlaneActorNameCell laneHeightPx={lane.height} label={orderedImplementer[index + 1]?.name} />
                 <td className="border-2 border-black p-0 align-top w-full">
-                  <div className="relative w-full overflow-x-auto" style={{ height: lane.height }}>
+                  <div className="relative w-full overflow-visible" style={{ height: lane.height }}>
                     <svg
                       className="block"
                       width={diagramWidth}
@@ -756,7 +724,7 @@ export function BpmnPage({
         {/* Decision text overlay (per lane, positioned in global coords) */}
         {laneLayouts.length > 0 && (
           <svg
-            className={`absolute inset-0 z-30 h-full w-full ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            className={`sop-diagram-overlay absolute inset-0 z-30 h-full w-full ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
           >
             {laneLayouts.flatMap((lane, laneIndex) => {
               const yOffset = laneLayouts
@@ -771,7 +739,10 @@ export function BpmnPage({
                     stepId={`step-${step.seq}`}
                     stepName={step.name}
                     x={step.x}
-                    y={globalY}
+                    y={
+                      step.decisionTextGlobalY ??
+                      globalY + BPMN_DECISION_TEXT_OFFSET_Y
+                    }
                     customPosition={decisionTextPositions[`step-${step.seq}`]}
                     editMode={editMode}
                     onPositionChanged={handleDecisionTextDrag}

@@ -43,6 +43,7 @@ export const ROUTES = {
   /** Halaman publik verifikasi pengesahan TTE (scan QR, tanpa login). */
   VALIDASI: {
     PENGESAHAN_PREFIX: "/validasi/pengesahan",
+    PDF: "/validasi/pdf",
   },
   /** Arsip SOP berlaku — akses tanpa login. */
   ARSIP: {

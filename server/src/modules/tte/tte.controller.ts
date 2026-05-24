@@ -16,6 +16,7 @@ import type { JwtAccessPayload } from '../../common/types/jwt-access-payload.typ
 import { PeranPengguna } from '../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME } from '../core/auth/helpers/auth.shared';
 import { RegisterTteDto } from './dto/register-tte.dto';
+import { SignBeritaAcaraArsipDto } from './dto/sign-berita-acara-arsip.dto';
 import { SignPdfDto } from './dto/sign-pdf.dto';
 import { TandaTanganiDto } from './dto/tanda-tangani.dto';
 import { UpdateTtePinDto } from './dto/update-tte-pin.dto';
@@ -178,6 +179,28 @@ export class TteController {
     const data = await this.tteService.signPdf(req.user, dto);
     return {
       message: data.signed ? 'PDF berhasil ditandatangani' : 'Penandatanganan PDF server dinonaktifkan',
+      success: true,
+      data,
+    };
+  }
+
+  @Post('pdf/sign-berita-acara-arsip')
+  @Roles(PeranPengguna.KEPALA_OPD)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({
+    summary: 'Tanda tangani PDF Berita Acara arsip (Kepala OPD)',
+    description:
+      'Menyisipkan PKCS#7 ke PDF unduhan arsip setelah PJ Evaluator dan PJ Penyusun menandatangani TTE. Tidak menggantikan riwayat TTE aplikasi.',
+  })
+  async signBeritaAcaraArsip(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: SignBeritaAcaraArsipDto,
+  ): Promise<ApiSuccessResponse<SignPdfResponse>> {
+    const data = await this.tteService.signBeritaAcaraArsip(req.user, dto);
+    return {
+      message: data.signed
+        ? 'PDF Berita Acara arsip berhasil ditandatangani'
+        : 'Penandatanganan PDF server dinonaktifkan',
       success: true,
       data,
     };

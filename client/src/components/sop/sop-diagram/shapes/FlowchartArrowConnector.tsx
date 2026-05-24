@@ -1,21 +1,27 @@
 import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
 import type { ArrowConnectionConfig, ArrowPathPoint, FlowchartConnection } from '../core/sopDiagramTypes'
 import {
-  routeOnCorridor,
   routeOrthogonal,
   scorePath,
   pathToSegments,
-  pathIntersectsRectangles,
-  pathOverlapsSegments,
   normalizeOrthogonalPath,
   assertOrthogonalPath,
   type OccupiedSegment,
-  type CorridorGraph,
 } from '../core/route/orthogonalRouter'
 import { selectSidePairs as selectFlowchartRouteCandidates, type Side, type UsedSides } from '../core/route/selectSidePairs'
 import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
 import { simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
-import type { DiagramPathAnchor } from '../edit/anchor-snap.util'
+import {
+  buildVisualConnectorAnchors,
+  elemPosToShapeRect,
+  preferCenterAnchorDistance,
+  scoreAnchorOffCenter,
+  sideLengthPx,
+  type DiagramPathAnchor,
+  type DiagramShapeSnapTargets,
+} from '../edit/anchor-snap.util'
+import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/path-route-quality.util'
+import { placeEdgeLabel } from '../core/route/edge-label-placement.util'
 import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
 import type { Rect } from '../core/route/orthogonalRouter'
 
@@ -53,47 +59,39 @@ type BoundsRect = { left: number; top: number; right: number; bottom: number }
  */
 export type RoutedPathsRef = MutableRefObject<Map<string, OccupiedSegment[]>>
 
-/* ───────────────────────── OPTIMIZATION #3: Path Cache ─────────────────────────── */
-
-/** Cache untuk hasil routing agar tidak perlu route ulang jika data tidak berubah */
-interface CachedPath {
-  path: { x: number; y: number }[]
-  sSide: Side
-  eSide: Side
-  score: number
-  fromPosHash: string
-  toPosHash: string
+/** Clear path cache — no-op stub, kept for API compat. */
+export function clearPathCache(_connectionId?: string): void {
+  // no-op: module-level pathCache removed
 }
 
-const pathCache = new Map<string, CachedPath>()
 
-/** Generate cache key berdasarkan connection dan posisi */
-function makeCacheKey(
-  conn: FlowchartConnection,
-  fromPos: ElemPos,
-  toPos: ElemPos,
-  obstacles: ArrowObstacle[]
-): string {
-  // Hash posisi untuk deteksi perubahan
-  const fromHash = `${fromPos.left}-${fromPos.top}-${fromPos.width}-${fromPos.height}`
-  const toHash = `${toPos.left}-${toPos.top}-${toPos.width}-${toPos.height}`
-  return `${conn.id}|${fromHash}|${toHash}|${obstacles.length}`
+
+
+function samePoint(a: ArrowPathPoint | null | undefined, b: ArrowPathPoint | null | undefined): boolean {
+  if (a == null || b == null) return a === b
+  return a.x === b.x && a.y === b.y
 }
 
-/** Clear cache untuk connection tertentu */
-export function clearPathCache(connectionId?: string): void {
-  if (connectionId) {
-    // Clear specific connection
-    for (const key of pathCache.keys()) {
-      if (key.startsWith(`${connectionId}|`)) {
-        pathCache.delete(key)
-      }
-    }
-  } else {
-    // Clear all
-    pathCache.clear()
+function samePath(a: ArrowPathPoint[], b: ArrowPathPoint[]): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i += 1) {
+    if (!samePoint(a[i], b[i])) return false
   }
+  return true
 }
+
+function sameSides(a: [Side, Side], b: [Side, Side]): boolean {
+  return a[0] === b[0] && a[1] === b[1]
+}
+
+function sameLabelPosition(
+  a: { x: number; y: number } | null,
+  b: { x: number; y: number } | null,
+): boolean {
+  if (a == null || b == null) return a === b
+  return a.x === b.x && a.y === b.y
+}
+
 
 /* ───────────────────────── Props ─────────────────────────── */
 
@@ -113,12 +111,12 @@ interface FlowchartArrowConnectorProps {
   constraintRect?: BoundsRect | null
   /** Shared ref for cross-arrow overlap avoidance */
   routedSegmentsRef?: RoutedPathsRef
-  /** From scan phase: Map of `${targetShapeId}-${side}` → Set of connectionIds that may use it (e.g. all Tidak to that target). */
+  /** From scan phase: Map of `${targetShapeId}-${side}` → Set of connectionIds. */
   reservedSidesRef?: MutableRefObject<Map<string, Set<string>>>
-  /** Pre-built corridor graph from scan phase for obstacle-aware routing */
-  corridorGraph?: CorridorGraph | null
+
   connectionIndex?: number
   allConnections?: FlowchartConnection[]
+  rerouteVersion?: number
 }
 
 /* ───────────────────────── Helpers ─────────────────────────── */
@@ -126,48 +124,6 @@ interface FlowchartArrowConnectorProps {
 type ElemPos = {
   left: number; top: number; width: number; height: number
   right: number; bottom: number
-}
-
-function sidePointOfRect(pos: ElemPos, side: Side): { x: number; y: number } {
-  switch (side) {
-    case 'top':
-      return { x: Math.round(pos.left + pos.width / 2), y: pos.top }
-    case 'bottom':
-      return { x: Math.round(pos.left + pos.width / 2), y: pos.bottom }
-    case 'left':
-      return { x: pos.left, y: Math.round(pos.top + pos.height / 2) }
-    case 'right':
-      return { x: pos.right, y: Math.round(pos.top + pos.height / 2) }
-  }
-}
-
-function buildConnectorAnchors(
-  connectionId: string,
-  fromPos: ElemPos,
-  toPos: ElemPos,
-): DiagramPathAnchor[] {
-  const sides: Side[] = ['top', 'right', 'bottom', 'left']
-  const startAnchors = sides.map((side) => {
-    const point = sidePointOfRect(fromPos, side)
-    return {
-      id: `${connectionId}-start-${side}`,
-      x: point.x,
-      y: point.y,
-      side,
-      kind: 'start' as const,
-    }
-  })
-  const endAnchors = sides.map((side) => {
-    const point = sidePointOfRect(toPos, side)
-    return {
-      id: `${connectionId}-end-${side}`,
-      x: point.x,
-      y: point.y,
-      side,
-      kind: 'end' as const,
-    }
-  })
-  return [...startAnchors, ...endAnchors]
 }
 
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
@@ -185,20 +141,15 @@ function getElementPosition(elementId: string, container: HTMLElement): ElemPos 
   }
 }
 
-function getFixedDistancePoint(
-  start: { x: number; y: number },
-  end: { x: number; y: number },
-  distance: number,
-  offset = 19,
-): { x: number; y: number } {
-  const dx = end.x - start.x
-  const dy = end.y - start.y
-  const len = Math.sqrt(dx * dx + dy * dy)
-  if (len === 0) return { x: start.x, y: start.y }
-  const px = start.x + (dx / len) * distance
-  const py = start.y + (dy / len) * distance
-  if (Math.abs(dx) > Math.abs(dy)) return { x: px, y: py - offset }
-  return { x: px + offset, y: py }
+function resolveConnectorLabelPosition(
+  path: { x: number; y: number }[],
+  label: string | null | undefined,
+  manualLabelPosition: { x: number; y: number } | null | undefined,
+  obstacles: Rect[],
+): { x: number; y: number } | null {
+  if (!label) return null
+  if (manualLabelPosition) return manualLabelPosition
+  return placeEdgeLabel({ path, label, obstacles })
 }
 
 function pathToD(points: { x: number; y: number }[]): string {
@@ -251,6 +202,50 @@ function tryNormalizeConnectorPath(
   }
 }
 
+/** Path ortogonal minimal bottom→top antara dua shape; tidak throw. */
+export function buildMinimalOrthogonalPath(
+  fromPos: ElemPos,
+  toPos: ElemPos,
+): { x: number; y: number }[] {
+  const x1 = Math.round(fromPos.left + fromPos.width / 2)
+  const x2 = Math.round(toPos.left + toPos.width / 2)
+  const y1 = Math.round(fromPos.bottom)
+  const y2 = Math.round(toPos.top)
+  if (x1 === x2) return [{ x: x1, y: y1 }, { x: x2, y: y2 }]
+  const xMid = Math.round((x1 + x2) / 2)
+  return [
+    { x: x1, y: y1 },
+    { x: xMid, y: y1 },
+    { x: xMid, y: y2 },
+    { x: x2, y: y2 },
+  ]
+}
+
+/** Pastikan path siap render: normalisasi aman lalu fallback berlapis. */
+export function finalizeRenderablePath(
+  points: { x: number; y: number }[],
+  fromPos: ElemPos,
+  toPos: ElemPos,
+  bounds: BoundsRect | null | undefined,
+): { x: number; y: number }[] {
+  const normalized = tryNormalizeConnectorPath(points, bounds)
+  if (normalized && normalized.length >= 2) return normalized
+  const ultimate = tryNormalizeConnectorPath(
+    buildMinimalOrthogonalPath(fromPos, toPos),
+    bounds,
+  )
+  if (ultimate && ultimate.length >= 2) return ultimate
+  const emergency = tryNormalizeConnectorPath(
+    [
+      { x: Math.round(fromPos.left + fromPos.width / 2), y: Math.round(fromPos.bottom) },
+      { x: Math.round(toPos.left + toPos.width / 2), y: Math.round(toPos.top) },
+    ],
+    null,
+  )
+  if (emergency && emergency.length >= 2) return emergency
+  return buildMinimalOrthogonalPath(fromPos, toPos)
+}
+
 export function buildUltimateOrthogonalFallback(
   fromPos: ElemPos,
   toPos: ElemPos,
@@ -267,12 +262,15 @@ export function buildUltimateOrthogonalFallback(
   const y1 = clampY(fromPos.bottom)
   const y2 = clampY(toPos.top)
   const xMid = clampX((x1 + x2) / 2)
-  return normalizeConnectorPath([
+  const candidate = [
     { x: x1, y: y1 },
     { x: xMid, y: y1 },
     { x: xMid, y: y2 },
     { x: x2, y: y2 },
-  ], bounds)
+  ]
+  const normalized = tryNormalizeConnectorPath(candidate, bounds)
+  if (normalized && normalized.length >= 2) return normalized
+  return buildMinimalOrthogonalPath(fromPos, toPos)
 }
 
 function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boolean {
@@ -316,17 +314,18 @@ const SHAPE_MARGIN = 16
 const BOUNDS_MARGIN = 15
 /** Inset from pelaksana column left/right so path never touches vertical cell borders. */
 const PATH_COLUMN_INSET = 24
-/** Extra inset on right to avoid path crossing into Mutu Baku (getBoundingClientRect can include border). */
+/** Extra inset on right to avoid path crossing into Mutu Baku. */
 const PATH_COLUMN_INSET_RIGHT_EXTRA = 12
 /** Inset from container top/bottom so path does not sit on horizontal border. */
 const PATH_VERTICAL_INSET = 12
-/** Penalty per pixel of horizontal span to prefer less "ruwet" / shorter-sideways paths. */
+/** Penalty per pixel of horizontal span to prefer less "ruwet" paths. */
 const HORIZONTAL_SPAN_PENALTY_PER_PX = 0.55
-/** Inset applied to globalBounds when passing to router so grid points stay away from border. */
+/** Inset applied to globalBounds when passing to router. */
 const ROUTER_INTERNAL_INSET = 4
-const MAX_TRIES = 5
+/** Max candidates to try per routing attempt. */
+const MAX_TRIES = 4
+/** Score threshold: if score <= this, skip remaining candidates. */
 const GOOD_SCORE_LIMIT = 480
-const ROUTING_IDLE_TIMEOUT_MS = 120
 
 /* ───────────────────────── Component ─────────────────────────── */
 
@@ -346,15 +345,16 @@ export function FlowchartArrowConnector({
   constraintRect = null,
   routedSegmentsRef,
   reservedSidesRef,
-  corridorGraph,
   connectionIndex = 0,
   allConnections = [],
+  rerouteVersion = 0,
 }: FlowchartArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
   const [resolvedSides, setResolvedSides] = useState<[Side, Side]>(['bottom', 'top'])
   const [resolvedPath, setResolvedPath] = useState<ArrowPathPoint[]>([])
   const [editableAnchors, setEditableAnchors] = useState<DiagramPathAnchor[]>([])
+  const [shapeSnapTargets, setShapeSnapTargets] = useState<DiagramShapeSnapTargets | null>(null)
   const routingGuardRef = useRef<{
     obsRects: Rect[]
     fromShape: Rect
@@ -377,24 +377,52 @@ export function FlowchartArrowConnector({
   onSelectRef.current = onSelect
 
   useLayoutEffect(() => {
+    let cancelled = false
+    let positionRetryCount = 0
+    const MAX_POSITION_RETRIES = 3
+
+    const applyLayout = () => {
+    if (cancelled) return
     const container = document.getElementById(idcontainer)
     if (!container) {
       setPathData('')
       setLabelPos(null)
       setEditableAnchors([])
+      setShapeSnapTargets(null)
       routingGuardRef.current = null
       return
     }
     const fromPos = getElementPosition(connection.from, container)
     const toPos = getElementPosition(connection.to, container)
     if (!fromPos || !toPos) {
+      if (positionRetryCount < MAX_POSITION_RETRIES) {
+        positionRetryCount += 1
+        requestAnimationFrame(applyLayout)
+        return
+      }
       setPathData('')
       setLabelPos(null)
       setEditableAnchors([])
+      setShapeSnapTargets(null)
       routingGuardRef.current = null
       return
     }
-    setEditableAnchors(buildConnectorAnchors(connection.id, fromPos, toPos))
+    const fromRect = elemPosToShapeRect(fromPos)
+    const toRect = elemPosToShapeRect(toPos)
+    const fromIsDiamond = connection.sourceType === 'flowchart-decision'
+    const toIsDiamond = connection.targetType === 'flowchart-decision'
+    setEditableAnchors(
+      buildVisualConnectorAnchors(connection.id, fromRect, toRect, { fromIsDiamond, toIsDiamond }),
+    )
+    setShapeSnapTargets({
+      connectionId: connection.id,
+      fromNodeId: connection.from,
+      toNodeId: connection.to,
+      start: fromRect,
+      end: toRect,
+      startIsDiamond: fromIsDiamond,
+      endIsDiamond: toIsDiamond,
+    })
 
     const isOpcConnection =
       connection.sourceType === 'flowchart-opc' || connection.targetType === 'flowchart-opc'
@@ -424,8 +452,9 @@ export function FlowchartArrowConnector({
           const left = Math.round(constraintRect.left + PATH_COLUMN_INSET)
           const right = Math.round(constraintRect.right - PATH_COLUMN_INSET - PATH_COLUMN_INSET_RIGHT_EXTRA)
           const w = Math.max(20, right - left)
-          const top = PATH_VERTICAL_INSET
-          const height = Math.max(40, container.scrollHeight - 2 * PATH_VERTICAL_INSET)
+          const top = Math.round(constraintRect.top + PATH_VERTICAL_INSET)
+          const bottom = Math.round(constraintRect.bottom - PATH_VERTICAL_INSET)
+          const height = Math.max(40, bottom - top)
           return { left, top, width: w, height }
         })()
       : null
@@ -460,13 +489,19 @@ export function FlowchartArrowConnector({
       const manualPath = tryNormalizeConnectorPath([startPoint, ...bendPoints, endPoint], constraintRect)
       if (manualPath) {
         setPathData(pathToD(manualPath))
-        setResolvedPath(manualPath.map((p) => ({ ...p })))
-        setResolvedSides([manualConfig!.sSide, manualConfig!.eSide])
+        setResolvedPath((prev) => (samePath(prev, manualPath) ? prev : manualPath.map((p) => ({ ...p }))))
+        setResolvedSides((prev) => {
+          const next: [Side, Side] = [manualConfig!.sSide, manualConfig!.eSide]
+          return sameSides(prev, next) ? prev : next
+        })
 
-        const lp = connection.label
-          ? manualLabelPosition ?? getFixedDistancePoint(manualPath[0], manualPath[1] ?? manualPath[manualPath.length - 1], 30, 19)
-          : null
-        setLabelPos(lp)
+        const lp = resolveConnectorLabelPosition(
+          manualPath,
+          connection.label,
+          manualLabelPosition,
+          obsRects,
+        )
+        setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
 
         if (onPathUpdatedRef.current && !emittedRef.current) {
           onPathUpdatedRef.current({
@@ -486,7 +521,6 @@ export function FlowchartArrowConnector({
     emittedRef.current = false
 
     /* ── Auto-routing (Grid + Dijkstra) ──────────────────────── */
-    const cacheKey = makeCacheKey(connection, fromPos, toPos, obstacles)
     const effectiveBounds: BoundsRect | null = pathAllowedBounds
       ? {
           left: pathAllowedBounds.left,
@@ -495,6 +529,8 @@ export function FlowchartArrowConnector({
           bottom: pathAllowedBounds.top + pathAllowedBounds.height,
         }
       : constraintRect
+    const corridorGraph = false // corridor graph no longer used; kept for type compat
+    void corridorGraph
 
     const dy = (toPos.top + toPos.height / 2) - (fromPos.top + fromPos.height / 2)
     const dx = (toPos.left + toPos.width / 2) - (fromPos.left + fromPos.width / 2)
@@ -531,8 +567,15 @@ export function FlowchartArrowConnector({
     }
 
     const used = usedSidesRef.current
-    const anchorSlots = [0.5, 0.28, 0.72, 0.18, 0.82, 0.4, 0.6]
-    const anchorDistance = (count: number) => anchorSlots[count % anchorSlots.length]
+    const anchorDistance = (shapeId: string, side: Side, count: number) => {
+      const shape =
+        shapeId === connection.from
+          ? fromShape
+          : shapeId === connection.to
+            ? toShape
+            : fromShape
+      return preferCenterAnchorDistance(count, sideLengthPx(shape, side))
+    }
     const usedAnchorCount = (shapeId: string, side: Side) => {
       const sideUsage = used[shapeId]
       const incoming = (sideUsage?.in?.[side] ?? []).filter((id) => id !== connection.id).length
@@ -546,50 +589,15 @@ export function FlowchartArrowConnector({
         (item.from === shapeId || item.to === shapeId)
       ).length
 
-    const isSafePath = (path: { x: number; y: number }[]) => {
-      if (path.length < 2) return false
-      if (pathIntersectsRectangles(path, obsRects, 2)) return false
-      if (pathOverlapsSegments(path, occupied, { includeCross: true })) return false
-      return true
-    }
+    const isSafePath = (path: { x: number; y: number }[]) =>
+      isAcceptableRoutedPath(path, createPathSafetyOptions('flowchart', {
+        obstacles: obsRects,
+        occupied,
+        fromShape,
+        toShape,
+      }))
 
-    const cached = pathCache.get(cacheKey)
-    if (cached) {
-      const cachedPath = tryNormalizeConnectorPath(cached.path, effectiveBounds)
-      if (cachedPath && isSafePath(cachedPath)) {
-        setResolvedPath(cachedPath.map((point) => ({ ...point })))
-        setResolvedSides([cached.sSide, cached.eSide])
-        setPathData(pathToD(cachedPath))
 
-        const lp = connection.label
-          ? manualLabelPosition ?? getFixedDistancePoint(
-              cachedPath[0],
-              cachedPath[1] ?? cachedPath[cachedPath.length - 1],
-              30,
-              19,
-            )
-          : null
-        setLabelPos(lp)
-
-        if (onPathUpdatedRef.current && !emittedRef.current) {
-          onPathUpdatedRef.current({
-            connectionId: connection.id,
-            from: connection.from,
-            to: connection.to,
-            sSide: cached.sSide,
-            eSide: cached.eSide,
-            startPoint: { ...cachedPath[0] },
-            endPoint: { ...cachedPath[cachedPath.length - 1] },
-            bendPoints: cachedPath.slice(1, -1).map(p => ({ ...p })),
-            label: connection.label ?? undefined,
-            labelPosition: lp ?? undefined,
-          })
-          emittedRef.current = true
-        }
-        return
-      }
-      pathCache.delete(cacheKey)
-    }
 
     const runRouting = () => {
     let bestPath: { x: number; y: number }[] | null = null
@@ -605,33 +613,21 @@ export function FlowchartArrowConnector({
 
     for (const candidate of routeCandidates.slice(0, MAX_TRIES)) {
       const { sSide, eSide } = candidate
-      const distA = anchorDistance(Math.max(
+      const usageA = Math.max(
         usedAnchorCount(connection.from, sSide),
         priorShapeUseCount(connection.from),
-      ))
-      const distB = anchorDistance(Math.max(
+      )
+      const usageB = Math.max(
         usedAnchorCount(connection.to, eSide),
         priorShapeUseCount(connection.to),
-      ))
+      )
+      const distA = anchorDistance(connection.from, sSide, usageA)
+      const distB = anchorDistance(connection.to, eSide, usageB)
 
       const pointA = { shape: fromShape, side: sSide, distance: distA }
       const pointB = { shape: toShape, side: eSide, distance: distB }
-      const corridorPath = corridorGraph
-        ? routeOnCorridor({
-            graph: corridorGraph,
-            pointA,
-            pointB,
-            shapeMargin: SHAPE_MARGIN,
-            occupiedSegments: occupied,
-            sourcePort: candidate.sourcePort,
-            targetPort: candidate.targetPort,
-            jettySize: candidate.jettySize,
-            sourceJettySize: candidate.sourceJettySize,
-            targetJettySize: candidate.targetJettySize,
-          })
-        : []
-
-      const path = corridorPath.length >= 2 ? corridorPath : routeOrthogonal({
+      // Always use routeOrthogonal (corridor graph no longer needed)
+      const path = routeOrthogonal({
         pointA,
         pointB,
         obstacles: obsRects,
@@ -652,6 +648,7 @@ export function FlowchartArrowConnector({
       if (!normalizedPath) continue
       if (!isSafePath(normalizedPath)) continue
       let score = scorePath(normalizedPath, occupied)
+      score += scoreAnchorOffCenter(distA) + scoreAnchorOffCenter(distB)
       score += Math.max(0, normalizedPath.length - 2) * 40
 
       // Kurangi path "ruwet": penalisasi rentang horizontal lebar agar path tidak memanjang ke samping tidak perlu
@@ -711,11 +708,11 @@ export function FlowchartArrowConnector({
       const fallbackPath = routeOrthogonal({
         pointA: { shape: fromShape, side: sSide, distance: 0.5 },
         pointB: { shape: toShape, side: eSide, distance: 0.5 },
-        obstacles: [],
+        obstacles: obsRects,
         shapeMargin: SHAPE_MARGIN,
         globalBounds,
         globalBoundsMargin: loopbackBoundsMargin,
-        occupiedSegments: [],
+        occupiedSegments: occupied,
         sourcePort: fallbackCandidate?.sourcePort,
         targetPort: fallbackCandidate?.targetPort,
         jettySize: fallbackCandidate?.jettySize,
@@ -727,45 +724,40 @@ export function FlowchartArrowConnector({
         bestPath = tryNormalizeConnectorPath(fallbackPath, effectiveBounds)
         bestSides = [sSide, eSide]
       }
-      if (bestPath && !isSafePath(bestPath)) bestPath = null
       if (!bestPath) {
         bestPath = buildUltimateOrthogonalFallback(fromPos, toPos, effectiveBounds)
         bestSides = ['bottom', 'top']
       }
     }
 
-    bestPath = normalizeConnectorPath(bestPath, effectiveBounds)
-    if (!isSafePath(bestPath)) {
-      const emergencyPath = buildUltimateOrthogonalFallback(fromPos, toPos, effectiveBounds)
-      bestPath = emergencyPath
-      bestSides = bestSides ?? ['bottom', 'top']
-    }
+    const pathForRender = bestPath ?? buildUltimateOrthogonalFallback(fromPos, toPos, effectiveBounds)
+    bestPath = finalizeRenderablePath(pathForRender, fromPos, toPos, effectiveBounds)
+    bestSides = bestSides ?? ['bottom', 'top']
     const resolvedSidesFinal: [Side, Side] = bestSides ?? ['bottom', 'top']
-    setResolvedSides(resolvedSidesFinal)
-    setResolvedPath(bestPath.map((p) => ({ ...p })))
-
-    // OPTIMIZATION #3: Save to cache after successful routing
-    pathCache.set(cacheKey, {
-      path: bestPath,
-      sSide: resolvedSidesFinal[0],
-      eSide: resolvedSidesFinal[1],
-      score: bestScore,
-      fromPosHash: `${fromPos.left}-${fromPos.top}-${fromPos.width}-${fromPos.height}`,
-      toPosHash: `${toPos.left}-${toPos.top}-${toPos.width}-${toPos.height}`,
-    })
+    setResolvedSides((prev) => (sameSides(prev, resolvedSidesFinal) ? prev : resolvedSidesFinal))
+    setResolvedPath((prev) => (samePath(prev, bestPath) ? prev : bestPath.map((p) => ({ ...p }))))
 
     // Register this arrow's segments for other arrows to avoid
     if (routedSegmentsRef) {
-      routedSegmentsRef.current.set(connection.id, pathToSegments(bestPath))
+      try {
+        routedSegmentsRef.current.set(connection.id, pathToSegments(bestPath))
+      } catch {
+        routedSegmentsRef.current.delete(connection.id)
+      }
     }
 
     setPathData(pathToD(bestPath))
 
     let lp: { x: number; y: number } | null = null
     if (connection.label && bestPath.length >= 2) {
-      lp = manualLabelPosition ?? getFixedDistancePoint(bestPath[0], bestPath[1], 30, 19)
+      lp = resolveConnectorLabelPosition(
+        bestPath,
+        connection.label,
+        manualLabelPosition,
+        obsRects,
+      )
     }
-    setLabelPos(lp)
+    setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
 
     const [sSide, eSide] = resolvedSidesFinal
     const payload: PathUpdatedPayload = {
@@ -788,14 +780,30 @@ export function FlowchartArrowConnector({
       return
     }
 
-    const useIdle = typeof requestIdleCallback !== 'undefined'
-    const scheduleId = useIdle
-      ? requestIdleCallback(runRouting, { timeout: ROUTING_IDLE_TIMEOUT_MS })
-      : requestAnimationFrame(runRouting)
+    // Routing sinkron dalam useLayoutEffect agar urutan connectionIndex terjaga
+    // dan occupiedSegments dari koneksi sebelumnya sudah terdaftar.
+    try {
+      runRouting()
+    } catch {
+      const emergency = finalizeRenderablePath(
+        buildMinimalOrthogonalPath(fromPos, toPos),
+        fromPos,
+        toPos,
+        effectiveBounds,
+      )
+      setResolvedSides(['bottom', 'top'])
+      setResolvedPath(emergency.map((p) => ({ ...p })))
+      if (routedSegmentsRef) {
+        routedSegmentsRef.current.set(connection.id, pathToSegments(emergency))
+      }
+      setPathData(pathToD(emergency))
+    }
+    }
+
+    applyLayout()
     const capturedRoutedSegments = routedSegmentsRef?.current
     return () => {
-      if (useIdle) cancelIdleCallback(scheduleId)
-      else cancelAnimationFrame(scheduleId)
+      cancelled = true
       capturedRoutedSegments?.delete(connection.id)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- callbacks via refs; obstacles via layout reads
@@ -805,7 +813,7 @@ export function FlowchartArrowConnector({
     connectionIndex, allConnections,
     manualConfig, manualLabelPosition, obstacles, constraintRect, editMode,
     routedSegmentsRef, reservedSidesRef,
-    corridorGraph,
+    rerouteVersion,
   ])
 
   if (!pathData) return null
@@ -835,7 +843,7 @@ export function FlowchartArrowConnector({
             flowchart: {
               globalBounds: guardCtx.globalBounds,
               globalBoundsMargin: guardCtx.boundsMargin,
-              corridorGraph: corridorGraph ?? null,
+              corridorGraph: null,
             },
           },
         }
@@ -852,15 +860,20 @@ export function FlowchartArrowConnector({
           sSide={resolvedSides[0]}
           eSide={resolvedSides[1]}
           anchors={editableAnchors}
+          shapeSnapTargets={shapeSnapTargets}
           shapeGuard={shapeGuard}
           connectionId={connection.id}
           isSelected={isSelected}
           markerEndId={markerId}
           onSelect={onSelectRef.current ?? (() => {})}
           onChange={(payload) => {
-            setResolvedPath([payload.startPoint, ...payload.bendPoints, payload.endPoint])
-            setResolvedSides([payload.sSide, payload.eSide])
-            setPathData(pathToD([payload.startPoint, ...payload.bendPoints, payload.endPoint]))
+            const nextPath = [payload.startPoint, ...payload.bendPoints, payload.endPoint]
+            setResolvedPath((prev) => (samePath(prev, nextPath) ? prev : nextPath))
+            setResolvedSides((prev) => {
+              const next: [Side, Side] = [payload.sSide, payload.eSide]
+              return sameSides(prev, next) ? prev : next
+            })
+            setPathData(pathToD(nextPath))
             onManualChangeRef.current?.({
               connectionId: connection.id,
               from: connection.from,
@@ -922,7 +935,11 @@ export function FlowchartArrowConnector({
         }
       />
       <path
-        d={pathData} fill="none" stroke="black" strokeWidth={2}
+        className="sop-connector-stroke"
+        d={pathData}
+        fill="none"
+        stroke="black"
+        strokeWidth={2}
         markerEnd={`url(#${markerId})`}
         style={{ pointerEvents: 'none' }}
       />

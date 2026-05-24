@@ -54,6 +54,7 @@ function SopPreviewWithDiagram({
       implementers={previewProps.implementers}
       tteSignaturePayload={tteSignaturePayload}
       previewOptions={{ editable: false, showScrollbar: true }}
+      registerPrintPrepare={false}
       diagramState={{
         activeTab,
         onActiveTabChange: setActiveTab,

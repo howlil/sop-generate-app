@@ -83,8 +83,8 @@ describe('selectBpmnSidePairs', () => {
     )
 
     expect(candidates[0]).toMatchObject({
-      sSide: 'top',
-      eSide: 'left',
+      sSide: 'right',
+      eSide: 'right',
       preferSimple: false,
     })
     expect(candidates[0]!.sourceJettySize).toBeGreaterThan(20)

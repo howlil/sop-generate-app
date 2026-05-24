@@ -579,23 +579,6 @@ export class SopCatalogRepository {
     changedFields: string[];
   }): Promise<SopCatalogRepoResult<void>> {
     const { detailSopId, sopId, userId, input, changedFields } = params;
-    if (input.sopTerkaitDetailIds !== undefined) {
-      const uniqueIds = Array.from(
-        new Set(input.sopTerkaitDetailIds.filter((id) => id !== detailSopId)),
-      );
-      if (uniqueIds.length > 0) {
-        const inverse = await this.prisma.sopTerkait.findFirst({
-          where: { detailSopTerkaitId: detailSopId, detailSopId: { in: uniqueIds } },
-          select: { detailSopId: true },
-        });
-        if (inverse !== null) {
-          return sopCatalogRepoFail(
-            'BAD_REQUEST',
-            'SOP terkait bentrok: salah satu target sudah menaut balik ke dokumen ini; hapus relasi terbalik terlebih dahulu.',
-          );
-        }
-      }
-    }
     await this.prisma.$transaction(async (tx) => {
       if (input.judul !== undefined) {
         await tx.sOP.update({

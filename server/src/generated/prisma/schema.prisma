@@ -214,7 +214,7 @@ model DasarHukum {
 }
 
 /// Relasi keluar: `detailSopId` (pemilik) → `detailSopTerkaitId` (target). Invariant DB + app:
-/// tidak boleh self-loop; tidak boleh `(B,A)` jika `(A,B)` sudah ada (pasangan terbalik).
+/// tidak boleh self-loop. Pasangan terbalik `(B,A)` boleh karena keterkaitan SOP bersifat simetris di UI.
 model SopTerkait {
   detailSopId        String
   detailSopTerkaitId String

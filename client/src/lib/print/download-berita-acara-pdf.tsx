@@ -6,13 +6,20 @@ import {
   type BeritaAcaraPdfDocumentProps,
 } from '@/components/pengajuan/berita-acara-pdf-document'
 import type { BeritaAcaraTemplateProps } from '@/components/pengajuan/berita-acara-template'
+import { assertPdfSigningApplied } from '@/lib/print/berita-acara-pdf-signing.util'
 import { getValidasiPengesahanUrl } from '@/lib/tte/url'
 import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 
 const QR_SIZE = 64
 
+export type BeritaAcaraPdfSigningMode =
+  | { readonly mode: 'none' }
+  | { readonly mode: 'pj'; readonly payload: TTESignaturePayload }
+  | { readonly mode: 'arsip'; readonly pengajuanEvaluasiId: string }
+
 export type BeritaAcaraPdfDownloadOptions = {
-  signingPayload?: TTESignaturePayload | null
+  readonly pdfSigningEnabled: boolean
+  readonly signing: BeritaAcaraPdfSigningMode
 }
 
 async function buildQrDataUrl(payload: TTESignaturePayload | undefined): Promise<string | undefined> {
@@ -86,24 +93,33 @@ function base64ToPdfBlob(base64: string): Blob {
 
 async function signBeritaAcaraPdfBlob(
   blob: Blob,
-  signingPayload: TTESignaturePayload | null | undefined,
+  options: BeritaAcaraPdfDownloadOptions,
 ): Promise<Blob> {
-  if (!signingPayload) {
+  if (!options.pdfSigningEnabled || options.signing.mode === 'none') {
     return blob
   }
-
+  const pdfBase64 = await blobToBase64(blob)
+  if (options.signing.mode === 'arsip') {
+    const response = await tteApi.signBeritaAcaraArsip({
+      pengajuanEvaluasiId: options.signing.pengajuanEvaluasiId,
+      pdfBase64,
+    })
+    assertPdfSigningApplied(response)
+    return base64ToPdfBlob(response.signedPdfBase64)
+  }
   const response = await tteApi.signPdf({
-    dokumenTteId: signingPayload.dokumenTteId,
-    userId: signingPayload.userId,
+    dokumenTteId: options.signing.payload.dokumenTteId,
+    userId: options.signing.payload.userId,
     jenisDokumen: 'BERITA_ACARA_EVALUASI',
-    pdfBase64: await blobToBase64(blob),
+    pdfBase64,
   })
+  assertPdfSigningApplied(response)
   return base64ToPdfBlob(response.signedPdfBase64)
 }
 
 export async function downloadBeritaAcaraPdf(
   props: BeritaAcaraTemplateProps,
-  options?: BeritaAcaraPdfDownloadOptions,
+  options: BeritaAcaraPdfDownloadOptions,
 ): Promise<void> {
   const qrUrls = await buildBeritaAcaraPdfQrUrls(props)
   const documentProps: BeritaAcaraPdfDocumentProps = {
@@ -111,6 +127,6 @@ export async function downloadBeritaAcaraPdf(
     ...qrUrls,
   }
   const unsignedBlob = await pdf(<BeritaAcaraPdfDocument {...documentProps} />).toBlob()
-  const downloadableBlob = await signBeritaAcaraPdfBlob(unsignedBlob, options?.signingPayload)
+  const downloadableBlob = await signBeritaAcaraPdfBlob(unsignedBlob, options)
   triggerBlobDownload(downloadableBlob, sanitizeBeritaAcaraPdfFilename(props))
 }

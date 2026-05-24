@@ -17,6 +17,7 @@ import {
   scorePath,
   pathOverlapsSegments,
 } from './orthogonalRouter'
+import { simplifyOrthogonalPath } from '../../edit/orthogonal-path-edit.util'
 
 export type Side = 'top' | 'right' | 'bottom' | 'left'
 
@@ -88,9 +89,10 @@ export type UsedSides = Record<
 >
 
 /* ═══════════════════════════════════════════════════════════════════
- *  selectBpmnSidePairs
+ *  selectBpmnSidePairs — simplified, max 4 candidates
  *
- *  BPMN flow is horizontal (left → right) with vertical swim lanes.
+ *  BPMN flow: horizontal (left → right) with vertical swim lanes.
+ *  Logic: flat positional — same-lane/cross-lane × left/right/above/below.
  * ═══════════════════════════════════════════════════════════════════ */
 
 function isYaLabel(label: string | null | undefined): boolean {
@@ -115,178 +117,140 @@ export function selectBpmnSidePairs(
   const targetAbove = conn.toLane < conn.fromLane
 
   const isDecSrc = conn.sourceType === 'flowchart-decision'
+  const isDecDst = conn.targetType === 'flowchart-decision'
   const isYa = isYaLabel(conn.label)
   const isTidak = isTidakLabel(conn.label)
   const isStartTerm = conn.sourceType === 'flowchart-terminator'
 
-  const srcOutBusy = (s: Side) =>
+  const srcBusy = (s: Side) =>
     (usedSides[conn.from]?.out?.[s] ?? []).some(id => id !== conn.id)
-  const dstInBusy = (s: Side) =>
+  const dstBusy = (s: Side) =>
     (usedSides[conn.to]?.in?.[s] ?? []).some(id => id !== conn.id)
 
   const pairs: BpmnRouteCandidate[] = []
-  const push = (
-    sSide: Side,
-    eSide: Side,
-    overrides: Partial<BpmnRouteCandidate> = {},
-  ) => {
-    pairs.push({
-      sSide,
-      eSide,
-      sourceJettySize: SHAPE_MARGIN,
-      targetJettySize: SHAPE_MARGIN,
-      preferSimple: true,
-      ...overrides,
-    })
+  const push = (sSide: Side, eSide: Side, overrides: Partial<BpmnRouteCandidate> = {}) => {
+    pairs.push({ sSide, eSide, sourceJettySize: SHAPE_MARGIN, targetJettySize: SHAPE_MARGIN, preferSimple: true, ...overrides })
   }
 
+  /* ── Start terminator: always right→left or bottom/top ──── */
   if (isStartTerm) {
-    if (sameLane) {
-      push('right', 'left', { sourceJettySize: 28, targetJettySize: 20 })
-    } else if (targetBelow) {
-      if (targetRight) push('right', 'left', { sourceJettySize: 28 })
-      push('bottom', 'top', { sourceJettySize: 28, targetJettySize: 20 })
-    } else if (targetAbove) {
-      if (targetRight) push('right', 'left', { sourceJettySize: 28 })
-      push('top', 'bottom', { sourceJettySize: 28, targetJettySize: 20 })
-    } else {
-      push('right', 'left', { sourceJettySize: 28, targetJettySize: 20 })
-    }
+    if (sameLane) push('right', 'left', { sourceJettySize: 28 })
+    else if (targetBelow) push('bottom', 'top', { sourceJettySize: 28 })
+    else if (targetAbove) push('top', 'bottom', { sourceJettySize: 28 })
+    else push('right', 'left', { sourceJettySize: 28 })
+    // Fallback
+    push('right', 'left', { sourceJettySize: 24 })
+    push('bottom', 'top', { sourceJettySize: 20 })
+    return bpmnDedup(pairs, isDecSrc, isDecDst, sameLane)
   }
 
-  if (isDecSrc && (isYa || isTidak)) {
-    if (isYa) {
-      if (sameLane && targetRight) {
-        push('right', 'left', { sourceJettySize: 20, targetJettySize: 20 })
-        push('bottom', 'left', { sourceJettySize: 18, preferSimple: false })
-      } else if (sameLane && targetLeft) {
-        if (!srcOutBusy('bottom') && !dstInBusy('bottom')) push('bottom', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
-        push('bottom', 'right', { sourceJettySize: 18, preferSimple: false })
-        push('left', 'right', { preferSimple: false })
-      } else if (targetBelow && targetLeft) {
-        push('bottom', 'right', { sourceJettySize: 18, preferSimple: false })
-        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
-        push('left', 'top', { preferSimple: false })
-      } else if (targetBelow) {
-        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
-        if (targetRight) push('bottom', 'left', { sourceJettySize: 18, preferSimple: false })
-      } else if (targetAbove && targetLeft) {
-        push('top', 'right', { sourceJettySize: 18, preferSimple: false })
-        push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
-      } else if (targetAbove) {
-        push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
-        if (targetRight) push('right', 'left')
-      } else {
-        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
-        push('right', 'left')
-      }
-    }
-
-    if (isTidak) {
-      if (sameLane && targetRight) {
-        push('top', 'left', { sourceJettySize: 20, preferSimple: false })
-        push('right', 'left')
-      } else if (sameLane && targetLeft) {
-        if (!srcOutBusy('top') && !dstInBusy('top')) push('top', 'top', { sourceJettySize: 22, targetJettySize: 22, preferSimple: false })
-        push('top', 'right', { sourceJettySize: 22, preferSimple: false })
-        push('left', 'right', { preferSimple: false })
-      } else if (targetBelow) {
-        push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
-        if (targetRight) push('right', 'top', { preferSimple: false })
-      } else if (targetAbove && targetLeft) {
-        push('top', 'left', { sourceJettySize: 22, preferSimple: false })
-        push('top', 'right', { sourceJettySize: 22, preferSimple: false })
-        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
-        push('left', 'right', { preferSimple: false })
-      } else if (targetAbove && sameCol) {
-        // Loop-back ke step di atas tapi sejajar kolom:
-        // arahkan keluar dari atas gateway lalu masuk ke sisi kiri target
-        // supaya panah "Tidak" tidak menembus langsung ke bawah.
-        push('top', 'left', { sourceJettySize: 22, preferSimple: false })
-        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
-      } else if (targetAbove) {
-        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
-        if (targetRight) push('right', 'bottom', { preferSimple: false })
-      } else {
-        push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
-        push('top', 'left', { sourceJettySize: 22, preferSimple: false })
-      }
-    }
-  }
-
-  else if (!isStartTerm) {
-    if (sameLane && targetRight) {
-      push('right', 'left')
-      if (srcOutBusy('right') || dstInBusy('left')) {
-        push('bottom', 'left', { preferSimple: false })
-        push('top', 'left', { preferSimple: false })
-      }
-    } else if (sameLane && targetLeft) {
-      if (!srcOutBusy('top') && !dstInBusy('top')) push('top', 'top', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
-      if (!srcOutBusy('bottom') && !dstInBusy('bottom')) push('bottom', 'bottom', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
-      push('left', 'right', { preferSimple: false })
-    } else if (sameLane && sameCol) {
-      push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18, preferSimple: true })
-      push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: true })
-      push('right', 'left')
-    } else if (targetBelow && (targetRight || sameCol)) {
+  /* ── Decision Ya: bottom exit preferred ──────────────────── */
+  if (isDecSrc && isYa) {
+    if (targetBelow || (sameLane && sameCol)) {
       push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
-      if (targetRight) {
-        push('right', 'left')
-        push('bottom', 'left', { preferSimple: false })
-      }
-    } else if (targetAbove && (targetRight || sameCol)) {
+      if (targetRight) push('right', 'left')
+      if (targetLeft) push('bottom', 'right', { sourceJettySize: 18, preferSimple: false })
+    } else if (targetAbove) {
       push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
       if (targetRight) push('right', 'left')
-    } else if (targetBelow && targetLeft) {
-      push('bottom', 'right', { preferSimple: false })
+    } else if (sameLane && targetRight) {
+      push('right', 'left', { sourceJettySize: 20 })
+      push('bottom', 'left', { sourceJettySize: 18, preferSimple: false })
+    } else if (sameLane && targetLeft) {
+      push('bottom', 'right', { sourceJettySize: 18, preferSimple: false })
+      push('left', 'right', { preferSimple: false })
+    } else {
       push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
-      push('left', 'top', { preferSimple: false })
-    } else if (targetAbove && targetLeft) {
-      push('top', 'right', { preferSimple: false })
-      push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
-      push('left', 'bottom', { preferSimple: false })
+      push('right', 'left')
     }
+    push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+    push('right', 'left')
+    return bpmnDedup(pairs, isDecSrc, isDecDst, sameLane)
   }
 
+  /* ── Decision Tidak: top exit (above) or side exit ───────── */
+  if (isDecSrc && isTidak) {
+    if (targetAbove || (sameLane && sameCol)) {
+      if (!srcBusy('right') && !dstBusy('right'))
+        push('right', 'right', { sourceJettySize: 22, targetJettySize: 22, preferSimple: false })
+      if (!srcBusy('left') && !dstBusy('left'))
+        push('left', 'left', { sourceJettySize: 22, targetJettySize: 22, preferSimple: false })
+      push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
+    } else if (targetBelow) {
+      push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+      if (targetRight) push('right', 'top', { preferSimple: false })
+      else push('left', 'top', { preferSimple: false })
+    } else if (sameLane && targetRight) {
+      push('top', 'left', { sourceJettySize: 20, preferSimple: false })
+      push('right', 'left')
+    } else if (sameLane && targetLeft) {
+      if (!srcBusy('top') && !dstBusy('top'))
+        push('top', 'top', { sourceJettySize: 22, targetJettySize: 22, preferSimple: false })
+      push('top', 'right', { sourceJettySize: 22, preferSimple: false })
+    } else {
+      push('top', 'bottom', { sourceJettySize: 22, targetJettySize: 18, preferSimple: false })
+      push('top', 'left', { sourceJettySize: 22, preferSimple: false })
+    }
+    push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+    push('right', 'left')
+    return bpmnDedup(pairs, isDecSrc, isDecDst, sameLane)
+  }
+
+  /* ── Normal flow: positional logic ───────────────────────── */
+  if (sameLane && targetRight) {
+    push('right', 'left')
+    if (srcBusy('right') || dstBusy('left')) push('bottom', 'left', { preferSimple: false })
+  } else if (sameLane && targetLeft) {
+    if (!srcBusy('top') && !dstBusy('top')) push('top', 'top', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
+    else push('bottom', 'bottom', { sourceJettySize: 20, targetJettySize: 20, preferSimple: false })
+    push('left', 'right', { preferSimple: false })
+  } else if (sameLane && sameCol) {
+    push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+    push('right', 'left')
+  } else if (targetBelow && (targetRight || sameCol)) {
+    push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+    if (targetRight) push('right', 'left')
+  } else if (targetAbove && (targetRight || sameCol)) {
+    push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+    if (targetRight) push('right', 'left')
+  } else if (targetBelow && targetLeft) {
+    push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+    push('bottom', 'right', { preferSimple: false })
+  } else if (targetAbove && targetLeft) {
+    push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
+    push('top', 'right', { preferSimple: false })
+  } else {
+    push('right', 'left')
+    push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
+  }
+
+  // Universal fallbacks (max 4 total after dedup)
   push('right', 'left')
+  push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18 })
   push('left', 'right', { preferSimple: false })
-  push('bottom', 'top', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
   push('top', 'bottom', { sourceJettySize: 18, targetJettySize: 18, preferSimple: false })
-  push('right', 'top', { preferSimple: false })
-  push('right', 'bottom', { preferSimple: false })
-  push('left', 'top', { preferSimple: false })
-  push('left', 'bottom', { preferSimple: false })
-  push('bottom', 'left', { preferSimple: false })
-  push('bottom', 'right', { preferSimple: false })
-  push('top', 'left', { preferSimple: false })
-  push('top', 'right', { preferSimple: false })
 
+  return bpmnDedup(pairs, isDecSrc, isDecDst, sameLane)
+}
+
+/** Dedup + apply gateway constraints. */
+function bpmnDedup(
+  pairs: BpmnRouteCandidate[],
+  isDecSrc: boolean,
+  isDecDst: boolean,
+  sameLane: boolean,
+): BpmnRouteCandidate[] {
   const seen = new Set<string>()
-  const filtered = pairs.filter(({ sSide: s, eSide: e }) => {
-    // Untuk gateway sebagai sumber: hindari kombinasi top↔bottom
-    // supaya tidak ada path yang menembus diamond secara vertikal.
-    if (isDecSrc && (
-      (s === 'top' && e === 'bottom') ||
-      (s === 'bottom' && e === 'top')
-    )) {
-      return false
-    }
-
-    // Untuk gateway sebagai target: blok top/bottom entry HANYA untuk same-lane.
-    // Cross-lane connections (misalnya dari lane di atas/bawah) perlu top/bottom untuk menghubung.
-    const isDecDst = conn.targetType === 'flowchart-decision'
-    if (isDecDst && sameLane && (e === 'top' || e === 'bottom')) {
-      return false
-    }
-
+  return pairs.filter(({ sSide: s, eSide: e }) => {
+    // Gateway source: block vertical through-path
+    if (isDecSrc && ((s === 'top' && e === 'bottom') || (s === 'bottom' && e === 'top'))) return false
+    // Gateway target same-lane: block top/bottom entry
+    if (isDecDst && sameLane && (e === 'top' || e === 'bottom')) return false
     const k = `${s}-${e}`
     if (seen.has(k)) return false
     seen.add(k)
     return true
   })
-
-  return filtered
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -588,7 +552,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
   const fObs = filterObstacles(obstacles, fromShape, toShape)
   const isUsablePath = (path: Point[]) =>
     !pathHitsObstacle(path, fObs, fromShape, toShape) &&
-    !pathOverlapsSegments(path, occupiedSegments, { includeCross: true }) &&
+    !pathOverlapsSegments(path, occupiedSegments, { includeCross: false }) &&
     !pathRunsAlongBpmnGrid(path, layout, opts.gridClearance)
 
   const sameLane = fromLane === toLane
@@ -887,16 +851,52 @@ function clampPathToBounds(path: Point[], bounds: Rect): Point[] {
  *  Main export
  * ═══════════════════════════════════════════════════════════════════ */
 
+function nudgePathFromOccupied(path: Point[], occupied: OccupiedSegment[]): Point[] {
+  if (path.length < 3 || occupied.length === 0) return path
+  const clearance = 12
+  const nudged = path.map((p) => ({ ...p }))
+  for (let i = 1; i < nudged.length - 1; i++) {
+    const prev = nudged[i - 1]!
+    const cur = nudged[i]!
+    const next = nudged[i + 1]!
+    const horiz = prev.y === cur.y && cur.y === next.y
+    const vert = prev.x === cur.x && cur.x === next.x
+    if (!horiz && !vert) continue
+    const seg: OccupiedSegment = horiz
+      ? { x1: prev.x, y1: cur.y, x2: next.x, y2: cur.y }
+      : { x1: cur.x, y1: prev.y, x2: cur.x, y2: next.y }
+    const offset = getTrackOffset(seg, occupied)
+    if (offset === 0) continue
+    if (horiz) {
+      nudged[i] = { x: cur.x, y: cur.y + offset }
+      if (i > 1) nudged[i - 1] = { x: nudged[i - 1]!.x, y: cur.y + offset }
+    } else {
+      nudged[i] = { x: cur.x + offset, y: cur.y }
+      if (i > 1) nudged[i - 1] = { x: cur.x + offset, y: nudged[i - 1]!.y }
+    }
+  }
+  return simplifyOrthogonalPath(simplifyPath(nudged), clearance)
+}
+
+function validateBpmnPath(path: Point[], opts: BpmnRouteOptions): boolean {
+  if (path.length < 2) return false
+  if (pathHitsObstacle(path, opts.obstacles, opts.fromShape, opts.toShape)) return false
+  if (pathOverlapsSegments(path, opts.occupiedSegments, { includeCross: false })) return false
+  if (pathRunsAlongBpmnGrid(path, opts.layout, opts.gridClearance)) return false
+  return true
+}
+
 export function routeBpmn(opts: BpmnRouteOptions): Point[] {
   let path = buildBpmnWaypoints(opts)
   if (opts.globalBounds && path.length > 0) {
     path = clampPathToBounds(path, opts.globalBounds)
   }
   path = simplifyPath(path)
-  if (path.length < 2) return []
-  if (pathHitsObstacle(path, opts.obstacles, opts.fromShape, opts.toShape)) return []
-  if (pathOverlapsSegments(path, opts.occupiedSegments, { includeCross: true })) return []
-  if (pathRunsAlongBpmnGrid(path, opts.layout, opts.gridClearance)) return []
+  if (!validateBpmnPath(path, opts)) {
+    const nudged = nudgePathFromOccupied(path, opts.occupiedSegments)
+    if (validateBpmnPath(nudged, opts)) return nudged
+    return []
+  }
   return path
 }
 

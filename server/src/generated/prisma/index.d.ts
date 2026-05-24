@@ -82,7 +82,7 @@ export type DasarHukum = $Result.DefaultSelection<Prisma.$DasarHukumPayload>
 /**
  * Model SopTerkait
  * Relasi keluar: `detailSopId` (pemilik) → `detailSopTerkaitId` (target). Invariant DB + app:
- * tidak boleh self-loop; tidak boleh `(B,A)` jika `(A,B)` sudah ada (pasangan terbalik).
+ * tidak boleh self-loop. Pasangan terbalik `(B,A)` boleh karena keterkaitan SOP bersifat simetris di UI.
  */
 export type SopTerkait = $Result.DefaultSelection<Prisma.$SopTerkaitPayload>
 /**

@@ -234,6 +234,65 @@ describe('PengajuanEvaluasiService', () => {
     expect(tx.detailSOP.updateMany).not.toHaveBeenCalled();
   });
 
+  it('should_reject_create_when_detail_sop_belongs_to_different_opd', async () => {
+    const opdId = '00000000-0000-4000-8000-000000000001';
+    const detailSopId = '00000000-0000-4000-8000-000000000002';
+    const tx = {
+      pengajuanEvaluasi: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        create: jest.fn(),
+      },
+      detailSOP: {
+        findFirst: jest.fn().mockResolvedValue(null),
+        updateMany: jest.fn(),
+      },
+    };
+    const runTransaction = jest.fn(async (cb: (t: typeof tx) => Promise<string>) => cb(tx));
+    const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
+    const getRequiredUserOpdId = jest.fn().mockResolvedValue(opdId);
+    const service = buildService(repo, { getRequiredUserOpdId });
+
+    await expect(
+      service.create(userPjPenyusun, {
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        sopDetailIds: [detailSopId],
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(tx.detailSOP.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ sop: { opdId } }),
+      }),
+    );
+  });
+
+  it('should_throw_conflict_when_opd_masih_memiliki_pengajuan_evaluasi_aktif', async () => {
+    const opdId = '00000000-0000-4000-8000-000000000001';
+    const detailSopId = '00000000-0000-4000-8000-000000000002';
+    const tx = {
+      pengajuanEvaluasi: {
+        findFirst: jest.fn().mockResolvedValue({ pengajuanEvaluasiId: 'p1' }),
+        create: jest.fn(),
+      },
+      detailSOP: {
+        findFirst: jest.fn(),
+        updateMany: jest.fn(),
+      },
+    };
+    const runTransaction = jest.fn(async (cb: (t: typeof tx) => Promise<string>) => cb(tx));
+    const repo = { runTransaction } as unknown as PengajuanEvaluasiRepository;
+    const getRequiredUserOpdId = jest.fn().mockResolvedValue(opdId);
+    const service = buildService(repo, { getRequiredUserOpdId });
+
+    await expect(
+      service.create(userPjPenyusun, {
+        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        sopDetailIds: [detailSopId],
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    expect(tx.pengajuanEvaluasi.create).not.toHaveBeenCalled();
+    expect(tx.detailSOP.findFirst).not.toHaveBeenCalled();
+  });
+
   it('should_conflict_create_when_status_changes_before_promote', async () => {
     const opdId = '00000000-0000-4000-8000-000000000001';
     const detailSopId = '00000000-0000-4000-8000-000000000002';

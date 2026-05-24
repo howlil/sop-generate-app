@@ -10,7 +10,10 @@ import type {
   UpdateTtePinDto,
   RiwayatTandaTangan,
   SignPdfDto,
+  SignBeritaAcaraArsipDto,
   SignPdfResponse,
+  PdfSigningStatus,
+  VerifyPdfResponse,
   TtePengesahanPublic,
   TteProfil,
   TandaTanganiBaDto,
@@ -55,12 +58,32 @@ export const tteApi = {
       apiClient.post<ApiSuccessResponse<SignPdfResponse>>("/tte/pdf/sign", payload),
     ),
 
+  signBeritaAcaraArsip: (payload: SignBeritaAcaraArsipDto) =>
+    unwrapApiData<SignPdfResponse>(
+      apiClient.post<ApiSuccessResponse<SignPdfResponse>>(
+        '/tte/pdf/sign-berita-acara-arsip',
+        payload,
+      ),
+    ),
+
   /** Verifikasi pengesahan (publik, tanpa login). */
   getPengesahanPublic: (dokumenTteId: string, userId: string) =>
     unwrapApiData<TtePengesahanPublic>(
       apiClient.get<ApiSuccessResponse<TtePengesahanPublic>>(
         `/tte/public/pengesahan/${encodeURIComponent(dokumenTteId)}/${encodeURIComponent(userId)}`,
       ),
+    ),
+
+  getPdfSigningStatus: () =>
+    unwrapApiData<PdfSigningStatus>(
+      apiClient.get<ApiSuccessResponse<PdfSigningStatus>>('/tte/public/pdf-signing/status'),
+    ),
+
+  verifyPdf: (pdfBase64: string) =>
+    unwrapApiData<VerifyPdfResponse>(
+      apiClient.post<ApiSuccessResponse<VerifyPdfResponse>>('/tte/public/pdf/verify', {
+        pdfBase64,
+      }),
     ),
 
   tandaTanganiBA: (pengajuanId: string, payload: TandaTanganiBaDto) =>
@@ -107,6 +130,15 @@ export function useTtePengesahanPublic(dokumenTteId: string, userId: string) {
     queryKey: queryKeys.ttePengesahanPublic(dokumenTteId, userId),
     queryFn: () => tteApi.getPengesahanPublic(dokumenTteId, userId),
     staleTime: STALE_TIME.LONG,
+    retry: false,
+  });
+}
+
+export function usePdfSigningStatus() {
+  return useQuery({
+    queryKey: queryKeys.ttePdfSigningStatus,
+    queryFn: () => tteApi.getPdfSigningStatus(),
+    staleTime: STALE_TIME.MEDIUM,
     retry: false,
   });
 }

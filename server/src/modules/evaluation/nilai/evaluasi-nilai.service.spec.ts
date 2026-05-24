@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
   HasilEvaluasi,
@@ -40,6 +40,49 @@ describe('EvaluasiNilaiService', () => {
         }),
       ).rejects.toBeInstanceOf(BadRequestException);
       expect(runTransaction).not.toHaveBeenCalled();
+    });
+
+    it('should_throw_not_found_when_pengajuan_not_sedang_dievaluasi', async () => {
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+          }),
+        },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
+      const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
+      const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
+      await expect(
+        service.isiNilai(user, 'p1', 'd1', {
+          hasil: HasilEvaluasi.SESUAI,
+          version: 0,
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('should_throw_conflict_when_version_mismatch', async () => {
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          }),
+        },
+        nilaiEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            version: 1, // Mismatch with expected version 0
+          }),
+        },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
+      const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
+      const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
+      await expect(
+        service.isiNilai(user, 'p1', 'd1', {
+          hasil: HasilEvaluasi.SESUAI,
+          version: 0,
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
 
     it('should_set_status_tindak_lanjut_terbuka_when_perlu_perbaikan', async () => {
@@ -237,6 +280,50 @@ describe('EvaluasiNilaiService', () => {
       await expect(service.selesai(user, 'p1', { nilaiOPD: 5 })).rejects.toBeInstanceOf(
         BadRequestException,
       );
+    });
+
+    it('should_throw_bad_request_when_selesai_but_status_not_sedang_dievaluasi', async () => {
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+          }),
+        },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
+      const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
+      const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
+      await expect(service.selesai(user, 'p1', { nilaiOPD: 5 })).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should_throw_bad_request_when_selesai_mandiri_with_nilaiOPD', async () => {
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            jenis: JenisPengajuanEvaluasi.MANDIRI,
+          }),
+        },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
+      const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
+      const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
+      await expect(service.selesai(user, 'p1', { nilaiOPD: 5 })).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should_throw_bad_request_when_selesai_terjadwal_without_valid_nilaiOPD', async () => {
+      const mockTx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          }),
+        },
+      };
+      const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) => fn(mockTx));
+      const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
+      const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
+      await expect(service.selesai(user, 'p1', {})).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 });

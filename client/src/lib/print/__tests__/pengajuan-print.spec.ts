@@ -1,18 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { printSopPdfDocument } from '../print-sop-pdf'
+import {
+  downloadSopPdf,
+  printSopPdfDocument,
+} from '../print-sop-pdf'
+import { printSopDocument } from '../sop-browser-print'
 import {
   canCetakArsipPengajuan,
   canCetakBeritaAcaraPengajuan,
   canCetakSopArsipPengajuan,
   PRINT_DELAY_MS,
   scheduleSopDocumentPrint,
-  SOP_BEFORE_PRINT_EVENT,
   triggerPengajuanPrint,
+  triggerSopBrowserPrint,
   triggerSopPrint,
 } from '../pengajuan-print'
 
 vi.mock('../print-sop-pdf', () => ({
-  printSopPdfDocument: vi.fn(() => Promise.resolve()),
+  downloadSopPdf: vi.fn(() => Promise.resolve({ diagramExportFailed: false })),
+  printSopPdfDocument: vi.fn(() => Promise.resolve({ diagramExportFailed: false })),
+}))
+
+vi.mock('../sop-browser-print', () => ({
+  printSopDocument: vi.fn(() => Promise.resolve({ diagramReady: true })),
 }))
 
 const sampleSopPrintProps = {
@@ -47,50 +56,39 @@ describe('canCetakArsipPengajuan', () => {
 
 describe('triggerSopPrint', () => {
   beforeEach(() => {
-    vi.spyOn(window, 'print').mockImplementation(() => {})
-    document.body.className = ''
+    vi.mocked(printSopPdfDocument).mockClear()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-    document.body.className = ''
-  })
-
-  it('menambahkan class print-mode-sop', () => {
-    triggerSopPrint()
-    expect(document.body.classList.contains('print-mode-sop')).toBe(true)
-    expect(window.print).toHaveBeenCalledOnce()
-  })
-
-  it('mendispatch SOP_BEFORE_PRINT_EVENT saat cetak SOP', () => {
-    const handler = vi.fn()
-    window.addEventListener(SOP_BEFORE_PRINT_EVENT, handler)
-    triggerSopPrint()
-    expect(handler).toHaveBeenCalledOnce()
-    window.removeEventListener(SOP_BEFORE_PRINT_EVENT, handler)
+  it('memanggil printSopPdfDocument', async () => {
+    triggerSopPrint(sampleSopPrintProps)
+    await vi.waitFor(() => expect(printSopPdfDocument).toHaveBeenCalledOnce())
   })
 })
 
 describe('triggerPengajuanPrint', () => {
   beforeEach(() => {
-    vi.spyOn(window, 'print').mockImplementation(() => {})
-    document.body.className = ''
+    vi.mocked(printSopPdfDocument).mockClear()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-    document.body.className = ''
+  it('hanya memicu cetak PDF untuk target sop', async () => {
+    triggerPengajuanPrint('sop', sampleSopPrintProps)
+    await vi.waitFor(() => expect(printSopPdfDocument).toHaveBeenCalledOnce())
   })
 
-  it('hanya memicu cetak browser untuk target sop', () => {
-    triggerPengajuanPrint('sop')
-    expect(document.body.classList.contains('print-mode-sop')).toBe(true)
-    expect(window.print).toHaveBeenCalledOnce()
-  })
-
-  it('tidak memicu cetak browser untuk target ba', () => {
+  it('tidak memicu cetak untuk target ba', () => {
     triggerPengajuanPrint('ba')
-    expect(window.print).not.toHaveBeenCalled()
+    expect(printSopPdfDocument).not.toHaveBeenCalled()
+  })
+})
+
+describe('triggerSopBrowserPrint', () => {
+  beforeEach(() => {
+    vi.mocked(printSopDocument).mockClear()
+  })
+
+  it('memanggil printSopDocument (legacy browser print)', async () => {
+    triggerSopBrowserPrint()
+    await vi.waitFor(() => expect(printSopDocument).toHaveBeenCalledOnce())
   })
 })
 
@@ -115,5 +113,11 @@ describe('scheduleSopDocumentPrint', () => {
     await promise
     expect(printSopPdfDocument).toHaveBeenCalledWith(sampleSopPrintProps, undefined)
     expect(window.print).not.toHaveBeenCalled()
+  })
+})
+
+describe('downloadSopPdf export', () => {
+  it('tersedia dari modul print-sop-pdf', () => {
+    expect(downloadSopPdf).toBeTypeOf('function')
   })
 })

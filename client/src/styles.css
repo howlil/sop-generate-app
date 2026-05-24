@@ -97,28 +97,73 @@ body {
 @media print {
   .sop-a4-preview,
   .sop-print-document {
-    width: 297mm;
-    min-width: 297mm;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     min-height: auto;
     padding: 0;
     box-shadow: none;
   }
 }
 
+/* Diagram non-aktif: off-screen tapi tetap terukur (jangan pakai visibility:hidden — SVG tidak ikut cetak) */
+@media screen {
+  .sop-diagram-screen-off {
+    position: fixed;
+    left: -12000px;
+    top: 0;
+    width: 297mm;
+    max-width: 297mm;
+    opacity: 0.01;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+/* Saat menyiapkan cetak: bawa kedua diagram ke layout normal agar path ter-render */
+body.sop-print-preparing .sop-diagram-screen-off {
+  position: static !important;
+  left: auto !important;
+  opacity: 1 !important;
+  width: auto !important;
+  max-width: none !important;
+  pointer-events: none !important;
+  z-index: auto !important;
+}
+
 /* ── Print: flowchart page breaks + A4 landscape ──────── */
 @media print {
   @page {
     size: A4 landscape;
-    margin: 10mm 15mm;
+    margin: 10mm 12mm;
   }
 
+  /* Margin 0 + padding konten: meminimalkan header/footer bawaan browser (URL, judul, nomor halaman). */
   body.print-mode-sop @page {
     size: A4 landscape;
-    margin: 10mm 15mm;
+    margin: 0;
   }
 
-  /* Sembunyikan chrome aplikasi saat cetak arsip pengajuan */
+  html,
+  body.print-mode-sop {
+    width: 100%;
+    height: auto;
+  }
+
+  .sop-diagram-screen-off,
+  body.sop-print-preparing .sop-diagram-screen-off {
+    position: static !important;
+    left: auto !important;
+    opacity: 1 !important;
+    width: auto !important;
+    max-width: none !important;
+    pointer-events: none !important;
+    z-index: auto !important;
+  }
+
+  /* Sembunyikan chrome aplikasi */
   body[class*='print-mode-'] aside,
+  body[class*='print-mode-'] nav[data-print-hide],
   body[class*='print-mode-'] [data-print-hide] {
     display: none !important;
   }
@@ -128,15 +173,20 @@ body {
     overflow: visible !important;
   }
 
+  /* Arsip: sembunyikan lapisan cetak duplikat kecuali area SOP aktif */
   body[class*='print-mode-'] [data-print-area] {
     display: none !important;
   }
 
   body.print-mode-sop [data-print-area='sop'] {
     display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: none !important;
+    overflow: visible !important;
   }
 
-  /* Isolasi cetak SOP: hanya header + diagram langkah yang terlihat */
+  /* Isolasi cetak: hanya dokumen SOP (Ctrl+P & tombol cetak) */
   body.print-mode-sop #root,
   body.print-mode-sop #root * {
     visibility: hidden;
@@ -147,9 +197,46 @@ body {
     visibility: visible;
   }
 
-  body.print-mode-sop [data-print-area='sop'] {
-    position: static;
+  body.print-mode-sop [data-print-area='sop'] .overflow-auto,
+  body.print-mode-sop [data-print-area='sop'] .overflow-y-auto,
+  body.print-mode-sop [data-print-area='sop'] .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  body.print-mode-sop [data-print-area='sop'] .sop-print-document {
     width: 100%;
+    max-width: 100%;
+  }
+
+  /* Cetak arsip: hanya diagram (halaman 2–4), tanpa lembar metadata/header. */
+  body.print-mode-sop .sop-print-header {
+    display: none !important;
+  }
+
+  body.print-mode-sop .sop-print-langkah {
+    page-break-before: auto;
+    break-before: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  body.print-mode-sop .sop-diagram-print-host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible !important;
+  }
+
+  body.print-mode-sop .sop-print-diagram-flowchart,
+  body.print-mode-sop .sop-print-diagram-bpmn {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .sop-print-header {
@@ -158,16 +245,36 @@ body {
     page-break-inside: avoid;
   }
 
-  .sop-print-langkah {
-    page-break-before: always;
-    break-before: page;
-  }
-
   .print-page {
     page-break-after: always;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    box-sizing: border-box;
+  }
+
+  body.print-mode-sop .print-page {
+    width: 297mm !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 10mm 12mm;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  body.print-mode-sop .print-page > .relative,
+  body.print-mode-sop .print-page table {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.print-mode-sop .print-page table {
+    width: 100%;
+    max-width: 100%;
   }
 
   .print-page.print-last-page,
@@ -188,6 +295,81 @@ body {
   .diagram-container {
     transform: scale(var(--bpmn-print-scale, 1));
     transform-origin: top left;
+  }
+
+  body.print-mode-sop .diagram-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  body.print-mode-sop .diagram-container {
+    transform: scale(var(--bpmn-print-scale, 1));
+    transform-origin: top center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .sop-print-brand-mark {
+    display: none;
+  }
+
+  body.print-mode-sop .sop-print-brand-mark {
+    display: block;
+    position: fixed;
+    right: 10mm;
+    bottom: 8mm;
+    width: 32px;
+    height: 32px;
+    z-index: 2147483646;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .sop-diagram-print-host,
+  .sop-diagram-print-host [data-sop-diagram-root] {
+    overflow: visible !important;
+  }
+
+  .sop-print-diagram-flowchart,
+  .sop-print-diagram-bpmn {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .sop-print-bpmn-section,
+  .sop-print-diagram-bpmn {
+    page-break-before: always;
+    break-before: page;
+    display: block !important;
+  }
+
+  svg.sop-diagram-overlay {
+    display: block !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  svg.sop-diagram-overlay path,
+  svg.sop-diagram-overlay g,
+  svg.sop-diagram-overlay marker {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  svg.sop-diagram-overlay .sop-connector-stroke {
+    stroke: #000 !important;
+    stroke-width: 2px !important;
+    fill: none !important;
+    opacity: 1 !important;
+  }
+
+  svg.sop-diagram-overlay marker path {
+    fill: #000 !important;
+    stroke: none !important;
   }
 }
 
