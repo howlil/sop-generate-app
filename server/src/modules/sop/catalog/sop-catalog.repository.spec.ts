@@ -34,7 +34,7 @@ function makeStatusTx(): { tx: Record<string, unknown>; calls: CallLog[] } {
   return { tx, calls };
 }
 
-describe('SopCatalogRepository status logging', () => {
+describe('Pengujian logging status pada SopCatalogRepository', () => {
   function makeRepo(): { repo: SopCatalogRepository; calls: CallLog[] } {
     const { tx, calls } = makeStatusTx();
     const prismaMock = {
@@ -43,7 +43,7 @@ describe('SopCatalogRepository status logging', () => {
     return { repo: new SopCatalogRepository(prismaMock), calls };
   }
 
-  it('should_write_discrete_status_log_when_updateDetailSopStatus', async () => {
+  it('seharusnya menulis log status terpisah ketika memperbarui status detail SOP', async () => {
     const { repo, calls } = makeRepo();
     await repo.updateDetailSopStatus({
       detailSopId: 'det-1',
@@ -56,12 +56,12 @@ describe('SopCatalogRepository status logging', () => {
     const data = (logCreate!.args as { data: { bagian: BagianSOP; discrete?: boolean } }).data;
     expect(data.bagian).toBe(BagianSOP.STATUS);
     expect(
-      (logCreate!.args as { data: { domainFields: { create: Array<{ domainField: string }> } } }).data
-        .domainFields.create,
+      (logCreate!.args as { data: { domainFields: { create: Array<{ domainField: string }> } } })
+        .data.domainFields.create,
     ).toEqual(expect.arrayContaining([{ domainField: 'status' }]));
   });
 
-  it('should_write_two_discrete_status_logs_on_revisi_to_diajukan_evaluasi', async () => {
+  it('seharusnya menulis dua log status terpisah ketika revisi menjadi diajukan evaluasi', async () => {
     const { repo, calls } = makeRepo();
     await repo.transitionDetailSopRevisiToDiajukanEvaluasi({
       detailSopId: 'det-revisi',

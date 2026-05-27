@@ -131,8 +131,11 @@ exports.Prisma.PenggunaScalarFieldEnum = {
   jabatan: 'jabatan',
   pangkat: 'pangkat',
   nohp: 'nohp',
+  sesiTokenVersion: 'sesiTokenVersion',
+  refreshTokenHash: 'refreshTokenHash',
+  refreshTokenExpiresAt: 'refreshTokenExpiresAt',
+  passwordChangedAt: 'passwordChangedAt',
   ttePinHash: 'ttePinHash',
-  ttePinSetAt: 'ttePinSetAt',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -282,7 +285,6 @@ exports.Prisma.LogEditSOPScalarFieldEnum = {
   penggunaId: 'penggunaId',
   createdAt: 'createdAt',
   bagian: 'bagian',
-  targetEntityId: 'targetEntityId',
   keterangan: 'keterangan',
   sesiChangeCount: 'sesiChangeCount',
   closedAt: 'closedAt',
@@ -347,7 +349,6 @@ exports.Prisma.DokumenTteScalarFieldEnum = {
   judulDokumen: 'judulDokumen',
   hashDokumen: 'hashDokumen',
   versiDokumen: 'versiDokumen',
-  metodeKanonikalisasi: 'metodeKanonikalisasi',
   detailSopId: 'detailSopId',
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   createdAt: 'createdAt',
@@ -361,7 +362,6 @@ exports.Prisma.RiwayatTandaTanganScalarFieldEnum = {
   signatureValue: 'signatureValue',
   signatureAlgorithm: 'signatureAlgorithm',
   signatureFormat: 'signatureFormat',
-  keyId: 'keyId',
   certSerialNumber: 'certSerialNumber',
   certIssuer: 'certIssuer',
   certSubject: 'certSubject',
@@ -435,6 +435,7 @@ exports.Prisma.PenggunaOrderByRelevanceFieldEnum = {
   jabatan: 'jabatan',
   pangkat: 'pangkat',
   nohp: 'nohp',
+  refreshTokenHash: 'refreshTokenHash',
   ttePinHash: 'ttePinHash'
 };
 
@@ -537,7 +538,6 @@ exports.Prisma.DetailSOPPelaksanaOrderByRelevanceFieldEnum = {
 exports.Prisma.LogEditSOPOrderByRelevanceFieldEnum = {
   detailSopId: 'detailSopId',
   penggunaId: 'penggunaId',
-  targetEntityId: 'targetEntityId',
   keterangan: 'keterangan'
 };
 
@@ -577,7 +577,6 @@ exports.Prisma.DokumenTteOrderByRelevanceFieldEnum = {
   nomorDokumen: 'nomorDokumen',
   judulDokumen: 'judulDokumen',
   hashDokumen: 'hashDokumen',
-  metodeKanonikalisasi: 'metodeKanonikalisasi',
   detailSopId: 'detailSopId',
   pengajuanEvaluasiId: 'pengajuanEvaluasiId'
 };
@@ -588,7 +587,6 @@ exports.Prisma.RiwayatTandaTanganOrderByRelevanceFieldEnum = {
   signatureValue: 'signatureValue',
   signatureAlgorithm: 'signatureAlgorithm',
   signatureFormat: 'signatureFormat',
-  keyId: 'keyId',
   certSerialNumber: 'certSerialNumber',
   certIssuer: 'certIssuer',
   certSubject: 'certSubject',

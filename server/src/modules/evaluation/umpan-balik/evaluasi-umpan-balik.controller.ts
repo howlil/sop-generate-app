@@ -10,7 +10,10 @@ import {
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
 import { PeranPengguna } from '../../../generated/prisma';
-import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../../core/auth/helpers/auth.shared';
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  type JwtAccessPayload,
+} from '../../core/auth/helpers/auth.shared';
 import { UmpanBalikEvaluasiDetailDto } from './dto/umpan-balik-evaluasi-detail.dto';
 import { EvaluasiUmpanBalikService } from './evaluasi-umpan-balik.service';
 
@@ -37,7 +40,10 @@ export class EvaluasiUmpanBalikController {
   ): Promise<ApiSuccessResponse<UmpanBalikEvaluasiDetailDto | null>> {
     const data = await this.evaluasiUmpanBalikService.getUmpanBalikForDetail(req.user, detailSopId);
     return {
-      message: data === null ? 'Tidak ada umpan balik evaluasi aktif' : 'Umpan balik evaluasi berhasil diambil',
+      message:
+        data === null
+          ? 'Tidak ada umpan balik evaluasi aktif'
+          : 'Umpan balik evaluasi berhasil diambil',
       success: true,
       data,
     };

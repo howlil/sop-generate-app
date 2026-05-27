@@ -6,9 +6,5 @@ export function isNilaiOpdSkorValid(nilai: number | null | undefined): boolean {
   if (nilai === null || nilai === undefined) {
     return false;
   }
-  return (
-    Number.isInteger(nilai) &&
-    nilai >= NILAI_OPD_SKOR_MIN &&
-    nilai <= NILAI_OPD_SKOR_MAX
-  );
+  return Number.isInteger(nilai) && nilai >= NILAI_OPD_SKOR_MIN && nilai <= NILAI_OPD_SKOR_MAX;
 }

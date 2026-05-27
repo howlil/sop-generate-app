@@ -23,7 +23,10 @@ export class BeritaAcaraTimEvaluasiDto {
   @ApiPropertyOptional({ type: () => Object })
   readonly penanggungJawabSelesai?: { id: string; nama: string };
 
-  @ApiProperty({ type: [String], description: 'Nama evaluator unik (dari baris nilai / dinilaiOleh)' })
+  @ApiProperty({
+    type: [String],
+    description: 'Nama evaluator unik (dari baris nilai / dinilaiOleh)',
+  })
   readonly evaluatorNamaUnik!: string[];
 }
 
@@ -80,7 +83,9 @@ export class BeritaAcaraEvaluasiViewDto {
   @ApiPropertyOptional()
   readonly tanggalEvaluasi?: string;
 
-  @ApiPropertyOptional({ description: 'Setelah diverifikasi PJ Evaluator; untuk tempat-tanggal di BA' })
+  @ApiPropertyOptional({
+    description: 'Setelah diverifikasi PJ Evaluator; untuk tempat-tanggal di BA',
+  })
   readonly tanggalVerifikasiPjEvaluator?: string;
 
   @ApiPropertyOptional()

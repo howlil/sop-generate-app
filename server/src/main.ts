@@ -6,14 +6,18 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import { WinstonModule } from 'nest-winston';
 import { createServer } from 'node:net';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { WinstonLoggerConfig } from './common/logger/winston.config';
 import { createDefaultValidationPipe } from './common';
-import { ACCESS_TOKEN_COOKIE_NAME } from './modules/core/auth/helpers/auth.shared';
+import { JSON_BODY_LIMIT, URLENCODED_BODY_LIMIT } from './common/http/request-body-limits';
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_NAME,
+} from './modules/core/auth/helpers/auth.shared';
 
 const DEFAULT_PORT = 3000;
 const CORS_MAX_AGE_SECONDS = 3600;
-const MAX_PORT_ATTEMPTS = 20;
 
 function buildCorsOptions(configService: ConfigService): CorsOptions {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
@@ -54,23 +58,16 @@ async function isPortAvailable(port: number): Promise<boolean> {
   });
 }
 
-async function resolveAvailablePort(preferredPort: number): Promise<number> {
-  for (let attempt = 0; attempt < MAX_PORT_ATTEMPTS; attempt += 1) {
-    const candidatePort = preferredPort + attempt;
-    if (await isPortAvailable(candidatePort)) {
-      return candidatePort;
-    }
-  }
-  throw new Error(
-    `Tidak ada port tersedia mulai dari ${preferredPort} hingga ${preferredPort + MAX_PORT_ATTEMPTS - 1}.`,
-  );
-}
-
 async function bootstrap() {
   const logger = WinstonModule.createLogger(WinstonLoggerConfig);
-  const app = await NestFactory.create(AppModule, { logger });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger,
+    bodyParser: false,
+  });
   const configService = app.get(ConfigService);
 
+  app.useBodyParser('json', { limit: JSON_BODY_LIMIT });
+  app.useBodyParser('urlencoded', { extended: true, limit: URLENCODED_BODY_LIMIT });
   app.use(cookieParser());
 
   process.on('uncaughtException', (err) => {
@@ -101,6 +98,7 @@ async function bootstrap() {
       .setVersion('1.0')
       .addBearerAuth()
       .addCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+      .addCookieAuth(REFRESH_TOKEN_COOKIE_NAME)
       .addTag('Auth', 'Authentication endpoints')
       .addTag('OPD', 'Master organisasi perangkat daerah')
       .addTag('Tim Evaluasi', 'Anggota tim evaluasi (Evaluator Biro)')
@@ -114,21 +112,23 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   const configuredPort = configService.get<number>('PORT', DEFAULT_PORT);
-  const resolvedPort = await resolveAvailablePort(configuredPort);
-  if (resolvedPort !== configuredPort) {
-    logger.warn(
-      `Port ${configuredPort} sedang dipakai. Server dialihkan ke port ${resolvedPort}.`,
-    );
+  if (!(await isPortAvailable(configuredPort))) {
+    const recoveryHint =
+      nodeEnv === 'development'
+        ? ` Hentikan proses lain (PowerShell: netstat -ano | findstr :${configuredPort}, lalu taskkill /PID <pid> /F), lalu jalankan ulang pnpm start:dev.`
+        : ' Server production tidak akan memilih port alternatif agar load balancer/service discovery tidak salah target.';
+    logger.error(`Port ${configuredPort} sudah dipakai.${recoveryHint}`);
+    process.exit(1);
   }
 
-  await app.listen(resolvedPort);
-  logger.log(`🚀 Server running on http://localhost:${resolvedPort}/api`);
+  await app.listen(configuredPort);
+  logger.log(`🚀 Server running on http://localhost:${configuredPort}/api`);
   if (swaggerEnabled) {
-    logger.log(`📚 Swagger docs: http://localhost:${resolvedPort}/docs`);
+    logger.log(`📚 Swagger docs: http://localhost:${configuredPort}/docs`);
   }
-  logger.log(`💚 Health check: http://localhost:${resolvedPort}/health`);
-  logger.log(`🔐 Auth (login): http://localhost:${resolvedPort}/api/v1/auth/login`);
-  logger.log(`🔐 Auth (me): http://localhost:${resolvedPort}/api/v1/auth/me`);
+  logger.log(`💚 Health check: http://localhost:${configuredPort}/health`);
+  logger.log(`🔐 Auth (login): http://localhost:${configuredPort}/api/v1/auth/login`);
+  logger.log(`🔐 Auth (me): http://localhost:${configuredPort}/api/v1/auth/me`);
 }
 
 void bootstrap();

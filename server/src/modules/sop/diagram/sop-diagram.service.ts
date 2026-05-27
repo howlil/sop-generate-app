@@ -57,16 +57,14 @@ export class SopDiagramService {
     return this.sopCatalogService.getPenyusunWorkbench(user, resolved.detailSopId, logsLimit);
   }
 
-  private async assertPenyusunOpdAccess(
-    user: JwtAccessPayload,
-    sopOpdId: string,
-  ): Promise<void> {
-    if (
-      user.peran !== PeranPengguna.PENYUSUN &&
-      user.peran !== PeranPengguna.PJ_PENYUSUN
-    ) {
+  private async assertPenyusunOpdAccess(user: JwtAccessPayload, sopOpdId: string): Promise<void> {
+    if (user.peran !== PeranPengguna.PENYUSUN && user.peran !== PeranPengguna.PJ_PENYUSUN) {
       throw new ForbiddenException('Akses ditolak: hanya penyusun yang dapat mengubah diagram');
     }
-    await this.userOpdAccessService.assertSameOpd(user.sub, sopOpdId, 'Akses ditolak untuk DetailSOP ini');
+    await this.userOpdAccessService.assertSameOpd(
+      user.sub,
+      sopOpdId,
+      'Akses ditolak untuk DetailSOP ini',
+    );
   }
 }

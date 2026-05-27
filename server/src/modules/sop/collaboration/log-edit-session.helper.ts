@@ -22,8 +22,6 @@ export interface AppendLogParams {
   detailSopId: string;
   penggunaId: string;
   bagian: BagianSOP;
-  /** Pointer longgar ke entitas yang diaudit (mis. id komposit nilai evaluasi); bukan FK. */
-  targetEntityId?: string | null;
   /** Daftar field domain yang baru saja berubah pada satu request. */
   fields: string[];
   /** Force selalu buat entry baru (untuk event diskrit, mis. UMPAN_BALIK/STATUS). */
@@ -84,12 +82,12 @@ export function buildLogSummary(bagian: BagianSOP, meta: LogEditSessionMeta): st
 function unionFields(prev: string[], next: string[]): string[] {
   const set = new Set<string>();
   for (const v of prev) {
-    if (typeof v === 'string' && v.length > 0) {
+    if (typeof v === 'string' && v.trim().length > 0) {
       set.add(v);
     }
   }
   for (const v of next) {
-    if (typeof v === 'string' && v.length > 0) {
+    if (typeof v === 'string' && v.trim().length > 0) {
       set.add(v);
     }
   }
@@ -106,7 +104,9 @@ async function replaceDomainFields(
   await tx.logEditSopDomainField.deleteMany({
     where: { detailSopId, penggunaId, logCreatedAt },
   });
-  const unique = Array.from(new Set(domainFields.filter((f) => typeof f === 'string' && f.length > 0)));
+  const unique = Array.from(
+    new Set(domainFields.filter((f) => typeof f === 'string' && f.trim().length > 0)),
+  );
   if (unique.length === 0) {
     return;
   }
@@ -130,8 +130,7 @@ async function replaceDomainFields(
 export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void> {
   const now = p.now ?? new Date();
   const window = p.idleWindowMs ?? DEFAULT_LOG_SESSION_IDLE_MS;
-  const fields = p.fields.filter((f) => typeof f === 'string' && f.length > 0);
-  const targetEntityId = p.targetEntityId ?? null;
+  const fields = p.fields.filter((f) => typeof f === 'string' && f.trim().length > 0);
 
   if (p.discrete === true) {
     const meta: LogEditSessionMeta = { fields, count: 1 };
@@ -141,7 +140,6 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
         penggunaId: p.penggunaId,
         createdAt: now,
         bagian: p.bagian,
-        targetEntityId,
         keterangan: buildLogSummary(p.bagian, meta),
         sesiChangeCount: 1,
         closedAt: now,
@@ -159,7 +157,6 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
       detailSopId: p.detailSopId,
       penggunaId: p.penggunaId,
       bagian: p.bagian,
-      targetEntityId,
       closedAt: null,
       updatedAt: { gt: cutoff },
     },
@@ -202,7 +199,6 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
       detailSopId: p.detailSopId,
       penggunaId: p.penggunaId,
       bagian: p.bagian,
-      targetEntityId,
       closedAt: null,
     },
     data: { closedAt: now },
@@ -215,7 +211,6 @@ export async function appendOrCreateLogSession(p: AppendLogParams): Promise<void
       penggunaId: p.penggunaId,
       createdAt: now,
       bagian: p.bagian,
-      targetEntityId,
       keterangan: buildLogSummary(p.bagian, fresh),
       sesiChangeCount: 1,
       closedAt: null,

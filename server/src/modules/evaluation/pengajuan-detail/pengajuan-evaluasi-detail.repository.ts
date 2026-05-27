@@ -40,10 +40,7 @@ export class PengajuanEvaluasiDetailRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /** True bila baris NilaiEvaluasi menghubungkan pengajuan dengan detail SOP. */
-  async existsNilaiUntukDetail(
-    pengajuanEvaluasiId: string,
-    detailSopId: string,
-  ): Promise<boolean> {
+  async existsNilaiUntukDetail(pengajuanEvaluasiId: string, detailSopId: string): Promise<boolean> {
     const row = await this.prisma.nilaiEvaluasi.findFirst({
       where: { pengajuanEvaluasiId, detailSopId },
       select: { pengajuanEvaluasiId: true },
@@ -52,9 +49,7 @@ export class PengajuanEvaluasiDetailRepository {
   }
 
   /** Dokumen TTE BA beserta peran yang sudah menandatangani. */
-  async findDokumenBeritaAcara(
-    pengajuanEvaluasiId: string,
-  ): Promise<BeritaAcaraDokumenRow | null> {
+  async findDokumenBeritaAcara(pengajuanEvaluasiId: string): Promise<BeritaAcaraDokumenRow | null> {
     const row = await this.prisma.dokumenTte.findFirst({
       where: {
         pengajuanEvaluasiId,

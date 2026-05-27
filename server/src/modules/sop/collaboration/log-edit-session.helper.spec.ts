@@ -4,6 +4,7 @@ import {
   buildLogSummary,
   DEFAULT_LOG_SESSION_IDLE_MS,
   translateField,
+  encodeLogEditSopClientId,
   type LogEditSessionMeta,
 } from './log-edit-session.helper';
 
@@ -19,7 +20,6 @@ interface FakeLogRow {
   penggunaId: string;
   createdAt: Date;
   bagian: BagianSOP;
-  targetEntityId: string | null;
   keterangan: string | null;
   sesiChangeCount: number;
   closedAt: Date | null;
@@ -40,7 +40,10 @@ interface CapturedTx {
 }
 
 function makeTx(): {
-  tx: { logEditSOP: CapturedTx; logEditSopDomainField: Pick<CapturedTx, 'domainDeleteMany' | 'domainCreateMany'> };
+  tx: {
+    logEditSOP: CapturedTx;
+    logEditSopDomainField: Pick<CapturedTx, 'domainDeleteMany' | 'domainCreateMany'>;
+  };
   capture: CapturedTx;
 } {
   const rows: FakeLogRow[] = [];
@@ -60,31 +63,36 @@ function makeTx(): {
     },
   };
 
-  capture.findFirst.mockImplementation(async (args: { where: Record<string, unknown>; include?: unknown }) => {
-    const w = args.where;
-    const cutoff = (w.updatedAt as { gt: Date } | undefined)?.gt;
-    const candidates = rows.filter(
-      (r) =>
-        r.detailSopId === w.detailSopId &&
-        r.penggunaId === w.penggunaId &&
-        r.bagian === w.bagian &&
-        r.targetEntityId === (w.targetEntityId as string | null) &&
-        r.closedAt === null &&
-        (cutoff === undefined || r.updatedAt > cutoff),
-    );
-    candidates.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
-    const hit = candidates[0] ?? null;
-    if (hit === null) {
-      return null;
-    }
-    if (args.include !== undefined && typeof args.include === 'object' && 'domainFields' in (args.include as object)) {
-      return {
-        ...hit,
-        domainFields: hit.domainFields.map((df) => ({ domainField: df.domainField })),
-      };
-    }
-    return hit;
-  });
+  capture.findFirst.mockImplementation(
+    async (args: { where: Record<string, unknown>; include?: unknown }) => {
+      const w = args.where;
+      const cutoff = (w.updatedAt as { gt: Date } | undefined)?.gt;
+      const candidates = rows.filter(
+        (r) =>
+          r.detailSopId === w.detailSopId &&
+          r.penggunaId === w.penggunaId &&
+          r.bagian === w.bagian &&
+          r.closedAt === null &&
+          (cutoff === undefined || r.updatedAt > cutoff),
+      );
+      candidates.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+      const hit = candidates[0] ?? null;
+      if (hit === null) {
+        return null;
+      }
+      if (
+        args.include !== undefined &&
+        typeof args.include === 'object' &&
+        'domainFields' in (args.include as object)
+      ) {
+        return {
+          ...hit,
+          domainFields: hit.domainFields.map((df) => ({ domainField: df.domainField })),
+        };
+      }
+      return hit;
+    },
+  );
 
   capture.create.mockImplementation(async (args: { data: Record<string, unknown> }) => {
     const d = args.data;
@@ -105,7 +113,6 @@ function makeTx(): {
       penggunaId,
       createdAt,
       bagian: d.bagian as BagianSOP,
-      targetEntityId: (d.targetEntityId as string | null | undefined) ?? null,
       keterangan: (d.keterangan as string | null | undefined) ?? null,
       sesiChangeCount: (d.sesiChangeCount as number | undefined) ?? 1,
       closedAt: (d.closedAt as Date | null | undefined) ?? null,
@@ -118,7 +125,13 @@ function makeTx(): {
 
   capture.update.mockImplementation(
     async (args: {
-      where: { detailSopId_penggunaId_createdAt: { detailSopId: string; penggunaId: string; createdAt: Date } };
+      where: {
+        detailSopId_penggunaId_createdAt: {
+          detailSopId: string;
+          penggunaId: string;
+          createdAt: Date;
+        };
+      };
       data: Record<string, unknown>;
     }) => {
       const k = args.where.detailSopId_penggunaId_createdAt;
@@ -131,11 +144,13 @@ function makeTx(): {
       if (idx === -1) {
         throw new Error('row not found');
       }
-      const target = rows[idx]!;
+      const target = rows[idx];
       const updated: FakeLogRow = {
         ...target,
         sesiChangeCount:
-          'sesiChangeCount' in args.data ? (args.data.sesiChangeCount as number) : target.sesiChangeCount,
+          'sesiChangeCount' in args.data
+            ? (args.data.sesiChangeCount as number)
+            : target.sesiChangeCount,
         keterangan:
           'keterangan' in args.data ? (args.data.keterangan as string | null) : target.keterangan,
         closedAt: 'closedAt' in args.data ? (args.data.closedAt as Date | null) : target.closedAt,
@@ -152,12 +167,11 @@ function makeTx(): {
       const w = args.where;
       let count = 0;
       for (let i = 0; i < rows.length; i += 1) {
-        const r = rows[i]!;
+        const r = rows[i];
         if (
           r.detailSopId === w.detailSopId &&
           r.penggunaId === w.penggunaId &&
           r.bagian === w.bagian &&
-          r.targetEntityId === (w.targetEntityId as string | null) &&
           (w.closedAt === null ? r.closedAt === null : true)
         ) {
           rows[i] = {
@@ -176,7 +190,7 @@ function makeTx(): {
     const w = args.where;
     let n = 0;
     for (let i = domainRows.length - 1; i >= 0; i -= 1) {
-      const d = domainRows[i]!;
+      const d = domainRows[i];
       if (
         d.detailSopId === w.detailSopId &&
         d.penggunaId === w.penggunaId &&
@@ -227,7 +241,9 @@ function makeTx(): {
 }
 
 /** Mock tx: hanya delegate log + domain field (sisanya tidak dipakai helper). */
-function asAppendTx(raw: ReturnType<typeof makeTx>['tx']): Parameters<typeof appendOrCreateLogSession>[0]['tx'] {
+function asAppendTx(
+  raw: ReturnType<typeof makeTx>['tx'],
+): Parameters<typeof appendOrCreateLogSession>[0]['tx'] {
   return {
     logEditSOP: raw.logEditSOP,
     logEditSopDomainField: {
@@ -237,48 +253,44 @@ function asAppendTx(raw: ReturnType<typeof makeTx>['tx']): Parameters<typeof app
   } as unknown as Parameters<typeof appendOrCreateLogSession>[0]['tx'];
 }
 
-async function appendAt(
-  capture: CapturedTx,
-  now: Date,
-  fn: () => Promise<void>,
-): Promise<void> {
+async function appendAt(capture: CapturedTx, now: Date, fn: () => Promise<void>): Promise<void> {
   capture.setClock(now);
   await fn();
 }
 
-describe('log-edit-session.helper', () => {
-  describe('translateField', () => {
-    it('should_return_indonesian_label_for_known_field', () => {
+describe('Pengujian helper sesi log edit', () => {
+  describe('Pengujian translateField', () => {
+    it('seharusnya mengembalikan label Indonesia untuk field yang dikenal', () => {
       expect(translateField('judul')).toBe('Judul SOP');
       expect(translateField('peringatan')).toBe('Peringatan');
     });
-    it('should_passthrough_unknown_field', () => {
+    it('seharusnya meneruskan field yang tidak dikenal apa adanya', () => {
       expect(translateField('xyz')).toBe('xyz');
     });
   });
 
-  describe('buildLogSummary', () => {
-    it('should_format_with_count_more_than_one', () => {
+  describe('Pengujian buildLogSummary', () => {
+    it('seharusnya memformat ringkasan ketika jumlah lebih dari satu', () => {
       const meta: LogEditSessionMeta = { fields: ['peringatan', 'judul'], count: 5 };
       expect(buildLogSummary(BagianSOP.HEADER, meta)).toBe(
         'Header SOP: Peringatan, Judul SOP (5 perubahan)',
       );
     });
-    it('should_format_singular_without_count_suffix', () => {
+    it('seharusnya memformat tunggal tanpa jumlah sufiks', () => {
       const meta: LogEditSessionMeta = { fields: ['nomorSOP'], count: 1 };
       expect(buildLogSummary(BagianSOP.HEADER, meta)).toBe('Header SOP: Nomor SOP');
     });
-    it('should_handle_empty_fields_with_only_bagian_label', () => {
+    it('seharusnya menangani field kosong hanya dengan label bagian', () => {
       const meta: LogEditSessionMeta = { fields: [], count: 1 };
       expect(buildLogSummary(BagianSOP.STATUS, meta)).toBe('Status SOP');
     });
   });
 
-  describe('appendOrCreateLogSession', () => {
+  describe('Pengujian appendOrCreateLogSession', () => {
     const detailSopId = 'detail-1';
     const penggunaId = 'user-1';
 
-    it('should_create_new_session_when_no_open_session_exists', async () => {
+    it('seharusnya membuat sesi baru ketika tidak ada sesi terbuka', async () => {
       const { tx, capture } = makeTx();
       const now = new Date('2026-05-04T10:00:00Z');
       await appendAt(capture, now, () =>
@@ -300,7 +312,7 @@ describe('log-edit-session.helper', () => {
       });
     });
 
-    it('should_merge_into_open_session_within_idle_window', async () => {
+    it('seharusnya menggabungkan ke sesi terbuka dalam jendela waktu idle', async () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date(t1.getTime() + 5 * 60 * 1000);
@@ -329,14 +341,14 @@ describe('log-edit-session.helper', () => {
       expect(capture.domainDeleteMany).toHaveBeenCalled();
       expect(capture.domainCreateMany).toHaveBeenCalled();
       expect(capture.rows.length).toBe(1);
-      expect(capture.rows[0]!.sesiChangeCount).toBe(2);
-      const keys = capture.rows[0]!.domainFields.map((x) => x.domainField).sort();
+      expect(capture.rows[0].sesiChangeCount).toBe(2);
+      const keys = capture.rows[0].domainFields.map((x) => x.domainField).sort();
       expect(keys).toEqual(['nomorSOP', 'peringatan'].sort());
-      expect(capture.rows[0]!.keterangan).toContain('Header SOP');
-      expect(capture.rows[0]!.keterangan).toContain('(2 perubahan)');
+      expect(capture.rows[0].keterangan).toContain('Header SOP');
+      expect(capture.rows[0].keterangan).toContain('(2 perubahan)');
     });
 
-    it('should_create_second_session_after_idle_window_expires', async () => {
+    it('seharusnya membuat sesi kedua setelah jendela waktu idle berakhir', async () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date(t1.getTime() + DEFAULT_LOG_SESSION_IDLE_MS + 60 * 1000);
@@ -361,11 +373,11 @@ describe('log-edit-session.helper', () => {
         }),
       );
       expect(capture.create).toHaveBeenCalledTimes(2);
-      expect(capture.rows[0]!.closedAt).not.toBeNull();
-      expect(capture.rows[1]!.closedAt).toBeNull();
+      expect(capture.rows[0].closedAt).not.toBeNull();
+      expect(capture.rows[1].closedAt).toBeNull();
     });
 
-    it('should_bypass_session_merge_when_discrete_true', async () => {
+    it('seharusnya melewati sesi menggabungkan ketika terpisah true', async () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date(t1.getTime() + 60 * 1000);
@@ -393,11 +405,11 @@ describe('log-edit-session.helper', () => {
       );
       expect(capture.create).toHaveBeenCalledTimes(2);
       expect(capture.findFirst).not.toHaveBeenCalled();
-      expect(capture.rows[0]!.closedAt).toEqual(t1);
-      expect(capture.rows[1]!.closedAt).toEqual(t2);
+      expect(capture.rows[0].closedAt).toEqual(t1);
+      expect(capture.rows[1].closedAt).toEqual(t2);
     });
 
-    it('should_separate_sessions_by_targetEntityId', async () => {
+    it('seharusnya menggabungkan sesi langkah ketika masih dalam window idle yang sama', async () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date(t1.getTime() + 60 * 1000);
@@ -407,7 +419,6 @@ describe('log-edit-session.helper', () => {
           detailSopId,
           penggunaId,
           bagian: BagianSOP.LANGKAH,
-          targetEntityId: 'lang-A',
           fields: ['kegiatan'],
           now: t1,
         }),
@@ -418,13 +429,167 @@ describe('log-edit-session.helper', () => {
           detailSopId,
           penggunaId,
           bagian: BagianSOP.LANGKAH,
-          targetEntityId: 'lang-B',
           fields: ['kegiatan'],
           now: t2,
         }),
       );
+      expect(capture.create).toHaveBeenCalledTimes(1);
+      expect(capture.rows.length).toBe(1);
+      expect(capture.rows[0].sesiChangeCount).toBe(2);
+    });
+  });
+
+  // --- COMPREHENSIVE TESTS (FALSE, WORST, EDGE CASES) ---
+
+  describe('Pengujian encodeLogEditSopClientId', () => {
+    it('seharusnya mengenkode id klien dengan pemisah unit (Success Case)', () => {
+      const now = new Date('2026-06-01T10:00:00Z');
+      const encoded = encodeLogEditSopClientId('det-1', 'usr-2', now);
+      expect(encoded).toBe(`det-1\u001fusr-2\u001f2026-06-01T10:00:00.000Z`);
+    });
+  });
+
+  describe('Pengujian Edge & Worst Cases untuk appendOrCreateLogSession', () => {
+    const detailSopId = 'detail-1';
+    const penggunaId = 'user-1';
+
+    it('seharusnya menangani input fields yang kotor (string kosong, undefined, whitespace, null) dengan aman (Worst Case)', async () => {
+      const { tx, capture } = makeTx();
+      const now = new Date('2026-05-04T10:00:00Z');
+      
+      // Simulasi dirty data: null/undefined di-bypass TS lewat tipe any
+      const dirtyFields = ['peringatan', '', '   ', null, undefined, 'peringatan', 'judul', ''] as any as string[];
+      
+      await appendAt(capture, now, () =>
+        appendOrCreateLogSession({
+          tx: asAppendTx(tx),
+          detailSopId,
+          penggunaId,
+          bagian: BagianSOP.HEADER,
+          fields: dirtyFields,
+          now,
+        }),
+      );
+      
+      expect(capture.create).toHaveBeenCalledTimes(1);
+      const created = capture.rows[0];
+      // Hanya peringatan dan judul yang lolos
+      expect(created.keterangan).toContain('Peringatan');
+      expect(created.keterangan).toContain('Judul SOP');
+      const domains = created.domainFields.map((d) => d.domainField).sort();
+      expect(domains).toEqual(['judul', 'peringatan'].sort());
+    });
+
+    it('seharusnya melewati createMany domain fields jika fields disanitasi menjadi kosong sepenuhnya (Edge Case)', async () => {
+      const { tx, capture } = makeTx();
+      const t1 = new Date('2026-05-04T10:00:00Z');
+      const t2 = new Date('2026-05-04T10:05:00Z');
+      
+      await appendAt(capture, t1, () =>
+        appendOrCreateLogSession({
+          tx: asAppendTx(tx),
+          detailSopId,
+          penggunaId,
+          bagian: BagianSOP.STATUS,
+          fields: ['status'],
+          now: t1,
+        }),
+      );
+      
+      // Simulasi array fields kosong saat update
+      await appendAt(capture, t2, () =>
+        appendOrCreateLogSession({
+          tx: asAppendTx(tx),
+          detailSopId,
+          penggunaId,
+          bagian: BagianSOP.STATUS,
+          fields: ['', '   '] as any as string[],
+          now: t2,
+        }),
+      );
+      
+      expect(capture.update).toHaveBeenCalledTimes(1);
+      // domainCreateMany seharusnya tidak menghasilkan elemen baru atau tidak dipanggil dengan array panjang (dalam simulasi ini 1 unik dari old)
+      // Fungsi helper replaceDomainFields tetap dipanggil untuk menyimpan union (['status'] + []) -> ['status']
+      expect(capture.rows[0].domainFields.map(x => x.domainField)).toEqual(['status']);
+    });
+
+    it('seharusnya menghormati override idleWindowMs dan memisahkan sesi walaupun dalam jendela default (Edge Case)', async () => {
+      const { tx, capture } = makeTx();
+      const t1 = new Date('2026-05-04T10:00:00Z');
+      // Beda 5 detik
+      const t2 = new Date(t1.getTime() + 5000);
+      
+      await appendAt(capture, t1, () =>
+        appendOrCreateLogSession({
+          tx: asAppendTx(tx),
+          detailSopId,
+          penggunaId,
+          bagian: BagianSOP.LANGKAH,
+          fields: ['kegiatan'],
+          now: t1,
+          idleWindowMs: 1000 // Jendela idle 1 detik
+        }),
+      );
+      
+      await appendAt(capture, t2, () =>
+        appendOrCreateLogSession({
+          tx: asAppendTx(tx),
+          detailSopId,
+          penggunaId,
+          bagian: BagianSOP.LANGKAH,
+          fields: ['aktor'],
+          now: t2,
+          idleWindowMs: 1000 // Jendela idle 1 detik
+        }),
+      );
+      
+      // Seharusnya membuat 2 sesi terpisah karena selisih 5 detik > 1 detik window
       expect(capture.create).toHaveBeenCalledTimes(2);
-      expect(capture.rows.length).toBe(2);
+      expect(capture.update).not.toHaveBeenCalled();
+      expect(capture.rows[0].closedAt).toEqual(t2); // Ditutup oleh t2
+      expect(capture.rows[1].closedAt).toBeNull(); // Masih open
+    });
+
+    it('seharusnya bisa menutup banyak sesi stale secara massal (stale session closure race condition) (Edge Case)', async () => {
+      const { tx, capture } = makeTx();
+      const t1 = new Date('2026-05-04T10:00:00Z');
+      const t2 = new Date(t1.getTime() + DEFAULT_LOG_SESSION_IDLE_MS + 1000);
+      
+      // Inject secara manual 3 sesi open basi (biasanya akibat race condition)
+      capture.rows.push({
+        detailSopId, penggunaId, bagian: BagianSOP.EVALUASI,
+        createdAt: new Date(t1.getTime() - 1000), closedAt: null, sesiChangeCount: 1, keterangan: '', updatedAt: t1, domainFields: []
+      });
+      capture.rows.push({
+        detailSopId, penggunaId, bagian: BagianSOP.EVALUASI,
+        createdAt: new Date(t1.getTime() - 2000), closedAt: null, sesiChangeCount: 1, keterangan: '', updatedAt: t1, domainFields: []
+      });
+      capture.rows.push({
+        detailSopId, penggunaId, bagian: BagianSOP.EVALUASI,
+        createdAt: new Date(t1.getTime() - 3000), closedAt: null, sesiChangeCount: 1, keterangan: '', updatedAt: t1, domainFields: []
+      });
+      
+      await appendAt(capture, t2, () =>
+        appendOrCreateLogSession({
+          tx: asAppendTx(tx),
+          detailSopId,
+          penggunaId,
+          bagian: BagianSOP.EVALUASI,
+          fields: ['catatan'],
+          now: t2,
+        }),
+      );
+      
+      // create dipanggil 1 kali untuk sesi baru
+      expect(capture.create).toHaveBeenCalledTimes(1);
+      
+      // 3 Sesi stale tersebut kini harus memiliki closedAt = t2
+      expect(capture.rows[0].closedAt).toEqual(t2);
+      expect(capture.rows[1].closedAt).toEqual(t2);
+      expect(capture.rows[2].closedAt).toEqual(t2);
+      // Sesi ke-4 (sesi baru) open
+      expect(capture.rows[3].closedAt).toBeNull();
     });
   });
 });

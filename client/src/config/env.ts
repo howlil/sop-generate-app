@@ -19,9 +19,13 @@ export type ClientEnv = z.infer<typeof clientEnvSchema>
 function readApiBaseUrl(): string {
   const raw: unknown = import.meta.env.VITE_API_BASE_URL
   if (typeof raw === 'string' && raw.trim() !== '') {
-    return raw.trim()
+    return raw.trim().replace(/\/$/, '')
   }
-  return '/api/v1'
+  return 'http://localhost:3000/api/v1'
+}
+
+export function resolveApiBaseUrl(): string {
+  return readApiBaseUrl()
 }
 
 /** Untuk unit test: parse input mentah tanpa membaca import.meta. */

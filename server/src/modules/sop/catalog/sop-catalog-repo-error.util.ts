@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import type { SopCatalogRepoResult } from './sop-catalog.repo-result';
 
 export function assertSopCatalogRepoOk<T>(result: SopCatalogRepoResult<T>): T {

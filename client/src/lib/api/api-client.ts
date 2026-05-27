@@ -1,4 +1,4 @@
-import { clientEnv } from '@/config/env'
+import { resolveApiBaseUrl } from '@/config/env'
 
 export function buildQueryString(
   params: Record<string, unknown> | undefined,
@@ -21,7 +21,9 @@ export function buildQueryString(
   return query ? `?${query}` : ''
 }
 
-const API_BASE_URL = clientEnv.VITE_API_BASE_URL
+function getApiBaseUrl(): string {
+  return resolveApiBaseUrl()
+}
 
 function getHeaders(): HeadersInit {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -133,7 +135,7 @@ function rejectRequestQueue(error: Error | ApiError) {
  */
 async function refreshAccessToken(): Promise<boolean> {
   try {
-    const url = `${API_BASE_URL}/auth/refresh`
+    const url = `${getApiBaseUrl()}/auth/refresh`
     const response = await fetch(url, {
       method: 'POST',
       headers: getHeaders(),
@@ -191,7 +193,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
     })
   }
 
-  const url = `${API_BASE_URL}${endpoint}`
+  const url = `${getApiBaseUrl()}${endpoint}`
   const headers = { ...getHeaders(), ...options.headers }
 
   let response: Response
@@ -207,9 +209,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
     })
   } catch (networkError: unknown) {
     const isTimeout = networkError instanceof DOMException && networkError.name === 'AbortError'
-    const message = isTimeout 
-      ? 'Permintaan melebihi batas waktu' 
-      : 'Tidak dapat terhubung ke server'
+    const message = isTimeout
+      ? 'Permintaan melebihi batas waktu'
+      : 'Tidak dapat terhubung ke server API. Pastikan `pnpm start:dev` di folder server sudah jalan.'
     throw new ApiError(0, message)
   } finally {
     clearTimeout(timeoutId)

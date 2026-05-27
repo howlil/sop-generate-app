@@ -24,8 +24,7 @@ export class UpdateSopProsedurDto {
 
   @ApiPropertyOptional({
     type: [LangkahPatchItem],
-    description:
-      'Daftar langkah prosedur (ganti semua). Urutan = posisi index di array.',
+    description: 'Daftar langkah prosedur (ganti semua). Urutan = posisi index di array.',
   })
   @IsOptional()
   @IsArray()

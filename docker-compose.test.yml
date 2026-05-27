@@ -44,14 +44,17 @@ services:
       - ./server/.env.test
     environment:
       RUN_INTEGRATION: "true"
+      INTEGRATION_TEST_DOCKER: "true"
       CI: "true"
       NODE_ENV: test
       DATABASE_HOST: sop-test-db
+      DATABASE_PORT: 3306
       DATABASE_USER: sop_test
       DATABASE_PASSWORD: sop_test_password
       DATABASE_NAME: sop_biro_organisasi_test
       DATABASE_URL: mysql://sop_test:sop_test_password@sop-test-db:3306/sop_biro_organisasi_test
       PDF_SIGNING_ENABLED: "false"
+      INTEGRATION_TEST_PATTERN: ${INTEGRATION_TEST_PATTERN:-}
     volumes:
       - ./server:/workspace/server
       - sop-test-node-modules:/workspace/server/node_modules
@@ -62,8 +65,13 @@ services:
         pnpm config set store-dir /workspace/server/.pnpm-store &&
         pnpm install --frozen-lockfile &&
         pnpm prisma generate &&
-        pnpm prisma migrate reset --force &&
-        pnpm test:integration
+        test -f src/generated/prisma/index.d.ts &&
+        pnpm prisma db push --force-reset --accept-data-loss &&
+        if [ -n \"$$INTEGRATION_TEST_PATTERN\" ]; then
+          pnpm test:integration:run --no-cache -- \"$$INTEGRATION_TEST_PATTERN\";
+        else
+          pnpm test:integration:run --no-cache;
+        fi
       "
     networks:
       - sop-test-network

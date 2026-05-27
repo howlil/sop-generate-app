@@ -91,21 +91,15 @@ export class OpdRepository {
     readonly riwayatOpdPengguna: number;
     readonly opdPeraturan: number;
   }> {
-    const [
-      pengguna,
-      sop,
-      pengajuanEvaluasi,
-      pelaksana,
-      riwayatOpdPengguna,
-      opdPeraturan,
-    ] = await Promise.all([
-      this.prisma.pengguna.count({ where: { opdId, deletedAt: null } }),
-      this.prisma.sOP.count({ where: { opdId } }),
-      this.prisma.pengajuanEvaluasi.count({ where: { opdId } }),
-      this.prisma.pelaksana.count({ where: { opdId } }),
-      this.prisma.riwayatOpdPengguna.count({ where: { opdId } }),
-      this.prisma.oPDPeraturan.count({ where: { opdId } }),
-    ]);
+    const [pengguna, sop, pengajuanEvaluasi, pelaksana, riwayatOpdPengguna, opdPeraturan] =
+      await Promise.all([
+        this.prisma.pengguna.count({ where: { opdId, deletedAt: null } }),
+        this.prisma.sOP.count({ where: { opdId } }),
+        this.prisma.pengajuanEvaluasi.count({ where: { opdId } }),
+        this.prisma.pelaksana.count({ where: { opdId } }),
+        this.prisma.riwayatOpdPengguna.count({ where: { opdId } }),
+        this.prisma.oPDPeraturan.count({ where: { opdId } }),
+      ]);
     return {
       pengguna,
       sop,

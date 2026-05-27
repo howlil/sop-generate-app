@@ -1,8 +1,4 @@
-import {
-  BagianSOP,
-  JenisLangkahProsedur,
-  SatuanWaktu,
-} from '../../../generated/prisma';
+import { BagianSOP, JenisLangkahProsedur, SatuanWaktu } from '../../../generated/prisma';
 import type { PrismaService } from '../../../common/prisma/prisma.service';
 import { buildLogSummary } from '../collaboration/log-edit-session.helper';
 import { SopProsedurRepository } from './sop-prosedur.repository';
@@ -35,7 +31,10 @@ function makeTx(existingLangkahIds: string[]): {
     });
 
   const tx = {
-    detailSOPPelaksana: { deleteMany: record('detailSOPPelaksana', 'deleteMany'), createMany: record('detailSOPPelaksana', 'createMany') },
+    detailSOPPelaksana: {
+      deleteMany: record('detailSOPPelaksana', 'deleteMany'),
+      createMany: record('detailSOPPelaksana', 'createMany'),
+    },
     langkahSOP: {
       findMany: record('langkahSOP', 'findMany'),
       updateMany: record('langkahSOP', 'updateMany'),
@@ -58,7 +57,7 @@ function makeTx(existingLangkahIds: string[]): {
   return { tx, calls };
 }
 
-describe('SopProsedurRepository.updateProsedurTransaction', () => {
+describe('Pengujian SopProsedurRepository.updateProsedurTransaction', () => {
   function makeRepo(existingLangkahIds: string[]): {
     repo: SopProsedurRepository;
     calls: CallLog[];
@@ -71,7 +70,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     return { repo, calls };
   }
 
-  it('should_replace_pelaksana_only_when_only_pelaksana_provided', async () => {
+  it('seharusnya hanya mengganti pelaksana ketika hanya pelaksana yang dikirim', async () => {
     const { repo, calls } = makeRepo([]);
     await repo.updateProsedurTransaction({
       detailSopId: 'det-1',
@@ -86,7 +85,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     expect(calls.some((c) => c.table === 'logEditSOP')).toBe(true);
   });
 
-  it('should_break_self_fk_then_delete_then_insert_then_relink', async () => {
+  it('seharusnya memutus self FK, menghapus, menambahkan, lalu menghubungkan ulang', async () => {
     const { repo, calls } = makeRepo(['L-1', 'L-2']);
     await repo.updateProsedurTransaction({
       detailSopId: 'det-1',
@@ -115,9 +114,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     });
 
     const opsOrder = calls
-      .filter((c) =>
-        ['langkahSOP', 'detailSOP', 'logEditSOP'].includes(c.table),
-      )
+      .filter((c) => ['langkahSOP', 'detailSOP', 'logEditSOP'].includes(c.table))
       .map((c) => `${c.table}.${c.op}`);
 
     const idxFindMany = opsOrder.indexOf('langkahSOP.findMany');
@@ -137,13 +134,11 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     expect(idxLogCreate).toBeGreaterThan(idxDetailUpdate);
 
     /* Branch update hanya untuk langkah yang punya cabang. */
-    const branchUpdates = calls.filter(
-      (c) => c.table === 'langkahSOP' && c.op === 'update',
-    );
+    const branchUpdates = calls.filter((c) => c.table === 'langkahSOP' && c.op === 'update');
     expect(branchUpdates).toHaveLength(1);
   });
 
-  it('should_insert_langkah_when_no_existing_without_diagram_cleanup', async () => {
+  it('seharusnya menambahkan langkah baru tanpa cleanup diagram ketika belum ada langkah', async () => {
     const { repo, calls } = makeRepo([]);
     await repo.updateProsedurTransaction({
       detailSopId: 'det-1',
@@ -164,7 +159,7 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
     expect(calls.some((c) => c.table === 'langkahSOP' && c.op === 'create')).toBe(true);
   });
 
-  it('should_call_log_helper_with_bagian_LANGKAH_and_changed_fields', async () => {
+  it('seharusnya memanggil log helper dengan bagian LANGKAH dan field yang berubah', async () => {
     const { repo, calls } = makeRepo([]);
     await repo.updateProsedurTransaction({
       detailSopId: 'det-1',
@@ -189,8 +184,6 @@ describe('SopProsedurRepository.updateProsedurTransaction', () => {
       buildLogSummary(BagianSOP.LANGKAH, { fields: ['pelaksana'], count: 1 }),
     );
     expect(data.domainFields.create).toEqual([{ domainField: 'pelaksana' }]);
-    expect(
-      calls.some((c) => c.table === 'logEditSOP' && c.op === 'findFirst'),
-    ).toBe(true);
+    expect(calls.some((c) => c.table === 'logEditSOP' && c.op === 'findFirst')).toBe(true);
   });
 });

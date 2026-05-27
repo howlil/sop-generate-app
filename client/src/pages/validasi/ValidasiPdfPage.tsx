@@ -203,9 +203,9 @@ export function ValidasiPdfPage() {
               variant={result.allValid ? "success" : result.hasSignatures ? "warning" : "warning"}
               title={
                 result.allValid
-                  ? "Tanda tangan PDF valid (CA internal)"
+                  ? "Tanda tangan PDF valid dan cocok dengan TTE aplikasi"
                   : result.hasSignatures
-                    ? "Tanda tangan PDF tidak valid"
+                    ? "Tanda tangan PDF belum valid/cocok penuh"
                     : "Tidak ada tanda tangan digital"
               }
               icon={
@@ -235,7 +235,28 @@ export function ValidasiPdfPage() {
                 </CardHeader>
                 <CardContent className="space-y-3 pt-4 text-sm">
                   <p className="text-slate-800">{signature.reason}</p>
+                  <p
+                    className={
+                      signature.tteMatch.matched
+                        ? "text-emerald-700"
+                        : "text-amber-800"
+                    }
+                  >
+                    {signature.tteMatch.reason}
+                  </p>
                   <div className="grid gap-1 sm:grid-cols-[9rem_1fr] sm:gap-x-3">
+                    {signature.tteMatch.nomorDokumen ? (
+                      <>
+                        <span className="text-slate-500">Nomor dokumen</span>
+                        <span className="text-slate-900">{signature.tteMatch.nomorDokumen}</span>
+                      </>
+                    ) : null}
+                    {signature.tteMatch.peran ? (
+                      <>
+                        <span className="text-slate-500">Peran TTE</span>
+                        <span className="text-slate-900">{signature.tteMatch.peran}</span>
+                      </>
+                    ) : null}
                     <span className="text-slate-500">Penandatangan</span>
                     <span className="text-slate-900">{signature.signerSubject}</span>
                     <span className="text-slate-500">Penerbit</span>

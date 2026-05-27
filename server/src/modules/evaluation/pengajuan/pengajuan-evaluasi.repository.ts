@@ -189,18 +189,18 @@ export class PengajuanEvaluasiRepository {
     return rows.map((r) => {
       const statusDisplay = displayStatusPengajuan(r.status);
       return {
-      pengajuanEvaluasiId: r.pengajuanEvaluasiId,
-      opdId: r.opdId,
-      opdNama: r.opd.nama,
-      jenis: String(r.jenis),
-      status: statusDisplay.value,
-      statusLabel: statusDisplay.label,
-      tanggalEvaluasi: r.tanggalEvaluasi?.toISOString(),
-      createdAt: r.createdAt.toISOString(),
-      nilaiOPD: r.nilaiOPD ?? undefined,
-      jumlahSop: totalMap.get(r.pengajuanEvaluasiId) ?? 0,
-      jumlahSudahDinilai: filledMap.get(r.pengajuanEvaluasiId) ?? 0,
-    };
+        pengajuanEvaluasiId: r.pengajuanEvaluasiId,
+        opdId: r.opdId,
+        opdNama: r.opd.nama,
+        jenis: String(r.jenis),
+        status: statusDisplay.value,
+        statusLabel: statusDisplay.label,
+        tanggalEvaluasi: r.tanggalEvaluasi?.toISOString(),
+        createdAt: r.createdAt.toISOString(),
+        nilaiOPD: r.nilaiOPD ?? undefined,
+        jumlahSop: totalMap.get(r.pengajuanEvaluasiId) ?? 0,
+        jumlahSudahDinilai: filledMap.get(r.pengajuanEvaluasiId) ?? 0,
+      };
     });
   }
 }

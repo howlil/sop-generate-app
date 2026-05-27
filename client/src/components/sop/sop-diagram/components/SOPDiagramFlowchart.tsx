@@ -16,7 +16,11 @@ import {
   type PathUpdatedPayload,
 } from '../shapes/FlowchartArrowConnector'
 import { type OccupiedSegment } from '../core/route/orthogonalRouter'
-import { FlowchartOffPageConnector } from '../shapes/flowchart/OffPageConnector'
+import { FlowchartOpcRow } from './flowchart-opc-row'
+import type { ImplementerColumnBoundsMap } from '../core/route/flowchart-column-bounds.util'
+import {
+  measureFlowchartLayoutWithColumns,
+} from './sop-diagram-flowchart-measure.util'
 import type {
   ProsedurRow,
   LayoutConfig,
@@ -255,7 +259,9 @@ export function SOPDiagramFlowchart({
       if (routingReconcilePass >= MAX_ROUTING_RECONCILE_PASSES) return
       lastRoutingViolatorSigRef.current = sig
       routingPriorityIdsRef.current = merged
-      setRoutingReconcilePass((pass) => pass + 1)
+      startTransition(() => {
+        setRoutingReconcilePass((pass) => pass + 1)
+      })
     },
     [routingReconcilePass],
   )
@@ -312,7 +318,24 @@ export function SOPDiagramFlowchart({
             targetType: stepNo ? stepShapeType(stepNo) : 'flowchart-process',
           })
         }
-      } else if (i < sortedSteps.length - 1) {
+        continue
+      }
+      const explicitNextSeq =
+        step.id_next_step_if_yes != null
+          ? rowIdToSeq.get(step.id_next_step_if_yes)
+          : undefined
+      if (explicitNextSeq != null) {
+        const target = sortedSteps.find((s) => s.seq_number === explicitNextSeq)
+        list.push({
+          id: `conn-${step.seq_number}-to-${explicitNextSeq}`,
+          from: `sop-step-${step.seq_number}`,
+          to: `sop-step-${explicitNextSeq}`,
+          sourceType: stepShapeType(step),
+          targetType: target ? stepShapeType(target) : 'flowchart-process',
+        })
+        continue
+      }
+      if (i < sortedSteps.length - 1) {
         const toStep = sortedSteps[i + 1]
         list.push({
           id: `conn-${step.seq_number}-to-${toStep.seq_number}`,
@@ -380,6 +403,7 @@ export function SOPDiagramFlowchart({
   /* ── Arrow readiness + pelaksana bounds per page ── */
 
   const pelaksanaBoundsRef = useRef<Record<number, { left: number; top: number; right: number; bottom: number }>>({})
+  const columnBoundsRef = useRef<Record<number, ImplementerColumnBoundsMap>>({})
 
   const [arrowsReady, setArrowsReady] = useState(false)
   const [layoutMeasureVersion, setLayoutMeasureVersion] = useState(0)
@@ -394,7 +418,11 @@ export function SOPDiagramFlowchart({
   }, [])
 
   const measurePelaksanaBounds = useCallback((): boolean => {
-    const { sig } = measureFlowchartPelaksanaBounds(allPages.length, pelaksanaBoundsRef.current)
+    const { sig } = measureFlowchartLayoutWithColumns(
+      allPages.length,
+      pelaksanaBoundsRef.current,
+      columnBoundsRef.current,
+    )
     if (!sig) return false
     return commitPelaksanaMeasure(sig)
   }, [allPages.length, commitPelaksanaMeasure])
@@ -548,6 +576,7 @@ export function SOPDiagramFlowchart({
             onManualChange={onManualChangeProp}
             onSelectConnection={onSelectConnectionProp}
             pelaksanaBounds={pelaksanaBoundsRef.current[pageIndex] ?? null}
+            columnBounds={columnBoundsRef.current[pageIndex] ?? null}
             isLastPage={pageIndex === allPages.length - 1}
             reservedSidesRef={reservedSidesRef}
             rerouteVersion={arrowRerouteVersion}
@@ -589,6 +618,7 @@ interface FlowchartPageProps {
   onSelectConnection?: (connectionId: string | null) => void
   onResetSelectedPath?: () => void
   pelaksanaBounds: { left: number; top: number; right: number; bottom: number } | null
+  columnBounds: ImplementerColumnBoundsMap | null
   isLastPage: boolean
   reservedSidesRef: MutableRefObject<Map<string, Set<string>>>
   rerouteVersion?: number
@@ -620,6 +650,7 @@ function FlowchartPage({
   onManualChange,
   onSelectConnection,
   pelaksanaBounds,
+  columnBounds,
   isLastPage,
   reservedSidesRef,
   rerouteVersion = 0,
@@ -668,17 +699,15 @@ function FlowchartPage({
         data-sop-connection-count={connections.length}
       >
         {opcTop.length > 0 && (
-          <div className={`flex items-end pb-2 ${opcTop.length > 3 ? 'flex-wrap gap-2 justify-start px-4' : 'justify-evenly'}`}>
-            {opcTop
-              .sort((a, b) => a.toSeq - b.toSeq)
-              .map((opc) => (
-                <FlowchartOffPageConnector
-                  key={`opc-in-${opc.fromSeq}-${opc.toSeq}`}
-                  id={`opc-in-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
-                  letter={opc.letter}
-                />
-              ))}
-          </div>
+          <FlowchartOpcRow
+            opcs={opcTop}
+            variant="in"
+            implementers={implementers}
+            kegiatanPercent={config.widthKegiatan}
+            pelaksanaColPercent={pelaksanaColWidth}
+            columnBounds={columnBounds}
+            className="pb-2"
+          />
         )}
 
         <table
@@ -835,17 +864,15 @@ function FlowchartPage({
         </table>
 
         {opcBottom.length > 0 && (
-          <div className={`flex items-start pt-2 ${opcBottom.length > 3 ? 'flex-wrap gap-2 justify-start px-4' : 'justify-evenly'}`}>
-            {opcBottom
-              .sort((a, b) => a.fromSeq - b.fromSeq)
-              .map((opc) => (
-                <FlowchartOffPageConnector
-                  key={`opc-out-${opc.fromSeq}-${opc.toSeq}`}
-                  id={`opc-out-step-${opc.fromSeq}-to-step-${opc.toSeq}`}
-                  letter={opc.letter}
-                />
-              ))}
-          </div>
+          <FlowchartOpcRow
+            opcs={opcBottom}
+            variant="out"
+            implementers={implementers}
+            kegiatanPercent={config.widthKegiatan}
+            pelaksanaColPercent={pelaksanaColWidth}
+            columnBounds={columnBounds}
+            className="pt-2"
+          />
         )}
 
         {canRenderArrows && (

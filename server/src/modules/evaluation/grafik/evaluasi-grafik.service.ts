@@ -61,8 +61,7 @@ export class EvaluasiGrafikService {
     const tahunBerjalan = new Date().getFullYear();
     const dariOpsional = queryEval.tahunDari;
     const sampaiOpsional = queryEval.tahunSampai;
-    const adaParameterRentangEksplisit =
-      dariOpsional !== undefined || sampaiOpsional !== undefined;
+    const adaParameterRentangEksplisit = dariOpsional !== undefined || sampaiOpsional !== undefined;
     if (!adaParameterRentangEksplisit && queryEval.tahun !== undefined) {
       return { tahunDari: queryEval.tahun, tahunSampai: queryEval.tahun };
     }

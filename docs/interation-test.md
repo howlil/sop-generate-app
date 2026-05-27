@@ -32,65 +32,43 @@ Pengujian pada dokumen ini berada di level integration test. Artinya, test berja
 
 ## Cara Menjalankan Integration Test
 
-Command integration test sudah tersedia pada server:
+**Integration test wajib dijalankan melalui Docker.** Menjalankan `pnpm test:integration` di host akan ditolak (exit 1). Runner container men-set `INTEGRATION_TEST_DOCKER=true` dan `RUN_INTEGRATION=true`; database test MariaDB (`sop-test-db`) dan Jest berjalan di jaringan compose yang sama.
 
-```bash
-cd C:\Users\howlil\Documents\tugas-akhir\codingan\server
-pnpm test:integration
-```
+Konfigurasi env test: `server/.env.test` (override opsional: `server/.env.test.local`).
 
-Secara default, suite integration test akan berstatus skipped. Hal ini disengaja agar command tidak menghapus atau mengubah database development secara tidak sengaja. Konfigurasi test dasar sudah tersedia di `server/.env.test`, dan nilai lokal yang rahasia atau berbeda antar laptop dapat ditimpa melalui `server/.env.test.local`.
-
-Untuk menjalankan test secara nyata, aktifkan flag `RUN_INTEGRATION=true` dan gunakan database khusus test. Nama database wajib mengandung kata `test`.
-
-Contoh PowerShell:
-
-```powershell
-$env:RUN_INTEGRATION="true"
-$env:NODE_ENV="test"
-$env:DATABASE_HOST="localhost"
-$env:DATABASE_USER="root"
-$env:DATABASE_PASSWORD="password_database_test"
-$env:DATABASE_NAME="sop_biro_organisasi_test"
-$env:DATABASE_URL="mysql://root:password_database_test@localhost:3306/sop_biro_organisasi_test"
-$env:JWT_SECRET="this-is-a-super-secret-key-that-is-at-least-32-characters-long"
-pnpm test:integration
-```
-
-Alternatif yang lebih rapi adalah membuat file `.env.test.local` di folder `server` untuk override konfigurasi database test, lalu menjalankan:
-
-```powershell
-$env:RUN_INTEGRATION="true"
-pnpm test:integration
-```
-
-### Menjalankan Database Test dengan Docker
-
-Lingkungan database test sudah disediakan pada file `docker-compose.test.yml` di root project. Service default hanya menjalankan MariaDB test pada port host `3308`, sehingga aman dipisahkan dari database development.
-
-```powershell
-cd C:\Users\howlil\Documents\tugas-akhir\codingan
-docker compose -f docker-compose.test.yml up -d sop-test-db
-```
-
-Setelah database hidup, reset schema test lalu jalankan integration test dari folder server:
+### Command utama (dari folder `server`)
 
 ```powershell
 cd C:\Users\howlil\Documents\tugas-akhir\codingan\server
-$env:RUN_INTEGRATION="true"
-$env:NODE_ENV="test"
-pnpm prisma migrate reset --force
-pnpm test:integration
+pnpm test:integration:docker
 ```
 
-### Menjalankan Full Integration Test di Container
+Runner akan: menunggu DB sehat → `pnpm install` → `prisma generate` → `prisma db push --force-reset` → menjalankan **semua** `*.integration-spec.ts` (`core-workflow`, `tte-pdf-qr-verifikasi`).
 
-Jika ingin seluruh proses berjalan dalam container, gunakan profile `test`. Runner akan menunggu database sehat, menjalankan install dependency, generate Prisma Client, reset schema test dari migrasi, lalu menjalankan `pnpm test:integration`.
+Hanya suite PDF/QR:
+
+```powershell
+pnpm test:integration:docker:pdf
+```
+
+### Menjalankan manual lewat Compose (root project)
 
 ```powershell
 cd C:\Users\howlil\Documents\tugas-akhir\codingan
 docker compose -f docker-compose.test.yml --profile test run --rm sop-integration-test
 ```
+
+Service `sop-test-db` ikut di-start oleh `depends_on` pada runner. Untuk hanya menyalakan DB (mis. inspeksi):
+
+```powershell
+docker compose -f docker-compose.test.yml up -d sop-test-db
+```
+
+Port host `3308` → MariaDB test (terpisah dari DB development).
+
+### Internal (hanya di dalam container)
+
+`pnpm test:integration:run` memanggil Jest; **jangan** dipakai di host — `setup-env.ts` memvalidasi `INTEGRATION_TEST_DOCKER`.
 
 Untuk membersihkan database test beserta volume setelah selesai:
 
@@ -211,6 +189,26 @@ Setiap integration test minimal memeriksa:
 | IT-73 | High | Laporan Evaluasi | Pengajuan dengan `nilaiOPD` di luar skala 1-5 tidak dihitung dalam KPI | `PJ_EVALUATOR` | `GET /evaluasi/laporan/grafik-tahunan` | Statistik mengabaikan nilai OPD invalid |
 | IT-74 | Critical | Optimistic Locking | Dua evaluator menyimpan nilai dengan versi data lama dan baru secara bersamaan | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/nilai/:detailSopId` | Update pertama berhasil, update stale ditolak sebagai konflik |
 | IT-75 | Critical | Idempotensi Data | Request refresh/list/detail berulang tidak mengubah status bisnis | Role sesuai endpoint | `GET /evaluasi`, `GET /sop`, `GET /evaluasi/pengajuan/:id` | Response konsisten dan tidak ada mutasi database |
+
+## Verifikasi PDF Unduhan (QR + CA Internal)
+
+Suite: [`server/test/integration/tte-pdf-qr-verifikasi.integration-spec.ts`](../server/test/integration/tte-pdf-qr-verifikasi.integration-spec.ts). Mensimulasikan alur setelah unduh PDF bertanda tangan: URL QR pada PDF (`/validasi/pengesahan/{dokumenTteId}/{userId}`) dan verifikasi PKCS#7 terhadap CA internal server.
+
+Jalankan via `pnpm test:integration:docker` atau `pnpm test:integration:docker:pdf`. `PDF_SIGNING_ENABLED` diaktifkan di `beforeAll` suite; sertifikat uji dari `scripts/generate-pdf-signing-cert.cjs`.
+
+| ID | Prioritas | Area | Skenario | Aktor | Endpoint Utama | Hasil yang Diharapkan |
+|---|---|---|---|---|---|---|
+| IT-76 | Critical | Verifikasi PDF unduhan | QR BA PJ Evaluator → API publik pengesahan | Publik | `GET /tte/public/pengesahan/:dokumenTteId/:userId` | Penandatangan PJ Evaluator valid, dokumen BA cocok |
+| IT-77 | Critical | Verifikasi PDF unduhan | QR SOP Kepala OPD → API publik pengesahan | Publik | `GET /tte/public/pengesahan/:dokumenTteId/:userId` | Peran `KEPALA_OPD`, dokumen `SOP_BERLAKU` |
+| IT-78 | Critical | Verifikasi PDF unduhan | PDF SOP ditandatangani PKCS#7 lalu diverifikasi CA internal | `KEPALA_OPD` | `POST /tte/pdf/sign` → `POST /tte/public/pdf/verify` | `allValid`, `digestMatch`, `chainTrusted` |
+| IT-79 | Critical | Verifikasi PDF unduhan | PDF Berita Acara arsip ditandatangani lalu diverifikasi CA internal | `KEPALA_OPD` | `POST /tte/pdf/sign-berita-acara-arsip` → `POST /tte/public/pdf/verify` | `allValid`, penandatangan arsip terdeteksi |
+| IT-80 | High | Verifikasi PDF unduhan | PDF tanpa tanda tangan digital | Publik | `POST /tte/public/pdf/verify` | `hasSignatures: false`, `allValid: false` |
+| IT-81 | High | Verifikasi PDF unduhan | `userId` tidak cocok dengan riwayat dokumen TTE | Publik | `GET /tte/public/pengesahan/:dokumenTteId/:userId` | Not found (404) |
+
+```powershell
+cd server
+pnpm test:integration:docker:pdf
+```
 
 ## Tambahan Constraint Coverage
 

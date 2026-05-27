@@ -9,7 +9,10 @@ import type { JwtAccessPayload } from '../../../common';
 import { PeranPengguna, Prisma, StatusSOP } from '../../../generated/prisma';
 import { displayStatusSop } from '../../../common/status/status-display';
 import { extractDbInvariantMessage } from '../../../common/prisma/prisma-db-invariant.util';
-import { assertDetailSopEditable, hasRevisiInFlight } from '../../../common/status/sop-editable.util';
+import {
+  assertDetailSopEditable,
+  hasRevisiInFlight,
+} from '../../../common/status/sop-editable.util';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { EvaluasiNilaiService } from '../../evaluation/nilai/evaluasi-nilai.service';
 import type { CreateSopDto } from './dto/create-sop.dto';
@@ -55,7 +58,10 @@ export class SopCatalogService {
     return n;
   }
 
-  private async assertOpdAccessForWorkbench(user: JwtAccessPayload, sopOpdId: string): Promise<void> {
+  private async assertOpdAccessForWorkbench(
+    user: JwtAccessPayload,
+    sopOpdId: string,
+  ): Promise<void> {
     await this.userOpdAccessService.assertWorkbenchAccess(user, sopOpdId);
   }
 
@@ -65,7 +71,10 @@ export class SopCatalogService {
     logsLimitRaw?: number,
   ): Promise<PenyusunWorkbenchDataDto> {
     const logsLimit = this.clampLogsLimit(logsLimitRaw);
-    const row = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(detailSopId, logsLimit);
+    const row = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
+      detailSopId,
+      logsLimit,
+    );
     if (row === null) {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
@@ -97,10 +106,7 @@ export class SopCatalogService {
    * Dokumen SOP berlaku untuk arsip publik (tanpa log audit dan umpan balik evaluasi).
    */
   async getPublicDokumenBerlaku(detailSopId: string): Promise<PublicSopDokumenDto> {
-    const row = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
-      detailSopId,
-      0,
-    );
+    const row = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(detailSopId, 0);
     if (row === null) {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
@@ -356,14 +362,12 @@ export class SopCatalogService {
     }
     const statusRaw = query.status?.trim();
     const status =
-      statusRaw === undefined || statusRaw.length === 0 || statusRaw === 'all' ? undefined : statusRaw;
+      statusRaw === undefined || statusRaw.length === 0 || statusRaw === 'all'
+        ? undefined
+        : statusRaw;
     const tanggalDari = query.tanggalDari?.trim() || undefined;
     const tanggalSampai = query.tanggalSampai?.trim() || undefined;
-    if (
-      tanggalDari !== undefined &&
-      tanggalSampai !== undefined &&
-      tanggalDari > tanggalSampai
-    ) {
+    if (tanggalDari !== undefined && tanggalSampai !== undefined && tanggalDari > tanggalSampai) {
       throw new BadRequestException('tanggalDari tidak boleh lebih besar dari tanggalSampai');
     }
     return { status, tanggalDari, tanggalSampai };
@@ -422,7 +426,9 @@ export class SopCatalogService {
     if (resolved === null) {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
-    const source = await this.sopCatalogRepository.findLatestDetailStatusContext(resolved.detailSopId);
+    const source = await this.sopCatalogRepository.findLatestDetailStatusContext(
+      resolved.detailSopId,
+    );
     if (source === null) {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
@@ -450,13 +456,11 @@ export class SopCatalogService {
     return this.getPenyusunWorkbench(user, cloned.detailSopId, logsLimitRaw);
   }
 
-  async getRiwayatVersi(
-    user: JwtAccessPayload,
-    sopId: string,
-  ): Promise<SopRiwayatVersiRowDto[]> {
+  async getRiwayatVersi(user: JwtAccessPayload, sopId: string): Promise<SopRiwayatVersiRowDto[]> {
     const header = await this.sopCatalogRepository.findDetailIdByDetailOrSopId(sopId);
     const resolvedSopId = header?.sopId ?? sopId;
-    const firstDetail = await this.sopCatalogRepository.findLatestDetailStatusContext(resolvedSopId);
+    const firstDetail =
+      await this.sopCatalogRepository.findLatestDetailStatusContext(resolvedSopId);
     if (firstDetail === null) {
       throw new NotFoundException('SOP tidak ditemukan');
     }

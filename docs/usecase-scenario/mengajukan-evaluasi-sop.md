@@ -1,5 +1,7 @@
 # Skenario UC-14: Mengajukan Evaluasi SOP
 
+**Use case inti (core)** — urutan 2 dari 5 alur bisnis utama.
+
 Dokumen ini merinci use case **Mengajukan Evaluasi SOP** sesuai [`../usecase.md`](../usecase.md).
 
 ## Identitas
@@ -7,7 +9,8 @@ Dokumen ini merinci use case **Mengajukan Evaluasi SOP** sesuai [`../usecase.md`
 | Elemen | Deskripsi |
 | :--- | :--- |
 | ID use case | UC-14 |
-| Use case diagram | Mengajukan Evaluasi SOP |
+| Core | Ya (2/5 — Ajukan evaluasi) |
+| Use case diagram | Mengajukan Evaluasi SOP |************
 | No requirements | 12 |
 | Nama fungsional requirements | Pengajuan Evaluasi SOP |
 | Aktor utama | PJ Penyusun |

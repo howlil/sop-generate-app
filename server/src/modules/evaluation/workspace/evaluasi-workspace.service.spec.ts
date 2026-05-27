@@ -11,7 +11,7 @@ import type { EvaluasiWorkspaceRepository } from './evaluasi-workspace.repositor
 import { EvaluasiWorkspaceService } from './evaluasi-workspace.service';
 import type { PengajuanEvaluasiService } from '../pengajuan/pengajuan-evaluasi.service';
 
-describe('EvaluasiWorkspaceService', () => {
+describe('Pengujian EvaluasiWorkspaceService', () => {
   const userEvaluator: JwtAccessPayload = {
     sub: 'pengguna-test',
     email: 'e@test.id',
@@ -67,7 +67,9 @@ describe('EvaluasiWorkspaceService', () => {
     };
   }
 
-  function createRepoMock(partial: Partial<jest.Mocked<EvaluasiWorkspaceRepository>>): jest.Mocked<EvaluasiWorkspaceRepository> {
+  function createRepoMock(
+    partial: Partial<jest.Mocked<EvaluasiWorkspaceRepository>>,
+  ): jest.Mocked<EvaluasiWorkspaceRepository> {
     return {
       findOpdRingkas: jest.fn(),
       findDaftarDetailPipeline: jest.fn(),
@@ -97,7 +99,7 @@ describe('EvaluasiWorkspaceService', () => {
     logEdit: [],
   };
 
-  it('should_throw_not_found_when_opd_missing', async () => {
+  it('seharusnya melempar NotFoundException ketika OPD tidak ditemukan', async () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue(null),
     });
@@ -113,7 +115,7 @@ describe('EvaluasiWorkspaceService', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('should_call_bootstrap_then_reload_pengajuan_when_evaluator_and_awalnya_null', async () => {
+  it('seharusnya memanggil bootstrap lalu memuat ulang pengajuan ketika pengguna evaluator dan data awal null', async () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
@@ -151,7 +153,7 @@ describe('EvaluasiWorkspaceService', () => {
     expect(sopCatalog.getPenyusunWorkbench).not.toHaveBeenCalled();
   });
 
-  it('should_not_call_bootstrap_when_pj_evaluator', async () => {
+  it('seharusnya tidak memanggil bootstrap ketika PJ evaluator', async () => {
     const userPj: JwtAccessPayload = {
       sub: 'pj-1',
       email: 'pj@test.id',
@@ -178,7 +180,7 @@ describe('EvaluasiWorkspaceService', () => {
     expect(actual.pengajuanAktif).toBeNull();
   });
 
-  it('should_map_tampilan_alur_when_nilai_draft_and_selesai', async () => {
+  it('seharusnya memetakan tampilan alur ketika nilai draft dan selesai', async () => {
     const detailOther = '33333333-3333-3333-3333-333333333333';
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
@@ -229,7 +231,7 @@ describe('EvaluasiWorkspaceService', () => {
     expect(actual.pengajuanAktif?.nilaiPerDetail).toHaveLength(2);
   });
 
-  it('should_fill_preview_only_when_expand_preview_and_allowed_detail', async () => {
+  it('seharusnya hanya mengisi preview ketika preview diperluas dan detail diperbolehkan', async () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
@@ -261,7 +263,7 @@ describe('EvaluasiWorkspaceService', () => {
     expect(getWorkbench).toHaveBeenCalledWith(userEvaluator, detailId, 50);
   });
 
-  it('should_skip_preview_when_detail_not_in_pipeline', async () => {
+  it('seharusnya melewati preview ketika detail tidak berada dalam alur evaluasi', async () => {
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findDaftarDetailPipeline: jest.fn().mockResolvedValue([]),
@@ -288,7 +290,7 @@ describe('EvaluasiWorkspaceService', () => {
     expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
   });
 
-  it('should_throw_not_found_when_pengajuan_bundle_missing', async () => {
+  it('seharusnya melempar NotFoundException ketika bundle pengajuan tidak ditemukan', async () => {
     const repo = createRepoMock({
       findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue(null),
     });
@@ -299,13 +301,13 @@ describe('EvaluasiWorkspaceService', () => {
       sopCatalog,
       pastikan as unknown as PengajuanEvaluasiService,
     );
-    await expect(service.getWorkspacePengajuan(userEvaluator, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', {})).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.getWorkspacePengajuan(userEvaluator, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', {}),
+    ).rejects.toBeInstanceOf(NotFoundException);
     expect(pastikan.assertUserCanAccessPengajuan).not.toHaveBeenCalled();
   });
 
-  it('should_map_workspace_pengajuan_from_bundle_nilai_only', async () => {
+  it('seharusnya memetakan workspace pengajuan hanya dari bundle nilai', async () => {
     const repo = createRepoMock({
       findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-1',
@@ -313,9 +315,7 @@ describe('EvaluasiWorkspaceService', () => {
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
         jenis: JenisPengajuanEvaluasi.TERJADWAL,
         nilaiEvaluasi: [nilaiEvaluasiRow()],
-        daftarRows: [
-          pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI }),
-        ],
+        daftarRows: [pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI })],
       }),
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
@@ -339,7 +339,7 @@ describe('EvaluasiWorkspaceService', () => {
     expect(actual.opd.id).toBe('opd-1');
   });
 
-  it('should_return_log_nilai_sop_terpilih_for_active_pengajuan_when_detail_sop_set', async () => {
+  it('seharusnya mengembalikan log nilai SOP terpilih untuk pengajuan aktif ketika detail SOP tersedia', async () => {
     const createdAt = new Date('2026-05-19T10:00:00.000Z');
     const findLogNilai = jest.fn().mockResolvedValue([
       {
@@ -356,16 +356,14 @@ describe('EvaluasiWorkspaceService', () => {
     ]);
     const repo = createRepoMock({
       findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
-      findDaftarDetailPipeline: jest.fn().mockResolvedValue([
-        pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI }),
-      ]),
+      findDaftarDetailPipeline: jest
+        .fn()
+        .mockResolvedValue([pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI })]),
       findPengajuanAktif: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
         jenis: JenisPengajuanEvaluasi.TERJADWAL,
-        nilaiEvaluasi: [
-          nilaiEvaluasiRow({ hasil: 'SESUAI', version: 1 }),
-        ],
+        nilaiEvaluasi: [nilaiEvaluasiRow({ hasil: 'SESUAI', version: 1 })],
       }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
       findLogNilaiUntukDetailWorkspace: findLogNilai,
@@ -387,16 +385,14 @@ describe('EvaluasiWorkspaceService', () => {
     expect(actual.logNilaiSopTerpilih[0]?.hasilSesudah).toBe('SESUAI');
   });
 
-  it('should_keep_pengajuan_status_visible_for_late_jobdesk_stage', async () => {
+  it('seharusnya mempertahankan status pengajuan tetap terlihat pada tahap jobdesk akhir', async () => {
     const repo = createRepoMock({
       findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-2',
         opdId: 'opd-1',
         status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
         jenis: JenisPengajuanEvaluasi.TERJADWAL,
-        nilaiEvaluasi: [
-          nilaiEvaluasiRow({ hasil: 'SESUAI', version: 2 }),
-        ],
+        nilaiEvaluasi: [nilaiEvaluasiRow({ hasil: 'SESUAI', version: 2 })],
         daftarRows: [
           pipelineRow({
             statusDetail: StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
@@ -417,5 +413,328 @@ describe('EvaluasiWorkspaceService', () => {
     );
     const actual = await service.getWorkspacePengajuan(userEvaluator, 'peng-2', {});
     expect(actual.pengajuanAktif?.status).toBe('DITANDATANGANI_PJ_PENYUSUN');
+  });
+
+  describe('getWorkspaceOpdSaya', () => {
+    it('seharusnya memanggil resolveOpdIdTerikat dan mendelegasikan ke getWorkspaceOpd', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-saya', nama: 'OPD Saya' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([]),
+        findPengajuanAktif: jest.fn().mockResolvedValue(null),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+      const mockResolve = jest.fn().mockResolvedValue('opd-saya');
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        { ...pastikan, resolveOpdIdTerikat: mockResolve } as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpdSaya(userEvaluator, {});
+      expect(mockResolve).toHaveBeenCalledWith(userEvaluator);
+      expect(pastikan.assertUserCanAccessPengajuan).toHaveBeenCalledWith(userEvaluator, 'opd-saya');
+      expect(res.opd.id).toBe('opd-saya');
+    });
+  });
+
+  describe('Edge/False/Worst Cases - getWorkspaceOpd', () => {
+    it('seharusnya melempar error jika pengguna tidak memiliki akses pengajuan OPD', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+      pastikan.assertUserCanAccessPengajuan.mockRejectedValue(new Error('Akses ditolak'));
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      await expect(service.getWorkspaceOpd(userEvaluator, 'opd-1', {})).rejects.toThrow('Akses ditolak');
+    });
+
+    it('seharusnya tidak memanggil pastikanPengajuanMandiriUntukEvaluator jika pengguna evaluator tetapi daftar detail kosong', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([]),
+        findPengajuanAktif: jest.fn().mockResolvedValue(null),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {});
+      expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
+      expect(res.pengajuanAktif).toBeNull();
+    });
+
+    it('seharusnya mengabaikan log dan preview jika detailSopId tidak ada di dalam daftar detail pipeline (foreign id)', async () => {
+      const foreignId = '99999999-9999-9999-9999-999999999999';
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
+        findPengajuanAktif: jest.fn().mockResolvedValue({
+          pengajuanEvaluasiId: 'peng-1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.MANDIRI,
+          nilaiEvaluasi: [nilaiEvaluasiRow()],
+        }),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        findLogNilaiUntukDetailWorkspace: jest.fn(),
+        detailMilikiOpd: jest.fn(),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
+        detailSopId: foreignId,
+        expand: 'preview'
+      });
+
+      expect(repo.findLogNilaiUntukDetailWorkspace).not.toHaveBeenCalled();
+      expect(res.logNilaiSopTerpilih).toEqual([]);
+      expect(res.preview).toBeNull();
+    });
+
+    it('seharusnya menangani query expand kosong atau whitespace dengan aman tanpa error', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([]),
+        findPengajuanAktif: jest.fn().mockResolvedValue(null),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', { expand: ', ,  ' });
+      expect(res).toBeDefined();
+    });
+
+    it('seharusnya mengembalikan preview null jika detailMilikiOpd mengembalikan false meskipun ada di pipeline', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
+        findPengajuanAktif: jest.fn().mockResolvedValue(null),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        detailMilikiOpd: jest.fn().mockResolvedValue(false),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+        findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
+        detailSopId: detailId,
+        expand: 'preview'
+      });
+
+      expect(repo.detailMilikiOpd).toHaveBeenCalledWith(detailId, 'opd-1');
+      expect(res.preview).toBeNull();
+      expect(sopCatalog.getPenyusunWorkbench).not.toHaveBeenCalled();
+    });
+
+    it('seharusnya mengembalikan preview null jika query.expand="preview" tetapi query.detailSopId undefined', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
+        findPengajuanAktif: jest.fn().mockResolvedValue(null),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
+        expand: 'preview'
+      });
+
+      expect(res.preview).toBeNull();
+    });
+
+    it('seharusnya menangani map evaluasi kosong atau evaluator terakhir null tanpa melempar error', async () => {
+      const repo = createRepoMock({
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
+        findDaftarDetailPipeline: jest.fn().mockResolvedValue([pipelineRow()]),
+        findPengajuanAktif: jest.fn().mockResolvedValue({
+          pengajuanEvaluasiId: 'peng-1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.MANDIRI,
+          nilaiEvaluasi: [], // Kosong
+        }),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()), // Kosong
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {});
+      expect(res.daftarSop[0]?.evaluatorTerakhir).toBeNull();
+      expect(res.daftarSop[0]?.tampilanAlur).toBe('perlu_evaluasi'); // Karena tidak ada di map nilaiEvaluasi
+    });
+  });
+
+  describe('Edge/False/Worst Cases - getWorkspacePengajuan', () => {
+    it('seharusnya melempar NotFoundException jika bundle ditemukan tetapi data OPD ringkas tidak ditemukan', async () => {
+      const repo = createRepoMock({
+        findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
+          pengajuanEvaluasiId: 'peng-1',
+          opdId: 'opd-1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          nilaiEvaluasi: [],
+          daftarRows: [],
+        }),
+        findOpdRingkas: jest.fn().mockResolvedValue(null),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      await expect(service.getWorkspacePengajuan(userEvaluator, 'peng-1', {})).rejects.toThrow(NotFoundException);
+    });
+
+    it('seharusnya melempar error dari assertUserCanAccessPengajuan jika pengguna tidak berwenang', async () => {
+      const repo = createRepoMock({
+        findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
+          pengajuanEvaluasiId: 'peng-1',
+          opdId: 'opd-1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          nilaiEvaluasi: [],
+          daftarRows: [],
+        }),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+      pastikan.assertUserCanAccessPengajuan.mockRejectedValue(new Error('Unauthorized'));
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      await expect(service.getWorkspacePengajuan(userEvaluator, 'peng-1', {})).rejects.toThrow('Unauthorized');
+    });
+
+    it('seharusnya mengabaikan log nilai dan preview jika detailSopId di query tidak ada di dalam bundle', async () => {
+      const foreignId = '99999999-9999-9999-9999-999999999999';
+      const repo = createRepoMock({
+        findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
+          pengajuanEvaluasiId: 'peng-1',
+          opdId: 'opd-1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          nilaiEvaluasi: [nilaiEvaluasiRow()],
+          daftarRows: [pipelineRow()],
+        }),
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD' }),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        findLogNilaiUntukDetailWorkspace: jest.fn(),
+        detailMilikiOpd: jest.fn(),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspacePengajuan(userEvaluator, 'peng-1', {
+        detailSopId: foreignId,
+        expand: 'preview'
+      });
+
+      expect(repo.findLogNilaiUntukDetailWorkspace).not.toHaveBeenCalled();
+      expect(res.logNilaiSopTerpilih).toEqual([]);
+      expect(res.preview).toBeNull();
+    });
+
+    it('seharusnya mengembalikan preview null jika expand preview diminta tetapi detailMilikiOpd false', async () => {
+      const repo = createRepoMock({
+        findPengajuanBundleForWorkspace: jest.fn().mockResolvedValue({
+          pengajuanEvaluasiId: 'peng-1',
+          opdId: 'opd-1',
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          nilaiEvaluasi: [nilaiEvaluasiRow()],
+          daftarRows: [pipelineRow()],
+        }),
+        findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD' }),
+        findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
+        findLogNilaiUntukDetailWorkspace: jest.fn().mockResolvedValue([]),
+        detailMilikiOpd: jest.fn().mockResolvedValue(false),
+        evaluatorTerakhirUntukDetailSop: jest.fn().mockResolvedValue(new Map()),
+      });
+      const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
+      const pastikan = createPastikanMock();
+
+      const service = new EvaluasiWorkspaceService(
+        repo,
+        sopCatalog,
+        pastikan as unknown as PengajuanEvaluasiService,
+      );
+
+      const res = await service.getWorkspacePengajuan(userEvaluator, 'peng-1', {
+        detailSopId: detailId,
+        expand: 'preview'
+      });
+
+      expect(repo.detailMilikiOpd).toHaveBeenCalledWith(detailId, 'opd-1');
+      expect(res.preview).toBeNull();
+      expect(sopCatalog.getPenyusunWorkbench).not.toHaveBeenCalled();
+    });
   });
 });

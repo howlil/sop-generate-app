@@ -2,6 +2,16 @@
 
 Dokumen ini mengacu pada **diagram use case UML** (*Sistem Informasi Pengelolaan SOP pada Biro Organisasi Sumbar*): **21 oval (UC-01–UC-21)** dan **6 aktor**. Detail alur per oval ada di [`usecase-scenario/`](usecase-scenario/README.md).
 
+### Lima use case inti (core)
+
+| Urut | UC | Use case |
+| :---: | :---: | :--- |
+| 1 | UC-15 | Menyusun Draft SOP |
+| 2 | UC-14 | Mengajukan Evaluasi SOP |
+| 3 | UC-11 | Mengevaluasi SOP |
+| 4 | UC-10 | Menandatangani Berita Acara (TTD BA) |
+| 5 | UC-13 | Mengesahkan Dokumen SOP |
+
 ---
 
 ## Penting: use case diagram **bukan** sama dengan requirements
@@ -32,51 +42,51 @@ Kolom **No requirements** pada tabel di bawah hanya **petunjuk pemetaan** (trace
 
 
 
-| ID | Use case (diagram) | Aktor pada diagram | No requirements | Relasi / catatan |
+| ID | Core | Use case (diagram) | Aktor pada diagram | No requirements | Relasi / catatan |
 
-| :---: | :--- | :--- | :---: | :--- |
+| :---: | :---: | :--- | :--- | :---: | :--- |
 
-| UC-01 | Login | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun | 7 | — |
+| UC-01 | | Login | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun | 7 | — |
+    
+| UC-02 | | Logout | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun | — | Pendukung sesi setelah Login (No 7) |
 
-| UC-02 | Logout | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun | — | Pendukung sesi setelah Login (No 7) |
+| UC-03 | | Melihat List SOP | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun | — | Navigasi daftar/monitoring SOP |
 
-| UC-03 | Melihat List SOP | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun | — | Navigasi daftar/monitoring SOP |
+| UC-04 | | Melihat Hasil Penilaian OPD | PJ Evaluator | 20 | Monitoring grafik evaluasi |
 
-| UC-04 | Melihat Hasil Penilaian OPD | PJ Evaluator | 20 | Monitoring grafik evaluasi |
+| UC-05 | | Mengelola OPD | PJ Evaluator | 1 | |
 
-| UC-05 | Mengelola OPD | PJ Evaluator | 1 | |
+| UC-06 | | Mengelola Tim Evaluator | PJ Evaluator | 2 | |
 
-| UC-06 | Mengelola Tim Evaluator | PJ Evaluator | 2 | |
+| UC-07 | | Mengelola Kepala OPD | PJ Evaluator | 4 | |
 
-| UC-07 | Mengelola Kepala OPD | PJ Evaluator | 4 | |
+| UC-08 | | Mengelola Tim Penyusun SOP | PJ Evaluator | 3 | |
 
-| UC-08 | Mengelola Tim Penyusun SOP | PJ Evaluator | 3 | |
+| UC-09 | | Membuat Tanda Tangan Elektronik | PJ Evaluator, PJ Penyusun | 9 | Registrasi / ubah PIN TTE |
 
-| UC-09 | Membuat Tanda Tangan Elektronik | PJ Evaluator, PJ Penyusun | 9 | Registrasi / ubah PIN TTE |
+| UC-10 | **1** | Menandatangani Berita Acara | PJ Evaluator, PJ Penyusun | 17 | Dua tahap: PJ Evaluator lalu PJ Penyusun |
 
-| UC-10 | Menandatangani Berita Acara | PJ Evaluator, PJ Penyusun | 17 | Dua tahap: PJ Evaluator lalu PJ Penyusun |
+| UC-11 | **1** | Mengevaluasi SOP | Evaluator | 15 | Penilaian substansi SOP |
 
-| UC-11 | Mengevaluasi SOP | Evaluator | 15 | Penilaian substansi SOP |
+| UC-12 | | Membuat Komentar | Evaluator | 16 | `<<extend>>` Mengevaluasi SOP (opsional saat `PERLU_PERBAIKAN`) |
 
-| UC-12 | Membuat Komentar | Evaluator | 16 | `<<extend>>` Mengevaluasi SOP (opsional saat `PERLU_PERBAIKAN`) |
+| UC-13 | **1** | Mengesahkan Dokumen SOP | Kepala OPD | 18 | Pengesahan massal SOP setelah BA |
+* | Menyusun Draft SOP | PJ Penyusun, Penyusun | 10 | Bagian penyusunan draft |
 
-| UC-13 | Mengesahkan Dokumen SOP | Kepala OPD | 18 | Pengesahan massal SOP setelah BA |
+| UC-16 | | Inisiasi Dokumen SOP | PJ Penyusun, Penyusun | 10 | Bagian pembuatan SOP/versi baru |
 
-| UC-14 | Mengajukan Evaluasi SOP | PJ Penyusun | 12 | |
+| UC-14 | **1** | Mengajukan Evaluasi SOP | PJ Penyusun | 12 | |
 
-| UC-15 | Menyusun Draft SOP | PJ Penyusun, Penyusun | 10 | Bagian penyusunan draft |
+| UC-15 | **1*
+| UC-17 | | Mengelola Pelaksana SOP | PJ Penyusun, Penyusun | 6 | |
 
-| UC-16 | Inisiasi Dokumen SOP | PJ Penyusun, Penyusun | 10 | Bagian pembuatan SOP/versi baru |
+| UC-18 | | Mengelola Peraturan SOP | PJ Penyusun, Penyusun | 5 | |
 
-| UC-17 | Mengelola Pelaksana SOP | PJ Penyusun, Penyusun | 6 | |
+| UC-19 | | Melihat Arsip Publik SOP | Pengunjung | 22 | Tanpa login |
 
-| UC-18 | Mengelola Peraturan SOP | PJ Penyusun, Penyusun | 5 | |
+| UC-20 | | Memeriksa Pengesahan TTE | Pengunjung | 23 | Scan QR / tautan verifikasi |
 
-| UC-19 | Melihat Arsip Publik SOP | Pengunjung | 22 | Tanpa login |
-
-| UC-20 | Memeriksa Pengesahan TTE | Pengunjung | 23 | Scan QR / tautan verifikasi |
-
-| UC-21 | Memverifikasi Tanda Tangan Digital | Pengunjung | 24 | Unggah PDF, cek signature PKCS#7 |
+| UC-21 | | Memverifikasi Tanda Tangan Digital | Pengunjung | 24 | Unggah PDF, cek signature PKCS#7 |
 
 
 

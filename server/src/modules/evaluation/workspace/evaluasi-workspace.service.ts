@@ -151,23 +151,21 @@ function mapWorkspaceNilaiPerDetail(n: {
   };
 }
 
-function mapWorkspacePengajuanAktif(
-  repo: {
-    pengajuanEvaluasiId: string;
-    status: import('../../../generated/prisma').StatusPengajuanEvaluasi;
-    jenis: import('../../../generated/prisma').JenisPengajuanEvaluasi;
-    nilaiEvaluasi: ReadonlyArray<{
-      detailSopId: string;
-      hasil: string | null;
-      catatan: string | null;
-      statusTindakLanjut: string | null;
-      version: number;
-      ditindaklanjutiPada: Date | null;
-      versi: number;
-      detailUpdatedAt: Date;
-    }>;
-  },
-) {
+function mapWorkspacePengajuanAktif(repo: {
+  pengajuanEvaluasiId: string;
+  status: import('../../../generated/prisma').StatusPengajuanEvaluasi;
+  jenis: import('../../../generated/prisma').JenisPengajuanEvaluasi;
+  nilaiEvaluasi: ReadonlyArray<{
+    detailSopId: string;
+    hasil: string | null;
+    catatan: string | null;
+    statusTindakLanjut: string | null;
+    version: number;
+    ditindaklanjutiPada: Date | null;
+    versi: number;
+    detailUpdatedAt: Date;
+  }>;
+}) {
   const statusDisplay = displayStatusPengajuan(repo.status);
   return {
     id: repo.pengajuanEvaluasiId,
@@ -217,11 +215,16 @@ export class EvaluasiWorkspaceService {
       pengajuanAktifRepo === null &&
       daftarRows.length > 0
     ) {
-      await this.pengajuanEvaluasiService.pastikanPengajuanMandiriUntukEvaluator(user, opdId, daftarRows);
+      await this.pengajuanEvaluasiService.pastikanPengajuanMandiriUntukEvaluator(
+        user,
+        opdId,
+        daftarRows,
+      );
       pengajuanAktifRepo = await this.evaluasiWorkspaceRepository.findPengajuanAktif(opdId);
     }
     const detailIds = daftarRows.map((r) => r.detailSopId);
-    const evaluatorMap = await this.evaluasiWorkspaceRepository.evaluatorTerakhirUntukDetailSop(detailIds);
+    const evaluatorMap =
+      await this.evaluasiWorkspaceRepository.evaluatorTerakhirUntukDetailSop(detailIds);
     const nilaiByDetail = new Map(
       (pengajuanAktifRepo?.nilaiEvaluasi ?? []).map((n) => [n.detailSopId, n]),
     );
@@ -285,9 +288,8 @@ export class EvaluasiWorkspaceService {
     pengajuanEvaluasiId: string,
     query: EvaluasiWorkspaceQueryDto,
   ): Promise<EvaluasiWorkspaceOpdResponseDto> {
-    const bundle = await this.evaluasiWorkspaceRepository.findPengajuanBundleForWorkspace(
-      pengajuanEvaluasiId,
-    );
+    const bundle =
+      await this.evaluasiWorkspaceRepository.findPengajuanBundleForWorkspace(pengajuanEvaluasiId);
     if (bundle === null) {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }

@@ -4,7 +4,7 @@ import type { JwtAccessPayload } from '../../../common';
 import { OpdRepository } from './opd.repository';
 import { UserOpdAccessService } from './user-opd-access.service';
 
-describe('UserOpdAccessService', () => {
+describe('Pengujian UserOpdAccessService', () => {
   const opdRepository: jest.Mocked<Pick<OpdRepository, 'findOpdIdByPenggunaId'>> = {
     findOpdIdByPenggunaId: jest.fn(),
   };
@@ -16,18 +16,18 @@ describe('UserOpdAccessService', () => {
     opdRepository.findOpdIdByPenggunaId.mockResolvedValue('opd-1');
   });
 
-  it('should_throw_when_user_not_bound_to_opd', async () => {
+  it('seharusnya melempar error ketika pengguna belum terhubung ke OPD', async () => {
     opdRepository.findOpdIdByPenggunaId.mockResolvedValueOnce(null);
     await expect(service.getRequiredUserOpdId('u1')).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('should_reject_query_opd_mismatch', async () => {
+  it('seharusnya menolak query OPD tidak cocok', async () => {
     await expect(
       service.resolveOwnOpdAllowingOptionalQuery('u1', 'opd-lain'),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('should_skip_workbench_assert_for_evaluator', async () => {
+  it('seharusnya melewati validasi workbench untuk evaluator', async () => {
     const user: JwtAccessPayload = {
       sub: 'ev-1',
       email: 'e@x.c',

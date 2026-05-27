@@ -3,7 +3,10 @@ import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
 /** Input pembaruan nama OPD. */
 export class UpdateOpdDto {
-  @ApiProperty({ example: 'Dinas Pendidikan dan Kebudayaan', description: 'Nama OPD yang diperbarui' })
+  @ApiProperty({
+    example: 'Dinas Pendidikan dan Kebudayaan',
+    description: 'Nama OPD yang diperbarui',
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

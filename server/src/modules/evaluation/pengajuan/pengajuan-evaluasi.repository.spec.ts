@@ -1,30 +1,38 @@
 import { StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 
-describe('PengajuanEvaluasiRepository.buildWhereFromQuery', () => {
+describe('Pengujian PengajuanEvaluasiRepository.buildWhere dari query', () => {
   const repo = new PengajuanEvaluasiRepository(null as never);
 
-  it('should_use_statusIn_when_non_empty_and_ignore_single_status', () => {
+  it('seharusnya menggunakan status In ketika non kosong dan mengabaikan tunggal status', () => {
     const actual = repo.buildWhereFromQuery({
       status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-      statusIn: [StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR, StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN],
+      statusIn: [
+        StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+        StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+      ],
     });
     expect(actual).toEqual({
       AND: [
         {
           status: {
-            in: [StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR, StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN],
+            in: [
+              StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+              StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+            ],
           },
         },
       ],
     });
   });
 
-  it('should_fall_back_to_single_status_when_statusIn_empty', () => {
+  it('seharusnya memakai status tunggal ketika daftar status kosong', () => {
     const actual = repo.buildWhereFromQuery({
       statusIn: [],
       status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
     });
-    expect(actual).toEqual({ AND: [{ status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR }] });
+    expect(actual).toEqual({
+      AND: [{ status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR }],
+    });
   });
 });

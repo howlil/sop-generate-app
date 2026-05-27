@@ -1,5 +1,7 @@
 # Skenario UC-10: Menandatangani Berita Acara
 
+**Use case inti (core)** — urutan 4 dari 5 alur bisnis utama (TTD BA).
+
 Dokumen ini merinci use case **Menandatangani Berita Acara** sesuai [`../usecase.md`](../usecase.md).
 
 ## Identitas
@@ -7,6 +9,7 @@ Dokumen ini merinci use case **Menandatangani Berita Acara** sesuai [`../usecase
 | Elemen | Deskripsi |
 | :--- | :--- |
 | ID use case | UC-10 |
+| Core | Ya (4/5 — TTD BA) |
 | Use case diagram | Menandatangani Berita Acara |
 | No requirements | 17 |
 | Nama fungsional requirements | Tanda Tangan Berita Acara Evaluasi |

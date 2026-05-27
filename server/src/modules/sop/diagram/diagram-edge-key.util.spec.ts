@@ -6,8 +6,8 @@ import {
   parseDiagramEdgeKey,
 } from './diagram-edge-key.util';
 
-describe('diagram-edge-key.util', () => {
-  it('should_detect_invalid_edge_key', () => {
+describe('Pengujian util kunci edge diagram', () => {
+  it('seharusnya mendeteksi tidak valid edge key', () => {
     expect(
       hasInvalidDiagramEdgeKeys({
         edges: {
@@ -23,7 +23,7 @@ describe('diagram-edge-key.util', () => {
     ).toBe(true);
   });
 
-  it('should_flatten_path_overrides_to_relational_rows', () => {
+  it('seharusnya meratakan path overrides menjadi relasional baris', () => {
     const edgeKey = buildDiagramEdgeKey('from-1', 'to-1', 'UTAMA');
     const actual = flattenDiagramPathOverridesToRows({
       detailSopId: 'detail-1',
@@ -52,13 +52,13 @@ describe('diagram-edge-key.util', () => {
     expect(actual.labels).toHaveLength(1);
   });
 
-  it('should_parse_valid_edge_key', () => {
+  it('seharusnya memproses valid edge key', () => {
     const key = buildDiagramEdgeKey('from-1', 'to-1', 'UTAMA');
     expect(parseDiagramEdgeKey(key)?.dariLangkahId).toBe('from-1');
     expect(parseDiagramEdgeKey(key)?.keLangkahId).toBe('to-1');
   });
 
-  it('should_drop_edges_with_unknown_langkah_ids', () => {
+  it('seharusnya membuang edge dengan ID langkah yang tidak dikenal', () => {
     const validKey = buildDiagramEdgeKey('langkah-a', 'langkah-b', 'UTAMA');
     const invalidKey = buildDiagramEdgeKey('start-terminator', 'langkah-b', 'UTAMA');
     const flattened = flattenDiagramPathOverridesToRows({
@@ -87,7 +87,10 @@ describe('diagram-edge-key.util', () => {
         },
       },
     });
-    const actual = filterFlattenedDiagramRowsByLangkahIds(flattened, new Set(['langkah-a', 'langkah-b']));
+    const actual = filterFlattenedDiagramRowsByLangkahIds(
+      flattened,
+      new Set(['langkah-a', 'langkah-b']),
+    );
     expect(actual.edges).toHaveLength(1);
     expect(actual.edges[0]?.dariLangkahSopId).toBe('langkah-a');
     expect(actual.labels).toHaveLength(1);

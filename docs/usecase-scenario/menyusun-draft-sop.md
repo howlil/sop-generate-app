@@ -1,5 +1,7 @@
 # Skenario UC-15: Menyusun Draft SOP
 
+**Use case inti (core)** — urutan 1 dari 5 alur bisnis utama.
+
 Dokumen ini merinci use case **Menyusun Draft SOP** sesuai [`../usecase.md`](../usecase.md).
 
 ## Identitas
@@ -7,6 +9,7 @@ Dokumen ini merinci use case **Menyusun Draft SOP** sesuai [`../usecase.md`](../
 | Elemen | Deskripsi |
 | :--- | :--- |
 | ID use case | UC-15 |
+| Core | Ya (1/5 — Menyusun draft SOP) |
 | Use case diagram | Menyusun Draft SOP |
 | No requirements | 10 |
 | Nama fungsional requirements | Penyusunan dan Pengelolaan Draft SOP |
@@ -20,7 +23,7 @@ Dokumen ini merinci use case **Menyusun Draft SOP** sesuai [`../usecase.md`](../
 - Status dokumen masih dapat diedit.
 
 ## Pemicu
-
+****
 Aktor mengisi atau memperbarui substansi SOP.
 
 ## Alur utama

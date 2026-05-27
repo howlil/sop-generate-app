@@ -9,6 +9,7 @@ import type { JwtAccessPayload } from '../../../common';
 import {
   JenisLangkahProsedur,
   PeranPengguna,
+  Prisma,
   SatuanWaktu,
   StatusSOP,
 } from '../../../generated/prisma';
@@ -18,7 +19,7 @@ import type { PenyusunWorkbenchDataDto } from '../catalog/dto/penyusun-workbench
 import { SopProsedurRepository } from './sop-prosedur.repository';
 import { SopProsedurService } from './sop-prosedur.service';
 
-describe('SopProsedurService', () => {
+describe('Pengujian SopProsedurService', () => {
   let service: SopProsedurService;
 
   const repoMock: jest.Mocked<
@@ -69,15 +70,15 @@ describe('SopProsedurService', () => {
     service = moduleRef.get(SopProsedurService);
   });
 
-  describe('updateProsedur', () => {
-    it('should_throw_not_found_when_id_unresolvable', async () => {
+  describe('Pengujian update prosedur', () => {
+    it('seharusnya melempar NotFoundException ketika id tidak dapat ditemukan', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce(null);
       await expect(
         service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'unknown', {}),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
-    it('should_throw_forbidden_when_role_not_penyusun', async () => {
+    it('seharusnya melempar ForbiddenException ketika peran bukan penyusun', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -87,7 +88,7 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
-    it('should_throw_forbidden_when_penyusun_opd_mismatch', async () => {
+    it('seharusnya melempar ForbiddenException ketika OPD penyusun tidak cocok', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -100,22 +101,18 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
-    it('should_return_workbench_without_calling_repo_when_dto_empty', async () => {
+    it('seharusnya mengembalikan workbench tanpa memanggil repository ketika DTO kosong', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
       });
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
-      const out = await service.updateProsedur(
-        makeUser(PeranPengguna.PENYUSUN),
-        'det-1',
-        {},
-      );
+      const out = await service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {});
       expect(repoMock.updateProsedurTransaction).not.toHaveBeenCalled();
       expect(out).toBe(fakeWorkbench);
     });
 
-    it('should_throw_conflict_when_detail_berlaku', async () => {
+    it('seharusnya melempar ConflictException ketika detail sudah berlaku', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -130,7 +127,7 @@ describe('SopProsedurService', () => {
       expect(repoMock.updateProsedurTransaction).not.toHaveBeenCalled();
     });
 
-    it('should_throw_bad_request_when_pelaksana_duplicate_in_dto', async () => {
+    it('seharusnya melempar BadRequestException ketika pelaksana duplikat in DTO', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -143,7 +140,7 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_throw_bad_request_when_pelaksana_not_in_opd', async () => {
+    it('seharusnya melempar BadRequestException ketika pelaksana tidak in OPD', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -157,7 +154,7 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_throw_bad_request_when_tempId_duplicate', async () => {
+    it('seharusnya melempar BadRequestException ketika temp Id duplikat', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -179,7 +176,7 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_throw_bad_request_when_branch_refs_unknown_tempId', async () => {
+    it('seharusnya melempar BadRequestException ketika cabang referensi tidak dikenal temp Id', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -201,7 +198,7 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_throw_bad_request_when_langkah_pelaksana_not_in_swimlane_payload', async () => {
+    it('seharusnya melempar BadRequestException ketika langkah pelaksana tidak in swimlane payload', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -223,7 +220,7 @@ describe('SopProsedurService', () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_call_repo_with_changedFields_pelaksana_only', async () => {
+    it('seharusnya memanggil repository hanya dengan field pelaksana yang berubah', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -243,7 +240,7 @@ describe('SopProsedurService', () => {
       expect(args.input.langkah).toBeUndefined();
     });
 
-    it('should_call_repo_with_changedFields_langkah_only_validating_against_existing_swimlane', async () => {
+    it('seharusnya memanggil repository hanya dengan field langkah yang berubah dan memvalidasi terhadap swimlane yang sudah ada', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -266,7 +263,7 @@ describe('SopProsedurService', () => {
       expect(args.input.langkah?.[0].pelaksanaId).toBe('p-9');
     });
 
-    it('should_call_repo_with_both_changedFields_and_relink_branches', async () => {
+    it('seharusnya memanggil repository dengan kedua field yang berubah dan menghubungkan ulang cabang', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
         detailSopId: 'det-1',
         sopOpdId: 'opd-1',
@@ -297,6 +294,117 @@ describe('SopProsedurService', () => {
       expect(args.changedFields).toEqual(['pelaksana', 'langkah']);
       expect(args.input.langkah?.[0].langkahSelanjutnyaYaTempId).toBe('t-2');
       expect(args.input.langkah?.[1].langkahSelanjutnyaYaTempId).toBeNull();
+    });
+
+    it('seharusnya melempar NotFoundException ketika detail status tidak ditemukan di tengah proses (Edge Case)', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findDetailStatus.mockResolvedValueOnce(null);
+      await expect(
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {}),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('seharusnya melempar BadRequestException ketika LangkahSOP tidak diset pelaksanaId dan pelaksana cadangan kosong (Edge Case)', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findExistingSwimlanePelaksanaIds.mockResolvedValueOnce([]); // no existing pelaksana
+      
+      await expect(
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
+          langkah: [
+            {
+              tempId: 't-1',
+              jenis: JenisLangkahProsedur.KEGIATAN,
+              kegiatan: 'tanpa pelaksana',
+              // pelaksanaId: undefined, // omitted intentionally
+            },
+          ],
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('seharusnya mengamankan jenis cabang dengan membuang (set null) langkah selanjutnya Ya/Tidak jika jenis BUKAN KEPUTUSAN', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findExistingSwimlanePelaksanaIds.mockResolvedValueOnce(['p-1']);
+      await service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
+        langkah: [
+          {
+            tempId: 't-1',
+            jenis: JenisLangkahProsedur.KEGIATAN, // Bukan keputusan
+            kegiatan: 'tes cabang ngawur',
+            pelaksanaId: 'p-1',
+            langkahSelanjutnyaYaTempId: 't-1', // Maliciously set branch
+            langkahSelanjutnyaTidakTempId: 't-1', // Maliciously set branch
+          },
+        ],
+      });
+      const args = repoMock.updateProsedurTransaction.mock.calls[0][0];
+      expect(args.input.langkah?.[0].langkahSelanjutnyaYaTempId).toBeNull();
+      expect(args.input.langkah?.[0].langkahSelanjutnyaTidakTempId).toBeNull();
+    });
+
+    it('seharusnya memetakan error Prisma P2002 menjadi ConflictException (Worst Case Konflik Unik)', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findPelaksanaIdsByOpd.mockResolvedValueOnce(new Set(['p-1']));
+      
+      const p2002 = new Prisma.PrismaClientKnownRequestError('duplicate', {
+        code: 'P2002',
+        clientVersion: 'test',
+      });
+      repoMock.updateProsedurTransaction.mockRejectedValueOnce(p2002);
+
+      await expect(
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', { pelaksana: [{ pelaksanaId: 'p-1' }] }),
+      ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('seharusnya memetakan error referensi P2003/P2025 menjadi BadRequestException (Worst Case Referensi Hilang)', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findPelaksanaIdsByOpd.mockResolvedValueOnce(new Set(['p-1']));
+      
+      const p2025 = new Prisma.PrismaClientKnownRequestError('not found', {
+        code: 'P2025',
+        clientVersion: 'test',
+      });
+      repoMock.updateProsedurTransaction.mockRejectedValueOnce(p2025);
+
+      await expect(
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', { pelaksana: [{ pelaksanaId: 'p-1' }] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('seharusnya merespons dengan BadRequestException khusus jika database mengembalikan error trigger Langkah tujuan cabang', async () => {
+      repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce({
+        detailSopId: 'det-1',
+        sopOpdId: 'opd-1',
+      });
+      repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
+      repoMock.findPelaksanaIdsByOpd.mockResolvedValueOnce(new Set(['p-1']));
+      
+      repoMock.updateProsedurTransaction.mockRejectedValueOnce(new Error('Langkah tujuan cabang terdeteksi melintas batas SOP'));
+
+      await expect(
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', { pelaksana: [{ pelaksanaId: 'p-1' }] }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

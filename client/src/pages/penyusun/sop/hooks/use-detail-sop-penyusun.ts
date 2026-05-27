@@ -58,18 +58,25 @@ export function useDetailSopPenyusunActions({
     invalidateKeys: [
       queryKeys.sop,
       queryKeys.evaluasiWorkspaceOpdAll,
+      queryKeys.evaluasiWorkspaceOpdSayaAll,
       queryKeys.evaluasiWorkspacePengajuanAll,
       queryKeys.evaluasiRingkasAll,
     ],
     successMessage: "SOP berhasil dikirim ulang ke evaluator",
     errorMessagePrefix: "Gagal mengirim ulang ke evaluator",
-    onSuccess: (data, sopOrDetailId) => {
+    onSuccess: async (data, sopOrDetailId) => {
       queryClient.setQueryData(queryKeys.penyusunWorkbench(sopOrDetailId), data);
-      void queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiUmpanBalik(sopOrDetailId) });
+      const invalidations = [
+        queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiUmpanBalik(sopOrDetailId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.sopRiwayatVersi(data.detail.sopId) }),
+      ];
       if (data.detail.id !== sopOrDetailId) {
         queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
-        void queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiUmpanBalik(data.detail.id) });
+        invalidations.push(
+          queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiUmpanBalik(data.detail.id) }),
+        );
       }
+      await Promise.all(invalidations);
     },
   });
 

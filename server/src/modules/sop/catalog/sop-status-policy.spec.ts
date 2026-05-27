@@ -2,8 +2,8 @@ import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { PeranPengguna, StatusSOP } from '../../../generated/prisma';
 import { assertAllowedSopStatusTransition } from './sop-status-policy';
 
-describe('sop-status-policy', () => {
-  it('should_throw_conflict_when_target_equals_current', () => {
+describe('Pengujian kebijakan status SOP', () => {
+  it('seharusnya melempar ConflictException ketika target sama dengan status saat ini', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.PENYUSUN,
@@ -13,7 +13,7 @@ describe('sop-status-policy', () => {
     ).toThrow(ConflictException);
   });
 
-  it('should_allow_penyusun_draft_to_siap_dievaluasi', () => {
+  it('seharusnya mengizinkan penyusun draft menjadi siap dievaluasi', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.PENYUSUN,
@@ -23,7 +23,7 @@ describe('sop-status-policy', () => {
     ).not.toThrow();
   });
 
-  it('should_forbid_evaluator_marking_siap_dievaluasi', () => {
+  it('seharusnya menolak akses evaluator saat menandai siap dievaluasi', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.EVALUATOR,
@@ -33,7 +33,7 @@ describe('sop-status-policy', () => {
     ).toThrow(ForbiddenException);
   });
 
-  it('should_allow_pj_penyusun_siap_to_diajukan_evaluasi', () => {
+  it('seharusnya mengizinkan PJ penyusun siap menjadi diajukan evaluasi', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.PJ_PENYUSUN,
@@ -43,7 +43,7 @@ describe('sop-status-policy', () => {
     ).not.toThrow();
   });
 
-  it('should_reject_berlaku_via_generic_endpoint', () => {
+  it('seharusnya menolak status berlaku melalui endpoint umum', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.KEPALA_OPD,
@@ -53,7 +53,7 @@ describe('sop-status-policy', () => {
     ).toThrow(ConflictException);
   });
 
-  it('should_allow_kepala_opd_cabut_berlaku', () => {
+  it('seharusnya mengizinkan kepala OPD cabut berlaku', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.KEPALA_OPD,

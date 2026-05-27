@@ -1,5 +1,7 @@
 # Skenario UC-13: Mengesahkan Dokumen SOP
 
+**Use case inti (core)** — urutan 5 dari 5 alur bisnis utama (Pengesahan SOP).
+
 Dokumen ini merinci use case **Mengesahkan Dokumen SOP** sesuai [`../usecase.md`](../usecase.md).
 
 ## Identitas
@@ -7,6 +9,7 @@ Dokumen ini merinci use case **Mengesahkan Dokumen SOP** sesuai [`../usecase.md`
 | Elemen | Deskripsi |
 | :--- | :--- |
 | ID use case | UC-13 |
+| Core | Ya (5/5 — Pengesahan SOP) |
 | Use case diagram | Mengesahkan Dokumen SOP |
 | No requirements | 18 |
 | Nama fungsional requirements | Pengesahan SOP |

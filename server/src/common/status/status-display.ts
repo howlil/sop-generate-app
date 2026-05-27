@@ -12,10 +12,7 @@ export interface StatusDisplay {
 
 export const HASIL_EVALUASI_BELUM_DINILAI = 'BELUM_DINILAI' as const;
 
-export type TampilanAlurEvaluasi =
-  | 'perlu_evaluasi'
-  | 'sedang_dievaluasi'
-  | 'selesai_pengajuan_ini';
+export type TampilanAlurEvaluasi = 'perlu_evaluasi' | 'sedang_dievaluasi' | 'selesai_pengajuan_ini';
 
 const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
   [StatusSOP.DRAFT]: 'Draft',
@@ -74,10 +71,12 @@ export function displayStatusSop(status: StatusSOP | string): StatusDisplay {
 }
 
 /** Status pengajuan evaluasi. */
-export function displayStatusPengajuan(
-  status: StatusPengajuanEvaluasi | string,
-): StatusDisplay {
-  return resolveEnumLabel(status, PENGAJUAN_STATUS_LABELS, 'Status pengajuan evaluasi tidak dikenal');
+export function displayStatusPengajuan(status: StatusPengajuanEvaluasi | string): StatusDisplay {
+  return resolveEnumLabel(
+    status,
+    PENGAJUAN_STATUS_LABELS,
+    'Status pengajuan evaluasi tidak dikenal',
+  );
 }
 
 /** Hasil penilaian per dokumen; null → BELUM_DINILAI (turunan API). */
@@ -110,5 +109,9 @@ export function displayStatusTindakLanjut(
   if (status === null || status === undefined) {
     return null;
   }
-  return resolveEnumLabel(status, STATUS_TINDAK_LANJUT_LABELS, 'Status tindak lanjut tidak dikenal');
+  return resolveEnumLabel(
+    status,
+    STATUS_TINDAK_LANJUT_LABELS,
+    'Status tindak lanjut tidak dikenal',
+  );
 }

@@ -8,13 +8,13 @@ import { buildNilaiEvaluasiClientId } from '../../evaluation/nilai/nilai-evaluas
 import type { SopWorkbenchDbPayload } from './sop-catalog.repository';
 import { mapDaftarRow, mapWorkbenchPayload, toIso } from './sop-catalog.mapper';
 
-describe('sop-catalog.mapper', () => {
-  it('should_format_date_as_iso_string', () => {
+describe('Pengujian SopCatalogMapper', () => {
+  it('seharusnya memformat tanggal sebagai string ISO', () => {
     const d = new Date('2026-03-01T08:00:00.000Z');
     expect(toIso(d)).toBe('2026-03-01T08:00:00.000Z');
   });
 
-  it('should_map_workbench_with_keputusan_langkah_and_nilai_evaluasi', () => {
+  it('seharusnya memetakan workbench dengan keputusan langkah dan nilai evaluasi', () => {
     const t = new Date('2026-03-02T10:00:00.000Z');
     const row = {
       detailSopId: 'det-1',
@@ -104,7 +104,7 @@ describe('sop-catalog.mapper', () => {
     expect(actual.detail.dasarHukumPeraturanIds).toEqual(['per-1']);
   });
 
-  it('should_map_daftar_row_with_versi_berlaku_flags', () => {
+  it('seharusnya memetakan baris daftar dengan flag versi berlaku', () => {
     const t = new Date('2026-01-15T10:00:00.000Z');
     const actual = mapDaftarRow({
       sopId: 'sop-1',

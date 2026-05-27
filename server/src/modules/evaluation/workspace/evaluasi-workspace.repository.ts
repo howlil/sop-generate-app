@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { JenisPengajuanEvaluasi, StatusPengajuanEvaluasi, StatusSOP } from '../../../generated/prisma';
+import {
+  JenisPengajuanEvaluasi,
+  StatusPengajuanEvaluasi,
+  StatusSOP,
+} from '../../../generated/prisma';
 import { STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK } from '../pengajuan/pengajuan-evaluasi-status.constants';
 
 const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
@@ -88,9 +92,10 @@ export class EvaluasiWorkspaceRepository {
     opdId: string,
     options?: { readonly includeSiapDievaluasi?: boolean },
   ): Promise<EvaluasiWorkspaceDaftarRowRepo[]> {
-    const allowedStatus = options?.includeSiapDievaluasi === true
-      ? STATUS_PIPELINE_DENGAN_SIAP_SET
-      : STATUS_PIPELINE_SET;
+    const allowedStatus =
+      options?.includeSiapDievaluasi === true
+        ? STATUS_PIPELINE_DENGAN_SIAP_SET
+        : STATUS_PIPELINE_SET;
     const sops = await this.prisma.sOP.findMany({
       where: { opdId },
       select: {
@@ -254,7 +259,10 @@ export class EvaluasiWorkspaceRepository {
     };
   }
 
-  async findRiwayatOpdSelesai(opdId: string, limit: number): Promise<EvaluasiWorkspaceRiwayatOpdRepoRow[]> {
+  async findRiwayatOpdSelesai(
+    opdId: string,
+    limit: number,
+  ): Promise<EvaluasiWorkspaceRiwayatOpdRepoRow[]> {
     const rows = await this.prisma.pengajuanEvaluasi.findMany({
       where: {
         opdId,
@@ -320,7 +328,9 @@ export class EvaluasiWorkspaceRepository {
     return row !== null;
   }
 
-  async evaluatorTerakhirUntukDetailSop(detailSopIds: string[]): Promise<Map<string, { nama: string; pada: string }>> {
+  async evaluatorTerakhirUntukDetailSop(
+    detailSopIds: string[],
+  ): Promise<Map<string, { nama: string; pada: string }>> {
     const map = new Map<string, { nama: string; pada: string }>();
     if (detailSopIds.length === 0) {
       return map;

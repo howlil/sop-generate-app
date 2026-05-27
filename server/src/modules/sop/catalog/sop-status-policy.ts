@@ -56,7 +56,5 @@ export function assertAllowedSopStatusTransition(input: SopStatusTransitionInput
     }
     return;
   }
-  throw new ConflictException(
-    `Transisi ke ${String(target)} tidak diizinkan melalui endpoint ini`,
-  );
+  throw new ConflictException(`Transisi ke ${String(target)} tidak diizinkan melalui endpoint ini`);
 }

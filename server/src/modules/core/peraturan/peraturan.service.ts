@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import type { PeraturanResponseDto } from './dto/peraturan-response.dto';
 import type { CreatePeraturanDto } from './dto/create-peraturan.dto';
@@ -41,10 +37,7 @@ export class PeraturanService {
     };
   }
 
-  private async resolveOpdIdOrThrow(
-    user: JwtAccessPayload,
-    queryOpdId?: string,
-  ): Promise<string> {
+  private async resolveOpdIdOrThrow(user: JwtAccessPayload, queryOpdId?: string): Promise<string> {
     return this.userOpdAccessService.resolveOwnOpdAllowingOptionalQuery(user.sub, queryOpdId);
   }
 
@@ -54,7 +47,11 @@ export class PeraturanService {
     return rows.map((r) => this.mapRow(r, opdId));
   }
 
-  async getById(user: JwtAccessPayload, id: string, queryOpdId?: string): Promise<PeraturanResponseDto> {
+  async getById(
+    user: JwtAccessPayload,
+    id: string,
+    queryOpdId?: string,
+  ): Promise<PeraturanResponseDto> {
     const opdId = await this.resolveOpdIdOrThrow(user, queryOpdId);
     const row = await this.peraturanRepository.findByIdForOpd(id, opdId);
     if (row === null) {
@@ -132,9 +129,7 @@ export class PeraturanService {
     }
     const used = await this.peraturanRepository.countDasarHukum(id);
     if (used > 0) {
-      throw new ConflictException(
-        `Peraturan masih digunakan sebagai dasar hukum pada ${used} SOP`,
-      );
+      throw new ConflictException(`Peraturan masih digunakan sebagai dasar hukum pada ${used} SOP`);
     }
     await this.peraturanRepository.deleteOpdLink(opdId, id);
     const remainingLinks = await this.peraturanRepository.countOpdLinks(id);

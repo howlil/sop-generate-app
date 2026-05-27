@@ -49,7 +49,21 @@ function buildFlowchartConnections(
           label: 'Tidak',
         })
       }
-    } else if (i < sortedSteps.length - 1) {
+      continue
+    }
+    const explicitNextSeq =
+      step.id_next_step_if_yes != null
+        ? rowIdToSeq.get(step.id_next_step_if_yes)
+        : undefined
+    if (explicitNextSeq != null) {
+      list.push({
+        id: `conn-${step.seq_number}-to-${explicitNextSeq}`,
+        from: `sop-step-${step.seq_number}`,
+        to: `sop-step-${explicitNextSeq}`,
+      })
+      continue
+    }
+    if (i < sortedSteps.length - 1) {
       const toStep = sortedSteps[i + 1]!
       list.push({
         id: `conn-${step.seq_number}-to-${toStep.seq_number}`,

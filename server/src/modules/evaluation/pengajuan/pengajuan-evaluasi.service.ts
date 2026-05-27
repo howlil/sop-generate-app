@@ -13,8 +13,15 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../../generated/prisma';
-import { mapPengajuanEvaluasiRow, type PengajuanEvaluasiApiPayload } from './pengajuan-evaluasi.mapper';
-import { resolvePagination, toPaginatedData, type PaginatedData } from '../../../common/utils/pagination.util';
+import {
+  mapPengajuanEvaluasiRow,
+  type PengajuanEvaluasiApiPayload,
+} from './pengajuan-evaluasi.mapper';
+import {
+  resolvePagination,
+  toPaginatedData,
+  type PaginatedData,
+} from '../../../common/utils/pagination.util';
 import type { CreatePengajuanEvaluasiDto } from './dto/create-pengajuan-evaluasi.dto';
 import type { PengajuanEvaluasiListQueryDto } from './dto/pengajuan-evaluasi-list-query.dto';
 import type { PengajuanEvaluasiRingkasQueryDto } from './dto/pengajuan-evaluasi-ringkas-query.dto';
@@ -62,15 +69,23 @@ export class PengajuanEvaluasiService {
     query: PengajuanEvaluasiRingkasQueryDto,
   ): Promise<PaginatedData<Record<string, unknown>>> {
     const forcedOpdId = await this.resolveForcedOpdFilter(user);
-    const whereInput = this.pengajuanEvaluasiRepository.buildWhereRingkasFromQuery(query, forcedOpdId);
+    const whereInput = this.pengajuanEvaluasiRepository.buildWhereRingkasFromQuery(
+      query,
+      forcedOpdId,
+    );
     const { skip, take, page, limit } = resolvePagination(query);
-    const total = await this.pengajuanEvaluasiRepository.countWhere(whereInput);
-    const rows = await this.pengajuanEvaluasiRepository.findRingkasPage(whereInput, skip, take);
+    const [total, rows] = await Promise.all([
+      this.pengajuanEvaluasiRepository.countWhere(whereInput),
+      this.pengajuanEvaluasiRepository.findRingkasPage(whereInput, skip, take),
+    ]);
     return toPaginatedData(rows, total, page, limit);
   }
 
   /** Satu pengajuan lengkap — PJ Penyusun/Kepala OPD hanya boleh mengakses OPD sendiri. */
-  async findOne(user: JwtAccessPayload, pengajuanEvaluasiId: string): Promise<PengajuanEvaluasiApiPayload> {
+  async findOne(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+  ): Promise<PengajuanEvaluasiApiPayload> {
     const row = await this.pengajuanEvaluasiRepository.findByIdFull(pengajuanEvaluasiId);
     if (row === null) {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
@@ -80,7 +95,10 @@ export class PengajuanEvaluasiService {
   }
 
   /** Membuka pengajuan evaluasi (SEDANG_DIEVALUASI + baris nilai per dokumen). Hanya PJ Penyusun OPD terkait. */
-  async create(user: JwtAccessPayload, dto: CreatePengajuanEvaluasiDto): Promise<PengajuanEvaluasiApiPayload> {
+  async create(
+    user: JwtAccessPayload,
+    dto: CreatePengajuanEvaluasiDto,
+  ): Promise<PengajuanEvaluasiApiPayload> {
     if (user.peran !== PeranPengguna.PJ_PENYUSUN) {
       throw new ForbiddenException('Hanya PJ Penyusun yang dapat membuka pengajuan evaluasi');
     }
@@ -88,63 +106,53 @@ export class PengajuanEvaluasiService {
       user.sub,
       'OPD pengguna tidak ditemukan',
     );
-    const idBaru = await this.pengajuanEvaluasiRepository.runTransaction(async (tx: Prisma.TransactionClient) => {
-      const blocking = await tx.pengajuanEvaluasi.findFirst({
-        where: {
-          opdId: opdIdPengguna,
-          status: {
-            in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
+    const sopDetailIds = this.uniqueSopDetailIds(dto.sopDetailIds);
+    const idBaru = await this.pengajuanEvaluasiRepository.runTransaction(
+      async (tx: Prisma.TransactionClient) => {
+        const blocking = await tx.pengajuanEvaluasi.findFirst({
+          where: {
+            opdId: opdIdPengguna,
+            status: {
+              in: [...STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK],
+            },
           },
-        },
-        select: { pengajuanEvaluasiId: true },
-      });
-      if (blocking !== null) {
-        throw new ConflictException(
-          'OPD ini masih memiliki pengajuan evaluasi aktif. Selesaikan atau tutup terlebih dahulu.',
-        );
-      }
-      for (const detailSopId of dto.sopDetailIds) {
-        const detail = await tx.detailSOP.findFirst({
-          where: { detailSopId, sop: { opdId: opdIdPengguna } },
-          select: { detailSopId: true, status: true },
+          select: { pengajuanEvaluasiId: true },
         });
-        if (detail === null) {
-          throw new BadRequestException(`Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD Anda.`);
-        }
-        if (!statusSiapPengajuanEvaluasiSet.has(String(detail.status))) {
-          throw new BadRequestException(
-            `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat dimasukkan pengajuan evaluasi.`,
+        if (blocking !== null) {
+          throw new ConflictException(
+            'OPD ini masih memiliki pengajuan evaluasi aktif. Selesaikan atau tutup terlebih dahulu.',
           );
         }
-      }
-      const sekarang = new Date();
-      const dibuat = await tx.pengajuanEvaluasi.create({
-        data: {
-          opdId: opdIdPengguna,
-          jenis: dto.jenis,
-          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          tanggalPermintaan: sekarang,
-          tanggalEvaluasi: sekarang,
-          nilaiEvaluasi: {
-            create: dto.sopDetailIds.map((detailSopId) => ({ detailSopId })),
+        await this.assertDetailSopSiapDalamOpd(tx, sopDetailIds, opdIdPengguna, 'Anda');
+        const sekarang = new Date();
+        const dibuat = await tx.pengajuanEvaluasi.create({
+          data: {
+            opdId: opdIdPengguna,
+            jenis: dto.jenis,
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+            tanggalPermintaan: sekarang,
+            tanggalEvaluasi: sekarang,
+            nilaiEvaluasi: {
+              create: sopDetailIds.map((detailSopId) => ({ detailSopId })),
+            },
           },
-        },
-        select: { pengajuanEvaluasiId: true },
-      });
-      const promoted = await tx.detailSOP.updateMany({
-        where: {
-          detailSopId: { in: dto.sopDetailIds },
-          status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
-        },
-        data: { status: StatusSOP.SEDANG_DIEVALUASI },
-      });
-      if (promoted.count !== dto.sopDetailIds.length) {
-        throw new ConflictException(
-          'Sebagian SOP tidak lagi berstatus SIAP_DIEVALUASI. Muat ulang daftar SOP lalu coba lagi.',
-        );
-      }
-      return dibuat.pengajuanEvaluasiId;
-    });
+          select: { pengajuanEvaluasiId: true },
+        });
+        const promoted = await tx.detailSOP.updateMany({
+          where: {
+            detailSopId: { in: sopDetailIds },
+            status: { in: [...STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI] },
+          },
+          data: { status: StatusSOP.SEDANG_DIEVALUASI },
+        });
+        if (promoted.count !== sopDetailIds.length) {
+          throw new ConflictException(
+            'Sebagian SOP tidak lagi berstatus SIAP_DIEVALUASI. Muat ulang daftar SOP lalu coba lagi.',
+          );
+        }
+        return dibuat.pengajuanEvaluasiId;
+      },
+    );
     const created = await this.pengajuanEvaluasiRepository.findByIdFull(idBaru);
     if (created === null) {
       throw new ConflictException('Gagal memuat pengajuan setelah pembuatan');
@@ -184,22 +192,7 @@ export class PengajuanEvaluasiService {
       if (blocking !== null) {
         return;
       }
-      for (const detailSopId of sopDetailIds) {
-        const detail = await tx.detailSOP.findFirst({
-          where: { detailSopId, sop: { opdId } },
-          select: { detailSopId: true, status: true },
-        });
-        if (detail === null) {
-          throw new BadRequestException(
-            `Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD.`,
-          );
-        }
-        if (!statusSiapPengajuanEvaluasiSet.has(String(detail.status))) {
-          throw new BadRequestException(
-            `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat masuk pengajuan mandiri.`,
-          );
-        }
-      }
+      await this.assertDetailSopSiapDalamOpd(tx, sopDetailIds, opdId);
       const sekarang = new Date();
       await tx.pengajuanEvaluasi.create({
         data: {
@@ -257,14 +250,58 @@ export class PengajuanEvaluasiService {
     throw new ForbiddenException('Peran tidak diizinkan mengakses daftar pengajuan evaluasi');
   }
 
+  private uniqueSopDetailIds(sopDetailIds: readonly string[]): string[] {
+    const uniqueIds = Array.from(new Set(sopDetailIds));
+    if (uniqueIds.length !== sopDetailIds.length) {
+      throw new BadRequestException('Daftar SOP tidak boleh berisi duplikasi');
+    }
+    return uniqueIds;
+  }
+
+  private async assertDetailSopSiapDalamOpd(
+    tx: Prisma.TransactionClient,
+    detailSopIds: readonly string[],
+    opdId: string,
+    ownerLabel = '',
+  ): Promise<void> {
+    const details = await tx.detailSOP.findMany({
+      where: {
+        detailSopId: { in: [...detailSopIds] },
+        sop: { opdId },
+      },
+      select: { detailSopId: true, status: true },
+    });
+    const byId = new Map(details.map((detail) => [detail.detailSopId, detail]));
+    for (const detailSopId of detailSopIds) {
+      const detail = byId.get(detailSopId);
+      if (detail === undefined) {
+        const suffix = ownerLabel.length > 0 ? ` ${ownerLabel}.` : '.';
+        throw new BadRequestException(
+          `Detail SOP ${detailSopId} tidak ditemukan atau bukan milik OPD${suffix}`,
+        );
+      }
+      if (!statusSiapPengajuanEvaluasiSet.has(String(detail.status))) {
+        throw new BadRequestException(
+          `Detail SOP ${detailSopId} berstatus ${String(detail.status)} dan tidak dapat dimasukkan pengajuan evaluasi.`,
+        );
+      }
+    }
+  }
+
   /**
    * Validasi akses baca pengajuan (dipakai sub-resource dokumen SOP & Berita Acara).
    */
-  async assertUserCanAccessPengajuan(user: JwtAccessPayload, pengajuanOpdId: string): Promise<void> {
+  async assertUserCanAccessPengajuan(
+    user: JwtAccessPayload,
+    pengajuanOpdId: string,
+  ): Promise<void> {
     await this.assertCanAccessPengajuan(user, pengajuanOpdId);
   }
 
-  private async assertCanAccessPengajuan(user: JwtAccessPayload, pengajuanOpdId: string): Promise<void> {
+  private async assertCanAccessPengajuan(
+    user: JwtAccessPayload,
+    pengajuanOpdId: string,
+  ): Promise<void> {
     if (user.peran === PeranPengguna.PJ_EVALUATOR || user.peran === PeranPengguna.EVALUATOR) {
       return;
     }
@@ -282,5 +319,4 @@ export class PengajuanEvaluasiService {
     }
     throw new ForbiddenException('Peran tidak diizinkan mengakses detail pengajuan evaluasi');
   }
-
 }

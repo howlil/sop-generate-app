@@ -4,8 +4,17 @@ export const DIAGRAM_MAX_CHARS_PER_LINE = 15
 /** Lebar maksimum shape task agar diagram tidak melebar horizontal. */
 export const DIAGRAM_MAX_SHAPE_WIDTH = 200
 
-export const DIAGRAM_CHAR_WIDTH_APPROX = 8
+/** Perkiraan lebar karakter untuk fontSize 13 (konservatif agar teks tidak meluber). */
+export const DIAGRAM_CHAR_WIDTH_APPROX = 9
 export const DIAGRAM_LINE_HEIGHT = 15
+
+/** Maks karakter per baris dari lebar area teks dalam kotak (px). */
+export function getDiagramMaxCharsForInnerWidth(
+  innerWidthPx: number,
+  charWidth: number = DIAGRAM_CHAR_WIDTH_APPROX,
+): number {
+  return Math.max(6, Math.floor(Math.max(charWidth, innerWidthPx) / charWidth))
+}
 
 function chunkLongToken(token: string, maxLen: number): string[] {
   if (token.length <= maxLen) return [token]
@@ -83,8 +92,73 @@ export function measureDiagramTextBox(params: MeasureDiagramTextBoxParams): {
   } = params
   if (lines.length === 0) return { width: minWidth, height: minHeight }
   const longestLength = lines.reduce((max, line) => Math.max(max, line.length), 0)
-  const rawWidth = longestLength * charWidth + horizontalPadding
+  const rawWidth = longestLength * charWidth + horizontalPadding * 2
   const width = Math.min(maxWidth, Math.max(minWidth, rawWidth))
-  const height = Math.max(minHeight, lines.length * lineHeight + verticalPadding)
+  const height = Math.max(minHeight, lines.length * lineHeight + verticalPadding * 2)
   return { width, height }
+}
+
+export interface MeasureDiagramTaskBoxOptions {
+  minWidth?: number
+  minHeight?: number
+  maxWidth?: number
+  horizontalPadding?: number
+  verticalPadding?: number
+  charWidth?: number
+  lineHeight?: number
+  minCharsPerLine?: number
+}
+
+/** Ukuran kotak task dari teks (layout engine + metrics). */
+export function measureDiagramTaskBox(
+  text: string,
+  options: MeasureDiagramTaskBoxOptions = {},
+): { lines: string[]; width: number; height: number } {
+  const maxWidth = options.maxWidth ?? DIAGRAM_MAX_SHAPE_WIDTH
+  const horizontalPadding = options.horizontalPadding ?? 20
+  const verticalPadding = options.verticalPadding ?? 20
+  const minWidth = options.minWidth ?? 80
+  const minHeight = options.minHeight ?? 40
+  const charWidth = options.charWidth ?? DIAGRAM_CHAR_WIDTH_APPROX
+  const minChars = options.minCharsPerLine ?? 6
+  const innerWidth = Math.max(charWidth, maxWidth - horizontalPadding * 2)
+  const maxChars = Math.max(
+    minChars,
+    getDiagramMaxCharsForInnerWidth(innerWidth, charWidth),
+  )
+  const lines = wrapDiagramText(text, maxChars)
+  const box = measureDiagramTextBox({
+    lines,
+    minWidth,
+    minHeight,
+    horizontalPadding,
+    verticalPadding,
+    maxWidth,
+    charWidth,
+    lineHeight: options.lineHeight,
+  })
+  return { lines, width: box.width, height: box.height }
+}
+
+export interface LayoutDiagramTaskLabelOptions {
+  horizontalPadding?: number
+  verticalPadding?: number
+  minCharsPerLine?: number
+  charWidth?: number
+  lineHeight?: number
+}
+
+/** Membungkus label task agar muat di kotak layout (render Activity). */
+export function layoutDiagramTaskLabel(
+  text: string,
+  boxWidth: number,
+  _boxHeight: number,
+  options: LayoutDiagramTaskLabelOptions = {},
+): string[] {
+  const horizontalPadding = options.horizontalPadding ?? 20
+  const minChars = options.minCharsPerLine ?? 10
+  const charWidth = options.charWidth ?? DIAGRAM_CHAR_WIDTH_APPROX
+  const innerWidth = Math.max(charWidth, boxWidth - horizontalPadding * 2)
+  const maxChars = Math.max(minChars, getDiagramMaxCharsForInnerWidth(innerWidth, charWidth))
+  return wrapDiagramText(text, maxChars)
 }

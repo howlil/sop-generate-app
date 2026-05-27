@@ -8,6 +8,7 @@ import {
   type Rect,
 } from './orthogonalRouter'
 import { pathCrossesShapeBodies } from '../../edit/path-shape-guard.util'
+import { bpmnPathHitsObstacle } from './bpmnRouter'
 
 export interface PathQualityOptions {
   obstacles: Rect[]
@@ -17,16 +18,18 @@ export interface PathQualityOptions {
   clearancePx?: number
   /** Flowchart: cek segmen memotong interior shape. */
   checkShapeBodies?: boolean
+  kind?: PathSafetyKind
 }
 
 export type PathSafetyKind = 'flowchart' | 'bpmn'
 
 export function createPathSafetyOptions(
   kind: PathSafetyKind,
-  opts: Omit<PathQualityOptions, 'clearancePx' | 'checkShapeBodies'> & Partial<Pick<PathQualityOptions, 'clearancePx'>>,
+  opts: Omit<PathQualityOptions, 'clearancePx' | 'checkShapeBodies' | 'kind'> & Partial<Pick<PathQualityOptions, 'clearancePx'>>,
 ): PathQualityOptions {
   return {
     ...opts,
+    kind,
     clearancePx: opts.clearancePx ?? (kind === 'flowchart' ? 2 : 3),
     checkShapeBodies: true,
   }
@@ -123,13 +126,11 @@ export function countPathQualityViolations(
   const overlapsCross = countSegmentViolations(path, opts.occupied)
   const obstacleHits = pathIntersectsRectangles(path, opts.obstacles, clearance) ? 1 : 0
   let shapeBodyHits = 0
-  if (
-    opts.checkShapeBodies &&
-    opts.fromShape &&
-    opts.toShape &&
-    pathCrossesShapeBodies(path, opts.fromShape, opts.toShape, opts.obstacles, clearance)
-  ) {
-    shapeBodyHits = 1
+  if (opts.checkShapeBodies && opts.fromShape && opts.toShape) {
+    const blocksShapes = opts.kind === 'bpmn'
+      ? bpmnPathHitsObstacle(path, opts.obstacles, opts.fromShape, opts.toShape)
+      : pathCrossesShapeBodies(path, opts.fromShape, opts.toShape, opts.obstacles, clearance)
+    if (blocksShapes) shapeBodyHits = 1
   }
   return {
     overlaps: overlapsCross.overlaps,
@@ -143,14 +144,14 @@ export function isAcceptableRoutedPath(path: Point[], opts: PathQualityOptions):
   if (path.length < 2) return false
   const clearance = opts.clearancePx ?? 2
   if (pathIntersectsRectangles(path, opts.obstacles, clearance)) return false
-  if (pathOverlapsSegments(path, opts.occupied, { includeCross: false })) return false
-  if (
-    opts.checkShapeBodies &&
-    opts.fromShape &&
-    opts.toShape &&
-    pathCrossesShapeBodies(path, opts.fromShape, opts.toShape, opts.obstacles, clearance)
-  ) {
-    return false
+  const rejectCrossings = opts.kind === 'bpmn'
+  if (pathOverlapsSegments(path, opts.occupied, { includeCross: rejectCrossings })) return false
+  if (opts.checkShapeBodies && opts.fromShape && opts.toShape) {
+    if (opts.kind === 'bpmn') {
+      if (bpmnPathHitsObstacle(path, opts.obstacles, opts.fromShape, opts.toShape)) return false
+    } else if (pathCrossesShapeBodies(path, opts.fromShape, opts.toShape, opts.obstacles, clearance)) {
+      return false
+    }
   }
   return true
 }

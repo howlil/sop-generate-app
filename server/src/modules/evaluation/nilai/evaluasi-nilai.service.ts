@@ -6,9 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
-import {
-  displayStatusTindakLanjut,
-} from '../../../common/status/status-display';
+import { displayStatusTindakLanjut } from '../../../common/status/status-display';
 import {
   HasilEvaluasi,
   JenisPengajuanEvaluasi,
@@ -62,13 +60,8 @@ export class EvaluasiNilaiService {
     const expectedVersion = dto.version ?? 0;
     const hasil = dto.hasil;
     const catatanNorm = dto.catatan === undefined ? null : dto.catatan.trim();
-    if (
-      hasil === HasilEvaluasi.PERLU_PERBAIKAN &&
-      (catatanNorm === null || catatanNorm === '')
-    ) {
-      throw new BadRequestException(
-        'Catatan wajib diisi jika hasil Perlu Perbaikan',
-      );
+    if (hasil === HasilEvaluasi.PERLU_PERBAIKAN && (catatanNorm === null || catatanNorm === '')) {
+      throw new BadRequestException('Catatan wajib diisi jika hasil Perlu Perbaikan');
     }
     const barisAkhir = await this.evaluasiNilaiRepository.runTransaction(
       async (tx: Prisma.TransactionClient): Promise<NilaiEvaluasi> => {
@@ -117,18 +110,22 @@ export class EvaluasiNilaiService {
             catatanSesudah: catatanNorm,
           },
         });
-        const tindakLanjutData =
-          hasil === HasilEvaluasi.PERLU_PERBAIKAN
-            ? {
-                statusTindakLanjut: StatusTindakLanjut.TERBUKA,
-                ditindaklanjutiPada: null,
-                ditindaklanjutiOlehId: null,
-              }
-            : {
-                statusTindakLanjut: null,
-                ditindaklanjutiPada: null,
-                ditindaklanjutiOlehId: null,
-              };
+        let tindakLanjutData = {};
+        if (hasil === HasilEvaluasi.PERLU_PERBAIKAN) {
+          tindakLanjutData = {
+            statusTindakLanjut: StatusTindakLanjut.TERBUKA,
+            ditindaklanjutiPada: null,
+            ditindaklanjutiOlehId: null,
+          };
+        } else {
+          if (sebelumnya.statusTindakLanjut === StatusTindakLanjut.TERBUKA) {
+            tindakLanjutData = {
+              statusTindakLanjut: null,
+              ditindaklanjutiPada: null,
+              ditindaklanjutiOlehId: null,
+            };
+          }
+        }
         const sesudah = await tx.nilaiEvaluasi.update({
           where: {
             pengajuanEvaluasiId_detailSopId: {
@@ -188,9 +185,7 @@ export class EvaluasiNilaiService {
           throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
         }
         if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
-          throw new BadRequestException(
-            'Pengajuan tidak dalam status evaluasi aktif',
-          );
+          throw new BadRequestException('Pengajuan tidak dalam status evaluasi aktif');
         }
         const detail = await tx.detailSOP.findFirst({
           where: { detailSopId, sop: { opdId } },
@@ -224,7 +219,9 @@ export class EvaluasiNilaiService {
           throw new ConflictException('Umpan balik evaluasi sudah ditandai selesai');
         }
         if (nilai.statusTindakLanjut !== StatusTindakLanjut.TERBUKA) {
-          throw new BadRequestException('Tidak ada umpan balik evaluasi yang menunggu tindak lanjut');
+          throw new BadRequestException(
+            'Tidak ada umpan balik evaluasi yang menunggu tindak lanjut',
+          );
         }
         const sekarang = new Date();
         return tx.nilaiEvaluasi.update({
@@ -272,9 +269,7 @@ export class EvaluasiNilaiService {
     this.assertHanyaEvaluator(user);
     const evaluatorId = user.sub;
     const yangDiupdate = await this.evaluasiNilaiRepository.runTransaction(
-      async (
-        tx: Prisma.TransactionClient,
-      ): Promise<PengajuanEvaluasi | null> => {
+      async (tx: Prisma.TransactionClient): Promise<PengajuanEvaluasi | null> => {
         const pengajuan = await tx.pengajuanEvaluasi.findUnique({
           where: { pengajuanEvaluasiId },
           include: { nilaiEvaluasi: true },
@@ -283,9 +278,7 @@ export class EvaluasiNilaiService {
           throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
         }
         if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
-          throw new BadRequestException(
-            'Pengajuan tidak dalam status pengisian evaluator',
-          );
+          throw new BadRequestException('Pengajuan tidak dalam status pengisian evaluator');
         }
         const mandiri = pengajuan.jenis === JenisPengajuanEvaluasi.MANDIRI;
         if (mandiri && dto.nilaiOPD !== undefined) {
@@ -309,9 +302,7 @@ export class EvaluasiNilaiService {
         }
         const nilaiOpdFinal = mandiri ? null : dto.nilaiOPD!;
         if (pengajuan.nilaiEvaluasi.length === 0) {
-          throw new BadRequestException(
-            'Pengajuan tidak memiliki dokumen untuk dinilai',
-          );
+          throw new BadRequestException('Pengajuan tidak memiliki dokumen untuk dinilai');
         }
         for (const row of pengajuan.nilaiEvaluasi) {
           if (row.hasil !== HasilEvaluasi.SESUAI) {
@@ -321,7 +312,7 @@ export class EvaluasiNilaiService {
           }
         }
         const detailIds = pengajuan.nilaiEvaluasi.map((n) => n.detailSopId);
-        await tx.detailSOP.updateMany({
+        const promoted = await tx.detailSOP.updateMany({
           where: {
             detailSopId: { in: detailIds },
             status: {
@@ -334,6 +325,11 @@ export class EvaluasiNilaiService {
           },
           data: { status: StatusSOP.SIAP_DIVERIFIKASI },
         });
+        if (promoted.count !== detailIds.length) {
+          throw new ConflictException(
+            'Status sebagian SOP sudah berubah. Muat ulang pengajuan lalu coba selesaikan evaluasi lagi.',
+          );
+        }
         const selesai = new Date();
         await tx.pengajuanEvaluasi.update({
           where: { pengajuanEvaluasiId },
@@ -360,10 +356,7 @@ export class EvaluasiNilaiService {
       id: buildNilaiEvaluasiClientId(row.pengajuanEvaluasiId, row.detailSopId),
       pengajuanEvaluasiId: row.pengajuanEvaluasiId,
       sopDetailId: row.detailSopId,
-      hasil:
-        row.hasil === undefined || row.hasil === null
-          ? undefined
-          : (row.hasil as HasilEvaluasi),
+      hasil: row.hasil === undefined || row.hasil === null ? undefined : row.hasil,
       catatan: row.catatan ?? null,
       statusTindakLanjut: row.statusTindakLanjut ?? null,
       statusTindakLanjutLabel: tindakDisplay?.label ?? null,

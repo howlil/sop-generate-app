@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { assignStepColumns } from '../bpmn-graph-layer.util'
+import { assignStepColumns, buildMainSpineStepIds } from '../bpmn-graph-layer.util'
 
 const IMP = ['lane-a', 'lane-b']
 
@@ -29,7 +29,7 @@ describe('assignStepColumns', () => {
     expect(cols.get('s2')).toBe(1)
   })
 
-  it('should_keep_cross_lane_successor_one_column_right', () => {
+  it('should_align_cross_lane_successor_in_same_column', () => {
     const steps = [
       step('s1', 1, 'task', 'lane-a'),
       step('s2', 2, 'task', 'lane-b'),
@@ -37,10 +37,10 @@ describe('assignStepColumns', () => {
     const connections = [{ from: 'bpmn-step-1', to: 'bpmn-step-2' }]
     const cols = assignStepColumns(steps, connections, IMP)
     expect(cols.get('s1')).toBe(0)
-    expect(cols.get('s2')).toBe(1)
+    expect(cols.get('s2')).toBe(0)
   })
 
-  it('should_not_reset_columns_when_lanes_alternate', () => {
+  it('should_stack_alternating_lane_handoffs_vertically', () => {
     const steps = [
       step('s1', 1, 'task', 'lane-a'),
       step('s2', 2, 'task', 'lane-b'),
@@ -53,7 +53,23 @@ describe('assignStepColumns', () => {
       { from: 'bpmn-step-3', to: 'bpmn-step-4' },
     ]
     const cols = assignStepColumns(steps, connections, IMP)
-    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 1, 2, 3])
+    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 0, 0, 0])
+  })
+
+  it('should_keep_cross_lane_ya_branch_in_gateway_column', () => {
+    const steps = [
+      step('d1', 1, 'decision', 'lane-a'),
+      step('y1', 2, 'task', 'lane-b'),
+      step('n1', 3, 'task', 'lane-a'),
+    ]
+    const connections = [
+      { from: 'bpmn-step-1', to: 'bpmn-step-2' },
+      { from: 'bpmn-step-1', to: 'bpmn-step-3' },
+    ]
+    const cols = assignStepColumns(steps, connections, IMP)
+    expect(cols.get('d1')).toBe(0)
+    expect(cols.get('y1')).toBe(0)
+    expect(cols.get('n1')).toBeGreaterThanOrEqual(1)
   })
 
   it('should_separate_ya_tidak_branches_from_decision', () => {
@@ -71,6 +87,28 @@ describe('assignStepColumns', () => {
     expect(cols.get('y1')).not.toBe(cols.get('n1'))
     expect(cols.get('y1')).toBeGreaterThanOrEqual(1)
     expect(cols.get('n1')).toBeGreaterThanOrEqual(1)
+  })
+
+  it('should_trace_main_spine_through_cross_lane_handoffs', () => {
+    const steps = [
+      step('s1', 1, 'terminator', 'lane-a'),
+      step('s2', 2, 'task', 'lane-b'),
+      step('s3', 3, 'task', 'lane-a'),
+      step('d4', 4, 'decision', 'lane-a'),
+      step('y5', 5, 'task', 'lane-b'),
+    ]
+    const connections = [
+      { from: 'bpmn-step-1', to: 'bpmn-step-2' },
+      { from: 'bpmn-step-2', to: 'bpmn-step-3' },
+      { from: 'bpmn-step-3', to: 'bpmn-step-4' },
+      { from: 'bpmn-step-4', to: 'bpmn-step-5' },
+    ]
+    const spine = buildMainSpineStepIds(steps, connections)
+    expect(spine.has('s1')).toBe(true)
+    expect(spine.has('s2')).toBe(true)
+    expect(spine.has('s3')).toBe(true)
+    expect(spine.has('d4')).toBe(true)
+    expect(spine.has('y5')).toBe(true)
   })
 
   it('should_handle_loopback_tidak_after_forward_ya', () => {

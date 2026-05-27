@@ -38,9 +38,9 @@ export interface CreatePenyusunRepoInput {
 export class PenyusunRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findOpdsWithPenyusun(search?: string): Promise<
-    Array<{ opdId: string; nama: string; pengguna: Pengguna[] }>
-  > {
+  async findOpdsWithPenyusun(
+    search?: string,
+  ): Promise<Array<{ opdId: string; nama: string; pengguna: Pengguna[] }>> {
     const trimmed = search?.trim();
     const rows = await this.prisma.oPD.findMany({
       where: { deletedAt: null },

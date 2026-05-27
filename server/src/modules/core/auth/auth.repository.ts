@@ -37,7 +37,49 @@ export class AuthRepository {
   async updateKataSandi(penggunaId: string, kataSandiHash: string): Promise<void> {
     await this.prisma.pengguna.update({
       where: { penggunaId },
-      data: { kataSandi: kataSandiHash },
+      data: {
+        kataSandi: kataSandiHash,
+        passwordChangedAt: new Date(),
+        sesiTokenVersion: { increment: 1 },
+        refreshTokenHash: null,
+        refreshTokenExpiresAt: null,
+      },
+    });
+  }
+
+  async startSession(penggunaId: string): Promise<PenggunaAuthRecord> {
+    return this.prisma.pengguna.update({
+      where: { penggunaId },
+      data: {
+        sesiTokenVersion: { increment: 1 },
+        refreshTokenHash: null,
+        refreshTokenExpiresAt: null,
+      },
+    });
+  }
+
+  async storeRefreshToken(
+    penggunaId: string,
+    refreshTokenHash: string,
+    refreshTokenExpiresAt: Date,
+  ): Promise<PenggunaAuthRecord> {
+    return this.prisma.pengguna.update({
+      where: { penggunaId },
+      data: {
+        refreshTokenHash,
+        refreshTokenExpiresAt,
+      },
+    });
+  }
+
+  async revokeSession(penggunaId: string): Promise<void> {
+    await this.prisma.pengguna.update({
+      where: { penggunaId },
+      data: {
+        sesiTokenVersion: { increment: 1 },
+        refreshTokenHash: null,
+        refreshTokenExpiresAt: null,
+      },
     });
   }
 }

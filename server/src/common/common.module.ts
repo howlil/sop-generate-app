@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PrismaModule } from './prisma/prisma.module';
 import { RolesGuard } from './guards/roles.guard';
 
 /**
@@ -8,6 +9,7 @@ import { RolesGuard } from './guards/roles.guard';
  */
 @Global()
 @Module({
+  imports: [PrismaModule],
   providers: [JwtAuthGuard, RolesGuard],
   exports: [JwtAuthGuard, RolesGuard],
 })

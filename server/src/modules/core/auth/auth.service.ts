@@ -2,15 +2,20 @@ import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/co
 import { JwtService, type JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { BCRYPT_SALT_ROUNDS } from '../../../common/auth/password.constants';
 import { AuthRepository, type PenggunaAuthRecord } from './auth.repository';
 import type { ChangePasswordDto } from './dto/change-password.dto';
 import type { LoginDto } from './dto/login.dto';
 import {
+  resolveRefreshTokenExpiry,
   resolveAccessTokenExpiry,
+  type JwtRefreshPayload,
   type JwtAccessPayload,
   type PublicPengguna,
 } from './helpers/auth.shared';
+
+const REFRESH_TOKEN_HASH_ROUNDS = 10;
 
 @Injectable()
 export class AuthService {
@@ -25,8 +30,10 @@ export class AuthService {
    */
   async login(dto: LoginDto): Promise<{
     accessToken: string;
+    refreshToken: string;
     pengguna: PublicPengguna;
     cookieMaxAgeMs: number;
+    refreshCookieMaxAgeMs: number;
   }> {
     const row = await this.authRepository.findActivePenggunaByEmail(dto.email);
     if (row === null) {
@@ -36,23 +43,23 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Email atau kata sandi tidak valid');
     }
-    const payload: JwtAccessPayload = {
-      sub: row.penggunaId,
-      email: row.email,
-      peran: row.peran,
-    };
-    const { expiresInSeconds, maxAgeMs } = resolveAccessTokenExpiry(
-      this.config.get('JWT_EXPIRATION'),
+    const sessionRow = await this.authRepository.startSession(row.penggunaId);
+    const refreshSession = await this.createRefreshToken(
+      sessionRow.penggunaId,
+      sessionRow.sesiTokenVersion,
     );
-    const signOptions: JwtSignOptions = {
-      expiresIn: expiresInSeconds,
-    };
-    const accessToken = await this.jwtService.signAsync({ ...payload }, signOptions);
-    const cookieMaxAgeMs = maxAgeMs;
+    const storedSessionRow = await this.authRepository.storeRefreshToken(
+      sessionRow.penggunaId,
+      refreshSession.refreshTokenHash,
+      refreshSession.refreshTokenExpiresAt,
+    );
+    const { accessToken, cookieMaxAgeMs } = await this.signAccessToken(storedSessionRow);
     return {
       accessToken,
+      refreshToken: refreshSession.refreshToken,
       pengguna: this.mapToPublicPengguna(row),
       cookieMaxAgeMs,
+      refreshCookieMaxAgeMs: refreshSession.refreshCookieMaxAgeMs,
     };
   }
 
@@ -67,9 +74,6 @@ export class AuthService {
     return this.mapToPublicPengguna(row);
   }
 
-  /**
-   * Menerbitkan ulang JWT akses dengan klaim yang sama (token masih valid).
-   */
   /**
    * Ubah kata sandi pengguna yang sedang login; wajib kata sandi lama valid.
    */
@@ -86,25 +90,69 @@ export class AuthService {
     await this.authRepository.updateKataSandi(penggunaId, kataSandiHash);
   }
 
-  async refreshAccessToken(payload: JwtAccessPayload): Promise<{
+  async refreshSession(refreshToken: string | undefined): Promise<{
     accessToken: string;
+    refreshToken: string;
     cookieMaxAgeMs: number;
+    refreshCookieMaxAgeMs: number;
   }> {
-    const { expiresInSeconds, maxAgeMs } = resolveAccessTokenExpiry(
-      this.config.get('JWT_EXPIRATION'),
+    if (refreshToken === undefined || refreshToken.trim() === '') {
+      throw new UnauthorizedException('Refresh token tidak valid');
+    }
+    const payload = await this.verifyRefreshToken(refreshToken);
+    const row = await this.authRepository.findActivePenggunaById(payload.sub);
+    if (
+      row === null ||
+      row.refreshTokenHash === null ||
+      row.refreshTokenExpiresAt === null ||
+      row.refreshTokenExpiresAt.getTime() <= Date.now() ||
+      row.sesiTokenVersion !== payload.sesiTokenVersion
+    ) {
+      throw new UnauthorizedException('Refresh token tidak valid');
+    }
+    const isMatch = await bcrypt.compare(refreshToken, row.refreshTokenHash);
+    if (!isMatch) {
+      throw new UnauthorizedException('Refresh token tidak valid');
+    }
+    const sessionRow = await this.authRepository.startSession(row.penggunaId);
+    const refreshSession = await this.createRefreshToken(
+      sessionRow.penggunaId,
+      sessionRow.sesiTokenVersion,
     );
-    const signOptions: JwtSignOptions = {
-      expiresIn: expiresInSeconds,
+    const storedSessionRow = await this.authRepository.storeRefreshToken(
+      sessionRow.penggunaId,
+      refreshSession.refreshTokenHash,
+      refreshSession.refreshTokenExpiresAt,
+    );
+    const { accessToken, cookieMaxAgeMs } = await this.signAccessToken(storedSessionRow);
+    return {
+      accessToken,
+      refreshToken: refreshSession.refreshToken,
+      cookieMaxAgeMs,
+      refreshCookieMaxAgeMs: refreshSession.refreshCookieMaxAgeMs,
     };
-    const accessToken = await this.jwtService.signAsync(
-      { sub: payload.sub, email: payload.email, peran: payload.peran },
-      signOptions,
-    );
-    return { accessToken, cookieMaxAgeMs: maxAgeMs };
+  }
+
+  async logout(refreshToken: string | undefined): Promise<void> {
+    if (refreshToken === undefined || refreshToken.trim() === '') {
+      return;
+    }
+    try {
+      const payload = await this.verifyRefreshToken(refreshToken);
+      const row = await this.authRepository.findActivePenggunaById(payload.sub);
+      if (row?.refreshTokenHash === null || row?.refreshTokenHash === undefined) {
+        return;
+      }
+      if (await bcrypt.compare(refreshToken, row.refreshTokenHash)) {
+        await this.authRepository.revokeSession(row.penggunaId);
+      }
+    } catch {
+      return;
+    }
   }
 
   private mapToPublicPengguna(row: PenggunaAuthRecord): PublicPengguna {
-    const configured = row.ttePinHash !== null && row.ttePinSetAt !== null;
+    const configured = row.ttePinHash !== null;
     return {
       penggunaId: row.penggunaId,
       email: row.email,
@@ -117,10 +165,81 @@ export class AuthService {
       nohp: row.nohp,
       tte: {
         configured,
-        ...(configured && row.ttePinSetAt !== null
-          ? { pinSetAt: row.ttePinSetAt.toISOString() }
-          : {}),
+        ...(configured ? { pinSetAt: row.updatedAt.toISOString() } : {}),
       },
     };
+  }
+
+  private async signAccessToken(row: PenggunaAuthRecord): Promise<{
+    accessToken: string;
+    cookieMaxAgeMs: number;
+  }> {
+    const payload: JwtAccessPayload = {
+      sub: row.penggunaId,
+      email: row.email,
+      peran: row.peran,
+      sesiTokenVersion: row.sesiTokenVersion,
+    };
+    const { expiresInSeconds, maxAgeMs } = resolveAccessTokenExpiry(
+      this.config.get('JWT_EXPIRATION'),
+    );
+    const signOptions: JwtSignOptions = { expiresIn: expiresInSeconds };
+    const accessToken = await this.jwtService.signAsync({ ...payload }, signOptions);
+    return { accessToken, cookieMaxAgeMs: maxAgeMs };
+  }
+
+  private async createRefreshToken(
+    penggunaId: string,
+    sesiTokenVersion: number,
+  ): Promise<{
+    refreshToken: string;
+    refreshTokenHash: string;
+    refreshTokenExpiresAt: Date;
+    refreshCookieMaxAgeMs: number;
+  }> {
+    const { expiresInSeconds, maxAgeMs } = resolveRefreshTokenExpiry(
+      this.config.get('JWT_REFRESH_EXPIRATION'),
+    );
+    const payload: JwtRefreshPayload = {
+      sub: penggunaId,
+      sesiTokenVersion,
+      tokenType: 'refresh',
+    };
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.getRefreshSecret(),
+      expiresIn: expiresInSeconds,
+      jwtid: randomUUID(),
+    });
+    const refreshTokenHash = await bcrypt.hash(refreshToken, REFRESH_TOKEN_HASH_ROUNDS);
+    return {
+      refreshToken,
+      refreshTokenHash,
+      refreshTokenExpiresAt: new Date(Date.now() + maxAgeMs),
+      refreshCookieMaxAgeMs: maxAgeMs,
+    };
+  }
+
+  private async verifyRefreshToken(refreshToken: string): Promise<JwtRefreshPayload> {
+    try {
+      const payload = await this.jwtService.verifyAsync<JwtRefreshPayload>(refreshToken, {
+        secret: this.getRefreshSecret(),
+      });
+      if (
+        payload.tokenType !== 'refresh' ||
+        typeof payload.sub !== 'string' ||
+        typeof payload.sesiTokenVersion !== 'number'
+      ) {
+        throw new UnauthorizedException('Refresh token tidak valid');
+      }
+      return payload;
+    } catch {
+      throw new UnauthorizedException('Refresh token tidak valid');
+    }
+  }
+
+  private getRefreshSecret(): string {
+    return (
+      this.config.get<string>('JWT_REFRESH_SECRET') ?? this.config.get<string>('JWT_SECRET') ?? ''
+    );
   }
 }

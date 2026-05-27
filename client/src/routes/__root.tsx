@@ -1,9 +1,4 @@
-import {
-  HeadContent,
-  Scripts,
-  createRootRoute,
-  redirect,
-} from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRoute, redirect } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -15,40 +10,24 @@ import { NotFoundPage } from "@/components/ui/not-found";
 import { RouteErrorPage } from "@/components/ui/route-error";
 import { RouteFocusManager } from "@/components/ui/route-focus-manager";
 import { queryClient } from "@/config/query-client";
-import { useAuthStore, ensureAuthHydrated, syncAuthFromCookie } from "@/stores/authStore";
-import { ROUTES } from "@/utils/constants";
+import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    const isPublic =
-      location.pathname === ROUTES.HOME ||
-      location.pathname.startsWith(ROUTES.AUTH.LOGIN) ||
-      location.pathname.startsWith(ROUTES.VALIDASI.PENGESAHAN_PREFIX) ||
-      location.pathname.startsWith(ROUTES.VALIDASI.PDF) ||
-      location.pathname.startsWith(ROUTES.ARSIP.PREFIX);
+    const isPublic = location.href === "/" || location.href.startsWith("/login");
     if (isPublic) return;
 
-    /** Lewati guard di SSR: persist & sesi JS hanya di browser (sama seperti requireRoles). */
-    const isServerSide =
-      import.meta.env.SSR === true ||
-      typeof globalThis.window === "undefined" ||
-      typeof globalThis.document === "undefined";
-    if (isServerSide) {
-      return;
-    }
-
     await ensureAuthHydrated();
-    await syncAuthFromCookie();
 
     const store = useAuthStore.getState();
+
     if (!store.user) {
       throw redirect({
-        to: ROUTES.AUTH.LOGIN,
+        to: "/login",
         search: { redirect: location.href },
       });
     }
   },
-  pendingMs: 1000,
   pendingComponent: () => (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
@@ -58,9 +37,7 @@ export const Route = createRootRoute({
     </div>
   ),
   notFoundComponent: () => <NotFoundPage />,
-  errorComponent: ({ error, reset }) => (
-    <RouteErrorPage error={error} reset={reset} />
-  ),
+  errorComponent: ({ error, reset }) => <RouteErrorPage error={error} reset={reset} />,
   head: () => ({
     meta: [
       {
@@ -98,22 +75,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ErrorBoundary
-          fallback={
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-              <div className="text-center p-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">Terjadi Kesalahan</h1>
-                <p className="text-gray-600 mb-4">Mohon maaf, terjadi kesalahan pada sistem.</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Muat Ulang Halaman
-                </button>
-              </div>
-            </div>
-          }
-        >
+        <ErrorBoundary fallback={<RouteErrorPage error={new Error("Terjadi kesalahan yang tidak terduga pada aplikasi.")} reset={() => window.location.reload()} />}>
           <QueryClientProvider client={queryClient}>
             <RouteFocusManager>{children}</RouteFocusManager>
             <GlobalToast />

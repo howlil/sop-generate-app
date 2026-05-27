@@ -185,7 +185,6 @@ export function mapWorkbenchPayload(row: SopWorkbenchDbPayload): PenyusunWorkben
       sopDetailId: log.detailSopId,
       userId: log.penggunaId,
       bagian: log.bagian,
-      targetEntityId: log.targetEntityId,
       keterangan: log.keterangan ?? null,
       meta: fields.length === 0 && count === 0 ? null : { fields, count },
       aktorRole: String(log.pengguna.peran),
@@ -228,9 +227,7 @@ export function mapDaftarRow(row: SopDaftarDbRow): SopDaftarRowDto {
   const inFlight = hasRevisiInFlight(row.allStatuses);
   const canBuatVersiBaru = hasBerlaku && !inFlight;
   const canCabutSop =
-    row.versiBerlaku !== null &&
-    row.versiBerlaku.status === StatusSOP.BERLAKU &&
-    !inFlight;
+    row.versiBerlaku !== null && row.versiBerlaku.status === StatusSOP.BERLAKU && !inFlight;
   if (d === undefined) {
     const statusDisplay = displayStatusSop('DRAFT');
     return {

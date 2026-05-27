@@ -12,6 +12,8 @@ interface EventProps {
   x?: number
   y?: number
   text?: string
+  /** Lingkaran tebal = event akhir (BPMN end). */
+  variant?: 'start' | 'end'
 }
 
 export function Event({
@@ -19,7 +21,9 @@ export function Event({
   x = 0,
   y = 0,
   text = 'Mulai',
+  variant = 'start',
 }: EventProps) {
+  const isEnd = variant === 'end'
   return (
     <g id={id}>
       <circle
@@ -28,8 +32,18 @@ export function Event({
         r={BPMN_EVENT_RADIUS}
         fill="white"
         stroke="#000"
-        strokeWidth="2"
+        strokeWidth={isEnd ? 4 : 2}
       />
+      {isEnd && (
+        <circle
+          cx={x}
+          cy={y}
+          r={BPMN_EVENT_RADIUS - 5}
+          fill="none"
+          stroke="#000"
+          strokeWidth={2}
+        />
+      )}
       <text
         x={x}
         y={y}

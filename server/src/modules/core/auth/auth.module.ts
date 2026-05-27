@@ -15,7 +15,9 @@ import { JwtAccessStrategy } from './helpers/jwt-access.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService): JwtModuleOptions => {
-        const expiresInSeconds = resolveAccessTokenExpiry(config.get('JWT_EXPIRATION')).expiresInSeconds;
+        const expiresInSeconds = resolveAccessTokenExpiry(
+          config.get('JWT_EXPIRATION'),
+        ).expiresInSeconds;
         return {
           secret: config.getOrThrow<string>('JWT_SECRET'),
           signOptions: {

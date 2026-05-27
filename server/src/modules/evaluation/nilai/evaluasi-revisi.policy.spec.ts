@@ -2,12 +2,12 @@ import { BadRequestException } from '@nestjs/common';
 import { HasilEvaluasi, StatusTindakLanjut } from '../../../generated/prisma';
 import { assertBolehKirimUlangSetelahRevisi } from './evaluasi-revisi.policy';
 
-describe('evaluasi-revisi.policy', () => {
-  it('should_pass_when_nilai_tidak_ada', () => {
+describe('Pengujian kebijakan revisi evaluasi', () => {
+  it('seharusnya lolos ketika nilai tidak ada', () => {
     expect(() => assertBolehKirimUlangSetelahRevisi(null)).not.toThrow();
   });
 
-  it('should_throw_when_status_masih_terbuka', () => {
+  it('seharusnya melempar error ketika status masih terbuka', () => {
     expect(() =>
       assertBolehKirimUlangSetelahRevisi({
         pengajuanEvaluasiId: 'p1',
@@ -18,7 +18,18 @@ describe('evaluasi-revisi.policy', () => {
     ).toThrow(BadRequestException);
   });
 
-  it('should_pass_when_status_selesai', () => {
+  it('seharusnya melempar error ketika status tindak lanjut masih kosong', () => {
+    expect(() =>
+      assertBolehKirimUlangSetelahRevisi({
+        pengajuanEvaluasiId: 'p1',
+        detailSopId: 'd1',
+        hasil: HasilEvaluasi.PERLU_PERBAIKAN,
+        statusTindakLanjut: null,
+      }),
+    ).toThrow(BadRequestException);
+  });
+
+  it('seharusnya lolos ketika status selesai', () => {
     expect(() =>
       assertBolehKirimUlangSetelahRevisi({
         pengajuanEvaluasiId: 'p1',

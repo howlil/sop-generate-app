@@ -22,7 +22,10 @@ import {
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
 import { PeranPengguna } from '../../../generated/prisma';
-import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../../core/auth/helpers/auth.shared';
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  type JwtAccessPayload,
+} from '../../core/auth/helpers/auth.shared';
 import { PenyusunWorkbenchDataDto } from '../catalog/dto/penyusun-workbench-data.dto';
 import { UpdateSopDiagramDto } from './dto/diagram-path-overrides.dto';
 import { SopDiagramService } from './sop-diagram.service';

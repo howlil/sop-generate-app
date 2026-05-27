@@ -121,6 +121,7 @@ export function SOPPreviewTemplate({
   const setActiveTab = isControlledActiveTab
     ? effectiveDiagramState.onActiveTabChange
     : setInternalActiveTab;
+  const requestDiagramMount = effectiveDiagramState.onRequestDiagramMount;
 
   // Defensive normalization: persisted/legacy data may contain empty implementer names.
   const safeImplementers = useMemo(
@@ -222,18 +223,9 @@ export function SOPPreviewTemplate({
     });
   }, [effectiveDiagramState.diagramMountEnabled, activeTab]);
 
-  /** Pre-warm BPMN off-screen agar routing selesai sebelum cetak pertama. */
-  useEffect(() => {
-    if (!effectiveDiagramState.diagramMountEnabled) return;
-    setVisitedTabs((prev) => {
-      if (prev.has("flowchart") && prev.has("bpmn")) return prev;
-      return new Set<"flowchart" | "bpmn">(["flowchart", "bpmn"]);
-    });
-  }, [effectiveDiagramState.diagramMountEnabled]);
-
   const handleDiagramTabChange = useCallback(
     (tab: "flowchart" | "bpmn") => {
-      effectiveDiagramState.onRequestDiagramMount?.();
+      requestDiagramMount?.();
       setVisitedTabs((prev) => {
         if (prev.has(tab)) return prev;
         const next = new Set(prev);
@@ -242,7 +234,7 @@ export function SOPPreviewTemplate({
       });
       setActiveTab(tab);
     },
-    [effectiveDiagramState.onRequestDiagramMount, setActiveTab],
+    [requestDiagramMount, setActiveTab],
   );
 
   const syncPrintDiagramMount = useCallback(() => {

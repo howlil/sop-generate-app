@@ -6,7 +6,9 @@ import {
   collectSopWorkbenchCompletenessIssues,
 } from './sop-completeness.validator';
 
-function buildMinimalWorkbench(overrides: Partial<SopWorkbenchDbPayload> = {}): SopWorkbenchDbPayload {
+function buildMinimalWorkbench(
+  overrides: Partial<SopWorkbenchDbPayload> = {},
+): SopWorkbenchDbPayload {
   const t = new Date('2026-03-01T08:00:00.000Z');
   return {
     detailSopId: 'det-1',
@@ -16,7 +18,14 @@ function buildMinimalWorkbench(overrides: Partial<SopWorkbenchDbPayload> = {}): 
     nomorSOP: '001',
     namaLembaga: 'Lembaga',
     sop: { sopId: 'sop-1', opdId: 'opd-1', judul: 'Judul', createdAt: t, updatedAt: t },
-    dasarHukum: [{ peraturanId: 'p1', createdAt: t, updatedAt: t, peraturan: { tentang: 'x', nomor: 1, tahun: 2020 } }],
+    dasarHukum: [
+      {
+        peraturanId: 'p1',
+        createdAt: t,
+        updatedAt: t,
+        peraturan: { tentang: 'x', nomor: 1, tahun: 2020 },
+      },
+    ],
     relasiSopKeluar: [
       {
         detailSopId: 'det-1',
@@ -32,10 +41,25 @@ function buildMinimalWorkbench(overrides: Partial<SopWorkbenchDbPayload> = {}): 
       },
     ],
     lampiranPeringatan: [{ lampiranPeringatanId: 'lp1', teks: 'Peringatan', createdAt: t }],
-    lampiranKualifikasiPelaksanaan: [{ lampiranKualifikasiPelaksanaanId: 'lk1', teks: 'Kual', createdAt: t }],
-    lampiranPeralatanPerlengkapan: [{ lampiranPeralatanPerlengkapanId: 'lpp1', teks: 'Alat', createdAt: t }],
-    lampiranPencatatanPendataan: [{ lampiranPencatatanPendataanId: 'lcp1', teks: 'Catat', createdAt: t }],
-    swimlanes: [{ detailSopId: 'det-1', pelaksanaId: 'pel-1', urutan: 1, createdAt: t, updatedAt: t, pelaksana: { pelaksanaId: 'pel-1', opdId: 'opd-1', nama: 'Staf' } }],
+    lampiranKualifikasiPelaksanaan: [
+      { lampiranKualifikasiPelaksanaanId: 'lk1', teks: 'Kual', createdAt: t },
+    ],
+    lampiranPeralatanPerlengkapan: [
+      { lampiranPeralatanPerlengkapanId: 'lpp1', teks: 'Alat', createdAt: t },
+    ],
+    lampiranPencatatanPendataan: [
+      { lampiranPencatatanPendataanId: 'lcp1', teks: 'Catat', createdAt: t },
+    ],
+    swimlanes: [
+      {
+        detailSopId: 'det-1',
+        pelaksanaId: 'pel-1',
+        urutan: 1,
+        createdAt: t,
+        updatedAt: t,
+        pelaksana: { pelaksanaId: 'pel-1', opdId: 'opd-1', nama: 'Staf' },
+      },
+    ],
     langkahSOP: [
       {
         langkahSopId: 'l1',
@@ -58,13 +82,13 @@ function buildMinimalWorkbench(overrides: Partial<SopWorkbenchDbPayload> = {}): 
   } as unknown as SopWorkbenchDbPayload;
 }
 
-describe('sop-completeness.validator', () => {
-  it('should_return_empty_issues_when_workbench_lengkap', () => {
+describe('Pengujian validator kelengkapan SOP', () => {
+  it('seharusnya mengembalikan daftar issue kosong ketika workbench lengkap', () => {
     const issues = collectSopWorkbenchCompletenessIssues(buildMinimalWorkbench());
     expect(issues).toHaveLength(0);
   });
 
-  it('should_collect_issues_when_header_and_langkah_kosong', () => {
+  it('seharusnya mengumpulkan issue ketika header dan langkah kosong', () => {
     const issues = collectSopWorkbenchCompletenessIssues(
       buildMinimalWorkbench({
         sop: {
@@ -90,7 +114,7 @@ describe('sop-completeness.validator', () => {
     expect(issues.some((p) => p.includes('dasar hukum'))).toBe(true);
   });
 
-  it('should_throw_bad_request_with_prefix_when_assert', () => {
+  it('seharusnya melempar BadRequestException dengan prefix ketika validasi gagal', () => {
     expect(() =>
       assertSopWorkbenchCompleteForSiapDievaluasi(
         buildMinimalWorkbench({ langkahSOP: [], swimlanes: [] }),

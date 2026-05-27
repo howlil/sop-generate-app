@@ -8,6 +8,7 @@ import { sopApi } from '@/api/sop'
 
 export const Route = createFileRoute('/penyusun/sop/')({
   loader: async () => {
+    if (typeof window === 'undefined') return
     await queryClient.ensureQueryData({
       queryKey: queryKeys.sopList(),
       queryFn: () => sopApi.findAll(),

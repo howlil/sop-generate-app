@@ -1,10 +1,5 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import {
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { type ApiSuccessResponse } from '../../../common';
 import { PublicArsipQueryDto } from './dto/public-arsip-query.dto';
 import { PublicOpdItemDto } from './dto/public-opd-item.dto';
@@ -22,7 +17,8 @@ export class SopPublicController {
   @Get('opd')
   @ApiOperation({
     summary: 'Daftar OPD dengan SOP berlaku (arsip publik)',
-    description: 'Tidak memerlukan autentikasi. Hanya OPD yang memiliki minimal satu SOP berstatus BERLAKU.',
+    description:
+      'Tidak memerlukan autentikasi. Hanya OPD yang memiliki minimal satu SOP berstatus BERLAKU.',
   })
   @ApiResponse({ status: 200, description: 'Daftar OPD terpaginated' })
   async listOpd(

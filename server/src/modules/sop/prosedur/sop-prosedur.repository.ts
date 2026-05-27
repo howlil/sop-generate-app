@@ -1,11 +1,7 @@
 import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '../../../generated/prisma';
-import {
-  BagianSOP,
-  JenisLangkahProsedur,
-  SatuanWaktu,
-} from '../../../generated/prisma';
+import { BagianSOP, JenisLangkahProsedur, SatuanWaktu } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
 import { appendOrCreateLogSession } from '../collaboration/log-edit-session.helper';
 

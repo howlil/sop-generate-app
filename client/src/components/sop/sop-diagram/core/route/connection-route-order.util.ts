@@ -103,13 +103,20 @@ export function findConnectionIdsWithCrossings(
 export function sortConnectionsForRouting<T extends RoutableConnectionMeta>(
   connections: T[],
   pathLayoutSeed: number,
-  options?: { priorityIds?: ReadonlySet<string>; reconcilePass?: number },
+  options?: {
+    priorityIds?: ReadonlySet<string>
+    reconcilePass?: number
+    /** Saat reconcile: violator diurutkan terakhir agar melihat occupied koneksi lain. */
+    priorityRoutesLast?: boolean
+  },
 ): T[] {
   const priority = options?.priorityIds
+  const violatorsLast =
+    options?.priorityRoutesLast === true && (options.reconcilePass ?? 0) > 0
   const list = [...connections]
   list.sort((a, b) => {
-    const priA = priority?.has(a.id) ? 0 : 1
-    const priB = priority?.has(b.id) ? 0 : 1
+    const priA = priority?.has(a.id) ? (violatorsLast ? 1 : 0) : (violatorsLast ? 0 : 1)
+    const priB = priority?.has(b.id) ? (violatorsLast ? 1 : 0) : (violatorsLast ? 0 : 1)
     if (priA !== priB) return priA - priB
     const spanDiff = estimateConnectionSpan(b) - estimateConnectionSpan(a)
     if (spanDiff !== 0) return spanDiff

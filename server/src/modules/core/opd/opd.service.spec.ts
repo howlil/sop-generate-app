@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { OpdRepository } from './opd.repository';
 import { OpdService } from './opd.service';
 
-describe('OpdService', () => {
+describe('Pengujian OpdService', () => {
   let service: OpdService;
   let opdRepository: jest.Mocked<
     Pick<
@@ -46,7 +46,7 @@ describe('OpdService', () => {
     service = module.get(OpdService);
   });
 
-  it('should_throw_conflict_when_soft_delete_and_opd_has_related_rows', async () => {
+  it('seharusnya melempar ConflictException ketika soft delete dan OPD masih memiliki baris terkait', async () => {
     const now = new Date();
     opdRepository.findAktifById.mockResolvedValue({
       opdId: 'opd-a',
@@ -69,7 +69,7 @@ describe('OpdService', () => {
     expect(opdRepository.softDelete).not.toHaveBeenCalled();
   });
 
-  it('should_throw_conflict_when_soft_delete_and_struktural_pengguna_exists', async () => {
+  it('seharusnya melempar ConflictException ketika soft delete dan pengguna struktural masih ada', async () => {
     const now = new Date();
     opdRepository.findAktifById.mockResolvedValue({
       opdId: 'opd-b',
@@ -84,5 +84,4 @@ describe('OpdService', () => {
     expect(opdRepository.summarizeBlockingRelations).not.toHaveBeenCalled();
     expect(opdRepository.softDelete).not.toHaveBeenCalled();
   });
-
 });

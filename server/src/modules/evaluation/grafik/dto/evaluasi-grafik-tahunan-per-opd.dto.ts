@@ -1,8 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  NILAI_OPD_SKOR_MAX,
-  NILAI_OPD_SKOR_MIN,
-} from '../../nilai/nilai-opd-skor.constants';
+import { NILAI_OPD_SKOR_MAX, NILAI_OPD_SKOR_MIN } from '../../nilai/nilai-opd-skor.constants';
 
 /** Statistik evaluasi satu OPD dalam satu tahun kalender. */
 export class EvaluasiGrafikTahunanPerOpdDto {

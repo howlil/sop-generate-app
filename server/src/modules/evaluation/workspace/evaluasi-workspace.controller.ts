@@ -12,7 +12,10 @@ import {
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
 import { PeranPengguna } from '../../../generated/prisma';
-import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../../core/auth/helpers/auth.shared';
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  type JwtAccessPayload,
+} from '../../core/auth/helpers/auth.shared';
 import { EvaluasiWorkspaceQueryDto } from './dto/evaluasi-workspace-query.dto';
 import { EvaluasiWorkspaceOpdResponseDto } from './dto/evaluasi-workspace-response.dto';
 import { EvaluasiWorkspaceService } from './evaluasi-workspace.service';
@@ -79,7 +82,9 @@ export class EvaluasiWorkspaceController {
     schema: { default: 30, minimum: 1, maximum: 50 },
   })
   @ApiResponse({ status: 200, type: EvaluasiWorkspaceOpdResponseDto })
-  @ApiForbiddenResponse({ description: 'Bukan EVALUATOR/PJ_EVALUATOR/PJ_PENYUSUN atau OPD tidak sesuai' })
+  @ApiForbiddenResponse({
+    description: 'Bukan EVALUATOR/PJ_EVALUATOR/PJ_PENYUSUN atau OPD tidak sesuai',
+  })
   @ApiNotFoundResponse({ description: 'OPD tidak ditemukan' })
   async getWorkspaceOpd(
     @Req() req: Request & { user: JwtAccessPayload },

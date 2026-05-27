@@ -23,7 +23,11 @@ import { SopProsedurModule } from './modules/sop/prosedur/sop-prosedur.module';
 import { SopDiagramModule } from './modules/sop/diagram/sop-diagram.module';
 import { SopPublicModule } from './modules/sop/public/sop-public.module';
 import { PelaksanaModule } from './modules/sop/pelaksana/pelaksana.module';
-import { TteModule } from './modules/tte/tte.module';
+import { TteSharedModule } from './modules/tte/shared/tte-shared.module';
+import { TteProfilModule } from './modules/tte/profil/tte-profil.module';
+import { TtePenandatangananModule } from './modules/tte/penandatanganan/tte-penandatanganan.module';
+import { TteVerifikasiModule } from './modules/tte/verifikasi/tte-verifikasi.module';
+import { TteCoreModule } from './modules/tte/core/tte-core.module';
 
 @Module({
   imports: [
@@ -54,7 +58,11 @@ import { TteModule } from './modules/tte/tte.module';
     EvaluasiWorkspaceModule,
     EvaluasiUmpanBalikModule,
     EvaluasiGrafikModule,
-    TteModule,
+    TteSharedModule,
+    TteProfilModule,
+    TtePenandatangananModule,
+    TteVerifikasiModule,
+    TteCoreModule,
   ],
 })
 export class AppModule {}

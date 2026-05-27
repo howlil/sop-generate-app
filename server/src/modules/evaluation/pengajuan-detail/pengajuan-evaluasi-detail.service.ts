@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import {
   displayHasilEvaluasi,
@@ -10,10 +6,7 @@ import {
   displayStatusSop,
   displayStatusTindakLanjut,
 } from '../../../common/status/status-display';
-import {
-  PeranPengguna,
-  StatusPengajuanEvaluasi,
-} from '../../../generated/prisma';
+import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import { encodeLogNilaiEvaluasiClientId } from '../nilai/log-nilai-evaluasi-client-id';
 import { buildNilaiEvaluasiClientId } from '../nilai/nilai-evaluasi-client-id';
 import { SopCatalogService } from '../../sop/catalog/sop-catalog.service';
@@ -44,7 +37,10 @@ export class PengajuanEvaluasiDetailService {
     private readonly sopCatalogService: SopCatalogService,
   ) {}
 
-  async getShell(user: JwtAccessPayload, pengajuanEvaluasiId: string): Promise<PengajuanEvaluasiShellDto> {
+  async getShell(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+  ): Promise<PengajuanEvaluasiShellDto> {
     const row = await this.pengajuanEvaluasiRepository.findByIdFull(pengajuanEvaluasiId);
     if (row === null) {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
@@ -88,7 +84,8 @@ export class PengajuanEvaluasiDetailService {
         if (rt.user === undefined || rt.user === null) {
           continue;
         }
-        tteSignaturePayloadKepalaOpd = PengajuanEvaluasiDetailService.mapRiwayatToSignaturePayload(rt);
+        tteSignaturePayloadKepalaOpd =
+          PengajuanEvaluasiDetailService.mapRiwayatToSignaturePayload(rt);
         break;
       }
     }
@@ -123,13 +120,11 @@ export class PengajuanEvaluasiDetailService {
     }
     await this.pengajuanEvaluasiService.assertUserCanAccessPengajuan(user, row.opdId);
     PengajuanEvaluasiDetailService.assertArsipCetakJikaDiminta(row, arsip);
-    const dokTte = await this.pengajuanEvaluasiDetailRepository.findDokumenBeritaAcara(
-      pengajuanEvaluasiId,
-    );
+    const dokTte =
+      await this.pengajuanEvaluasiDetailRepository.findDokumenBeritaAcara(pengajuanEvaluasiId);
     const dokBa = row.dokumenTte[0];
     const nomorBA =
-      row.nomorBA ??
-      (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
+      row.nomorBA ?? (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
     const hasilPerSop = [...row.nilaiEvaluasi]
       .map((n) => {
         const hasilDisplay = displayHasilEvaluasi(n.hasil);
@@ -160,24 +155,28 @@ export class PengajuanEvaluasiDetailService {
       const adaRiwayatTandaTanganPerPeran: Record<string, boolean> = Object.fromEntries(
         Object.values(PeranPengguna).map((p) => [p, false]),
       );
-      let payloadPjEvaluator: {
-        id: string;
-        dokumenTteId: string;
-        userId: string;
-        nip: string;
-        namaLengkap: string;
-        jabatan?: string;
-        signedAt?: string;
-      } | undefined;
-      let payloadPjPenyusun: {
-        id: string;
-        dokumenTteId: string;
-        userId: string;
-        nip: string;
-        namaLengkap: string;
-        jabatan?: string;
-        signedAt?: string;
-      } | undefined;
+      let payloadPjEvaluator:
+        | {
+            id: string;
+            dokumenTteId: string;
+            userId: string;
+            nip: string;
+            namaLengkap: string;
+            jabatan?: string;
+            signedAt?: string;
+          }
+        | undefined;
+      let payloadPjPenyusun:
+        | {
+            id: string;
+            dokumenTteId: string;
+            userId: string;
+            nip: string;
+            namaLengkap: string;
+            jabatan?: string;
+            signedAt?: string;
+          }
+        | undefined;
       for (const rt of dokTte.riwayatTandaTangan) {
         adaRiwayatTandaTanganPerPeran[rt.peran] = true;
         if (rt.user === undefined || rt.user === null) {
@@ -223,8 +222,7 @@ export class PengajuanEvaluasiDetailService {
   private static mapRowToShell(row: PengajuanEvaluasiDetailRow): PengajuanEvaluasiShellDto {
     const dokBa = row.dokumenTte[0];
     const nomorBA =
-      row.nomorBA ??
-      (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
+      row.nomorBA ?? (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
     const sopItems = row.nilaiEvaluasi.map((n) => {
       const statusDisplay = displayStatusSop(n.detailSop.status);
       const hasilDisplay = displayHasilEvaluasi(n.hasil);

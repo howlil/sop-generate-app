@@ -93,8 +93,8 @@ export function parseDiagramEdgeKey(key: string): {
   const cabang = parts[2];
   if (cabang !== 'UTAMA' && cabang !== 'YA' && cabang !== 'TIDAK') return null;
   return {
-    dariLangkahId: parts[0]!,
-    keLangkahId: parts[1]!,
+    dariLangkahId: parts[0],
+    keLangkahId: parts[1],
     cabang,
   };
 }
@@ -207,9 +207,7 @@ export function filterFlattenedDiagramRowsByLangkahIds(
     ),
   );
   const bendPoints = flattened.bendPoints.filter((point) =>
-    edgeKeys.has(
-      buildDiagramEdgeKey(point.dariLangkahSopId, point.keLangkahSopId, point.cabang),
-    ),
+    edgeKeys.has(buildDiagramEdgeKey(point.dariLangkahSopId, point.keLangkahSopId, point.cabang)),
   );
   const labels = flattened.labels.filter((label) => edgeKeys.has(label.kunciLabel));
   return { edges, bendPoints, labels };
@@ -258,5 +256,7 @@ function isValidArrowConnection(value: unknown): boolean {
 function isValidPoint(value: unknown): boolean {
   if (typeof value !== 'object' || value === null) return false;
   const p = value as Record<string, unknown>;
-  return typeof p.x === 'number' && typeof p.y === 'number' && !Number.isNaN(p.x) && !Number.isNaN(p.y);
+  return (
+    typeof p.x === 'number' && typeof p.y === 'number' && !Number.isNaN(p.x) && !Number.isNaN(p.y)
+  );
 }

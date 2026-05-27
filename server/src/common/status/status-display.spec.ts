@@ -1,28 +1,36 @@
-import {
-  HasilEvaluasi,
-  StatusPengajuanEvaluasi,
-  StatusSOP,
-} from '../../generated/prisma';
+import { HasilEvaluasi, StatusPengajuanEvaluasi, StatusSOP, StatusTindakLanjut } from '../../generated/prisma';
 import {
   displayHasilEvaluasi,
   displayStatusPengajuan,
   displayStatusSop,
   displayTampilanAlur,
+  displayStatusTindakLanjut,
   HASIL_EVALUASI_BELUM_DINILAI,
 } from './status-display';
 
-describe('displayStatusSop', () => {
-  it('should_provide_label_for_every_StatusSOP_enum', () => {
+describe('Pengujian displayStatusSop', () => {
+  it('seharusnya menyediakan label untuk setiap enum StatusSOP', () => {
     for (const status of Object.values(StatusSOP)) {
       const actual = displayStatusSop(status);
       expect(actual.value).toBe(status);
       expect(actual.label.length).toBeGreaterThan(0);
     }
   });
+  it('seharusnya menangani input yang tidak dikenal pada displayStatusSop dengan label fallback (False Case)', () => {
+    const actual = displayStatusSop('STATUS_GAIB');
+    expect(actual.label).toBe('Status tidak dikenal');
+    expect(actual.value).toBe('STATUS_GAIB');
+  });
+
+  it('seharusnya menangani input kosong / null dengan string fallback (Edge Case)', () => {
+    const actual = displayStatusSop(null as any);
+    expect(actual.label).toBe('Status tidak dikenal');
+    expect(actual.value).toBe('');
+  });
 });
 
-describe('displayStatusPengajuan', () => {
-  it('should_provide_label_for_every_StatusPengajuanEvaluasi_enum', () => {
+describe('Pengujian displayStatusPengajuan', () => {
+  it('seharusnya menyediakan label untuk setiap enum StatusPengajuanEvaluasi', () => {
     for (const status of Object.values(StatusPengajuanEvaluasi)) {
       const actual = displayStatusPengajuan(status);
       expect(actual.value).toBe(status);
@@ -30,33 +38,52 @@ describe('displayStatusPengajuan', () => {
     }
   });
 
-  it('should_map_DIVERIFIKASI_PJ_EVALUATOR_to_BA_diverifikasi_biro', () => {
+  it('seharusnya memetakan DIVERIFIKASI_PJ_EVALUATOR menjadi BA diverifikasi biro', () => {
     expect(displayStatusPengajuan(StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR).label).toBe(
       'BA diverifikasi biro',
     );
   });
 });
 
-describe('displayHasilEvaluasi', () => {
-  it('should_return_BELUM_DINILAI_when_hasil_null', () => {
+describe('Pengujian displayHasilEvaluasi', () => {
+  it('seharusnya mengembalikan BELUM_DINILAI ketika hasil bernilai null', () => {
     const actual = displayHasilEvaluasi(null);
     expect(actual.value).toBe(HASIL_EVALUASI_BELUM_DINILAI);
     expect(actual.label).toBe('Belum dinilai');
   });
 
-  it('should_map_SESUAI_and_PERLU_PERBAIKAN', () => {
+  it('seharusnya memetakan SESUAI dan PERLU_PERBAIKAN', () => {
     expect(displayHasilEvaluasi(HasilEvaluasi.SESUAI).label).toBe('Sesuai');
     expect(displayHasilEvaluasi(HasilEvaluasi.PERLU_PERBAIKAN).label).toBe('Perlu perbaikan');
   });
 });
 
-describe('displayTampilanAlur', () => {
-  it('should_provide_labels_for_all_alur_values', () => {
+describe('Pengujian displayTampilanAlur', () => {
+  it('seharusnya menyediakan label untuk semua nilai alur', () => {
     const values = ['perlu_evaluasi', 'sedang_dievaluasi', 'selesai_pengajuan_ini'] as const;
     for (const alur of values) {
       const actual = displayTampilanAlur(alur);
       expect(actual.value).toBe(alur);
       expect(actual.label.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('Pengujian displayStatusTindakLanjut', () => {
+  it('seharusnya mengembalikan null ketika input bernilai null atau undefined (Edge Case)', () => {
+    expect(displayStatusTindakLanjut(null)).toBeNull();
+    expect(displayStatusTindakLanjut(undefined)).toBeNull();
+  });
+
+  it('seharusnya memetakan nilai Enum yang valid', () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(displayStatusTindakLanjut(StatusTindakLanjut.TERBUKA)!.label).toBe('Menunggu tindak lanjut OPD');
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(displayStatusTindakLanjut(StatusTindakLanjut.SELESAI)!.label).toBe('Siap dinilai ulang');
+  });
+
+  it('seharusnya menggunakan label fallback ketika nilai tidak dikenal (False Case)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(displayStatusTindakLanjut('TIDAK_JELAS')!.label).toBe('Status tindak lanjut tidak dikenal');
   });
 });

@@ -7,6 +7,7 @@ import { evaluasiApi } from "@/api/evaluasi";
 
 export const Route = createFileRoute('/pj-evaluator/grafik-evaluasi/')({
   loader: async () => {
+    if (typeof window === 'undefined') return
     const q = getDefaultGrafikEvaluasiTahunQuery()
     await queryClient.ensureQueryData({
       queryKey: queryKeys.evaluasiGrafikTahunan(q),

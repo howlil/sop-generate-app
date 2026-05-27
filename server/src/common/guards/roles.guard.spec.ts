@@ -13,8 +13,8 @@ function buildContext(user: { peran: PeranPengguna } | undefined): ExecutionCont
   } as unknown as ExecutionContext;
 }
 
-describe('RolesGuard', () => {
-  it('should_allow_when_no_roles_metadata', () => {
+describe('Pengujian RolesGuard', () => {
+  it('seharusnya mengizinkan ketika tidak ada peran metadata', () => {
     const reflector = {
       getAllAndOverride: jest.fn().mockReturnValue(undefined),
     } as unknown as Reflector;
@@ -23,7 +23,7 @@ describe('RolesGuard', () => {
     expect(actual).toBe(true);
   });
 
-  it('should_allow_when_allowed_roles_includes_user_peran', () => {
+  it('seharusnya mengizinkan akses ketika peran pengguna termasuk dalam daftar peran yang diperbolehkan', () => {
     const reflector = {
       getAllAndOverride: jest
         .fn()
@@ -32,13 +32,11 @@ describe('RolesGuard', () => {
         ),
     } as unknown as Reflector;
     const guard = new RolesGuard(reflector);
-    const actual = guard.canActivate(
-      buildContext({ peran: PeranPengguna.PJ_EVALUATOR }),
-    );
+    const actual = guard.canActivate(buildContext({ peran: PeranPengguna.PJ_EVALUATOR }));
     expect(actual).toBe(true);
   });
 
-  it('should_throw_when_roles_required_but_peran_mismatch', () => {
+  it('seharusnya melempar error ketika peran required tetapi peran tidak cocok', () => {
     const reflector = {
       getAllAndOverride: jest
         .fn()
@@ -47,12 +45,12 @@ describe('RolesGuard', () => {
         ),
     } as unknown as Reflector;
     const guard = new RolesGuard(reflector);
-    expect(() =>
-      guard.canActivate(buildContext({ peran: PeranPengguna.EVALUATOR })),
-    ).toThrow(ForbiddenException);
+    expect(() => guard.canActivate(buildContext({ peran: PeranPengguna.EVALUATOR }))).toThrow(
+      ForbiddenException,
+    );
   });
 
-  it('should_throw_when_roles_required_but_user_missing', () => {
+  it('seharusnya melempar error ketika peran required tetapi pengguna tidak ditemukan', () => {
     const reflector = {
       getAllAndOverride: jest
         .fn()
@@ -62,5 +60,13 @@ describe('RolesGuard', () => {
     } as unknown as Reflector;
     const guard = new RolesGuard(reflector);
     expect(() => guard.canActivate(buildContext(undefined))).toThrow(ForbiddenException);
+  });
+  it('seharusnya mengizinkan ketika metadata peran diset sebagai array kosong (Edge Case)', () => {
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue([]),
+    } as unknown as Reflector;
+    const guard = new RolesGuard(reflector);
+    const actual = guard.canActivate(buildContext({ peran: PeranPengguna.PENYUSUN }));
+    expect(actual).toBe(true);
   });
 });

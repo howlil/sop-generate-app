@@ -1,0 +1,110 @@
+import { Injectable } from '@nestjs/common';
+import type { JwtAccessPayload } from '../../../common';
+import { RegisterTteDto } from '../shared/dto/register-tte.dto';
+import { SignBeritaAcaraArsipDto } from '../shared/dto/sign-berita-acara-arsip.dto';
+import { SignPdfDto } from '../shared/dto/sign-pdf.dto';
+import { TandaTanganiDto } from '../shared/dto/tanda-tangani.dto';
+import { UpdateTtePinDto } from '../shared/dto/update-tte-pin.dto';
+import {
+  TtePdfSigningService,
+} from '../penandatanganan/tte-pdf-signing.service';
+import type { VerifyPdfDto } from '../shared/dto/verify-pdf.dto';
+import { TtePenandatangananService } from '../penandatanganan/tte-penandatanganan.service';
+import { TteProfilService } from '../profil/tte-profil.service';
+import { TteVerifikasiService } from '../verifikasi/tte-verifikasi.service';
+
+import {
+  PdfSigningStatusResponse,
+  SignPdfResponse,
+  VerifyPdfResponse,
+  TteProfilResponse,
+  TteRiwayatResponse,
+  TtePengesahanPublicResponse,
+  TteBatchSignSopPengajuanResponse,
+} from '../shared/types/tte.types';
+
+export type {
+  PdfSigningStatusResponse,
+  SignPdfResponse,
+  VerifyPdfResponse,
+  TteProfilResponse,
+  TteRiwayatResponse,
+  TtePengesahanPublicResponse,
+  TteBatchSignSopPengajuanResponse,
+} from '../shared/types/tte.types';
+
+/**
+ * Fasad TTE: mendelegasikan ke layanan profil, penandatanganan, dan verifikasi.
+ */
+@Injectable()
+export class TteService {
+  constructor(
+    private readonly profilService: TteProfilService,
+    private readonly penandatangananService: TtePenandatangananService,
+    private readonly verifikasiService: TteVerifikasiService,
+    private readonly pdfSigningService: TtePdfSigningService,
+  ) {}
+
+  getProfil(user: JwtAccessPayload): Promise<TteProfilResponse | null> {
+    return this.profilService.getProfil(user);
+  }
+
+  registerProfil(user: JwtAccessPayload, dto: RegisterTteDto): Promise<TteProfilResponse> {
+    return this.profilService.registerProfil(user, dto);
+  }
+
+  updateProfilPin(user: JwtAccessPayload, dto: UpdateTtePinDto): Promise<TteProfilResponse> {
+    return this.profilService.updateProfilPin(user, dto);
+  }
+
+  mintTokenVerifikasi(user: JwtAccessPayload): Promise<{ token: string }> {
+    return this.profilService.mintTokenVerifikasi(user);
+  }
+
+  konfirmasiEmail(token: string): Promise<{ message: string }> {
+    return this.profilService.konfirmasiEmail(token);
+  }
+
+  getPengesahanPublic(dokumenTteId: string, userId: string): Promise<TtePengesahanPublicResponse> {
+    return this.verifikasiService.getPengesahanPublic(dokumenTteId, userId);
+  }
+
+  tandaTanganiBa(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+    dto: TandaTanganiDto,
+  ): Promise<TteRiwayatResponse> {
+    return this.penandatangananService.tandaTanganiBa(user, pengajuanEvaluasiId, dto);
+  }
+
+  tandaTanganiSemuaSopPengajuan(
+    user: JwtAccessPayload,
+    pengajuanEvaluasiId: string,
+    dto: TandaTanganiDto,
+  ): Promise<TteBatchSignSopPengajuanResponse> {
+    return this.penandatangananService.tandaTanganiSemuaSopPengajuan(
+      user,
+      pengajuanEvaluasiId,
+      dto,
+    );
+  }
+
+  signPdf(user: JwtAccessPayload, dto: SignPdfDto): Promise<SignPdfResponse> {
+    return this.pdfSigningService.signPdf(user, dto);
+  }
+
+  signBeritaAcaraArsip(
+    user: JwtAccessPayload,
+    dto: SignBeritaAcaraArsipDto,
+  ): Promise<SignPdfResponse> {
+    return this.pdfSigningService.signBeritaAcaraArsip(user, dto);
+  }
+
+  getPdfSigningStatus(): PdfSigningStatusResponse {
+    return this.pdfSigningService.getPdfSigningStatus();
+  }
+
+  verifyPdf(dto: VerifyPdfDto): Promise<VerifyPdfResponse> {
+    return this.pdfSigningService.verifyPdf(dto);
+  }
+}

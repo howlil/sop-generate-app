@@ -1,16 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MaxLength,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 import { JenisLangkahProsedur, SatuanWaktu } from '../../../../generated/prisma';
 
- /**
+/**
  * Satu langkah prosedur. `tempId` adalah ID stabil di seluruh body PATCH (cukup
  * unik di muatan data tsb) untuk merujuk relasi cabang Ya/Tidak antar entri.
  */

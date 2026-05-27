@@ -18,11 +18,12 @@ const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
 /** Muatan data selaras kebutuhan klien (`PengajuanEvaluasi` di `evaluasi.dto.ts`). */
 export type PengajuanEvaluasiApiPayload = Record<string, unknown>;
 
-export function mapPengajuanEvaluasiRow(row: PengajuanEvaluasiDetailRow): PengajuanEvaluasiApiPayload {
+export function mapPengajuanEvaluasiRow(
+  row: PengajuanEvaluasiDetailRow,
+): PengajuanEvaluasiApiPayload {
   const dokBa = row.dokumenTte[0];
   const nomorBA =
-    row.nomorBA ??
-    (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
+    row.nomorBA ?? (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
   const sopList = row.nilaiEvaluasi.map((n) => {
     const statusDisplay = displayStatusSop(n.detailSop.status);
     const hasilDisplay = displayHasilEvaluasi(n.hasil);

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ServiceUnavailableException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import type { Prisma } from '../../../generated/prisma';
 import { PeranPengguna, type Pengguna } from '../../../generated/prisma';
 import {
@@ -61,7 +57,10 @@ export class EvaluatorService {
     }
   }
 
-  async updateAnggota(penggunaId: string, dto: UpdateEvaluatorDto): Promise<AnggotaEvaluatorItemDto> {
+  async updateAnggota(
+    penggunaId: string,
+    dto: UpdateEvaluatorDto,
+  ): Promise<AnggotaEvaluatorItemDto> {
     const opdId = await this.requireBiroOpdId();
     const existing = await this.penggunaRepository.findEvaluatorByIdInOpd(penggunaId, opdId);
     if (existing === null) {

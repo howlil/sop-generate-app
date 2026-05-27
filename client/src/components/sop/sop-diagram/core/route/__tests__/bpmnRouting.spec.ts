@@ -230,6 +230,40 @@ describe('bpmnPathHitsObstacle', () => {
     expect(hit).toBe(true)
   })
 
+  it('routes cross-lane vertical paths through column-pipe when a same-column obstacle blocks the lane', () => {
+    const blocker = rect(260, 180, 120, 60)
+    const path = routeBpmn({
+      fromShape: rect(280, 80),
+      toShape: rect(280, 400),
+      fromSide: 'bottom',
+      toSide: 'top',
+      fromDistance: 0.5,
+      toDistance: 0.5,
+      layout: layout(),
+      fromLane: 0,
+      toLane: 2,
+      fromCol: 1,
+      toCol: 1,
+      obstacles: [blocker],
+      occupiedSegments: [],
+      globalBounds: { left: 0, top: 0, width: 800, height: 700 },
+      sourceJettySize: 18,
+      targetJettySize: 18,
+    })
+
+    expect(path.length).toBeGreaterThanOrEqual(2)
+    expectOrthogonal(path)
+    expect(bpmnPathHitsObstacle(path, [blocker], rect(280, 80), rect(280, 400))).toBe(false)
+    const verticalXs = new Set<number>()
+    for (let i = 0; i < path.length - 1; i += 1) {
+      const a = path[i]!
+      const b = path[i + 1]!
+      if (a.x === b.x) verticalXs.add(a.x)
+    }
+    expect(verticalXs.size).toBeGreaterThan(0)
+    expect([...verticalXs].some((x) => x < blocker.left || x > blocker.left + blocker.width)).toBe(true)
+  })
+
   it('still treats a diamond-edge path inside the source obstacle margin as a hit', () => {
     const hit = bpmnPathHitsObstacle(
       [

@@ -137,7 +137,10 @@ export class SopCatalogRepository {
     return d.toISOString().slice(0, 10);
   }
 
-  private applyDaftarFilters(rows: SopDaftarDbRow[], filters: SopDaftarListFilters): SopDaftarDbRow[] {
+  private applyDaftarFilters(
+    rows: SopDaftarDbRow[],
+    filters: SopDaftarListFilters,
+  ): SopDaftarDbRow[] {
     const hasStatus = filters.status !== undefined && filters.status.length > 0;
     const hasDari = filters.tanggalDari !== undefined && filters.tanggalDari.length > 0;
     const hasSampai = filters.tanggalSampai !== undefined && filters.tanggalSampai.length > 0;
@@ -153,10 +156,10 @@ export class SopCatalogRepository {
         return false;
       }
       const day = SopCatalogRepository.isoDateUtc(d.updatedAt);
-      if (hasDari && day < filters.tanggalDari!) {
+      if (hasDari && day < filters.tanggalDari) {
         return false;
       }
-      if (hasSampai && day > filters.tanggalSampai!) {
+      if (hasSampai && day > filters.tanggalSampai) {
         return false;
       }
       return true;
@@ -241,18 +244,16 @@ export class SopCatalogRepository {
     };
   }
 
-  private mapDetailSlice(
-    d: {
-      detailSopId: string;
-      nomorSOP: string;
-      status: StatusSOP;
-      versi: number;
-      updatedAt: Date;
-      dibuatOleh: { nama: string } | null;
-      terakhirDieditOleh: { nama: string } | null;
-      dasarHukum: { peraturanId: string }[];
-    },
-  ): SopDaftarDetailSlice {
+  private mapDetailSlice(d: {
+    detailSopId: string;
+    nomorSOP: string;
+    status: StatusSOP;
+    versi: number;
+    updatedAt: Date;
+    dibuatOleh: { nama: string } | null;
+    terakhirDieditOleh: { nama: string } | null;
+    dasarHukum: { peraturanId: string }[];
+  }): SopDaftarDetailSlice {
     return {
       detailSopId: d.detailSopId,
       nomorSOP: d.nomorSOP,
@@ -295,11 +296,14 @@ export class SopCatalogRepository {
 
   private static deriveNomorSopVersiBaru(nomorLama: string, versiBaru: number): string {
     const match = nomorLama.match(/^(.+)-V\d+$/i);
-    const base = match !== null ? match[1]! : nomorLama;
+    const base = match !== null ? match[1] : nomorLama;
     return `${base}-V${versiBaru}`;
   }
 
-  async findDaftarByOpdId(opdId: string, filters: SopDaftarListFilters = {}): Promise<SopDaftarDbRow[]> {
+  async findDaftarByOpdId(
+    opdId: string,
+    filters: SopDaftarListFilters = {},
+  ): Promise<SopDaftarDbRow[]> {
     const rows = await this.prisma.sOP.findMany({
       where: { opdId },
       orderBy: { updatedAt: 'desc' },

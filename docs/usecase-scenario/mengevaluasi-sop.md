@@ -1,5 +1,7 @@
 # Skenario UC-11: Mengevaluasi SOP
 
+**Use case inti (core)** — urutan 3 dari 5 alur bisnis utama.
+
 Dokumen ini merinci use case **Mengevaluasi SOP** sesuai [`../usecase.md`](../usecase.md).
 
 ## Identitas
@@ -7,6 +9,7 @@ Dokumen ini merinci use case **Mengevaluasi SOP** sesuai [`../usecase.md`](../us
 | Elemen | Deskripsi |
 | :--- | :--- |
 | ID use case | UC-11 |
+| Core | Ya (3/5 — Evaluasi SOP) |
 | Use case diagram | Mengevaluasi SOP |
 | No requirements | 15 |
 | Nama fungsional requirements | Penilaian Substansi SOP |

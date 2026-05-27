@@ -7,6 +7,7 @@ import { sopApi } from "@/api/sop-client";
 import type {
   CreatePelaksanaMutationDto,
   Pelaksana,
+  PenyusunWorkbenchData,
   SetSopStatusOverrideMutationDto,
   UpdatePelaksanaMutationDto,
   UpdateSopHeaderDto,
@@ -18,6 +19,26 @@ import type {
  * Replaces localStorage-based status simulation with real API calls
  */
 
+async function syncSopWorkbenchAfterStatusChange(
+  queryClient: ReturnType<typeof useQueryClient>,
+  data: PenyusunWorkbenchData,
+  requestedId: string,
+) {
+  queryClient.setQueryData(queryKeys.penyusunWorkbench(requestedId), data);
+  queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
+
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: queryKeys.sop }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.detailSop }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.sopRiwayatVersi(data.detail.sopId) }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiWorkspaceOpdAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiWorkspaceOpdSayaAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiWorkspacePengajuanAll }),
+    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiRingkasAll }),
+    queryClient.invalidateQueries({ queryKey: ['sop', 'public'] }),
+  ]);
+}
+
 /**
  * Hook to update SOP status via real API
  * Replaces previous localStorage-based simulation
@@ -27,13 +48,8 @@ export function useSopStatus() {
   const updateStatusMutation = useMutationWithToast({
     mutationFn: ({ sopId, status }: SetSopStatusOverrideMutationDto) =>
       sopApi.updateStatus(sopId, { status }),
-    invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData(queryKeys.penyusunWorkbench(variables.sopId), data);
-      if (data.detail.id !== variables.sopId) {
-        queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
-      }
-    },
+    onSuccess: (data, variables) =>
+      syncSopWorkbenchAfterStatusChange(queryClient, data, variables.sopId),
     successMessage: "Status SOP berhasil diubah",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal mengubah status SOP",
@@ -75,11 +91,8 @@ export function useCabutSop() {
   const queryClient = useQueryClient();
   const mutation = useMutationWithToast({
     mutationFn: (sopOrDetailId: string) => sopApi.cabutSop(sopOrDetailId),
-    invalidateKeys: [queryKeys.detailSop, queryKeys.sop],
-    onSuccess: (data, sopOrDetailId) => {
-      queryClient.setQueryData(queryKeys.penyusunWorkbench(sopOrDetailId), data);
-      queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
-    },
+    onSuccess: (data, sopOrDetailId) =>
+      syncSopWorkbenchAfterStatusChange(queryClient, data, sopOrDetailId),
     successMessage: 'SOP berhasil dicabut',
     useDetailedErrors: true,
     errorMessagePrefix: 'Gagal mencabut SOP',

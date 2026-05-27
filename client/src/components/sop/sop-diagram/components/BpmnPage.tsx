@@ -5,15 +5,14 @@ import {
   useLayoutEffect,
   useCallback,
   useRef,
+  startTransition,
 } from 'react'
 import { Event, Gateway } from '../shapes/bpmn/BpmnBasicShapes'
 import { Activity } from '../shapes/bpmn/Activity'
-import { BpmnDecisionText } from '../shapes/bpmn/DecisionText'
-import {
-  FlowchartArrowConnector,
-  type FlowchartConnection,
-  type UsedSides,
-  type PathUpdatedPayload,
+import type {
+  FlowchartConnection,
+  UsedSides,
+  PathUpdatedPayload,
 } from '../shapes/FlowchartArrowConnector'
 import { BpmnArrowConnector } from '../shapes/BpmnArrowConnector'
 import type { BpmnConnectionMeta, BpmnLaneLayout } from '../core/route/bpmnRouter'
@@ -32,17 +31,18 @@ import {
   sortConnectionsForRouting,
 } from '../core/route/connection-route-order.util'
 import { applyUsedSidePayload } from '../core/route/used-side-usage.util'
+
+const MAX_BPMN_ROUTING_RECONCILE_PASSES = 4
 import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from '../layout/sopDocumentLayout'
 import {
   BPMN_BASE_ROW_HEIGHT,
-  BPMN_DECISION_TEXT_OFFSET_Y,
   BPMN_RIGHT_MARGIN,
   BPMN_ROW_SPACING,
+  BPMN_SOP_CONTENT_MAX_WIDTH_PX,
   BPMN_TASK_MIN_WIDTH,
 } from '../layout/bpmnDiagramMetrics'
 import { computeBpmnLayout } from '../layout/bpmn-layout.engine'
 
-const MAX_ROUTING_RECONCILE_PASSES = 4
 const LAYOUT_ORIGIN_EPS = 2
 const RESIZE_OBSERVER_DEBOUNCE_MS = 120
 
@@ -105,8 +105,7 @@ function SwimlaneActorNameCell(props: { laneHeightPx: number; label: string | un
 export interface BpmnPageProps {
   pageIndex: number
   isLastPage: boolean
-  maxTaskSeq: number
-  pageSteps: SOPStep[]
+  processedSteps: ProcessedBpmnStep[]
   pageConnections: FlowchartConnection[]
   name?: string
   implementers: Implementer[]
@@ -128,8 +127,7 @@ export interface BpmnPageProps {
 export function BpmnPage({
   pageIndex,
   isLastPage,
-  maxTaskSeq,
-  pageSteps,
+  processedSteps,
   pageConnections,
   name = '',
   implementers,
@@ -144,21 +142,20 @@ export function BpmnPage({
   const selectedConnectionId = config?.selectedConnectionId ?? null
   const onManualChangeProp = events?.onManualChange
   const onSelectConnectionProp = events?.onSelectConnection
-  const onManualEdit = events?.onManualEdit
   const [arrowConfigs, setArrowConfigs] = useState<Record<string, ArrowConnectionConfig>>({})
   const [usedSides, setUsedSides] = useState<UsedSides>({})
   const routedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
+  const obstacleRectsRef = useRef<Array<{ left: number; top: number; width: number; height: number }> | null>(null)
   const routingPriorityIdsRef = useRef<Set<string>>(new Set())
   const lastRoutingViolatorSigRef = useRef<string | null>(null)
   const [routingReconcilePass, setRoutingReconcilePass] = useState(0)
-  const obstacleRectsRef = useRef<Array<{ left: number; top: number; width: number; height: number }> | null>(null)
   useLayoutEffect(() => {
     routedSegmentsRef.current = new Map()
-  }, [pathLayoutSeed])
-  useEffect(() => {
-    setRoutingReconcilePass(0)
+    layoutMeasureLockedForGeomRef.current = ''
+    setLayoutMeasureVersion(0)
     routingPriorityIdsRef.current = new Set()
     lastRoutingViolatorSigRef.current = null
+    setRoutingReconcilePass(0)
   }, [pathLayoutSeed])
   const [arrowsReady, setArrowsReady] = useState(false)
   const layoutRef = useRef<{
@@ -208,7 +205,7 @@ export function BpmnPage({
     const map = new Map(implementers.map((i) => [i.id, i]))
     const seen = new Set<string>()
     const order: Implementer[] = []
-    pageSteps.forEach((step) => {
+    processedSteps.forEach((step) => {
       if (step.id_implementer && map.has(step.id_implementer) && !seen.has(step.id_implementer)) {
         seen.add(step.id_implementer)
         order.push(map.get(step.id_implementer)!)
@@ -218,48 +215,14 @@ export function BpmnPage({
       if (!seen.has(impl.id)) order.push(impl)
     })
     return order
-  }, [implementers, pageSteps])
-
-  const processedSteps = useMemo((): ProcessedBpmnStep[] => {
-    if (!pageSteps.length) return []
-    const sorted = [...pageSteps].sort((a, b) => a.seq_number - b.seq_number)
-    const first = sorted[0]
-    const last = sorted[sorted.length - 1]
-    const result: ProcessedBpmnStep[] = []
-    if (pageIndex === 0) {
-      result.push({
-        id_step: 'start-terminator',
-        seq_number: 0,
-        name: 'Mulai',
-        type: 'terminator',
-        id_implementer: first?.id_implementer,
-      })
-    }
-    sorted.forEach((s) => {
-      result.push({
-        ...s,
-        type: s.type === 'terminator' ? 'task' : s.type,
-        seq_number: s.seq_number,
-        id_step: s.id_step ?? `step-${s.seq_number}`,
-      })
-    })
-    if (isLastPage) {
-      result.push({
-        id_step: 'end-terminator',
-        seq_number: maxTaskSeq + 1,
-        name: 'Selesai',
-        type: 'terminator',
-        id_implementer: last?.id_implementer,
-      })
-    }
-    return result
-  }, [pageSteps, pageIndex, isLastPage, maxTaskSeq])
+  }, [implementers, processedSteps])
 
   const bpmnConnections = useMemo(
     () =>
       sortConnectionsForRouting(pageConnections, pathLayoutSeed, {
         priorityIds: routingPriorityIdsRef.current,
         reconcilePass: routingReconcilePass,
+        priorityRoutesLast: true,
       }),
     [pageConnections, pathLayoutSeed, routingReconcilePass],
   )
@@ -270,7 +233,7 @@ export function BpmnPage({
   const routableConnectionCount = bpmnConnections.length
   useLayoutEffect(() => {
     routedSegmentsRef.current = new Map()
-  }, [connectionIdsSig])
+  }, [connectionIdsSig, routingReconcilePass])
 
   const obstacles = useMemo(
     () => processedSteps.map((s) => ({ id: `bpmn-step-${s.seq_number}` })),
@@ -302,26 +265,32 @@ export function BpmnPage({
   }, [bpmnConnections, laneLayouts])
 
   const onPathUpdated = useCallback((payload: PathUpdatedPayload) => {
-    if (!onManualChangeProp) {
-      setArrowConfigs((prev) => ({
-        ...prev,
-        [payload.connectionId]: {
-          sSide: payload.sSide,
-          eSide: payload.eSide,
-          startPoint: payload.startPoint,
-          endPoint: payload.endPoint,
-          bendPoints: payload.bendPoints,
-        },
-      }))
-    }
-    setUsedSides((prev) => applyUsedSidePayload(prev, payload))
+    startTransition(() => {
+      if (!onManualChangeProp) {
+        setArrowConfigs((prev) => ({
+          ...prev,
+          [payload.connectionId]: {
+            sSide: payload.sSide,
+            eSide: payload.eSide,
+            startPoint: payload.startPoint,
+            endPoint: payload.endPoint,
+            bendPoints: payload.bendPoints,
+          },
+        }))
+      }
+      setUsedSides((prev) => applyUsedSidePayload(prev, payload))
+    })
   }, [onManualChangeProp])
 
+  const [layoutDiagramWidth, setLayoutDiagramWidth] = useState(0)
+
   const applyBpmnLayout = useCallback(() => {
+    const titleReserve = name ? 48 : 0
     const result = computeBpmnLayout({
       steps: processedSteps,
       connections: pageConnections,
       implementerIds: orderedImplementer.map((impl) => impl.id),
+      contentMaxWidthPx: BPMN_SOP_CONTENT_MAX_WIDTH_PX - titleReserve,
     })
     if (!result) return
     layoutRef.current = {
@@ -329,9 +298,10 @@ export function BpmnPage({
       columnStartXs: result.columnStartXs,
       maxColumnWidths: result.maxColumnWidths,
     }
+    setLayoutDiagramWidth(result.diagramContentWidth)
     setLaneLayouts(result.laneLayouts)
     setBpmnLaneLayoutForRouter(result.bpmnLaneLayoutForRouter)
-  }, [processedSteps, orderedImplementer, pageConnections])
+  }, [processedSteps, orderedImplementer, pageConnections, name])
 
   useEffect(() => {
     applyBpmnLayout()
@@ -340,12 +310,13 @@ export function BpmnPage({
   const bpmnBoundsRef = useRef<{ left: number; top: number; right: number; bottom: number } | null>(null)
 
   const diagramWidth = useMemo(() => {
+    if (layoutDiagramWidth > 0) return layoutDiagramWidth
     if (!laneLayouts.length) return BPMN_RIGHT_MARGIN + BPMN_TASK_MIN_WIDTH + BPMN_RIGHT_MARGIN
     const allSteps = laneLayouts.flatMap((l) => l.steps)
     if (!allSteps.length) return BPMN_RIGHT_MARGIN + BPMN_TASK_MIN_WIDTH + BPMN_RIGHT_MARGIN
     const maxX = Math.max(...allSteps.map((s) => s.x + (s.width ?? 0) / 2))
     return maxX + BPMN_RIGHT_MARGIN
-  }, [laneLayouts])
+  }, [laneLayouts, layoutDiagramWidth])
 
   const totalDiagramHeight = useMemo(() => {
     if (!laneLayouts.length) return BPMN_BASE_ROW_HEIGHT
@@ -361,16 +332,30 @@ export function BpmnPage({
     return laneLayouts.reduce((sum, l) => sum + l.height, 0)
   }, [laneLayouts])
 
+  const charWidth = 9
+  const dynamicTitleWidth = name
+    ? (() => {
+        const maxW = Math.max(120, swimlaneTableBodyHeight * 0.85)
+        const textW = name.length * charWidth
+        const lineCount = textW <= maxW ? 1 : Math.ceil(textW / maxW)
+        return lineCount * 30 + 20
+      })()
+    : 0
+
+  /** Lebar minimum scroll = judul SOP + kolom aktor + area diagram (selaras dengan layout engine). */
+  const swimlaneTableMinWidth = dynamicTitleWidth + 32 + diagramWidth
+
   const measureBpmnContainerSize = useCallback(() => {
     const container = document.getElementById(containerId)
     if (!container) return { width: 0, height: 0 }
     const containerRect = container.getBoundingClientRect()
     const w = Math.round(containerRect.width)
     const h = Math.round(Math.max(containerRect.height, totalDiagramHeight))
+    const contentWidth = dynamicTitleWidth + 32 + diagramWidth
     bpmnBoundsRef.current = {
       left: 0,
       top: 0,
-      right: w,
+      right: Math.max(w, contentWidth),
       bottom: h,
     }
     setContainerSize((prev) => {
@@ -378,7 +363,7 @@ export function BpmnPage({
       return { width: w, height: h }
     })
     return { width: w, height: h }
-  }, [containerId, totalDiagramHeight])
+  }, [containerId, totalDiagramHeight, diagramWidth, dynamicTitleWidth])
 
   const laneLayoutGeomSig = useMemo(
     () => laneLayoutsGeometrySignature(laneLayouts),
@@ -387,18 +372,7 @@ export function BpmnPage({
   const prevLaneGeomSigRef = useRef('')
   const prevLayoutOriginRef = useRef({ x: 0, y: 0 })
   const prevObstacleSigRef = useRef('')
-
-  const charWidth = 9
-  const rowHeight = 120
-  const safetyFactor = 1
-  const dynamicTitleWidth = name
-    ? (() => {
-        const maxW = orderedImplementer.length * rowHeight * safetyFactor
-        const textW = name.length * charWidth
-        const lineCount = textW <= maxW ? 1 : Math.ceil(textW / maxW)
-        return lineCount * 30 + 20
-      })()
-    : 0
+  const layoutMeasureLockedForGeomRef = useRef('')
 
   useEffect(() => {
     if (processedSteps.length === 0) {
@@ -409,6 +383,8 @@ export function BpmnPage({
     const geomUnchanged = laneLayoutGeomSig === prevLaneGeomSigRef.current
     prevLaneGeomSigRef.current = laneLayoutGeomSig
     if (geomUnchanged) return
+    layoutMeasureLockedForGeomRef.current = ''
+    setLayoutMeasureVersion(0)
     setArrowsReady(false)
     let cancelled = false
     const run = () => {
@@ -426,8 +402,6 @@ export function BpmnPage({
   }, [
     processedSteps.length,
     laneLayoutGeomSig,
-    diagramWidth,
-    dynamicTitleWidth,
     measureBpmnContainerSize,
   ])
 
@@ -514,49 +488,73 @@ export function BpmnPage({
     const filtered = rects.filter((r): r is NonNullable<typeof r> => r != null)
     const nextObstacleSig = obstacleRectsSignature(filtered.length > 0 ? filtered : null)
     obstacleRectsRef.current = filtered.length > 0 ? filtered : null
-    measureBpmnContainerSize()
     const origin = measureLayoutContentOrigin()
-    const originChanged = !originsNearlyEqual(origin, prevLayoutOriginRef.current)
-    const obstaclesChanged = nextObstacleSig !== prevObstacleSigRef.current
     setLayoutContentOrigin((prev) => (originsNearlyEqual(prev, origin) ? prev : origin))
-    if (originChanged || obstaclesChanged) {
-      prevLayoutOriginRef.current = origin
-      prevObstacleSigRef.current = nextObstacleSig
-      setLayoutMeasureVersion((v) => v + 1)
+    const originChanged = !originsNearlyEqual(prevLayoutOriginRef.current, origin)
+    prevLayoutOriginRef.current = origin
+    prevObstacleSigRef.current = nextObstacleSig
+    if (layoutMeasureLockedForGeomRef.current === laneLayoutGeomSig) {
+      if (originChanged) {
+        setLayoutMeasureVersion((v) => v + 1)
+      }
+      return
     }
+    layoutMeasureLockedForGeomRef.current = laneLayoutGeomSig
+    setLayoutMeasureVersion((v) => (v === 0 ? 1 : v))
   }, [
     pathLayoutSeed,
     obstacles,
     laneLayoutGeomSig,
     arrowsReady,
-    diagramWidth,
     measureLayoutContentOrigin,
-    measureBpmnContainerSize,
     containerId,
   ])
 
+  const layoutMeasured = layoutMeasureVersion > 0
+
   useEffect(() => {
-    if (!arrowsReady || routingReconcilePass >= MAX_ROUTING_RECONCILE_PASSES) return
+    if (!arrowsReady || !layoutMeasured || bpmnConnections.length === 0) return
     const timer = window.setTimeout(() => {
-      if (routedSegmentsRef.current.size < routableConnectionCount) return
+      if (routedSegmentsRef.current.size < bpmnConnections.length) return
       const violators = findConnectionIdsWithCrossings(routedSegmentsRef.current)
-      if (violators.length === 0) return
+      if (violators.length === 0) {
+        lastRoutingViolatorSigRef.current = null
+        return
+      }
       const sig = [...violators].sort().join('|')
       if (lastRoutingViolatorSigRef.current === sig) return
+      if (routingReconcilePass >= MAX_BPMN_ROUTING_RECONCILE_PASSES) return
       lastRoutingViolatorSigRef.current = sig
       routingPriorityIdsRef.current = new Set(violators)
-      setRoutingReconcilePass((pass) => pass + 1)
+      startTransition(() => {
+        setRoutingReconcilePass((pass) => pass + 1)
+      })
     }, 160)
     return () => window.clearTimeout(timer)
-  }, [arrowsReady, routingReconcilePass, pathLayoutSeed, routableConnectionCount])
+  }, [
+    arrowsReady,
+    layoutMeasured,
+    bpmnConnections.length,
+    connectionIdsSig,
+    routingReconcilePass,
+    layoutMeasureVersion,
+    layoutContentOrigin.x,
+    layoutContentOrigin.y,
+  ])
 
-  const arrowRerouteVersion = pathLayoutSeed + layoutMeasureVersion + routingReconcilePass
-  const arrowOverlayWidth = Math.max(containerSize.width, diagramWidth, 1)
+  const layoutOriginSig = `${Math.round(layoutContentOrigin.x)}|${Math.round(layoutContentOrigin.y)}`
+  const arrowRerouteVersion =
+    pathLayoutSeed +
+    layoutMeasureVersion * 1000 +
+    routingReconcilePass * 10_000 +
+    Math.round(layoutContentOrigin.x) * 17 +
+    Math.round(layoutContentOrigin.y)
+  const arrowOverlayWidth = swimlaneTableMinWidth
   const arrowOverlayHeight = Math.max(containerSize.height, totalDiagramHeight, 1)
-  const layoutMeasured = layoutMeasureVersion > 0
   const showArrowLayer =
     arrowsReady &&
     layoutMeasured &&
+    routerLaneLayout != null &&
     bpmnConnections.length > 0 &&
     (arrowOverlayWidth > 0 || arrowOverlayHeight > 0)
 
@@ -567,18 +565,10 @@ export function BpmnPage({
     arrowRerouteVersion,
   )
 
-  const decisionTextPositions = labelConfig?.positions ?? {}
-  const handleDecisionTextDrag = useCallback(
-    (stepId: string, position: { x: number; y: number }) => {
-      onManualEdit?.({ stepId, textPosition: position, type: 'decision-text' })
-    },
-    [onManualEdit]
-  )
-
   const effectiveArrowConfig = useMemo(() => ({ ...(arrowConfig ?? {}), ...arrowConfigs }), [arrowConfig, arrowConfigs])
 
   const A4_LANDSCAPE_PX = 1123 /* 297mm at 96dpi */
-  const printScale = Math.min(1, A4_LANDSCAPE_PX / diagramWidth)
+  const printScale = Math.min(1, A4_LANDSCAPE_PX / swimlaneTableMinWidth)
 
   return (
     <div
@@ -592,18 +582,20 @@ export function BpmnPage({
         id={containerId}
         data-sop-diagram-root
         data-sop-connection-count={routableConnectionCount}
-        className="diagram-container relative w-full min-w-0 print:origin-top-left"
+        className="diagram-container relative w-full min-w-0 max-w-full overflow-x-auto overflow-y-visible print:origin-top-left"
         style={{
           minHeight: totalDiagramHeight,
           height: totalDiagramHeight > 0 ? totalDiagramHeight : undefined,
           printColorAdjust: 'exact',
         }}
       >
+        <div
+          className="relative shrink-0"
+          style={{ width: swimlaneTableMinWidth, minWidth: swimlaneTableMinWidth }}
+        >
         <table
-          className="border-2 border-black relative z-10 w-full table-fixed my-5"
-          style={{
-            minWidth: dynamicTitleWidth + 32 + diagramWidth,
-          }}
+          className="border-2 border-black relative z-10 table-fixed my-5"
+          style={{ width: swimlaneTableMinWidth, minWidth: swimlaneTableMinWidth }}
         >
           <tbody>
             <tr>
@@ -620,12 +612,7 @@ export function BpmnPage({
                       height: swimlaneTableBodyHeight,
                     }}
                   >
-                    <p
-                      className="origin-center font-bold text-lg -rotate-90 text-center whitespace-nowrap"
-                      style={{
-                        maxWidth: orderedImplementer.length * rowHeight * safetyFactor,
-                      }}
-                    >
+                    <p className="origin-center font-bold text-lg -rotate-90 text-center whitespace-nowrap">
                       {capitalizeWords(name)}
                     </p>
                   </div>
@@ -637,13 +624,17 @@ export function BpmnPage({
                     laneHeightPx={laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT}
                     label={orderedImplementer[0]?.name}
                   />
-                  <td className="border-2 border-black p-0 align-top w-full">
+                  <td className="border-2 border-black p-0 align-top">
                     <div
-                      className="relative w-full overflow-visible"
-                      style={{ height: laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT }}
+                      className="relative overflow-visible"
+                      style={{
+                        width: diagramWidth,
+                        minWidth: diagramWidth,
+                        height: laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT,
+                      }}
                     >
                       <svg
-                        className="block"
+                        className="block shrink-0"
                         width={diagramWidth}
                         height={laneLayouts[0]?.height ?? BPMN_BASE_ROW_HEIGHT}
                       >
@@ -655,6 +646,7 @@ export function BpmnPage({
                                 x={step.x}
                                 y={step.y}
                                 text={step.seq === 0 ? 'Mulai' : 'Selesai'}
+                                variant={step.seq === 0 ? 'start' : 'end'}
                               />
                             )}
                             {step.type === 'task' && (
@@ -681,13 +673,12 @@ export function BpmnPage({
             {laneLayouts.slice(1).map((lane, index) => (
               <tr key={lane.impId}>
                 <SwimlaneActorNameCell laneHeightPx={lane.height} label={orderedImplementer[index + 1]?.name} />
-                <td className="border-2 border-black p-0 align-top w-full">
-                  <div className="relative w-full overflow-visible" style={{ height: lane.height }}>
-                    <svg
-                      className="block"
-                      width={diagramWidth}
-                      height={lane.height}
-                    >
+                <td className="border-2 border-black p-0 align-top">
+                  <div
+                    className="relative overflow-visible"
+                    style={{ width: diagramWidth, minWidth: diagramWidth, height: lane.height }}
+                  >
+                    <svg className="block shrink-0" width={diagramWidth} height={lane.height}>
                       {lane.steps.map((step) => (
                         <g key={step.id}>
                           {step.type === 'terminator' && (
@@ -696,6 +687,7 @@ export function BpmnPage({
                               x={step.x}
                               y={step.y}
                               text={step.seq === 0 ? 'Mulai' : 'Selesai'}
+                              variant={step.seq === 0 ? 'start' : 'end'}
                             />
                           )}
                           {step.type === 'task' && (
@@ -720,88 +712,31 @@ export function BpmnPage({
             ))}
           </tbody>
         </table>
-
-        {/* Decision text overlay (per lane, positioned in global coords) */}
-        {laneLayouts.length > 0 && (
-          <svg
-            className={`sop-diagram-overlay absolute inset-0 z-30 h-full w-full ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
-          >
-            {laneLayouts.flatMap((lane, laneIndex) => {
-              const yOffset = laneLayouts
-                .slice(0, laneIndex)
-                .reduce((a, l) => a + l.height + BPMN_ROW_SPACING, 0)
-              const globalY = yOffset + lane.height / 2
-              return lane.steps
-                .filter((s) => s.type === 'decision')
-                .map((step) => (
-                  <BpmnDecisionText
-                    key={`dt-${step.seq}`}
-                    stepId={`step-${step.seq}`}
-                    stepName={step.name}
-                    x={step.x}
-                    y={
-                      step.decisionTextGlobalY ??
-                      globalY + BPMN_DECISION_TEXT_OFFSET_Y
-                    }
-                    customPosition={decisionTextPositions[`step-${step.seq}`]}
-                    editMode={editMode}
-                    onPositionChanged={handleDecisionTextDrag}
-                  />
-                ))
-            })}
-          </svg>
-        )}
+        </div>
 
         {showArrowLayer && (
           <svg
-            className={`absolute left-0 top-0 z-40 overflow-visible ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
+            className={`absolute left-0 top-0 z-40 shrink-0 overflow-visible ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
             width={arrowOverlayWidth}
             height={arrowOverlayHeight}
+            style={{ minWidth: swimlaneTableMinWidth }}
             onClick={() => onSelectConnectionProp?.(null)}
           >
             {bpmnConnections.map((conn, idx) => {
               const meta = bpmnConnectionsMeta[idx]
-              const hasValidLayout =
-                routerLaneLayout?.lanes?.length != null && routerLaneLayout.lanes.length > 0
-              const useBpmnConnector =
-                hasValidLayout && routerLaneLayout && meta && bpmnConnectionsMeta.length === bpmnConnections.length
-              const connectorKey = `${conn.id}-${arrowRerouteVersion}`
-              if (useBpmnConnector) {
-                return (
-                  <BpmnArrowConnector
-                    key={connectorKey}
-                    connection={meta}
-                    idcontainer={containerId}
-                    idarrow={`bpmn-${idx}-${conn.id}`}
-                    obstacles={obstacles}
-                    usedSides={usedSides}
-                    laneLayout={routerLaneLayout}
-                    connectionIndex={idx}
-                    allConnectionsMeta={bpmnConnectionsMeta}
-                    manualConfig={effectiveArrowConfig[conn.id]}
-                    manualLabelPosition={labelConfig?.positions?.[conn.id]}
-                    onPathUpdated={onPathUpdated}
-                    onManualChange={onManualChangeProp}
-                    editMode={editMode}
-                    isSelected={selectedConnectionId === conn.id}
-                    onSelect={(id) => onSelectConnectionProp?.(id)}
-                    constraintRect={bpmnBoundsRef.current}
-                    routedSegmentsRef={routedSegmentsRef}
-                    rerouteVersion={arrowRerouteVersion}
-                    obstacleRectsRef={obstacleRectsRef}
-                  />
-                )
-              }
+              if (!meta || !routerLaneLayout) return null
+              const connectorKey = `${conn.id}-${arrowRerouteVersion}-${layoutOriginSig}-r${routingReconcilePass}`
               return (
-                <FlowchartArrowConnector
+                <BpmnArrowConnector
                   key={connectorKey}
-                  connection={conn}
+                  connection={meta}
                   idcontainer={containerId}
                   idarrow={`bpmn-${idx}-${conn.id}`}
                   obstacles={obstacles}
                   usedSides={usedSides}
+                  laneLayout={routerLaneLayout}
                   connectionIndex={idx}
-                  allConnections={bpmnConnections}
+                  allConnectionsMeta={bpmnConnectionsMeta}
                   manualConfig={effectiveArrowConfig[conn.id]}
                   manualLabelPosition={labelConfig?.positions?.[conn.id]}
                   onPathUpdated={onPathUpdated}
@@ -811,6 +746,8 @@ export function BpmnPage({
                   onSelect={(id) => onSelectConnectionProp?.(id)}
                   constraintRect={bpmnBoundsRef.current}
                   routedSegmentsRef={routedSegmentsRef}
+                  rerouteVersion={arrowRerouteVersion}
+                  obstacleRectsRef={obstacleRectsRef}
                 />
               )
             })}

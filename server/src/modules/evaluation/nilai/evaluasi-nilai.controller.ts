@@ -12,7 +12,10 @@ import {
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
 import { PeranPengguna } from '../../../generated/prisma';
-import { ACCESS_TOKEN_COOKIE_NAME, type JwtAccessPayload } from '../../core/auth/helpers/auth.shared';
+import {
+  ACCESS_TOKEN_COOKIE_NAME,
+  type JwtAccessPayload,
+} from '../../core/auth/helpers/auth.shared';
 import { IsiNilaiEvaluasiDto } from './dto/isi-nilai-evaluasi.dto';
 import { NilaiEvaluasiPatchResponseDto } from './dto/nilai-evaluasi-patch-response.dto';
 import { PengajuanEvaluasiSelesaiResponseDto } from './dto/pengajuan-evaluasi-selesai-response.dto';

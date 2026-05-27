@@ -1,5 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { resolvePagination, toPaginatedData, type PaginatedData } from '../../../common/utils/pagination.util';
+import {
+  resolvePagination,
+  toPaginatedData,
+  type PaginatedData,
+} from '../../../common/utils/pagination.util';
 import { SopCatalogService } from '../catalog/sop-catalog.service';
 import type { PublicArsipQueryDto } from './dto/public-arsip-query.dto';
 import type { PublicOpdItemDto } from './dto/public-opd-item.dto';
@@ -33,10 +37,7 @@ export class SopPublicService {
     return toPaginatedData(items, total, page, limit);
   }
 
-  async listSopByOpd(
-    opdId: string,
-    query: PublicArsipQueryDto,
-  ): Promise<PublicSopByOpdPageDto> {
+  async listSopByOpd(opdId: string, query: PublicArsipQueryDto): Promise<PublicSopByOpdPageDto> {
     const opd = await this.sopPublicRepository.findOpdAktifById(opdId);
     if (opd === null) {
       throw new NotFoundException('OPD tidak ditemukan');

@@ -46,11 +46,14 @@ export class SopPublicRepository {
       select: {
         opdId: true,
         nama: true,
-        sop: {
-          where: {
-            detailSops: { some: { status: StatusSOP.BERLAKU } },
+        _count: {
+          select: {
+            sop: {
+              where: {
+                detailSops: { some: { status: StatusSOP.BERLAKU } },
+              },
+            },
           },
-          select: { sopId: true },
         },
       },
       orderBy: { nama: 'asc' },
@@ -60,7 +63,7 @@ export class SopPublicRepository {
     return rows.map((row) => ({
       opdId: row.opdId,
       nama: row.nama,
-      jumlahSopBerlaku: row.sop.length,
+      jumlahSopBerlaku: row._count.sop,
     }));
   }
 
@@ -173,10 +176,7 @@ export class SopPublicRepository {
     const searchFilter =
       search !== undefined
         ? {
-            OR: [
-              { nomorSOP: { contains: search } },
-              { sop: { judul: { contains: search } } },
-            ],
+            OR: [{ nomorSOP: { contains: search } }, { sop: { judul: { contains: search } } }],
           }
         : {};
     return {

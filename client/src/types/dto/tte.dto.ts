@@ -1,7 +1,4 @@
-export type PeranTTE =
-  | "KEPALA_OPD"
-  | "PJ_EVALUATOR"
-  | "PJ_PENYUSUN";
+export type PeranTTE = "KEPALA_OPD" | "PJ_EVALUATOR" | "PJ_PENYUSUN";
 
 /** Profil TTE dari GET/POST `/tte/profil` — PIN disimpan di server pada data pengguna. */
 export interface TteProfil {
@@ -104,9 +101,15 @@ export interface PdfSignatureVerificationEntry {
   index: number;
   valid: boolean;
   reason: string;
+  signatureValue: string;
   signerSubject: string;
   signerIssuer: string;
   signedAt: string | null;
+  binding: {
+    dokumenTteId: string;
+    userId: string;
+    jenisDokumen: string;
+  } | null;
   certificate: {
     validFrom: string;
     validTo: string;
@@ -114,6 +117,17 @@ export interface PdfSignatureVerificationEntry {
     serialNumber: string;
   };
   checks: PdfSignatureChecks;
+  tteMatch: {
+    matched: boolean;
+    reason: string;
+    dokumenTteId?: string;
+    userId?: string;
+    peran?: string;
+    jenisDokumen?: string;
+    nomorDokumen?: string;
+    judulDokumen?: string;
+    ditandatanganiPada?: string;
+  };
 }
 
 export interface VerifyPdfResponse {
@@ -149,10 +163,7 @@ export interface TtePengesahanPublic {
   qrPayload: string;
 }
 
-export type TTERole =
-  | "kepala-opd"
-  | "pj-evaluator"
-  | "pj-penyusun";
+export type TTERole = "kepala-opd" | "pj-evaluator" | "pj-penyusun";
 
 export interface RegisterTteDto {
   pin: string;

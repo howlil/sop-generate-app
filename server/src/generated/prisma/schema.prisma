@@ -24,8 +24,11 @@ model Pengguna {
   jabatan                         String
   pangkat                         String
   nohp                            String
+  sesiTokenVersion                Int                  @default(0)
+  refreshTokenHash                String?              @db.VarChar(255)
+  refreshTokenExpiresAt           DateTime?
+  passwordChangedAt               DateTime?
   ttePinHash                      String?              @db.VarChar(255)
-  ttePinSetAt                     DateTime?
   deletedAt                       DateTime?
   createdAt                       DateTime             @default(now())
   updatedAt                       DateTime             @updatedAt
@@ -42,6 +45,8 @@ model Pengguna {
   opd                             OPD                  @relation(fields: [opdId], references: [opdId], onDelete: Restrict)
   riwayatOpd                      RiwayatOpdPengguna[]
   tandaTangan                     RiwayatTandaTangan[]
+
+  @@index([opdId, peran, deletedAt], map: "Pengguna_opdId_peran_deletedAt_idx")
 }
 
 model OPD {
@@ -56,6 +61,8 @@ model OPD {
   riwayatOpdPengguna RiwayatOpdPengguna[]
   opdPeraturan       OPDPeraturan[]
   sop                SOP[]
+
+  @@index([deletedAt, nama], map: "OPD_deletedAt_nama_idx")
 }
 
 model RiwayatOpdPengguna {
@@ -68,6 +75,7 @@ model RiwayatOpdPengguna {
   pengguna   Pengguna @relation(fields: [penggunaId], references: [penggunaId], onDelete: Cascade)
 
   @@id([penggunaId, opdId])
+  @@index([opdId, isAktif], map: "RiwayatOpdPengguna_opdId_isAktif_idx")
 }
 
 /// =========================
@@ -155,7 +163,9 @@ model DetailSOP {
 
   @@unique([sopId, versi])
   @@index([sopId, status])
+  @@index([sopId, status, versi], map: "DetailSOP_sopId_status_versi_idx")
   @@index([status, updatedAt])
+  @@index([status, tanggalEfektif], map: "DetailSOP_status_tanggalEfektif_idx")
   @@index([revisiDariDetailSopId])
 }
 
@@ -216,6 +226,7 @@ model DasarHukum {
   detailSop   DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@id([detailSopId, peraturanId])
+  @@index([peraturanId], map: "DasarHukum_peraturanId_idx")
 }
 
 /// Relasi keluar: `detailSopId` (pemilik) → `detailSopTerkaitId` (target). Invariant DB + app:
@@ -229,6 +240,7 @@ model SopTerkait {
   sopTerkait         DetailSOP @relation("RelasiSOPTerkait", fields: [detailSopTerkaitId], references: [detailSopId], onDelete: Cascade)
 
   @@id([detailSopId, detailSopTerkaitId])
+  @@index([detailSopTerkaitId], map: "SopTerkait_detailSopTerkaitId_idx")
 }
 
 /// `pelaksanaId` harus dari OPD yang sama dengan SOP pemilik `detailSopId` (trigger DB + validasi prosedur).
@@ -258,6 +270,9 @@ model LangkahSOP {
   detailSop                  DetailSOP                 @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@unique([detailSopId, urutan])
+  @@index([pelaksanaId], map: "LangkahSOP_pelaksanaId_idx")
+  @@index([langkahSelanjutnyaYaId], map: "LangkahSOP_langkahSelanjutnyaYaId_idx")
+  @@index([langkahSelanjutnyaTidakId], map: "LangkahSOP_langkahSelanjutnyaTidakId_idx")
 }
 
 model Pelaksana {
@@ -269,6 +284,8 @@ model Pelaksana {
   sopDetails  DetailSOPPelaksana[]
   langkahSOP  LangkahSOP[]
   opd         OPD                  @relation(fields: [opdId], references: [opdId])
+
+  @@index([opdId, nama], map: "Pelaksana_opdId_nama_idx")
 }
 
 /// Swimlane: `pelaksanaId` harus master `Pelaksana` dengan `opdId` sama seperti `SOP` pemilik `DetailSOP` (trigger DB).
@@ -282,6 +299,7 @@ model DetailSOPPelaksana {
   detailSop   DetailSOP @relation(fields: [detailSopId], references: [detailSopId], onDelete: Cascade)
 
   @@id([detailSopId, pelaksanaId])
+  @@index([pelaksanaId], map: "DetailSOPPelaksana_pelaksanaId_idx")
 }
 
 /// =========================
@@ -294,8 +312,6 @@ model LogEditSOP {
   penggunaId      String
   createdAt       DateTime                @default(now()) @db.DateTime(3)
   bagian          BagianSOP               @default(HEADER)
-  /// Pointer longgar ke entitas yang diaudit (mis. id komposit nilai evaluasi); bukan FK.
-  targetEntityId  String?
   /// Ringkasan human-readable yang sudah memuat label bagian + field yang berubah.
   keterangan      String?                 @db.Text
   /// Jumlah event yang digabung dalam sesi (bekas `meta.count`).
@@ -356,6 +372,9 @@ model PengajuanEvaluasi {
   opd                                OPD                     @relation(fields: [opdId], references: [opdId])
 
   @@index([opdId, status, createdAt])
+  @@index([opdId, status, updatedAt], map: "PengajuanEvaluasi_opdId_status_updatedAt_idx")
+  @@index([opdId, status, tanggalDiselesaikan, updatedAt], map: "PengajuanEvaluasi_opd_status_selesai_idx")
+  @@index([status, createdAt], map: "PengajuanEvaluasi_status_createdAt_idx")
 }
 
 /// Hasil penilaian per DetailSOP dalam satu pengajuan evaluasi.
@@ -382,6 +401,7 @@ model NilaiEvaluasi {
 
   @@id([pengajuanEvaluasiId, detailSopId])
   @@index([pengajuanEvaluasiId])
+  @@index([pengajuanEvaluasiId, hasil], map: "NilaiEvaluasi_pengajuanEvaluasiId_hasil_idx")
   @@index([detailSopId])
 }
 
@@ -408,23 +428,23 @@ model LogNilaiEvaluasi {
 /// Wajib tepat satu parent: `detailSopId` XOR `pengajuanEvaluasiId` (CHECK MySQL, lihat migrasi invariant).
 
 model DokumenTte {
-  dokumenTteId         String               @id @default(uuid())
-  nomorDokumen         String               @unique
-  jenisDokumen         JenisDokumenTte
-  judulDokumen         String
-  hashDokumen          String
-  versiDokumen         Int                  @default(1)
-  metodeKanonikalisasi String?
-  detailSopId          String?
-  pengajuanEvaluasiId  String?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-  detailSop            DetailSOP?           @relation(fields: [detailSopId], references: [detailSopId], onDelete: Restrict)
-  pengajuanEvaluasi    PengajuanEvaluasi?   @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Restrict)
-  riwayatTandaTangan   RiwayatTandaTangan[]
+  dokumenTteId        String               @id @default(uuid())
+  nomorDokumen        String               @unique
+  jenisDokumen        JenisDokumenTte
+  judulDokumen        String
+  hashDokumen         String
+  versiDokumen        Int                  @default(1)
+  detailSopId         String?
+  pengajuanEvaluasiId String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  detailSop           DetailSOP?           @relation(fields: [detailSopId], references: [detailSopId], onDelete: Restrict)
+  pengajuanEvaluasi   PengajuanEvaluasi?   @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId], onDelete: Restrict)
+  riwayatTandaTangan  RiwayatTandaTangan[]
 
   @@unique([detailSopId])
   @@unique([pengajuanEvaluasiId])
+  @@index([jenisDokumen, createdAt], map: "DokumenTte_jenisDokumen_createdAt_idx")
 }
 
 model RiwayatTandaTangan {
@@ -434,7 +454,6 @@ model RiwayatTandaTangan {
   signatureValue     String?       @db.LongText
   signatureAlgorithm String?
   signatureFormat    String?
-  keyId              String?
   certSerialNumber   String?
   certIssuer         String?
   certSubject        String?

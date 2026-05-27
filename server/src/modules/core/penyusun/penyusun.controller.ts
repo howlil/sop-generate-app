@@ -64,9 +64,7 @@ export class PenyusunController {
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({ summary: 'Tambah penyusun / PJ penyusun (sandi default server)' })
   @ApiResponse({ status: 201, type: PenyusunPublikItemDto })
-  async create(
-    @Body() dto: CreatePenyusunDto,
-  ): Promise<ApiSuccessResponse<PenyusunPublikItemDto>> {
+  async create(@Body() dto: CreatePenyusunDto): Promise<ApiSuccessResponse<PenyusunPublikItemDto>> {
     const data = await this.penyusunService.create(dto);
     return {
       message: 'Penyusun berhasil ditambahkan',
@@ -109,7 +107,9 @@ export class PenyusunController {
   @ApiOperation({ summary: 'Aktifkan kembali penyusun yang dinonaktifkan' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 200, type: PenyusunPublikItemDto })
-  async aktifkan(@Param('id', ParseUUIDPipe) id: string): Promise<ApiSuccessResponse<PenyusunPublikItemDto>> {
+  async aktifkan(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ApiSuccessResponse<PenyusunPublikItemDto>> {
     const data = await this.penyusunService.aktifkan(id);
     return {
       message: 'Penyusun berhasil diaktifkan kembali',

@@ -29,7 +29,10 @@ export class PeraturanResponseDto {
   @ApiPropertyOptional({ nullable: true, format: 'uuid' })
   readonly lastEditedById?: string | null;
 
-  @ApiPropertyOptional({ nullable: true, description: 'Pengguna yang terakhir mengubah master peraturan (beserta OPD).' })
+  @ApiPropertyOptional({
+    nullable: true,
+    description: 'Pengguna yang terakhir mengubah master peraturan (beserta OPD).',
+  })
   readonly lastEditedBy?: { id: string; nama: string; opd: { id: string; nama: string } } | null;
 
   @ApiPropertyOptional({ description: 'Jumlah pemakaian sebagai dasar hukum SOP' })

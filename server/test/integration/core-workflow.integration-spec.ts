@@ -6,6 +6,12 @@ import * as bcrypt from 'bcrypt';
 import { createDefaultValidationPipe } from '../../src/common';
 import { PrismaService } from '../../src/common/prisma/prisma.service';
 import {
+  assertSafeIntegrationDatabase,
+  pingIntegrationDatabase,
+  resetIntegrationDatabase,
+} from './helpers/integration-database.util';
+import { isIntegrationEnabled } from './helpers/integration-runtime.util';
+import {
   BagianSOP,
   HasilEvaluasi,
   JenisDokumenTte,
@@ -18,8 +24,7 @@ import {
   StatusSOP,
 } from '../../src/generated/prisma';
 
-const RUN_INTEGRATION = process.env.RUN_INTEGRATION === 'true';
-const describeIntegration = RUN_INTEGRATION ? describe : describe.skip;
+const describeIntegration = isIntegrationEnabled() ? describe : describe.skip;
 const API = '/api/v1';
 const PASSWORD = 'Integration123!';
 const PIN_TTE = '123456';
@@ -33,56 +38,6 @@ type WorkflowState = {
   relatedDetailSopId: string;
   pengajuanId: string;
 };
-
-function assertSafeIntegrationDatabase(): void {
-  const databaseName = process.env.DATABASE_NAME ?? '';
-  if (!databaseName.toLowerCase().includes('test')) {
-    throw new Error(
-      `Integration test dibatalkan: DATABASE_NAME harus mengandung kata "test". Nilai saat ini: ${databaseName}`,
-    );
-  }
-}
-
-async function resetDatabase(prisma: PrismaService): Promise<void> {
-  const tables = [
-    'TitikTekukPanahDiagramSOP',
-    'OverrideLabelDiagramSOP',
-    'OverridePanahDiagramSOP',
-    'KonfigurasiDiagramSOP',
-    'LogEditSopDomainField',
-    'LogEditSOP',
-    'RiwayatTandaTangan',
-    'DokumenTte',
-    'LogNilaiEvaluasi',
-    'NilaiEvaluasi',
-    'PengajuanEvaluasi',
-    'LangkahSOP',
-    'DetailSOPPelaksana',
-    'SopTerkait',
-    'DasarHukum',
-    'LampiranPeringatan',
-    'LampiranKualifikasiPelaksanaan',
-    'LampiranPeralatanPerlengkapan',
-    'LampiranPencatatanPendataan',
-    'DetailSOP',
-    'SOP',
-    'Pelaksana',
-    'OPDPeraturan',
-    'Peraturan',
-    'RiwayatOpdPengguna',
-    'Pengguna',
-    'OPD',
-  ];
-
-  await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS=0');
-  try {
-    for (const table of tables) {
-      await prisma.$executeRawUnsafe(`DELETE FROM \`${table}\``);
-    }
-  } finally {
-    await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS=1');
-  }
-}
 
 async function seedUser(
   prisma: PrismaService,
@@ -167,7 +122,15 @@ async function seedBaseData(prisma: PrismaService): Promise<{ opdAId: string; op
 
 async function loginAgent(app: INestApplication, email: string): Promise<Agent> {
   const agent = request.agent(app.getHttpServer());
-  await agent.post(`${API}/auth/login`).send({ email, password: PASSWORD }).expect(201);
+  const response = await agent
+    .post(`${API}/auth/login`)
+    .send({ email, password: PASSWORD })
+    .expect(201);
+  const setCookie = response.headers['set-cookie'];
+  const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
+  if (cookies.length > 0) {
+    agent.set('Cookie', cookies.map((cookie) => cookie.split(';')[0]).join('; '));
+  }
   return agent;
 }
 
@@ -199,7 +162,8 @@ describeIntegration('Core workflow integration test', () => {
     await app.init();
 
     prisma = app.get(PrismaService);
-    await resetDatabase(prisma);
+    await pingIntegrationDatabase(prisma);
+    await resetIntegrationDatabase(prisma);
     const seeded = await seedBaseData(prisma);
 
     penyusunAgent = await loginAgent(app, 'penyusun.integration@example.test');
@@ -221,11 +185,14 @@ describeIntegration('Core workflow integration test', () => {
   });
 
   afterAll(async () => {
-    if (prisma !== undefined) {
-      await resetDatabase(prisma);
-    }
-    if (app !== undefined) {
-      await app.close();
+    try {
+      if (prisma !== undefined) {
+        await resetIntegrationDatabase(prisma);
+      }
+    } finally {
+      if (app !== undefined) {
+        await app.close();
+      }
     }
   });
 
@@ -432,7 +399,9 @@ describeIntegration('Core workflow integration test', () => {
     expectRejected(earlyResubmit.status);
 
     await penyusunAgent
-      .patch(`${API}/evaluasi/${state.pengajuanId}/nilai/${state.detailSopId}/tindak-lanjut-selesai`)
+      .patch(
+        `${API}/evaluasi/${state.pengajuanId}/nilai/${state.detailSopId}/tindak-lanjut-selesai`,
+      )
       .expect(200);
     await pjPenyusunAgent
       .post(`${API}/sop/penyusun-workbench/${state.detailSopId}/kirim-ulang-evaluasi`)
@@ -526,12 +495,20 @@ describeIntegration('Core workflow integration test', () => {
 
     const wrongKepala = await kepalaLainAgent
       .post(`${API}/tte/tanda-tangani/pengajuan/${state.pengajuanId}/sop-semua`)
-      .send({ pin: PIN_TTE, nomorDokumen: 'SOP-SIGN-INT-001', judulDokumen: 'Pengesahan SOP Integration' });
+      .send({
+        pin: PIN_TTE,
+        nomorDokumen: 'SOP-SIGN-INT-001',
+        judulDokumen: 'Pengesahan SOP Integration',
+      });
     expectRejected(wrongKepala.status);
 
     await kepalaAgent
       .post(`${API}/tte/tanda-tangani/pengajuan/${state.pengajuanId}/sop-semua`)
-      .send({ pin: PIN_TTE, nomorDokumen: 'SOP-SIGN-INT-001', judulDokumen: 'Pengesahan SOP Integration' })
+      .send({
+        pin: PIN_TTE,
+        nomorDokumen: 'SOP-SIGN-INT-001',
+        judulDokumen: 'Pengesahan SOP Integration',
+      })
       .expect(201);
 
     const detail = await prisma.detailSOP.findUniqueOrThrow({

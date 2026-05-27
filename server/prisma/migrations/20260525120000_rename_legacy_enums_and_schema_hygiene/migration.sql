@@ -15,15 +15,16 @@ ALTER TABLE `LogEditSOP`
 
 -- ---------------------------------------------------------------------------
 -- 2) Indeks lampiran: cukup detailSopId (bukan riwayat berdasarkan createdAt)
+-- Buat indeks FK baru dulu agar DROP indeks lama tidak gagal (MySQL 1553).
 -- ---------------------------------------------------------------------------
-DROP INDEX `LampiranPeringatan_detailSopId_createdAt_idx` ON `LampiranPeringatan`;
 CREATE INDEX `LampiranPeringatan_detailSopId_idx` ON `LampiranPeringatan`(`detailSopId`);
+DROP INDEX `LampiranPeringatan_detailSopId_createdAt_idx` ON `LampiranPeringatan`;
 
-DROP INDEX `LampiranKualifikasiPelaksanaan_detailSopId_createdAt_idx` ON `LampiranKualifikasiPelaksanaan`;
 CREATE INDEX `LampiranKualifikasiPelaksanaan_detailSopId_idx` ON `LampiranKualifikasiPelaksanaan`(`detailSopId`);
+DROP INDEX `LampiranKualifikasiPelaksanaan_detailSopId_createdAt_idx` ON `LampiranKualifikasiPelaksanaan`;
 
-DROP INDEX `LampiranPeralatanPerlengkapan_detailSopId_createdAt_idx` ON `LampiranPeralatanPerlengkapan`;
 CREATE INDEX `LampiranPeralatanPerlengkapan_detailSopId_idx` ON `LampiranPeralatanPerlengkapan`(`detailSopId`);
+DROP INDEX `LampiranPeralatanPerlengkapan_detailSopId_createdAt_idx` ON `LampiranPeralatanPerlengkapan`;
 
-DROP INDEX `LampiranPencatatanPendataan_detailSopId_createdAt_idx` ON `LampiranPencatatanPendataan`;
 CREATE INDEX `LampiranPencatatanPendataan_detailSopId_idx` ON `LampiranPencatatanPendataan`(`detailSopId`);
+DROP INDEX `LampiranPencatatanPendataan_detailSopId_createdAt_idx` ON `LampiranPencatatanPendataan`;

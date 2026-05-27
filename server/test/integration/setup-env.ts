@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { assertIntegrationDockerOnly } from './helpers/integration-runtime.util';
 
 const runtimeEnvKeys = new Set(Object.keys(process.env));
 
@@ -48,3 +49,4 @@ loadEnvFile(resolve(rootDir, '.env'), false);
 loadEnvFile(resolve(rootDir, `.env.${process.env.NODE_ENV}`), true);
 loadEnvFile(resolve(rootDir, `.env.${process.env.NODE_ENV}.local`), true);
 process.env.PDF_SIGNING_ENABLED = 'false';
+assertIntegrationDockerOnly();

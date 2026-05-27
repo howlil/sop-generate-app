@@ -36,8 +36,7 @@ export class KepalaOpdPublicDto {
   readonly updatedAt!: Date;
 
   @ApiProperty({
-    description:
-      'True jika akun boleh dihapus (belum ada Detail SOP yang dibuat pengguna ini)',
+    description: 'True jika akun boleh dihapus (belum ada Detail SOP yang dibuat pengguna ini)',
   })
   readonly dapatDihapus!: boolean;
 }

@@ -209,7 +209,8 @@ const SEED_PERATURAN: ReadonlyArray<SeedPeraturanInput> = [
     nomor: '15 Tahun 2022',
     tahun: 2022,
     nama: 'Peraturan Gubernur Pelayanan Publik Berkualitas',
-    tentang: 'Penyelenggaraan pelayanan publik berkualitas dan berorientasi pada kepuasan masyarakat.',
+    tentang:
+      'Penyelenggaraan pelayanan publik berkualitas dan berorientasi pada kepuasan masyarakat.',
   },
 ];
 
@@ -327,7 +328,12 @@ export class SeedService {
       });
 
       // 13. Log Nilai Evaluasi
-      await this.seedLogNilaiEvaluasi(tx, { d, pe, evaluator1Id: u['evaluator1@gmail.com'].penggunaId, evaluator2Id: u['evaluator2@gmail.com'].penggunaId });
+      await this.seedLogNilaiEvaluasi(tx, {
+        d,
+        pe,
+        evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
+        evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+      });
 
       await this.validateSeedEvaluationBusinessRules(tx);
 
@@ -452,7 +458,13 @@ export class SeedService {
     for (const p of SEED_PERATURAN) {
       const persisted = await tx.peraturan.upsert({
         where: { nomor_tahun: { nomor: p.nomor, tahun: p.tahun } },
-        create: { nama: p.nama, nomor: p.nomor, tahun: p.tahun, tentang: p.tentang, lastEditedById },
+        create: {
+          nama: p.nama,
+          nomor: p.nomor,
+          tahun: p.tahun,
+          tentang: p.tentang,
+          lastEditedById,
+        },
         update: { nama: p.nama, tentang: p.tentang, lastEditedById },
         select: { peraturanId: true },
       });
@@ -504,16 +516,40 @@ export class SeedService {
       { key: 'FRONT_OFFICE_DINKES', opdId: params.opdDinkesId, nama: 'Front Office Dinkes' },
       { key: 'KASUBAG_DINKES', opdId: params.opdDinkesId, nama: 'Kasubag Pelayanan Dinkes' },
       { key: 'DOKTER_DINKES', opdId: params.opdDinkesId, nama: 'Dokter Pemeriksa' },
-      { key: 'PETUGAS_IMUNISASI_DINKES', opdId: params.opdDinkesId, nama: 'Petugas Imunisasi Dinkes' },
+      {
+        key: 'PETUGAS_IMUNISASI_DINKES',
+        opdId: params.opdDinkesId,
+        nama: 'Petugas Imunisasi Dinkes',
+      },
       { key: 'SURVEILANS_DINKES', opdId: params.opdDinkesId, nama: 'Petugas Surveilans Dinkes' },
       { key: 'TIM_GIZI_DINKES', opdId: params.opdDinkesId, nama: 'Tim Gizi Dinkes' },
-      { key: 'PETUGAS_RAWAT_INAP_DINKES', opdId: params.opdDinkesId, nama: 'Petugas Rawat Inap Dinkes' },
+      {
+        key: 'PETUGAS_RAWAT_INAP_DINKES',
+        opdId: params.opdDinkesId,
+        nama: 'Petugas Rawat Inap Dinkes',
+      },
       { key: 'PETUGAS_FARMASI_DINKES', opdId: params.opdDinkesId, nama: 'Petugas Farmasi Dinkes' },
-      { key: 'TIM_LAYANAN_DISKOMINFO', opdId: params.opdDiskominfoId, nama: 'Tim Layanan Informasi Diskominfo' },
-      { key: 'TIM_MEDIA_DISKOMINFO', opdId: params.opdDiskominfoId, nama: 'Tim Media Sosial Diskominfo' },
-      { key: 'TIM_ADUAN_DISKOMINFO', opdId: params.opdDiskominfoId, nama: 'Tim Aduan Masyarakat Diskominfo' },
+      {
+        key: 'TIM_LAYANAN_DISKOMINFO',
+        opdId: params.opdDiskominfoId,
+        nama: 'Tim Layanan Informasi Diskominfo',
+      },
+      {
+        key: 'TIM_MEDIA_DISKOMINFO',
+        opdId: params.opdDiskominfoId,
+        nama: 'Tim Media Sosial Diskominfo',
+      },
+      {
+        key: 'TIM_ADUAN_DISKOMINFO',
+        opdId: params.opdDiskominfoId,
+        nama: 'Tim Aduan Masyarakat Diskominfo',
+      },
       { key: 'TIM_PPDB_DISDIK', opdId: params.opdDisdikId, nama: 'Tim Penerimaan PPDB Disdik' },
-      { key: 'SEKSI_AKREDITASI_DISDIK', opdId: params.opdDisdikId, nama: 'Seksi Akreditasi Disdik' },
+      {
+        key: 'SEKSI_AKREDITASI_DISDIK',
+        opdId: params.opdDisdikId,
+        nama: 'Seksi Akreditasi Disdik',
+      },
       { key: 'TIM_AKREDITASI_DISDIK', opdId: params.opdDisdikId, nama: 'Tim Akreditasi Disdik' },
     ];
     for (const entry of entries) {
@@ -553,16 +589,48 @@ export class SeedService {
     },
   ): Promise<Record<string, { detailSopId: string }>> {
     // SOP parents
-    const sopSuratSehat = await this.findOrCreateSop(tx, params.opdDinkesId, 'Pelayanan Surat Keterangan Sehat');
+    const sopSuratSehat = await this.findOrCreateSop(
+      tx,
+      params.opdDinkesId,
+      'Pelayanan Surat Keterangan Sehat',
+    );
     const sopImunisasi = await this.findOrCreateSop(tx, params.opdDinkesId, 'Imunisasi Rutin');
-    const sopSurveilans = await this.findOrCreateSop(tx, params.opdDinkesId, 'Surveilans Epidemiologi');
-    const sopGiziBuruk = await this.findOrCreateSop(tx, params.opdDinkesId, 'Penanganan Gizi Buruk');
+    const sopSurveilans = await this.findOrCreateSop(
+      tx,
+      params.opdDinkesId,
+      'Surveilans Epidemiologi',
+    );
+    const sopGiziBuruk = await this.findOrCreateSop(
+      tx,
+      params.opdDinkesId,
+      'Penanganan Gizi Buruk',
+    );
     const sopRawatInap = await this.findOrCreateSop(tx, params.opdDinkesId, 'Pelayanan Rawat Inap');
-    const sopFarmasi = await this.findOrCreateSop(tx, params.opdDinkesId, 'Manajemen Farmasi Puskesmas');
-    const sopInfoPublik = await this.findOrCreateSop(tx, params.opdDiskominfoId, 'Permohonan Informasi Publik');
-    const sopMediaSosial = await this.findOrCreateSop(tx, params.opdDiskominfoId, 'Pengelolaan Media Sosial Pemerintah');
-    const sopAduanMasy = await this.findOrCreateSop(tx, params.opdDiskominfoId, 'Penanganan Aduan Masyarakat Digital');
-    const sopPPDB = await this.findOrCreateSop(tx, params.opdDisdikId, 'Penerimaan Peserta Didik Baru (PPDB)');
+    const sopFarmasi = await this.findOrCreateSop(
+      tx,
+      params.opdDinkesId,
+      'Manajemen Farmasi Puskesmas',
+    );
+    const sopInfoPublik = await this.findOrCreateSop(
+      tx,
+      params.opdDiskominfoId,
+      'Permohonan Informasi Publik',
+    );
+    const sopMediaSosial = await this.findOrCreateSop(
+      tx,
+      params.opdDiskominfoId,
+      'Pengelolaan Media Sosial Pemerintah',
+    );
+    const sopAduanMasy = await this.findOrCreateSop(
+      tx,
+      params.opdDiskominfoId,
+      'Penanganan Aduan Masyarakat Digital',
+    );
+    const sopPPDB = await this.findOrCreateSop(
+      tx,
+      params.opdDisdikId,
+      'Penerimaan Peserta Didik Baru (PPDB)',
+    );
     const sopAkreditasi = await this.findOrCreateSop(tx, params.opdDisdikId, 'Akreditasi Sekolah');
 
     const d: Record<string, { detailSopId: string }> = {};
@@ -793,12 +861,30 @@ export class SeedService {
       { detailSopId: d['DINKES_005_V1'].detailSopId, peraturanId: p['15 Tahun 2022'].peraturanId },
       { detailSopId: d['DINKES_006_V1'].detailSopId, peraturanId: p['35 Tahun 2012'].peraturanId },
       { detailSopId: d['DINKES_006_V1'].detailSopId, peraturanId: p['15 Tahun 2022'].peraturanId },
-      { detailSopId: d['DISKOMINFO_001_V1'].detailSopId, peraturanId: p['7 Tahun 2023'].peraturanId },
-      { detailSopId: d['DISKOMINFO_001_V1'].detailSopId, peraturanId: p['15 Tahun 2022'].peraturanId },
-      { detailSopId: d['DISKOMINFO_002_V1'].detailSopId, peraturanId: p['7 Tahun 2023'].peraturanId },
-      { detailSopId: d['DISKOMINFO_002_V1'].detailSopId, peraturanId: p['15 Tahun 2022'].peraturanId },
-      { detailSopId: d['DISKOMINFO_003_V1'].detailSopId, peraturanId: p['7 Tahun 2023'].peraturanId },
-      { detailSopId: d['DISKOMINFO_003_V1'].detailSopId, peraturanId: p['15 Tahun 2022'].peraturanId },
+      {
+        detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
+        peraturanId: p['7 Tahun 2023'].peraturanId,
+      },
+      {
+        detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
+        peraturanId: p['15 Tahun 2022'].peraturanId,
+      },
+      {
+        detailSopId: d['DISKOMINFO_002_V1'].detailSopId,
+        peraturanId: p['7 Tahun 2023'].peraturanId,
+      },
+      {
+        detailSopId: d['DISKOMINFO_002_V1'].detailSopId,
+        peraturanId: p['15 Tahun 2022'].peraturanId,
+      },
+      {
+        detailSopId: d['DISKOMINFO_003_V1'].detailSopId,
+        peraturanId: p['7 Tahun 2023'].peraturanId,
+      },
+      {
+        detailSopId: d['DISKOMINFO_003_V1'].detailSopId,
+        peraturanId: p['15 Tahun 2022'].peraturanId,
+      },
       { detailSopId: d['DISDIK_001_V1'].detailSopId, peraturanId: p['12 Tahun 2024'].peraturanId },
       { detailSopId: d['DISDIK_001_V1'].detailSopId, peraturanId: p['15 Tahun 2022'].peraturanId },
       { detailSopId: d['DISDIK_001_V2'].detailSopId, peraturanId: p['12 Tahun 2024'].peraturanId },
@@ -817,9 +903,18 @@ export class SeedService {
 
     // SopTerkait — relasi antar DetailSOP (satu arah; tidak boleh self-loop atau pasangan terbalik `(B,A)` bila `(A,B)` ada — trigger `trg_sop_terkait_*`)
     const relasiPairs: Array<{ detailSopId: string; detailSopTerkaitId: string }> = [
-      { detailSopId: d['DINKES_001_V1'].detailSopId, detailSopTerkaitId: d['DISKOMINFO_001_V1'].detailSopId },
-      { detailSopId: d['DINKES_001_V1'].detailSopId, detailSopTerkaitId: d['DISDIK_001_V2'].detailSopId },
-      { detailSopId: d['DISDIK_001_V1'].detailSopId, detailSopTerkaitId: d['DISDIK_001_V2'].detailSopId },
+      {
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        detailSopTerkaitId: d['DISKOMINFO_001_V1'].detailSopId,
+      },
+      {
+        detailSopId: d['DINKES_001_V1'].detailSopId,
+        detailSopTerkaitId: d['DISDIK_001_V2'].detailSopId,
+      },
+      {
+        detailSopId: d['DISDIK_001_V1'].detailSopId,
+        detailSopTerkaitId: d['DISDIK_001_V2'].detailSopId,
+      },
     ];
 
     for (const pair of relasiPairs) {
@@ -848,9 +943,24 @@ export class SeedService {
     const { d, pel } = params;
 
     // ── Swimlane: SOP-DINKES-001-V1 ───────────────────────────────────
-    await this.upsertSwimlane(tx, d['DINKES_001_V1'].detailSopId, pel['FRONT_OFFICE_DINKES'].pelaksanaId, 1);
-    await this.upsertSwimlane(tx, d['DINKES_001_V1'].detailSopId, pel['KASUBAG_DINKES'].pelaksanaId, 2);
-    await this.upsertSwimlane(tx, d['DINKES_001_V1'].detailSopId, pel['DOKTER_DINKES'].pelaksanaId, 3);
+    await this.upsertSwimlane(
+      tx,
+      d['DINKES_001_V1'].detailSopId,
+      pel['FRONT_OFFICE_DINKES'].pelaksanaId,
+      1,
+    );
+    await this.upsertSwimlane(
+      tx,
+      d['DINKES_001_V1'].detailSopId,
+      pel['KASUBAG_DINKES'].pelaksanaId,
+      2,
+    );
+    await this.upsertSwimlane(
+      tx,
+      d['DINKES_001_V1'].detailSopId,
+      pel['DOKTER_DINKES'].pelaksanaId,
+      3,
+    );
 
     // ── LangkahSOP: SOP-DINKES-001-V1 (alur AWAL→KEGIATAN→KEPUTUSAN→AWAL) ──
     const dinkesV1Id = d['DINKES_001_V1'].detailSopId;
@@ -927,7 +1037,7 @@ export class SeedService {
     await tx.langkahSOP.update({
       where: { langkahSopId: lD1Verifikasi.langkahSopId },
       data: {
-        langkahSelanjutnyaYaId: lD1Pemeriksaan.langkahSopId,   // berkas lengkap
+        langkahSelanjutnyaYaId: lD1Pemeriksaan.langkahSopId, // berkas lengkap
         langkahSelanjutnyaTidakId: lD1TerimaData.langkahSopId, // berkas tidak lengkap → kembali
       },
     });
@@ -936,8 +1046,122 @@ export class SeedService {
       data: { langkahSelanjutnyaYaId: lD1Terbit.langkahSopId },
     });
 
+    // ── Swimlane & LangkahSOP: SOP-DINKES-002-V1 (Imunisasi Rutin) ─────
+    const imunisasiDetailId = d['DINKES_002_V1'].detailSopId;
+    await this.upsertSwimlane(
+      tx,
+      imunisasiDetailId,
+      pel['PETUGAS_IMUNISASI_DINKES'].pelaksanaId,
+      1,
+    );
+    await this.upsertSwimlane(tx, imunisasiDetailId, pel['KASUBAG_DINKES'].pelaksanaId, 2);
+    await this.upsertSwimlane(tx, imunisasiDetailId, pel['FRONT_OFFICE_DINKES'].pelaksanaId, 3);
+    await this.upsertSwimlane(tx, imunisasiDetailId, pel['DOKTER_DINKES'].pelaksanaId, 4);
+
+    const lImStart = await this.upsertLangkah(tx, {
+      detailSopId: imunisasiDetailId,
+      kegiatan: 'Mulai: Menerima kebutuhan imunisasi rutin.',
+      jenis: JenisLangkahProsedur.AWAL_AKHIR,
+      urutan: 1,
+      kelengkapan: 'Jadwal imunisasi, data sasaran, dan vaksin',
+      keluaran: 'Agenda imunisasi tercatat',
+      waktu: 30,
+      satuanWaktu: SatuanWaktu.m,
+      keterangan: 'Petugas imunisasi menerima permintaan dan menyiapkan jadwal pelayanan.',
+      pelaksanaId: pel['PETUGAS_IMUNISASI_DINKES'].pelaksanaId,
+    });
+    const lImDaftar = await this.upsertLangkah(tx, {
+      detailSopId: imunisasiDetailId,
+      kegiatan: 'Mendaftarkan sasaran imunisasi di loket pelayanan.',
+      jenis: JenisLangkahProsedur.KEGIATAN,
+      urutan: 2,
+      kelengkapan: 'Kartu imunisasi, identitas sasaran, dan formulir pendaftaran',
+      keluaran: 'Sasaran terdaftar di sistem',
+      waktu: 20,
+      satuanWaktu: SatuanWaktu.m,
+      keterangan: 'Front office mencatat data sasaran dan jadwal kedatangan.',
+      pelaksanaId: pel['FRONT_OFFICE_DINKES'].pelaksanaId,
+    });
+    const lImVerifikasi = await this.upsertLangkah(tx, {
+      detailSopId: imunisasiDetailId,
+      kegiatan: 'Apakah kelengkapan berkas imunisasi rutin sudah valid?',
+      jenis: JenisLangkahProsedur.KEPUTUSAN,
+      urutan: 3,
+      kelengkapan: 'Checklist kelengkapan dokumen imunisasi',
+      keluaran: 'Status berkas: lengkap / tidak lengkap',
+      waktu: 1,
+      satuanWaktu: SatuanWaktu.h,
+      keterangan: 'Kasubag memverifikasi kelengkapan administrasi dan kesiapan vaksin.',
+      pelaksanaId: pel['KASUBAG_DINKES'].pelaksanaId,
+    });
+    const lImPemeriksaan = await this.upsertLangkah(tx, {
+      detailSopId: imunisasiDetailId,
+      kegiatan: 'Melakukan skrining medis pra-imunisasi.',
+      jenis: JenisLangkahProsedur.KEGIATAN,
+      urutan: 4,
+      kelengkapan: 'Berkas lengkap tervalidasi',
+      keluaran: 'Hasil skrining medis',
+      waktu: 30,
+      satuanWaktu: SatuanWaktu.m,
+      keterangan: 'Dokter menilai kelayakan sasaran sebelum vaksinasi.',
+      pelaksanaId: pel['DOKTER_DINKES'].pelaksanaId,
+    });
+    const lImPelaksanaan = await this.upsertLangkah(tx, {
+      detailSopId: imunisasiDetailId,
+      kegiatan: 'Melaksanakan imunisasi rutin sesuai protokol.',
+      jenis: JenisLangkahProsedur.KEGIATAN,
+      urutan: 5,
+      kelengkapan: 'Vaksin, APD, dan kartu imunisasi',
+      keluaran: 'Vaksinasi selesai dilakukan',
+      waktu: 15,
+      satuanWaktu: SatuanWaktu.m,
+      keterangan: 'Petugas imunisasi memberikan vaksin dan mencatat reaksi awal.',
+      pelaksanaId: pel['PETUGAS_IMUNISASI_DINKES'].pelaksanaId,
+    });
+    const lImSelesai = await this.upsertLangkah(tx, {
+      detailSopId: imunisasiDetailId,
+      kegiatan: 'Selesai: Mendokumentasikan hasil imunisasi rutin.',
+      jenis: JenisLangkahProsedur.AWAL_AKHIR,
+      urutan: 6,
+      kelengkapan: 'Register imunisasi dan laporan cakupan',
+      keluaran: 'Layanan imunisasi tercatat',
+      waktu: 1,
+      satuanWaktu: SatuanWaktu.d,
+      keterangan: 'Kasubag mengarsipkan hasil dan melaporkan cakupan imunisasi.',
+      pelaksanaId: pel['KASUBAG_DINKES'].pelaksanaId,
+    });
+
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lImStart.langkahSopId },
+      data: { langkahSelanjutnyaYaId: lImDaftar.langkahSopId },
+    });
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lImDaftar.langkahSopId },
+      data: { langkahSelanjutnyaYaId: lImVerifikasi.langkahSopId },
+    });
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lImVerifikasi.langkahSopId },
+      data: {
+        langkahSelanjutnyaYaId: lImPemeriksaan.langkahSopId,
+        langkahSelanjutnyaTidakId: lImDaftar.langkahSopId,
+      },
+    });
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lImPemeriksaan.langkahSopId },
+      data: { langkahSelanjutnyaYaId: lImPelaksanaan.langkahSopId },
+    });
+    await tx.langkahSOP.update({
+      where: { langkahSopId: lImPelaksanaan.langkahSopId },
+      data: { langkahSelanjutnyaYaId: lImSelesai.langkahSopId },
+    });
+
     // ── Swimlane & LangkahSOP: SOP-DISKOMINFO-001-V1 ──────────────────
-    await this.upsertSwimlane(tx, d['DISKOMINFO_001_V1'].detailSopId, pel['TIM_LAYANAN_DISKOMINFO'].pelaksanaId, 1);
+    await this.upsertSwimlane(
+      tx,
+      d['DISKOMINFO_001_V1'].detailSopId,
+      pel['TIM_LAYANAN_DISKOMINFO'].pelaksanaId,
+      1,
+    );
 
     const diskoV1Id = d['DISKOMINFO_001_V1'].detailSopId;
     const lDsk1Start = await this.upsertLangkah(tx, {
@@ -1012,13 +1236,18 @@ export class SeedService {
     await tx.langkahSOP.update({
       where: { langkahSopId: lDsk1Kategori.langkahSopId },
       data: {
-        langkahSelanjutnyaYaId: lDsk1Tolak.langkahSopId,    // dikecualikan → tolak
+        langkahSelanjutnyaYaId: lDsk1Tolak.langkahSopId, // dikecualikan → tolak
         langkahSelanjutnyaTidakId: lDsk1Serahkan.langkahSopId, // tidak dikecualikan → serahkan
       },
     });
 
     // ── Swimlane & LangkahSOP: SOP-DISDIK-001-V2 (dengan SatuanWaktu w, mo, y) ──
-    await this.upsertSwimlane(tx, d['DISDIK_001_V2'].detailSopId, pel['TIM_PPDB_DISDIK'].pelaksanaId, 1);
+    await this.upsertSwimlane(
+      tx,
+      d['DISDIK_001_V2'].detailSopId,
+      pel['TIM_PPDB_DISDIK'].pelaksanaId,
+      1,
+    );
 
     const disdikV2Id = d['DISDIK_001_V2'].detailSopId;
     const lDdk2Start = await this.upsertLangkah(tx, {
@@ -1081,16 +1310,36 @@ export class SeedService {
     await tx.langkahSOP.update({
       where: { langkahSopId: lDdk2Keputusan.langkahSopId },
       data: {
-        langkahSelanjutnyaYaId: lDdk2Pengumuman.langkahSopId,    // diterima
+        langkahSelanjutnyaYaId: lDdk2Pengumuman.langkahSopId, // diterima
         langkahSelanjutnyaTidakId: lDdk2Verifikasi.langkahSopId, // tidak diterima → kembali verifikasi
       },
     });
 
     // ── Swimlane: SOP Dinkes versi lain ───────────────────────────────
-    await this.upsertSwimlane(tx, d['DINKES_001_V2'].detailSopId, pel['FRONT_OFFICE_DINKES'].pelaksanaId, 1);
-    await this.upsertSwimlane(tx, d['DINKES_001_V2'].detailSopId, pel['KASUBAG_DINKES'].pelaksanaId, 2);
-    await this.upsertSwimlane(tx, d['DISKOMINFO_002_V1'].detailSopId, pel['TIM_MEDIA_DISKOMINFO'].pelaksanaId, 1);
-    await this.upsertSwimlane(tx, d['DISDIK_001_V1'].detailSopId, pel['TIM_PPDB_DISDIK'].pelaksanaId, 1);
+    await this.upsertSwimlane(
+      tx,
+      d['DINKES_001_V2'].detailSopId,
+      pel['FRONT_OFFICE_DINKES'].pelaksanaId,
+      1,
+    );
+    await this.upsertSwimlane(
+      tx,
+      d['DINKES_001_V2'].detailSopId,
+      pel['KASUBAG_DINKES'].pelaksanaId,
+      2,
+    );
+    await this.upsertSwimlane(
+      tx,
+      d['DISKOMINFO_002_V1'].detailSopId,
+      pel['TIM_MEDIA_DISKOMINFO'].pelaksanaId,
+      1,
+    );
+    await this.upsertSwimlane(
+      tx,
+      d['DISDIK_001_V1'].detailSopId,
+      pel['TIM_PPDB_DISDIK'].pelaksanaId,
+      1,
+    );
 
     const prosedurRingkas: ReadonlyArray<{
       detailKey: string;
@@ -1105,13 +1354,6 @@ export class SeedService {
         topik: 'revisi pelayanan surat keterangan sehat',
         dokumen: 'Draft revisi SOP dan formulir layanan',
         keluaran: 'Draft revisi tervalidasi',
-      },
-      {
-        detailKey: 'DINKES_002_V1',
-        pelaksanaId: pel['PETUGAS_IMUNISASI_DINKES'].pelaksanaId,
-        topik: 'imunisasi rutin',
-        dokumen: 'Jadwal imunisasi, data sasaran, dan vaksin',
-        keluaran: 'Layanan imunisasi tercatat',
       },
       {
         detailKey: 'DINKES_003_V1',
@@ -1306,8 +1548,14 @@ export class SeedService {
       {
         detailKey: 'DINKES_001_V1',
         peringatan: 'Pemohon wajib membawa dokumen asli saat verifikasi lapangan.',
-        kualifikasi: ['Petugas memiliki sertifikasi pelayanan kesehatan dasar.', 'Dokter memiliki SIP aktif dari Dinas Kesehatan.'],
-        peralatan: ['Komputer, printer, scanner, formulir pemeriksaan standar.', 'Alat pemeriksaan medis (tensi, termometer, stetoskop).'],
+        kualifikasi: [
+          'Petugas memiliki sertifikasi pelayanan kesehatan dasar.',
+          'Dokter memiliki SIP aktif dari Dinas Kesehatan.',
+        ],
+        peralatan: [
+          'Komputer, printer, scanner, formulir pemeriksaan standar.',
+          'Alat pemeriksaan medis (tensi, termometer, stetoskop).',
+        ],
         pencatatan: ['Data dicatat di register layanan harian dan arsip bulanan Dinkes.'],
       },
       {
@@ -1328,27 +1576,39 @@ export class SeedService {
         detailKey: 'DINKES_003_V1',
         peringatan: 'Laporan kasus prioritas wajib ditindaklanjuti maksimal 24 jam.',
         kualifikasi: ['Petugas mampu melakukan penyelidikan epidemiologi dan analisis tren kasus.'],
-        peralatan: ['Formulir PE, perangkat komunikasi, dashboard surveilans, dan kendaraan operasional.'],
+        peralatan: [
+          'Formulir PE, perangkat komunikasi, dashboard surveilans, dan kendaraan operasional.',
+        ],
         pencatatan: ['Data kasus dicatat pada sistem surveilans dan dilaporkan berjenjang.'],
       },
       {
         detailKey: 'DINKES_004_V1',
-        peringatan: 'Kasus gizi buruk dengan komplikasi harus segera dirujuk ke fasilitas kesehatan.',
+        peringatan:
+          'Kasus gizi buruk dengan komplikasi harus segera dirujuk ke fasilitas kesehatan.',
         kualifikasi: ['Tim gizi memahami tata laksana gizi buruk dan konseling keluarga.'],
         peralatan: ['Timbangan, length board, pita LILA, formulir pemantauan, dan PMT.'],
-        pencatatan: ['Intervensi dan perkembangan anak dicatat pada register gizi dan laporan bulanan.'],
+        pencatatan: [
+          'Intervensi dan perkembangan anak dicatat pada register gizi dan laporan bulanan.',
+        ],
       },
       {
         detailKey: 'DINKES_005_V1',
-        peringatan: 'Pasien hanya dapat dirawat setelah asesmen awal dan persetujuan tindakan selesai.',
-        kualifikasi: ['Petugas rawat inap memahami triase, keselamatan pasien, dan pencatatan rekam medis.'],
-        peralatan: ['Tempat tidur pasien, rekam medis, gelang identitas, dan alat monitoring vital.'],
+        peringatan:
+          'Pasien hanya dapat dirawat setelah asesmen awal dan persetujuan tindakan selesai.',
+        kualifikasi: [
+          'Petugas rawat inap memahami triase, keselamatan pasien, dan pencatatan rekam medis.',
+        ],
+        peralatan: [
+          'Tempat tidur pasien, rekam medis, gelang identitas, dan alat monitoring vital.',
+        ],
         pencatatan: ['Status pasien dicatat dalam rekam medis dan buku register rawat inap.'],
       },
       {
         detailKey: 'DINKES_006_V1',
         peringatan: 'Obat kedaluwarsa atau rusak tidak boleh didistribusikan.',
-        kualifikasi: ['Petugas farmasi memahami manajemen stok, FIFO/FEFO, dan pencatatan distribusi obat.'],
+        kualifikasi: [
+          'Petugas farmasi memahami manajemen stok, FIFO/FEFO, dan pencatatan distribusi obat.',
+        ],
         peralatan: ['Kartu stok, rak obat, sistem inventori, dan formulir serah terima.'],
         pencatatan: ['Mutasi obat dicatat pada kartu stok dan laporan farmasi puskesmas.'],
       },
@@ -1362,8 +1622,12 @@ export class SeedService {
       {
         detailKey: 'DISKOMINFO_002_V1',
         peringatan: 'Konten yang dipublikasikan wajib melalui pemeriksaan substansi dan bahasa.',
-        kualifikasi: ['Tim media memahami komunikasi publik, editorial konten, dan moderasi kanal digital.'],
-        peralatan: ['Kalender konten, akun media sosial resmi, aplikasi desain, dan arsip aset digital.'],
+        kualifikasi: [
+          'Tim media memahami komunikasi publik, editorial konten, dan moderasi kanal digital.',
+        ],
+        peralatan: [
+          'Kalender konten, akun media sosial resmi, aplikasi desain, dan arsip aset digital.',
+        ],
         pencatatan: ['Publikasi dan metrik kanal dicatat dalam rekapitulasi media sosial bulanan.'],
       },
       {
@@ -1375,7 +1639,8 @@ export class SeedService {
       },
       {
         detailKey: 'DISDIK_001_V1',
-        peringatan: 'Versi lama hanya digunakan sebagai arsip pembanding dan tidak menjadi acuan layanan baru.',
+        peringatan:
+          'Versi lama hanya digunakan sebagai arsip pembanding dan tidak menjadi acuan layanan baru.',
         kualifikasi: ['Panitia memahami riwayat kebijakan PPDB dan dokumen zonasi tahun terkait.'],
         peralatan: ['Arsip PPDB, rekap pendaftar, dokumen zonasi, dan berita acara seleksi.'],
         pencatatan: ['Arsip PPDB versi lama disimpan dalam repositori dokumen Disdik.'],
@@ -1383,14 +1648,22 @@ export class SeedService {
       {
         detailKey: 'DISDIK_001_V2',
         peringatan: 'Berkas yang tidak lengkap dalam 3 hari dinyatakan gugur seleksi.',
-        kualifikasi: ['Panitia PPDB telah mendapat pelatihan sistem PPDB Online.', 'Petugas verifikasi memahami regulasi zonasi terkini.'],
+        kualifikasi: [
+          'Panitia PPDB telah mendapat pelatihan sistem PPDB Online.',
+          'Petugas verifikasi memahami regulasi zonasi terkini.',
+        ],
         peralatan: ['Aplikasi PPDB Online, scanner berkas, komputer panitia.'],
-        pencatatan: ['Data pendaftar tersimpan di sistem PPDB Online provinsi.', 'Laporan rekapitulasi dikirim ke Kemendikbud setiap semester.'],
+        pencatatan: [
+          'Data pendaftar tersimpan di sistem PPDB Online provinsi.',
+          'Laporan rekapitulasi dikirim ke Kemendikbud setiap semester.',
+        ],
       },
       {
         detailKey: 'DISDIK_002_V1',
         peringatan: 'SOP dicabut sehingga hanya dipakai untuk kebutuhan riwayat dan audit.',
-        kualifikasi: ['Tim akreditasi memahami instrumen akreditasi dan tata kelola arsip sekolah.'],
+        kualifikasi: [
+          'Tim akreditasi memahami instrumen akreditasi dan tata kelola arsip sekolah.',
+        ],
         peralatan: ['Instrumen akreditasi, dokumen sekolah, lembar verifikasi, dan arsip digital.'],
         pencatatan: ['Hasil akreditasi dicatat dalam rekap sekolah dan arsip evaluasi Disdik.'],
       },
@@ -1398,8 +1671,12 @@ export class SeedService {
 
     // Hapus dulu agar seed idempoten
     await tx.lampiranPeringatan.deleteMany({ where: { detailSopId: { in: targetIds } } });
-    await tx.lampiranKualifikasiPelaksanaan.deleteMany({ where: { detailSopId: { in: targetIds } } });
-    await tx.lampiranPeralatanPerlengkapan.deleteMany({ where: { detailSopId: { in: targetIds } } });
+    await tx.lampiranKualifikasiPelaksanaan.deleteMany({
+      where: { detailSopId: { in: targetIds } },
+    });
+    await tx.lampiranPeralatanPerlengkapan.deleteMany({
+      where: { detailSopId: { in: targetIds } },
+    });
     await tx.lampiranPencatatanPendataan.deleteMany({ where: { detailSopId: { in: targetIds } } });
 
     await tx.lampiranPeringatan.createMany({
@@ -1468,8 +1745,7 @@ export class SeedService {
       readonly detailSopId: string;
       readonly penggunaId: string;
       readonly bagian: BagianSOP;
-      readonly targetEntityId?: string | null;
-      readonly keterangan: string | null;
+      readonly keterangan?: string | null;
       readonly sesiChangeCount: number;
       readonly closedAt: Date | null;
       readonly fields: readonly string[];
@@ -1509,7 +1785,6 @@ export class SeedService {
         detailSopId: d['DINKES_001_V1'].detailSopId,
         penggunaId: evaluator1Id,
         bagian: BagianSOP.UMPAN_BALIK,
-        targetEntityId: null,
         keterangan: 'Menambahkan komentar terkait SLA pada langkah keputusan.',
         sesiChangeCount: 1,
         closedAt: new Date('2026-03-01T09:30:00.000Z'),
@@ -1554,8 +1829,7 @@ export class SeedService {
           penggunaId: L.penggunaId,
           createdAt: L.createdAt,
           bagian: L.bagian,
-          targetEntityId: L.targetEntityId ?? null,
-          keterangan: L.keterangan,
+          keterangan: L.keterangan ?? null,
           sesiChangeCount: L.sesiChangeCount,
           closedAt: L.closedAt,
           domainFields: {
@@ -1940,11 +2214,7 @@ export class SeedService {
       if (pengajuan === null) {
         continue;
       }
-      await this.syncStatusDetailSopDalamPengajuan(
-        tx,
-        pengajuanEvaluasiId,
-        pengajuan.status,
-      );
+      await this.syncStatusDetailSopDalamPengajuan(tx, pengajuanEvaluasiId, pengajuan.status);
     }
   }
 
@@ -2013,10 +2283,7 @@ export class SeedService {
       return [pel['FRONT_OFFICE_DINKES'].pelaksanaId, pel['KASUBAG_DINKES'].pelaksanaId];
     }
     if (opdId === opdIds.opdDiskominfoId) {
-      return [
-        pel['TIM_LAYANAN_DISKOMINFO'].pelaksanaId,
-        pel['TIM_MEDIA_DISKOMINFO'].pelaksanaId,
-      ];
+      return [pel['TIM_LAYANAN_DISKOMINFO'].pelaksanaId, pel['TIM_MEDIA_DISKOMINFO'].pelaksanaId];
     }
     return [pel['TIM_PPDB_DISDIK'].pelaksanaId, pel['SEKSI_AKREDITASI_DISDIK'].pelaksanaId];
   }
@@ -2145,9 +2412,7 @@ export class SeedService {
     });
   }
 
-  private async validateSeedEvaluationBusinessRules(
-    tx: Prisma.TransactionClient,
-  ): Promise<void> {
+  private async validateSeedEvaluationBusinessRules(tx: Prisma.TransactionClient): Promise<void> {
     const pengajuan = await tx.pengajuanEvaluasi.findMany({
       select: {
         pengajuanEvaluasiId: true,
@@ -2243,8 +2508,21 @@ export class SeedService {
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:00.000Z'),
           hasilSebelum: null,
-          hasilSesudah: HasilEvaluasi.SESUAI,
+          hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
           catatanSebelum: null,
+          catatanSesudah:
+            'Lengkapi alur validasi data balita dan bukti koordinasi lintas puskesmas.',
+        },
+        // Dinkes Terjadwal: SOP penanganan gizi — PERLU_PERBAIKAN → SESUAI
+        {
+          pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+          detailSopId: d['DINKES_004_V1'].detailSopId,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:00.500Z'),
+          hasilSebelum: HasilEvaluasi.PERLU_PERBAIKAN,
+          hasilSesudah: HasilEvaluasi.SESUAI,
+          catatanSebelum:
+            'Lengkapi alur validasi data balita dan bukti koordinasi lintas puskesmas.',
           catatanSesudah: 'SOP penanganan gizi buruk sesuai standar pelayanan.',
         },
         // Dinkes Terjadwal: SOP rawat inap — null → SESUAI
@@ -2276,8 +2554,21 @@ export class SeedService {
           penggunaId: evaluator2Id,
           createdAt: new Date('2025-06-01T10:00:04.000Z'),
           hasilSebelum: null,
-          hasilSesudah: HasilEvaluasi.SESUAI,
+          hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
           catatanSebelum: null,
+          catatanSesudah:
+            'Perlu penyesuaian kriteria dokumen dengan kebijakan zonasi tahun berjalan.',
+        },
+        // Disdik Terjadwal: akreditasi — PERLU_PERBAIKAN → SESUAI
+        {
+          pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
+          detailSopId: d['DISDIK_002_V1'].detailSopId,
+          penggunaId: evaluator2Id,
+          createdAt: new Date('2025-06-01T10:00:04.500Z'),
+          hasilSebelum: HasilEvaluasi.PERLU_PERBAIKAN,
+          hasilSesudah: HasilEvaluasi.SESUAI,
+          catatanSebelum:
+            'Perlu penyesuaian kriteria dokumen dengan kebijakan zonasi tahun berjalan.',
           catatanSesudah: 'Dokumen PPDB lengkap dan sesuai regulasi zonasi terkini.',
         },
         // Diskominfo Terjadwal: V2 SESUAI
@@ -2298,8 +2589,19 @@ export class SeedService {
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:06.000Z'),
           hasilSebelum: null,
-          hasilSesudah: HasilEvaluasi.SESUAI,
+          hasilSesudah: HasilEvaluasi.PERLU_PERBAIKAN,
           catatanSebelum: null,
+          catatanSesudah: 'Perjelas validasi berkas dan batas waktu sanggah pada alur PPDB.',
+        },
+        // Disdik Mandiri: V2 PERLU_PERBAIKAN → SESUAI
+        {
+          pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
+          detailSopId: d['DISDIK_001_V2'].detailSopId,
+          penggunaId: evaluator1Id,
+          createdAt: new Date('2025-06-01T10:00:06.500Z'),
+          hasilSebelum: HasilEvaluasi.PERLU_PERBAIKAN,
+          hasilSesudah: HasilEvaluasi.SESUAI,
+          catatanSebelum: 'Perjelas validasi berkas dan batas waktu sanggah pada alur PPDB.',
           catatanSesudah: 'SOP PPDB versi baru sesuai regulasi zonasi terkini. Layak berlaku.',
         },
       ],
@@ -2332,7 +2634,6 @@ export class SeedService {
         judulDokumen: 'SOP Berlaku Pelayanan Surat Keterangan Sehat',
         hashDokumen: 'sha256-sop-dinkes-berlaku-v1-2024',
         versiDokumen: 1,
-        metodeKanonikalisasi: 'PDF-C14N',
         detailSopId: d['DINKES_001_V1'].detailSopId,
       },
       update: {
@@ -2353,7 +2654,6 @@ export class SeedService {
         judulDokumen: 'Berita Acara Evaluasi SOP Dinkes Terjadwal 2026',
         hashDokumen: 'sha256-ba-dinkes-terjadwal-2026-001',
         versiDokumen: 1,
-        metodeKanonikalisasi: 'PDF-C14N',
         pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
       },
       update: {
@@ -2374,7 +2674,6 @@ export class SeedService {
         judulDokumen: 'SOP Berlaku PPDB Dinas Pendidikan Provinsi',
         hashDokumen: 'sha256-sop-disdik-ppdb-berlaku-v2-2024',
         versiDokumen: 2,
-        metodeKanonikalisasi: 'PDF-C14N',
         detailSopId: d['DISDIK_001_V2'].detailSopId,
       },
       update: {
@@ -2395,7 +2694,6 @@ export class SeedService {
         judulDokumen: 'Berita Acara Evaluasi SOP PPDB Disdik 2023',
         hashDokumen: 'sha256-ba-disdik-mandiri-2023-001',
         versiDokumen: 1,
-        metodeKanonikalisasi: 'PDF-C14N',
         pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
       },
       update: {
@@ -2434,7 +2732,6 @@ export class SeedService {
     },
   ): Promise<void> {
     const { dok } = params;
-    const tteSekarang = new Date('2026-01-15T10:00:00.000Z');
 
     const pinUserIds: readonly string[] = [
       params.pjPenyusunDinkesId,
@@ -2450,7 +2747,7 @@ export class SeedService {
     for (const userId of pinUserIds) {
       await tx.pengguna.update({
         where: { penggunaId: userId },
-        data: { ttePinHash: params.ttePinHash, ttePinSetAt: tteSekarang },
+        data: { ttePinHash: params.ttePinHash },
       });
     }
 
@@ -2461,7 +2758,6 @@ export class SeedService {
       dokumenTteId: string;
       peran: PeranPengguna;
       signatureValue: string;
-      keyId: string;
       certSerialNumber: string;
       certSubject: string;
       ditandatanganiPada: Date;
@@ -2472,7 +2768,6 @@ export class SeedService {
         dokumenTteId: dok['SOP_BERLAKU_DINKES'].dokumenTteId,
         peran: PeranPengguna.PJ_PENYUSUN,
         signatureValue: 'sig-pj-penyusun-dinkes-sop-berlaku-2024',
-        keyId: 'key-pj-penyusun-dinkes',
         certSerialNumber: 'SERIAL-PJP-DINKES-001',
         certSubject: 'PJ Penyusun Dinas Kesehatan Provinsi',
         ditandatanganiPada: new Date('2024-07-01T10:00:00.000Z'),
@@ -2483,7 +2778,6 @@ export class SeedService {
         dokumenTteId: dok['BA_EVALUASI_DINKES'].dokumenTteId,
         peran: PeranPengguna.KEPALA_OPD,
         signatureValue: 'sig-kepala-dinkes-ba-evaluasi-2026',
-        keyId: 'key-kepala-dinkes',
         certSerialNumber: 'SERIAL-KEPALA-DINKES-001',
         certSubject: 'Kepala Dinas Kesehatan Provinsi',
         ditandatanganiPada: new Date('2026-03-10T09:00:00.000Z'),
@@ -2494,7 +2788,6 @@ export class SeedService {
         dokumenTteId: dok['BA_EVALUASI_DISDIK'].dokumenTteId,
         peran: PeranPengguna.PJ_EVALUATOR,
         signatureValue: 'sig-pj-evaluator-ba-disdik-2023',
-        keyId: 'key-pj-evaluator',
         certSerialNumber: 'SERIAL-PJE-001',
         certSubject: 'PJ Evaluator Biro Organisasi',
         ditandatanganiPada: new Date('2023-10-25T14:00:00.000Z'),
@@ -2511,7 +2804,6 @@ export class SeedService {
           signatureValue: ttd.signatureValue,
           signatureAlgorithm: 'RSA-SHA256',
           signatureFormat: 'CMS',
-          keyId: ttd.keyId,
           certSerialNumber: ttd.certSerialNumber,
           certIssuer: 'Balai Sertifikasi Elektronik (BSrE) BSSN',
           certSubject: ttd.certSubject,

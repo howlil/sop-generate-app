@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/config/query-keys";
-import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { showErrorMessages, useToast } from "@/hooks/useToast";
 import { evaluasiApi } from "@/api/evaluasi-client";
 import { STATUS_HASIL_EVALUASI } from "@/types/dto/evaluasi.dto";
 import { usePengajuanEvaluasiAktif } from "@/lib/evaluasi/hooks/evaluasi-derived-hooks";
 import type { TahapPenilaianSop } from "@/lib/evaluasi/evaluasi-domain";
 import type {
+  EvaluasiWorkspaceOpdResponse,
   EvaluasiWorkspacePengajuanAktif,
+  NilaiEvaluasi,
+  PengajuanEvaluasi,
   SelesaiEvaluasiDto,
   StatusHasilEvaluasi,
 } from "@/types/dto/evaluasi.dto";
@@ -16,6 +18,130 @@ import { assertCanMutateEvaluasiNilai } from "@/lib/evaluasi/evaluasi-permission
 import { useAuthStore } from "@/stores/authStore";
 
 const AUTO_SAVE_DELAY_MS = 1500;
+
+interface SaveDraftMutationVariables {
+  pengajuanId: string;
+  sopDetailId: string;
+  status: StatusHasilEvaluasi;
+  komentar: string;
+  version: number;
+  signature: string;
+}
+
+function getHasilEvaluasiLabel(hasil: StatusHasilEvaluasi): string {
+  return hasil === STATUS_HASIL_EVALUASI.SESUAI ? "Sesuai" : "Perlu perbaikan";
+}
+
+function updatePengajuanEvaluasiListCache(
+  list: PengajuanEvaluasi[] | undefined,
+  savedNilai: NilaiEvaluasi,
+  variables: SaveDraftMutationVariables,
+): PengajuanEvaluasi[] | undefined {
+  if (!list) return list;
+
+  return list.map((pengajuan) => {
+    if (pengajuan.id !== variables.pengajuanId) return pengajuan;
+
+    const nilaiEvaluasi = pengajuan.nilaiEvaluasi ?? [];
+    const hasExistingNilai = nilaiEvaluasi.some(
+      (nilai) => nilai.sopDetailId === variables.sopDetailId,
+    );
+
+    return {
+      ...pengajuan,
+      nilaiEvaluasi: hasExistingNilai
+        ? nilaiEvaluasi.map((nilai) =>
+            nilai.sopDetailId === variables.sopDetailId ? savedNilai : nilai,
+          )
+        : [...nilaiEvaluasi, savedNilai],
+    };
+  });
+}
+
+function updateWorkspaceEvaluasiCache(
+  workspace: EvaluasiWorkspaceOpdResponse | undefined,
+  savedNilai: NilaiEvaluasi,
+  variables: SaveDraftMutationVariables,
+): EvaluasiWorkspaceOpdResponse | undefined {
+  if (!workspace || workspace.pengajuanAktif?.id !== variables.pengajuanId) {
+    return workspace;
+  }
+
+  const hasil = savedNilai.hasil ?? variables.status;
+  const catatan = savedNilai.catatan ?? variables.komentar;
+  const hasilLabel = getHasilEvaluasiLabel(hasil);
+
+  return {
+    ...workspace,
+    pengajuanAktif: {
+      ...workspace.pengajuanAktif,
+      nilaiPerDetail: workspace.pengajuanAktif.nilaiPerDetail.map((nilai) =>
+        nilai.detailSopId === variables.sopDetailId
+          ? {
+              ...nilai,
+              hasil,
+              hasilLabel,
+              catatan,
+              version: savedNilai.version,
+              statusTindakLanjut:
+                savedNilai.statusTindakLanjut ?? nilai.statusTindakLanjut,
+              statusTindakLanjutLabel:
+                savedNilai.statusTindakLanjutLabel ??
+                nilai.statusTindakLanjutLabel,
+              ditindaklanjutiPada:
+                savedNilai.ditindaklanjutiPada ?? nilai.ditindaklanjutiPada,
+            }
+          : nilai,
+      ),
+    },
+    daftarSop: workspace.daftarSop.map((row) =>
+      row.detailSopId === variables.sopDetailId
+        ? {
+            ...row,
+            hasilEvaluasi: hasil,
+            hasilEvaluasiLabel: hasilLabel,
+            statusTindakLanjut:
+              savedNilai.statusTindakLanjut ?? row.statusTindakLanjut,
+            statusTindakLanjutLabel:
+              savedNilai.statusTindakLanjutLabel ??
+              row.statusTindakLanjutLabel,
+            ditindaklanjutiPada:
+              savedNilai.ditindaklanjutiPada ?? row.ditindaklanjutiPada,
+          }
+        : row,
+    ),
+  };
+}
+
+async function syncDraftEvaluasiCache(
+  queryClient: QueryClient,
+  savedNilai: NilaiEvaluasi,
+  variables: SaveDraftMutationVariables,
+): Promise<void> {
+  queryClient.setQueriesData<PengajuanEvaluasi[]>(
+    {
+      predicate: (query) =>
+        query.queryKey[0] === "evaluasi" && query.queryKey[1] === "list",
+    },
+    (list) => updatePengajuanEvaluasiListCache(list, savedNilai, variables),
+  );
+  queryClient.setQueriesData<EvaluasiWorkspaceOpdResponse>(
+    { queryKey: queryKeys.evaluasiWorkspaceOpdAll },
+    (workspace) => updateWorkspaceEvaluasiCache(workspace, savedNilai, variables),
+  );
+  queryClient.setQueriesData<EvaluasiWorkspaceOpdResponse>(
+    { queryKey: queryKeys.evaluasiWorkspaceOpdSayaAll },
+    (workspace) => updateWorkspaceEvaluasiCache(workspace, savedNilai, variables),
+  );
+  queryClient.setQueriesData<EvaluasiWorkspaceOpdResponse>(
+    { queryKey: queryKeys.evaluasiWorkspacePengajuanAll },
+    (workspace) => updateWorkspaceEvaluasiCache(workspace, savedNilai, variables),
+  );
+  await queryClient.invalidateQueries({
+    queryKey: queryKeys.evaluasiRingkasAll,
+    refetchType: "none",
+  });
+}
 
 export interface UseEvaluasiDraftReturn {
   statusEvaluasi: StatusHasilEvaluasi | null;
@@ -35,6 +161,7 @@ export function useEvaluasiDraft(
   readOnly = false,
   tahapPenilaian?: TahapPenilaianSop,
 ): UseEvaluasiDraftReturn {
+  const queryClient = useQueryClient();
   const {
     pengajuanId,
     pengajuan,
@@ -70,17 +197,58 @@ export function useEvaluasiDraft(
   const isTinjauanUlang = tahapPenilaian === "tinjauan_ulang";
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSubmittedRef = useRef<string | null>(null);
+  const inFlightSignatureRef = useRef<string | null>(null);
+  const serverDraftRef = useRef<{
+    sopDetailId: string | null;
+    status: StatusHasilEvaluasi | null;
+    komentar: string;
+  } | null>(null);
 
   useEffect(() => {
+    const nextServerDraft = {
+      sopDetailId,
+      status: isTinjauanUlang ? null : (existingNilai?.hasil ?? null),
+      komentar: isTinjauanUlang ? "" : (existingNilai?.catatan ?? ""),
+    };
+    const previousServerDraft = serverDraftRef.current;
+    const isDifferentDetail =
+      previousServerDraft?.sopDetailId !== nextServerDraft.sopDetailId;
+    const localMatchesPreviousServer =
+      previousServerDraft == null ||
+      (statusEvaluasi === previousServerDraft.status &&
+        komentarEvaluasi === previousServerDraft.komentar);
+
+    serverDraftRef.current = nextServerDraft;
+
     if (isTinjauanUlang) {
-      setStatusEvaluasiState(null);
-      setKomentarEvaluasiState("");
+      if (statusEvaluasi !== null) setStatusEvaluasiState(null);
+      if (komentarEvaluasi !== "") setKomentarEvaluasiState("");
       lastSubmittedRef.current = null;
+      inFlightSignatureRef.current = null;
       return;
     }
-    setStatusEvaluasiState(existingNilai?.hasil ?? null);
-    setKomentarEvaluasiState(existingNilai?.catatan ?? "");
-  }, [existingNilai?.hasil, existingNilai?.catatan, sopDetailId, isTinjauanUlang]);
+
+    if (!isDifferentDetail && !localMatchesPreviousServer) {
+      return;
+    }
+    if (isDifferentDetail) {
+      lastSubmittedRef.current = null;
+      inFlightSignatureRef.current = null;
+    }
+    if (statusEvaluasi !== nextServerDraft.status) {
+      setStatusEvaluasiState(nextServerDraft.status);
+    }
+    if (komentarEvaluasi !== nextServerDraft.komentar) {
+      setKomentarEvaluasiState(nextServerDraft.komentar);
+    }
+  }, [
+    existingNilai?.hasil,
+    existingNilai?.catatan,
+    sopDetailId,
+    isTinjauanUlang,
+    statusEvaluasi,
+    komentarEvaluasi,
+  ]);
 
   useEffect(() => {
     return () => {
@@ -90,35 +258,94 @@ export function useEvaluasiDraft(
     };
   }, []);
 
-  const saveDraftMutation = useMutationWithToast({
+  const saveDraftMutation = useMutation({
     mutationFn: async ({
+      pengajuanId: currentPengajuanId,
+      sopDetailId: currentSopDetailId,
       status,
       komentar,
-    }: {
-      status: StatusHasilEvaluasi;
-      komentar: string;
-    }) => {
+      version,
+    }: SaveDraftMutationVariables) => {
       assertCanMutateEvaluasiNilai(useAuthStore.getState().user?.peran);
-      if (!pengajuanId || !sopDetailId) {
-        throw new Error("Data evaluasi belum tersedia");
-      }
-      const version = getCurrentVersion(sopDetailId);
 
-      return evaluasiApi.isiNilai(pengajuanId, sopDetailId, {
+      return evaluasiApi.isiNilai(currentPengajuanId, currentSopDetailId, {
         hasil: status,
         catatan: komentar,
         version,
       });
     },
-    invalidateKeys: [
-      queryKeys.evaluasi,
-      queryKeys.evaluasiWorkspaceOpdAll,
-      queryKeys.evaluasiWorkspacePengajuanAll,
-      queryKeys.evaluasiRingkasAll,
-    ],
-    successMessage: "Draft evaluasi berhasil disimpan",
-    useDetailedErrors: true,
-    errorMessagePrefix: "Gagal menyimpan draft evaluasi",
+    onSuccess: async (savedNilai, variables) => {
+      await syncDraftEvaluasiCache(queryClient, savedNilai, variables);
+      lastSubmittedRef.current = variables.signature;
+      if (inFlightSignatureRef.current === variables.signature) {
+        inFlightSignatureRef.current = null;
+      }
+    },
+    onError: (error, variables) => {
+      if (lastSubmittedRef.current === variables.signature) {
+        lastSubmittedRef.current = null;
+      }
+      if (inFlightSignatureRef.current === variables.signature) {
+        inFlightSignatureRef.current = null;
+      }
+      showErrorMessages(error, "Gagal menyimpan draft evaluasi");
+    },
+  });
+
+  const { mutate: mutateSaveDraft } = saveDraftMutation;
+
+  const submitDraft = useCallback(
+    (status: StatusHasilEvaluasi, komentar: string) => {
+      if (!pengajuanId || !sopDetailId) {
+        return;
+      }
+
+      const version = getCurrentVersion(sopDetailId);
+      const signature = JSON.stringify({
+        sopDetailId,
+        status,
+        komentar: komentar.trim(),
+        version,
+      });
+      if (lastSubmittedRef.current === signature || inFlightSignatureRef.current) {
+        return;
+      }
+
+      inFlightSignatureRef.current = signature;
+      mutateSaveDraft({
+        pengajuanId,
+        sopDetailId,
+        status,
+        komentar,
+        version,
+        signature,
+      });
+    },
+    [getCurrentVersion, mutateSaveDraft, pengajuanId, sopDetailId],
+  );
+
+  const {
+    isPending: isSavingDraft,
+    error: saveDraftError,
+  } = saveDraftMutation;
+
+  useEffect(() => {
+    if (!isSavingDraft && inFlightSignatureRef.current) {
+      inFlightSignatureRef.current = null;
+    }
+  }, [isSavingDraft]);
+
+  useEffect(() => {
+    if (!pengajuanId || !sopDetailId) {
+      inFlightSignatureRef.current = null;
+    }
+  }, [pengajuanId, sopDetailId]);
+
+  useEffect(() => {
+    if (!saveDraftError) {
+      return;
+    }
+    lastSubmittedRef.current = null;
   });
 
   const triggerAutoSave = useCallback(() => {
@@ -157,21 +384,7 @@ export function useEvaluasiDraft(
     const currentKomentar = komentarEvaluasi;
 
     autoSaveTimerRef.current = setTimeout(() => {
-      const version = sopDetailId ? getCurrentVersion(sopDetailId) : null;
-      const signature = JSON.stringify({
-        sopDetailId,
-        status: currentStatus,
-        komentar: currentKomentar.trim(),
-        version,
-      });
-      if (lastSubmittedRef.current === signature) {
-        return;
-      }
-      lastSubmittedRef.current = signature;
-      saveDraftMutation.mutate({
-        status: currentStatus,
-        komentar: currentKomentar,
-      });
+      submitDraft(currentStatus, currentKomentar);
     }, AUTO_SAVE_DELAY_MS);
   }, [
     readOnly,
@@ -180,10 +393,9 @@ export function useEvaluasiDraft(
     isLoadingPengajuan,
     statusEvaluasi,
     komentarEvaluasi,
-    saveDraftMutation,
+    submitDraft,
     existingNilai?.hasil,
     existingNilai?.catatan,
-    getCurrentVersion,
     isTinjauanUlang,
   ]);
 
@@ -215,22 +427,21 @@ export function useEvaluasiDraft(
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
     }
-    saveDraftMutation.mutate({
-      status: statusEvaluasi,
-      komentar: komentarEvaluasi,
-    });
+    submitDraft(statusEvaluasi, komentarEvaluasi);
   }, [
     readOnly,
     pengajuanId,
     sopDetailId,
     statusEvaluasi,
     komentarEvaluasi,
-    saveDraftMutation,
+    submitDraft,
   ]);
 
   const clearDraft = useCallback(() => {
     setStatusEvaluasiState(null);
     setKomentarEvaluasiState("");
+    lastSubmittedRef.current = null;
+    inFlightSignatureRef.current = null;
   }, []);
 
   return {
@@ -240,8 +451,8 @@ export function useEvaluasiDraft(
     setKomentarEvaluasi,
     saveDraft,
     clearDraft,
-    isSaving: saveDraftMutation.isPending,
-    error: saveDraftMutation.error,
+    isSaving: isSavingDraft,
+    error: saveDraftError,
   };
 }
 
@@ -298,15 +509,21 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
         ? { nilaiOPD: ratingOPD! }
         : {};
       await evaluasiApi.selesai(pengajuanAktifId, payload);
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.evaluasiWorkspaceOpdAll,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.evaluasiWorkspacePengajuanAll,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.evaluasiRingkasAll,
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.evaluasiWorkspaceOpdAll,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.evaluasiWorkspaceOpdSayaAll,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.evaluasiWorkspacePengajuanAll,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.evaluasiRingkasAll,
+        }),
+      ]);
       showToast("Pengajuan berhasil diajukan ke PJ Evaluator", "success");
       onSuccess?.();
     } catch (error) {

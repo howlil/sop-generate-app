@@ -12,12 +12,15 @@
 
 import {
   type OccupiedSegment,
-  segmentsOverlap,
-  segmentsNearby,
   scorePath,
   pathOverlapsSegments,
 } from './orthogonalRouter'
 import { simplifyOrthogonalPath } from '../../edit/orthogonal-path-edit.util'
+import {
+  occupancyPenalty,
+  resolveHorizontalTrackY,
+  resolveVerticalTrackX,
+} from './bpmn-segment-tracks.util'
 
 export type Side = 'top' | 'right' | 'bottom' | 'left'
 
@@ -336,12 +339,9 @@ function rectsOverlap(a: Rect, b: Rect): boolean {
   )
 }
 
-/**
- * Return all obstacles (no filter). Path hit test will skip segment 0 vs fromShape
- * and last segment vs toShape so path may attach to source/target only at endpoints.
- */
-function filterObstacles(obstacles: Rect[], _fromShape: Rect, _toShape: Rect): Rect[] {
-  return obstacles
+/** Shape perantara saja — ujung koneksi dikecualikan (dicek terpisah di pathHitsObstacle). */
+function filterObstacles(obstacles: Rect[], fromShape: Rect, toShape: Rect): Rect[] {
+  return obstacles.filter((obs) => !rectsOverlap(obs, fromShape) && !rectsOverlap(obs, toShape))
 }
 
 /** Inset (shrink) rect so we can detect segment going through shape interior. */
@@ -391,6 +391,39 @@ function pathHitsObstacle(
   return false
 }
 
+/** Lintasan vertikal antar-lane lewat lane-pipe tiap batas lane (satu sumbu X). */
+function buildMultiLanePipePath(
+  start: Point,
+  extStart: Point,
+  extEnd: Point,
+  end: Point,
+  layout: BpmnLaneLayout,
+  fromLane: number,
+  toLane: number,
+  occupied: OccupiedSegment[],
+): Point[] {
+  const path: Point[] = [start, extStart]
+  const cx = resolveVerticalTrackX(extStart.x, extStart.y, extEnd.y, occupied)
+  if (toLane > fromLane) {
+    for (let lane = fromLane; lane < toLane; lane += 1) {
+      const pipeY = findLanePipeY(layout, lane, lane + 1)
+      path.push({ x: cx, y: pipeY })
+    }
+  } else if (toLane < fromLane) {
+    for (let lane = fromLane; lane > toLane; lane -= 1) {
+      const pipeY = findLanePipeY(layout, lane - 1, lane)
+      path.push({ x: cx, y: pipeY })
+    }
+  }
+  const last = path[path.length - 1]!
+  if (Math.abs(last.x - extEnd.x) > 2) {
+    const hy = resolveHorizontalTrackY(last.y, last.x, extEnd.x, occupied)
+    path.push({ x: extEnd.x, y: hy })
+  }
+  path.push(extEnd, end)
+  return path
+}
+
 /* ── Find a clear vertical X in a column-pipe gap ────────────── */
 
 function findColumnPipeX(
@@ -419,10 +452,7 @@ function findColumnPipeX(
     for (const obs of obstacles) {
       if (rectContainsSegment(obs, seg.x1, seg.y1, seg.x2, seg.y2)) penalty += 8000
     }
-    for (const occ of occupied) {
-      if (segmentsOverlap(seg, occ)) penalty += 5000
-      else if (segmentsNearby(seg, occ, 8)) penalty += 300
-    }
+    penalty += occupancyPenalty(seg, occupied)
     candidates.push({ x: mid, penalty })
   }
 
@@ -445,7 +475,7 @@ function findColumnPipeX(
       bestX = candidates[i].x
     }
   }
-  return bestX
+  return resolveVerticalTrackX(bestX, extStartY, extEndY, occupied)
 }
 
 /* ── Find the lane-pipe Y between two lanes ──────────────────── */
@@ -552,7 +582,7 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
   const fObs = filterObstacles(obstacles, fromShape, toShape)
   const isUsablePath = (path: Point[]) =>
     !pathHitsObstacle(path, fObs, fromShape, toShape) &&
-    !pathOverlapsSegments(path, occupiedSegments, { includeCross: false }) &&
+    !pathOverlapsSegments(path, occupiedSegments, { includeCross: true }) &&
     !pathRunsAlongBpmnGrid(path, layout, opts.gridClearance)
 
   const sameLane = fromLane === toLane
@@ -573,7 +603,8 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       const belowY = lane.top + lane.height + SHAPE_MARGIN * 2
       const abovePipe = fromLane > 0 ? findLanePipeY(layout, fromLane - 1, fromLane) : aboveY
       const belowPipe = fromLane < layout.lanes.length - 1 ? findLanePipeY(layout, fromLane, fromLane + 1) : belowY
-      for (const uY of [abovePipe, belowPipe, aboveY, belowY]) {
+      for (const baseY of [abovePipe, belowPipe, aboveY, belowY]) {
+        const uY = resolveHorizontalTrackY(baseY, extStart.x, extEnd.x, occupiedSegments)
         const path = [start, extStart, { x: extStart.x, y: uY }, { x: extEnd.x, y: uY }, extEnd, end]
         if (isUsablePath(path)) return path
       }
@@ -590,15 +621,11 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
         ? (fromLane > 0 ? findLanePipeY(layout, fromLane - 1, fromLane) : lane.top - SHAPE_MARGIN * 3)
         : (fromLane < layout.lanes.length - 1 ? findLanePipeY(layout, fromLane, fromLane + 1) : lane.top + lane.height + SHAPE_MARGIN * 3)
 
-      const trackOffset = getTrackOffset(
-        { x1: Math.min(extStart.x, extEnd.x), y1: baseY, x2: Math.max(extStart.x, extEnd.x), y2: baseY },
-        occupiedSegments,
-      )
-
+      const trackY = resolveHorizontalTrackY(baseY, extStart.x, extEnd.x, occupiedSegments)
       const path = [
         start, extStart,
-        { x: extStart.x, y: baseY + trackOffset },
-        { x: extEnd.x, y: baseY + trackOffset },
+        { x: extStart.x, y: trackY },
+        { x: extEnd.x, y: trackY },
         extEnd, end,
       ]
       if (isUsablePath(path)) return path
@@ -607,42 +634,15 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
 
   /* ── Case 3: Cross-lane, vert exit + vert entry ─────────── */
   if (!sameLane && isVertExit && isVertEntry) {
-    const goingDown = toLane > fromLane
-    const lanesCrossed = Math.abs(toLane - fromLane)
-    const fromCenterCol = opts.fromSide === 'bottom' || opts.fromSide === 'top'
-      ? findColumnForX(extStart.x, layout)
-      : -1
-    const toCenterCol = opts.toSide === 'bottom' || opts.toSide === 'top'
-      ? findColumnForX(extEnd.x, layout)
-      : -1
+    const fromCenterCol = findColumnForX(extStart.x, layout)
+    const toCenterCol = findColumnForX(extEnd.x, layout)
+    const preferredGap = Math.max(0, Math.min(fromCenterCol, toCenterCol, layout.columnStartXs.length - 2))
 
-    // Jika melintasi 2+ lane, selalu pakai lane-pipe (Z) agar path tidak menembus lurus tengah lane.
-    // Selain itu, hindari path lurus jika sudah ada segmen panah lain di jalur yang sama
-    // supaya panah bolak-balik (contoh: step ↔ decision) tidak menumpuk.
-    const roughlyAligned = Math.abs(extStart.x - extEnd.x) < 20
-    const useStraight = lanesCrossed < 2 && roughlyAligned
+    const multiPipe = buildMultiLanePipePath(
+      start, extStart, extEnd, end, layout, fromLane, toLane, occupiedSegments,
+    )
+    if (isUsablePath(multiPipe)) return multiPipe
 
-    if (useStraight) {
-      const straight = [start, extStart, extEnd, end]
-      if (isUsablePath(straight)) return straight
-
-      const midY = (extStart.y + extEnd.y) / 2
-      const zPath = [start, extStart, { x: extStart.x, y: midY }, { x: extEnd.x, y: midY }, extEnd, end]
-      if (isUsablePath(zPath)) return zPath
-    }
-
-    const laneGapIdx = goingDown ? fromLane : toLane
-    const lanePipeY = findLanePipeY(layout, laneGapIdx, laneGapIdx + 1)
-    const zPath = [
-      start, extStart,
-      { x: extStart.x, y: lanePipeY },
-      { x: extEnd.x, y: lanePipeY },
-      extEnd, end,
-    ]
-    if (isUsablePath(zPath)) return zPath
-
-    // If Z-shape hits obstacles, use a column-pipe for vertical travel
-    const preferredGap = Math.min(fromCenterCol, toCenterCol)
     const vX = findColumnPipeX(layout, preferredGap, extStart.y, extEnd.y, fObs, occupiedSegments)
     const colPipePath = [
       start, extStart,
@@ -651,13 +651,26 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       extEnd, end,
     ]
     if (isUsablePath(colPipePath)) return colPipePath
+
+    const goingDown = toLane > fromLane
+    const laneGapIdx = goingDown ? fromLane : toLane - 1
+    const basePipeY = findLanePipeY(
+      layout,
+      Math.max(0, laneGapIdx),
+      Math.min(layout.lanes.length - 1, laneGapIdx + 1),
+    )
+    const lanePipeY = resolveHorizontalTrackY(basePipeY, extStart.x, extEnd.x, occupiedSegments)
+    const lanePipeZ = [
+      start, extStart,
+      { x: extStart.x, y: lanePipeY },
+      { x: extEnd.x, y: lanePipeY },
+      extEnd, end,
+    ]
+    if (isUsablePath(lanePipeZ)) return lanePipeZ
   }
 
   /* ── Case 4: Cross-lane, horiz exit + vert entry ────────── */
   if (!sameLane && isHorizExit && isVertEntry) {
-    const lPath = [start, extStart, { x: extEnd.x, y: extStart.y }, extEnd, end]
-    if (isUsablePath(lPath)) return lPath
-
     const preferredGap = Math.max(0, Math.min(opts.fromCol, opts.toCol))
     const vX = findColumnPipeX(layout, preferredGap, extStart.y, extEnd.y, fObs, occupiedSegments)
     const colPath = [
@@ -667,16 +680,22 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
       extEnd, end,
     ]
     if (isUsablePath(colPath)) return colPath
+
+    const elbowY = resolveHorizontalTrackY(extStart.y, extStart.x, extEnd.x, occupiedSegments)
+    const lPath = [start, extStart, { x: extEnd.x, y: elbowY }, extEnd, end]
+    if (isUsablePath(lPath)) return lPath
   }
 
   /* ── Case 5: Cross-lane, vert exit + horiz entry ────────── */
   if (!sameLane && isVertExit && isHorizEntry) {
-    const lPath = [start, extStart, { x: extStart.x, y: extEnd.y }, extEnd, end]
+    const elbowY = resolveHorizontalTrackY(extEnd.y, extStart.x, extEnd.x, occupiedSegments)
+    const lPath = [start, extStart, { x: extStart.x, y: elbowY }, extEnd, end]
     if (isUsablePath(lPath)) return lPath
 
     const goingDown = toLane > fromLane
     const laneGapIdx = goingDown ? fromLane : toLane
-    const lanePipeY = findLanePipeY(layout, laneGapIdx, laneGapIdx + 1)
+    const basePipeY = findLanePipeY(layout, laneGapIdx, laneGapIdx + 1)
+    const lanePipeY = resolveHorizontalTrackY(basePipeY, extStart.x, extEnd.x, occupiedSegments)
 
     if (opts.toCol < opts.fromCol) {
       const preferredGap = Math.max(0, opts.toCol)
@@ -707,10 +726,10 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
     if (lane) {
       // U-turn above or below the lane
       for (const goUp of [true, false]) {
-        const uY = goUp
+        const baseY = goUp
           ? (fromLane > 0 ? findLanePipeY(layout, fromLane - 1, fromLane) : lane.top - SHAPE_MARGIN * 3)
           : (fromLane < layout.lanes.length - 1 ? findLanePipeY(layout, fromLane, fromLane + 1) : lane.top + lane.height + SHAPE_MARGIN * 3)
-
+        const uY = resolveHorizontalTrackY(baseY, extStart.x, extEnd.x, occupiedSegments)
         const path = [
           start, extStart,
           { x: extStart.x, y: uY },
@@ -747,7 +766,12 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
 
   /* ── Fallback: L-shape or Z-shape — hanya return jika tidak menembus shape ── */
   if (isVertExit && isVertEntry) {
-    const midY = (extStart.y + extEnd.y) / 2
+    const midY = resolveHorizontalTrackY(
+      (extStart.y + extEnd.y) / 2,
+      extStart.x,
+      extEnd.x,
+      occupiedSegments,
+    )
     const p = [start, extStart, { x: extStart.x, y: midY }, { x: extEnd.x, y: midY }, extEnd, end]
     if (isUsablePath(p)) return p
   }
@@ -760,7 +784,12 @@ function buildBpmnWaypoints(opts: BpmnRouteOptions): Point[] {
     if (isUsablePath(p)) return p
   }
   // Both horizontal
-  const midX = (extStart.x + extEnd.x) / 2
+  const midX = resolveVerticalTrackX(
+    (extStart.x + extEnd.x) / 2,
+    extStart.y,
+    extEnd.y,
+    occupiedSegments,
+  )
   const p = [start, extStart, { x: midX, y: extStart.y }, { x: midX, y: extEnd.y }, extEnd, end]
   if (isUsablePath(p)) return p
 
@@ -777,25 +806,6 @@ function findColumnForX(x: number, layout: BpmnLaneLayout): number {
     if (x >= cs && x <= cs + cw) return i
   }
   return 0
-}
-
-function getTrackOffset(
-  proposedSeg: OccupiedSegment,
-  occupied: OccupiedSegment[],
-): number {
-  const TRACK_SPACING = 10
-  let offset = 0
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const shifted = {
-      x1: proposedSeg.x1, y1: proposedSeg.y1 + offset,
-      x2: proposedSeg.x2, y2: proposedSeg.y2 + offset,
-    }
-    const hasOverlap = occupied.some(occ => segmentsOverlap(shifted, occ))
-    const hasNearby = occupied.some(occ => segmentsNearby(shifted, occ, 6))
-    if (!hasOverlap && !hasNearby) return offset
-    offset += (attempt % 2 === 0 ? 1 : -1) * TRACK_SPACING * Math.ceil((attempt + 1) / 2)
-  }
-  return offset
 }
 
 /* ── Simplify collinear and zero-length points ──────────────────
@@ -834,19 +844,6 @@ function simplifyPath(pts: Point[]): Point[] {
   return filtered.length >= 2 ? filtered : out
 }
 
-/* ── Clamp path to global bounds (path hanya dalam area diagram, tidak menimpa border) ── */
-
-function clampPathToBounds(path: Point[], bounds: Rect): Point[] {
-  const left = bounds.left
-  const right = bounds.left + bounds.width
-  const top = bounds.top
-  const bottom = bounds.top + bounds.height
-  return path.map((p) => ({
-    x: Math.max(left, Math.min(right, p.x)),
-    y: Math.max(top, Math.min(bottom, p.y)),
-  }))
-}
-
 /* ═══════════════════════════════════════════════════════════════════
  *  Main export
  * ═══════════════════════════════════════════════════════════════════ */
@@ -862,17 +859,14 @@ function nudgePathFromOccupied(path: Point[], occupied: OccupiedSegment[]): Poin
     const horiz = prev.y === cur.y && cur.y === next.y
     const vert = prev.x === cur.x && cur.x === next.x
     if (!horiz && !vert) continue
-    const seg: OccupiedSegment = horiz
-      ? { x1: prev.x, y1: cur.y, x2: next.x, y2: cur.y }
-      : { x1: cur.x, y1: prev.y, x2: cur.x, y2: next.y }
-    const offset = getTrackOffset(seg, occupied)
-    if (offset === 0) continue
     if (horiz) {
-      nudged[i] = { x: cur.x, y: cur.y + offset }
-      if (i > 1) nudged[i - 1] = { x: nudged[i - 1]!.x, y: cur.y + offset }
+      const y = resolveHorizontalTrackY(cur.y, Math.min(prev.x, next.x), Math.max(prev.x, next.x), occupied)
+      nudged[i] = { x: cur.x, y }
+      if (i > 1) nudged[i - 1] = { x: nudged[i - 1]!.x, y }
     } else {
-      nudged[i] = { x: cur.x + offset, y: cur.y }
-      if (i > 1) nudged[i - 1] = { x: cur.x + offset, y: nudged[i - 1]!.y }
+      const x = resolveVerticalTrackX(cur.x, Math.min(prev.y, next.y), Math.max(prev.y, next.y), occupied)
+      nudged[i] = { x, y: cur.y }
+      if (i > 1) nudged[i - 1] = { x, y: nudged[i - 1]!.y }
     }
   }
   return simplifyOrthogonalPath(simplifyPath(nudged), clearance)
@@ -880,17 +874,15 @@ function nudgePathFromOccupied(path: Point[], occupied: OccupiedSegment[]): Poin
 
 function validateBpmnPath(path: Point[], opts: BpmnRouteOptions): boolean {
   if (path.length < 2) return false
-  if (pathHitsObstacle(path, opts.obstacles, opts.fromShape, opts.toShape)) return false
-  if (pathOverlapsSegments(path, opts.occupiedSegments, { includeCross: false })) return false
+  const fObs = filterObstacles(opts.obstacles, opts.fromShape, opts.toShape)
+  if (pathHitsObstacle(path, fObs, opts.fromShape, opts.toShape)) return false
+  if (pathOverlapsSegments(path, opts.occupiedSegments, { includeCross: true })) return false
   if (pathRunsAlongBpmnGrid(path, opts.layout, opts.gridClearance)) return false
   return true
 }
 
 export function routeBpmn(opts: BpmnRouteOptions): Point[] {
   let path = buildBpmnWaypoints(opts)
-  if (opts.globalBounds && path.length > 0) {
-    path = clampPathToBounds(path, opts.globalBounds)
-  }
   path = simplifyPath(path)
   if (!validateBpmnPath(path, opts)) {
     const nudged = nudgePathFromOccupied(path, opts.occupiedSegments)

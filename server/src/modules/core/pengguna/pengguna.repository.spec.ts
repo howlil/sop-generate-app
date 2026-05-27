@@ -2,7 +2,7 @@ import { PeranPengguna } from '../../../generated/prisma';
 import type { PrismaService } from '../../../common/prisma/prisma.service';
 import { PenggunaRepository } from './pengguna.repository';
 
-describe('PenggunaRepository.createPengguna', () => {
+describe('Pengujian PenggunaRepository.createPengguna', () => {
   const prismaMock = {
     pengguna: {
       create: jest.fn(),
@@ -16,7 +16,7 @@ describe('PenggunaRepository.createPengguna', () => {
     repo = new PenggunaRepository(prismaMock as unknown as PrismaService);
   });
 
-  it('should_persist_create_input', async () => {
+  it('seharusnya menyimpan membuat input', async () => {
     prismaMock.pengguna.create.mockResolvedValueOnce({ penggunaId: 'u-1' });
     await repo.createPengguna({
       email: 'e@t.com',

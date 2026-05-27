@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import type { CreatePelaksanaDto } from './dto/create-pelaksana.dto';
 import type { UpdatePelaksanaDto } from './dto/update-pelaksana.dto';
@@ -31,10 +27,7 @@ export class PelaksanaService {
     user: JwtAccessPayload,
     bodyOrQueryOpdId?: string,
   ): Promise<string> {
-    return this.userOpdAccessService.resolveOwnOpdAllowingOptionalQuery(
-      user.sub,
-      bodyOrQueryOpdId,
-    );
+    return this.userOpdAccessService.resolveOwnOpdAllowingOptionalQuery(user.sub, bodyOrQueryOpdId);
   }
 
   async list(user: JwtAccessPayload, queryOpdId?: string): Promise<PelaksanaResponseDto[]> {

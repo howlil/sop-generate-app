@@ -10,6 +10,7 @@ import {
   downloadBeritaAcaraPdf,
   type BeritaAcaraPdfSigningMode,
 } from '@/lib/print/download-berita-acara-pdf'
+import { ApiError } from '@/lib/api/api-client'
 import { PdfSigningNotAppliedError } from '@/lib/print/berita-acara-pdf-signing.util'
 import {
   printSopFromPreviewProps,
@@ -181,6 +182,10 @@ export function usePengajuanCetakArsip({
         }
       } catch (err) {
         if (err instanceof PdfSigningNotAppliedError) {
+          showToast(err.message, 'error')
+          return
+        }
+        if (err instanceof ApiError) {
           showToast(err.message, 'error')
           return
         }

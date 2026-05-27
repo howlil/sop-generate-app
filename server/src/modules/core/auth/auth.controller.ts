@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
@@ -8,8 +8,11 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginDto } from './dto/login.dto';
 import {
   ACCESS_TOKEN_COOKIE_NAME,
+  REFRESH_TOKEN_COOKIE_NAME,
   buildAccessTokenCookieOptions,
   buildClearAccessTokenCookieOptions,
+  buildClearRefreshTokenCookieOptions,
+  buildRefreshTokenCookieOptions,
   type JwtAccessPayload,
   type PublicPengguna,
 } from './helpers/auth.shared';
@@ -34,12 +37,25 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiSuccessResponse<PublicPengguna>> {
-    const { accessToken, pengguna, cookieMaxAgeMs } = await this.authService.login(dto);
+    let loginResult: Awaited<ReturnType<AuthService['login']>>;
+    try {
+      loginResult = await this.authService.login(dto);
+    } catch (error) {
+      throw error;
+    }
+    const { accessToken, refreshToken, pengguna, cookieMaxAgeMs, refreshCookieMaxAgeMs } =
+      loginResult;
     const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+    const isProduction = nodeEnv === 'production';
     res.cookie(
       ACCESS_TOKEN_COOKIE_NAME,
       accessToken,
-      buildAccessTokenCookieOptions(cookieMaxAgeMs, nodeEnv === 'production'),
+      buildAccessTokenCookieOptions(cookieMaxAgeMs, isProduction),
+    );
+    res.cookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      refreshToken,
+      buildRefreshTokenCookieOptions(refreshCookieMaxAgeMs, isProduction),
     );
     return {
       message: 'Login berhasil',
@@ -58,7 +74,9 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Data pengguna' })
   @ApiResponse({ status: 401, description: 'Tidak terautentikasi' })
   @ApiResponse({ status: 404, description: 'Pengguna tidak ditemukan' })
-  async me(@Req() req: Request & { user: JwtAccessPayload }): Promise<ApiSuccessResponse<PublicPengguna>> {
+  async me(
+    @Req() req: Request & { user: JwtAccessPayload },
+  ): Promise<ApiSuccessResponse<PublicPengguna>> {
     const pengguna = await this.authService.getMe(req.user.sub);
     return {
       message: 'Data pengguna berhasil diambil',
@@ -68,24 +86,31 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @UseGuards(JwtAuthGuard)
-  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @HttpCode(200)
+  @ApiCookieAuth(REFRESH_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Perbarui sesi',
-    description: 'Menerbitkan ulang cookie JWT akses berdasarkan token yang masih valid.',
+    description: 'Merotasi refresh token dan menerbitkan ulang cookie JWT akses.',
   })
   @ApiResponse({ status: 200, description: 'Token diperbarui' })
   @ApiResponse({ status: 401, description: 'Tidak terautentikasi' })
   async refresh(
-    @Req() req: Request & { user: JwtAccessPayload },
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiSuccessResponse<{ success: true }>> {
-    const { accessToken, cookieMaxAgeMs } = await this.authService.refreshAccessToken(req.user);
+    const { accessToken, refreshToken, cookieMaxAgeMs, refreshCookieMaxAgeMs } =
+      await this.authService.refreshSession(this.getCookie(req, REFRESH_TOKEN_COOKIE_NAME));
     const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+    const isProduction = nodeEnv === 'production';
     res.cookie(
       ACCESS_TOKEN_COOKIE_NAME,
       accessToken,
-      buildAccessTokenCookieOptions(cookieMaxAgeMs, nodeEnv === 'production'),
+      buildAccessTokenCookieOptions(cookieMaxAgeMs, isProduction),
+    );
+    res.cookie(
+      REFRESH_TOKEN_COOKIE_NAME,
+      refreshToken,
+      buildRefreshTokenCookieOptions(refreshCookieMaxAgeMs, isProduction),
     );
     return {
       message: 'Sesi diperbarui',
@@ -95,17 +120,21 @@ export class AuthController {
   }
 
   @Post('logout')
+  @HttpCode(200)
   @ApiOperation({
     summary: 'Keluar',
     description: 'Menghapus cookie JWT akses.',
   })
   @ApiResponse({ status: 200, description: 'Logout berhasil' })
-  async logout(@Res({ passthrough: true }) res: Response): Promise<ApiSuccessResponse<{ success: true }>> {
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiSuccessResponse<{ success: true }>> {
+    await this.authService.logout(this.getCookie(req, REFRESH_TOKEN_COOKIE_NAME));
     const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
-    res.clearCookie(
-      ACCESS_TOKEN_COOKIE_NAME,
-      buildClearAccessTokenCookieOptions(nodeEnv === 'production'),
-    );
+    const isProduction = nodeEnv === 'production';
+    res.clearCookie(ACCESS_TOKEN_COOKIE_NAME, buildClearAccessTokenCookieOptions(isProduction));
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, buildClearRefreshTokenCookieOptions(isProduction));
     return {
       message: 'Logout berhasil',
       success: true,
@@ -121,7 +150,10 @@ export class AuthController {
     description: 'Membutuhkan cookie JWT akses. Kata sandi lama harus valid.',
   })
   @ApiResponse({ status: 200, description: 'Kata sandi berhasil diubah' })
-  @ApiResponse({ status: 401, description: 'Kata sandi lama tidak valid atau tidak terautentikasi' })
+  @ApiResponse({
+    status: 401,
+    description: 'Kata sandi lama tidak valid atau tidak terautentikasi',
+  })
   @ApiResponse({ status: 404, description: 'Pengguna tidak ditemukan' })
   async changePassword(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -133,5 +165,10 @@ export class AuthController {
       success: true,
       data: { success: true },
     };
+  }
+
+  private getCookie(req: Request, name: string): string | undefined {
+    const raw = req.cookies?.[name];
+    return typeof raw === 'string' ? raw : undefined;
   }
 }

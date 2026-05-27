@@ -210,22 +210,17 @@ function isValidManualConfig(c: ArrowConnectionConfig | null | undefined): boole
   return [s.x, s.y, e.x, e.y].every(v => typeof v === 'number' && !isNaN(v))
 }
 
-function rectsOverlap(a: ElemPos | { left: number; top: number; width: number; height: number }, b: ElemPos | { left: number; top: number; width: number; height: number }): boolean {
-  return (
-    a.left < b.left + b.width &&
-    a.left + a.width > b.left &&
-    a.top < b.top + b.height &&
-    a.top + a.height > b.top
-  )
-}
-
-/** Hindari shape sumber/target di daftar obstacle routing — sudah di-handle di endpoint. */
+/** Kecualikan hanya node ujung koneksi; shape perantara tetap jadi obstacle. */
 function filterRoutingObstacles(
   obsRects: Array<{ left: number; top: number; width: number; height: number }>,
-  fromShape: { left: number; top: number; width: number; height: number },
-  toShape: { left: number; top: number; width: number; height: number },
+  obstacleIds: string[],
+  fromNodeId: string,
+  toNodeId: string,
 ): Array<{ left: number; top: number; width: number; height: number }> {
-  return obsRects.filter((obs) => !rectsOverlap(obs, fromShape) && !rectsOverlap(obs, toShape))
+  return obsRects.filter((_, index) => {
+    const id = obstacleIds[index]
+    return id !== fromNodeId && id !== toNodeId
+  })
 }
 
 type ShapeRect = { left: number; top: number; width: number; height: number }
@@ -290,7 +285,7 @@ function ensureRenderableFallbackPath(
 /* ───────────────────────── Constants ─────────────────────────── */
 
 // Coba semua side pair yang masuk akal; prioritas path tidak menembus shape, bukan rute terpendek.
-const MAX_SIDE_PAIRS = 12
+const MAX_SIDE_PAIRS = 10
 
 /* ───────────────────────── Component ─────────────────────────── */
 
@@ -356,26 +351,35 @@ export function BpmnArrowConnector({
     // Capture ref value at effect start so cleanup always uses the right instance
     // even if the routedSegmentsRef prop changes before cleanup is called.
     const capturedRoutedSegs = routedSegmentsRefRef.current
+    let retryFrame = 0
+    let cancelled = false
 
-    const container = document.getElementById(idcontainer)
-    if (!container) {
-      setPathData('')
-      setLabelPos(null)
-      setEditableAnchors([])
-      setShapeSnapTargets(null)
-      routingGuardRef.current = null
-      return
-    }
-    const fromPos = getElementPosition(connection.from, container)
-    const toPos = getElementPosition(connection.to, container)
-    if (!fromPos || !toPos) {
-      setPathData('')
-      setLabelPos(null)
-      setEditableAnchors([])
-      setShapeSnapTargets(null)
-      routingGuardRef.current = null
-      return
-    }
+    const runRoute = (): void => {
+      if (cancelled) return
+      const container = document.getElementById(idcontainer)
+      if (!container) {
+        setPathData('')
+        setLabelPos(null)
+        setEditableAnchors([])
+        setShapeSnapTargets(null)
+        routingGuardRef.current = null
+        return
+      }
+      const fromPos = getElementPosition(connection.from, container)
+      const toPos = getElementPosition(connection.to, container)
+      if (!fromPos || !toPos) {
+        if (retryFrame < 4) {
+          retryFrame += 1
+          requestAnimationFrame(runRoute)
+          return
+        }
+        setPathData('')
+        setLabelPos(null)
+        setEditableAnchors([])
+        setShapeSnapTargets(null)
+        routingGuardRef.current = null
+        return
+      }
     const fromRect = elemPosToShapeRect(fromPos)
     const toRect = elemPosToShapeRect(toPos)
     const fromIsDiamond = connection.sourceType === 'flowchart-decision'
@@ -422,7 +426,13 @@ export function BpmnArrowConnector({
       : { left: 0, top: 0, width: container.scrollWidth, height: container.scrollHeight }
     const fromShape = { left: fromPos.left, top: fromPos.top, width: fromPos.width, height: fromPos.height }
     const toShape = { left: toPos.left, top: toPos.top, width: toPos.width, height: toPos.height }
-    const routingObstacles = filterRoutingObstacles(obsRects, fromShape, toShape)
+    const obstacleIds = curObstacles.map((o) => o.id)
+    const routingObstacles = filterRoutingObstacles(
+      obsRects,
+      obstacleIds,
+      connection.from,
+      connection.to,
+    )
     const curLayout = laneLayoutRef.current
     const domLayout =
       curLayout?.lanes != null && curLayout.lanes.length > 0
@@ -493,9 +503,7 @@ export function BpmnArrowConnector({
     emittedRef.current = false
 
     if (editMode && isValidManualConfig(manualConfig)) {
-      return () => {
-        capturedRoutedSegs?.current.delete(connection.id)
-      }
+      return
     }
 
     /* ── Auto-routing (BPMN lane-aware) ──────────────────── */
@@ -542,13 +550,15 @@ export function BpmnArrowConnector({
     let bestCandidate: BpmnRouteCandidate | null = null
     let bestScore = Infinity
 
+    const pathSafetyOpts = createPathSafetyOptions('bpmn', {
+      obstacles: routingObstacles,
+      occupied,
+      fromShape,
+      toShape,
+      clearancePx: 6,
+    })
     const isSafePath = (path: { x: number; y: number }[]) =>
-      isAcceptableRoutedPath(path, createPathSafetyOptions('bpmn', {
-        obstacles: routingObstacles,
-        occupied,
-        fromShape,
-        toShape,
-      }))
+      isAcceptableRoutedPath(path, pathSafetyOpts)
 
     const tryRouteCandidates = (obstacleSet: typeof routingObstacles): void => {
       if (!domLayout) return
@@ -605,37 +615,88 @@ export function BpmnArrowConnector({
     const pickFallbackCandidate = (): BpmnRouteCandidate =>
       bestCandidate ?? sidePairs[0] ?? { sSide: 'right', eSide: 'left' }
 
-    if (!domLayout) {
-      const fc = pickFallbackCandidate()
-      bestPath = ensureRenderableFallbackPath(fromShape, toShape, fc, connection)
-      bestCandidate = fc
+    const pickSafeFallback = (): { path: { x: number; y: number }[]; candidate: BpmnRouteCandidate } | null => {
+      const ordered = [
+        bestCandidate,
+        ...sidePairs.slice(0, MAX_SIDE_PAIRS),
+        { sSide: 'right' as Side, eSide: 'left' as Side },
+        { sSide: 'bottom' as Side, eSide: 'top' as Side },
+      ].filter((c): c is BpmnRouteCandidate => c != null)
+      const seen = new Set<string>()
+      for (const fc of ordered) {
+        const key = `${fc.sSide}-${fc.eSide}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        if (domLayout) {
+          const repaired = routeBpmn({
+            fromShape,
+            toShape,
+            fromSide: fc.sSide,
+            toSide: fc.eSide,
+            fromDistance: 0.5,
+            toDistance: 0.5,
+            fromIsDiamond: connection.sourceType === 'flowchart-decision',
+            toIsDiamond: connection.targetType === 'flowchart-decision',
+            layout: domLayout,
+            fromLane: connection.fromLane,
+            toLane: connection.toLane,
+            fromCol: connection.fromCol,
+            toCol: connection.toCol,
+            obstacles: routingObstacles,
+            occupiedSegments: occupied,
+            globalBounds,
+            sourceJettySize: fc.sourceJettySize,
+            targetJettySize: fc.targetJettySize,
+          })
+          const repairedOrtho = snapToOrthogonal(repaired)
+          if (repairedOrtho.length >= 2 && isSafePath(repairedOrtho)) {
+            return { path: repairedOrtho, candidate: fc }
+          }
+        }
+        const candidatePath = snapToOrthogonal(
+          ensureRenderableFallbackPath(fromShape, toShape, fc, connection),
+        )
+        if (candidatePath.length >= 2 && isSafePath(candidatePath)) {
+          return { path: candidatePath, candidate: fc }
+        }
+      }
+      return null
     }
 
     if (!bestPath || !bestCandidate) {
-      const fc = pickFallbackCandidate()
-      bestPath = ensureRenderableFallbackPath(fromShape, toShape, fc, connection)
-      bestCandidate = fc
+      const safe = pickSafeFallback()
+      if (safe) {
+        bestPath = safe.path
+        bestCandidate = safe.candidate
+      }
     }
 
-    const finalPath = snapToOrthogonal(bestPath)
+    const finalPath = snapToOrthogonal(bestPath ?? [])
     if (finalPath.length < 2) {
-      const emergencyPath = ensureRenderableFallbackPath(fromShape, toShape, pickFallbackCandidate(), connection)
-      bestPath = emergencyPath
-      bestCandidate = pickFallbackCandidate()
+      const safe = pickSafeFallback()
+      if (!safe) {
+        capturedRoutedSegs?.current.delete(connection.id)
+        setPathData('')
+        setResolvedPath((prev) => (prev.length === 0 ? prev : []))
+        setLabelPos((prev) => (prev === null ? prev : null))
+        return
+      }
+      bestPath = safe.path
+      bestCandidate = safe.candidate
     }
-    let resolvedPathFinal = snapToOrthogonal(bestPath)
-    if (resolvedPathFinal.length < 2) {
-      capturedRoutedSegs?.current.delete(connection.id)
-      setPathData('')
-      setResolvedPath((prev) => (prev.length === 0 ? prev : []))
-      setLabelPos((prev) => (prev === null ? prev : null))
-      return
-    }
+    let resolvedPathFinal = snapToOrthogonal(bestPath!)
     if (!isSafePath(resolvedPathFinal)) {
-      const fc = pickFallbackCandidate()
-      const repaired = ensureRenderableFallbackPath(fromShape, toShape, fc, connection)
-      resolvedPathFinal = snapToOrthogonal(repaired)
-      bestCandidate = fc
+      const safe = pickSafeFallback()
+      if (safe) {
+        resolvedPathFinal = safe.path
+        bestCandidate = safe.candidate
+      } else {
+        capturedRoutedSegs?.current.delete(connection.id)
+        setPathData('')
+        setResolvedPath((prev) => (prev.length === 0 ? prev : []))
+        setLabelPos((prev) => (prev === null ? prev : null))
+        return
+      }
     }
 
     if (capturedRoutedSegs) {
@@ -680,7 +741,12 @@ export function BpmnArrowConnector({
       onPathUpdatedRef.current(payload)
     }
 
+    }
+
+    runRoute()
+
     return () => {
+      cancelled = true
       capturedRoutedSegs?.current.delete(connection.id)
     }
   // Only re-run when the connection identity or manual config changes.

@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import {
-  NILAI_OPD_SKOR_MAX,
-  NILAI_OPD_SKOR_MIN,
-} from '../nilai/nilai-opd-skor.constants';
+import { NILAI_OPD_SKOR_MAX, NILAI_OPD_SKOR_MIN } from '../nilai/nilai-opd-skor.constants';
 
 /** Satu baris agregasi SQL per tahun × OPD. */
 export type EvaluasiGrafikAggRow = {

@@ -7,11 +7,7 @@ import {
 } from '@nestjs/common';
 import { assertDetailSopEditable } from '../../../common/status/sop-editable.util';
 import type { JwtAccessPayload } from '../../../common';
-import {
-  JenisLangkahProsedur,
-  PeranPengguna,
-  Prisma,
-} from '../../../generated/prisma';
+import { JenisLangkahProsedur, PeranPengguna, Prisma } from '../../../generated/prisma';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { SopCatalogService } from '../catalog/sop-catalog.service';
 import type { PenyusunWorkbenchDataDto } from '../catalog/dto/penyusun-workbench-data.dto';
@@ -41,8 +37,7 @@ export class SopProsedurService {
     dto: UpdateSopProsedurDto,
     logsLimit?: number,
   ): Promise<PenyusunWorkbenchDataDto> {
-    const resolved =
-      await this.sopProsedurRepository.findDetailIdByDetailOrSopId(detailOrSopId);
+    const resolved = await this.sopProsedurRepository.findDetailIdByDetailOrSopId(detailOrSopId);
     if (resolved === null) {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
@@ -82,9 +77,7 @@ export class SopProsedurService {
       }
       const message = err instanceof Error ? err.message : '';
       if (message.includes('Langkah tujuan cabang')) {
-        throw new BadRequestException(
-          'Langkah tujuan harus berada dalam DetailSOP yang sama',
-        );
+        throw new BadRequestException('Langkah tujuan harus berada dalam DetailSOP yang sama');
       }
       throw err;
     }
@@ -92,19 +85,17 @@ export class SopProsedurService {
     return this.sopCatalogService.getPenyusunWorkbench(user, resolved.detailSopId, logsLimit);
   }
 
-  private async assertPenyusunOpdAccess(
-    user: JwtAccessPayload,
-    sopOpdId: string,
-  ): Promise<void> {
-    if (
-      user.peran !== PeranPengguna.PENYUSUN &&
-      user.peran !== PeranPengguna.PJ_PENYUSUN
-    ) {
+  private async assertPenyusunOpdAccess(user: JwtAccessPayload, sopOpdId: string): Promise<void> {
+    if (user.peran !== PeranPengguna.PENYUSUN && user.peran !== PeranPengguna.PJ_PENYUSUN) {
       /* Guard di controller seharusnya sudah memblokir, tapi pengaman runtime tetap perlu
          agar logic OPD scoping di bawah aman dipakai. */
       throw new ForbiddenException('Akses ditolak: hanya penyusun yang dapat mengubah prosedur');
     }
-    await this.userOpdAccessService.assertSameOpd(user.sub, sopOpdId, 'Akses ditolak untuk DetailSOP ini');
+    await this.userOpdAccessService.assertSameOpd(
+      user.sub,
+      sopOpdId,
+      'Akses ditolak untuk DetailSOP ini',
+    );
   }
 
   private collectChangedFields(dto: UpdateSopProsedurDto): string[] {
@@ -139,9 +130,7 @@ export class SopProsedurService {
       const dedup: { pelaksanaId: string }[] = [];
       for (const p of dto.pelaksana) {
         if (seen.has(p.pelaksanaId)) {
-          throw new BadRequestException(
-            `Pelaksana duplikat di jalur pelaksana: ${p.pelaksanaId}`,
-          );
+          throw new BadRequestException(`Pelaksana duplikat di jalur pelaksana: ${p.pelaksanaId}`);
         }
         seen.add(p.pelaksanaId);
         dedup.push({ pelaksanaId: p.pelaksanaId });
@@ -189,10 +178,10 @@ export class SopProsedurService {
       const defaultPelaksanaId =
         out.pelaksana !== undefined && out.pelaksana.length > 0
           ? out.pelaksana[0].pelaksanaId
-          : Array.from(allowedForLangkah)[0] ?? null;
+          : (Array.from(allowedForLangkah)[0] ?? null);
 
       const repoLangkah: RepoLangkahPatchItem[] = langkah.map((item) =>
-        this.toRepoLangkahItem(item, allowedForLangkah!, tempIds, defaultPelaksanaId),
+        this.toRepoLangkahItem(item, allowedForLangkah, tempIds, defaultPelaksanaId),
       );
 
       out.langkah = repoLangkah;

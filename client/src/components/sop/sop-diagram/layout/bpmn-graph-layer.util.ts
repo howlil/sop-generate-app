@@ -26,14 +26,34 @@ function laneIndexForStep(
   return idx === -1 ? 0 : idx
 }
 
+function columnFromPredecessors(
+  step: BpmnLayoutStepInput,
+  preds: string[],
+  steps: BpmnLayoutStepInput[],
+  rawColumns: Map<string, number>,
+  implementerIds: string[],
+): number {
+  if (preds.length === 0) return 0
+  const stepLane = laneIndexForStep(step, implementerIds)
+  let columnIndex = 0
+  for (const predId of preds) {
+    const pred = steps.find((s) => s.id_step === predId)
+    if (!pred) continue
+    const predCol = rawColumns.get(predId) ?? 0
+    const predLane = laneIndexForStep(pred, implementerIds)
+    if (predLane === stepLane) {
+      columnIndex = Math.max(columnIndex, predCol + 1)
+    } else {
+      columnIndex = Math.max(columnIndex, predCol)
+    }
+  }
+  return columnIndex
+}
+
 /**
- * Assign kolom berdasarkan urutan workflow global.
- *
- * BPMN harus terbaca kiri → kanan lintas swimlane. Karena itu successor forward
- * selalu ditempatkan minimal satu kolom di kanan predecessor, dan setiap langkah
- * berikutnya mendapat floor sekuensial agar lane berbeda tidak "reset" ke kiri.
- * Loop-back tetap boleh kembali ke target lama, jadi edge mundur tidak menaikkan
- * kolom target.
+ * Assign kolom workflow (alur kiri → kanan pada swimlane horizontal).
+ * Handoff lintas swimlane: kolom sama dengan predecessor (alur lurus ke bawah, hemat lebar).
+ * Successor dalam swimlane yang sama: satu kolom ke kanan agar shape tidak bertumpuk.
  */
 export function assignStepColumns(
   steps: BpmnLayoutStepInput[],
@@ -63,26 +83,107 @@ export function assignStepColumns(
   const sorted = [...steps].sort((a, b) => a.seq_number - b.seq_number)
   const rawColumns = new Map<string, number>()
   let previousSequentialColumn = -1
+  let previousSequentialLane = -1
   for (const step of sorted) {
     const preds = predsByIdStep.get(step.id_step) ?? []
-    let columnIndex = Math.max(0, previousSequentialColumn + 1)
-    for (const predId of preds) {
-      const pred = steps.find((s) => s.id_step === predId)
-      if (!pred) continue
-      const predCol = rawColumns.get(predId) ?? 0
-      columnIndex = Math.max(columnIndex, predCol + 1)
+    const stepLane = laneIndexForStep(step, implementerIds)
+    let columnIndex = columnFromPredecessors(step, preds, steps, rawColumns, implementerIds)
+    if (
+      preds.length === 0 &&
+      previousSequentialLane === stepLane &&
+      previousSequentialColumn >= 0
+    ) {
+      columnIndex = Math.max(columnIndex, previousSequentialColumn + 1)
     }
     if (step.type === 'decision') {
       columnIndex = Math.max(columnIndex, 0)
     }
     rawColumns.set(step.id_step, columnIndex)
     previousSequentialColumn = columnIndex
+    previousSequentialLane = stepLane
   }
   bumpDecisionBranchColumns(steps, connections, rawColumns, implementerIds)
+  enforceLaneMonotonicColumns(steps, connections, rawColumns, implementerIds)
   return rawColumns
 }
 
-/** Cabang Ya/Tidak dari gateway: minimal kolom decision+1, tidak satu kolom. */
+/**
+ * Langkah pada alur utama (spine): ikuti rantai dari Mulai, prioritaskan edge ke seq+1.
+ * Dipakai agar handoff lintas swimlane tetap di kolom kiri; cabang decision yang digeser.
+ */
+export function buildMainSpineStepIds(
+  steps: BpmnLayoutStepInput[],
+  connections: BpmnLayoutConnectionInput[],
+): Set<string> {
+  const spine = new Set<string>()
+  if (steps.length === 0) return spine
+  const seqToId = new Map<number, string>()
+  for (const step of steps) {
+    seqToId.set(step.seq_number, step.id_step)
+  }
+  const start =
+    steps.find((s) => s.type === 'terminator') ??
+    [...steps].sort((a, b) => a.seq_number - b.seq_number)[0]
+  if (!start) return spine
+  let currentId = start.id_step
+  spine.add(currentId)
+  const visited = new Set<string>([currentId])
+  for (let guard = 0; guard < steps.length + 2; guard += 1) {
+    const current = steps.find((s) => s.id_step === currentId)
+    if (!current) break
+    const fromNode = `bpmn-step-${current.seq_number}`
+    const outs = connections
+      .map((c) => {
+        if (c.from !== fromNode) return null
+        const toSeq = parseBpmnStepSeq(c.to)
+        if (toSeq === null) return null
+        const toId = seqToId.get(toSeq)
+        if (!toId) return null
+        return { toSeq, toId }
+      })
+      .filter((x): x is { toSeq: number; toId: string } => x != null)
+    if (outs.length === 0) break
+    const preferred =
+      outs.find((o) => o.toSeq === current.seq_number + 1) ??
+      [...outs].sort((a, b) => a.toSeq - b.toSeq)[0]
+    if (!preferred || visited.has(preferred.toId)) break
+    spine.add(preferred.toId)
+    visited.add(preferred.toId)
+    currentId = preferred.toId
+  }
+  return spine
+}
+
+/**
+ * Dalam satu swimlane, hanya edge same-lane yang mendorong kolom ke kanan.
+ * Tidak memaksa +1 per urutan seq (menghindari kolom berlebihan & kotak sempit).
+ */
+function enforceLaneMonotonicColumns(
+  steps: BpmnLayoutStepInput[],
+  connections: BpmnLayoutConnectionInput[],
+  rawColumns: Map<string, number>,
+  implementerIds: string[],
+): void {
+  const seqToId = new Map(steps.map((s) => [s.seq_number, s.id_step]))
+  for (const conn of connections) {
+    const fromSeq = parseBpmnStepSeq(conn.from)
+    const toSeq = parseBpmnStepSeq(conn.to)
+    if (fromSeq === null || toSeq === null || fromSeq >= toSeq) continue
+    const fromId = seqToId.get(fromSeq)
+    const toId = seqToId.get(toSeq)
+    if (!fromId || !toId) continue
+    const fromStep = steps.find((s) => s.id_step === fromId)
+    const toStep = steps.find((s) => s.id_step === toId)
+    if (!fromStep || !toStep) continue
+    const fromLane = laneIndexForStep(fromStep, implementerIds)
+    const toLane = laneIndexForStep(toStep, implementerIds)
+    if (fromLane !== toLane) continue
+    const fromCol = rawColumns.get(fromId) ?? 0
+    rawColumns.set(toId, Math.max(rawColumns.get(toId) ?? 0, fromCol + 1))
+  }
+}
+
+/** Cabang Ya/Tidak: pisah kolom hanya bila target masih di swimlane yang sama. */
 function bumpDecisionBranchColumns(
   steps: BpmnLayoutStepInput[],
   connections: BpmnLayoutConnectionInput[],
@@ -93,23 +194,23 @@ function bumpDecisionBranchColumns(
     if (step.type !== 'decision') continue
     const fromNode = `bpmn-step-${step.seq_number}`
     const outs = connections.filter((c) => c.from === fromNode)
-    if (outs.length < 2) continue
+    if (outs.length === 0) continue
     const baseCol = rawColumns.get(step.id_step) ?? 0
-    const lane = laneIndexForStep(step, implementerIds)
-    const targetIds: string[] = []
+    const decisionLane = laneIndexForStep(step, implementerIds)
+    let sameLaneBranch = 0
     for (const conn of outs) {
       const toSeq = parseBpmnStepSeq(conn.to)
       if (toSeq === null) continue
       const toStep = steps.find((s) => s.seq_number === toSeq)
       if (!toStep) continue
-      if (laneIndexForStep(toStep, implementerIds) === lane) {
-        targetIds.push(toStep.id_step)
+      const toLane = laneIndexForStep(toStep, implementerIds)
+      if (toLane === decisionLane) {
+        const minCol = baseCol + 1 + sameLaneBranch
+        sameLaneBranch += 1
+        rawColumns.set(toStep.id_step, Math.max(rawColumns.get(toStep.id_step) ?? 0, minCol))
+      } else {
+        rawColumns.set(toStep.id_step, Math.max(rawColumns.get(toStep.id_step) ?? 0, baseCol))
       }
     }
-    if (targetIds.length < 2) continue
-    targetIds.forEach((id, i) => {
-      const minCol = baseCol + 1 + i
-      rawColumns.set(id, Math.max(rawColumns.get(id) ?? 0, minCol))
-    })
   }
 }

@@ -5,4 +5,5 @@ export type JwtAccessPayload = {
   readonly sub: string;
   readonly email: string;
   readonly peran: PeranPengguna;
+  readonly sesiTokenVersion?: number;
 };

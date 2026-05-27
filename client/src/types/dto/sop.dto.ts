@@ -137,7 +137,6 @@ export interface PenyusunWorkbenchLogEdit {
   sopDetailId: string;
   userId: string;
   bagian: BagianSOP;
-  targetEntityId?: string | null;
   keterangan?: string | null;
   meta?: PenyusunWorkbenchLogEditMeta | null;
   aktorRole: string;

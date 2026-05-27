@@ -20,10 +20,14 @@ import type { ListSopQueryDto } from './dto/list-sop-query.dto';
 import type { UpdateDetailSopStatusDto } from './dto/update-detail-sop-status.dto';
 import type { UpdateSopHeaderDto } from './dto/update-sop-header.dto';
 import { encodeLogEditSopClientId } from '../collaboration/log-edit-session.helper';
-import { SopCatalogRepository, type SopDaftarDbRow, type SopWorkbenchDbPayload } from './sop-catalog.repository';
+import {
+  SopCatalogRepository,
+  type SopDaftarDbRow,
+  type SopWorkbenchDbPayload,
+} from './sop-catalog.repository';
 import { SopCatalogService } from './sop-catalog.service';
 
-describe('SopCatalogService', () => {
+describe('Pengujian SopCatalogService', () => {
   let service: SopCatalogService;
   const repoMock: jest.Mocked<
     Pick<
@@ -63,8 +67,9 @@ describe('SopCatalogService', () => {
     assertBolehKirimUlangSetelahRevisi: jest.fn().mockResolvedValue(undefined),
   };
   const userOpdAccessMock = {
-    isEvaluatorRole: jest.fn((role: PeranPengguna) =>
-      role === PeranPengguna.EVALUATOR || role === PeranPengguna.PJ_EVALUATOR,
+    isEvaluatorRole: jest.fn(
+      (role: PeranPengguna) =>
+        role === PeranPengguna.EVALUATOR || role === PeranPengguna.PJ_EVALUATOR,
     ),
     getRequiredUserOpdId: jest.fn().mockResolvedValue('opd-1'),
     assertWorkbenchAccess: jest.fn().mockResolvedValue(undefined),
@@ -91,7 +96,7 @@ describe('SopCatalogService', () => {
     userOpdAccessMock.assertWorkbenchAccess.mockResolvedValue(undefined);
   });
 
-  it('should_throw_forbidden_when_user_has_no_opd', async () => {
+  it('seharusnya melempar ForbiddenException ketika pengguna tidak memiliki OPD', async () => {
     userOpdAccessMock.getRequiredUserOpdId.mockRejectedValueOnce(
       new ForbiddenException('Pengguna tidak terikat OPD'),
     );
@@ -99,7 +104,7 @@ describe('SopCatalogService', () => {
     expect(repoMock.findDaftarByOpdId).not.toHaveBeenCalled();
   });
 
-  it('should_map_latest_detail_and_terakhir_diedit', async () => {
+  it('seharusnya memetakan terbaru detail dan terakhir diedit', async () => {
     const t = new Date('2026-01-15T10:00:00.000Z');
     const row: SopDaftarDbRow = {
       sopId: 'sop-1',
@@ -136,7 +141,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  it('should_map_row_without_detail', async () => {
+  it('seharusnya memetakan baris tanpa detail', async () => {
     const row: SopDaftarDbRow = {
       sopId: 'sop-2',
       opdId: 'opd-1',
@@ -162,7 +167,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  it('should_set_canCabutSop_when_berlaku_without_in_flight', async () => {
+  it('seharusnya mengatur canCabutSop ketika SOP berlaku tanpa revisi berjalan', async () => {
     const t = new Date('2026-01-15T10:00:00.000Z');
     const row: SopDaftarDbRow = {
       sopId: 'sop-berlaku',
@@ -196,7 +201,7 @@ describe('SopCatalogService', () => {
     expect(actual[0]?.canBuatVersiBaru).toBe(true);
   });
 
-  it('should_clear_canCabutSop_when_revisi_in_flight', async () => {
+  it('seharusnya mengosongkan canCabutSop ketika revisi sedang berjalan', async () => {
     const t = new Date('2026-01-15T10:00:00.000Z');
     const row: SopDaftarDbRow = {
       sopId: 'sop-revisi',
@@ -230,7 +235,7 @@ describe('SopCatalogService', () => {
     expect(actual[0]?.canBuatVersiBaru).toBe(false);
   });
 
-  it('should_use_findDaftarAll_for_evaluator', async () => {
+  it('seharusnya menggunakan findDaftarSemua untuk evaluator', async () => {
     const evaluatorUser: JwtAccessPayload = {
       sub: 'ev-1',
       email: 'ev@b.c',
@@ -242,7 +247,7 @@ describe('SopCatalogService', () => {
     expect(userOpdAccessMock.getRequiredUserOpdId).not.toHaveBeenCalled();
   });
 
-  it('should_pass_filters_to_repository_when_user_is_penyusun', async () => {
+  it('seharusnya meneruskan filter ke repository ketika pengguna adalah penyusun', async () => {
     const query = {
       status: 'DRAFT',
       tanggalDari: '2026-01-01',
@@ -257,7 +262,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  it('should_use_findDaftarAll_with_filters_when_user_is_evaluator', async () => {
+  it('seharusnya menggunakan findDaftarSemua dengan filter ketika pengguna adalah evaluator', async () => {
     const evaluatorUser: JwtAccessPayload = {
       sub: 'ev-2',
       email: 'ev2@b.c',
@@ -273,13 +278,15 @@ describe('SopCatalogService', () => {
     });
   });
 
-  it('should_throw_BadRequest_when_tanggalDari_after_tanggalSampai', async () => {
+  it('seharusnya melempar BadRequestException ketika tanggal awal setelah tanggal akhir', async () => {
     const query = { tanggalDari: '2026-02-10', tanggalSampai: '2026-02-01' } as ListSopQueryDto;
-    await expect(service.listForCurrentUser(user, query)).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.listForCurrentUser(user, query)).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
     expect(repoMock.findDaftarByOpdId).not.toHaveBeenCalled();
   });
 
-  it('should_treat_status_all_as_no_status_filter', async () => {
+  it('seharusnya memperlakukan status semua sebagai tanpa filter status', async () => {
     const query = { status: 'all', tanggalSampai: '2026-06-30' } as ListSopQueryDto;
     repoMock.findDaftarByOpdId.mockResolvedValue([]);
     await service.listForCurrentUser(user, query);
@@ -290,7 +297,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  it('should_create_sop_with_empty_nama_lembaga_when_dto_omits_field', async () => {
+  it('seharusnya membuat SOP dengan nama lembaga kosong ketika DTO tidak mengirim field tersebut', async () => {
     const t = new Date('2026-02-01T12:00:00.000Z');
     const dbRow: SopDaftarDbRow = {
       sopId: 'sop-new',
@@ -330,7 +337,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  it('should_persist_empty_nama_lembaga_when_dto_omits_field_even_if_opd_nama_unknown', async () => {
+  it('seharusnya menyimpan nama lembaga kosong ketika DTO tidak mengirim field meskipun nama OPD tidak dikenal', async () => {
     const t = new Date('2026-02-01T12:00:00.000Z');
     const dbRow: SopDaftarDbRow = {
       sopId: 'sop-new',
@@ -358,7 +365,7 @@ describe('SopCatalogService', () => {
     );
   });
 
-  it('should_persist_trimmed_nama_lembaga_when_dto_provides_value', async () => {
+  it('seharusnya menyimpan nama lembaga yang sudah di-trim ketika DTO mengirim nilai', async () => {
     const t = new Date('2026-02-01T12:00:00.000Z');
     const dbRow: SopDaftarDbRow = {
       sopId: 'sop-new',
@@ -389,7 +396,7 @@ describe('SopCatalogService', () => {
     );
   });
 
-  it('should_throw_forbidden_when_create_and_no_opd', async () => {
+  it('seharusnya melempar ForbiddenException ketika membuat SOP tanpa OPD', async () => {
     userOpdAccessMock.getRequiredUserOpdId.mockRejectedValueOnce(
       new ForbiddenException('Pengguna tidak terikat OPD'),
     );
@@ -398,7 +405,7 @@ describe('SopCatalogService', () => {
     expect(repoMock.createSopWithInitialDetail).not.toHaveBeenCalled();
   });
 
-  it('should_map_p2002_to_conflict', async () => {
+  it('seharusnya memetakan P2002 menjadi ConflictException', async () => {
     const p2002 = new Prisma.PrismaClientKnownRequestError('duplicate', {
       code: 'P2002',
       clientVersion: 'test',
@@ -408,14 +415,14 @@ describe('SopCatalogService', () => {
     await expect(service.createForPenyusun(user, dto)).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('should_throw_not_found_when_workbench_detail_missing', async () => {
+  it('seharusnya melempar NotFoundException ketika workbench detail tidak ditemukan', async () => {
     repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValue(null);
-    await expect(service.getPenyusunWorkbench(user, '00000000-0000-4000-8000-000000000001')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.getPenyusunWorkbench(user, '00000000-0000-4000-8000-000000000001'),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('should_throw_forbidden_when_workbench_opd_mismatch', async () => {
+  it('seharusnya melempar ForbiddenException ketika OPD workbench tidak cocok', async () => {
     const t = new Date('2026-03-01T08:00:00.000Z');
     const payload = {
       detailSopId: 'det-wb',
@@ -461,10 +468,12 @@ describe('SopCatalogService', () => {
     userOpdAccessMock.assertWorkbenchAccess.mockRejectedValueOnce(
       new ForbiddenException('Akses ditolak untuk DetailSOP ini'),
     );
-    await expect(service.getPenyusunWorkbench(user, 'det-wb')).rejects.toBeInstanceOf(ForbiddenException);
+    await expect(service.getPenyusunWorkbench(user, 'det-wb')).rejects.toBeInstanceOf(
+      ForbiddenException,
+    );
   });
 
-  it('should_return_workbench_when_penyusun_opd_matches', async () => {
+  it('seharusnya mengembalikan workbench ketika OPD penyusun cocok', async () => {
     const t = new Date('2026-03-02T09:00:00.000Z');
     const payload = {
       detailSopId: 'det-wb-2',
@@ -510,7 +519,6 @@ describe('SopCatalogService', () => {
           penggunaId: 'p1',
           createdAt: t,
           bagian: 'HEADER',
-          targetEntityId: null,
           keterangan: 'Header SOP: Peringatan',
           sesiChangeCount: 1,
           closedAt: null,
@@ -537,9 +545,11 @@ describe('SopCatalogService', () => {
     expect(actual.logEdit[0]?.aktorRole).toBe(PeranPengguna.PENYUSUN);
   });
 
-  describe('updatePenyusunHeader', () => {
+  describe('Pengujian memperbarui penyusun header', () => {
     const t = new Date('2026-04-01T08:00:00.000Z');
-    const baseWorkbenchPayload = (override?: Partial<Record<string, unknown>>): SopWorkbenchDbPayload =>
+    const baseWorkbenchPayload = (
+      override?: Partial<Record<string, unknown>>,
+    ): SopWorkbenchDbPayload =>
       ({
         detailSopId: 'det-up',
         sopId: 'sop-up',
@@ -591,7 +601,7 @@ describe('SopCatalogService', () => {
       repoMock.updateSopHeaderTransaction.mockResolvedValue({ ok: true, data: undefined });
     });
 
-    it('should_throw_not_found_when_detail_or_sop_id_unresolvable', async () => {
+    it('seharusnya melempar NotFoundException ketika detail atau SOP id tidak dapat ditemukan', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValueOnce(null);
       const dto: UpdateSopHeaderDto = { judul: 'X' };
       await expect(service.updatePenyusunHeader(user, 'unknown', dto)).rejects.toBeInstanceOf(
@@ -600,7 +610,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateSopHeaderTransaction).not.toHaveBeenCalled();
     });
 
-    it('should_throw_conflict_when_detail_berlaku', async () => {
+    it('seharusnya melempar ConflictException ketika detail sudah berlaku', async () => {
       repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(
         baseWorkbenchPayload({ status: StatusSOP.BERLAKU }),
       );
@@ -611,7 +621,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateSopHeaderTransaction).not.toHaveBeenCalled();
     });
 
-    it('should_throw_forbidden_when_opd_mismatch', async () => {
+    it('seharusnya melempar ForbiddenException ketika OPD tidak cocok', async () => {
       const payload = baseWorkbenchPayload({
         sop: {
           sopId: 'sop-up',
@@ -637,7 +647,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateSopHeaderTransaction).not.toHaveBeenCalled();
     });
 
-    it('should_update_judul_in_sop_header_when_judul_provided', async () => {
+    it('seharusnya memperbarui judul pada header SOP ketika judul dikirim', async () => {
       const dto: UpdateSopHeaderDto = { judul: 'Judul Baru' };
       await service.updatePenyusunHeader(user, 'det-up', dto);
       expect(repoMock.updateSopHeaderTransaction).toHaveBeenCalledWith(
@@ -651,7 +661,7 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_return_workbench_with_logEdit_after_header_patch', async () => {
+    it('seharusnya mengembalikan workbench dengan log edit setelah patch header', async () => {
       const logTime = new Date('2026-04-01T09:00:00.000Z');
       repoMock.findWorkbenchPayloadByDetailOrSopId
         .mockResolvedValueOnce(baseWorkbenchPayload())
@@ -663,7 +673,6 @@ describe('SopCatalogService', () => {
                 penggunaId: 'p1',
                 createdAt: logTime,
                 bagian: 'HEADER',
-                targetEntityId: null,
                 keterangan: 'Header SOP: Judul SOP',
                 sesiChangeCount: 1,
                 closedAt: null,
@@ -685,7 +694,7 @@ describe('SopCatalogService', () => {
       expect(actual.logEdit[0]?.meta?.fields).toContain('judul');
     });
 
-    it('should_update_nomor_and_namaLembaga_on_detail_when_provided', async () => {
+    it('seharusnya memperbarui nomor dan nama lembaga pada detail ketika dikirim', async () => {
       const dto: UpdateSopHeaderDto = {
         nomorSOP: '042/2026',
         namaLembaga: 'PEMERINTAH\nKOTA Y',
@@ -701,11 +710,8 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_replace_dasar_hukum_when_ids_provided', async () => {
-      const ids = [
-        '11111111-1111-4111-8111-111111111111',
-        '22222222-2222-4222-8222-222222222222',
-      ];
+    it('seharusnya mengganti dasar hukum ketika daftar ID dikirim', async () => {
+      const ids = ['11111111-1111-4111-8111-111111111111', '22222222-2222-4222-8222-222222222222'];
       const dto: UpdateSopHeaderDto = { dasarHukumPeraturanIds: ids };
       await service.updatePenyusunHeader(user, 'det-up', dto);
       expect(repoMock.updateSopHeaderTransaction).toHaveBeenCalledWith(
@@ -715,11 +721,8 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_replace_sop_terkait_when_ids_provided', async () => {
-      const ids = [
-        '33333333-3333-4333-8333-333333333333',
-        '44444444-4444-4444-8444-444444444444',
-      ];
+    it('seharusnya mengganti SOP terkait ketika daftar ID dikirim', async () => {
+      const ids = ['33333333-3333-4333-8333-333333333333', '44444444-4444-4444-8444-444444444444'];
       const dto: UpdateSopHeaderDto = { sopTerkaitDetailIds: ids };
       await service.updatePenyusunHeader(user, 'det-up', dto);
       expect(repoMock.updateSopHeaderTransaction).toHaveBeenCalledWith(
@@ -729,7 +732,7 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_replace_lampiran_per_jenis_when_arrays_provided', async () => {
+    it('seharusnya mengganti lampiran per jenis ketika array dikirim', async () => {
       const dto: UpdateSopHeaderDto = {
         lampiran: {
           peringatan: ['Hati-hati saat verifikasi'],
@@ -759,7 +762,7 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_throw_conflict_when_nomor_sop_duplicate', async () => {
+    it('seharusnya melempar ConflictException ketika nomor SOP duplikat', async () => {
       const p2002 = new Prisma.PrismaClientKnownRequestError('duplicate', {
         code: 'P2002',
         clientVersion: 'test',
@@ -771,7 +774,7 @@ describe('SopCatalogService', () => {
       );
     });
 
-    it('should_throw_bad_request_when_db_sop_terkait_invariant_fails', async () => {
+    it('seharusnya melempar BadRequestException ketika invariant DB SOP terkait gagal', async () => {
       const driverError = {
         name: 'DriverAdapterError',
         cause: {
@@ -791,14 +794,14 @@ describe('SopCatalogService', () => {
       });
     });
 
-    it('should_skip_repo_when_dto_has_no_field', async () => {
+    it('seharusnya melewati repository ketika DTO tidak memiliki field', async () => {
       const dto: UpdateSopHeaderDto = {};
       await service.updatePenyusunHeader(user, 'det-up', dto);
       expect(repoMock.updateSopHeaderTransaction).not.toHaveBeenCalled();
       expect(repoMock.findWorkbenchPayloadByDetailOrSopId).toHaveBeenCalled();
     });
 
-    it('should_return_workbench_with_grouped_lampiran_after_update', async () => {
+    it('seharusnya mengembalikan workbench dengan lampiran terkelompok setelah pembaruan', async () => {
       const refreshedPayload = baseWorkbenchPayload({
         lampiranPeringatan: [
           {
@@ -841,7 +844,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  describe('transitionDetailSopStatus', () => {
+  describe('Pengujian transisi status detail SOP', () => {
     const t = new Date('2026-05-01T08:00:00.000Z');
     function stubWorkbenchPayload(status: string): SopWorkbenchDbPayload {
       return {
@@ -1008,16 +1011,16 @@ describe('SopCatalogService', () => {
       repoMock.updateDetailSopStatus.mockResolvedValue(undefined);
     });
 
-    it('should_throw_not_found_when_detail_missing', async () => {
+    it('seharusnya melempar NotFoundException ketika detail tidak ditemukan', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValueOnce(null);
       const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
-      await expect(service.transitionDetailSopStatus(user, 'unknown-id', dto)).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(
+        service.transitionDetailSopStatus(user, 'unknown-id', dto),
+      ).rejects.toBeInstanceOf(NotFoundException);
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_throw_conflict_when_target_equals_current', async () => {
+    it('seharusnya melempar ConflictException ketika target sama dengan status saat ini', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
@@ -1031,7 +1034,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_throw_conflict_when_generic_status_endpoint_sets_berlaku', async () => {
+    it('seharusnya melempar ConflictException ketika endpoint status umum mengatur status berlaku', async () => {
       const kepalaUser: JwtAccessPayload = { ...user, peran: PeranPengguna.KEPALA_OPD };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
@@ -1040,13 +1043,13 @@ describe('SopCatalogService', () => {
         sopOpdId: 'opd-1',
       });
       const dto: UpdateDetailSopStatusDto = { status: StatusSOP.BERLAKU };
-      await expect(service.transitionDetailSopStatus(kepalaUser, 'det-st', dto)).rejects.toBeInstanceOf(
-        ConflictException,
-      );
+      await expect(
+        service.transitionDetailSopStatus(kepalaUser, 'det-st', dto),
+      ).rejects.toBeInstanceOf(ConflictException);
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_allow_draft_to_siap_dievaluasi_for_penyusun_when_workbench_lengkap', async () => {
+    it('seharusnya mengizinkan draft menjadi siap dievaluasi untuk penyusun ketika workbench lengkap', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
@@ -1068,14 +1071,16 @@ describe('SopCatalogService', () => {
       expect(actual.detail.status).toBe('SIAP_DIEVALUASI');
     });
 
-    it('should_throw_bad_request_when_workbench_tidak_lengkap_for_siap_dievaluasi', async () => {
+    it('seharusnya melempar BadRequestException ketika workbench tidak lengkap untuk siap dievaluasi', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
         status: StatusSOP.DRAFT,
         sopOpdId: 'opd-1',
       });
-      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(stubWorkbenchPayload('DRAFT'));
+      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(
+        stubWorkbenchPayload('DRAFT'),
+      );
       const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
       await expect(service.transitionDetailSopStatus(user, 'det-st', dto)).rejects.toBeInstanceOf(
         BadRequestException,
@@ -1083,7 +1088,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_forbid_penyusun_submitting_evaluasi_from_siap', async () => {
+    it('seharusnya menolak akses penyusun saat mengajukan evaluasi dari status siap', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
@@ -1097,7 +1102,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_allow_pj_penyusun_submitting_evaluasi_from_siap', async () => {
+    it('seharusnya mengizinkan PJ penyusun mengajukan evaluasi dari status siap', async () => {
       const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
@@ -1118,7 +1123,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  describe('kirimUlangKeEvaluatorSetelahRevisi', () => {
+  describe('Pengujian kirim ulang ke evaluator setelah revisi', () => {
     const t = new Date('2026-05-01T08:00:00.000Z');
 
     function minimalRevisiWorkbench(): SopWorkbenchDbPayload {
@@ -1271,15 +1276,15 @@ describe('SopCatalogService', () => {
       repoMock.transitionDetailSopRevisiToDiajukanEvaluasi.mockResolvedValue(undefined);
     });
 
-    it('should_forbid_evaluator', async () => {
+    it('seharusnya menolak akses evaluator', async () => {
       const evUser: JwtAccessPayload = { ...user, peran: PeranPengguna.EVALUATOR };
-      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(evUser, 'det-rev')).rejects.toBeInstanceOf(
-        ForbiddenException,
-      );
+      await expect(
+        service.kirimUlangKeEvaluatorSetelahRevisi(evUser, 'det-rev'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
       expect(repoMock.findLatestDetailStatusContext).not.toHaveBeenCalled();
     });
 
-    it('should_throw_conflict_when_bukan_revisi', async () => {
+    it('seharusnya melempar ConflictException ketika status bukan revisi', async () => {
       const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-rev',
@@ -1287,21 +1292,21 @@ describe('SopCatalogService', () => {
         status: StatusSOP.DRAFT,
         sopOpdId: 'opd-1',
       });
-      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev')).rejects.toBeInstanceOf(
-        ConflictException,
-      );
+      await expect(
+        service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev'),
+      ).rejects.toBeInstanceOf(ConflictException);
       expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
     });
 
-    it('should_forbid_penyusun', async () => {
-      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev')).rejects.toBeInstanceOf(
-        ForbiddenException,
-      );
+    it('seharusnya menolak akses penyusun', async () => {
+      await expect(
+        service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev'),
+      ).rejects.toBeInstanceOf(ForbiddenException);
       expect(repoMock.findLatestDetailStatusContext).not.toHaveBeenCalled();
       expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
     });
 
-    it('should_allow_pj_penyusun', async () => {
+    it('seharusnya mengizinkan PJ penyusun', async () => {
       const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-rev',
@@ -1310,7 +1315,10 @@ describe('SopCatalogService', () => {
         sopOpdId: 'opd-1',
       });
       const lengkap = minimalRevisiWorkbench();
-      const refreshed = { ...lengkap, status: 'DIAJUKAN_EVALUASI' } as unknown as SopWorkbenchDbPayload;
+      const refreshed = {
+        ...lengkap,
+        status: 'DIAJUKAN_EVALUASI',
+      } as unknown as SopWorkbenchDbPayload;
       repoMock.findWorkbenchPayloadByDetailOrSopId
         .mockResolvedValueOnce(lengkap)
         .mockResolvedValueOnce(refreshed);
@@ -1322,7 +1330,7 @@ describe('SopCatalogService', () => {
       expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');
     });
 
-    it('should_reject_kirim_ulang_when_umpan_balik_belum_selesai', async () => {
+    it('seharusnya menolak kirim ulang ketika umpan balik belum selesai', async () => {
       const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-rev',
@@ -1334,14 +1342,14 @@ describe('SopCatalogService', () => {
       evaluasiNilaiServiceMock.assertBolehKirimUlangSetelahRevisi.mockRejectedValueOnce(
         new BadRequestException('Umpan balik evaluasi belum ditindaklanjuti'),
       );
-      await expect(service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev')).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev'),
+      ).rejects.toBeInstanceOf(BadRequestException);
       expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
     });
   });
 
-  describe('buatVersiBaruDariBerlaku', () => {
+  describe('Pengujian buat versi baru dari SOP berlaku', () => {
     const t = new Date('2026-05-20T08:00:00.000Z');
     const workbenchV2 = {
       detailSopId: 'det-v2',
@@ -1382,7 +1390,7 @@ describe('SopCatalogService', () => {
       logEditSop: [],
     } as unknown as SopWorkbenchDbPayload;
 
-    it('should_clone_from_berlaku_and_return_workbench', async () => {
+    it('seharusnya mengkloning dari versi berlaku dan mengembalikan workbench', async () => {
       repoMock.findDetailIdByDetailOrSopId.mockResolvedValue({
         detailSopId: 'det-v1',
         sopId: 'sop-v1',
@@ -1406,7 +1414,7 @@ describe('SopCatalogService', () => {
       expect(actual.detail.id).toBe('det-v2');
     });
 
-    it('should_throw_forbidden_when_not_penyusun', async () => {
+    it('seharusnya melempar ForbiddenException ketika pengguna bukan penyusun', async () => {
       const evaluator: JwtAccessPayload = { ...user, peran: PeranPengguna.EVALUATOR };
       await expect(service.buatVersiBaruDariBerlaku(evaluator, 'det-v1')).rejects.toBeInstanceOf(
         ForbiddenException,
@@ -1414,7 +1422,7 @@ describe('SopCatalogService', () => {
     });
   });
 
-  describe('cabutSopBerlaku', () => {
+  describe('Pengujian cabut SOP berlaku', () => {
     const kepalaUser: JwtAccessPayload = {
       sub: 'kepala-1',
       email: 'kepala@b.c',
@@ -1476,7 +1484,7 @@ describe('SopCatalogService', () => {
       });
     });
 
-    it('should_cabut_berlaku_version_and_return_workbench', async () => {
+    it('seharusnya cabut berlaku versi dan mengembalikan workbench', async () => {
       repoMock.findRiwayatVersiBySopId.mockResolvedValue([
         {
           detailSopId: 'det-berlaku',
@@ -1501,7 +1509,7 @@ describe('SopCatalogService', () => {
       expect(actual.detail.status).toBe('DICABUT');
     });
 
-    it('should_cabut_berlaku_when_param_is_sop_header_and_latest_is_draft', async () => {
+    it('seharusnya mencabut versi berlaku ketika parameter adalah header SOP dan versi terbaru adalah draft', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-draft',
         sopId: 'sop-cabut',
@@ -1531,14 +1539,14 @@ describe('SopCatalogService', () => {
       });
     });
 
-    it('should_reject_cabut_for_non_kepala_opd', async () => {
+    it('seharusnya menolak cabut untuk non kepala OPD', async () => {
       await expect(service.cabutSopBerlaku(user, 'sop-cabut')).rejects.toBeInstanceOf(
         ForbiddenException,
       );
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_reject_cabut_when_no_berlaku_version', async () => {
+    it('seharusnya menolak cabut ketika tidak ada berlaku versi', async () => {
       repoMock.findRiwayatVersiBySopId.mockResolvedValue([
         {
           detailSopId: 'det-draft',
@@ -1557,7 +1565,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_reject_cabut_when_revisi_in_flight', async () => {
+    it('seharusnya menolak pencabutan ketika revisi sedang berjalan', async () => {
       repoMock.findRiwayatVersiBySopId.mockResolvedValue([
         {
           detailSopId: 'det-berlaku',
@@ -1586,7 +1594,7 @@ describe('SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('should_delegate_dicabut_from_transitionDetailSopStatus', async () => {
+    it('seharusnya mendelegasikan dicabut dari transition detail SOP status', async () => {
       repoMock.findRiwayatVersiBySopId.mockResolvedValue([
         {
           detailSopId: 'det-berlaku',
@@ -1613,8 +1621,8 @@ describe('SopCatalogService', () => {
     });
   });
 
-  describe('hapusVersiDraft', () => {
-    it('should_call_repo_delete_when_penyusun', async () => {
+  describe('Pengujian hapus versi draft', () => {
+    it('seharusnya memanggil repository menghapus ketika penyusun', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-draft',
         sopId: 'sop-1',

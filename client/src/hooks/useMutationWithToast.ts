@@ -18,7 +18,7 @@ interface UseMutationWithToastOptions<TData = unknown, TVariables = unknown> {
   /** Prefix for error toast message (used when useDetailedErrors is false) */
   errorMessagePrefix?: string;
   /** Optional additional onSuccess callback */
-  onSuccess?: (data: TData, variables: TVariables) => void;
+  onSuccess?: (data: TData, variables: TVariables) => void | Promise<void>;
   /** Optional additional onError callback */
   onError?: (error: Error, variables: TVariables) => void;
 }
@@ -31,15 +31,18 @@ export function useMutationWithToast<TData = unknown, TVariables = unknown>(
 
   return useMutation({
     mutationFn: options.mutationFn,
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
+      await options.onSuccess?.(data, variables);
+
       // Invalidate specified query keys if provided
       if (options.invalidateKeys) {
-        for (const key of options.invalidateKeys) {
-          queryClient.invalidateQueries({ queryKey: key });
-        }
+        await Promise.all(
+          options.invalidateKeys.map((key) =>
+            queryClient.invalidateQueries({ queryKey: key }),
+          ),
+        );
       }
       showToast(options.successMessage, "success");
-      options.onSuccess?.(data, variables);
     },
     onError: (error: Error, variables) => {
       // Always use showErrorMessages for consistent error handling

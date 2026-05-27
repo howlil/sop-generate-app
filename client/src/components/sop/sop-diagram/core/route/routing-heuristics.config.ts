@@ -1,0 +1,63 @@
+export const ROUTING_HEURISTICS = {
+  flowchart: {
+    shapeMargin: 16,
+    boundsMargin: 15,
+    pathColumnInset: 30,
+    pathColumnInsetRightExtra: 32,
+    pathVerticalInset: 18,
+    horizontalSpanPenaltyPerPx: 3,
+    routerInternalInset: 8,
+    maxCandidates: 8,
+    goodScoreLimit: 480,
+    candidateJetty: {
+      default: 16,
+      loopback: 24,
+      opc: 18,
+    },
+    score: {
+      dedicatedLoopbackBonus: -50_000,
+      horizontalLoopbackRequiredPenalty: 10_000,
+      horizontalLoopbackWrongSidePenalty: 4_000,
+      yaBottomTailRequiredPenalty: 8_000,
+      yaCrossColumnEntryPenalty: 3_000,
+      opcStraightPenalty: 6_000,
+      sameColumnPreferredBonus: -6_000,
+      sameColumnFallbackPenalty: 8_000,
+      simpleFlowBottomExitBonus: -12_000,
+    },
+  },
+  bpmn: {
+    shapeMargin: 24,
+    maxSidePairs: 12,
+    gridClearance: 9,
+    laneBorderInset: 17,
+    startTerminatorJetty: 28,
+    fallbackStartTerminatorJetty: 24,
+    fallbackBottomTopJetty: 20,
+    decisionJetty: 18,
+    decisionTidakLoopbackJetty: 22,
+    decisionSideJetty: 20,
+    score: {
+      nonSimpleCandidatePenalty: 200,
+      verticalSourceSidePenalty: 25,
+      verticalTargetSidePenalty: 25,
+    },
+  },
+  reconcile: {
+    extraCandidatesPerPass: 2,
+  },
+  quality: {
+    obstacleHitPenalty: 50_000,
+    shapeBodyHitPenalty: 40_000,
+    gridHitPenalty: 25_000,
+    overlapPenalty: 8_000,
+    crossingPenalty: 12_000,
+  },
+  anchor: {
+    occupiedStubPenalty: 12_000,
+    noFreeSlotFallbackPenalty: 50_000,
+  },
+  orthogonal: {
+    elbowOutsideBoundsPenalty: 10_000,
+  },
+} as const

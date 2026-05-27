@@ -7,9 +7,7 @@ export const SEED_TTE_PIN = '1234';
  * Memetakan status pengajuan evaluasi ke status DetailSOP anggota batch (seed sync).
  * Selaras `EvaluasiNilaiService.selesai` dan `TteRepository` (BERLAKU hanya setelah TTE Kepala OPD).
  */
-export function mapStatusSopUntukPengajuan(
-  statusPengajuan: StatusPengajuanEvaluasi,
-): StatusSOP {
+export function mapStatusSopUntukPengajuan(statusPengajuan: StatusPengajuanEvaluasi): StatusSOP {
   switch (statusPengajuan) {
     case StatusPengajuanEvaluasi.SEDANG_DIEVALUASI:
       return StatusSOP.SEDANG_DIEVALUASI;

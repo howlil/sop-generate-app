@@ -2,7 +2,10 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /** Satu baris daftar SOP di panel kiri workspace evaluasi. */
 export class EvaluasiWorkspaceDaftarSopRowDto {
-  @ApiProperty({ format: 'uuid', description: 'ID DetailSOP versi terbaru dalam pipeline evaluasi' })
+  @ApiProperty({
+    format: 'uuid',
+    description: 'ID DetailSOP versi terbaru dalam pipeline evaluasi',
+  })
   readonly detailSopId!: string;
 
   @ApiProperty({ format: 'uuid' })
