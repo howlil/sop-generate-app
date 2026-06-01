@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/config/query-keys'
-import { STALE_TIME } from '@/utils/constants'
 import { apiClient, buildQueryString } from '@/lib/api/api-client'
 import { unwrapApiData } from '@/lib/api/response'
+import { SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS } from '@/lib/api/cache-invalidation'
 import type { ApiSuccessResponse } from '@/types/dto/auth.dto'
 import type {
   PublicArsipQueryParams,
@@ -46,7 +46,7 @@ export function usePublicOpdList(params: PublicArsipQueryParams) {
   return useQuery({
     queryKey: queryKeys.sopPublicOpdList(params),
     queryFn: () => sopPublicApi.listOpd(params),
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }
 
@@ -55,7 +55,7 @@ export function usePublicSopList(opdId: string, params: PublicArsipQueryParams) 
     queryKey: queryKeys.sopPublicSopList(opdId, params),
     queryFn: () => sopPublicApi.listSopByOpd(opdId, params),
     enabled: Boolean(opdId),
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }
 
@@ -64,7 +64,7 @@ export function usePublicSopGlobalList(params: PublicArsipQueryParams) {
     queryKey: queryKeys.sopPublicSopGlobal(params),
     queryFn: () => sopPublicApi.listSopGlobal(params),
     enabled: Boolean(params.search?.trim()),
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }
 
@@ -73,6 +73,6 @@ export function usePublicSopDokumen(detailSopId: string | undefined) {
     queryKey: queryKeys.sopPublicDokumen(detailSopId ?? ''),
     queryFn: () => sopPublicApi.getDokumen(detailSopId!),
     enabled: Boolean(detailSopId),
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }

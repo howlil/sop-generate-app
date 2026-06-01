@@ -68,6 +68,7 @@ export function useAuth() {
     mutationFn: (payload: LoginRequestDto) => authApi.login(payload),
     onSuccess: async (response) => {
       const u = response.data;
+      queryClient.clear();
       setUser(mapPublicDataToAuthUser(u));
 
       showToast(`Selamat datang, ${u.nama}!`, "success");

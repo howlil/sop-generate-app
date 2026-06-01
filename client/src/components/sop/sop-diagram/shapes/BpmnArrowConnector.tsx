@@ -4,7 +4,7 @@ import {
   routeBpmn,
   routeBpmnAllowOccupiedFallback,
   selectBpmnSidePairs,
-  scorePath,
+  scoreBpmnPath,
   scoreBpmnRouteCandidate,
   bpmnPathToSegments,
   translateBpmnLaneLayoutToDom,
@@ -15,7 +15,7 @@ import {
   type UsedSides,
   type Side,
   type OccupiedSegment,
-} from '../core/route/bpmnRouter'
+} from '../core/route/bpmn/bpmnRouter'
 import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
 import { pathToD as pathToDUtil, simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
 import {
@@ -28,10 +28,11 @@ import {
   type DiagramShapeSnapTargets,
 } from '../edit/anchor-snap.util'
 import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
-import type { Rect } from '../core/route/orthogonalRouter'
-import { buildSideAnchoredFallbackPath } from '../core/route/bpmn-fallback-path.util'
-import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/path-route-quality.util'
-import { placeEdgeLabel } from '../core/route/edge-label-placement.util'
+import type { Rect } from '../core/route/shared/orthogonalRouter'
+import { buildSideAnchoredFallbackPath } from '../core/route/bpmn/bpmn-fallback-path.util'
+import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/quality/path-route-quality.util'
+import { placeEdgeLabel } from '../core/route/shared/edge-label-placement.util'
+import type { PlannedBpmnPath } from '../core/route/bpmn/global/bpmn-routing-plan'
 
 /* ───────────────────────── Public types ─────────────────────────── */
 
@@ -75,6 +76,8 @@ interface BpmnArrowConnectorProps {
   rerouteVersion?: number
   /** Precomputed obstacle rects from parent (saves DOM reads when set). */
   obstacleRectsRef?: MutableRefObject<Array<{ left: number; top: number; width: number; height: number }> | null>
+  /** Parent-level result. Missing value keeps the legacy per-connector fallback available. */
+  plannedPath?: PlannedBpmnPath | null
 }
 
 /* ───────────────────────── Helpers ─────────────────────────── */
@@ -319,6 +322,7 @@ export function BpmnArrowConnector({
   routedSegmentsRef,
   rerouteVersion = 0,
   obstacleRectsRef,
+  plannedPath,
 }: BpmnArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
@@ -512,6 +516,43 @@ export function BpmnArrowConnector({
 
     emittedRef.current = false
 
+    /* ── Parent-level global routing plan ─────────────────── */
+    if (plannedPath?.path && plannedPath.path.length >= 2) {
+      const planned = snapToOrthogonal(plannedPath.path)
+      const nextSides: [Side, Side] = [plannedPath.sSide, plannedPath.eSide]
+      setPathData(pathToD(planned))
+      setResolvedPath((prev) => (samePath(prev, planned) ? prev : planned.map((p) => ({ ...p }))))
+      setResolvedSides((prev) => (sameSides(prev, nextSides) ? prev : nextSides))
+
+      const lp = resolveConnectorLabelPosition(
+        planned,
+        connection.label,
+        manualLabelPosition,
+        routingObstacles,
+      )
+      setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
+
+      const payload: PathUpdatedPayload = {
+        connectionId: connection.id,
+        from: connection.from,
+        to: connection.to,
+        sSide: plannedPath.sSide,
+        eSide: plannedPath.eSide,
+        startPoint: { ...planned[0]! },
+        endPoint: { ...planned[planned.length - 1]! },
+        bendPoints: planned.slice(1, -1).map((point) => ({ ...point })),
+        label: connection.label ?? undefined,
+        labelPosition: lp ?? undefined,
+      }
+      const pathSig = planned.map((point) => `${point.x | 0},${point.y | 0}`).join(';')
+      const sig = `${connection.id}:${plannedPath.sSide}:${plannedPath.eSide}:${pathSig}`
+      if (onPathUpdatedRef.current && lastAutoSigRef.current !== sig) {
+        lastAutoSigRef.current = sig
+        onPathUpdatedRef.current(payload)
+      }
+      return
+    }
+
     if (editMode && isValidManualConfig(manualConfig)) {
       return
     }
@@ -566,6 +607,7 @@ export function BpmnArrowConnector({
       fromShape,
       toShape,
       clearancePx: 6,
+      allowCrossings: true,
     })
     const isSafePath = (path: { x: number; y: number }[]) =>
       isAcceptableRoutedPath(path, pathSafetyOpts)
@@ -605,13 +647,14 @@ export function BpmnArrowConnector({
           globalBounds,
           sourceJettySize: candidate.sourceJettySize,
           targetJettySize: candidate.targetJettySize,
+          allowCrossings: true,
         })
         if (path.length < 2) continue
         const orthoPath = snapToOrthogonal(path)
         if (!isSafePath(orthoPath)) continue
         const score =
           scoreBpmnRouteCandidate(candidate) +
-          scorePath(orthoPath, occupied) +
+          scoreBpmnPath(orthoPath, occupied) +
           scoreAnchorOffCenter(distA) +
           scoreAnchorOffCenter(distB)
         if (score < bestScore) {
@@ -659,6 +702,7 @@ export function BpmnArrowConnector({
             globalBounds,
             sourceJettySize: fc.sourceJettySize,
             targetJettySize: fc.targetJettySize,
+            allowCrossings: true,
           })
           const repairedOrtho = snapToOrthogonal(repaired)
           if (repairedOrtho.length >= 2 && isSafePath(repairedOrtho)) {
@@ -696,6 +740,7 @@ export function BpmnArrowConnector({
           globalBounds,
           sourceJettySize: fc.sourceJettySize,
           targetJettySize: fc.targetJettySize,
+          allowCrossings: true,
         })
         const relaxedOrtho = snapToOrthogonal(relaxed.path)
         if (
@@ -804,7 +849,7 @@ export function BpmnArrowConnector({
     connection.label, connection.sourceType, connection.targetType,
     connection.fromLane, connection.toLane, connection.fromCol, connection.toCol,
     connectionIndex, allConnectionsMeta,
-    manualConfig, manualLabelPosition, rerouteVersion, editMode,
+    manualConfig, manualLabelPosition, plannedPath, rerouteVersion, editMode,
   ])
 
   if (!pathData) return null
@@ -861,20 +906,22 @@ export function BpmnArrowConnector({
           onSelect={onSelectRef.current ?? (() => {})}
           onChange={(payload) => {
             const nextPath = [payload.startPoint, ...payload.bendPoints, payload.endPoint]
-            setResolvedPath((prev) => (samePath(prev, nextPath) ? prev : nextPath))
-            setResolvedSides((prev) => {
-              const next: [Side, Side] = [payload.sSide, payload.eSide]
-              return sameSides(prev, next) ? prev : next
-            })
-            setPathData(pathToDUtil(nextPath))
-            onManualChangeRef.current?.({
+            const updatedPayload = {
               connectionId: connection.id,
               from: connection.from,
               to: connection.to,
               ...payload,
               label: connection.label ?? undefined,
               labelPosition: effectiveLabelPos ?? undefined,
+            }
+            setResolvedPath((prev) => (samePath(prev, nextPath) ? prev : nextPath))
+            setResolvedSides((prev) => {
+              const next: [Side, Side] = [payload.sSide, payload.eSide]
+              return sameSides(prev, next) ? prev : next
             })
+            setPathData(pathToDUtil(nextPath))
+            onPathUpdatedRef.current?.(updatedPayload)
+            onManualChangeRef.current?.(updatedPayload)
           }}
           onDeleteSelected={() => onManualChangeRef.current?.({
             connectionId: connection.id,

@@ -1,4 +1,4 @@
-import type { BpmnLaneLayout } from '../core/route/bpmnRouter'
+import type { BpmnLaneLayout } from '../core/route/bpmn/bpmnRouter'
 import type { FlowchartConnection } from '../shapes/FlowchartArrowConnector'
 import {
   assignStepColumns,

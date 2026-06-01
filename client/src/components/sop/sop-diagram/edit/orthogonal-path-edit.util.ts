@@ -1,5 +1,12 @@
-import type { Point } from '@/components/sop/sop-diagram/core/route/orthogonalRouter'
-import { normalizeOrthogonalPath } from '@/components/sop/sop-diagram/core/route/orthogonalRouter'
+import type { Point } from '@/components/sop/sop-diagram/core/route/shared/orthogonalRouter'
+import { normalizeOrthogonalPath } from '@/components/sop/sop-diagram/core/route/shared/orthogonal-path-normalization.util'
+
+export {
+  simplifyOrthogonalPath,
+} from '@/components/sop/sop-diagram/core/route/shared/orthogonal-path-normalization.util'
+export type {
+  PathObstacleCheck,
+} from '@/components/sop/sop-diagram/core/route/shared/orthogonal-path-normalization.util'
 
 const GRID_SNAP = 4
 
@@ -155,6 +162,40 @@ const STRAIGHT_EPS = 1
 const PERPENDICULAR_DRAG_RATIO = 0.55
 const FORK_MIN_DRAG_PX = GRID_SNAP * 2
 
+export type PathEndpointKind = 'start' | 'end'
+
+export function getDraggedEndpointKind(
+  originPath: Point[],
+  index: number,
+): PathEndpointKind | null {
+  if (index === 0) return 'start'
+  return index === originPath.length - 1 ? 'end' : null
+}
+
+export function endpointIndexForKind(path: Point[], kind: PathEndpointKind): number {
+  return kind === 'start' ? 0 : path.length - 1
+}
+
+export function alignEndpointSegmentPreservingEndpoint(
+  path: Point[],
+  index: number,
+): Point[] {
+  if (index !== 0 && index !== path.length - 1) return path
+  const target = path[index]
+  const neighborIndex = index === 0 ? 1 : path.length - 2
+  const neighbor = path[neighborIndex]
+  if (!target || !neighbor) return path
+  const aligned = path.map((point) => ({ ...point }))
+  if (target.x !== neighbor.x && target.y !== neighbor.y) {
+    if (Math.abs(target.x - neighbor.x) <= Math.abs(target.y - neighbor.y)) {
+      aligned[neighborIndex] = { ...neighbor, x: target.x }
+    } else {
+      aligned[neighborIndex] = { ...neighbor, y: target.y }
+    }
+  }
+  return aligned
+}
+
 /** Path hanya start + end pada satu garis horizontal atau vertikal. */
 export function isStraightTwoPointPath(path: Point[]): boolean {
   if (path.length !== 2) return false
@@ -214,228 +255,6 @@ export function forkStraightPathForEndpointDrag(
     return [{ ...dragged }, { ...corner }, { ...fixed }]
   }
   return [{ ...fixed }, { ...corner }, { ...dragged }]
-}
-
-function isCollinearMiddle(prev: Point, cur: Point, next: Point): boolean {
-  return (prev.x === cur.x && cur.x === next.x) || (prev.y === cur.y && cur.y === next.y)
-}
-
-type SegmentAxis = 'horizontal' | 'vertical'
-
-function segmentAxis(from: Point, to: Point): SegmentAxis | null {
-  if (from.x === to.x && from.y !== to.y) return 'vertical'
-  if (from.y === to.y && from.x !== to.x) return 'horizontal'
-  return null
-}
-
-/** Optional callback to check whether a simplified path would cross obstacles. */
-export type PathObstacleCheck = (candidate: Point[]) => boolean
-
-/** Hapus satu lipatan persegi (4 titik) menjadi satu siku ortogonal. */
-function tryCollapseRectangle(path: Point[], wouldCross?: PathObstacleCheck): Point[] | null {
-  for (let i = 0; i < path.length - 3; i += 1) {
-    const p0 = path[i]!
-    const p1 = path[i + 1]!
-    const p2 = path[i + 2]!
-    const p3 = path[i + 3]!
-    if (p0.x === p2.x && p1.y === p3.y && (p0.x !== p1.x || p0.y !== p1.y)) {
-      const corner = { x: p0.x, y: p3.y }
-      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), corner, p3, ...path.slice(i + 4)].map((p) => ({ ...p })))
-      if (wouldCross && wouldCross(merged)) continue
-      return merged
-    }
-    if (p0.y === p2.y && p1.x === p3.x && (p0.y !== p1.y || p0.x !== p1.x)) {
-      const corner = { x: p3.x, y: p0.y }
-      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), corner, p3, ...path.slice(i + 4)].map((p) => ({ ...p })))
-      if (wouldCross && wouldCross(merged)) continue
-      return merged
-    }
-  }
-  return null
-}
-
-/** Maks. offset dari spine agar lipatan dianggap notch (bukan L-routing sengaja). */
-const SPINE_NOTCH_MAX_PX = 48
-
-/**
- * Hapus lipatan 2-langkah dekat spine vertikal/horizontal (b dan e sejajar sumbu utama).
- * L-routing yang menyimpang jauh dari spine (mis. elbow ke kolom lain) tidak dihapus.
- */
-function tryRemoveSpineDetour(path: Point[], maxSpineNotchPx = SPINE_NOTCH_MAX_PX, wouldCross?: PathObstacleCheck): Point[] | null {
-  for (let i = 0; i < path.length - 3; i += 1) {
-    const b = path[i]!
-    const c = path[i + 1]!
-    const d = path[i + 2]!
-    const e = path[i + 3]!
-    const bc = segmentAxis(b, c)
-    const cd = segmentAxis(c, d)
-    const de = segmentAxis(d, e)
-    if (!bc || !cd || !de || bc === cd || cd === de) continue
-    if (b.x === e.x && bc === 'horizontal' && cd === 'vertical' && de === 'horizontal') {
-      if (Math.abs(c.x - b.x) <= maxSpineNotchPx && Math.abs(d.x - b.x) <= maxSpineNotchPx) {
-        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
-        if (wouldCross && wouldCross(merged)) continue
-        return merged
-      }
-    }
-    if (b.y === e.y && bc === 'vertical' && cd === 'horizontal' && de === 'vertical') {
-      if (Math.abs(c.y - b.y) <= maxSpineNotchPx && Math.abs(d.y - b.y) <= maxSpineNotchPx) {
-        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
-        if (wouldCross && wouldCross(merged)) continue
-        return merged
-      }
-    }
-  }
-  return null
-}
-
-/** Hapus detour 2 titik (b-c-d-e) bila b dan e sejajar — hanya lipatan kecil. */
-function tryRemoveTwoStepDetour(path: Point[], maxNotchPx: number, wouldCross?: PathObstacleCheck): Point[] | null {
-  for (let i = 0; i < path.length - 3; i += 1) {
-    const b = path[i]!
-    const c = path[i + 1]!
-    const d = path[i + 2]!
-    const e = path[i + 3]!
-    const bc = segmentAxis(b, c)
-    const cd = segmentAxis(c, d)
-    const de = segmentAxis(d, e)
-    if (!bc || !cd || !de || bc === cd || cd === de) continue
-    if (b.x === e.x && bc === 'horizontal' && cd === 'vertical' && de === 'horizontal') {
-      const detourW = Math.abs(c.x - b.x)
-      const detourH = Math.abs(d.y - c.y)
-      if (detourW <= maxNotchPx && detourH <= maxNotchPx) {
-        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
-        if (wouldCross && wouldCross(merged)) continue
-        return merged
-      }
-    }
-    if (b.y === e.y && bc === 'vertical' && cd === 'horizontal' && de === 'vertical') {
-      const detourW = Math.abs(c.x - b.x)
-      const detourH = Math.abs(d.y - c.y)
-      if (detourW <= maxNotchPx && detourH <= maxNotchPx) {
-        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
-        if (wouldCross && wouldCross(merged)) continue
-        return merged
-      }
-    }
-  }
-  return null
-}
-
-/** Hapus detour 3 titik bila notch kecil dan titik awal/akhir sejajar. */
-function tryRemoveThreeStepDetour(path: Point[], maxNotchPx: number, wouldCross?: PathObstacleCheck): Point[] | null {
-  for (let i = 0; i < path.length - 4; i += 1) {
-    const b = path[i]!
-    const c = path[i + 1]!
-    const d = path[i + 2]!
-    const e = path[i + 3]!
-    const f = path[i + 4]!
-    const bc = segmentAxis(b, c)
-    const cd = segmentAxis(c, d)
-    const de = segmentAxis(d, e)
-    const ef = segmentAxis(e, f)
-    if (!bc || !cd || !de || !ef || bc === cd || cd === de || de === ef) continue
-    const detourW = Math.max(Math.abs(c.x - b.x), Math.abs(d.x - e.x))
-    const detourH = Math.max(Math.abs(c.y - b.y), Math.abs(d.y - e.y))
-    if (detourW > maxNotchPx || detourH > maxNotchPx) continue
-    if (
-      b.x === f.x &&
-      bc === 'vertical' &&
-      cd === 'horizontal' &&
-      de === 'vertical' &&
-      ef === 'horizontal'
-    ) {
-      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 4)].map((p) => ({ ...p })))
-      if (wouldCross && wouldCross(merged)) continue
-      return merged
-    }
-    if (
-      b.y === f.y &&
-      bc === 'horizontal' &&
-      cd === 'vertical' &&
-      de === 'horizontal' &&
-      ef === 'vertical'
-    ) {
-      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 4)].map((p) => ({ ...p })))
-      if (wouldCross && wouldCross(merged)) continue
-      return merged
-    }
-  }
-  return null
-}
-
-function removeOrthogonalNotches(path: Point[], maxNotchPx: number, wouldCross?: PathObstacleCheck): Point[] {
-  let next = normalizeOrthogonalPath(path.map((p) => ({ ...p })))
-  let changed = true
-  while (changed) {
-    changed = false
-    const collapsed = tryCollapseRectangle(next, wouldCross)
-    if (collapsed) {
-      next = collapsed
-      changed = true
-      continue
-    }
-    const spineDetour = tryRemoveSpineDetour(next, SPINE_NOTCH_MAX_PX, wouldCross)
-    if (spineDetour) {
-      next = spineDetour
-      changed = true
-      continue
-    }
-    const twoStep = tryRemoveTwoStepDetour(next, maxNotchPx, wouldCross)
-    if (twoStep) {
-      next = twoStep
-      changed = true
-      continue
-    }
-    const threeStep = tryRemoveThreeStepDetour(next, maxNotchPx, wouldCross)
-    if (threeStep) {
-      next = threeStep
-      changed = true
-    }
-  }
-  return next
-}
-
-/** Kurangi zig-zag: collinear, dogleg pendek, dan lipatan persegi redundan. */
-export function simplifyOrthogonalPath(
-  path: Point[],
-  minSegmentPx = 10,
-  wouldCrossObstacles?: PathObstacleCheck,
-): Point[] {
-  if (path.length < 3) return normalizeOrthogonalPath(path.map((p) => ({ ...p })))
-  const maxNotchPx = Math.max(minSegmentPx + 8, 24)
-  let next = removeOrthogonalNotches(path, maxNotchPx, wouldCrossObstacles)
-  const withoutCollinear: Point[] = [next[0]!]
-  for (let i = 1; i < next.length - 1; i += 1) {
-    const prev = withoutCollinear[withoutCollinear.length - 1]!
-    const cur = next[i]!
-    const after = next[i + 1]!
-    if (!isCollinearMiddle(prev, cur, after)) {
-      withoutCollinear.push(cur)
-    }
-  }
-  withoutCollinear.push(next[next.length - 1]!)
-  next = withoutCollinear
-  let changed = true
-  while (changed && next.length > 2) {
-    changed = false
-    const simplified: Point[] = [next[0]!]
-    for (let i = 1; i < next.length - 1; i += 1) {
-      const prev = simplified[simplified.length - 1]!
-      const cur = next[i]!
-      const after = next[i + 1]!
-      const leg1 = Math.abs(cur.x - prev.x) + Math.abs(cur.y - prev.y)
-      const leg2 = Math.abs(after.x - cur.x) + Math.abs(after.y - cur.y)
-      if (leg1 < minSegmentPx && leg2 < minSegmentPx) {
-        changed = true
-        continue
-      }
-      simplified.push(cur)
-    }
-    simplified.push(next[next.length - 1]!)
-    next = normalizeOrthogonalPath(simplified)
-  }
-  return removeOrthogonalNotches(next, maxNotchPx, wouldCrossObstacles)
 }
 
 export function findNearestSegmentIndex(path: Point[], x: number, y: number): number {

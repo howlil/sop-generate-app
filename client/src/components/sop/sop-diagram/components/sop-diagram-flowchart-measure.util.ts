@@ -1,13 +1,13 @@
 import {
   measureFlowchartGridLayout,
   type FlowchartGridLayout,
-} from '../core/route/flowchart-grid-layout.util'
+} from '../core/route/flowchart/flowchart-grid-layout.util'
 import {
   measureFlowchartImplementerColumnBounds,
-} from '../core/route/flowchart-column-bounds.util'
-import type { ImplementerColumnBoundsMap } from '../core/route/flowchart-column-bounds.util'
+} from '../core/route/flowchart/flowchart-column-bounds.util'
+import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 
-export type { ImplementerColumnBoundsMap } from '../core/route/flowchart-column-bounds.util'
+export type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 
 export type FlowchartPelaksanaBoundsRect = {
   left: number

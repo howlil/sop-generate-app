@@ -206,6 +206,10 @@ export interface TandaTanganiSopPengajuanDto {
   pin: string;
   nomorDokumen: string;
   judulDokumen: string;
+  sopPdfs: Array<{
+    detailSopId: string;
+    pdfBase64: string;
+  }>;
 }
 
 export interface TandaTanganiSopPengajuanMutationDto {

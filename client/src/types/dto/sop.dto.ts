@@ -1,3 +1,5 @@
+import type { TTESignaturePayload } from "./tte.dto";
+
 export type StatusSOP =
   | "DRAFT"
   | "SEDANG_DISUSUN"
@@ -151,6 +153,7 @@ export interface PenyusunWorkbenchData {
   langkah: LangkahSOP[];
   logEdit: PenyusunWorkbenchLogEdit[];
   diagramKonfigurasi?: PenyusunWorkbenchDiagramKonfigurasi;
+  tteSignaturePayloadKepalaOpd?: TTESignaturePayload;
 }
 
 export type JenisDiagram = 'FLOWCHART' | 'BPMN';

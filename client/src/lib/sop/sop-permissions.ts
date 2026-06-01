@@ -34,6 +34,14 @@ export function canHapusVersiDraft(
   return status === 'DRAFT' && canHapusDraft === true
 }
 
+export function canHapusSopDraftAwal(row: {
+  status: string
+  versi?: number | null
+  canHapusSopDraft?: boolean
+}): boolean {
+  return row.status === 'DRAFT' && row.versi === 1 && row.canHapusSopDraft === true
+}
+
 /** Kirim ulang ke evaluator setelah revisi evaluator — hanya PJ Penyusun. */
 export function canKirimUlangKeEvaluatorAfterRevisi(
   role: string | null | undefined,

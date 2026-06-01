@@ -7,8 +7,9 @@ import {
   normalizeOrthogonalPath,
   assertOrthogonalPath,
   type OccupiedSegment,
-} from '../core/route/orthogonalRouter'
-import { selectSidePairs as selectFlowchartRouteCandidates, type Side, type UsedSides } from '../core/route/selectSidePairs'
+} from '../core/route/shared/orthogonalRouter'
+import { selectSidePairs as selectFlowchartRouteCandidates } from '../core/route/flowchart/selectSidePairs'
+import type { Side, UsedSides } from '../core/route/shared/connector-side.types'
 import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
 import { simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
 import {
@@ -20,15 +21,15 @@ import {
   type DiagramPathAnchor,
   type DiagramShapeSnapTargets,
 } from '../edit/anchor-snap.util'
-import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/path-route-quality.util'
-import { placeEdgeLabel } from '../core/route/edge-label-placement.util'
+import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/quality/path-route-quality.util'
+import { placeEdgeLabel } from '../core/route/shared/edge-label-placement.util'
 import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
-import type { Rect } from '../core/route/orthogonalRouter'
+import type { Rect } from '../core/route/shared/orthogonalRouter'
 
 /* ───────────────────────── Public types (re-export for consumers) ─────────────────────────── */
 
 export type { FlowchartConnection } from '../core/sopDiagramTypes'
-export type { UsedSides } from '../core/route/selectSidePairs'
+export type { UsedSides } from '../core/route/shared/connector-side.types'
 
 export interface ArrowObstacle { id: string }
 
@@ -868,20 +869,22 @@ export function FlowchartArrowConnector({
           onSelect={onSelectRef.current ?? (() => {})}
           onChange={(payload) => {
             const nextPath = [payload.startPoint, ...payload.bendPoints, payload.endPoint]
-            setResolvedPath((prev) => (samePath(prev, nextPath) ? prev : nextPath))
-            setResolvedSides((prev) => {
-              const next: [Side, Side] = [payload.sSide, payload.eSide]
-              return sameSides(prev, next) ? prev : next
-            })
-            setPathData(pathToD(nextPath))
-            onManualChangeRef.current?.({
+            const updatedPayload = {
               connectionId: connection.id,
               from: connection.from,
               to: connection.to,
               ...payload,
               label: connection.label ?? undefined,
               labelPosition: effectiveLabelPos ?? undefined,
+            }
+            setResolvedPath((prev) => (samePath(prev, nextPath) ? prev : nextPath))
+            setResolvedSides((prev) => {
+              const next: [Side, Side] = [payload.sSide, payload.eSide]
+              return sameSides(prev, next) ? prev : next
             })
+            setPathData(pathToD(nextPath))
+            onPathUpdatedRef.current?.(updatedPayload)
+            onManualChangeRef.current?.(updatedPayload)
           }}
           onDeleteSelected={() => onManualChangeRef.current?.({
             connectionId: connection.id,

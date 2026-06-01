@@ -46,6 +46,7 @@ describe('Pengujian SopCatalogService', () => {
       | 'cloneDetailSopFromBerlaku'
       | 'findRiwayatVersiBySopId'
       | 'deleteVersiDraft'
+      | 'deleteSopDraftAwal'
     >
   > = {
     findOpdIdByPenggunaId: jest.fn(),
@@ -62,6 +63,7 @@ describe('Pengujian SopCatalogService', () => {
     cloneDetailSopFromBerlaku: jest.fn(),
     findRiwayatVersiBySopId: jest.fn(),
     deleteVersiDraft: jest.fn(),
+    deleteSopDraftAwal: jest.fn(),
   };
   const evaluasiNilaiServiceMock = {
     assertBolehKirimUlangSetelahRevisi: jest.fn().mockResolvedValue(undefined),
@@ -1632,6 +1634,37 @@ describe('Pengujian SopCatalogService', () => {
       repoMock.deleteVersiDraft.mockResolvedValue({ ok: true, data: undefined });
       await service.hapusVersiDraft(user, 'det-draft');
       expect(repoMock.deleteVersiDraft).toHaveBeenCalledWith('det-draft');
+    });
+  });
+
+  describe('Pengujian hapus SOP draft awal', () => {
+    it('seharusnya memanggil repository untuk menghapus header SOP ketika penyusun', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-draft-awal',
+        sopId: 'sop-draft-awal',
+        status: StatusSOP.DRAFT,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.deleteSopDraftAwal.mockResolvedValue({ ok: true, data: undefined });
+      await service.hapusSopDraftAwal(user, 'det-draft-awal');
+      expect(repoMock.deleteSopDraftAwal).toHaveBeenCalledWith('det-draft-awal');
+    });
+
+    it('seharusnya meneruskan konflik ketika repository menolak draft yang bukan draft awal', async () => {
+      repoMock.findLatestDetailStatusContext.mockResolvedValue({
+        detailSopId: 'det-proses',
+        sopId: 'sop-proses',
+        status: StatusSOP.SEDANG_DISUSUN,
+        sopOpdId: 'opd-1',
+      });
+      repoMock.deleteSopDraftAwal.mockResolvedValue({
+        ok: false,
+        reason: 'CONFLICT',
+        message: 'SOP hanya dapat dihapus ketika masih berupa draft awal',
+      });
+      await expect(service.hapusSopDraftAwal(user, 'det-proses')).rejects.toBeInstanceOf(
+        ConflictException,
+      );
     });
   });
 });

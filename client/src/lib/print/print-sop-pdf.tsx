@@ -123,7 +123,7 @@ export async function buildSopPdfBlob(
   ).toBlob()
 }
 
-async function blobToBase64(blob: Blob): Promise<string> {
+export async function blobToBase64(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer())
   let binary = ''
   const chunkSize = 0x8000
@@ -131,6 +131,20 @@ async function blobToBase64(blob: Blob): Promise<string> {
     binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize))
   }
   return btoa(binary)
+}
+
+/** Bangun PDF arsip lengkap; kegagalan ekspor diagram wajib menghentikan pengesahan. */
+export async function buildSopOfficialPdfBase64(props: SopPdfDocumentProps): Promise<string> {
+  const { props: resolvedProps, diagramExportFailed } = await prepareSopPdfDocumentProps(props)
+  const snapshots = resolvedProps.diagramSnapshots ?? []
+  const missingDiagram = getRequiredDiagramKinds(resolvedProps).some(
+    (kind) => !snapshots.some((snapshot) => snapshot.kind === kind),
+  )
+  if (diagramExportFailed || missingDiagram) {
+    throw new Error('Flowchart atau BPMN SOP gagal dirender. Pengesahan dibatalkan agar PDF resmi tidak rusak.')
+  }
+  const blob = await buildSopPdfBlob(resolvedProps, { skipDiagramExport: true })
+  return blobToBase64(blob)
 }
 
 function base64ToPdfBlob(base64: string): Blob {

@@ -16,6 +16,7 @@ import type {
 } from "@/types/dto/evaluasi.dto";
 import { assertCanMutateEvaluasiNilai } from "@/lib/evaluasi/evaluasi-permissions";
 import { useAuthStore } from "@/stores/authStore";
+import { invalidateSopEvaluasiWorkflow } from "@/lib/api/cache-invalidation";
 
 const AUTO_SAVE_DELAY_MS = 1500;
 
@@ -137,10 +138,7 @@ async function syncDraftEvaluasiCache(
     { queryKey: queryKeys.evaluasiWorkspacePengajuanAll },
     (workspace) => updateWorkspaceEvaluasiCache(workspace, savedNilai, variables),
   );
-  await queryClient.invalidateQueries({
-    queryKey: queryKeys.evaluasiRingkasAll,
-    refetchType: "none",
-  });
+  await invalidateSopEvaluasiWorkflow(queryClient, "none");
 }
 
 export interface UseEvaluasiDraftReturn {
@@ -510,21 +508,7 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
           ? { nomorBA, nilaiOPD: ratingOPD! }
           : { nomorBA };
       await evaluasiApi.selesai(pengajuanAktifId, payload);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.evaluasiWorkspaceOpdAll,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.evaluasiWorkspaceOpdSayaAll,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.evaluasiWorkspacePengajuanAll,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.evaluasiRingkasAll,
-        }),
-      ]);
+      await invalidateSopEvaluasiWorkflow(queryClient);
       showToast("Pengajuan berhasil diajukan ke PJ Evaluator", "success");
       onSuccess?.();
     } catch (error) {

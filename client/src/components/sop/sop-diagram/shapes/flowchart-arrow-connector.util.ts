@@ -1,8 +1,8 @@
 import {
   normalizeOrthogonalPath,
   assertOrthogonalPath,
-} from '../core/route/orthogonalRouter'
-import { clampPathToPelaksanaBounds } from '../core/route/flowchart-path-bounds.util'
+} from '../core/route/shared/orthogonalRouter'
+import { clampPathToPelaksanaBounds } from '../core/route/flowchart/flowchart-path-bounds.util'
 import { simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
 
 export type FlowchartBoundsRect = {

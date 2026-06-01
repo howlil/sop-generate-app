@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  alignEndpointSegmentPreservingEndpoint,
   insertWaypointAtSegmentMidpoint,
   removeWaypoint,
   dragSegmentFromOrigin,
   dragWaypointFromOrigin,
   dragWaypointOrthogonal,
+  endpointIndexForKind,
   forkStraightPathForEndpointDrag,
+  getDraggedEndpointKind,
   isPerpendicularEndpointDrag,
   isStraightTwoPointPath,
   simplifyOrthogonalPath,
@@ -158,6 +161,29 @@ describe('orthogonal-path-edit.util', () => {
     expect(forked![2]).toEqual({ x: 200, y: 180 })
     expect(forked![0]!.y).toBe(forked![1]!.y)
     expect(forked![1]!.x).toBe(forked![2]!.x)
+  })
+
+  it('should_keep_tracking_end_endpoint_after_straight_path_forks', () => {
+    const straight = [
+      { x: 0, y: 100 },
+      { x: 200, y: 100 },
+    ]
+    const kind = getDraggedEndpointKind(straight, 1)
+    const forked = forkStraightPathForEndpointDrag(straight, 1, 0, 80)
+    expect(kind).toBe('end')
+    expect(forked).toHaveLength(3)
+    expect(endpointIndexForKind(forked!, kind!)).toBe(2)
+  })
+
+  it('should_align_neighbor_without_moving_snapped_endpoint', () => {
+    const path = [
+      { x: 100, y: 100 },
+      { x: 180, y: 160 },
+      { x: 240, y: 160 },
+    ]
+    const aligned = alignEndpointSegmentPreservingEndpoint(path, 0)
+    expect(aligned[0]).toEqual({ x: 100, y: 100 })
+    expect(aligned[1]).toEqual({ x: 180, y: 100 })
   })
 
   it('should_not_fork_when_drag_along_horizontal', () => {

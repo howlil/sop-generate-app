@@ -124,6 +124,11 @@ export const sopApi = {
       apiClient.delete<ApiSuccessResponse<null>>(`/sop/${detailSopId}/versi-draft`),
     ),
 
+  hapusSopDraftAwal: (detailSopId: string) =>
+    unwrapApiData(
+      apiClient.delete<ApiSuccessResponse<null>>(`/sop/${detailSopId}/draft`),
+    ),
+
   findPelaksana: (opdId: string) =>
     unwrapPelaksanaMaster(
       apiClient.get<ApiSuccessResponse<Pelaksana[]>>(`/pelaksana?opdId=${encodeURIComponent(opdId)}`),

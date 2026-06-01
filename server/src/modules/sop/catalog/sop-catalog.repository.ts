@@ -60,6 +60,21 @@ export type SopWorkbenchDbPayload = Prisma.DetailSOPGetPayload<{
         sop: { include: { sop: { select: { judul: true; sopId: true } } } };
       };
     };
+    dokumenTte: {
+      where: { jenisDokumen: 'SOP_BERLAKU' };
+      select: {
+        dokumenTteId: true;
+        riwayatTandaTangan: {
+          select: {
+            peran: true;
+            userId: true;
+            dokumenTteId: true;
+            ditandatanganiPada: true;
+            user: { select: { nama: true; nip: true; jabatan: true } };
+          };
+        };
+      };
+    };
     swimlanes: { include: { pelaksana: true } };
     nilaiEvaluasi: {
       select: { pengajuanEvaluasiId: true; detailSopId: true; hasil: true; catatan: true };
@@ -376,6 +391,21 @@ export class SopCatalogRepository {
         relasiSopMasuk: {
           include: {
             sop: { include: { sop: { select: { judul: true, sopId: true } } } },
+          },
+        },
+        dokumenTte: {
+          where: { jenisDokumen: 'SOP_BERLAKU' },
+          select: {
+            dokumenTteId: true,
+            riwayatTandaTangan: {
+              select: {
+                peran: true,
+                userId: true,
+                dokumenTteId: true,
+                ditandatanganiPada: true,
+                user: { select: { nama: true, nip: true, jabatan: true } },
+              },
+            },
           },
         },
         swimlanes: { include: { pelaksana: true } },
@@ -1034,5 +1064,36 @@ export class SopCatalogRepository {
     }
     await this.prisma.detailSOP.delete({ where: { detailSopId } });
     return sopCatalogRepoOk(undefined);
+  }
+
+  async deleteSopDraftAwal(detailSopId: string): Promise<SopCatalogRepoResult<void>> {
+    return this.prisma.$transaction(async (tx) => {
+      const row = await tx.detailSOP.findUnique({
+        where: { detailSopId },
+        select: {
+          sopId: true,
+          status: true,
+          versi: true,
+          revisiDariDetailSopId: true,
+          sop: { select: { _count: { select: { detailSops: true } } } },
+        },
+      });
+      if (row === null) {
+        return sopCatalogRepoFail('NOT_FOUND', 'DetailSOP tidak ditemukan');
+      }
+      if (
+        row.status !== StatusSOP.DRAFT ||
+        row.versi !== 1 ||
+        row.revisiDariDetailSopId !== null ||
+        row.sop._count.detailSops !== 1
+      ) {
+        return sopCatalogRepoFail(
+          'CONFLICT',
+          'SOP hanya dapat dihapus ketika masih berupa draft awal dan belum memiliki versi lain',
+        );
+      }
+      await tx.sOP.delete({ where: { sopId: row.sopId } });
+      return sopCatalogRepoOk(undefined);
+    });
   }
 }

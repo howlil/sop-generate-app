@@ -14,6 +14,7 @@ import { sopApi } from "@/api/sop-client";
 import { ROUTES } from "@/utils/constants";
 import { transformLangkahToProsedurRow, transformSopDetailToMetadata } from "@/lib/sop/detailSop.mappers";
 import { DEFAULT_SOP_STATUS } from "@/types/dto/sop.dto";
+import { SOP_EVALUASI_WORKFLOW_QUERY_KEYS } from "@/lib/api/cache-invalidation";
 import {
   canEditSop,
   canKirimUlangKeEvaluatorAfterRevisi,
@@ -56,11 +57,7 @@ export function useDetailSopPenyusunActions({
   const kirimUlangKeEvaluatorMutation = useMutationWithToast({
     mutationFn: (sopOrDetailId: string) => sopApi.kirimUlangEvaluasiSetelahRevisi(sopOrDetailId),
     invalidateKeys: [
-      queryKeys.sop,
-      queryKeys.evaluasiWorkspaceOpdAll,
-      queryKeys.evaluasiWorkspaceOpdSayaAll,
-      queryKeys.evaluasiWorkspacePengajuanAll,
-      queryKeys.evaluasiRingkasAll,
+      ...SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
     ],
     successMessage: "SOP berhasil dikirim ulang ke evaluator",
     errorMessagePrefix: "Gagal mengirim ulang ke evaluator",

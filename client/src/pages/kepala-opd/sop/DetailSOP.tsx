@@ -156,7 +156,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
               }
               prosedurRows={previewProps?.prosedurRows ?? []}
               implementers={previewProps?.implementers ?? []}
-              tteSignaturePayload={undefined}
+              tteSignaturePayload={workbench?.tteSignaturePayloadKepalaOpd}
               previewOptions={{ editable: false }}
               diagramState={{
                 activeTab,

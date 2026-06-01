@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import type { Implementer, SOPStep, ArrowConfig, LabelConfig } from '../core/sopDiagramTypes'
-import { buildWorkflowConnections } from '../core/build-workflow-connections.util'
+import { buildWorkflowConnections } from '../core/workflow/build-workflow-connections.util'
 import { BpmnPage, type ProcessedBpmnStep } from './BpmnPage'
 
 export interface SOPDiagramBpmnProps {

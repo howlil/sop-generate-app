@@ -4,6 +4,7 @@ import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { useAuthStore } from "@/stores/authStore";
 import { STALE_TIME } from "@/utils/constants";
 import { sopApi } from "@/api/sop-client";
+import { invalidateSopEvaluasiWorkflow } from "@/lib/api/cache-invalidation";
 import type {
   CreatePelaksanaMutationDto,
   Pelaksana,
@@ -28,14 +29,8 @@ async function syncSopWorkbenchAfterStatusChange(
   queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
 
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: queryKeys.sop }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.detailSop }),
+    invalidateSopEvaluasiWorkflow(queryClient),
     queryClient.invalidateQueries({ queryKey: queryKeys.sopRiwayatVersi(data.detail.sopId) }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiWorkspaceOpdAll }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiWorkspaceOpdSayaAll }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiWorkspacePengajuanAll }),
-    queryClient.invalidateQueries({ queryKey: queryKeys.evaluasiRingkasAll }),
-    queryClient.invalidateQueries({ queryKey: ['sop', 'public'] }),
   ]);
 }
 
@@ -133,7 +128,7 @@ export function usePelaksana(opdId?: string) {
         namaPelaksana: data.namaPelaksana,
       });
     },
-    invalidateKeys: [queryKeys.pelaksanaByOpd(effectiveOpdId || "")],
+    invalidateKeys: [queryKeys.pelaksana, queryKeys.sop, queryKeys.evaluasi],
     successMessage: "Pelaksana SOP berhasil ditambahkan",
     errorMessagePrefix: "Gagal menambah pelaksana",
   });
@@ -141,14 +136,14 @@ export function usePelaksana(opdId?: string) {
   const updateMutation = useMutationWithToast({
     mutationFn: ({ id, namaPelaksana }: UpdatePelaksanaMutationDto) =>
       sopApi.updatePelaksana(id, namaPelaksana),
-    invalidateKeys: [queryKeys.pelaksanaByOpd(effectiveOpdId || "")],
+    invalidateKeys: [queryKeys.pelaksana, queryKeys.sop, queryKeys.evaluasi],
     successMessage: "Pelaksana SOP berhasil diperbarui",
     errorMessagePrefix: "Gagal memperbarui pelaksana",
   });
 
   const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => sopApi.deletePelaksana(id),
-    invalidateKeys: [queryKeys.pelaksanaByOpd(effectiveOpdId || "")],
+    invalidateKeys: [queryKeys.pelaksana, queryKeys.sop, queryKeys.evaluasi],
     successMessage: "Pelaksana SOP berhasil dihapus",
     errorMessagePrefix: "Gagal menghapus pelaksana",
   });
@@ -191,6 +186,16 @@ export function useHapusVersiDraft(sopId: string) {
   });
 }
 
+export function useHapusSopDraftAwal() {
+  return useMutationWithToast({
+    mutationFn: (detailSopId: string) => sopApi.hapusSopDraftAwal(detailSopId),
+    invalidateKeys: [queryKeys.sop],
+    successMessage: 'Draft SOP berhasil dihapus',
+    useDetailedErrors: true,
+    errorMessagePrefix: 'Gagal menghapus draft SOP',
+  });
+}
+
 /**
  * Mutation autosave PATCH header SOP. Tidak memunculkan toast (silent autosave),
  * tidak meng-invalidate cache; sebagai gantinya `setQueryData` workbench dengan response
@@ -205,6 +210,7 @@ export function useUpdateSopHeader(detailSopId: string) {
       if (data.detail.id !== detailSopId) {
         queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
       }
+      void invalidateSopEvaluasiWorkflow(queryClient, 'none');
     },
   });
 }
@@ -223,6 +229,7 @@ export function useUpdateSopProsedur(detailSopId: string) {
       if (data.detail.id !== detailSopId) {
         queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
       }
+      void invalidateSopEvaluasiWorkflow(queryClient, 'none');
     },
   });
 }
@@ -236,6 +243,7 @@ export function useUpdateSopDiagram(detailSopId: string) {
       if (data.detail.id !== detailSopId) {
         queryClient.setQueryData(queryKeys.penyusunWorkbench(data.detail.id), data);
       }
+      void invalidateSopEvaluasiWorkflow(queryClient, 'none');
     },
   });
 }

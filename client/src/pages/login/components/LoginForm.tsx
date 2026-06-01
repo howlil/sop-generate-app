@@ -85,10 +85,16 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
     <div className="w-full">
       {/* Header */}
       <div className="mb-8">
-        <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 mb-6 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Kembali ke Beranda
-        </Link>
+        <Button
+          asChild
+          variant="ghost"
+          className="mb-6 -ml-4 text-slate-500 hover:text-slate-900"
+        >
+          <Link to="/">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Kembali ke Beranda
+          </Link>
+        </Button>
         <h1 className="text-xl font-semibold text-slate-900 mb-1">
           Selamat Datang
         </h1>

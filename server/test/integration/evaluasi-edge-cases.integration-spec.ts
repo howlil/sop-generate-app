@@ -369,14 +369,14 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
 
       const res = await mandiriGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/selesai`)
-        .send({ nilaiOPD: 5 }); // MANDIRI tidak boleh ada nilaiOPD
+        .send({ nomorBA: 'BA-EVAL-EE-MD-001', nilaiOPD: 5 }); // MANDIRI tidak boleh ada nilaiOPD
       expect([400]).toContain(res.status);
     });
 
     it('PATCH /evaluasi/:id/selesai tanpa nilaiOPD pada MANDIRI → 200 (Success Case)', async () => {
       await mandiriGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/selesai`)
-        .send({})
+        .send({ nomorBA: 'BA-EVAL-EE-MD-001' })
         .expect(200);
     });
   });
@@ -501,21 +501,21 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
     it('PATCH selesai tanpa nilaiOPD pada TERJADWAL → 400 (False Case)', async () => {
       const res = await terjadwalGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/selesai`)
-        .send({}); // tanpa nilaiOPD untuk TERJADWAL
+        .send({ nomorBA: 'BA-EVAL-EE-TJ-001' }); // tanpa nilaiOPD untuk TERJADWAL
       expect([400]).toContain(res.status);
     });
 
     it('PATCH selesai dengan nilaiOPD di luar range 1-5 → 400 (Edge Case)', async () => {
       const res = await terjadwalGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/selesai`)
-        .send({ nilaiOPD: 10 }); // di luar range
+        .send({ nomorBA: 'BA-EVAL-EE-TJ-001', nilaiOPD: 10 }); // di luar range
       expect([400]).toContain(res.status);
     });
 
     it('PATCH selesai dengan nilaiOPD valid pada TERJADWAL → 200 (Success Case)', async () => {
       await terjadwalGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/selesai`)
-        .send({ nilaiOPD: 4 })
+        .send({ nomorBA: 'BA-EVAL-EE-TJ-001', nilaiOPD: 4 })
         .expect(200);
 
       const result = await prisma.pengajuanEvaluasi.findUniqueOrThrow({

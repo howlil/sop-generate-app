@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
-import type { OpcPair } from '../core/route/flowchartPagination'
-import type { ImplementerColumnBoundsMap } from '../core/route/flowchart-column-bounds.util'
+import type { OpcPair } from '../core/route/flowchart/flowchartPagination'
+import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 import {
   buildFlowchartTableColumnPercents,
   centerPercentToLeftCss,
@@ -10,7 +10,7 @@ import {
   OPC_CONNECTOR_HEIGHT_PX,
   OPC_CONNECTOR_STACK_GAP_PX,
   type OpcPlacementVariant,
-} from '../core/route/flowchart-opc-placement.util'
+} from '../core/route/flowchart/flowchart-opc-placement.util'
 import { FlowchartOffPageConnector } from '../shapes/flowchart/OffPageConnector'
 
 interface FlowchartOpcRowProps {

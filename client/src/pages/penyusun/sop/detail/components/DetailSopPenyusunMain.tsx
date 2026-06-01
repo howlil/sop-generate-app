@@ -187,6 +187,7 @@ export function DetailSOPPenyusunMain({
           metadata={previewMetadata}
           prosedurRows={prosedurRows}
           implementers={implementers}
+          tteSignaturePayload={workbench?.tteSignaturePayloadKepalaOpd}
           diagramState={{
             pathLayoutSeed: diagramConfig.pathLayoutSeed,
             activeTab,

@@ -3,9 +3,9 @@ import { useParams } from "@tanstack/react-router";
 import { AlertCircle, CheckCircle, FileText, Loader2 } from "lucide-react";
 import { PengajuanCetakArsipButtons } from "@/components/pengajuan/PengajuanCetakArsipButtons";
 import { usePengajuanCetakArsip } from "@/components/pengajuan/hooks/use-pengajuan-cetak-arsip";
-import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
-import { usePengajuanBeritaAcaraView, usePengajuanEvaluasiDetail, usePengajuanSopDokumenWorkbench } from "@/api/evaluasi";
-import { createPinConfirmHandler, useTandaTanganiSopPengajuan } from "@/api/tte";
+import { buildSopArsipPdfBase64FromPreviewProps, canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from "@/lib/print/pengajuan-print";
+import { evaluasiApi, usePengajuanBeritaAcaraView, usePengajuanEvaluasiDetail, usePengajuanSopDokumenWorkbench } from "@/api/evaluasi";
+import { useTandaTanganiSopPengajuan } from "@/api/tte";
 import { mapPenyusunWorkbenchToPreviewProps } from "@/lib/sop/detailSop.mappers";
 import { parseTTESignaturePayload } from "@/lib/tte/parse-tte-signature-payload";
 import { DetailPageLayout } from "@/components/layout/DetailPageLayout";
@@ -30,10 +30,12 @@ import { PinVerificationDialog } from "@/components/tte/pin-verification-dialog"
 import { TteSetupRequiredDialog } from "@/components/tte/tte-setup-required-dialog";
 import { SOPListCard } from "@/components/sop/sop-list-card";
 import { useRequireTteSetup } from "@/hooks/use-require-tte-setup";
+import { useToast } from "@/hooks/useToast";
 import { ROUTES } from "@/utils/constants";
 import { formatDateIdFull } from "@/utils/format-date";
 
 const STATUS_SOP_SIAP_TTD_KEPALA_OPD = "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI";
+const WORKBENCH_LOGS_LIMIT = 100;
 type PengajuanDetail = NonNullable<ReturnType<typeof usePengajuanEvaluasiDetail>["pengajuan"]>;
 type PengajuanSopList = NonNullable<PengajuanDetail["sopList"]>;
 const EMPTY_SOP_LIST: PengajuanSopList = [];
@@ -114,19 +116,46 @@ export function DetailPengajuanSOPPage() {
   const tandaTanganiSemuaSop = useTandaTanganiSopPengajuan({
     suppressSetupRequiredToast: true,
   });
-  const handlePinConfirm = createPinConfirmHandler(
-    tandaTanganiSemuaSop.mutateAsync,
-    (pin) => ({
-      pengajuanId: id,
-      payload: {
-        pin,
-        nomorDokumen: pengajuan?.nomorBA ?? `PGJ-${pengajuan?.opdNama ?? ""}`,
-        judulDokumen: `Pengesahan SOP OPD - ${pengajuan?.opdNama ?? ""}`,
-      },
-    }),
-    undefined,
-    (error) => handleTteSigningError(error, () => setPinDialogOpen(false)),
-  );
+  const { showToast } = useToast();
+  const handlePinConfirm = async (pin: string): Promise<boolean> => {
+    let signingRequestStarted = false;
+    try {
+      const sopPdfs = [];
+      for (const sop of sopList) {
+        const dokumen = await evaluasiApi.findPengajuanSopDokumen(
+          id,
+          sop.sopDetailId,
+          WORKBENCH_LOGS_LIMIT,
+        );
+        sopPdfs.push({
+          detailSopId: sop.sopDetailId,
+          pdfBase64: await buildSopArsipPdfBase64FromPreviewProps(
+            mapPenyusunWorkbenchToPreviewProps(dokumen.workbench),
+          ),
+        });
+      }
+      signingRequestStarted = true;
+      await tandaTanganiSemuaSop.mutateAsync({
+        pengajuanId: id,
+        payload: {
+          pin,
+          nomorDokumen: pengajuan?.nomorBA ?? `PGJ-${pengajuan?.opdNama ?? ""}`,
+          judulDokumen: `Pengesahan SOP OPD - ${pengajuan?.opdNama ?? ""}`,
+          sopPdfs,
+        },
+      });
+      return true;
+    } catch (error) {
+      handleTteSigningError(error, () => setPinDialogOpen(false));
+      if (!signingRequestStarted) {
+        showToast(
+          error instanceof Error ? error.message : "Gagal membuat PDF resmi SOP.",
+          "error",
+        );
+      }
+      return false;
+    }
+  };
   const handleOpenPinDialog = () => {
     void requireTteReady(() => setPinDialogOpen(true));
   };

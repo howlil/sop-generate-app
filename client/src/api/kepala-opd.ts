@@ -63,7 +63,13 @@ export function useKepalaOpdRiwayat(penggunaId: string | null, enabled: boolean)
 export function useCreateKepalaOpd() {
   return useMutationWithToast({
     mutationFn: (payload: CreateKepalaOpdDto) => kepalaOpdApi.create(payload),
-    invalidateKeys: [queryKeys.kepalaOpd, queryKeys.opd, queryKeys.users],
+    invalidateKeys: [
+      queryKeys.kepalaOpd,
+      queryKeys.opd,
+      queryKeys.users,
+      queryKeys.sop,
+      queryKeys.evaluasi,
+    ],
     successMessage: 'Kepala OPD berhasil ditambahkan',
     errorMessagePrefix: 'Gagal menambahkan Kepala OPD',
   })
@@ -73,7 +79,13 @@ export function useUpdateKepalaOpd() {
   return useMutationWithToast({
     mutationFn: ({ id, payload }: { id: string; payload: UpdateKepalaOpdDto }) =>
       kepalaOpdApi.update(id, payload),
-    invalidateKeys: [queryKeys.kepalaOpd, queryKeys.opd, queryKeys.users],
+    invalidateKeys: [
+      queryKeys.kepalaOpd,
+      queryKeys.opd,
+      queryKeys.users,
+      queryKeys.sop,
+      queryKeys.evaluasi,
+    ],
     successMessage: 'Data Kepala OPD berhasil diperbarui',
     errorMessagePrefix: 'Gagal memperbarui Kepala OPD',
   })
@@ -82,7 +94,13 @@ export function useUpdateKepalaOpd() {
 export function useDeleteKepalaOpd() {
   return useMutationWithToast({
     mutationFn: (id: string) => kepalaOpdApi.remove(id),
-    invalidateKeys: [queryKeys.kepalaOpd, queryKeys.opd, queryKeys.users],
+    invalidateKeys: [
+      queryKeys.kepalaOpd,
+      queryKeys.opd,
+      queryKeys.users,
+      queryKeys.sop,
+      queryKeys.evaluasi,
+    ],
     successMessage: 'Kepala OPD berhasil dihapus',
     errorMessagePrefix: 'Gagal menghapus Kepala OPD',
   })

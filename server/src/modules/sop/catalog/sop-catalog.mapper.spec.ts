@@ -134,6 +134,29 @@ describe('Pengujian SopCatalogMapper', () => {
     });
     expect(actual.canBuatVersiBaru).toBe(true);
     expect(actual.canCabutSop).toBe(true);
+    expect(actual.canHapusSopDraft).toBe(false);
     expect(actual.versiBerlaku?.detailSopId).toBe('det-1');
+  });
+
+  it('seharusnya mengizinkan hapus SOP hanya untuk draft awal satu-satunya', () => {
+    const t = new Date('2026-01-15T10:00:00.000Z');
+    const actual = mapDaftarRow({
+      sopId: 'sop-draft',
+      opdId: 'opd-1',
+      judul: 'Draft awal',
+      detail: {
+        detailSopId: 'det-draft',
+        nomorSOP: 'DRAFT-001',
+        status: StatusSOP.DRAFT,
+        versi: 1,
+        updatedAt: t,
+        pembuatNama: 'Budi',
+        editorNama: 'Budi',
+        peraturanId: null,
+      },
+      versiBerlaku: null,
+      allStatuses: [StatusSOP.DRAFT],
+    });
+    expect(actual.canHapusSopDraft).toBe(true);
   });
 });

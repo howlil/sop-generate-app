@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ROLES } from '@/utils/constants'
 import {
   canKirimUlangKeEvaluatorAfterRevisi,
+  canHapusSopDraftAwal,
   getKirimUlangRoleBlockingReason,
   isSopEligibleForSigning,
 } from '../sop-permissions'
@@ -22,5 +23,12 @@ describe('sop-permissions', () => {
     expect(canKirimUlangKeEvaluatorAfterRevisi(null)).toBe(false)
     expect(getKirimUlangRoleBlockingReason(ROLES.PJ_PENYUSUN)).toBeNull()
     expect(getKirimUlangRoleBlockingReason(ROLES.PENYUSUN)).toContain('PJ Penyusun')
+  })
+
+  it('should_only_allow_deleting_initial_sop_draft', () => {
+    expect(canHapusSopDraftAwal({ status: 'DRAFT', versi: 1, canHapusSopDraft: true })).toBe(true)
+    expect(canHapusSopDraftAwal({ status: 'SEDANG_DISUSUN', versi: 1, canHapusSopDraft: true })).toBe(false)
+    expect(canHapusSopDraftAwal({ status: 'DRAFT', versi: 2, canHapusSopDraft: true })).toBe(false)
+    expect(canHapusSopDraftAwal({ status: 'DRAFT', versi: 1, canHapusSopDraft: false })).toBe(false)
   })
 })

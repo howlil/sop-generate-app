@@ -2,9 +2,12 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
-import { STALE_TIME } from "@/utils/constants";
 import { evaluasiApi } from "@/api/evaluasi-client";
 import { mapEvaluasiShellToLegacyPengajuan } from "@/lib/evaluasi/evaluasi-mappers";
+import {
+  SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
+  SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
+} from "@/lib/api/cache-invalidation";
 import type {
   CreatePengajuanEvaluasiDto,
   EvaluasiGrafikTahunanQueryParams,
@@ -18,7 +21,7 @@ export function useUmpanBalikEvaluasi(detailSopId: string | undefined, enabled =
     queryKey: queryKeys.evaluasiUmpanBalik(detailSopId ?? ''),
     queryFn: () => evaluasiApi.getUmpanBalikEvaluasi(detailSopId as string),
     enabled: Boolean(detailSopId) && enabled,
-    staleTime: STALE_TIME.SHORT,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }
 
@@ -46,20 +49,14 @@ export function useEvaluasi(params?: EvaluasiListQueryParams & { enabled?: boole
   } = useQuery({
     queryKey: queryKeys.evaluasiList(listParams),
     queryFn: () => evaluasiApi.findAll(listParams),
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
     enabled,
   });
 
   const createMutation = useMutationWithToast({
     mutationFn: (payload: CreatePengajuanEvaluasiDto) =>
       evaluasiApi.create(payload),
-    invalidateKeys: [
-      queryKeys.evaluasi,
-      queryKeys.evaluasiRingkasAll,
-      queryKeys.evaluasiWorkspaceOpdAll,
-      queryKeys.evaluasiWorkspaceOpdSayaAll,
-      queryKeys.evaluasiWorkspacePengajuanAll,
-    ],
+    invalidateKeys: SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
     successMessage: "Pengajuan evaluasi berhasil dibuat",
     errorMessagePrefix: "Gagal membuat pengajuan evaluasi",
   });
@@ -90,7 +87,7 @@ export function useEvaluasiWorkspaceOpdSaya(
     queryKey: queryKeys.evaluasiWorkspaceOpdSaya(queryParams),
     queryFn: () => evaluasiApi.workspaceOpdSaya(queryParams),
     enabled,
-    staleTime: STALE_TIME.SHORT,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   });
 }
 
@@ -112,7 +109,7 @@ export function useEvaluasiWorkspaceOpd(
     queryKey: queryKeys.evaluasiWorkspaceOpd(opdId, queryParams),
     queryFn: () => evaluasiApi.workspaceOpd(opdId, queryParams),
     enabled: Boolean(opdId) && enabled,
-    staleTime: STALE_TIME.SHORT,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   });
 }
 
@@ -134,7 +131,7 @@ export function useEvaluasiWorkspacePengajuan(
     queryKey: queryKeys.evaluasiWorkspacePengajuan(pengajuanEvaluasiId, queryParams),
     queryFn: () => evaluasiApi.workspacePengajuan(pengajuanEvaluasiId, queryParams),
     enabled: Boolean(pengajuanEvaluasiId) && enabled,
-    staleTime: STALE_TIME.SHORT,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   });
 }
 
@@ -155,7 +152,7 @@ export function usePengajuanEvaluasiRingkas(
   return useQuery({
     queryKey: queryKeys.evaluasiRingkas(ringkasParams as Record<string, unknown>),
     queryFn: () => evaluasiApi.findRingkas(ringkasParams),
-    staleTime: STALE_TIME.SHORT,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
     enabled,
   });
 }
@@ -170,7 +167,6 @@ export function useEvaluasiGrafikTahunan(params?: EvaluasiGrafikTahunanQueryPara
 
 // ==================== Pengajuan Evaluasi ====================
 
-const PENGAJUAN_SHELL_STALE_MS = STALE_TIME.SHORT
 /** Batas log workbench di panel pratinjau PJ evaluator. */
 const PJ_EVAL_PREVIEW_WORKBENCH_LOGS = 100
 
@@ -179,7 +175,7 @@ export function usePengajuanEvaluasiDetail(pengajuanId?: string) {
     queryKey: queryKeys.evaluasiPengajuanShell(pengajuanId || ''),
     queryFn: () => evaluasiApi.findPengajuanShell(pengajuanId || ''),
     enabled: !!pengajuanId,
-    staleTime: PENGAJUAN_SHELL_STALE_MS,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 
   const pengajuan = useMemo(
@@ -213,7 +209,7 @@ export function usePengajuanSopDokumenWorkbench(
     queryFn: () =>
       evaluasiApi.findPengajuanSopDokumen(pid, dsid, PJ_EVAL_PREVIEW_WORKBENCH_LOGS),
     enabled,
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }
 
@@ -223,6 +219,6 @@ export function usePengajuanBeritaAcaraView(pengajuanId?: string, opts?: { enabl
     queryKey: queryKeys.evaluasiPengajuanBeritaAcara(pengajuanId || ''),
     queryFn: () => evaluasiApi.findPengajuanBeritaAcara(pengajuanId || ''),
     enabled,
-    staleTime: STALE_TIME.MEDIUM,
+    ...SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
   })
 }

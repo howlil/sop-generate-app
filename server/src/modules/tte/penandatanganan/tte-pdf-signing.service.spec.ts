@@ -188,6 +188,7 @@ describe('Pengujian TtePdfSigningService', () => {
       userId,
       jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
     });
+    expect(verification.signatures[0]?.signedAt).not.toBeNull();
   });
 });
 

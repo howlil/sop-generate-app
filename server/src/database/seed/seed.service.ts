@@ -25,6 +25,13 @@ const STATUS_PENGAJUAN_AKTIF_SEED: readonly StatusPengajuanEvaluasi[] = [
   StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
   StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
 ] as const;
+const STATUS_SOP_WAJIB_PUNYA_PENGAJUAN_AKTIF_SEED: readonly StatusSOP[] = [
+  StatusSOP.DIAJUKAN_EVALUASI,
+  StatusSOP.SEDANG_DIEVALUASI,
+  StatusSOP.REVISI_DARI_EVALUATOR,
+  StatusSOP.SIAP_DIVERIFIKASI,
+  StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
+] as const;
 
 /** Identitas OPD — dipakai sebagai kunci lookup di SEED_USERS */
 const SEED_OPD_PJ_EVALUATOR = 'Biro Organisasi Sekretariat Daerah';
@@ -632,12 +639,12 @@ export class SeedService {
       tanggalEfektif: new Date('2024-07-01T00:00:00.000Z'),
     });
 
-    // StatusSOP.SEDANG_DIEVALUASI — sedang dalam proses evaluasi
+    // Versi revisi resmi masih disusun dan belum menjadi anggota pengajuan evaluasi.
     d['DINKES_001_V2'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DINKES-001-V2',
       sopId: sopSuratSehat.sopId,
       versi: 2,
-      status: StatusSOP.SEDANG_DIEVALUASI,
+      status: StatusSOP.SEDANG_DISUSUN,
       namaLembaga: 'Dinas Kesehatan Provinsi',
       dibuatOlehId: params.penyusunDinkesId,
       terakhirDieditOlehId: params.penyusunDinkesId,
@@ -724,12 +731,12 @@ export class SeedService {
       terakhirDieditOlehId: params.penyusunDiskominfoId,
     });
 
-    // StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI — diverifikasi, menunggu pengesahan akhir
+    // Draft aktif yang belum menjadi anggota pengajuan evaluasi.
     d['DISKOMINFO_003_V1'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DISKOMINFO-003-V1',
       sopId: sopAduanMasy.sopId,
       versi: 1,
-      status: StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
+      status: StatusSOP.SEDANG_DISUSUN,
       namaLembaga: 'Dinas Komunikasi dan Informatika',
       dibuatOlehId: params.penyusunDiskominfoId,
       terakhirDieditOlehId: params.penyusunDiskominfoId,
@@ -2458,6 +2465,19 @@ export class SeedService {
       if (rows.length > 1) {
         throw new Error(
           `Seed invalid: DetailSOP ${detailSopId} masuk lebih dari satu pengajuan aktif (${rows.join(', ')}).`,
+        );
+      }
+    }
+    const orphanPipelineDetails = await tx.detailSOP.findMany({
+      where: {
+        status: { in: [...STATUS_SOP_WAJIB_PUNYA_PENGAJUAN_AKTIF_SEED] },
+      },
+      select: { detailSopId: true, nomorSOP: true, status: true },
+    });
+    for (const detail of orphanPipelineDetails) {
+      if (!activeByDetail.has(detail.detailSopId)) {
+        throw new Error(
+          `Seed invalid: DetailSOP ${detail.nomorSOP} berstatus ${String(detail.status)} tetapi tidak masuk pengajuan aktif.`,
         );
       }
     }

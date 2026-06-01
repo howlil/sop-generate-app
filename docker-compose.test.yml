@@ -59,6 +59,7 @@ services:
       - ./server:/workspace/server
       - sop-test-node-modules:/workspace/server/node_modules
       - sop-test-pnpm-store:/workspace/server/.pnpm-store
+      - sop-test-generated-prisma:/workspace/server/src/generated/prisma
     command: >
       sh -lc "
         corepack enable &&
@@ -84,3 +85,4 @@ volumes:
   sop-test-db-data:
   sop-test-node-modules:
   sop-test-pnpm-store:
+  sop-test-generated-prisma:

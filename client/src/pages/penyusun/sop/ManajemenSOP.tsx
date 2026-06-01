@@ -5,6 +5,7 @@ import {
   Send,
   Plus,
   FileText,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Table } from "@/components/ui/data-table";
@@ -37,6 +38,9 @@ import type { SopListQueryParams } from "@/types/dto/sop.dto";
 import { useDaftarSopFilters } from "@/pages/penyusun/sop/hooks/use-daftar-sop-filters";
 import { useAppRole } from "@/hooks/useAppRole";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import type { SopDaftarRow } from "@/types/dto/sop.dto";
+import { canHapusSopDraftAwal, useHapusSopDraftAwal } from "@/api/sop";
 
 export function ManajemenSOP() {
   useDocumentTitle("Manajemen SOP — Penyusun");
@@ -66,6 +70,8 @@ export function ManajemenSOP() {
   const [isBukaPengajuanEvaluasiDialogOpen, setIsBukaPengajuanEvaluasiDialogOpen] =
     useState(false);
   const [isBuatSOPDialogOpen, setIsBuatSOPDialogOpen] = useState(false);
+  const [sopDraftToDelete, setSopDraftToDelete] = useState<SopDaftarRow | null>(null);
+  const hapusSopDraft = useHapusSopDraftAwal();
 
   return (
     <ListPageLayout
@@ -208,6 +214,16 @@ export function ManajemenSOP() {
                                   title: "Lihat",
                                   variant: "outline",
                                 },
+                            ...(canHapusSopDraftAwal(sop)
+                              ? [
+                                  {
+                                    icon: Trash2,
+                                    title: "Hapus draft SOP",
+                                    destructive: true,
+                                    onClick: () => setSopDraftToDelete(sop),
+                                  },
+                                ]
+                              : []),
                           ]}
                         />
                       </Table.Td>
@@ -232,6 +248,23 @@ export function ManajemenSOP() {
           await create({
             judul: data.judul,
             nomorSop: data.nomorSop,
+          });
+        }}
+      />
+
+      <ConfirmDialog
+        open={sopDraftToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setSopDraftToDelete(null);
+        }}
+        title="Hapus draft SOP?"
+        description="Draft SOP akan dihapus permanen beserta data yang sudah diisi. Tindakan ini tidak dapat dibatalkan."
+        confirmLabel="Hapus draft"
+        destructive
+        onConfirm={() => {
+          if (sopDraftToDelete?.detailSopId == null) return;
+          hapusSopDraft.mutate(sopDraftToDelete.detailSopId, {
+            onSuccess: () => setSopDraftToDelete(null),
           });
         }}
       />

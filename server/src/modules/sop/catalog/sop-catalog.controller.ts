@@ -376,4 +376,25 @@ export class SopCatalogController {
       data: null,
     };
   }
+
+  @Delete(':detailSopId/draft')
+  @HttpCode(200)
+  @Roles(PeranPengguna.PENYUSUN, PeranPengguna.PJ_PENYUSUN)
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @ApiOperation({ summary: 'Hapus SOP yang masih berupa draft awal' })
+  @ApiResponse({ status: 200, description: 'Draft SOP dihapus' })
+  @ApiConflictResponse()
+  @ApiForbiddenResponse()
+  @ApiNotFoundResponse()
+  async hapusSopDraftAwal(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+  ): Promise<ApiSuccessResponse<null>> {
+    await this.sopCatalogService.hapusSopDraftAwal(req.user, detailSopId);
+    return {
+      message: 'Draft SOP berhasil dihapus',
+      success: true,
+      data: null,
+    };
+  }
 }

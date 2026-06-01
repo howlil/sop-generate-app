@@ -1,20 +1,29 @@
-export type DiagramAnchorSide = 'top' | 'right' | 'bottom' | 'left'
-export type DiagramAnchorKind = 'start' | 'end'
+import {
+  sideLengthPx,
+  snapDistanceToCenter,
+  type DiagramAnchorKind,
+  type DiagramAnchorSide,
+  type DiagramPathAnchor,
+  type DiagramShapeRect,
+} from '../core/route/shared/connector-anchor.util'
 
-export interface DiagramPathAnchor {
-  id: string
-  x: number
-  y: number
-  side: DiagramAnchorSide
-  kind: DiagramAnchorKind
-}
-
-export interface DiagramShapeRect {
-  left: number
-  top: number
-  width: number
-  height: number
-}
+export {
+  ANCHOR_CHANNEL_SPACING_PX,
+  ANCHOR_OFF_CENTER_PENALTY_PER_TENTH,
+  CENTER_SNAP_THRESHOLD_PX,
+  channelAnchorDistance,
+  getAutoRouteAnchorSlot,
+  preferCenterAnchorDistance,
+  scoreAnchorOffCenter,
+  sideLengthPx,
+  snapDistanceToCenter,
+} from '../core/route/shared/connector-anchor.util'
+export type {
+  DiagramAnchorKind,
+  DiagramAnchorSide,
+  DiagramPathAnchor,
+  DiagramShapeRect,
+} from '../core/route/shared/connector-anchor.util'
 
 export interface DiagramShapeSnapTargets {
   connectionId: string
@@ -43,7 +52,7 @@ export interface ResolveConstrainedEdgeSnapOptions {
   x: number
   y: number
   kind: DiagramAnchorKind
-  releaseDistancePx: number
+  releaseDistancePx?: number
   lockedAnchorId?: string | null
   oppositePoint?: { x: number; y: number } | null
   shapeIsDiamond?: boolean
@@ -113,55 +122,7 @@ export interface ActiveEdgeSnapHighlight {
 }
 
 const ANCHOR_SLOT_DISTANCES = [0.5, 0.28, 0.72] as const
-const AUTO_ANCHOR_SLOT_DISTANCES = [0.5, 0.28, 0.72, 0.18, 0.82, 0.4, 0.6] as const
 const DIAMOND_VERTEX_DISTANCE = 0.5
-/** Jarak pointer dari tengah tepi (px) untuk snap ke distance 0.5. */
-export const CENTER_SNAP_THRESHOLD_PX = 14
-/** Jarak minimum antar channel anchor pada satu sisi (px). */
-export const ANCHOR_CHANNEL_SPACING_PX = 14
-/** Penalti skor routing per 0.1 offset dari tengah (0.5). */
-export const ANCHOR_OFF_CENTER_PENALTY_PER_TENTH = 150
-
-export function snapDistanceToCenter(
-  distance: number,
-  sideLengthPx: number,
-  thresholdPx = CENTER_SNAP_THRESHOLD_PX,
-): number {
-  if (sideLengthPx <= 0) return 0.5
-  const offsetPx = Math.abs(distance - 0.5) * sideLengthPx
-  return offsetPx <= thresholdPx ? 0.5 : distance
-}
-
-export function sideLengthPx(rect: DiagramShapeRect, side: DiagramAnchorSide): number {
-  return side === 'top' || side === 'bottom' ? rect.width : rect.height
-}
-
-/** Slot anchor untuk auto-route: 0.5 dulu, lalu alternatif bila sisi padat. */
-export function getAutoRouteAnchorSlot(slotIndex: number): number {
-  return AUTO_ANCHOR_SLOT_DISTANCES[slotIndex % AUTO_ANCHOR_SLOT_DISTANCES.length]!
-}
-
-/** Channel di sekitar tengah: jarak 0.5, lalu ±14px, ±28px, … */
-export function channelAnchorDistance(
-  channelIndex: number,
-  sideLengthPx: number,
-): number {
-  if (sideLengthPx <= 0 || channelIndex <= 0) return 0.5
-  const step = ANCHOR_CHANNEL_SPACING_PX / sideLengthPx
-  const half = Math.ceil(channelIndex / 2)
-  const sign = channelIndex % 2 === 1 ? -1 : 1
-  const offset = sign * half * step
-  return Math.max(0.08, Math.min(0.92, 0.5 + offset))
-}
-
-export function preferCenterAnchorDistance(usedCount: number, sideLengthPx: number): number {
-  if (usedCount <= 0) return 0.5
-  return channelAnchorDistance(usedCount, sideLengthPx)
-}
-
-export function scoreAnchorOffCenter(distance: number): number {
-  return Math.abs(distance - 0.5) * 10 * ANCHOR_OFF_CENTER_PENALTY_PER_TENTH
-}
 
 export interface ResolvePreferredEndpointSnapOptions extends ResolveConstrainedEdgeSnapOptions {
   anchors: DiagramPathAnchor[]
@@ -170,7 +131,7 @@ export interface ResolvePreferredEndpointSnapOptions extends ResolveConstrainedE
 }
 
 /**
- * Snap endpoint: kunci sisi → magnet ke anchor (utama 0.5) → slide di tepi dengan prefer tengah.
+ * Snap endpoint: pilih sisi dari pointer → magnet ke anchor utama → slide di tepi dengan prefer tengah.
  */
 export function resolvePreferredEndpointSnap(
   options: ResolvePreferredEndpointSnapOptions,
@@ -202,9 +163,9 @@ export function resolvePreferredEndpointSnap(
     y: edgeOptions.y,
     kind: edgeOptions.kind,
     snapDistancePx,
-    releaseDistancePx: edgeOptions.releaseDistancePx,
+    releaseDistancePx: snapDistancePx,
     hardSnapDistancePx,
-    lockedAnchorId: edgeOptions.lockedAnchorId,
+    lockedAnchorId: null,
   })
   if (magnetic) {
     const side = magnetic.anchor.side
@@ -556,22 +517,6 @@ export function pickSnapSideForPointer(
   return pickSideByQuadrant(rect, x, y)
 }
 
-function shouldReleaseLockedSide(
-  rect: DiagramShapeRect,
-  x: number,
-  y: number,
-  lockedSide: DiagramAnchorSide,
-  releaseDistancePx: number,
-): boolean {
-  const otherZones = (['left', 'right', 'top', 'bottom'] as const).filter(
-    (side) => side !== lockedSide && isPointerInSideZone(rect, x, y, side),
-  )
-  if (otherZones.length > 0) return true
-  const onLocked = projectPointerToShapeEdge(rect, x, y, lockedSide)
-  if (!onLocked) return true
-  return onLocked.distanceToEdge > releaseDistancePx
-}
-
 /**
  * Slide-only: proyeksikan pointer ke tepi shape yang diizinkan (zona sisi + arah ujung lawan).
  */
@@ -584,18 +529,10 @@ export function resolveConstrainedEdgeSnap(
     x,
     y,
     kind,
-    releaseDistancePx,
-    lockedAnchorId,
     oppositePoint,
     shapeIsDiamond,
   } = options
-  const lockedSide = parseLockedSideFromAnchorId(lockedAnchorId, kind)
-  let targetSide: DiagramAnchorSide
-  if (lockedAnchorId && lockedSide && !shouldReleaseLockedSide(shape, x, y, lockedSide, releaseDistancePx)) {
-    targetSide = lockedSide
-  } else {
-    targetSide = pickSnapSideForPointer(shape, x, y, { oppositePoint, lockedSide, shapeIsDiamond })
-  }
+  const targetSide = pickSnapSideForPointer(shape, x, y, { oppositePoint, shapeIsDiamond })
   if (shapeIsDiamond) {
     const vertex = pointOnShapeEdge(shape, targetSide, DIAMOND_VERTEX_DISTANCE)
     return {

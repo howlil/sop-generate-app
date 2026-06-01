@@ -20,6 +20,7 @@ import {
   resetIntegrationDatabase,
 } from './helpers/integration-database.util';
 import { isIntegrationEnabled } from './helpers/integration-runtime.util';
+import { createMinimalPdfBuffer } from './helpers/integration-pdf.util';
 import {
   HasilEvaluasi,
   JenisLangkahProsedur,
@@ -159,12 +160,12 @@ async function buildAndPromoteSopToBerlaku(
     .expect(200);
   await evaluatorAgent
     .patch(`${API}/evaluasi/${pengajuan.pengajuanEvaluasiId}/selesai`)
-    .send({})
+    .send({ nomorBA: `BA-EVAL-${opts.nomorSop}` })
     .expect(200);
 
   await pjEvaluatorAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE });
   await pjPenyusunAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE });
-  await kepalaAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE });
+  await kepalaAgent.post(`${API}/tte/profil/setup/generate`).send({ pin: PIN_TTE });
 
   await pjEvaluatorAgent
     .post(`${API}/tte/tanda-tangani/ba/${pengajuan.pengajuanEvaluasiId}`)
@@ -182,9 +183,15 @@ async function buildAndPromoteSopToBerlaku(
       judulDokumen: `BA ${opts.judul}`,
     })
     .expect(201);
+  const sopPdfBase64 = (await createMinimalPdfBuffer(opts.judul)).toString('base64');
   await kepalaAgent
     .post(`${API}/tte/tanda-tangani/pengajuan/${pengajuan.pengajuanEvaluasiId}/sop-semua`)
-    .send({ pin: PIN_TTE, nomorDokumen: `SOP-VR-${opts.nomorSop}`, judulDokumen: opts.judul })
+    .send({
+      pin: PIN_TTE,
+      nomorDokumen: `SOP-VR-${opts.nomorSop}`,
+      judulDokumen: opts.judul,
+      sopPdfs: [{ detailSopId, pdfBase64: sopPdfBase64 }],
+    })
     .expect(201);
 
   const updated = await prisma.detailSOP.findUniqueOrThrow({ where: { detailSopId } });
@@ -340,6 +347,55 @@ describeIntegration('SOP Versioning — siklus hidup versi SOP', () => {
         `${API}/sop?tanggalDari=2026-12-31&tanggalSampai=2026-01-01`,
       );
       expect([400]).toContain(res.status);
+    });
+  });
+
+  // ============================
+  // HAPUS SOP DRAFT AWAL
+  // ============================
+
+  describe('DELETE /sop/:detailSopId/draft — hapus SOP draft awal', () => {
+    it('menghapus header SOP beserta detail draft awal (Success Case)', async () => {
+      const sopRes = await penyusunAgent
+        .post(`${API}/sop`)
+        .send({
+          judul: 'SOP Draft Akan Dihapus',
+          nomorSop: 'VR-SOP-DEL-001',
+          namaLembaga: 'OPD Versioning A',
+        })
+        .expect(201);
+      const detailSopId: string = sopRes.body.data.detailSopId;
+      const beforeDelete = await prisma.detailSOP.findUniqueOrThrow({ where: { detailSopId } });
+
+      const listRes = await penyusunAgent.get(`${API}/sop`).expect(200);
+      const listRow = listRes.body.data.find(
+        (row: { detailSopId?: string }) => row.detailSopId === detailSopId,
+      );
+      expect(listRow?.canHapusSopDraft).toBe(true);
+
+      await penyusunAgent.delete(`${API}/sop/${detailSopId}/draft`).expect(200);
+
+      expect(await prisma.detailSOP.findUnique({ where: { detailSopId } })).toBeNull();
+      expect(await prisma.sOP.findUnique({ where: { sopId: beforeDelete.sopId } })).toBeNull();
+    });
+
+    it('menolak penghapusan ketika SOP sudah bukan DRAFT (False Case)', async () => {
+      const sopRes = await penyusunAgent
+        .post(`${API}/sop`)
+        .send({
+          judul: 'SOP Draft Sudah Masuk Proses',
+          nomorSop: 'VR-SOP-DEL-002',
+          namaLembaga: 'OPD Versioning A',
+        })
+        .expect(201);
+      const detailSopId: string = sopRes.body.data.detailSopId;
+      await prisma.detailSOP.update({
+        where: { detailSopId },
+        data: { status: StatusSOP.SEDANG_DISUSUN },
+      });
+
+      await penyusunAgent.delete(`${API}/sop/${detailSopId}/draft`).expect(409);
+      expect(await prisma.detailSOP.findUnique({ where: { detailSopId } })).not.toBeNull();
     });
   });
 

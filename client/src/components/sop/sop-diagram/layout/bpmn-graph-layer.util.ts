@@ -27,33 +27,26 @@ function laneIndexForStep(
 }
 
 function columnFromPredecessors(
-  step: BpmnLayoutStepInput,
   preds: string[],
   steps: BpmnLayoutStepInput[],
   rawColumns: Map<string, number>,
-  implementerIds: string[],
 ): number {
   if (preds.length === 0) return 0
-  const stepLane = laneIndexForStep(step, implementerIds)
   let columnIndex = 0
   for (const predId of preds) {
     const pred = steps.find((s) => s.id_step === predId)
     if (!pred) continue
     const predCol = rawColumns.get(predId) ?? 0
-    const predLane = laneIndexForStep(pred, implementerIds)
-    if (predLane === stepLane) {
-      columnIndex = Math.max(columnIndex, predCol + 1)
-    } else {
-      columnIndex = Math.max(columnIndex, predCol)
-    }
+    columnIndex = Math.max(columnIndex, predCol + 1)
   }
   return columnIndex
 }
 
 /**
- * Assign kolom workflow (alur kiri → kanan pada swimlane horizontal).
- * Handoff lintas swimlane: kolom sama dengan predecessor (alur lurus ke bawah, hemat lebar).
- * Successor dalam swimlane yang sama: satu kolom ke kanan agar shape tidak bertumpuk.
+ * Assign rank global workflow (alur kiri → kanan pada swimlane horizontal).
+ * Semua forward edge maju minimal satu kolom, termasuk handoff lintas swimlane.
+ * Ini mencegah rantai handoff ditumpuk pada satu sumbu vertikal yang sama.
+ * Loopback dikeluarkan dari rank DAG dan ditangani router melalui corridor luar.
  */
 export function assignStepColumns(
   steps: BpmnLayoutStepInput[],
@@ -87,7 +80,7 @@ export function assignStepColumns(
   for (const step of sorted) {
     const preds = predsByIdStep.get(step.id_step) ?? []
     const stepLane = laneIndexForStep(step, implementerIds)
-    let columnIndex = columnFromPredecessors(step, preds, steps, rawColumns, implementerIds)
+    let columnIndex = columnFromPredecessors(preds, steps, rawColumns)
     if (
       preds.length === 0 &&
       previousSequentialLane === stepLane &&
@@ -103,7 +96,7 @@ export function assignStepColumns(
     previousSequentialLane = stepLane
   }
   bumpDecisionBranchColumns(steps, connections, rawColumns, implementerIds)
-  enforceLaneMonotonicColumns(steps, connections, rawColumns, implementerIds)
+  enforceForwardMonotonicColumns(steps, connections, rawColumns)
   return rawColumns
 }
 
@@ -155,35 +148,34 @@ export function buildMainSpineStepIds(
 }
 
 /**
- * Dalam satu swimlane, hanya edge same-lane yang mendorong kolom ke kanan.
- * Tidak memaksa +1 per urutan seq (menghindari kolom berlebihan & kotak sempit).
+ * Propagasi rank setelah cabang decision digeser. Seluruh forward edge wajib maju
+ * minimal satu kolom; feedback edge tidak ikut agar loop tidak merusak DAG.
  */
-function enforceLaneMonotonicColumns(
+function enforceForwardMonotonicColumns(
   steps: BpmnLayoutStepInput[],
   connections: BpmnLayoutConnectionInput[],
   rawColumns: Map<string, number>,
-  implementerIds: string[],
 ): void {
   const seqToId = new Map(steps.map((s) => [s.seq_number, s.id_step]))
-  for (const conn of connections) {
-    const fromSeq = parseBpmnStepSeq(conn.from)
-    const toSeq = parseBpmnStepSeq(conn.to)
-    if (fromSeq === null || toSeq === null || fromSeq >= toSeq) continue
-    const fromId = seqToId.get(fromSeq)
-    const toId = seqToId.get(toSeq)
-    if (!fromId || !toId) continue
-    const fromStep = steps.find((s) => s.id_step === fromId)
-    const toStep = steps.find((s) => s.id_step === toId)
-    if (!fromStep || !toStep) continue
-    const fromLane = laneIndexForStep(fromStep, implementerIds)
-    const toLane = laneIndexForStep(toStep, implementerIds)
-    if (fromLane !== toLane) continue
-    const fromCol = rawColumns.get(fromId) ?? 0
-    rawColumns.set(toId, Math.max(rawColumns.get(toId) ?? 0, fromCol + 1))
+  for (let pass = 0; pass < steps.length; pass += 1) {
+    let changed = false
+    for (const conn of connections) {
+      const fromSeq = parseBpmnStepSeq(conn.from)
+      const toSeq = parseBpmnStepSeq(conn.to)
+      if (fromSeq === null || toSeq === null || fromSeq >= toSeq) continue
+      const fromId = seqToId.get(fromSeq)
+      const toId = seqToId.get(toSeq)
+      if (!fromId || !toId) continue
+      const nextCol = (rawColumns.get(fromId) ?? 0) + 1
+      if (nextCol <= (rawColumns.get(toId) ?? 0)) continue
+      rawColumns.set(toId, nextCol)
+      changed = true
+    }
+    if (!changed) break
   }
 }
 
-/** Cabang Ya/Tidak: pisah kolom hanya bila target masih di swimlane yang sama. */
+/** Cabang Ya/Tidak: target selalu maju; cabang satu lane dipisah lagi bila perlu. */
 function bumpDecisionBranchColumns(
   steps: BpmnLayoutStepInput[],
   connections: BpmnLayoutConnectionInput[],
@@ -209,7 +201,7 @@ function bumpDecisionBranchColumns(
         sameLaneBranch += 1
         rawColumns.set(toStep.id_step, Math.max(rawColumns.get(toStep.id_step) ?? 0, minCol))
       } else {
-        rawColumns.set(toStep.id_step, Math.max(rawColumns.get(toStep.id_step) ?? 0, baseCol))
+        rawColumns.set(toStep.id_step, Math.max(rawColumns.get(toStep.id_step) ?? 0, baseCol + 1))
       }
     }
   }

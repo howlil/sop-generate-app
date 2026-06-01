@@ -1,12 +1,15 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
-import type { Side } from '@/components/sop/sop-diagram/core/route/selectSidePairs'
+import type { Side } from '@/components/sop/sop-diagram/core/route/shared/connector-side.types'
 import type { ArrowPathPoint } from '@/components/sop/sop-diagram/core/sopDiagramTypes'
 import {
+  alignEndpointSegmentPreservingEndpoint,
   clientToSvgPoint,
   dragSegmentFromOrigin,
   dragWaypointFromOrigin,
+  endpointIndexForKind,
   forkStraightPathForEndpointDrag,
   findNearestSegmentIndex,
+  getDraggedEndpointKind,
   insertWaypointAtSegmentMidpoint,
   pathToD,
   removeWaypoint,
@@ -60,7 +63,6 @@ interface EditableOrthogonalPathProps {
   onDeleteSelected?: () => void
 }
 
-const SIDE_LOCK_RELEASE_PX = 48
 const ANCHOR_SNAP_DISTANCE_PX = 24
 const ANCHOR_HARD_SNAP_DISTANCE_PX = 8
 const ROUTE_PREVIEW_MS = 32
@@ -184,22 +186,10 @@ function EditableOrthogonalPathInner({
   }, [])
 
   const alignEndpointSegment = useCallback(
-    (nextPath: ArrowPathPoint[], index: number): ArrowPathPoint[] => {
-      if (!isEndpointIndex(index, nextPath.length)) return nextPath
-      const target = { ...nextPath[index]! }
-      const neighbor = index === 0 ? nextPath[1] : nextPath[nextPath.length - 2]
-      if (!neighbor) return nextPath
-      if (target.x !== neighbor.x && target.y !== neighbor.y) {
-        if (Math.abs(target.x - neighbor.x) <= Math.abs(target.y - neighbor.y)) {
-          target.x = neighbor.x
-        } else {
-          target.y = neighbor.y
-        }
-      }
-      const aligned = nextPath.map((point) => ({ ...point }))
-      aligned[index] = target
-      return aligned
-    },
+    (nextPath: ArrowPathPoint[], index: number): ArrowPathPoint[] =>
+      isEndpointIndex(index, nextPath.length)
+        ? alignEndpointSegmentPreservingEndpoint(nextPath, index)
+        : nextPath,
     [],
   )
 
@@ -338,8 +328,7 @@ function EditableOrthogonalPathInner({
       let moved = dragWaypointFromOrigin(session.originPath, session.index, dx, dy, {
         normalize: false,
       })
-      const pointKind =
-        session.index === 0 ? 'start' : session.index === moved.length - 1 ? 'end' : null
+      const pointKind = getDraggedEndpointKind(session.originPath, session.index)
       if (!pointKind) return moved
       if (session.originPath.length === 2) {
         const forked = forkStraightPathForEndpointDrag(
@@ -350,16 +339,17 @@ function EditableOrthogonalPathInner({
         )
         if (forked) moved = forked
       }
+      const endpointIndex = endpointIndexForKind(moved, pointKind)
       const targets = shapeSnapTargetsRef.current
       const connId = targets?.connectionId ?? connectionId
       let nextSides = { ...localSidesRef.current }
       let edgeHighlight: ActiveEdgeSnapHighlight | null = null
-      const endpoint = moved[session.index]
+      const endpoint = moved[endpointIndex]
       if (!endpoint) return moved
       const shapeRect = getAllowedShapeForEndpoint(targets, pointKind)
       if (shapeRect) {
         const oppositeIndex =
-          session.index === 0 ? moved.length - 1 : 0
+          endpointIndex === 0 ? moved.length - 1 : 0
         const oppositePoint = moved[oppositeIndex]
         const visualAnchors =
           anchors.length > 0
@@ -376,8 +366,6 @@ function EditableOrthogonalPathInner({
           x: endpoint.x,
           y: endpoint.y,
           kind: pointKind,
-          releaseDistancePx: SIDE_LOCK_RELEASE_PX,
-          lockedAnchorId: activeAnchorIdRef.current,
           oppositePoint: oppositePoint ? { x: oppositePoint.x, y: oppositePoint.y } : null,
           shapeIsDiamond: isDiamondSnapEndpoint(targets, pointKind),
           anchors: visualAnchors,
@@ -386,7 +374,7 @@ function EditableOrthogonalPathInner({
         })
         if (edgeSnap) {
           const snappedPath = moved.map((point) => ({ ...point }))
-          snappedPath[session.index] = { x: edgeSnap.x, y: edgeSnap.y }
+          snappedPath[endpointIndex] = { x: edgeSnap.x, y: edgeSnap.y }
           activeAnchorIdRef.current = edgeSnap.anchorId
           if (pointKind === 'start') {
             nextSides = { ...nextSides, sSide: edgeSnap.side }
@@ -394,35 +382,37 @@ function EditableOrthogonalPathInner({
             nextSides = { ...nextSides, eSide: edgeSnap.side }
           }
           edgeHighlight = { kind: pointKind, side: edgeSnap.side, rect: shapeRect }
-          moved = alignEndpointSegment(snappedPath, session.index)
+          moved = alignEndpointSegment(snappedPath, endpointIndex)
         } else {
-          const fallback = lastValidPathRef.current[session.index]
+          const fallbackIndex = pointKind === 'start' ? 0 : lastValidPathRef.current.length - 1
+          const fallback = lastValidPathRef.current[fallbackIndex]
           if (fallback) {
             const snappedPath = moved.map((point) => ({ ...point }))
-            snappedPath[session.index] = { ...fallback }
-            moved = alignEndpointSegment(snappedPath, session.index)
+            snappedPath[endpointIndex] = { ...fallback }
+            moved = alignEndpointSegment(snappedPath, endpointIndex)
           }
         }
       } else if (targets) {
-        const fallback = lastValidPathRef.current[session.index]
+        const fallbackIndex = pointKind === 'start' ? 0 : lastValidPathRef.current.length - 1
+        const fallback = lastValidPathRef.current[fallbackIndex]
         if (fallback) {
           const snappedPath = moved.map((point) => ({ ...point }))
-          snappedPath[session.index] = { ...fallback }
-          moved = alignEndpointSegment(snappedPath, session.index)
+          snappedPath[endpointIndex] = { ...fallback }
+          moved = alignEndpointSegment(snappedPath, endpointIndex)
         }
       } else {
         const kindAnchors = filterAnchorsForEndpoint(anchors, pointKind)
         const nearest = kindAnchors[0]
         if (nearest) {
           const snappedPath = moved.map((point) => ({ ...point }))
-          snappedPath[session.index] = { x: nearest.x, y: nearest.y }
+          snappedPath[endpointIndex] = { x: nearest.x, y: nearest.y }
           activeAnchorIdRef.current = nearest.id
           if (pointKind === 'start') {
             nextSides = { ...nextSides, sSide: nearest.side }
           } else {
             nextSides = { ...nextSides, eSide: nearest.side }
           }
-          moved = alignEndpointSegment(snappedPath, session.index)
+          moved = alignEndpointSegment(snappedPath, endpointIndex)
         }
       }
       localSidesRef.current = nextSides
@@ -449,7 +439,7 @@ function EditableOrthogonalPathInner({
     pendingPathRef.current = null
     const isEndpointDrag =
       session.mode === 'waypoint' &&
-      (session.index === 0 || session.index === current.length - 1)
+      getDraggedEndpointKind(session.originPath, session.index) !== null
     const finalPath = isEndpointDrag
       ? tryLiveReroute(current, localSidesRef.current, true)
       : session.mode === 'waypoint'

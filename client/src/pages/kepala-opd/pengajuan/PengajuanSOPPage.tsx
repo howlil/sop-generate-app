@@ -69,6 +69,12 @@ export function PengajuanSOPPage() {
             ),
           },
           {
+            id: "jumlah-sop",
+            header: "Jumlah SOP",
+            className: "text-gray-700",
+            render: (item) => `${item.sopList?.length ?? 0} SOP`,
+          },
+          {
             id: "nomor-ba",
             header: "Nomor BA",
             render: (item) => <PengajuanBaNumberCell value={item.nomorBA} />,

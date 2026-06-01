@@ -127,6 +127,7 @@ import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { isTteSetupRequiredError } from "@/lib/tte/tte-setup-state";
 import { STALE_TIME } from "@/utils/constants";
+import { SOP_EVALUASI_WORKFLOW_QUERY_KEYS } from "@/lib/api/cache-invalidation";
 
 export function useTTEProfil(options?: { enabled?: boolean }) {
   return useQuery({
@@ -233,10 +234,7 @@ export function useTandaTanganiBA(options?: {
   return useMutationWithToast({
     mutationFn: ({ pengajuanId, payload }: TandaTanganiBaMutationDto) =>
       tteApi.tandaTanganiBA(pengajuanId, payload),
-    invalidateKeys: [
-      queryKeys.evaluasi,
-      queryKeys.evaluasiWorkspaceOpdAll,
-    ],
+    invalidateKeys: [...SOP_EVALUASI_WORKFLOW_QUERY_KEYS, queryKeys.tte],
     successMessage,
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menandatangani Berita Acara",
@@ -252,12 +250,7 @@ export function useTandaTanganiSopPengajuan(options?: {
   return useMutationWithToast({
     mutationFn: ({ pengajuanId, payload }: TandaTanganiSopPengajuanMutationDto) =>
       tteApi.tandaTanganiSemuaSopPengajuan(pengajuanId, payload),
-    invalidateKeys: [
-      queryKeys.sop,
-      queryKeys.evaluasi,
-      queryKeys.detailSop,
-      queryKeys.evaluasiWorkspaceOpdAll,
-    ],
+    invalidateKeys: [...SOP_EVALUASI_WORKFLOW_QUERY_KEYS, queryKeys.tte],
     successMessage: "Seluruh SOP dalam pengajuan berhasil ditandatangani.",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menandatangani seluruh SOP pengajuan",

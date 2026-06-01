@@ -57,7 +57,14 @@ export function useOpd(options?: UseOpdOptions) {
 
   const createMutation = useMutationWithToast({
     mutationFn: (payload: CreateOpdDto) => opdApi.create(payload),
-    invalidateKeys: [queryKeys.opd],
+    invalidateKeys: [
+      queryKeys.opd,
+      queryKeys.kepalaOpd,
+      queryKeys.penyusun,
+      queryKeys.evaluatorAnggota,
+      queryKeys.sop,
+      queryKeys.evaluasi,
+    ],
     successMessage: 'OPD berhasil ditambahkan',
     errorMessagePrefix: 'Gagal menambahkan OPD',
   })
@@ -65,14 +72,28 @@ export function useOpd(options?: UseOpdOptions) {
   const updateMutation = useMutationWithToast({
     mutationFn: ({ id, payload }: UpdateOpdMutationDto) =>
       opdApi.update(id, payload),
-    invalidateKeys: [queryKeys.opd],
+    invalidateKeys: [
+      queryKeys.opd,
+      queryKeys.kepalaOpd,
+      queryKeys.penyusun,
+      queryKeys.evaluatorAnggota,
+      queryKeys.sop,
+      queryKeys.evaluasi,
+    ],
     successMessage: 'OPD berhasil diperbarui',
     errorMessagePrefix: 'Gagal memperbarui OPD',
   })
 
   const deleteMutation = useMutationWithToast({
     mutationFn: (id: string) => opdApi.delete(id),
-    invalidateKeys: [queryKeys.opd],
+    invalidateKeys: [
+      queryKeys.opd,
+      queryKeys.kepalaOpd,
+      queryKeys.penyusun,
+      queryKeys.evaluatorAnggota,
+      queryKeys.sop,
+      queryKeys.evaluasi,
+    ],
     successMessage: 'OPD berhasil dinonaktifkan',
     errorMessagePrefix: 'Gagal menonaktifkan OPD',
   })

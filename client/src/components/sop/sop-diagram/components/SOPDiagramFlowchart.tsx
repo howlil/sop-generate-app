@@ -15,9 +15,9 @@ import {
   type UsedSides,
   type PathUpdatedPayload,
 } from '../shapes/FlowchartArrowConnector'
-import { type OccupiedSegment } from '../core/route/orthogonalRouter'
+import { type OccupiedSegment } from '../core/route/shared/orthogonalRouter'
 import { FlowchartOpcRow } from './flowchart-opc-row'
-import type { ImplementerColumnBoundsMap } from '../core/route/flowchart-column-bounds.util'
+import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 import {
   measureFlowchartLayoutWithColumns,
 } from './sop-diagram-flowchart-measure.util'
@@ -35,15 +35,15 @@ import {
   splitCrossPageConnections,
   getOpcShapesForPage,
   type OpcPair,
-} from '../core/route/flowchartPagination'
+} from '../core/route/flowchart/flowchartPagination'
 import { SOP_DOCUMENT_PAGE_WIDTH_CLASS } from '../layout/sopDocumentLayout'
 import { SOP_BEFORE_PRINT_EVENT } from '@/lib/print/sop-print-events'
 import { useSopDiagramPrintReadyDispatch } from '../hooks/use-sop-diagram-print-ready-dispatch'
 import {
   findConnectionIdsWithCrossings,
   sortConnectionsForRouting,
-} from '../core/route/connection-route-order.util'
-import { applyUsedSidePayload } from '../core/route/used-side-usage.util'
+} from '../core/route/shared/connection-route-order.util'
+import { applyUsedSidePayload } from '../core/route/shared/used-side-usage.util'
 
 /* ───────────────────────── Defaults ─────────────────────────── */
 

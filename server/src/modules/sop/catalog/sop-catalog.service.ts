@@ -491,4 +491,14 @@ export class SopCatalogService {
     await this.assertOpdAccessForWorkbench(user, ctx.sopOpdId);
     assertSopCatalogRepoOk(await this.sopCatalogRepository.deleteVersiDraft(ctx.detailSopId));
   }
+
+  async hapusSopDraftAwal(user: JwtAccessPayload, detailSopId: string): Promise<void> {
+    this.assertPenyusunOrPj(user);
+    const ctx = await this.sopCatalogRepository.findLatestDetailStatusContext(detailSopId);
+    if (ctx === null) {
+      throw new NotFoundException('DetailSOP tidak ditemukan');
+    }
+    await this.assertOpdAccessForWorkbench(user, ctx.sopOpdId);
+    assertSopCatalogRepoOk(await this.sopCatalogRepository.deleteSopDraftAwal(ctx.detailSopId));
+  }
 }

@@ -23,6 +23,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../src/generated/prisma';
+import { createMinimalPdfBuffer } from './helpers/integration-pdf.util';
 
 const describeIntegration = isIntegrationEnabled() ? describe : describe.skip;
 const API = '/api/v1';
@@ -445,10 +446,13 @@ describeIntegration('Core workflow integration test', () => {
 
     const mandiriWithScore = await evaluatorAgent
       .patch(`${API}/evaluasi/${state.pengajuanId}/selesai`)
-      .send({ nilaiOPD: 5 });
+      .send({ nomorBA: 'BA-EVAL-INT-001', nilaiOPD: 5 });
     expectRejected(mandiriWithScore.status);
 
-    await evaluatorAgent.patch(`${API}/evaluasi/${state.pengajuanId}/selesai`).send({}).expect(200);
+    await evaluatorAgent
+      .patch(`${API}/evaluasi/${state.pengajuanId}/selesai`)
+      .send({ nomorBA: 'BA-EVAL-INT-001' })
+      .expect(200);
 
     const pengajuan = await prisma.pengajuanEvaluasi.findUniqueOrThrow({
       where: { pengajuanEvaluasiId: state.pengajuanId },
@@ -465,7 +469,7 @@ describeIntegration('Core workflow integration test', () => {
   it('menjalankan TTE BA, menolak duplikasi tanda tangan, dan mengesahkan SOP oleh Kepala OPD', async () => {
     await pjEvaluatorAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
     await pjPenyusunAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
-    await kepalaAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
+    await kepalaAgent.post(`${API}/tte/profil/setup/generate`).send({ pin: PIN_TTE }).expect(201);
     await kepalaLainAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
 
     await pjEvaluatorAgent
@@ -493,12 +497,17 @@ describeIntegration('Core workflow integration test', () => {
     });
     expect(pengajuan.status).toBe(StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN);
 
+    const sopPdfBase64 = (await createMinimalPdfBuffer('SOP Integration Utama')).toString(
+      'base64',
+    );
+    const sopPdfs = [{ detailSopId: state.detailSopId, pdfBase64: sopPdfBase64 }];
     const wrongKepala = await kepalaLainAgent
       .post(`${API}/tte/tanda-tangani/pengajuan/${state.pengajuanId}/sop-semua`)
       .send({
         pin: PIN_TTE,
         nomorDokumen: 'SOP-SIGN-INT-001',
         judulDokumen: 'Pengesahan SOP Integration',
+        sopPdfs,
       });
     expectRejected(wrongKepala.status);
 
@@ -508,6 +517,7 @@ describeIntegration('Core workflow integration test', () => {
         pin: PIN_TTE,
         nomorDokumen: 'SOP-SIGN-INT-001',
         judulDokumen: 'Pengesahan SOP Integration',
+        sopPdfs,
       })
       .expect(201);
 

@@ -8,6 +8,7 @@ import { printSopDocument } from './sop-browser-print'
 import { SOP_BEFORE_PRINT_EVENT } from './sop-print-events'
 import {
   downloadSopPdf,
+  buildSopOfficialPdfBase64,
   printSopPdfDocument,
   type SopPdfPrintOptions,
 } from './print-sop-pdf'
@@ -74,6 +75,15 @@ export function printSopArsipFromPreviewProps(
     ...SOP_ARSIP_PDF_OPTIONS,
     ...options,
   })
+}
+
+/** Bangun artefak PDF resmi untuk disimpan server saat Kepala OPD mengesahkan SOP. */
+export function buildSopArsipPdfBase64FromPreviewProps(
+  preview: SopPreviewWorkbenchProps,
+): Promise<string> {
+  return buildSopOfficialPdfBase64(
+    sopPreviewPropsToPdfDocumentProps(preview, SOP_ARSIP_PDF_OPTIONS),
+  )
 }
 
 /** Unduh SOP dari props pratinjau workbench (PDF + diagram). */

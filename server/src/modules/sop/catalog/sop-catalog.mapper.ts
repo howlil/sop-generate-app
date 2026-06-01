@@ -9,6 +9,9 @@ import type { SopDaftarVersiSliceDto } from './dto/sop-daftar-versi-slice.dto';
 import type { SopDaftarDbRow, SopWorkbenchDbPayload } from './sop-catalog.repository';
 import { mapDiagramConfigsToWorkbenchDto } from '../diagram/diagram-workbench.mapper';
 
+import type { BeritaAcaraTteSignaturePayloadDto } from '../../evaluation/pengajuan-detail/dto/berita-acara-evaluasi-view.dto';
+import { PeranPengguna } from '../../../generated/prisma';
+
 export function toIso(d: Date): string {
   return d.toISOString();
 }
@@ -197,11 +200,32 @@ export function mapWorkbenchPayload(row: SopWorkbenchDbPayload): PenyusunWorkben
       },
     };
   });
+
+  let tteSignaturePayloadKepalaOpd: BeritaAcaraTteSignaturePayloadDto | undefined;
+  if (row.dokumenTte && row.dokumenTte.length > 0) {
+    const dokTte = row.dokumenTte[0];
+    for (const rt of dokTte.riwayatTandaTangan) {
+      if (rt.peran === PeranPengguna.KEPALA_OPD && rt.user) {
+        tteSignaturePayloadKepalaOpd = {
+          id: `${rt.dokumenTteId}:${rt.userId}`,
+          dokumenTteId: rt.dokumenTteId,
+          userId: rt.userId,
+          nip: rt.user.nip,
+          namaLengkap: rt.user.nama,
+          jabatan: rt.user.jabatan,
+          signedAt: toIso(rt.ditandatanganiPada),
+        };
+        break;
+      }
+    }
+  }
+
   return {
     detail,
     langkah,
     logEdit,
     diagramKonfigurasi: mapDiagramConfigsToWorkbenchDto(row.konfigurasiDiagram),
+    tteSignaturePayloadKepalaOpd,
   };
 }
 
@@ -228,6 +252,11 @@ export function mapDaftarRow(row: SopDaftarDbRow): SopDaftarRowDto {
   const canBuatVersiBaru = hasBerlaku && !inFlight;
   const canCabutSop =
     row.versiBerlaku !== null && row.versiBerlaku.status === StatusSOP.BERLAKU && !inFlight;
+  const canHapusSopDraft =
+    d !== undefined &&
+    d.status === StatusSOP.DRAFT &&
+    d.versi === 1 &&
+    row.allStatuses.length === 1;
   if (d === undefined) {
     const statusDisplay = displayStatusSop('DRAFT');
     return {
@@ -246,6 +275,7 @@ export function mapDaftarRow(row: SopDaftarDbRow): SopDaftarRowDto {
       versiBerlaku: null,
       canBuatVersiBaru: false,
       canCabutSop: false,
+      canHapusSopDraft: false,
     };
   }
   const waktuIso = d.updatedAt.toISOString();
@@ -269,5 +299,6 @@ export function mapDaftarRow(row: SopDaftarDbRow): SopDaftarRowDto {
     versiBerlaku: row.versiBerlaku === null ? null : mapVersiSlice(row.versiBerlaku),
     canBuatVersiBaru,
     canCabutSop,
+    canHapusSopDraft,
   };
 }

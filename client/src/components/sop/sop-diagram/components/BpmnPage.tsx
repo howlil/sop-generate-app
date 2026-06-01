@@ -15,8 +15,15 @@ import type {
   PathUpdatedPayload,
 } from "../shapes/FlowchartArrowConnector";
 import { BpmnArrowConnector } from "../shapes/BpmnArrowConnector";
-import type { BpmnConnectionMeta, BpmnLaneLayout } from "../core/route/bpmnRouter";
-import type { OccupiedSegment } from "../core/route/orthogonalRouter";
+import {
+  translateBpmnLaneLayoutToDom,
+  type BpmnConnectionMeta,
+  type BpmnLaneLayout,
+} from "../core/route/bpmn/bpmnRouter";
+import {
+  computeBpmnRoutingPlan,
+  type BpmnRoutingNode,
+} from "../core/route/bpmn/global/bpmn-routing-plan";
 import type {
   Implementer,
   SOPStep,
@@ -25,13 +32,8 @@ import type {
 } from "../core/sopDiagramTypes";
 import { SOP_BEFORE_PRINT_EVENT } from "@/lib/print/sop-print-events";
 import { useSopDiagramPrintReadyDispatch } from "../hooks/use-sop-diagram-print-ready-dispatch";
-import {
-  findConnectionIdsWithCrossings,
-  sortConnectionsForRouting,
-} from "../core/route/connection-route-order.util";
-import { applyUsedSidePayload } from "../core/route/used-side-usage.util";
+import { applyUsedSidePayload } from "../core/route/shared/used-side-usage.util";
 
-const MAX_BPMN_ROUTING_RECONCILE_PASSES = 4;
 import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from "../layout/sopDocumentLayout";
 import {
   BPMN_BASE_ROW_HEIGHT,
@@ -170,23 +172,15 @@ export function BpmnPage({
   const onManualChangeProp = events?.onManualChange;
   const onSelectConnectionProp = events?.onSelectConnection;
   const [usedSides, setUsedSides] = useState<UsedSides>({});
-  const routedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map());
   const obstacleRectsRef = useRef<Array<{
     left: number;
     top: number;
     width: number;
     height: number;
   }> | null>(null);
-  const routingPriorityIdsRef = useRef<Set<string>>(new Set());
-  const lastRoutingViolatorSigRef = useRef<string | null>(null);
-  const [routingReconcilePass, setRoutingReconcilePass] = useState(0);
   useLayoutEffect(() => {
-    routedSegmentsRef.current = new Map();
     layoutMeasureLockedForGeomRef.current = "";
     setLayoutMeasureVersion(0);
-    routingPriorityIdsRef.current = new Set();
-    lastRoutingViolatorSigRef.current = null;
-    setRoutingReconcilePass(0);
   }, [pathLayoutSeed]);
   const [arrowsReady, setArrowsReady] = useState(false);
   const layoutRef = useRef<{
@@ -250,23 +244,8 @@ export function BpmnPage({
     return order;
   }, [implementers, processedSteps]);
 
-  const bpmnConnections = useMemo(
-    () =>
-      sortConnectionsForRouting(pageConnections, pathLayoutSeed, {
-        priorityIds: routingPriorityIdsRef.current,
-        reconcilePass: routingReconcilePass,
-        priorityRoutesLast: true,
-      }),
-    [pageConnections, pathLayoutSeed, routingReconcilePass],
-  );
-  const connectionIdsSig = useMemo(
-    () => [...new Set(bpmnConnections.map((conn) => conn.id))].sort().join("|"),
-    [bpmnConnections],
-  );
+  const bpmnConnections = pageConnections;
   const routableConnectionCount = bpmnConnections.length;
-  useLayoutEffect(() => {
-    routedSegmentsRef.current = new Map();
-  }, [connectionIdsSig, routingReconcilePass]);
 
   const obstacles = useMemo(
     () => processedSteps.map((s) => ({ id: `bpmn-step-${s.seq_number}` })),
@@ -577,41 +556,10 @@ export function BpmnPage({
 
   const layoutMeasured = layoutMeasureVersion > 0;
 
-  useEffect(() => {
-    if (!arrowsReady || !layoutMeasured || bpmnConnections.length === 0) return;
-    const timer = window.setTimeout(() => {
-      if (routedSegmentsRef.current.size < bpmnConnections.length) return;
-      const violators = findConnectionIdsWithCrossings(routedSegmentsRef.current);
-      if (violators.length === 0) {
-        lastRoutingViolatorSigRef.current = null;
-        return;
-      }
-      const sig = [...violators].sort().join("|");
-      if (lastRoutingViolatorSigRef.current === sig) return;
-      if (routingReconcilePass >= MAX_BPMN_ROUTING_RECONCILE_PASSES) return;
-      lastRoutingViolatorSigRef.current = sig;
-      routingPriorityIdsRef.current = new Set(violators);
-      startTransition(() => {
-        setRoutingReconcilePass((pass) => pass + 1);
-      });
-    }, 160);
-    return () => window.clearTimeout(timer);
-  }, [
-    arrowsReady,
-    layoutMeasured,
-    bpmnConnections.length,
-    connectionIdsSig,
-    routingReconcilePass,
-    layoutMeasureVersion,
-    layoutContentOrigin.x,
-    layoutContentOrigin.y,
-  ]);
-
   const layoutOriginSig = `${Math.round(layoutContentOrigin.x)}|${Math.round(layoutContentOrigin.y)}`;
   const arrowRerouteVersion =
     pathLayoutSeed +
     layoutMeasureVersion * 1000 +
-    routingReconcilePass * 10_000 +
     Math.round(layoutContentOrigin.x) * 17 +
     Math.round(layoutContentOrigin.y);
   const arrowOverlayWidth = swimlaneTableMinWidth;
@@ -634,6 +582,67 @@ export function BpmnPage({
     () => arrowConfig ?? {},
     [arrowConfig],
   );
+
+  const globalRoutingNodes = useMemo((): BpmnRoutingNode[] => {
+    if (!routerLaneLayout) return [];
+    const domLayout = translateBpmnLaneLayoutToDom(routerLaneLayout);
+    const originX = routerLaneLayout.originX ?? 0;
+    return laneLayouts.flatMap((lane) =>
+      lane.steps.map((step) => {
+        const routerLane = domLayout.lanes[step.lane];
+        const left = originX + step.x - step.width / 2;
+        const top = (routerLane?.top ?? 0) + step.y - step.height / 2;
+        return {
+          id: step.id,
+          type: step.type,
+          lane: step.lane,
+          columnIndex: step.columnIndex,
+          rect: {
+            left: Math.round(left),
+            top: Math.round(top),
+            width: Math.round(step.width),
+            height: Math.round(step.height),
+          },
+        };
+      }),
+    );
+  }, [laneLayouts, routerLaneLayout]);
+
+  const globalRoutingPlan = useMemo(() => {
+    if (
+      !arrowsReady ||
+      !layoutMeasured ||
+      !routerLaneLayout ||
+      globalRoutingNodes.length === 0 ||
+      bpmnConnectionsMeta.length === 0
+    ) {
+      return null;
+    }
+    return computeBpmnRoutingPlan({
+      nodes: globalRoutingNodes,
+      edges: bpmnConnectionsMeta,
+      laneLayout: translateBpmnLaneLayoutToDom(routerLaneLayout),
+      bounds: {
+        left: 0,
+        top: 0,
+        width: Math.max(arrowOverlayWidth, containerSize.width, 1),
+        height: arrowOverlayHeight,
+      },
+      manualLocks: effectiveArrowConfig,
+      pathLayoutSeed,
+    });
+  }, [
+    arrowsReady,
+    layoutMeasured,
+    routerLaneLayout,
+    globalRoutingNodes,
+    bpmnConnectionsMeta,
+    arrowOverlayWidth,
+    arrowOverlayHeight,
+    containerSize.width,
+    effectiveArrowConfig,
+    pathLayoutSeed,
+  ]);
 
   const printScale = Math.min(1, BPMN_SOP_CONTENT_MAX_WIDTH_PX / swimlaneTableMinWidth);
   const scaledCanvasWidth = Math.ceil(swimlaneTableMinWidth * printScale);
@@ -809,7 +818,7 @@ export function BpmnPage({
               {bpmnConnections.map((conn, idx) => {
                 const meta = bpmnConnectionsMeta[idx];
                 if (!meta || !routerLaneLayout) return null;
-                const connectorKey = `${conn.id}-${arrowRerouteVersion}-${layoutOriginSig}-r${routingReconcilePass}`;
+                const connectorKey = `${conn.id}-${arrowRerouteVersion}-${layoutOriginSig}`;
                 return (
                   <BpmnArrowConnector
                     key={connectorKey}
@@ -829,9 +838,9 @@ export function BpmnPage({
                     isSelected={selectedConnectionId === conn.id}
                     onSelect={(id) => onSelectConnectionProp?.(id)}
                     constraintRect={bpmnBoundsRef.current}
-                    routedSegmentsRef={routedSegmentsRef}
                     rerouteVersion={arrowRerouteVersion}
                     obstacleRectsRef={obstacleRectsRef}
+                    plannedPath={globalRoutingPlan?.pathsByConnection[conn.id]}
                   />
                 );
               })}

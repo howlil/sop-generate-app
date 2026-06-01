@@ -455,6 +455,68 @@ function isCertificateAuthority(cert: forge.pki.Certificate): boolean {
 }
 
 function extractSigningTime(pkcs7Buffer: Buffer): string | null {
+  try {
+    const pkcs7Asn1 = forge.asn1.fromDer(pkcs7Buffer.toString('binary'));
+    const signingTime = findSigningTimeAttribute(pkcs7Asn1);
+    if (signingTime !== null) {
+      return signingTime.toISOString();
+    }
+  } catch {
+    // Pertahankan fallback DER sederhana untuk PDF lama atau PKCS#7 non-standar.
+  }
+  return extractSigningTimeFromDerHex(pkcs7Buffer);
+}
+
+function findSigningTimeAttribute(node: forge.asn1.Asn1): Date | null {
+  const children = Array.isArray(node.value) ? node.value : [];
+  for (let index = 0; index < children.length; index += 1) {
+    const child = children[index];
+    if (isSigningTimeOid(child)) {
+      const value = children[index + 1];
+      return value ? findAsn1TimeValue(value) : null;
+    }
+    const nested = findSigningTimeAttribute(child);
+    if (nested !== null) {
+      return nested;
+    }
+  }
+  return null;
+}
+
+function isSigningTimeOid(node: forge.asn1.Asn1): boolean {
+  if (
+    node.type !== forge.asn1.Type.OID ||
+    typeof node.value !== 'string'
+  ) {
+    return false;
+  }
+  try {
+    return forge.asn1.derToOid(node.value) === '1.2.840.113549.1.9.5';
+  } catch {
+    return false;
+  }
+}
+
+function findAsn1TimeValue(node: forge.asn1.Asn1): Date | null {
+  if (typeof node.value === 'string') {
+    if (node.type === forge.asn1.Type.UTCTIME) {
+      return forge.asn1.utcTimeToDate(node.value);
+    }
+    if (node.type === forge.asn1.Type.GENERALIZEDTIME) {
+      return forge.asn1.generalizedTimeToDate(node.value);
+    }
+  }
+  const children = Array.isArray(node.value) ? node.value : [];
+  for (const child of children) {
+    const nested = findAsn1TimeValue(child);
+    if (nested !== null) {
+      return nested;
+    }
+  }
+  return null;
+}
+
+function extractSigningTimeFromDerHex(pkcs7Buffer: Buffer): string | null {
   const signingTimeOidHex = '06092a864886f70d010905';
   const pkcs7Hex = pkcs7Buffer.toString('hex');
   const oidIndex = pkcs7Hex.indexOf(signingTimeOidHex);
@@ -466,17 +528,19 @@ function extractSigningTime(pkcs7Buffer: Buffer): string | null {
   if (utcTagIndex < 0) {
     return null;
   }
-  const utcHex = afterOid.slice(utcTagIndex + 4, utcTagIndex + 4 + 28);
-  if (utcHex.length < 24) {
+  const utcHex = afterOid.slice(utcTagIndex + 4, utcTagIndex + 4 + 26);
+  if (utcHex.length !== 26) {
     return null;
   }
-  const year = utcHex.slice(0, 4);
-  const month = utcHex.slice(4, 6);
-  const day = utcHex.slice(6, 8);
-  const hour = utcHex.slice(8, 10);
-  const minute = utcHex.slice(10, 12);
-  const second = utcHex.slice(12, 14);
-  const parsed = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`);
+  const utcText = Buffer.from(utcHex, 'hex').toString('ascii');
+  const match = /^(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})Z$/.exec(utcText);
+  if (match === null) {
+    return null;
+  }
+  const year = Number(match[1]) >= 50 ? `19${match[1]}` : `20${match[1]}`;
+  const parsed = new Date(
+    `${year}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}Z`,
+  );
   if (Number.isNaN(parsed.getTime())) {
     return null;
   }

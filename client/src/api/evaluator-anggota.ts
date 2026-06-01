@@ -59,7 +59,7 @@ export function useEvaluatorAnggota(search?: string) {
   const tambahMutation = useMutationWithToast({
     mutationFn: (payload: CreateEvaluatorAnggotaDto) =>
       evaluatorAnggotaApi.tambah(payload),
-    invalidateKeys: [queryKeys.evaluatorAnggota],
+    invalidateKeys: [queryKeys.evaluatorAnggota, queryKeys.evaluasi],
     successMessage: 'Anggota evaluator berhasil ditambahkan',
     errorMessagePrefix: 'Gagal menambahkan anggota',
   })
@@ -67,14 +67,14 @@ export function useEvaluatorAnggota(search?: string) {
   const updateMutation = useMutationWithToast({
     mutationFn: ({ id, payload }: UpdateEvaluatorAnggotaMutationDto) =>
       evaluatorAnggotaApi.update(id, payload),
-    invalidateKeys: [queryKeys.evaluatorAnggota],
+    invalidateKeys: [queryKeys.evaluatorAnggota, queryKeys.evaluasi],
     successMessage: 'Data anggota berhasil diperbarui',
     errorMessagePrefix: 'Gagal memperbarui anggota',
   })
 
   const hapusMutation = useMutationWithToast({
     mutationFn: (id: string) => evaluatorAnggotaApi.hapus(id),
-    invalidateKeys: [queryKeys.evaluatorAnggota],
+    invalidateKeys: [queryKeys.evaluatorAnggota, queryKeys.evaluasi],
     successMessage: 'Anggota evaluator berhasil dinonaktifkan',
     errorMessagePrefix: 'Gagal menonaktifkan anggota',
   })

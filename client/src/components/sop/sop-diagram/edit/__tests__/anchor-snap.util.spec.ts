@@ -327,6 +327,21 @@ describe('anchor-snap.util', () => {
     expect(snapped?.side).toBe('left')
   })
 
+  it('should_allow_switching_regular_shape_side_even_when_previous_side_was_locked', () => {
+    const snapped = resolveConstrainedEdgeSnap({
+      connectionId: 'conn-1',
+      shape: wideSwimlaneRect,
+      x: 100,
+      y: 220,
+      kind: 'end',
+      releaseDistancePx: 48,
+      lockedAnchorId: buildEdgeAnchorId('conn-1', 'end', 'right'),
+    })
+    expect(snapped?.side).toBe('left')
+    expect(snapped?.x).toBe(100)
+    expect(snapped?.y).toBe(220)
+  })
+
   it('should_build_only_four_visual_anchors_per_diamond_shape', () => {
     const diamond = { left: 100, top: 100, width: 80, height: 80 }
     const process = { left: 300, top: 100, width: 120, height: 50 }
@@ -357,6 +372,23 @@ describe('anchor-snap.util', () => {
     expect(snapped?.x).toBe(100)
     expect(snapped?.y).toBe(140)
     expect(snapped?.distance).toBe(0.5)
+  })
+
+  it('should_allow_switching_diamond_vertex_even_when_previous_vertex_was_locked', () => {
+    const diamond = { left: 100, top: 100, width: 80, height: 80 }
+    const snapped = resolveConstrainedEdgeSnap({
+      connectionId: 'conn-1',
+      shape: diamond,
+      x: 100,
+      y: 140,
+      kind: 'start',
+      releaseDistancePx: 48,
+      lockedAnchorId: buildEdgeAnchorId('conn-1', 'start', 'right'),
+      shapeIsDiamond: true,
+    })
+    expect(snapped?.side).toBe('left')
+    expect(snapped?.x).toBe(100)
+    expect(snapped?.y).toBe(140)
   })
 
   it('should_snap_distance_to_center_when_near_midpoint', () => {

@@ -80,12 +80,15 @@ export type PreparedSopPengesahanResult =
         | 'EMPTY_SOP'
         | 'BAD_SOP_STATUS'
         | 'ALREADY_SIGNED'
-        | 'INVALID_DOC_PARENT';
+        | 'INVALID_DOC_PARENT'
+        | 'SOP_STATUS_DRIFT';
       readonly status?: StatusPengajuanEvaluasi | StatusSOP;
       readonly expectedStatus?: StatusPengajuanEvaluasi | StatusSOP;
       readonly detailSopId?: string;
       readonly nomorSOP?: string;
       readonly judulSOP?: string;
+      readonly expectedCount?: number;
+      readonly updatedCount?: number;
     };
 
 export type FinalizeSopPengesahanArtifactInput = {
@@ -609,6 +612,7 @@ export class TteRepository {
     hashDokumen: string;
     nomorDokumen: string;
     judulDokumen: string;
+    expectedDetailSopIds: readonly string[];
   }): Promise<PreparedSopPengesahanResult> {
     return this.prisma.$transaction(async (tx) => {
       const pengajuan = await tx.pengajuanEvaluasi.findUnique({
@@ -631,6 +635,19 @@ export class TteRepository {
       const invalid = this.validateSopPengesahanPengajuan(pengajuan, params.userOpdId);
       if (invalid !== null) {
         return invalid;
+      }
+      const expectedDetailSopIds = new Set(params.expectedDetailSopIds);
+      if (
+        expectedDetailSopIds.size !== pengajuan.nilaiEvaluasi.length ||
+        pengajuan.nilaiEvaluasi.some(
+          (nilai) => !expectedDetailSopIds.has(nilai.detailSop.detailSopId),
+        )
+      ) {
+        return {
+          error: 'SOP_STATUS_DRIFT' as const,
+          expectedCount: pengajuan.nilaiEvaluasi.length,
+          updatedCount: expectedDetailSopIds.size,
+        };
       }
       const items: PreparedSopPengesahanItem[] = [];
       for (const nilai of pengajuan.nilaiEvaluasi) {

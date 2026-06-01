@@ -662,6 +662,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                     implementers={previewProps.implementers}
                     name={previewProps.name}
                     number={previewProps.number}
+                    tteSignaturePayload={workspace?.preview?.workbench?.tteSignaturePayloadKepalaOpd}
                     diagramState={{
                       activeTab: diagramPreviewTab,
                       onActiveTabChange: setDiagramPreviewTab,

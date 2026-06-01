@@ -83,7 +83,9 @@ describe('Pengujian TteService', () => {
     const pdfSigningService = {
       signPdf: jest.fn(),
     } as unknown as TtePdfSigningService;
-    const sopOfficialPdfService = {} as any;
+    const sopOfficialPdfService = {
+      buildUnsignedOfficialPdf: jest.fn().mockReturnValue(Buffer.from('%PDF-1.7\n')),
+    } as any;
     const sopPdfStorageService = {} as any;
     const penandatangananService = new TtePenandatangananService(
       repo,
@@ -390,6 +392,12 @@ describe('Pengujian TteService', () => {
         pin: '1234',
         nomorDokumen: 'DOC-1',
         judulDokumen: 'Judul Dokumen',
+        sopPdfs: [
+          {
+            detailSopId: 'detail-1',
+            pdfBase64: Buffer.from('%PDF-1.7\n').toString('base64'),
+          },
+        ],
       }),
     ).rejects.toThrow(
       'SOP SOP-DINKES-001-V1 (Pelayanan Surat Keterangan Sehat) tidak dapat ditandatangani dari status BERLAKU. Status yang diwajibkan: DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI.',

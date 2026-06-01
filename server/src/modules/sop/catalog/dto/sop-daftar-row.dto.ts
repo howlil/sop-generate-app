@@ -69,4 +69,9 @@ export class SopDaftarRowDto {
     description: 'Kepala OPD dapat mencabut versi BERLAKU (tanpa revisi yang sedang berjalan)',
   })
   readonly canCabutSop!: boolean;
+
+  @ApiProperty({
+    description: 'Penyusun dapat menghapus SOP bila masih berupa draft awal satu-satunya',
+  })
+  readonly canHapusSopDraft!: boolean;
 }

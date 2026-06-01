@@ -4,6 +4,7 @@ import { RegisterTteDto } from '../shared/dto/register-tte.dto';
 
 import { SignPdfDto } from '../shared/dto/sign-pdf.dto';
 import { TandaTanganiDto } from '../shared/dto/tanda-tangani.dto';
+import { TandaTanganiSemuaSopDto } from '../shared/dto/tanda-tangani-semua-sop.dto';
 import { UpdateTtePinDto } from '../shared/dto/update-tte-pin.dto';
 import { GenerateP12Dto } from '../shared/dto/generate-p12.dto';
 import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
@@ -92,7 +93,7 @@ export class TteService {
   tandaTanganiSemuaSopPengajuan(
     user: JwtAccessPayload,
     pengajuanEvaluasiId: string,
-    dto: TandaTanganiDto,
+    dto: TandaTanganiSemuaSopDto,
   ): Promise<TteBatchSignSopPengajuanResponse> {
     return this.penandatangananService.tandaTanganiSemuaSopPengajuan(
       user,

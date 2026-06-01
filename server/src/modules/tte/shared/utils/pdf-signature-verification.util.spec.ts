@@ -44,6 +44,7 @@ describe('Pengujian util verifikasi tanda tangan PDF', () => {
     expect(actual.signatures[0]?.valid).toBe(true);
     expect(actual.signatures[0]?.checks.digestMatch).toBe(true);
     expect(actual.signatures[0]?.checks.chainTrusted).toBe(true);
+    expect(actual.signatures[0]?.signedAt).not.toBeNull();
   });
 
   it('seharusnya menolak tanpa tanda tangan PDF', async () => {

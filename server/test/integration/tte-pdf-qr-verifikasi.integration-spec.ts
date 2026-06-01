@@ -253,12 +253,12 @@ async function runMinimalTteWorkflow(
 
   await evaluatorAgent
     .patch(`${API}/evaluasi/${pengajuan.pengajuanEvaluasiId}/selesai`)
-    .send({})
+    .send({ nomorBA: 'BA-EVAL-PDF-INT-001' })
     .expect(200);
 
   await pjEvaluatorAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
   await pjPenyusunAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
-  await kepalaAgent.post(`${API}/tte/profil`).send({ pin: PIN_TTE }).expect(201);
+  await kepalaAgent.post(`${API}/tte/profil/setup/generate`).send({ pin: PIN_TTE }).expect(201);
 
   await pjEvaluatorAgent
     .post(`${API}/tte/tanda-tangani/ba/${pengajuan.pengajuanEvaluasiId}`)
@@ -270,9 +270,17 @@ async function runMinimalTteWorkflow(
     .send({ pin: PIN_TTE, nomorDokumen: 'BA-PDF-INT-001', judulDokumen: 'BA PDF Integration' })
     .expect(201);
 
+  const sopPdfBase64 = (await createMinimalPdfBuffer('SOP PDF official integration')).toString(
+    'base64',
+  );
   await kepalaAgent
     .post(`${API}/tte/tanda-tangani/pengajuan/${pengajuan.pengajuanEvaluasiId}/sop-semua`)
-    .send({ pin: PIN_TTE, nomorDokumen: 'SOP-PDF-INT-001', judulDokumen: 'SOP PDF Integration' })
+    .send({
+      pin: PIN_TTE,
+      nomorDokumen: 'SOP-PDF-INT-001',
+      judulDokumen: 'SOP PDF Integration',
+      sopPdfs: [{ detailSopId, pdfBase64: sopPdfBase64 }],
+    })
     .expect(201);
 
   const baDokumen = await prisma.dokumenTte.findFirstOrThrow({
@@ -412,49 +420,38 @@ describeIntegration('TTE PDF unduhan — verifikasi QR dan CA (IT-76–IT-81)', 
   });
 
   it('IT-78: PDF SOP ditandatangani PKCS#7 dan diverifikasi valid terhadap CA internal', async () => {
-    const unsignedPdf = await createMinimalPdfBuffer('SOP PDF integration sign');
-    const pdfBase64 = unsignedPdf.toString('base64');
-
-    const signResponse = await kepalaAgent
-      .post(`${API}/tte/pdf/sign`)
-      .send({
-        dokumenTteId: state.sopDokumenTteId,
-        userId: state.kepalaUserId,
-        jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
-        pdfBase64,
-      })
-      .expect(201);
-
-    expect(signResponse.body.success).toBe(true);
-    expect(signResponse.body.data.signed).toBe(true);
-    expect(signResponse.body.data.signatureFormat).toBe('PKCS7_DETACHED');
-    expect(signResponse.body.data.certificate).not.toBeNull();
-    expect(signResponse.body.data.signedPdfBase64.length).toBeGreaterThan(pdfBase64.length);
+    const publishedPdf = await request(app.getHttpServer())
+      .get(`${API}/sop/public/pdf/${state.detailSopId}`)
+      .expect('Content-Type', /application\/pdf/)
+      .expect(200);
 
     const verifyResponse = await request(app.getHttpServer())
       .post(`${API}/tte/public/pdf/verify`)
-      .send({ pdfBase64: signResponse.body.data.signedPdfBase64 })
+      .send({ pdfBase64: publishedPdf.body.toString('base64') })
       .expect(201);
 
     expect(verifyResponse.body.success).toBe(true);
     expect(verifyResponse.body.data.pdfSigningEnabled).toBe(true);
     expect(verifyResponse.body.data.hasSignatures).toBe(true);
     expect(verifyResponse.body.data.allValid).toBe(true);
-    expect(verifyResponse.body.data.trustedCaSubject).toBeTruthy();
+    expect(verifyResponse.body.data.trustedCaSubject).toBeNull();
     expect(verifyResponse.body.data.signatures).toHaveLength(1);
     expect(verifyResponse.body.data.signatures[0].valid).toBe(true);
     expect(verifyResponse.body.data.signatures[0].checks.digestMatch).toBe(true);
-    expect(verifyResponse.body.data.signatures[0].checks.chainTrusted).toBe(true);
+    expect(verifyResponse.body.data.signatures[0].tteMatch.matched).toBe(true);
   });
 
   it('IT-79: PDF Berita Acara arsip tidak diinjeksi CA dan tetap tanpa signature PKCS#7', async () => {
     const unsignedPdf = await createMinimalPdfBuffer('BA arsip PDF integration unsigned');
     const pdfBase64 = unsignedPdf.toString('base64');
 
-    const signResponse = await kepalaAgent
-      .post(`${API}/tte/pdf/sign-berita-acara-arsip`)
+    const signResponse = await pjEvaluatorAgent
+      .post(`${API}/tte/pdf/sign`)
       .send({
-        pengajuanEvaluasiId: state.pengajuanId,
+        pin: PIN_TTE,
+        dokumenTteId: state.baDokumenTteId,
+        userId: state.pjEvaluatorUserId,
+        jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
         pdfBase64,
       })
       .expect(201);
@@ -485,13 +482,13 @@ describeIntegration('TTE PDF unduhan — verifikasi QR dan CA (IT-76–IT-81)', 
     expect(verifyResponse.body.data.allValid).toBe(false);
   });
 
-  it('GET /tte/public/pdf-signing/status menyatakan penandatanganan PDF aktif', async () => {
+  it('GET /tte/public/pdf-signing/status menyatakan penandatanganan PDF personal aktif', async () => {
     const statusResponse = await request(app.getHttpServer())
       .get(`${API}/tte/public/pdf-signing/status`)
       .expect(200);
 
     expect(statusResponse.body.success).toBe(true);
     expect(statusResponse.body.data.enabled).toBe(true);
-    expect(statusResponse.body.data.trustedCaSubject).toBeTruthy();
+    expect(statusResponse.body.data.trustedCaSubject).toBeNull();
   });
 });
