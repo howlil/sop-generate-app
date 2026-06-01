@@ -7,10 +7,11 @@
  * - Professional aesthetic
  */
 import { useState } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Link } from "@tanstack/react-router";
 import type { LoginRequestDto } from "@/types/dto/auth.dto";
 
 export interface LoginFormProps {
@@ -84,6 +85,10 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
     <div className="w-full">
       {/* Header */}
       <div className="mb-8">
+        <Link to="/" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 mb-6 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Kembali ke Beranda
+        </Link>
         <h1 className="text-xl font-semibold text-slate-900 mb-1">
           Selamat Datang
         </h1>

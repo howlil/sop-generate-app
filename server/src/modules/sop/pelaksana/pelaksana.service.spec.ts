@@ -1,5 +1,5 @@
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
-import { PeranPengguna } from '../../../generated/prisma';
+import { PeranPengguna, Prisma } from '../../../generated/prisma';
 import type { JwtAccessPayload } from '../../../common';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
 import { PelaksanaRepository } from './pelaksana.repository';
@@ -84,6 +84,19 @@ describe('Pengujian PelaksanaService', () => {
     expect(pelaksanaRepoMock.create).toHaveBeenCalledWith('opd-1', 'Staf A');
   });
 
+  it('seharusnya melempar ConflictException ketika nama pelaksana duplikat dalam OPD saat create', async () => {
+    pelaksanaRepoMock.create.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('unique', {
+        code: 'P2002',
+        clientVersion: '1',
+      }),
+    );
+
+    await expect(service.create(penyusunUser, { namaPelaksana: 'Staf A' })).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
   it('seharusnya mengembalikan daftar pelaksana terpetakan dan meneruskan query OPD opsional', async () => {
     const row2 = {
       ...baseRow,
@@ -153,6 +166,20 @@ describe('Pengujian PelaksanaService', () => {
     );
     expect(pelaksanaRepoMock.findByIdAndOpd).toHaveBeenCalledWith('pl-1', 'opd-1');
     expect(pelaksanaRepoMock.updateNama).toHaveBeenCalledWith('pl-1', 'Staf B');
+  });
+
+  it('seharusnya melempar ConflictException ketika nama pelaksana duplikat dalam OPD saat update', async () => {
+    pelaksanaRepoMock.findByIdAndOpd.mockResolvedValueOnce(baseRow);
+    pelaksanaRepoMock.updateNama.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('unique', {
+        code: 'P2002',
+        clientVersion: '1',
+      }),
+    );
+
+    await expect(
+      service.update(penyusunUser, 'pl-1', { namaPelaksana: 'Staf B' }),
+    ).rejects.toBeInstanceOf(ConflictException);
   });
 
   it('seharusnya tidak mengubah nama ketika resolver OPD gagal saat update (False Case)', async () => {

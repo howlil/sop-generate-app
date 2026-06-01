@@ -5,7 +5,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
@@ -15,9 +14,12 @@ import { P12Signer } from '@signpdf/signer-p12';
 import { SignPdf } from '@signpdf/signpdf';
 import { PDFDocument } from 'pdf-lib';
 import type { JwtAccessPayload } from '../../../common';
-import { PDF_BASE64_MAX_LENGTH, PDF_BINARY_MAX_BYTES } from '../../../common/http/request-body-limits';
-import { JenisDokumenTte, PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
-import { SignBeritaAcaraArsipDto } from '../shared/dto/sign-berita-acara-arsip.dto';
+import {
+  PDF_BASE64_MAX_LENGTH,
+  PDF_BINARY_MAX_BYTES,
+} from '../../../common/http/request-body-limits';
+import { JenisDokumenTte } from '../../../generated/prisma';
+
 import { SignPdfDto } from '../shared/dto/sign-pdf.dto';
 import { VerifyPdfDto } from '../shared/dto/verify-pdf.dto';
 import {
@@ -31,10 +33,11 @@ import {
   assertValidPdfBuffer,
   buildPdfTteSigningReason,
   extractPdfSignatureFields,
-  verifyPdfWithP12,
+  verifyPdfSignaturesGeneric,
   type PdfSignatureVerificationEntry,
   type VerifyPdfSignaturesResult,
 } from '../shared/utils/pdf-signature-verification.util';
+import { decryptP12Passphrase } from '../shared/utils/tte-crypto.util';
 import { TteRepository, type PdfSignatureMetadataInput } from '../shared/repository/tte.repository';
 
 const DEFAULT_SIGNATURE_LENGTH = 32_000;
@@ -43,8 +46,16 @@ export type SignPdfResponse = {
   readonly signed: boolean;
   readonly signedPdfBase64: string;
   readonly sha256SignedPdf: string;
-  readonly signatureFormat: 'PKCS7_DETACHED' | 'UNSIGNED_DISABLED';
+  readonly signatureFormat: 'PKCS7_DETACHED' | 'UNSIGNED_DISABLED' | 'UNSIGNED_NOT_REQUIRED';
   readonly certificate: PdfCertificateResponse | null;
+};
+
+export type OfficialPdfSigningResult = {
+  readonly signedPdf: Buffer;
+  readonly sha256SignedPdf: string;
+  readonly signatureFormat: 'PKCS7_DETACHED';
+  readonly certificate: PdfCertificateResponse;
+  readonly riwayatMetadata: PdfSignatureMetadataInput;
 };
 
 export type PdfSigningStatusResponse = {
@@ -93,13 +104,6 @@ type PdfSigningConfig = {
 const PDF_VERIFICATION_DISCLAIMER =
   'Verifikasi ini memakai CA internal Sistem Informasi SOP. Untuk TTE tersertifikasi nasional, gunakan portal resmi Komdigi atau BSrE.';
 
-const BERITA_ACARA_ARSIP_SIGNER_NAME = 'Sistem Informasi SOP';
-const BERITA_ACARA_ARSIP_SIGN_REASON = 'Arsip Berita Acara Evaluasi — Sistem Informasi SOP';
-
-const BERITA_ACARA_ARSIP_ALLOWED_STATUSES: ReadonlySet<StatusPengajuanEvaluasi> = new Set([
-  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
-  StatusPengajuanEvaluasi.SELESAI,
-]);
 
 @Injectable()
 export class TtePdfSigningService {
@@ -111,92 +115,29 @@ export class TtePdfSigningService {
   ) {}
 
   getPdfSigningStatus(): PdfSigningStatusResponse {
-    const config = this.getConfig();
-    if (!config.enabled) {
-      return {
-        enabled: false,
-        trustedCaSubject: null,
-        trustedSignerSubject: null,
-        verificationPath: '/validasi/pdf',
-        configError:
-          'PDF_SIGNING_ENABLED tidak aktif. Set PDF_SIGNING_ENABLED=true di server/.env lalu restart server.',
-      };
-    }
-    if (!config.p12Base64) {
-      return {
-        enabled: false,
-        trustedCaSubject: null,
-        trustedSignerSubject: null,
-        verificationPath: '/validasi/pdf',
-        configError:
-          'PDF_SIGNING_P12_BASE64 kosong. Jalankan npm run pdf-signing:generate-cert di folder server, salin ke .env, lalu restart server.',
-      };
-    }
-    try {
-      const trusted = loadTrustedCertificatesFromP12(
-        Buffer.from(config.p12Base64, 'base64'),
-        config.passphrase,
-      );
-      return {
-        enabled: true,
-        trustedCaSubject: trusted.caSubject,
-        trustedSignerSubject: trusted.signingSubject,
-        verificationPath: '/validasi/pdf',
-      };
-    } catch (error) {
-      const configError = error instanceof Error ? error.message : 'Gagal memuat sertifikat P12.';
-      this.logger.warn(`Status PDF signing: ${configError}`);
-      return {
-        enabled: false,
-        trustedCaSubject: null,
-        trustedSignerSubject: null,
-        verificationPath: '/validasi/pdf',
-        configError: `${configError} Setelah memperbaiki .env, restart server Nest (pnpm start:dev).`,
-      };
-    }
+    return {
+      enabled: true,
+      trustedCaSubject: null,
+      trustedSignerSubject: null,
+      verificationPath: '/validasi/pdf',
+    };
   }
 
   async verifyPdf(dto: VerifyPdfDto): Promise<VerifyPdfResponse> {
     const pdfBuffer = this.decodePdf(dto.pdfBase64);
-    const config = this.getConfig();
-    if (!config.enabled || !config.p12Base64) {
-      return {
-        pdfSigningEnabled: false,
-        trustedCaSubject: null,
-        hasSignatures: false,
-        allValid: false,
-        signatures: [],
-        disclaimer: PDF_VERIFICATION_DISCLAIMER,
-      };
-    }
     let verification: VerifyPdfSignaturesResult;
     try {
-      verification = verifyPdfWithP12(
-        pdfBuffer,
-        Buffer.from(config.p12Base64, 'base64'),
-        config.passphrase,
-      );
+      verification = verifyPdfSignaturesGeneric(pdfBuffer);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Gagal memverifikasi PDF.';
-      if (
-        message.includes('P12') ||
-        message.includes('PDF_SIGNING') ||
-        message.includes('sertifikat')
-      ) {
-        throw new ServiceUnavailableException(message);
-      }
       throw new BadRequestException(message);
     }
-    const trusted = loadTrustedCertificatesFromP12(
-      Buffer.from(config.p12Base64, 'base64'),
-      config.passphrase,
-    );
     const signatures = await Promise.all(
       verification.signatures.map((entry) => this.attachTteMatch(entry)),
     );
     return {
       pdfSigningEnabled: true,
-      trustedCaSubject: trusted.caSubject,
+      trustedCaSubject: null,
       hasSignatures: verification.hasSignatures,
       allValid: verification.allValid && signatures.every((entry) => entry.tteMatch.matched),
       signatures,
@@ -216,16 +157,27 @@ export class TtePdfSigningService {
     if (riwayat.dokumenTte.jenisDokumen !== dto.jenisDokumen) {
       throw new BadRequestException('Jenis dokumen tidak sesuai dengan riwayat TTE.');
     }
+    if (dto.jenisDokumen !== JenisDokumenTte.SOP_BERLAKU) {
+      return this.buildSkippedCaResponse(pdfBuffer);
+    }
+    
+    // Ambil kredensial P12 pengguna
+    const kredensial = await this.repository.findKredensial(dto.userId);
+    if (!kredensial || !kredensial.p12Base64 || !kredensial.p12PassphraseEncrypted) {
+      throw new BadRequestException('Sertifikat TTE personal belum diatur. Silakan buat di halaman Profil.');
+    }
+
+    let p12Passphrase: string;
+    try {
+      p12Passphrase = decryptP12Passphrase(kredensial.p12PassphraseEncrypted, dto.pin);
+    } catch {
+      throw new ForbiddenException('PIN TTE salah atau gagal mendekripsi sertifikat.');
+    }
+
     const config = this.getConfig();
-    if (!config.enabled) {
-      return this.buildDisabledResponse(pdfBuffer);
-    }
-    if (!config.p12Base64) {
-      throw new ServiceUnavailableException('Konfigurasi sertifikat PDF belum tersedia.');
-    }
     const signed = await this.applyPkcs7Signature(
       pdfBuffer,
-      { ...config, p12Base64: config.p12Base64 },
+      { ...config, p12Base64: kredensial.p12Base64, passphrase: p12Passphrase },
       {
         name: riwayat.user.nama,
         reason: buildPdfTteSigningReason(config.reason, {
@@ -243,78 +195,50 @@ export class TtePdfSigningService {
     return signed.response;
   }
 
-  async signBeritaAcaraArsip(
-    user: JwtAccessPayload,
-    dto: SignBeritaAcaraArsipDto,
-  ): Promise<SignPdfResponse> {
-    const pengguna = await this.repository.findPenggunaAktif(user.sub);
-    if (pengguna === null) {
-      throw new NotFoundException('Pengguna tidak ditemukan.');
-    }
-    if (pengguna.peran !== PeranPengguna.KEPALA_OPD) {
-      throw new ForbiddenException('Penandatanganan arsip Berita Acara hanya untuk Kepala OPD.');
-    }
-    const pdfBuffer = this.decodePdf(dto.pdfBase64);
-    const pengajuan = await this.repository.findBeritaAcaraArsipForPdfSigning(
-      dto.pengajuanEvaluasiId,
-    );
-    if (pengajuan === null) {
-      throw new NotFoundException('Pengajuan evaluasi tidak ditemukan.');
-    }
-    if (pengajuan.opdId !== pengguna.opdId) {
-      throw new ForbiddenException('Pengajuan evaluasi bukan milik OPD Anda.');
-    }
-    if (!BERITA_ACARA_ARSIP_ALLOWED_STATUSES.has(pengajuan.status)) {
+  async signOfficialSopPdfWithUserCertificate(params: {
+    userId: string;
+    pin: string;
+    dokumenTteId: string;
+    pdfBuffer: Buffer;
+    signerName: string;
+  }): Promise<OfficialPdfSigningResult> {
+    const kredensial = await this.repository.findKredensial(params.userId);
+    if (!kredensial || !kredensial.p12Base64 || !kredensial.p12PassphraseEncrypted) {
       throw new BadRequestException(
-        'Berita Acara belum siap arsip: kedua PJ harus menandatangani TTE terlebih dahulu.',
+        'Sertifikat TTE personal belum diatur. Silakan buat di halaman Profil.',
       );
     }
-    const dokumen = pengajuan.dokumenTte;
-    if (dokumen === null) {
-      throw new BadRequestException('Dokumen TTE Berita Acara belum tersedia.');
+
+    let p12Passphrase: string;
+    try {
+      p12Passphrase = decryptP12Passphrase(kredensial.p12PassphraseEncrypted, params.pin);
+    } catch {
+      throw new ForbiddenException('PIN TTE salah atau gagal mendekripsi sertifikat.');
     }
-    if (dokumen.jenisDokumen !== JenisDokumenTte.BERITA_ACARA_EVALUASI) {
-      throw new BadRequestException('Jenis dokumen TTE bukan Berita Acara evaluasi.');
-    }
-    const signedPerans = new Set(dokumen.riwayatTandaTangan.map((entry) => entry.peran));
-    if (
-      !signedPerans.has(PeranPengguna.PJ_EVALUATOR) ||
-      !signedPerans.has(PeranPengguna.PJ_PENYUSUN)
-    ) {
-      throw new BadRequestException(
-        'Riwayat TTE PJ Evaluator dan PJ Penyusun belum lengkap untuk arsip PDF.',
-      );
-    }
-    const bindingRiwayat = this.selectBeritaAcaraArsipBinding(dokumen.riwayatTandaTangan);
-    if (bindingRiwayat === null) {
-      throw new BadRequestException('Riwayat TTE Berita Acara tidak valid untuk arsip PDF.');
-    }
+
     const config = this.getConfig();
-    if (!config.enabled) {
-      return this.buildDisabledResponse(pdfBuffer);
-    }
-    if (!config.p12Base64) {
-      throw new ServiceUnavailableException('Konfigurasi sertifikat PDF belum tersedia.');
-    }
-    const opdLabel = pengajuan.opd.nama.trim() || BERITA_ACARA_ARSIP_SIGNER_NAME;
     const signed = await this.applyPkcs7Signature(
-      pdfBuffer,
-      { ...config, p12Base64: config.p12Base64 },
+      params.pdfBuffer,
+      { ...config, p12Base64: kredensial.p12Base64, passphrase: p12Passphrase },
       {
-        name: `${BERITA_ACARA_ARSIP_SIGNER_NAME} (${opdLabel})`,
-        reason: buildPdfTteSigningReason(BERITA_ACARA_ARSIP_SIGN_REASON, {
-          dokumenTteId: dokumen.dokumenTteId,
-          userId: bindingRiwayat.userId,
-          jenisDokumen: String(dokumen.jenisDokumen),
+        name: params.signerName,
+        reason: buildPdfTteSigningReason(config.reason, {
+          dokumenTteId: params.dokumenTteId,
+          userId: params.userId,
+          jenisDokumen: String(JenisDokumenTte.SOP_BERLAKU),
         }),
       },
     );
-    await this.repository.updateRiwayatPdfSignatureMetadata({
-      userId: bindingRiwayat.userId,
-      dokumenTteId: dokumen.dokumenTteId,
-      metadata: signed.riwayatMetadata,
-    });
-    return signed.response;
+    if (!signed.response.signed || signed.response.certificate === null) {
+      throw new InternalServerErrorException('Gagal menandatangani PDF SOP resmi.');
+    }
+    return {
+      signedPdf: Buffer.from(signed.response.signedPdfBase64, 'base64'),
+      sha256SignedPdf: signed.response.sha256SignedPdf,
+      signatureFormat: 'PKCS7_DETACHED',
+      certificate: signed.response.certificate,
+      riwayatMetadata: signed.riwayatMetadata,
+    };
   }
 
   private async buildPlaceholderPdf(
@@ -451,25 +375,14 @@ export class TtePdfSigningService {
     return pdfBuffer;
   }
 
-  private buildDisabledResponse(pdfBuffer: Buffer): SignPdfResponse {
+  private buildSkippedCaResponse(pdfBuffer: Buffer): SignPdfResponse {
     return {
       signed: false,
       signedPdfBase64: pdfBuffer.toString('base64'),
       sha256SignedPdf: this.sha256Hex(pdfBuffer),
-      signatureFormat: 'UNSIGNED_DISABLED',
+      signatureFormat: 'UNSIGNED_NOT_REQUIRED',
       certificate: null,
     };
-  }
-
-  private selectBeritaAcaraArsipBinding(
-    riwayat: readonly { userId: string; peran: PeranPengguna; ditandatanganiPada: Date }[],
-  ): { userId: string; peran: PeranPengguna } | null {
-    const pjPenyusun = riwayat.find((entry) => entry.peran === PeranPengguna.PJ_PENYUSUN);
-    if (pjPenyusun) {
-      return { userId: pjPenyusun.userId, peran: pjPenyusun.peran };
-    }
-    const pjEvaluator = riwayat.find((entry) => entry.peran === PeranPengguna.PJ_EVALUATOR);
-    return pjEvaluator ? { userId: pjEvaluator.userId, peran: pjEvaluator.peran } : null;
   }
 
   private sha256Hex(buffer: Buffer): string {

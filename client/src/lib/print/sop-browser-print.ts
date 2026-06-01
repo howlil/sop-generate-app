@@ -48,9 +48,7 @@ function getExpectedConnectionCount(root: Element): number {
 }
 
 function countValidConnectorPaths(root: Element): number {
-  const paths = root.querySelectorAll(
-    'svg.sop-diagram-overlay path.sop-connector-stroke[d]',
-  )
+  const paths = root.querySelectorAll('path.sop-connector-stroke[d]')
   let valid = 0
   paths.forEach((path) => {
     const d = path.getAttribute('d')

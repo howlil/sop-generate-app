@@ -385,6 +385,28 @@ describe('anchor-snap.util', () => {
     expect(snapped?.y).toBe(100)
   })
 
+  it('should_not_replace_projected_edge_with_nearer_anchor_from_wrong_side', () => {
+    const rect = { left: 100, top: 100, width: 120, height: 50 }
+    const snapped = resolvePreferredEndpointSnap({
+      connectionId: 'conn-1',
+      shape: rect,
+      x: 160,
+      y: 100,
+      kind: 'start',
+      releaseDistancePx: 48,
+      lockedAnchorId: null,
+      anchors: [
+        { id: 'wrong-left', x: 160, y: 100, side: 'left', kind: 'start' },
+        { id: 'valid-top', x: 160, y: 100, side: 'top', kind: 'start' },
+      ],
+      snapDistancePx: 24,
+      hardSnapDistancePx: 8,
+    })
+    expect(snapped?.side).toBe('top')
+    expect(snapped?.x).toBe(160)
+    expect(snapped?.y).toBe(100)
+  })
+
   it('should_get_allowed_shape_only_for_matching_endpoint', () => {
     const targets: DiagramShapeSnapTargets = {
       connectionId: 'conn-1',

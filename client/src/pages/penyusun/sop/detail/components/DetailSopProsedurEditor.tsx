@@ -90,32 +90,32 @@ export function DetailSOPProsedurEditor({
         <p className="text-[11px] text-gray-500">No akan otomatis mengikuti urutan baris.</p>
       </div>
       <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
-        <Table.Table>
+        <Table.Table className="min-w-[1000px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <Table.HeadRow>
-              <Table.Th className="px-1 py-1 w-10">No</Table.Th>
-              <Table.Th className="px-1 py-1 w-[28%]">Kegiatan</Table.Th>
-              <Table.Th className="px-1 py-1 w-[12%]">Tipe</Table.Th>
-              <Table.Th className="px-1 py-1 w-[14%]">Pelaksana</Table.Th>
-              <Table.Th className="px-1 py-1 w-[13%]">Kelengkapan</Table.Th>
-              <Table.Th className="px-1 py-1 w-[8%]">Waktu</Table.Th>
-              <Table.Th className="px-1 py-1 w-[12%]">Output</Table.Th>
-              <Table.Th className="px-1 py-1 w-[23%]">Keterangan</Table.Th>
-              <Table.Th align="center" className="px-0.5 py-1 w-10">Aksi</Table.Th>
+              <Table.Th className="px-2 py-2 w-10 min-w-[40px]">No</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[200px]">Kegiatan</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[120px]">Tipe</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[140px]">Pelaksana</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[140px]">Kelengkapan</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[120px]">Waktu</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[140px]">Output</Table.Th>
+              <Table.Th className="px-2 py-2 min-w-[160px]">Keterangan</Table.Th>
+              <Table.Th align="center" className="px-1 py-2 w-12 min-w-[48px]">Aksi</Table.Th>
             </Table.HeadRow>
           </thead>
           <tbody>
             {prosedurRows.map((row, realIdx) => {
               return (
                 <Table.BodyRow key={row.id} className="align-top">
-                  <Table.Td className="px-1 py-1 text-center align-middle">{realIdx + 1}</Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2 text-center align-middle">{realIdx + 1}</Table.Td>
+                  <Table.Td className="px-2 py-2">
                     <KegiatanCell
                       value={row.kegiatan}
                       onChange={(value) => handleKegiatanChange(realIdx, value)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2">
                     <TypeCell
                       row={row}
                       index={realIdx}
@@ -124,38 +124,38 @@ export function DetailSOPProsedurEditor({
                       onTypeChange={(type, role) => handleTypeChange(realIdx, type, role)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2">
                     <ImplementerCell
                       row={row}
                       implementers={implementers}
                       onImplementerChange={(id) => handlePelaksanaChange(realIdx, id, implementers)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2">
                     <MutuKelengkapanCell
                       value={row.mutu_kelengkapan ?? ''}
                       onChange={(value) => handleMutuKelengkapanChange(realIdx, value)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2">
                     <MutuWaktuCell
                       value={row.mutu_waktu ?? ''}
                       onChange={(amount, unit) => handleMutuWaktuChange(realIdx, amount, unit)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2">
                     <OutputCell
                       value={row.output ?? ''}
                       onChange={(value) => handleOutputChange(realIdx, value)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-1 py-1">
+                  <Table.Td className="px-2 py-2">
                     <KeteranganCell
                       value={row.keterangan ?? ''}
                       onChange={(value) => handleKeteranganChange(realIdx, value)}
                     />
                   </Table.Td>
-                  <Table.Td className="px-0.5 py-1 text-center align-middle">
+                  <Table.Td className="px-1 py-2 text-center align-middle">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button

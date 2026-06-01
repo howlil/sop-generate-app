@@ -13,7 +13,7 @@ import {
   routeBpmn,
   type BpmnRouteOptions,
 } from '@/components/sop/sop-diagram/core/route/bpmnRouter'
-import { simplifyOrthogonalPath } from './orthogonal-path-edit.util'
+import { simplifyOrthogonalPath, type PathObstacleCheck } from './orthogonal-path-edit.util'
 
 export type PathGuardDiagramKind = 'flowchart' | 'bpmn'
 
@@ -183,7 +183,8 @@ function repairFlowchartPath(input: RepairPathAroundShapesInput): Point[] | null
         })
   if (routed.length < 2) return null
   const withEndpoints = attachManualEndpoints(routed, input.startPoint, input.endPoint)
-  const simplified = simplifyOrthogonalPath(withEndpoints)
+  const wouldCross = buildObstacleCheck('flowchart', input.obstacles, input.fromShape, input.toShape)
+  const simplified = simplifyOrthogonalPath(withEndpoints, undefined, wouldCross)
   if (
     isPathBlockingShapes({
       kind: 'flowchart',
@@ -209,7 +210,8 @@ function repairBpmnPath(input: RepairPathAroundShapesInput): Point[] | null {
   })
   if (routed.length < 2) return null
   const withEndpoints = attachManualEndpoints(routed, input.startPoint, input.endPoint)
-  const simplified = simplifyOrthogonalPath(withEndpoints)
+  const wouldCross = buildObstacleCheck('bpmn', input.obstacles, input.fromShape, input.toShape)
+  const simplified = simplifyOrthogonalPath(withEndpoints, undefined, wouldCross)
   if (
     isPathBlockingShapes({
       kind: 'bpmn',
@@ -243,6 +245,7 @@ export function rebuildPathForAnchorSides(
     fromShape: input.fromShape,
     toShape: input.toShape,
   }
+  const wouldCross = buildObstacleCheck(input.kind, input.obstacles, input.fromShape, input.toShape)
   const isValid = (candidate: Point[]) =>
     candidate.length >= 2 && !isPathBlockingShapes({ ...checkInput, path: candidate })
 
@@ -252,6 +255,8 @@ export function rebuildPathForAnchorSides(
   if (options?.fallbackPath && options.fallbackPath.length >= 2) {
     const fallback = simplifyOrthogonalPath(
       normalizeOrthogonalPath(options.fallbackPath.map((p) => ({ ...p }))),
+      undefined,
+      wouldCross,
     )
     if (isValid(fallback)) return fallback
   }
@@ -270,17 +275,44 @@ export function finalizeManualOrthogonalPath(
 ): Point[] {
   const check = (candidate: Point[]) =>
     !isPathBlockingShapes({ ...guard.check, path: candidate })
+  const wouldCross = buildObstacleCheck(
+    guard.check.kind,
+    guard.check.obstacles,
+    guard.check.fromShape,
+    guard.check.toShape,
+    guard.check.clearance,
+  )
 
-  const next = simplifyOrthogonalPath(normalizeOrthogonalPath(path.map((p) => ({ ...p }))))
+  const next = simplifyOrthogonalPath(
+    normalizeOrthogonalPath(path.map((p) => ({ ...p }))),
+    undefined,
+    wouldCross,
+  )
   if (check(next)) return next
 
   const repaired = repairPathAroundShapes(guard.repair)
   if (repaired && repaired.length >= 2 && check(repaired)) return repaired
 
   if (fallbackPath && fallbackPath.length >= 2) {
-    const fallback = simplifyOrthogonalPath(normalizeOrthogonalPath(fallbackPath.map((p) => ({ ...p }))))
+    const fallback = simplifyOrthogonalPath(
+      normalizeOrthogonalPath(fallbackPath.map((p) => ({ ...p }))),
+      undefined,
+      wouldCross,
+    )
     if (check(fallback)) return fallback
   }
 
   return next
+}
+
+/** Build a callback that checks if a candidate path would cross shape obstacles. */
+function buildObstacleCheck(
+  kind: PathGuardDiagramKind,
+  obstacles: Rect[],
+  fromShape: Rect,
+  toShape: Rect,
+  clearance?: number,
+): PathObstacleCheck {
+  return (candidate: Point[]) =>
+    isPathBlockingShapes({ kind, path: candidate, obstacles, fromShape, toShape, clearance })
 }

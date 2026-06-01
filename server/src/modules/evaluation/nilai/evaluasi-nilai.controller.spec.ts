@@ -86,9 +86,9 @@ describe('Pengujian EvaluasiNilaiController', () => {
     };
     service.selesai.mockResolvedValueOnce(selesaiResponse);
 
-    const actual = await controller.selesai(req, 'p1', { nilaiOPD: 5 });
+    const actual = await controller.selesai(req, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 });
 
-    expect(service.selesai).toHaveBeenCalledWith(user, 'p1', { nilaiOPD: 5 });
+    expect(service.selesai).toHaveBeenCalledWith(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 });
     expect(actual).toEqual({
       message: 'Pengajuan evaluasi berhasil diselesaikan',
       success: true,

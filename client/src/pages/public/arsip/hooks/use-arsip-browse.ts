@@ -264,6 +264,12 @@ export function useArsipBrowse() {
     }
     return sopItems.find((s) => s.detailSopId === detailSopId)?.judul
   }, [detailSopId, sopItems])
+  const selectedSop = useMemo(() => {
+    if (!detailSopId) {
+      return undefined
+    }
+    return sopItems.find((s) => s.detailSopId === detailSopId)
+  }, [detailSopId, sopItems])
 
   const breadcrumbItems = useMemo((): ArsipBreadcrumbItem[] => {
     const items: ArsipBreadcrumbItem[] = [arsipHomeCrumb()]
@@ -289,6 +295,7 @@ export function useArsipBrowse() {
     opdId,
     selectedOpdName,
     detailSopId,
+    selectedSop,
     opdItems,
     opdFilter,
     onOpdFilterChange: handleOpdFilterChange,
@@ -315,6 +322,9 @@ export function useArsipBrowse() {
     onSopSearchChange: handleSopSearchChange,
     onSelectSop: handleSelectSop,
     onClosePreview: handleClosePreview,
+    onRefreshPreview: () => {
+      void (isGlobalMode ? globalSopQuery.refetch() : sopByOpdQuery.refetch())
+    },
     sopEmptyTitle,
     sopEmptyHint,
   }
@@ -345,6 +355,7 @@ export function useArsipBrowse() {
     panelTitle,
     panelSubtitle,
     sopItems,
+    selectedSop,
     sopPagination,
     sopPage,
     sopLoading,

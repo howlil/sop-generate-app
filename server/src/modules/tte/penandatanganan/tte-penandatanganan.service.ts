@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -18,7 +19,11 @@ import { TandaTanganiDto } from '../shared/dto/tanda-tangani.dto';
 import { buildTteQrPayload } from '../shared/utils/tte-verifikasi-qr.util';
 import { hashDokumenKanonik, mapTtePeranResponse, runTteRepositoryMutation } from '../shared/utils/tte-support';
 import { TteRepository } from '../shared/repository/tte.repository';
+import type { PdfSignatureMetadataInput } from '../shared/repository/tte.repository';
 import type { TteBatchSignSopPengajuanResponse, TteRiwayatResponse } from '../shared/types/tte.types';
+import { SopOfficialPdfService } from '../../sop/pdf/sop-official-pdf.service';
+import { SopPdfStorageService } from '../../sop/pdf/sop-pdf-storage.service';
+import { TtePdfSigningService } from './tte-pdf-signing.service';
 
 @Injectable()
 export class TtePenandatangananService {
@@ -27,6 +32,9 @@ export class TtePenandatangananService {
   constructor(
     private readonly tteRepository: TteRepository,
     configService: ConfigService,
+    @Optional() private readonly sopOfficialPdfService?: SopOfficialPdfService,
+    @Optional() private readonly sopPdfStorageService?: SopPdfStorageService,
+    @Optional() private readonly ttePdfSigningService?: TtePdfSigningService,
   ) {
     this.publicTteVerifyBaseUrl = configService.get<string>('PUBLIC_TTE_VERIFY_BASE_URL');
   }
@@ -148,18 +156,110 @@ export class TtePenandatangananService {
       refId: pengajuanEvaluasiId,
     });
     const signedAt = new Date();
-    const result = await runTteRepositoryMutation(() =>
-      this.tteRepository.transaksiTandaTanganiSemuaSopPengajuan({
+    if (
+      this.sopOfficialPdfService === undefined ||
+      this.sopPdfStorageService === undefined ||
+      this.ttePdfSigningService === undefined
+    ) {
+      throw new ConflictException('Layanan PDF SOP resmi belum tersedia');
+    }
+    const prepared = await runTteRepositoryMutation(() =>
+      this.tteRepository.prepareSopPengesahanDocuments({
         pengajuanEvaluasiId,
         userId: user.sub,
         userOpdId: pengguna.opdId,
         peran: PeranPengguna.KEPALA_OPD,
-        signedAt,
         hashDokumen,
         nomorDokumen: dto.nomorDokumen,
         judulDokumen: dto.judulDokumen,
       }),
     );
+    if (!prepared.ok) {
+      this.throwBatchSopResult(prepared);
+    }
+    const artifacts: Array<{
+      detailSopId: string;
+      dokumenTteId: string;
+      pdfPath: string;
+      pdfSha256: string;
+      pdfSizeBytes: number;
+      signatureMetadata: PdfSignatureMetadataInput;
+    }> = [];
+    try {
+      if (!prepared.ok) throw new Error(); for (const item of prepared.items) {
+        const relativePath = this.sopPdfStorageService.buildRelativePath({
+          opdId: item.opdId,
+          sopId: item.sopId,
+          detailSopId: item.detailSopId,
+          versi: item.versi,
+        });
+        const unsignedPdf = await this.sopOfficialPdfService.buildUnsignedOfficialPdf(
+          item.detailSopId,
+          {
+            dokumenTteId: item.dokumenTteId,
+            userId: user.sub,
+            nomorDokumen: item.nomorDokumen,
+            signedAt,
+            verificationUrl: this.buildPublicVerificationUrl(item.dokumenTteId, user.sub),
+          },
+        );
+        const signedPdf = await this.ttePdfSigningService.signOfficialSopPdfWithUserCertificate({
+          userId: user.sub,
+          pin: dto.pin,
+          dokumenTteId: item.dokumenTteId,
+          pdfBuffer: unsignedPdf,
+          signerName: pengguna.nama,
+        });
+        const stored = await this.sopPdfStorageService.writeOfficialPdf(
+          relativePath,
+          signedPdf.signedPdf,
+        );
+        artifacts.push({
+          detailSopId: item.detailSopId,
+          dokumenTteId: item.dokumenTteId,
+          pdfPath: stored.relativePath,
+          pdfSha256: stored.sha256,
+          pdfSizeBytes: stored.sizeBytes,
+          signatureMetadata: signedPdf.riwayatMetadata,
+        });
+      }
+      const result = await runTteRepositoryMutation(() =>
+        this.tteRepository.finalizeSopPengesahanWithArtifacts({
+          pengajuanEvaluasiId,
+          userId: user.sub,
+          userOpdId: pengguna.opdId,
+          peran: PeranPengguna.KEPALA_OPD,
+          signedAt,
+          artifacts,
+        }),
+      );
+      if (!result.ok) {
+        this.throwBatchSopResult(result);
+      }
+    } catch (error) {
+      await Promise.all(
+        artifacts.map((artifact) => this.sopPdfStorageService?.deleteStoredPdf(artifact.pdfPath)),
+      );
+      throw error;
+    }
+    return {
+      pengajuanEvaluasiId,
+      totalSopDitandatangani: artifacts.length,
+      ditandatanganiPada: signedAt.toISOString(),
+    };
+  }
+
+  private throwBatchSopResult(result: {
+    ok?: false;
+    error?: string;
+    status?: StatusPengajuanEvaluasi | StatusSOP;
+    expectedStatus?: StatusPengajuanEvaluasi | StatusSOP;
+    detailSopId?: string;
+    nomorSOP?: string;
+    judulSOP?: string;
+    expectedCount?: number;
+    updatedCount?: number;
+  }): never {
     if (result.error === 'NOT_FOUND') {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }
@@ -189,14 +289,20 @@ export class TtePenandatangananService {
         `Data dokumen TTE tidak konsisten untuk SOP ${String((result as { detailSopId?: string }).detailSopId)}: wajib tepat satu referensi parent (DetailSOP atau PengajuanEvaluasi)`,
       );
     }
-    if (!result.ok) {
-      throw new ConflictException('Gagal menandatangani seluruh SOP dalam pengajuan');
+    if (result.error === 'SOP_STATUS_DRIFT') {
+      throw new ConflictException(
+        `Status sebagian SOP sudah berubah (${String((result as { updatedCount?: number }).updatedCount ?? 0)}/${String((result as { expectedCount?: number }).expectedCount ?? 0)}). Muat ulang pengajuan lalu coba tanda tangani lagi.`,
+      );
     }
-    return {
-      pengajuanEvaluasiId,
-      totalSopDitandatangani: result.totalSopDitandatangani,
-      ditandatanganiPada: signedAt.toISOString(),
-    };
+    throw new ConflictException('Gagal menandatangani seluruh SOP dalam pengajuan');
+  }
+
+  private buildPublicVerificationUrl(dokumenTteId: string, userId: string): string | null {
+    if (!this.publicTteVerifyBaseUrl) {
+      return null;
+    }
+    const base = this.publicTteVerifyBaseUrl.replace(/\/$/, '');
+    return `${base}/${encodeURIComponent(dokumenTteId)}/${encodeURIComponent(userId)}`;
   }
 
   private mapRiwayat(row: {

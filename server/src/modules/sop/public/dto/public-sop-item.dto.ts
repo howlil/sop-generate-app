@@ -25,4 +25,7 @@ export class PublicSopItemDto {
 
   @ApiProperty()
   readonly opdNama!: string;
+
+  @ApiProperty({ description: 'URL PDF resmi yang divalidasi server setiap request' })
+  readonly pdfUrl!: string;
 }

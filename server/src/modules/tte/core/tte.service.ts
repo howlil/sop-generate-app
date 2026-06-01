@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import type { JwtAccessPayload } from '../../../common';
 import { RegisterTteDto } from '../shared/dto/register-tte.dto';
-import { SignBeritaAcaraArsipDto } from '../shared/dto/sign-berita-acara-arsip.dto';
+
 import { SignPdfDto } from '../shared/dto/sign-pdf.dto';
 import { TandaTanganiDto } from '../shared/dto/tanda-tangani.dto';
 import { UpdateTtePinDto } from '../shared/dto/update-tte-pin.dto';
+import { GenerateP12Dto } from '../shared/dto/generate-p12.dto';
+import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
+import { SetupTteGenerateDto } from '../shared/dto/setup-tte-generate.dto';
+import { SetupTteUploadDto } from '../shared/dto/setup-tte-upload.dto';
 import {
   TtePdfSigningService,
 } from '../penandatanganan/tte-pdf-signing.service';
@@ -57,12 +61,20 @@ export class TteService {
     return this.profilService.updateProfilPin(user, dto);
   }
 
-  mintTokenVerifikasi(user: JwtAccessPayload): Promise<{ token: string }> {
-    return this.profilService.mintTokenVerifikasi(user);
+  generateP12(user: JwtAccessPayload, dto: GenerateP12Dto): Promise<TteProfilResponse> {
+    return this.profilService.generateP12(user, dto);
   }
 
-  konfirmasiEmail(token: string): Promise<{ message: string }> {
-    return this.profilService.konfirmasiEmail(token);
+  uploadP12(user: JwtAccessPayload, dto: UploadP12Dto, file: any): Promise<TteProfilResponse> {
+    return this.profilService.uploadP12(user, dto, file);
+  }
+
+  setupTteGenerate(user: JwtAccessPayload, dto: SetupTteGenerateDto): Promise<TteProfilResponse> {
+    return this.profilService.setupTteGenerate(user, dto);
+  }
+
+  setupTteWithUpload(user: JwtAccessPayload, dto: SetupTteUploadDto, file: any): Promise<TteProfilResponse> {
+    return this.profilService.setupTteWithUpload(user, dto, file);
   }
 
   getPengesahanPublic(dokumenTteId: string, userId: string): Promise<TtePengesahanPublicResponse> {
@@ -93,12 +105,6 @@ export class TteService {
     return this.pdfSigningService.signPdf(user, dto);
   }
 
-  signBeritaAcaraArsip(
-    user: JwtAccessPayload,
-    dto: SignBeritaAcaraArsipDto,
-  ): Promise<SignPdfResponse> {
-    return this.pdfSigningService.signBeritaAcaraArsip(user, dto);
-  }
 
   getPdfSigningStatus(): PdfSigningStatusResponse {
     return this.pdfSigningService.getPdfSigningStatus();

@@ -2,20 +2,26 @@ import { Link } from "@tanstack/react-router";
 import {
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
   FileUp,
   Home,
+  Link2,
+  Link2Off,
   Loader2,
   Shield,
+  ShieldCheck,
+  ShieldX,
   XCircle,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { tteApi, usePdfSigningStatus } from "@/api/tte";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { InfoCard } from "@/components/ui/info-card";
 import { useDocumentTitle } from "@/hooks/use-document-title";
 import { ApiError } from "@/lib/api/api-client";
-import type { VerifyPdfResponse } from "@/types/dto/tte.dto";
+import type { PdfSignatureVerificationEntry, VerifyPdfResponse } from "@/types/dto/tte.dto";
 import { ROUTES } from "@/utils/constants";
 import { formatDateIdLong } from "@/utils/format-date";
 
@@ -36,6 +42,309 @@ function truncateHex(hex: string, head = 16, tail = 8): string {
     return hex;
   }
   return `${hex.slice(0, head)}…${hex.slice(-tail)}`;
+}
+
+function formatDN(dn: string): string {
+  const parts = dn.split(',').map(p => p.trim());
+  const dict: Record<string, string> = {};
+  for (const part of parts) {
+    const [k, v] = part.split('=');
+    if (k && v) dict[k.toUpperCase()] = v;
+  }
+  if (dict['CN'] && dict['O']) {
+    return `${dict['CN']} (${dict['O']})`;
+  } else if (dict['CN']) {
+    return dict['CN'];
+  }
+  return dn;
+}
+
+function parseDN(dn: string): { label: string; value: string }[] {
+  const parts = dn.split(',').map(p => p.trim());
+  return parts.map(part => {
+    const [k, v] = part.split('=');
+    if (!k || !v) return { label: part, value: '' };
+    switch (k.toUpperCase()) {
+      case 'CN': return { label: 'Nama', value: v };
+      case 'O': return { label: 'Organisasi', value: v };
+      case 'OU': return { label: 'Unit', value: v };
+      case 'C': return { label: 'Negara', value: v };
+      case 'L': return { label: 'Kota', value: v };
+      case 'ST': return { label: 'Provinsi', value: v };
+      case 'E': return { label: 'Email', value: v };
+      default: return { label: k, value: v };
+    }
+  });
+}
+
+function DNDetails({ dn }: { dn: string }) {
+  const parsed = parseDN(dn);
+  return (
+    <div className="mt-3 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+      {parsed.map((item, idx) => (
+        <div key={idx} className="flex flex-col gap-1 border-l-2 border-slate-200 pl-3">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{item.label}</span>
+          <span className="text-sm font-medium text-slate-900">{item.value || "-"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function formatFingerprint(hex: string): string {
+  return hex.toUpperCase().match(/.{1,2}/g)?.join(':') || hex;
+}
+
+function VerificationBadge({
+  ok,
+  okText,
+  failText,
+}: {
+  ok: boolean;
+  okText: string;
+  failText: string;
+}) {
+  return (
+    <Badge variant={ok ? "success" : "warning"} className="h-6 gap-1.5 px-2 text-[11px]">
+      {ok ? (
+        <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+      ) : (
+        <AlertCircle className="h-3.5 w-3.5" aria-hidden />
+      )}
+      {ok ? okText : failText}
+    </Badge>
+  );
+}
+
+function SummaryCheck({
+  label,
+  ok,
+  okText,
+  failText,
+}: {
+  label: string;
+  ok: boolean;
+  okText: string;
+  failText: string;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
+      <span className="text-sm text-slate-600">{label}</span>
+      <div className="flex items-center gap-2">
+        {ok ? (
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden />
+        ) : (
+          <AlertCircle className="h-4 w-4 text-rose-600" aria-hidden />
+        )}
+        <span
+          className={
+            ok ? "text-sm font-medium text-emerald-700" : "text-sm font-medium text-rose-700"
+          }
+        >
+          {ok ? okText : failText}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function DetailField({
+  label,
+  children,
+  mono = false,
+}: {
+  label: string;
+  children: React.ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <dt className="text-xs font-medium text-slate-500">{label}</dt>
+      <dd
+        className={
+          mono
+            ? "break-all font-mono text-sm text-slate-900"
+            : "break-words text-sm text-slate-900"
+        }
+      >
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+function BindingNotice({ signature }: { signature: PdfSignatureVerificationEntry }) {
+  const ok = signature.tteMatch.matched;
+  return (
+    <div
+      className={`flex items-start gap-3 rounded-md px-4 py-3 text-sm ${
+        ok ? "bg-emerald-50 text-emerald-800 border border-emerald-100" : "bg-rose-50 text-rose-800 border border-rose-100"
+      }`}
+    >
+      {ok ? (
+        <Link2 className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+      ) : (
+        <Link2Off className="mt-0.5 h-4 w-4 shrink-0" aria-hidden />
+      )}
+      <div>
+        <p className="font-semibold">
+          {ok ? "Cocok dengan riwayat TTE aplikasi" : "Belum cocok dengan riwayat TTE aplikasi"}
+        </p>
+        <p className="mt-0.5 text-xs opacity-90">{signature.tteMatch.reason}</p>
+        {!ok && (
+          <p className="mt-1.5 text-xs opacity-80 leading-5">
+            Artinya tanda tangan PDF bisa saja valid secara kriptografis, tetapi belum dapat
+            dipasangkan ke data pengesahan di aplikasi.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SignatureResultCard({ signature }: { signature: PdfSignatureVerificationEntry }) {
+  return (
+    <Card className="overflow-hidden border-slate-200 shadow-sm">
+      <div
+        className={`flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between ${
+          signature.valid ? "bg-white border-slate-200" : "bg-rose-50 border-rose-100"
+        }`}
+      >
+        <div className="flex items-center gap-2.5">
+          {signature.valid ? (
+            <ShieldCheck className="h-5 w-5 text-emerald-600" aria-hidden />
+          ) : (
+            <ShieldX className="h-5 w-5 text-rose-600" aria-hidden />
+          )}
+          <h3 className="text-sm font-semibold text-slate-900">Tanda tangan #{signature.index}</h3>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <VerificationBadge ok={signature.valid} okText="PDF valid" failText="PDF bermasalah" />
+          <VerificationBadge
+            ok={signature.tteMatch.matched}
+            okText="Riwayat cocok"
+            failText="Riwayat belum cocok"
+          />
+        </div>
+      </div>
+      <CardContent className="space-y-6 pt-5 pb-6">
+        <BindingNotice signature={signature} />
+
+        {!signature.valid && (
+          <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800 border border-rose-100">
+            <span className="font-semibold">Alasan tidak valid:</span> {signature.reason}
+          </div>
+        )}
+
+        <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <DetailField label="Penandatangan">
+            {formatDN(signature.signerSubject)}
+          </DetailField>
+          <DetailField label="Diterbitkan oleh">
+            {formatDN(signature.signerIssuer)}
+          </DetailField>
+          <DetailField label="Waktu penandatanganan">
+            {signature.signedAt ? formatDateIdLong(signature.signedAt) : "Tidak tersedia di PDF"}
+          </DetailField>
+          <DetailField label="Kode keamanan" mono>
+            <span title={signature.certificate.fingerprint}>
+              {truncateHex(signature.certificate.fingerprint, 24, 12)}
+            </span>
+          </DetailField>
+        </div>
+
+        {signature.tteMatch.nomorDokumen || signature.tteMatch.peran ? (
+          <div className="rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+            <h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Data Dokumen Aplikasi
+            </h4>
+            <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+              {signature.tteMatch.nomorDokumen && (
+                <DetailField label="Nomor dokumen">{signature.tteMatch.nomorDokumen}</DetailField>
+              )}
+              {signature.tteMatch.peran && (
+                <DetailField label="Peran TTE">{signature.tteMatch.peran}</DetailField>
+              )}
+              {signature.tteMatch.jenisDokumen && (
+                <DetailField label="Jenis dokumen">{signature.tteMatch.jenisDokumen}</DetailField>
+              )}
+              {signature.tteMatch.ditandatanganiPada && (
+                <DetailField label="Waktu di aplikasi">
+                  {formatDateIdLong(signature.tteMatch.ditandatanganiPada)}
+                </DetailField>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        <div>
+          <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Hasil Pemeriksaan
+          </h4>
+          <div className="rounded-lg border border-slate-200 bg-white px-4">
+            <SummaryCheck
+              label="Integritas dokumen"
+              ok={signature.checks.digestMatch}
+              okText="Tidak berubah"
+              failText="Sudah berubah"
+            />
+            <SummaryCheck
+              label="CA penerbit"
+              ok={signature.checks.chainTrusted}
+              okText="Diakui sistem"
+              failText="Tidak dikenali"
+            />
+            <SummaryCheck
+              label="Sertifikat"
+              ok={signature.checks.certificatePeriodValid}
+              okText="Masih aktif"
+              failText="Kedaluwarsa"
+            />
+          </div>
+        </div>
+
+        <details className="group [&_summary::-webkit-details-marker]:hidden">
+          <summary className="inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 rounded px-1">
+            <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
+            Tampilkan informasi teknis sertifikat
+          </summary>
+          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-5 shadow-sm">
+            <div className="flex flex-col gap-6">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Masa Berlaku Sertifikat</p>
+                <div className="flex flex-wrap items-center gap-2.5 text-sm font-medium">
+                  <div className="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-slate-700 shadow-sm">
+                    {formatDateIdLong(signature.certificate.validFrom)}
+                  </div>
+                  <span className="text-slate-400">→</span>
+                  <div className="rounded-md border border-slate-200 bg-white px-3.5 py-2 text-slate-700 shadow-sm">
+                    {formatDateIdLong(signature.certificate.validTo)}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Informasi Pemilik Sertifikat</p>
+                <DNDetails dn={signature.signerSubject} />
+              </div>
+              
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Informasi Otoritas Penerbit</p>
+                <DNDetails dn={signature.signerIssuer} />
+              </div>
+              
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Kode Keamanan (Fingerprint SHA-256)</p>
+                <div className="break-all rounded-md border border-slate-800 bg-slate-950 p-3.5 font-mono text-xs leading-relaxed text-emerald-400 shadow-inner">
+                  {formatFingerprint(signature.certificate.fingerprint)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function ValidasiPdfPage() {
@@ -96,7 +405,7 @@ export function ValidasiPdfPage() {
   }, [selectedFile]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100/80 px-4 py-10 sm:px-6">
+    <div className="min-h-screen bg-slate-50/50 px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="flex items-start gap-3">
           <div className="rounded-lg border border-slate-200 bg-white p-2 shadow-sm">
@@ -222,72 +531,7 @@ export function ValidasiPdfPage() {
             </InfoCard>
 
             {result.signatures.map((signature) => (
-              <Card key={signature.index} className="border-slate-200 shadow-sm">
-                <CardHeader className="border-b border-slate-100 pb-3">
-                  <h2 className="text-base font-semibold text-slate-900">
-                    Tanda tangan #{signature.index}
-                    {signature.valid ? (
-                      <span className="ml-2 text-sm font-normal text-emerald-700">Valid</span>
-                    ) : (
-                      <span className="ml-2 text-sm font-normal text-amber-800">Tidak valid</span>
-                    )}
-                  </h2>
-                </CardHeader>
-                <CardContent className="space-y-3 pt-4 text-sm">
-                  <p className="text-slate-800">{signature.reason}</p>
-                  <p
-                    className={
-                      signature.tteMatch.matched
-                        ? "text-emerald-700"
-                        : "text-amber-800"
-                    }
-                  >
-                    {signature.tteMatch.reason}
-                  </p>
-                  <div className="grid gap-1 sm:grid-cols-[9rem_1fr] sm:gap-x-3">
-                    {signature.tteMatch.nomorDokumen ? (
-                      <>
-                        <span className="text-slate-500">Nomor dokumen</span>
-                        <span className="text-slate-900">{signature.tteMatch.nomorDokumen}</span>
-                      </>
-                    ) : null}
-                    {signature.tteMatch.peran ? (
-                      <>
-                        <span className="text-slate-500">Peran TTE</span>
-                        <span className="text-slate-900">{signature.tteMatch.peran}</span>
-                      </>
-                    ) : null}
-                    <span className="text-slate-500">Penandatangan</span>
-                    <span className="text-slate-900">{signature.signerSubject}</span>
-                    <span className="text-slate-500">Penerbit</span>
-                    <span className="text-slate-900">{signature.signerIssuer}</span>
-                    <span className="text-slate-500">Waktu (PKCS#7)</span>
-                    <span className="text-slate-900">
-                      {signature.signedAt ? formatDateIdLong(signature.signedAt) : "—"}
-                    </span>
-                    <span className="text-slate-500">Masa berlaku sertifikat</span>
-                    <span className="text-slate-900">
-                      {formatDateIdLong(signature.certificate.validFrom)} —{" "}
-                      {formatDateIdLong(signature.certificate.validTo)}
-                    </span>
-                    <span className="text-slate-500">Sidik jari</span>
-                    <span
-                      className="break-all font-mono text-xs text-slate-800"
-                      title={signature.certificate.fingerprint}
-                    >
-                      {truncateHex(signature.certificate.fingerprint)}
-                    </span>
-                  </div>
-                  <ul className="list-inside list-disc text-xs text-slate-600">
-                    <li>Integritas dokumen: {signature.checks.digestMatch ? "cocok" : "tidak cocok"}</li>
-                    <li>Rantai CA internal: {signature.checks.chainTrusted ? "dipercaya" : "tidak dipercaya"}</li>
-                    <li>
-                      Masa berlaku sertifikat:{" "}
-                      {signature.checks.certificatePeriodValid ? "aktif" : "kedaluwarsa"}
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+              <SignatureResultCard key={signature.index} signature={signature} />
             ))}
           </>
         ) : null}

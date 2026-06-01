@@ -1,8 +1,15 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 
 /** Body PATCH `/evaluasi/:pengajuanEvaluasiId/selesai` — ajukan ke PJ setelah semua SOP SESUAI. */
 export class SelesaiEvaluasiDto {
+  @ApiProperty({
+    description: 'Nomor Berita Acara yang diinputkan oleh Evaluator (wajib untuk semua evaluasi).',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly nomorBA: string;
+
   @ApiPropertyOptional({
     description:
       'Skor evaluasi tingkat OPD (1–5). Wajib untuk pengajuan TERJADWAL; untuk MANDIRI jangan kirim — server menyimpan tanpa skor OPD.',

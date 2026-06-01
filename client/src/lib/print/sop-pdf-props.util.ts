@@ -18,7 +18,11 @@ export function sopPreviewPropsToPdfDocumentProps(
 ): SopPdfDocumentProps {
   const printMode = options.printMode ?? 'diagrams_only'
   const includeHeader =
-    options.includeHeader ?? (printMode === 'full' || printMode === 'steps_and_diagrams')
+    options.includeHeader ??
+    (printMode === 'full' ||
+      printMode === 'steps_and_diagrams' ||
+      printMode === 'header_and_steps' ||
+      printMode === 'header_steps_bpmn')
   return {
     name: preview.name,
     number: preview.number,

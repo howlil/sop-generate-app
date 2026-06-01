@@ -1,85 +1,61 @@
+import { ExternalLink, Loader2, RefreshCw, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Loader2, Printer, X } from 'lucide-react'
-import { usePublicSopDokumen } from '@/api/sop-public'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { SopStatusBadge } from '@/components/status/sop-status-badge'
-import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
-import { useSopPreviewDiagramState } from '@/hooks/use-sop-preview-diagram-state'
-import type { PenyusunWorkbenchData } from '@/types/dto/sop.dto'
+import { resolveApiBaseUrl } from '@/config/env'
 import { cn } from '@/utils/cn'
-import { SOPPreviewTemplate } from '@/components/sop/sop-preview-template'
-import { scheduleSopDocumentPrint } from '@/lib/print/pengajuan-print'
 
 export interface ArsipSopPreviewPaneProps {
   detailSopId: string
+  pdfUrl?: string
+  title?: string
+  opdName?: string
   onClose: () => void
+  onRefresh?: () => void
   variant: 'inline' | 'overlay'
   embedded?: boolean
 }
 
 export function ArsipSopPreviewPane({
   detailSopId,
+  pdfUrl,
+  title = 'Dokumen SOP',
+  opdName,
   onClose,
+  onRefresh,
   variant,
   embedded = false,
 }: ArsipSopPreviewPaneProps) {
-  const { data, isLoading, isError } = usePublicSopDokumen(detailSopId)
-  const [activeTab, setActiveTab] = useState<'flowchart' | 'bpmn'>('flowchart')
-  const judul = data?.detail.sop?.judul ?? 'Dokumen SOP'
-  const previewProps = useMemo(() => {
-    if (!data) {
-      return null
-    }
-    const workbench: PenyusunWorkbenchData = {
-      detail: data.detail,
-      langkah: data.langkah,
-      logEdit: [],
-      diagramKonfigurasi: data.diagramKonfigurasi,
-    }
-    return mapPenyusunWorkbenchToPreviewProps(workbench)
-  }, [data])
-  const diagramRenderState = useSopPreviewDiagramState(
-    previewProps
-      ? {
-          diagramKonfigurasi: previewProps.diagramKonfigurasi,
-          prosedurRows: previewProps.prosedurRows,
-          implementers: previewProps.implementers,
-        }
-      : null,
-    activeTab,
-  )
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasLoadError, setHasLoadError] = useState(false)
+  const resolvedPdfUrl = useMemo(() => resolvePdfUrl(pdfUrl), [pdfUrl])
   const shellClass = cn(
     'flex flex-col bg-white',
     variant === 'overlay' && 'fixed inset-0 z-40 pt-[env(safe-area-inset-top)]',
     variant === 'inline' && embedded && 'h-full min-h-0',
-    variant === 'inline' && !embedded && 'h-full min-h-[calc(100vh-12rem)] max-h-[calc(100vh-12rem)] rounded-xl border border-slate-200 shadow-sm',
+    variant === 'inline' &&
+      !embedded &&
+      'h-full min-h-[calc(100vh-12rem)] max-h-[calc(100vh-12rem)] rounded-xl border border-slate-200 shadow-sm',
   )
   return (
     <section className={shellClass} aria-label="Pratinjau dokumen SOP">
-      <header className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 lg:px-5 print:hidden">
+      <header className="flex shrink-0 flex-wrap items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 lg:px-5">
         <div className="min-w-0 flex-1 pr-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Pratinjau dokumen</p>
-          <h2 className="mt-0.5 line-clamp-2 text-base font-semibold text-slate-900 sm:text-lg">{judul}</h2>
-          {data?.opd.nama ? <p className="mt-1 text-sm text-slate-600">{data.opd.nama}</p> : null}
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">PDF resmi</p>
+          <h2 className="mt-0.5 line-clamp-2 text-base font-semibold text-slate-900 sm:text-lg">{title}</h2>
+          {opdName ? <p className="mt-1 text-sm text-slate-600">{opdName}</p> : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {data ? <SopStatusBadge status="BERLAKU" label="Berlaku" showDomain={false} /> : null}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => {
-              if (previewProps) {
-                void scheduleSopDocumentPrint(previewProps)
-              }
-            }}
-            disabled={!previewProps}
-          >
-            <Printer className="h-4 w-4" aria-hidden />
-            Cetak
-          </Button>
+          {resolvedPdfUrl ? <SopStatusBadge status="BERLAKU" label="Berlaku" showDomain={false} /> : null}
+          {resolvedPdfUrl ? (
+            <Button asChild type="button" variant="outline" size="sm" className="gap-1.5">
+              <a href={resolvedPdfUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4" aria-hidden />
+                Buka
+              </a>
+            </Button>
+          ) : null}
           <Button
             type="button"
             variant="ghost"
@@ -92,33 +68,64 @@ export function ArsipSopPreviewPane({
           </Button>
         </div>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-5 print:overflow-visible">
-        {isLoading ? (
-          <Card className="flex min-h-[240px] items-center justify-center p-12">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" aria-label="Memuat dokumen" />
-          </Card>
-        ) : null}
-        {isError ? (
-          <Card className="border-red-200 bg-red-50 p-8 text-center text-sm text-red-800">
-            Dokumen tidak ditemukan atau belum berstatus Berlaku.
-          </Card>
-        ) : null}
-        {previewProps ? (
-          <Card className="overflow-hidden border-slate-200 p-3 sm:p-4 print:border-0 print:shadow-none">
-            <div data-print-area="sop">
-            <SOPPreviewTemplate
-              {...previewProps}
-              previewOptions={{ editable: false, showScrollbar: true }}
-              diagramState={{
-                activeTab,
-                onActiveTabChange: setActiveTab,
-                ...diagramRenderState,
+      <div className="relative min-h-0 flex-1 bg-slate-100">
+        {!resolvedPdfUrl ? (
+          <UnavailableState onRefresh={onRefresh} />
+        ) : (
+          <>
+            {isLoading ? (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" aria-label="Memuat PDF" />
+              </div>
+            ) : null}
+            {hasLoadError ? (
+              <div className="absolute inset-0 z-20 flex items-center justify-center p-4">
+                <UnavailableState onRefresh={onRefresh} />
+              </div>
+            ) : null}
+            <iframe
+              key={`${detailSopId}:${resolvedPdfUrl}`}
+              title={`PDF SOP ${title}`}
+              src={resolvedPdfUrl}
+              className="h-full min-h-[70vh] w-full border-0 bg-white"
+              onLoad={() => setIsLoading(false)}
+              onError={() => {
+                setIsLoading(false)
+                setHasLoadError(true)
               }}
             />
-            </div>
-          </Card>
-        ) : null}
+          </>
+        )}
       </div>
     </section>
   )
+}
+
+function UnavailableState({ onRefresh }: { onRefresh?: () => void }) {
+  return (
+    <div className="flex h-full min-h-[320px] items-center justify-center p-4">
+      <Card className="max-w-md border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-900">
+        <p className="font-medium">PDF SOP tidak tersedia.</p>
+        <p className="mt-1">
+          Dokumen mungkin sudah dicabut, digantikan versi baru, atau belum memiliki PDF resmi.
+        </p>
+        {onRefresh ? (
+          <Button type="button" variant="outline" size="sm" className="mt-4 gap-1.5" onClick={onRefresh}>
+            <RefreshCw className="h-4 w-4" aria-hidden />
+            Muat ulang daftar
+          </Button>
+        ) : null}
+      </Card>
+    </div>
+  )
+}
+
+function resolvePdfUrl(pdfUrl: string | undefined): string | undefined {
+  if (!pdfUrl) {
+    return undefined
+  }
+  if (/^https?:\/\//i.test(pdfUrl)) {
+    return pdfUrl
+  }
+  return `${resolveApiBaseUrl()}${pdfUrl.startsWith('/') ? pdfUrl : `/${pdfUrl}`}`
 }

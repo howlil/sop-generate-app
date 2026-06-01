@@ -127,8 +127,6 @@ async function bootstrap() {
     logger.log(`📚 Swagger docs: http://localhost:${configuredPort}/docs`);
   }
   logger.log(`💚 Health check: http://localhost:${configuredPort}/health`);
-  logger.log(`🔐 Auth (login): http://localhost:${configuredPort}/api/v1/auth/login`);
-  logger.log(`🔐 Auth (me): http://localhost:${configuredPort}/api/v1/auth/me`);
 }
 
 void bootstrap();

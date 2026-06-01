@@ -45,6 +45,11 @@ export interface SopPdfFromPreviewOptions extends SopPdfPrintOptions {
   printMode?: SopPdfDocumentProps['printMode']
 }
 
+const SOP_ARSIP_PDF_OPTIONS: Pick<SopPdfFromPreviewOptions, 'includeHeader' | 'printMode'> = {
+  includeHeader: true,
+  printMode: 'header_steps_bpmn',
+}
+
 /** Cetak SOP dari props pratinjau workbench (PDF + diagram). */
 export async function printSopFromPreviewProps(
   preview: SopPreviewWorkbenchProps,
@@ -57,6 +62,18 @@ export async function printSopFromPreviewProps(
     tteSignaturePayload,
   })
   return printSopPdfDocument(pdfProps, options)
+}
+
+/** Cetak SOP resmi dengan format arsip yang sama di seluruh halaman. */
+export function printSopArsipFromPreviewProps(
+  preview: SopPreviewWorkbenchProps,
+  tteSignaturePayload: TTESignaturePayload | null = null,
+  options: SopPdfPrintOptions = {},
+): Promise<{ diagramExportFailed: boolean }> {
+  return printSopFromPreviewProps(preview, tteSignaturePayload, {
+    ...SOP_ARSIP_PDF_OPTIONS,
+    ...options,
+  })
 }
 
 /** Unduh SOP dari props pratinjau workbench (PDF + diagram). */

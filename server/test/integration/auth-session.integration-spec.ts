@@ -10,7 +10,7 @@
 import { VersioningType, type INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
-import request, { type Agent } from 'supertest';
+import request from 'supertest';
 import * as bcrypt from 'bcrypt';
 import { createDefaultValidationPipe } from '../../src/common';
 import { PrismaService } from '../../src/common/prisma/prisma.service';

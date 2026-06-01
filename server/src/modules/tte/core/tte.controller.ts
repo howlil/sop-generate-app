@@ -6,9 +6,11 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { type ApiSuccessResponse, Roles, UseJwtAndRolesGuards } from '../../../common';
@@ -16,10 +18,14 @@ import type { JwtAccessPayload } from '../../../common/types/jwt-access-payload.
 import { PeranPengguna } from '../../../generated/prisma';
 import { ACCESS_TOKEN_COOKIE_NAME } from '../../core/auth/helpers/auth.shared';
 import { RegisterTteDto } from '../shared/dto/register-tte.dto';
-import { SignBeritaAcaraArsipDto } from '../shared/dto/sign-berita-acara-arsip.dto';
+
 import { SignPdfDto } from '../shared/dto/sign-pdf.dto';
 import { TandaTanganiDto } from '../shared/dto/tanda-tangani.dto';
 import { UpdateTtePinDto } from '../shared/dto/update-tte-pin.dto';
+import { GenerateP12Dto } from '../shared/dto/generate-p12.dto';
+import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
+import { SetupTteGenerateDto } from '../shared/dto/setup-tte-generate.dto';
+import { SetupTteUploadDto } from '../shared/dto/setup-tte-upload.dto';
 import {
   TteService,
   type TteBatchSignSopPengajuanResponse,
@@ -90,35 +96,77 @@ export class TteController {
     };
   }
 
-  @Post('profil/verifikasi-email')
+  @Post('profil/generate-p12')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Token verifikasi email (simulasi)',
-    description: 'Mode simulasi: tidak mengirim email; kompatibilitas klien lama.',
+    summary: 'Buat Sertifikat TTE Personal (Sistem)',
+    description: 'Sistem akan membuat P12 khusus untuk user ini. Memerlukan PIN aktif.',
   })
-  async mintVerifikasiEmail(
+  async generateP12(
     @Req() req: Request & { user: JwtAccessPayload },
-  ): Promise<ApiSuccessResponse<{ token: string }>> {
-    const data = await this.tteService.mintTokenVerifikasi(req.user);
+    @Body() dto: GenerateP12Dto,
+  ): Promise<ApiSuccessResponse<TteProfilResponse>> {
+    const data = await this.tteService.generateP12(req.user, dto);
     return {
-      message: 'Token simulasi dibuat',
+      message: 'Sertifikat P12 personal berhasil dibuat',
       success: true,
       data,
     };
   }
 
-  @Get('profil/verifikasi-email')
+  @Post('profil/upload-p12')
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Unggah Sertifikat P12 Resmi',
+    description: 'Unggah file P12 dari BSrE. Membutuhkan passphrase P12 asli dan PIN aktif.',
+  })
+  async uploadP12(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: UploadP12Dto,
+    @UploadedFile() file: any,
+  ): Promise<ApiSuccessResponse<TteProfilResponse>> {
+    const data = await this.tteService.uploadP12(req.user, dto, file);
+    return {
+      message: 'Sertifikat P12 berhasil diunggah',
+      success: true,
+      data,
+    };
+  }
+
+  @Post('profil/setup/generate')
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Konfirmasi verifikasi email tanpa perubahan status',
-    description: 'Mode simulasi — tidak mengubah status.',
+    summary: 'Setup awal TTE: generate sertifikat P12 otomatis + atur PIN',
+    description: 'Untuk pengguna yang belum pernah mengatur TTE. Sertifikat P12 dibuat otomatis oleh sistem dan PIN diatur dalam satu operasi.',
   })
-  async konfirmasiEmail(
-    @Query('token') token: string,
-  ): Promise<ApiSuccessResponse<{ message: string }>> {
-    const data = await this.tteService.konfirmasiEmail(token);
+  async setupTteGenerate(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: SetupTteGenerateDto,
+  ): Promise<ApiSuccessResponse<TteProfilResponse>> {
+    const data = await this.tteService.setupTteGenerate(req.user, dto);
     return {
-      message: data.message,
+      message: 'TTE berhasil disiapkan dengan sertifikat otomatis',
+      success: true,
+      data,
+    };
+  }
+
+  @Post('profil/setup/upload')
+  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Setup awal TTE: unggah sertifikat P12 BSrE + atur PIN',
+    description: 'Untuk pengguna yang belum pernah mengatur TTE. Upload P12 dari BSrE dan PIN diatur dalam satu operasi.',
+  })
+  async setupTteWithUpload(
+    @Req() req: Request & { user: JwtAccessPayload },
+    @Body() dto: SetupTteUploadDto,
+    @UploadedFile() file: any,
+  ): Promise<ApiSuccessResponse<TteProfilResponse>> {
+    const data = await this.tteService.setupTteWithUpload(req.user, dto, file);
+    return {
+      message: 'TTE berhasil disiapkan dengan sertifikat BSrE',
       success: true,
       data,
     };
@@ -178,33 +226,15 @@ export class TteController {
   ): Promise<ApiSuccessResponse<SignPdfResponse>> {
     const data = await this.tteService.signPdf(req.user, dto);
     return {
-      message: data.signed
-        ? 'PDF berhasil ditandatangani'
-        : 'Penandatanganan PDF server dinonaktifkan',
+      message:
+        data.signatureFormat === 'UNSIGNED_NOT_REQUIRED'
+          ? 'PDF tidak memerlukan injeksi CA'
+          : data.signed
+            ? 'PDF berhasil ditandatangani'
+            : 'Penandatanganan PDF server dinonaktifkan',
       success: true,
       data,
     };
   }
 
-  @Post('pdf/sign-berita-acara-arsip')
-  @Roles(PeranPengguna.KEPALA_OPD)
-  @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
-  @ApiOperation({
-    summary: 'Tanda tangani PDF Berita Acara arsip (Kepala OPD)',
-    description:
-      'Menyisipkan PKCS#7 ke PDF unduhan arsip setelah PJ Evaluator dan PJ Penyusun menandatangani TTE. Tidak menggantikan riwayat TTE aplikasi.',
-  })
-  async signBeritaAcaraArsip(
-    @Req() req: Request & { user: JwtAccessPayload },
-    @Body() dto: SignBeritaAcaraArsipDto,
-  ): Promise<ApiSuccessResponse<SignPdfResponse>> {
-    const data = await this.tteService.signBeritaAcaraArsip(req.user, dto);
-    return {
-      message: data.signed
-        ? 'PDF Berita Acara arsip berhasil ditandatangani'
-        : 'Penandatanganan PDF server dinonaktifkan',
-      success: true,
-      data,
-    };
-  }
 }

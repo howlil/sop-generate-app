@@ -27,7 +27,9 @@ import { DocumentPreviewTabs } from "@/components/pengajuan/document-preview-tab
 import { SopDocumentPreviewPane } from "@/components/pengajuan/sop-document-preview-pane";
 import { mapBeritaAcaraTemplateProps } from "@/lib/pengajuan/map-berita-acara-template-props";
 import { PinVerificationDialog } from "@/components/tte/pin-verification-dialog";
+import { TteSetupRequiredDialog } from "@/components/tte/tte-setup-required-dialog";
 import { SOPListCard } from "@/components/sop/sop-list-card";
+import { useRequireTteSetup } from "@/hooks/use-require-tte-setup";
 import { ROUTES } from "@/utils/constants";
 import { formatDateIdFull } from "@/utils/format-date";
 
@@ -103,7 +105,15 @@ export function DetailPengajuanSOPPage() {
     tteSignaturePayload: tteSignaturePayloadKepalaOpd ?? null,
   });
 
-  const tandaTanganiSemuaSop = useTandaTanganiSopPengajuan();
+  const {
+    tteSetupDialogOpen,
+    setTteSetupDialogOpen,
+    requireTteReady,
+    handleTteSigningError,
+  } = useRequireTteSetup();
+  const tandaTanganiSemuaSop = useTandaTanganiSopPengajuan({
+    suppressSetupRequiredToast: true,
+  });
   const handlePinConfirm = createPinConfirmHandler(
     tandaTanganiSemuaSop.mutateAsync,
     (pin) => ({
@@ -114,7 +124,12 @@ export function DetailPengajuanSOPPage() {
         judulDokumen: `Pengesahan SOP OPD - ${pengajuan?.opdNama ?? ""}`,
       },
     }),
+    undefined,
+    (error) => handleTteSigningError(error, () => setPinDialogOpen(false)),
   );
+  const handleOpenPinDialog = () => {
+    void requireTteReady(() => setPinDialogOpen(true));
+  };
 
   if (loading && pengajuan === null) {
     return (
@@ -166,7 +181,7 @@ export function DetailPengajuanSOPPage() {
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    onClick={() => setPinDialogOpen(true)}
+                    onClick={handleOpenPinDialog}
                     disabled={tandaTanganiSemuaSop.isPending}
                   >
                     {tandaTanganiSemuaSop.isPending ? (
@@ -295,6 +310,10 @@ export function DetailPengajuanSOPPage() {
         description="Masukkan PIN TTE untuk menandatangani seluruh SOP pada pengajuan ini."
         onConfirm={handlePinConfirm}
         confirmLabel="Tanda Tangani"
+      />
+      <TteSetupRequiredDialog
+        open={tteSetupDialogOpen}
+        onOpenChange={setTteSetupDialogOpen}
       />
     </>
   );

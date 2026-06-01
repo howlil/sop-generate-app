@@ -184,15 +184,19 @@ export function resolvePreferredEndpointSnap(
   const edgeSnap = resolveConstrainedEdgeSnap(edgeOptions)
   if (!edgeSnap) return null
   if (edgeOptions.shapeIsDiamond) return edgeSnap
-  const kindAnchors = filterAnchorsForEndpoint(anchors, edgeOptions.kind)
-  const centerAnchors = kindAnchors.filter((a) => {
+  // The pointer projection owns the selected shape side. Magnetic anchors
+  // may refine the position along that edge, but must not switch edges.
+  const sideAnchors = filterAnchorsForEndpoint(anchors, edgeOptions.kind).filter(
+    (anchor) => anchor.side === edgeSnap.side,
+  )
+  const centerAnchors = sideAnchors.filter((a) => {
     const dist = distanceOnShapeEdge(edgeOptions.shape, a.side, a)
     return Math.abs(dist - 0.5) < 0.02
   })
   const magnetic = resolveMagneticAnchorSnap({
     anchors: [
       ...centerAnchors,
-      ...kindAnchors.filter((a) => !centerAnchors.some((c) => c.id === a.id)),
+      ...sideAnchors.filter((a) => !centerAnchors.some((c) => c.id === a.id)),
     ],
     x: edgeOptions.x,
     y: edgeOptions.y,
@@ -420,9 +424,19 @@ function isPointerInSideZone(
   const zoneH = Math.min(rect.height * EDGE_ZONE_RATIO, rect.width * 0.75)
   switch (side) {
     case 'left':
-      return x >= rect.left - margin && x <= rect.left + zoneW + margin && y <= bottom + margin
+      return (
+        x >= rect.left - margin &&
+        x <= rect.left + zoneW + margin &&
+        y >= rect.top - margin &&
+        y <= bottom + margin
+      )
     case 'right':
-      return x >= right - zoneW - margin && x <= right + margin && y <= bottom + margin
+      return (
+        x >= right - zoneW - margin &&
+        x <= right + margin &&
+        y >= rect.top - margin &&
+        y <= bottom + margin
+      )
     case 'top':
       return (
         y >= rect.top - margin &&
@@ -456,6 +470,16 @@ function sideFacingOppositePoint(
   return dy > 0 ? 'bottom' : 'top'
 }
 
+function isPointerNearHorizontalSide(
+  rect: DiagramShapeRect,
+  x: number,
+  side: 'left' | 'right',
+): boolean {
+  const right = rect.left + rect.width
+  const zoneW = Math.min(rect.width * EDGE_ZONE_RATIO, rect.height * 0.75)
+  return side === 'left' ? x <= rect.left + zoneW : x >= right - zoneW
+}
+
 function pickSideByQuadrant(rect: DiagramShapeRect, x: number, y: number): DiagramAnchorSide {
   const cx = rect.left + rect.width / 2
   const cy = rect.top + rect.height / 2
@@ -475,7 +499,6 @@ function resolveZoneSideOverlap(
   x: number,
   y: number,
 ): DiagramAnchorSide {
-  const isWide = rect.width >= rect.height * 1.1
   const ranked = zones
     .map((side) => ({
       side,
@@ -483,10 +506,6 @@ function resolveZoneSideOverlap(
     }))
     .sort((a, b) => a.distance - b.distance)
   if (ranked.length === 0) return 'top'
-  if (isWide && ranked.length > 1) {
-    const horizontal = ranked.filter((entry) => entry.side === 'left' || entry.side === 'right')
-    if (horizontal.length > 0) return horizontal[0]!.side
-  }
   return ranked[0]!.side
 }
 
@@ -518,13 +537,13 @@ export function pickSnapSideForPointer(
   const bottom = rect.top + rect.height
   const withinHorizontalSpan = x >= rect.left && x <= right
   if (withinHorizontalSpan && y < rect.top) {
-    if (isPointerInSideZone(rect, x, y, 'left')) return 'left'
-    if (isPointerInSideZone(rect, x, y, 'right')) return 'right'
+    if (isPointerNearHorizontalSide(rect, x, 'left')) return 'left'
+    if (isPointerNearHorizontalSide(rect, x, 'right')) return 'right'
     return 'top'
   }
   if (withinHorizontalSpan && y > bottom) {
-    if (isPointerInSideZone(rect, x, y, 'left')) return 'left'
-    if (isPointerInSideZone(rect, x, y, 'right')) return 'right'
+    if (isPointerNearHorizontalSide(rect, x, 'left')) return 'left'
+    if (isPointerNearHorizontalSide(rect, x, 'right')) return 'right'
     return 'bottom'
   }
   const sides: DiagramAnchorSide[] = ['left', 'right', 'top', 'bottom']
@@ -772,8 +791,8 @@ export function resolveEdgeMagneticSnap(
   const lockedSide = parseLockedSideFromAnchorId(lockedAnchorId, kind)
   const projection = projectPointerToShapeEdge(shape, x, y, lockedSide)
   if (!projection) return null
-  let target = projection
-  let distance = projection.distanceToEdge
+  const target = projection
+  const distance = projection.distanceToEdge
   let activeSnapDistance = snapDistancePx
   if (lockedAnchorId && lockedSide) {
     if (distance <= releaseDistancePx) {

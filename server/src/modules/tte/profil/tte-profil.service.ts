@@ -10,9 +10,17 @@ import type { JwtAccessPayload } from '../../../common';
 import { PeranPengguna } from '../../../generated/prisma';
 import { RegisterTteDto } from '../shared/dto/register-tte.dto';
 import { UpdateTtePinDto } from '../shared/dto/update-tte-pin.dto';
+import { GenerateP12Dto } from '../shared/dto/generate-p12.dto';
+import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
+import { SetupTteGenerateDto } from '../shared/dto/setup-tte-generate.dto';
+import { SetupTteUploadDto } from '../shared/dto/setup-tte-upload.dto';
 import { mapTtePeranResponse } from '../shared/utils/tte-support';
+import { encryptP12Passphrase } from '../shared/utils/tte-crypto.util';
+import { generatePersonalP12 } from '../shared/utils/generate-p12.util';
+import { loadTrustedCertificatesFromP12 } from '../shared/utils/pdf-signing-certificate.util';
 import { TteRepository } from '../shared/repository/tte.repository';
 import type { TteProfilResponse } from '../shared/types/tte.types';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class TteProfilService {
@@ -68,19 +76,137 @@ export class TteProfilService {
     return this.buildProfilResponse(pengguna, row);
   }
 
-  async mintTokenVerifikasi(user: JwtAccessPayload): Promise<{ token: string }> {
-    const row = await this.tteRepository.findKredensial(user.sub);
-    if (row === null) {
-      throw new BadRequestException('Buat PIN TTE terlebih dahulu');
-    }
-    return { token: 'mock-email-skip' };
+  async generateP12(user: JwtAccessPayload, dto: GenerateP12Dto): Promise<TteProfilResponse> {
+    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
+    if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
+    const existing = await this.tteRepository.findKredensial(user.sub);
+    if (existing === null) throw new BadRequestException('PIN TTE belum diatur.');
+    
+    const pinValid = await bcrypt.compare(dto.pin, existing.hashPin);
+    if (!pinValid) throw new UnauthorizedException('PIN tidak sesuai');
+
+    const randomPassphrase = crypto.randomBytes(16).toString('hex');
+    const p12Buffer = generatePersonalP12({
+      nama: pengguna.nama,
+      nip: pengguna.nip,
+      opdNama: pengguna.opdNama,
+      jabatan: pengguna.jabatan,
+      passphrase: randomPassphrase,
+    });
+    
+    const p12Base64 = p12Buffer.toString('base64');
+    const encryptedPassphrase = encryptP12Passphrase(randomPassphrase, dto.pin);
+    
+    const row = await this.tteRepository.updateKredensialP12({
+      userId: user.sub,
+      p12Base64,
+      p12PassphraseEncrypted: encryptedPassphrase,
+    });
+    
+    return this.buildProfilResponse(pengguna, row);
   }
 
-  async konfirmasiEmail(token: string): Promise<{ message: string }> {
-    if (typeof token !== 'string' || token.trim() === '') {
-      throw new BadRequestException('Token tidak valid');
+  /**
+   * Setup awal TTE: buat sertifikat P12 otomatis + set PIN dalam satu operasi.
+   * Tidak membutuhkan PIN lama — auth via JWT (setup pertama kali).
+   */
+  async setupTteGenerate(user: JwtAccessPayload, dto: SetupTteGenerateDto): Promise<TteProfilResponse> {
+    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
+    if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
+
+    const existing = await this.tteRepository.findKredensial(user.sub);
+    if (existing !== null) {
+      throw new ConflictException('TTE sudah diatur. Gunakan endpoint update jika ingin mengubah PIN atau sertifikat.');
     }
-    return { message: 'Verifikasi tidak diperlukan pada mode simulasi TTE' };
+
+    const hashPin = await bcrypt.hash(dto.pin, 10);
+    const randomPassphrase = crypto.randomBytes(16).toString('hex');
+    const p12Buffer = generatePersonalP12({
+      nama: pengguna.nama,
+      nip: pengguna.nip,
+      opdNama: pengguna.opdNama,
+      jabatan: pengguna.jabatan,
+      passphrase: randomPassphrase,
+    });
+
+    const p12Base64 = p12Buffer.toString('base64');
+    const encryptedPassphrase = encryptP12Passphrase(randomPassphrase, dto.pin);
+
+    const row = await this.tteRepository.createKredensialPinDanP12({
+      userId: user.sub,
+      hashPin,
+      p12Base64,
+      p12PassphraseEncrypted: encryptedPassphrase,
+    });
+
+    return this.buildProfilResponse(pengguna, row);
+  }
+
+  /**
+   * Setup awal TTE: unggah P12 dari BSrE + set PIN dalam satu operasi.
+   * Tidak membutuhkan PIN lama — auth via JWT (setup pertama kali).
+   */
+  async setupTteWithUpload(
+    user: JwtAccessPayload,
+    dto: SetupTteUploadDto,
+    file: { buffer: Buffer },
+  ): Promise<TteProfilResponse> {
+    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
+    if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
+
+    const existing = await this.tteRepository.findKredensial(user.sub);
+    if (existing !== null) {
+      throw new ConflictException('TTE sudah diatur. Gunakan endpoint update jika ingin mengubah PIN atau sertifikat.');
+    }
+
+    try {
+      loadTrustedCertificatesFromP12(file.buffer, dto.p12Passphrase);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Sertifikat P12 tidak valid';
+      throw new BadRequestException(msg);
+    }
+
+    const hashPin = await bcrypt.hash(dto.pin, 10);
+    const p12Base64 = file.buffer.toString('base64');
+    const encryptedPassphrase = encryptP12Passphrase(dto.p12Passphrase, dto.pin);
+
+    const row = await this.tteRepository.createKredensialPinDanP12({
+      userId: user.sub,
+      hashPin,
+      p12Base64,
+      p12PassphraseEncrypted: encryptedPassphrase,
+    });
+
+    return this.buildProfilResponse(pengguna, row);
+  }
+
+  async uploadP12(user: JwtAccessPayload, dto: UploadP12Dto, file: { buffer: Buffer }): Promise<TteProfilResponse> {
+    const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
+    if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
+    const existing = await this.tteRepository.findKredensial(user.sub);
+    if (existing === null) throw new BadRequestException('PIN TTE belum diatur.');
+
+    const pinValid = await bcrypt.compare(dto.pin, existing.hashPin);
+    if (!pinValid) throw new UnauthorizedException('PIN tidak sesuai');
+
+    // Validasi P12
+    try {
+      loadTrustedCertificatesFromP12(file.buffer, dto.p12Passphrase);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Sertifikat P12 tidak valid';
+      throw new BadRequestException(msg);
+    }
+
+    const p12Base64 = file.buffer.toString('base64');
+    const encryptedPassphrase = encryptP12Passphrase(dto.p12Passphrase, dto.pin);
+    
+    const row = await this.tteRepository.updateKredensialP12({
+      userId: user.sub,
+      p12Base64,
+      p12PassphraseEncrypted: encryptedPassphrase,
+    });
+
+    return this.buildProfilResponse(pengguna, row);
   }
 
   private buildProfilResponse(
@@ -93,11 +219,12 @@ export class TteProfilService {
       pangkat: string;
       peran: PeranPengguna;
     },
-    row: { updatedAt: Date },
+    row: { updatedAt: Date; p12Base64?: string | null },
   ): TteProfilResponse {
     return {
       id: pengguna.penggunaId,
       userId: pengguna.penggunaId,
+      hasP12: Boolean(row.p12Base64),
       peran: mapTtePeranResponse(pengguna.peran),
       createdAt: row.updatedAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),

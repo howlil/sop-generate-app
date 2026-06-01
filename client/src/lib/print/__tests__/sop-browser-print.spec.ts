@@ -59,6 +59,18 @@ describe('isSopDiagramRootReady', () => {
     expect(isSopDiagramRootReady(root)).toBe(true)
   })
 
+  it('menganggap BPMN siap walau SVG panah tidak memakai class overlay flowchart', () => {
+    document.body.innerHTML = `
+      <div data-sop-diagram-root data-sop-connection-count="1">
+        <svg>
+          <path class="sop-connector-stroke" d="M10 10 L80 10 L80 60" />
+        </svg>
+      </div>
+    `
+    const root = document.querySelector('[data-sop-diagram-root]')!
+    expect(isSopDiagramRootReady(root)).toBe(true)
+  })
+
   it('belum siap bila path belum cukup', () => {
     document.body.innerHTML = `
       <div data-sop-diagram-root data-sop-connection-count="2">

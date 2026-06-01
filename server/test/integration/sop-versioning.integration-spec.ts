@@ -22,7 +22,6 @@ import {
 import { isIntegrationEnabled } from './helpers/integration-runtime.util';
 import {
   HasilEvaluasi,
-  JenisDokumenTte,
   JenisLangkahProsedur,
   JenisPengajuanEvaluasi,
   PeranPengguna,
@@ -436,7 +435,6 @@ describeIntegration('SOP Versioning — siklus hidup versi SOP', () => {
 
   describe('Cabut SOP BERLAKU — oleh Kepala OPD', () => {
     let sopCabutDetailId: string;
-    let sopCabutSopId: string;
 
     beforeAll(async () => {
       const result = await buildAndPromoteSopToBerlaku(
@@ -457,7 +455,6 @@ describeIntegration('SOP Versioning — siklus hidup versi SOP', () => {
         },
       );
       sopCabutDetailId = result.detailSopId;
-      sopCabutSopId = result.sopId;
     });
 
     it('POST /sop/cabut/:detailOrSopId oleh Kepala OPD sendiri → 200 DICABUT (Success Case)', async () => {

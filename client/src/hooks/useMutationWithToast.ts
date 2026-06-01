@@ -21,6 +21,8 @@ interface UseMutationWithToastOptions<TData = unknown, TVariables = unknown> {
   onSuccess?: (data: TData, variables: TVariables) => void | Promise<void>;
   /** Optional additional onError callback */
   onError?: (error: Error, variables: TVariables) => void;
+  /** Suppress the default error toast for errors that will be handled by the caller UI. */
+  shouldSuppressErrorToast?: (error: Error, variables: TVariables) => boolean;
 }
 
 export function useMutationWithToast<TData = unknown, TVariables = unknown>(
@@ -45,12 +47,14 @@ export function useMutationWithToast<TData = unknown, TVariables = unknown>(
       showToast(options.successMessage, "success");
     },
     onError: (error: Error, variables) => {
-      // Always use showErrorMessages for consistent error handling
-      // This handles both ApiError (with errors array) and regular errors
-      showErrorMessages(
-        error,
-        options.errorMessagePrefix || "Terjadi kesalahan",
-      );
+      if (!options.shouldSuppressErrorToast?.(error, variables)) {
+        // Always use showErrorMessages for consistent error handling.
+        // This handles both ApiError (with errors array) and regular errors.
+        showErrorMessages(
+          error,
+          options.errorMessagePrefix || "Terjadi kesalahan",
+        );
+      }
       options.onError?.(error, variables);
     },
   });

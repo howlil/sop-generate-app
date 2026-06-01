@@ -31,13 +31,10 @@ describe('Pengujian TteController - Profil', () => {
       getProfil: jest.fn(),
       registerProfil: jest.fn(),
       updateProfilPin: jest.fn(),
-      mintTokenVerifikasi: jest.fn(),
-      konfirmasiEmail: jest.fn(),
       getPengesahanPublic: jest.fn(),
       tandaTanganiBa: jest.fn(),
       tandaTanganiSemuaSopPengajuan: jest.fn(),
       signPdf: jest.fn(),
-      signBeritaAcaraArsip: jest.fn(),
       getPdfSigningStatus: jest.fn(),
       verifyPdf: jest.fn(),
       ...partial,
@@ -97,30 +94,4 @@ describe('Pengujian TteController - Profil', () => {
     expect(tteService.updateProfilPin).toHaveBeenCalledWith(user, dto);
   });
 
-  it('seharusnya mendelegasikan token verifikasi email simulasi', async () => {
-    const tteService = serviceMock({
-      mintTokenVerifikasi: jest.fn().mockResolvedValue({ token: 'mock-email-skip' }),
-    });
-
-    await expect(new TteController(tteService).mintVerifikasiEmail(req)).resolves.toEqual({
-      message: 'Token simulasi dibuat',
-      success: true,
-      data: { token: 'mock-email-skip' },
-    });
-    expect(tteService.mintTokenVerifikasi).toHaveBeenCalledWith(user);
-  });
-
-  it('seharusnya menggunakan pesan service saat konfirmasi email', async () => {
-    const data = { message: 'Verifikasi tidak diperlukan pada mode simulasi TTE' };
-    const tteService = serviceMock({
-      konfirmasiEmail: jest.fn().mockResolvedValue(data),
-    });
-
-    await expect(new TteController(tteService).konfirmasiEmail('token-1')).resolves.toEqual({
-      message: data.message,
-      success: true,
-      data,
-    });
-    expect(tteService.konfirmasiEmail).toHaveBeenCalledWith('token-1');
-  });
 });

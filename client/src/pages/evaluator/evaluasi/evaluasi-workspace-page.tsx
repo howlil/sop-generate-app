@@ -747,7 +747,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         snapshotRows={ajukanSnapshotRows}
         canConfirm={canAjukan}
         blockingReason={blockingAjukan}
-        onConfirm={() => void handleSubmitAll()}
+        onConfirm={(nomorBA: string) => void handleSubmitAll(nomorBA)}
         isSubmitting={isAjukanSubmitting}
         terjadwalSubmitError={submitErrorObj}
       />

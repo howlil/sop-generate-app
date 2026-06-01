@@ -486,28 +486,29 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
     setTerjadwalSubmitError(null);
   }, []);
 
-  const handleSubmitAll = useCallback(async () => {
-    if (!pengajuanAktifId) {
-      setTerjadwalSubmitError("Pengajuan evaluasi tidak tersedia.");
-      return;
-    }
-    if (!canSubmit) {
-      setTerjadwalSubmitError(
-        blockingMessage ?? "Syarat pengajuan belum terpenuhi.",
-      );
-      return;
-    }
-    if (requiresNilaiOpd && (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5)) {
-      setTerjadwalSubmitError("Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.");
-      return;
-    }
-    setIsSubmitting(true);
-    setTerjadwalSubmitError(null);
-    try {
-      assertCanMutateEvaluasiNilai(useAuthStore.getState().user?.peran);
-      const payload: SelesaiEvaluasiDto = requiresNilaiOpd
-        ? { nilaiOPD: ratingOPD! }
-        : {};
+  const handleSubmitAll = useCallback(
+    async (nomorBA: string) => {
+      if (!pengajuanAktifId) {
+        setTerjadwalSubmitError("Pengajuan evaluasi tidak tersedia.");
+        return;
+      }
+      if (!canSubmit) {
+        setTerjadwalSubmitError(
+          blockingMessage ?? "Syarat pengajuan belum terpenuhi.",
+        );
+        return;
+      }
+      if (requiresNilaiOpd && (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5)) {
+        setTerjadwalSubmitError("Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.");
+        return;
+      }
+      setIsSubmitting(true);
+      setTerjadwalSubmitError(null);
+      try {
+        assertCanMutateEvaluasiNilai(useAuthStore.getState().user?.peran);
+        const payload: SelesaiEvaluasiDto = requiresNilaiOpd
+          ? { nomorBA, nilaiOPD: ratingOPD! }
+          : { nomorBA };
       await evaluasiApi.selesai(pengajuanAktifId, payload);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.evaluasi }),

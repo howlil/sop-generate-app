@@ -20,6 +20,44 @@ describe('sopPreviewPropsToPdfDocumentProps', () => {
 })
 
 describe('resolvePrintSections', () => {
+  it('menampilkan header dan tabel langkah tanpa diagram', () => {
+    const actual = resolvePrintSections({
+      includeHeader: true,
+      printMode: 'header_and_steps',
+      diagramSnapshots: [
+        {
+          kind: 'flowchart',
+          pageIndex: 0,
+          dataUrl: 'data:image/png;base64,abc',
+          width: 100,
+          height: 80,
+        },
+      ],
+    })
+    expect(actual.showHeader).toBe(true)
+    expect(actual.showSteps).toBe(true)
+    expect(actual.showDiagrams).toBe(false)
+  })
+
+  it('menampilkan header dan snapshot kanvas untuk mode header_steps_bpmn', () => {
+    const actual = resolvePrintSections({
+      includeHeader: true,
+      printMode: 'header_steps_bpmn',
+      diagramSnapshots: [
+        {
+          kind: 'bpmn',
+          pageIndex: 0,
+          dataUrl: 'data:image/png;base64,abc',
+          width: 100,
+          height: 80,
+        },
+      ],
+    })
+    expect(actual.showHeader).toBe(true)
+    expect(actual.showSteps).toBe(false)
+    expect(actual.showDiagrams).toBe(true)
+  })
+
   it('menyembunyikan header saat mode diagrams_only dengan snapshot', () => {
     const actual = resolvePrintSections({
       includeHeader: false,

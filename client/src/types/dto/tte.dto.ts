@@ -5,6 +5,7 @@ export interface TteProfil {
   id: string;
   userId: string;
   peran: PeranTTE;
+  hasP12?: boolean;
   createdAt: string;
   updatedAt: string;
   user?: {
@@ -55,15 +56,31 @@ export interface TTESignaturePayload {
 export type JenisDokumenTte = "BERITA_ACARA_EVALUASI" | "SOP_BERLAKU";
 
 export interface SignPdfDto {
+  pin: string;
   dokumenTteId: string;
   userId: string;
   jenisDokumen: JenisDokumenTte;
   pdfBase64: string;
 }
 
-export interface SignBeritaAcaraArsipDto {
-  pengajuanEvaluasiId: string;
-  pdfBase64: string;
+export interface GenerateP12Dto {
+  pin: string;
+}
+
+export interface UploadP12Dto {
+  pin: string;
+  p12Passphrase: string;
+}
+
+/** Setup awal TTE: buat sertifikat otomatis + PIN dalam satu request */
+export interface SetupTteGenerateDto {
+  pin: string;
+}
+
+/** Setup awal TTE: unggah P12 BSrE + PIN dalam satu request */
+export interface SetupTteUploadDto {
+  pin: string;
+  p12Passphrase: string;
 }
 
 export interface PdfCertificateInfo {
@@ -79,7 +96,7 @@ export interface SignPdfResponse {
   signed: boolean;
   signedPdfBase64: string;
   sha256SignedPdf: string;
-  signatureFormat: "PKCS7_DETACHED" | "UNSIGNED_DISABLED";
+  signatureFormat: "PKCS7_DETACHED" | "UNSIGNED_DISABLED" | "UNSIGNED_NOT_REQUIRED";
   certificate: PdfCertificateInfo | null;
 }
 

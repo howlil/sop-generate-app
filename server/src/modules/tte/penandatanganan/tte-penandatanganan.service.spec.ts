@@ -59,6 +59,8 @@ describe('Pengujian TtePenandatangananService', () => {
       transaksiTandaTanganiBaEvaluator: jest.fn(),
       transaksiTandaTanganiBaPjPenyusun: jest.fn(),
       transaksiTandaTanganiSemuaSopPengajuan: jest.fn(),
+      prepareSopPengesahanDocuments: jest.fn(),
+      finalizeSopPengesahanWithArtifacts: jest.fn(),
       ...partial,
     } as unknown as jest.Mocked<TteRepository>;
   }
@@ -256,6 +258,54 @@ describe('Pengujian TtePenandatangananService', () => {
   describe('tandaTanganiSemuaSopPengajuan', () => {
     let repo: jest.Mocked<TteRepository>;
     let service: TtePenandatangananService;
+    const preparedOk = {
+      ok: true,
+      items: [
+        {
+          detailSopId: 'ds-1',
+          sopId: 'sop-1',
+          opdId: 'opd-1',
+          judulSop: 'SOP',
+          nomorSOP: '123',
+          versi: 1,
+          dokumenTteId: 'doc-1',
+          nomorDokumen: 'D-123',
+          judulDokumen: 'J - SOP',
+        },
+      ],
+    } as const;
+    const pdfService = {
+      buildUnsignedOfficialPdf: jest.fn().mockResolvedValue(Buffer.from('%PDF-1.7\n')),
+    };
+    const storageService = {
+      buildRelativePath: jest.fn().mockReturnValue('opd-1/sop-1/v1-ds-1.pdf'),
+      writeOfficialPdf: jest.fn().mockResolvedValue({
+        relativePath: 'opd-1/sop-1/v1-ds-1.pdf',
+        absolutePath: 'x',
+        sizeBytes: 12,
+        sha256: 'sha256',
+      }),
+      deleteStoredPdf: jest.fn().mockResolvedValue(undefined),
+    };
+    const pdfSigningService = {
+      signOfficialSopPdfWithUserCertificate: jest.fn().mockResolvedValue({
+        signedPdf: Buffer.from('%PDF-1.7 signed\n'),
+        sha256SignedPdf: 'sha256',
+        signatureFormat: 'PKCS7_DETACHED',
+        certificate: {},
+        riwayatMetadata: {
+          signatureValue: 'sha256:sig',
+          signatureAlgorithm: 'SHA256withRSA',
+          signatureFormat: 'PKCS7_DETACHED',
+          certSerialNumber: '1',
+          certIssuer: 'issuer',
+          certSubject: 'subject',
+          certFingerprint: 'fp',
+          certValidFrom: new Date('2026-01-01T00:00:00.000Z'),
+          certValidTo: new Date('2027-01-01T00:00:00.000Z'),
+        },
+      }),
+    };
 
     beforeEach(() => {
       repo = createRepoMock({
@@ -263,7 +313,14 @@ describe('Pengujian TtePenandatangananService', () => {
         findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      service = new TtePenandatangananService(repo, config());
+      jest.clearAllMocks();
+      service = new TtePenandatangananService(
+        repo,
+        config(),
+        pdfService as any,
+        storageService as any,
+        pdfSigningService as any,
+      );
     });
 
     it('seharusnya melempar ForbiddenException jika peran bukan Kepala OPD', async () => {
@@ -274,49 +331,58 @@ describe('Pengujian TtePenandatangananService', () => {
     });
 
     it('seharusnya menerjemahkan error BAD_PENGAJUAN_STATUS', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ error: 'BAD_PENGAJUAN_STATUS', status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI } as any);
+      repo.prepareSopPengesahanDocuments.mockResolvedValue({ error: 'BAD_PENGAJUAN_STATUS', status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI } as any);
       await expect(
         service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' })
       ).rejects.toThrow(/Pengajuan tidak dapat ditandatangani pada status SEDANG_DIEVALUASI/);
     });
 
     it('seharusnya menerjemahkan error EMPTY_SOP', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ error: 'EMPTY_SOP' });
+      repo.prepareSopPengesahanDocuments.mockResolvedValue({ error: 'EMPTY_SOP' });
       await expect(
         service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' })
       ).rejects.toThrow(BadRequestException);
     });
 
     it('seharusnya menerjemahkan error BAD_SOP_STATUS', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ error: 'BAD_SOP_STATUS', nomorSOP: '123', status: StatusSOP.DRAFT } as any);
+      repo.prepareSopPengesahanDocuments.mockResolvedValue({ error: 'BAD_SOP_STATUS', nomorSOP: '123', status: StatusSOP.DRAFT } as any);
       await expect(
         service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' })
       ).rejects.toThrow(/tidak dapat ditandatangani dari status DRAFT/);
     });
 
     it('seharusnya menerjemahkan error ALREADY_SIGNED', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ error: 'ALREADY_SIGNED', detailSopId: 'ds-1' });
+      repo.prepareSopPengesahanDocuments.mockResolvedValue({ error: 'ALREADY_SIGNED', detailSopId: 'ds-1' });
       await expect(
         service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' })
       ).rejects.toThrow('SOP ds-1 sudah ditandatangani');
     });
 
     it('seharusnya menerjemahkan error INVALID_DOC_PARENT', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ error: 'INVALID_DOC_PARENT', detailSopId: 'ds-1' });
+      repo.prepareSopPengesahanDocuments.mockResolvedValue({ error: 'INVALID_DOC_PARENT', detailSopId: 'ds-1' });
       await expect(
         service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' })
       ).rejects.toThrow('wajib tepat satu referensi parent');
     });
 
     it('seharusnya melempar ConflictException ketika ok=false (Gagal sistem)', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ ok: false } as any);
+      repo.prepareSopPengesahanDocuments.mockResolvedValue(preparedOk as any);
+      repo.finalizeSopPengesahanWithArtifacts.mockResolvedValue({ ok: false } as any);
       await expect(
         service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' })
       ).rejects.toThrow('Gagal menandatangani seluruh SOP');
     });
 
     it('seharusnya mengembalikan response batch berhasil ketika transaksi OK', async () => {
-      repo.transaksiTandaTanganiSemuaSopPengajuan.mockResolvedValue({ ok: true, totalSopDitandatangani: 5 } as any);
+      repo.prepareSopPengesahanDocuments.mockResolvedValue({
+        ok: true,
+        items: Array.from({ length: 5 }).map((_, index) => ({
+          ...preparedOk.items[0],
+          detailSopId: `ds-${index + 1}`,
+          dokumenTteId: `doc-${index + 1}`,
+        })),
+      } as any);
+      repo.finalizeSopPengesahanWithArtifacts.mockResolvedValue({ ok: true, totalSopDitandatangani: 5 } as any);
       const actual = await service.tandaTanganiSemuaSopPengajuan(kepalaUser, 'pid-1', { pin: '1234', nomorDokumen: 'D', judulDokumen: 'J' });
       expect(actual.totalSopDitandatangani).toBe(5);
       expect(actual.pengajuanEvaluasiId).toBe('pid-1');

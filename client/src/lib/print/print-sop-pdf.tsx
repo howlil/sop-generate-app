@@ -15,6 +15,7 @@ const QR_SIZE = 64
 export type SopPdfPrintOptions = {
   signPdf?: boolean
   skipDiagramExport?: boolean
+  pin?: string
 }
 
 export interface PrepareSopPdfDocumentPropsResult {
@@ -48,7 +49,12 @@ function shouldExportDiagrams(props: SopPdfDocumentProps, options?: SopPdfPrintO
   if (options?.skipDiagramExport) {
     return false
   }
-  if ((props.diagramSnapshots?.length ?? 0) > 0) {
+  const snapshots = props.diagramSnapshots ?? []
+  const requiredKinds = getRequiredDiagramKinds(props)
+  if (
+    snapshots.length > 0 &&
+    requiredKinds.every((kind) => snapshots.some((snapshot) => snapshot.kind === kind))
+  ) {
     return false
   }
   const printMode: SopPdfPrintMode =
@@ -56,8 +62,25 @@ function shouldExportDiagrams(props: SopPdfDocumentProps, options?: SopPdfPrintO
   return (
     printMode === 'diagrams_only' ||
     printMode === 'steps_and_diagrams' ||
+    printMode === 'header_steps_bpmn' ||
     printMode === 'full'
   )
+}
+
+function getRequiredDiagramKinds(props: SopPdfDocumentProps): Array<'flowchart' | 'bpmn'> {
+  const printMode: SopPdfPrintMode =
+    props.printMode ?? (props.includeHeader === false ? 'diagrams_only' : 'full')
+  if (printMode === 'header_steps_bpmn') {
+    return ['flowchart', 'bpmn']
+  }
+  if (
+    printMode === 'diagrams_only' ||
+    printMode === 'steps_and_diagrams' ||
+    printMode === 'full'
+  ) {
+    return ['flowchart', 'bpmn']
+  }
+  return []
 }
 
 /** Siapkan props PDF termasuk ekspor diagram bila diperlukan. */
@@ -74,6 +97,8 @@ export async function prepareSopPdfDocumentProps(
       prosedurRows: props.prosedurRows ?? [],
       implementers: props.implementers ?? [],
       diagramKonfigurasi: props.diagramKonfigurasi,
+    }, {
+      requiredKinds: getRequiredDiagramKinds(props),
     })
     return {
       props: { ...props, diagramSnapshots },
@@ -123,11 +148,12 @@ async function signSopPdfBlob(
   options: SopPdfPrintOptions | undefined,
 ): Promise<Blob> {
   const shouldSign = options?.signPdf ?? Boolean(props.tteSignaturePayload)
-  if (!shouldSign || !props.tteSignaturePayload) {
+  if (!shouldSign || !props.tteSignaturePayload || !options?.pin) {
     return blob
   }
 
   const response = await tteApi.signPdf({
+    pin: options.pin,
     dokumenTteId: props.tteSignaturePayload.dokumenTteId,
     userId: props.tteSignaturePayload.userId,
     jenisDokumen: 'SOP_BERLAKU',

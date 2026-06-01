@@ -14,6 +14,7 @@ export function resolvePrintSections(props: SopPdfDocumentProps): {
     printMode !== 'steps_only'
   const showSteps =
     printMode === 'full' ||
+    printMode === 'header_and_steps' ||
     printMode === 'steps_only' ||
     printMode === 'steps_and_diagrams' ||
     (printMode === 'diagrams_only' && !hasDiagrams)
@@ -21,6 +22,7 @@ export function resolvePrintSections(props: SopPdfDocumentProps): {
     hasDiagrams &&
     (printMode === 'full' ||
       printMode === 'diagrams_only' ||
-      printMode === 'steps_and_diagrams')
+      printMode === 'steps_and_diagrams' ||
+      printMode === 'header_steps_bpmn')
   return { showHeader, showSteps, showDiagrams }
 }

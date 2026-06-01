@@ -3984,6 +3984,8 @@ export namespace Prisma {
     refreshTokenExpiresAt: Date | null
     passwordChangedAt: Date | null
     ttePinHash: string | null
+    tteP12Base64: string | null
+    tteP12PassphraseEncrypted: string | null
     deletedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4005,6 +4007,8 @@ export namespace Prisma {
     refreshTokenExpiresAt: Date | null
     passwordChangedAt: Date | null
     ttePinHash: string | null
+    tteP12Base64: string | null
+    tteP12PassphraseEncrypted: string | null
     deletedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -4026,6 +4030,8 @@ export namespace Prisma {
     refreshTokenExpiresAt: number
     passwordChangedAt: number
     ttePinHash: number
+    tteP12Base64: number
+    tteP12PassphraseEncrypted: number
     deletedAt: number
     createdAt: number
     updatedAt: number
@@ -4057,6 +4063,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: true
     passwordChangedAt?: true
     ttePinHash?: true
+    tteP12Base64?: true
+    tteP12PassphraseEncrypted?: true
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -4078,6 +4086,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: true
     passwordChangedAt?: true
     ttePinHash?: true
+    tteP12Base64?: true
+    tteP12PassphraseEncrypted?: true
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -4099,6 +4109,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: true
     passwordChangedAt?: true
     ttePinHash?: true
+    tteP12Base64?: true
+    tteP12PassphraseEncrypted?: true
     deletedAt?: true
     createdAt?: true
     updatedAt?: true
@@ -4207,6 +4219,8 @@ export namespace Prisma {
     refreshTokenExpiresAt: Date | null
     passwordChangedAt: Date | null
     ttePinHash: string | null
+    tteP12Base64: string | null
+    tteP12PassphraseEncrypted: string | null
     deletedAt: Date | null
     createdAt: Date
     updatedAt: Date
@@ -4247,6 +4261,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: boolean
     passwordChangedAt?: boolean
     ttePinHash?: boolean
+    tteP12Base64?: boolean
+    tteP12PassphraseEncrypted?: boolean
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -4284,12 +4300,14 @@ export namespace Prisma {
     refreshTokenExpiresAt?: boolean
     passwordChangedAt?: boolean
     ttePinHash?: boolean
+    tteP12Base64?: boolean
+    tteP12PassphraseEncrypted?: boolean
     deletedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PenggunaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"penggunaId" | "email" | "opdId" | "nama" | "kataSandi" | "peran" | "nip" | "jabatan" | "pangkat" | "nohp" | "sesiTokenVersion" | "refreshTokenHash" | "refreshTokenExpiresAt" | "passwordChangedAt" | "ttePinHash" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pengguna"]>
+  export type PenggunaOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"penggunaId" | "email" | "opdId" | "nama" | "kataSandi" | "peran" | "nip" | "jabatan" | "pangkat" | "nohp" | "sesiTokenVersion" | "refreshTokenHash" | "refreshTokenExpiresAt" | "passwordChangedAt" | "ttePinHash" | "tteP12Base64" | "tteP12PassphraseEncrypted" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pengguna"]>
   export type PenggunaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSopDibuat?: boolean | Pengguna$detailSopDibuatArgs<ExtArgs>
     detailSopDiedit?: boolean | Pengguna$detailSopDieditArgs<ExtArgs>
@@ -4340,6 +4358,8 @@ export namespace Prisma {
       refreshTokenExpiresAt: Date | null
       passwordChangedAt: Date | null
       ttePinHash: string | null
+      tteP12Base64: string | null
+      tteP12PassphraseEncrypted: string | null
       deletedAt: Date | null
       createdAt: Date
       updatedAt: Date
@@ -4740,6 +4760,8 @@ export namespace Prisma {
     readonly refreshTokenExpiresAt: FieldRef<"Pengguna", 'DateTime'>
     readonly passwordChangedAt: FieldRef<"Pengguna", 'DateTime'>
     readonly ttePinHash: FieldRef<"Pengguna", 'String'>
+    readonly tteP12Base64: FieldRef<"Pengguna", 'String'>
+    readonly tteP12PassphraseEncrypted: FieldRef<"Pengguna", 'String'>
     readonly deletedAt: FieldRef<"Pengguna", 'DateTime'>
     readonly createdAt: FieldRef<"Pengguna", 'DateTime'>
     readonly updatedAt: FieldRef<"Pengguna", 'DateTime'>
@@ -6690,6 +6712,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       penggunaId: string
       opdId: string
+      /**
+       * Histori penempatan OPD. Sumber kebenaran OPD aktif tetap `Pengguna.opdId`;
+       * `isAktif` disinkronkan service untuk kemudahan tampilan riwayat.
+       */
       isAktif: boolean
       createdAt: Date
       updatedAt: Date
@@ -25101,6 +25127,10 @@ export namespace Prisma {
     hasilSesudah: $Enums.HasilEvaluasi | null
     catatanSebelum: string | null
     catatanSesudah: string | null
+    statusTindakLanjutSebelum: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId: string | null
+    ditindaklanjutiPada: Date | null
     createdAt: Date | null
   }
 
@@ -25112,6 +25142,10 @@ export namespace Prisma {
     hasilSesudah: $Enums.HasilEvaluasi | null
     catatanSebelum: string | null
     catatanSesudah: string | null
+    statusTindakLanjutSebelum: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId: string | null
+    ditindaklanjutiPada: Date | null
     createdAt: Date | null
   }
 
@@ -25123,6 +25157,10 @@ export namespace Prisma {
     hasilSesudah: number
     catatanSebelum: number
     catatanSesudah: number
+    statusTindakLanjutSebelum: number
+    statusTindakLanjutSesudah: number
+    ditindaklanjutiOlehId: number
+    ditindaklanjutiPada: number
     createdAt: number
     _all: number
   }
@@ -25136,6 +25174,10 @@ export namespace Prisma {
     hasilSesudah?: true
     catatanSebelum?: true
     catatanSesudah?: true
+    statusTindakLanjutSebelum?: true
+    statusTindakLanjutSesudah?: true
+    ditindaklanjutiOlehId?: true
+    ditindaklanjutiPada?: true
     createdAt?: true
   }
 
@@ -25147,6 +25189,10 @@ export namespace Prisma {
     hasilSesudah?: true
     catatanSebelum?: true
     catatanSesudah?: true
+    statusTindakLanjutSebelum?: true
+    statusTindakLanjutSesudah?: true
+    ditindaklanjutiOlehId?: true
+    ditindaklanjutiPada?: true
     createdAt?: true
   }
 
@@ -25158,6 +25204,10 @@ export namespace Prisma {
     hasilSesudah?: true
     catatanSebelum?: true
     catatanSesudah?: true
+    statusTindakLanjutSebelum?: true
+    statusTindakLanjutSesudah?: true
+    ditindaklanjutiOlehId?: true
+    ditindaklanjutiPada?: true
     createdAt?: true
     _all?: true
   }
@@ -25242,6 +25292,10 @@ export namespace Prisma {
     hasilSesudah: $Enums.HasilEvaluasi | null
     catatanSebelum: string | null
     catatanSesudah: string | null
+    statusTindakLanjutSebelum: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId: string | null
+    ditindaklanjutiPada: Date | null
     createdAt: Date
     _count: LogNilaiEvaluasiCountAggregateOutputType | null
     _min: LogNilaiEvaluasiMinAggregateOutputType | null
@@ -25270,6 +25324,10 @@ export namespace Prisma {
     hasilSesudah?: boolean
     catatanSebelum?: boolean
     catatanSesudah?: boolean
+    statusTindakLanjutSebelum?: boolean
+    statusTindakLanjutSesudah?: boolean
+    ditindaklanjutiOlehId?: boolean
+    ditindaklanjutiPada?: boolean
     createdAt?: boolean
     pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
@@ -25286,10 +25344,14 @@ export namespace Prisma {
     hasilSesudah?: boolean
     catatanSebelum?: boolean
     catatanSesudah?: boolean
+    statusTindakLanjutSebelum?: boolean
+    statusTindakLanjutSesudah?: boolean
+    ditindaklanjutiOlehId?: boolean
+    ditindaklanjutiPada?: boolean
     createdAt?: boolean
   }
 
-  export type LogNilaiEvaluasiOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengajuanEvaluasiId" | "detailSopId" | "penggunaId" | "hasilSebelum" | "hasilSesudah" | "catatanSebelum" | "catatanSesudah" | "createdAt", ExtArgs["result"]["logNilaiEvaluasi"]>
+  export type LogNilaiEvaluasiOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pengajuanEvaluasiId" | "detailSopId" | "penggunaId" | "hasilSebelum" | "hasilSesudah" | "catatanSebelum" | "catatanSesudah" | "statusTindakLanjutSebelum" | "statusTindakLanjutSesudah" | "ditindaklanjutiOlehId" | "ditindaklanjutiPada" | "createdAt", ExtArgs["result"]["logNilaiEvaluasi"]>
   export type LogNilaiEvaluasiInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pengguna?: boolean | PenggunaDefaultArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | PengajuanEvaluasiDefaultArgs<ExtArgs>
@@ -25311,6 +25373,10 @@ export namespace Prisma {
       hasilSesudah: $Enums.HasilEvaluasi | null
       catatanSebelum: string | null
       catatanSesudah: string | null
+      statusTindakLanjutSebelum: $Enums.StatusTindakLanjut | null
+      statusTindakLanjutSesudah: $Enums.StatusTindakLanjut | null
+      ditindaklanjutiOlehId: string | null
+      ditindaklanjutiPada: Date | null
       createdAt: Date
     }, ExtArgs["result"]["logNilaiEvaluasi"]>
     composites: {}
@@ -25691,6 +25757,10 @@ export namespace Prisma {
     readonly hasilSesudah: FieldRef<"LogNilaiEvaluasi", 'HasilEvaluasi'>
     readonly catatanSebelum: FieldRef<"LogNilaiEvaluasi", 'String'>
     readonly catatanSesudah: FieldRef<"LogNilaiEvaluasi", 'String'>
+    readonly statusTindakLanjutSebelum: FieldRef<"LogNilaiEvaluasi", 'StatusTindakLanjut'>
+    readonly statusTindakLanjutSesudah: FieldRef<"LogNilaiEvaluasi", 'StatusTindakLanjut'>
+    readonly ditindaklanjutiOlehId: FieldRef<"LogNilaiEvaluasi", 'String'>
+    readonly ditindaklanjutiPada: FieldRef<"LogNilaiEvaluasi", 'DateTime'>
     readonly createdAt: FieldRef<"LogNilaiEvaluasi", 'DateTime'>
   }
     
@@ -26072,10 +26142,12 @@ export namespace Prisma {
 
   export type DokumenTteAvgAggregateOutputType = {
     versiDokumen: number | null
+    pdfSizeBytes: number | null
   }
 
   export type DokumenTteSumAggregateOutputType = {
     versiDokumen: number | null
+    pdfSizeBytes: number | null
   }
 
   export type DokumenTteMinAggregateOutputType = {
@@ -26085,6 +26157,13 @@ export namespace Prisma {
     judulDokumen: string | null
     hashDokumen: string | null
     versiDokumen: number | null
+    pdfPath: string | null
+    pdfSha256: string | null
+    pdfSizeBytes: number | null
+    pdfGeneratedAt: Date | null
+    pdfPublishedAt: Date | null
+    pdfRevokedAt: Date | null
+    pdfStatus: string | null
     detailSopId: string | null
     pengajuanEvaluasiId: string | null
     createdAt: Date | null
@@ -26098,6 +26177,13 @@ export namespace Prisma {
     judulDokumen: string | null
     hashDokumen: string | null
     versiDokumen: number | null
+    pdfPath: string | null
+    pdfSha256: string | null
+    pdfSizeBytes: number | null
+    pdfGeneratedAt: Date | null
+    pdfPublishedAt: Date | null
+    pdfRevokedAt: Date | null
+    pdfStatus: string | null
     detailSopId: string | null
     pengajuanEvaluasiId: string | null
     createdAt: Date | null
@@ -26111,6 +26197,13 @@ export namespace Prisma {
     judulDokumen: number
     hashDokumen: number
     versiDokumen: number
+    pdfPath: number
+    pdfSha256: number
+    pdfSizeBytes: number
+    pdfGeneratedAt: number
+    pdfPublishedAt: number
+    pdfRevokedAt: number
+    pdfStatus: number
     detailSopId: number
     pengajuanEvaluasiId: number
     createdAt: number
@@ -26121,10 +26214,12 @@ export namespace Prisma {
 
   export type DokumenTteAvgAggregateInputType = {
     versiDokumen?: true
+    pdfSizeBytes?: true
   }
 
   export type DokumenTteSumAggregateInputType = {
     versiDokumen?: true
+    pdfSizeBytes?: true
   }
 
   export type DokumenTteMinAggregateInputType = {
@@ -26134,6 +26229,13 @@ export namespace Prisma {
     judulDokumen?: true
     hashDokumen?: true
     versiDokumen?: true
+    pdfPath?: true
+    pdfSha256?: true
+    pdfSizeBytes?: true
+    pdfGeneratedAt?: true
+    pdfPublishedAt?: true
+    pdfRevokedAt?: true
+    pdfStatus?: true
     detailSopId?: true
     pengajuanEvaluasiId?: true
     createdAt?: true
@@ -26147,6 +26249,13 @@ export namespace Prisma {
     judulDokumen?: true
     hashDokumen?: true
     versiDokumen?: true
+    pdfPath?: true
+    pdfSha256?: true
+    pdfSizeBytes?: true
+    pdfGeneratedAt?: true
+    pdfPublishedAt?: true
+    pdfRevokedAt?: true
+    pdfStatus?: true
     detailSopId?: true
     pengajuanEvaluasiId?: true
     createdAt?: true
@@ -26160,6 +26269,13 @@ export namespace Prisma {
     judulDokumen?: true
     hashDokumen?: true
     versiDokumen?: true
+    pdfPath?: true
+    pdfSha256?: true
+    pdfSizeBytes?: true
+    pdfGeneratedAt?: true
+    pdfPublishedAt?: true
+    pdfRevokedAt?: true
+    pdfStatus?: true
     detailSopId?: true
     pengajuanEvaluasiId?: true
     createdAt?: true
@@ -26260,6 +26376,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen: number
+    pdfPath: string | null
+    pdfSha256: string | null
+    pdfSizeBytes: number | null
+    pdfGeneratedAt: Date | null
+    pdfPublishedAt: Date | null
+    pdfRevokedAt: Date | null
+    pdfStatus: string | null
     detailSopId: string | null
     pengajuanEvaluasiId: string | null
     createdAt: Date
@@ -26292,6 +26415,13 @@ export namespace Prisma {
     judulDokumen?: boolean
     hashDokumen?: boolean
     versiDokumen?: boolean
+    pdfPath?: boolean
+    pdfSha256?: boolean
+    pdfSizeBytes?: boolean
+    pdfGeneratedAt?: boolean
+    pdfPublishedAt?: boolean
+    pdfRevokedAt?: boolean
+    pdfStatus?: boolean
     detailSopId?: boolean
     pengajuanEvaluasiId?: boolean
     createdAt?: boolean
@@ -26311,13 +26441,20 @@ export namespace Prisma {
     judulDokumen?: boolean
     hashDokumen?: boolean
     versiDokumen?: boolean
+    pdfPath?: boolean
+    pdfSha256?: boolean
+    pdfSizeBytes?: boolean
+    pdfGeneratedAt?: boolean
+    pdfPublishedAt?: boolean
+    pdfRevokedAt?: boolean
+    pdfStatus?: boolean
     detailSopId?: boolean
     pengajuanEvaluasiId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DokumenTteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"dokumenTteId" | "nomorDokumen" | "jenisDokumen" | "judulDokumen" | "hashDokumen" | "versiDokumen" | "detailSopId" | "pengajuanEvaluasiId" | "createdAt" | "updatedAt", ExtArgs["result"]["dokumenTte"]>
+  export type DokumenTteOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"dokumenTteId" | "nomorDokumen" | "jenisDokumen" | "judulDokumen" | "hashDokumen" | "versiDokumen" | "pdfPath" | "pdfSha256" | "pdfSizeBytes" | "pdfGeneratedAt" | "pdfPublishedAt" | "pdfRevokedAt" | "pdfStatus" | "detailSopId" | "pengajuanEvaluasiId" | "createdAt" | "updatedAt", ExtArgs["result"]["dokumenTte"]>
   export type DokumenTteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     detailSop?: boolean | DokumenTte$detailSopArgs<ExtArgs>
     pengajuanEvaluasi?: boolean | DokumenTte$pengajuanEvaluasiArgs<ExtArgs>
@@ -26339,6 +26476,13 @@ export namespace Prisma {
       judulDokumen: string
       hashDokumen: string
       versiDokumen: number
+      pdfPath: string | null
+      pdfSha256: string | null
+      pdfSizeBytes: number | null
+      pdfGeneratedAt: Date | null
+      pdfPublishedAt: Date | null
+      pdfRevokedAt: Date | null
+      pdfStatus: string | null
       detailSopId: string | null
       pengajuanEvaluasiId: string | null
       createdAt: Date
@@ -26721,6 +26865,13 @@ export namespace Prisma {
     readonly judulDokumen: FieldRef<"DokumenTte", 'String'>
     readonly hashDokumen: FieldRef<"DokumenTte", 'String'>
     readonly versiDokumen: FieldRef<"DokumenTte", 'Int'>
+    readonly pdfPath: FieldRef<"DokumenTte", 'String'>
+    readonly pdfSha256: FieldRef<"DokumenTte", 'String'>
+    readonly pdfSizeBytes: FieldRef<"DokumenTte", 'Int'>
+    readonly pdfGeneratedAt: FieldRef<"DokumenTte", 'DateTime'>
+    readonly pdfPublishedAt: FieldRef<"DokumenTte", 'DateTime'>
+    readonly pdfRevokedAt: FieldRef<"DokumenTte", 'DateTime'>
+    readonly pdfStatus: FieldRef<"DokumenTte", 'String'>
     readonly detailSopId: FieldRef<"DokumenTte", 'String'>
     readonly pengajuanEvaluasiId: FieldRef<"DokumenTte", 'String'>
     readonly createdAt: FieldRef<"DokumenTte", 'DateTime'>
@@ -32333,6 +32484,8 @@ export namespace Prisma {
     refreshTokenExpiresAt: 'refreshTokenExpiresAt',
     passwordChangedAt: 'passwordChangedAt',
     ttePinHash: 'ttePinHash',
+    tteP12Base64: 'tteP12Base64',
+    tteP12PassphraseEncrypted: 'tteP12PassphraseEncrypted',
     deletedAt: 'deletedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -32596,6 +32749,10 @@ export namespace Prisma {
     hasilSesudah: 'hasilSesudah',
     catatanSebelum: 'catatanSebelum',
     catatanSesudah: 'catatanSesudah',
+    statusTindakLanjutSebelum: 'statusTindakLanjutSebelum',
+    statusTindakLanjutSesudah: 'statusTindakLanjutSesudah',
+    ditindaklanjutiOlehId: 'ditindaklanjutiOlehId',
+    ditindaklanjutiPada: 'ditindaklanjutiPada',
     createdAt: 'createdAt'
   };
 
@@ -32609,6 +32766,13 @@ export namespace Prisma {
     judulDokumen: 'judulDokumen',
     hashDokumen: 'hashDokumen',
     versiDokumen: 'versiDokumen',
+    pdfPath: 'pdfPath',
+    pdfSha256: 'pdfSha256',
+    pdfSizeBytes: 'pdfSizeBytes',
+    pdfGeneratedAt: 'pdfGeneratedAt',
+    pdfPublishedAt: 'pdfPublishedAt',
+    pdfRevokedAt: 'pdfRevokedAt',
+    pdfStatus: 'pdfStatus',
     detailSopId: 'detailSopId',
     pengajuanEvaluasiId: 'pengajuanEvaluasiId',
     createdAt: 'createdAt',
@@ -32720,7 +32884,9 @@ export namespace Prisma {
     pangkat: 'pangkat',
     nohp: 'nohp',
     refreshTokenHash: 'refreshTokenHash',
-    ttePinHash: 'ttePinHash'
+    ttePinHash: 'ttePinHash',
+    tteP12Base64: 'tteP12Base64',
+    tteP12PassphraseEncrypted: 'tteP12PassphraseEncrypted'
   };
 
   export type PenggunaOrderByRelevanceFieldEnum = (typeof PenggunaOrderByRelevanceFieldEnum)[keyof typeof PenggunaOrderByRelevanceFieldEnum]
@@ -32913,7 +33079,8 @@ export namespace Prisma {
     detailSopId: 'detailSopId',
     penggunaId: 'penggunaId',
     catatanSebelum: 'catatanSebelum',
-    catatanSesudah: 'catatanSesudah'
+    catatanSesudah: 'catatanSesudah',
+    ditindaklanjutiOlehId: 'ditindaklanjutiOlehId'
   };
 
   export type LogNilaiEvaluasiOrderByRelevanceFieldEnum = (typeof LogNilaiEvaluasiOrderByRelevanceFieldEnum)[keyof typeof LogNilaiEvaluasiOrderByRelevanceFieldEnum]
@@ -32924,6 +33091,9 @@ export namespace Prisma {
     nomorDokumen: 'nomorDokumen',
     judulDokumen: 'judulDokumen',
     hashDokumen: 'hashDokumen',
+    pdfPath: 'pdfPath',
+    pdfSha256: 'pdfSha256',
+    pdfStatus: 'pdfStatus',
     detailSopId: 'detailSopId',
     pengajuanEvaluasiId: 'pengajuanEvaluasiId'
   };
@@ -33132,6 +33302,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     passwordChangedAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     ttePinHash?: StringNullableFilter<"Pengguna"> | string | null
+    tteP12Base64?: StringNullableFilter<"Pengguna"> | string | null
+    tteP12PassphraseEncrypted?: StringNullableFilter<"Pengguna"> | string | null
     deletedAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     createdAt?: DateTimeFilter<"Pengguna"> | Date | string
     updatedAt?: DateTimeFilter<"Pengguna"> | Date | string
@@ -33166,6 +33338,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: SortOrderInput | SortOrder
     passwordChangedAt?: SortOrderInput | SortOrder
     ttePinHash?: SortOrderInput | SortOrder
+    tteP12Base64?: SortOrderInput | SortOrder
+    tteP12PassphraseEncrypted?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33204,6 +33378,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     passwordChangedAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     ttePinHash?: StringNullableFilter<"Pengguna"> | string | null
+    tteP12Base64?: StringNullableFilter<"Pengguna"> | string | null
+    tteP12PassphraseEncrypted?: StringNullableFilter<"Pengguna"> | string | null
     deletedAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     createdAt?: DateTimeFilter<"Pengguna"> | Date | string
     updatedAt?: DateTimeFilter<"Pengguna"> | Date | string
@@ -33238,6 +33414,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: SortOrderInput | SortOrder
     passwordChangedAt?: SortOrderInput | SortOrder
     ttePinHash?: SortOrderInput | SortOrder
+    tteP12Base64?: SortOrderInput | SortOrder
+    tteP12PassphraseEncrypted?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -33267,6 +33445,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: DateTimeNullableWithAggregatesFilter<"Pengguna"> | Date | string | null
     passwordChangedAt?: DateTimeNullableWithAggregatesFilter<"Pengguna"> | Date | string | null
     ttePinHash?: StringNullableWithAggregatesFilter<"Pengguna"> | string | null
+    tteP12Base64?: StringNullableWithAggregatesFilter<"Pengguna"> | string | null
+    tteP12PassphraseEncrypted?: StringNullableWithAggregatesFilter<"Pengguna"> | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Pengguna"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Pengguna"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Pengguna"> | Date | string
@@ -34244,6 +34424,7 @@ export namespace Prisma {
 
   export type PelaksanaWhereUniqueInput = Prisma.AtLeast<{
     pelaksanaId?: string
+    opdId_nama?: PelaksanaOpdIdNamaCompoundUniqueInput
     AND?: PelaksanaWhereInput | PelaksanaWhereInput[]
     OR?: PelaksanaWhereInput[]
     NOT?: PelaksanaWhereInput | PelaksanaWhereInput[]
@@ -34254,7 +34435,7 @@ export namespace Prisma {
     sopDetails?: DetailSOPPelaksanaListRelationFilter
     langkahSOP?: LangkahSOPListRelationFilter
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
-  }, "pelaksanaId">
+  }, "pelaksanaId" | "opdId_nama">
 
   export type PelaksanaOrderByWithAggregationInput = {
     pelaksanaId?: SortOrder
@@ -34530,13 +34711,13 @@ export namespace Prisma {
 
   export type PengajuanEvaluasiWhereUniqueInput = Prisma.AtLeast<{
     pengajuanEvaluasiId?: string
+    nomorBA?: string
     AND?: PengajuanEvaluasiWhereInput | PengajuanEvaluasiWhereInput[]
     OR?: PengajuanEvaluasiWhereInput[]
     NOT?: PengajuanEvaluasiWhereInput | PengajuanEvaluasiWhereInput[]
     opdId?: StringFilter<"PengajuanEvaluasi"> | string
     jenis?: EnumJenisPengajuanEvaluasiFilter<"PengajuanEvaluasi"> | $Enums.JenisPengajuanEvaluasi
     status?: EnumStatusPengajuanEvaluasiFilter<"PengajuanEvaluasi"> | $Enums.StatusPengajuanEvaluasi
-    nomorBA?: StringNullableFilter<"PengajuanEvaluasi"> | string | null
     tanggalPermintaan?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     tanggalEvaluasi?: DateTimeNullableFilter<"PengajuanEvaluasi"> | Date | string | null
     nilaiOPD?: IntNullableFilter<"PengajuanEvaluasi"> | number | null
@@ -34555,7 +34736,7 @@ export namespace Prisma {
     diverifikasiOlehUser?: XOR<PenggunaNullableScalarRelationFilter, PenggunaWhereInput> | null
     dokumenTte?: DokumenTteListRelationFilter
     opd?: XOR<OPDScalarRelationFilter, OPDWhereInput>
-  }, "pengajuanEvaluasiId">
+  }, "pengajuanEvaluasiId" | "nomorBA">
 
   export type PengajuanEvaluasiOrderByWithAggregationInput = {
     pengajuanEvaluasiId?: SortOrder
@@ -34715,6 +34896,10 @@ export namespace Prisma {
     hasilSesudah?: EnumHasilEvaluasiNullableFilter<"LogNilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatanSebelum?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
+    statusTindakLanjutSebelum?: EnumStatusTindakLanjutNullableFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: EnumStatusTindakLanjutNullableFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
+    ditindaklanjutiPada?: DateTimeNullableFilter<"LogNilaiEvaluasi"> | Date | string | null
     createdAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
     pengguna?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
@@ -34729,6 +34914,10 @@ export namespace Prisma {
     hasilSesudah?: SortOrderInput | SortOrder
     catatanSebelum?: SortOrderInput | SortOrder
     catatanSesudah?: SortOrderInput | SortOrder
+    statusTindakLanjutSebelum?: SortOrderInput | SortOrder
+    statusTindakLanjutSesudah?: SortOrderInput | SortOrder
+    ditindaklanjutiOlehId?: SortOrderInput | SortOrder
+    ditindaklanjutiPada?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     pengguna?: PenggunaOrderByWithRelationInput
     pengajuanEvaluasi?: PengajuanEvaluasiOrderByWithRelationInput
@@ -34748,6 +34937,10 @@ export namespace Prisma {
     hasilSesudah?: EnumHasilEvaluasiNullableFilter<"LogNilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatanSebelum?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
+    statusTindakLanjutSebelum?: EnumStatusTindakLanjutNullableFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: EnumStatusTindakLanjutNullableFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
+    ditindaklanjutiPada?: DateTimeNullableFilter<"LogNilaiEvaluasi"> | Date | string | null
     createdAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
     pengguna?: XOR<PenggunaScalarRelationFilter, PenggunaWhereInput>
     pengajuanEvaluasi?: XOR<PengajuanEvaluasiScalarRelationFilter, PengajuanEvaluasiWhereInput>
@@ -34762,6 +34955,10 @@ export namespace Prisma {
     hasilSesudah?: SortOrderInput | SortOrder
     catatanSebelum?: SortOrderInput | SortOrder
     catatanSesudah?: SortOrderInput | SortOrder
+    statusTindakLanjutSebelum?: SortOrderInput | SortOrder
+    statusTindakLanjutSesudah?: SortOrderInput | SortOrder
+    ditindaklanjutiOlehId?: SortOrderInput | SortOrder
+    ditindaklanjutiPada?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: LogNilaiEvaluasiCountOrderByAggregateInput
     _max?: LogNilaiEvaluasiMaxOrderByAggregateInput
@@ -34779,6 +34976,10 @@ export namespace Prisma {
     hasilSesudah?: EnumHasilEvaluasiNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatanSebelum?: StringNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | string | null
+    statusTindakLanjutSebelum?: EnumStatusTindakLanjutNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: EnumStatusTindakLanjutNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: StringNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | string | null
+    ditindaklanjutiPada?: DateTimeNullableWithAggregatesFilter<"LogNilaiEvaluasi"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"LogNilaiEvaluasi"> | Date | string
   }
 
@@ -34792,6 +34993,13 @@ export namespace Prisma {
     judulDokumen?: StringFilter<"DokumenTte"> | string
     hashDokumen?: StringFilter<"DokumenTte"> | string
     versiDokumen?: IntFilter<"DokumenTte"> | number
+    pdfPath?: StringNullableFilter<"DokumenTte"> | string | null
+    pdfSha256?: StringNullableFilter<"DokumenTte"> | string | null
+    pdfSizeBytes?: IntNullableFilter<"DokumenTte"> | number | null
+    pdfGeneratedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfPublishedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfRevokedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfStatus?: StringNullableFilter<"DokumenTte"> | string | null
     detailSopId?: StringNullableFilter<"DokumenTte"> | string | null
     pengajuanEvaluasiId?: StringNullableFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeFilter<"DokumenTte"> | Date | string
@@ -34808,6 +35016,13 @@ export namespace Prisma {
     judulDokumen?: SortOrder
     hashDokumen?: SortOrder
     versiDokumen?: SortOrder
+    pdfPath?: SortOrderInput | SortOrder
+    pdfSha256?: SortOrderInput | SortOrder
+    pdfSizeBytes?: SortOrderInput | SortOrder
+    pdfGeneratedAt?: SortOrderInput | SortOrder
+    pdfPublishedAt?: SortOrderInput | SortOrder
+    pdfRevokedAt?: SortOrderInput | SortOrder
+    pdfStatus?: SortOrderInput | SortOrder
     detailSopId?: SortOrderInput | SortOrder
     pengajuanEvaluasiId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -34830,6 +35045,13 @@ export namespace Prisma {
     judulDokumen?: StringFilter<"DokumenTte"> | string
     hashDokumen?: StringFilter<"DokumenTte"> | string
     versiDokumen?: IntFilter<"DokumenTte"> | number
+    pdfPath?: StringNullableFilter<"DokumenTte"> | string | null
+    pdfSha256?: StringNullableFilter<"DokumenTte"> | string | null
+    pdfSizeBytes?: IntNullableFilter<"DokumenTte"> | number | null
+    pdfGeneratedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfPublishedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfRevokedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfStatus?: StringNullableFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeFilter<"DokumenTte"> | Date | string
     updatedAt?: DateTimeFilter<"DokumenTte"> | Date | string
     detailSop?: XOR<DetailSOPNullableScalarRelationFilter, DetailSOPWhereInput> | null
@@ -34844,6 +35066,13 @@ export namespace Prisma {
     judulDokumen?: SortOrder
     hashDokumen?: SortOrder
     versiDokumen?: SortOrder
+    pdfPath?: SortOrderInput | SortOrder
+    pdfSha256?: SortOrderInput | SortOrder
+    pdfSizeBytes?: SortOrderInput | SortOrder
+    pdfGeneratedAt?: SortOrderInput | SortOrder
+    pdfPublishedAt?: SortOrderInput | SortOrder
+    pdfRevokedAt?: SortOrderInput | SortOrder
+    pdfStatus?: SortOrderInput | SortOrder
     detailSopId?: SortOrderInput | SortOrder
     pengajuanEvaluasiId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -34865,6 +35094,13 @@ export namespace Prisma {
     judulDokumen?: StringWithAggregatesFilter<"DokumenTte"> | string
     hashDokumen?: StringWithAggregatesFilter<"DokumenTte"> | string
     versiDokumen?: IntWithAggregatesFilter<"DokumenTte"> | number
+    pdfPath?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
+    pdfSha256?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
+    pdfSizeBytes?: IntNullableWithAggregatesFilter<"DokumenTte"> | number | null
+    pdfGeneratedAt?: DateTimeNullableWithAggregatesFilter<"DokumenTte"> | Date | string | null
+    pdfPublishedAt?: DateTimeNullableWithAggregatesFilter<"DokumenTte"> | Date | string | null
+    pdfRevokedAt?: DateTimeNullableWithAggregatesFilter<"DokumenTte"> | Date | string | null
+    pdfStatus?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
     detailSopId?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
     pengajuanEvaluasiId?: StringNullableWithAggregatesFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"DokumenTte"> | Date | string
@@ -35298,6 +35534,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35332,6 +35570,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35364,6 +35604,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35398,6 +35640,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35431,6 +35675,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35451,6 +35697,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35472,6 +35720,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -36906,6 +37156,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
     pengguna: PenggunaCreateNestedOneWithoutLogNilaiEvaluasiInput
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
@@ -36920,6 +37174,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -36928,6 +37186,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengguna?: PenggunaUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
@@ -36942,6 +37204,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -36953,6 +37219,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -36961,6 +37231,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -36972,6 +37246,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -36982,6 +37260,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSop?: DetailSOPCreateNestedOneWithoutDokumenTteInput
@@ -36996,6 +37281,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     detailSopId?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
@@ -37010,6 +37302,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneWithoutDokumenTteNestedInput
@@ -37024,6 +37323,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37038,6 +37344,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     detailSopId?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
@@ -37051,6 +37364,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -37062,6 +37382,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -37656,6 +37983,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: SortOrder
     passwordChangedAt?: SortOrder
     ttePinHash?: SortOrder
+    tteP12Base64?: SortOrder
+    tteP12PassphraseEncrypted?: SortOrder
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -37681,6 +38010,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: SortOrder
     passwordChangedAt?: SortOrder
     ttePinHash?: SortOrder
+    tteP12Base64?: SortOrder
+    tteP12PassphraseEncrypted?: SortOrder
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -37702,6 +38033,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: SortOrder
     passwordChangedAt?: SortOrder
     ttePinHash?: SortOrder
+    tteP12Base64?: SortOrder
+    tteP12PassphraseEncrypted?: SortOrder
     deletedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -38569,6 +38902,11 @@ export namespace Prisma {
     search: string
   }
 
+  export type PelaksanaOpdIdNamaCompoundUniqueInput = {
+    opdId: string
+    nama: string
+  }
+
   export type PelaksanaCountOrderByAggregateInput = {
     pelaksanaId?: SortOrder
     opdId?: SortOrder
@@ -39015,6 +39353,10 @@ export namespace Prisma {
     hasilSesudah?: SortOrder
     catatanSebelum?: SortOrder
     catatanSesudah?: SortOrder
+    statusTindakLanjutSebelum?: SortOrder
+    statusTindakLanjutSesudah?: SortOrder
+    ditindaklanjutiOlehId?: SortOrder
+    ditindaklanjutiPada?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -39026,6 +39368,10 @@ export namespace Prisma {
     hasilSesudah?: SortOrder
     catatanSebelum?: SortOrder
     catatanSesudah?: SortOrder
+    statusTindakLanjutSebelum?: SortOrder
+    statusTindakLanjutSesudah?: SortOrder
+    ditindaklanjutiOlehId?: SortOrder
+    ditindaklanjutiPada?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -39037,6 +39383,10 @@ export namespace Prisma {
     hasilSesudah?: SortOrder
     catatanSebelum?: SortOrder
     catatanSesudah?: SortOrder
+    statusTindakLanjutSebelum?: SortOrder
+    statusTindakLanjutSesudah?: SortOrder
+    ditindaklanjutiOlehId?: SortOrder
+    ditindaklanjutiPada?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -39065,6 +39415,13 @@ export namespace Prisma {
     judulDokumen?: SortOrder
     hashDokumen?: SortOrder
     versiDokumen?: SortOrder
+    pdfPath?: SortOrder
+    pdfSha256?: SortOrder
+    pdfSizeBytes?: SortOrder
+    pdfGeneratedAt?: SortOrder
+    pdfPublishedAt?: SortOrder
+    pdfRevokedAt?: SortOrder
+    pdfStatus?: SortOrder
     detailSopId?: SortOrder
     pengajuanEvaluasiId?: SortOrder
     createdAt?: SortOrder
@@ -39073,6 +39430,7 @@ export namespace Prisma {
 
   export type DokumenTteAvgOrderByAggregateInput = {
     versiDokumen?: SortOrder
+    pdfSizeBytes?: SortOrder
   }
 
   export type DokumenTteMaxOrderByAggregateInput = {
@@ -39082,6 +39440,13 @@ export namespace Prisma {
     judulDokumen?: SortOrder
     hashDokumen?: SortOrder
     versiDokumen?: SortOrder
+    pdfPath?: SortOrder
+    pdfSha256?: SortOrder
+    pdfSizeBytes?: SortOrder
+    pdfGeneratedAt?: SortOrder
+    pdfPublishedAt?: SortOrder
+    pdfRevokedAt?: SortOrder
+    pdfStatus?: SortOrder
     detailSopId?: SortOrder
     pengajuanEvaluasiId?: SortOrder
     createdAt?: SortOrder
@@ -39095,6 +39460,13 @@ export namespace Prisma {
     judulDokumen?: SortOrder
     hashDokumen?: SortOrder
     versiDokumen?: SortOrder
+    pdfPath?: SortOrder
+    pdfSha256?: SortOrder
+    pdfSizeBytes?: SortOrder
+    pdfGeneratedAt?: SortOrder
+    pdfPublishedAt?: SortOrder
+    pdfRevokedAt?: SortOrder
+    pdfStatus?: SortOrder
     detailSopId?: SortOrder
     pengajuanEvaluasiId?: SortOrder
     createdAt?: SortOrder
@@ -39103,6 +39475,7 @@ export namespace Prisma {
 
   export type DokumenTteSumOrderByAggregateInput = {
     versiDokumen?: SortOrder
+    pdfSizeBytes?: SortOrder
   }
 
   export type EnumJenisDokumenTteWithAggregatesFilter<$PrismaModel = never> = {
@@ -43066,6 +43439,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
     nilaiEvaluasi: NilaiEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
@@ -43078,6 +43455,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -43561,6 +43942,10 @@ export namespace Prisma {
     hasilSesudah?: EnumHasilEvaluasiNullableFilter<"LogNilaiEvaluasi"> | $Enums.HasilEvaluasi | null
     catatanSebelum?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
     catatanSesudah?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
+    statusTindakLanjutSebelum?: EnumStatusTindakLanjutNullableFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: EnumStatusTindakLanjutNullableFilter<"LogNilaiEvaluasi"> | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: StringNullableFilter<"LogNilaiEvaluasi"> | string | null
+    ditindaklanjutiPada?: DateTimeNullableFilter<"LogNilaiEvaluasi"> | Date | string | null
     createdAt?: DateTimeFilter<"LogNilaiEvaluasi"> | Date | string
   }
 
@@ -43907,6 +44292,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -43939,6 +44326,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44116,6 +44505,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     passwordChangedAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     ttePinHash?: StringNullableFilter<"Pengguna"> | string | null
+    tteP12Base64?: StringNullableFilter<"Pengguna"> | string | null
+    tteP12PassphraseEncrypted?: StringNullableFilter<"Pengguna"> | string | null
     deletedAt?: DateTimeNullableFilter<"Pengguna"> | Date | string | null
     createdAt?: DateTimeFilter<"Pengguna"> | Date | string
     updatedAt?: DateTimeFilter<"Pengguna"> | Date | string
@@ -44236,6 +44627,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44269,6 +44662,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44353,6 +44748,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44386,6 +44783,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44461,6 +44860,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44494,6 +44895,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -44583,6 +44986,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -44616,6 +45021,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45090,6 +45497,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45123,6 +45532,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45180,6 +45591,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45213,6 +45626,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45527,6 +45942,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiCreateNestedOneWithoutDokumenTteInput
@@ -45540,6 +45962,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -45711,6 +46140,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45744,6 +46175,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45813,6 +46246,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -45846,6 +46281,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -46134,6 +46571,13 @@ export namespace Prisma {
     judulDokumen?: StringFilter<"DokumenTte"> | string
     hashDokumen?: StringFilter<"DokumenTte"> | string
     versiDokumen?: IntFilter<"DokumenTte"> | number
+    pdfPath?: StringNullableFilter<"DokumenTte"> | string | null
+    pdfSha256?: StringNullableFilter<"DokumenTte"> | string | null
+    pdfSizeBytes?: IntNullableFilter<"DokumenTte"> | number | null
+    pdfGeneratedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfPublishedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfRevokedAt?: DateTimeNullableFilter<"DokumenTte"> | Date | string | null
+    pdfStatus?: StringNullableFilter<"DokumenTte"> | string | null
     detailSopId?: StringNullableFilter<"DokumenTte"> | string | null
     pengajuanEvaluasiId?: StringNullableFilter<"DokumenTte"> | string | null
     createdAt?: DateTimeFilter<"DokumenTte"> | Date | string
@@ -48283,6 +48727,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48316,6 +48762,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48452,6 +48900,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48485,6 +48935,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -48592,6 +49044,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
     pengguna: PenggunaCreateNestedOneWithoutLogNilaiEvaluasiInput
     nilaiEvaluasi: NilaiEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
@@ -48604,6 +49060,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -48670,6 +49130,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48703,6 +49165,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48739,6 +49203,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48772,6 +49238,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48808,6 +49276,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48841,6 +49311,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48869,6 +49341,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSop?: DetailSOPCreateNestedOneWithoutDokumenTteInput
@@ -48882,6 +49361,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     detailSopId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -48987,6 +49473,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49020,6 +49508,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49062,6 +49552,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49095,6 +49587,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49137,6 +49631,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49170,6 +49666,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49254,6 +49752,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49287,6 +49787,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49323,6 +49825,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49356,6 +49860,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49494,6 +50000,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
     pengguna: PenggunaCreateNestedOneWithoutLogNilaiEvaluasiInput
     pengajuanEvaluasi: PengajuanEvaluasiCreateNestedOneWithoutLogNilaiEvaluasiInput
@@ -49505,6 +50015,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -49544,6 +50058,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49577,6 +50093,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49619,6 +50137,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49652,6 +50172,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -49823,6 +50345,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49856,6 +50380,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -49983,6 +50509,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50016,6 +50544,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50423,6 +50953,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     detailSop?: DetailSOPCreateNestedOneWithoutDokumenTteInput
@@ -50436,6 +50973,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     detailSopId?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
@@ -50462,6 +51006,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50495,6 +51041,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -50534,6 +51082,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneWithoutDokumenTteNestedInput
@@ -50547,6 +51102,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50579,6 +51141,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -50612,6 +51176,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -51350,6 +51916,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -51654,6 +52224,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
@@ -51666,6 +52240,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -51676,6 +52254,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -52081,6 +52663,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: Date | string | null
     passwordChangedAt?: Date | string | null
     ttePinHash?: string | null
+    tteP12Base64?: string | null
+    tteP12PassphraseEncrypted?: string | null
     deletedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52206,6 +52790,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52238,6 +52824,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52270,6 +52858,8 @@ export namespace Prisma {
     refreshTokenExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     passwordChangedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     ttePinHash?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12Base64?: NullableStringFieldUpdateOperationsInput | string | null
+    tteP12PassphraseEncrypted?: NullableStringFieldUpdateOperationsInput | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -52593,6 +53183,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     pengajuanEvaluasiId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -52978,6 +53575,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneWithoutDokumenTteNestedInput
@@ -52991,6 +53595,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53004,6 +53615,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     pengajuanEvaluasiId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53432,6 +54050,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -53455,6 +54077,13 @@ export namespace Prisma {
     judulDokumen: string
     hashDokumen: string
     versiDokumen?: number
+    pdfPath?: string | null
+    pdfSha256?: string | null
+    pdfSizeBytes?: number | null
+    pdfGeneratedAt?: Date | string | null
+    pdfPublishedAt?: Date | string | null
+    pdfRevokedAt?: Date | string | null
+    pdfStatus?: string | null
     detailSopId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -53465,6 +54094,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengguna?: PenggunaUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
     nilaiEvaluasi?: NilaiEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
@@ -53477,6 +54110,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -53487,6 +54124,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -53538,6 +54179,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     detailSop?: DetailSOPUpdateOneWithoutDokumenTteNestedInput
@@ -53551,6 +54199,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53564,6 +54219,13 @@ export namespace Prisma {
     judulDokumen?: StringFieldUpdateOperationsInput | string
     hashDokumen?: StringFieldUpdateOperationsInput | string
     versiDokumen?: IntFieldUpdateOperationsInput | number
+    pdfPath?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSha256?: NullableStringFieldUpdateOperationsInput | string | null
+    pdfSizeBytes?: NullableIntFieldUpdateOperationsInput | number | null
+    pdfGeneratedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfRevokedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    pdfStatus?: NullableStringFieldUpdateOperationsInput | string | null
     detailSopId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53575,6 +54237,10 @@ export namespace Prisma {
     hasilSesudah?: $Enums.HasilEvaluasi | null
     catatanSebelum?: string | null
     catatanSesudah?: string | null
+    statusTindakLanjutSebelum?: $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: string | null
+    ditindaklanjutiPada?: Date | string | null
     createdAt?: Date | string
   }
 
@@ -53583,6 +54249,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pengguna?: PenggunaUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
     pengajuanEvaluasi?: PengajuanEvaluasiUpdateOneRequiredWithoutLogNilaiEvaluasiNestedInput
@@ -53594,6 +54264,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -53603,6 +54277,10 @@ export namespace Prisma {
     hasilSesudah?: NullableEnumHasilEvaluasiFieldUpdateOperationsInput | $Enums.HasilEvaluasi | null
     catatanSebelum?: NullableStringFieldUpdateOperationsInput | string | null
     catatanSesudah?: NullableStringFieldUpdateOperationsInput | string | null
+    statusTindakLanjutSebelum?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    statusTindakLanjutSesudah?: NullableEnumStatusTindakLanjutFieldUpdateOperationsInput | $Enums.StatusTindakLanjut | null
+    ditindaklanjutiOlehId?: NullableStringFieldUpdateOperationsInput | string | null
+    ditindaklanjutiPada?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

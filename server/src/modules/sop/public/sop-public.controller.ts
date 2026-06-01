@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe, Query, Res, StreamableFile } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { type ApiSuccessResponse } from '../../../common';
 import { PublicArsipQueryDto } from './dto/public-arsip-query.dto';
@@ -8,6 +8,7 @@ import { PublicSopByOpdPageDto } from './dto/public-sop-by-opd-page.dto';
 import { PublicSopItemDto } from './dto/public-sop-item.dto';
 import { SopPublicService } from './sop-public.service';
 import type { PaginatedData } from '../../../common/utils/pagination.util';
+import type { Response } from 'express';
 
 @ApiTags('SOP Publik')
 @Controller('sop/public')
@@ -86,5 +87,28 @@ export class SopPublicController {
       success: true,
       data,
     };
+  }
+
+  @Get('pdf/:detailSopId')
+  @ApiOperation({
+    summary: 'Stream PDF resmi SOP berlaku',
+    description:
+      'Tidak memerlukan autentikasi. Server mengecek status BERLAKU dan artifact PDF published setiap request.',
+  })
+  @ApiResponse({ status: 200, description: 'PDF SOP resmi' })
+  @ApiNotFoundResponse({ description: 'PDF tidak ditemukan' })
+  async getPdf(
+    @Param('detailSopId', ParseUUIDPipe) detailSopId: string,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    const file = await this.sopPublicService.getPublishedPdf(detailSopId);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Length': String(file.sizeBytes),
+      'Content-Disposition': `inline; filename="${file.filename}"`,
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+    });
+    return new StreamableFile(file.buffer);
   }
 }

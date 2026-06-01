@@ -97,6 +97,26 @@ export class EvaluasiNilaiService {
             'Konflik versi: data nilai sudah berubah, muat ulang lalu coba lagi',
           );
         }
+        const statusTindakLanjutSebelum = sebelumnya.statusTindakLanjut ?? null;
+        let statusTindakLanjutSesudah = statusTindakLanjutSebelum;
+        let tindakLanjutData = {};
+        if (hasil === HasilEvaluasi.PERLU_PERBAIKAN) {
+          statusTindakLanjutSesudah = StatusTindakLanjut.TERBUKA;
+          tindakLanjutData = {
+            statusTindakLanjut: StatusTindakLanjut.TERBUKA,
+            ditindaklanjutiPada: null,
+            ditindaklanjutiOlehId: null,
+          };
+        } else {
+          if (sebelumnya.statusTindakLanjut === StatusTindakLanjut.TERBUKA) {
+            statusTindakLanjutSesudah = null;
+            tindakLanjutData = {
+              statusTindakLanjut: null,
+              ditindaklanjutiPada: null,
+              ditindaklanjutiOlehId: null,
+            };
+          }
+        }
         const logCreatedAt = new Date();
         await tx.logNilaiEvaluasi.create({
           data: {
@@ -108,24 +128,10 @@ export class EvaluasiNilaiService {
             hasilSesudah: hasil,
             catatanSebelum: sebelumnya.catatan ?? null,
             catatanSesudah: catatanNorm,
+            statusTindakLanjutSebelum,
+            statusTindakLanjutSesudah,
           },
         });
-        let tindakLanjutData = {};
-        if (hasil === HasilEvaluasi.PERLU_PERBAIKAN) {
-          tindakLanjutData = {
-            statusTindakLanjut: StatusTindakLanjut.TERBUKA,
-            ditindaklanjutiPada: null,
-            ditindaklanjutiOlehId: null,
-          };
-        } else {
-          if (sebelumnya.statusTindakLanjut === StatusTindakLanjut.TERBUKA) {
-            tindakLanjutData = {
-              statusTindakLanjut: null,
-              ditindaklanjutiPada: null,
-              ditindaklanjutiOlehId: null,
-            };
-          }
-        }
         const sesudah = await tx.nilaiEvaluasi.update({
           where: {
             pengajuanEvaluasiId_detailSopId: {
@@ -224,6 +230,22 @@ export class EvaluasiNilaiService {
           );
         }
         const sekarang = new Date();
+        await tx.logNilaiEvaluasi.create({
+          data: {
+            pengajuanEvaluasiId,
+            detailSopId,
+            penggunaId: user.sub,
+            createdAt: sekarang,
+            hasilSebelum: nilai.hasil,
+            hasilSesudah: nilai.hasil,
+            catatanSebelum: nilai.catatan ?? null,
+            catatanSesudah: nilai.catatan ?? null,
+            statusTindakLanjutSebelum: nilai.statusTindakLanjut,
+            statusTindakLanjutSesudah: StatusTindakLanjut.SELESAI,
+            ditindaklanjutiOlehId: user.sub,
+            ditindaklanjutiPada: sekarang,
+          },
+        });
         return tx.nilaiEvaluasi.update({
           where: {
             pengajuanEvaluasiId_detailSopId: {
@@ -330,11 +352,22 @@ export class EvaluasiNilaiService {
             'Status sebagian SOP sudah berubah. Muat ulang pengajuan lalu coba selesaikan evaluasi lagi.',
           );
         }
+
+        // Cek duplikasi nomor BA
+        const existingBA = await tx.pengajuanEvaluasi.findUnique({
+          where: { nomorBA: dto.nomorBA },
+          select: { pengajuanEvaluasiId: true },
+        });
+        if (existingBA !== null && existingBA.pengajuanEvaluasiId !== pengajuanEvaluasiId) {
+          throw new ConflictException(`Nomor Berita Acara "${dto.nomorBA}" sudah digunakan oleh pengajuan lain.`);
+        }
+
         const selesai = new Date();
         await tx.pengajuanEvaluasi.update({
           where: { pengajuanEvaluasiId },
           data: {
             status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+            nomorBA: dto.nomorBA,
             nilaiOPD: nilaiOpdFinal,
             tanggalDiselesaikan: selesai,
             tanggalEvaluasi: pengajuan.tanggalEvaluasi ?? selesai,
@@ -369,9 +402,9 @@ export class EvaluasiNilaiService {
   }
 
   private static keResponseSelesaiDto(
-    row: PengajuanEvaluasi | null,
+    row: PengajuanEvaluasi | null | undefined,
   ): PengajuanEvaluasiSelesaiResponseDto {
-    if (row === null) {
+    if (row == null) {
       throw new ConflictException('Gagal memuat pengajuan setelah penyimpanan');
     }
     return {

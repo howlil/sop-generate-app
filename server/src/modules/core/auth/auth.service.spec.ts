@@ -42,6 +42,8 @@ describe('Pengujian AuthService', () => {
     refreshTokenExpiresAt: null,
     passwordChangedAt: null,
     ttePinHash: null,
+    tteP12Base64: null,
+    tteP12PassphraseEncrypted: null,
     deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),

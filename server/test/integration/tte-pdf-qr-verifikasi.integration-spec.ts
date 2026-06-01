@@ -447,8 +447,8 @@ describeIntegration('TTE PDF unduhan — verifikasi QR dan CA (IT-76–IT-81)', 
     expect(verifyResponse.body.data.signatures[0].checks.chainTrusted).toBe(true);
   });
 
-  it('IT-79: PDF Berita Acara arsip ditandatangani dan diverifikasi valid terhadap CA internal', async () => {
-    const unsignedPdf = await createMinimalPdfBuffer('BA arsip PDF integration sign');
+  it('IT-79: PDF Berita Acara arsip tidak diinjeksi CA dan tetap tanpa signature PKCS#7', async () => {
+    const unsignedPdf = await createMinimalPdfBuffer('BA arsip PDF integration unsigned');
     const pdfBase64 = unsignedPdf.toString('base64');
 
     const signResponse = await kepalaAgent
@@ -459,18 +459,19 @@ describeIntegration('TTE PDF unduhan — verifikasi QR dan CA (IT-76–IT-81)', 
       })
       .expect(201);
 
-    expect(signResponse.body.data.signed).toBe(true);
-    expect(signResponse.body.data.signatureFormat).toBe('PKCS7_DETACHED');
+    expect(signResponse.body.data.signed).toBe(false);
+    expect(signResponse.body.data.signatureFormat).toBe('UNSIGNED_NOT_REQUIRED');
+    expect(signResponse.body.data.certificate).toBeNull();
+    expect(signResponse.body.data.signedPdfBase64).toBe(pdfBase64);
 
     const verifyResponse = await request(app.getHttpServer())
       .post(`${API}/tte/public/pdf/verify`)
       .send({ pdfBase64: signResponse.body.data.signedPdfBase64 })
       .expect(201);
 
-    expect(verifyResponse.body.data.allValid).toBe(true);
-    expect(verifyResponse.body.data.signatures[0].valid).toBe(true);
-    expect(verifyResponse.body.data.signatures[0].checks.chainTrusted).toBe(true);
-    expect(verifyResponse.body.data.signatures[0].signerSubject).toContain('Sistem Informasi SOP');
+    expect(verifyResponse.body.data.hasSignatures).toBe(false);
+    expect(verifyResponse.body.data.allValid).toBe(false);
+    expect(verifyResponse.body.data.signatures).toHaveLength(0);
   });
 
   it('IT-80: PDF tanpa tanda tangan digital ditolak verifikasi', async () => {

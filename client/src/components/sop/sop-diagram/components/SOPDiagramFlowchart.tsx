@@ -880,6 +880,9 @@ function FlowchartPage({
             className={`sop-diagram-overlay absolute inset-0 z-20 h-full w-full print:break-inside-avoid ${editMode ? 'pointer-events-auto' : 'pointer-events-none'}`}
             aria-hidden={!editMode}
             onClick={() => onSelectConnection?.(null)}
+            xmlns="http://www.w3.org/2000/svg"
+            width="100%"
+            height="100%"
           >
             {connections.map((conn, idx) => (
               <FlowchartArrowConnector

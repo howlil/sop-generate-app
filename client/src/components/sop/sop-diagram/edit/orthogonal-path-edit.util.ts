@@ -65,17 +65,32 @@ function applyWaypointDragDelta(
     const horizPrev = Math.abs(prev.y - next[index]!.y) < 1
     const horizNext = Math.abs(nextPt.y - next[index]!.y) < 1
     if (vertPrev && vertNext) {
+      // Both neighbors are on a vertical line — only allow vertical movement
       nx = prev.x
       ny = snapToGrid(ny)
     } else if (horizPrev && horizNext) {
-      ny = snapToGrid(ny)
-      nx = next[index]!.x
-    } else if (horizPrev || horizNext) {
-      ny = snapToGrid(ny)
-      nx = next[index]!.x
-    } else {
+      // Both neighbors are on a horizontal line — only allow horizontal movement
       nx = snapToGrid(nx)
       ny = next[index]!.y
+    } else if ((horizPrev && vertNext) || (vertPrev && horizNext)) {
+      // Corner waypoint: one horizontal segment, one vertical segment.
+      // Allow movement along the dominant drag direction and adjust the
+      // appropriate neighbor axis to keep the path orthogonal.
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        nx = snapToGrid(nx)
+        ny = next[index]!.y
+      } else {
+        ny = snapToGrid(ny)
+        nx = next[index]!.x
+      }
+    } else if (horizPrev || horizNext) {
+      // One horizontal neighbor, other is diagonal/degenerate — allow horizontal movement
+      nx = snapToGrid(nx)
+      ny = next[index]!.y
+    } else {
+      // One or both vertical neighbors — allow vertical movement
+      nx = next[index]!.x
+      ny = snapToGrid(ny)
     }
   } else {
     nx = snapToGrid(nx)
@@ -213,8 +228,11 @@ function segmentAxis(from: Point, to: Point): SegmentAxis | null {
   return null
 }
 
+/** Optional callback to check whether a simplified path would cross obstacles. */
+export type PathObstacleCheck = (candidate: Point[]) => boolean
+
 /** Hapus satu lipatan persegi (4 titik) menjadi satu siku ortogonal. */
-function tryCollapseRectangle(path: Point[]): Point[] | null {
+function tryCollapseRectangle(path: Point[], wouldCross?: PathObstacleCheck): Point[] | null {
   for (let i = 0; i < path.length - 3; i += 1) {
     const p0 = path[i]!
     const p1 = path[i + 1]!
@@ -222,13 +240,15 @@ function tryCollapseRectangle(path: Point[]): Point[] | null {
     const p3 = path[i + 3]!
     if (p0.x === p2.x && p1.y === p3.y && (p0.x !== p1.x || p0.y !== p1.y)) {
       const corner = { x: p0.x, y: p3.y }
-      const merged = [...path.slice(0, i + 1), corner, p3, ...path.slice(i + 4)]
-      return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), corner, p3, ...path.slice(i + 4)].map((p) => ({ ...p })))
+      if (wouldCross && wouldCross(merged)) continue
+      return merged
     }
     if (p0.y === p2.y && p1.x === p3.x && (p0.y !== p1.y || p0.x !== p1.x)) {
       const corner = { x: p3.x, y: p0.y }
-      const merged = [...path.slice(0, i + 1), corner, p3, ...path.slice(i + 4)]
-      return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), corner, p3, ...path.slice(i + 4)].map((p) => ({ ...p })))
+      if (wouldCross && wouldCross(merged)) continue
+      return merged
     }
   }
   return null
@@ -241,7 +261,7 @@ const SPINE_NOTCH_MAX_PX = 48
  * Hapus lipatan 2-langkah dekat spine vertikal/horizontal (b dan e sejajar sumbu utama).
  * L-routing yang menyimpang jauh dari spine (mis. elbow ke kolom lain) tidak dihapus.
  */
-function tryRemoveSpineDetour(path: Point[], maxSpineNotchPx = SPINE_NOTCH_MAX_PX): Point[] | null {
+function tryRemoveSpineDetour(path: Point[], maxSpineNotchPx = SPINE_NOTCH_MAX_PX, wouldCross?: PathObstacleCheck): Point[] | null {
   for (let i = 0; i < path.length - 3; i += 1) {
     const b = path[i]!
     const c = path[i + 1]!
@@ -253,14 +273,16 @@ function tryRemoveSpineDetour(path: Point[], maxSpineNotchPx = SPINE_NOTCH_MAX_P
     if (!bc || !cd || !de || bc === cd || cd === de) continue
     if (b.x === e.x && bc === 'horizontal' && cd === 'vertical' && de === 'horizontal') {
       if (Math.abs(c.x - b.x) <= maxSpineNotchPx && Math.abs(d.x - b.x) <= maxSpineNotchPx) {
-        const merged = [...path.slice(0, i + 1), ...path.slice(i + 3)]
-        return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
+        if (wouldCross && wouldCross(merged)) continue
+        return merged
       }
     }
     if (b.y === e.y && bc === 'vertical' && cd === 'horizontal' && de === 'vertical') {
       if (Math.abs(c.y - b.y) <= maxSpineNotchPx && Math.abs(d.y - b.y) <= maxSpineNotchPx) {
-        const merged = [...path.slice(0, i + 1), ...path.slice(i + 3)]
-        return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
+        if (wouldCross && wouldCross(merged)) continue
+        return merged
       }
     }
   }
@@ -268,7 +290,7 @@ function tryRemoveSpineDetour(path: Point[], maxSpineNotchPx = SPINE_NOTCH_MAX_P
 }
 
 /** Hapus detour 2 titik (b-c-d-e) bila b dan e sejajar — hanya lipatan kecil. */
-function tryRemoveTwoStepDetour(path: Point[], maxNotchPx: number): Point[] | null {
+function tryRemoveTwoStepDetour(path: Point[], maxNotchPx: number, wouldCross?: PathObstacleCheck): Point[] | null {
   for (let i = 0; i < path.length - 3; i += 1) {
     const b = path[i]!
     const c = path[i + 1]!
@@ -282,16 +304,18 @@ function tryRemoveTwoStepDetour(path: Point[], maxNotchPx: number): Point[] | nu
       const detourW = Math.abs(c.x - b.x)
       const detourH = Math.abs(d.y - c.y)
       if (detourW <= maxNotchPx && detourH <= maxNotchPx) {
-        const merged = [...path.slice(0, i + 1), ...path.slice(i + 3)]
-        return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
+        if (wouldCross && wouldCross(merged)) continue
+        return merged
       }
     }
     if (b.y === e.y && bc === 'vertical' && cd === 'horizontal' && de === 'vertical') {
       const detourW = Math.abs(c.x - b.x)
       const detourH = Math.abs(d.y - c.y)
       if (detourW <= maxNotchPx && detourH <= maxNotchPx) {
-        const merged = [...path.slice(0, i + 1), ...path.slice(i + 3)]
-        return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+        const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 3)].map((p) => ({ ...p })))
+        if (wouldCross && wouldCross(merged)) continue
+        return merged
       }
     }
   }
@@ -299,7 +323,7 @@ function tryRemoveTwoStepDetour(path: Point[], maxNotchPx: number): Point[] | nu
 }
 
 /** Hapus detour 3 titik bila notch kecil dan titik awal/akhir sejajar. */
-function tryRemoveThreeStepDetour(path: Point[], maxNotchPx: number): Point[] | null {
+function tryRemoveThreeStepDetour(path: Point[], maxNotchPx: number, wouldCross?: PathObstacleCheck): Point[] | null {
   for (let i = 0; i < path.length - 4; i += 1) {
     const b = path[i]!
     const c = path[i + 1]!
@@ -321,8 +345,9 @@ function tryRemoveThreeStepDetour(path: Point[], maxNotchPx: number): Point[] | 
       de === 'vertical' &&
       ef === 'horizontal'
     ) {
-      const merged = [...path.slice(0, i + 1), ...path.slice(i + 4)]
-      return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 4)].map((p) => ({ ...p })))
+      if (wouldCross && wouldCross(merged)) continue
+      return merged
     }
     if (
       b.y === f.y &&
@@ -331,37 +356,38 @@ function tryRemoveThreeStepDetour(path: Point[], maxNotchPx: number): Point[] | 
       de === 'horizontal' &&
       ef === 'vertical'
     ) {
-      const merged = [...path.slice(0, i + 1), ...path.slice(i + 4)]
-      return normalizeOrthogonalPath(merged.map((p) => ({ ...p })))
+      const merged = normalizeOrthogonalPath([...path.slice(0, i + 1), ...path.slice(i + 4)].map((p) => ({ ...p })))
+      if (wouldCross && wouldCross(merged)) continue
+      return merged
     }
   }
   return null
 }
 
-function removeOrthogonalNotches(path: Point[], maxNotchPx: number): Point[] {
+function removeOrthogonalNotches(path: Point[], maxNotchPx: number, wouldCross?: PathObstacleCheck): Point[] {
   let next = normalizeOrthogonalPath(path.map((p) => ({ ...p })))
   let changed = true
   while (changed) {
     changed = false
-    const collapsed = tryCollapseRectangle(next)
+    const collapsed = tryCollapseRectangle(next, wouldCross)
     if (collapsed) {
       next = collapsed
       changed = true
       continue
     }
-    const spineDetour = tryRemoveSpineDetour(next)
+    const spineDetour = tryRemoveSpineDetour(next, SPINE_NOTCH_MAX_PX, wouldCross)
     if (spineDetour) {
       next = spineDetour
       changed = true
       continue
     }
-    const twoStep = tryRemoveTwoStepDetour(next, maxNotchPx)
+    const twoStep = tryRemoveTwoStepDetour(next, maxNotchPx, wouldCross)
     if (twoStep) {
       next = twoStep
       changed = true
       continue
     }
-    const threeStep = tryRemoveThreeStepDetour(next, maxNotchPx)
+    const threeStep = tryRemoveThreeStepDetour(next, maxNotchPx, wouldCross)
     if (threeStep) {
       next = threeStep
       changed = true
@@ -371,10 +397,14 @@ function removeOrthogonalNotches(path: Point[], maxNotchPx: number): Point[] {
 }
 
 /** Kurangi zig-zag: collinear, dogleg pendek, dan lipatan persegi redundan. */
-export function simplifyOrthogonalPath(path: Point[], minSegmentPx = 10): Point[] {
+export function simplifyOrthogonalPath(
+  path: Point[],
+  minSegmentPx = 10,
+  wouldCrossObstacles?: PathObstacleCheck,
+): Point[] {
   if (path.length < 3) return normalizeOrthogonalPath(path.map((p) => ({ ...p })))
   const maxNotchPx = Math.max(minSegmentPx + 8, 24)
-  let next = removeOrthogonalNotches(path, maxNotchPx)
+  let next = removeOrthogonalNotches(path, maxNotchPx, wouldCrossObstacles)
   const withoutCollinear: Point[] = [next[0]!]
   for (let i = 1; i < next.length - 1; i += 1) {
     const prev = withoutCollinear[withoutCollinear.length - 1]!
@@ -405,7 +435,7 @@ export function simplifyOrthogonalPath(path: Point[], minSegmentPx = 10): Point[
     simplified.push(next[next.length - 1]!)
     next = normalizeOrthogonalPath(simplified)
   }
-  return removeOrthogonalNotches(next, maxNotchPx)
+  return removeOrthogonalNotches(next, maxNotchPx, wouldCrossObstacles)
 }
 
 export function findNearestSegmentIndex(path: Point[], x: number, y: number): number {

@@ -50,15 +50,16 @@ describe('Pengujian DTO Evaluasi Nilai', () => {
 
   it('seharusnya menerima payload selesai tanpa nilaiOPD karena validasi bisnis dilakukan di service', async () => {
     const dto = new SelesaiEvaluasiDto();
+    Object.assign(dto, { nomorBA: 'BA-01' });
 
     await expect(validate(dto)).resolves.toHaveLength(0);
   });
 
   it('seharusnya menerima nilaiOPD batas 1 dan 5', async () => {
     const min = new SelesaiEvaluasiDto();
-    Object.assign(min, { nilaiOPD: 1 });
+    Object.assign(min, { nomorBA: 'BA-01', nilaiOPD: 1 });
     const max = new SelesaiEvaluasiDto();
-    Object.assign(max, { nilaiOPD: 5 });
+    Object.assign(max, { nomorBA: 'BA-01', nilaiOPD: 5 });
 
     await expect(validate(min)).resolves.toHaveLength(0);
     await expect(validate(max)).resolves.toHaveLength(0);

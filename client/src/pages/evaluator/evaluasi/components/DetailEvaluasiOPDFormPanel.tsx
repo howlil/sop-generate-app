@@ -1,6 +1,8 @@
-import { Activity, FileText, Building2, PanelsTopLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Activity, FileText, Building2, PanelsTopLeft, Lock, Unlock } from "lucide-react";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   CollapsedStripButton,
   CollapsibleSidePanel,
@@ -77,6 +79,15 @@ export function DetailEvaluasiOPDFormPanel({
   sopForm,
   opdForm,
 }: DetailEvaluasiOPDFormPanelProps) {
+  const [isLockedSopForm, setIsLockedSopForm] = useState(false);
+
+  useEffect(() => {
+    // Kunci otomatis saat pertama kali dibuka jika sudah pernah disimpan
+    if (sopForm.effectiveSopId) {
+      setIsLockedSopForm(sopForm.nilaiTersimpan?.hasil != null);
+    }
+  }, [sopForm.effectiveSopId]);
+
   const formTabs = penilaianOpdDiizinkan
     ? [
         {
@@ -188,34 +199,68 @@ export function DetailEvaluasiOPDFormPanel({
                       Penilaian ulang
                     </p>
                   ) : null}
-                  <StatusHasilEvaluasiPicker
-                    value={sopForm.statusEvaluasi}
-                    onChange={(v) => {
-                      sopForm.setStatusEvaluasi(v);
-                      if (v === STATUS_HASIL_EVALUASI.SESUAI) {
-                        sopForm.setKomentarEvaluasi("");
-                      }
-                    }}
-                    komentarTrim={sopForm.komentarEvaluasi?.trim() ?? ""}
-                  />
-                  {sopForm.statusEvaluasi ===
-                    STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && (
-                    <FormField label="Catatan hasil evaluasi (formal)">
-                      <Textarea
-                        className="text-xs min-h-[80px]"
-                        placeholder="Catatan untuk penyusun — wajib jika hasil Perlu Perbaikan; tersimpan sebagai catatan nilai evaluasi dan muncul sebagai umpan balik di panel penyusun."
-                        value={sopForm.komentarEvaluasi}
-                        onChange={(e) =>
-                          sopForm.setKomentarEvaluasi(e.target.value)
-                        }
+                  
+                  {isLockedSopForm ? (
+                    <div className="space-y-3">
+                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-gray-700">Hasil Penilaian</span>
+                          <span className="text-xs font-semibold text-gray-900">{labelHasilRiwayat(sopForm.statusEvaluasi)}</span>
+                        </div>
+                        {sopForm.statusEvaluasi === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && (
+                          <div className="space-y-1">
+                            <span className="text-xs text-gray-500">Catatan:</span>
+                            <p className="text-xs text-gray-800 whitespace-pre-wrap">{sopForm.komentarEvaluasi || "-"}</p>
+                          </div>
+                        )}
+                      </div>
+                      <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5" onClick={() => setIsLockedSopForm(false)}>
+                        <Unlock className="w-3.5 h-3.5" /> Buka Kunci Edit
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <StatusHasilEvaluasiPicker
+                        value={sopForm.statusEvaluasi}
+                        onChange={(v) => {
+                          sopForm.setStatusEvaluasi(v);
+                          if (v === STATUS_HASIL_EVALUASI.SESUAI) {
+                            sopForm.setKomentarEvaluasi("");
+                          }
+                        }}
+                        komentarTrim={sopForm.komentarEvaluasi?.trim() ?? ""}
                       />
-                    </FormField>
+                      {sopForm.statusEvaluasi ===
+                        STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && (
+                        <FormField label="Catatan hasil evaluasi (formal)">
+                          <Textarea
+                            className="text-xs min-h-[80px]"
+                            placeholder="Catatan untuk penyusun — wajib jika hasil Perlu Perbaikan; tersimpan sebagai catatan nilai evaluasi dan muncul sebagai umpan balik di panel penyusun."
+                            value={sopForm.komentarEvaluasi}
+                            onChange={(e) =>
+                              sopForm.setKomentarEvaluasi(e.target.value)
+                            }
+                          />
+                        </FormField>
+                      )}
+                      
+                      <div className="pt-2">
+                        <Button 
+                          size="sm" 
+                          className="w-full text-xs h-8 gap-1.5" 
+                          onClick={() => setIsLockedSopForm(true)} 
+                          disabled={!sopForm.statusEvaluasi || (sopForm.statusEvaluasi === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && !sopForm.komentarEvaluasi.trim())}
+                        >
+                          <Lock className="w-3.5 h-3.5" /> Selesai & Kunci Penilaian
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </div>
                 <p className="text-[11px] text-gray-500">
                   {sopForm.tahapPenilaian === "tinjauan_ulang"
                     ? "Pilih hasil penilaian ulang — perubahan disimpan otomatis setelah Anda memilih."
-                    : "Perubahan disimpan otomatis. Riwayat ada di tab Aktivitas."}
+                    : "Perubahan disimpan otomatis. Pastikan untuk menekan Selesai & Kunci jika sudah selesai mengisi."}
                 </p>
               </>
             )}

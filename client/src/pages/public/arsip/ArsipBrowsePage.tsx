@@ -80,7 +80,11 @@ export function ArsipBrowsePage() {
         <div className="lg:hidden">
           <ArsipSopPreviewPane
             detailSopId={browse.mobile.detailSopId}
+            pdfUrl={browse.selectedSop?.pdfUrl}
+            title={browse.selectedSop?.judul}
+            opdName={browse.selectedSop?.opdNama}
             onClose={browse.handleClosePreview}
+            onRefresh={browse.workspaceProps.onRefreshPreview}
             variant="overlay"
           />
         </div>

@@ -22,7 +22,6 @@ import {
   getInitialSopDetailImplementers,
 } from "@/lib/sop/detailSop.initial-state";
 import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from "./sop-diagram";
-import { SopPrintBrandMark } from "./sop-print-brand-mark";
 
 const DEFAULT_METADATA = getInitialSopDetailMetadata();
 const DEFAULT_PROSEDUR_ROWS: ProsedurRow[] = [];
@@ -349,7 +348,6 @@ export function SOPPreviewTemplate({
       }
     >
       <div className="sop-print-document sop-a4-preview flex flex-col gap-10 p-4 print:gap-0 print:p-0">
-          <SopPrintBrandMark />
           <section className="sop-print-header">
           <SOPHeaderInfo
             {...metadata}
@@ -360,8 +358,8 @@ export function SOPPreviewTemplate({
           </section>
 
           {effectiveOptions.diagramAlternate != null ? (
-            <section className="sop-print-langkah flex flex-col gap-6 print:gap-0">
-            <div className="flex justify-center">{effectiveOptions.diagramAlternate}</div>
+            <section className="sop-print-langkah flex flex-col gap-6 print:gap-0 w-full">
+            <div className="flex justify-center w-full">{effectiveOptions.diagramAlternate}</div>
             </section>
           ) : (
             <section className="sop-print-langkah flex flex-col gap-6 print:gap-0">

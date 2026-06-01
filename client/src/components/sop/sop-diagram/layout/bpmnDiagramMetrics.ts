@@ -63,8 +63,11 @@ export const BPMN_DECISION_TEXT_OFFSET_Y = BPMN_GATEWAY_HALF_SIZE + 24
 /** Padding antar rect saat deteksi tabrakan layout. */
 export const BPMN_COLLISION_PADDING = 20
 
-/** Lebar konten cetak SOP ≈ calc(297mm − 3cm) pada 96dpi. */
-export const BPMN_SOP_CONTENT_MAX_WIDTH_PX = 1040
+/** Lebar kertas A4 landscape pada 96dpi: 297mm. */
+export const A4_LANDSCAPE_WIDTH_PX = Math.floor((297 * 96) / 25.4)
+
+/** Lebar pool cetak SOP: calc(297mm - 3cm), sinkron dengan sopDocumentLayout.ts. */
+export const BPMN_SOP_CONTENT_MAX_WIDTH_PX = Math.floor(((297 - 30) * 96) / 25.4)
 
 export interface BpmnStepDimensions {
   width: number

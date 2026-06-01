@@ -9,6 +9,7 @@ import {
   canCetakBeritaAcaraPengajuan,
   canCetakSopArsipPengajuan,
   PRINT_DELAY_MS,
+  printSopArsipFromPreviewProps,
   scheduleSopDocumentPrint,
   triggerPengajuanPrint,
   triggerSopBrowserPrint,
@@ -62,6 +63,32 @@ describe('triggerSopPrint', () => {
   it('memanggil printSopPdfDocument', async () => {
     triggerSopPrint(sampleSopPrintProps)
     await vi.waitFor(() => expect(printSopPdfDocument).toHaveBeenCalledOnce())
+  })
+})
+
+describe('printSopArsipFromPreviewProps', () => {
+  beforeEach(() => {
+    vi.mocked(printSopPdfDocument).mockClear()
+  })
+
+  it('selalu memakai format PDF arsip SOP global', async () => {
+    await printSopArsipFromPreviewProps({
+      name: 'SOP Pengujian',
+      number: '001/SOP',
+      metadata: {},
+      prosedurRows: [],
+      implementers: [],
+    })
+    expect(printSopPdfDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        includeHeader: true,
+        printMode: 'header_steps_bpmn',
+      }),
+      expect.objectContaining({
+        includeHeader: true,
+        printMode: 'header_steps_bpmn',
+      }),
+    )
   })
 })
 

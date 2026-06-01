@@ -145,6 +145,22 @@ export function verifyPdfWithP12(
   return verifyPdfSignatures(pdfBuffer, trusted, verifiedAt);
 }
 
+export function verifyPdfSignaturesGeneric(
+  pdfBuffer: Buffer,
+  verifiedAt: Date = new Date(),
+): VerifyPdfSignaturesResult {
+  assertValidPdfBuffer(pdfBuffer);
+  const fields = extractPdfSignatureFields(pdfBuffer);
+  const signatures = fields.map((field, index) =>
+    verifyEmbeddedSignatureGeneric(pdfBuffer, field, verifiedAt, index + 1),
+  );
+  return {
+    hasSignatures: signatures.length > 0,
+    allValid: signatures.length > 0 && signatures.every((entry) => entry.valid),
+    signatures,
+  };
+}
+
 function verifyEmbeddedSignature(
   pdfBuffer: Buffer,
   field: PdfEmbeddedSignatureField,
@@ -209,6 +225,90 @@ function verifyEmbeddedSignature(
     checks: {
       digestMatch,
       chainTrusted,
+      certificatePeriodValid,
+    },
+  };
+}
+
+function buildInvalidEntryGeneric(
+  index: number,
+  reason: string,
+): PdfSignatureVerificationEntry {
+  return {
+    index,
+    valid: false,
+    reason,
+    signatureValue: '',
+    signerSubject: '',
+    signerIssuer: '',
+    signedAt: null,
+    binding: null,
+    certificate: {
+      validFrom: '',
+      validTo: '',
+      fingerprint: '',
+      serialNumber: '',
+    },
+    checks: {
+      digestMatch: false,
+      chainTrusted: false,
+      certificatePeriodValid: false,
+    },
+  };
+}
+
+function verifyEmbeddedSignatureGeneric(
+  pdfBuffer: Buffer,
+  field: PdfEmbeddedSignatureField,
+  verifiedAt: Date,
+  index: number,
+): PdfSignatureVerificationEntry {
+  const documentDigest = computeDocumentDigest(pdfBuffer, field.byteRange);
+  let pkcs7: PkcsSignedDataMessage;
+  try {
+    const parsed = forge.pkcs7.messageFromAsn1(
+      forge.asn1.fromDer(field.pkcs7Buffer.toString('binary')),
+    );
+    if (!('certificates' in parsed) || !Array.isArray(parsed.certificates)) {
+      throw new Error('No certificates');
+    }
+    pkcs7 = parsed as PkcsSignedDataMessage;
+  } catch {
+    return buildInvalidEntryGeneric(index, 'Struktur PKCS#7 tidak valid.');
+  }
+  const embeddedDigest = extractMessageDigestFromPkcs7(field.pkcs7Buffer);
+  const digestMatch = embeddedDigest !== null && embeddedDigest.equals(documentDigest);
+  
+  // Ambil cert penandatangan dari dalam PDF itu sendiri (biasanya bukan CA)
+  const signingCertificate = pkcs7.certificates.find(c => !isCertificateAuthority(c)) || pkcs7.certificates[0];
+  if (!signingCertificate) {
+    return buildInvalidEntryGeneric(index, 'Sertifikat penandatangan tidak ditemukan.');
+  }
+  const certificatePeriodValid = isCertificateValidAt(signingCertificate, verifiedAt);
+  const certificate = mapCertificateToResponse(signingCertificate);
+  const signatureValue = `sha256:${createHash('sha256').update(field.pkcs7Buffer).digest('hex')}`;
+  const valid = digestMatch && certificatePeriodValid;
+  const reason = valid
+    ? 'Tanda tangan valid dan tidak diubah sejak ditandatangani.'
+    : buildFailureReason({ digestMatch, chainTrusted: true, certificatePeriodValid });
+  return {
+    index,
+    valid,
+    reason,
+    signatureValue,
+    signerSubject: certificate.subject,
+    signerIssuer: certificate.issuer,
+    signedAt: extractSigningTime(field.pkcs7Buffer),
+    binding: parsePdfTteSigningReason(field.reason),
+    certificate: {
+      validFrom: certificate.validFrom,
+      validTo: certificate.validTo,
+      fingerprint: certificate.fingerprint,
+      serialNumber: certificate.serialNumber,
+    },
+    checks: {
+      digestMatch,
+      chainTrusted: true,
       certificatePeriodValid,
     },
   };

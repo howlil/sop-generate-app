@@ -16,6 +16,18 @@ jest.mock('bcrypt', () => ({
   compare: jest.fn(),
 }));
 
+jest.mock('../shared/utils/generate-p12.util', () => ({
+  generatePersonalP12: jest.fn().mockReturnValue(Buffer.from('dummy-p12')),
+}));
+
+jest.mock('../shared/utils/tte-crypto.util', () => ({
+  encryptP12Passphrase: jest.fn().mockReturnValue('encrypted-passphrase'),
+}));
+
+jest.mock('../shared/utils/pdf-signing-certificate.util', () => ({
+  loadTrustedCertificatesFromP12: jest.fn().mockReturnValue(true),
+}));
+
 describe('Pengujian TteProfilService', () => {
   const user: JwtAccessPayload = {
     sub: 'user-1',
@@ -106,6 +118,7 @@ describe('Pengujian TteProfilService', () => {
         id: user.sub,
         userId: user.sub,
         peran: expectedPeran,
+        hasP12: false,
         createdAt: updatedAt.toISOString(),
         updatedAt: updatedAt.toISOString(),
         user: {
@@ -269,45 +282,66 @@ describe('Pengujian TteProfilService', () => {
     });
   });
 
-  describe('verifikasi email simulasi', () => {
-    it('seharusnya membuat token simulasi ketika kredensial sudah ada', async () => {
+  describe('generateP12', () => {
+    it('seharusnya melempar NotFoundException jika pengguna tidak ditemukan', async () => {
       const repo = createRepoMock({
+        findPenggunaAktif: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service(repo).generateP12(user, { pin: '1234' })).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('seharusnya membuat kredensial p12 untuk pengguna', async () => {
+      const repo = createRepoMock({
+        findPenggunaAktif: jest.fn().mockResolvedValue(pengguna()),
         findKredensial: jest.fn().mockResolvedValue(kredensial),
+        updateKredensialP12: jest.fn().mockResolvedValue({
+          userId: user.sub,
+          p12Base64: 'dummy',
+          updatedAt,
+        }),
       });
 
-      await expect(service(repo).mintTokenVerifikasi(user)).resolves.toEqual({
-        token: 'mock-email-skip',
-      });
-      expect(repo.findPenggunaAktif).not.toHaveBeenCalled();
-    });
+      const actual = await service(repo).generateP12(user, { pin: '1234' });
 
-    it('seharusnya melempar BadRequestException ketika mint token tanpa kredensial', async () => {
-      const repo = createRepoMock({
-        findKredensial: jest.fn().mockResolvedValue(null),
-      });
-
-      await expect(service(repo).mintTokenVerifikasi(user)).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-    });
-
-    it.each([undefined, null, 0, {}, '', '   '] as unknown[])(
-      'seharusnya menolak token konfirmasi invalid: %p',
-      async (token) => {
-        const repo = createRepoMock();
-
-        await expect(service(repo).konfirmasiEmail(token as string)).rejects.toBeInstanceOf(
-          BadRequestException,
-        );
-      },
-    );
-
-    it('seharusnya menerima token non-empty setelah trim pada mode simulasi', async () => {
-      const repo = createRepoMock();
-
-      await expect(service(repo).konfirmasiEmail('  token-valid  ')).resolves.toEqual({
-        message: 'Verifikasi tidak diperlukan pada mode simulasi TTE',
-      });
+      expect(repo.updateKredensialP12).toHaveBeenCalledWith(expect.objectContaining({
+        userId: user.sub,
+        p12Base64: Buffer.from('dummy-p12').toString('base64'),
+        p12PassphraseEncrypted: 'encrypted-passphrase',
+      }));
+      expect(actual.hasP12).toBe(true);
     });
   });
+
+  describe('uploadP12', () => {
+    it('seharusnya melempar NotFoundException jika pengguna tidak ditemukan', async () => {
+      const repo = createRepoMock({
+        findPenggunaAktif: jest.fn().mockResolvedValue(null),
+      });
+
+      await expect(service(repo).uploadP12(user, { pin: '1234', p12Passphrase: 'pass' }, { buffer: Buffer.from('file') })).rejects.toBeInstanceOf(NotFoundException);
+    });
+
+    it('seharusnya mengunggah dan menyimpan file p12', async () => {
+      const repo = createRepoMock({
+        findPenggunaAktif: jest.fn().mockResolvedValue(pengguna()),
+        findKredensial: jest.fn().mockResolvedValue(kredensial),
+        updateKredensialP12: jest.fn().mockResolvedValue({
+          userId: user.sub,
+          p12Base64: 'dummy',
+          updatedAt,
+        }),
+      });
+
+      const actual = await service(repo).uploadP12(user, { pin: '1234', p12Passphrase: 'pass' }, { buffer: Buffer.from('file') });
+
+      expect(repo.updateKredensialP12).toHaveBeenCalledWith({
+        userId: user.sub,
+        p12Base64: Buffer.from('file').toString('base64'),
+        p12PassphraseEncrypted: 'encrypted-passphrase',
+      });
+      expect(actual.hasP12).toBe(true);
+    });
+  });
+
 });

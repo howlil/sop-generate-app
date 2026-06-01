@@ -1,3 +1,451 @@
-<mxfile host="app.diagrams.net" modified="2026-05-26T00:00:00.000Z" agent="Codex" version="26.0.0" type="device">
-    <diagram id="server-domain-class-diagram" name="Domain Class Diagram">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</diagram>
+<mxfile host="65bd71144e">
+    <diagram id="server-domain-class-diagram" name="Domain Class Diagram">
+        <mxGraphModel dx="6182" dy="1335" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4600" pageHeight="3049" background="#ffffff" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="OPD" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;OPD&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- opdId: string&lt;br&gt;- nama: string&lt;br&gt;- deletedAt: Date?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findManyRingkasAktif(search?: string): Promise&amp;lt;OpdRingkasRow[]&amp;gt;&lt;br&gt;+ findRingkasAktifById(opdId: string): Promise&amp;lt;OpdRingkasRow | null&amp;gt;&lt;br&gt;+ findAktifById(opdId: string): Promise&amp;lt;OPD | null&amp;gt;&lt;br&gt;+ create(data: OPDCreateInput): Promise&amp;lt;OPD&amp;gt;&lt;br&gt;+ update(opdId: string, data: OPDUpdateInput): Promise&amp;lt;OPD&amp;gt;&lt;br&gt;+ softDelete(opdId: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ summarizeBlockingRelations(opdId: string): Promise&amp;lt;BlockingRelations&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry y="1704.078125" width="429" height="255" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pengguna" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;Pengguna&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- penggunaId: string&lt;br&gt;- email: string&lt;br&gt;- opdId: string&lt;br&gt;- nama: string&lt;br&gt;- kataSandi: string&lt;br&gt;- peran: PeranPengguna&lt;br&gt;- nip: string&lt;br&gt;- jabatan: string&lt;br&gt;- pangkat: string&lt;br&gt;- nohp: string&lt;br&gt;- sesiTokenVersion: number&lt;br&gt;- refreshTokenHash: string?&lt;br&gt;- refreshTokenExpiresAt: Date?&lt;br&gt;- passwordChangedAt: Date?&lt;br&gt;- ttePinHash: string?&lt;br&gt;- deletedAt: Date?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findActivePenggunaByEmail(email: string): Promise&amp;lt;Pengguna | null&amp;gt;&lt;br&gt;+ findActivePenggunaById(penggunaId: string): Promise&amp;lt;Pengguna | null&amp;gt;&lt;br&gt;+ updateKataSandi(penggunaId: string, kataSandiHash: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ startSession(penggunaId: string): Promise&amp;lt;Pengguna&amp;gt;&lt;br&gt;+ storeRefreshToken(penggunaId: string, hash: string, expiresAt: Date): Promise&amp;lt;Pengguna&amp;gt;&lt;br&gt;+ revokeSession(penggunaId: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ findOpdIdByPenggunaId(penggunaId: string): Promise&amp;lt;string | null&amp;gt;&lt;br&gt;+ findPenggunaAktif(userId: string): Promise&amp;lt;TtePenggunaRingkas | null&amp;gt;&lt;br&gt;+ findKredensial(userId: string): Promise&amp;lt;TteKredensialRow | null&amp;gt;&lt;br&gt;+ createKredensialPin(params: CreatePinParams): Promise&amp;lt;TteKredensialRow&amp;gt;&lt;br&gt;+ updateKredensialPinHash(params: UpdatePinParams): Promise&amp;lt;TteKredensialRow&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="565.34" y="892.21" width="528" height="518.79" as="geometry"/>
+                </mxCell>
+                <mxCell id="PeranPengguna" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;PeranPengguna&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;PJ_EVALUATOR&lt;br&gt;EVALUATOR&lt;br&gt;KEPALA_OPD&lt;br&gt;PJ_PENYUSUN&lt;br&gt;PENYUSUN&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="1494.1799999999998" y="981" width="300" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="RiwayatOpdPengguna" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;RiwayatOpdPengguna&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- penggunaId: string&lt;br&gt;- opdId: string&lt;br&gt;- isAktif: boolean&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ listRiwayatOpd(penggunaId: string): Promise&amp;lt;RiwayatOpdPengguna[]&amp;gt;&lt;br&gt;+ syncRiwayatOpd(penggunaId: string, opdId: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ aktifkanRiwayat(): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="1409.1799999999998" y="1146" width="470" height="183" as="geometry"/>
+                </mxCell>
+                <mxCell id="Peraturan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;Peraturan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- peraturanId: string&lt;br&gt;- nama: string&lt;br&gt;- nomor: string&lt;br&gt;- tahun: number&lt;br&gt;- tentang: string&lt;br&gt;- lastEditedById: string?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findMany(search?: string): Promise&amp;lt;Peraturan[]&amp;gt;&lt;br&gt;+ findById(peraturanId: string): Promise&amp;lt;Peraturan | null&amp;gt;&lt;br&gt;+ create(dto: CreatePeraturanDto): Promise&amp;lt;Peraturan&amp;gt;&lt;br&gt;+ update(peraturanId: string, dto: UpdatePeraturanDto): Promise&amp;lt;Peraturan&amp;gt;&lt;br&gt;+ remove(peraturanId: string): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3088.68" y="1523.5" width="491" height="258" as="geometry"/>
+                </mxCell>
+                <mxCell id="OPDPeraturan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;OPDPeraturan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- opdId: string&lt;br&gt;- peraturanId: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ attachPeraturanToOpd(opdId: string, peraturanId: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ detachPeraturanFromOpd(opdId: string, peraturanId: string): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2245.68" y="2847.5" width="532" height="174" as="geometry"/>
+                </mxCell>
+                <mxCell id="SOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;SOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- sopId: string&lt;br&gt;- opdId: string&lt;br&gt;- judul: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ createSopWithInitialDetail(params: CreateSopParams): Promise&amp;lt;SopDaftarDbRow&amp;gt;&lt;br&gt;+ findDaftarByOpdId(opdId: string, filters?: SopDaftarListFilters): Promise&amp;lt;SopDaftarDbRow[]&amp;gt;&lt;br&gt;+ findDaftarAll(filters?: SopDaftarListFilters): Promise&amp;lt;SopDaftarDbRow[]&amp;gt;&lt;br&gt;+ findRiwayatVersiBySopId(sopId: string): Promise&amp;lt;SopRiwayatVersiDbRow[]&amp;gt;&lt;br&gt;+ updateSopHeaderTransaction(params: UpdateHeaderParams): Promise&amp;lt;SopCatalogRepoResult&amp;lt;void&amp;gt;&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="529" y="1826.578125" width="600.68" height="231" as="geometry"/>
+                </mxCell>
+                <mxCell id="DetailSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;DetailSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- sopId: string&lt;br&gt;- status: StatusSOP&lt;br&gt;- versi: number&lt;br&gt;- nomorSOP: string&lt;br&gt;- tanggalPembuatan: Date&lt;br&gt;- tanggalRevisi: Date?&lt;br&gt;- tanggalEfektif: Date?&lt;br&gt;- namaLembaga: string&lt;br&gt;- dibuatOlehId: string?&lt;br&gt;- terakhirDieditOlehId: string?&lt;br&gt;- revisiDariDetailSopId: string?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findWorkbenchPayload(detailSopId: string, logsLimit: number): Promise&amp;lt;SopWorkbenchDbPayload | null&amp;gt;&lt;br&gt;+ findWorkbenchPayloadByDetailOrSopId(id: string, logsLimit: number): Promise&amp;lt;SopWorkbenchDbPayload | null&amp;gt;&lt;br&gt;+ findDetailIdByDetailOrSopId(id: string): Promise&amp;lt;DetailIdResult | null&amp;gt;&lt;br&gt;+ findLatestDetailStatusContext(id: string): Promise&amp;lt;DetailStatusContext | null&amp;gt;&lt;br&gt;+ findDetailStatus(detailSopId: string): Promise&amp;lt;StatusSOP | null&amp;gt;&lt;br&gt;+ updateDetailSopStatus(params: UpdateStatusParams): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ transitionDetailSopRevisiToDiajukanEvaluasi(params: RevisiSubmitParams): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ cloneDetailSopFromBerlaku(params: CloneDetailParams): Promise&amp;lt;SopCatalogRepoResult&amp;lt;CloneResult&amp;gt;&amp;gt;&lt;br&gt;+ deleteVersiDraft(detailSopId: string): Promise&amp;lt;SopCatalogRepoResult&amp;lt;void&amp;gt;&amp;gt;&lt;br&gt;+ findOpdIdByDetailSopId(detailSopId: string): Promise&amp;lt;string | null&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="1321.6799999999998" y="1865" width="645" height="450" as="geometry"/>
+                </mxCell>
+                <mxCell id="StatusSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;&amp;lt;&amp;lt;enumeration&amp;gt;&amp;gt;&lt;br&gt;StatusSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;DRAFT&lt;br&gt;SEDANG_DISUSUN&lt;br&gt;SIAP_DIEVALUASI&lt;br&gt;DIAJUKAN_EVALUASI&lt;br&gt;SEDANG_DIEVALUASI&lt;br&gt;REVISI_DARI_EVALUATOR&lt;br&gt;SIAP_DIVERIFIKASI&lt;br&gt;DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI&lt;br&gt;BERLAKU&lt;br&gt;DIGANTIKAN&lt;br&gt;DICABUT&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2357.68" y="2346.5" width="308" height="237" as="geometry"/>
+                </mxCell>
+                <mxCell id="DasarHukum" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;DasarHukum&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- peraturanId: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceDasarHukum(detailSopId: string, peraturanIds: string[]): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ findDasarHukumByDetail(detailSopId: string): Promise&amp;lt;DasarHukum[]&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2231.68" y="2148.5" width="560" height="168" as="geometry"/>
+                </mxCell>
+                <mxCell id="SopTerkait" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;SopTerkait&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- detailSopTerkaitId: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceSopTerkait(detailSopId: string, relatedIds: string[]): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ findRelasiSopKeluar(detailSopId: string): Promise&amp;lt;SopTerkait[]&amp;gt;&lt;br&gt;+ findRelasiSopMasuk(detailSopId: string): Promise&amp;lt;SopTerkait[]&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2238.68" y="726" width="546" height="185.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="Pelaksana" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;Pelaksana&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- pelaksanaId: string&lt;br&gt;- opdId: string&lt;br&gt;- nama: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findManyByOpdId(opdId: string): Promise&amp;lt;PelaksanaRow[]&amp;gt;&lt;br&gt;+ findByIdAndOpd(pelaksanaId: string, opdId: string): Promise&amp;lt;PelaksanaRow | null&amp;gt;&lt;br&gt;+ findPelaksanaIdsByOpd(opdId: string, ids: string[]): Promise&amp;lt;Set&amp;lt;string&amp;gt;&amp;gt;&lt;br&gt;+ create(opdId: string, nama: string): Promise&amp;lt;PelaksanaRow&amp;gt;&lt;br&gt;+ updateNama(pelaksanaId: string, nama: string): Promise&amp;lt;PelaksanaRow&amp;gt;&lt;br&gt;+ delete(pelaksanaId: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ countLangkahReferences(pelaksanaId: string): Promise&amp;lt;number&amp;gt;&lt;br&gt;+ countSwimlaneReferences(pelaksanaId: string): Promise&amp;lt;number&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3088.68" y="1811.5" width="491" height="258" as="geometry"/>
+                </mxCell>
+                <mxCell id="DetailSOPPelaksana" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;DetailSOPPelaksana&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- pelaksanaId: string&lt;br&gt;- urutan: number&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findExistingSwimlanePelaksanaIds(detailSopId: string): Promise&amp;lt;string[]&amp;gt;&lt;br&gt;+ replaceSwimlanePelaksana(detailSopId: string, pelaksanaIds: string[]): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ countSwimlaneReferences(pelaksanaId: string): Promise&amp;lt;number&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2207.68" y="2613.5" width="608" height="204" as="geometry"/>
+                </mxCell>
+                <mxCell id="LangkahSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LangkahSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- langkahSopId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- kegiatan: string&lt;br&gt;- jenis: JenisLangkahProsedur&lt;br&gt;- urutan: number&lt;br&gt;- kelengkapan: string&lt;br&gt;- keluaran: string&lt;br&gt;- waktu: number&lt;br&gt;- satuanWaktu: SatuanWaktu&lt;br&gt;- keterangan: string&lt;br&gt;- pelaksanaId: string&lt;br&gt;- langkahSelanjutnyaYaId: string?&lt;br&gt;- langkahSelanjutnyaTidakId: string?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ updateProsedurTransaction(params: UpdateProsedurParams): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ replaceLangkahInTx(tx: TransactionClient, detailSopId: string, input: UpdateSopProsedurRepoInput): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ countLangkahReferences(pelaksanaId: string): Promise&amp;lt;number&amp;gt;&lt;br&gt;+ hubungkanLangkahYa(sourceId: string, targetId: string): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ hubungkanLangkahTidak(sourceId: string, targetId: string): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3803.68" y="1759" width="801" height="393" as="geometry"/>
+                </mxCell>
+                <mxCell id="LampiranPeringatan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LampiranPeringatan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- lampiranPeringatanId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- teks: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceLampiranPeringatan(detailSopId: string, teks: string[]): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2231.68" y="1348.5" width="560" height="169" as="geometry"/>
+                </mxCell>
+                <mxCell id="LampiranKualifikasiPelaksanaan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LampiranKualifikasiPelaksanaan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- lampiranKualifikasiPelaksanaanId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- teks: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceLampiranKualifikasi(detailSopId: string, teks: string[]): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2228.18" y="1547.5" width="567" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="LampiranPeralatanPerlengkapan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LampiranPeralatanPerlengkapan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- lampiranPeralatanPerlengkapanId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- teks: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceLampiranPeralatan(detailSopId: string, teks: string[]): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2235.18" y="1747.5" width="553" height="170" as="geometry"/>
+                </mxCell>
+                <mxCell id="LampiranPencatatanPendataan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LampiranPencatatanPendataan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- lampiranPencatatanPendataanId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- teks: string&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceLampiranPencatatan(detailSopId: string, teks: string[]): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2231.68" y="1947.5" width="560" height="171" as="geometry"/>
+                </mxCell>
+                <mxCell id="LogEditSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LogEditSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- penggunaId: string&lt;br&gt;- createdAt: Date&lt;br&gt;- bagian: BagianSOP&lt;br&gt;- targetEntityId: string?&lt;br&gt;- keterangan: string?&lt;br&gt;- sesiChangeCount: number&lt;br&gt;- closedAt: Date?&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ appendOrCreateLogSession(params: LogSessionParams): Promise&amp;lt;LogEditSOP&amp;gt;&lt;br&gt;+ findLogEditSop(detailSopId: string, limit: number): Promise&amp;lt;LogEditSOP[]&amp;gt;&lt;br&gt;+ closeSession(): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2273.18" width="477" height="270" as="geometry"/>
+                </mxCell>
+                <mxCell id="LogEditSopDomainField" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LogEditSopDomainField&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- penggunaId: string&lt;br&gt;- logCreatedAt: Date&lt;br&gt;- domainField: string&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ appendDomainFields(fields: string[]): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ listChangedFields(logKey: LogEditKey): Promise&amp;lt;string[]&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3139.18" y="51.5" width="390" height="167" as="geometry"/>
+                </mxCell>
+                <mxCell id="KonfigurasiDiagramSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;KonfigurasiDiagramSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- jenis: JenisDiagram&lt;br&gt;- layoutSeed: number&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ getDiagramWorkbench(detailSopId: string): Promise&amp;lt;PenyusunWorkbenchDiagramSliceDto&amp;gt;&lt;br&gt;+ updateDiagramOverrides(dto: UpdateSopDiagramDto): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ upsertKonfigurasi(detailSopId: string, jenis: JenisDiagram): Promise&amp;lt;KonfigurasiDiagramSOP&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2225.18" y="3081.5" width="573" height="184.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="OverridePanahDiagramSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;OverridePanahDiagramSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- jenis: JenisDiagram&lt;br&gt;- dariLangkahSopId: string&lt;br&gt;- keLangkahSopId: string&lt;br&gt;- cabang: CabangDiagram&lt;br&gt;- sSide: SisiPanahDiagram&lt;br&gt;- eSide: SisiPanahDiagram&lt;br&gt;- startX: number&lt;br&gt;- startY: number&lt;br&gt;- endX: number&lt;br&gt;- endY: number&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ upsertOverridePanah(params: OverridePanahParams): Promise&amp;lt;OverridePanahDiagramSOP&amp;gt;&lt;br&gt;+ deleteOverridePanah(key: OverridePanahKey): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ normalizeEdgeKey(): string&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3102.68" y="2404.66" width="550.32" height="330.34" as="geometry"/>
+                </mxCell>
+                <mxCell id="TitikTekukPanahDiagramSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;TitikTekukPanahDiagramSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- jenis: JenisDiagram&lt;br&gt;- dariLangkahSopId: string&lt;br&gt;- keLangkahSopId: string&lt;br&gt;- cabang: CabangDiagram&lt;br&gt;- urutan: number&lt;br&gt;- x: number&lt;br&gt;- y: number&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ replaceTitikTekuk(edgeKey: OverridePanahKey, points: DiagramPathPointDto[]): Promise&amp;lt;void&amp;gt;&lt;br&gt;+ orderByUrutan(): TitikTekukPanahDiagramSOP[]&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3879.68" y="2449.66" width="649" height="229.34" as="geometry"/>
+                </mxCell>
+                <mxCell id="OverrideLabelDiagramSOP" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;OverrideLabelDiagramSOP&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- detailSopId: string&lt;br&gt;- jenis: JenisDiagram&lt;br&gt;- kunciLabel: string&lt;br&gt;- posisiX: number&lt;br&gt;- posisiY: number&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ upsertOverrideLabel(params: OverrideLabelParams): Promise&amp;lt;OverrideLabelDiagramSOP&amp;gt;&lt;br&gt;+ deleteOverrideLabel(key: OverrideLabelKey): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3102.68" y="2099.5" width="463" height="198" as="geometry"/>
+                </mxCell>
+                <mxCell id="PengajuanEvaluasi" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;PengajuanEvaluasi&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- pengajuanEvaluasiId: string&lt;br&gt;- opdId: string&lt;br&gt;- jenis: JenisPengajuanEvaluasi&lt;br&gt;- status: StatusPengajuanEvaluasi&lt;br&gt;- nomorBA: string?&lt;br&gt;- tanggalPermintaan: Date?&lt;br&gt;- tanggalEvaluasi: Date?&lt;br&gt;- nilaiOPD: number?&lt;br&gt;- diverifikasiOlehUserId: string?&lt;br&gt;- ditandatanganiOlehPjPenyusunUserId: string?&lt;br&gt;- tanggalTTDBaPjPenyusun: Date?&lt;br&gt;- diselesaikanOlehId: string?&lt;br&gt;- tanggalDiselesaikan: Date?&lt;br&gt;- version: number&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ runTransaction&amp;lt;T&amp;gt;(fn: TransactionFn&amp;lt;T&amp;gt;): Promise&amp;lt;T&amp;gt;&lt;br&gt;+ findOpdIdPengguna(penggunaId: string): Promise&amp;lt;string | null&amp;gt;&lt;br&gt;+ findManyFiltered(whereInput: PengajuanWhereInput): Promise&amp;lt;PengajuanEvaluasiDetailRow[]&amp;gt;&lt;br&gt;+ findByIdFull(pengajuanEvaluasiId: string): Promise&amp;lt;PengajuanEvaluasiDetailRow | null&amp;gt;&lt;br&gt;+ buildWhereFromQuery(query: PengajuanEvaluasiListQueryDto, forcedOpdId?: string): PengajuanWhereInput&lt;br&gt;+ buildWhereRingkasFromQuery(query: PengajuanEvaluasiRingkasQueryDto, forcedOpdId?: string): PengajuanWhereInput&lt;br&gt;+ countWhere(where: PengajuanWhereInput): Promise&amp;lt;number&amp;gt;&lt;br&gt;+ findRingkasPage(where: PengajuanWhereInput, skip: number, take: number): Promise&amp;lt;PengajuanRingkasRow[]&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="1229.6799999999998" y="1389" width="829" height="446" as="geometry"/>
+                </mxCell>
+                <mxCell id="NilaiEvaluasi" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;NilaiEvaluasi&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- pengajuanEvaluasiId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- hasil: HasilEvaluasi?&lt;br&gt;- catatan: string?&lt;br&gt;- statusTindakLanjut: StatusTindakLanjut?&lt;br&gt;- ditindaklanjutiPada: Date?&lt;br&gt;- ditindaklanjutiOlehId: string?&lt;br&gt;- version: number&lt;br&gt;- dinilaiOlehId: string?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ runTransaction&amp;lt;T&amp;gt;(fn: TransactionFn&amp;lt;T&amp;gt;): Promise&amp;lt;T&amp;gt;&lt;br&gt;+ findNilaiRevisiAktifForDetail(detailSopId: string): Promise&amp;lt;NilaiRevisiAktifRow | null&amp;gt;&lt;br&gt;+ findUmpanBalikForDetail(detailSopId: string, opdId: string): Promise&amp;lt;UmpanBalikEvaluasiRow | null&amp;gt;&lt;br&gt;+ isiNilai(dto: IsiNilaiEvaluasiDto): Promise&amp;lt;NilaiEvaluasiPatchResponseDto&amp;gt;&lt;br&gt;+ tandaiTindakLanjut(detailSopId: string): Promise&amp;lt;void&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2242.18" y="330" width="539" height="336" as="geometry"/>
+                </mxCell>
+                <mxCell id="LogNilaiEvaluasi" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;LogNilaiEvaluasi&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- pengajuanEvaluasiId: string&lt;br&gt;- detailSopId: string&lt;br&gt;- penggunaId: string&lt;br&gt;- hasilSebelum: HasilEvaluasi?&lt;br&gt;- hasilSesudah: HasilEvaluasi?&lt;br&gt;- catatanSebelum: string?&lt;br&gt;- catatanSesudah: string?&lt;br&gt;- createdAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ appendLogNilaiEvaluasi(params: LogNilaiParams): Promise&amp;lt;LogNilaiEvaluasi&amp;gt;&lt;br&gt;+ findRiwayatNilai(detailSopId: string): Promise&amp;lt;LogNilaiEvaluasi[]&amp;gt;&lt;br&gt;+ groupByPengajuan(): Promise&amp;lt;NilaiEvaluasiAggregate[]&amp;gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="3102.68" y="272.5" width="463" height="253" as="geometry"/>
+                </mxCell>
+                <mxCell id="DokumenTte" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;DokumenTte&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- dokumenTteId: string&lt;br&gt;- nomorDokumen: string&lt;br&gt;- jenisDokumen: JenisDokumenTte&lt;br&gt;- judulDokumen: string&lt;br&gt;- hashDokumen: string&lt;br&gt;- versiDokumen: number&lt;br&gt;- detailSopId: string?&lt;br&gt;- pengajuanEvaluasiId: string?&lt;br&gt;- createdAt: Date&lt;br&gt;- updatedAt: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ findRiwayatPengesahanByUserAndDokumen(userId: string, dokumenTteId: string): Promise&amp;lt;RiwayatPengesahanRow | null&amp;gt;&lt;br&gt;+ findBeritaAcaraArsipForPdfSigning(pengajuanEvaluasiId: string): Promise&amp;lt;BeritaAcaraArsipRow | null&amp;gt;&lt;br&gt;+ findRiwayatForPdfSigning(userId: string, dokumenTteId: string): Promise&amp;lt;RiwayatPdfSigningRow | null&amp;gt;&lt;br&gt;+ transaksiTandaTanganiBaEvaluator(params: SignBaEvaluatorParams): Promise&amp;lt;SignBaResult&amp;gt;&lt;br&gt;+ transaksiTandaTanganiBaPjPenyusun(params: SignBaPjPenyusunParams): Promise&amp;lt;SignBaResult&amp;gt;&lt;br&gt;+ transaksiTandaTanganiSemuaSopPengajuan(params: SignAllSopParams): Promise&amp;lt;SignAllSopResult&amp;gt;&lt;br&gt;+ validasiSatuParent(): boolean&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2158.68" y="971.5" width="706" height="347" as="geometry"/>
+                </mxCell>
+                <mxCell id="RiwayatTandaTangan" value="&lt;div style=&quot;text-align:center;padding:4px 10px 5px 10px;font-size:14px;line-height:17px&quot;&gt;&lt;b&gt;RiwayatTandaTangan&lt;/b&gt;&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;- userId: string&lt;br&gt;- dokumenTteId: string&lt;br&gt;- peran: PeranPengguna&lt;br&gt;- signatureValue: string?&lt;br&gt;- signatureAlgorithm: string?&lt;br&gt;- signatureFormat: string?&lt;br&gt;- certSerialNumber: string?&lt;br&gt;- certIssuer: string?&lt;br&gt;- certSubject: string?&lt;br&gt;- certFingerprint: string?&lt;br&gt;- certValidFrom: Date?&lt;br&gt;- certValidTo: Date?&lt;br&gt;- ditandatanganiPada: Date&lt;/div&gt;&lt;hr&gt;&lt;div style=&quot;padding:6px 14px 6px 14px;font-size:12px;line-height:15px&quot;&gt;+ assertRiwayatBelumAda(tx: TransactionClient, dokumenTteId: string, peran: PeranPengguna): Promise&amp;lt;RiwayatTandaTangan | null&amp;gt;&lt;br&gt;+ createRiwayatTandaTangan(params: SignatureFields): Promise&amp;lt;RiwayatTandaTangan&amp;gt;&lt;br&gt;+ findRiwayatForPdfSigning(userId: string, dokumenTteId: string): Promise&amp;lt;RiwayatPdfSigningRow | null&amp;gt;&lt;br&gt;+ verifikasiSignature(): VerifyPdfResponse&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=12;align=left;verticalAlign=top;overflow=fill;strokeWidth=2;" parent="1" vertex="1">
+                    <mxGeometry x="2964.68" y="1133.75" width="739" height="348" as="geometry"/>
+                </mxCell>
+                <mxCell id="r-opd-pengguna" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=0;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="Pengguna" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="441" y="1729.4947916666667"/>
+                            <mxPoint x="517" y="1146.20703125"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-role" value="peran" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="PeranPengguna" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1147.6799999999998" y="1146.20703125"/>
+                            <mxPoint x="1217.6799999999998" y="1048.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-opd-riwayat" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="RiwayatOpdPengguna" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="443" y="1770.328125"/>
+                            <mxPoint x="479" y="1533.828125"/>
+                            <mxPoint x="1179.6799999999998" y="1533.828125"/>
+                            <mxPoint x="1217.6799999999998" y="1280.75"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-riwayat" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="RiwayatOpdPengguna" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1145.6799999999998" y="1217.349888392857"/>
+                            <mxPoint x="1217.6799999999998" y="1194.25"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-opd-peraturan" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="OPDPeraturan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="443" y="1892.8281249999998"/>
+                            <mxPoint x="479" y="2345"/>
+                            <mxPoint x="1179.6799999999998" y="2345"/>
+                            <mxPoint x="1179.6799999999998" y="2345"/>
+                            <mxPoint x="2108.68" y="2345"/>
+                            <mxPoint x="2146.68" y="2934.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-peraturan-opd" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPDPeraturan" target="Peraturan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="2934.5"/>
+                            <mxPoint x="2952.68" y="1714.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-opd-sop" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=0;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="SOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="445" y="1851.9947916666665"/>
+                            <mxPoint x="517" y="1942.078125"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-sop-detail" value="1 : 1..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="SOP" target="DetailSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1141.6799999999998" y="1942.078125"/>
+                            <mxPoint x="1217.6799999999998" y="2200"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-status" value="status" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="StatusSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2074.68" y="2225.3846153846152"/>
+                            <mxPoint x="2146.68" y="2465"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-detail-buat" value="dibuatOleh / dieditOleh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;exitX=0.971;exitY=1.001;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="Pengguna" target="DetailSOP" edge="1">
+                    <mxGeometry x="-0.001" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1141.6799999999998" y="1359.6356026785713"/>
+                            <mxPoint x="1217.6799999999998" y="1980"/>
+                        </Array>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-dasar" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="DasarHukum" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2076.68" y="2191.5384615384614"/>
+                            <mxPoint x="2146.68" y="2232.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-dasar-peraturan" value="M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DasarHukum" target="Peraturan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="2232.5"/>
+                            <mxPoint x="2952.68" y="1590.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-terkait" value="SOP terkait self M:N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="SopTerkait" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2076.68" y="1988.4615384615383"/>
+                            <mxPoint x="2146.68" y="818.75"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-opd-pelaksana" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamondThin;startFill=0;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="Pelaksana" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="441" y="1933.661458333333"/>
+                            <mxPoint x="479" y="3051.5"/>
+                            <mxPoint x="1179.6799999999998" y="3051.5"/>
+                            <mxPoint x="1179.6799999999998" y="3051.5"/>
+                            <mxPoint x="2108.68" y="3051.5"/>
+                            <mxPoint x="2108.68" y="3051.5"/>
+                            <mxPoint x="2914.68" y="3051.5"/>
+                            <mxPoint x="2952.68" y="2002.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-swimlane" value="M:N swimlane" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="DetailSOPPelaksana" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2072.68" y="2259.230769230769"/>
+                            <mxPoint x="2146.68" y="2715.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-swimlane-pelaksana" value="M:N swimlane" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOPPelaksana" target="Pelaksana" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="2715.5"/>
+                            <mxPoint x="2952.68" y="1878.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-langkah" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="LangkahSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2074.68" y="1954.6153846153845"/>
+                            <mxPoint x="2108.68" y="696"/>
+                            <mxPoint x="2914.68" y="696"/>
+                            <mxPoint x="2914.68" y="696"/>
+                            <mxPoint x="3753.6800000000003" y="696"/>
+                            <mxPoint x="3791.6800000000003" y="1822.8333333333333"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pelaksana-langkah" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pelaksana" target="LangkahSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="3715.68" y="1940.5"/>
+                            <mxPoint x="3789.6800000000003" y="1940.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-lamp1" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="LampiranPeringatan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2080.68" y="2056.153846153846"/>
+                            <mxPoint x="2146.68" y="1433"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-lamp2" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="LampiranKualifikasiPelaksanaan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2082.68" y="2090"/>
+                            <mxPoint x="2146.68" y="1632.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-lamp3" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="LampiranPeralatanPerlengkapan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2080.68" y="2123.846153846154"/>
+                            <mxPoint x="2146.68" y="1832.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-lamp4" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="LampiranPencatatanPendataan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2078.68" y="2157.6923076923076"/>
+                            <mxPoint x="2146.68" y="2033"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-log" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="LogEditSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2070.68" y="1886.923076923077"/>
+                            <mxPoint x="2146.68" y="200"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-log" value="editor" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="LogEditSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1141.6799999999998" y="932.7784598214286"/>
+                            <mxPoint x="1179.6799999999998" y="640.603515625"/>
+                            <mxPoint x="2108.68" y="640.603515625"/>
+                            <mxPoint x="2146.68" y="70"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-log-field" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="LogEditSOP" target="LogEditSopDomainField" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="135"/>
+                            <mxPoint x="2952.68" y="135"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-config" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="KonfigurasiDiagramSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2070.68" y="2293.076923076923"/>
+                            <mxPoint x="2146.68" y="3173.75"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-config-panah" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="KonfigurasiDiagramSOP" target="OverridePanahDiagramSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="3217.375"/>
+                            <mxPoint x="2952.68" y="2556.1604938271607"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-panah-titik" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OverridePanahDiagramSOP" target="TitikTekukPanahDiagramSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="3715.68" y="2629.4104938271607"/>
+                            <mxPoint x="3791.6800000000003" y="2556.1604938271607"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-config-label" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="KonfigurasiDiagramSOP" target="OverrideLabelDiagramSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="3130.125"/>
+                            <mxPoint x="2952.68" y="2198.5"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-panah-langkah" value="dariLangkah / keLangkah" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OverridePanahDiagramSOP" target="LangkahSOP" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="3715.68" y="2482.9104938271607"/>
+                            <mxPoint x="3791.6800000000003" y="2058.1666666666665"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-opd-pengajuan" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="OPD" target="PengajuanEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="445" y="1811.1614583333333"/>
+                            <mxPoint x="479" y="1721.078125"/>
+                            <mxPoint x="1179.6799999999998" y="1721.078125"/>
+                            <mxPoint x="1217.6799999999998" y="1612"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengajuan-nilai" value="1 : 1..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="PengajuanEvaluasi" target="NilaiEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2070.68" y="1503"/>
+                            <mxPoint x="2144.68" y="498"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-nilai" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="NilaiEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2072.68" y="1920.7692307692307"/>
+                            <mxPoint x="2146.68" y="606.6666666666666"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-nilai" value="dinilaiOleh / ditindaklanjutiOleh" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="NilaiEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1145.6799999999998" y="1075.064174107143"/>
+                            <mxPoint x="1179.6799999999998" y="822.103515625"/>
+                            <mxPoint x="2108.68" y="822.103515625"/>
+                            <mxPoint x="2146.68" y="389.3333333333333"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-nilai-log" value="1 : 0..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="NilaiEvaluasi" target="LogNilaiEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="498"/>
+                            <mxPoint x="2952.68" y="459.75"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-lognilai" value="pengubah" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="LogNilaiEvaluasi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1143.6799999999998" y="1003.9213169642857"/>
+                            <mxPoint x="1179.6799999999998" y="723.103515625"/>
+                            <mxPoint x="2108.68" y="723.103515625"/>
+                            <mxPoint x="2108.68" y="300"/>
+                            <mxPoint x="2914.68" y="300"/>
+                            <mxPoint x="2952.68" y="338.25"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-detail-dokt" value="0..1 : 0..1 SOP_BERLAKU" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DetailSOP" target="DokumenTte" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2078.68" y="2022.3076923076922"/>
+                            <mxPoint x="2146.68" y="1229.25"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengajuan-dokt" value="0..1 : 0..1 BERITA_ACARA" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="PengajuanEvaluasi" target="DokumenTte" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2070.68" y="1721"/>
+                            <mxPoint x="2146.68" y="1060.75"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-dokt-ttd" value="1 : 1..*" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;startArrow=diamond;startFill=1;endArrow=none;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="DokumenTte" target="RiwayatTandaTangan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="2876.68" y="1145"/>
+                            <mxPoint x="2952.68" y="1392.25"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="r-pengguna-ttd" value="penanda tangan" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=#ffffff;noEdgeStyle=1;orthogonal=1;" parent="1" source="Pengguna" target="RiwayatTandaTangan" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="1143.6799999999998" y="1288.4927455357142"/>
+                            <mxPoint x="1179.6799999999998" y="1359"/>
+                            <mxPoint x="2108.68" y="1359"/>
+                            <mxPoint x="2108.68" y="941.5"/>
+                            <mxPoint x="2914.68" y="941.5"/>
+                            <mxPoint x="2952.68" y="1223.25"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="2" style="edgeStyle=none;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="TitikTekukPanahDiagramSOP" target="TitikTekukPanahDiagramSOP">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>

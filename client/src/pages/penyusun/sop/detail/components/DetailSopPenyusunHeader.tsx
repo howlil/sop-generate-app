@@ -8,6 +8,12 @@ import { cn } from '@/utils/cn'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
 import type { StatusSOP } from "@/types/dto/sop.dto";
 import type { SopHeaderAutosaveStatus } from '@/pages/penyusun/sop/hooks/use-sop-header-autosave'
+import { Printer } from 'lucide-react'
+import { usePenyusunWorkbench } from '@/api/sop'
+import { useSopEditor } from '../SopEditorContext'
+import { useToast } from '@/hooks/useToast'
+import { printSopArsipFromPreviewProps } from '@/lib/print/pengajuan-print'
+import { mapPenyusunWorkbenchToPreviewProps } from '@/lib/sop/detailSop.mappers'
 
 export interface DetailSOPPenyusunHeaderProps {
   metadata: SOPDetailMetadata
@@ -94,6 +100,36 @@ export function DetailSOPPenyusunHeader({
   onBuatVersiBaru,
   isBuatVersiBaruPending = false,
 }: DetailSOPPenyusunHeaderProps) {
+  const { sopDetailId } = useSopEditor()
+  const { data: workbench, isLoading: isWorkbenchLoading } = usePenyusunWorkbench(sopDetailId)
+  const { showToast } = useToast()
+  const [isPrinting, setIsPrinting] = useState(false)
+
+  const handlePrintSop = async () => {
+    if (isWorkbenchLoading) return
+    setIsPrinting(true)
+    try {
+      if (!workbench) {
+        showToast('Data SOP belum siap untuk dicetak.', 'error')
+        return
+      }
+      const previewProps = mapPenyusunWorkbenchToPreviewProps(workbench)
+      const { diagramExportFailed } = await printSopArsipFromPreviewProps(previewProps, null, {
+        signPdf: false,
+      })
+      if (diagramExportFailed) {
+        showToast(
+          'Beberapa halaman diagram tidak dapat diekspor; PDF tetap dicetak dengan tabel langkah.',
+          'error',
+        )
+      }
+    } catch {
+      showToast('Gagal memuat cetak. Coba muat ulang halaman.', 'error')
+    } finally {
+      setIsPrinting(false)
+    }
+  }
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const indicator = isReadOnly ? null : autosaveAppearance(autosaveStatus)
   const confirmTitle = isRevisionFlow
@@ -141,6 +177,20 @@ export function DetailSOPPenyusunHeader({
             >
               <RefreshCcw className="h-3 w-3" />
               Coba lagi
+            </Button>
+          ) : null}
+          {currentSopStatus === 'BERLAKU' ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-xs gap-1.5 rounded-md border-gray-200 text-gray-700 hover:bg-gray-50"
+              onClick={() => void handlePrintSop()}
+              disabled={isWorkbenchLoading || isPrinting}
+              title="Cetak dokumen SOP sebagai PDF (A4 landscape)."
+            >
+              <Printer className="w-3.5 h-3.5" />
+              {isPrinting ? 'Menyiapkan…' : 'Cetak PDF'}
             </Button>
           ) : null}
           {canBuatVersiBaru && onBuatVersiBaru ? (

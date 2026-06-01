@@ -134,7 +134,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         actions={null}
         header={workspaceHeaderToolbar}
         main={
-          <div className="flex flex-col h-full p-4 gap-3">
+          <div className="flex flex-col h-full p-4 gap-3 overflow-y-auto">
             {isDicabut ? (
               <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
                 <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
@@ -161,6 +161,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
               diagramState={{
                 activeTab,
                 onActiveTabChange: setActiveTab,
+                diagramMountEnabled: previewProps != null,
                 ...diagramRenderState,
               }}
             />

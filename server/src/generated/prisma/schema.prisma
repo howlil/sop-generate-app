@@ -8,7 +8,7 @@ datasource db {
   provider = "mysql"
 }
 
-/// Invariant database (trigger, unique): lihat `server/prisma/DB-INVARIANTS.md`.
+/// Invariant database (trigger, unique): lihat `prisma/DB-INVARIANTS.md`.
 
 /// =========================
 /// MODUL 1 — MASTER & AKSES
@@ -29,6 +29,8 @@ model Pengguna {
   refreshTokenExpiresAt           DateTime?
   passwordChangedAt               DateTime?
   ttePinHash                      String?              @db.VarChar(255)
+  tteP12Base64                    String?              @db.LongText
+  tteP12PassphraseEncrypted       String?              @db.VarChar(2048)
   deletedAt                       DateTime?
   createdAt                       DateTime             @default(now())
   updatedAt                       DateTime             @updatedAt
@@ -68,6 +70,8 @@ model OPD {
 model RiwayatOpdPengguna {
   penggunaId String
   opdId      String
+  /// Histori penempatan OPD. Sumber kebenaran OPD aktif tetap `Pengguna.opdId`;
+  /// `isAktif` disinkronkan service untuk kemudahan tampilan riwayat.
   isAktif    Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -285,7 +289,7 @@ model Pelaksana {
   langkahSOP  LangkahSOP[]
   opd         OPD                  @relation(fields: [opdId], references: [opdId])
 
-  @@index([opdId, nama], map: "Pelaksana_opdId_nama_idx")
+  @@unique([opdId, nama], map: "Pelaksana_opdId_nama_key")
 }
 
 /// Swimlane: `pelaksanaId` harus master `Pelaksana` dengan `opdId` sama seperti `SOP` pemilik `DetailSOP` (trigger DB).
@@ -347,7 +351,7 @@ model PengajuanEvaluasi {
   opdId                              String
   jenis                              JenisPengajuanEvaluasi
   status                             StatusPengajuanEvaluasi @default(SEDANG_DIEVALUASI)
-  nomorBA                            String?
+  nomorBA                            String?                 @unique
   tanggalPermintaan                  DateTime?
   tanggalEvaluasi                    DateTime?
   nilaiOPD                           Int?
@@ -406,17 +410,21 @@ model NilaiEvaluasi {
 }
 
 model LogNilaiEvaluasi {
-  pengajuanEvaluasiId String
-  detailSopId         String
-  penggunaId          String
-  hasilSebelum        HasilEvaluasi?
-  hasilSesudah        HasilEvaluasi?
-  catatanSebelum      String?           @db.Text
-  catatanSesudah      String?           @db.Text
-  createdAt           DateTime          @default(now()) @db.DateTime(3)
-  pengguna            Pengguna          @relation(fields: [penggunaId], references: [penggunaId])
-  pengajuanEvaluasi   PengajuanEvaluasi @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
-  nilaiEvaluasi       NilaiEvaluasi     @relation(fields: [pengajuanEvaluasiId, detailSopId], references: [pengajuanEvaluasiId, detailSopId], onDelete: Cascade)
+  pengajuanEvaluasiId       String
+  detailSopId               String
+  penggunaId                String
+  hasilSebelum              HasilEvaluasi?
+  hasilSesudah              HasilEvaluasi?
+  catatanSebelum            String?             @db.Text
+  catatanSesudah            String?             @db.Text
+  statusTindakLanjutSebelum StatusTindakLanjut?
+  statusTindakLanjutSesudah StatusTindakLanjut?
+  ditindaklanjutiOlehId     String?
+  ditindaklanjutiPada       DateTime?
+  createdAt                 DateTime            @default(now()) @db.DateTime(3)
+  pengguna                  Pengguna            @relation(fields: [penggunaId], references: [penggunaId])
+  pengajuanEvaluasi         PengajuanEvaluasi   @relation(fields: [pengajuanEvaluasiId], references: [pengajuanEvaluasiId])
+  nilaiEvaluasi             NilaiEvaluasi       @relation(fields: [pengajuanEvaluasiId, detailSopId], references: [pengajuanEvaluasiId, detailSopId], onDelete: Cascade)
 
   @@id([pengajuanEvaluasiId, detailSopId, penggunaId, createdAt])
   @@index([detailSopId, createdAt])
@@ -434,6 +442,13 @@ model DokumenTte {
   judulDokumen        String
   hashDokumen         String
   versiDokumen        Int                  @default(1)
+  pdfPath             String?              @db.Text
+  pdfSha256           String?
+  pdfSizeBytes        Int?
+  pdfGeneratedAt      DateTime?
+  pdfPublishedAt      DateTime?
+  pdfRevokedAt        DateTime?
+  pdfStatus           String?              @db.VarChar(32)
   detailSopId         String?
   pengajuanEvaluasiId String?
   createdAt           DateTime             @default(now())
@@ -445,6 +460,7 @@ model DokumenTte {
   @@unique([detailSopId])
   @@unique([pengajuanEvaluasiId])
   @@index([jenisDokumen, createdAt], map: "DokumenTte_jenisDokumen_createdAt_idx")
+  @@index([jenisDokumen, pdfStatus], map: "DokumenTte_jenisDokumen_pdfStatus_idx")
 }
 
 model RiwayatTandaTangan {

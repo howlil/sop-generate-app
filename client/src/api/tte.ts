@@ -10,9 +10,9 @@ import type {
   UpdateTtePinDto,
   RiwayatTandaTangan,
   SignPdfDto,
-  SignBeritaAcaraArsipDto,
   SignPdfResponse,
   PdfSigningStatus,
+
   VerifyPdfResponse,
   TtePengesahanPublic,
   TteProfil,
@@ -21,6 +21,10 @@ import type {
   TandaTanganiSopPengajuanDto,
   TandaTanganiSopPengajuanMutationDto,
   TandaTanganiSopPengajuanResponse,
+  GenerateP12Dto,
+  UploadP12Dto,
+  SetupTteGenerateDto,
+  SetupTteUploadDto,
 } from "@/types/dto/tte.dto";
 
 export const tteApi = {
@@ -39,32 +43,40 @@ export const tteApi = {
       apiClient.patch<ApiSuccessResponse<TteProfil>>("/tte/profil/pin", payload),
     ),
 
-  mintTokenVerifikasi: () =>
-    unwrapApiData<{ token: string }>(
-      apiClient.post<ApiSuccessResponse<{ token: string }>>(
-        "/tte/profil/verifikasi-email",
-      ),
-    ),
-
-  konfirmasiEmail: (token: string) =>
-    unwrapApiData<{ message: string }>(
-      apiClient.get<ApiSuccessResponse<{ message: string }>>(
-        `/tte/profil/verifikasi-email?token=${encodeURIComponent(token)}`,
-      ),
-    ),
-
   signPdf: (payload: SignPdfDto) =>
     unwrapApiData<SignPdfResponse>(
       apiClient.post<ApiSuccessResponse<SignPdfResponse>>("/tte/pdf/sign", payload),
     ),
 
-  signBeritaAcaraArsip: (payload: SignBeritaAcaraArsipDto) =>
-    unwrapApiData<SignPdfResponse>(
-      apiClient.post<ApiSuccessResponse<SignPdfResponse>>(
-        '/tte/pdf/sign-berita-acara-arsip',
-        payload,
-      ),
+  generateP12: (payload: GenerateP12Dto) =>
+    unwrapApiData<TteProfil>(
+      apiClient.post<ApiSuccessResponse<TteProfil>>("/tte/profil/generate-p12", payload),
     ),
+
+  uploadP12: (payload: UploadP12Dto, file: File) => {
+    const formData = new FormData();
+    formData.append("pin", payload.pin);
+    formData.append("p12Passphrase", payload.p12Passphrase);
+    formData.append("file", file);
+    return unwrapApiData<TteProfil>(
+      apiClient.post<ApiSuccessResponse<TteProfil>>("/tte/profil/upload-p12", formData),
+    );
+  },
+
+  setupTteGenerate: (payload: SetupTteGenerateDto) =>
+    unwrapApiData<TteProfil>(
+      apiClient.post<ApiSuccessResponse<TteProfil>>("/tte/profil/setup/generate", payload),
+    ),
+
+  setupTteWithUpload: (payload: SetupTteUploadDto, file: File) => {
+    const formData = new FormData();
+    formData.append("pin", payload.pin);
+    formData.append("p12Passphrase", payload.p12Passphrase);
+    formData.append("file", file);
+    return unwrapApiData<TteProfil>(
+      apiClient.post<ApiSuccessResponse<TteProfil>>("/tte/profil/setup/upload", formData),
+    );
+  },
 
   /** Verifikasi pengesahan (publik, tanpa login). */
   getPengesahanPublic: (dokumenTteId: string, userId: string) =>
@@ -113,6 +125,7 @@ export const tteApi = {
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
+import { isTteSetupRequiredError } from "@/lib/tte/tte-setup-state";
 import { STALE_TIME } from "@/utils/constants";
 
 export function useTTEProfil(options?: { enabled?: boolean }) {
@@ -163,10 +176,53 @@ export function useUpdateTTEPin() {
   });
 }
 
+export function useGenerateP12() {
+  return useMutationWithToast({
+    mutationFn: (payload: GenerateP12Dto) => tteApi.generateP12(payload),
+    invalidateKeys: [queryKeys.tteProfil],
+    successMessage: "Sertifikat P12 personal berhasil dibuat",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal membuat sertifikat P12",
+  });
+}
+
+export function useUploadP12() {
+  return useMutationWithToast({
+    mutationFn: ({ payload, file }: { payload: UploadP12Dto; file: File }) =>
+      tteApi.uploadP12(payload, file),
+    invalidateKeys: [queryKeys.tteProfil],
+    successMessage: "Sertifikat P12 berhasil diunggah",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal mengunggah sertifikat P12",
+  });
+}
+
+export function useSetupTteGenerate() {
+  return useMutationWithToast({
+    mutationFn: (payload: SetupTteGenerateDto) => tteApi.setupTteGenerate(payload),
+    invalidateKeys: [queryKeys.tteProfil, queryKeys.auth],
+    successMessage: "TTE berhasil disiapkan",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal menyiapkan TTE",
+  });
+}
+
+export function useSetupTteUpload() {
+  return useMutationWithToast({
+    mutationFn: ({ payload, file }: { payload: SetupTteUploadDto; file: File }) =>
+      tteApi.setupTteWithUpload(payload, file),
+    invalidateKeys: [queryKeys.tteProfil, queryKeys.auth],
+    successMessage: "TTE berhasil disiapkan dengan sertifikat BSrE",
+    useDetailedErrors: true,
+    errorMessagePrefix: "Gagal menyiapkan TTE dengan sertifikat BSrE",
+  });
+}
+
 export function useTandaTanganiBA(options?: {
   isPjPenyusun?: boolean;
   /** Mengganti pesan sukses bawaan (satu sumber toast; jangan panggil showToast lagi setelah mutateAsync). */
   successMessage?: string;
+  suppressSetupRequiredToast?: boolean;
 }) {
   const defaultSuccessPjPenyusun =
     "Berita Acara berhasil ditandatangani oleh PJ Penyusun.";
@@ -184,10 +240,15 @@ export function useTandaTanganiBA(options?: {
     successMessage,
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menandatangani Berita Acara",
+    shouldSuppressErrorToast: options?.suppressSetupRequiredToast
+      ? (error) => isTteSetupRequiredError(error)
+      : undefined,
   });
 }
 
-export function useTandaTanganiSopPengajuan() {
+export function useTandaTanganiSopPengajuan(options?: {
+  suppressSetupRequiredToast?: boolean;
+}) {
   return useMutationWithToast({
     mutationFn: ({ pengajuanId, payload }: TandaTanganiSopPengajuanMutationDto) =>
       tteApi.tandaTanganiSemuaSopPengajuan(pengajuanId, payload),
@@ -200,6 +261,9 @@ export function useTandaTanganiSopPengajuan() {
     successMessage: "Seluruh SOP dalam pengajuan berhasil ditandatangani.",
     useDetailedErrors: true,
     errorMessagePrefix: "Gagal menandatangani seluruh SOP pengajuan",
+    shouldSuppressErrorToast: options?.suppressSetupRequiredToast
+      ? (error) => isTteSetupRequiredError(error)
+      : undefined,
   });
 }
 
@@ -211,13 +275,15 @@ export function createPinConfirmHandler<T>(
   mutateAsync: (vars: T) => Promise<unknown>,
   buildPayload: (pin: string) => T,
   onSuccess?: () => void,
+  onError?: (error: unknown) => void,
 ) {
   return async (pin: string): Promise<boolean> => {
     try {
       await mutateAsync(buildPayload(pin));
       onSuccess?.();
       return true;
-    } catch {
+    } catch (error) {
+      onError?.(error);
       return false;
     }
   };

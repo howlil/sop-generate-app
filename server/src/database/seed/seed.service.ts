@@ -15,7 +15,7 @@ import {
   StatusPengajuanEvaluasi,
   StatusSOP,
 } from '../../generated/prisma';
-import { mapStatusSopUntukPengajuan, SEED_TTE_PIN } from './seed-status.util';
+import { mapStatusSopUntukPengajuan } from './seed-status.util';
 
 const BCRYPT_SALT_ROUNDS = 10;
 const DEFAULT_SEED_PASSWORD = '@Password123:)';
@@ -230,8 +230,6 @@ export class SeedService {
   async run(): Promise<void> {
     const plainPassword = this.config.get<string>('SEED_DEFAULT_PASSWORD', DEFAULT_SEED_PASSWORD);
     const hashedPassword = await bcrypt.hash(plainPassword, BCRYPT_SALT_ROUNDS);
-    const ttePinHash = await bcrypt.hash(SEED_TTE_PIN, BCRYPT_SALT_ROUNDS);
-
     await this.prisma.$transaction(async (tx) => {
       // 1. OPD
       const opdPjEvaluator = await this.ensureOpd(tx, SEED_OPD_PJ_EVALUATOR);
@@ -338,23 +336,8 @@ export class SeedService {
       await this.validateSeedEvaluationBusinessRules(tx);
 
       // 14. DokumenTTE - JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
-      const dok = await this.seedDokumenTte(tx, { d, pe });
+      await this.seedDokumenTte(tx, { d, pe });
 
-      // 15. PIN TTE di `Pengguna` & RiwayatTandaTangan
-      await this.seedKredensialDanRiwayatTtd(tx, {
-        u,
-        dok,
-        ttePinHash,
-        pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
-        kepalaDinkesId: u['kepalaopd.dinkes@gmail.com'].penggunaId,
-        pjPenyusunDiskominfoId: u['pjpenyusun.diskominfo@gmail.com'].penggunaId,
-        kepalaDiskominfoId: u['kepalaopd.diskominfo@gmail.com'].penggunaId,
-        pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
-        kepalaDisdikId: u['kepalaopd.disdik@gmail.com'].penggunaId,
-        pjEvaluatorId: u['pjevaluator@gmail.com'].penggunaId,
-        evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-        evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
-      });
     });
 
     this.logger.log(
@@ -366,7 +349,7 @@ export class SeedService {
       ].join(' '),
     );
     this.logger.warn(
-      `Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}). PIN TTE seed: ${SEED_TTE_PIN} (development).`,
+      `Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}).`,
     );
   }
 
@@ -2708,117 +2691,4 @@ export class SeedService {
     return dok;
   }
 
-  /**
-   * PIN TTE (`Pengguna.ttePinHash`) & RiwayatTandaTangan:
-   * - Beberapa pengguna seed memiliki PIN; PJ Penyusun Disdik sama (siap tanda tangan).
-   * - RiwayatTandaTangan mencakup peran PJ_PENYUSUN & KEPALA_OPD pada berbagai dokumen
-   * Hanya mengubah kolom PIN — tidak mengubah `peran` (selaras `trg_pengguna_peran_slot_konsisten_update`).
-   */
-  private async seedKredensialDanRiwayatTtd(
-    tx: Prisma.TransactionClient,
-    params: {
-      u: Record<string, SeedUserRecord>;
-      dok: Record<string, { dokumenTteId: string }>;
-      ttePinHash: string;
-      pjPenyusunDinkesId: string;
-      kepalaDinkesId: string;
-      pjPenyusunDiskominfoId: string;
-      kepalaDiskominfoId: string;
-      pjPenyusunDisdikId: string;
-      kepalaDisdikId: string;
-      pjEvaluatorId: string;
-      evaluator1Id: string;
-      evaluator2Id: string;
-    },
-  ): Promise<void> {
-    const { dok } = params;
-
-    const pinUserIds: readonly string[] = [
-      params.pjPenyusunDinkesId,
-      params.kepalaDinkesId,
-      params.pjPenyusunDiskominfoId,
-      params.kepalaDiskominfoId,
-      params.pjEvaluatorId,
-      params.kepalaDisdikId,
-      params.pjPenyusunDisdikId,
-      params.evaluator1Id,
-      params.evaluator2Id,
-    ];
-    for (const userId of pinUserIds) {
-      await tx.pengguna.update({
-        where: { penggunaId: userId },
-        data: { ttePinHash: params.ttePinHash },
-      });
-    }
-
-    // ── RiwayatTandaTangan ─────────────────────────────────────────────
-
-    const ttdEntries: Array<{
-      userId: string;
-      dokumenTteId: string;
-      peran: PeranPengguna;
-      signatureValue: string;
-      certSerialNumber: string;
-      certSubject: string;
-      ditandatanganiPada: Date;
-    }> = [
-      // SOP Berlaku Dinkes: ditanda tangani PJ Penyusun
-      {
-        userId: params.pjPenyusunDinkesId,
-        dokumenTteId: dok['SOP_BERLAKU_DINKES'].dokumenTteId,
-        peran: PeranPengguna.PJ_PENYUSUN,
-        signatureValue: 'sig-pj-penyusun-dinkes-sop-berlaku-2024',
-        certSerialNumber: 'SERIAL-PJP-DINKES-001',
-        certSubject: 'PJ Penyusun Dinas Kesehatan Provinsi',
-        ditandatanganiPada: new Date('2024-07-01T10:00:00.000Z'),
-      },
-      // BA Evaluasi Dinkes: ditanda tangani Kepala OPD
-      {
-        userId: params.kepalaDinkesId,
-        dokumenTteId: dok['BA_EVALUASI_DINKES'].dokumenTteId,
-        peran: PeranPengguna.KEPALA_OPD,
-        signatureValue: 'sig-kepala-dinkes-ba-evaluasi-2026',
-        certSerialNumber: 'SERIAL-KEPALA-DINKES-001',
-        certSubject: 'Kepala Dinas Kesehatan Provinsi',
-        ditandatanganiPada: new Date('2026-03-10T09:00:00.000Z'),
-      },
-      // BA Evaluasi Disdik: ditanda tangani PJ Evaluator (SOP V2 belum ditandatangani Kepala OPD)
-      {
-        userId: params.pjEvaluatorId,
-        dokumenTteId: dok['BA_EVALUASI_DISDIK'].dokumenTteId,
-        peran: PeranPengguna.PJ_EVALUATOR,
-        signatureValue: 'sig-pj-evaluator-ba-disdik-2023',
-        certSerialNumber: 'SERIAL-PJE-001',
-        certSubject: 'PJ Evaluator Biro Organisasi',
-        ditandatanganiPada: new Date('2023-10-25T14:00:00.000Z'),
-      },
-    ];
-
-    for (const ttd of ttdEntries) {
-      await tx.riwayatTandaTangan.upsert({
-        where: { dokumenTteId_peran: { dokumenTteId: ttd.dokumenTteId, peran: ttd.peran } },
-        create: {
-          userId: ttd.userId,
-          dokumenTteId: ttd.dokumenTteId,
-          peran: ttd.peran,
-          signatureValue: ttd.signatureValue,
-          signatureAlgorithm: 'RSA-SHA256',
-          signatureFormat: 'CMS',
-          certSerialNumber: ttd.certSerialNumber,
-          certIssuer: 'Balai Sertifikasi Elektronik (BSrE) BSSN',
-          certSubject: ttd.certSubject,
-          certFingerprint: `fp-${ttd.certSerialNumber.toLowerCase()}`,
-          certValidFrom: new Date('2024-01-01T00:00:00.000Z'),
-          certValidTo: new Date('2027-01-01T00:00:00.000Z'),
-          ditandatanganiPada: ttd.ditandatanganiPada,
-        },
-        update: {
-          userId: ttd.userId,
-          signatureValue: ttd.signatureValue,
-          signatureAlgorithm: 'RSA-SHA256',
-          signatureFormat: 'CMS',
-        },
-      });
-    }
-  }
 }

@@ -2,6 +2,7 @@ import { useLayoutEffect, useState, useRef, type MutableRefObject } from 'react'
 import type { ArrowConnectionConfig, ArrowPathPoint } from '../core/sopDiagramTypes'
 import {
   routeBpmn,
+  routeBpmnAllowOccupiedFallback,
   selectBpmnSidePairs,
   scorePath,
   scoreBpmnRouteCandidate,
@@ -108,12 +109,21 @@ type ElemPos = {
   right: number; bottom: number
 }
 
+function getElementScale(element: HTMLElement): { x: number; y: number } {
+  const rect = element.getBoundingClientRect()
+  return {
+    x: element.offsetWidth > 0 ? rect.width / element.offsetWidth : 1,
+    y: element.offsetHeight > 0 ? rect.height / element.offsetHeight : 1,
+  }
+}
+
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
   const el =
     container.querySelector<SVGElement>(`#${CSS.escape(elementId)}`) ??
     document.getElementById(elementId)
   if (!el) return null
   const containerRect = container.getBoundingClientRect()
+  const scale = getElementScale(container)
   if (el instanceof SVGGraphicsElement) {
     try {
       const bbox = el.getBBox()
@@ -121,10 +131,10 @@ function getElementPosition(elementId: string, container: HTMLElement): ElemPos 
       if (ctm && bbox.width > 0 && bbox.height > 0) {
         const topLeft = new DOMPoint(bbox.x, bbox.y).matrixTransform(ctm)
         const bottomRight = new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(ctm)
-        const left = Math.round(topLeft.x - containerRect.left)
-        const top = Math.round(topLeft.y - containerRect.top)
-        const right = Math.round(bottomRight.x - containerRect.left)
-        const bottom = Math.round(bottomRight.y - containerRect.top)
+        const left = Math.round((topLeft.x - containerRect.left) / scale.x)
+        const top = Math.round((topLeft.y - containerRect.top) / scale.y)
+        const right = Math.round((bottomRight.x - containerRect.left) / scale.x)
+        const bottom = Math.round((bottomRight.y - containerRect.top) / scale.y)
         const width = Math.max(1, right - left)
         const height = Math.max(1, bottom - top)
         if (width > 0 && height > 0) {
@@ -137,12 +147,12 @@ function getElementPosition(elementId: string, container: HTMLElement): ElemPos 
   }
   const shapeRect = el.getBoundingClientRect()
   return {
-    left: Math.round(shapeRect.left - containerRect.left),
-    top: Math.round(shapeRect.top - containerRect.top),
-    width: Math.round(shapeRect.width),
-    height: Math.round(shapeRect.height),
-    right: Math.round(shapeRect.right - containerRect.left),
-    bottom: Math.round(shapeRect.bottom - containerRect.top),
+    left: Math.round((shapeRect.left - containerRect.left) / scale.x),
+    top: Math.round((shapeRect.top - containerRect.top) / scale.y),
+    width: Math.round(shapeRect.width / scale.x),
+    height: Math.round(shapeRect.height / scale.y),
+    right: Math.round((shapeRect.right - containerRect.left) / scale.x),
+    bottom: Math.round((shapeRect.bottom - containerRect.top) / scale.y),
   }
 }
 
@@ -559,6 +569,8 @@ export function BpmnArrowConnector({
     })
     const isSafePath = (path: { x: number; y: number }[]) =>
       isAcceptableRoutedPath(path, pathSafetyOpts)
+    const isShapeSafePath = (path: { x: number; y: number }[]) =>
+      isAcceptableRoutedPath(path, { ...pathSafetyOpts, occupied: [] })
 
     const tryRouteCandidates = (obstacleSet: typeof routingObstacles): void => {
       if (!domLayout) return
@@ -658,6 +670,40 @@ export function BpmnArrowConnector({
         )
         if (candidatePath.length >= 2 && isSafePath(candidatePath)) {
           return { path: candidatePath, candidate: fc }
+        }
+      }
+      // Do not drop a workflow edge when all strict tracks are occupied.
+      // The parent reconcile pass sees the overlap and gets another chance
+      // to reroute it after every connector remains visible.
+      if (!domLayout) return null
+      for (const fc of ordered) {
+        const relaxed = routeBpmnAllowOccupiedFallback({
+          fromShape,
+          toShape,
+          fromSide: fc.sSide,
+          toSide: fc.eSide,
+          fromDistance: 0.5,
+          toDistance: 0.5,
+          fromIsDiamond: connection.sourceType === 'flowchart-decision',
+          toIsDiamond: connection.targetType === 'flowchart-decision',
+          layout: domLayout,
+          fromLane: connection.fromLane,
+          toLane: connection.toLane,
+          fromCol: connection.fromCol,
+          toCol: connection.toCol,
+          obstacles: routingObstacles,
+          occupiedSegments: occupied,
+          globalBounds,
+          sourceJettySize: fc.sourceJettySize,
+          targetJettySize: fc.targetJettySize,
+        })
+        const relaxedOrtho = snapToOrthogonal(relaxed.path)
+        if (
+          relaxed.usedOccupiedFallback &&
+          relaxedOrtho.length >= 2 &&
+          isShapeSafePath(relaxedOrtho)
+        ) {
+          return { path: relaxedOrtho, candidate: fc }
         }
       }
       return null

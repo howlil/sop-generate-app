@@ -11,6 +11,7 @@ export type TteProfilResponse = {
   readonly peran: 'KEPALA_OPD' | 'PJ_EVALUATOR' | 'PJ_PENYUSUN';
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly hasP12: boolean;
   readonly user?: {
     readonly id: string;
     readonly nama: string;

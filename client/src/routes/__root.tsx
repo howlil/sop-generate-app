@@ -10,18 +10,29 @@ import { NotFoundPage } from "@/components/ui/not-found";
 import { RouteErrorPage } from "@/components/ui/route-error";
 import { RouteFocusManager } from "@/components/ui/route-focus-manager";
 import { queryClient } from "@/config/query-client";
-import { useAuthStore, ensureAuthHydrated } from "@/stores/authStore";
+import { useAuthStore, ensureAuthHydrated, syncAuthFromCookie } from "@/stores/authStore";
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
-    const isPublic = location.href === "/" || location.href.startsWith("/login");
+    const path = location.pathname;
+    const isPublic =
+      path === "/" ||
+      path.startsWith("/login") ||
+      path.startsWith("/arsip") ||
+      path.startsWith("/validasi");
     if (isPublic) return;
+
+    if (typeof window === "undefined") {
+      return;
+    }
 
     await ensureAuthHydrated();
 
-    const store = useAuthStore.getState();
+    if (!useAuthStore.getState().user) {
+      await syncAuthFromCookie();
+    }
 
-    if (!store.user) {
+    if (!useAuthStore.getState().user) {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },

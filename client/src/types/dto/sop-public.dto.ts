@@ -22,6 +22,7 @@ export interface PublicSopItem {
   versi: number
   tanggalEfektif: string | null
   opdNama: string
+  pdfUrl: string
 }
 
 export interface PublicOpdPage {

@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ListTree, PenLine, Printer, RotateCcw } from 'lucide-react'
-import { printSopFromPreviewProps } from '@/lib/print/pengajuan-print'
-import { useToast } from '@/hooks/useToast'
+import { ListTree, PenLine, RotateCcw } from 'lucide-react'
 import { SOPPreviewTemplate } from '@/components/sop/sop-preview-template'
 import { DetailSOPProsedurEditor } from './DetailSopProsedurEditor'
 import type { SOPDetailMetadata } from "@/types/ui/sop";
@@ -78,8 +76,6 @@ export function DetailSOPPenyusunMain({
     if (!isWorkbenchDataReady || allowDiagramRender) return
     return scheduleDiagramIdleMount(() => setAllowDiagramRender(true))
   }, [isWorkbenchDataReady, allowDiagramRender])
-  const { showToast } = useToast()
-  const [isPrinting, setIsPrinting] = useState(false)
   const diagramConfig = usePenyusunDiagramConfig({
     detailSopId: sopDetailId,
     workbench,
@@ -99,45 +95,6 @@ export function DetailSOPPenyusunMain({
     [onActiveTabChange],
   )
   const previewMetadata = useMemo(() => toPreviewMetadata(metadata), [metadata])
-  const handlePrintSop = useCallback(async () => {
-    if (!diagramMountEnabled) {
-      showToast('Diagram belum siap. Tunggu hingga selesai dimuat, lalu coba cetak lagi.', 'error')
-      return
-    }
-    setIsPrinting(true)
-    try {
-      const previewProps = {
-        name: previewMetadata.name,
-        number: previewMetadata.number,
-        metadata: previewMetadata,
-        prosedurRows,
-        implementers,
-        diagramKonfigurasi: workbench?.diagramKonfigurasi,
-      }
-      const { diagramExportFailed } = await printSopFromPreviewProps(previewProps, null, {
-        includeHeader: true,
-        printMode: 'full',
-        signPdf: false,
-      })
-      if (diagramExportFailed) {
-        showToast(
-          'Beberapa halaman diagram tidak dapat diekspor; PDF tetap dicetak dengan tabel langkah.',
-          'error',
-        )
-      }
-    } catch {
-      showToast('Gagal membuka cetak. Coba muat ulang halaman lalu cetak lagi.', 'error')
-    } finally {
-      setIsPrinting(false)
-    }
-  }, [
-    diagramMountEnabled,
-    implementers,
-    previewMetadata,
-    prosedurRows,
-    showToast,
-    workbench?.diagramKonfigurasi,
-  ])
 
   const handleToggleManualEdit = () => {
     if (isEditingSteps) {
@@ -157,22 +114,6 @@ export function DetailSOPPenyusunMain({
       role="group"
       aria-label="Kontrol dokumen SOP"
     >
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-8 gap-1.5 rounded-md px-2.5 text-xs font-medium text-gray-700 hover:bg-white/90"
-        onClick={() => void handlePrintSop()}
-        disabled={!diagramMountEnabled || isPrinting}
-        title={
-          diagramMountEnabled
-            ? 'Cetak dokumen SOP sebagai PDF (A4 landscape).'
-            : 'Diagram sedang dimuat'
-        }
-      >
-        <Printer className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-hidden />
-        {isPrinting ? 'Menyiapkan…' : 'Cetak SOP'}
-      </Button>
       {!isReadOnly ? (
         <>
           <Button
@@ -230,7 +171,7 @@ export function DetailSOPPenyusunMain({
   )
   const diagramAlternate =
     !isReadOnly && isEditingSteps ? (
-      <div className="print:hidden">
+      <div className="print:hidden w-full">
         <DetailSOPProsedurEditor
           prosedurRows={prosedurRows}
           setProsedurRows={setProsedurRows}

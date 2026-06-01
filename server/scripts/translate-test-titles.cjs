@@ -61,7 +61,7 @@ const titleMap = new Map([
   ['updateProsedur', 'Pengujian update prosedur'],
   ['SopPublicService', 'Pengujian SopPublicService'],
   ['pdf-signature-verification.util', 'Pengujian util verifikasi tanda tangan PDF'],
-  ['TtePdfSigningService.signBeritaAcaraArsip', 'Pengujian TtePdfSigningService.signBeritaAcaraArsip'],
+  ['TtePdfSigningService', 'Pengujian TtePdfSigningService'],
   ['tte-verifikasi-qr.util', 'Pengujian util verifikasi QR TTE'],
   ['normalizePublicVerifyBaseUrl', 'Pengujian normalizePublicVerifyBaseUrl'],
   ['buildTteQrVerificationUrl', 'Pengujian buildTteQrVerificationUrl'],

@@ -398,7 +398,7 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
         { judul: 'SOP Loop Revisi', nomorSop: 'EE-SOP-LP-001', namaLembaga: 'OPD Loop Revisi' },
       );
 
-      const res = await loopGroup.pjPenyusunAgent
+      await loopGroup.pjPenyusunAgent
         .post(`${API}/evaluasi`)
         .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [sopLoopId] })
         .expect(201);

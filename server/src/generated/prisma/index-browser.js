@@ -136,6 +136,8 @@ exports.Prisma.PenggunaScalarFieldEnum = {
   refreshTokenExpiresAt: 'refreshTokenExpiresAt',
   passwordChangedAt: 'passwordChangedAt',
   ttePinHash: 'ttePinHash',
+  tteP12Base64: 'tteP12Base64',
+  tteP12PassphraseEncrypted: 'tteP12PassphraseEncrypted',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -339,6 +341,10 @@ exports.Prisma.LogNilaiEvaluasiScalarFieldEnum = {
   hasilSesudah: 'hasilSesudah',
   catatanSebelum: 'catatanSebelum',
   catatanSesudah: 'catatanSesudah',
+  statusTindakLanjutSebelum: 'statusTindakLanjutSebelum',
+  statusTindakLanjutSesudah: 'statusTindakLanjutSesudah',
+  ditindaklanjutiOlehId: 'ditindaklanjutiOlehId',
+  ditindaklanjutiPada: 'ditindaklanjutiPada',
   createdAt: 'createdAt'
 };
 
@@ -349,6 +355,13 @@ exports.Prisma.DokumenTteScalarFieldEnum = {
   judulDokumen: 'judulDokumen',
   hashDokumen: 'hashDokumen',
   versiDokumen: 'versiDokumen',
+  pdfPath: 'pdfPath',
+  pdfSha256: 'pdfSha256',
+  pdfSizeBytes: 'pdfSizeBytes',
+  pdfGeneratedAt: 'pdfGeneratedAt',
+  pdfPublishedAt: 'pdfPublishedAt',
+  pdfRevokedAt: 'pdfRevokedAt',
+  pdfStatus: 'pdfStatus',
   detailSopId: 'detailSopId',
   pengajuanEvaluasiId: 'pengajuanEvaluasiId',
   createdAt: 'createdAt',
@@ -436,7 +449,9 @@ exports.Prisma.PenggunaOrderByRelevanceFieldEnum = {
   pangkat: 'pangkat',
   nohp: 'nohp',
   refreshTokenHash: 'refreshTokenHash',
-  ttePinHash: 'ttePinHash'
+  ttePinHash: 'ttePinHash',
+  tteP12Base64: 'tteP12Base64',
+  tteP12PassphraseEncrypted: 'tteP12PassphraseEncrypted'
 };
 
 exports.Prisma.OPDOrderByRelevanceFieldEnum = {
@@ -569,7 +584,8 @@ exports.Prisma.LogNilaiEvaluasiOrderByRelevanceFieldEnum = {
   detailSopId: 'detailSopId',
   penggunaId: 'penggunaId',
   catatanSebelum: 'catatanSebelum',
-  catatanSesudah: 'catatanSesudah'
+  catatanSesudah: 'catatanSesudah',
+  ditindaklanjutiOlehId: 'ditindaklanjutiOlehId'
 };
 
 exports.Prisma.DokumenTteOrderByRelevanceFieldEnum = {
@@ -577,6 +593,9 @@ exports.Prisma.DokumenTteOrderByRelevanceFieldEnum = {
   nomorDokumen: 'nomorDokumen',
   judulDokumen: 'judulDokumen',
   hashDokumen: 'hashDokumen',
+  pdfPath: 'pdfPath',
+  pdfSha256: 'pdfSha256',
+  pdfStatus: 'pdfStatus',
   detailSopId: 'detailSopId',
   pengajuanEvaluasiId: 'pengajuanEvaluasiId'
 };

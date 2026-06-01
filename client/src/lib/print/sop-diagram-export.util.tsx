@@ -21,6 +21,8 @@ export interface SopDiagramExportInput {
   diagramKonfigurasi?: PenyusunWorkbenchDiagramKonfigurasi
 }
 
+export type DiagramSnapshotKind = DiagramPageSnapshot['kind']
+
 const EXPORT_ROOT_STYLE =
   'position:fixed;left:-16000px;top:0;width:297mm;background:#fff;pointer-events:none;z-index:-1;'
 
@@ -87,13 +89,16 @@ async function exportPagesFromHost(
 /** Ekspor halaman flowchart + BPMN ke PNG untuk embed PDF. */
 export async function exportSopDiagramSnapshots(
   input: SopDiagramExportInput,
-  options: { useCache?: boolean; timeoutMs?: number } = {},
+  options: { useCache?: boolean; timeoutMs?: number; requiredKinds?: DiagramSnapshotKind[] } = {},
 ): Promise<DiagramPageSnapshot[]> {
   const useCache = options.useCache ?? true
+  const requiredKinds = options.requiredKinds ?? []
+  const hasRequiredKinds = (snapshots: DiagramPageSnapshot[]) =>
+    requiredKinds.every((kind) => snapshots.some((snapshot) => snapshot.kind === kind))
   const cacheKey = buildCacheKey(input)
   if (useCache) {
     const cached = snapshotCache.get(cacheKey)
-    if (cached != null && cached.length > 0) {
+    if (cached != null && cached.length > 0 && hasRequiredKinds(cached)) {
       return cached
     }
   }
@@ -128,6 +133,9 @@ export async function exportSopDiagramSnapshots(
     const exported = [...flowchartSnapshots, ...bpmnSnapshots]
     if (exported.length === 0) {
       throw new Error('Tidak ada halaman diagram yang dapat diekspor')
+    }
+    if (!hasRequiredKinds(exported)) {
+      throw new Error('Halaman diagram yang diminta tidak tersedia untuk diekspor')
     }
     if (useCache) {
       snapshotCache.set(cacheKey, exported)

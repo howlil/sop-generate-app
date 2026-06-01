@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   bpmnPathHitsObstacle,
   routeBpmn,
+  routeBpmnAllowOccupiedFallback,
   scoreBpmnRouteCandidate,
   selectBpmnSidePairs,
   type BpmnConnectionMeta,
@@ -212,6 +213,37 @@ describe('routeBpmn', () => {
     })
 
     expect(path).toEqual([])
+  })
+
+  it('relaxes occupied tracks as a last resort instead of dropping the edge', () => {
+    const result = routeBpmnAllowOccupiedFallback({
+      fromShape: rect(80, 80),
+      toShape: rect(280, 80),
+      fromSide: 'right',
+      toSide: 'left',
+      fromDistance: 0.5,
+      toDistance: 0.5,
+      layout: {
+        lanes: [{ index: 0, top: 40, height: 140 }],
+        columnStartXs: [80, 280],
+        columnWidths: [120, 120],
+      },
+      fromLane: 0,
+      toLane: 0,
+      fromCol: 0,
+      toCol: 1,
+      obstacles: [],
+      occupiedSegments: [
+        { x1: 160, y1: 110, x2: 280, y2: 110 },
+        { x1: 160, y1: -32, x2: 280, y2: -32 },
+        { x1: 160, y1: 252, x2: 280, y2: 252 },
+      ],
+      globalBounds: { left: 0, top: 0, width: 800, height: 700 },
+    })
+
+    expect(result.usedOccupiedFallback).toBe(true)
+    expect(result.path.length).toBeGreaterThanOrEqual(2)
+    expectOrthogonal(result.path)
   })
 })
 

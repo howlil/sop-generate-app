@@ -6,6 +6,7 @@ import {
   usePengajuanSopDokumenWorkbench,
 } from '@/api/evaluasi'
 import { PinVerificationDialog } from '@/components/tte/pin-verification-dialog'
+import { TteSetupRequiredDialog } from '@/components/tte/tte-setup-required-dialog'
 import { createPinConfirmHandler, useTandaTanganiBA } from '@/api/tte'
 import { BeritaAcaraPreviewPane } from '@/components/pengajuan/berita-acara-preview-pane'
 import { DocumentPreviewTabs } from '@/components/pengajuan/document-preview-tabs'
@@ -34,6 +35,7 @@ import { PengajuanCetakArsipButtons } from '@/components/pengajuan/PengajuanCeta
 import { usePengajuanCetakArsip } from '@/components/pengajuan/hooks/use-pengajuan-cetak-arsip'
 import { canCetakBeritaAcaraPengajuan, canCetakSopArsipPengajuan } from '@/lib/print/pengajuan-print'
 import { formatDateIdFull } from '@/utils/format-date'
+import { useRequireTteSetup } from '@/hooks/use-require-tte-setup'
 
 type PengajuanDetail = NonNullable<ReturnType<typeof usePengajuanEvaluasiDetail>['pengajuan']>
 type PengajuanSopList = NonNullable<PengajuanDetail['sopList']>
@@ -46,12 +48,21 @@ export function DetailBeritaAcaraPage() {
   const [leftPanelCollapsed, setLeftPanelCollapsed] = useState(false)
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null)
   const { pengajuan, loading: isLoading } = usePengajuanEvaluasiDetail(id)
+  const {
+    tteSetupDialogOpen,
+    setTteSetupDialogOpen,
+    requireTteReady,
+    handleTteSigningError,
+  } = useRequireTteSetup()
 
   useEffect(() => {
     setSelectedSopId(null)
   }, [id])
 
-  const tandaTanganiBA = useTandaTanganiBA({ isPjPenyusun: true })
+  const tandaTanganiBA = useTandaTanganiBA({
+    isPjPenyusun: true,
+    suppressSetupRequiredToast: true,
+  })
   const handlePinConfirm = createPinConfirmHandler(
     tandaTanganiBA.mutateAsync,
     (pin) => ({
@@ -62,7 +73,12 @@ export function DetailBeritaAcaraPage() {
         judulDokumen: `Berita Acara Evaluasi - ${pengajuan?.opdNama ?? ''}`,
       },
     }),
+    undefined,
+    (error) => handleTteSigningError(error, () => setTteDialogOpen(false)),
   )
+  const handleOpenTteDialog = () => {
+    void requireTteReady(() => setTteDialogOpen(true))
+  }
 
   const isReadyForSignature = pengajuan?.status === 'DIVERIFIKASI_PJ_EVALUATOR'
   const isAlreadySigned = pengajuan?.status === 'DITANDATANGANI_PJ_PENYUSUN'
@@ -176,7 +192,7 @@ export function DetailBeritaAcaraPage() {
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    onClick={() => setTteDialogOpen(true)}
+                    onClick={handleOpenTteDialog}
                     disabled={tandaTanganiBA.isPending}
                   >
                     {tandaTanganiBA.isPending ? (
@@ -320,6 +336,10 @@ export function DetailBeritaAcaraPage() {
         title="Verifikasi PIN TTE"
         description="Masukkan PIN TTE untuk menandatangani Berita Acara ini (simulasi)."
         onConfirm={handlePinConfirm}
+      />
+      <TteSetupRequiredDialog
+        open={tteSetupDialogOpen}
+        onOpenChange={setTteSetupDialogOpen}
       />
     </>
   )

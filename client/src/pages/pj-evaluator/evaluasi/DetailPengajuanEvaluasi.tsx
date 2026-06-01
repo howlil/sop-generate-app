@@ -10,6 +10,7 @@ import { mapBeritaAcaraTemplateProps } from "@/lib/pengajuan/map-berita-acara-te
 import { SOPListCard } from "@/components/sop/sop-list-card";
 import { formatDateId } from "@/utils/format-date";
 import { PinVerificationDialog } from "@/components/tte/pin-verification-dialog";
+import { TteSetupRequiredDialog } from "@/components/tte/tte-setup-required-dialog";
 import { createPinConfirmHandler } from "@/api/tte";
 import { useTandaTanganiBA } from "@/api/tte";
 import {
@@ -36,6 +37,7 @@ import { PengajuanEvaluasiStatusHeader } from "@/components/evaluasi/pengajuan-e
 import { InfoField } from "@/components/ui/info-field";
 import { DocumentPreviewTabs } from "@/components/pengajuan/document-preview-tabs";
 import { useDocumentTitle } from "@/hooks/use-document-title";
+import { useRequireTteSetup } from "@/hooks/use-require-tte-setup";
 import { IA } from "@/utils/constants";
 
 export function DetailPengajuanEvaluasi() {
@@ -48,10 +50,17 @@ export function DetailPengajuanEvaluasi() {
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
   const [selectedSopId, setSelectedSopId] = useState<string | null>(null);
   const [tteDialogOpen, setTteDialogOpen] = useState(false);
+  const {
+    tteSetupDialogOpen,
+    setTteSetupDialogOpen,
+    requireTteReady,
+    handleTteSigningError,
+  } = useRequireTteSetup();
 
   const tandaTanganiBA = useTandaTanganiBA({
     successMessage:
       "Verifikasi Berita Acara oleh PJ Evaluator berhasil. PJ Penyusun dapat melanjutkan verifikasi BA.",
+    suppressSetupRequiredToast: true,
   });
 
   const handlePinConfirm = createPinConfirmHandler(
@@ -64,7 +73,12 @@ export function DetailPengajuanEvaluasi() {
         judulDokumen: `Berita Acara Evaluasi - ${pengajuan?.opdNama ?? ""}`,
       },
     }),
+    undefined,
+    (error) => handleTteSigningError(error, () => setTteDialogOpen(false)),
   );
+  const handleOpenTteDialog = () => {
+    void requireTteReady(() => setTteDialogOpen(true));
+  };
 
   const sopList = pengajuan?.sopList ?? [];
   const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuan?.status);
@@ -181,7 +195,7 @@ export function DetailPengajuanEvaluasi() {
                     variant="default"
                     size="sm"
                     className="h-8 text-xs gap-1.5"
-                    onClick={() => setTteDialogOpen(true)}
+                    onClick={handleOpenTteDialog}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
                     Verifikasi BA
@@ -327,6 +341,10 @@ export function DetailPengajuanEvaluasi() {
         onOpenChange={setTteDialogOpen}
         title="Verifikasi Berita Acara"
         onConfirm={handlePinConfirm}
+      />
+      <TteSetupRequiredDialog
+        open={tteSetupDialogOpen}
+        onOpenChange={setTteSetupDialogOpen}
       />
     </>
   );

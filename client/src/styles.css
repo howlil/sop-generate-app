@@ -68,7 +68,12 @@
 }
 
 body {
-  font-family: 'Arimo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    "Arimo",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 .manajemen-opd-search::placeholder {
@@ -138,12 +143,6 @@ body.sop-print-preparing .sop-diagram-screen-off {
     margin: 10mm 12mm;
   }
 
-  /* Margin 0 + padding konten: meminimalkan header/footer bawaan browser (URL, judul, nomor halaman). */
-  body.print-mode-sop @page {
-    size: A4 landscape;
-    margin: 0;
-  }
-
   html,
   body.print-mode-sop {
     width: 100%;
@@ -162,23 +161,23 @@ body.sop-print-preparing .sop-diagram-screen-off {
   }
 
   /* Sembunyikan chrome aplikasi */
-  body[class*='print-mode-'] aside,
-  body[class*='print-mode-'] nav[data-print-hide],
-  body[class*='print-mode-'] [data-print-hide] {
+  body[class*="print-mode-"] aside,
+  body[class*="print-mode-"] nav[data-print-hide],
+  body[class*="print-mode-"] [data-print-hide] {
     display: none !important;
   }
 
-  body[class*='print-mode-'] #main-content {
+  body[class*="print-mode-"] #main-content {
     padding: 0 !important;
     overflow: visible !important;
   }
 
   /* Arsip: sembunyikan lapisan cetak duplikat kecuali area SOP aktif */
-  body[class*='print-mode-'] [data-print-area] {
+  body[class*="print-mode-"] [data-print-area] {
     display: none !important;
   }
 
-  body.print-mode-sop [data-print-area='sop'] {
+  body.print-mode-sop [data-print-area="sop"] {
     display: block !important;
     position: static !important;
     width: 100% !important;
@@ -192,25 +191,20 @@ body.sop-print-preparing .sop-diagram-screen-off {
     visibility: hidden;
   }
 
-  body.print-mode-sop [data-print-area='sop'],
-  body.print-mode-sop [data-print-area='sop'] * {
+  body.print-mode-sop [data-print-area="sop"],
+  body.print-mode-sop [data-print-area="sop"] * {
     visibility: visible;
   }
 
-  body.print-mode-sop [data-print-area='sop'] .overflow-auto,
-  body.print-mode-sop [data-print-area='sop'] .overflow-y-auto,
-  body.print-mode-sop [data-print-area='sop'] .overflow-x-auto {
+  body.print-mode-sop [data-print-area="sop"] .overflow-auto,
+  body.print-mode-sop [data-print-area="sop"] .overflow-y-auto,
+  body.print-mode-sop [data-print-area="sop"] .overflow-x-auto {
     overflow: visible !important;
   }
 
-  body.print-mode-sop [data-print-area='sop'] .sop-print-document {
+  body.print-mode-sop [data-print-area="sop"] .sop-print-document {
     width: 100%;
     max-width: 100%;
-  }
-
-  /* Cetak arsip: hanya diagram (halaman 2–4), tanpa lembar metadata/header. */
-  body.print-mode-sop .sop-print-header {
-    display: none !important;
   }
 
   body.print-mode-sop .sop-print-langkah {
@@ -292,11 +286,6 @@ body.sop-print-preparing .sop-diagram-screen-off {
     break-before: page;
   }
 
-  .diagram-container {
-    transform: scale(var(--bpmn-print-scale, 1));
-    transform-origin: top left;
-  }
-
   body.print-mode-sop .diagram-wrapper {
     display: flex;
     justify-content: center;
@@ -304,8 +293,6 @@ body.sop-print-preparing .sop-diagram-screen-off {
   }
 
   body.print-mode-sop .diagram-container {
-    transform: scale(var(--bpmn-print-scale, 1));
-    transform-origin: top center;
     margin-left: auto;
     margin-right: auto;
   }
@@ -328,6 +315,10 @@ body.sop-print-preparing .sop-diagram-screen-off {
 
   .sop-diagram-print-host,
   .sop-diagram-print-host [data-sop-diagram-root] {
+    overflow: visible !important;
+  }
+
+  .bpmn-scaled-viewport {
     overflow: visible !important;
   }
 
@@ -371,6 +362,10 @@ body.sop-print-preparing .sop-diagram-screen-off {
     fill: #000 !important;
     stroke: none !important;
   }
+}
+
+[data-sop-diagram-export-container] .bpmn-scaled-viewport {
+  overflow: visible !important;
 }
 
 /* ── Scrollbar disembunyikan agar area scroll terlihat rapi (scroll tetap berfungsi) ──────── */

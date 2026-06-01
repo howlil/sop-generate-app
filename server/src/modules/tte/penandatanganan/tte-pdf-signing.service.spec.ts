@@ -1,24 +1,25 @@
 import { execSync } from 'child_process';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { JenisDokumenTte, PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
+import { JenisDokumenTte, PeranPengguna } from '../../../generated/prisma';
 import { verifyPdfWithP12 } from '../shared/utils/pdf-signature-verification.util';
 import { TtePdfSigningService } from './tte-pdf-signing.service';
 import { TteRepository } from '../shared/repository/tte.repository';
+import { encryptP12Passphrase } from '../shared/utils/tte-crypto.util';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const PDFDocument = require(
   require.resolve('pdfkit', { paths: [require.resolve('@signpdf/placeholder-plain')] }),
 );
 
-describe('Pengujian TtePdfSigningService.signBeritaAcaraArsip', () => {
+describe('Pengujian TtePdfSigningService', () => {
   let service: TtePdfSigningService;
   let repository: {
     findPenggunaAktif: jest.Mock;
-    findBeritaAcaraArsipForPdfSigning: jest.Mock;
     findRiwayatForPdfSigning: jest.Mock;
     updateRiwayatPdfSignatureMetadata: jest.Mock;
+    findKredensial: jest.Mock;
   };
   let p12Base64 = '';
   const passphrase = 'test-passphrase';
@@ -43,9 +44,9 @@ describe('Pengujian TtePdfSigningService.signBeritaAcaraArsip', () => {
   beforeEach(async () => {
     repository = {
       findPenggunaAktif: jest.fn(),
-      findBeritaAcaraArsipForPdfSigning: jest.fn(),
       findRiwayatForPdfSigning: jest.fn(),
       updateRiwayatPdfSignatureMetadata: jest.fn(),
+      findKredensial: jest.fn(),
     };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -83,128 +84,16 @@ describe('Pengujian TtePdfSigningService.signBeritaAcaraArsip', () => {
       pangkat: 'IV/a',
       email: 'k@opd.id',
     });
-  });
-
-  it('seharusnya menolak ketika pengajuan status tidak siap untuk arsip', async () => {
-    repository.findBeritaAcaraArsipForPdfSigning.mockResolvedValue({
-      pengajuanEvaluasiId: 'pgj-1',
-      status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
-      opdId: 'opd-1',
-      opd: { nama: 'Dinkes' },
-      dokumenTte: {
-        dokumenTteId: 'doc-1',
-        jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
-        pengajuanEvaluasiId: 'pgj-1',
-        riwayatTandaTangan: [
-          { userId: 'pj-evaluator-1', peran: PeranPengguna.PJ_EVALUATOR },
-          { userId: 'pj-penyusun-1', peran: PeranPengguna.PJ_PENYUSUN },
-        ],
-      },
-    });
-    const pdfBase64 = (await createSamplePdf()).toString('base64');
-    await expect(
-      service.signBeritaAcaraArsip(kepalaOpdUser, {
-        pengajuanEvaluasiId: 'pgj-1',
-        pdfBase64,
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('seharusnya menolak ketika riwayat PJ belum lengkap', async () => {
-    repository.findBeritaAcaraArsipForPdfSigning.mockResolvedValue({
-      pengajuanEvaluasiId: 'pgj-1',
-      status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
-      opdId: 'opd-1',
-      opd: { nama: 'Dinkes' },
-      dokumenTte: {
-        dokumenTteId: 'doc-1',
-        jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
-        pengajuanEvaluasiId: 'pgj-1',
-        riwayatTandaTangan: [{ userId: 'pj-evaluator-1', peran: PeranPengguna.PJ_EVALUATOR }],
-      },
-    });
-    const pdfBase64 = (await createSamplePdf()).toString('base64');
-    await expect(
-      service.signBeritaAcaraArsip(kepalaOpdUser, {
-        pengajuanEvaluasiId: 'pgj-1',
-        pdfBase64,
-      }),
-    ).rejects.toBeInstanceOf(BadRequestException);
-  });
-
-  it('seharusnya menolak ketika OPD tidak cocok', async () => {
-    repository.findBeritaAcaraArsipForPdfSigning.mockResolvedValue({
-      pengajuanEvaluasiId: 'pgj-1',
-      status: StatusPengajuanEvaluasi.SELESAI,
-      opdId: 'opd-lain',
-      opd: { nama: 'Dinkes' },
-      dokumenTte: {
-        dokumenTteId: 'doc-1',
-        jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
-        pengajuanEvaluasiId: 'pgj-1',
-        riwayatTandaTangan: [
-          { userId: 'pj-evaluator-1', peran: PeranPengguna.PJ_EVALUATOR },
-          { userId: 'pj-penyusun-1', peran: PeranPengguna.PJ_PENYUSUN },
-        ],
-      },
-    });
-    const pdfBase64 = (await createSamplePdf()).toString('base64');
-    await expect(
-      service.signBeritaAcaraArsip(kepalaOpdUser, {
-        pengajuanEvaluasiId: 'pgj-1',
-        pdfBase64,
-      }),
-    ).rejects.toBeInstanceOf(ForbiddenException);
-  });
-
-  it('seharusnya menandatangani PDF ketika arsip siap dan penandatanganan PDF aktif', async () => {
-    repository.findBeritaAcaraArsipForPdfSigning.mockResolvedValue({
-      pengajuanEvaluasiId: 'pgj-1',
-      status: StatusPengajuanEvaluasi.SELESAI,
-      opdId: 'opd-1',
-      opd: { nama: 'Dinkes' },
-      dokumenTte: {
-        dokumenTteId: 'doc-1',
-        jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
-        pengajuanEvaluasiId: 'pgj-1',
-        riwayatTandaTangan: [
-          { userId: 'pj-evaluator-1', peran: PeranPengguna.PJ_EVALUATOR },
-          { userId: 'pj-penyusun-1', peran: PeranPengguna.PJ_PENYUSUN },
-        ],
-      },
-    });
-    const pdfBase64 = (await createSamplePdf()).toString('base64');
-    const actual = await service.signBeritaAcaraArsip(kepalaOpdUser, {
-      pengajuanEvaluasiId: 'pgj-1',
-      pdfBase64,
-    });
-    expect(actual.signed).toBe(true);
-    expect(actual.signatureFormat).toBe('PKCS7_DETACHED');
-    expect(actual.certificate).not.toBeNull();
-    expect(actual.signedPdfBase64.length).toBeGreaterThan(pdfBase64.length);
-    expect(repository.updateRiwayatPdfSignatureMetadata).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: 'pj-penyusun-1',
-        dokumenTteId: 'doc-1',
-        metadata: expect.objectContaining({
-          signatureAlgorithm: 'SHA256withRSA',
-          signatureFormat: 'PKCS7_DETACHED',
-        }),
-      }),
-    );
-    const verification = verifyPdfWithP12(
-      Buffer.from(actual.signedPdfBase64, 'base64'),
-      Buffer.from(p12Base64, 'base64'),
-      passphrase,
-    );
-    expect(verification.signatures[0]?.binding).toEqual({
-      dokumenTteId: 'doc-1',
-      userId: 'pj-penyusun-1',
-      jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
+    repository.findKredensial.mockResolvedValue({
+      userId: kepalaOpdUser.sub,
+      p12Base64,
+      p12PassphraseEncrypted: encryptP12Passphrase(passphrase, '123456'),
     });
   });
 
-  it('seharusnya menyimpan metadata sertifikat real dan binding TTE pada PDF', async () => {
+
+
+  it('seharusnya tidak menginjeksi CA ketika signPdf menerima jenis Berita Acara', async () => {
     const userId = '00000000-0000-4000-8000-0000000000aa';
     const dokumenTteId = '00000000-0000-4000-8000-0000000000bb';
     repository.findRiwayatForPdfSigning.mockResolvedValue({
@@ -214,8 +103,8 @@ describe('Pengujian TtePdfSigningService.signBeritaAcaraArsip', () => {
       ditandatanganiPada: new Date('2026-05-01T00:00:00.000Z'),
       dokumenTte: {
         dokumenTteId,
-        nomorDokumen: 'BA-REAL-CERT',
-        judulDokumen: 'Berita Acara Real Cert',
+        nomorDokumen: 'BA-NO-CA',
+        judulDokumen: 'Berita Acara Tanpa CA',
         jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
       },
       user: {
@@ -229,9 +118,50 @@ describe('Pengujian TtePdfSigningService.signBeritaAcaraArsip', () => {
     const actual = await service.signPdf(
       { sub: userId, email: 'pj@example.test', peran: PeranPengguna.PJ_EVALUATOR },
       {
+        pin: '123456',
         dokumenTteId,
         userId,
         jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
+        pdfBase64,
+      },
+    );
+
+    expect(actual.signed).toBe(false);
+    expect(actual.signatureFormat).toBe('UNSIGNED_NOT_REQUIRED');
+    expect(actual.certificate).toBeNull();
+    expect(actual.signedPdfBase64).toBe(pdfBase64);
+    expect(repository.updateRiwayatPdfSignatureMetadata).not.toHaveBeenCalled();
+  });
+
+  it('seharusnya menyimpan metadata sertifikat real dan binding TTE pada PDF SOP', async () => {
+    const userId = '00000000-0000-4000-8000-0000000000aa';
+    const dokumenTteId = '00000000-0000-4000-8000-0000000000bb';
+    repository.findRiwayatForPdfSigning.mockResolvedValue({
+      userId,
+      dokumenTteId,
+      peran: PeranPengguna.PJ_EVALUATOR,
+      ditandatanganiPada: new Date('2026-05-01T00:00:00.000Z'),
+      dokumenTte: {
+        dokumenTteId,
+        nomorDokumen: 'SOP-REAL-CERT',
+        judulDokumen: 'SOP Real Cert',
+        jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
+      },
+      user: {
+        penggunaId: userId,
+        nama: 'PJ Evaluator',
+        nip: '198001011234567890',
+        jabatan: 'PJ Evaluator',
+      },
+    });
+    const pdfBase64 = (await createSamplePdf()).toString('base64');
+    const actual = await service.signPdf(
+      { sub: userId, email: 'pj@example.test', peran: PeranPengguna.PJ_EVALUATOR },
+      {
+        pin: '123456',
+        dokumenTteId,
+        userId,
+        jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
         pdfBase64,
       },
     );
@@ -256,7 +186,7 @@ describe('Pengujian TtePdfSigningService.signBeritaAcaraArsip', () => {
     expect(verification.signatures[0]?.binding).toEqual({
       dokumenTteId,
       userId,
-      jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
+      jenisDokumen: JenisDokumenTte.SOP_BERLAKU,
     });
   });
 });

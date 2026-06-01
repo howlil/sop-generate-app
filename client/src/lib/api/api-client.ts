@@ -194,7 +194,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
   }
 
   const url = `${getApiBaseUrl()}${endpoint}`
-  const headers = { ...getHeaders(), ...options.headers }
+  // Filter out empty headers (like Content-Type: '') to allow browser to set FormData boundary
+  const mergedHeaders = { ...getHeaders(), ...options.headers }
+  const headers = Object.fromEntries(
+    Object.entries(mergedHeaders).filter(([_, v]) => v !== '')
+  ) as Record<string, string>
 
   let response: Response
   const controller = new AbortController()
@@ -253,7 +257,22 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
 
 export const apiClient = {
   get: <T>(endpoint: string) => request<T>(endpoint),
-  post: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) }),
+  post: <T>(endpoint: string, body?: unknown) => {
+    const isFormData = body instanceof FormData
+    const requestOptions: RequestInit = {
+      method: 'POST',
+      body: isFormData ? (body as FormData) : JSON.stringify(body),
+    }
+    
+    // Biarkan browser yang set boundary untuk multipart/form-data
+    if (isFormData) {
+      requestOptions.headers = {
+        // Trik agar fetch menghapus Content-Type bawaan (application/json)
+        'Content-Type': '',
+      }
+    }
+    return request<T>(endpoint, requestOptions)
+  },
   patch: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PATCH', body: JSON.stringify(body) }),
   put: <T>(endpoint: string, body?: unknown) => request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T = void>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),

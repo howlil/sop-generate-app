@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   NotFoundException,
@@ -63,6 +62,7 @@ describe('Pengujian TteService', () => {
       transaksiTandaTanganiBaEvaluator: jest.fn(),
       transaksiTandaTanganiBaPjPenyusun: jest.fn(),
       transaksiTandaTanganiSemuaSopPengajuan: jest.fn(),
+      prepareSopPengesahanDocuments: jest.fn(),
       ...partial,
     } as unknown as jest.Mocked<TteRepository>;
   }
@@ -80,11 +80,19 @@ describe('Pengujian TteService', () => {
 
   function buildTteService(repo: jest.Mocked<TteRepository>, cfg: ConfigService): TteService {
     const profilService = new TteProfilService(repo);
-    const penandatangananService = new TtePenandatangananService(repo, cfg);
-    const verifikasiService = new TteVerifikasiService(repo, cfg);
     const pdfSigningService = {
       signPdf: jest.fn(),
     } as unknown as TtePdfSigningService;
+    const sopOfficialPdfService = {} as any;
+    const sopPdfStorageService = {} as any;
+    const penandatangananService = new TtePenandatangananService(
+      repo,
+      cfg,
+      sopOfficialPdfService,
+      sopPdfStorageService,
+      pdfSigningService,
+    );
+    const verifikasiService = new TteVerifikasiService(repo, cfg);
     return new TteService(
       profilService,
       penandatangananService,
@@ -224,15 +232,7 @@ describe('Pengujian TteService', () => {
     ).rejects.toThrow('Status sebagian SOP sudah berubah (1/2)');
   });
 
-  it('seharusnya melempar error ketika menerbitkan token tanpa kredensial', async () => {
-    const repo = createRepoMock({
-      findKredensial: jest.fn().mockResolvedValue(null),
-    });
-    const service = buildTteService(repo, config());
-    await expect(service.mintTokenVerifikasi(kepalaUser)).rejects.toBeInstanceOf(
-      BadRequestException,
-    );
-  });
+
 
   it('seharusnya melempar NotFoundException untuk tidak dikenal pengguna pada profil', async () => {
     const repo = createRepoMock({
@@ -373,7 +373,8 @@ describe('Pengujian TteService', () => {
         opdId: 'opd-1',
       }),
       findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
-      transaksiTandaTanganiSemuaSopPengajuan: jest.fn().mockResolvedValue({
+      prepareSopPengesahanDocuments: jest.fn().mockResolvedValue({
+        ok: false,
         error: 'BAD_SOP_STATUS',
         detailSopId: 'detail-1',
         nomorSOP: 'SOP-DINKES-001-V1',
@@ -395,19 +396,7 @@ describe('Pengujian TteService', () => {
     );
   });
 
-  it('seharusnya melempar BadRequestException ketika token konfirmasi email kosong atau tidak valid (Worst Case)', async () => {
-    const repo = createRepoMock({});
-    const service = buildTteService(repo, config());
-    await expect(service.konfirmasiEmail('   ')).rejects.toBeInstanceOf(BadRequestException);
-    await expect(service.konfirmasiEmail(null as unknown as string)).rejects.toBeInstanceOf(BadRequestException);
-  });
 
-  it('seharusnya mengembalikan pesan sukses simulasi saat konfirmasi email dengan token valid (Normal Case)', async () => {
-    const repo = createRepoMock({});
-    const service = buildTteService(repo, config());
-    const actual = await service.konfirmasiEmail('valid-token');
-    expect(actual).toEqual({ message: 'Verifikasi tidak diperlukan pada mode simulasi TTE' });
-  });
 
   it('seharusnya mendelegasikan signPdf ke pdfSigningService (Edge Case Delegation)', async () => {
     const repo = createRepoMock({});
@@ -418,14 +407,7 @@ describe('Pengujian TteService', () => {
     expect((service as any).pdfSigningService.signPdf).toHaveBeenCalled();
   });
 
-  it('seharusnya mendelegasikan signBeritaAcaraArsip ke pdfSigningService (Edge Case Delegation)', async () => {
-    const repo = createRepoMock({});
-    const service = buildTteService(repo, config());
-    (service as any).pdfSigningService.signBeritaAcaraArsip = jest.fn().mockResolvedValueOnce({ status: 'OK' });
-    const actual = await service.signBeritaAcaraArsip(evaluatorUser, { fileBase64: 'base64', pin: '123', pengajuanEvaluasiId: '1' } as any);
-    expect(actual).toEqual({ status: 'OK' });
-    expect((service as any).pdfSigningService.signBeritaAcaraArsip).toHaveBeenCalled();
-  });
+
 
   it('seharusnya mendelegasikan getPdfSigningStatus ke pdfSigningService (Edge Case Delegation)', () => {
     const repo = createRepoMock({});

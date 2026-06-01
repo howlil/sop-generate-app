@@ -6,21 +6,16 @@ import type { BeritaAcaraTemplateProps } from '@/components/pengajuan/berita-aca
 import type { SopPreviewWorkbenchProps } from '@/components/pengajuan/sop-document-preview-pane'
 import { queryKeys } from '@/config/query-keys'
 import { useToast } from '@/hooks/useToast'
-import {
-  downloadBeritaAcaraPdf,
-  type BeritaAcaraPdfSigningMode,
-} from '@/lib/print/download-berita-acara-pdf'
+import { downloadBeritaAcaraPdf } from '@/lib/print/download-berita-acara-pdf'
 import { ApiError } from '@/lib/api/api-client'
-import { PdfSigningNotAppliedError } from '@/lib/print/berita-acara-pdf-signing.util'
 import {
-  printSopFromPreviewProps,
+  printSopArsipFromPreviewProps,
   type PengajuanPrintTarget,
 } from '@/lib/print/pengajuan-print'
 import {
   mapBeritaAcaraTemplateProps,
   type MapBeritaAcaraPengajuanInput,
 } from '@/lib/pengajuan/map-berita-acara-template-props'
-import { useAuthStore } from '@/stores/authStore'
 import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 
 const WORKBENCH_LOGS_LIMIT = 100
@@ -34,38 +29,6 @@ interface UsePengajuanCetakArsipParams {
   tteSignaturePayload?: TTESignaturePayload | null
 }
 
-function resolveCurrentUserBaSigningPayload(
-  props: BeritaAcaraTemplateProps | null,
-  userId: string | undefined,
-): TTESignaturePayload | null {
-  if (!props || !userId) {
-    return null
-  }
-  const candidates = [
-    props.tteSignaturePayloadPjEvaluator,
-    props.tteSignaturePayloadPjPenyusun,
-  ]
-  return candidates.find((payload) => payload?.userId === userId) ?? null
-}
-
-function resolveBeritaAcaraPdfSigningMode(
-  pdfSigningEnabled: boolean,
-  userPeran: string | undefined,
-  pengajuanId: string,
-  signingPayload: TTESignaturePayload | null,
-): BeritaAcaraPdfSigningMode {
-  if (!pdfSigningEnabled) {
-    return { mode: 'none' }
-  }
-  if (userPeran === 'KEPALA_OPD') {
-    return { mode: 'arsip', pengajuanEvaluasiId: pengajuanId }
-  }
-  if (signingPayload) {
-    return { mode: 'pj', payload: signingPayload }
-  }
-  return { mode: 'none' }
-}
-
 export function usePengajuanCetakArsip({
   pengajuanId,
   pengajuan,
@@ -76,8 +39,6 @@ export function usePengajuanCetakArsip({
 }: UsePengajuanCetakArsipParams) {
   const queryClient = useQueryClient()
   const { showToast } = useToast()
-  const currentUserId = useAuthStore((state) => state.user?.id)
-  const currentUserPeran = useAuthStore((state) => state.user?.peran)
   const [cetakLoading, setCetakLoading] = useState(false)
 
   const prefetchBeritaAcaraArsip = useCallback(async () => {
@@ -112,13 +73,7 @@ export function usePengajuanCetakArsip({
       setCetakLoading(true)
       try {
         if (target === 'ba') {
-          const [baView, pdfSigningStatus] = await Promise.all([
-            prefetchBeritaAcaraArsip(),
-            queryClient.fetchQuery({
-              queryKey: queryKeys.ttePdfSigningStatus,
-              queryFn: () => tteApi.getPdfSigningStatus(),
-            }),
-          ])
+          const baView = await prefetchBeritaAcaraArsip()
           const freshBaTemplateProps =
             pengajuan !== null
               ? mapBeritaAcaraTemplateProps({ pengajuan, baView })
@@ -127,30 +82,7 @@ export function usePengajuanCetakArsip({
             showToast('Data Berita Acara belum siap untuk diunduh.', 'error')
             return
           }
-          const signingPayload = resolveCurrentUserBaSigningPayload(
-            freshBaTemplateProps,
-            currentUserId,
-          )
-          const signing = resolveBeritaAcaraPdfSigningMode(
-            pdfSigningStatus.enabled,
-            currentUserPeran,
-            pengajuanId,
-            signingPayload,
-          )
-          if (
-            pdfSigningStatus.enabled &&
-            signing.mode === 'none' &&
-            currentUserPeran !== 'KEPALA_OPD'
-          ) {
-            showToast(
-              'PDF diunduh tanpa tanda tangan digital: riwayat TTE Anda belum tersedia pada dokumen ini.',
-              'error',
-            )
-          }
-          await downloadBeritaAcaraPdf(freshBaTemplateProps, {
-            pdfSigningEnabled: pdfSigningStatus.enabled,
-            signing,
-          })
+          await downloadBeritaAcaraPdf(freshBaTemplateProps)
           return
         }
         if (effectiveSopDetailId === null) {
@@ -165,12 +97,10 @@ export function usePengajuanCetakArsip({
           queryKey: queryKeys.ttePdfSigningStatus,
           queryFn: () => tteApi.getPdfSigningStatus(),
         })
-        const { diagramExportFailed } = await printSopFromPreviewProps(
+        const { diagramExportFailed } = await printSopArsipFromPreviewProps(
           sopPreviewProps,
           tteSignaturePayload,
           {
-            includeHeader: false,
-            printMode: 'diagrams_only',
             signPdf: pdfSigningStatus.enabled && Boolean(tteSignaturePayload),
           },
         )
@@ -181,10 +111,6 @@ export function usePengajuanCetakArsip({
           )
         }
       } catch (err) {
-        if (err instanceof PdfSigningNotAppliedError) {
-          showToast(err.message, 'error')
-          return
-        }
         if (err instanceof ApiError) {
           showToast(err.message, 'error')
           return
@@ -198,11 +124,8 @@ export function usePengajuanCetakArsip({
     },
     [
       baTemplateProps,
-      currentUserId,
-      currentUserPeran,
       effectiveSopDetailId,
       pengajuan,
-      pengajuanId,
       prefetchBeritaAcaraArsip,
       prefetchSopDokumenArsip,
       queryClient,

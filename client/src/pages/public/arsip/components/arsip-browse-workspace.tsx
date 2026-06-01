@@ -19,6 +19,7 @@ export interface ArsipBrowseWorkspaceProps {
   opdId?: string
   selectedOpdName?: string
   detailSopId?: string
+  selectedSop?: PublicSopItem
   opdItems: PublicOpdItem[]
   opdFilter: string
   onOpdFilterChange: (value: string) => void
@@ -45,6 +46,7 @@ export interface ArsipBrowseWorkspaceProps {
   onSopSearchChange: (value: string) => void
   onSelectSop: (sop: PublicSopItem) => void
   onClosePreview: () => void
+  onRefreshPreview: () => void
   sopEmptyTitle: string
   sopEmptyHint: string
 }
@@ -54,6 +56,7 @@ export function ArsipBrowseWorkspace({
   opdId,
   selectedOpdName,
   detailSopId,
+  selectedSop,
   opdItems,
   opdFilter,
   onOpdFilterChange,
@@ -80,6 +83,7 @@ export function ArsipBrowseWorkspace({
   onSopSearchChange,
   onSelectSop,
   onClosePreview,
+  onRefreshPreview,
   sopEmptyTitle,
   sopEmptyHint,
 }: ArsipBrowseWorkspaceProps) {
@@ -175,7 +179,11 @@ export function ArsipBrowseWorkspace({
         {detailSopId ? (
           <ArsipSopPreviewPane
             detailSopId={detailSopId}
+            pdfUrl={selectedSop?.pdfUrl}
+            title={selectedSop?.judul}
+            opdName={selectedSop?.opdNama ?? selectedOpdName}
             onClose={onClosePreview}
+            onRefresh={onRefreshPreview}
             variant="inline"
             embedded
           />

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TERMINAL_DETAIL_STATUSES } from '../../../common/status/sop-editable.util';
 import type { Prisma } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { BagianSOP, PeranPengguna, StatusSOP } from '../../../generated/prisma';
+import { BagianSOP, JenisDokumenTte, PeranPengguna, StatusSOP } from '../../../generated/prisma';
 import { appendOrCreateLogSession } from '../collaboration/log-edit-session.helper';
 import {
   sopCatalogRepoFail,
@@ -524,6 +524,15 @@ export class SopCatalogRepository {
         fields: ['status'],
         discrete: true,
       });
+      if (status === StatusSOP.DICABUT) {
+        await tx.$executeRaw`
+          UPDATE DokumenTte
+          SET pdfStatus = ${'REVOKED'},
+              pdfRevokedAt = ${new Date()}
+          WHERE detailSopId = ${detailSopId}
+            AND jenisDokumen = ${JenisDokumenTte.SOP_BERLAKU}
+        `;
+      }
     });
   }
 

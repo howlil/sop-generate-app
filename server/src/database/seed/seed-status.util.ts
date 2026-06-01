@@ -1,7 +1,5 @@
 import { StatusPengajuanEvaluasi, StatusSOP } from '../../generated/prisma';
 
-/** PIN TTE untuk semua akun seed (development). */
-export const SEED_TTE_PIN = '1234';
 
 /**
  * Memetakan status pengajuan evaluasi ke status DetailSOP anggota batch (seed sync).

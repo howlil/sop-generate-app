@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SopCatalogService } from '../catalog/sop-catalog.service';
+import { SopPdfStorageService } from '../pdf/sop-pdf-storage.service';
 import type { PublicArsipQueryDto } from './dto/public-arsip-query.dto';
 import { SopPublicRepository } from './sop-public.repository';
 import { SopPublicService } from './sop-public.service';
@@ -19,6 +20,9 @@ describe('Pengujian SopPublicService', () => {
   const catalogMock = {
     getPublicDokumenBerlaku: jest.fn(),
   };
+  const storageMock = {
+    readPublishedPdf: jest.fn(),
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -27,6 +31,7 @@ describe('Pengujian SopPublicService', () => {
         SopPublicService,
         { provide: SopPublicRepository, useValue: repoMock },
         { provide: SopCatalogService, useValue: catalogMock },
+        { provide: SopPdfStorageService, useValue: storageMock },
       ],
     }).compile();
     service = module.get(SopPublicService);
@@ -87,6 +92,7 @@ describe('Pengujian SopPublicService', () => {
     expect(actual.items[0]?.detailSopId).toBe('det-1');
     expect(actual.items[0]?.opdId).toBe('opd-1');
     expect(actual.items[0]?.tanggalEfektif).toBe('2026-05-01T00:00:00.000Z');
+    expect(actual.items[0]?.pdfUrl).toBe('/sop/public/pdf/det-1');
   });
 
   it('seharusnya mengembalikan hasil pencarian SOP global secara terpaginasi', async () => {

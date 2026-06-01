@@ -611,8 +611,9 @@ function EditableOrthogonalPathInner({
     : null
 
   return (
-    <g className="print:hidden">
+    <g>
       <path
+        className="print:hidden"
         d={pathToD(localPath)}
         fill="none"
         stroke="transparent"
@@ -626,6 +627,7 @@ function EditableOrthogonalPathInner({
         onPointerDown={isSelected ? handlePathPointerDown : undefined}
       />
       <path
+        className="sop-connector-stroke"
         d={pathToD(localPath)}
         fill="none"
         stroke={strokeColor}
@@ -635,6 +637,7 @@ function EditableOrthogonalPathInner({
       />
       {isSelected && highlightLine && (
         <line
+          className="print:hidden"
           x1={highlightLine.x1}
           y1={highlightLine.y1}
           x2={highlightLine.x2}
@@ -662,6 +665,7 @@ function EditableOrthogonalPathInner({
             anchor.kind !== activeEdgeHighlight.kind
           return (
             <circle
+              className="print:hidden"
               key={`${connectionId}-anchor-${anchor.id}`}
               cx={anchor.x}
               cy={anchor.y}
@@ -680,6 +684,7 @@ function EditableOrthogonalPathInner({
           const endpointSnapping = isEndpoint && isSnapping
           return (
             <circle
+              className="print:hidden"
               key={`${connectionId}-wp-${idx}`}
               cx={p.x}
               cy={p.y}

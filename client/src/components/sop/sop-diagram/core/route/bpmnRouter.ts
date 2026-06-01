@@ -892,6 +892,29 @@ export function routeBpmn(opts: BpmnRouteOptions): Point[] {
   return path
 }
 
+export interface BpmnRouteFallbackResult {
+  path: Point[]
+  usedOccupiedFallback: boolean
+}
+
+/**
+ * Keep the connector visible when every collision-free track is already
+ * reserved. Shape and grid validation still apply; only arrow-to-arrow
+ * occupancy is relaxed so the parent reconcile pass can reroute crossings.
+ */
+export function routeBpmnAllowOccupiedFallback(
+  opts: BpmnRouteOptions,
+): BpmnRouteFallbackResult {
+  const path = routeBpmn(opts)
+  if (path.length >= 2 || opts.occupiedSegments.length === 0) {
+    return { path, usedOccupiedFallback: false }
+  }
+  return {
+    path: routeBpmn({ ...opts, occupiedSegments: [] }),
+    usedOccupiedFallback: true,
+  }
+}
+
 export function scoreBpmnRouteCandidate(candidate: BpmnRouteCandidate): number {
   let score = 0
   if (candidate.preferSimple === false) score += 200

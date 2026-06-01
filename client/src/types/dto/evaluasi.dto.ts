@@ -295,15 +295,17 @@ export interface CreatePengajuanEvaluasiDto {
   sopDetailIds: string[];
 }
 
+export interface SelesaiEvaluasiDto {
+  /** Nomor Berita Acara yang diinputkan oleh Evaluator (wajib untuk semua evaluasi). */
+  nomorBA: string;
+  /** Skor evaluasi tingkat OPD (1-5). Wajib untuk TERJADWAL, jangan kirim untuk MANDIRI. */
+  nilaiOPD?: number;
+}
+
 export interface IsiNilaiEvaluasiDto {
   hasil: StatusHasilEvaluasi;
   catatan?: string;
   version?: number;
-}
-
-/** Wajib untuk pengajuan TERJADWAL pada PATCH selesai; untuk MANDIRI tidak dikirim. */
-export interface SelesaiEvaluasiDto {
-  nilaiOPD?: number;
 }
 
 export interface UpdatePengajuanEvaluasiDto {
