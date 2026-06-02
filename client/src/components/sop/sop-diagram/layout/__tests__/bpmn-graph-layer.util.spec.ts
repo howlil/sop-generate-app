@@ -40,7 +40,7 @@ describe('assignStepColumns', () => {
     expect(cols.get('s2')).toBe(0)
   })
 
-  it('should_compact_alternating_lane_handoffs_into_shared_global_layers', () => {
+  it('should_open_a_new_column_each_time_an_alternating_lane_chain_reverses_direction', () => {
     const steps = [
       step('s1', 1, 'task', 'lane-a'),
       step('s2', 2, 'task', 'lane-b'),
@@ -53,7 +53,53 @@ describe('assignStepColumns', () => {
       { from: 'bpmn-step-3', to: 'bpmn-step-4' },
     ]
     const cols = assignStepColumns(steps, connections, IMP)
-    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 0, 0, 0])
+    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 0, 1, 2])
+  })
+
+  it('should_keep_skipped_lanes_compact_until_the_downward_sweep_reverses', () => {
+    const steps = [
+      step('s1', 1, 'task', 'lane-a'),
+      step('s2', 2, 'task', 'lane-b'),
+      step('s3', 3, 'task', 'lane-d'),
+      step('s4', 4, 'task', 'lane-c'),
+      step('s5', 5, 'task', 'lane-b'),
+      step('s6', 6, 'task', 'lane-a'),
+    ]
+    const connections = [
+      { from: 'bpmn-step-1', to: 'bpmn-step-2' },
+      { from: 'bpmn-step-2', to: 'bpmn-step-3' },
+      { from: 'bpmn-step-3', to: 'bpmn-step-4' },
+      { from: 'bpmn-step-4', to: 'bpmn-step-5' },
+      { from: 'bpmn-step-5', to: 'bpmn-step-6' },
+    ]
+    const cols = assignStepColumns(steps, connections, [
+      'lane-a',
+      'lane-b',
+      'lane-c',
+      'lane-d',
+    ])
+    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 0, 0, 1, 1, 1])
+  })
+
+  it('should_keep_skipped_lanes_compact_until_an_upward_sweep_reverses', () => {
+    const steps = [
+      step('s1', 1, 'task', 'lane-d'),
+      step('s2', 2, 'task', 'lane-c'),
+      step('s3', 3, 'task', 'lane-a'),
+      step('s4', 4, 'task', 'lane-b'),
+    ]
+    const connections = [
+      { from: 'bpmn-step-1', to: 'bpmn-step-2' },
+      { from: 'bpmn-step-2', to: 'bpmn-step-3' },
+      { from: 'bpmn-step-3', to: 'bpmn-step-4' },
+    ]
+    const cols = assignStepColumns(steps, connections, [
+      'lane-a',
+      'lane-b',
+      'lane-c',
+      'lane-d',
+    ])
+    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 0, 0, 1])
   })
 
   it('should_place_cross_lane_ya_branch_after_the_gateway_column', () => {

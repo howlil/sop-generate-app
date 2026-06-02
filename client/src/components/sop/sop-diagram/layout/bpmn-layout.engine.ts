@@ -6,6 +6,10 @@ import {
   type BpmnLayoutStepInput,
 } from './bpmn-graph-layer.util'
 import {
+  transitionBpmnLaneRun,
+  type BpmnLaneRunDirection,
+} from './bpmn-lane-run.util'
+import {
   BPMN_BASE_ROW_HEIGHT,
   BPMN_BASE_X,
   BPMN_COLLISION_PADDING,
@@ -243,20 +247,30 @@ export function straightenSimpleCrossLaneTaskChains(
     const rightSeq = parseBpmnStepSeq(right.from) ?? Number.MAX_SAFE_INTEGER
     return leftSeq - rightSeq
   })
+  const directionBySeq = new Map<number, BpmnLaneRunDirection>()
   for (const connection of orderedConnections) {
     const fromSeq = parseBpmnStepSeq(connection.from)
     const toSeq = parseBpmnStepSeq(connection.to)
     if (fromSeq == null || toSeq == null || fromSeq >= toSeq) continue
     const from = stepBySeq.get(fromSeq)
     const to = stepBySeq.get(toSeq)
+    if (!from || !to) continue
+    const isSimpleHandoff =
+      (outbound.get(connection.from) ?? 0) === 1 &&
+      (inbound.get(connection.to) ?? 0) === 1
+    const transition = transitionBpmnLaneRun(
+      from.lane,
+      to.lane,
+      directionBySeq.get(fromSeq) ?? 0,
+      from.type === 'decision',
+    )
+    directionBySeq.set(toSeq, isSimpleHandoff ? transition.direction : 0)
     if (
-      !from ||
-      !to ||
       from.type !== 'task' ||
       to.type !== 'task' ||
       from.lane === to.lane ||
-      (outbound.get(connection.from) ?? 0) !== 1 ||
-      (inbound.get(connection.to) ?? 0) !== 1
+      !isSimpleHandoff ||
+      transition.columnAdvance > 0
     ) {
       continue
     }

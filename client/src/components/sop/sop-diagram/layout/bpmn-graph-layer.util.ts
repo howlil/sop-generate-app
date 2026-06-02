@@ -1,3 +1,8 @@
+import {
+  transitionBpmnLaneRun,
+  type BpmnLaneRunDirection,
+} from './bpmn-lane-run.util'
+
 export interface BpmnLayoutStepInput {
   id_step: string
   seq_number: number
@@ -37,22 +42,54 @@ function minimumForwardColumnAdvance(
     : 0
 }
 
+function edgeKey(fromId: string, toId: string): string {
+  return `${fromId}->${toId}`
+}
+
+function buildLaneRunAdvances(
+  sortedSteps: BpmnLayoutStepInput[],
+  predsByIdStep: Map<string, string[]>,
+  stepById: Map<string, BpmnLayoutStepInput>,
+  implementerIds: string[],
+): Map<string, 0 | 1> {
+  const directionById = new Map<string, BpmnLaneRunDirection>()
+  const advances = new Map<string, 0 | 1>()
+  for (const step of sortedSteps) {
+    const incomingDirections: BpmnLaneRunDirection[] = []
+    for (const predId of predsByIdStep.get(step.id_step) ?? []) {
+      const pred = stepById.get(predId)
+      if (!pred) continue
+      const transition = transitionBpmnLaneRun(
+        laneIndexForStep(pred, implementerIds),
+        laneIndexForStep(step, implementerIds),
+        directionById.get(predId) ?? 0,
+        pred.type === 'decision',
+      )
+      advances.set(edgeKey(predId, step.id_step), transition.columnAdvance)
+      incomingDirections.push(transition.direction)
+    }
+    const distinctDirections = new Set(incomingDirections)
+    directionById.set(
+      step.id_step,
+      distinctDirections.size === 1 ? incomingDirections[0]! : 0,
+    )
+  }
+  return advances
+}
+
 function columnFromPredecessors(
   preds: string[],
   step: BpmnLayoutStepInput,
-  stepById: Map<string, BpmnLayoutStepInput>,
   rawColumns: Map<string, number>,
-  implementerIds: string[],
+  laneRunAdvances: Map<string, 0 | 1>,
 ): number {
   if (preds.length === 0) return 0
   let columnIndex = 0
   for (const predId of preds) {
-    const pred = stepById.get(predId)
-    if (!pred) continue
     const predCol = rawColumns.get(predId) ?? 0
     columnIndex = Math.max(
       columnIndex,
-      predCol + minimumForwardColumnAdvance(pred, step, implementerIds),
+      predCol + (laneRunAdvances.get(edgeKey(predId, step.id_step)) ?? 0),
     )
   }
   return columnIndex
@@ -91,13 +128,19 @@ export function assignStepColumns(
   }
   const sorted = [...steps].sort((a, b) => a.seq_number - b.seq_number)
   const stepById = new Map(steps.map((step) => [step.id_step, step]))
+  const laneRunAdvances = buildLaneRunAdvances(
+    sorted,
+    predsByIdStep,
+    stepById,
+    implementerIds,
+  )
   const rawColumns = new Map<string, number>()
   let previousSequentialColumn = -1
   let previousSequentialLane = -1
   for (const step of sorted) {
     const preds = predsByIdStep.get(step.id_step) ?? []
     const stepLane = laneIndexForStep(step, implementerIds)
-    let columnIndex = columnFromPredecessors(preds, step, stepById, rawColumns, implementerIds)
+    let columnIndex = columnFromPredecessors(preds, step, rawColumns, laneRunAdvances)
     if (
       preds.length === 0 &&
       previousSequentialLane === stepLane &&
@@ -113,7 +156,13 @@ export function assignStepColumns(
     previousSequentialLane = stepLane
   }
   bumpDecisionBranchColumns(steps, connections, rawColumns, implementerIds)
-  enforceForwardMonotonicColumns(steps, connections, rawColumns, implementerIds)
+  enforceForwardMonotonicColumns(
+    steps,
+    connections,
+    rawColumns,
+    implementerIds,
+    laneRunAdvances,
+  )
   return rawColumns
 }
 
@@ -173,6 +222,7 @@ function enforceForwardMonotonicColumns(
   connections: BpmnLayoutConnectionInput[],
   rawColumns: Map<string, number>,
   implementerIds: string[],
+  laneRunAdvances: Map<string, 0 | 1>,
 ): void {
   const stepBySeq = new Map(steps.map((step) => [step.seq_number, step]))
   for (let pass = 0; pass < steps.length; pass += 1) {
@@ -186,7 +236,8 @@ function enforceForwardMonotonicColumns(
       if (!fromStep || !toStep) continue
       const nextCol =
         (rawColumns.get(fromStep.id_step) ?? 0) +
-        minimumForwardColumnAdvance(fromStep, toStep, implementerIds)
+        (laneRunAdvances.get(edgeKey(fromStep.id_step, toStep.id_step)) ??
+          minimumForwardColumnAdvance(fromStep, toStep, implementerIds))
       if (nextCol <= (rawColumns.get(toStep.id_step) ?? 0)) continue
       rawColumns.set(toStep.id_step, nextCol)
       changed = true
