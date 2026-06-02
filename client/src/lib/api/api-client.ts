@@ -224,6 +224,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}, retryCoun
   const isAuthSessionEndpoint =
     endpoint === '/auth/login' ||
     endpoint === '/auth/refresh' ||
+    endpoint === '/auth/me' ||
+    endpoint === '/auth/logout' ||
     endpoint.startsWith('/auth/login?')
 
   const isPublicApiEndpoint =

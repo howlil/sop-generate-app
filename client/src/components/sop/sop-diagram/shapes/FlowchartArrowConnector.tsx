@@ -11,7 +11,6 @@ import {
 import { selectSidePairs as selectFlowchartRouteCandidates } from '../core/route/flowchart/selectSidePairs'
 import type { Side, UsedSides } from '../core/route/shared/connector-side.types'
 import { EditableOrthogonalPath } from '../edit/EditableOrthogonalPath'
-import { simplifyOrthogonalPath } from '../edit/orthogonal-path-edit.util'
 import {
   buildVisualConnectorAnchors,
   elemPosToShapeRect,
@@ -25,6 +24,13 @@ import { createPathSafetyOptions, isAcceptableRoutedPath } from '../core/route/q
 import { placeEdgeLabel } from '../core/route/shared/edge-label-placement.util'
 import type { PathShapeGuardConfig } from '../edit/path-shape-guard.util'
 import type { Rect } from '../core/route/shared/orthogonalRouter'
+import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
+import type { FlowchartGridLayout } from '../core/route/flowchart/flowchart-grid-layout.util'
+import { tryBuildDedicatedFlowchartPath } from '../core/route/flowchart/flowchart-dedicated-route.util'
+import {
+  computeConnectionRoutingBounds,
+  resolveColumnForConnection,
+} from '../core/route/flowchart/flowchart-routing-bounds.util'
 
 /* ───────────────────────── Public types (re-export for consumers) ─────────────────────────── */
 
@@ -110,6 +116,11 @@ interface FlowchartArrowConnectorProps {
   isSelected?: boolean
   onSelect?: (connectionId: string) => void
   constraintRect?: BoundsRect | null
+  columnBounds?: ImplementerColumnBoundsMap | null
+  gridLayout?: FlowchartGridLayout | null
+  loopbackCorridorIndex?: number
+  crossColumnGutterSlot?: number
+  columnTrunkSlot?: number
   /** Shared ref for cross-arrow overlap avoidance */
   routedSegmentsRef?: RoutedPathsRef
   /** From scan phase: Map of `${targetShapeId}-${side}` → Set of connectionIds. */
@@ -194,8 +205,7 @@ export function normalizeConnectorPath(
   const normalized = normalizeOrthogonalPath(clampPathToBounds(points, bounds), {
     bounds: toRouterBounds(bounds),
   })
-  const simplified = simplifyOrthogonalPath(normalized)
-  return assertOrthogonalPath(simplified, 'FlowchartArrowConnector path')
+  return assertOrthogonalPath(normalized, 'FlowchartArrowConnector path')
 }
 
 function tryNormalizeConnectorPath(
@@ -350,6 +360,11 @@ export function FlowchartArrowConnector({
   isSelected = false,
   onSelect,
   constraintRect = null,
+  columnBounds = null,
+  gridLayout = null,
+  loopbackCorridorIndex = 0,
+  crossColumnGutterSlot = 0,
+  columnTrunkSlot = 0,
   routedSegmentsRef,
   reservedSidesRef,
   connectionIndex = 0,
@@ -564,6 +579,35 @@ export function FlowchartArrowConnector({
       connection.to,
       connection.id,
     )
+    const sourceColumn = resolveColumnForConnection(
+      connection.fromImplementerId,
+      fromPos.left + fromPos.width / 2,
+      fromPos.left,
+      fromPos.right,
+      columnBounds,
+      constraintRect,
+    )
+    const targetColumn = resolveColumnForConnection(
+      connection.toImplementerId,
+      toPos.left + toPos.width / 2,
+      toPos.left,
+      toPos.right,
+      columnBounds,
+      constraintRect,
+    )
+    const isCrossColumn =
+      sourceColumn != null &&
+      targetColumn != null &&
+      (
+        Math.abs(sourceColumn.left - targetColumn.left) >= 4 ||
+        Math.abs(sourceColumn.right - targetColumn.right) >= 4
+      )
+    const connectionRoutingBounds = computeConnectionRoutingBounds({
+      pelaksana: constraintRect,
+      sourceColumn,
+      targetColumn,
+      isCrossColumn,
+    })
 
     // Collect occupied segments from other already-routed arrows
     const occupied: OccupiedSegment[] = []
@@ -603,6 +647,13 @@ export function FlowchartArrowConnector({
         fromShape,
         toShape,
       }))
+    const isShapeSafePath = (path: { x: number; y: number }[]) =>
+      isAcceptableRoutedPath(path, createPathSafetyOptions('flowchart', {
+        obstacles: obsRects,
+        occupied: [],
+        fromShape,
+        toShape,
+      }))
 
 
 
@@ -617,8 +668,100 @@ export function FlowchartArrowConnector({
       destBelow && connection.sourceType === 'flowchart-decision' && isYaLabel(connection.label ?? '')
     const preferOpcStraight =
       destBelow && (connection.targetType === 'flowchart-opc' || connection.sourceType === 'flowchart-opc')
+    const preferredCandidate = routeCandidates[0]
+    const sourceJetty =
+      preferredCandidate?.sourceJettySize ??
+      preferredCandidate?.jettySize ??
+      SHAPE_MARGIN
+    const targetJetty =
+      preferredCandidate?.targetJettySize ??
+      preferredCandidate?.jettySize ??
+      SHAPE_MARGIN
 
-    for (const candidate of routeCandidates.slice(0, MAX_TRIES)) {
+    // First pass: cari L-shape aman pada seluruh pasangan port. Jalur channel
+    // dan multi-bend hanya dipakai bila tidak ada L yang valid.
+    for (const [candidateIndex, candidate] of routeCandidates.slice(0, MAX_TRIES).entries()) {
+      const { sSide, eSide } = candidate
+      const usageA = Math.max(
+        usedAnchorCount(connection.from, sSide),
+        priorShapeUseCount(connection.from),
+      )
+      const usageB = Math.max(
+        usedAnchorCount(connection.to, eSide),
+        priorShapeUseCount(connection.to),
+      )
+      const distA = anchorDistance(connection.from, sSide, usageA)
+      const distB = anchorDistance(connection.to, eSide, usageB)
+      const path = routeOrthogonal({
+        pointA: { shape: fromShape, side: sSide, distance: distA },
+        pointB: { shape: toShape, side: eSide, distance: distB },
+        obstacles: obsRects,
+        shapeMargin: SHAPE_MARGIN,
+        globalBounds,
+        globalBoundsMargin: loopbackBoundsMargin,
+        occupiedSegments: occupied,
+        sourcePort: candidate.sourcePort,
+        targetPort: candidate.targetPort,
+        jettySize: candidate.jettySize,
+        sourceJettySize: candidate.sourceJettySize,
+        targetJettySize: candidate.targetJettySize,
+        preferSimple: true,
+        lShapeOnly: true,
+      })
+      if (path.length < 2) continue
+      const normalizedPath = tryNormalizeConnectorPath(path, effectiveBounds)
+      if (!normalizedPath || !isSafePath(normalizedPath)) continue
+      const score =
+        scorePath(normalizedPath, occupied) +
+        scoreAnchorOffCenter(distA) +
+        scoreAnchorOffCenter(distB) +
+        candidateIndex * 120
+      if (score < bestScore) {
+        bestPath = normalizedPath
+        bestSides = [sSide, eSide]
+        bestScore = score
+      }
+    }
+
+    if (!bestPath) {
+      const dedicated = tryBuildDedicatedFlowchartPath({
+        fromShape,
+        toShape,
+        fromIsDiamond,
+        toIsDiamond,
+        sourceColumn,
+        targetColumn,
+        routingBounds: connectionRoutingBounds ?? constraintRect,
+        columns: columnBounds,
+        pelaksana: constraintRect,
+        gridLayout,
+        obstacles: obsRects,
+        occupied,
+        destAbove,
+        destBelow,
+        sameCol,
+        isCrossColumn,
+        isLinearDown: destBelow && !destAbove && !isCrossColumn,
+        sourceType: connection.sourceType,
+        targetType: connection.targetType,
+        fromId: connection.from,
+        toId: connection.to,
+        loopbackCorridorIndex,
+        crossColumnGutterSlot,
+        columnTrunkSlot,
+        sourceJetty,
+        targetJetty,
+      })
+      if (dedicated) {
+        const normalized = tryNormalizeConnectorPath(dedicated.path, effectiveBounds)
+        if (normalized && isSafePath(normalized)) {
+          bestPath = normalized
+          bestSides = [dedicated.sSide, dedicated.eSide]
+        }
+      }
+    }
+
+    for (const candidate of bestPath ? [] : routeCandidates.slice(0, MAX_TRIES)) {
       const { sSide, eSide } = candidate
       const usageA = Math.max(
         usedAnchorCount(connection.from, sSide),
@@ -728,8 +871,42 @@ export function FlowchartArrowConnector({
         preferSimple: fallbackCandidate?.preferSimple ?? true,
       })
       if (fallbackPath.length >= 2) {
-        bestPath = tryNormalizeConnectorPath(fallbackPath, effectiveBounds)
-        bestSides = [sSide, eSide]
+        const normalizedFallback = tryNormalizeConnectorPath(fallbackPath, effectiveBounds)
+        if (normalizedFallback && isSafePath(normalizedFallback)) {
+          bestPath = normalizedFallback
+          bestSides = [sSide, eSide]
+        }
+      }
+      if (!bestPath) {
+        // Konflik connector boleh dilonggarkan sebagai fallback, tetapi shape
+        // tetap hard constraint. Nilai dengan occupied asli agar jalur dengan
+        // crossing/overlap paling kecil yang dipilih.
+        let softFallbackScore = Infinity
+        for (const candidate of routeCandidates.slice(0, MAX_TRIES)) {
+          const softFallback = routeOrthogonal({
+            pointA: { shape: fromShape, side: candidate.sSide, distance: 0.5 },
+            pointB: { shape: toShape, side: candidate.eSide, distance: 0.5 },
+            obstacles: obsRects,
+            shapeMargin: SHAPE_MARGIN,
+            globalBounds,
+            globalBoundsMargin: loopbackBoundsMargin,
+            occupiedSegments: [],
+            sourcePort: candidate.sourcePort,
+            targetPort: candidate.targetPort,
+            jettySize: candidate.jettySize,
+            sourceJettySize: candidate.sourceJettySize,
+            targetJettySize: candidate.targetJettySize,
+            preferSimple: candidate.preferSimple ?? true,
+          })
+          const normalizedFallback = tryNormalizeConnectorPath(softFallback, effectiveBounds)
+          if (!normalizedFallback || !isShapeSafePath(normalizedFallback)) continue
+          const fallbackScore = scorePath(normalizedFallback, occupied)
+          if (fallbackScore < softFallbackScore) {
+            bestPath = normalizedFallback
+            bestSides = [candidate.sSide, candidate.eSide]
+            softFallbackScore = fallbackScore
+          }
+        }
       }
       if (!bestPath) {
         bestPath = buildUltimateOrthogonalFallback(fromPos, toPos, effectiveBounds)
@@ -819,6 +996,7 @@ export function FlowchartArrowConnector({
     connection.label, connection.sourceType, connection.targetType,
     connectionIndex, allConnections,
     manualConfig, manualLabelPosition, obstacles, constraintRect, editMode,
+    columnBounds, gridLayout, loopbackCorridorIndex, crossColumnGutterSlot, columnTrunkSlot,
     routedSegmentsRef, reservedSidesRef,
     rerouteVersion,
   ])

@@ -156,14 +156,16 @@ export function selectSidePairs(
     } else if (destBelow && destLeft) {
       push('bottom', 'right', { preferSimple: false })
       push('left', 'top', { preferSimple: false })
-    } else if (destAbove && destRight) {
-      push('top', 'left', { preferSimple: false })
-      push('right', 'bottom', { preferSimple: false })
-    } else if (destAbove && destLeft) {
-      push('top', 'right', { preferSimple: false })
-      push('left', 'bottom', { preferSimple: false })
     } else if (destAbove) {
-      push('top', 'bottom', { preferSimple: false })
+      // `top` decision dipertahankan untuk panah masuk. Feedback keluar dari
+      // sisi lateral agar tidak menumpuk pada connector sebelum decision.
+      if (destLeft) {
+        push('left', 'left', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+        push('right', 'right', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+      } else {
+        push('right', 'right', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+        push('left', 'left', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+      }
     } else {
       push('bottom', 'top')
     }
@@ -192,12 +194,11 @@ export function selectSidePairs(
       push('left', 'top', { preferSimple: false })
       push('bottom', 'right', { preferSimple: false })
     } else if (destBelow) {
-      push('bottom', 'top', {
-        sourcePort: { ...makeSourcePort('bottom'), exitX: 0.5 },
-        targetPort: { ...makeTargetPort('top'), entryX: 0.5 },
-      })
+      // `bottom` decision dipakai branch Ya. Tidak mencoba sisi lateral lebih
+      // dulu agar dua label tidak berbagi jetty vertikal yang sama.
       if (!srcOutBusy('right')) push('right', 'top', { preferSimple: false })
       if (!srcOutBusy('left')) push('left', 'top', { preferSimple: false })
+      push('bottom', 'top', { preferSimple: false })
     } else {
       push('right', 'top', { preferSimple: false })
       push('left', 'top', { preferSimple: false })
@@ -216,9 +217,13 @@ export function selectSidePairs(
         push('left', 'left', { jettySize: LOOPBACK_JETTY, preferSimple: false })
       push('top', 'bottom', { preferSimple: false })
     } else if (destRight) {
+      push('right', 'right', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+      push('left', 'left', { jettySize: LOOPBACK_JETTY, preferSimple: false })
       push('right', 'bottom', { preferSimple: false })
       push('top', 'left', { preferSimple: false })
     } else {
+      push('left', 'left', { jettySize: LOOPBACK_JETTY, preferSimple: false })
+      push('right', 'right', { jettySize: LOOPBACK_JETTY, preferSimple: false })
       push('left', 'bottom', { preferSimple: false })
       push('top', 'right', { preferSimple: false })
     }

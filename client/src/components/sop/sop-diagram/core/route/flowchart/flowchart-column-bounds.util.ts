@@ -39,6 +39,9 @@ export function measureFlowchartImplementerColumnBounds(
   store: Record<number, ImplementerColumnBoundsMap>,
   areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
 ): string {
+  for (const pageIndex of Object.keys(store)) {
+    if (Number(pageIndex) >= pageCount) delete store[Number(pageIndex)]
+  }
   for (let pi = 0; pi < pageCount; pi += 1) {
     const container = document.getElementById(areaIdForPage(pi))
     const cols: ImplementerColumnBoundsMap = {}

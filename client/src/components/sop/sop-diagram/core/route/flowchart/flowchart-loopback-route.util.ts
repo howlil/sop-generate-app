@@ -141,7 +141,6 @@ export function assignLoopbackCorridorIndices(
 ): Map<string, number> {
   const loopbacks = connections
     .filter((c) => {
-      if (c.sourceType !== 'flowchart-decision') return false
       const fromSeq = seqFromFlowchartShapeId(c.from)
       const toSeq = seqFromFlowchartShapeId(c.to)
       return fromSeq >= 0 && toSeq >= 0 && toSeq < fromSeq

@@ -42,4 +42,17 @@ describe('connection-route-order.util', () => {
     })
     expect(sorted[0]!.id).toBe('b')
   })
+
+  it('should_route_violators_last_when_reconcile_needs_stable_occupied_segments', () => {
+    const list = [
+      { id: 'a', from: 'sop-step-1', to: 'sop-step-2' },
+      { id: 'b', from: 'sop-step-2', to: 'sop-step-3' },
+    ]
+    const sorted = sortConnectionsForRouting(list, 0, {
+      priorityIds: new Set(['b']),
+      reconcilePass: 1,
+      priorityRoutesLast: true,
+    })
+    expect(sorted[sorted.length - 1]!.id).toBe('b')
+  })
 })

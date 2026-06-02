@@ -26,6 +26,20 @@ describe('flowchart-loopback-route.util', () => {
     expect(map.has('c-linear')).toBe(false)
   })
 
+  it('should_assign_a_corridor_to_explicit_task_loopbacks', () => {
+    const map = assignLoopbackCorridorIndices([
+      {
+        id: 'c-task-back',
+        from: 'sop-step-6',
+        to: 'sop-step-2',
+        sourceType: 'flowchart-process',
+        fromImplementerId: 'impl-a',
+      },
+    ])
+
+    expect(map.get('c-task-back')).toBe(0)
+  })
+
   it('should_build_horizontal_loopback_with_separate_corridor_x', () => {
     const gridLayout: FlowchartGridLayout = {
       horizontalLines: [0, 80, 160, 240, 320, 400],

@@ -13,7 +13,16 @@ import {
 } from './flowchart-route-complexity.util'
 import type { FlowchartGridLayout } from './flowchart-grid-layout.util'
 import { pathWithinPelaksanaBounds } from './flowchart-path-bounds.util'
-import { pathIntersectsRectangles, type Point, type Rect, type Side } from '../shared/orthogonalRouter'
+import { pathCrossesShapeBodies } from '../shared/shape-body-path.util'
+import {
+  pathIntersectsRectangles,
+  pathOverlapsSegments,
+  scorePath,
+  type OccupiedSegment,
+  type Point,
+  type Rect,
+  type Side,
+} from '../shared/orthogonalRouter'
 
 export interface TryDedicatedFlowchartPathInput {
   fromShape: Rect
@@ -27,12 +36,11 @@ export interface TryDedicatedFlowchartPathInput {
   pelaksana: FlowchartPelaksanaBoundsRect | null | undefined
   gridLayout: FlowchartGridLayout | null
   obstacles: Rect[]
+  occupied: OccupiedSegment[]
   destAbove: boolean
   destBelow: boolean
   sameCol: boolean
   isCrossColumn: boolean
-  isLoopBackDecision: boolean
-  isTidakLoopBack: boolean
   isLinearDown: boolean
   sourceType?: string
   targetType?: string
@@ -55,11 +63,40 @@ function isDedicatedUsable(
   path: Point[],
   routingBounds: FlowchartPelaksanaBoundsRect | null,
   obstacles: Rect[],
+  occupied: OccupiedSegment[],
+  fromShape: Rect,
+  toShape: Rect,
 ): boolean {
   if (path.length < 2) return false
   if (!pathWithinPelaksanaBounds(path, routingBounds, 0)) return false
   if (pathIntersectsRectangles(path, obstacles, 2)) return false
+  if (pathOverlapsSegments(path, occupied)) return false
+  if (pathCrossesShapeBodies(path, fromShape, toShape, obstacles, 2)) return false
   return true
+}
+
+function pickLowerScore(
+  current: DedicatedFlowchartPathResult | null,
+  candidate: DedicatedFlowchartPathResult,
+  occupied: OccupiedSegment[],
+): DedicatedFlowchartPathResult {
+  if (!current) return candidate
+  return scorePath(candidate.path, occupied) < scorePath(current.path, occupied)
+    ? candidate
+    : current
+}
+
+function mergeCorridorBounds(
+  sourceColumn: FlowchartPelaksanaBoundsRect,
+  targetColumn: FlowchartPelaksanaBoundsRect | null,
+): FlowchartPelaksanaBoundsRect {
+  if (!targetColumn) return sourceColumn
+  return {
+    left: Math.min(sourceColumn.left, targetColumn.left),
+    top: Math.min(sourceColumn.top, targetColumn.top),
+    right: Math.max(sourceColumn.right, targetColumn.right),
+    bottom: Math.max(sourceColumn.bottom, targetColumn.bottom),
+  }
 }
 
 /**
@@ -75,16 +112,17 @@ export function tryBuildDedicatedFlowchartPath(
     fromIsDiamond,
     toIsDiamond,
     sourceColumn,
+    targetColumn,
     routingBounds,
     columns,
     pelaksana,
     gridLayout,
     obstacles,
+    occupied,
     destAbove,
     destBelow,
     sameCol,
     isCrossColumn,
-    isLoopBackDecision,
     isLinearDown,
     sourceType,
     targetType,
@@ -130,10 +168,13 @@ export function tryBuildDedicatedFlowchartPath(
     return null
   }
 
-  if (isLoopBackDecision && destAbove && sourceColumn) {
-    const corridorBounds = columnBoundsToCorridor(sourceColumn)
+  if (destAbove && sourceColumn) {
+    const corridorBounds = columnBoundsToCorridor(
+      routingBounds ?? mergeCorridorBounds(sourceColumn, targetColumn),
+    )
     const toLeft = toShape.left + toShape.width / 2 < fromShape.left + fromShape.width / 2
     const loopSides: Array<'left' | 'right'> = toLeft ? ['left', 'right'] : ['right', 'left']
+    let bestLoopback: DedicatedFlowchartPathResult | null = null
     for (const side of loopSides) {
       const loopPath = buildFlowchartLoopbackPath({
         fromPos: {
@@ -166,10 +207,22 @@ export function tryBuildDedicatedFlowchartPath(
         fromRow,
         toRow,
       })
-      if (loopPath && isDedicatedUsable(loopPath, routingBounds, obstacles)) {
-        return { path: loopPath, sSide: side, eSide: side }
+      if (loopPath && isDedicatedUsable(
+        loopPath,
+        routingBounds,
+        obstacles,
+        occupied,
+        fromShape,
+        toShape,
+      )) {
+        bestLoopback = pickLowerScore(
+          bestLoopback,
+          { path: loopPath, sSide: side, eSide: side },
+          occupied,
+        )
       }
     }
+    if (bestLoopback) return bestLoopback
   }
 
   if (
@@ -185,6 +238,7 @@ export function tryBuildDedicatedFlowchartPath(
       ['bottom', 'left'],
       ['bottom', 'right'],
     ]
+    let bestCrossColumn: DedicatedFlowchartPathResult | null = null
     for (const [sSide, eSide] of sidePairs) {
       const crossPath = buildFlowchartCrossColumnPath({
         fromShape,
@@ -202,10 +256,22 @@ export function tryBuildDedicatedFlowchartPath(
         fromRow,
         toRow,
       })
-      if (crossPath && isDedicatedUsable(crossPath, routingBounds, obstacles)) {
-        return { path: crossPath, sSide, eSide }
+      if (crossPath && isDedicatedUsable(
+        crossPath,
+        routingBounds,
+        obstacles,
+        occupied,
+        fromShape,
+        toShape,
+      )) {
+        bestCrossColumn = pickLowerScore(
+          bestCrossColumn,
+          { path: crossPath, sSide, eSide },
+          occupied,
+        )
       }
     }
+    if (bestCrossColumn) return bestCrossColumn
   }
 
   if (
@@ -225,7 +291,14 @@ export function tryBuildDedicatedFlowchartPath(
       sourceJetty,
       targetJetty,
     })
-    if (trunkPath && isDedicatedUsable(trunkPath, routingBounds, obstacles)) {
+    if (trunkPath && isDedicatedUsable(
+      trunkPath,
+      routingBounds,
+      obstacles,
+      occupied,
+      fromShape,
+      toShape,
+    )) {
       return { path: trunkPath, sSide: 'bottom', eSide: 'top' }
     }
   }

@@ -41,6 +41,9 @@ export function measureFlowchartPelaksanaBounds(
   const PAD_TOP = 8
   const PAD_BOTTOM = 12
   let domReady = false
+  for (const pageIndex of Object.keys(boundsStore)) {
+    if (Number(pageIndex) >= pageCount) delete boundsStore[Number(pageIndex)]
+  }
   for (let pi = 0; pi < pageCount; pi += 1) {
     const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
@@ -82,10 +85,14 @@ export function measureFlowchartLayoutWithColumns(
   boundsStore: Record<number, FlowchartPelaksanaBoundsRect>,
   columnStore: Record<number, ImplementerColumnBoundsMap>,
   areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
+  gridStore?: Record<number, FlowchartGridLayout | null>,
 ): { sig: string; domReady: boolean } {
   const base = measureFlowchartPelaksanaBounds(pageCount, boundsStore, areaIdForPage)
   const colSig = measureFlowchartImplementerColumnBounds(pageCount, columnStore, areaIdForPage)
-  return { sig: `${base.sig}::${colSig}`, domReady: base.domReady }
+  const gridSig = gridStore
+    ? measureFlowchartGridLayouts(pageCount, gridStore, areaIdForPage)
+    : ''
+  return { sig: `${base.sig}::${colSig}::${gridSig}`, domReady: base.domReady }
 }
 
 /** Ukur garis grid pelaksana per halaman (untuk routing menjauhi border tabel). */
@@ -93,7 +100,10 @@ export function measureFlowchartGridLayouts(
   pageCount: number,
   gridStore: Record<number, FlowchartGridLayout | null>,
   areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
-): void {
+): string {
+  for (const pageIndex of Object.keys(gridStore)) {
+    if (Number(pageIndex) >= pageCount) delete gridStore[Number(pageIndex)]
+  }
   for (let pi = 0; pi < pageCount; pi += 1) {
     const container = document.getElementById(areaIdForPage(pi))
     if (!container) {
@@ -102,6 +112,13 @@ export function measureFlowchartGridLayouts(
     }
     gridStore[pi] = measureFlowchartGridLayout(container)
   }
+  return Object.entries(gridStore)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([pageIndex, layout]) => {
+      if (!layout) return `${pageIndex}:none`
+      return `${pageIndex}:${layout.horizontalLines.join(',')}|${layout.verticalLines.join(',')}|${layout.rowGutters.join(',')}`
+    })
+    .join(';')
 }
 
 export function applyFlowchartPelaksanaFallbackBounds(

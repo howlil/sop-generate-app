@@ -59,6 +59,9 @@ export interface FlowchartConnection {
   label?: string | null
   sourceType?: string
   targetType?: string
+  /** Swimlane column metadata used by the deterministic flowchart channel router. */
+  fromImplementerId?: string
+  toImplementerId?: string
 }
 
 /** Label position for arrow label or BPMN decision text */

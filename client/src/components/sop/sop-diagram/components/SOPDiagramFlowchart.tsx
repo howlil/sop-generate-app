@@ -20,6 +20,10 @@ import { type OccupiedSegment } from '../core/route/shared/orthogonalRouter'
 import { FlowchartOpcRow } from './flowchart-opc-row'
 import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 import type { FlowchartAreaIdResolver } from '../core/route/flowchart/flowchart-column-bounds.util'
+import type { FlowchartGridLayout } from '../core/route/flowchart/flowchart-grid-layout.util'
+import { assignColumnTrunkSlots } from '../core/route/flowchart/flowchart-column-trunk.util'
+import { assignCrossColumnGutterSlots } from '../core/route/flowchart/flowchart-cross-column-route.util'
+import { assignLoopbackCorridorIndices } from '../core/route/flowchart/flowchart-loopback-route.util'
 import {
   measureFlowchartLayoutWithColumns,
 } from './sop-diagram-flowchart-measure.util'
@@ -334,6 +338,8 @@ export function SOPDiagramFlowchart({
             label: customYes ?? 'Ya',
             sourceType: 'flowchart-decision',
             targetType: stepYes ? stepShapeType(stepYes) : 'flowchart-process',
+            fromImplementerId: step.id_implementer,
+            toImplementerId: stepYes?.id_implementer,
           })
         }
         if (toNo != null) {
@@ -345,6 +351,8 @@ export function SOPDiagramFlowchart({
             label: customNo ?? 'Tidak',
             sourceType: 'flowchart-decision',
             targetType: stepNo ? stepShapeType(stepNo) : 'flowchart-process',
+            fromImplementerId: step.id_implementer,
+            toImplementerId: stepNo?.id_implementer,
           })
         }
         continue
@@ -361,6 +369,8 @@ export function SOPDiagramFlowchart({
           to: stepShapeId(explicitNextSeq),
           sourceType: stepShapeType(step),
           targetType: target ? stepShapeType(target) : 'flowchart-process',
+          fromImplementerId: step.id_implementer,
+          toImplementerId: target?.id_implementer,
         })
         continue
       }
@@ -372,12 +382,15 @@ export function SOPDiagramFlowchart({
           to: stepShapeId(toStep.seq_number),
           sourceType: stepShapeType(step),
           targetType: stepShapeType(toStep),
+          fromImplementerId: step.id_implementer,
+          toImplementerId: toStep.id_implementer,
         })
       }
     }
     return sortConnectionsForRouting(list, pathLayoutSeed, {
       priorityIds: routingPriorityIdsRef.current,
       reconcilePass: routingReconcilePass,
+      priorityRoutesLast: true,
     })
   }, [sortedSteps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed, routingReconcilePass, stepShapeId])
   /* ── Scan: reserved sides per target (all Tidak to same target get left/right) ── */
@@ -452,6 +465,7 @@ export function SOPDiagramFlowchart({
 
   const pelaksanaBoundsRef = useRef<Record<number, { left: number; top: number; right: number; bottom: number }>>({})
   const columnBoundsRef = useRef<Record<number, ImplementerColumnBoundsMap>>({})
+  const gridLayoutRef = useRef<Record<number, FlowchartGridLayout | null>>({})
 
   const [arrowsReady, setArrowsReady] = useState(false)
   const [layoutMeasureVersion, setLayoutMeasureVersion] = useState(0)
@@ -471,6 +485,7 @@ export function SOPDiagramFlowchart({
       pelaksanaBoundsRef.current,
       columnBoundsRef.current,
       areaIdForPage,
+      gridLayoutRef.current,
     )
     if (!sig) return false
     return commitPelaksanaMeasure(sig)
@@ -631,6 +646,7 @@ export function SOPDiagramFlowchart({
             onSelectConnection={onSelectConnectionProp}
             pelaksanaBounds={pelaksanaBoundsRef.current[pageIndex] ?? null}
             columnBounds={columnBoundsRef.current[pageIndex] ?? null}
+            gridLayout={gridLayoutRef.current[pageIndex] ?? null}
             isLastPage={pageIndex === allPages.length - 1}
             reservedSidesRef={reservedSidesRef}
             rerouteVersion={arrowRerouteVersion}
@@ -675,6 +691,7 @@ interface FlowchartPageProps {
   onResetSelectedPath?: () => void
   pelaksanaBounds: { left: number; top: number; right: number; bottom: number } | null
   columnBounds: ImplementerColumnBoundsMap | null
+  gridLayout: FlowchartGridLayout | null
   isLastPage: boolean
   reservedSidesRef: MutableRefObject<Map<string, Set<string>>>
   rerouteVersion?: number
@@ -709,6 +726,7 @@ function FlowchartPage({
   onSelectConnection,
   pelaksanaBounds,
   columnBounds,
+  gridLayout,
   isLastPage,
   reservedSidesRef,
   rerouteVersion = 0,
@@ -716,6 +734,18 @@ function FlowchartPage({
   onPageCrossings,
 }: FlowchartPageProps) {
   const pageRoutedSegmentsRef = useRef<Map<string, OccupiedSegment[]>>(new Map())
+  const loopbackCorridorIndices = useMemo(
+    () => assignLoopbackCorridorIndices(connections),
+    [connections],
+  )
+  const crossColumnGutterSlots = useMemo(
+    () => assignCrossColumnGutterSlots(connections),
+    [connections],
+  )
+  const columnTrunkSlots = useMemo(
+    () => assignColumnTrunkSlots(connections),
+    [connections],
+  )
 
   useLayoutEffect(() => {
     pageRoutedSegmentsRef.current = new Map()
@@ -960,6 +990,11 @@ function FlowchartPage({
                 isSelected={selectedConnectionId === conn.id}
                 onSelect={(id) => onSelectConnection?.(id)}
                 constraintRect={pelaksanaBounds}
+                columnBounds={columnBounds}
+                gridLayout={gridLayout}
+                loopbackCorridorIndex={loopbackCorridorIndices.get(conn.id) ?? 0}
+                crossColumnGutterSlot={crossColumnGutterSlots.get(conn.id) ?? 0}
+                columnTrunkSlot={columnTrunkSlots.get(conn.id) ?? 0}
                 routedSegmentsRef={pageRoutedSegmentsRef}
                 reservedSidesRef={reservedSidesRef}
                 rerouteVersion={rerouteVersion}

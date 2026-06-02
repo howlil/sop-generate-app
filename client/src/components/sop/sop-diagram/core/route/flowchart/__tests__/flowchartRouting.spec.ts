@@ -114,7 +114,7 @@ describe('flowchart route candidate selection', () => {
     })
   })
 
-  it('prefers bottom-to-top for Tidak same-column below non-decision target', () => {
+  it('prefers a lateral exit for Tidak same-column below non-decision target', () => {
     const candidates = selectSidePairs(
       conn({ sourceType: 'flowchart-decision', label: 'Tidak', targetType: 'flowchart-process' }),
       rect(100, 100, 80, 80),
@@ -126,10 +126,14 @@ describe('flowchart route candidate selection', () => {
     )
 
     expect(candidates[0]).toMatchObject({
+      sSide: 'right',
+      eSide: 'top',
+      preferSimple: false,
+    })
+    expect(candidates).toContainEqual(expect.objectContaining({
       sSide: 'bottom',
       eSide: 'top',
-      preferSimple: true,
-    })
+    }))
   })
 
   it('prefers bottom-to-top for Ya branch below with south/north constraints', () => {
@@ -169,6 +173,25 @@ describe('flowchart route candidate selection', () => {
       preferSimple: false,
     })
     expect(candidates[0]?.jettySize).toBeGreaterThan(16)
+  })
+
+  it('keeps the incoming top port free when a Ya branch loops back upward', () => {
+    const candidates = selectSidePairs(
+      conn({ sourceType: 'flowchart-decision', label: 'Ya' }),
+      rect(220, 220, 80, 80),
+      rect(100, 40, 80, 80),
+      {},
+      undefined,
+      'b',
+      'c1',
+    )
+
+    expect(candidates[0]).toMatchObject({
+      sSide: 'left',
+      eSide: 'left',
+      preferSimple: false,
+    })
+    expect(candidates[0]!.sSide).not.toBe('top')
   })
 
   it('prefers right-right loop-back when Tidak target is above and to the right', () => {
@@ -303,12 +326,13 @@ describe('routeOrthogonal', () => {
   })
 
   it('falls back to multi-bend routing when the direct simple elbow is blocked', () => {
+    const obstacle = { left: 145, top: 60, width: 40, height: 80 }
     const path = routeOrthogonal({
       pointA: { shape: { left: 40, top: 80, width: 60, height: 40 }, side: 'right', distance: 0.5 },
       pointB: { shape: { left: 240, top: 80, width: 60, height: 40 }, side: 'left', distance: 0.5 },
       jettySize: 16,
       preferSimple: true,
-      obstacles: [{ left: 145, top: 60, width: 40, height: 80 }],
+      obstacles: [obstacle],
       globalBounds: { left: 0, top: 0, width: 360, height: 220 },
     })
 
@@ -316,6 +340,20 @@ describe('routeOrthogonal', () => {
     expect(path[0]).toEqual({ x: 100, y: 100 })
     expect(path[path.length - 1]).toEqual({ x: 240, y: 100 })
     expectOrthogonal(path)
+    expect(pathIntersectsRectangles(path, [obstacle], 2)).toBe(false)
+  })
+
+  it('returns_no_path_in_l_shape_only_mode_when_the_direct_elbow_is_blocked', () => {
+    const path = routeOrthogonal({
+      pointA: { shape: { left: 40, top: 80, width: 60, height: 40 }, side: 'right', distance: 0.5 },
+      pointB: { shape: { left: 240, top: 80, width: 60, height: 40 }, side: 'left', distance: 0.5 },
+      jettySize: 16,
+      lShapeOnly: true,
+      obstacles: [{ left: 145, top: 60, width: 40, height: 80 }],
+      globalBounds: { left: 0, top: 0, width: 360, height: 220 },
+    })
+
+    expect(path).toEqual([])
   })
 
   it('keeps a Tidak decision loop-back orthogonal', () => {

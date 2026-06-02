@@ -67,6 +67,8 @@ export interface RouteOptions {
   sourceJettySize?: number
   targetJettySize?: number
   preferSimple?: boolean
+  /** Flowchart planning pass: return only a safe direct L path, without detours. */
+  lShapeOnly?: boolean
 }
 
 /* ── Kept for consumers (CellInfo/CorridorGraph stubs — no-op) ── */
@@ -380,6 +382,7 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     jettySize,
     sourceJettySize,
     targetJettySize,
+    lShapeOnly = false,
   } = opts
 
   const sourceJetty = sourceJettySize ?? jettySize ?? margin
@@ -400,11 +403,12 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     width: pointB.shape.width + 4, height: pointB.shape.height + 4,
   }
 
-  // Collect all obstacles
-  const allObs = [infFromShape, infToShape, ...extras.map((o) => ({
+  // Source/target perlu aturan khusus: segmen pertama boleh keluar source dan
+  // segmen terakhir boleh masuk target. Shape lain tetap obstacle penuh.
+  const allObs = extras.map((o) => ({
     left: o.left - margin, top: o.top - margin,
     width: o.width + margin * 2, height: o.height + margin * 2,
-  }))]
+  }))
 
   // Compute bounds
   let bounds: Rect = {
@@ -418,18 +422,18 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     const gTop = gb.top
     const gRight = gb.left + gb.width
     const gBottom = gb.top + gb.height
-    const intersectLeft = Math.max(bounds.left, gLeft)
-    const intersectTop = Math.max(bounds.top, gTop)
-    const intersectRight = Math.min(bounds.left + bounds.width, gRight)
-    const intersectBottom = Math.min(bounds.top + bounds.height, gBottom)
-    const intersectWidth = intersectRight - intersectLeft
-    const intersectHeight = intersectBottom - intersectTop
-    if (intersectWidth > 0 && intersectHeight > 0) {
+    const hasUsableGlobalBounds =
+      gRight - gLeft > 0 &&
+      gBottom - gTop > 0
+    if (hasUsableGlobalBounds) {
+      // Direct L/Z tetap lokal karena dicoba lebih dulu. Detour membutuhkan
+      // seluruh area pelaksana agar dapat mengitari obstacle yang menutup
+      // bounding box source-target.
       bounds = {
-        left: intersectLeft,
-        top: intersectTop,
-        width: intersectWidth,
-        height: intersectHeight,
+        left: gLeft,
+        top: gTop,
+        width: gRight - gLeft,
+        height: gBottom - gTop,
       }
     }
   }
@@ -441,16 +445,33 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     bounds = { ...bounds, height: MIN_ROUTER_BOUNDS_SIZE }
   }
 
+  const crossesHardObstacle = (path: Point[]): boolean => {
+    if (path.length < 2) return true
+    if (pathIntersectsRectangles(path, allObs, 2)) return true
+    const lastSegment = path.length - 2
+    for (let i = 0; i < path.length - 1; i += 1) {
+      const a = path[i]!
+      const b = path[i + 1]!
+      if (i !== 0 && !edgeClear(a.x, a.y, b.x, b.y, [infFromShape])) return true
+      if (i !== lastSegment && !edgeClear(a.x, a.y, b.x, b.y, [infToShape])) return true
+    }
+    return false
+  }
+
   const isUsable = (path: Point[]): boolean => {
     if (path.length < 2) return false
     if (!isOrthogonalPath(path)) return false
     if (pathOverlapsSegments(path, occupied, { includeCross: false })) return false
-    if (pathIntersectsRectangles(path, allObs, 2)) return false
+    if (crossesHardObstacle(path)) return false
     return true
   }
 
   const normalize = (path: Point[]): Point[] =>
-    simplifyOrthogonalPath(normalizeOrthogonalPath(path, { bounds }))
+    simplifyOrthogonalPath(
+      normalizeOrthogonalPath(path, { bounds }),
+      undefined,
+      crossesHardObstacle,
+    )
 
   const tryPath = (raw: Point[]): Point[] | null => {
     const p = normalize(raw)
@@ -465,36 +486,43 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
   const isVertA = isVert(pointA.side)
   const isVertB = isVert(pointB.side)
 
-  // ── Strategy 1: Direct connection (same axis alignment) ─────
+  const pickLowestScore = (rawCandidates: Point[][]): Point[] | null => {
+    let bestPath: Point[] | null = null
+    let bestScore = Infinity
+    for (const raw of rawCandidates) {
+      const path = tryPath(raw)
+      if (!path) continue
+      const score = scorePath(path, occupied)
+      if (score < bestScore) {
+        bestPath = path
+        bestScore = score
+      }
+    }
+    return bestPath
+  }
+
+  // ── Strategy 1: direct L-shape, across every side combination ─
+  const directL = pickLowestScore([
+    [oA, extA, { x: extA.x, y: extB.y }, extB, oB],
+    [oA, extA, { x: extB.x, y: extA.y }, extB, oB],
+  ])
+  if (directL) return directL
+  if (lShapeOnly) return []
+
+  // ── Strategy 2: midpoint Z-shape ─────────────────────────────
   if (isVertA && isVertB) {
-    // Both vertical exits: Z through midY
     const midY = Math.round((extA.y + extB.y) / 2)
-    // L-shape: go from extA down/up to extB.y then across
-    const lShape1 = tryPath([oA, extA, { x: extA.x, y: extB.y }, extB, oB])
-    if (lShape1) return lShape1
-    const lShape2 = tryPath([oA, extA, { x: extB.x, y: extA.y }, extB, oB])
-    if (lShape2) return lShape2
-    // Z-shape through midpoint
     const zShape = tryPath([oA, extA, { x: extA.x, y: midY }, { x: extB.x, y: midY }, extB, oB])
     if (zShape) return zShape
   }
 
   if (!isVertA && !isVertB) {
-    // Both horizontal exits: Z through midX
     const midX = Math.round((extA.x + extB.x) / 2)
-    const lShape1 = tryPath([oA, extA, { x: extB.x, y: extA.y }, extB, oB])
-    if (lShape1) return lShape1
-    const lShape2 = tryPath([oA, extA, { x: extA.x, y: extB.y }, extB, oB])
-    if (lShape2) return lShape2
     const zShape = tryPath([oA, extA, { x: midX, y: extA.y }, { x: midX, y: extB.y }, extB, oB])
     if (zShape) return zShape
   }
 
   if (isVertA && !isVertB) {
-    // Vertical exit → horizontal entry: L-shape
-    const lShape = tryPath([oA, extA, { x: extB.x, y: extA.y }, extB, oB])
-    if (lShape) return lShape
-    // Alternate via midpoint
     const midX = Math.round((extA.x + extB.x) / 2)
     const midY = Math.round((extA.y + extB.y) / 2)
     const z1 = tryPath([oA, extA, { x: extA.x, y: midY }, { x: extB.x, y: midY }, extB, oB])
@@ -504,9 +532,6 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
   }
 
   if (!isVertA && isVertB) {
-    // Horizontal exit → vertical entry: L-shape
-    const lShape = tryPath([oA, extA, { x: extA.x, y: extB.y }, extB, oB])
-    if (lShape) return lShape
     const midX = Math.round((extA.x + extB.x) / 2)
     const midY = Math.round((extA.y + extB.y) / 2)
     const z1 = tryPath([oA, extA, { x: midX, y: extA.y }, { x: midX, y: extB.y }, extB, oB])
@@ -515,7 +540,7 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     if (z2) return z2
   }
 
-  // ── Strategy 2: U-shape (loop-back) ─────────────────────────
+  // ── Strategy 3: U-shape (loop-back) ─────────────────────────
   const uLeft = bounds.left + 4
   const uRight = bounds.left + bounds.width - 4
   const uTop = bounds.top + 4
@@ -534,7 +559,51 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     }
   }
 
-  // ── Strategy 3: Generic fallback ─────────────────────────────
+  // ── Strategy 4: obstacle-adaptive rail detour ────────────────
+  const RAIL_CLEARANCE = 4
+  const boundsRight = bounds.left + bounds.width
+  const boundsBottom = bounds.top + bounds.height
+  const withinX = (x: number) => x > bounds.left + 2 && x < boundsRight - 2
+  const withinY = (y: number) => y > bounds.top + 2 && y < boundsBottom - 2
+  const unique = (values: number[]) => [...new Set(values.map((value) => Math.round(value)))]
+  const xRails = unique([
+    uLeft,
+    uRight,
+    ...allObs.flatMap((obstacle) => [
+      obstacle.left - RAIL_CLEARANCE,
+      obstacle.left + obstacle.width + RAIL_CLEARANCE,
+    ]),
+  ]).filter(withinX)
+  const yRails = unique([
+    uTop,
+    uBot,
+    ...allObs.flatMap((obstacle) => [
+      obstacle.top - RAIL_CLEARANCE,
+      obstacle.top + obstacle.height + RAIL_CLEARANCE,
+    ]),
+  ]).filter(withinY)
+  const railCandidates: Point[][] = [
+    ...xRails.map((railX) => [
+      oA,
+      extA,
+      { x: railX, y: extA.y },
+      { x: railX, y: extB.y },
+      extB,
+      oB,
+    ]),
+    ...yRails.map((railY) => [
+      oA,
+      extA,
+      { x: extA.x, y: railY },
+      { x: extB.x, y: railY },
+      extB,
+      oB,
+    ]),
+  ]
+  const railPath = pickLowestScore(railCandidates)
+  if (railPath) return railPath
+
+  // ── Strategy 5: Generic fallback ─────────────────────────────
   // Build 4 generic candidates and pick best score
   const candidates: Point[][] = [
     [oA, extA, { x: extA.x, y: extB.y }, extB, oB],
@@ -543,14 +612,7 @@ export function routeOrthogonal(opts: RouteOptions): Point[] {
     [oA, extA, { x: Math.round((extA.x + extB.x) / 2), y: extA.y }, { x: Math.round((extA.x + extB.x) / 2), y: extB.y }, extB, oB],
   ]
 
-  let bestPath: Point[] | null = null
-  let bestScore = Infinity
-  for (const raw of candidates) {
-    const p = tryPath(raw)
-    if (!p) continue
-    const s = scorePath(p, occupied)
-    if (s < bestScore) { bestScore = s; bestPath = p }
-  }
+  const bestPath = pickLowestScore(candidates)
   if (bestPath) return bestPath
 
   // ── Emergency: straight path ignoring obstacles ───────────────

@@ -118,20 +118,69 @@ export class EvaluasiNilaiService {
           }
         }
         const logCreatedAt = new Date();
-        await tx.logNilaiEvaluasi.create({
-          data: {
+        const idleWindowMs = 10 * 60 * 1000;
+        const cutoff = new Date(logCreatedAt.getTime() - idleWindowMs);
+
+        const lastLog = await tx.logNilaiEvaluasi.findFirst({
+          where: {
             pengajuanEvaluasiId,
             detailSopId,
             penggunaId: evaluatorId,
-            createdAt: logCreatedAt,
-            hasilSebelum: sebelumnya.hasil,
-            hasilSesudah: hasil,
-            catatanSebelum: sebelumnya.catatan ?? null,
-            catatanSesudah: catatanNorm,
-            statusTindakLanjutSebelum,
-            statusTindakLanjutSesudah,
+            createdAt: { gt: cutoff },
           },
+          orderBy: { createdAt: 'desc' },
         });
+
+        if (lastLog) {
+          if (
+            lastLog.hasilSebelum === hasil &&
+            (lastLog.catatanSebelum ?? null) === catatanNorm
+          ) {
+            // Reverted back to the original state within the idle window. Delete the log to avoid spam.
+            await tx.logNilaiEvaluasi.delete({
+              where: {
+                pengajuanEvaluasiId_detailSopId_penggunaId_createdAt: {
+                  pengajuanEvaluasiId,
+                  detailSopId,
+                  penggunaId: evaluatorId,
+                  createdAt: lastLog.createdAt,
+                },
+              },
+            });
+          } else {
+            // Update the existing session log.
+            await tx.logNilaiEvaluasi.update({
+              where: {
+                pengajuanEvaluasiId_detailSopId_penggunaId_createdAt: {
+                  pengajuanEvaluasiId,
+                  detailSopId,
+                  penggunaId: evaluatorId,
+                  createdAt: lastLog.createdAt,
+                },
+              },
+              data: {
+                hasilSesudah: hasil,
+                catatanSesudah: catatanNorm,
+                statusTindakLanjutSesudah,
+              },
+            });
+          }
+        } else {
+          await tx.logNilaiEvaluasi.create({
+            data: {
+              pengajuanEvaluasiId,
+              detailSopId,
+              penggunaId: evaluatorId,
+              createdAt: logCreatedAt,
+              hasilSebelum: sebelumnya.hasil,
+              hasilSesudah: hasil,
+              catatanSebelum: sebelumnya.catatan ?? null,
+              catatanSesudah: catatanNorm,
+              statusTindakLanjutSebelum,
+              statusTindakLanjutSesudah,
+            },
+          });
+        }
         const sesudah = await tx.nilaiEvaluasi.update({
           where: {
             pengajuanEvaluasiId_detailSopId: {

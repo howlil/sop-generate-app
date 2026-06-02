@@ -25,6 +25,8 @@ describe('splitCrossPageConnections', () => {
           id: 'conn-1-to-2',
           from: 'flowchart-export-sop-step-1',
           to: 'flowchart-export-sop-step-2',
+          fromImplementerId: 'impl-a',
+          toImplementerId: 'impl-b',
         },
       ],
       steps,
@@ -36,6 +38,8 @@ describe('splitCrossPageConnections', () => {
 
     expect(result.pages[0]?.[0]?.to).toBe('flowchart-export-opc-out-step-1-to-step-2')
     expect(result.pages[1]?.[0]?.from).toBe('flowchart-export-opc-in-step-1-to-step-2')
+    expect(result.pages[0]?.[0]?.toImplementerId).toBe('impl-a')
+    expect(result.pages[1]?.[0]?.fromImplementerId).toBe('impl-b')
     expect(getOpcElementId(result.opcPairs[0]!, 'out')).toBe(
       'flowchart-export-opc-out-step-1-to-step-2',
     )

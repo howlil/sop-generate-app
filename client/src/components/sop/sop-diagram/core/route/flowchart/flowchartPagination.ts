@@ -114,6 +114,7 @@ export function splitCrossPageConnections(
       id: `${conn.id}__out`,
       to: opcOutId,
       targetType: 'flowchart-opc',
+      toImplementerId: fromStep?.id_implementer ?? conn.fromImplementerId,
     })
 
     pages[toPage].push({
@@ -121,6 +122,7 @@ export function splitCrossPageConnections(
       id: `${conn.id}__in`,
       from: opcInId,
       sourceType: 'flowchart-opc',
+      fromImplementerId: toStep?.id_implementer ?? conn.toImplementerId,
     })
 
     opcPairs.push({
