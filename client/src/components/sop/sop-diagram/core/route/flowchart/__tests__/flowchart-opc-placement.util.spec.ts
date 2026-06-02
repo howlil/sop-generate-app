@@ -4,6 +4,7 @@ import {
   computeColumnCenterX,
   computeOpcStackTopPx,
   computePelaksanaColumnCenterPercent,
+  layoutOpcEndpointPlacements,
   layoutOpcPlacements,
   OPC_CONNECTOR_WIDTH_PX,
   resolveOpcImplementerId,
@@ -69,5 +70,32 @@ describe('flowchart-opc-placement', () => {
     expect(placements[0]!.centerPercent).toBe(placements[1]!.centerPercent)
     expect(placements[1]!.stackIndex).toBe(1)
     expect(computeOpcStackTopPx(1)).toBeGreaterThan(0)
+  })
+
+  it('should_keep_mixed_endpoint_variants_in_one_visual_row', () => {
+    const forwardIn = opc({
+      fromSeq: 1,
+      toSeq: 8,
+      opcInId: 'forward-in',
+      toImplId: 'impl-b',
+    })
+    const loopbackOut = opc({
+      fromSeq: 9,
+      toSeq: 2,
+      opcOutId: 'loopback-out',
+      fromImplId: 'impl-a',
+    })
+    const placements = layoutOpcEndpointPlacements(
+      [
+        { opc: forwardIn, variant: 'in' },
+        { opc: loopbackOut, variant: 'out' },
+      ],
+      { implementers, tableColumns },
+    )
+
+    expect(placements.map((placement) => placement.elementId)).toEqual([
+      'loopback-out',
+      'forward-in',
+    ])
   })
 })

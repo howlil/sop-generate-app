@@ -12,6 +12,8 @@ function sopDiagramAreaId(pageIndex: number): string {
   return `main-sop-area-${pageIndex}`
 }
 
+export type FlowchartAreaIdResolver = (pageIndex: number) => string
+
 const COL_PAD_LEFT = 6
 const COL_PAD_RIGHT = 6
 const COL_PAD_TOP = 4
@@ -35,9 +37,10 @@ function buildColumnBoundsSig(
 export function measureFlowchartImplementerColumnBounds(
   pageCount: number,
   store: Record<number, ImplementerColumnBoundsMap>,
+  areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
 ): string {
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopDiagramAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     const cols: ImplementerColumnBoundsMap = {}
     if (!container) {
       store[pi] = cols

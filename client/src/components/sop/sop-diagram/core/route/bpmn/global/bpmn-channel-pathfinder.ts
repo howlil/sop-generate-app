@@ -9,6 +9,7 @@ import {
   type Rect,
 } from '../../shared/orthogonalRouter'
 import type { BpmnLaneLayout, Side } from '../bpmnRouter'
+import { bpmnLaneBoundaryTrackYs } from '../bpmn-lane-corridor.util'
 
 const CORRIDOR_CLEARANCE = 8
 const JETTY_SIZE = 24
@@ -160,9 +161,9 @@ function buildCoordinates(input: {
     addCoordinate(xs, (left + right) / 2, minX, maxX)
   }
   for (let index = 0; index < layout.lanes.length - 1; index += 1) {
-    const top = layout.lanes[index]!.top + layout.lanes[index]!.height
-    const bottom = layout.lanes[index + 1]!.top
-    addCoordinate(ys, (top + bottom) / 2, minY, maxY)
+    for (const y of bpmnLaneBoundaryTrackYs(layout.lanes[index]!, layout.lanes[index + 1]!)) {
+      addCoordinate(ys, y, minY, maxY)
+    }
   }
   if (layout.lanes.length > 0) {
     const top = Math.min(...layout.lanes.map((lane) => lane.top))

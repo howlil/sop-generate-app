@@ -4,6 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useCallback,
+  useId,
   useRef,
   startTransition,
 } from "react";
@@ -43,6 +44,7 @@ import {
   BPMN_TASK_MIN_WIDTH,
 } from "../layout/bpmnDiagramMetrics";
 import { computeBpmnLayout } from "../layout/bpmn-layout.engine";
+import { createBpmnDomIds } from "./bpmn-dom-id.util";
 
 const LAYOUT_ORIGIN_EPS = 2;
 const RESIZE_OBSERVER_DEBOUNCE_MS = 120;
@@ -163,7 +165,12 @@ export function BpmnPage({
   config,
   events,
 }: BpmnPageProps) {
-  const containerId = `bpmn-container-${pageIndex}`;
+  const reactDiagramId = useId();
+  const domIds = useMemo(
+    () => createBpmnDomIds(reactDiagramId, pageIndex),
+    [reactDiagramId, pageIndex],
+  );
+  const containerId = domIds.containerId;
   const pathLayoutSeed = config?.pathLayoutSeed ?? 0;
   const arrowConfig = config?.arrowConfig;
   const labelConfig = config?.labelConfig;
@@ -431,19 +438,27 @@ export function BpmnPage({
     setLayoutMeasureVersion(0);
     setArrowsReady(false);
     let cancelled = false;
+    let settled = false;
+    const settle = () => {
+      if (cancelled || settled) return;
+      settled = true;
+      measureBpmnContainerSize();
+      setArrowsReady(true);
+    };
     const run = () => {
       requestAnimationFrame(() => {
         if (cancelled) return;
         requestAnimationFrame(() => {
-          if (cancelled) return;
-          measureBpmnContainerSize();
-          setArrowsReady(true);
+          settle();
         });
       });
     };
     run();
+    // Fallback via setTimeout — rAF tidak terjamin di background tab
+    const fallbackTimer = window.setTimeout(settle, 300);
     return () => {
       cancelled = true;
+      window.clearTimeout(fallbackTimer);
     };
   }, [processedSteps.length, laneLayoutGeomSig, measureBpmnContainerSize]);
 
@@ -483,8 +498,7 @@ export function BpmnPage({
     const firstStep = laneLayouts[0]?.steps[0];
     if (!container || !firstStep) return { x: 0, y: 0 };
     const el =
-      container.querySelector<SVGElement>(`#${CSS.escape(firstStep.id)}`) ??
-      document.getElementById(firstStep.id);
+      container.querySelector<SVGElement>(`#${CSS.escape(domIds.shapeId(firstStep.id))}`);
     if (!el) return { x: 0, y: 0 };
     const shapeRect = el.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
@@ -495,7 +509,7 @@ export function BpmnPage({
       x: Math.round((shapeRect.left - containerRect.left) / scale.x - layoutLeft),
       y: Math.round((shapeRect.top - containerRect.top) / scale.y - layoutTop),
     };
-  }, [containerId, laneLayouts]);
+  }, [containerId, domIds, laneLayouts]);
 
   const routerLaneLayout = useMemo((): BpmnLaneLayout | null => {
     if (!bpmnLaneLayoutForRouter) return null;
@@ -516,8 +530,7 @@ export function BpmnPage({
     const OBSTACLE_MARGIN = 10;
     const rects = obstacles.map((o) => {
       const el =
-        container.querySelector<SVGElement>(`#${CSS.escape(o.id)}`) ??
-        document.getElementById(o.id);
+        container.querySelector<SVGElement>(`#${CSS.escape(domIds.shapeId(o.id))}`);
       if (!el) return null;
       const r = el.getBoundingClientRect();
       const c = container.getBoundingClientRect();
@@ -552,6 +565,7 @@ export function BpmnPage({
     arrowsReady,
     measureLayoutContentOrigin,
     containerId,
+    domIds,
   ]);
 
   const layoutMeasured = layoutMeasureVersion > 0;
@@ -731,7 +745,7 @@ export function BpmnPage({
                               <g key={step.id}>
                                 {step.type === "terminator" && (
                                   <Event
-                                    id={step.id}
+                                    id={domIds.shapeId(step.id)}
                                     x={step.x}
                                     y={step.y}
                                     text={step.seq === 0 ? "Mulai" : "Selesai"}
@@ -740,7 +754,7 @@ export function BpmnPage({
                                 )}
                                 {step.type === "task" && (
                                   <Activity
-                                    id={step.id}
+                                    id={domIds.shapeId(step.id)}
                                     x={step.x}
                                     y={step.y}
                                     width={step.width}
@@ -749,7 +763,7 @@ export function BpmnPage({
                                   />
                                 )}
                                 {step.type === "decision" && (
-                                  <Gateway id={step.id} x={step.x} y={step.y} />
+                                  <Gateway id={domIds.shapeId(step.id)} x={step.x} y={step.y} />
                                 )}
                               </g>
                             ))}
@@ -775,7 +789,7 @@ export function BpmnPage({
                             <g key={step.id}>
                               {step.type === "terminator" && (
                                 <Event
-                                  id={step.id}
+                                    id={domIds.shapeId(step.id)}
                                   x={step.x}
                                   y={step.y}
                                   text={step.seq === 0 ? "Mulai" : "Selesai"}
@@ -784,7 +798,7 @@ export function BpmnPage({
                               )}
                               {step.type === "task" && (
                                 <Activity
-                                  id={step.id}
+                                    id={domIds.shapeId(step.id)}
                                   x={step.x}
                                   y={step.y}
                                   width={step.width}
@@ -793,7 +807,7 @@ export function BpmnPage({
                                 />
                               )}
                               {step.type === "decision" && (
-                                <Gateway id={step.id} x={step.x} y={step.y} />
+                                  <Gateway id={domIds.shapeId(step.id)} x={step.x} y={step.y} />
                               )}
                             </g>
                           ))}
@@ -824,7 +838,7 @@ export function BpmnPage({
                     key={connectorKey}
                     connection={meta}
                     idcontainer={containerId}
-                    idarrow={`bpmn-${idx}-${conn.id}`}
+                    idarrow={`${domIds.instancePrefix}arrow-${idx}-${conn.id}`}
                     obstacles={obstacles}
                     usedSides={usedSides}
                     laneLayout={routerLaneLayout}
@@ -841,6 +855,7 @@ export function BpmnPage({
                     rerouteVersion={arrowRerouteVersion}
                     obstacleRectsRef={obstacleRectsRef}
                     plannedPath={globalRoutingPlan?.pathsByConnection[conn.id]}
+                    resolveElementId={domIds.shapeId}
                   />
                 );
               })}

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  finalizeManualOrthogonalPath,
   isPathBlockingShapes,
   pathCrossesShapeBodies,
   rebuildPathForAnchorSides,
@@ -119,5 +120,50 @@ describe('path-shape-guard.util', () => {
     ).toBe(false)
     expect(rebuilt![0]).toEqual({ x: 20, y: 40 })
     expect(rebuilt![rebuilt!.length - 1]).toEqual({ x: 220, y: 200 })
+  })
+
+  it('should_keep_manual_path_with_collision_when_policy_is_warn', () => {
+    const manualPath = [
+      { x: 40, y: 60 },
+      { x: 110, y: 60 },
+      { x: 110, y: 200 },
+      { x: 220, y: 200 },
+    ]
+    const finalized = finalizeManualOrthogonalPath(
+      manualPath,
+      {
+        collisionPolicy: 'warn',
+        check: {
+          kind: 'flowchart',
+          path: manualPath,
+          obstacles: [obstacle],
+          fromShape,
+          toShape,
+        },
+        repair: {
+          kind: 'flowchart',
+          startPoint: manualPath[0]!,
+          endPoint: manualPath[manualPath.length - 1]!,
+          sSide: 'bottom',
+          eSide: 'top',
+          fromShape,
+          toShape,
+          obstacles: [obstacle],
+          flowchart: {
+            globalBounds: { left: 0, top: 0, width: 300, height: 300 },
+          },
+        },
+      },
+    )
+    expect(finalized).toEqual(manualPath)
+    expect(
+      isPathBlockingShapes({
+        kind: 'flowchart',
+        path: finalized,
+        obstacles: [obstacle],
+        fromShape,
+        toShape,
+      }),
+    ).toBe(true)
   })
 })

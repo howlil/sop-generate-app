@@ -20,7 +20,11 @@ import {
   type BpmnRouteCandidate,
   type Side,
 } from '../bpmnRouter'
-import { buildFeedbackCorridorCandidates } from './bpmn-feedback-corridor'
+import {
+  buildFeedbackCorridorCandidates,
+  buildInternalFeedbackCorridorCandidates,
+  type BpmnFeedbackCorridorScope,
+} from './bpmn-feedback-corridor'
 import {
   bpmnPortDistance,
   countReservedBpmnPorts,
@@ -44,6 +48,7 @@ import {
 const OBSTACLE_MARGIN = 10
 const MAX_SLOT_VARIANTS = 3
 const DEFAULT_MAX_REROUTE_PASSES = 4
+const MAX_ACCEPTABLE_BENDS_PER_EDGE = 3
 
 export interface BpmnRoutingNode {
   id: string
@@ -59,6 +64,7 @@ export interface PlannedBpmnPath extends BpmnQualityPath {
   sSide: Side
   eSide: Side
   locked: boolean
+  feedbackCorridorScope?: BpmnFeedbackCorridorScope
 }
 
 export interface BpmnRoutingPlan {
@@ -79,7 +85,7 @@ export interface ComputeBpmnRoutingPlanInput {
 
 interface PlannerContext extends ComputeBpmnRoutingPlanInput {
   nodeById: Map<string, BpmnRoutingNode>
-  obstacleById: Map<string, Rect>
+  obstaclesByEdgeId: Map<string, Rect[]>
 }
 
 interface PlannerState {
@@ -92,6 +98,7 @@ interface AutoRouteCandidate {
   sSide: Side
   eSide: Side
   usesFeedbackCorridor: boolean
+  feedbackCorridorScope?: BpmnFeedbackCorridorScope
   score: number
 }
 
@@ -122,19 +129,25 @@ function validManualConfig(
 }
 
 function buildContext(input: ComputeBpmnRoutingPlanInput): PlannerContext {
+  const obstacleById = new Map(
+    input.nodes.map((node) => [node.id, inflateRect(node.rect, OBSTACLE_MARGIN)]),
+  )
   return {
     ...input,
     nodeById: new Map(input.nodes.map((node) => [node.id, node])),
-    obstacleById: new Map(
-      input.nodes.map((node) => [node.id, inflateRect(node.rect, OBSTACLE_MARGIN)]),
+    obstaclesByEdgeId: new Map(
+      input.edges.map((edge) => [
+        edge.id,
+        [...obstacleById]
+          .filter(([nodeId]) => nodeId !== edge.from && nodeId !== edge.to)
+          .map(([, rect]) => rect),
+      ]),
     ),
   }
 }
 
 function routingObstacles(context: PlannerContext, edge: BpmnConnectionMeta): Rect[] {
-  return [...context.obstacleById]
-    .filter(([nodeId]) => nodeId !== edge.from && nodeId !== edge.to)
-    .map(([, rect]) => rect)
+  return context.obstaclesByEdgeId.get(edge.id) ?? []
 }
 
 function occupiedSegments(
@@ -174,6 +187,7 @@ function createPlannedPath(input: {
   eSide: Side
   locked: boolean
   usesFeedbackCorridor: boolean
+  feedbackCorridorScope?: BpmnFeedbackCorridorScope
 }): PlannedBpmnPath {
   const path = normalizePath(input.path)
   return {
@@ -186,6 +200,7 @@ function createPlannedPath(input: {
     locked: input.locked,
     kind: classifyBpmnEdge(input.edge),
     usesFeedbackCorridor: input.usesFeedbackCorridor,
+    feedbackCorridorScope: input.feedbackCorridorScope,
     segments: segmentsForPath(path),
   }
 }
@@ -201,7 +216,7 @@ function initialLockedPaths(context: PlannerContext): Map<string, PlannedBpmnPat
       sSide: config.sSide,
       eSide: config.eSide,
       locked: true,
-      usesFeedbackCorridor: classifyBpmnEdge(edge) !== 'feedback',
+      usesFeedbackCorridor: false,
     }))
   }
   return paths
@@ -212,15 +227,16 @@ function isSafePath(input: {
   edge: BpmnConnectionMeta
   context: PlannerContext
   occupied: OccupiedSegment[]
+  obstacles?: Rect[]
 }): boolean {
-  const { path, edge, context, occupied } = input
+  const { path, edge, context, occupied, obstacles = routingObstacles(context, edge) } = input
   const from = context.nodeById.get(edge.from)
   const to = context.nodeById.get(edge.to)
   if (!from || !to || path.length < 2 || !isOrthogonalPath(path)) return false
   return isAcceptableRoutedPath(
     path,
     createPathSafetyOptions('bpmn', {
-      obstacles: routingObstacles(context, edge),
+      obstacles,
       occupied,
       fromShape: from.rect,
       toShape: to.rect,
@@ -238,6 +254,23 @@ function semanticPairPenalty(
   if (edge.sourceType !== 'flowchart-decision') return 0
   const branchSideUse = countReservedBpmnPorts(ledger, edge.from, 'out', sSide)
   return branchSideUse * 6_000
+}
+
+function portDistancesForSides(input: {
+  ledger: BpmnPortLedger
+  nodeId: string
+  direction: 'in' | 'out'
+  shape: Rect
+  slotOffset: number
+  isDiamond: boolean
+}): Record<Side, number> {
+  const { ledger, nodeId, direction, shape, slotOffset, isDiamond } = input
+  return {
+    top: bpmnPortDistance(ledger, nodeId, direction, 'top', shape, slotOffset, isDiamond),
+    right: bpmnPortDistance(ledger, nodeId, direction, 'right', shape, slotOffset, isDiamond),
+    bottom: bpmnPortDistance(ledger, nodeId, direction, 'bottom', shape, slotOffset, isDiamond),
+    left: bpmnPortDistance(ledger, nodeId, direction, 'left', shape, slotOffset, isDiamond),
+  }
 }
 
 function candidatePairs(
@@ -270,6 +303,25 @@ function standardRouteCandidates(input: {
   const toIsDiamond = edge.targetType === 'flowchart-decision'
   const candidates: AutoRouteCandidate[] = []
   const obstacles = routingObstacles(context, edge)
+  const appendCandidate = (
+    path: Point[],
+    pair: BpmnRouteCandidate,
+    fromDistance: number,
+    toDistance: number,
+  ) => {
+    candidates.push({
+      path,
+      sSide: pair.sSide,
+      eSide: pair.eSide,
+      usesFeedbackCorridor: false,
+      score:
+        scoreBpmnRouteCandidate(pair) +
+        scoreBpmnPath(path, occupied) +
+        scoreAnchorOffCenter(fromDistance) +
+        scoreAnchorOffCenter(toDistance) +
+        semanticPairPenalty(edge, ledger, pair.sSide),
+    })
+  }
 
   for (const pair of candidatePairs(edge, from.rect, to.rect, ledger)) {
     for (let slotOffset = 0; slotOffset < MAX_SLOT_VARIANTS; slotOffset += 1) {
@@ -312,13 +364,20 @@ function standardRouteCandidates(input: {
         targetJettySize: pair.targetJettySize,
         allowCrossings: true,
       })
-      const pathOptions = [directPath]
       const normalizedDirectPath = normalizePath(directPath)
+      const directSafe = isSafePath({
+        path: normalizedDirectPath,
+        edge,
+        context,
+        occupied,
+        obstacles,
+      })
+      if (directSafe) appendCandidate(normalizedDirectPath, pair, fromDistance, toDistance)
       const directNeedsChannel =
-        !isSafePath({ path: normalizedDirectPath, edge, context, occupied }) ||
+        !directSafe ||
         pathOverlapsSegments(normalizedDirectPath, occupied, { includeCross: true })
       if (slotOffset === 0 && directNeedsChannel) {
-        pathOptions.push(routeBpmnOnChannelGraph({
+        const channelPath = normalizePath(routeBpmnOnChannelGraph({
           fromShape: from.rect,
           toShape: to.rect,
           fromSide: pair.sSide,
@@ -334,82 +393,75 @@ function standardRouteCandidates(input: {
           sourceJettySize: pair.sourceJettySize,
           targetJettySize: pair.targetJettySize,
         }))
-      }
-      for (const rawPath of pathOptions) {
-        const path = normalizePath(rawPath)
-        if (!isSafePath({ path, edge, context, occupied })) continue
-        candidates.push({
-          path,
-          sSide: pair.sSide,
-          eSide: pair.eSide,
-          usesFeedbackCorridor: false,
-          score:
-            scoreBpmnRouteCandidate(pair) +
-            scoreBpmnPath(path, occupied) +
-            scoreAnchorOffCenter(fromDistance) +
-            scoreAnchorOffCenter(toDistance) +
-            semanticPairPenalty(edge, ledger, pair.sSide),
-        })
+        if (isSafePath({ path: channelPath, edge, context, occupied, obstacles })) {
+          appendCandidate(channelPath, pair, fromDistance, toDistance)
+        }
       }
     }
   }
   return candidates
 }
 
-function outerCorridorCandidates(input: {
+function feedbackCorridorCandidates(input: {
   edge: BpmnConnectionMeta
   context: PlannerContext
   ledger: BpmnPortLedger
   occupied: OccupiedSegment[]
   feedback: boolean
+  scope: BpmnFeedbackCorridorScope
 }): AutoRouteCandidate[] {
-  const { edge, context, ledger, occupied, feedback } = input
+  const { edge, context, ledger, occupied, feedback, scope } = input
   const from = context.nodeById.get(edge.from)
   const to = context.nodeById.get(edge.to)
   if (!from || !to) return []
   const fromIsDiamond = edge.sourceType === 'flowchart-decision'
   const toIsDiamond = edge.targetType === 'flowchart-decision'
   const candidates: AutoRouteCandidate[] = []
+  const obstacles = routingObstacles(context, edge)
 
   for (let trackOffset = 0; trackOffset < MAX_SLOT_VARIANTS; trackOffset += 1) {
-    for (const outer of buildFeedbackCorridorCandidates({
+    const corridorInput = {
       fromShape: from.rect,
       toShape: to.rect,
-      fromDistance: bpmnPortDistance(
+      fromDistances: portDistancesForSides({
         ledger,
-        edge.from,
-        'out',
-        'top',
-        from.rect,
-        trackOffset,
-        fromIsDiamond,
-      ),
-      toDistance: bpmnPortDistance(
+        nodeId: edge.from,
+        direction: 'out' as const,
+        shape: from.rect,
+        slotOffset: trackOffset,
+        isDiamond: fromIsDiamond,
+      }),
+      toDistances: portDistancesForSides({
         ledger,
-        edge.to,
-        'in',
-        'top',
-        to.rect,
-        trackOffset,
-        toIsDiamond,
-      ),
+        nodeId: edge.to,
+        direction: 'in' as const,
+        shape: to.rect,
+        slotOffset: trackOffset,
+        isDiamond: toIsDiamond,
+      }),
       fromIsDiamond,
       toIsDiamond,
       layout: context.laneLayout,
-      bounds: context.bounds,
       trackOffset,
-    })) {
-      const path = normalizePath(outer.path)
-      if (!isSafePath({ path, edge, context, occupied })) continue
+    }
+    const corridorCandidates = scope === 'internal'
+      ? buildInternalFeedbackCorridorCandidates(corridorInput)
+      : buildFeedbackCorridorCandidates({ ...corridorInput, bounds: context.bounds })
+    for (const corridor of corridorCandidates) {
+      const path = normalizePath(corridor.path)
+      if (!isSafePath({ path, edge, context, occupied, obstacles })) continue
       candidates.push({
         path,
-        sSide: outer.sSide,
-        eSide: outer.eSide,
+        sSide: corridor.sSide,
+        eSide: corridor.eSide,
         usesFeedbackCorridor: true,
+        feedbackCorridorScope: corridor.scope,
         score:
           scoreBpmnPath(path, occupied) +
-          semanticPairPenalty(edge, ledger, outer.sSide) +
-          (feedback ? 0 : 20_000),
+          scoreAnchorOffCenter(corridor.fromDistance) +
+          scoreAnchorOffCenter(corridor.toDistance) +
+          semanticPairPenalty(edge, ledger, corridor.sSide) +
+          (feedback || scope === 'internal' ? 0 : 20_000),
       })
     }
   }
@@ -424,6 +476,13 @@ function bestCandidate(candidates: AutoRouteCandidate[]): AutoRouteCandidate | n
   return best
 }
 
+function staysInsideSwimlanePool(path: Point[], layout: BpmnLaneLayout): boolean {
+  if (layout.lanes.length === 0) return false
+  const top = Math.min(...layout.lanes.map((lane) => lane.top))
+  const bottom = Math.max(...layout.lanes.map((lane) => lane.top + lane.height))
+  return path.every((point) => point.y >= top && point.y <= bottom)
+}
+
 function routeAutoEdge(input: {
   edge: BpmnConnectionMeta
   context: PlannerContext
@@ -434,15 +493,34 @@ function routeAutoEdge(input: {
   const ledger = buildLedger(paths, edge.id)
   const kind = classifyBpmnEdge(edge)
   const feedback = kind === 'feedback'
-  const feedbackCandidates = feedback
-    ? outerCorridorCandidates({ edge, context, ledger, occupied, feedback: true })
+  const standardCandidates = standardRouteCandidates({ edge, context, ledger, occupied })
+  const internalFeedbackCandidates = feedback
+    ? feedbackCorridorCandidates({ edge, context, ledger, occupied, feedback: true, scope: 'internal' })
     : []
-  const candidates = feedback && feedbackCandidates.length > 0
-    ? feedbackCandidates
-    : standardRouteCandidates({ edge, context, ledger, occupied })
-  const routed =
-    bestCandidate(candidates) ??
-    bestCandidate(outerCorridorCandidates({ edge, context, ledger, occupied, feedback }))
+  const primaryCandidates = feedback
+    ? [
+        ...standardCandidates
+          .filter((candidate) => staysInsideSwimlanePool(candidate.path, context.laneLayout))
+          .map((candidate) => ({
+            ...candidate,
+            usesFeedbackCorridor: true,
+            feedbackCorridorScope: 'internal' as const,
+          })),
+        ...internalFeedbackCandidates,
+      ]
+    : standardCandidates
+  let routed = bestCandidate(primaryCandidates)
+  if (!routed) {
+    routed = bestCandidate(feedbackCorridorCandidates({
+      edge,
+      context,
+      ledger,
+      occupied,
+      feedback,
+      scope: 'outer',
+    }))
+  }
+  if (!routed && feedback) routed = bestCandidate(standardCandidates)
   if (!routed) return null
   return createPlannedPath({
     edge,
@@ -451,6 +529,7 @@ function routeAutoEdge(input: {
     eSide: routed.eSide,
     locked: false,
     usesFeedbackCorridor: routed.usesFeedbackCorridor,
+    feedbackCorridorScope: routed.feedbackCorridorScope,
   })
 }
 
@@ -543,6 +622,26 @@ function distinctOrders(
   })
 }
 
+function hasRoutingConflicts(diagnostics: BpmnRoutingDiagnostics): boolean {
+  return (
+    diagnostics.unroutedConnectionIds.length > 0 ||
+    diagnostics.obstacleHits > 0 ||
+    diagnostics.overlaps > 0 ||
+    diagnostics.crossings > 0 ||
+    diagnostics.feedbackCorridorMisuse > 0
+  )
+}
+
+function isGoodEnoughRoutingPlan(
+  diagnostics: BpmnRoutingDiagnostics,
+  edgeCount: number,
+): boolean {
+  return (
+    !hasRoutingConflicts(diagnostics) &&
+    diagnostics.bends <= edgeCount * MAX_ACCEPTABLE_BENDS_PER_EDGE
+  )
+}
+
 function toRoutingPlan(state: PlannerState): BpmnRoutingPlan {
   const pathsByConnection: Record<string, PlannedBpmnPath> = {}
   const segmentsByConnection = new Map<string, OccupiedSegment[]>()
@@ -574,12 +673,14 @@ export function computeBpmnRoutingPlan(
 
   const context = buildContext(input)
   const maxPasses = input.maxReroutePasses ?? DEFAULT_MAX_REROUTE_PASSES
-  let best: PlannerState | null = null
-  for (const order of distinctOrders(context.edges, input.pathLayoutSeed ?? 0)) {
+  const orders = distinctOrders(context.edges, input.pathLayoutSeed ?? 0)
+  let best = improvePlan(context, routeInOrder(context, orders[0] ?? context.edges), maxPasses)
+  if (isGoodEnoughRoutingPlan(best.diagnostics, context.edges.length)) return toRoutingPlan(best)
+  for (const order of orders.slice(1)) {
     const candidate = improvePlan(context, routeInOrder(context, order), maxPasses)
-    if (!best || compareBpmnRoutingDiagnostics(candidate.diagnostics, best.diagnostics) < 0) {
+    if (compareBpmnRoutingDiagnostics(candidate.diagnostics, best.diagnostics) < 0) {
       best = candidate
     }
   }
-  return toRoutingPlan(best ?? routeInOrder(context, context.edges))
+  return toRoutingPlan(best)
 }

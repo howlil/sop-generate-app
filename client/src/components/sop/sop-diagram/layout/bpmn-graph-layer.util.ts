@@ -26,27 +26,43 @@ function laneIndexForStep(
   return idx === -1 ? 0 : idx
 }
 
+function minimumForwardColumnAdvance(
+  fromStep: BpmnLayoutStepInput,
+  toStep: BpmnLayoutStepInput,
+  implementerIds: string[],
+): number {
+  if (fromStep.type === 'decision') return 1
+  return laneIndexForStep(fromStep, implementerIds) === laneIndexForStep(toStep, implementerIds)
+    ? 1
+    : 0
+}
+
 function columnFromPredecessors(
   preds: string[],
-  steps: BpmnLayoutStepInput[],
+  step: BpmnLayoutStepInput,
+  stepById: Map<string, BpmnLayoutStepInput>,
   rawColumns: Map<string, number>,
+  implementerIds: string[],
 ): number {
   if (preds.length === 0) return 0
   let columnIndex = 0
   for (const predId of preds) {
-    const pred = steps.find((s) => s.id_step === predId)
+    const pred = stepById.get(predId)
     if (!pred) continue
     const predCol = rawColumns.get(predId) ?? 0
-    columnIndex = Math.max(columnIndex, predCol + 1)
+    columnIndex = Math.max(
+      columnIndex,
+      predCol + minimumForwardColumnAdvance(pred, step, implementerIds),
+    )
   }
   return columnIndex
 }
 
 /**
  * Assign rank global workflow (alur kiri → kanan pada swimlane horizontal).
- * Semua forward edge maju minimal satu kolom, termasuk handoff lintas swimlane.
- * Ini mencegah rantai handoff ditumpuk pada satu sumbu vertikal yang sama.
- * Loopback dikeluarkan dari rank DAG dan ditangani router melalui corridor luar.
+ * Handoff lintas swimlane biasa boleh berbagi kolom agar alur vertikal tetap ringkas.
+ * Alur satu lane dan cabang decision tetap maju agar arah baca tidak ambigu.
+ * Loopback dikeluarkan dari rank DAG dan ditangani router melalui corridor khusus.
  */
 export function assignStepColumns(
   steps: BpmnLayoutStepInput[],
@@ -74,13 +90,14 @@ export function assignStepColumns(
     predsByIdStep.set(toId, list)
   }
   const sorted = [...steps].sort((a, b) => a.seq_number - b.seq_number)
+  const stepById = new Map(steps.map((step) => [step.id_step, step]))
   const rawColumns = new Map<string, number>()
   let previousSequentialColumn = -1
   let previousSequentialLane = -1
   for (const step of sorted) {
     const preds = predsByIdStep.get(step.id_step) ?? []
     const stepLane = laneIndexForStep(step, implementerIds)
-    let columnIndex = columnFromPredecessors(preds, steps, rawColumns)
+    let columnIndex = columnFromPredecessors(preds, step, stepById, rawColumns, implementerIds)
     if (
       preds.length === 0 &&
       previousSequentialLane === stepLane &&
@@ -96,7 +113,7 @@ export function assignStepColumns(
     previousSequentialLane = stepLane
   }
   bumpDecisionBranchColumns(steps, connections, rawColumns, implementerIds)
-  enforceForwardMonotonicColumns(steps, connections, rawColumns)
+  enforceForwardMonotonicColumns(steps, connections, rawColumns, implementerIds)
   return rawColumns
 }
 
@@ -148,27 +165,30 @@ export function buildMainSpineStepIds(
 }
 
 /**
- * Propagasi rank setelah cabang decision digeser. Seluruh forward edge wajib maju
- * minimal satu kolom; feedback edge tidak ikut agar loop tidak merusak DAG.
+ * Propagasi rank setelah cabang decision digeser. Handoff lintas lane biasa dapat
+ * tetap pada kolom yang sama; feedback edge tidak ikut agar loop tidak merusak DAG.
  */
 function enforceForwardMonotonicColumns(
   steps: BpmnLayoutStepInput[],
   connections: BpmnLayoutConnectionInput[],
   rawColumns: Map<string, number>,
+  implementerIds: string[],
 ): void {
-  const seqToId = new Map(steps.map((s) => [s.seq_number, s.id_step]))
+  const stepBySeq = new Map(steps.map((step) => [step.seq_number, step]))
   for (let pass = 0; pass < steps.length; pass += 1) {
     let changed = false
     for (const conn of connections) {
       const fromSeq = parseBpmnStepSeq(conn.from)
       const toSeq = parseBpmnStepSeq(conn.to)
       if (fromSeq === null || toSeq === null || fromSeq >= toSeq) continue
-      const fromId = seqToId.get(fromSeq)
-      const toId = seqToId.get(toSeq)
-      if (!fromId || !toId) continue
-      const nextCol = (rawColumns.get(fromId) ?? 0) + 1
-      if (nextCol <= (rawColumns.get(toId) ?? 0)) continue
-      rawColumns.set(toId, nextCol)
+      const fromStep = stepBySeq.get(fromSeq)
+      const toStep = stepBySeq.get(toSeq)
+      if (!fromStep || !toStep) continue
+      const nextCol =
+        (rawColumns.get(fromStep.id_step) ?? 0) +
+        minimumForwardColumnAdvance(fromStep, toStep, implementerIds)
+      if (nextCol <= (rawColumns.get(toStep.id_step) ?? 0)) continue
+      rawColumns.set(toStep.id_step, nextCol)
       changed = true
     }
     if (!changed) break

@@ -5,6 +5,10 @@ import {
   computeBpmnRoutingPlan,
   type BpmnRoutingNode,
 } from '../global/bpmn-routing-plan'
+import {
+  clearBpmnRoutingPlanCache,
+  computeCachedBpmnRoutingPlan,
+} from '../global/bpmn-routing-plan-cache'
 
 function layout(): BpmnLaneLayout {
   return {
@@ -31,6 +35,32 @@ function node(
   const columnStart = layout().columnStartXs[columnIndex]!
   const columnWidth = layout().columnWidths[columnIndex]!
   const centerX = columnStart + columnWidth / 2
+  const centerY = laneInfo.top + laneInfo.height / 2
+  return {
+    id: `bpmn-step-${seq}`,
+    type,
+    lane,
+    columnIndex,
+    rect: {
+      left: centerX - width / 2,
+      top: centerY - height / 2,
+      width,
+      height,
+    },
+  }
+}
+
+function nodeInLayout(
+  laneLayout: BpmnLaneLayout,
+  seq: number,
+  lane: number,
+  columnIndex: number,
+  type: string,
+  width = type === 'terminator' ? 52 : type === 'decision' ? 56 : 100,
+  height = type === 'terminator' ? 52 : type === 'decision' ? 56 : 50,
+): BpmnRoutingNode {
+  const laneInfo = laneLayout.lanes[lane]!
+  const centerX = laneLayout.columnStartXs[columnIndex]! + laneLayout.columnWidths[columnIndex]! / 2
   const centerY = laneInfo.top + laneInfo.height / 2
   return {
     id: `bpmn-step-${seq}`,
@@ -132,14 +162,46 @@ describe('computeBpmnRoutingPlan', () => {
     expect(pathSignature(normal)).toBe(pathSignature(reversed))
   })
 
-  it('sends feedback edges through an explicit outer corridor', () => {
+  it('keeps feedback edges inside the swimlane pool when an internal corridor is available', () => {
     const result = plan()
     const feedback = result.pathsByConnection['conn-6-to-1']
+    const laneLayout = layout()
+    const laneTop = Math.min(...laneLayout.lanes.map((lane) => lane.top))
+    const laneBottom = Math.max(...laneLayout.lanes.map((lane) => lane.top + lane.height))
 
     expect(feedback).toBeDefined()
     expect(feedback?.kind).toBe('feedback')
     expect(feedback?.usesFeedbackCorridor).toBe(true)
+    expect(feedback?.feedbackCorridorScope).toBe('internal')
+    expect(feedback?.path.every((point) => point.y >= laneTop && point.y <= laneBottom)).toBe(true)
     expect(result.diagnostics.feedbackCorridorMisuse).toBe(0)
+  })
+
+  it('keeps feedback edges internal when rendered swimlane rows are contiguous', () => {
+    const laneLayout: BpmnLaneLayout = {
+      lanes: [
+        { index: 0, top: 40, height: 120 },
+        { index: 1, top: 160, height: 120 },
+        { index: 2, top: 280, height: 120 },
+      ],
+      columnStartXs: [80, 280, 480],
+      columnWidths: [120, 120, 120],
+    }
+    const target = nodeInLayout(laneLayout, 1, 0, 1, 'task')
+    const source = nodeInLayout(laneLayout, 3, 2, 2, 'task')
+    const result = computeBpmnRoutingPlan({
+      nodes: [target, source],
+      edges: [edge('conn-3-to-1', source, target)],
+      laneLayout,
+      bounds: { left: 0, top: 0, width: 760, height: 440 },
+    })
+    const feedback = result.pathsByConnection['conn-3-to-1']
+
+    expect(feedback).toBeDefined()
+    expect(feedback?.kind).toBe('feedback')
+    expect(feedback?.feedbackCorridorScope).toBe('internal')
+    expect(feedback?.path.every((point) => point.y >= 40 && point.y <= 400)).toBe(true)
+    expect(result.diagnostics.unroutedConnectionIds).toEqual([])
   })
 
   it('uses separate gateway ports for Ya and Tidak branches', () => {
@@ -170,5 +232,32 @@ describe('computeBpmnRoutingPlan', () => {
       { x: 166, y: 100 },
       { x: 290, y: 100 },
     ])
+  })
+
+  it('reuses a cached plan when reopening an equivalent BPMN tab', () => {
+    clearBpmnRoutingPlanCache()
+    const data = fixture()
+    const input = {
+      nodes: data.nodes,
+      edges: data.edges,
+      laneLayout: layout(),
+      bounds: { left: 0, top: 0, width: 920, height: 640 },
+    }
+
+    const first = computeCachedBpmnRoutingPlan(input)
+    const reopened = computeCachedBpmnRoutingPlan({
+      ...input,
+      nodes: [...input.nodes],
+      edges: [...input.edges].reverse(),
+      laneLayout: {
+        ...input.laneLayout,
+        lanes: input.laneLayout.lanes.map((lane) => ({ ...lane })),
+      },
+    })
+    const rerouted = computeCachedBpmnRoutingPlan({ ...input, pathLayoutSeed: 1 })
+
+    expect(reopened).toBe(first)
+    expect(rerouted).not.toBe(first)
+    clearBpmnRoutingPlanCache()
   })
 })

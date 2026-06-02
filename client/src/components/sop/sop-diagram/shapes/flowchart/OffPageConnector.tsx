@@ -14,7 +14,7 @@ export function FlowchartOffPageConnector({
   className = '',
 }: FlowchartOffPageConnectorProps) {
   return (
-    <div id={id} style={style} className={`inline-block ${className}`}>
+    <div id={id} data-flowchart-opc style={style} className={`inline-block ${className}`}>
       <svg width="50" height="60" xmlns="http://www.w3.org/2000/svg">
         <polygon
           points="25,55 5,40 5,5 45,5 45,40"

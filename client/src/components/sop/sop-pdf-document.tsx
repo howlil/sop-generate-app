@@ -339,24 +339,22 @@ function HeaderPage({
                 </View>
               ))}
               <View style={styles.row}>
-                <View style={[styles.cellTight, { width: "47%", minHeight: 82 }]}>
+                <View style={[styles.cellTight, { width: "47%", minHeight: 110 }]}>
                   <Text style={styles.label}>DISAHKAN OLEH</Text>
                 </View>
-                <View style={[styles.cellTight, { width: "5%", minHeight: 82 }]}>
+                <View style={[styles.cellTight, { width: "5%", minHeight: 110 }]}>
                   <Text style={styles.centerText}>:</Text>
                 </View>
                 <View
-                  style={[styles.cellTight, { width: "48%", minHeight: 82, alignItems: "center" }]}
+                  style={[styles.cellTight, { width: "48%", minHeight: 110, alignItems: "center", justifyContent: "center" }]}
                 >
+                  <Text style={{ fontSize: 7, marginBottom: 4, textAlign: "center" }}>
+                    {metadata.picRole || "Penanggung Jawab"},
+                  </Text>
                   {qrDataUrlKepalaOpd ? (
                     <Image src={qrDataUrlKepalaOpd} style={styles.signatureQr} />
                   ) : (
-                    <>
-                      <Text style={{ fontSize: 7, marginBottom: 4 }}>
-                        {metadata.picRole || "Penanggung Jawab"},
-                      </Text>
-                      <View style={styles.signatureSpacer} />
-                    </>
+                    <View style={styles.signatureSpacer} />
                   )}
                   <Text style={[styles.label, styles.centerText]}>
                     {tteSignaturePayload?.namaLengkap || metadata.picName || " - "}

@@ -128,7 +128,13 @@ type ElemPos = {
 }
 
 function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
-  const el = document.getElementById(elementId)
+  const escapedId =
+    typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+      ? CSS.escape(elementId)
+      : elementId.replace(/([^a-zA-Z0-9_-])/g, '\\$1')
+  const el = container.id === elementId
+    ? container
+    : container.querySelector<HTMLElement>(`#${escapedId}`)
   if (!el) return null
   const r = el.getBoundingClientRect()
   const c = container.getBoundingClientRect()

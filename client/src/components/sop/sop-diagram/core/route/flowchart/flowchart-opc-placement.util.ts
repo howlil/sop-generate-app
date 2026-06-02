@@ -1,4 +1,9 @@
-import type { OpcPair } from './flowchartPagination'
+import {
+  getOpcElementId,
+  type OpcEndpointVariant,
+  type OpcPair,
+  type PositionedOpcEndpoint,
+} from './flowchartPagination'
 import type {
   FlowchartPelaksanaBoundsRect,
   ImplementerColumnBoundsMap,
@@ -9,7 +14,7 @@ export const OPC_CONNECTOR_WIDTH_PX = 50
 export const OPC_CONNECTOR_HEIGHT_PX = 60
 export const OPC_CONNECTOR_STACK_GAP_PX = 8
 
-export type OpcPlacementVariant = 'in' | 'out'
+export type OpcPlacementVariant = OpcEndpointVariant
 
 /** Lebar kolom tabel flowchart (persen, selaras dengan `<colgroup>`). */
 export interface FlowchartTableColumnPercents {
@@ -121,14 +126,32 @@ export function layoutOpcPlacements(
     tableColumns: FlowchartTableColumnPercents
   },
 ): OpcPlacement[] {
+  return layoutOpcEndpointPlacements(
+    opcs.map((opc) => ({ opc, variant })),
+    options,
+  )
+}
+
+/**
+ * Layout endpoints in one visual row. A row can contain semantic `in` and `out`
+ * endpoints together when forward edges and loop-backs meet on the same page.
+ */
+export function layoutOpcEndpointPlacements(
+  endpoints: ReadonlyArray<PositionedOpcEndpoint>,
+  options: {
+    implementers: ReadonlyArray<{ id: string }>
+    columnBounds?: ImplementerColumnBoundsMap | null
+    tableColumns: FlowchartTableColumnPercents
+  },
+): OpcPlacement[] {
   const { implementers, columnBounds, tableColumns } = options
-  const prefix = variant === 'in' ? 'opc-in' : 'opc-out'
-  const byColumn = new Map<string, OpcPair[]>()
-  for (const opc of opcs) {
+  const byColumn = new Map<string, PositionedOpcEndpoint[]>()
+  for (const endpoint of endpoints) {
+    const { opc, variant } = endpoint
     const implId = resolveOpcImplementerId(opc, variant)
     const key = implId || '__default__'
     const list = byColumn.get(key) ?? []
-    list.push(opc)
+    list.push(endpoint)
     byColumn.set(key, list)
   }
   const placements: OpcPlacement[] = []
@@ -143,11 +166,15 @@ export function layoutOpcPlacements(
     )
     group
       .slice()
-      .sort((a, b) => (a.fromSeq !== b.fromSeq ? a.fromSeq - b.fromSeq : a.toSeq - b.toSeq))
-      .forEach((opc, stackIndex) => {
+      .sort((a, b) =>
+        a.opc.fromSeq !== b.opc.fromSeq
+          ? a.opc.fromSeq - b.opc.fromSeq
+          : a.opc.toSeq - b.opc.toSeq,
+      )
+      .forEach(({ opc, variant }, stackIndex) => {
         placements.push({
           opc,
-          elementId: `${prefix}-step-${opc.fromSeq}-to-step-${opc.toSeq}`,
+          elementId: getOpcElementId(opc, variant),
           implementerId,
           centerXPx,
           centerPercent,

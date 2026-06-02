@@ -17,7 +17,6 @@ import {
   BPMN_LANE_MIN_STEP_GAP,
   BPMN_LANE_STEP_PADDING,
   BPMN_RIGHT_MARGIN,
-  BPMN_ROW_SPACING,
   BPMN_SOP_CONTENT_MAX_WIDTH_PX,
   BPMN_TASK_MIN_HEIGHT,
   BPMN_TASK_MIN_WIDTH,
@@ -218,6 +217,63 @@ function compactStepColumnIndices(steps: BpmnLayoutGlobalStep[]): BpmnLayoutGlob
   }))
 }
 
+function parseBpmnStepSeq(nodeId: string): number | null {
+  const match = nodeId.match(/^bpmn-step-(\d+)$/)
+  return match ? Number(match[1]) : null
+}
+
+/**
+ * Luruskan rantai handoff sederhana lintas-lane setelah collision pass.
+ * Branch, join, feedback, dan lane yang sudah terisi sengaja tidak disentuh.
+ */
+export function straightenSimpleCrossLaneTaskChains(
+  steps: BpmnLayoutGlobalStep[],
+  connections: Array<{ from: string; to: string }>,
+): BpmnLayoutGlobalStep[] {
+  const next = steps.map((step) => ({ ...step }))
+  const stepBySeq = new Map(next.map((step) => [step.seq, step]))
+  const inbound = new Map<string, number>()
+  const outbound = new Map<string, number>()
+  for (const connection of connections) {
+    inbound.set(connection.to, (inbound.get(connection.to) ?? 0) + 1)
+    outbound.set(connection.from, (outbound.get(connection.from) ?? 0) + 1)
+  }
+  const orderedConnections = [...connections].sort((left, right) => {
+    const leftSeq = parseBpmnStepSeq(left.from) ?? Number.MAX_SAFE_INTEGER
+    const rightSeq = parseBpmnStepSeq(right.from) ?? Number.MAX_SAFE_INTEGER
+    return leftSeq - rightSeq
+  })
+  for (const connection of orderedConnections) {
+    const fromSeq = parseBpmnStepSeq(connection.from)
+    const toSeq = parseBpmnStepSeq(connection.to)
+    if (fromSeq == null || toSeq == null || fromSeq >= toSeq) continue
+    const from = stepBySeq.get(fromSeq)
+    const to = stepBySeq.get(toSeq)
+    if (
+      !from ||
+      !to ||
+      from.type !== 'task' ||
+      to.type !== 'task' ||
+      from.lane === to.lane ||
+      (outbound.get(connection.from) ?? 0) !== 1 ||
+      (inbound.get(connection.to) ?? 0) !== 1
+    ) {
+      continue
+    }
+    const desiredColumn = from.columnIndex
+    if (to.columnIndex <= desiredColumn) continue
+    const conflicts = next.some(
+      (step) =>
+        step.id !== to.id &&
+        step.lane === to.lane &&
+        step.columnIndex === desiredColumn,
+    )
+    if (conflicts) continue
+    to.columnIndex = desiredColumn
+  }
+  return next
+}
+
 function naturalColumnWidths(
   steps: BpmnLayoutGlobalStep[],
   stepDimensionsCache: Map<string, ReturnType<typeof getBpmnStepLayoutDimensions>>,
@@ -301,7 +357,7 @@ function rebuildColumnGeometry(
   let cumulativeY = 0
   for (let i = 0; i < numLanes; i += 1) {
     laneYPositions[i] = cumulativeY + (laneMaxHeights[i] ?? BPMN_BASE_ROW_HEIGHT) / 2
-    cumulativeY += (laneMaxHeights[i] ?? BPMN_BASE_ROW_HEIGHT) + BPMN_ROW_SPACING
+    cumulativeY += laneMaxHeights[i] ?? BPMN_BASE_ROW_HEIGHT
   }
   const positioned = steps.map((step) => {
     const dims = stepDimensionsCache.get(step.id) ?? {
@@ -407,8 +463,13 @@ export function computeBpmnLayout(input: ComputeBpmnLayoutInput): BpmnLayoutResu
     BPMN_TASK_MIN_WIDTH,
     Math.min(BPMN_TASK_PREFERRED_MAX_WIDTH, widthPerColumnBudget),
   )
-  let stepDimensionsCache = buildStepDimensionsCache(steps, initialMaxShapeWidth)
-  globalSteps = compactStepColumnIndices(enforceUniqueColumnsPerLane(globalSteps, spineIds))
+  const stepDimensionsCache = buildStepDimensionsCache(steps, initialMaxShapeWidth)
+  globalSteps = compactStepColumnIndices(
+    straightenSimpleCrossLaneTaskChains(
+      enforceUniqueColumnsPerLane(globalSteps, spineIds),
+      layoutConnections,
+    ),
+  )
   let naturalWidths = naturalColumnWidths(globalSteps, stepDimensionsCache)
   let fittedWidths = fitWidthsToBudget(naturalWidths, diagramBudget, BPMN_COLUMN_SPACING)
   rebuildStepDimensionsForColumns(globalSteps, steps, fittedWidths, stepDimensionsCache)
@@ -416,7 +477,10 @@ export function computeBpmnLayout(input: ComputeBpmnLayoutInput): BpmnLayoutResu
   fittedWidths = fitWidthsToBudget(naturalWidths, diagramBudget, BPMN_COLUMN_SPACING)
   let geometry = rebuildColumnGeometry(globalSteps, stepDimensionsCache, fittedWidths)
   globalSteps = compactStepColumnIndices(resolveColumnCollisions(geometry.positioned, spineIds))
-  globalSteps = spreadOverlappingLaneSteps(globalSteps, spineIds)
+  globalSteps = straightenSimpleCrossLaneTaskChains(
+    spreadOverlappingLaneSteps(globalSteps, spineIds),
+    layoutConnections,
+  )
   globalSteps = compactStepColumnIndices(globalSteps)
   naturalWidths = naturalColumnWidths(globalSteps, stepDimensionsCache)
   fittedWidths = fitWidthsToBudget(naturalWidths, diagramBudget, BPMN_COLUMN_SPACING)
@@ -424,7 +488,12 @@ export function computeBpmnLayout(input: ComputeBpmnLayoutInput): BpmnLayoutResu
   naturalWidths = naturalColumnWidths(globalSteps, stepDimensionsCache)
   fittedWidths = fitWidthsToBudget(naturalWidths, diagramBudget, BPMN_COLUMN_SPACING)
   geometry = rebuildColumnGeometry(globalSteps, stepDimensionsCache, fittedWidths)
-  globalSteps = compactStepColumnIndices(resolveColumnCollisions(geometry.positioned, spineIds))
+  globalSteps = compactStepColumnIndices(
+    straightenSimpleCrossLaneTaskChains(
+      resolveColumnCollisions(geometry.positioned, spineIds),
+      layoutConnections,
+    ),
+  )
   rebuildStepDimensionsForColumns(globalSteps, steps, fittedWidths, stepDimensionsCache)
   naturalWidths = naturalColumnWidths(globalSteps, stepDimensionsCache)
   fittedWidths = fitWidthsToBudget(naturalWidths, diagramBudget, BPMN_COLUMN_SPACING)
@@ -464,7 +533,7 @@ export function computeBpmnLayout(input: ComputeBpmnLayoutInput): BpmnLayoutResu
     let laneTop = 0
     const lanes = laneLayouts.map((l, i) => {
       const info = { index: i, top: laneTop, height: l.height }
-      laneTop += l.height + BPMN_ROW_SPACING
+      laneTop += l.height
       return info
     })
     bpmnLaneLayoutForRouter = {

@@ -4,6 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useCallback,
+  useId,
   useRef,
   startTransition,
   type MutableRefObject,
@@ -18,6 +19,7 @@ import {
 import { type OccupiedSegment } from '../core/route/shared/orthogonalRouter'
 import { FlowchartOpcRow } from './flowchart-opc-row'
 import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
+import type { FlowchartAreaIdResolver } from '../core/route/flowchart/flowchart-column-bounds.util'
 import {
   measureFlowchartLayoutWithColumns,
 } from './sop-diagram-flowchart-measure.util'
@@ -34,7 +36,8 @@ import {
   splitStepsIntoPages,
   splitCrossPageConnections,
   getOpcShapesForPage,
-  type OpcPair,
+  getOpcElementId,
+  type PositionedOpcEndpoint,
 } from '../core/route/flowchart/flowchartPagination'
 import { SOP_DOCUMENT_PAGE_WIDTH_CLASS } from '../layout/sopDocumentLayout'
 import { SOP_BEFORE_PRINT_EVENT } from '@/lib/print/sop-print-events'
@@ -101,11 +104,21 @@ function sopAreaId(pageIndex: number) {
   return `main-sop-area-${pageIndex}`
 }
 
+function toFlowchartDomToken(reactId: string): string {
+  const token = reactId
+    .replace(/[^a-zA-Z0-9_-]/g, '-')
+    .replace(/\d/g, (digit) => String.fromCharCode('a'.charCodeAt(0) + Number(digit)))
+  return token || 'instance'
+}
+
 type FlowchartBoundsRect = { left: number; top: number; right: number; bottom: number }
 
-function hasFlowchartMeasureDom(pageCount: number): boolean {
+function hasFlowchartMeasureDom(
+  pageCount: number,
+  areaIdForPage: FlowchartAreaIdResolver = sopAreaId,
+): boolean {
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
     if (container.querySelector('td[data-implementer-id]')) return true
   }
@@ -125,6 +138,7 @@ function buildPelaksanaBoundsSig(
 export function measureFlowchartPelaksanaBounds(
   pageCount: number,
   boundsStore: Record<number, FlowchartBoundsRect>,
+  areaIdForPage: FlowchartAreaIdResolver = sopAreaId,
 ): { sig: string; domReady: boolean } {
   const PAD_LEFT = 8
   const PAD_RIGHT = 8
@@ -132,7 +146,7 @@ export function measureFlowchartPelaksanaBounds(
   const PAD_BOTTOM = 8
   let domReady = false
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
     domReady = true
     const containerRect = container.getBoundingClientRect()
@@ -148,7 +162,7 @@ export function measureFlowchartPelaksanaBounds(
       minTop = Math.min(minTop, rect.top - containerRect.top)
       maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
     })
-    const opcEls = container.querySelectorAll('[id^="opc-"]')
+    const opcEls = container.querySelectorAll('[data-flowchart-opc]')
     opcEls.forEach((el) => {
       const rect = el.getBoundingClientRect()
       minTop = Math.min(minTop, rect.top - containerRect.top)
@@ -169,13 +183,14 @@ export function measureFlowchartPelaksanaBounds(
 export function applyFlowchartPelaksanaFallbackBounds(
   pageCount: number,
   boundsStore: Record<number, FlowchartBoundsRect>,
+  areaIdForPage: FlowchartAreaIdResolver = sopAreaId,
 ): string {
   const PAD_LEFT = 8
   const PAD_RIGHT = 8
   const PAD_TOP = 4
   const PAD_BOTTOM = 8
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
     const containerRect = container.getBoundingClientRect()
     boundsStore[pi] = {
@@ -224,6 +239,20 @@ export function SOPDiagramFlowchart({
   const onManualChangeProp = events?.onManualChange
   const onSelectConnectionProp = events?.onSelectConnection
   const config = { ...DEFAULT_LAYOUT, ...layoutConfig }
+  const reactDiagramId = useId()
+  const diagramDomPrefix = useMemo(
+    () => `flowchart-${toFlowchartDomToken(reactDiagramId)}-`,
+    [reactDiagramId],
+  )
+  const stepShapeIdPrefix = `${diagramDomPrefix}sop-step-`
+  const areaIdForPage = useCallback(
+    (pageIndex: number) => `${diagramDomPrefix}main-sop-area-${pageIndex}`,
+    [diagramDomPrefix],
+  )
+  const stepShapeId = useCallback(
+    (seqNumber: number) => `${stepShapeIdPrefix}${seqNumber}`,
+    [stepShapeIdPrefix],
+  )
   const sortedSteps = useMemo(() => [...steps].sort((a, b) => a.seq_number - b.seq_number), [steps])
   const MIN_PELAKSANA_COL_WIDTH = 10
   const pelaksanaColWidth = implementers.length > 0
@@ -300,8 +329,8 @@ export function SOPDiagramFlowchart({
           const customYes = labelConfig?.custom_labels?.[`step-${step.seq_number}-yes`]
           list.push({
             id: `conn-${step.seq_number}-yes-${toYes}`,
-            from: `sop-step-${step.seq_number}`,
-            to: `sop-step-${toYes}`,
+            from: stepShapeId(step.seq_number),
+            to: stepShapeId(toYes),
             label: customYes ?? 'Ya',
             sourceType: 'flowchart-decision',
             targetType: stepYes ? stepShapeType(stepYes) : 'flowchart-process',
@@ -311,8 +340,8 @@ export function SOPDiagramFlowchart({
           const customNo = labelConfig?.custom_labels?.[`step-${step.seq_number}-no`]
           list.push({
             id: `conn-${step.seq_number}-no-${toNo}`,
-            from: `sop-step-${step.seq_number}`,
-            to: `sop-step-${toNo}`,
+            from: stepShapeId(step.seq_number),
+            to: stepShapeId(toNo),
             label: customNo ?? 'Tidak',
             sourceType: 'flowchart-decision',
             targetType: stepNo ? stepShapeType(stepNo) : 'flowchart-process',
@@ -328,8 +357,8 @@ export function SOPDiagramFlowchart({
         const target = sortedSteps.find((s) => s.seq_number === explicitNextSeq)
         list.push({
           id: `conn-${step.seq_number}-to-${explicitNextSeq}`,
-          from: `sop-step-${step.seq_number}`,
-          to: `sop-step-${explicitNextSeq}`,
+          from: stepShapeId(step.seq_number),
+          to: stepShapeId(explicitNextSeq),
           sourceType: stepShapeType(step),
           targetType: target ? stepShapeType(target) : 'flowchart-process',
         })
@@ -339,8 +368,8 @@ export function SOPDiagramFlowchart({
         const toStep = sortedSteps[i + 1]
         list.push({
           id: `conn-${step.seq_number}-to-${toStep.seq_number}`,
-          from: `sop-step-${step.seq_number}`,
-          to: `sop-step-${toStep.seq_number}`,
+          from: stepShapeId(step.seq_number),
+          to: stepShapeId(toStep.seq_number),
           sourceType: stepShapeType(step),
           targetType: stepShapeType(toStep),
         })
@@ -350,7 +379,7 @@ export function SOPDiagramFlowchart({
       priorityIds: routingPriorityIdsRef.current,
       reconcilePass: routingReconcilePass,
     })
-  }, [sortedSteps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed, routingReconcilePass])
+  }, [sortedSteps, rowIdToSeq, labelConfig?.custom_labels, pathLayoutSeed, routingReconcilePass, stepShapeId])
   /* ── Scan: reserved sides per target (all Tidak to same target get left/right) ── */
   const reservedSidesRef = useRef<Map<string, Set<string>>>(new Map())
   reservedSidesRef.current = useMemo(() => {
@@ -369,22 +398,41 @@ export function SOPDiagramFlowchart({
   /* ── Split cross-page connections + OPC pairs ──── */
 
   const { pages: pageConnections, opcPairs } = useMemo(
-    () => splitCrossPageConnections(allConnections, steps, config.firstPageSteps, config.nextPageSteps),
-    [allConnections, steps, config.firstPageSteps, config.nextPageSteps],
+    () =>
+      splitCrossPageConnections(
+        allConnections,
+        steps,
+        config.firstPageSteps,
+        config.nextPageSteps,
+        stepShapeIdPrefix,
+        diagramDomPrefix,
+      ),
+    [
+      allConnections,
+      steps,
+      config.firstPageSteps,
+      config.nextPageSteps,
+      stepShapeIdPrefix,
+      diagramDomPrefix,
+    ],
   )
 
   /* ── Per-page obstacles (step shapes + OPC shapes) */
 
   const pageObstacles = useMemo(() => {
     return allPages.map((pageSteps, pi) => {
-      const obs: { id: string }[] = [{ id: `sop-page-${pi}-table-header` }]
-      for (const s of pageSteps) obs.push({ id: `sop-step-${s.seq_number}` })
+      const obs: { id: string }[] = [{ id: `${diagramDomPrefix}sop-page-${pi}-table-header` }]
+      for (const s of pageSteps) obs.push({ id: stepShapeId(s.seq_number) })
       const { top, bottom } = getOpcShapesForPage(pi, opcPairs)
-      for (const opc of top) obs.push({ id: `opc-in-step-${opc.fromSeq}-to-step-${opc.toSeq}` })
-      for (const opc of bottom) obs.push({ id: `opc-out-step-${opc.fromSeq}-to-step-${opc.toSeq}` })
+      for (const endpoint of top) {
+        obs.push({ id: getOpcElementId(endpoint.opc, endpoint.variant) })
+      }
+      for (const endpoint of bottom) {
+        obs.push({ id: getOpcElementId(endpoint.opc, endpoint.variant) })
+      }
       return obs
     })
-  }, [allPages, opcPairs])
+  }, [allPages, opcPairs, diagramDomPrefix, stepShapeId])
 
   /* ── usedSides (global across all pages) ─────── */
 
@@ -422,10 +470,11 @@ export function SOPDiagramFlowchart({
       allPages.length,
       pelaksanaBoundsRef.current,
       columnBoundsRef.current,
+      areaIdForPage,
     )
     if (!sig) return false
     return commitPelaksanaMeasure(sig)
-  }, [allPages.length, commitPelaksanaMeasure])
+  }, [allPages.length, areaIdForPage, commitPelaksanaMeasure])
 
   useEffect(() => {
     if (allPages.length === 0) {
@@ -436,11 +485,12 @@ export function SOPDiagramFlowchart({
     const geomUnchanged = pageGeomSig === prevPageGeomSigRef.current
     prevPageGeomSigRef.current = pageGeomSig
     if (geomUnchanged) {
-      if (hasFlowchartMeasureDom(allPages.length)) {
+      if (hasFlowchartMeasureDom(allPages.length, areaIdForPage)) {
         if (!measurePelaksanaBounds()) {
           const fallbackSig = applyFlowchartPelaksanaFallbackBounds(
             allPages.length,
             pelaksanaBoundsRef.current,
+            areaIdForPage,
           )
           commitPelaksanaMeasure(fallbackSig || 'fallback-empty', true)
         }
@@ -465,6 +515,7 @@ export function SOPDiagramFlowchart({
       const fallbackSig = applyFlowchartPelaksanaFallbackBounds(
         allPages.length,
         pelaksanaBoundsRef.current,
+        areaIdForPage,
       )
       if (fallbackSig) {
         commitPelaksanaMeasure(fallbackSig, true)
@@ -477,12 +528,13 @@ export function SOPDiagramFlowchart({
     const tryMeasure = () => {
       if (cancelled) return
       frame += 1
-      if (hasFlowchartMeasureDom(allPages.length)) {
+      if (hasFlowchartMeasureDom(allPages.length, areaIdForPage)) {
         clearScheduledFallback()
         if (!measurePelaksanaBounds()) {
           const fallbackSig = applyFlowchartPelaksanaFallbackBounds(
             allPages.length,
             pelaksanaBoundsRef.current,
+            areaIdForPage,
           )
           commitPelaksanaMeasure(fallbackSig || 'fallback-empty', true)
         }
@@ -503,7 +555,7 @@ export function SOPDiagramFlowchart({
       cancelled = true
       clearScheduledFallback()
     }
-  }, [allPages.length, pageGeomSig, measurePelaksanaBounds, commitPelaksanaMeasure])
+  }, [allPages.length, pageGeomSig, measurePelaksanaBounds, areaIdForPage, commitPelaksanaMeasure])
 
   useEffect(() => {
     const onBeforePrint = () => {
@@ -525,14 +577,14 @@ export function SOPDiagramFlowchart({
     }, 150)
     
     for (let pi = 0; pi < allPages.length; pi++) {
-      const container = document.getElementById(sopAreaId(pi))
+      const container = document.getElementById(areaIdForPage(pi))
       if (!container) continue
       const ro = new ResizeObserver(debouncedMeasure)
       ro.observe(container)
       observers.push(ro)
     }
     return () => observers.forEach((ro) => ro.disconnect())
-  }, [allPages.length, measurePelaksanaBounds])
+  }, [allPages.length, areaIdForPage, measurePelaksanaBounds])
 
   const arrowRerouteVersion =
     pathLayoutSeed + layoutMeasureVersion + routingReconcilePass
@@ -549,13 +601,15 @@ export function SOPDiagramFlowchart({
         const conns = pageConnections[pageIndex] ?? []
         const obstacles = pageObstacles[pageIndex] ?? []
         const { top: opcTop, bottom: opcBottom } = getOpcShapesForPage(pageIndex, opcPairs)
-        const areaId = sopAreaId(pageIndex)
+        const areaId = areaIdForPage(pageIndex)
 
         return (
           <FlowchartPage
             key={pageIndex}
             pageIndex={pageIndex}
             areaId={areaId}
+            tableHeaderId={`${diagramDomPrefix}sop-page-${pageIndex}-table-header`}
+            stepShapeIdPrefix={stepShapeIdPrefix}
             pageSteps={pageSteps}
             pageRows={pageRows}
             implementers={implementers}
@@ -597,6 +651,8 @@ export function SOPDiagramFlowchart({
 interface FlowchartPageProps {
   pageIndex: number
   areaId: string
+  tableHeaderId: string
+  stepShapeIdPrefix: string
   pageSteps: SOPStep[]
   pageRows: ProsedurRow[]
   implementers: Implementer[]
@@ -604,8 +660,8 @@ interface FlowchartPageProps {
   pelaksanaColWidth: number
   connections: FlowchartConnection[]
   obstacles: { id: string }[]
-  opcTop: OpcPair[]
-  opcBottom: OpcPair[]
+  opcTop: PositionedOpcEndpoint[]
+  opcBottom: PositionedOpcEndpoint[]
   usedSides: UsedSides
   arrowsReady: boolean
   layoutMeasured?: boolean
@@ -630,6 +686,8 @@ interface FlowchartPageProps {
 function FlowchartPage({
   pageIndex,
   areaId,
+  tableHeaderId,
+  stepShapeIdPrefix,
   pageSteps,
   pageRows,
   implementers,
@@ -700,8 +758,8 @@ function FlowchartPage({
       >
         {opcTop.length > 0 && (
           <FlowchartOpcRow
-            opcs={opcTop}
-            variant="in"
+            endpoints={opcTop}
+            position="top"
             implementers={implementers}
             kegiatanPercent={config.widthKegiatan}
             pelaksanaColPercent={pelaksanaColWidth}
@@ -724,7 +782,7 @@ function FlowchartPage({
             <col style={{ width: `${config.widthOutput}%` }} />
             <col style={{ width: `${config.widthKeterangan}%` }} />
           </colgroup>
-          <thead id={`sop-page-${pageIndex}-table-header`}>
+          <thead id={tableHeaderId}>
             <tr className="bg-[#D9D9D9]">
               <th rowSpan={2} className="border-2 py-0.5 border-black">NO</th>
               <th rowSpan={2} className="border-2 py-0.5 border-black">KEGIATAN</th>
@@ -770,7 +828,7 @@ function FlowchartPage({
                       {step.id_implementer === impl?.id && (
                         <div className="flex flex-col justify-around items-center px-2 py-5 min-h-[70px] relative z-10">
                           <span
-                            id={`sop-step-${step.seq_number}`}
+                            id={`${stepShapeIdPrefix}${step.seq_number}`}
                             className="inline-block leading-[0]"
                             aria-hidden
                           >
@@ -865,8 +923,8 @@ function FlowchartPage({
 
         {opcBottom.length > 0 && (
           <FlowchartOpcRow
-            opcs={opcBottom}
-            variant="out"
+            endpoints={opcBottom}
+            position="bottom"
             implementers={implementers}
             kegiatanPercent={config.widthKegiatan}
             pelaksanaColPercent={pelaksanaColWidth}
@@ -889,7 +947,7 @@ function FlowchartPage({
                 key={conn.id}
                 connection={conn}
                 idcontainer={areaId}
-                idarrow={`p${pageIndex}-${idx}-${conn.id}`}
+                idarrow={`${areaId}-p${pageIndex}-${idx}-${conn.id}`}
                 obstacles={obstacles}
                 usedSides={usedSides}
                 connectionIndex={idx}

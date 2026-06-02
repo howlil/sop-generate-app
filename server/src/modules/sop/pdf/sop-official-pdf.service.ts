@@ -5,6 +5,22 @@ import { assertValidPdfBuffer } from '../../tte/shared/utils/pdf-signature-verif
 
 const SIGNATURE_QR_DRAW_SIZE = 54;
 const SIGNATURE_QR_RENDER_SIZE = 192;
+const SIGNATURE_QR_RIGHT_INSET = 104.89;
+const SIGNATURE_QR_TOP_INSET = 92.28;
+
+export function resolveSignatureQrPlacement(pageSize: { width: number; height: number }): {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+} {
+  return {
+    x: pageSize.width - SIGNATURE_QR_RIGHT_INSET - SIGNATURE_QR_DRAW_SIZE,
+    y: pageSize.height - SIGNATURE_QR_TOP_INSET - SIGNATURE_QR_DRAW_SIZE,
+    width: SIGNATURE_QR_DRAW_SIZE,
+    height: SIGNATURE_QR_DRAW_SIZE,
+  };
+}
 
 @Injectable()
 export class SopOfficialPdfService {
@@ -38,13 +54,14 @@ export class SopOfficialPdfService {
         margin: 1,
       });
       const qrImage = await pdfDocument.embedPng(qrPng);
-      // Sel tanda tangan Kepala OPD berada di sisi kanan header halaman pertama.
-      firstPage.drawImage(qrImage, {
-        x: 683,
-        y: 449,
-        width: SIGNATURE_QR_DRAW_SIZE,
-        height: SIGNATURE_QR_DRAW_SIZE,
-      });
+      // Sel tanda tangan Kepala OPD memakai inset dari sudut kanan atas halaman.
+      firstPage.drawImage(
+        qrImage,
+        resolveSignatureQrPlacement({
+          width: firstPage.getWidth(),
+          height: firstPage.getHeight(),
+        }),
+      );
 
       const stampedPdf = Buffer.from(await pdfDocument.save({ useObjectStreams: false }));
       assertValidPdfBuffer(stampedPdf);

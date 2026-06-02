@@ -16,6 +16,7 @@ import {
 import { simplifyOrthogonalPath, type PathObstacleCheck } from './orthogonal-path-edit.util'
 
 export type PathGuardDiagramKind = 'flowchart' | 'bpmn'
+export type PathShapeCollisionPolicy = 'block' | 'warn'
 
 const DEFAULT_CLEARANCE = 3
 const FLOWCHART_SHAPE_MARGIN = 16
@@ -211,6 +212,11 @@ export function rebuildPathForAnchorSides(
 export interface PathShapeGuardConfig {
   check: PathShapeGuardCheckInput
   repair: RepairPathAroundShapesInput
+  /**
+   * Interactive BPMN edits may intentionally keep an existing collision while
+   * the user reshapes a connector. Auto-routing still prefers a clean path.
+   */
+  collisionPolicy?: PathShapeCollisionPolicy
 }
 
 export function finalizeManualOrthogonalPath(
@@ -234,6 +240,7 @@ export function finalizeManualOrthogonalPath(
     wouldCross,
   )
   if (check(next)) return next
+  if (guard.collisionPolicy === 'warn') return next
 
   const repaired = repairPathAroundShapes(guard.repair)
   if (repaired && repaired.length >= 2 && check(repaired)) return repaired

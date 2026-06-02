@@ -22,6 +22,7 @@ import {
   isDiamondSnapEndpoint,
   isEndpointIndex,
   pointOnShapeEdge,
+  resolveAnchorSnap,
   snapDistanceToCenter,
   sideLengthPx,
   buildVisualConnectorAnchors,
@@ -302,7 +303,7 @@ function EditableOrthogonalPathInner({
       )
       const invalid = isPathBlockingShapes({ ...guard.check, path: finalized })
       setIsPathInvalid(invalid)
-      if (invalid) {
+      if (invalid && guard.collisionPolicy !== 'warn') {
         const revert = lastValidPathRef.current.map((p) => ({ ...p }))
         setLocalPath(revert)
         return revert
@@ -402,17 +403,27 @@ function EditableOrthogonalPathInner({
         }
       } else {
         const kindAnchors = filterAnchorsForEndpoint(anchors, pointKind)
-        const nearest = kindAnchors[0]
-        if (nearest) {
+        const snappedAnchor = resolveAnchorSnap({
+          anchors: kindAnchors,
+          x: endpoint.x,
+          y: endpoint.y,
+          kind: pointKind,
+          snapDistancePx: ANCHOR_SNAP_DISTANCE_PX,
+          releaseDistancePx: ANCHOR_SNAP_DISTANCE_PX * 1.5,
+          lockedAnchorId: activeAnchorIdRef.current,
+        })
+        if (snappedAnchor) {
           const snappedPath = moved.map((point) => ({ ...point }))
-          snappedPath[endpointIndex] = { x: nearest.x, y: nearest.y }
-          activeAnchorIdRef.current = nearest.id
+          snappedPath[endpointIndex] = { x: snappedAnchor.x, y: snappedAnchor.y }
+          activeAnchorIdRef.current = snappedAnchor.id
           if (pointKind === 'start') {
-            nextSides = { ...nextSides, sSide: nearest.side }
+            nextSides = { ...nextSides, sSide: snappedAnchor.side }
           } else {
-            nextSides = { ...nextSides, eSide: nearest.side }
+            nextSides = { ...nextSides, eSide: snappedAnchor.side }
           }
           moved = alignEndpointSegment(snappedPath, endpointIndex)
+        } else {
+          activeAnchorIdRef.current = null
         }
       }
       localSidesRef.current = nextSides

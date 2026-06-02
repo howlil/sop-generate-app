@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { computeBpmnLayout } from '../bpmn-layout.engine'
+import {
+  computeBpmnLayout,
+  straightenSimpleCrossLaneTaskChains,
+  type BpmnLayoutGlobalStep,
+} from '../bpmn-layout.engine'
 import { BPMN_SOP_CONTENT_MAX_WIDTH_PX } from '../bpmnDiagramMetrics'
 
 describe('computeBpmnLayout', () => {
@@ -94,6 +98,37 @@ describe('computeBpmnLayout', () => {
     expect(xs[1]).toBeGreaterThan(xs[0]!)
   })
 
+  it('should_align_plain_cross_lane_handoff_in_the_same_column', () => {
+    const steps = [
+      {
+        id_step: 'a',
+        seq_number: 1,
+        name: 'Menerima dokumen',
+        type: 'task',
+        id_implementer: 'imp-front',
+      },
+      {
+        id_step: 'b',
+        seq_number: 2,
+        name: 'Memverifikasi dokumen',
+        type: 'task',
+        id_implementer: 'imp-back',
+      },
+    ]
+    const connections = [{ id: 'c1', from: 'bpmn-step-1', to: 'bpmn-step-2' }]
+    const result = computeBpmnLayout({
+      steps,
+      connections,
+      implementerIds: ['imp-front', 'imp-back'],
+      contentMaxWidthPx: BPMN_SOP_CONTENT_MAX_WIDTH_PX,
+    })
+    expect(result).not.toBeNull()
+    const front = result!.globalSteps.find((step) => step.id === 'a')!
+    const back = result!.globalSteps.find((step) => step.id === 'b')!
+    expect(front.columnIndex).toBe(back.columnIndex)
+    expect(front.x).toBe(back.x)
+  })
+
   it('should_keep_main_handoff_left_and_push_decision_branch_right_in_same_lane', () => {
     const steps = [
       {
@@ -149,5 +184,66 @@ describe('computeBpmnLayout', () => {
     const branchLane3 = result!.globalSteps.find((s) => s.id === 'e')!
     expect(mainLane3.columnIndex).toBeLessThan(branchLane3.columnIndex)
     expect(mainLane3.x).toBeLessThan(branchLane3.x)
+  })
+
+  it('should_match_router_lane_tops_to_the_contiguous_swimlane_table_rows', () => {
+    const result = computeBpmnLayout({
+      steps: [
+        {
+          id_step: 'a',
+          seq_number: 1,
+          name: 'Menerima dokumen',
+          type: 'task',
+          id_implementer: 'imp-front',
+        },
+        {
+          id_step: 'b',
+          seq_number: 2,
+          name: 'Memverifikasi dokumen',
+          type: 'task',
+          id_implementer: 'imp-back',
+        },
+      ],
+      connections: [{ id: 'c1', from: 'bpmn-step-1', to: 'bpmn-step-2' }],
+      implementerIds: ['imp-front', 'imp-back'],
+    })
+
+    const routerLanes = result!.bpmnLaneLayoutForRouter!.lanes
+    expect(routerLanes[0]!.top).toBe(0)
+    expect(routerLanes[1]!.top).toBe(routerLanes[0]!.height)
+  })
+
+  it('should_straighten_a_shifted_simple_cross_lane_task_chain_when_lanes_are_free', () => {
+    const makeStep = (
+      id: string,
+      seq: number,
+      lane: number,
+      columnIndex: number,
+    ): BpmnLayoutGlobalStep => ({
+      id,
+      seq,
+      lane,
+      columnIndex,
+      type: 'task',
+      x: 0,
+      y: 0,
+      width: 96,
+      height: 44,
+      name: id,
+      laneHeight: 152,
+    })
+    const steps = [
+      makeStep('a', 1, 0, 1),
+      makeStep('b', 2, 1, 2),
+      makeStep('c', 3, 2, 3),
+      makeStep('d', 4, 0, 4),
+    ]
+    const straightened = straightenSimpleCrossLaneTaskChains(steps, [
+      { from: 'bpmn-step-1', to: 'bpmn-step-2' },
+      { from: 'bpmn-step-2', to: 'bpmn-step-3' },
+      { from: 'bpmn-step-3', to: 'bpmn-step-4' },
+    ])
+
+    expect(straightened.map((step) => step.columnIndex)).toEqual([1, 1, 1, 4])
   })
 })

@@ -6,6 +6,7 @@ import {
   measureFlowchartImplementerColumnBounds,
 } from '../core/route/flowchart/flowchart-column-bounds.util'
 import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
+import type { FlowchartAreaIdResolver } from '../core/route/flowchart/flowchart-column-bounds.util'
 
 export type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 
@@ -33,6 +34,7 @@ function buildPelaksanaBoundsSig(
 export function measureFlowchartPelaksanaBounds(
   pageCount: number,
   boundsStore: Record<number, FlowchartPelaksanaBoundsRect>,
+  areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
 ): { sig: string; domReady: boolean } {
   const PAD_LEFT = 8
   const PAD_RIGHT = 8
@@ -40,7 +42,7 @@ export function measureFlowchartPelaksanaBounds(
   const PAD_BOTTOM = 12
   let domReady = false
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopDiagramAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
     domReady = true
     const containerRect = container.getBoundingClientRect()
@@ -56,7 +58,7 @@ export function measureFlowchartPelaksanaBounds(
       minTop = Math.min(minTop, rect.top - containerRect.top)
       maxBottom = Math.max(maxBottom, rect.bottom - containerRect.top)
     })
-    const opcEls = container.querySelectorAll('[id^="opc-"]')
+    const opcEls = container.querySelectorAll('[data-flowchart-opc]')
     opcEls.forEach((el) => {
       const rect = el.getBoundingClientRect()
       minTop = Math.min(minTop, rect.top - containerRect.top)
@@ -79,9 +81,10 @@ export function measureFlowchartLayoutWithColumns(
   pageCount: number,
   boundsStore: Record<number, FlowchartPelaksanaBoundsRect>,
   columnStore: Record<number, ImplementerColumnBoundsMap>,
+  areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
 ): { sig: string; domReady: boolean } {
-  const base = measureFlowchartPelaksanaBounds(pageCount, boundsStore)
-  const colSig = measureFlowchartImplementerColumnBounds(pageCount, columnStore)
+  const base = measureFlowchartPelaksanaBounds(pageCount, boundsStore, areaIdForPage)
+  const colSig = measureFlowchartImplementerColumnBounds(pageCount, columnStore, areaIdForPage)
   return { sig: `${base.sig}::${colSig}`, domReady: base.domReady }
 }
 
@@ -89,9 +92,10 @@ export function measureFlowchartLayoutWithColumns(
 export function measureFlowchartGridLayouts(
   pageCount: number,
   gridStore: Record<number, FlowchartGridLayout | null>,
+  areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
 ): void {
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopDiagramAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) {
       gridStore[pi] = null
       continue
@@ -103,13 +107,14 @@ export function measureFlowchartGridLayouts(
 export function applyFlowchartPelaksanaFallbackBounds(
   pageCount: number,
   boundsStore: Record<number, FlowchartPelaksanaBoundsRect>,
+  areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
 ): string {
   const PAD_LEFT = 8
   const PAD_RIGHT = 8
   const PAD_TOP = 8
   const PAD_BOTTOM = 12
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopDiagramAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
     const containerRect = container.getBoundingClientRect()
     boundsStore[pi] = {
@@ -122,9 +127,12 @@ export function applyFlowchartPelaksanaFallbackBounds(
   return buildPelaksanaBoundsSig(boundsStore)
 }
 
-export function hasFlowchartMeasureDom(pageCount: number): boolean {
+export function hasFlowchartMeasureDom(
+  pageCount: number,
+  areaIdForPage: FlowchartAreaIdResolver = sopDiagramAreaId,
+): boolean {
   for (let pi = 0; pi < pageCount; pi += 1) {
-    const container = document.getElementById(sopDiagramAreaId(pi))
+    const container = document.getElementById(areaIdForPage(pi))
     if (!container) continue
     if (container.querySelector('td[data-implementer-id]')) return true
   }

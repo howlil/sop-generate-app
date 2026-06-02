@@ -142,8 +142,8 @@ export function DetailPageLayout({
 }: DetailPageLayoutProps) {
   const mainContent = main ?? children
   return (
-    <div className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-2 sm:gap-3'}>
-      <div data-print-hide>
+    <div suppressHydrationWarning className={className ?? 'flex flex-col h-[calc(100vh-5rem)] min-h-0 gap-2 sm:gap-3'}>
+      <div suppressHydrationWarning data-print-hide>
       <SetPageHeader
         breadcrumb={breadcrumb ?? []}
         title={title}

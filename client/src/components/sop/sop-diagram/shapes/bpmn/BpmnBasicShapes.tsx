@@ -3,7 +3,12 @@
  * Digabung dalam satu file karena ukuran kecil (~25–38 baris masing-masing).
  */
 import { useMemo } from 'react'
-import { BPMN_EVENT_RADIUS, BPMN_GATEWAY_HALF_SIZE } from '../../layout/bpmnDiagramMetrics'
+import {
+  BPMN_DECISION_TEXT_OFFSET_Y,
+  BPMN_EVENT_RADIUS,
+  BPMN_GATEWAY_HALF_SIZE,
+} from '../../layout/bpmnDiagramMetrics'
+import { BpmnDecisionText } from './DecisionText'
 
 // ----- Event -----
 
@@ -68,7 +73,7 @@ interface GatewayProps {
   name?: string
 }
 
-export function Gateway({ id, x = 0, y = 0 }: GatewayProps) {
+export function Gateway({ id, x = 0, y = 0, name }: GatewayProps) {
   const diamondPath = useMemo(
     () =>
       `M ${x} ${y - BPMN_GATEWAY_HALF_SIZE} L ${x + BPMN_GATEWAY_HALF_SIZE} ${y} L ${x} ${y + BPMN_GATEWAY_HALF_SIZE} L ${x - BPMN_GATEWAY_HALF_SIZE} ${y} Z`,
@@ -76,8 +81,18 @@ export function Gateway({ id, x = 0, y = 0 }: GatewayProps) {
   )
 
   return (
-    <g id={id}>
-      <path d={diamondPath} fill="white" stroke="#000" strokeWidth="2" />
-    </g>
+    <>
+      <g id={id}>
+        <path d={diamondPath} fill="white" stroke="#000" strokeWidth="2" />
+      </g>
+      {name?.trim() && (
+        <BpmnDecisionText
+          stepId={id ?? ''}
+          stepName={name}
+          x={x}
+          y={y + BPMN_DECISION_TEXT_OFFSET_Y}
+        />
+      )}
+    </>
   )
 }

@@ -1,21 +1,20 @@
 import { useMemo } from 'react'
-import type { OpcPair } from '../core/route/flowchart/flowchartPagination'
+import type { PositionedOpcEndpoint } from '../core/route/flowchart/flowchartPagination'
 import type { ImplementerColumnBoundsMap } from '../core/route/flowchart/flowchart-column-bounds.util'
 import {
   buildFlowchartTableColumnPercents,
   centerPercentToLeftCss,
   centerXToLeftPx,
   computeOpcStackTopPx,
-  layoutOpcPlacements,
+  layoutOpcEndpointPlacements,
   OPC_CONNECTOR_HEIGHT_PX,
   OPC_CONNECTOR_STACK_GAP_PX,
-  type OpcPlacementVariant,
 } from '../core/route/flowchart/flowchart-opc-placement.util'
 import { FlowchartOffPageConnector } from '../shapes/flowchart/OffPageConnector'
 
 interface FlowchartOpcRowProps {
-  opcs: OpcPair[]
-  variant: OpcPlacementVariant
+  endpoints: PositionedOpcEndpoint[]
+  position: 'top' | 'bottom'
   implementers: Array<{ id: string }>
   kegiatanPercent: number
   pelaksanaColPercent: number
@@ -24,8 +23,8 @@ interface FlowchartOpcRowProps {
 }
 
 export function FlowchartOpcRow({
-  opcs,
-  variant,
+  endpoints,
+  position,
   implementers,
   kegiatanPercent,
   pelaksanaColPercent,
@@ -38,12 +37,12 @@ export function FlowchartOpcRow({
   )
   const placements = useMemo(
     () =>
-      layoutOpcPlacements(opcs, variant, {
+      layoutOpcEndpointPlacements(endpoints, {
         implementers,
         columnBounds,
         tableColumns,
       }),
-    [opcs, variant, implementers, columnBounds, tableColumns],
+    [endpoints, implementers, columnBounds, tableColumns],
   )
   if (placements.length === 0) return null
   const maxStack = placements.reduce((max, p) => Math.max(max, p.stackIndex), 0)
@@ -54,7 +53,7 @@ export function FlowchartOpcRow({
     <div
       className={`relative w-full ${className}`}
       style={{ minHeight: rowHeight }}
-      data-opc-row={variant}
+      data-opc-row={position}
     >
       {placements.map((placement) => {
         const topPx = computeOpcStackTopPx(placement.stackIndex)

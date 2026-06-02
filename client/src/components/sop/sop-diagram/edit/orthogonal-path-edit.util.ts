@@ -86,9 +86,13 @@ function applyWaypointDragDelta(
       if (Math.abs(dx) >= Math.abs(dy)) {
         nx = snapToGrid(nx)
         ny = next[index]!.y
+        if (vertPrev && prev) prev.x = nx
+        if (vertNext && nextPt) nextPt.x = nx
       } else {
         ny = snapToGrid(ny)
         nx = next[index]!.x
+        if (horizPrev && prev) prev.y = ny
+        if (horizNext && nextPt) nextPt.y = ny
       }
     } else if (horizPrev || horizNext) {
       // One horizontal neighbor, other is diagonal/degenerate — allow horizontal movement

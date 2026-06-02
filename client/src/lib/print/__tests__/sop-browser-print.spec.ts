@@ -106,6 +106,11 @@ describe('areSopDiagramRootsReady', () => {
     document.querySelector('.sop-print-diagram-bpmn')?.remove()
     expect(areSopDiagramRootsReady(document)).toBe(false)
   })
+
+  it('dapat mengecek flowchart secara terpisah untuk ekspor serial', () => {
+    document.querySelector('.sop-print-diagram-bpmn')?.remove()
+    expect(areSopDiagramRootsReady(document, ['flowchart'])).toBe(true)
+  })
 })
 
 describe('suppressBrowserPrintChrome', () => {

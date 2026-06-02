@@ -81,11 +81,11 @@ export const Route = createRootRoute({
 function RootDocument({ children }: { children: React.ReactNode }) {
   // Auth check and token refresh already handled in beforeLoad
   return (
-    <html lang="id">
+    <html lang="id" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <ErrorBoundary fallback={<RouteErrorPage error={new Error("Terjadi kesalahan yang tidak terduga pada aplikasi.")} reset={() => window.location.reload()} />}>
           <QueryClientProvider client={queryClient}>
             <RouteFocusManager>{children}</RouteFocusManager>

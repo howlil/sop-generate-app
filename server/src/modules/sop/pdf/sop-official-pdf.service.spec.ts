@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { PDFDocument } from 'pdf-lib';
-import { SopOfficialPdfService } from './sop-official-pdf.service';
+import { resolveSignatureQrPlacement, SopOfficialPdfService } from './sop-official-pdf.service';
 
 describe('SopOfficialPdfService', () => {
   const service = new SopOfficialPdfService();
@@ -32,9 +32,24 @@ describe('SopOfficialPdfService', () => {
     await expect(PDFDocument.load(stampedPdf)).resolves.toBeDefined();
   });
 
+  it('menjaga posisi QR relatif terhadap sudut kanan atas halaman', () => {
+    expect(resolveSignatureQrPlacement({ width: 841.89, height: 595.28 })).toEqual({
+      x: 683,
+      y: 449,
+      width: 54,
+      height: 54,
+    });
+    expect(resolveSignatureQrPlacement({ width: 900, height: 700 })).toEqual({
+      x: 741.11,
+      y: 553.72,
+      width: 54,
+      height: 54,
+    });
+  });
+
   it('menolak (melempar BadRequestException) jika PDF buffer rusak/corrupt (Bad Case)', async () => {
     const corruptPdf = Buffer.from('%PDF-1.7\nCorrupt-buffer-tanpa-eof');
-    
+
     await expect(
       service.stampSignatureQrCode({
         detailSopId: 'detail-3',

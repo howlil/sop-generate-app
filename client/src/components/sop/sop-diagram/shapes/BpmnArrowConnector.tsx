@@ -78,6 +78,8 @@ interface BpmnArrowConnectorProps {
   obstacleRectsRef?: MutableRefObject<Array<{ left: number; top: number; width: number; height: number }> | null>
   /** Parent-level result. Missing value keeps the legacy per-connector fallback available. */
   plannedPath?: PlannedBpmnPath | null
+  /** Map logical workflow node IDs to IDs isolated inside this rendered DOM tree. */
+  resolveElementId?: (logicalElementId: string) => string
 }
 
 /* ───────────────────────── Helpers ─────────────────────────── */
@@ -120,10 +122,12 @@ function getElementScale(element: HTMLElement): { x: number; y: number } {
   }
 }
 
-function getElementPosition(elementId: string, container: HTMLElement): ElemPos | null {
-  const el =
-    container.querySelector<SVGElement>(`#${CSS.escape(elementId)}`) ??
-    document.getElementById(elementId)
+function getElementPosition(
+  elementId: string,
+  container: HTMLElement,
+  resolveElementId: (logicalElementId: string) => string,
+): ElemPos | null {
+  const el = container.querySelector<SVGElement>(`#${CSS.escape(resolveElementId(elementId))}`)
   if (!el) return null
   const containerRect = container.getBoundingClientRect()
   const scale = getElementScale(container)
@@ -323,6 +327,7 @@ export function BpmnArrowConnector({
   rerouteVersion = 0,
   obstacleRectsRef,
   plannedPath,
+  resolveElementId = (elementId) => elementId,
 }: BpmnArrowConnectorProps) {
   const [pathData, setPathData] = useState('')
   const [labelPos, setLabelPos] = useState<{ x: number; y: number } | null>(null)
@@ -368,8 +373,61 @@ export function BpmnArrowConnector({
     let retryFrame = 0
     let cancelled = false
 
+    const applyPlannedPath = (routingObstacles: Rect[]): boolean => {
+      if (!plannedPath?.path || plannedPath.path.length < 2) return false
+      const planned = snapToOrthogonal(plannedPath.path)
+      const nextSides: [Side, Side] = [plannedPath.sSide, plannedPath.eSide]
+      setPathData(pathToD(planned))
+      setResolvedPath((prev) => (samePath(prev, planned) ? prev : planned.map((p) => ({ ...p }))))
+      setResolvedSides((prev) => (sameSides(prev, nextSides) ? prev : nextSides))
+
+      const lp = resolveConnectorLabelPosition(
+        planned,
+        connection.label,
+        manualLabelPosition,
+        routingObstacles,
+      )
+      setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
+
+      const payload: PathUpdatedPayload = {
+        connectionId: connection.id,
+        from: connection.from,
+        to: connection.to,
+        sSide: plannedPath.sSide,
+        eSide: plannedPath.eSide,
+        startPoint: { ...planned[0]! },
+        endPoint: { ...planned[planned.length - 1]! },
+        bendPoints: planned.slice(1, -1).map((point) => ({ ...point })),
+        label: connection.label ?? undefined,
+        labelPosition: lp ?? undefined,
+      }
+      const pathSig = planned.map((point) => `${point.x | 0},${point.y | 0}`).join(';')
+      const sig = `${connection.id}:${plannedPath.sSide}:${plannedPath.eSide}:${pathSig}`
+      if (onPathUpdatedRef.current && lastAutoSigRef.current !== sig) {
+        lastAutoSigRef.current = sig
+        onPathUpdatedRef.current(payload)
+      }
+      return true
+    }
+
     const runRoute = (): void => {
       if (cancelled) return
+      if (!editMode && !isValidManualConfig(manualConfig)) {
+        const precomputed = obstacleRectsRef?.current ?? []
+        const obstacleIds = obstaclesRef.current.map((obstacle) => obstacle.id)
+        const routingObstacles = filterRoutingObstacles(
+          precomputed,
+          obstacleIds,
+          connection.from,
+          connection.to,
+        )
+        if (applyPlannedPath(routingObstacles)) {
+          routingGuardRef.current = null
+          setEditableAnchors((prev) => (prev.length === 0 ? prev : []))
+          setShapeSnapTargets((prev) => (prev == null ? prev : null))
+          return
+        }
+      }
       const container = document.getElementById(idcontainer)
       if (!container) {
         setPathData('')
@@ -379,8 +437,8 @@ export function BpmnArrowConnector({
         routingGuardRef.current = null
         return
       }
-      const fromPos = getElementPosition(connection.from, container)
-      const toPos = getElementPosition(connection.to, container)
+      const fromPos = getElementPosition(connection.from, container, resolveElementId)
+      const toPos = getElementPosition(connection.to, container, resolveElementId)
       if (!fromPos || !toPos) {
         if (retryFrame < 4) {
           retryFrame += 1
@@ -420,7 +478,7 @@ export function BpmnArrowConnector({
     } else {
       obsRects = curObstacles
         .map(o => o.id)
-        .map(id => getElementPosition(id, container))
+        .map(id => getElementPosition(id, container, resolveElementId))
         .filter((r): r is ElemPos => r != null)
         .map(r => ({
           left: r.left - OBSTACLE_MARGIN,
@@ -517,41 +575,7 @@ export function BpmnArrowConnector({
     emittedRef.current = false
 
     /* ── Parent-level global routing plan ─────────────────── */
-    if (plannedPath?.path && plannedPath.path.length >= 2) {
-      const planned = snapToOrthogonal(plannedPath.path)
-      const nextSides: [Side, Side] = [plannedPath.sSide, plannedPath.eSide]
-      setPathData(pathToD(planned))
-      setResolvedPath((prev) => (samePath(prev, planned) ? prev : planned.map((p) => ({ ...p }))))
-      setResolvedSides((prev) => (sameSides(prev, nextSides) ? prev : nextSides))
-
-      const lp = resolveConnectorLabelPosition(
-        planned,
-        connection.label,
-        manualLabelPosition,
-        routingObstacles,
-      )
-      setLabelPos((prev) => (sameLabelPosition(prev, lp) ? prev : lp))
-
-      const payload: PathUpdatedPayload = {
-        connectionId: connection.id,
-        from: connection.from,
-        to: connection.to,
-        sSide: plannedPath.sSide,
-        eSide: plannedPath.eSide,
-        startPoint: { ...planned[0]! },
-        endPoint: { ...planned[planned.length - 1]! },
-        bendPoints: planned.slice(1, -1).map((point) => ({ ...point })),
-        label: connection.label ?? undefined,
-        labelPosition: lp ?? undefined,
-      }
-      const pathSig = planned.map((point) => `${point.x | 0},${point.y | 0}`).join(';')
-      const sig = `${connection.id}:${plannedPath.sSide}:${plannedPath.eSide}:${pathSig}`
-      if (onPathUpdatedRef.current && lastAutoSigRef.current !== sig) {
-        lastAutoSigRef.current = sig
-        onPathUpdatedRef.current(payload)
-      }
-      return
-    }
+    if (applyPlannedPath(routingObstacles)) return
 
     if (editMode && isValidManualConfig(manualConfig)) {
       return
@@ -849,7 +873,7 @@ export function BpmnArrowConnector({
     connection.label, connection.sourceType, connection.targetType,
     connection.fromLane, connection.toLane, connection.fromCol, connection.toCol,
     connectionIndex, allConnectionsMeta,
-    manualConfig, manualLabelPosition, plannedPath, rerouteVersion, editMode,
+    manualConfig, manualLabelPosition, plannedPath, resolveElementId, rerouteVersion, editMode,
   ])
 
   if (!pathData) return null
@@ -861,6 +885,7 @@ export function BpmnArrowConnector({
     const shapeGuard: PathShapeGuardConfig | null =
       guardCtx && guardCtx.bpmnRepairBase
         ? {
+            collisionPolicy: 'warn',
             check: {
               kind: 'bpmn',
               path: resolvedPath,

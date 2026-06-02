@@ -6,7 +6,13 @@ import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from '@/components/sop/sop-diagram
 import { buildDiagramStateForPreviewTab } from '@/lib/sop/diagram-config.mapper'
 import type { SopDiagramExportInput } from '@/lib/print/sop-diagram-export.util'
 
-export function SopDiagramExportHost({ input }: { input: SopDiagramExportInput }) {
+export function SopDiagramExportHost({
+  input,
+  kinds = ['flowchart', 'bpmn'],
+}: {
+  input: SopDiagramExportInput
+  kinds?: Array<'flowchart' | 'bpmn'>
+}) {
   const safeImplementers = useMemo(
     () =>
       (input.implementers ?? []).map((impl, index) => ({
@@ -77,12 +83,16 @@ export function SopDiagramExportHost({ input }: { input: SopDiagramExportInput }
   }
   return (
     <div data-sop-diagram-export-root className="bg-white">
-      <div className={`sop-print-diagram-flowchart ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
-        <SOPDiagramFlowchart {...flowchartProps} />
-      </div>
-      <div className={`sop-print-diagram-bpmn ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
-        <SOPDiagramBpmn {...bpmnProps} />
-      </div>
+      {kinds.includes('flowchart') && (
+        <div className={`sop-print-diagram-flowchart ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
+          <SOPDiagramFlowchart {...flowchartProps} />
+        </div>
+      )}
+      {kinds.includes('bpmn') && (
+        <div className={`sop-print-diagram-bpmn ${SOP_DOCUMENT_CONTENT_WRAPPER_CLASS}`}>
+          <SOPDiagramBpmn {...bpmnProps} />
+        </div>
+      )}
     </div>
   )
 }

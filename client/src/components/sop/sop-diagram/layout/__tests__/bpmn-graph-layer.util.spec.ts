@@ -29,7 +29,7 @@ describe('assignStepColumns', () => {
     expect(cols.get('s2')).toBe(1)
   })
 
-  it('should_advance_cross_lane_successor_to_the_next_global_layer', () => {
+  it('should_align_plain_cross_lane_handoff_in_the_same_global_layer', () => {
     const steps = [
       step('s1', 1, 'task', 'lane-a'),
       step('s2', 2, 'task', 'lane-b'),
@@ -37,10 +37,10 @@ describe('assignStepColumns', () => {
     const connections = [{ from: 'bpmn-step-1', to: 'bpmn-step-2' }]
     const cols = assignStepColumns(steps, connections, IMP)
     expect(cols.get('s1')).toBe(0)
-    expect(cols.get('s2')).toBe(1)
+    expect(cols.get('s2')).toBe(0)
   })
 
-  it('should_spread_alternating_lane_handoffs_across_global_layers', () => {
+  it('should_compact_alternating_lane_handoffs_into_shared_global_layers', () => {
     const steps = [
       step('s1', 1, 'task', 'lane-a'),
       step('s2', 2, 'task', 'lane-b'),
@@ -53,7 +53,7 @@ describe('assignStepColumns', () => {
       { from: 'bpmn-step-3', to: 'bpmn-step-4' },
     ]
     const cols = assignStepColumns(steps, connections, IMP)
-    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 1, 2, 3])
+    expect([...steps.map((s) => cols.get(s.id_step))]).toEqual([0, 0, 0, 0])
   })
 
   it('should_place_cross_lane_ya_branch_after_the_gateway_column', () => {

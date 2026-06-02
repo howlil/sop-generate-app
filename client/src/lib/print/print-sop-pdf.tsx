@@ -21,6 +21,7 @@ export type SopPdfPrintOptions = {
 export interface PrepareSopPdfDocumentPropsResult {
   props: SopPdfDocumentProps
   diagramExportFailed: boolean
+  diagramExportError?: Error
 }
 
 async function buildQrDataUrl(payload: TTESignaturePayload | null | undefined): Promise<string | undefined> {
@@ -49,8 +50,11 @@ function shouldExportDiagrams(props: SopPdfDocumentProps, options?: SopPdfPrintO
   if (options?.skipDiagramExport) {
     return false
   }
-  const snapshots = props.diagramSnapshots ?? []
   const requiredKinds = getRequiredDiagramKinds(props)
+  if (requiredKinds.length === 0) {
+    return false
+  }
+  const snapshots = props.diagramSnapshots ?? []
   if (
     snapshots.length > 0 &&
     requiredKinds.every((kind) => snapshots.some((snapshot) => snapshot.kind === kind))
@@ -68,6 +72,9 @@ function shouldExportDiagrams(props: SopPdfDocumentProps, options?: SopPdfPrintO
 }
 
 function getRequiredDiagramKinds(props: SopPdfDocumentProps): Array<'flowchart' | 'bpmn'> {
+  if (!props.prosedurRows || props.prosedurRows.length === 0) {
+    return []
+  }
   const printMode: SopPdfPrintMode =
     props.printMode ?? (props.includeHeader === false ? 'diagrams_only' : 'full')
   if (printMode === 'header_steps_bpmn') {
@@ -104,8 +111,13 @@ export async function prepareSopPdfDocumentProps(
       props: { ...props, diagramSnapshots },
       diagramExportFailed: false,
     }
-  } catch {
-    return { props, diagramExportFailed: true }
+  } catch (err) {
+    console.error('[SOP PDF] Diagram export gagal:', err)
+    return {
+      props,
+      diagramExportFailed: true,
+      diagramExportError: err instanceof Error ? err : new Error(String(err)),
+    }
   }
 }
 
@@ -135,13 +147,35 @@ export async function blobToBase64(blob: Blob): Promise<string> {
 
 /** Bangun PDF arsip lengkap; kegagalan ekspor diagram wajib menghentikan pengesahan. */
 export async function buildSopOfficialPdfBase64(props: SopPdfDocumentProps): Promise<string> {
-  const { props: resolvedProps, diagramExportFailed } = await prepareSopPdfDocumentProps(props)
+  const requiredKinds = getRequiredDiagramKinds(props)
+
+  // Jika tidak ada diagram yang dibutuhkan (misalnya prosedurRows kosong),
+  // langsung buat PDF tanpa diagram.
+  if (requiredKinds.length === 0) {
+    const blob = await buildSopPdfBlob(props, { skipDiagramExport: true })
+    return blobToBase64(blob)
+  }
+
+  const {
+    props: resolvedProps,
+    diagramExportFailed,
+    diagramExportError,
+  } = await prepareSopPdfDocumentProps(props)
   const snapshots = resolvedProps.diagramSnapshots ?? []
-  const missingDiagram = getRequiredDiagramKinds(resolvedProps).some(
+  const missingKinds = requiredKinds.filter(
     (kind) => !snapshots.some((snapshot) => snapshot.kind === kind),
   )
-  if (diagramExportFailed || missingDiagram) {
-    throw new Error('Flowchart atau BPMN SOP gagal dirender. Pengesahan dibatalkan agar PDF resmi tidak rusak.')
+
+  if (diagramExportFailed || missingKinds.length > 0) {
+    const detail = missingKinds.length > 0
+      ? `Diagram yang gagal: ${missingKinds.join(', ')}. `
+      : ''
+    throw new Error(
+      `${detail}Flowchart atau BPMN SOP gagal dirender setelah beberapa percobaan. ` +
+      `${diagramExportError?.message ? `Detail teknis: ${diagramExportError.message}. ` : ''}` +
+      `Pengesahan dibatalkan agar PDF resmi tidak rusak. ` +
+      `Silakan muat ulang halaman dan coba lagi.`,
+    )
   }
   const blob = await buildSopPdfBlob(resolvedProps, { skipDiagramExport: true })
   return blobToBase64(blob)

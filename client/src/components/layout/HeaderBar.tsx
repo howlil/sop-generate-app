@@ -40,7 +40,7 @@ export function HeaderBar() {
       data-print-hide
       className="h-14 px-6 bg-white border-b border-gray-200 flex items-center justify-between flex-shrink-0 gap-4"
     >
-      <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div suppressHydrationWarning className="flex items-center gap-2 min-w-0 flex-1">
         {headerContent ? (
           <>
             {headerContent.leading && (
@@ -55,7 +55,7 @@ export function HeaderBar() {
           </>
         ) : null}
       </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div suppressHydrationWarning className="flex items-center gap-2 flex-shrink-0">
         {headerContent?.actions}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

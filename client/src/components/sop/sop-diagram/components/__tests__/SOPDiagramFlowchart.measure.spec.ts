@@ -68,4 +68,29 @@ describe('measureFlowchartPelaksanaBounds', () => {
     expect(boundsStore[0]?.right).toBe(492)
     expect(boundsStore[0]?.bottom).toBe(392)
   })
+
+  it('should_measure_the_requested_namespaced_instance_when_multiple_diagrams_exist', () => {
+    const visibleContainer = mockContainer({ width: 500, height: 400 }, false)
+    visibleContainer.id = 'main-sop-area-0'
+    document.body.appendChild(visibleContainer)
+
+    const exportContainer = mockContainer({ width: 400, height: 300 }, true)
+    exportContainer.id = 'flowchart-export-main-sop-area-0'
+    document.body.appendChild(exportContainer)
+
+    const boundsStore: Record<number, { left: number; top: number; right: number; bottom: number }> = {}
+    const actual = measureFlowchartPelaksanaBounds(
+      1,
+      boundsStore,
+      (pageIndex) => `flowchart-export-main-sop-area-${pageIndex}`,
+    )
+
+    expect(actual.domReady).toBe(true)
+    expect(boundsStore[0]).toEqual({
+      left: 48,
+      top: 24,
+      right: 112,
+      bottom: 88,
+    })
+  })
 })

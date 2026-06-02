@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { isOrthogonalPath } from '@/components/sop/sop-diagram/core/route/shared/orthogonal-path-normalization.util'
 import {
   alignEndpointSegmentPreservingEndpoint,
   insertWaypointAtSegmentMidpoint,
@@ -59,6 +60,36 @@ describe('orthogonal-path-edit.util', () => {
     const moved = dragWaypointFromOrigin(path, 1, 0, 16, { normalize: false })
     expect(moved[1]?.y).toBe(216)
     expect(moved[1]?.x).toBe(100)
+  })
+
+  it('should_move_next_vertical_bend_when_corner_is_dragged_horizontally', () => {
+    const path = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ]
+    const moved = dragWaypointFromOrigin(path, 1, 16, 0, { normalize: false })
+    expect(moved).toEqual([
+      { x: 0, y: 0 },
+      { x: 116, y: 0 },
+      { x: 116, y: 100 },
+    ])
+    expect(isOrthogonalPath(moved)).toBe(true)
+  })
+
+  it('should_move_previous_horizontal_bend_when_corner_is_dragged_vertically', () => {
+    const path = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ]
+    const moved = dragWaypointFromOrigin(path, 1, 0, 20, { normalize: false })
+    expect(moved).toEqual([
+      { x: 0, y: 20 },
+      { x: 100, y: 20 },
+      { x: 100, y: 100 },
+    ])
+    expect(isOrthogonalPath(moved)).toBe(true)
   })
 
   it('should_simplify_collinear_middle_points', () => {

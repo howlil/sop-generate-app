@@ -1,5 +1,6 @@
 import { flushSync } from 'react-dom'
 import { SOP_BEFORE_PRINT_EVENT } from './sop-print-events'
+import { waitForPaintFrames } from './print-frame-wait'
 
 export const SOP_PRINT_READY_TIMEOUT_MS = 6000
 export const SOP_PRINT_POLL_INTERVAL_MS = 80
@@ -8,6 +9,7 @@ const MIN_PATH_D_LENGTH = 8
 export interface WaitForSopDiagramPrintReadyOptions {
   timeoutMs?: number
   scope?: ParentNode
+  requiredKinds?: SopDiagramKind[]
 }
 
 export interface PrintSopDocumentResult {
@@ -24,6 +26,9 @@ export function suppressBrowserPrintChrome(): () => void {
 }
 
 type SopPrintPrepareHandler = () => void
+export type SopDiagramKind = 'flowchart' | 'bpmn'
+
+const ALL_SOP_DIAGRAM_KINDS: SopDiagramKind[] = ['flowchart', 'bpmn']
 
 let sopPrintPrepareHandler: SopPrintPrepareHandler | null = null
 
@@ -33,11 +38,7 @@ export function registerSopPrintPrepareHandler(handler: SopPrintPrepareHandler |
 }
 
 function waitForPrintPaint(): Promise<void> {
-  return new Promise((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => resolve())
-    })
-  })
+  return waitForPaintFrames(2)
 }
 
 function getExpectedConnectionCount(root: Element): number {
@@ -63,20 +64,52 @@ export function isSopDiagramRootReady(root: Element): boolean {
   return countValidConnectorPaths(root) >= expected
 }
 
-function collectRequiredDiagramRoots(scope: ParentNode): Element[] {
-  const flowchartHost = scope.querySelector('.sop-print-diagram-flowchart')
-  const bpmnHost = scope.querySelector('.sop-print-diagram-bpmn')
-  if (flowchartHost == null || bpmnHost == null) return []
-  return [
-    ...flowchartHost.querySelectorAll('[data-sop-diagram-root]'),
-    ...bpmnHost.querySelectorAll('[data-sop-diagram-root]'),
-  ]
+function hostSelectorForKind(kind: SopDiagramKind): string {
+  return `.sop-print-diagram-${kind}`
 }
 
-export function areSopDiagramRootsReady(scope: ParentNode = document): boolean {
-  const roots = collectRequiredDiagramRoots(scope)
+function collectRequiredDiagramRoots(
+  scope: ParentNode,
+  requiredKinds: SopDiagramKind[] = ALL_SOP_DIAGRAM_KINDS,
+): Element[] {
+  const roots: Element[] = []
+  for (const kind of requiredKinds) {
+    const host = scope.querySelector(hostSelectorForKind(kind))
+    if (host == null) return []
+    const kindRoots = [...host.querySelectorAll('[data-sop-diagram-root]')]
+    if (kindRoots.length === 0) return []
+    roots.push(...kindRoots)
+  }
+  return roots
+}
+
+export function areSopDiagramRootsReady(
+  scope: ParentNode = document,
+  requiredKinds: SopDiagramKind[] = ALL_SOP_DIAGRAM_KINDS,
+): boolean {
+  const roots = collectRequiredDiagramRoots(scope, requiredKinds)
   if (roots.length === 0) return false
   return roots.every((root) => isSopDiagramRootReady(root))
+}
+
+export function debugSopDiagramRoots(
+  scope: ParentNode = document,
+  requiredKinds: SopDiagramKind[] = ALL_SOP_DIAGRAM_KINDS,
+): void {
+  for (const kind of requiredKinds) {
+    console.log(`[DEBUG] ${kind}Host ada?`, scope.querySelector(hostSelectorForKind(kind)) != null)
+  }
+
+  const roots = collectRequiredDiagramRoots(scope, requiredKinds)
+  console.log('[DEBUG] Jumlah root diagram:', roots.length)
+
+  roots.forEach((root, idx) => {
+    const expected = getExpectedConnectionCount(root)
+    const validPaths = countValidConnectorPaths(root)
+    const rawPaths = root.querySelectorAll('path.sop-connector-stroke').length
+    const id = root.getAttribute('id') || `root-${idx}`
+    console.log(`[DEBUG] Root ${id}: expected=${expected}, validPaths=${validPaths}, rawPaths=${rawPaths}`)
+  })
 }
 
 /** Area cetak khusus SOP (lapisan tersembunyi jika ada, seperti sebelumnya). */
@@ -85,23 +118,55 @@ export function getPrintScope(): ParentNode {
   return dedicated ?? document
 }
 
+/** Apakah host diagram sudah ter-mount di scope? */
+function hasDiagramHostsMounted(
+  scope: ParentNode,
+  requiredKinds: SopDiagramKind[] = ALL_SOP_DIAGRAM_KINDS,
+): boolean {
+  return requiredKinds.every((kind) => scope.querySelector(hostSelectorForKind(kind)) != null)
+}
+
 /** Tunggu flowchart + BPMN selesai merender path. */
 export async function waitForSopDiagramPrintReady(
   options: WaitForSopDiagramPrintReadyOptions = {},
 ): Promise<boolean> {
   const timeoutMs = options.timeoutMs ?? SOP_PRINT_READY_TIMEOUT_MS
   const scope = options.scope ?? getPrintScope()
+  const requiredKinds = options.requiredKinds ?? ALL_SOP_DIAGRAM_KINDS
   const deadline = Date.now() + timeoutMs
 
+  // Fase 1: tunggu sampai host diagram ter-mount (React perlu beberapa siklus effect)
   while (Date.now() < deadline) {
     await waitForPrintPaint()
-    if (areSopDiagramRootsReady(scope)) return true
+    if (hasDiagramHostsMounted(scope, requiredKinds)) break
     await new Promise((resolve) => {
       window.setTimeout(resolve, SOP_PRINT_POLL_INTERVAL_MS)
     })
   }
-  return areSopDiagramRootsReady(scope)
+
+  // Fase 2: tunggu sampai semua root diagram dan connector path ter-render
+  while (Date.now() < deadline) {
+    await waitForPrintPaint()
+    if (areSopDiagramRootsReady(scope, requiredKinds)) return true
+    // Gunakan polling interval yang lebih panjang setelah beberapa iterasi
+    // untuk memberi waktu layout effect berjalan
+    const remaining = deadline - Date.now()
+    const interval = remaining > 4000 ? SOP_PRINT_POLL_INTERVAL_MS : 200
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, interval)
+    })
+  }
+
+  // Cek terakhir setelah timeout — beri satu paint frame lagi
+  await waitForPrintPaint()
+  const isReady = areSopDiagramRootsReady(scope, requiredKinds)
+  if (!isReady) {
+    console.warn('[SOP PDF] Timeout menunggu diagram ready. Mendebug state saat ini:')
+    debugSopDiagramRoots(scope, requiredKinds)
+  }
+  return isReady
 }
+
 
 function mountDiagramsForPrint(): void {
   if (sopPrintPrepareHandler != null) {

@@ -22,6 +22,7 @@ import {
   resolveHorizontalTrackY,
   resolveVerticalTrackX,
 } from './bpmn-segment-tracks.util'
+import { preferredBpmnLaneBoundaryTrackY } from './bpmn-lane-corridor.util'
 
 export type { Side, UsedSides } from '../shared/connector-side.types'
 
@@ -476,8 +477,6 @@ function findColumnPipeX(
 
 /* ── Find the lane-pipe Y between two lanes ──────────────────── */
 
-/** Inset dari garis border lane agar path tidak menimpa garis box tabel. */
-const LANE_BORDER_INSET = 12
 const BPMN_GRID_CLEARANCE = 6
 
 function findLanePipeY(
@@ -495,12 +494,7 @@ function findLanePipeY(
   }
   const above = layout.lanes[aboveLane]
   const below = layout.lanes[belowLane]
-  const aboveBottom = above.top + above.height
-  const gap = below.top - aboveBottom
-  const mid = (aboveBottom + below.top) / 2
-  const inset = Math.min(LANE_BORDER_INSET, Math.max(4, Math.floor(gap / 3)))
-  const pipeY = Math.max(aboveBottom + inset, Math.min(below.top - inset, mid))
-  return Math.round(pipeY)
+  return preferredBpmnLaneBoundaryTrackY(above, below)
 }
 
 function rangesIntersect(a1: number, a2: number, b1: number, b2: number): boolean {

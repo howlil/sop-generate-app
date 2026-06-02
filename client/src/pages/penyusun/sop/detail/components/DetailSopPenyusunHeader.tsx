@@ -114,9 +114,13 @@ export function DetailSOPPenyusunHeader({
         return
       }
       const previewProps = mapPenyusunWorkbenchToPreviewProps(workbench)
-      const { diagramExportFailed } = await printSopArsipFromPreviewProps(previewProps, null, {
-        signPdf: false,
-      })
+      const { diagramExportFailed } = await printSopArsipFromPreviewProps(
+        previewProps,
+        workbench.tteSignaturePayloadKepalaOpd ?? null,
+        {
+          signPdf: false,
+        },
+      )
       if (diagramExportFailed) {
         showToast(
           'Beberapa halaman diagram tidak dapat diekspor; PDF tetap dicetak dengan tabel langkah.',
