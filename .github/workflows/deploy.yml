@@ -1,0 +1,65 @@
+name: Deploy to aaPanel via SSH
+
+on:
+  push:
+    branches:
+      - final
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🚀 Copy files to aaPanel via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "."
+          target: "/www/wwwroot/sop-app"
+
+      - name: 🐳 Build and Run Docker on aaPanel
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            cd /www/wwwroot/sop-app
+
+            # 1. Buat file .env untuk Backend (di root / di server folder)
+            echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" > server/.env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> server/.env
+            echo "DB_USER=${{ secrets.DB_USER }}" >> server/.env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> server/.env
+            echo "DATABASE_HOST=db" >> server/.env
+            echo "DATABASE_URL=mysql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@db:3306/${{ secrets.DB_NAME }}" >> server/.env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> server/.env
+            echo "JWT_EXPIRATION=${{ secrets.JWT_EXPIRATION }}" >> server/.env
+            echo "JWT_REFRESH_EXPIRATION=${{ secrets.JWT_REFRESH_EXPIRATION }}" >> server/.env
+            echo "TTE_SIGNING_SECRET=${{ secrets.TTE_SIGNING_SECRET }}" >> server/.env
+            echo "PDF_SIGNING_ENABLED=${{ secrets.PDF_SIGNING_ENABLED }}" >> server/.env
+            echo "PDF_SIGNING_P12_PASSPHRASE=${{ secrets.PDF_SIGNING_P12_PASSPHRASE }}" >> server/.env
+            echo "PDF_SIGNING_P12_BASE64=${{ secrets.PDF_SIGNING_P12_BASE64 }}" >> server/.env
+            
+            # 2. Buat file .env untuk Frontend (di client folder)
+            # Karena Vite butuh env saat proses BUILD, kita taruh di client/.env
+            echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" > client/.env
+            echo "VITE_APP_NAME=${{ secrets.VITE_APP_NAME }}" >> client/.env
+            echo "VITE_APP_VERSION=${{ secrets.VITE_APP_VERSION }}" >> client/.env
+            echo "VITE_ENABLE_DEV_TOOLS=false" >> client/.env
+            
+            # 3. Stop container lama
+            docker compose -f docker-compose.prod.yml down
+
+            # Build dan Start container baru di background
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            # Jalankan Prisma Database Migration
+            echo "Memproses migrasi database prisma..."
+            docker compose -f docker-compose.prod.yml exec -T backend pnpm prisma migrate deploy

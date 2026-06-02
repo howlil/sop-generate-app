@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:11.4
+    container_name: sop-prod-db
+    restart: always
+    command:
+      - --lower_case_table_names=1
+    env_file:
+      - ./server/.env # Load env root
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Jakarta
+    volumes:
+      - db-prod-data:/var/lib/mysql
+    networks:
+      - sop-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sop-backend
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - ./server/.env # Gunakan .env yang dibuat di dalam folder server
+    ports:
+      - "3000:3000"
+    networks:
+      - sop-network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sop-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    networks:
+      - sop-network
+
+networks:
+  sop-network:
+    driver: bridge
+
+volumes:
+  db-prod-data:

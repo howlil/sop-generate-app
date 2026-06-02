@@ -10,3 +10,4 @@ Laporan:
 - buat tabel pengujian UAT 
 - buat tabel pengujian system testing
 - selaraskan bab 4 dan 5
+- buat dokumen wawancara

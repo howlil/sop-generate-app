@@ -32,10 +32,10 @@ Pengajuan evaluasi perlu disahkan secara administratif melalui berita acara.
 2. PJ Evaluator memilih pengajuan dan memasukkan PIN TTE.
 3. Sistem memvalidasi PIN dan status pengajuan.
 4. Sistem mencatat tanda tangan PJ Evaluator pada berita acara.
-5. Sistem memindahkan pengajuan ke tahap menunggu tanda tangan PJ Penyusun.
+5. Sistem mengubah status pengajuan menjadi diverifikasi PJ Evaluator.
 6. PJ Penyusun membuka pengajuan yang sudah ditandatangani PJ Evaluator.
 7. PJ Penyusun memasukkan PIN TTE.
-8. Sistem mencatat tanda tangan PJ Penyusun dan memindahkan pengajuan ke tahap pra-pengesahan.
+8. Sistem mencatat tanda tangan PJ Penyusun, mengubah status pengajuan menjadi ditandatangani PJ Penyusun, dan mengubah status SOP menjadi diverifikasi PJ Evaluator Organisasi.
 
 ## Alur alternatif
 

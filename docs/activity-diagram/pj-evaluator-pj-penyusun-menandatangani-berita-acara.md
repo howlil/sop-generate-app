@@ -34,7 +34,7 @@ start
 :Memeriksa kebenaran PIN PJ Evaluator;
 if (PIN dan status pengajuan sesuai?) then (Ya)
   :Mencatat tanda tangan PJ Evaluator pada berita acara;
-  :Mengubah pengajuan ke tahap menunggu tanda tangan PJ Penyusun;
+  :Mengubah status pengajuan menjadi diverifikasi PJ Evaluator;
 else (Tidak)
   :Menolak proses tanda tangan;
   :Menampilkan alasan kegagalan;
@@ -57,7 +57,8 @@ endif
 :Memeriksa kebenaran PIN PJ Penyusun;
 if (PIN dan status pengajuan sesuai?) then (Ya)
   :Mencatat tanda tangan PJ Penyusun pada berita acara;
-  :Mengubah pengajuan ke tahap siap disahkan;
+  :Mengubah status pengajuan menjadi ditandatangani PJ Penyusun;
+  :Mengubah status SOP menjadi diverifikasi PJ Evaluator Organisasi;
   :Menampilkan pemberitahuan bahwa berita acara berhasil ditandatangani;
 else (Tidak)
   :Menolak proses tanda tangan;

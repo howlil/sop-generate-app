@@ -47,10 +47,10 @@ alt Data pengesahan valid
   TTECtrl -> DokumenTTE : Membuat dokumen TTE SOP berlaku
   loop Untuk setiap SOP dalam pengajuan
     TTECtrl -> Riwayat : Mencatat tanda tangan Kepala OPD
-    TTECtrl -> Detail : Menetapkan SOP sebagai dokumen berlaku
+    TTECtrl -> Detail : Mengubah status SOP menjadi berlaku
     TTECtrl -> Arsip : Memperbarui arsip publik SOP
   end
-  TTECtrl -> Pengajuan : Menandai pengajuan selesai
+  TTECtrl -> Pengajuan : Mengubah status pengajuan menjadi selesai
   TTECtrl --> UI : Mengirim hasil pengesahan berhasil
   UI --> Aktor : Menampilkan SOP berhasil disahkan
 else Data pengesahan tidak valid

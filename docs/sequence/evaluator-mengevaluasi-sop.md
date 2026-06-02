@@ -50,7 +50,7 @@ alt SOP perlu perbaikan
   UI -> EvalCtrl : Mengirim catatan perbaikan
   EvalCtrl -> Catatan : Menyimpan catatan evaluasi
   EvalCtrl -> Nilai : Menyimpan hasil perlu perbaikan
-  EvalCtrl -> Detail : Mengubah status SOP menjadi perlu revisi
+  EvalCtrl -> Detail : Mengubah status SOP menjadi revisi dari evaluator
   EvalCtrl -> Log : Mencatat riwayat penilaian
   EvalCtrl --> UI : Mengirim hasil evaluasi tersimpan
   UI --> Aktor : Menampilkan SOP perlu ditindaklanjuti

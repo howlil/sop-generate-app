@@ -33,7 +33,7 @@ PJ Penyusun ingin menyerahkan SOP kepada evaluator untuk dinilai.
 3. PJ Penyusun memilih SOP yang akan dimasukkan ke pengajuan.
 4. PJ Penyusun mengisi informasi pengajuan yang dibutuhkan.
 5. Sistem memvalidasi status SOP, kepemilikan OPD, dan aturan pengajuan aktif.
-6. Sistem membuat pengajuan evaluasi.
+6. Sistem membuat pengajuan dengan status sedang dievaluasi.
 7. Sistem mengubah status SOP yang diajukan menjadi sedang dievaluasi.
 
 ## Alur alternatif

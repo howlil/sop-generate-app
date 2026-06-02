@@ -43,7 +43,7 @@ alt Pengajuan aktif masih ada
   UI --> Aktor : Menampilkan alasan pengajuan ditolak
 else Pengajuan dapat dibuat
   Validasi --> EvalCtrl : Data pengajuan valid
-  EvalCtrl -> Pengajuan : Membuat catatan pengajuan evaluasi
+  EvalCtrl -> Pengajuan : Membuat pengajuan dengan status sedang dievaluasi
   loop Untuk setiap SOP yang diajukan
     EvalCtrl -> Nilai : Membuat lembar penilaian awal
     EvalCtrl -> Detail : Mengubah status SOP menjadi sedang dievaluasi

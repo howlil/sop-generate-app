@@ -35,7 +35,7 @@ Kepala OPD memilih aksi pengesahan pada dokumen SOP yang siap diberlakukan.
 5. Sistem memvalidasi PIN, kewenangan OPD, dan status dokumen.
 6. Sistem mencatat riwayat tanda tangan pengesahan.
 7. Sistem mengubah status SOP menjadi berlaku dan memperbarui arsip publik.
-8. Sistem menandai proses pengajuan selesai.
+8. Sistem mengubah status pengajuan menjadi selesai.
 
 ## Alur alternatif
 

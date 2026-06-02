@@ -45,7 +45,7 @@
     :Memastikan catatan perbaikan sudah diisi;
     :Menyimpan hasil penilaian dan catatan perbaikan;
     :Membuka proses tindak lanjut untuk penyusun;
-    :Mengubah status SOP menjadi perlu revisi;
+    :Mengubah status SOP menjadi revisi dari evaluator;
     :Menampilkan pemberitahuan bahwa hasil evaluasi tersimpan;
     stop
   else (Tidak)

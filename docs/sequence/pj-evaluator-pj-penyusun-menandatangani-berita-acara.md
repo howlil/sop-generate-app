@@ -25,6 +25,7 @@ control "TTE Controller" as TTECtrl
 control "Validasi TTE" as Validasi
 entity "Pengajuan Evaluasi" as Pengajuan
 entity "Dokumen TTE Berita Acara" as DokumenTTE
+entity "Detail SOP" as Detail
 entity "Riwayat Tanda Tangan" as Riwayat
 entity "PIN TTE Pengguna" as Pin
 
@@ -43,7 +44,7 @@ alt PIN dan status valid
   Validasi --> TTECtrl : Valid
   TTECtrl -> DokumenTTE : Membuat atau memperbarui dokumen BA
   TTECtrl -> Riwayat : Mencatat tanda tangan PJ Evaluator
-  TTECtrl -> Pengajuan : Mengubah status menunggu tanda tangan PJ Penyusun
+  TTECtrl -> Pengajuan : Mengubah status pengajuan menjadi diverifikasi PJ Evaluator
   TTECtrl --> UI : Mengirim hasil tanda tangan berhasil
   UI --> PJE : Menampilkan pemberitahuan berhasil
 else PIN atau status tidak valid
@@ -66,7 +67,8 @@ Validasi -> Pin : Memeriksa kecocokan PIN
 alt PIN dan status valid
   Validasi --> TTECtrl : Valid
   TTECtrl -> Riwayat : Mencatat tanda tangan PJ Penyusun
-  TTECtrl -> Pengajuan : Mengubah status pengajuan siap disahkan
+  TTECtrl -> Pengajuan : Mengubah status pengajuan menjadi ditandatangani PJ Penyusun
+  TTECtrl -> Detail : Mengubah status SOP menjadi diverifikasi PJ Evaluator Organisasi
   TTECtrl --> UI : Mengirim hasil tanda tangan berhasil
   UI --> PJP : Menampilkan berita acara berhasil ditandatangani
 else PIN atau status tidak valid

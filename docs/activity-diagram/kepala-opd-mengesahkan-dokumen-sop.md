@@ -36,10 +36,10 @@ start
 :Memeriksa status pengajuan dan kewenangan OPD;
 if (PIN, status, dan kewenangan sesuai?) then (Ya)
   :Mencatat riwayat pengesahan dokumen;
-  :Menetapkan SOP sebagai dokumen yang berlaku;
+  :Mengubah status SOP menjadi berlaku;
   :Menandai versi lama sesuai aturan pergantian dokumen;
   :Memperbarui arsip publik SOP;
-  :Menandai proses pengajuan telah selesai;
+  :Mengubah status pengajuan menjadi selesai;
   :Menampilkan pemberitahuan bahwa pengesahan berhasil;
 else (Tidak)
   :Menolak proses pengesahan;

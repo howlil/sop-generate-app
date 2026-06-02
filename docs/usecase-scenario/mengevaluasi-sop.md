@@ -33,7 +33,7 @@ Evaluator membuka workbench evaluasi untuk menilai substansi SOP.
 4. Evaluator memberikan hasil penilaian untuk SOP.
 5. Sistem menyimpan nilai evaluasi dan audit perubahan.
 6. Setelah seluruh SOP memenuhi kriteria, evaluator menyelesaikan evaluasi pengajuan.
-7. Sistem mengubah status pengajuan menjadi siap untuk proses berita acara.
+7. Sistem mengubah status pengajuan menjadi selesai dievaluasi.
 
 ## Alur alternatif
 
