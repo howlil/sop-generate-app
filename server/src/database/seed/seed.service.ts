@@ -1915,11 +1915,11 @@ export class SeedService {
       tanggalDiselesaikan: new Date('2026-02-10T00:00:00.000Z'),
     });
 
-    // 5. SELESAI - riwayat pengajuan Dinkes yang sudah disahkan Kepala OPD
+    // 5. DITANDATANGANI_PJ_PENYUSUN - Dinkes menunggu pengesahan Kepala OPD
     pe['DINKES_TERJADWAL'] = await this.findOrCreatePengajuan(tx, 'BA-DINKES-2026-001', {
       opdId: params.opdDinkesId,
       jenis: JenisPengajuanEvaluasi.TERJADWAL,
-      status: StatusPengajuanEvaluasi.SELESAI,
+      status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
       tanggalPermintaan: new Date('2026-03-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-03-05T00:00:00.000Z'),
       nilaiOPD: 5,
@@ -1976,7 +1976,7 @@ export class SeedService {
       dinilaiOlehId: params.evaluator2Id,
     });
 
-    // Pengajuan DIVERIFIKASI_PJ_EVALUATOR
+    // Pengajuan selesai penuh Diskominfo
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DISKOMINFO_TERJADWAL'].pengajuanEvaluasiId,
       detailSopId: d['DISKOMINFO_002_V1'].detailSopId,
@@ -1985,7 +1985,7 @@ export class SeedService {
       dinilaiOlehId: params.evaluator1Id,
     });
 
-    // Pengajuan DITANDATANGANI — dua SOP berbeda (bukan V1+V2 satu induk SOP)
+    // Pengajuan Dinkes menunggu pengesahan Kepala OPD — dua SOP berbeda (bukan V1+V2 satu induk SOP)
     await this.upsertNilai(tx, {
       pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
       detailSopId: d['DINKES_004_V1'].detailSopId,

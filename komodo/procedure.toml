@@ -1,0 +1,24 @@
+# Pipeline deploy: build stack lalu migrasi Prisma.
+# Webhook procedure (branch final): .../listener/github/procedure/sop-app-deploy/final
+
+[[procedure]]
+name = "sop-app-deploy"
+description = "Deploy docker compose produksi dan jalankan prisma migrate deploy"
+tags = ["sop", "production"]
+
+[[procedure.config.stage]]
+name = "Deploy stack"
+executions = [
+  { execution.type = "DeployStack", execution.params.stack = "sop-app" },
+]
+
+[[procedure.config.stage]]
+name = "Migrasi database"
+executions = [
+  {
+    execution.type = "RunStackService",
+    execution.params.stack = "sop-app",
+    execution.params.service = "backend",
+    execution.params.command = ["pnpm", "prisma", "migrate", "deploy"],
+  },
+]

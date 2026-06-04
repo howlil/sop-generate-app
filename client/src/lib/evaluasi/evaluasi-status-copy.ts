@@ -52,7 +52,7 @@ export function getEvaluasiStatusBanner(
       }
       return {
         variant: 'success',
-        title: 'BA diverifikasi biro',
+        title: 'BA diverifikasi PJ Evaluator',
         message: 'PJ Penyusun dapat melanjutkan verifikasi BA. Setelah itu Kepala OPD mengesahkan SOP.',
       }
     case 'DITANDATANGANI_PJ_PENYUSUN':

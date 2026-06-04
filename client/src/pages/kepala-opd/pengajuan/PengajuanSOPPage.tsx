@@ -8,17 +8,15 @@ import {
 } from "@/components/pengajuan/pengajuan-tabbed-table";
 import { PengajuanStatusBadge } from "@/components/status/pengajuan-status-badge";
 import { useKepalaOpdPengajuan } from "@/api/evaluasi";
-import { useAuthStore } from "@/stores/authStore";
 import { ROUTES } from "@/utils/constants";
 import { formatDateIdFull } from "@/utils/format-date";
 
 export function PengajuanSOPPage() {
-  const opdId = useAuthStore((state) => state.user?.opdId ?? "");
   const {
     belumDitandatangani,
     sudahBerlaku,
     isLoading,
-  } = useKepalaOpdPengajuan(opdId);
+  } = useKepalaOpdPengajuan();
 
   return (
     <ListPageLayout

@@ -21,25 +21,29 @@ const CORS_MAX_AGE_SECONDS = 3600;
 
 function buildCorsOptions(configService: ConfigService): CorsOptions {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  const allowedOrigins = configService
-    .get<string>('ALLOWED_ORIGINS', '')
+  const allowedOriginsRaw = configService.get<string>('ALLOWED_ORIGINS', '').trim();
+  const allowAllOrigins =
+    nodeEnv !== 'production' ||
+    allowedOriginsRaw === '' ||
+    allowedOriginsRaw === '*' ||
+    allowedOriginsRaw.toLowerCase() === 'all';
+  const allowedOrigins = allowedOriginsRaw
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
   return {
-    origin:
-      nodeEnv === 'production'
-        ? (
-            origin: string | undefined,
-            callback: (error: Error | null, allow?: boolean) => void,
-          ) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-              callback(null, true);
-              return;
-            }
-            callback(new Error('CORS policy violation'));
+    origin: allowAllOrigins
+      ? true
+      : (
+          origin: string | undefined,
+          callback: (error: Error | null, allow?: boolean) => void,
+        ) => {
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+            return;
           }
-        : true,
+          callback(new Error('CORS policy violation'));
+        },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
     credentials: true,

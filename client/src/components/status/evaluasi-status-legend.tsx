@@ -14,11 +14,11 @@ import { SopStatusBadge } from './sop-status-badge'
 
 const LEGEND_PENGAJUAN_EVALUASI = {
   status: 'DIVERIFIKASI_PJ_EVALUATOR',
-  label: 'BA diverifikasi biro',
+  label: 'BA diverifikasi PJ Evaluator',
 } as const
 const LEGEND_DOKUMEN = {
   status: 'SIAP_DIVERIFIKASI',
-  label: 'Siap verifikasi biro',
+  label: 'Menunggu verifikasi PJ Evaluator',
 } as const
 const LEGEND_SESUAI = { hasil: 'SESUAI', label: 'Sesuai' } as const
 const LEGEND_PERBAIKAN = { hasil: 'PERLU_PERBAIKAN', label: 'Perlu perbaikan' } as const

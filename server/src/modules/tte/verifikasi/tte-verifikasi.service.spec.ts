@@ -2,6 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TteVerifikasiService } from './tte-verifikasi.service';
 import { TteRepository } from '../shared/repository/tte.repository';
+import { TtePublicUrlResolver } from '../shared/utils/tte-public-url.resolver';
 import { PeranPengguna, JenisDokumenTte } from '../../../generated/prisma';
 
 describe('Pengujian TteVerifikasiService', () => {
@@ -37,14 +38,14 @@ describe('Pengujian TteVerifikasiService', () => {
 
     mockConfigService = {
       get: jest.fn((key: string) => {
-        if (key === 'PUBLIC_TTE_VERIFY_BASE_URL') return 'https://verify.example.com';
+        if (key === 'PUBLIC_APP_ORIGIN') return 'https://verify.example.com';
         return undefined;
       }),
     };
 
     service = new TteVerifikasiService(
       mockTteRepository as TteRepository,
-      mockConfigService as ConfigService,
+      new TtePublicUrlResolver(mockConfigService as ConfigService),
     );
   });
 
@@ -104,25 +105,23 @@ describe('Pengujian TteVerifikasiService', () => {
       expect(result.dokumen.pengajuanEvaluasiId).toBeUndefined();
     });
 
-    it('seharusnya dapat membangun payload QR walaupun PUBLIC_TTE_VERIFY_BASE_URL undefined (Edge Case)', async () => {
-      // Override config behavior
+    it('seharusnya memakai payload JSON ketika origin publik tidak dapat ditentukan', async () => {
       const emptyConfigService = {
         get: jest.fn().mockReturnValue(undefined),
       };
-      
-      const emptyConfigServiceInstance = new TteVerifikasiService(
+      const serviceTanpaOrigin = new TteVerifikasiService(
         mockTteRepository as TteRepository,
-        emptyConfigService as unknown as ConfigService,
+        new TtePublicUrlResolver(emptyConfigService as unknown as ConfigService),
       );
-
       (mockTteRepository.findRiwayatPengesahanByUserAndDokumen as jest.Mock).mockResolvedValue(
         defaultRiwayatRow,
       );
-
-      const result = await emptyConfigServiceInstance.getPengesahanPublic('dok-123', 'user-123');
-      // Karena base URL undef, kita ingin memastikan fungsi tidak melempar error dan menyatukan path/URL fallback 
-      expect(result.qrVerificationUrl).toBeDefined();
-      expect(typeof result.qrPayload).toBe('string');
+      const result = await serviceTanpaOrigin.getPengesahanPublic('dok-123', 'user-123');
+      expect(result.qrVerificationUrl).toBeNull();
+      expect(JSON.parse(result.qrPayload)).toMatchObject({
+        t: 'tte-verify-v1',
+        dokumenTteId: 'dok-123',
+      });
     });
 
     it('seharusnya mengembalikan mapping response dengan lengkap (Success Case)', async () => {

@@ -1,0 +1,44 @@
+# Stack produksi SOP — deploy via Komodo (Git + docker compose).
+# Sesuaikan server, git_account, dan repo sebelum Resource Sync / import manual.
+
+[[stack]]
+name = "sop-app"
+description = "Aplikasi SOP (MariaDB + NestJS + Vite/Nginx)"
+tags = ["sop", "production"]
+deploy = true
+
+[stack.config]
+server = "Local"
+branch = "final"
+git_provider = "github.com"
+git_account = "howlil"
+repo = "howlil/sop-generate-app"
+file_paths = ["docker-compose.prod.yml"]
+project_name = "sop-app"
+extra_args = "--build -d"
+environment = """
+DB_ROOT_PASSWORD = [[DB_ROOT_PASSWORD]]
+DB_NAME = [[DB_NAME]]
+DB_USER = [[DB_USER]]
+DB_PASSWORD = [[DB_PASSWORD]]
+NODE_ENV = production
+PORT = 3000
+SWAGGER_ENABLED = false
+ALLOWED_ORIGINS = *
+JWT_SECRET = [[JWT_SECRET]]
+JWT_REFRESH_SECRET = [[JWT_REFRESH_SECRET]]
+JWT_EXPIRATION = [[JWT_EXPIRATION]]
+JWT_REFRESH_EXPIRATION = [[JWT_REFRESH_EXPIRATION]]
+DATABASE_HOST = db
+DATABASE_PORT = 3306
+DATABASE_USER = [[DB_USER]]
+DATABASE_PASSWORD = [[DB_PASSWORD]]
+DATABASE_NAME = [[DB_NAME]]
+DATABASE_URL = mysql://[[DB_USER]]:[[DB_PASSWORD]]@db:3306/[[DB_NAME]]
+PDF_SIGNING_ENABLED = [[PDF_SIGNING_ENABLED]]
+PDF_SIGNING_P12_BASE64 = [[PDF_SIGNING_P12_BASE64]]
+PDF_SIGNING_P12_PASSPHRASE = [[PDF_SIGNING_P12_PASSPHRASE]]
+PDF_SIGNING_REASON = Pengesahan dokumen SOP
+PDF_SIGNING_LOCATION = Sumatera Barat, Indonesia
+PDF_SIGNING_CONTACT = Biro Organisasi Sekda Provinsi Sumatera Barat
+"""

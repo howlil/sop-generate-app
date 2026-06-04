@@ -1,0 +1,14 @@
+# Resource Sync: Komodo menarik definisi stack & procedure dari repo (GitOps).
+# Webhook (opsional di GitHub Actions): .../listener/github/sync/sop-app-resources/sync
+
+[[resource_sync]]
+name = "sop-app-resources"
+description = "Sinkronkan stack.toml dan procedure.toml dari branch final"
+tags = ["sop", "production"]
+
+[resource_sync.config]
+git_provider = "github.com"
+git_account = "howlil"
+repo = "howlil/sop-generate-app"
+branch = "final"
+resource_path = ["komodo/stack.toml", "komodo/procedure.toml"]

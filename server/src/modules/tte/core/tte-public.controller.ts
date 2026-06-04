@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { type ApiSuccessResponse } from '../../../common';
 import { PdfSigningStatusResponseDto } from '../shared/dto/pdf-signing-status-response.dto';
@@ -22,10 +23,11 @@ export class TtePublicController {
   @ApiResponse({ status: 200, type: TtePengesahanPublicResponseDto })
   @ApiNotFoundResponse({ description: 'Riwayat pengesahan tidak ditemukan' })
   async getPengesahan(
+    @Req() req: Request,
     @Param('dokumenTteId', ParseUUIDPipe) dokumenTteId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<ApiSuccessResponse<TtePengesahanPublicResponseDto>> {
-    const data = await this.tteService.getPengesahanPublic(dokumenTteId, userId);
+    const data = await this.tteService.getPengesahanPublic(dokumenTteId, userId, req);
     return {
       message: 'Data pengesahan berhasil ditemukan',
       success: true,

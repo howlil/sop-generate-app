@@ -1,38 +1,12 @@
-import { z } from 'zod'
+/** API dev: Vite → backend di localhost. */
+const API_BASE_URL_DEVELOPMENT = 'http://localhost:3000/api/v1'
 
-/**
- * Skema variabel lingkungan sisi klien (Vite).
- * Diparse saat modul pertama kali diimpor agar konfigurasi salah terdeteksi dini.
- */
-export const clientEnvSchema = z.object({
-  VITE_API_BASE_URL: z
-    .string()
-    .min(1)
-    .refine(
-      (val) => val.startsWith('/') || /^https?:\/\//i.test(val),
-      'VITE_API_BASE_URL harus path relatif (awalan /) atau URL absolut http(s)',
-    ),
-})
+/** API produksi: path relatif; Nginx frontend mem-proxy `/api` → backend (client/nginx.conf). */
+const API_BASE_URL_PRODUCTION = '/api/v1'
 
-export type ClientEnv = z.infer<typeof clientEnvSchema>
-
-function readApiBaseUrl(): string {
-  const raw: unknown = import.meta.env.VITE_API_BASE_URL
-  if (typeof raw === 'string' && raw.trim() !== '') {
-    return raw.trim().replace(/\/$/, '')
-  }
-  return 'http://localhost:3000/api/v1'
-}
+export const APP_DISPLAY_NAME = 'Sistem Pengelolaan SOP Biro Organisasi'
+export const APP_VERSION = '1.0.0'
 
 export function resolveApiBaseUrl(): string {
-  return readApiBaseUrl()
+  return import.meta.env.DEV ? API_BASE_URL_DEVELOPMENT : API_BASE_URL_PRODUCTION
 }
-
-/** Untuk unit test: parse input mentah tanpa membaca import.meta. */
-export function parseClientEnv(input: z.input<typeof clientEnvSchema>): ClientEnv {
-  return clientEnvSchema.parse(input)
-}
-
-export const clientEnv: ClientEnv = parseClientEnv({
-  VITE_API_BASE_URL: readApiBaseUrl(),
-})

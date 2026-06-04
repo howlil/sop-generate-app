@@ -2,7 +2,7 @@
  * Payload QR verifikasi dokumen TTE **tidak perlu kolom DB terpisah**:
  * URL atau JSON dapat dibentuk dari `dokumenTteId` + `hashDokumen` yang sudah ada di `DokumenTte`.
  *
- * Jika `PUBLIC_TTE_VERIFY_BASE_URL` di-set, QR berisi URL publik menuju halaman verifikasi.
+ * Jika basis URL publik tersedia (deteksi Origin atau `PUBLIC_APP_ORIGIN`), QR berisi URL verifikasi.
  * Jika tidak, QR berisi JSON ringkas agar klien tetap bisa render QR tanpa basis URL.
  */
 

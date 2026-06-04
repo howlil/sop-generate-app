@@ -21,7 +21,7 @@ const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
   [StatusSOP.DIAJUKAN_EVALUASI]: 'Diajukan evaluasi',
   [StatusSOP.SEDANG_DIEVALUASI]: 'Dalam penilaian',
   [StatusSOP.REVISI_DARI_EVALUATOR]: 'Perlu revisi',
-  [StatusSOP.SIAP_DIVERIFIKASI]: 'Siap verifikasi biro',
+  [StatusSOP.SIAP_DIVERIFIKASI]: 'Menunggu verifikasi PJ Evaluator',
   [StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI]: 'Menunggu pengesahan Kepala OPD',
   [StatusSOP.BERLAKU]: 'Berlaku',
   [StatusSOP.DIGANTIKAN]: 'Digantikan',
@@ -31,8 +31,8 @@ const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
 const PENGAJUAN_STATUS_LABELS: Record<StatusPengajuanEvaluasi, string> = {
   [StatusPengajuanEvaluasi.SEDANG_DIEVALUASI]: 'Sedang dinilai tim',
   [StatusPengajuanEvaluasi.SELESAI_DIEVALUASI]: 'Menunggu verifikasi BA',
-  [StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR]: 'BA diverifikasi biro',
-  [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN]: 'BA ditandatangani OPD',
+  [StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR]: 'BA diverifikasi PJ Evaluator',
+  [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN]: 'Menunggu pengesahan Kepala OPD',
   [StatusPengajuanEvaluasi.SELESAI]: 'Pengajuan evaluasi selesai',
 };
 

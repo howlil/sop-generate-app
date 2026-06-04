@@ -186,7 +186,7 @@ export class TteController {
     @Param('pengajuanId', ParseUUIDPipe) pengajuanId: string,
     @Body() dto: TandaTanganiDto,
   ): Promise<ApiSuccessResponse<TteRiwayatResponse>> {
-    const data = await this.tteService.tandaTanganiBa(req.user, pengajuanId, dto);
+    const data = await this.tteService.tandaTanganiBa(req.user, pengajuanId, dto, req);
     return {
       message: 'Berita Acara berhasil ditandatangani',
       success: true,
@@ -206,7 +206,7 @@ export class TteController {
     @Param('pengajuanId', ParseUUIDPipe) pengajuanId: string,
     @Body() dto: TandaTanganiSemuaSopDto,
   ): Promise<ApiSuccessResponse<TteBatchSignSopPengajuanResponse>> {
-    const data = await this.tteService.tandaTanganiSemuaSopPengajuan(req.user, pengajuanId, dto);
+    const data = await this.tteService.tandaTanganiSemuaSopPengajuan(req.user, pengajuanId, dto, req);
     return {
       message: 'Seluruh SOP dalam pengajuan berhasil ditandatangani',
       success: true,

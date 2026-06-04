@@ -38,9 +38,15 @@ describe('Pengujian displayStatusPengajuan', () => {
     }
   });
 
-  it('seharusnya memetakan DIVERIFIKASI_PJ_EVALUATOR menjadi BA diverifikasi biro', () => {
+  it('seharusnya memetakan DIVERIFIKASI_PJ_EVALUATOR menjadi BA diverifikasi PJ Evaluator', () => {
     expect(displayStatusPengajuan(StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR).label).toBe(
-      'BA diverifikasi biro',
+      'BA diverifikasi PJ Evaluator',
+    );
+  });
+
+  it('seharusnya memetakan DITANDATANGANI_PJ_PENYUSUN menjadi menunggu pengesahan Kepala OPD', () => {
+    expect(displayStatusPengajuan(StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN).label).toBe(
+      'Menunggu pengesahan Kepala OPD',
     );
   });
 });

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useEvaluasi } from "@/api/evaluasi-queries";
 import type {
+  EvaluasiListQueryParams,
   EvaluasiWorkspacePengajuanAktif,
   JenisPengajuanEvaluasi,
   NilaiEvaluasi,
@@ -58,12 +59,21 @@ export interface KepalaOpdPengajuanBuckets {
   sudahBerlaku: PengajuanEvaluasi[];
 }
 
-export function useKepalaOpdPengajuan(opdId?: string) {
-  const { list, isLoading, error } = useEvaluasi({
-    opdId,
+export function buildKepalaOpdPengajuanQueryParams(
+  opdId?: string,
+): EvaluasiListQueryParams & { enabled: true } {
+  const normalizedOpdId = opdId?.trim();
+  return {
+    ...(normalizedOpdId ? { opdId: normalizedOpdId } : {}),
     statusIn: [...KEPALA_OPD_PENGAJUAN_STATUSES],
-    enabled: Boolean(opdId),
-  });
+    enabled: true,
+  };
+}
+
+export function useKepalaOpdPengajuan(opdId?: string) {
+  const { list, isLoading, error } = useEvaluasi(
+    buildKepalaOpdPengajuanQueryParams(opdId),
+  );
 
   const buckets = useMemo<KepalaOpdPengajuanBuckets>(() => {
     const belumDitandatangani = list.filter((item) =>

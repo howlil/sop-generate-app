@@ -1,14 +1,5 @@
 /**
- * Landing Page — Sistem Informasi SOP PJ Evaluator Organisasi
- *
- * Sections:
- * 1. Header (sticky nav)
- * 2. Hero (headline + CTA)
- * 3. Stats (key metrics)
- * 4. How It Works (workflow steps)
- * 5. Features (per-role benefits)
- * 6. CTA Banner
- * 7. Footer
+ * Beranda publik — Sistem Informasi Pengelolaan SOP AP (Biro Organisasi Sekda Sumbar).
  */
 import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
@@ -37,28 +28,28 @@ const workflowSteps = [
   {
     step: '01',
     title: 'Susun',
-    description: 'Penyusun membuat SOP dengan editor prosedur berbasis swimlane yang intuitif.',
+    description: 'OPD menyusun draft SOP AP lewat form dan diagram alur; komponen mengikuti pedoman PermenPAN-RB Nomor 35 Tahun 2012.',
     icon: PenTool,
     color: 'blue',
   },
   {
     step: '02',
     title: 'Evaluasi',
-    description: 'Evaluator menilai kesesuaian SOP terhadap standar yang berlaku secara terstruktur.',
+    description: 'Evaluator Biro Organisasi menilai format, alur, dan substansi; catatan perbaikan tersimpan di sistem.',
     icon: Search,
     color: 'amber',
   },
   {
     step: '03',
     title: 'Verifikasi',
-    description: 'PJ Evaluator Organisasi memverifikasi hasil evaluasi dan memastikan kualitas SOP.',
+    description: 'PJ Evaluator Organisasi meninjau hasil penilaian dan berita acara sebelum pengajuan ke Kepala OPD.',
     icon: CheckCircle,
     color: 'green',
   },
   {
     step: '04',
     title: 'Sahkan',
-    description: 'Kepala OPD mengesahkan SOP dengan tanda tangan elektronik yang aman dan teraudit.',
+    description: 'Kepala OPD menandatangani SOP dengan TTE BSRE; status dan riwayat penandatanganan tercatat.',
     icon: Award,
     color: 'purple',
   },
@@ -67,29 +58,29 @@ const workflowSteps = [
 const roleBenefits = [
   {
     role: 'Penyusun',
-    description: 'Fokus pada substansi, bukan administrasi. Editor prosedur visual membuat penyusunan SOP jadi lebih mudah.',
-    features: ['Editor prosedur drag-and-drop', 'Preview SOP real-time', 'Template siap pakai', 'Kolaborasi tim'],
+    description: 'Mengerjakan isi SOP dan perbaikan setelah evaluasi. Draft disimpan per versi, tidak perlu bolak-balik kirim berkas fisik.',
+    features: ['Form komponen SOP AP', 'Diagram alur prosedur', 'Pratinjau dokumen', 'Riwayat revisi'],
     icon: FileText,
     gradient: 'from-blue-500 to-blue-600',
   },
   {
     role: 'Evaluator',
-    description: 'Penilaian terstruktur dengan rubrik yang jelas. Tidak ada lagi evaluasi yang subjektif atau tidak konsisten.',
-    features: ['Rubrik evaluasi standar', 'Dashboard tugas', 'Riwayat penilaian', 'Catatan terstruktur'],
+    description: 'Memeriksa pengajuan sesuai rubrik Biro Organisasi. Skor dan catatan per dokumen bisa dilihat PJ Evaluator Organisasi.',
+    features: ['Rubrik penilaian', 'Daftar tugas evaluasi', 'Catatan per SOP', 'Status pengajuan'],
     icon: Search,
     gradient: 'from-amber-500 to-amber-600',
   },
   {
     role: 'PJ Evaluator Organisasi',
-    description: 'Pantau seluruh proses evaluasi dari hulu ke hilir. Verifikasi BA dengan satu klik.',
-    features: ['Grafik evaluasi tahunan', 'Manajemen tim', 'Verifikasi BA digital', 'Laporan otomatis'],
+    description: 'Mengkoordinasikan evaluasi lintas OPD, mengelola tim evaluator/penyusun, dan memverifikasi berita acara.',
+    features: ['Grafik evaluasi tahunan', 'Manajemen akun tim', 'Verifikasi berita acara', 'Laporan evaluasi'],
     icon: CheckCircle,
     gradient: 'from-green-500 to-green-600',
   },
   {
     role: 'Kepala OPD',
-    description: 'Pantau progres SOP di OPD Anda. Sahkan dokumen kapan saja, di mana saja, secara digital.',
-    features: ['Dashboard pantauan', 'Pengesahan digital', 'Riwayat TTE', 'Arsip terjamin'],
+    description: 'Melihat pengajuan SOP OPD sendiri dan mengesahkan setelah proses evaluasi di Biro selesai.',
+    features: ['Daftar pengajuan OPD', 'Pengesahan TTE', 'Riwayat penandatanganan', 'Arsip SOP berlaku'],
     icon: Award,
     gradient: 'from-purple-500 to-purple-600',
   },
@@ -97,20 +88,20 @@ const roleBenefits = [
 
 const faqs = [
   {
-    question: 'Apa itu Sistem Informasi SOP?',
-    answer: 'Platform digital terintegrasi untuk mengelola seluruh siklus hidup SOP — mulai dari penyusunan, evaluasi, verifikasi, hingga pengesahan dengan tanda tangan elektronik.',
+    question: 'Untuk apa sistem ini dipakai?',
+    answer: 'Mendukung pengelolaan SOP Administrasi Pemerintahan (SOP AP) di lingkungan Pemerintah Provinsi Sumatera Barat: penyusunan di OPD, evaluasi dan verifikasi di Biro Organisasi Sekretariat Daerah, lalu pengesahan internal dan arsip digital.',
   },
   {
-    question: 'Siapa saja yang bisa menggunakan sistem ini?',
-    answer: 'Sistem ini dirancang untuk 5 peran: Penyusun, PJ Penyusun, Evaluator, PJ Evaluator Organisasi, dan Kepala OPD. Setiap peran memiliki dashboard dan fitur yang disesuaikan.',
+    question: 'Siapa yang punya akun?',
+    answer: 'Akun dibuat oleh admin sesuai peran: Penyusun, PJ Penyusun, Evaluator, PJ Evaluator Organisasi, dan Kepala OPD. Hak akses mengikuti OPD masing-masing, kecuali peran Biro Organisasi yang menilai lintas OPD.',
   },
   {
-    question: 'Bagaimana keamanan tanda tangan elektronik?',
-    answer: 'Tanda tangan elektronik menggunakan sistem TTE (Tanda Tangan Elektronik) BSRE dengan PIN verifikasi dan jejak audit yang lengkap. Setiap penandatanganan tercatat dengan timestamp dan identitas penandatangan.',
+    question: 'Bagaimana tanda tangan elektroniknya?',
+    answer: 'Pengesahan memakai TTE BSRE. Penandatangan memasukkan PIN; sistem mencatat waktu, pengguna, dan dokumen yang ditandatangani untuk keperluan audit.',
   },
   {
-    question: 'Apakah data SOP tersimpan aman?',
-    answer: 'Ya. Seluruh data tersimpan di database terenkripsi dengan backup berkala. Setiap perubahan SOP tercatat dalam audit trail yang tidak dapat diubah.',
+    question: 'Apakah SOP lama bisa dicari?',
+    answer: 'SOP yang sudah masuk sistem disimpan per versi dengan status (misalnya berlaku, digantikan, atau dicabut). Arsip publik dapat dibuka tanpa login; untuk mengubah dokumen, pengguna harus masuk sesuai perannya.',
   },
 ]
 
@@ -359,7 +350,7 @@ export function LandingPage() {
             <img src={logoSvg} alt="Logo" className="w-9 h-9" />
             <div className="hidden sm:block">
               <h1 className={cn('text-sm font-semibold leading-tight transition-colors', scrolled ? 'text-gray-900' : 'text-white')}>Sistem Informasi SOP</h1>
-              <p className={cn('text-[11px] leading-tight transition-colors', scrolled ? 'text-gray-500' : 'text-blue-200')}>PJ Evaluator Organisasi</p>
+              <p className={cn('text-[11px] leading-tight transition-colors', scrolled ? 'text-gray-500' : 'text-blue-200')}>Biro Organisasi · Sumatera Barat</p>
             </div>
           </div>
           <Link to={ROUTES.AUTH.LOGIN}>
@@ -386,10 +377,10 @@ export function LandingPage() {
 
         <div className="relative flex items-center gap-2 border border-white/30 hover:border-white/50 rounded-full w-max mx-auto px-4 py-2 mt-0 md:mt-0 bg-white/10 backdrop-blur-sm">
           <Clock className="w-4 h-4 text-white" />
-          <span className="font-medium text-white">Platform Digital Terintegrasi</span>
+          <span className="font-medium text-white">Biro Organisasi · Sekda Provinsi Sumatera Barat</span>
           <span className="text-white/60">—</span>
           <a href="#cara-kerja" className="flex items-center gap-1 font-medium text-white hover:text-blue-100">
-            <span>Pelajari lebih lanjut</span>
+            <span>Alur kerja</span>
             <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
               <path d="M3.959 9.5h11.083m0 0L9.501 3.958M15.042 9.5l-5.541 5.54" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -397,18 +388,18 @@ export function LandingPage() {
         </div>
 
         <h5 className="relative text-4xl md:text-7xl font-medium max-w-[850px] text-center mx-auto mt-8 text-white">
-          Kelola SOP Lebih Cepat, Transparan, dan Terukur
+          Pengelolaan SOP AP dari OPD hingga pengesahan internal
         </h5>
 
         <p className="relative text-sm md:text-base mx-auto max-w-2xl text-center mt-6 text-gray-300 max-md:px-2">
-          Dari penyusunan hingga pengesahan — seluruh proses SOP terdigitalisasi dengan jejak audit yang lengkap.
-          Tidak ada lagi dokumen hilang, versi membingungkan, atau proses yang tidak terlacak.
+          Satu tempat untuk menyusun SOP, mengajukan evaluasi ke Biro Organisasi, mencatat revisi,
+          mengesahkan dengan TTE, dan menyimpan arsip versi yang berlaku.
         </p>
 
         <div className="relative mx-auto w-full flex items-center justify-center gap-3 mt-4">
           <Link to={ROUTES.AUTH.LOGIN}>
             <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium transition">
-              Mulai Sekarang
+              Masuk ke sistem
             </button>
           </Link>
           <Link to={ROUTES.ARSIP.PREFIX}>
@@ -446,7 +437,7 @@ export function LandingPage() {
           <div className="text-center space-y-3 mb-12">
             <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Cara Kerja</h3>
             <p className="text-gray-600 max-w-xl mx-auto text-sm">
-              Empat langkah terstruktur dari penyusunan hingga SOP resmi berlaku.
+              Alur yang dipakai saat ini: OPD menyusun, Biro mengevaluasi, PJ Evaluator Organisasi memverifikasi, Kepala OPD mengesahkan.
             </p>
           </div>
 
@@ -595,9 +586,9 @@ export function LandingPage() {
       <section className="py-16 md:py-20">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center space-y-3 mb-12">
-            <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Dirancang untuk Setiap Peran</h3>
+            <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Tampilan menurut peran pengguna</h3>
             <p className="text-gray-600 max-w-xl mx-auto text-sm">
-              Setiap pengguna mendapatkan pengalaman yang disesuaikan dengan tugas dan tanggung jawabnya.
+              Menu dan halaman mengikuti tugas masing-masing aktor dalam pengelolaan SOP AP.
             </p>
           </div>
 
@@ -610,7 +601,7 @@ export function LandingPage() {
         <div className="max-w-2xl mx-auto px-4">
           <div className="text-center space-y-3 mb-10">
             <h3 className="text-2xl md:text-3xl font-medium text-gray-900">Pertanyaan Umum</h3>
-            <p className="text-gray-600 text-sm">Jawaban untuk pertanyaan yang sering diajukan.</p>
+            <p className="text-gray-600 text-sm">Ringkasan singkat sebelum masuk ke sistem.</p>
           </div>
           <div className="space-y-3">
             {faqs.map((faq) => (
@@ -625,11 +616,11 @@ export function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
           <Send className="w-10 h-10 text-blue-200 mx-auto" />
           <h3 className="text-2xl md:text-3xl font-medium text-white">
-            Siap Mendigitalkan Proses SOP di Instansi Anda?
+            Butuh akun untuk OPD atau Biro Organisasi?
           </h3>
           <p className="text-blue-100 max-w-lg mx-auto text-sm leading-relaxed">
-            Mulai gunakan platform ini untuk menyusun, mengevaluasi, dan mengesahkan SOP secara digital.
-            Hubungi admin PJ Evaluator Organisasi untuk pembuatan akun.
+            Pembuatan akun dilakukan oleh admin PJ Evaluator Organisasi.
+            Jika sudah punya akun, masuk lewat tombol di bawah; arsip SOP dan validasi PDF tetap bisa diakses tanpa login.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link to={ROUTES.ARSIP.PREFIX}>
@@ -665,7 +656,7 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <img src={logoSvg} alt="Logo" className="w-8 h-8" />
-            <span className="text-sm text-gray-600">Sistem Informasi SOP — PJ Evaluator Organisasi</span>
+            <span className="text-sm text-gray-600">Sistem Informasi Pengelolaan SOP AP · Biro Organisasi Sekda Sumbar</span>
           </div>
           <p className="text-xs text-gray-400">
             &copy; {new Date().getFullYear()} Hak cipta dilindungi.

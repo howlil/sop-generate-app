@@ -11,3 +11,10 @@ Laporan:
 - buat tabel pengujian system testing
 - selaraskan bab 4 dan 5
 - buat dokumen wawancara
+
+
+
+- tolong ganti bahasanya
+- sederhakana proses bagian pengiriman komentar
+- ganti bahasa di aplikasi lebih mudahdi pahami, 
+- kurangi bahasa" ai slop

@@ -10,6 +10,7 @@ import {
 import type { JwtAccessPayload } from '../../../common/types/jwt-access-payload.type';
 import type { TteRepository } from '../shared/repository/tte.repository';
 import { TtePenandatangananService } from './tte-penandatanganan.service';
+import { TtePublicUrlResolver } from '../shared/utils/tte-public-url.resolver';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
@@ -63,12 +64,16 @@ describe('Pengujian TtePenandatangananService', () => {
   function config() {
     return {
       get: jest.fn((key: string) => {
-        if (key === 'PUBLIC_TTE_VERIFY_BASE_URL') {
+        if (key === 'PUBLIC_APP_ORIGIN') {
           return 'https://verify.test';
         }
-        return '';
+        return undefined;
       }),
     } as unknown as ConfigService;
+  }
+
+  function publicUrlResolver() {
+    return new TtePublicUrlResolver(config());
   }
 
   beforeEach(() => {
@@ -80,7 +85,7 @@ describe('Pengujian TtePenandatangananService', () => {
       const repo = createRepoMock({
         findPenggunaAktif: jest.fn().mockResolvedValue(null),
       });
-      const service = new TtePenandatangananService(repo, config());
+      const service = new TtePenandatangananService(repo, publicUrlResolver());
 
       await expect(
         service.tandaTanganiBa(evaluatorUser, 'pid-1', {
@@ -98,7 +103,7 @@ describe('Pengujian TtePenandatangananService', () => {
           .mockResolvedValue({ peran: PeranPengguna.PJ_EVALUATOR } as any),
         findKredensial: jest.fn().mockResolvedValue(null),
       });
-      const service = new TtePenandatangananService(repo, config());
+      const service = new TtePenandatangananService(repo, publicUrlResolver());
 
       await expect(
         service.tandaTanganiBa(evaluatorUser, 'pid-1', {
@@ -117,7 +122,7 @@ describe('Pengujian TtePenandatangananService', () => {
         findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-      const service = new TtePenandatangananService(repo, config());
+      const service = new TtePenandatangananService(repo, publicUrlResolver());
 
       await expect(
         service.tandaTanganiBa(evaluatorUser, 'pid-1', {
@@ -141,7 +146,7 @@ describe('Pengujian TtePenandatangananService', () => {
         findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      service = new TtePenandatangananService(repo, config());
+      service = new TtePenandatangananService(repo, publicUrlResolver());
     });
 
     it('seharusnya melempar NotFoundException ketika NOT_FOUND', async () => {
@@ -215,7 +220,7 @@ describe('Pengujian TtePenandatangananService', () => {
         findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      service = new TtePenandatangananService(repo, config());
+      service = new TtePenandatangananService(repo, publicUrlResolver());
     });
 
     it('seharusnya melempar ForbiddenException ketika FORBIDDEN_OPD', async () => {
@@ -293,7 +298,7 @@ describe('Pengujian TtePenandatangananService', () => {
         findKredensial: jest.fn().mockResolvedValue(mockTtePinRow),
       });
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      const service = new TtePenandatangananService(repo, config());
+      const service = new TtePenandatangananService(repo, publicUrlResolver());
 
       await expect(
         service.tandaTanganiBa(invalidRoleUser, 'pid-1', {
@@ -378,7 +383,7 @@ describe('Pengujian TtePenandatangananService', () => {
       jest.clearAllMocks();
       service = new TtePenandatangananService(
         repo,
-        config(),
+        publicUrlResolver(),
         pdfService as any,
         storageService as any,
         pdfSigningService as any,
@@ -486,7 +491,7 @@ describe('Pengujian TtePenandatangananService', () => {
       expect(pdfService.stampSignatureQrCode).toHaveBeenCalledWith({
         detailSopId: 'ds-1',
         pdfBuffer: Buffer.from('%PDF-1.7\n'),
-        qrPayload: 'https://verify.test/doc-1/user-kep',
+        qrPayload: 'https://verify.test/validasi/pengesahan/doc-1/user-kep',
       });
       expect(pdfSigningService.signOfficialSopPdfWithUserCertificate).toHaveBeenCalledWith(
         expect.objectContaining({

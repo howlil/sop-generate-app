@@ -1,0 +1,14 @@
+# Impor SEKALI di Komodo: New → Resource Sync → paste / upload file ini.
+# Setelah itu, GitHub Actions mengurus sync + deploy otomatis.
+
+[[resource_sync]]
+name = "sop-app-resources"
+description = "Sinkronkan stack & procedure dari GitHub"
+tags = ["sop", "production"]
+
+[resource_sync.config]
+git_provider = "github.com"
+git_account = "howlil"
+repo = "howlil/sop-generate-app"
+branch = "final"
+resource_path = ["komodo/stack.toml", "komodo/procedure.toml"]

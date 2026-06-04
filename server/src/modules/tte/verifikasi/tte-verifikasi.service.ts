@@ -1,24 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import type { Request } from 'express';
 import { buildTteQrPayload } from '../shared/utils/tte-verifikasi-qr.util';
+import { TtePublicUrlResolver } from '../shared/utils/tte-public-url.resolver';
 import { mapTtePeranResponse } from '../shared/utils/tte-support';
 import { TteRepository } from '../shared/repository/tte.repository';
 import type { TtePengesahanPublicResponse } from '../shared/types/tte.types';
 
 @Injectable()
 export class TteVerifikasiService {
-  private readonly publicTteVerifyBaseUrl: string | undefined;
-
   constructor(
     private readonly tteRepository: TteRepository,
-    private readonly configService: ConfigService,
-  ) {
-    this.publicTteVerifyBaseUrl = this.configService.get<string>('PUBLIC_TTE_VERIFY_BASE_URL');
-  }
+    private readonly publicUrlResolver: TtePublicUrlResolver,
+  ) {}
 
   async getPengesahanPublic(
     dokumenTteId: string,
     userId: string,
+    req?: Pick<Request, 'headers'>,
   ): Promise<TtePengesahanPublicResponse> {
     const row = await this.tteRepository.findRiwayatPengesahanByUserAndDokumen(
       userId,
@@ -28,7 +26,7 @@ export class TteVerifikasiService {
       throw new NotFoundException('Data pengesahan tidak ditemukan');
     }
     const qr = buildTteQrPayload({
-      publicVerifyBaseUrl: this.publicTteVerifyBaseUrl,
+      publicVerifyBaseUrl: this.publicUrlResolver.resolveDocumentVerifyBaseUrl(req),
       dokumenTteId: row.dokumenTte.dokumenTteId,
       hashDokumen: row.dokumenTte.hashDokumen,
     });

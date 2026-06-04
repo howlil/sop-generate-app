@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Request } from 'express';
 import type { JwtAccessPayload } from '../../../common';
 import { RegisterTteDto } from '../shared/dto/register-tte.dto';
 
@@ -78,27 +79,34 @@ export class TteService {
     return this.profilService.setupTteWithUpload(user, dto, file);
   }
 
-  getPengesahanPublic(dokumenTteId: string, userId: string): Promise<TtePengesahanPublicResponse> {
-    return this.verifikasiService.getPengesahanPublic(dokumenTteId, userId);
+  getPengesahanPublic(
+    dokumenTteId: string,
+    userId: string,
+    req?: Request,
+  ): Promise<TtePengesahanPublicResponse> {
+    return this.verifikasiService.getPengesahanPublic(dokumenTteId, userId, req);
   }
 
   tandaTanganiBa(
     user: JwtAccessPayload,
     pengajuanEvaluasiId: string,
     dto: TandaTanganiDto,
+    req?: Request,
   ): Promise<TteRiwayatResponse> {
-    return this.penandatangananService.tandaTanganiBa(user, pengajuanEvaluasiId, dto);
+    return this.penandatangananService.tandaTanganiBa(user, pengajuanEvaluasiId, dto, req);
   }
 
   tandaTanganiSemuaSopPengajuan(
     user: JwtAccessPayload,
     pengajuanEvaluasiId: string,
     dto: TandaTanganiSemuaSopDto,
+    req?: Request,
   ): Promise<TteBatchSignSopPengajuanResponse> {
     return this.penandatangananService.tandaTanganiSemuaSopPengajuan(
       user,
       pengajuanEvaluasiId,
       dto,
+      req,
     );
   }
 

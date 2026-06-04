@@ -1,0 +1,11 @@
+# Paste di halaman Servers → tombol Toml (jika belum ada server "Local").
+# Di screenshot Anda server "Local" sudah OK — langkah ini boleh dilewati.
+
+[[server]]
+name = "Local"
+description = "VPS lokal / server deploy SOP"
+tags = ["sop", "production"]
+
+[server.config]
+address = "http://127.0.0.1:8120"
+enabled = true

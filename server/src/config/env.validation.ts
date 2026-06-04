@@ -31,22 +31,21 @@ const envSchema = z
       z.string().default('15m'),
     ),
     JWT_REFRESH_EXPIRATION: z.string().default('7d'),
-    LOGIN_RATE_LIMIT_IP_MAX: z.coerce.number().int().min(1).default(20),
-    LOGIN_RATE_LIMIT_IP_WINDOW_SECONDS: z.coerce.number().int().min(1).default(60),
-    LOGIN_RATE_LIMIT_EMAIL_MAX: z.coerce.number().int().min(1).default(10),
-    LOGIN_RATE_LIMIT_EMAIL_WINDOW_SECONDS: z.coerce.number().int().min(1).default(900),
-    PUBLIC_PDF_VERIFY_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(20),
-    PUBLIC_PDF_VERIFY_RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().min(1).default(60),
     DATABASE_HOST: z.string().min(1),
     DATABASE_PORT: z.coerce.number().int().min(1).max(65535).default(3306),
     DATABASE_USER: z.string().min(1),
     DATABASE_PASSWORD: z.string().min(1),
     DATABASE_NAME: z.string().min(1),
     DATABASE_URL: z.string().url(),
-    /** Basis URL publik (frontend) untuk tautan verifikasi dokumen di QR — opsional; tanpa ini QR memakai JSON deterministik. */
-    PUBLIC_TTE_VERIFY_BASE_URL: z.preprocess(
+    /** Override origin frontend (mis. https://app.domain.go.id). Kosong = deteksi dari header request. */
+    PUBLIC_APP_ORIGIN: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().url().optional(),
+    ),
+    /** Legacy; gunakan PUBLIC_APP_ORIGIN. Jika di-set, dipakai sebagai fallback bila request tanpa Origin. */
+    PUBLIC_TTE_VERIFY_BASE_URL: z.preprocess(
+      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
+      z.string().optional(),
     ),
     PDF_SIGNING_ENABLED: envBoolean(false),
     PDF_SIGNING_P12_BASE64: z.preprocess(

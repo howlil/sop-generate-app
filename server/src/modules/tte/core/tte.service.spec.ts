@@ -15,6 +15,7 @@ import {
 import type { JwtAccessPayload } from '../../../common/types/jwt-access-payload.type';
 import type { TteRepository } from '../shared/repository/tte.repository';
 import { TtePenandatangananService } from '../penandatanganan/tte-penandatanganan.service';
+import { TtePublicUrlResolver } from '../shared/utils/tte-public-url.resolver';
 import type { TtePdfSigningService } from '../penandatanganan/tte-pdf-signing.service';
 import { TteProfilService } from '../profil/tte-profil.service';
 import { TteService } from './tte.service';
@@ -87,14 +88,15 @@ describe('Pengujian TteService', () => {
       buildUnsignedOfficialPdf: jest.fn().mockReturnValue(Buffer.from('%PDF-1.7\n')),
     } as any;
     const sopPdfStorageService = {} as any;
+    const publicUrlResolver = new TtePublicUrlResolver(cfg);
     const penandatangananService = new TtePenandatangananService(
       repo,
-      cfg,
+      publicUrlResolver,
       sopOfficialPdfService,
       sopPdfStorageService,
       pdfSigningService,
     );
-    const verifikasiService = new TteVerifikasiService(repo, cfg);
+    const verifikasiService = new TteVerifikasiService(repo, publicUrlResolver);
     return new TteService(
       profilService,
       penandatangananService,
