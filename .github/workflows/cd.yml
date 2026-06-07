@@ -38,6 +38,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/final'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Sinkronkan definisi Komodo dari repo
         env:
           WEBHOOK_URL: ${{ secrets.KOMODO_SYNC_WEBHOOK_URL }}
@@ -59,6 +62,9 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/final'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Deploy produksi via Komodo
         env:
           WEBHOOK_URL: ${{ secrets.KOMODO_PROCEDURE_WEBHOOK_URL }}
