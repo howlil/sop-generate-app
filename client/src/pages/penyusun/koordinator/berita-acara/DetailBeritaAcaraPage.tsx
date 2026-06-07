@@ -63,14 +63,15 @@ export function DetailBeritaAcaraPage() {
     isPjPenyusun: true,
     suppressSetupRequiredToast: true,
   })
+  const nomorBaLabel = pengajuan?.nomorBA ?? `BA-${id.slice(0, 8)}`
   const handlePinConfirm = createPinConfirmHandler(
     tandaTanganiBA.mutateAsync,
     (pin) => ({
       pengajuanId: id,
       payload: {
         pin,
-        nomorDokumen: pengajuan?.nomorBA ?? `BA-${pengajuan?.opdNama ?? ''}`,
-        judulDokumen: `Berita Acara Evaluasi - ${pengajuan?.opdNama ?? ''}`,
+        nomorDokumen: nomorBaLabel,
+        judulDokumen: `Berita Acara Evaluasi - ${nomorBaLabel}`,
       },
     }),
     undefined,
@@ -80,7 +81,7 @@ export function DetailBeritaAcaraPage() {
     void requireTteReady(() => setTteDialogOpen(true))
   }
 
-  const isReadyForSignature = pengajuan?.status === 'DIVERIFIKASI_PJ_EVALUATOR'
+  const isReadyForSignature = pengajuan?.status === 'DITANDATANGANI_PJ_EVALUATOR'
   const isAlreadySigned = pengajuan?.status === 'DITANDATANGANI_PJ_PENYUSUN'
   const sopList = pengajuan?.sopList ?? EMPTY_SOP_LIST
   const canCetakBa = canCetakBeritaAcaraPengajuan(pengajuan?.status)
@@ -124,9 +125,7 @@ export function DetailBeritaAcaraPage() {
             pengajuan,
             baView,
             overrides: {
-              opd: pengajuan.opdNama ?? pengajuan.opd?.nama ?? '',
-              namaPjPenyusun:
-                pengajuan.namaPjPenyusun ?? pengajuan.opdNama ?? 'PJ Penyusun OPD',
+              namaPjPenyusun: pengajuan.namaPjPenyusun ?? 'PJ Penyusun OPD',
             },
           })
         : null,
@@ -172,13 +171,17 @@ export function DetailBeritaAcaraPage() {
           { label: 'Berita Acara', to: ROUTES.PENYUSUN.PJ_PENYUSUN_BERITA_ACARA },
         ]}
         title="Detail Berita Acara"
-        description={`${pengajuan.opdNama ?? ''} - verifikasi BA dan finalisasi tanda tangan elektronik.`}
+        description={
+          pengajuan.nomorBA
+            ? `${pengajuan.nomorBA} — tanda tangani Berita Acara dengan tanda tangan elektronik.`
+            : 'Tanda tangani Berita Acara dengan tanda tangan elektronik.'
+        }
         backTo={ROUTES.PENYUSUN.PJ_PENYUSUN_BERITA_ACARA}
         backSize="icon"
         header={
           <div className="space-y-4">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <h2 className="text-sm font-semibold text-gray-900">Informasi OPD & Evaluasi</h2>
+              <h2 className="text-sm font-semibold text-gray-900">Informasi Evaluasi</h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <PengajuanCetakArsipButtons
                   printScope="pj-penyusun-kepala-opd"
@@ -211,11 +214,10 @@ export function DetailBeritaAcaraPage() {
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1.5">
-              <InfoField label="OPD">{pengajuan.opdNama ?? pengajuan.opd?.nama ?? ''}</InfoField>
               <InfoField label="Nomor BA">
                 <span className="font-mono">{pengajuan.nomorBA ?? '-'}</span>
               </InfoField>
-              <InfoField label="Tanggal Verifikasi">{formatDateIdFull(pengajuan.tanggalVerifikasi, '')}</InfoField>
+              <InfoField label="Tanggal Tanda Tangan">{formatDateIdFull(pengajuan.tanggalVerifikasi, '')}</InfoField>
               <InfoField label="Evaluator">{pengajuan.timEvaluasi ?? '-'}</InfoField>
               <InfoField label="Jumlah SOP">{`${sopList.length} dokumen`}</InfoField>
             </div>
@@ -229,7 +231,7 @@ export function DetailBeritaAcaraPage() {
                 <div className="flex gap-3">
                   <AlertCircle className="h-5 w-5 flex-shrink-0 text-orange-700" />
                   <p className="text-xs text-orange-700">
-                    Berita Acara ini telah diverifikasi oleh PJ Evaluator dan menunggu tanda tangan Anda.
+                    Berita Acara ini telah ditandatangani PJ Evaluator dan menunggu tanda tangan Anda.
                   </p>
                 </div>
               </div>
@@ -333,7 +335,7 @@ export function DetailBeritaAcaraPage() {
       <PinVerificationDialog
         open={tteDialogOpen}
         onOpenChange={setTteDialogOpen}
-        title="Verifikasi PIN TTE"
+        title="Tanda Tangan — PIN TTE"
         description="Masukkan PIN TTE untuk menandatangani Berita Acara ini (simulasi)."
         onConfirm={handlePinConfirm}
       />

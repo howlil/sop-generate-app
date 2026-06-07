@@ -37,15 +37,15 @@ export function LoginHero() {
         {/* Title */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4 leading-tight">
-            Kelola SOP
+            Pengelolaan SOP AP
             <br />
             <span className="bg-gradient-to-r from-blue-200 to-cyan-200 bg-clip-text text-transparent">
-              Lebih Efisien
+              Terpadu dan Teraudit
             </span>
           </h1>
           <p className="text-sm text-blue-100/70 leading-relaxed max-w-sm">
-            Platform digital untuk Standard Operating Procedure dengan proses
-            terstruktur dan teraudit.
+            Penyusunan, evaluasi, verifikasi, dan pengesahan SOP Administrasi
+            Pemerintahan dalam satu sistem terintegrasi.
           </p>
         </div>
 
@@ -57,9 +57,11 @@ export function LoginHero() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-white/90">
-                Draft hingga pengesahan
+                Penyusunan hingga pengesahan
               </p>
-              <p className="text-xs text-blue-200/60">End-to-end workflow</p>
+              <p className="text-xs text-blue-200/60">
+                Alur kerja dari draft di OPD sampai pengesahan TTE BSRE
+              </p>
             </div>
             <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
@@ -70,9 +72,11 @@ export function LoginHero() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-white/90">
-                Verifikasi berjenjang
+                Evaluasi dan verifikasi berjenjang
               </p>
-              <p className="text-xs text-blue-200/60">Multi-level approval</p>
+              <p className="text-xs text-blue-200/60">
+                Penilaian Biro Organisasi dengan persetujuan bertingkat
+              </p>
             </div>
             <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>
@@ -83,9 +87,11 @@ export function LoginHero() {
             </div>
             <div className="flex-1">
               <p className="text-sm font-medium text-white/90">
-                Dashboard & Pelaporan
+                Dashboard dan pelaporan
               </p>
-              <p className="text-xs text-blue-200/60"> analytics</p>
+              <p className="text-xs text-blue-200/60">
+                Rekapitulasi data evaluasi dan statistik pengelolaan SOP
+              </p>
             </div>
             <ArrowUpRight className="w-4 h-4 text-white/20 group-hover:text-white/40 transition-colors" />
           </div>

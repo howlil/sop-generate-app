@@ -1,12 +1,6 @@
 import type { ReactNode } from "react";
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { flushSync } from "react-dom";
-import { SOP_BEFORE_PRINT_EVENT } from "@/lib/print/sop-print-events";
-import {
-  createSopPrintPrepareHandler,
-  registerSopPrintPrepareHandler,
-  suppressBrowserPrintChrome,
-} from "@/lib/print/sop-browser-print";
+import { useState, useMemo, useEffect, useCallback } from "react";
+
 import {
   SOPHeaderInfo,
   type SOPHeaderInfoProps,
@@ -72,8 +66,7 @@ export interface SOPPreviewTemplateProps {
   onMetadataChange?: (field: string, value: unknown) => void;
   previewOptions?: SopPreviewOptions;
   diagramState?: SopPreviewDiagramState;
-  /** false untuk salinan tersembunyi — hindari menimpa handler cetak pratinjau aktif. */
-  registerPrintPrepare?: boolean;
+
 }
 
 export function SOPPreviewTemplate({
@@ -86,7 +79,6 @@ export function SOPPreviewTemplate({
   onMetadataChange,
   previewOptions = {},
   diagramState = {},
-  registerPrintPrepare = true,
 }: SOPPreviewTemplateProps) {
   const effectiveOptions: Required<SopPreviewOptions> = {
     hideDiagramTabs: previewOptions.hideDiagramTabs ?? false,
@@ -122,7 +114,7 @@ export function SOPPreviewTemplate({
     : setInternalActiveTab;
   const requestDiagramMount = effectiveDiagramState.onRequestDiagramMount;
 
-  // Defensive normalization: persisted/legacy data may contain empty implementer names.
+  // Defensive normalization: persisted data may contain empty implementer names.
   const safeImplementers = useMemo(
     () =>
       (implementers ?? []).map((impl, index) => ({
@@ -192,16 +184,7 @@ export function SOPPreviewTemplate({
     const initialTab = diagramState.activeTab ?? "flowchart";
     return new Set([initialTab]);
   });
-  /** Saat cetak: mount flowchart + BPMN meski tab belum pernah dibuka di layar. */
-  const [printPrepared, setPrintPrepared] = useState(false);
-  const restoreBrowserPrintChromeRef = useRef<(() => void) | null>(null);
 
-  const ensureBothDiagramTabs = useCallback(() => {
-    setVisitedTabs((prev) => {
-      if (prev.has("flowchart") && prev.has("bpmn")) return prev;
-      return new Set<"flowchart" | "bpmn">(["flowchart", "bpmn"]);
-    });
-  }, []);
 
   useEffect(() => {
     setVisitedTabs((prev) => {
@@ -236,44 +219,7 @@ export function SOPPreviewTemplate({
     [requestDiagramMount, setActiveTab],
   );
 
-  const syncPrintDiagramMount = useCallback(() => {
-    setPrintPrepared(true);
-    ensureBothDiagramTabs();
-  }, [ensureBothDiagramTabs]);
 
-  const prepareForPrint = useCallback(() => {
-    restoreBrowserPrintChromeRef.current = suppressBrowserPrintChrome();
-    document.body.classList.add("print-mode-sop");
-    flushSync(() => {
-      syncPrintDiagramMount();
-    });
-    window.dispatchEvent(new Event(SOP_BEFORE_PRINT_EVENT));
-  }, [syncPrintDiagramMount]);
-
-  const cleanupAfterPrint = useCallback(() => {
-    restoreBrowserPrintChromeRef.current?.();
-    restoreBrowserPrintChromeRef.current = null;
-    document.body.classList.remove("print-mode-sop", "sop-print-preparing");
-    setPrintPrepared(false);
-  }, []);
-
-  useEffect(() => {
-    if (!registerPrintPrepare) return;
-    registerSopPrintPrepareHandler(
-      createSopPrintPrepareHandler(syncPrintDiagramMount),
-    );
-    return () => registerSopPrintPrepareHandler(null);
-  }, [registerPrintPrepare, syncPrintDiagramMount]);
-
-  useEffect(() => {
-    window.addEventListener("beforeprint", prepareForPrint);
-    window.addEventListener("afterprint", cleanupAfterPrint);
-    return () => {
-      window.removeEventListener("beforeprint", prepareForPrint);
-      window.removeEventListener("afterprint", cleanupAfterPrint);
-      document.body.classList.remove("print-mode-sop", "sop-print-preparing");
-    };
-  }, [prepareForPrint, cleanupAfterPrint]);
 
   const diagramDataProps = useMemo(
     () => ({
@@ -331,9 +277,9 @@ export function SOPPreviewTemplate({
 
   const canMountDiagram = effectiveDiagramState.diagramMountEnabled;
   const mountFlowchartDiagram =
-    canMountDiagram && (visitedTabs.has("flowchart") || printPrepared);
+    canMountDiagram && visitedTabs.has("flowchart");
   const mountBpmnDiagram =
-    canMountDiagram && (visitedTabs.has("bpmn") || printPrepared);
+    canMountDiagram && visitedTabs.has("bpmn");
   const showFlowchartOnScreen =
     mountFlowchartDiagram && activeTab === "flowchart";
   const showBpmnOnScreen = mountBpmnDiagram && activeTab === "bpmn";

@@ -181,8 +181,7 @@ export function DetailSOPPenyusunMain({
       </div>
     ) : undefined
   return (
-    <div className="flex-1 overflow-auto p-4">
-      <div data-print-area="sop">
+    <div className="h-full min-h-0 flex-1 overflow-auto p-4">
         <SOPPreviewTemplate
           metadata={previewMetadata}
           prosedurRows={prosedurRows}
@@ -207,7 +206,6 @@ export function DetailSOPPenyusunMain({
             diagramAlternate,
           }}
         />
-      </div>
     </div>
   )
 }

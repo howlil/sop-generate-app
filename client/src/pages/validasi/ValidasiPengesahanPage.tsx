@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle2, Download, Home, Loader2, Shield } from "luci
 import { useCallback, useMemo, useState } from "react";
 import { usePublicSopDokumen } from "@/api/sop-public";
 import { usePdfSigningStatus, useTtePengesahanPublic } from "@/api/tte";
-import { PengajuanSopPrintLayer } from "@/components/pengajuan/pengajuan-sop-print-layer";
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InfoCard } from "@/components/ui/info-card";
@@ -250,12 +250,7 @@ export function ValidasiPengesahanPage() {
           </Button>
         </div>
 
-        {isSopDocument ? (
-          <PengajuanSopPrintLayer
-            previewProps={sopPreviewProps}
-            tteSignaturePayload={tteSignaturePayload}
-          />
-        ) : null}
+
       </div>
     </div>
   );

@@ -456,10 +456,19 @@ describe('Pengujian helper sesi log edit', () => {
     it('seharusnya menangani input fields yang kotor (string kosong, undefined, whitespace, null) dengan aman (Worst Case)', async () => {
       const { tx, capture } = makeTx();
       const now = new Date('2026-05-04T10:00:00Z');
-      
+
       // Simulasi dirty data: null/undefined di-bypass TS lewat tipe any
-      const dirtyFields = ['peringatan', '', '   ', null, undefined, 'peringatan', 'judul', ''] as any as string[];
-      
+      const dirtyFields = [
+        'peringatan',
+        '',
+        '   ',
+        null,
+        undefined,
+        'peringatan',
+        'judul',
+        '',
+      ] as any as string[];
+
       await appendAt(capture, now, () =>
         appendOrCreateLogSession({
           tx: asAppendTx(tx),
@@ -470,7 +479,7 @@ describe('Pengujian helper sesi log edit', () => {
           now,
         }),
       );
-      
+
       expect(capture.create).toHaveBeenCalledTimes(1);
       const created = capture.rows[0];
       // Hanya peringatan dan judul yang lolos
@@ -484,7 +493,7 @@ describe('Pengujian helper sesi log edit', () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date('2026-05-04T10:05:00Z');
-      
+
       await appendAt(capture, t1, () =>
         appendOrCreateLogSession({
           tx: asAppendTx(tx),
@@ -495,7 +504,7 @@ describe('Pengujian helper sesi log edit', () => {
           now: t1,
         }),
       );
-      
+
       // Simulasi array fields kosong saat update
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
@@ -507,11 +516,11 @@ describe('Pengujian helper sesi log edit', () => {
           now: t2,
         }),
       );
-      
+
       expect(capture.update).toHaveBeenCalledTimes(1);
       // domainCreateMany seharusnya tidak menghasilkan elemen baru atau tidak dipanggil dengan array panjang (dalam simulasi ini 1 unik dari old)
       // Fungsi helper replaceDomainFields tetap dipanggil untuk menyimpan union (['status'] + []) -> ['status']
-      expect(capture.rows[0].domainFields.map(x => x.domainField)).toEqual(['status']);
+      expect(capture.rows[0].domainFields.map((x) => x.domainField)).toEqual(['status']);
     });
 
     it('seharusnya menghormati override idleWindowMs dan memisahkan sesi walaupun dalam jendela default (Edge Case)', async () => {
@@ -519,7 +528,7 @@ describe('Pengujian helper sesi log edit', () => {
       const t1 = new Date('2026-05-04T10:00:00Z');
       // Beda 5 detik
       const t2 = new Date(t1.getTime() + 5000);
-      
+
       await appendAt(capture, t1, () =>
         appendOrCreateLogSession({
           tx: asAppendTx(tx),
@@ -528,10 +537,10 @@ describe('Pengujian helper sesi log edit', () => {
           bagian: BagianSOP.LANGKAH,
           fields: ['kegiatan'],
           now: t1,
-          idleWindowMs: 1000 // Jendela idle 1 detik
+          idleWindowMs: 1000, // Jendela idle 1 detik
         }),
       );
-      
+
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
           tx: asAppendTx(tx),
@@ -540,10 +549,10 @@ describe('Pengujian helper sesi log edit', () => {
           bagian: BagianSOP.LANGKAH,
           fields: ['aktor'],
           now: t2,
-          idleWindowMs: 1000 // Jendela idle 1 detik
+          idleWindowMs: 1000, // Jendela idle 1 detik
         }),
       );
-      
+
       // Seharusnya membuat 2 sesi terpisah karena selisih 5 detik > 1 detik window
       expect(capture.create).toHaveBeenCalledTimes(2);
       expect(capture.update).not.toHaveBeenCalled();
@@ -555,21 +564,42 @@ describe('Pengujian helper sesi log edit', () => {
       const { tx, capture } = makeTx();
       const t1 = new Date('2026-05-04T10:00:00Z');
       const t2 = new Date(t1.getTime() + DEFAULT_LOG_SESSION_IDLE_MS + 1000);
-      
+
       // Inject secara manual 3 sesi open basi (biasanya akibat race condition)
       capture.rows.push({
-        detailSopId, penggunaId, bagian: BagianSOP.EVALUASI,
-        createdAt: new Date(t1.getTime() - 1000), closedAt: null, sesiChangeCount: 1, keterangan: '', updatedAt: t1, domainFields: []
+        detailSopId,
+        penggunaId,
+        bagian: BagianSOP.EVALUASI,
+        createdAt: new Date(t1.getTime() - 1000),
+        closedAt: null,
+        sesiChangeCount: 1,
+        keterangan: '',
+        updatedAt: t1,
+        domainFields: [],
       });
       capture.rows.push({
-        detailSopId, penggunaId, bagian: BagianSOP.EVALUASI,
-        createdAt: new Date(t1.getTime() - 2000), closedAt: null, sesiChangeCount: 1, keterangan: '', updatedAt: t1, domainFields: []
+        detailSopId,
+        penggunaId,
+        bagian: BagianSOP.EVALUASI,
+        createdAt: new Date(t1.getTime() - 2000),
+        closedAt: null,
+        sesiChangeCount: 1,
+        keterangan: '',
+        updatedAt: t1,
+        domainFields: [],
       });
       capture.rows.push({
-        detailSopId, penggunaId, bagian: BagianSOP.EVALUASI,
-        createdAt: new Date(t1.getTime() - 3000), closedAt: null, sesiChangeCount: 1, keterangan: '', updatedAt: t1, domainFields: []
+        detailSopId,
+        penggunaId,
+        bagian: BagianSOP.EVALUASI,
+        createdAt: new Date(t1.getTime() - 3000),
+        closedAt: null,
+        sesiChangeCount: 1,
+        keterangan: '',
+        updatedAt: t1,
+        domainFields: [],
       });
-      
+
       await appendAt(capture, t2, () =>
         appendOrCreateLogSession({
           tx: asAppendTx(tx),
@@ -580,10 +610,10 @@ describe('Pengujian helper sesi log edit', () => {
           now: t2,
         }),
       );
-      
+
       // create dipanggil 1 kali untuk sesi baru
       expect(capture.create).toHaveBeenCalledTimes(1);
-      
+
       // 3 Sesi stale tersebut kini harus memiliki closedAt = t2
       expect(capture.rows[0].closedAt).toEqual(t2);
       expect(capture.rows[1].closedAt).toEqual(t2);

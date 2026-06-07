@@ -42,12 +42,12 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
     }
 
     if (!password) {
-      setPasswordError("Password wajib diisi");
+      setPasswordError("Kata sandi wajib diisi");
       return false;
     }
 
     if (password.length < 8) {
-      setPasswordError("Password minimal 8 karakter");
+      setPasswordError("Kata sandi minimal 8 karakter");
       return false;
     }
 
@@ -130,7 +130,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
         {/* Password Field */}
         <div className="space-y-2">
           <Label htmlFor="password" required>
-            Password
+            Kata sandi
           </Label>
           <div className="relative">
             <Lock
@@ -142,7 +142,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
               type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Masukkan password"
+              placeholder="Masukkan kata sandi"
               disabled={isSubmitting}
               autoComplete="current-password"
               errorMessage={passwordError}
@@ -154,7 +154,7 @@ export function LoginForm({ isSubmitting, onSubmitLogin }: LoginFormProps) {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-600 rounded"
               disabled={isSubmitting}
               aria-label={
-                showPassword ? "Sembunyikan password" : "Tampilkan password"
+                showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
               }
             >
               {showPassword ? (

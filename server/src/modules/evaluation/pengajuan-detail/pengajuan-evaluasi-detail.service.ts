@@ -20,10 +20,11 @@ import { PengajuanEvaluasiDetailRepository } from './pengajuan-evaluasi-detail.r
 import type { PengajuanEvaluasiDetailRow } from '../pengajuan/pengajuan-evaluasi.repository';
 import { PengajuanEvaluasiRepository } from '../pengajuan/pengajuan-evaluasi.repository';
 import { PengajuanEvaluasiService } from '../pengajuan/pengajuan-evaluasi.service';
+import { shouldOmitOpdFieldsForViewer } from '../pengajuan/pengajuan-evaluasi.mapper';
 
 const DEFAULT_LOGS_LIMIT = 100;
 const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
-  StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
   StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
   StatusPengajuanEvaluasi.SELESAI,
 ]);
@@ -46,7 +47,7 @@ export class PengajuanEvaluasiDetailService {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }
     await this.pengajuanEvaluasiService.assertUserCanAccessPengajuan(user, row.opdId);
-    return PengajuanEvaluasiDetailService.mapRowToShell(row);
+    return PengajuanEvaluasiDetailService.mapRowToShell(row, user.peran);
   }
 
   async getSopDokumen(
@@ -219,7 +220,10 @@ export class PengajuanEvaluasiDetailService {
     };
   }
 
-  private static mapRowToShell(row: PengajuanEvaluasiDetailRow): PengajuanEvaluasiShellDto {
+  private static mapRowToShell(
+    row: PengajuanEvaluasiDetailRow,
+    viewerPeran?: string,
+  ): PengajuanEvaluasiShellDto {
     const dokBa = row.dokumenTte[0];
     const nomorBA =
       row.nomorBA ?? (dokBa !== undefined && dokBa !== null ? dokBa.nomorDokumen : undefined);
@@ -290,10 +294,9 @@ export class PengajuanEvaluasiDetailService {
       ? row.updatedAt.toISOString()
       : undefined;
     const statusDisplay = displayStatusPengajuan(row.status);
+    const omitOpdFields = shouldOmitOpdFieldsForViewer(viewerPeran);
     return {
       id: row.pengajuanEvaluasiId,
-      opdId: row.opdId,
-      opdNama: row.opd.nama,
       jenis: String(row.jenis),
       status: statusDisplay.value,
       statusLabel: statusDisplay.label,
@@ -302,7 +305,6 @@ export class PengajuanEvaluasiDetailService {
       tanggalPermintaan: row.tanggalPermintaan?.toISOString(),
       tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),
       tanggalVerifikasi,
-      nilaiOPD: row.nilaiOPD ?? undefined,
       diverifikasiOlehUserId: row.diverifikasiOlehUserId ?? undefined,
       namaPjEvaluator: row.diverifikasiOlehUser?.nama ?? row.diselesaikanOleh?.nama ?? undefined,
       ditandatanganiOlehPjPenyusunUserId: row.ditandatanganiOlehPjPenyusunUserId ?? undefined,
@@ -313,7 +315,6 @@ export class PengajuanEvaluasiDetailService {
         row.diselesaikanOleh !== null && row.diselesaikanOleh !== undefined
           ? { id: row.diselesaikanOleh.penggunaId, nama: row.diselesaikanOleh.nama }
           : undefined,
-      opd: { id: row.opd.opdId, nama: row.opd.nama },
       timEvaluasi: row.diselesaikanOleh?.nama ?? '',
       tanggalDiselesaikan: row.tanggalDiselesaikan?.toISOString(),
       sopItems,
@@ -321,6 +322,14 @@ export class PengajuanEvaluasiDetailService {
       timelineNilai,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
+      ...(omitOpdFields
+        ? {}
+        : {
+            opdId: row.opdId,
+            opdNama: row.opd.nama,
+            nilaiOPD: row.nilaiOPD ?? undefined,
+            opd: { id: row.opd.opdId, nama: row.opd.nama },
+          }),
     };
   }
 

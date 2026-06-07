@@ -91,8 +91,6 @@ describe('Pengujian TtePdfSigningService', () => {
     });
   });
 
-
-
   it('seharusnya tidak menginjeksi CA ketika signPdf menerima jenis Berita Acara', async () => {
     const userId = '00000000-0000-4000-8000-0000000000aa';
     const dokumenTteId = '00000000-0000-4000-8000-0000000000bb';

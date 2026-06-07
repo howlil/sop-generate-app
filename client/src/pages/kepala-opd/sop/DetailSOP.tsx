@@ -134,7 +134,7 @@ export function DetailSOP(props: DetailSOPProps = {}) {
         actions={null}
         header={workspaceHeaderToolbar}
         main={
-          <div className="flex flex-col h-full p-4 gap-3 overflow-y-auto">
+          <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto p-4">
             {isDicabut ? (
               <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-900">
                 <AlertTriangle className="mr-1 inline h-3.5 w-3.5 align-text-bottom" aria-hidden />
@@ -147,7 +147,6 @@ export function DetailSOP(props: DetailSOPProps = {}) {
                 {cabutBlockingReason}
               </div>
             ) : null}
-            <div data-print-area="sop">
             <SOPPreviewTemplate
               name={sopName}
               number={sopNumber}
@@ -165,7 +164,6 @@ export function DetailSOP(props: DetailSOPProps = {}) {
                 ...diagramRenderState,
               }}
             />
-            </div>
           </div>
         }
         rightPanel={null}

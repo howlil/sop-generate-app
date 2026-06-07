@@ -51,7 +51,9 @@ describe('Pengujian TteVerifikasiService', () => {
 
   describe('getPengesahanPublic', () => {
     it('seharusnya melempar NotFoundException jika data tidak ditemukan (False Case)', async () => {
-      (mockTteRepository.findRiwayatPengesahanByUserAndDokumen as jest.Mock).mockResolvedValue(null);
+      (mockTteRepository.findRiwayatPengesahanByUserAndDokumen as jest.Mock).mockResolvedValue(
+        null,
+      );
 
       await expect(service.getPengesahanPublic('dok-123', 'user-123')).rejects.toBeInstanceOf(
         NotFoundException,

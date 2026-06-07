@@ -3,7 +3,6 @@ import {
   areSopDiagramRootsReady,
   getPrintScope,
   isSopDiagramRootReady,
-  registerSopPrintPrepareHandler,
   suppressBrowserPrintChrome,
   waitForSopDiagramPrintReady,
 } from '../sop-browser-print'
@@ -141,7 +140,6 @@ describe('getPrintScope', () => {
 
 describe('waitForSopDiagramPrintReady', () => {
   afterEach(() => {
-    registerSopPrintPrepareHandler(null)
     document.body.innerHTML = ''
     document.body.className = ''
   })

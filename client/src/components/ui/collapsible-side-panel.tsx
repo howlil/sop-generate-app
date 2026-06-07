@@ -147,23 +147,33 @@ export interface PanelTabStripProps {
 export function PanelTabStrip({ tabs, activeTab, onTabChange }: PanelTabStripProps) {
   return (
     <div className="flex flex-1 min-w-0 rounded-md bg-gray-100 p-0.5 gap-0.5">
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          onClick={() => onTabChange(tab.id)}
-          className={cn(
-            'flex-1 min-w-0 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs font-medium transition-colors',
-            activeTab === tab.id
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          )}
-        >
-          {tab.icon && <span className="shrink-0 w-3.5 h-3.5 flex items-center justify-center">{tab.icon}</span>}
-          <span className="truncate">{tab.label}</span>
-          {tab.badge && <span className="text-[10px] opacity-80">{tab.badge}</span>}
-        </button>
-      ))}
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.id
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            title={tab.label}
+            onClick={() => onTabChange(tab.id)}
+            className={cn(
+              'flex items-center justify-center gap-1.5 px-2 py-1.5 rounded text-xs font-medium transition-colors',
+              isActive
+                ? 'flex-none shrink-0 bg-white text-gray-900 shadow-sm'
+                : 'flex-1 min-w-0 text-gray-600 hover:text-gray-900'
+            )}
+          >
+            {tab.icon && (
+              <span className="shrink-0 w-3.5 h-3.5 flex items-center justify-center">
+                {tab.icon}
+              </span>
+            )}
+            <span className={cn(isActive ? 'whitespace-nowrap' : 'sr-only')}>
+              {tab.label}
+            </span>
+            {tab.badge && <span className="text-[10px] opacity-80">{tab.badge}</span>}
+          </button>
+        )
+      })}
     </div>
   )
 }

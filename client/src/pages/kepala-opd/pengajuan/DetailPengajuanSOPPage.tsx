@@ -299,6 +299,7 @@ export function DetailPengajuanSOPPage() {
           </CollapsibleSidePanel>
         }
       >
+        <div className="flex h-full min-h-0 min-w-0 flex-col">
         <DocumentPreviewTabs
           value={previewMainTab}
           onValueChange={setPreviewMainTab}
@@ -330,12 +331,13 @@ export function DetailPengajuanSOPPage() {
             },
           ]}
         />
+        </div>
       </DetailPageLayout>
 
       <PinVerificationDialog
         open={pinDialogOpen}
         onOpenChange={setPinDialogOpen}
-        title="Verifikasi PIN TTE"
+        title="Tanda Tangan — PIN TTE"
         description="Masukkan PIN TTE untuk menandatangani seluruh SOP pada pengajuan ini."
         onConfirm={handlePinConfirm}
         confirmLabel="Tanda Tangani"

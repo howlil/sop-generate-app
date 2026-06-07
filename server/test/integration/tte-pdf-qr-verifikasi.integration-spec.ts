@@ -224,12 +224,12 @@ async function runMinimalTteWorkflow(
 
   await penyusunAgent
     .patch(`${API}/sop/status/${detailSopId}`)
-    .send({ status: StatusSOP.SIAP_DIEVALUASI })
+    .send({ status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI })
     .expect(200);
 
   await pjPenyusunAgent
     .post(`${API}/evaluasi`)
-    .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [detailSopId] })
+    .send({ jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD, sopDetailIds: [detailSopId] })
     .expect(201);
 
   const pengajuan = await prisma.pengajuanEvaluasi.findFirstOrThrow({

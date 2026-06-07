@@ -27,8 +27,8 @@ entity "Pengajuan Evaluasi" as Pengajuan
 entity "Nilai Evaluasi" as Nilai
 
 Aktor -> UI : Membuka halaman pengajuan evaluasi
-UI -> EvalCtrl : Meminta daftar SOP siap dievaluasi
-EvalCtrl -> Detail : Mencari SOP milik OPD yang siap dievaluasi
+UI -> EvalCtrl : Meminta daftar SOP menunggu pengajuan evaluasi
+EvalCtrl -> Detail : Mencari SOP milik OPD yang menunggu pengajuan evaluasi
 Detail --> EvalCtrl : Daftar SOP siap diajukan
 EvalCtrl --> UI : Menampilkan daftar SOP
 

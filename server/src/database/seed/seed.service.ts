@@ -22,14 +22,14 @@ const DEFAULT_SEED_PASSWORD = '@Password123:)';
 const STATUS_PENGAJUAN_AKTIF_SEED: readonly StatusPengajuanEvaluasi[] = [
   StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
   StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
-  StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
   StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
 ] as const;
 const STATUS_SOP_WAJIB_PUNYA_PENGAJUAN_AKTIF_SEED: readonly StatusSOP[] = [
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,
   StatusSOP.REVISI_DARI_EVALUATOR,
-  StatusSOP.SIAP_DIVERIFIKASI,
+  StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
   StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
 ] as const;
 
@@ -344,7 +344,6 @@ export class SeedService {
 
       // 14. DokumenTTE - JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
       await this.seedDokumenTte(tx, { d, pe });
-
     });
 
     this.logger.log(
@@ -355,9 +354,7 @@ export class SeedService {
         'invariant status SOP seragam per pengajuan, prosedur minimal (≥3 langkah, ≥2 pelaksana).',
       ].join(' '),
     );
-    this.logger.warn(
-      `Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}).`,
-    );
+    this.logger.warn(`Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}).`);
   }
 
   // ── MODUL 1: Master & Akses ─────────────────────────────────────────────
@@ -563,8 +560,8 @@ export class SeedService {
 
   /**
    * Membuat SOP & DetailSOP mencakup SEMUA 11 nilai StatusSOP:
-   * DRAFT, SEDANG_DISUSUN, SIAP_DIEVALUASI, DIAJUKAN_EVALUASI,
-   * SEDANG_DIEVALUASI, REVISI_DARI_EVALUATOR, SIAP_DIVERIFIKASI,
+   * DRAFT, SEDANG_DISUSUN, MENUNGGU_PENGAJUAN_EVALUASI, DIAJUKAN_EVALUASI,
+   * SEDANG_DIEVALUASI, REVISI_DARI_EVALUATOR, MENUNGGU_TTD_PJ_EVALUATOR,
    * DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI, BERLAKU, DIGANTIKAN, DICABUT.
    */
   private async seedSopDanDetail(
@@ -674,12 +671,12 @@ export class SeedService {
       terakhirDieditOlehId: params.penyusunDinkesId,
     });
 
-    // StatusSOP.SIAP_DIEVALUASI — penyusunan selesai, menunggu pengajuan evaluasi
+    // StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI — penyusunan selesai, menunggu pengajuan evaluasi
     d['DINKES_004_V1'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DINKES-004-V1',
       sopId: sopGiziBuruk.sopId,
       versi: 1,
-      status: StatusSOP.SIAP_DIEVALUASI,
+      status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
       namaLembaga: 'Dinas Kesehatan Provinsi',
       dibuatOlehId: params.penyusunDinkesId,
       terakhirDieditOlehId: params.penyusunDinkesId,
@@ -709,23 +706,23 @@ export class SeedService {
 
     // ── Diskominfo ───────────────────────────────────────────────────────
 
-    // StatusSOP.SIAP_DIEVALUASI (Diskominfo)
+    // StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI (Diskominfo)
     d['DISKOMINFO_001_V1'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DISKOMINFO-001-V1',
       sopId: sopInfoPublik.sopId,
       versi: 1,
-      status: StatusSOP.SIAP_DIEVALUASI,
+      status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
       namaLembaga: 'Dinas Komunikasi dan Informatika',
       dibuatOlehId: params.penyusunDiskominfoId,
       terakhirDieditOlehId: params.penyusunDiskominfoId,
     });
 
-    // StatusSOP.SIAP_DIVERIFIKASI — evaluasi selesai, menunggu verifikasi PJ Evaluator
+    // StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR — evaluasi selesai, menunggu verifikasi PJ Evaluator
     d['DISKOMINFO_002_V1'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DISKOMINFO-002-V1',
       sopId: sopMediaSosial.sopId,
       versi: 1,
-      status: StatusSOP.SIAP_DIVERIFIKASI,
+      status: StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
       namaLembaga: 'Dinas Komunikasi dan Informatika',
       dibuatOlehId: params.penyusunDiskominfoId,
       terakhirDieditOlehId: params.penyusunDiskominfoId,
@@ -756,13 +753,13 @@ export class SeedService {
       tanggalEfektif: new Date('2023-06-01T00:00:00.000Z'),
     });
 
-    // StatusSOP.SIAP_DIVERIFIKASI — versi baru menunggu pengesahan Kepala OPD (alur DISDIK_MANDIRI)
+    // StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR — versi baru menunggu pengesahan Kepala OPD (alur DISDIK_REQUEST_OPD)
     d['DISDIK_001_V2'] = await this.upsertDetailSop(tx, {
       nomorSOP: 'SOP-DISDIK-001-V2',
       sopId: sopPPDB.sopId,
       versi: 2,
       revisiDariDetailSopId: d['DISDIK_001_V1'].detailSopId,
-      status: StatusSOP.SIAP_DIVERIFIKASI,
+      status: StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
       namaLembaga: 'Dinas Pendidikan Provinsi',
       dibuatOlehId: params.penyusunDisdikId,
       terakhirDieditOlehId: params.penyusunDisdikId,
@@ -1765,7 +1762,8 @@ export class SeedService {
         detailSopId: d['DINKES_001_V1'].detailSopId,
         penggunaId: pjPenyusunDinkesId,
         bagian: BagianSOP.STATUS,
-        keterangan: 'Status SOP diubah dari SIAP_DIEVALUASI menjadi BERLAKU setelah pengesahan.',
+        keterangan:
+          'Status SOP diubah dari MENUNGGU_PENGAJUAN_EVALUASI menjadi BERLAKU setelah pengesahan.',
         sesiChangeCount: 1,
         closedAt: new Date('2024-07-01T10:00:00.000Z'),
         fields: ['status'],
@@ -1834,7 +1832,7 @@ export class SeedService {
 
   /**
    * PengajuanEvaluasi & NilaiEvaluasi — mencakup status alur:
-   * SEDANG_DIEVALUASI, SELESAI_DIEVALUASI, DIVERIFIKASI_PJ_EVALUATOR,
+   * SEDANG_DIEVALUASI, SELESAI_DIEVALUASI, DITANDATANGANI_PJ_EVALUATOR,
    * DITANDATANGANI_PJ_PENYUSUN, SELESAI.
    */
   private async seedPengajuanDanNilaiEvaluasi(
@@ -1855,10 +1853,10 @@ export class SeedService {
     const { d } = params;
     const pe: Record<string, { pengajuanEvaluasiId: string }> = {};
 
-    // 1. SEDANG_DIEVALUASI — mandiri, nilai belum diisi (null)
-    pe['DINKES_MANDIRI'] = await this.findOrCreatePengajuan(tx, 'BA-DINKES-2026-002', {
+    // 1. SEDANG_DIEVALUASI — EVALUASI_REQUEST_OPD, nilai belum diisi (null)
+    pe['DINKES_REQUEST_OPD'] = await this.findOrCreatePengajuan(tx, 'BA-DINKES-2026-002', {
       opdId: params.opdDinkesId,
-      jenis: JenisPengajuanEvaluasi.MANDIRI,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
       status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
       tanggalPermintaan: new Date('2026-04-15T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-04-15T00:00:00.000Z'),
@@ -1871,9 +1869,9 @@ export class SeedService {
     });
 
     // 2. SEDANG_DIEVALUASI — evaluasi sedang berlangsung
-    pe['DISKOMINFO_MANDIRI'] = await this.findOrCreatePengajuan(tx, 'BA-DISKOMINFO-2026-001', {
+    pe['DISKOMINFO_REQUEST_OPD'] = await this.findOrCreatePengajuan(tx, 'BA-DISKOMINFO-2026-001', {
       opdId: params.opdDiskominfoId,
-      jenis: JenisPengajuanEvaluasi.MANDIRI,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
       status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
       tanggalPermintaan: new Date('2026-04-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-04-04T00:00:00.000Z'),
@@ -1886,9 +1884,9 @@ export class SeedService {
     });
 
     // 3. SELESAI_DIEVALUASI — evaluasi selesai, menunggu verifikasi PJ Evaluator
-    pe['DISDIK_TERJADWAL'] = await this.findOrCreatePengajuan(tx, 'BA-DISDIK-2026-001', {
+    pe['DISDIK_REQUEST_EVALUATOR'] = await this.findOrCreatePengajuan(tx, 'BA-DISDIK-2026-001', {
       opdId: params.opdDisdikId,
-      jenis: JenisPengajuanEvaluasi.TERJADWAL,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
       status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
       tanggalPermintaan: new Date('2026-01-10T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-01-15T00:00:00.000Z'),
@@ -1901,24 +1899,28 @@ export class SeedService {
     });
 
     // 4. SELESAI - riwayat pengajuan Diskominfo yang sudah selesai penuh
-    pe['DISKOMINFO_TERJADWAL'] = await this.findOrCreatePengajuan(tx, 'BA-DISKOMINFO-2026-002', {
-      opdId: params.opdDiskominfoId,
-      jenis: JenisPengajuanEvaluasi.TERJADWAL,
-      status: StatusPengajuanEvaluasi.SELESAI,
-      tanggalPermintaan: new Date('2026-02-01T00:00:00.000Z'),
-      tanggalEvaluasi: new Date('2026-02-05T00:00:00.000Z'),
-      nilaiOPD: 4,
-      diverifikasiOlehUserId: params.pjEvaluatorId,
-      ditandatanganiOlehPjPenyusunUserId: params.pjPenyusunDiskominfoId,
-      tanggalTTDBaPjPenyusun: new Date('2026-02-12T00:00:00.000Z'),
-      diselesaikanOlehId: params.evaluator1Id,
-      tanggalDiselesaikan: new Date('2026-02-10T00:00:00.000Z'),
-    });
+    pe['DISKOMINFO_REQUEST_EVALUATOR'] = await this.findOrCreatePengajuan(
+      tx,
+      'BA-DISKOMINFO-2026-002',
+      {
+        opdId: params.opdDiskominfoId,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
+        status: StatusPengajuanEvaluasi.SELESAI,
+        tanggalPermintaan: new Date('2026-02-01T00:00:00.000Z'),
+        tanggalEvaluasi: new Date('2026-02-05T00:00:00.000Z'),
+        nilaiOPD: 4,
+        diverifikasiOlehUserId: params.pjEvaluatorId,
+        ditandatanganiOlehPjPenyusunUserId: params.pjPenyusunDiskominfoId,
+        tanggalTTDBaPjPenyusun: new Date('2026-02-12T00:00:00.000Z'),
+        diselesaikanOlehId: params.evaluator1Id,
+        tanggalDiselesaikan: new Date('2026-02-10T00:00:00.000Z'),
+      },
+    );
 
     // 5. DITANDATANGANI_PJ_PENYUSUN - Dinkes menunggu pengesahan Kepala OPD
-    pe['DINKES_TERJADWAL'] = await this.findOrCreatePengajuan(tx, 'BA-DINKES-2026-001', {
+    pe['DINKES_REQUEST_EVALUATOR'] = await this.findOrCreatePengajuan(tx, 'BA-DINKES-2026-001', {
       opdId: params.opdDinkesId,
-      jenis: JenisPengajuanEvaluasi.TERJADWAL,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
       status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
       tanggalPermintaan: new Date('2026-03-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2026-03-05T00:00:00.000Z'),
@@ -1931,9 +1933,9 @@ export class SeedService {
     });
 
     // 6. SELESAI - riwayat revisi PPDB versi baru yang sudah berlaku
-    pe['DISDIK_MANDIRI'] = await this.findOrCreatePengajuan(tx, 'BA-DISDIK-2026-002', {
+    pe['DISDIK_REQUEST_OPD'] = await this.findOrCreatePengajuan(tx, 'BA-DISDIK-2026-002', {
       opdId: params.opdDisdikId,
-      jenis: JenisPengajuanEvaluasi.MANDIRI,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
       status: StatusPengajuanEvaluasi.SELESAI,
       tanggalPermintaan: new Date('2023-10-01T00:00:00.000Z'),
       tanggalEvaluasi: new Date('2023-10-15T00:00:00.000Z'),
@@ -1947,9 +1949,9 @@ export class SeedService {
 
     // ── NilaiEvaluasi (mencakup null, SESUAI, PERLU_PERBAIKAN) ─────────────
 
-    // Pengajuan SEDANG_DIEVALUASI (Dinkes mandiri): SOP revisi dengan umpan balik TERBUKA
+    // Pengajuan SEDANG_DIEVALUASI (Dinkes EVALUASI_REQUEST_OPD): SOP revisi dengan umpan balik TERBUKA
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DINKES_MANDIRI'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DINKES_REQUEST_OPD'].pengajuanEvaluasiId,
       detailSopId: d['DINKES_006_V1'].detailSopId,
       hasil: HasilEvaluasi.PERLU_PERBAIKAN,
       catatan:
@@ -1960,7 +1962,7 @@ export class SeedService {
 
     // Pengajuan SEDANG_DIEVALUASI: sebagian terisi
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DISKOMINFO_MANDIRI'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DISKOMINFO_REQUEST_OPD'].pengajuanEvaluasiId,
       detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
       hasil: null,
       catatan: null,
@@ -1969,7 +1971,7 @@ export class SeedService {
 
     // Pengajuan SELESAI_DIEVALUASI: akreditasi (SOP terpisah dari batch PPDB selesai)
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DISDIK_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
       detailSopId: d['DISDIK_002_V1'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
       catatan: 'Dokumen PPDB lengkap dan sesuai regulasi zonasi terkini.',
@@ -1978,7 +1980,7 @@ export class SeedService {
 
     // Pengajuan selesai penuh Diskominfo
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DISKOMINFO_TERJADWAL'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DISKOMINFO_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
       detailSopId: d['DISKOMINFO_002_V1'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
       catatan: 'SOP Pengelolaan Media Sosial sesuai panduan KPI Humas Pemerintah.',
@@ -1987,14 +1989,14 @@ export class SeedService {
 
     // Pengajuan Dinkes menunggu pengesahan Kepala OPD — dua SOP berbeda (bukan V1+V2 satu induk SOP)
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
       detailSopId: d['DINKES_004_V1'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
       catatan: 'SOP penanganan gizi buruk sesuai standar pelayanan.',
       dinilaiOlehId: params.evaluator1Id,
     });
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
       detailSopId: d['DINKES_005_V1'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
       catatan: 'SOP rawat inap lengkap dan dapat diimplementasikan.',
@@ -2003,7 +2005,7 @@ export class SeedService {
 
     // Pengajuan SELESAI (Disdik V2 SESUAI - versi baru sudah berlaku)
     await this.upsertNilai(tx, {
-      pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
+      pengajuanEvaluasiId: pe['DISDIK_REQUEST_OPD'].pengajuanEvaluasiId,
       detailSopId: d['DISDIK_001_V2'].detailSopId,
       hasil: HasilEvaluasi.SESUAI,
       catatan: 'SOP PPDB versi baru sesuai regulasi zonasi terkini. Layak berlaku.',
@@ -2063,7 +2065,7 @@ export class SeedService {
         key: 'SYNTH_01',
         nomorBA: 'BA-SYNTH-2026-001',
         opdKey: 'dinkes',
-        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DINKES_001_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2074,7 +2076,7 @@ export class SeedService {
         key: 'SYNTH_02',
         nomorBA: 'BA-SYNTH-2026-002',
         opdKey: 'dinkes',
-        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DINKES_004_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2085,7 +2087,7 @@ export class SeedService {
         key: 'SYNTH_03',
         nomorBA: 'BA-SYNTH-2026-003',
         opdKey: 'dinkes',
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DINKES_005_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2096,7 +2098,7 @@ export class SeedService {
         key: 'SYNTH_04',
         nomorBA: 'BA-SYNTH-2026-004',
         opdKey: 'dinkes',
-        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DINKES_001_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2107,7 +2109,7 @@ export class SeedService {
         key: 'SYNTH_05',
         nomorBA: 'BA-SYNTH-2026-005',
         opdKey: 'diskominfo',
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DISKOMINFO_002_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2118,7 +2120,7 @@ export class SeedService {
         key: 'SYNTH_06',
         nomorBA: 'BA-SYNTH-2026-006',
         opdKey: 'disdik',
-        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DISDIK_001_V2',
         hasil: HasilEvaluasi.SESUAI,
@@ -2129,7 +2131,7 @@ export class SeedService {
         key: 'SYNTH_07',
         nomorBA: 'BA-SYNTH-2026-007',
         opdKey: 'dinkes',
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DINKES_004_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2140,7 +2142,7 @@ export class SeedService {
         key: 'SYNTH_08',
         nomorBA: 'BA-SYNTH-2026-008',
         opdKey: 'diskominfo',
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         status: StatusPengajuanEvaluasi.SELESAI,
         detailKey: 'DISKOMINFO_002_V1',
         hasil: HasilEvaluasi.SESUAI,
@@ -2504,9 +2506,9 @@ export class SeedService {
 
     await tx.logNilaiEvaluasi.createMany({
       data: [
-        // Dinkes Terjadwal: SOP penanganan gizi — null → SESUAI
+        // Dinkes EVALUASI_REQUEST_EVALUATOR: SOP penanganan gizi — null → SESUAI
         {
-          pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
           detailSopId: d['DINKES_004_V1'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:00.000Z'),
@@ -2516,9 +2518,9 @@ export class SeedService {
           catatanSesudah:
             'Lengkapi alur validasi data balita dan bukti koordinasi lintas puskesmas.',
         },
-        // Dinkes Terjadwal: SOP penanganan gizi — PERLU_PERBAIKAN → SESUAI
+        // Dinkes EVALUASI_REQUEST_EVALUATOR: SOP penanganan gizi — PERLU_PERBAIKAN → SESUAI
         {
-          pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
           detailSopId: d['DINKES_004_V1'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:00.500Z'),
@@ -2528,9 +2530,9 @@ export class SeedService {
             'Lengkapi alur validasi data balita dan bukti koordinasi lintas puskesmas.',
           catatanSesudah: 'SOP penanganan gizi buruk sesuai standar pelayanan.',
         },
-        // Dinkes Terjadwal: SOP rawat inap — null → SESUAI
+        // Dinkes EVALUASI_REQUEST_EVALUATOR: SOP rawat inap — null → SESUAI
         {
-          pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
           detailSopId: d['DINKES_005_V1'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:01.000Z'),
@@ -2539,9 +2541,9 @@ export class SeedService {
           catatanSebelum: null,
           catatanSesudah: 'SOP rawat inap lengkap dan dapat diimplementasikan.',
         },
-        // Diskominfo Mandiri: belum dinilai (null → null, log awal penugasan)
+        // Diskominfo EVALUASI_REQUEST_OPD: belum dinilai (null → null, log awal penugasan)
         {
-          pengajuanEvaluasiId: pe['DISKOMINFO_MANDIRI'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DISKOMINFO_REQUEST_OPD'].pengajuanEvaluasiId,
           detailSopId: d['DISKOMINFO_001_V1'].detailSopId,
           penggunaId: evaluator2Id,
           createdAt: new Date('2025-06-01T10:00:03.000Z'),
@@ -2550,9 +2552,9 @@ export class SeedService {
           catatanSebelum: null,
           catatanSesudah: null,
         },
-        // Disdik Terjadwal: akreditasi — null → SESUAI
+        // Disdik EVALUASI_REQUEST_EVALUATOR: akreditasi — null → SESUAI
         {
-          pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DISDIK_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
           detailSopId: d['DISDIK_002_V1'].detailSopId,
           penggunaId: evaluator2Id,
           createdAt: new Date('2025-06-01T10:00:04.000Z'),
@@ -2562,9 +2564,9 @@ export class SeedService {
           catatanSesudah:
             'Perlu penyesuaian kriteria dokumen dengan kebijakan zonasi tahun berjalan.',
         },
-        // Disdik Terjadwal: akreditasi — PERLU_PERBAIKAN → SESUAI
+        // Disdik EVALUASI_REQUEST_EVALUATOR: akreditasi — PERLU_PERBAIKAN → SESUAI
         {
-          pengajuanEvaluasiId: pe['DISDIK_TERJADWAL'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DISDIK_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
           detailSopId: d['DISDIK_002_V1'].detailSopId,
           penggunaId: evaluator2Id,
           createdAt: new Date('2025-06-01T10:00:04.500Z'),
@@ -2574,9 +2576,9 @@ export class SeedService {
             'Perlu penyesuaian kriteria dokumen dengan kebijakan zonasi tahun berjalan.',
           catatanSesudah: 'Dokumen PPDB lengkap dan sesuai regulasi zonasi terkini.',
         },
-        // Diskominfo Terjadwal: V2 SESUAI
+        // Diskominfo EVALUASI_REQUEST_EVALUATOR: V2 SESUAI
         {
-          pengajuanEvaluasiId: pe['DISKOMINFO_TERJADWAL'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DISKOMINFO_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
           detailSopId: d['DISKOMINFO_002_V1'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:05.000Z'),
@@ -2585,9 +2587,9 @@ export class SeedService {
           catatanSebelum: null,
           catatanSesudah: 'SOP Pengelolaan Media Sosial sesuai panduan KPI Humas Pemerintah.',
         },
-        // Disdik Mandiri: V2 SESUAI
+        // Disdik EVALUASI_REQUEST_OPD: V2 SESUAI
         {
-          pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DISDIK_REQUEST_OPD'].pengajuanEvaluasiId,
           detailSopId: d['DISDIK_001_V2'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:06.000Z'),
@@ -2596,9 +2598,9 @@ export class SeedService {
           catatanSebelum: null,
           catatanSesudah: 'Perjelas validasi berkas dan batas waktu sanggah pada alur PPDB.',
         },
-        // Disdik Mandiri: V2 PERLU_PERBAIKAN → SESUAI
+        // Disdik EVALUASI_REQUEST_OPD: V2 PERLU_PERBAIKAN → SESUAI
         {
-          pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
+          pengajuanEvaluasiId: pe['DISDIK_REQUEST_OPD'].pengajuanEvaluasiId,
           detailSopId: d['DISDIK_001_V2'].detailSopId,
           penggunaId: evaluator1Id,
           createdAt: new Date('2025-06-01T10:00:06.500Z'),
@@ -2648,21 +2650,21 @@ export class SeedService {
       select: { dokumenTteId: true },
     });
 
-    // JenisDokumenTte.BERITA_ACARA_EVALUASI — BA evaluasi Dinkes terjadwal
+    // JenisDokumenTte.BERITA_ACARA_EVALUASI — BA evaluasi Dinkes EVALUASI_REQUEST_EVALUATOR
     dok['BA_EVALUASI_DINKES'] = await tx.dokumenTte.upsert({
-      where: { pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId },
+      where: { pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId },
       create: {
         nomorDokumen: 'DOC-BA-DINKES-2026-001',
         jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
-        judulDokumen: 'Berita Acara Evaluasi SOP Dinkes Terjadwal 2026',
-        hashDokumen: 'sha256-ba-dinkes-terjadwal-2026-001',
+        judulDokumen: 'Berita Acara Evaluasi SOP Dinkes EVALUASI_REQUEST_EVALUATOR 2026',
+        hashDokumen: 'sha256-ba-dinkes-EVALUASI_REQUEST_EVALUATOR-2026-001',
         versiDokumen: 1,
-        pengajuanEvaluasiId: pe['DINKES_TERJADWAL'].pengajuanEvaluasiId,
+        pengajuanEvaluasiId: pe['DINKES_REQUEST_EVALUATOR'].pengajuanEvaluasiId,
       },
       update: {
-        hashDokumen: 'sha256-ba-dinkes-terjadwal-2026-001',
+        hashDokumen: 'sha256-ba-dinkes-EVALUASI_REQUEST_EVALUATOR-2026-001',
         jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
-        judulDokumen: 'Berita Acara Evaluasi SOP Dinkes Terjadwal 2026',
+        judulDokumen: 'Berita Acara Evaluasi SOP Dinkes EVALUASI_REQUEST_EVALUATOR 2026',
         detailSopId: null,
       },
       select: { dokumenTteId: true },
@@ -2690,17 +2692,17 @@ export class SeedService {
 
     // JenisDokumenTte.BERITA_ACARA_EVALUASI — BA evaluasi Disdik selesai
     dok['BA_EVALUASI_DISDIK'] = await tx.dokumenTte.upsert({
-      where: { pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId },
+      where: { pengajuanEvaluasiId: pe['DISDIK_REQUEST_OPD'].pengajuanEvaluasiId },
       create: {
         nomorDokumen: 'DOC-BA-DISDIK-2023-001',
         jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
         judulDokumen: 'Berita Acara Evaluasi SOP PPDB Disdik 2023',
-        hashDokumen: 'sha256-ba-disdik-mandiri-2023-001',
+        hashDokumen: 'sha256-ba-disdik-EVALUASI_REQUEST_OPD-2023-001',
         versiDokumen: 1,
-        pengajuanEvaluasiId: pe['DISDIK_MANDIRI'].pengajuanEvaluasiId,
+        pengajuanEvaluasiId: pe['DISDIK_REQUEST_OPD'].pengajuanEvaluasiId,
       },
       update: {
-        hashDokumen: 'sha256-ba-disdik-mandiri-2023-001',
+        hashDokumen: 'sha256-ba-disdik-EVALUASI_REQUEST_OPD-2023-001',
         jenisDokumen: JenisDokumenTte.BERITA_ACARA_EVALUASI,
         judulDokumen: 'Berita Acara Evaluasi SOP PPDB Disdik 2023',
         detailSopId: null,
@@ -2710,5 +2712,4 @@ export class SeedService {
 
     return dok;
   }
-
 }

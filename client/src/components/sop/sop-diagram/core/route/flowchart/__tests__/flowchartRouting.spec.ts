@@ -37,7 +37,7 @@ function conn(overrides: Partial<FlowchartConnectionForSidePairs> = {}): Flowcha
   }
 }
 
-/** Legacy corridor graph — flowchart kini memakai routeOrthogonal langsung. */
+/** Corridor graph — flowchart kini memakai routeOrthogonal langsung. */
 describe.skip('buildCorridorGraph', () => {
   it('places corridor graph points 4px from horizontal cell boundaries', () => {
     const graph = buildCorridorGraph([[
@@ -435,7 +435,7 @@ describe('connector path normalization', () => {
     expectOrthogonal(path)
   })
 
-  it('normalizes cached legacy diagonal points before render', () => {
+  it('normalizes cached diagonal points before render', () => {
     const path = normalizeConnectorPath([
       { x: 120, y: 90 },
       { x: 180, y: 140 },

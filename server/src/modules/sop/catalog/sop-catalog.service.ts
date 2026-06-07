@@ -14,7 +14,6 @@ import {
   hasRevisiInFlight,
 } from '../../../common/status/sop-editable.util';
 import { UserOpdAccessService } from '../../core/opd/user-opd-access.service';
-import { EvaluasiNilaiService } from '../../evaluation/nilai/evaluasi-nilai.service';
 import type { CreateSopDto } from './dto/create-sop.dto';
 import type { PenyusunWorkbenchDataDto } from './dto/penyusun-workbench-data.dto';
 import type { SopRiwayatVersiRowDto } from './dto/sop-riwayat-versi-row.dto';
@@ -41,7 +40,6 @@ export class SopCatalogService {
   constructor(
     private readonly sopCatalogRepository: SopCatalogRepository,
     private readonly userOpdAccessService: UserOpdAccessService,
-    private readonly evaluasiNilaiService: EvaluasiNilaiService,
   ) {}
 
   private clampLogsLimit(raw: number | undefined): number {
@@ -200,7 +198,7 @@ export class SopCatalogService {
       target: dto.status,
     });
     const logsLimit = this.clampLogsLimit(logsLimitRaw);
-    if (dto.status === StatusSOP.SIAP_DIEVALUASI) {
+    if (dto.status === StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI) {
       const draftPayload = await this.sopCatalogRepository.findWorkbenchPayloadByDetailOrSopId(
         ctx.detailSopId,
         logsLimit,
@@ -227,7 +225,7 @@ export class SopCatalogService {
 
   /**
    * PJ Penyusun: satu aksi dari `REVISI_DARI_EVALUATOR` setelah perbaikan penyusun —
-   * validasi kelengkapan seperti Siap Dievaluasi, lalu transaksi SIAP_DIEVALUASI → DIAJUKAN_EVALUASI.
+   * validasi kelengkapan seperti Siap Dievaluasi, lalu transaksi MENUNGGU_PENGAJUAN_EVALUASI → SEDANG_DIEVALUASI.
    * Berbeda dari `PATCH /sop/status` ke `DIAJUKAN_EVALUASI` yang hanya untuk PJ pada SOP sudah SIAP.
    */
   async kirimUlangKeEvaluatorSetelahRevisi(
@@ -259,8 +257,7 @@ export class SopCatalogService {
       throw new NotFoundException('DetailSOP tidak ditemukan');
     }
     assertSopWorkbenchCompleteForSiapDievaluasi(draftPayload);
-    await this.evaluasiNilaiService.assertBolehKirimUlangSetelahRevisi(ctx.detailSopId);
-    await this.sopCatalogRepository.transitionDetailSopRevisiToDiajukanEvaluasi({
+    await this.sopCatalogRepository.transitionDetailSopRevisiToSedangDievaluasi({
       detailSopId: ctx.detailSopId,
       userId: user.sub,
     });

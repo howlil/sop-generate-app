@@ -25,7 +25,7 @@ export const STATUS_RIWAYAT_FINAL_EVALUASI = [
 
 /** Halaman Berita Acara PJ Penyusun — tab Perlu TTE. */
 export const STATUS_BERITA_ACARA_PERLU_TTE = [
-  "DIVERIFIKASI_PJ_EVALUATOR",
+  "DITANDATANGANI_PJ_EVALUATOR",
 ] as const satisfies readonly PengajuanEvaluasi["status"][];
 
 /** Halaman Berita Acara PJ Penyusun — tab Riwayat. */
@@ -229,7 +229,7 @@ export function usePengajuanEvaluasiAktif(
           id: activePengajuan.id,
           status: activePengajuan.status,
           statusLabel: activePengajuan.statusLabel,
-          jenis: activePengajuan.jenis ?? "TERJADWAL",
+          jenis: activePengajuan.jenis ?? "EVALUASI_REQUEST_EVALUATOR",
           nilaiEvaluasi: activePengajuan.nilaiEvaluasi ?? [],
         }
       : null,

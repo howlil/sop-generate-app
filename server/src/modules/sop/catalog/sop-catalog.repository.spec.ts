@@ -1,4 +1,4 @@
-import { BagianSOP, StatusSOP } from '../../../generated/prisma';
+import { BagianSOP, HasilEvaluasi, StatusSOP, StatusTindakLanjut } from '../../../generated/prisma';
 import type { PrismaService } from '../../../common/prisma/prisma.service';
 import { SopCatalogRepository } from './sop-catalog.repository';
 
@@ -8,18 +8,33 @@ interface CallLog {
   args: unknown;
 }
 
-function makeStatusTx(): { tx: Record<string, unknown>; calls: CallLog[] } {
+function makeStatusTx(): {
+  tx: Record<string, unknown>;
+  calls: CallLog[];
+  setActiveNilai: (nilai: unknown) => void;
+} {
   const calls: CallLog[] = [];
+  let activeNilai: unknown = null;
   const record = (table: string, op: string) =>
     jest.fn(async (args: unknown) => {
       calls.push({ table, op, args });
       if (table === 'logEditSOP' && op === 'findFirst') {
         return null;
       }
+      if (table === 'nilaiEvaluasi' && op === 'findFirst') {
+        return activeNilai;
+      }
       return { count: 0 };
     });
   const tx = {
     detailSOP: { update: record('detailSOP', 'update') },
+    nilaiEvaluasi: {
+      findFirst: record('nilaiEvaluasi', 'findFirst'),
+      update: record('nilaiEvaluasi', 'update'),
+    },
+    logNilaiEvaluasi: {
+      create: record('logNilaiEvaluasi', 'create'),
+    },
     logEditSOP: {
       findFirst: record('logEditSOP', 'findFirst'),
       create: record('logEditSOP', 'create'),
@@ -31,23 +46,33 @@ function makeStatusTx(): { tx: Record<string, unknown>; calls: CallLog[] } {
       createMany: record('logEditSopDomainField', 'createMany'),
     },
   };
-  return { tx, calls };
+  return {
+    tx,
+    calls,
+    setActiveNilai: (nilai: unknown) => {
+      activeNilai = nilai;
+    },
+  };
 }
 
 describe('Pengujian logging status pada SopCatalogRepository', () => {
-  function makeRepo(): { repo: SopCatalogRepository; calls: CallLog[] } {
-    const { tx, calls } = makeStatusTx();
+  function makeRepo(): {
+    repo: SopCatalogRepository;
+    calls: CallLog[];
+    setActiveNilai: (nilai: unknown) => void;
+  } {
+    const { tx, calls, setActiveNilai } = makeStatusTx();
     const prismaMock = {
       $transaction: jest.fn(async (cb: (inner: unknown) => Promise<void>) => cb(tx)),
     } as unknown as PrismaService;
-    return { repo: new SopCatalogRepository(prismaMock), calls };
+    return { repo: new SopCatalogRepository(prismaMock), calls, setActiveNilai };
   }
 
   it('seharusnya menulis log status terpisah ketika memperbarui status detail SOP', async () => {
     const { repo, calls } = makeRepo();
     await repo.updateDetailSopStatus({
       detailSopId: 'det-1',
-      status: StatusSOP.SIAP_DIEVALUASI,
+      status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
       userId: 'u-1',
     });
     expect(calls.some((c) => c.table === 'detailSOP' && c.op === 'update')).toBe(true);
@@ -61,9 +86,9 @@ describe('Pengujian logging status pada SopCatalogRepository', () => {
     ).toEqual(expect.arrayContaining([{ domainField: 'status' }]));
   });
 
-  it('seharusnya menulis dua log status terpisah ketika revisi menjadi diajukan evaluasi', async () => {
+  it('seharusnya menulis dua log status terpisah ketika revisi menjadi sedang dievaluasi', async () => {
     const { repo, calls } = makeRepo();
-    await repo.transitionDetailSopRevisiToDiajukanEvaluasi({
+    await repo.transitionDetailSopRevisiToSedangDievaluasi({
       detailSopId: 'det-revisi',
       userId: 'u-penyusun',
     });
@@ -75,5 +100,41 @@ describe('Pengujian logging status pada SopCatalogRepository', () => {
       const data = (entry.args as { data: { bagian: BagianSOP } }).data;
       expect(data.bagian).toBe(BagianSOP.STATUS);
     }
+  });
+
+  it('seharusnya otomatis menandai tindak lanjut selesai saat kirim ulang revisi', async () => {
+    const { repo, calls, setActiveNilai } = makeRepo();
+    setActiveNilai({
+      pengajuanEvaluasiId: 'pengajuan-1',
+      detailSopId: 'det-revisi',
+      hasil: HasilEvaluasi.PERLU_PERBAIKAN,
+      catatan: 'Perbaiki keluaran',
+      statusTindakLanjut: StatusTindakLanjut.TERBUKA,
+    });
+
+    await repo.transitionDetailSopRevisiToSedangDievaluasi({
+      detailSopId: 'det-revisi',
+      userId: 'u-penyusun',
+    });
+
+    const nilaiUpdate = calls.find((c) => c.table === 'nilaiEvaluasi' && c.op === 'update');
+    expect(nilaiUpdate).toBeDefined();
+    expect(
+      (nilaiUpdate!.args as { data: { statusTindakLanjut: StatusTindakLanjut } }).data
+        .statusTindakLanjut,
+    ).toBe(StatusTindakLanjut.SELESAI);
+
+    const logNilaiCreate = calls.find((c) => c.table === 'logNilaiEvaluasi' && c.op === 'create');
+    expect(logNilaiCreate).toBeDefined();
+    expect(
+      (
+        logNilaiCreate!.args as {
+          data: { statusTindakLanjutSesudah: StatusTindakLanjut; ditindaklanjutiOlehId: string };
+        }
+      ).data,
+    ).toMatchObject({
+      statusTindakLanjutSesudah: StatusTindakLanjut.SELESAI,
+      ditindaklanjutiOlehId: 'u-penyusun',
+    });
   });
 });

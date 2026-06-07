@@ -8,7 +8,7 @@ import { PeraturanService } from './peraturan.service';
 
 describe('Pengujian PeraturanService', () => {
   let service: PeraturanService;
-  
+
   const repoMock = {
     findOpdIdByPenggunaId: jest.fn(),
     hasOpdLink: jest.fn(),
@@ -21,7 +21,7 @@ describe('Pengujian PeraturanService', () => {
     createWithOpdLink: jest.fn(),
     updateMasterWithLastEditor: jest.fn(),
   };
-  
+
   const userOpdAccessMock = {
     resolveOwnOpdAllowingOptionalQuery: jest.fn(),
   };
@@ -34,9 +34,9 @@ describe('Pengujian PeraturanService', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
-    
+
     userOpdAccessMock.resolveOwnOpdAllowingOptionalQuery.mockResolvedValue('opd-1');
-    
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PeraturanService,
@@ -84,7 +84,7 @@ describe('Pengujian PeraturanService', () => {
           createdAt: new Date('2026-01-01T00:00:00.000Z'),
           updatedAt: new Date('2026-01-02T00:00:00.000Z'),
           dasarHukumCount: 0,
-        }
+        },
       ]);
       const rows = await service.list(user, undefined);
       expect(rows).toHaveLength(2);
@@ -96,7 +96,9 @@ describe('Pengujian PeraturanService', () => {
     });
 
     it('harus melemparkan error jika resolusi OPD gagal', async () => {
-      userOpdAccessMock.resolveOwnOpdAllowingOptionalQuery.mockRejectedValue(new Error('Akses ditolak'));
+      userOpdAccessMock.resolveOwnOpdAllowingOptionalQuery.mockRejectedValue(
+        new Error('Akses ditolak'),
+      );
       await expect(service.list(user)).rejects.toThrow('Akses ditolak');
     });
   });
@@ -148,11 +150,13 @@ describe('Pengujian PeraturanService', () => {
 
       const result = await service.create(user, createDto);
       expect(result.id).toBe('per-new');
-      expect(repoMock.createWithOpdLink).toHaveBeenCalledWith(expect.objectContaining({
-        nama: 'Baru',
-        opdId: 'opd-1',
-        lastEditedById: user.sub,
-      }));
+      expect(repoMock.createWithOpdLink).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nama: 'Baru',
+          opdId: 'opd-1',
+          lastEditedById: user.sub,
+        }),
+      );
     });
 
     it('harus melempar ConflictException jika nomor dan tahun sudah ada (Prisma P2002)', async () => {
@@ -161,7 +165,7 @@ describe('Pengujian PeraturanService', () => {
         clientVersion: 'x',
       });
       repoMock.createWithOpdLink.mockRejectedValue(prismaError);
-      
+
       await expect(service.create(user, createDto)).rejects.toThrow(ConflictException);
     });
 
@@ -218,12 +222,12 @@ describe('Pengujian PeraturanService', () => {
         updatedAt: mockDate,
         dasarHukumCount: 0,
       });
-      
+
       const result = await service.update(user, 'per-1', { namaPeraturan: 'Nama Baru' });
       expect(repoMock.updateMasterWithLastEditor).toHaveBeenCalledWith(
         'per-1',
         { nama: 'Nama Baru' },
-        user.sub
+        user.sub,
       );
       expect(result.namaPeraturan).toBe('Nama Baru');
     });
@@ -243,12 +247,17 @@ describe('Pengujian PeraturanService', () => {
         updatedAt: mockDate,
         dasarHukumCount: 0,
       });
-      
-      const result = await service.update(user, 'per-1', { namaPeraturan: 'Nama Baru', nomor: '2', tahun: 2024, tentang: 'Tentang Baru' });
+
+      const result = await service.update(user, 'per-1', {
+        namaPeraturan: 'Nama Baru',
+        nomor: '2',
+        tahun: 2024,
+        tentang: 'Tentang Baru',
+      });
       expect(repoMock.updateMasterWithLastEditor).toHaveBeenCalledWith(
         'per-1',
         { nama: 'Nama Baru', nomor: '2', tahun: 2024, tentang: 'Tentang Baru' },
-        user.sub
+        user.sub,
       );
       expect(result.namaPeraturan).toBe('Nama Baru');
     });
@@ -260,8 +269,10 @@ describe('Pengujian PeraturanService', () => {
         clientVersion: 'x',
       });
       repoMock.updateMasterWithLastEditor.mockRejectedValue(prismaError);
-      
-      await expect(service.update(user, 'per-1', { nomor: '10' })).rejects.toThrow(ConflictException);
+
+      await expect(service.update(user, 'per-1', { nomor: '10' })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('harus meneruskan error selain P2002 secara langsung saat update', async () => {
@@ -288,9 +299,9 @@ describe('Pengujian PeraturanService', () => {
       repoMock.hasOpdLink.mockResolvedValue(true);
       repoMock.countDasarHukum.mockResolvedValue(0);
       repoMock.countOpdLinks.mockResolvedValue(0);
-      
+
       await service.remove(user, 'per-1');
-      
+
       expect(repoMock.deleteOpdLink).toHaveBeenCalledWith('opd-1', 'per-1');
       expect(repoMock.deletePeraturan).toHaveBeenCalledWith('per-1');
     });
@@ -299,9 +310,9 @@ describe('Pengujian PeraturanService', () => {
       repoMock.hasOpdLink.mockResolvedValue(true);
       repoMock.countDasarHukum.mockResolvedValue(0);
       repoMock.countOpdLinks.mockResolvedValue(1);
-      
+
       await service.remove(user, 'per-1');
-      
+
       expect(repoMock.deleteOpdLink).toHaveBeenCalledWith('opd-1', 'per-1');
       expect(repoMock.deletePeraturan).not.toHaveBeenCalled();
     });

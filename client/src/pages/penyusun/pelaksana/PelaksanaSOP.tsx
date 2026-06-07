@@ -47,8 +47,8 @@ export function PelaksanaSOP() {
   if (!userOpdId) {
     return (
       <ListPageLayout
-        breadcrumb={[{ label: "Kelola Pelaksana SOP" }]}
-        title="Kelola Pelaksana SOP"
+        breadcrumb={[{ label: "Manajemen Pelaksana SOP" }]}
+        title="Manajemen Pelaksana SOP"
         description="Master data pelaksana/aktor yang dipakai di kolom pelaksana saat menyusun prosedur SOP"
       >
         <EmptyState
@@ -122,8 +122,8 @@ export function PelaksanaSOP() {
 
   return (
     <ListPageLayout
-      breadcrumb={[{ label: "Kelola Pelaksana SOP" }]}
-      title="Kelola Pelaksana SOP"
+      breadcrumb={[{ label: "Manajemen Pelaksana SOP" }]}
+      title="Manajemen Pelaksana SOP"
       description="Master data pelaksana/aktor yang dipakai di kolom pelaksana saat menyusun prosedur SOP"
       toolbar={
         <SearchToolbar

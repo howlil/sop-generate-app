@@ -11,7 +11,11 @@ import {
   resetIntegrationDatabase,
 } from './helpers/integration-database.util';
 import { isIntegrationEnabled } from './helpers/integration-runtime.util';
-import { PeranPengguna, StatusPengajuanEvaluasi, JenisPengajuanEvaluasi } from '../../src/generated/prisma';
+import {
+  PeranPengguna,
+  StatusPengajuanEvaluasi,
+  JenisPengajuanEvaluasi,
+} from '../../src/generated/prisma';
 
 const describeIntegration = isIntegrationEnabled() ? describe : describe.skip;
 const API = '/api/v1';
@@ -44,7 +48,10 @@ async function seedUser(
 
 async function loginAgent(app: INestApplication, email: string): Promise<Agent> {
   const agent = request.agent(app.getHttpServer());
-  const response = await agent.post(`${API}/auth/login`).send({ email, password: PASSWORD }).expect(201);
+  const response = await agent
+    .post(`${API}/auth/login`)
+    .send({ email, password: PASSWORD })
+    .expect(201);
   const setCookie = response.headers['set-cookie'];
   const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
   if (cookies.length > 0) {
@@ -91,8 +98,18 @@ describeIntegration('Evaluasi Grafik Integration', () => {
     // Create some evaluasi data
     await prisma.pengajuanEvaluasi.createMany({
       data: [
-        { opdId: opdA.opdId, status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI, jenis: JenisPengajuanEvaluasi.MANDIRI, createdAt: new Date() },
-        { opdId: opdA.opdId, status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI, jenis: JenisPengajuanEvaluasi.MANDIRI, createdAt: new Date() },
+        {
+          opdId: opdA.opdId,
+          status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+          createdAt: new Date(),
+        },
+        {
+          opdId: opdA.opdId,
+          status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+          createdAt: new Date(),
+        },
       ],
     });
 
@@ -114,8 +131,10 @@ describeIntegration('Evaluasi Grafik Integration', () => {
   });
 
   it('seharusnya berhasil mengambil data grafik tahunan untuk PJ_EVALUATOR', async () => {
-    const response = await pjEvaluatorAgent.get(`${API}/evaluasi/laporan/grafik-tahunan`).expect(200);
-    
+    const response = await pjEvaluatorAgent
+      .get(`${API}/evaluasi/laporan/grafik-tahunan`)
+      .expect(200);
+
     expect(response.body.success).toBe(true);
     expect(response.body.data.ringkasanPerTahun).toBeDefined();
     expect(response.body.data.ringkasanPerTahun.length).toBeGreaterThan(0);
@@ -125,9 +144,11 @@ describeIntegration('Evaluasi Grafik Integration', () => {
   it('seharusnya berhasil mengambil data grafik tahunan dengan filter tahun spesifik', async () => {
     const currentYear = new Date().getFullYear();
     const response = await pjEvaluatorAgent
-      .get(`${API}/evaluasi/laporan/grafik-tahunan?tahunDari=${currentYear}&tahunSampai=${currentYear}`)
+      .get(
+        `${API}/evaluasi/laporan/grafik-tahunan?tahunDari=${currentYear}&tahunSampai=${currentYear}`,
+      )
       .expect(200);
-    
+
     expect(response.body.success).toBe(true);
     expect(response.body.data.ringkasanPerTahun.length).toBe(1);
     expect(response.body.data.ringkasanPerTahun[0].tahun).toEqual(currentYear);

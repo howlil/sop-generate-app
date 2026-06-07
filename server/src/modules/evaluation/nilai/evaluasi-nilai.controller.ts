@@ -98,7 +98,7 @@ export class EvaluasiNilaiController {
   @ApiOperation({
     summary: 'Selesaikan pengajuan evaluasi (semua SOP harus SESUAI, lalu ajukan ke PJ)',
     description:
-      'Memvalidasi seluruh baris NilaiEvaluasi berhasil SESUAI, memperbarui status dokumen ke SIAP_DIVERIFIKASI, dan mengubah pengajuan ke SELESAI_DIEVALUASI. Untuk pengajuan TERJADWAL wajib `nilaiOPD` 1–5; untuk MANDIRI jangan kirim `nilaiOPD` (evaluasi hanya per dokumen SOP).',
+      'Memvalidasi seluruh baris NilaiEvaluasi berhasil SESUAI, memperbarui status dokumen ke MENUNGGU_TTD_PJ_EVALUATOR, dan mengubah pengajuan ke SELESAI_DIEVALUASI. Untuk pengajuan EVALUASI_REQUEST_EVALUATOR wajib `nilaiOPD` 1–5; untuk EVALUASI_REQUEST_OPD jangan kirim `nilaiOPD` (evaluasi hanya per dokumen SOP).',
   })
   @ApiParam({ name: 'pengajuanEvaluasiId', format: 'uuid' })
   @ApiResponse({ status: 200, type: PengajuanEvaluasiSelesaiResponseDto })

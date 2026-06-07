@@ -126,7 +126,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
       id: fp.id,
       status: fp.status,
       statusLabel: fp.statusLabel ?? fp.status,
-      jenis: fp.jenis ?? "TERJADWAL",
+      jenis: fp.jenis ?? "EVALUASI_REQUEST_EVALUATOR",
       nilaiPerDetail: fp.nilaiEvaluasi.map((n) => {
         const hasil =
           n.hasil === "SESUAI" || n.hasil === "PERLU_PERBAIKAN"
@@ -153,8 +153,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
     };
   }, [workspace, pengajuanFallbackState.pengajuan]);
 
-  /** Pengajuan terjadwal memakai skor OPD; mandiri hanya per dokumen SOP. */
-  const requiresNilaiOpd = pengajuanAktifEffektif?.jenis !== "MANDIRI";
+  /** Pengajuan EVALUASI_REQUEST_EVALUATOR memakai skor OPD; EVALUASI_REQUEST_OPD hanya per dokumen SOP. */
+  const requiresNilaiOpd = pengajuanAktifEffektif?.jenis !== "EVALUASI_REQUEST_OPD";
 
   /** Hanya pengajuan SEDANG_DIEVALUASI yang boleh diedit / diajukan. */
   const isPengajuanReadOnly =
@@ -373,8 +373,8 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
 
   const {
     handleSubmitAll,
-    terjadwalSubmitError,
-    clearTerjadwalSubmitError,
+    evaluasiSubmitError,
+    clearEvaluasiSubmitError,
     isSubmitting: isAjukanSubmitting,
   } = useEvaluasiSubmit({
     pengajuanAktifId: pengajuanAktifEffektif?.id,
@@ -427,13 +427,13 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
 
   /** Convert string error to PengajuanEvaluasiSubmitError shape */
   const submitErrorObj = useMemo((): PengajuanEvaluasiSubmitError => {
-    if (!terjadwalSubmitError) return { kind: "none", items: [] };
+    if (!evaluasiSubmitError) return { kind: "none", items: [] };
     return {
       kind: "blocked",
       items: [],
-      message: terjadwalSubmitError,
+      message: evaluasiSubmitError,
     };
-  }, [terjadwalSubmitError]);
+  }, [evaluasiSubmitError]);
 
   const notFoundMessage =
     props.mode === "opd"
@@ -450,7 +450,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         description=""
         backTo={listHref}
         main={
-          <p className="p-4 text-sm text-gray-600">Memuat workspace evaluasi…</p>
+          <p className="p-4 text-sm text-gray-600">Memuat data evaluasi…</p>
         }
       />
     );
@@ -469,7 +469,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
           <p className="p-4 text-sm text-red-600">
             {workspaceError instanceof Error
               ? workspaceError.message
-              : "Gagal memuat workspace evaluasi."}
+              : "Gagal memuat data evaluasi."}
           </p>
         }
       />
@@ -508,42 +508,6 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
 
   return (
     <>
-      {pengajuanAktifEffektif &&
-        !isPengajuanReadOnly &&
-        ajukanSnapshotRows.length > 0 && (
-        <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50/95 px-3 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-blue-950">
-          <span>
-            {canAjukan ? (
-              <>
-                Semua dokumen <strong>Sesuai</strong>
-                {requiresNilaiOpd ? (
-                  <>
-                    {" "}
-                    dan skor OPD terisi — siap{" "}
-                  </>
-                ) : (
-                  <> — siap </>
-                )}
-                <strong>Kirim Hasil Evaluasi</strong> ke PJ Evaluator.
-              </>
-            ) : (
-              <>{blockingAjukan}</>
-            )}
-          </span>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="h-8 shrink-0 border-blue-300 text-blue-900"
-            onClick={() => {
-              clearTerjadwalSubmitError();
-              setIsSubmitOpen(true);
-            }}
-          >
-            Buka dialog ajukan
-          </Button>
-        </div>
-      )}
       <DetailPageLayout
         breadcrumb={[
           { label: "Evaluasi SOP", to: listHref },
@@ -561,7 +525,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
           <>
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-sm font-semibold text-gray-900">
-                Workspace Evaluasi SOP
+                Penilaian SOP
               </h2>
               <div className="flex items-center gap-2">
                 {!isPengajuanReadOnly ? (
@@ -569,11 +533,11 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                     size="sm"
                     className="h-8 px-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-xs gap-1.5 disabled:opacity-50"
                     onClick={() => {
-                      clearTerjadwalSubmitError();
+                      clearEvaluasiSubmitError();
                       setIsSubmitOpen(true);
                     }}
                   >
-                    <Send className="w-3.5 h-3.5" /> Kirim Hasil Evaluasi
+                    <Send className="w-3.5 h-3.5" /> Ajukan Tanda Tangan BA
                   </Button>
                 ) : null}
               </div>
@@ -646,16 +610,15 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
           </CollapsibleSidePanel>
         }
         main={
-          <div className="flex flex-col h-full">
+          <div className="flex h-full min-h-0 flex-col">
             <div className="p-2 border-b border-gray-100 bg-gray-50 flex-shrink-0 print:hidden">
               <h3 className="text-xs font-semibold text-gray-700">
                 Preview SOP
               </h3>
             </div>
-            <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex min-h-0 flex-1 flex-col overflow-auto">
               {selectedSop ? (
                 previewProps ? (
-                  <div data-print-area="sop">
                   <SOPPreviewTemplate
                     metadata={previewProps.metadata}
                     prosedurRows={previewProps.prosedurRows}
@@ -669,14 +632,11 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                       ...diagramRenderState,
                     }}
                   />
-                  </div>
                 ) : (
-                  <div data-print-area="sop">
                   <SOPPreviewTemplate
                     name={selectedSop.judul}
                     number={selectedSop.nomorSOP}
                   />
-                  </div>
                 )
               ) : (
                 <div className="flex items-center justify-center flex-1 text-xs text-gray-400">
@@ -743,14 +703,14 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
         open={isSubmitOpen}
         onOpenChange={(open) => {
           setIsSubmitOpen(open);
-          if (!open) clearTerjadwalSubmitError();
+          if (!open) clearEvaluasiSubmitError();
         }}
         snapshotRows={ajukanSnapshotRows}
         canConfirm={canAjukan}
         blockingReason={blockingAjukan}
         onConfirm={(nomorBA: string) => void handleSubmitAll(nomorBA)}
         isSubmitting={isAjukanSubmitting}
-        terjadwalSubmitError={submitErrorObj}
+        evaluasiSubmitError={submitErrorObj}
       />
     </>
   );

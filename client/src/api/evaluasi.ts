@@ -1,5 +1,5 @@
 export { evaluasiApi } from "@/api/evaluasi-client";
-export { mapEvaluasiShellToLegacyPengajuan } from "@/lib/evaluasi/evaluasi-mappers";
+export { mapEvaluasiShellToPengajuan } from "@/lib/evaluasi/evaluasi-mappers";
 export {
   buildAjukanEvaluasiSnapshotRows,
   getAjukanEvaluasiBlockingReason,

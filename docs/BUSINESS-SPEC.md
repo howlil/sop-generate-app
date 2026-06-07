@@ -83,11 +83,11 @@ Enum `StatusSOP`:
 ```text
 DRAFT
 SEDANG_DISUSUN
-SIAP_DIEVALUASI
+MENUNGGU_PENGAJUAN_EVALUASI
 DIAJUKAN_EVALUASI
 SEDANG_DIEVALUASI
 REVISI_DARI_EVALUATOR
-SIAP_DIVERIFIKASI
+MENUNGGU_TTD_PJ_EVALUATOR
 DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI
 BERLAKU
 DIGANTIKAN
@@ -100,11 +100,11 @@ Makna status:
 |---|---|
 | `DRAFT` | Versi awal SOP, dapat diedit penyusun/PJ Penyusun. |
 | `SEDANG_DISUSUN` | SOP dalam proses penyusunan dan dapat diedit. |
-| `SIAP_DIEVALUASI` | Dokumen lengkap dan siap masuk pengajuan evaluasi. |
+| `MENUNGGU_PENGAJUAN_EVALUASI` | Dokumen lengkap dan siap masuk pengajuan evaluasi. |
 | `DIAJUKAN_EVALUASI` | Status transisi manual dari PJ Penyusun sebelum masuk pengajuan aktif. |
 | `SEDANG_DIEVALUASI` | SOP sedang berada dalam pengajuan evaluasi aktif. |
 | `REVISI_DARI_EVALUATOR` | Evaluator memberi hasil `PERLU_PERBAIKAN`; dokumen dapat diedit penyusun. |
-| `SIAP_DIVERIFIKASI` | Semua nilai dalam pengajuan sudah `SESUAI`; menunggu TTE BA. |
+| `MENUNGGU_TTD_PJ_EVALUATOR` | Semua nilai dalam pengajuan sudah `SESUAI`; menunggu TTE BA. |
 | `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` | BA sudah ditandatangani PJ Penyusun; SOP menunggu pengesahan Kepala OPD. |
 | `BERLAKU` | SOP sudah disahkan Kepala OPD dan dapat muncul di arsip publik. |
 | `DIGANTIKAN` | Versi yang sebelumnya berlaku otomatis digantikan saat versi baru disahkan. |
@@ -133,7 +133,7 @@ Enum `StatusPengajuanEvaluasi`:
 ```text
 SEDANG_DIEVALUASI
 SELESAI_DIEVALUASI
-DIVERIFIKASI_PJ_EVALUATOR
+DITANDATANGANI_PJ_EVALUATOR
 DITANDATANGANI_PJ_PENYUSUN
 SELESAI
 ```
@@ -143,7 +143,7 @@ Alur utama:
 ```text
 SEDANG_DIEVALUASI
   -> SELESAI_DIEVALUASI
-  -> DIVERIFIKASI_PJ_EVALUATOR
+  -> DITANDATANGANI_PJ_EVALUATOR
   -> DITANDATANGANI_PJ_PENYUSUN
   -> SELESAI
 ```
@@ -153,7 +153,7 @@ Status pengajuan aktif lintas jobdesk:
 ```text
 SEDANG_DIEVALUASI
 SELESAI_DIEVALUASI
-DIVERIFIKASI_PJ_EVALUATOR
+DITANDATANGANI_PJ_EVALUATOR
 DITANDATANGANI_PJ_PENYUSUN
 ```
 
@@ -299,8 +299,8 @@ Transisi manual yang diizinkan:
 
 | Target | Sumber | Peran | Catatan |
 |---|---|---|---|
-| `SIAP_DIEVALUASI` | `DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVALUATOR` | `PENYUSUN`, `PJ_PENYUSUN` | Wajib lulus validasi kelengkapan dokumen. |
-| `DIAJUKAN_EVALUASI` | `SIAP_DIEVALUASI` | `PJ_PENYUSUN` | Mengajukan SOP siap evaluasi. |
+| `MENUNGGU_PENGAJUAN_EVALUASI` | `DRAFT`, `SEDANG_DISUSUN`, `REVISI_DARI_EVALUATOR` | `PENYUSUN`, `PJ_PENYUSUN` | Wajib lulus validasi kelengkapan dokumen. |
+| `DIAJUKAN_EVALUASI` | `MENUNGGU_PENGAJUAN_EVALUASI` | `PJ_PENYUSUN` | Mengajukan SOP siap evaluasi. |
 | `DICABUT` | `BERLAKU` | `KEPALA_OPD` | Sebaiknya melalui endpoint cabut khusus. |
 
 Transisi ke `BERLAKU` tidak boleh melalui endpoint status manual. Pengesahan `BERLAKU` wajib melalui TTE Kepala OPD.
@@ -343,21 +343,21 @@ Aturan pembuatan pengajuan oleh PJ Penyusun:
 - OPD diambil dari akun login.
 - `sopDetailIds` wajib tidak kosong dan tidak duplikat.
 - Semua detail SOP harus milik OPD pengguna.
-- Semua detail SOP wajib berstatus `SIAP_DIEVALUASI`.
+- Semua detail SOP wajib berstatus `MENUNGGU_PENGAJUAN_EVALUASI`.
 - OPD tidak boleh memiliki pengajuan aktif lain.
 - Server membuat `PengajuanEvaluasi` status `SEDANG_DIEVALUASI`.
 - Server membuat `NilaiEvaluasi` untuk setiap SOP.
-- Server mengubah setiap `DetailSOP` dari `SIAP_DIEVALUASI` ke `SEDANG_DIEVALUASI`.
+- Server mengubah setiap `DetailSOP` dari `MENUNGGU_PENGAJUAN_EVALUASI` ke `SEDANG_DIEVALUASI`.
 - Semua langkah di atas harus atomik dalam satu transaksi.
 
 Jenis pengajuan:
 
 | Jenis | Makna |
 |---|---|
-| `TERJADWAL` | Evaluasi formal; saat selesai wajib mengirim skor `nilaiOPD` integer 1-5. |
-| `MANDIRI` | Evaluasi per dokumen; tidak memakai skor `nilaiOPD`. |
+| `EVALUASI_REQUEST_EVALUATOR` | Evaluasi formal; saat selesai wajib mengirim skor `nilaiOPD` integer 1-5. |
+| `EVALUASI_REQUEST_OPD` | Evaluasi per dokumen; tidak memakai skor `nilaiOPD`. |
 
-Workspace evaluator dapat membuat pengajuan `MANDIRI` otomatis jika evaluator membuka OPD yang belum punya pengajuan aktif dan ada SOP `SIAP_DIEVALUASI`.
+Workspace evaluator dapat membuat pengajuan `EVALUASI_REQUEST_OPD` otomatis jika evaluator membuka OPD yang belum punya pengajuan aktif dan ada SOP `MENUNGGU_PENGAJUAN_EVALUASI`.
 
 ### 5.2 Penilaian Per SOP
 
@@ -463,12 +463,12 @@ Guard:
 - Pengajuan harus `SEDANG_DIEVALUASI`.
 - Pengajuan harus memiliki minimal satu baris `NilaiEvaluasi`.
 - Semua baris `NilaiEvaluasi.hasil` wajib `SESUAI`.
-- Jika `jenis = TERJADWAL`, `nilaiOPD` wajib integer 1-5.
-- Jika `jenis = MANDIRI`, request tidak boleh mengirim `nilaiOPD`.
+- Jika `jenis = EVALUASI_REQUEST_EVALUATOR`, `nilaiOPD` wajib integer 1-5.
+- Jika `jenis = EVALUASI_REQUEST_OPD`, request tidak boleh mengirim `nilaiOPD`.
 
 Efek:
 
-- Semua detail SOP dalam pengajuan dengan status `DIAJUKAN_EVALUASI`, `SEDANG_DIEVALUASI`, atau `REVISI_DARI_EVALUATOR` menjadi `SIAP_DIVERIFIKASI`.
+- Semua detail SOP dalam pengajuan dengan status `DIAJUKAN_EVALUASI`, `SEDANG_DIEVALUASI`, atau `REVISI_DARI_EVALUATOR` menjadi `MENUNGGU_TTD_PJ_EVALUATOR`.
 - Pengajuan menjadi `SELESAI_DIEVALUASI`.
 - `tanggalDiselesaikan`, `diselesaikanOlehId`, dan `version` diperbarui.
 
@@ -517,8 +517,8 @@ Alur:
 
 | Peran | Status awal pengajuan | Status akhir pengajuan | Efek SOP |
 |---|---|---|---|
-| `PJ_EVALUATOR` | `SELESAI_DIEVALUASI` | `DIVERIFIKASI_PJ_EVALUATOR` | Tidak mengubah status SOP. |
-| `PJ_PENYUSUN` | `DIVERIFIKASI_PJ_EVALUATOR` | `DITANDATANGANI_PJ_PENYUSUN` | Semua SOP dalam pengajuan dari `SIAP_DIVERIFIKASI` menjadi `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI`. |
+| `PJ_EVALUATOR` | `SELESAI_DIEVALUASI` | `DITANDATANGANI_PJ_EVALUATOR` | Tidak mengubah status SOP. |
+| `PJ_PENYUSUN` | `DITANDATANGANI_PJ_EVALUATOR` | `DITANDATANGANI_PJ_PENYUSUN` | Semua SOP dalam pengajuan dari `MENUNGGU_TTD_PJ_EVALUATOR` menjadi `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI`. |
 
 `DokumenTte` BA memiliki parent `pengajuanEvaluasiId`.
 
@@ -664,7 +664,7 @@ Penyusun/PJ Penyusun
   -> mengisi identitas SOP, dasar hukum, lampiran, dan SOP terkait
   -> mengisi pelaksana dan langkah prosedur
   -> menyesuaikan diagram bila diperlukan
-  -> menandai dokumen siap dievaluasi
+  -> menandai dokumen menunggu pengajuan evaluasi
 ```
 
 Mode kerja:
@@ -673,9 +673,9 @@ Mode kerja:
 |---|---|---|
 | `DRAFT` | Edit penuh | Penyusun, PJ Penyusun |
 | `SEDANG_DISUSUN` | Edit penuh | Penyusun, PJ Penyusun |
-| `SIAP_DIEVALUASI` | Isi dokumen tidak diedit lagi | Penyusun, PJ Penyusun |
+| `MENUNGGU_PENGAJUAN_EVALUASI` | Isi dokumen tidak diedit lagi | Penyusun, PJ Penyusun |
 
-Sebelum SOP ditandai siap dievaluasi, aplikasi memastikan:
+Sebelum SOP ditandai menunggu pengajuan evaluasi, aplikasi memastikan:
 
 - Header dan nomor SOP valid.
 - Dasar hukum dan lampiran yang dibutuhkan sudah diisi.
@@ -694,7 +694,7 @@ Tujuan: PJ Penyusun mengirim satu atau lebih SOP yang sudah siap kepada evaluato
 
 ```text
 PJ Penyusun
-  -> memilih SOP yang siap dievaluasi
+  -> memilih SOP yang menunggu pengajuan evaluasi
   -> memilih jenis evaluasi
   -> membuka pengajuan evaluasi
   -> aplikasi memasukkan SOP terpilih ke antrian evaluasi
@@ -707,19 +707,19 @@ Aturan bisnis:
 - Satu OPD hanya boleh memiliki satu pengajuan yang masih berjalan.
 - Pengajuan harus berisi minimal satu SOP.
 - Semua SOP yang dipilih harus milik OPD pengguna.
-- Semua SOP yang dipilih harus sudah siap dievaluasi.
+- Semua SOP yang dipilih harus sudah menunggu pengajuan evaluasi.
 
 Jenis pengajuan:
 
 | Jenis | Kapan digunakan | Konsekuensi saat selesai |
 |---|---|---|
-| `TERJADWAL` | Evaluasi formal/periodik | Evaluator wajib mengisi skor OPD 1-5. |
-| `MANDIRI` | Evaluasi per dokumen tanpa skor OPD | Evaluator tidak mengisi skor OPD. |
+| `EVALUASI_REQUEST_EVALUATOR` | Evaluasi formal/periodik | Evaluator wajib mengisi skor OPD 1-5. |
+| `EVALUASI_REQUEST_OPD` | Evaluasi per dokumen tanpa skor OPD | Evaluator tidak mengisi skor OPD. |
 
 Catatan sesuai implementasi:
 
 - PJ Penyusun dapat membuka pengajuan manual.
-- Evaluator juga dapat memulai evaluasi mandiri dari ruang kerja evaluasi jika ada SOP siap dievaluasi dan OPD belum punya pengajuan aktif.
+- Evaluator juga dapat memulai evaluasi EVALUASI_REQUEST_OPD dari ruang kerja evaluasi jika ada SOP menunggu pengajuan evaluasi dan OPD belum punya pengajuan aktif.
 
 Hasil akhir:
 
@@ -750,13 +750,13 @@ Syarat selesai evaluasi:
 
 - Semua SOP dalam pengajuan harus sudah dinyatakan sesuai.
 - Tidak ada SOP yang masih perlu perbaikan.
-- Untuk `TERJADWAL`, skor OPD 1-5 wajib diisi.
-- Untuk `MANDIRI`, skor OPD tidak digunakan.
+- Untuk `EVALUASI_REQUEST_EVALUATOR`, skor OPD 1-5 wajib diisi.
+- Untuk `EVALUASI_REQUEST_OPD`, skor OPD tidak digunakan.
 
 Hasil akhir selesai evaluasi:
 
 - Pengajuan berpindah ke tahap menunggu verifikasi BA oleh PJ Evaluator.
-- Semua SOP dalam pengajuan siap diverifikasi.
+- Semua SOP dalam pengajuan menunggu TTD PJ Evaluator.
 - Pengajuan siap ditandatangani PJ Evaluator.
 
 ### 8.5 Workflow Revisi dari Evaluator
@@ -808,7 +808,7 @@ Tujuan: mengesahkan hasil evaluasi dan menerbitkan SOP berlaku.
 Evaluator
   -> menyelesaikan evaluasi
   -> pengajuan menunggu verifikasi PJ Evaluator
-  -> SOP siap diverifikasi
+  -> SOP menunggu TTD PJ Evaluator
 
 PJ Evaluator
   -> memeriksa dan menandatangani Berita Acara evaluasi
@@ -919,7 +919,7 @@ Hasil akhir:
 ```text
 Setup master data
   -> Penyusun membuat dan melengkapi SOP
-  -> Penyusun/PJ Penyusun menandai SOP siap dievaluasi
+  -> Penyusun/PJ Penyusun menandai SOP menunggu pengajuan evaluasi
   -> PJ Penyusun membuka pengajuan evaluasi
   -> Evaluator menilai semua SOP
       -> jika perlu perbaikan: revisi, tindak lanjut, kirim ulang
@@ -1056,7 +1056,7 @@ Given DetailSOP berstatus DRAFT, SEDANG_DISUSUN, atau REVISI_DARI_EVALUATOR
 When penyusun mengubah header atau prosedur
 Then perubahan diterima
 
-Given DetailSOP berstatus SIAP_DIEVALUASI atau lebih lanjut
+Given DetailSOP berstatus MENUNGGU_PENGAJUAN_EVALUASI atau lebih lanjut
 When penyusun mengubah header atau prosedur
 Then perubahan ditolak
 ```
@@ -1074,8 +1074,8 @@ Then request ditolak
 ```text
 Given DetailSOP berstatus DRAFT, SEDANG_DISUSUN, atau REVISI_DARI_EVALUATOR
 And dokumen lengkap
-When PATCH /sop/status/:detailSopId dengan status SIAP_DIEVALUASI
-Then status berubah menjadi SIAP_DIEVALUASI
+When PATCH /sop/status/:detailSopId dengan status MENUNGGU_PENGAJUAN_EVALUASI
+Then status berubah menjadi MENUNGGU_PENGAJUAN_EVALUASI
 ```
 
 **AC-SOP-05: Transisi status tidak valid ditolak**
@@ -1122,8 +1122,8 @@ Then request ditolak
 ```text
 Given PJ Penyusun login pada OPD A
 And OPD A tidak memiliki pengajuan aktif
-And semua sopDetailIds milik OPD A dan berstatus SIAP_DIEVALUASI
-When POST /evaluasi dengan jenis TERJADWAL atau MANDIRI
+And semua sopDetailIds milik OPD A dan berstatus MENUNGGU_PENGAJUAN_EVALUASI
+When POST /evaluasi dengan jenis EVALUASI_REQUEST_EVALUATOR atau EVALUASI_REQUEST_OPD
 Then PengajuanEvaluasi dibuat dengan status SEDANG_DIEVALUASI
 And NilaiEvaluasi dibuat untuk setiap SOP
 And semua SOP berubah menjadi SEDANG_DIEVALUASI
@@ -1141,7 +1141,7 @@ And tidak ada pengajuan atau nilai baru dibuat
 **AC-EVL-03: Pengajuan ditolak jika SOP tidak eligible**
 
 ```text
-Given salah satu DetailSOP tidak berstatus SIAP_DIEVALUASI
+Given salah satu DetailSOP tidak berstatus MENUNGGU_PENGAJUAN_EVALUASI
 When PJ Penyusun POST /evaluasi dengan detail tersebut
 Then request ditolak
 And transaksi dibatalkan seluruhnya
@@ -1199,23 +1199,23 @@ When Evaluator PATCH /evaluasi/:pengajuanId/selesai
 Then request ditolak
 ```
 
-**AC-EVL-09: Selesai pengajuan terjadwal wajib skor OPD**
+**AC-EVL-09: Selesai pengajuan EVALUASI_REQUEST_EVALUATOR wajib skor OPD**
 
 ```text
-Given PengajuanEvaluasi jenis TERJADWAL
+Given PengajuanEvaluasi jenis EVALUASI_REQUEST_EVALUATOR
 And semua NilaiEvaluasi = SESUAI
 When Evaluator PATCH /evaluasi/:pengajuanId/selesai tanpa nilaiOPD
 Then request ditolak
 
 When Evaluator mengirim nilaiOPD integer 1 sampai 5
 Then pengajuan menjadi SELESAI_DIEVALUASI
-And semua SOP menjadi SIAP_DIVERIFIKASI
+And semua SOP menjadi MENUNGGU_TTD_PJ_EVALUATOR
 ```
 
-**AC-EVL-10: Selesai pengajuan mandiri tidak memakai skor OPD**
+**AC-EVL-10: Selesai pengajuan EVALUASI_REQUEST_OPD tidak memakai skor OPD**
 
 ```text
-Given PengajuanEvaluasi jenis MANDIRI
+Given PengajuanEvaluasi jenis EVALUASI_REQUEST_OPD
 And semua NilaiEvaluasi = SESUAI
 When Evaluator PATCH /evaluasi/:pengajuanId/selesai dengan nilaiOPD
 Then request ditolak
@@ -1255,15 +1255,15 @@ And PJ Evaluator memiliki PIN TTE
 When POST /tte/tanda-tangani/ba/:pengajuanId dengan PIN valid
 Then DokumenTte BA dibuat atau diperbarui
 And RiwayatTandaTangan peran PJ_EVALUATOR dibuat
-And pengajuan menjadi DIVERIFIKASI_PJ_EVALUATOR
+And pengajuan menjadi DITANDATANGANI_PJ_EVALUATOR
 And status SOP tidak berubah
 ```
 
 **AC-TTE-04: PJ Penyusun menandatangani BA**
 
 ```text
-Given PengajuanEvaluasi status DIVERIFIKASI_PJ_EVALUATOR
-And semua SOP terkait berstatus SIAP_DIVERIFIKASI
+Given PengajuanEvaluasi status DITANDATANGANI_PJ_EVALUATOR
+And semua SOP terkait berstatus MENUNGGU_TTD_PJ_EVALUATOR
 When PJ Penyusun POST /tte/tanda-tangani/ba/:pengajuanId dengan PIN valid
 Then RiwayatTandaTangan peran PJ_PENYUSUN dibuat
 And pengajuan menjadi DITANDATANGANI_PJ_PENYUSUN

@@ -17,11 +17,11 @@ export type TampilanAlurEvaluasi = 'perlu_evaluasi' | 'sedang_dievaluasi' | 'sel
 const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
   [StatusSOP.DRAFT]: 'Draft',
   [StatusSOP.SEDANG_DISUSUN]: 'Sedang disusun',
-  [StatusSOP.SIAP_DIEVALUASI]: 'Siap dievaluasi',
+  [StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI]: 'Menunggu pengajuan evaluasi',
   [StatusSOP.DIAJUKAN_EVALUASI]: 'Diajukan evaluasi',
   [StatusSOP.SEDANG_DIEVALUASI]: 'Dalam penilaian',
   [StatusSOP.REVISI_DARI_EVALUATOR]: 'Perlu revisi',
-  [StatusSOP.SIAP_DIVERIFIKASI]: 'Menunggu verifikasi PJ Evaluator',
+  [StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR]: 'Menunggu TTD PJ Evaluator',
   [StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI]: 'Menunggu pengesahan Kepala OPD',
   [StatusSOP.BERLAKU]: 'Berlaku',
   [StatusSOP.DIGANTIKAN]: 'Digantikan',
@@ -30,8 +30,8 @@ const SOP_STATUS_LABELS: Record<StatusSOP, string> = {
 
 const PENGAJUAN_STATUS_LABELS: Record<StatusPengajuanEvaluasi, string> = {
   [StatusPengajuanEvaluasi.SEDANG_DIEVALUASI]: 'Sedang dinilai tim',
-  [StatusPengajuanEvaluasi.SELESAI_DIEVALUASI]: 'Menunggu verifikasi BA',
-  [StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR]: 'BA diverifikasi PJ Evaluator',
+  [StatusPengajuanEvaluasi.SELESAI_DIEVALUASI]: 'Menunggu tanda tangan BA',
+  [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR]: 'BA ditandatangani PJ Evaluator',
   [StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN]: 'Menunggu pengesahan Kepala OPD',
   [StatusPengajuanEvaluasi.SELESAI]: 'Pengajuan evaluasi selesai',
 };

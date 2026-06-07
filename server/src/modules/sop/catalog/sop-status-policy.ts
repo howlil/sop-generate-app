@@ -15,7 +15,7 @@ export function assertAllowedSopStatusTransition(input: SopStatusTransitionInput
   if (current === target) {
     throw new ConflictException('Status SOP sudah sesuai permintaan');
   }
-  if (target === StatusSOP.SIAP_DIEVALUASI) {
+  if (target === StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI) {
     const allowedFrom = new Set<StatusSOP>([
       StatusSOP.DRAFT,
       StatusSOP.SEDANG_DISUSUN,
@@ -23,18 +23,20 @@ export function assertAllowedSopStatusTransition(input: SopStatusTransitionInput
     ]);
     if (!allowedFrom.has(current)) {
       throw new ConflictException(
-        `Tidak dapat mengubah status ke SIAP_DIEVALUASI dari status ${String(current)}`,
+        `Tidak dapat mengubah status ke MENUNGGU_PENGAJUAN_EVALUASI dari status ${String(current)}`,
       );
     }
     if (role !== PeranPengguna.PENYUSUN && role !== PeranPengguna.PJ_PENYUSUN) {
-      throw new ForbiddenException('Hanya penyusun yang dapat menandai SOP siap dievaluasi');
+      throw new ForbiddenException(
+        'Hanya penyusun yang dapat menandai SOP menunggu pengajuan evaluasi',
+      );
     }
     return;
   }
   if (target === StatusSOP.DIAJUKAN_EVALUASI) {
-    if (current !== StatusSOP.SIAP_DIEVALUASI) {
+    if (current !== StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI) {
       throw new ConflictException(
-        `Hanya SOP berstatus SIAP_DIEVALUASI yang dapat diajukan ke evaluasi (status saat ini: ${String(current)})`,
+        `Hanya SOP berstatus MENUNGGU_PENGAJUAN_EVALUASI yang dapat diajukan ke evaluasi (status saat ini: ${String(current)})`,
       );
     }
     if (role !== PeranPengguna.PJ_PENYUSUN) {

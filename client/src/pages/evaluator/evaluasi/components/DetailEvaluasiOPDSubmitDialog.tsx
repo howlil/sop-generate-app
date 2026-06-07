@@ -21,10 +21,10 @@ export interface DetailEvaluasiOPDSubmitDialogProps {
   blockingReason: string | null;
   onConfirm: (nomorBA: string) => void;
   isSubmitting?: boolean;
-  /** false untuk pengajuan MANDIRI — teks bantuan tanpa syarat skor OPD. */
+  /** false untuk pengajuan EVALUASI_REQUEST_OPD — teks bantuan tanpa syarat skor OPD. */
   requiresNilaiOpdInCopy?: boolean;
   /** Error validasi / server terakhir (ditampilkan di dalam dialog). */
-  terjadwalSubmitError?: PengajuanEvaluasiSubmitError;
+  evaluasiSubmitError?: PengajuanEvaluasiSubmitError;
 }
 
 export function DetailEvaluasiOPDSubmitDialog({
@@ -35,7 +35,7 @@ export function DetailEvaluasiOPDSubmitDialog({
   blockingReason,
   onConfirm,
   isSubmitting = false,
-  terjadwalSubmitError = { kind: "none", items: [] },
+  evaluasiSubmitError = { kind: "none", items: [] },
 }: DetailEvaluasiOPDSubmitDialogProps) {
   const [nomorBA, setNomorBA] = useState("");
 
@@ -46,8 +46,8 @@ export function DetailEvaluasiOPDSubmitDialog({
   }, [open]);
 
   const serverMessage =
-    terjadwalSubmitError.kind === "blocked" || terjadwalSubmitError.kind === "incomplete"
-      ? terjadwalSubmitError.message
+    evaluasiSubmitError.kind === "blocked" || evaluasiSubmitError.kind === "incomplete"
+      ? evaluasiSubmitError.message
       : null;
   const alertMessage = serverMessage ?? (!canConfirm ? blockingReason : null);
 
@@ -57,7 +57,7 @@ export function DetailEvaluasiOPDSubmitDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-sm">Ajukan hasil ke PJ Evaluator</DialogTitle>
+          <DialogTitle className="text-sm">Ajukan tanda tangan Berita Acara</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {alertMessage ? (
@@ -120,7 +120,7 @@ export function DetailEvaluasiOPDSubmitDialog({
             onClick={() => onConfirm(nomorBA.trim())}
             disabled={!isValid || isSubmitting}
           >
-            <Send className="w-3.5 h-3.5" /> Ya, ajukan ke PJ
+            <Send className="w-3.5 h-3.5" /> Ya, ajukan BA
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -159,102 +159,271 @@ describe('Pengujian TteRepository', () => {
   });
 
   // --- COMPREHENSIVE TESTS (FALSE, WORST, EDGE CASES) ---
-  
+
   describe('transaksiTandaTanganiBaEvaluator (Tambahan Kasus)', () => {
     it('seharusnya mengembalikan error NOT_FOUND jika pengajuan tidak ada', async () => {
       const tx = { pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue(null) } };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaEvaluator({ pengajuanEvaluasiId: 'x', userId: 'u', peran: PeranPengguna.PJ_EVALUATOR, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaEvaluator({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        peran: PeranPengguna.PJ_EVALUATOR,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'NOT_FOUND' });
     });
 
     it('seharusnya mengembalikan error BAD_STATUS jika status pengajuan tidak SELESAI_DIEVALUASI', async () => {
-      const tx = { pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI }) } };
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI }),
+        },
+      };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaEvaluator({ pengajuanEvaluasiId: 'x', userId: 'u', peran: PeranPengguna.PJ_EVALUATOR, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
-      expect(res).toEqual({ error: 'BAD_STATUS', status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI });
+      const res = await repo.transaksiTandaTanganiBaEvaluator({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        peran: PeranPengguna.PJ_EVALUATOR,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
+      expect(res).toEqual({
+        error: 'BAD_STATUS',
+        status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+      });
     });
 
     it('seharusnya mengembalikan error INVALID_DOC_PARENT jika dokumenTte berbagi parent (Edge Case)', async () => {
-      const tx = { 
-        pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI }) },
-        dokumenTte: { findUnique: jest.fn().mockResolvedValue({ detailSopId: 'det-1', pengajuanEvaluasiId: 'x' }) } // Keduanya ada -> invalid
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI }),
+        },
+        dokumenTte: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ detailSopId: 'det-1', pengajuanEvaluasiId: 'x' }),
+        }, // Keduanya ada -> invalid
       };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaEvaluator({ pengajuanEvaluasiId: 'x', userId: 'u', peran: PeranPengguna.PJ_EVALUATOR, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaEvaluator({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        peran: PeranPengguna.PJ_EVALUATOR,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'INVALID_DOC_PARENT' });
     });
 
     it('seharusnya mengembalikan error ALREADY_SIGNED jika peran sudah tanda tangan (Edge Case)', async () => {
-      const tx = { 
-        pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI }) },
-        dokumenTte: { findUnique: jest.fn().mockResolvedValue({ detailSopId: null, pengajuanEvaluasiId: 'x', dokumenTteId: 'doc-1' }), update: jest.fn() },
-        riwayatTandaTangan: { findUnique: jest.fn().mockResolvedValue({ ada: true }) } // Riwayat sudah ada
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI }),
+        },
+        dokumenTte: {
+          findUnique: jest.fn().mockResolvedValue({
+            detailSopId: null,
+            pengajuanEvaluasiId: 'x',
+            dokumenTteId: 'doc-1',
+          }),
+          update: jest.fn(),
+        },
+        riwayatTandaTangan: { findUnique: jest.fn().mockResolvedValue({ ada: true }) }, // Riwayat sudah ada
       };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaEvaluator({ pengajuanEvaluasiId: 'x', userId: 'u', peran: PeranPengguna.PJ_EVALUATOR, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaEvaluator({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        peran: PeranPengguna.PJ_EVALUATOR,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'ALREADY_SIGNED' });
     });
 
     it('seharusnya berhasil menandatangani BA Evaluator (Success)', async () => {
-      const tx = { 
-        pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI }), update: jest.fn() },
-        dokumenTte: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn().mockResolvedValue({ dokumenTteId: 'doc-new' }) },
-        riwayatTandaTangan: { findUnique: jest.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({ berhasil: true }), create: jest.fn() } 
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI }),
+          update: jest.fn(),
+        },
+        dokumenTte: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({ dokumenTteId: 'doc-new' }),
+        },
+        riwayatTandaTangan: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce({ berhasil: true }),
+          create: jest.fn(),
+        },
       };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaEvaluator({ pengajuanEvaluasiId: 'x', userId: 'u', peran: PeranPengguna.PJ_EVALUATOR, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaEvaluator({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        peran: PeranPengguna.PJ_EVALUATOR,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ ok: true, riwayat: { berhasil: true } });
-      expect(tx.pengajuanEvaluasi.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR }) }));
+      expect(tx.pengajuanEvaluasi.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
+          }),
+        }),
+      );
     });
   });
 
   describe('transaksiTandaTanganiBaPjPenyusun (Tambahan Kasus)', () => {
     it('seharusnya mengembalikan error FORBIDDEN_OPD jika opd pengguna berbeda', async () => {
-      const tx = { pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ opdId: 'opd-1' }) } };
+      const tx = {
+        pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ opdId: 'opd-1' }) },
+      };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaPjPenyusun({ pengajuanEvaluasiId: 'x', userId: 'u', userOpdId: 'opd-beda', peran: PeranPengguna.PJ_PENYUSUN, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaPjPenyusun({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        userOpdId: 'opd-beda',
+        peran: PeranPengguna.PJ_PENYUSUN,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'FORBIDDEN_OPD' });
     });
 
     it('seharusnya mengembalikan error DOC_MISMATCH jika dokumenTte milik pengajuan lain (Worst Case)', async () => {
-      const tx = { 
-        pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ opdId: 'opd-1', status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR }) },
-        dokumenTte: { findUnique: jest.fn().mockResolvedValue({ detailSopId: null, pengajuanEvaluasiId: 'beda', dokumenTteId: 'doc-1' }) },
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            opdId: 'opd-1',
+            status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
+          }),
+        },
+        dokumenTte: {
+          findUnique: jest.fn().mockResolvedValue({
+            detailSopId: null,
+            pengajuanEvaluasiId: 'beda',
+            dokumenTteId: 'doc-1',
+          }),
+        },
       };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaPjPenyusun({ pengajuanEvaluasiId: 'x', userId: 'u', userOpdId: 'opd-1', peran: PeranPengguna.PJ_PENYUSUN, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaPjPenyusun({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        userOpdId: 'opd-1',
+        peran: PeranPengguna.PJ_PENYUSUN,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'DOC_MISMATCH' });
     });
 
     it('seharusnya mengembalikan error SOP_STATUS_DRIFT jika jumlah SOP yang diupdate tidak cocok (Edge Case)', async () => {
-      const tx = { 
-        pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ opdId: 'opd-1', status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR, nilaiEvaluasi: [{detailSopId: 'd1'}, {detailSopId: 'd2'}] }) },
-        dokumenTte: { findUnique: jest.fn().mockResolvedValue(null), create: jest.fn().mockResolvedValue({ detailSopId: null, pengajuanEvaluasiId: 'x', dokumenTteId: 'doc-new' }), update: jest.fn().mockResolvedValue(undefined) },
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            opdId: 'opd-1',
+            status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
+            nilaiEvaluasi: [{ detailSopId: 'd1' }, { detailSopId: 'd2' }],
+          }),
+        },
+        dokumenTte: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest.fn().mockResolvedValue({
+            detailSopId: null,
+            pengajuanEvaluasiId: 'x',
+            dokumenTteId: 'doc-new',
+          }),
+          update: jest.fn().mockResolvedValue(undefined),
+        },
         riwayatTandaTangan: { findUnique: jest.fn().mockResolvedValue(null) },
-        detailSOP: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) } // Seharusnya 2, tapi cuma 1 -> drift
+        detailSOP: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) }, // Seharusnya 2, tapi cuma 1 -> drift
       };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiBaPjPenyusun({ pengajuanEvaluasiId: 'x', userId: 'u', userOpdId: 'opd-1', peran: PeranPengguna.PJ_PENYUSUN, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiBaPjPenyusun({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        userOpdId: 'opd-1',
+        peran: PeranPengguna.PJ_PENYUSUN,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'SOP_STATUS_DRIFT', expectedCount: 2, updatedCount: 1 });
     });
   });
 
   describe('transaksiTandaTanganiSemuaSopPengajuan (Tambahan Kasus Kepala OPD)', () => {
     it('seharusnya mengembalikan error EMPTY_SOP jika array nilaiEvaluasi kosong (Worst Case)', async () => {
-      const tx = { pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ opdId: 'opd-1', status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN, nilaiEvaluasi: [] }) } };
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            opdId: 'opd-1',
+            status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+            nilaiEvaluasi: [],
+          }),
+        },
+      };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiSemuaSopPengajuan({ pengajuanEvaluasiId: 'x', userId: 'u', userOpdId: 'opd-1', peran: PeranPengguna.KEPALA_OPD, signedAt, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiSemuaSopPengajuan({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        userOpdId: 'opd-1',
+        peran: PeranPengguna.KEPALA_OPD,
+        signedAt,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual({ error: 'EMPTY_SOP' });
     });
 
     it('seharusnya mengembalikan error BAD_SOP_STATUS jika ada sop yang belum diverifikasi organisasi (False Case)', async () => {
-      const tx = { pengajuanEvaluasi: { findUnique: jest.fn().mockResolvedValue({ 
-        opdId: 'opd-1', status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN, 
-        nilaiEvaluasi: [{ detailSop: { sop: { opdId: 'opd-1' }, status: StatusSOP.SIAP_DIVERIFIKASI } }] 
-      }) } };
+      const tx = {
+        pengajuanEvaluasi: {
+          findUnique: jest.fn().mockResolvedValue({
+            opdId: 'opd-1',
+            status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
+            nilaiEvaluasi: [
+              {
+                detailSop: { sop: { opdId: 'opd-1' }, status: StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR },
+              },
+            ],
+          }),
+        },
+      };
       const repo = createRepository(tx);
-      const res = await repo.transaksiTandaTanganiSemuaSopPengajuan({ pengajuanEvaluasiId: 'x', userId: 'u', userOpdId: 'opd-1', peran: PeranPengguna.KEPALA_OPD, signedAt, hashDokumen: 'h', nomorDokumen: 'n', judulDokumen: 'j' });
+      const res = await repo.transaksiTandaTanganiSemuaSopPengajuan({
+        pengajuanEvaluasiId: 'x',
+        userId: 'u',
+        userOpdId: 'opd-1',
+        peran: PeranPengguna.KEPALA_OPD,
+        signedAt,
+        hashDokumen: 'h',
+        nomorDokumen: 'n',
+        judulDokumen: 'j',
+      });
       expect(res).toEqual(expect.objectContaining({ error: 'BAD_SOP_STATUS' }));
     });
   });

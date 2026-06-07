@@ -22,6 +22,12 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
     peran: PeranPengguna.PJ_EVALUATOR,
   };
 
+  const userPjPenyusun: JwtAccessPayload = {
+    sub: 'pj-pen-1',
+    email: 'pj-pen@test',
+    peran: PeranPengguna.PJ_PENYUSUN,
+  };
+
   const pengajuanId = '11111111-1111-4111-8111-111111111111';
   const detailSopA = '22222222-2222-4222-8222-222222222221';
   const detailSopB = '22222222-2222-4222-8222-222222222222';
@@ -70,7 +76,7 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
     return {
       pengajuanEvaluasiId: pengajuanId,
       opdId: '33333333-3333-4333-8333-333333333333',
-      jenis: JenisPengajuanEvaluasi.TERJADWAL,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
       status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
       nomorBA: 'BA-001',
       tanggalPermintaan: createdAt,
@@ -268,6 +274,27 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
     expect(shell.timelineNilai[0]?.id).toBe(
       encodeLogNilaiEvaluasiClientId(pengajuanId, detailSopA, 'evo-1', logCreatedAt),
     );
+    expect(shell.opdNama).toBe('Dinas Test');
+    expect(shell.nilaiOPD).toBe(4);
+  });
+
+  it('shell seharusnya menghilangkan field OPD untuk PJ Penyusun', async () => {
+    const row = buildMinimalRow();
+    const repo = {
+      findByIdFull: jest.fn().mockResolvedValue(row),
+    } as unknown as PengajuanEvaluasiRepository;
+    const detailRepo = {} as unknown as PengajuanEvaluasiDetailRepository;
+    const pengSvc = {
+      assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+    } as unknown as PengajuanEvaluasiService;
+    const sop = {} as unknown as SopCatalogService;
+    const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
+    const shell = await service.getShell(userPjPenyusun, pengajuanId);
+    expect(shell.id).toBe(pengajuanId);
+    expect(shell).not.toHaveProperty('opdId');
+    expect(shell).not.toHaveProperty('opdNama');
+    expect(shell).not.toHaveProperty('opd');
+    expect(shell).not.toHaveProperty('nilaiOPD');
   });
 
   it('BA view seharusnya urut hasil per SOP nomor numerically', async () => {
@@ -295,9 +322,9 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
     expect(actual.tteBeritaAcara?.adaRiwayatTandaTanganPerPeran?.PJ_EVALUATOR).toBe(true);
   });
 
-  it('seharusnya memuat tanggal verifikasi pada shell ketika status diverifikasi PJ evaluator', async () => {
+  it('seharusnya memuat tanggal verifikasi pada shell ketika status ditandatangani PJ evaluator', async () => {
     const row = buildMinimalRow({
-      status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+      status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
       updatedAt: new Date('2026-06-01T12:00:00.000Z'),
     });
     const repo = {
@@ -318,12 +345,18 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
   describe('getShell (Tambahan)', () => {
     it('seharusnya melempar error jika otorisasi gagal (False Case)', async () => {
       const row = buildMinimalRow();
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {} as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockRejectedValue(new ForbiddenException()) } as unknown as PengajuanEvaluasiService;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockRejectedValue(new ForbiddenException()),
+      } as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      await expect(service.getShell(userPj, pengajuanId)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.getShell(userPj, pengajuanId)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
     });
 
     it('seharusnya menghandle fallback nomorBA, evaluator null, dan status unverified dengan benar (Edge/Worst Case)', async () => {
@@ -336,13 +369,17 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
       // Override nilaiEvaluasi to simulate missing evaluator name
       row.nilaiEvaluasi[0].dinilaiOleh = null;
       row.diselesaikanOleh = null;
-      
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {} as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined) } as unknown as PengajuanEvaluasiService;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      
+
       const shell = await service.getShell(userPj, pengajuanId);
       expect(shell.nomorBA).toBeUndefined();
       expect(shell.tanggalVerifikasi).toBeUndefined();
@@ -353,42 +390,60 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
 
   describe('getSopDokumen (Tambahan)', () => {
     it('seharusnya melempar NotFoundException jika pengajuan tidak ditemukan (False Case)', async () => {
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(null) } as unknown as PengajuanEvaluasiRepository;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(null),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {} as unknown as PengajuanEvaluasiDetailRepository;
       const pengSvc = {} as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      await expect(service.getSopDokumen(userPj, pengajuanId, detailSopA)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.getSopDokumen(userPj, pengajuanId, detailSopA)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('seharusnya melempar error jika otorisasi gagal (False Case)', async () => {
       const row = buildMinimalRow();
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {} as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockRejectedValue(new ForbiddenException()) } as unknown as PengajuanEvaluasiService;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockRejectedValue(new ForbiddenException()),
+      } as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      await expect(service.getSopDokumen(userPj, pengajuanId, detailSopA)).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.getSopDokumen(userPj, pengajuanId, detailSopA)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
     });
 
     it('seharusnya menggunakan DEFAULT_LOGS_LIMIT jika limit tidak diberikan (Edge Case)', async () => {
       const row = buildMinimalRow();
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
-      const detailRepo = { 
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
+      const detailRepo = {
         existsNilaiUntukDetail: jest.fn().mockResolvedValue(true),
-        findDokumenSopBerlaku: jest.fn().mockResolvedValue(null)
+        findDokumenSopBerlaku: jest.fn().mockResolvedValue(null),
       } as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined) } as unknown as PengajuanEvaluasiService;
-      const sop = { getPenyusunWorkbenchForEvaluasiContext: jest.fn().mockResolvedValue({}) } as unknown as SopCatalogService;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PengajuanEvaluasiService;
+      const sop = {
+        getPenyusunWorkbenchForEvaluasiContext: jest.fn().mockResolvedValue({}),
+      } as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      
+
       await service.getSopDokumen(userPj, pengajuanId, detailSopA);
       expect(sop.getPenyusunWorkbenchForEvaluasiContext).toHaveBeenCalledWith(detailSopA, 100);
     });
 
     it('seharusnya skip TTE jika rt.user null atau peran bukan KEPALA_OPD (Edge Case)', async () => {
       const row = buildMinimalRow();
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {
         existsNilaiUntukDetail: jest.fn().mockResolvedValue(true),
         findDokumenSopBerlaku: jest.fn().mockResolvedValue({
@@ -399,10 +454,14 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
           ],
         }),
       } as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined) } as unknown as PengajuanEvaluasiService;
-      const sop = { getPenyusunWorkbenchForEvaluasiContext: jest.fn().mockResolvedValue({}) } as unknown as SopCatalogService;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PengajuanEvaluasiService;
+      const sop = {
+        getPenyusunWorkbenchForEvaluasiContext: jest.fn().mockResolvedValue({}),
+      } as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      
+
       const actual = await service.getSopDokumen(userPj, pengajuanId, detailSopA);
       expect(actual.tteSignaturePayloadKepalaOpd).toBeUndefined();
     });
@@ -410,12 +469,16 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
 
   describe('getBeritaAcaraView (Tambahan)', () => {
     it('seharusnya melempar NotFoundException jika pengajuan tidak ditemukan (False Case)', async () => {
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(null) } as unknown as PengajuanEvaluasiRepository;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(null),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {} as unknown as PengajuanEvaluasiDetailRepository;
       const pengSvc = {} as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      await expect(service.getBeritaAcaraView(userPj, pengajuanId)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.getBeritaAcaraView(userPj, pengajuanId)).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('seharusnya membuang whitespace dan string kosong saat mapping evaluator (Worst Case)', async () => {
@@ -425,34 +488,54 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
       row.nilaiEvaluasi.push({ ...baseSop, dinilaiOleh: { nama: '  ' } } as any);
       row.nilaiEvaluasi.push({ ...baseSop, dinilaiOleh: { nama: 'Eva Luna' } } as any);
       row.nilaiEvaluasi.push({ ...baseSop, dinilaiOleh: { nama: 'Budi' } } as any);
-      
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
-      const detailRepo = { findDokumenBeritaAcara: jest.fn().mockResolvedValue(null) } as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined) } as unknown as PengajuanEvaluasiService;
+
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
+      const detailRepo = {
+        findDokumenBeritaAcara: jest.fn().mockResolvedValue(null),
+      } as unknown as PengajuanEvaluasiDetailRepository;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      
+
       const actual = await service.getBeritaAcaraView(userPj, pengajuanId);
       // 'Eva Luna' and 'Budi'
-      expect(actual.timEvaluasi.evaluatorNamaUnik).toEqual(['Budi', 'Eva Luna']); 
+      expect(actual.timEvaluasi.evaluatorNamaUnik).toEqual(['Budi', 'Eva Luna']);
     });
 
     it('seharusnya mengabaikan tanda tangan duplikat dan ambil yang pertama untuk PJ_EVALUATOR (Edge Case)', async () => {
       const row = buildMinimalRow();
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
       const detailRepo = {
         findDokumenBeritaAcara: jest.fn().mockResolvedValue({
           dokumenTteId: 'doc-1',
           riwayatTandaTangan: [
-            { peran: PeranPengguna.PJ_EVALUATOR, userId: 'user-1', ditandatanganiPada: new Date(), user: { nama: 'First', nip: '1' } },
-            { peran: PeranPengguna.PJ_EVALUATOR, userId: 'user-2', ditandatanganiPada: new Date(), user: { nama: 'Second', nip: '2' } },
+            {
+              peran: PeranPengguna.PJ_EVALUATOR,
+              userId: 'user-1',
+              ditandatanganiPada: new Date(),
+              user: { nama: 'First', nip: '1' },
+            },
+            {
+              peran: PeranPengguna.PJ_EVALUATOR,
+              userId: 'user-2',
+              ditandatanganiPada: new Date(),
+              user: { nama: 'Second', nip: '2' },
+            },
           ],
         }),
       } as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined) } as unknown as PengajuanEvaluasiService;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      
+
       const actual = await service.getBeritaAcaraView(userPj, pengajuanId);
       expect(actual.tteBeritaAcara?.payloadPjEvaluator?.namaLengkap).toBe('First');
     });
@@ -462,12 +545,18 @@ describe('Pengujian PengajuanEvaluasiDetailService', () => {
         nomorBA: null,
         dokumenTte: [{ nomorDokumen: 'DOC-FALLBACK' }] as any,
       });
-      const repo = { findByIdFull: jest.fn().mockResolvedValue(row) } as unknown as PengajuanEvaluasiRepository;
-      const detailRepo = { findDokumenBeritaAcara: jest.fn().mockResolvedValue(null) } as unknown as PengajuanEvaluasiDetailRepository;
-      const pengSvc = { assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined) } as unknown as PengajuanEvaluasiService;
+      const repo = {
+        findByIdFull: jest.fn().mockResolvedValue(row),
+      } as unknown as PengajuanEvaluasiRepository;
+      const detailRepo = {
+        findDokumenBeritaAcara: jest.fn().mockResolvedValue(null),
+      } as unknown as PengajuanEvaluasiDetailRepository;
+      const pengSvc = {
+        assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
+      } as unknown as PengajuanEvaluasiService;
       const sop = {} as unknown as SopCatalogService;
       const service = new PengajuanEvaluasiDetailService(repo, detailRepo, pengSvc, sop);
-      
+
       const actual = await service.getBeritaAcaraView(userPj, pengajuanId);
       expect(actual.tteBeritaAcara).toBeUndefined();
       expect(actual.nomorBA).toBe('DOC-FALLBACK');

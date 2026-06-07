@@ -138,7 +138,7 @@ async function syncDraftEvaluasiCache(
     { queryKey: queryKeys.evaluasiWorkspacePengajuanAll },
     (workspace) => updateWorkspaceEvaluasiCache(workspace, savedNilai, variables),
   );
-  await invalidateSopEvaluasiWorkflow(queryClient, "none");
+  await invalidateSopEvaluasiWorkflow(queryClient);
 }
 
 export interface UseEvaluasiDraftReturn {
@@ -457,7 +457,7 @@ export function useEvaluasiDraft(
 interface UseEvaluasiSubmitConfig {
   pengajuanAktifId: string | undefined;
   ratingOPD: number | null;
-  /** false untuk pengajuan MANDIRI — PATCH selesai tanpa nilaiOPD. */
+  /** false untuk pengajuan EVALUASI_REQUEST_OPD — PATCH selesai tanpa nilaiOPD. */
   requiresNilaiOpd: boolean;
   canSubmit: boolean;
   blockingMessage: string | null;
@@ -476,32 +476,32 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [terjadwalSubmitError, setTerjadwalSubmitError] = useState<
+  const [evaluasiSubmitError, setEvaluasiSubmitError] = useState<
     string | null
   >(null);
 
-  const clearTerjadwalSubmitError = useCallback(() => {
-    setTerjadwalSubmitError(null);
+  const clearEvaluasiSubmitError = useCallback(() => {
+    setEvaluasiSubmitError(null);
   }, []);
 
   const handleSubmitAll = useCallback(
     async (nomorBA: string) => {
       if (!pengajuanAktifId) {
-        setTerjadwalSubmitError("Pengajuan evaluasi tidak tersedia.");
+        setEvaluasiSubmitError("Pengajuan evaluasi tidak tersedia.");
         return;
       }
       if (!canSubmit) {
-        setTerjadwalSubmitError(
+        setEvaluasiSubmitError(
           blockingMessage ?? "Syarat pengajuan belum terpenuhi.",
         );
         return;
       }
       if (requiresNilaiOpd && (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5)) {
-        setTerjadwalSubmitError("Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.");
+        setEvaluasiSubmitError("Isi skor evaluasi OPD (1–5) di tab Evaluasi OPD.");
         return;
       }
       setIsSubmitting(true);
-      setTerjadwalSubmitError(null);
+      setEvaluasiSubmitError(null);
       try {
         assertCanMutateEvaluasiNilai(useAuthStore.getState().user?.peran);
         const payload: SelesaiEvaluasiDto = requiresNilaiOpd
@@ -509,12 +509,12 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
           : { nomorBA };
       await evaluasiApi.selesai(pengajuanAktifId, payload);
       await invalidateSopEvaluasiWorkflow(queryClient);
-      showToast("Pengajuan berhasil diajukan ke PJ Evaluator", "success");
+      showToast("Berita Acara berhasil diajukan ke PJ Evaluator", "success");
       onSuccess?.();
     } catch (error) {
       const err = error as Error;
-      const message = err.message || "Gagal mengajukan hasil evaluasi";
-      setTerjadwalSubmitError(message);
+      const message = err.message || "Gagal mengajukan Berita Acara";
+      setEvaluasiSubmitError(message);
       showErrorMessages(error, message);
     } finally {
       setIsSubmitting(false);
@@ -533,7 +533,7 @@ export function useEvaluasiSubmit(config: UseEvaluasiSubmitConfig) {
   return {
     isSubmitting,
     handleSubmitAll,
-    terjadwalSubmitError,
-    clearTerjadwalSubmitError,
+    evaluasiSubmitError,
+    clearEvaluasiSubmitError,
   };
 }

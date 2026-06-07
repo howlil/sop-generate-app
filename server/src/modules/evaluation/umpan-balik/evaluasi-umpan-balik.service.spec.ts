@@ -35,14 +35,13 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
 
   describe('Validasi Hak Akses (RBAC & OPD)', () => {
     it('seharusnya menolak akses (Forbidden) jika peran pengguna bukan PENYUSUN, PJ_PENYUSUN, atau KEPALA_OPD', async () => {
-      const deniedRoles = [
-        PeranPengguna.EVALUATOR,
-        PeranPengguna.PJ_EVALUATOR,
-      ];
-      
+      const deniedRoles = [PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR];
+
       for (const peran of deniedRoles) {
         const user: JwtAccessPayload = { sub: 'u-1', email: 'e@x.id', peran };
-        await expect(service.getUmpanBalikForDetail(user, 'detail-1')).rejects.toThrow(ForbiddenException);
+        await expect(service.getUmpanBalikForDetail(user, 'detail-1')).rejects.toThrow(
+          ForbiddenException,
+        );
       }
       expect(pengajuanRepoMock.findOpdIdPengguna).not.toHaveBeenCalled();
     });
@@ -53,9 +52,9 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
         PeranPengguna.PJ_PENYUSUN,
         PeranPengguna.KEPALA_OPD,
       ];
-      
+
       nilaiServiceMock.findUmpanBalikForDetail.mockResolvedValue(null);
-      
+
       for (const peran of allowedRoles) {
         const user: JwtAccessPayload = { sub: 'u-1', email: 'e@x.id', peran };
         const result = await service.getUmpanBalikForDetail(user, 'detail-1');
@@ -65,17 +64,23 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
 
     it('seharusnya melempar ForbiddenException jika OPD pengguna tidak terdaftar di database', async () => {
       pengajuanRepoMock.findOpdIdPengguna.mockResolvedValue(null);
-      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(ForbiddenException);
+      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('seharusnya melempar NotFoundException jika Detail SOP tidak ada di database', async () => {
       nilaiServiceMock.findOpdIdByDetailSopId.mockResolvedValue(null);
-      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(NotFoundException);
+      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('seharusnya melempar ForbiddenException jika Detail SOP berada di instansi (OPD) yang berbeda dengan milik pengguna', async () => {
       nilaiServiceMock.findOpdIdByDetailSopId.mockResolvedValue('opd-lain');
-      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(ForbiddenException);
+      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -100,7 +105,7 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
       });
 
       const actual = await service.getUmpanBalikForDetail(penyusunUser, 'detail-1');
-      
+
       expect(actual?.hasil).toBe(HasilEvaluasi.PERLU_PERBAIKAN);
       expect(actual?.hasilLabel).toBeTruthy();
     });
@@ -133,7 +138,9 @@ describe('Pengujian EvaluasiUmpanBalikService', () => {
 
     it('seharusnya meneruskan error jika service di bawahnya gagal (Worst Case)', async () => {
       nilaiServiceMock.findUmpanBalikForDetail.mockRejectedValue(new Error('Koneksi terputus'));
-      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow('Koneksi terputus');
+      await expect(service.getUmpanBalikForDetail(penyusunUser, 'detail-1')).rejects.toThrow(
+        'Koneksi terputus',
+      );
     });
   });
 });

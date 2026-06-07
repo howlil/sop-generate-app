@@ -8,7 +8,7 @@ describe('Pengujian PengajuanEvaluasiRepository.buildWhere dari query', () => {
     const actual = repo.buildWhereFromQuery({
       status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
       statusIn: [
-        StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+        StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
         StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
       ],
     });
@@ -17,7 +17,7 @@ describe('Pengujian PengajuanEvaluasiRepository.buildWhere dari query', () => {
         {
           status: {
             in: [
-              StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+              StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
               StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
             ],
           },
@@ -29,10 +29,10 @@ describe('Pengujian PengajuanEvaluasiRepository.buildWhere dari query', () => {
   it('seharusnya memakai status tunggal ketika daftar status kosong', () => {
     const actual = repo.buildWhereFromQuery({
       statusIn: [],
-      status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+      status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
     });
     expect(actual).toEqual({
-      AND: [{ status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR }],
+      AND: [{ status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR }],
     });
   });
 });
@@ -84,9 +84,7 @@ describe('Pengujian repairPengesahanKepalaOpdStatusJikaDokumenSudahSigned', () =
           ],
         }),
       },
-      $transaction: jest.fn((callback: (transactionClient: typeof tx) => unknown) =>
-        callback(tx),
-      ),
+      $transaction: jest.fn((callback: (transactionClient: typeof tx) => unknown) => callback(tx)),
     };
     const repository = new PengajuanEvaluasiRepository(prisma as never);
 

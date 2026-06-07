@@ -63,7 +63,7 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
     },
     {
       to: ROUTES.PENYUSUN.PELAKSANA,
-      label: "Kelola Pelaksana SOP",
+      label: "Manajemen Pelaksana SOP",
       icon: UserCog,
     },
     {
@@ -80,7 +80,7 @@ const SIDEBAR_ITEMS: Record<RoleKey, SidebarItem[]> = {
     },
     {
       to: ROUTES.PENYUSUN.PELAKSANA,
-      label: "Kelola Pelaksana SOP",
+      label: "Manajemen Pelaksana SOP",
       icon: UserCog,
     },
     {

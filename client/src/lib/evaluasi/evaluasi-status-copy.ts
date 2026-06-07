@@ -20,7 +20,7 @@ export function getEvaluasiStatusBanner(
           variant: 'info',
           title: 'Penilaian sedang berlangsung',
           message:
-            'Lengkapi penilaian setiap SOP. Setelah semua Sesuai, ajukan hasil ke PJ Evaluator.',
+            'Lengkapi penilaian setiap SOP. Setelah semua Sesuai, ajukan tanda tangan Berita Acara ke PJ Evaluator.',
         }
       }
       return {
@@ -32,28 +32,28 @@ export function getEvaluasiStatusBanner(
       if (role === 'PJ_EVALUATOR') {
         return {
           variant: 'warning',
-          title: 'Menunggu verifikasi BA',
-          message: 'Tim evaluator menyelesaikan penilaian. Verifikasi dan tanda tangani Berita Acara.',
+          title: 'Menunggu tanda tangan BA',
+          message: 'Tim evaluator menyelesaikan penilaian. Tanda tangani Berita Acara.',
         }
       }
       return {
         variant: 'info',
-        title: 'Menunggu verifikasi BA',
-        message: 'Penilaian tim selesai. PJ Evaluator akan memverifikasi Berita Acara.',
+        title: 'Menunggu tanda tangan BA',
+        message: 'Penilaian tim selesai. PJ Evaluator akan menandatangani Berita Acara.',
       }
-    case 'DIVERIFIKASI_PJ_EVALUATOR':
+    case 'DITANDATANGANI_PJ_EVALUATOR':
       if (role === 'PJ_PENYUSUN') {
         return {
           variant: 'warning',
           title: 'Tanda tangani Berita Acara',
           message:
-            'BA sudah diverifikasi biro. Tanda tangani BA, lalu Kepala OPD mengesahkan setiap SOP agar berstatus Berlaku.',
+            'BA sudah ditandatangani PJ Evaluator. Tanda tangani BA, lalu Kepala OPD mengesahkan setiap SOP agar berstatus Berlaku.',
         }
       }
       return {
         variant: 'success',
-        title: 'BA diverifikasi PJ Evaluator',
-        message: 'PJ Penyusun dapat melanjutkan verifikasi BA. Setelah itu Kepala OPD mengesahkan SOP.',
+        title: 'BA ditandatangani PJ Evaluator',
+        message: 'PJ Penyusun dapat melanjutkan tanda tangan BA. Setelah itu Kepala OPD mengesahkan SOP.',
       }
     case 'DITANDATANGANI_PJ_PENYUSUN':
       if (role === 'KEPALA_OPD') {

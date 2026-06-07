@@ -31,8 +31,6 @@ import type {
   ArrowConfig,
   LabelConfig,
 } from "../core/sopDiagramTypes";
-import { SOP_BEFORE_PRINT_EVENT } from "@/lib/print/sop-print-events";
-import { useSopDiagramPrintReadyDispatch } from "../hooks/use-sop-diagram-print-ready-dispatch";
 import { applyUsedSidePayload } from "../core/route/shared/used-side-usage.util";
 
 import { SOP_DOCUMENT_CONTENT_WRAPPER_CLASS } from "../layout/sopDocumentLayout";
@@ -467,10 +465,8 @@ export function BpmnPage({
       measureBpmnContainerSize();
     };
     window.addEventListener("beforeprint", onBeforePrint);
-    window.addEventListener(SOP_BEFORE_PRINT_EVENT, onBeforePrint);
     return () => {
       window.removeEventListener("beforeprint", onBeforePrint);
-      window.removeEventListener(SOP_BEFORE_PRINT_EVENT, onBeforePrint);
     };
   }, [measureBpmnContainerSize]);
 
@@ -584,13 +580,6 @@ export function BpmnPage({
     routerLaneLayout != null &&
     bpmnConnections.length > 0 &&
     (arrowOverlayWidth > 0 || arrowOverlayHeight > 0);
-
-  useSopDiagramPrintReadyDispatch(
-    containerId,
-    arrowsReady && layoutMeasured,
-    routableConnectionCount,
-    arrowRerouteVersion,
-  );
 
   const effectiveArrowConfig = useMemo(
     () => arrowConfig ?? {},

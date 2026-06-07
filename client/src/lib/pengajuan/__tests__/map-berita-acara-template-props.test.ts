@@ -50,6 +50,18 @@ describe('mapBeritaAcaraTemplateProps', () => {
     expect(actual.namaBiro).toBe('PJ dari tim')
   })
 
+  it('should_use_baView_namaOpd_when_pengajuan_has_no_opd_fields', () => {
+    const actual = mapBeritaAcaraTemplateProps({
+      pengajuan: {
+        nomorBA: 'PG-99',
+        namaPjPenyusun: 'Budi Penyusun',
+      },
+      baView,
+    })
+    expect(actual.opd).toBe('Dinas dari BA')
+    expect(actual.namaPjPenyusun).toBe('Budi Penyusun')
+  })
+
   it('should_apply_overrides_after_defaults', () => {
     const actual = mapBeritaAcaraTemplateProps({
       pengajuan: {

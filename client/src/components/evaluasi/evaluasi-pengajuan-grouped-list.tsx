@@ -30,8 +30,8 @@ export interface EvaluasiPengajuanGroupedListProps {
 }
 
 function labelJenis(jenis: string): string {
-  if (jenis === 'TERJADWAL') return 'Terjadwal'
-  if (jenis === 'MANDIRI') return 'Mandiri'
+  if (jenis === 'EVALUASI_REQUEST_EVALUATOR') return 'Request Evaluator'
+  if (jenis === 'EVALUASI_REQUEST_OPD') return 'Request OPD'
   return jenis
 }
 

@@ -1,4 +1,9 @@
-import { HasilEvaluasi, StatusPengajuanEvaluasi, StatusSOP, StatusTindakLanjut } from '../../generated/prisma';
+import {
+  HasilEvaluasi,
+  StatusPengajuanEvaluasi,
+  StatusSOP,
+  StatusTindakLanjut,
+} from '../../generated/prisma';
 import {
   displayHasilEvaluasi,
   displayStatusPengajuan,
@@ -22,6 +27,15 @@ describe('Pengujian displayStatusSop', () => {
     expect(actual.value).toBe('STATUS_GAIB');
   });
 
+  it('seharusnya memetakan status SOP rename ke label baru', () => {
+    expect(displayStatusSop(StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI).label).toBe(
+      'Menunggu pengajuan evaluasi',
+    );
+    expect(displayStatusSop(StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR).label).toBe(
+      'Menunggu TTD PJ Evaluator',
+    );
+  });
+
   it('seharusnya menangani input kosong / null dengan string fallback (Edge Case)', () => {
     const actual = displayStatusSop(null as any);
     expect(actual.label).toBe('Status tidak dikenal');
@@ -38,9 +52,9 @@ describe('Pengujian displayStatusPengajuan', () => {
     }
   });
 
-  it('seharusnya memetakan DIVERIFIKASI_PJ_EVALUATOR menjadi BA diverifikasi PJ Evaluator', () => {
-    expect(displayStatusPengajuan(StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR).label).toBe(
-      'BA diverifikasi PJ Evaluator',
+  it('seharusnya memetakan DITANDATANGANI_PJ_EVALUATOR menjadi BA ditandatangani PJ Evaluator', () => {
+    expect(displayStatusPengajuan(StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR).label).toBe(
+      'BA ditandatangani PJ Evaluator',
     );
   });
 
@@ -82,14 +96,16 @@ describe('Pengujian displayStatusTindakLanjut', () => {
   });
 
   it('seharusnya memetakan nilai Enum yang valid', () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(displayStatusTindakLanjut(StatusTindakLanjut.TERBUKA)!.label).toBe('Menunggu tindak lanjut OPD');
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(displayStatusTindakLanjut(StatusTindakLanjut.TERBUKA)!.label).toBe(
+      'Menunggu tindak lanjut OPD',
+    );
+
     expect(displayStatusTindakLanjut(StatusTindakLanjut.SELESAI)!.label).toBe('Siap dinilai ulang');
   });
 
   it('seharusnya menggunakan label fallback ketika nilai tidak dikenal (False Case)', () => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(displayStatusTindakLanjut('TIDAK_JELAS')!.label).toBe('Status tindak lanjut tidak dikenal');
+    expect(displayStatusTindakLanjut('TIDAK_JELAS')!.label).toBe(
+      'Status tindak lanjut tidak dikenal',
+    );
   });
 });

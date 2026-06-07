@@ -1,6 +1,6 @@
 import type { ProsedurRow } from '@/types/ui/sop'
 
-export function resolveLegacyPelaksanaMappingId(
+export function resolvePelaksanaMappingId(
   mapping: Record<string, string> | undefined,
 ): string {
   if (!mapping) return ''
@@ -11,7 +11,7 @@ export function resolveLegacyPelaksanaMappingId(
 export function resolveProsedurPelaksanaId(row: ProsedurRow): string {
   const fromField = typeof row.pelaksana === 'string' ? row.pelaksana.trim() : ''
   if (fromField.length > 0) return fromField
-  return resolveLegacyPelaksanaMappingId(row.pelaksanaMapping)
+  return resolvePelaksanaMappingId(row.pelaksanaMapping)
 }
 
 export function resolveProsedurPelaksanaIdOrFallback(

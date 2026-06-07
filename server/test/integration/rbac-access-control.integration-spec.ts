@@ -48,10 +48,7 @@ async function seedUser(
 
 async function loginAgent(app: INestApplication, email: string): Promise<Agent> {
   const agent = request.agent(app.getHttpServer());
-  const res = await agent
-    .post(`${API}/auth/login`)
-    .send({ email, password: PASSWORD })
-    .expect(201);
+  const res = await agent.post(`${API}/auth/login`).send({ email, password: PASSWORD }).expect(201);
   const raw = res.headers['set-cookie'];
   const arr = Array.isArray(raw) ? raw : raw ? [raw] : [];
   if (arr.length > 0) {
@@ -93,12 +90,48 @@ describeIntegration('RBAC Access Control — enforcement peran di seluruh endpoi
     opdAId = opdA.opdId;
     opdBId = opdB.opdId;
 
-    await seedUser(prisma, { email: 'pj-ev.rbac@example.test', nama: 'PJ Evaluator RBAC', nip: 'RBAC-PJE-001', peran: PeranPengguna.PJ_EVALUATOR, opdId: opdAId });
-    await seedUser(prisma, { email: 'ev.rbac@example.test', nama: 'Evaluator RBAC', nip: 'RBAC-EV-001', peran: PeranPengguna.EVALUATOR, opdId: opdAId });
-    await seedUser(prisma, { email: 'pjp.rbac@example.test', nama: 'PJ Penyusun RBAC', nip: 'RBAC-PJP-001', peran: PeranPengguna.PJ_PENYUSUN, opdId: opdAId });
-    await seedUser(prisma, { email: 'pen.rbac@example.test', nama: 'Penyusun RBAC', nip: 'RBAC-PEN-001', peran: PeranPengguna.PENYUSUN, opdId: opdAId });
-    await seedUser(prisma, { email: 'kepala.rbac@example.test', nama: 'Kepala OPD A RBAC', nip: 'RBAC-KA-001', peran: PeranPengguna.KEPALA_OPD, opdId: opdAId });
-    await seedUser(prisma, { email: 'kepala-b.rbac@example.test', nama: 'Kepala OPD B RBAC', nip: 'RBAC-KB-001', peran: PeranPengguna.KEPALA_OPD, opdId: opdBId });
+    await seedUser(prisma, {
+      email: 'pj-ev.rbac@example.test',
+      nama: 'PJ Evaluator RBAC',
+      nip: 'RBAC-PJE-001',
+      peran: PeranPengguna.PJ_EVALUATOR,
+      opdId: opdAId,
+    });
+    await seedUser(prisma, {
+      email: 'ev.rbac@example.test',
+      nama: 'Evaluator RBAC',
+      nip: 'RBAC-EV-001',
+      peran: PeranPengguna.EVALUATOR,
+      opdId: opdAId,
+    });
+    await seedUser(prisma, {
+      email: 'pjp.rbac@example.test',
+      nama: 'PJ Penyusun RBAC',
+      nip: 'RBAC-PJP-001',
+      peran: PeranPengguna.PJ_PENYUSUN,
+      opdId: opdAId,
+    });
+    await seedUser(prisma, {
+      email: 'pen.rbac@example.test',
+      nama: 'Penyusun RBAC',
+      nip: 'RBAC-PEN-001',
+      peran: PeranPengguna.PENYUSUN,
+      opdId: opdAId,
+    });
+    await seedUser(prisma, {
+      email: 'kepala.rbac@example.test',
+      nama: 'Kepala OPD A RBAC',
+      nip: 'RBAC-KA-001',
+      peran: PeranPengguna.KEPALA_OPD,
+      opdId: opdAId,
+    });
+    await seedUser(prisma, {
+      email: 'kepala-b.rbac@example.test',
+      nama: 'Kepala OPD B RBAC',
+      nip: 'RBAC-KB-001',
+      peran: PeranPengguna.KEPALA_OPD,
+      opdId: opdBId,
+    });
 
     pjEvaluatorAgent = await loginAgent(app, 'pj-ev.rbac@example.test');
     evaluatorAgent = await loginAgent(app, 'ev.rbac@example.test');
@@ -210,10 +243,7 @@ describeIntegration('RBAC Access Control — enforcement peran di seluruh endpoi
     });
 
     it('POST /opd → 403 (hanya PJ_EVALUATOR)', async () => {
-      await pjPenyusunAgent
-        .post(`${API}/opd`)
-        .send({ nama: 'OPD Ilegal' })
-        .expect(403);
+      await pjPenyusunAgent.post(`${API}/opd`).send({ nama: 'OPD Ilegal' }).expect(403);
     });
 
     it('GET /evaluator → 403', async () => {
@@ -237,7 +267,7 @@ describeIntegration('RBAC Access Control — enforcement peran di seluruh endpoi
     it('POST /evaluasi → 403 (hanya PJ_PENYUSUN yang boleh buat pengajuan)', async () => {
       await penyusunAgent
         .post(`${API}/evaluasi`)
-        .send({ jenis: 'MANDIRI', sopDetailIds: [] })
+        .send({ jenis: 'EVALUASI_REQUEST_OPD', sopDetailIds: [] })
         .expect(403);
     });
 

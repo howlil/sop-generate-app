@@ -4,13 +4,13 @@ import {
   displayStatusSop,
   displayStatusTindakLanjut,
 } from '../../../common/status/status-display';
-import { StatusPengajuanEvaluasi } from '../../../generated/prisma';
+import { PeranPengguna, StatusPengajuanEvaluasi } from '../../../generated/prisma';
 import { encodeLogNilaiEvaluasiClientId } from '../nilai/log-nilai-evaluasi-client-id';
 import { buildNilaiEvaluasiClientId } from '../nilai/nilai-evaluasi-client-id';
 import type { PengajuanEvaluasiDetailRow } from './pengajuan-evaluasi.repository';
 
 const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
-  StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
   StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
   StatusPengajuanEvaluasi.SELESAI,
 ]);
@@ -18,8 +18,13 @@ const STATUS_PENGAJUAN_SUDAH_DIVERIFIKASI = new Set<StatusPengajuanEvaluasi>([
 /** Muatan data selaras kebutuhan klien (`PengajuanEvaluasi` di `evaluasi.dto.ts`). */
 export type PengajuanEvaluasiApiPayload = Record<string, unknown>;
 
+export function shouldOmitOpdFieldsForViewer(viewerPeran?: string): boolean {
+  return viewerPeran === PeranPengguna.PJ_PENYUSUN;
+}
+
 export function mapPengajuanEvaluasiRow(
   row: PengajuanEvaluasiDetailRow,
+  viewerPeran?: string,
 ): PengajuanEvaluasiApiPayload {
   const dokBa = row.dokumenTte[0];
   const nomorBA =
@@ -88,10 +93,9 @@ export function mapPengajuanEvaluasiRow(
     ? row.updatedAt.toISOString()
     : undefined;
   const statusDisplay = displayStatusPengajuan(row.status);
-  return {
+  const omitOpdFields = shouldOmitOpdFieldsForViewer(viewerPeran);
+  const payload: PengajuanEvaluasiApiPayload = {
     id: row.pengajuanEvaluasiId,
-    opdId: row.opdId,
-    opdNama: row.opd.nama,
     jenis: String(row.jenis),
     status: statusDisplay.value,
     statusLabel: statusDisplay.label,
@@ -100,7 +104,6 @@ export function mapPengajuanEvaluasiRow(
     tanggalEvaluasi: row.tanggalEvaluasi?.toISOString(),
     tanggalVerifikasi,
     namaBiro: undefined,
-    nilaiOPD: row.nilaiOPD ?? undefined,
     diverifikasiOlehUserId: row.diverifikasiOlehUserId ?? undefined,
     namaPjEvaluator: row.diverifikasiOlehUser?.nama ?? row.diselesaikanOleh?.nama ?? undefined,
     ditandatanganiOlehPjPenyusunUserId: row.ditandatanganiOlehPjPenyusunUserId ?? undefined,
@@ -111,7 +114,6 @@ export function mapPengajuanEvaluasiRow(
       row.diselesaikanOleh !== null && row.diselesaikanOleh !== undefined
         ? { id: row.diselesaikanOleh.penggunaId, nama: row.diselesaikanOleh.nama }
         : undefined,
-    opd: { id: row.opd.opdId, nama: row.opd.nama },
     timEvaluasi: row.diselesaikanOleh?.nama ?? '',
     tanggalDiselesaikan: row.tanggalDiselesaikan?.toISOString(),
     sopList,
@@ -121,4 +123,11 @@ export function mapPengajuanEvaluasiRow(
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
+  if (!omitOpdFields) {
+    payload.opdId = row.opdId;
+    payload.opdNama = row.opd.nama;
+    payload.nilaiOPD = row.nilaiOPD ?? undefined;
+    payload.opd = { id: row.opd.opdId, nama: row.opd.nama };
+  }
+  return payload;
 }

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/config/query-keys";
 import { useMutationWithToast } from "@/hooks/useMutationWithToast";
 import { evaluasiApi } from "@/api/evaluasi-client";
-import { mapEvaluasiShellToLegacyPengajuan } from "@/lib/evaluasi/evaluasi-mappers";
+import { mapEvaluasiShellToPengajuan } from "@/lib/evaluasi/evaluasi-mappers";
 import {
   SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
   SOP_EVALUASI_WORKFLOW_REFRESH_OPTIONS,
@@ -179,11 +179,11 @@ export function usePengajuanEvaluasiDetail(pengajuanId?: string) {
   })
 
   const pengajuan = useMemo(
-    () => (shell ? mapEvaluasiShellToLegacyPengajuan(shell) : null),
+    () => (shell ? mapEvaluasiShellToPengajuan(shell) : null),
     [shell],
   )
 
-  const isVerified = pengajuan?.status === 'DIVERIFIKASI_PJ_EVALUATOR'
+  const isVerified = pengajuan?.status === 'DITANDATANGANI_PJ_EVALUATOR'
   const canVerify = pengajuan?.status === 'SELESAI_DIEVALUASI'
 
   return {

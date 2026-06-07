@@ -57,7 +57,14 @@ export function DocumentPreviewTabs<TValue extends string = string>({
       </div>
 
       {tabs.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value} className={tab.contentClassName}>
+        <TabsContent
+          key={tab.value}
+          value={tab.value}
+          className={cn(
+            'mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden',
+            tab.contentClassName,
+          )}
+        >
           {tab.content}
         </TabsContent>
       ))}

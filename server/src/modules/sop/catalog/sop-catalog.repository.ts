@@ -1,8 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { TERMINAL_DETAIL_STATUSES } from '../../../common/status/sop-editable.util';
-import type { Prisma } from '../../../generated/prisma';
 import { PrismaService } from '../../../common/prisma/prisma.service';
-import { BagianSOP, JenisDokumenTte, PeranPengguna, StatusSOP } from '../../../generated/prisma';
+import {
+  BagianSOP,
+  HasilEvaluasi,
+  JenisDokumenTte,
+  PeranPengguna,
+  Prisma,
+  StatusPengajuanEvaluasi,
+  StatusSOP,
+  StatusTindakLanjut,
+} from '../../../generated/prisma';
 import { appendOrCreateLogSession } from '../collaboration/log-edit-session.helper';
 import {
   sopCatalogRepoFail,
@@ -567,18 +575,61 @@ export class SopCatalogRepository {
   }
 
   /**
-   * Transaksi: set SIAP_DIEVALUASI lalu DIAJUKAN_EVALUASI (kirim ulang setelah revisi evaluator).
+   * Transaksi: tutup tindak lanjut evaluasi lalu set REVISI_DARI_EVALUATOR -> SEDANG_DIEVALUASI.
    */
-  async transitionDetailSopRevisiToDiajukanEvaluasi(params: {
+  async transitionDetailSopRevisiToSedangDievaluasi(params: {
     detailSopId: string;
     userId: string;
   }): Promise<void> {
     const { detailSopId, userId } = params;
     await this.prisma.$transaction(async (tx) => {
+      const nilai = await tx.nilaiEvaluasi.findFirst({
+        where: {
+          detailSopId,
+          hasil: HasilEvaluasi.PERLU_PERBAIKAN,
+          pengajuanEvaluasi: {
+            status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
+          },
+        },
+        orderBy: { updatedAt: 'desc' },
+      });
+      if (nilai !== null && nilai.statusTindakLanjut !== StatusTindakLanjut.SELESAI) {
+        const sekarang = new Date();
+        await tx.logNilaiEvaluasi.create({
+          data: {
+            pengajuanEvaluasiId: nilai.pengajuanEvaluasiId,
+            detailSopId,
+            penggunaId: userId,
+            createdAt: sekarang,
+            hasilSebelum: nilai.hasil,
+            hasilSesudah: nilai.hasil,
+            catatanSebelum: nilai.catatan ?? null,
+            catatanSesudah: nilai.catatan ?? null,
+            statusTindakLanjutSebelum: nilai.statusTindakLanjut ?? null,
+            statusTindakLanjutSesudah: StatusTindakLanjut.SELESAI,
+            ditindaklanjutiOlehId: userId,
+            ditindaklanjutiPada: sekarang,
+          },
+        });
+        await tx.nilaiEvaluasi.update({
+          where: {
+            pengajuanEvaluasiId_detailSopId: {
+              pengajuanEvaluasiId: nilai.pengajuanEvaluasiId,
+              detailSopId,
+            },
+          },
+          data: {
+            statusTindakLanjut: StatusTindakLanjut.SELESAI,
+            ditindaklanjutiOlehId: userId,
+            ditindaklanjutiPada: sekarang,
+            version: { increment: 1 },
+          },
+        });
+      }
       await tx.detailSOP.update({
         where: { detailSopId },
         data: {
-          status: StatusSOP.SIAP_DIEVALUASI,
+          status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
           terakhirDieditOlehId: userId,
         },
       });
@@ -593,7 +644,7 @@ export class SopCatalogRepository {
       await tx.detailSOP.update({
         where: { detailSopId },
         data: {
-          status: StatusSOP.DIAJUKAN_EVALUASI,
+          status: StatusSOP.SEDANG_DIEVALUASI,
           terakhirDieditOlehId: userId,
         },
       });
@@ -1067,33 +1118,34 @@ export class SopCatalogRepository {
   }
 
   async deleteSopDraftAwal(detailSopId: string): Promise<SopCatalogRepoResult<void>> {
-    return this.prisma.$transaction(async (tx) => {
-      const row = await tx.detailSOP.findUnique({
-        where: { detailSopId },
-        select: {
-          sopId: true,
-          status: true,
-          versi: true,
-          revisiDariDetailSopId: true,
-          sop: { select: { _count: { select: { detailSops: true } } } },
-        },
-      });
-      if (row === null) {
-        return sopCatalogRepoFail('NOT_FOUND', 'DetailSOP tidak ditemukan');
-      }
-      if (
-        row.status !== StatusSOP.DRAFT ||
-        row.versi !== 1 ||
-        row.revisiDariDetailSopId !== null ||
-        row.sop._count.detailSops !== 1
-      ) {
-        return sopCatalogRepoFail(
-          'CONFLICT',
-          'SOP hanya dapat dihapus ketika masih berupa draft awal dan belum memiliki versi lain',
-        );
-      }
-      await tx.sOP.delete({ where: { sopId: row.sopId } });
-      return sopCatalogRepoOk(undefined);
+    const row = await this.prisma.detailSOP.findUnique({
+      where: { detailSopId },
+      select: {
+        sopId: true,
+        status: true,
+        versi: true,
+        revisiDariDetailSopId: true,
+        sop: { select: { _count: { select: { detailSops: true } } } },
+      },
     });
+    if (row === null) {
+      return sopCatalogRepoFail('NOT_FOUND', 'DetailSOP tidak ditemukan');
+    }
+    if (
+      row.status !== StatusSOP.DRAFT ||
+      row.versi !== 1 ||
+      row.revisiDariDetailSopId !== null ||
+      row.sop._count.detailSops !== 1
+    ) {
+      return sopCatalogRepoFail(
+        'CONFLICT',
+        'SOP hanya dapat dihapus ketika masih berupa draft awal dan belum memiliki versi lain',
+      );
+    }
+    await this.prisma.$transaction(async (tx) => {
+      await tx.detailSOP.delete({ where: { detailSopId } });
+      await tx.sOP.delete({ where: { sopId: row.sopId } });
+    });
+    return sopCatalogRepoOk(undefined);
   }
 }

@@ -44,7 +44,7 @@ describe('Pengujian extractDbInvariantMessage', () => {
     const err1: any = { message: 'not interesting' };
     const err2: any = { message: 'also not interesting', cause: err1 };
     err1.cause = err2; // circular!
-    
+
     expect(extractDbInvariantMessage(err1)).toBeNull(); // Should safely terminate
   });
 
@@ -53,9 +53,9 @@ describe('Pengujian extractDbInvariantMessage', () => {
       name: 'OuterError',
       cause: {
         error: {
-          originalMessage: '   SOP terkait ditemukan secara nested   '
-        }
-      }
+          originalMessage: '   SOP terkait ditemukan secara nested   ',
+        },
+      },
     };
     expect(extractDbInvariantMessage(err)).toBe('SOP terkait ditemukan secara nested');
   });

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Activity, FileText, Building2, PanelsTopLeft, Lock, Unlock } from "lucide-react";
+import { Activity, Check, CornerUpLeft, FileText, Building2, PanelsTopLeft, Unlock } from "lucide-react";
 import { FormField } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -60,7 +60,7 @@ interface DetailEvaluasiOpdFormProps {
 }
 
 export interface DetailEvaluasiOPDFormPanelProps {
-  /** false untuk pengajuan MANDIRI — tanpa tab Evaluasi OPD. */
+  /** false untuk pengajuan EVALUASI_REQUEST_OPD — tanpa tab Evaluasi OPD. */
   penilaianOpdDiizinkan?: boolean;
   panelState: DetailEvaluasiPanelStateProps;
   sopForm: DetailEvaluasiSopFormProps;
@@ -71,6 +71,12 @@ function labelHasilRiwayat(hasil: string | null | undefined): string {
   if (hasil === "SESUAI") return "Sesuai";
   if (hasil === "PERLU_PERBAIKAN") return "Perlu Perbaikan";
   return hasil ?? "—";
+}
+
+function labelSimpanHasilEvaluasi(hasil: StatusHasilEvaluasi | null): string {
+  if (hasil === STATUS_HASIL_EVALUASI.SESUAI) return "Tandai Sesuai";
+  if (hasil === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN) return "Ajukan Perbaikan";
+  return "Simpan Hasil Evaluasi";
 }
 
 export function DetailEvaluasiOPDFormPanel({
@@ -215,7 +221,7 @@ export function DetailEvaluasiOPDFormPanel({
                         )}
                       </div>
                       <Button variant="outline" size="sm" className="w-full text-xs h-8 gap-1.5" onClick={() => setIsLockedSopForm(false)}>
-                        <Unlock className="w-3.5 h-3.5" /> Buka Kunci Edit
+                        <Unlock className="w-3.5 h-3.5" /> Ubah Penilaian
                       </Button>
                     </div>
                   ) : (
@@ -228,14 +234,13 @@ export function DetailEvaluasiOPDFormPanel({
                             sopForm.setKomentarEvaluasi("");
                           }
                         }}
-                        komentarTrim={sopForm.komentarEvaluasi?.trim() ?? ""}
                       />
                       {sopForm.statusEvaluasi ===
                         STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && (
-                        <FormField label="Catatan hasil evaluasi (formal)">
+                        <FormField label="Catatan" required>
                           <Textarea
                             className="text-xs min-h-[80px]"
-                            placeholder="Catatan untuk penyusun — wajib jika hasil Perlu Perbaikan; tersimpan sebagai catatan nilai evaluasi dan muncul sebagai umpan balik di panel penyusun."
+                            placeholder="Catatan untuk penyusun"
                             value={sopForm.komentarEvaluasi}
                             onChange={(e) =>
                               sopForm.setKomentarEvaluasi(e.target.value)
@@ -243,7 +248,6 @@ export function DetailEvaluasiOPDFormPanel({
                           />
                         </FormField>
                       )}
-                      
                       <div className="pt-2">
                         <Button 
                           size="sm" 
@@ -251,17 +255,17 @@ export function DetailEvaluasiOPDFormPanel({
                           onClick={() => setIsLockedSopForm(true)} 
                           disabled={!sopForm.statusEvaluasi || (sopForm.statusEvaluasi === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN && !sopForm.komentarEvaluasi.trim())}
                         >
-                          <Lock className="w-3.5 h-3.5" /> Selesai & Kunci Penilaian
+                          {sopForm.statusEvaluasi === STATUS_HASIL_EVALUASI.PERLU_PERBAIKAN ? (
+                            <CornerUpLeft className="w-3.5 h-3.5" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                          {labelSimpanHasilEvaluasi(sopForm.statusEvaluasi)}
                         </Button>
                       </div>
                     </>
                   )}
                 </div>
-                <p className="text-[11px] text-gray-500">
-                  {sopForm.tahapPenilaian === "tinjauan_ulang"
-                    ? "Pilih hasil penilaian ulang — perubahan disimpan otomatis setelah Anda memilih."
-                    : "Perubahan disimpan otomatis. Pastikan untuk menekan Selesai & Kunci jika sudah selesai mengisi."}
-                </p>
               </>
             )}
           </>

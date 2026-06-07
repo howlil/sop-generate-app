@@ -2,24 +2,51 @@
  * Reusable inline-editable list of strings (add, edit, remove).
  * Replaces the repeated pattern in DetailSOPMetadataPanel.
  */
-import { X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { AutoResizeTextarea } from '@/components/ui/auto-resize-textarea'
 import { Button } from '@/components/ui/button'
+import { FieldWithCornerRemoveButton } from '@/components/ui/field-with-corner-remove-button'
+
+interface AddItemIconButtonProps {
+  onClick: () => void
+  label?: string
+}
+
+/** Tombol tambah item berbentuk ikon + (konsisten di header kartu metadata SOP). */
+export function AddItemIconButton({
+  onClick,
+  label = 'Tambah',
+}: AddItemIconButtonProps) {
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      className="h-7 w-7 shrink-0"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+    >
+      <Plus className="h-3.5 w-3.5" />
+    </Button>
+  )
+}
 
 interface EditableStringListProps {
   items: string[]
   onChange: (next: string[]) => void
   placeholder?: string
   emptyMessage?: string
-  addLabel?: string
+  /** Sembunyikan tombol tambah bila parent menempatkannya di header kartu. */
+  showAddButton?: boolean
 }
 
 export function EditableStringList({
   items,
   onChange,
   placeholder = '',
-  emptyMessage = 'Belum ada item. Klik "Tambah" untuk menambahkan.',
-  addLabel = 'Tambah',
+  emptyMessage = 'Belum ada item. Gunakan tombol + di atas untuk menambahkan.',
+  showAddButton = true,
 }: EditableStringListProps) {
   const handleAdd = () => onChange([...items, ''])
 
@@ -35,32 +62,23 @@ export function EditableStringList({
 
   return (
     <>
-      <div className="flex justify-end">
-        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleAdd}>
-          {addLabel}
-        </Button>
-      </div>
-      <div className="space-y-2 mt-1.5">
+      {showAddButton ? (
+        <div className="flex justify-end">
+          <AddItemIconButton onClick={handleAdd} />
+        </div>
+      ) : null}
+      <div className={showAddButton ? 'space-y-2 mt-1.5' : 'space-y-2'}>
         {items.map((item, idx) => (
-          <div key={idx} className="flex items-start gap-2">
+          <FieldWithCornerRemoveButton key={idx} onRemove={() => handleRemove(idx)}>
             <AutoResizeTextarea
-              className="flex-1 min-h-9 py-1.5"
+              className="min-h-9 w-full py-1.5"
               minRows={1}
               maxRows={8}
               value={item}
               onChange={(e) => handleChange(idx, e.target.value)}
               placeholder={placeholder ? `${placeholder} ${idx + 1}` : undefined}
             />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 w-9 shrink-0 p-0 text-gray-500 hover:text-red-600"
-              onClick={() => handleRemove(idx)}
-              title="Hapus"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
+          </FieldWithCornerRemoveButton>
         ))}
         {items.length === 0 && (
           <p className="text-[11px] text-gray-500">{emptyMessage}</p>

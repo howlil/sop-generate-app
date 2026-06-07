@@ -6,11 +6,11 @@ import { STATUS_BADGE_COLORS_DEFAULT } from './status-badge.types'
 export const SOP_STATUS_BADGE_COLORS: Record<string, StatusBadgeColors> = {
   DRAFT: { color: 'text-gray-700', bgColor: 'bg-gray-100' },
   SEDANG_DISUSUN: { color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
-  SIAP_DIEVALUASI: { color: 'text-cyan-800', bgColor: 'bg-cyan-100' },
+  MENUNGGU_PENGAJUAN_EVALUASI: { color: 'text-cyan-800', bgColor: 'bg-cyan-100' },
   DIAJUKAN_EVALUASI: { color: 'text-blue-700', bgColor: 'bg-blue-100' },
   SEDANG_DIEVALUASI: { color: 'text-amber-800', bgColor: 'bg-amber-100' },
   REVISI_DARI_EVALUATOR: { color: 'text-orange-700', bgColor: 'bg-orange-100' },
-  SIAP_DIVERIFIKASI: { color: 'text-teal-800', bgColor: 'bg-teal-100' },
+  MENUNGGU_TTD_PJ_EVALUATOR: { color: 'text-teal-800', bgColor: 'bg-teal-100' },
   DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: {
     color: 'text-violet-800',
     bgColor: 'bg-violet-100',
@@ -23,15 +23,28 @@ export const SOP_STATUS_BADGE_COLORS: Record<string, StatusBadgeColors> = {
 const SOP_STATUS_FILTER_VALUES = [
   'DRAFT',
   'SEDANG_DISUSUN',
-  'SIAP_DIEVALUASI',
+  'MENUNGGU_PENGAJUAN_EVALUASI',
   'DIAJUKAN_EVALUASI',
   'SEDANG_DIEVALUASI',
   'REVISI_DARI_EVALUATOR',
-  'SIAP_DIVERIFIKASI',
+  'MENUNGGU_TTD_PJ_EVALUATOR',
   'DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI',
   'BERLAKU',
   'DICABUT',
 ] as const satisfies readonly StatusSOP[]
+
+const SOP_STATUS_FILTER_LABELS: Record<(typeof SOP_STATUS_FILTER_VALUES)[number], string> = {
+  DRAFT: 'Draft',
+  SEDANG_DISUSUN: 'Sedang disusun',
+  MENUNGGU_PENGAJUAN_EVALUASI: 'Menunggu pengajuan evaluasi',
+  DIAJUKAN_EVALUASI: 'Diajukan evaluasi',
+  SEDANG_DIEVALUASI: 'Dalam penilaian',
+  REVISI_DARI_EVALUATOR: 'Perlu revisi',
+  MENUNGGU_TTD_PJ_EVALUATOR: 'Menunggu TTD PJ Evaluator',
+  DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: 'Menunggu pengesahan Kepala OPD',
+  BERLAKU: 'Berlaku',
+  DICABUT: 'Dicabut',
+}
 
 export function getSopStatusColors(status: string): StatusBadgeColors {
   return SOP_STATUS_BADGE_COLORS[status] ?? STATUS_BADGE_COLORS_DEFAULT
@@ -42,6 +55,6 @@ export const SOP_STATUS_FILTER_OPTIONS = [
   { value: 'all' as const, label: 'Semua Status' },
   ...SOP_STATUS_FILTER_VALUES.map((value) => ({
     value,
-    label: value.replaceAll('_', ' '),
+    label: SOP_STATUS_FILTER_LABELS[value],
   })),
 ] as const

@@ -93,9 +93,9 @@ export class SopCatalogController {
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary:
-      'PJ Penyusun: kirim ulang ke evaluator setelah revisi (satu aksi: SIAP_DIEVALUASI lalu DIAJUKAN_EVALUASI dalam transaksi)',
+      'PJ Penyusun: kirim ulang ke evaluator setelah revisi (satu aksi: tutup tindak lanjut lalu SEDANG_DIEVALUASI)',
     description:
-      'Hanya PJ Penyusun. Untuk DetailSOP berstatus REVISI_DARI_EVALUATOR setelah perbaikan penyusun. Memvalidasi kelengkapan dokumen seperti tombol Selesai/Siap dievaluasi, lalu mengajukan kembali ke evaluator. Param :detailSopId boleh ID DetailSOP atau ID header SOP.',
+      'Hanya PJ Penyusun. Untuk DetailSOP berstatus REVISI_DARI_EVALUATOR setelah perbaikan penyusun. Memvalidasi kelengkapan dokumen seperti tombol Selesai/Menunggu pengajuan evaluasi, lalu mengajukan kembali ke evaluator. Param :detailSopId boleh ID DetailSOP atau ID header SOP.',
   })
   @ApiQuery({
     name: 'logsLimit',
@@ -119,7 +119,7 @@ export class SopCatalogController {
       logsLimit,
     );
     return {
-      message: 'SOP berhasil dikirim ulang ke evaluator',
+      message: 'SOP berhasil dikirim ulang evaluasi',
       success: true,
       data,
     };

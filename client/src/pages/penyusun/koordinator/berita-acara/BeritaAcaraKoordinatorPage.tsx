@@ -53,7 +53,7 @@ export function BeritaAcaraKoordinatorPage() {
                 rows: perluTindakan,
                 emptyTitle: 'Belum ada BA menunggu tanda tangan',
                 emptyDescription:
-                  'Berita Acara akan muncul setelah PJ Evaluator memverifikasi evaluasi.',
+                  'Berita Acara akan muncul setelah PJ Evaluator menandatangani evaluasi.',
               },
               {
                 value: 'riwayat',
@@ -65,16 +65,6 @@ export function BeritaAcaraKoordinatorPage() {
               },
             ]}
             columns={[
-              {
-                id: 'opd',
-                header: 'OPD',
-                className: 'max-w-[200px]',
-                render: (pengajuan) => (
-                  <span className="font-medium text-gray-900">
-                    {pengajuan.opdNama ?? pengajuan.opd?.nama ?? '-'}
-                  </span>
-                ),
-              },
               {
                 id: 'status',
                 header: 'Status',

@@ -8,12 +8,7 @@ import { TtePublicController } from './tte-public.controller';
 import { TteService } from './tte.service';
 
 @Module({
-  imports: [
-    TteSharedModule,
-    TteProfilModule,
-    TtePenandatangananModule,
-    TteVerifikasiModule,
-  ],
+  imports: [TteSharedModule, TteProfilModule, TtePenandatangananModule, TteVerifikasiModule],
   controllers: [TteController, TtePublicController],
   providers: [TteService],
   exports: [TteService],

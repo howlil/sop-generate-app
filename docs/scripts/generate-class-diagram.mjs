@@ -142,7 +142,7 @@ ey += Math.max(e1.totalH, e2.totalH, e3.totalH) + rowGap;
 
 const e4 = swimlane('SOP', 'SOP', 'entity', EX, ey, 280, ['- sopId: string', '- opdId: string', '- judul: string'], ['+ buatDraft()', '+ buatRevisi()']);
 const e5 = swimlane('DetailSOP', 'DetailSOP', 'entity', EX + 310, ey, 320, ['- detailSopId: string', '- sopId: string', '- nomorSOP: string', '- versi: number', '- status: StatusSOP'], ['+ ajukanEvaluasi()', '+ verifikasi()', '+ sahkan()', '+ cabut()']);
-const e6 = enumeration('StatusSOP', 'StatusSOP', EX + 660, ey, 280, ['DRAFT', 'SEDANG_DISUSUN', 'SIAP_DIEVALUASI', 'DIAJUKAN_EVALUASI', 'SEDANG_DIEVALUASI', 'REVISI_DARI_EVALUATOR', 'SIAP_DIVERIFIKASI', 'BERLAKU', 'DIGANTIKAN', 'DICABUT']);
+const e6 = enumeration('StatusSOP', 'StatusSOP', EX + 660, ey, 280, ['DRAFT', 'SEDANG_DISUSUN', 'MENUNGGU_PENGAJUAN_EVALUASI', 'DIAJUKAN_EVALUASI', 'SEDANG_DIEVALUASI', 'REVISI_DARI_EVALUATOR', 'MENUNGGU_TTD_PJ_EVALUATOR', 'DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI', 'BERLAKU', 'DIGANTIKAN', 'DICABUT']);
 const e7 = swimlane('Pelaksana', 'Pelaksana', 'entity', EX + 970, ey, 260, ['- pelaksanaId: string', '- opdId: string', '- nama: string'], ['+ ubahNama()']);
 cells += e4.xml + e5.xml + e6.xml + e7.xml;
 ey += Math.max(e4.totalH, e5.totalH, e6.totalH, e7.totalH) + rowGap;

@@ -2,8 +2,8 @@ import type { StatusPengajuanEvaluasi } from '@/types/dto/evaluasi.dto'
 
 export const EVALUASI_WORKFLOW_STEPS = [
   { id: 1, label: 'Penilaian tim' },
-  { id: 2, label: 'Verifikasi BA' },
-  { id: 3, label: 'TTE BA OPD' },
+  { id: 2, label: 'Tanda Tangan BA' },
+  { id: 3, label: 'Tanda Tangan BA OPD' },
   { id: 4, label: 'Pengesahan SOP' },
   { id: 5, label: 'Selesai' },
 ] as const
@@ -25,7 +25,7 @@ export function getEvaluasiWorkflowActiveStep(
       return 1
     case 'SELESAI_DIEVALUASI':
       return 2
-    case 'DIVERIFIKASI_PJ_EVALUATOR':
+    case 'DITANDATANGANI_PJ_EVALUATOR':
       return 3
     case 'DITANDATANGANI_PJ_PENYUSUN':
       return 4

@@ -1,4 +1,4 @@
-/** Skor evaluasi tingkat OPD (pengajuan TERJADWAL) — selaras `SelesaiEvaluasiDto` dan UI evaluator. */
+/** Skor evaluasi tingkat OPD (pengajuan EVALUASI_REQUEST_EVALUATOR) — selaras `SelesaiEvaluasiDto` dan UI evaluator. */
 export const NILAI_OPD_SKOR_MIN = 1;
 export const NILAI_OPD_SKOR_MAX = 5;
 

@@ -95,7 +95,7 @@ Catatan penting:
 | `PENYUSUN_A` | Pengguna dengan role `PENYUSUN` pada `OPD_A` |
 | `KEPALA_A` | Pengguna dengan role `KEPALA_OPD` pada `OPD_A` |
 | `SOP_DRAFT_A` | SOP milik `OPD_A` dengan status awal `DRAFT` |
-| `SOP_SIAP_A` | SOP milik `OPD_A` yang sudah lengkap dan berstatus `SIAP_DIEVALUASI` |
+| `SOP_SIAP_A` | SOP milik `OPD_A` yang sudah lengkap dan berstatus `MENUNGGU_PENGAJUAN_EVALUASI` |
 | `SOP_BERLAKU_A` | SOP milik `OPD_A` yang sudah disahkan dan berstatus `BERLAKU` |
 
 ## Strategi Assertion
@@ -125,11 +125,11 @@ Setiap integration test minimal memeriksa:
 | IT-09 | Critical | Penyusunan SOP | Penyusun mengisi header SOP lengkap | `PENYUSUN` | `PATCH /sop/header/:detailSopId` | Header, dasar hukum, lampiran, dan relasi SOP terkait tersimpan |
 | IT-10 | Critical | Penyusunan SOP | Penyusun mengisi prosedur/langkah SOP | `PENYUSUN` | `PATCH /sop/langkah/:detailSopId` | Swimlane pelaksana dan langkah SOP tersimpan sesuai urutan |
 | IT-11 | High | Penyusunan SOP | Penyusun mengatur diagram SOP | `PENYUSUN` | `PATCH /sop/diagram/:detailSopId` | Konfigurasi diagram dan path override tersimpan |
-| IT-12 | Critical | Validasi SOP | SOP belum lengkap ditandai siap dievaluasi | `PENYUSUN` | `PATCH /sop/status/:detailSopId` | Request ditolak, status SOP tetap belum siap |
-| IT-13 | Critical | Validasi SOP | SOP lengkap ditandai siap dievaluasi | `PENYUSUN` | `PATCH /sop/status/:detailSopId` | Status SOP berubah menjadi `SIAP_DIEVALUASI` |
+| IT-12 | Critical | Validasi SOP | SOP belum lengkap ditandai menunggu pengajuan evaluasi | `PENYUSUN` | `PATCH /sop/status/:detailSopId` | Request ditolak, status SOP tetap belum siap |
+| IT-13 | Critical | Validasi SOP | SOP lengkap ditandai menunggu pengajuan evaluasi | `PENYUSUN` | `PATCH /sop/status/:detailSopId` | Status SOP berubah menjadi `MENUNGGU_PENGAJUAN_EVALUASI` |
 | IT-14 | Critical | Pengajuan Evaluasi | Penyusun biasa mencoba mengajukan SOP ke evaluasi | `PENYUSUN` | `PATCH /sop/status/:detailSopId` atau `POST /evaluasi` | Request ditolak, hanya PJ Penyusun yang boleh mengajukan |
-| IT-15 | Critical | Pengajuan Evaluasi | PJ Penyusun membuat pengajuan evaluasi mandiri | `PJ_PENYUSUN` | `POST /evaluasi` | `PengajuanEvaluasi` dibuat, `NilaiEvaluasi` dibuat, status SOP menjadi `SEDANG_DIEVALUASI` |
-| IT-16 | Critical | Pengajuan Evaluasi | Pengajuan evaluasi dibuat untuk SOP yang belum `SIAP_DIEVALUASI` | `PJ_PENYUSUN` | `POST /evaluasi` | Request ditolak, tidak ada pengajuan atau nilai evaluasi tersimpan |
+| IT-15 | Critical | Pengajuan Evaluasi | PJ Penyusun membuat pengajuan evaluasi EVALUASI_REQUEST_OPD | `PJ_PENYUSUN` | `POST /evaluasi` | `PengajuanEvaluasi` dibuat, `NilaiEvaluasi` dibuat, status SOP menjadi `SEDANG_DIEVALUASI` |
+| IT-16 | Critical | Pengajuan Evaluasi | Pengajuan evaluasi dibuat untuk SOP yang belum `MENUNGGU_PENGAJUAN_EVALUASI` | `PJ_PENYUSUN` | `POST /evaluasi` | Request ditolak, tidak ada pengajuan atau nilai evaluasi tersimpan |
 | IT-17 | High | Pengajuan Evaluasi | PJ Penyusun hanya melihat pengajuan OPD sendiri | `PJ_PENYUSUN` | `GET /evaluasi` | Response hanya berisi pengajuan dari OPD pengguna |
 | IT-18 | High | Pengajuan Evaluasi | Evaluator melihat daftar pengajuan lintas OPD | `EVALUATOR` | `GET /evaluasi` | Response berisi daftar pengajuan yang dapat dievaluasi |
 | IT-19 | Critical | Evaluasi SOP | Evaluator memberi nilai `PERLU_PERBAIKAN` tanpa catatan | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/nilai/:detailSopId` | Request ditolak, nilai evaluasi tidak berubah |
@@ -140,12 +140,12 @@ Setiap integration test minimal memeriksa:
 | IT-24 | Critical | Revisi SOP | PJ Penyusun kirim ulang saat tindak lanjut masih terbuka | `PJ_PENYUSUN` | `POST /sop/penyusun-workbench/:detailSopId/kirim-ulang-evaluasi` | Request ditolak, SOP tidak dikirim ulang |
 | IT-25 | Critical | Revisi SOP | PJ Penyusun kirim ulang setelah revisi selesai | `PJ_PENYUSUN` | `POST /sop/penyusun-workbench/:detailSopId/kirim-ulang-evaluasi` | SOP kembali masuk alur evaluasi |
 | IT-26 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi ketika masih ada `PERLU_PERBAIKAN` | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Request ditolak, pengajuan tetap belum selesai |
-| IT-27 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi mandiri setelah semua SOP `SESUAI` | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Pengajuan menjadi `SELESAI_DIEVALUASI`, SOP menjadi `SIAP_DIVERIFIKASI`, `nilaiOPD` kosong |
-| IT-28 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi terjadwal tanpa nilai OPD | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Request ditolak karena `nilaiOPD` wajib |
-| IT-29 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi terjadwal dengan nilai OPD valid | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Pengajuan menjadi `SELESAI_DIEVALUASI`, `nilaiOPD` tersimpan |
+| IT-27 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi EVALUASI_REQUEST_OPD setelah semua SOP `SESUAI` | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Pengajuan menjadi `SELESAI_DIEVALUASI`, SOP menjadi `MENUNGGU_TTD_PJ_EVALUATOR`, `nilaiOPD` kosong |
+| IT-28 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi EVALUASI_REQUEST_EVALUATOR tanpa nilai OPD | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Request ditolak karena `nilaiOPD` wajib |
+| IT-29 | Critical | Penyelesaian Evaluasi | Evaluator menyelesaikan evaluasi EVALUASI_REQUEST_EVALUATOR dengan nilai OPD valid | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/selesai` | Pengajuan menjadi `SELESAI_DIEVALUASI`, `nilaiOPD` tersimpan |
 | IT-30 | Critical | TTE Profil | PJ Evaluator membuat PIN TTE pertama kali | `PJ_EVALUATOR` | `POST /tte/profil` | Hash PIN tersimpan pada data pengguna |
 | IT-31 | Critical | TTE BA | PJ Evaluator tanda tangan BA pada status salah | `PJ_EVALUATOR` | `POST /tte/tanda-tangani/ba/:pengajuanId` | Request ditolak, tidak ada riwayat tanda tangan |
-| IT-32 | Critical | TTE BA | PJ Evaluator tanda tangan BA pada status `SELESAI_DIEVALUASI` | `PJ_EVALUATOR` | `POST /tte/tanda-tangani/ba/:pengajuanId` | Dokumen TTE BA dan riwayat tanda tangan dibuat, pengajuan menjadi `DIVERIFIKASI_PJ_EVALUATOR` |
+| IT-32 | Critical | TTE BA | PJ Evaluator tanda tangan BA pada status `SELESAI_DIEVALUASI` | `PJ_EVALUATOR` | `POST /tte/tanda-tangani/ba/:pengajuanId` | Dokumen TTE BA dan riwayat tanda tangan dibuat, pengajuan menjadi `DITANDATANGANI_PJ_EVALUATOR` |
 | IT-33 | Critical | TTE BA | PJ Penyusun tanda tangan BA setelah PJ Evaluator | `PJ_PENYUSUN` | `POST /tte/tanda-tangani/ba/:pengajuanId` | Riwayat tanda tangan PJ Penyusun dibuat, pengajuan menjadi `DITANDATANGANI_PJ_PENYUSUN`, SOP menjadi `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI` |
 | IT-34 | Critical | TTE BA | PJ Penyusun dari OPD lain tanda tangan BA | `PJ_PENYUSUN` OPD lain | `POST /tte/tanda-tangani/ba/:pengajuanId` | Request ditolak karena OPD tidak sesuai |
 | IT-35 | Critical | TTE SOP | Kepala OPD tanda tangan semua SOP dalam pengajuan | `KEPALA_OPD` | `POST /tte/tanda-tangani/pengajuan/:pengajuanId/sop-semua` | Semua SOP menjadi `BERLAKU`, dokumen TTE SOP dibuat, pengajuan menjadi `SELESAI` |
@@ -165,7 +165,7 @@ Setiap integration test minimal memeriksa:
 | IT-49 | Critical | Konsistensi Data | Mengajukan evaluasi dengan sebagian DetailSOP valid dan sebagian tidak valid | `PJ_PENYUSUN` | `POST /evaluasi` | Transaksi dibatalkan seluruhnya, tidak ada pengajuan parsial |
 | IT-50 | Critical | Concurrency | Dua request mengubah status pengajuan/SOP secara bersamaan | Role sesuai skenario | Endpoint status/evaluasi/TTE | Salah satu request berhasil, request konflik ditolak, data akhir tetap konsisten |
 | IT-51 | Critical | Pengajuan Evaluasi | Membuat pengajuan saat masih ada pengajuan aktif/blocking pada OPD/SOP yang sama | `PJ_PENYUSUN` | `POST /evaluasi` | Request ditolak, tidak ada pengajuan aktif ganda |
-| IT-52 | Critical | Pengajuan Evaluasi | Pengajuan `MANDIRI` dibuat dengan payload `nilaiOPD` | `PJ_PENYUSUN`/`EVALUATOR` | `POST /evaluasi` atau `PATCH /evaluasi/:id/selesai` | Request ditolak karena evaluasi mandiri tidak memakai nilai OPD |
+| IT-52 | Critical | Pengajuan Evaluasi | Pengajuan `EVALUASI_REQUEST_OPD` dibuat dengan payload `nilaiOPD` | `PJ_PENYUSUN`/`EVALUATOR` | `POST /evaluasi` atau `PATCH /evaluasi/:id/selesai` | Request ditolak karena evaluasi EVALUASI_REQUEST_OPD tidak memakai nilai OPD |
 | IT-53 | Critical | Evaluasi SOP | Evaluator mengisi nilai saat pengajuan bukan `SEDANG_DIEVALUASI` | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/nilai/:detailSopId` | Request ditolak, nilai evaluasi tidak berubah |
 | IT-54 | Critical | Evaluasi SOP | Evaluator menilai DetailSOP yang bukan anggota pengajuan | `EVALUATOR` | `PATCH /evaluasi/:pengajuanId/nilai/:detailSopId` | Request ditolak, SOP luar pengajuan tidak dapat dinilai |
 | IT-55 | Critical | Revisi SOP | Kirim ulang revisi ketika SOP sudah tidak lengkap setelah diperbaiki | `PJ_PENYUSUN` | `POST /sop/penyusun-workbench/:detailSopId/kirim-ulang-evaluasi` | Request ditolak oleh validasi kelengkapan |
@@ -217,7 +217,7 @@ Test case IT-51 sampai IT-75 ditambahkan untuk menutup constraint bisnis yang ti
 | Constraint | Test Case |
 |---|---|
 | Tidak boleh ada pengajuan evaluasi aktif ganda untuk SOP/OPD yang sama | IT-51 |
-| Evaluasi `MANDIRI` tidak menggunakan nilai OPD, sedangkan evaluasi `TERJADWAL` wajib nilai OPD saat selesai | IT-28, IT-29, IT-52 |
+| Evaluasi `EVALUASI_REQUEST_OPD` tidak menggunakan nilai OPD, sedangkan evaluasi `EVALUASI_REQUEST_EVALUATOR` wajib nilai OPD saat selesai | IT-28, IT-29, IT-52 |
 | Evaluator hanya boleh menilai pengajuan aktif berstatus `SEDANG_DIEVALUASI` | IT-53 |
 | DetailSOP yang dinilai harus menjadi anggota pengajuan | IT-54 |
 | Kirim ulang revisi harus tetap melewati validasi kelengkapan SOP | IT-55 |
@@ -240,18 +240,18 @@ Test case IT-51 sampai IT-75 ditambahkan untuk menutup constraint bisnis yang ti
 
 ## Detail Skenario Kritis
 
-### IT-15: PJ Penyusun Membuat Pengajuan Evaluasi Mandiri
+### IT-15: PJ Penyusun Membuat Pengajuan Evaluasi EVALUASI_REQUEST_OPD
 
 Tujuan:
 Memastikan pengajuan evaluasi benar-benar membentuk data lintas tabel dan mengubah status SOP.
 
 Prakondisi:
 - User `PJ_PENYUSUN_A` sudah login.
-- `SOP_SIAP_A` lengkap dan berstatus `SIAP_DIEVALUASI`.
+- `SOP_SIAP_A` lengkap dan berstatus `MENUNGGU_PENGAJUAN_EVALUASI`.
 
 Langkah:
 1. Kirim request `POST /evaluasi`.
-2. Body berisi jenis pengajuan `MANDIRI` dan daftar `detailSopId`.
+2. Body berisi jenis pengajuan `EVALUASI_REQUEST_OPD` dan daftar `detailSopId`.
 3. Ambil response API.
 4. Query database untuk `PengajuanEvaluasi`, `NilaiEvaluasi`, dan `DetailSOP`.
 
@@ -259,7 +259,7 @@ Data/Input:
 
 ```json
 {
-  "jenis": "MANDIRI",
+  "jenis": "EVALUASI_REQUEST_OPD",
   "detailSopIds": ["<detailSopId>"]
 }
 ```
@@ -332,7 +332,7 @@ Prakondisi:
 - User `PJ_EVAL` sudah login.
 - User sudah memiliki PIN TTE.
 - Pengajuan berstatus `SELESAI_DIEVALUASI`.
-- Semua SOP dalam pengajuan sudah `SIAP_DIVERIFIKASI`.
+- Semua SOP dalam pengajuan sudah `MENUNGGU_TTD_PJ_EVALUATOR`.
 
 Langkah:
 1. Kirim request `POST /tte/tanda-tangani/ba/:pengajuanId`.
@@ -352,17 +352,17 @@ Expected result:
 - HTTP response sukses.
 - Dokumen TTE jenis `BERITA_ACARA_EVALUASI` terbentuk.
 - Riwayat tanda tangan PJ Evaluator tersimpan.
-- Pengajuan berubah menjadi `DIVERIFIKASI_PJ_EVALUATOR`.
+- Pengajuan berubah menjadi `DITANDATANGANI_PJ_EVALUATOR`.
 
 ### IT-33: PJ Penyusun Menandatangani Berita Acara
 
 Tujuan:
-Memastikan BA ditandatangani pihak OPD setelah diverifikasi PJ Evaluator.
+Memastikan BA ditandatangani pihak OPD setelah ditandatangani PJ Evaluator.
 
 Prakondisi:
 - User `PJ_PENYUSUN_A` sudah login.
 - User sudah memiliki PIN TTE.
-- Pengajuan berstatus `DIVERIFIKASI_PJ_EVALUATOR`.
+- Pengajuan berstatus `DITANDATANGANI_PJ_EVALUATOR`.
 - Pengajuan berasal dari OPD user.
 
 Langkah:
@@ -421,7 +421,7 @@ Alur berikut dapat dijadikan satu integration scenario besar, tetapi tetap sebai
 2. Buat SOP baru.
 3. Isi header SOP.
 4. Isi pelaksana dan langkah SOP.
-5. Tandai SOP menjadi `SIAP_DIEVALUASI`.
+5. Tandai SOP menjadi `MENUNGGU_PENGAJUAN_EVALUASI`.
 6. Login sebagai `PJ_PENYUSUN`.
 7. Buat pengajuan evaluasi.
 8. Login sebagai `EVALUATOR`.
@@ -450,7 +450,7 @@ Alur berikut dapat dijadikan satu integration scenario besar, tetapi tetap sebai
 | Akses lintas OPD bocor | IT-17, IT-34, IT-48, IT-68 |
 | Status SOP melompat tanpa validasi | IT-12, IT-13, IT-14, IT-16, IT-24, IT-36, IT-53, IT-62 |
 | Pengajuan evaluasi terbentuk sebagian atau ganda | IT-15, IT-16, IT-49, IT-51 |
-| Jenis evaluasi `MANDIRI`/`TERJADWAL` tidak konsisten dengan nilai OPD | IT-28, IT-29, IT-52 |
+| Jenis evaluasi `EVALUASI_REQUEST_OPD`/`EVALUASI_REQUEST_EVALUATOR` tidak konsisten dengan nilai OPD | IT-28, IT-29, IT-52 |
 | DetailSOP luar pengajuan dapat ikut dinilai | IT-54 |
 | Catatan revisi tidak tersimpan | IT-19, IT-20, IT-21 |
 | Revisi dikirim ulang sebelum selesai atau saat dokumen tidak lengkap | IT-23, IT-24, IT-25, IT-55 |

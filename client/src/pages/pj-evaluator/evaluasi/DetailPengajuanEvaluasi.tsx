@@ -59,7 +59,7 @@ export function DetailPengajuanEvaluasi() {
 
   const tandaTanganiBA = useTandaTanganiBA({
     successMessage:
-      "Verifikasi Berita Acara oleh PJ Evaluator berhasil. PJ Penyusun dapat melanjutkan verifikasi BA.",
+      "Tanda Tangan Berita Acara oleh PJ Evaluator berhasil. PJ Penyusun dapat melanjutkan tanda tangan BA.",
     suppressSetupRequiredToast: true,
   });
 
@@ -135,7 +135,7 @@ export function DetailPengajuanEvaluasi() {
 
   useDocumentTitle(
     pengajuan
-      ? `${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}`
+      ? `${IA.REQUEST_EVALUATOR_EVALUASI_OPD} — ${pengajuan.opdNama}`
       : undefined,
   );
 
@@ -166,12 +166,12 @@ export function DetailPengajuanEvaluasi() {
       <DetailPageLayout
         breadcrumb={[
           {
-            label: IA.NAV_BIRO_EVALUASI_TERJADWAL,
+            label: IA.NAV_BIRO_EVALUASI_REQUEST_EVALUATOR,
             to: ROUTES.PJ_EVALUATOR.EVALUASI,
           },
           { label: pengajuan.opdNama ?? "" },
         ]}
-        title={`${IA.TERJADWAL_EVALUASI_OPD} — ${pengajuan.opdNama}`}
+        title={`${IA.REQUEST_EVALUATOR_EVALUASI_OPD} — ${pengajuan.opdNama}`}
         description={`${IA.VERIFIKASI_BA_BIRO} pada dokumen ${IA.BERITA_ACARA}. Setelah ini: PJ Penyusun → ${IA.PENGESAHAN_SOP} oleh Kepala OPD.`}
         backTo={ROUTES.PJ_EVALUATOR.EVALUASI}
         backSize="icon"
@@ -198,7 +198,7 @@ export function DetailPengajuanEvaluasi() {
                     onClick={handleOpenTteDialog}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
-                    Verifikasi BA
+                    Tanda Tangan BA
                   </Button>
                 )}
               </div>
@@ -296,6 +296,7 @@ export function DetailPengajuanEvaluasi() {
           </CollapsibleSidePanel>
         }
       >
+        <div className="flex h-full min-h-0 min-w-0 flex-col">
         <DocumentPreviewTabs
           value={previewMainTab}
           onValueChange={setPreviewMainTab}
@@ -334,12 +335,13 @@ export function DetailPengajuanEvaluasi() {
             },
           ]}
         />
+        </div>
       </DetailPageLayout>
 
       <PinVerificationDialog
         open={tteDialogOpen}
         onOpenChange={setTteDialogOpen}
-        title="Verifikasi Berita Acara"
+        title="Tanda Tangan Berita Acara"
         onConfirm={handlePinConfirm}
       />
       <TteSetupRequiredDialog

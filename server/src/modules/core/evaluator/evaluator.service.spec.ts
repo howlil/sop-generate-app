@@ -1,5 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, ServiceUnavailableException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ServiceUnavailableException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import {
   BCRYPT_SALT_ROUNDS,
@@ -209,7 +214,7 @@ describe('Pengujian EvaluatorService', () => {
   it('seharusnya membersihkan spasi dan mengubah huruf email pada updateAnggota (Worst Case)', async () => {
     repository.existsEmailOtherThan = jest.fn().mockResolvedValue(false);
     repository.existsNipOtherThan = jest.fn().mockResolvedValue(false);
-    
+
     await service.updateAnggota('u-1', {
       email: '  BARU@test.com ',
       nama: '  Nama Baru ',
@@ -264,7 +269,9 @@ describe('Pengujian EvaluatorService', () => {
   // --- Tambahan Test Case softDeleteAnggota ---
   it('seharusnya melempar ServiceUnavailableException jika biro tidak ada pada softDeleteAnggota (False Case)', async () => {
     repository.findPjEvaluatorOrganisasiOpdId.mockResolvedValueOnce(null);
-    await expect(service.softDeleteAnggota('u-1')).rejects.toBeInstanceOf(ServiceUnavailableException);
+    await expect(service.softDeleteAnggota('u-1')).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
   });
 
   it('seharusnya melempar NotFoundException jika evaluator aktif tidak ditemukan pada softDeleteAnggota (False Case)', async () => {
@@ -278,24 +285,24 @@ describe('Pengujian EvaluatorService', () => {
   });
 
   // --- Tambahan Test Case Advanced (Edge & False Cases) ---
-  
+
   it('seharusnya tidak mengecek ke database jika email dan NIP yang dikirim sama dengan data lama (Edge Case)', async () => {
     await service.updateAnggota('u-1', {
       email: 'a@b.c',
-      nip: '1'
+      nip: '1',
     });
     expect(repository.existsEmailOtherThan).not.toHaveBeenCalled();
     expect(repository.existsNipOtherThan).not.toHaveBeenCalled();
     expect(repository.updateEvaluator).toHaveBeenCalledWith(
       'u-1',
-      expect.objectContaining({ email: 'a@b.c', nip: '1' })
+      expect.objectContaining({ email: 'a@b.c', nip: '1' }),
     );
   });
 
   it('seharusnya meneruskan error jika terjadi kegagalan sistem selain Prisma P2002 (False Case)', async () => {
     const genericError = new Error('Database Down');
     repository.createPengguna.mockRejectedValueOnce(genericError);
-    
+
     await expect(
       service.createAnggota({
         email: 'x@test.com',
@@ -316,10 +323,7 @@ describe('Pengujian EvaluatorService', () => {
 
   it('seharusnya hanya memperbarui satu field pada pembaruan parsial (Edge Case)', async () => {
     await service.updateAnggota('u-1', { nohp: '08123' });
-    expect(repository.updateEvaluator).toHaveBeenCalledWith(
-      'u-1',
-      { nohp: '08123' }
-    );
+    expect(repository.updateEvaluator).toHaveBeenCalledWith('u-1', { nohp: '08123' });
   });
 
   it('seharusnya mengonversi response DTO dengan benar saat deletedAt terisi (Edge Case)', async () => {
@@ -328,11 +332,16 @@ describe('Pengujian EvaluatorService', () => {
       ...baseRow,
       deletedAt: deleteDate,
     });
-    
+
     const res = await service.createAnggota({
-        email: 'e@test.com', nama: 'N', nip: 'n', jabatan: 'J', pangkat: 'P', nohp: '0'
+      email: 'e@test.com',
+      nama: 'N',
+      nip: 'n',
+      jabatan: 'J',
+      pangkat: 'P',
+      nohp: '0',
     });
-    
+
     expect(res.status).toBe('NONAKTIF');
     expect(res.berakhirPada).toEqual(deleteDate);
   });

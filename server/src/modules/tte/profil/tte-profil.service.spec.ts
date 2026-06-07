@@ -288,7 +288,9 @@ describe('Pengujian TteProfilService', () => {
         findPenggunaAktif: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service(repo).generateP12(user, { pin: '1234' })).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service(repo).generateP12(user, { pin: '1234' })).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('seharusnya membuat kredensial p12 untuk pengguna', async () => {
@@ -304,11 +306,13 @@ describe('Pengujian TteProfilService', () => {
 
       const actual = await service(repo).generateP12(user, { pin: '1234' });
 
-      expect(repo.updateKredensialP12).toHaveBeenCalledWith(expect.objectContaining({
-        userId: user.sub,
-        p12Base64: Buffer.from('dummy-p12').toString('base64'),
-        p12PassphraseEncrypted: 'encrypted-passphrase',
-      }));
+      expect(repo.updateKredensialP12).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: user.sub,
+          p12Base64: Buffer.from('dummy-p12').toString('base64'),
+          p12PassphraseEncrypted: 'encrypted-passphrase',
+        }),
+      );
       expect(actual.hasP12).toBe(true);
     });
   });
@@ -319,7 +323,13 @@ describe('Pengujian TteProfilService', () => {
         findPenggunaAktif: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(service(repo).uploadP12(user, { pin: '1234', p12Passphrase: 'pass' }, { buffer: Buffer.from('file') })).rejects.toBeInstanceOf(NotFoundException);
+      await expect(
+        service(repo).uploadP12(
+          user,
+          { pin: '1234', p12Passphrase: 'pass' },
+          { buffer: Buffer.from('file') },
+        ),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('seharusnya mengunggah dan menyimpan file p12', async () => {
@@ -333,7 +343,11 @@ describe('Pengujian TteProfilService', () => {
         }),
       });
 
-      const actual = await service(repo).uploadP12(user, { pin: '1234', p12Passphrase: 'pass' }, { buffer: Buffer.from('file') });
+      const actual = await service(repo).uploadP12(
+        user,
+        { pin: '1234', p12Passphrase: 'pass' },
+        { buffer: Buffer.from('file') },
+      );
 
       expect(repo.updateKredensialP12).toHaveBeenCalledWith({
         userId: user.sub,
@@ -343,5 +357,4 @@ describe('Pengujian TteProfilService', () => {
       expect(actual.hasP12).toBe(true);
     });
   });
-
 });

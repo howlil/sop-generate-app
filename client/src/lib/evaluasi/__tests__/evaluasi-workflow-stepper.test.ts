@@ -11,8 +11,8 @@ describe('getEvaluasiWorkflowActiveStep', () => {
   it('should_map_SELESAI_DIEVALUASI_to_step_2', () => {
     expect(getEvaluasiWorkflowActiveStep('SELESAI_DIEVALUASI')).toBe(2)
   })
-  it('should_map_DIVERIFIKASI_PJ_EVALUATOR_to_step_3', () => {
-    expect(getEvaluasiWorkflowActiveStep('DIVERIFIKASI_PJ_EVALUATOR')).toBe(3)
+  it('should_map_DITANDATANGANI_PJ_EVALUATOR_to_step_3', () => {
+    expect(getEvaluasiWorkflowActiveStep('DITANDATANGANI_PJ_EVALUATOR')).toBe(3)
   })
   it('should_map_DITANDATANGANI_PJ_PENYUSUN_to_step_4', () => {
     expect(getEvaluasiWorkflowActiveStep('DITANDATANGANI_PJ_PENYUSUN')).toBe(4)
@@ -24,7 +24,7 @@ describe('getEvaluasiWorkflowActiveStep', () => {
 
 describe('buildEvaluasiWorkflowSteps', () => {
   it('should_mark_prior_steps_done_when_pengajuan_at_step_3', () => {
-    const steps = buildEvaluasiWorkflowSteps('DIVERIFIKASI_PJ_EVALUATOR')
+    const steps = buildEvaluasiWorkflowSteps('DITANDATANGANI_PJ_EVALUATOR')
     expect(steps[0]?.state).toBe('done')
     expect(steps[1]?.state).toBe('done')
     expect(steps[2]?.state).toBe('current')

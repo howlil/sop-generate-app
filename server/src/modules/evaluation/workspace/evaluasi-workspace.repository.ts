@@ -11,13 +11,13 @@ const STATUS_PIPELINE_EVALUASI: readonly StatusSOP[] = [
   StatusSOP.DIAJUKAN_EVALUASI,
   StatusSOP.SEDANG_DIEVALUASI,
   StatusSOP.REVISI_DARI_EVALUATOR,
-  StatusSOP.SIAP_DIVERIFIKASI,
+  StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
 ] as const;
 
 const STATUS_PIPELINE_SET = new Set<string>(STATUS_PIPELINE_EVALUASI);
 const STATUS_PIPELINE_DENGAN_SIAP_SET = new Set<string>([
   ...STATUS_PIPELINE_EVALUASI.map(String),
-  String(StatusSOP.SIAP_DIEVALUASI),
+  String(StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI),
 ]);
 
 export type EvaluasiWorkspaceDaftarRowRepo = {

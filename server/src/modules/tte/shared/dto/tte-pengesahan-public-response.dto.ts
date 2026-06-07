@@ -56,7 +56,8 @@ export class TtePengesahanPublicResponseDto {
 
   @ApiPropertyOptional({
     nullable: true,
-    description: 'URL verifikasi publik bila origin aplikasi dapat ditentukan (request atau PUBLIC_APP_ORIGIN)',
+    description:
+      'URL verifikasi publik bila origin aplikasi dapat ditentukan (request atau PUBLIC_APP_ORIGIN)',
   })
   qrVerificationUrl!: string | null;
 

@@ -28,7 +28,7 @@ export function TteSetupRequiredDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="Setup TTE diperlukan"
-      description="Anda perlu menyiapkan PIN dan sertifikat TTE terlebih dahulu sebelum memverifikasi BA atau mengesahkan SOP."
+      description="Anda perlu menyiapkan PIN dan sertifikat TTE terlebih dahulu sebelum menandatangani BA atau mengesahkan SOP."
       cancelLabel="Nanti"
       confirmLabel="Buka Setup TTE"
       onConfirm={handleOpenProfile}

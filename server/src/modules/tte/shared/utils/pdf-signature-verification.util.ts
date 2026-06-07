@@ -230,10 +230,7 @@ function verifyEmbeddedSignature(
   };
 }
 
-function buildInvalidEntryGeneric(
-  index: number,
-  reason: string,
-): PdfSignatureVerificationEntry {
+function buildInvalidEntryGeneric(index: number, reason: string): PdfSignatureVerificationEntry {
   return {
     index,
     valid: false,
@@ -278,9 +275,10 @@ function verifyEmbeddedSignatureGeneric(
   }
   const embeddedDigest = extractMessageDigestFromPkcs7(field.pkcs7Buffer);
   const digestMatch = embeddedDigest !== null && embeddedDigest.equals(documentDigest);
-  
+
   // Ambil cert penandatangan dari dalam PDF itu sendiri (biasanya bukan CA)
-  const signingCertificate = pkcs7.certificates.find(c => !isCertificateAuthority(c)) || pkcs7.certificates[0];
+  const signingCertificate =
+    pkcs7.certificates.find((c) => !isCertificateAuthority(c)) || pkcs7.certificates[0];
   if (!signingCertificate) {
     return buildInvalidEntryGeneric(index, 'Sertifikat penandatangan tidak ditemukan.');
   }
@@ -484,10 +482,7 @@ function findSigningTimeAttribute(node: forge.asn1.Asn1): Date | null {
 }
 
 function isSigningTimeOid(node: forge.asn1.Asn1): boolean {
-  if (
-    node.type !== forge.asn1.Type.OID ||
-    typeof node.value !== 'string'
-  ) {
+  if (node.type !== forge.asn1.Type.OID || typeof node.value !== 'string') {
     return false;
   }
   try {
@@ -538,9 +533,7 @@ function extractSigningTimeFromDerHex(pkcs7Buffer: Buffer): string | null {
     return null;
   }
   const year = Number(match[1]) >= 50 ? `19${match[1]}` : `20${match[1]}`;
-  const parsed = new Date(
-    `${year}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}Z`,
-  );
+  const parsed = new Date(`${year}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}Z`);
   if (Number.isNaN(parsed.getTime())) {
     return null;
   }

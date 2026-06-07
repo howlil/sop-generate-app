@@ -134,11 +134,11 @@ async function buildAndPromoteSopToBerlaku(
 
   await penyusunAgent
     .patch(`${API}/sop/status/${detailSopId}`)
-    .send({ status: StatusSOP.SIAP_DIEVALUASI })
+    .send({ status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI })
     .expect(200);
   await pjPenyusunAgent
     .post(`${API}/evaluasi`)
-    .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [detailSopId] })
+    .send({ jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD, sopDetailIds: [detailSopId] })
     .expect(201);
 
   const pengajuan = await prisma.pengajuanEvaluasi.findFirstOrThrow({
@@ -559,7 +559,7 @@ describeIntegration('SOP Versioning — siklus hidup versi SOP', () => {
     let draftSopId: string;
 
     beforeAll(async () => {
-      // Buat SOP LENGKAP agar bisa transition ke SIAP_DIEVALUASI
+      // Buat SOP LENGKAP agar bisa transition ke MENUNGGU_PENGAJUAN_EVALUASI
       // (SOP bare tanpa langkah/header tidak bisa transition karena validasi kelengkapan)
       const sopRes = await penyusunAgent
         .post(`${API}/sop`)
@@ -628,7 +628,7 @@ describeIntegration('SOP Versioning — siklus hidup versi SOP', () => {
       // Pertama buat SOP siap evaluasi
       await penyusunAgent
         .patch(`${API}/sop/status/${draftSopId}`)
-        .send({ status: StatusSOP.SIAP_DIEVALUASI })
+        .send({ status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI })
         .expect(200);
 
       const res = await penyusunAgent

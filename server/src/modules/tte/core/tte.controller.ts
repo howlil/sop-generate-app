@@ -139,7 +139,8 @@ export class TteController {
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
     summary: 'Setup awal TTE: generate sertifikat P12 otomatis + atur PIN',
-    description: 'Untuk pengguna yang belum pernah mengatur TTE. Sertifikat P12 dibuat otomatis oleh sistem dan PIN diatur dalam satu operasi.',
+    description:
+      'Untuk pengguna yang belum pernah mengatur TTE. Sertifikat P12 dibuat otomatis oleh sistem dan PIN diatur dalam satu operasi.',
   })
   async setupTteGenerate(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -158,7 +159,8 @@ export class TteController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: 'Setup awal TTE: unggah sertifikat P12 BSrE + atur PIN',
-    description: 'Untuk pengguna yang belum pernah mengatur TTE. Upload P12 dari BSrE dan PIN diatur dalam satu operasi.',
+    description:
+      'Untuk pengguna yang belum pernah mengatur TTE. Upload P12 dari BSrE dan PIN diatur dalam satu operasi.',
   })
   async setupTteWithUpload(
     @Req() req: Request & { user: JwtAccessPayload },
@@ -178,7 +180,7 @@ export class TteController {
   @ApiOperation({
     summary: 'Tanda tangani Berita Acara evaluasi',
     description:
-      'PJ Evaluator pada status SELESAI_DIEVALUASI → DIVERIFIKASI_PJ_EVALUATOR. PJ Penyusun pada DIVERIFIKASI_PJ_EVALUATOR → DITANDATANGANI_PJ_PENYUSUN.',
+      'PJ Evaluator pada status SELESAI_DIEVALUASI → DITANDATANGANI_PJ_EVALUATOR. PJ Penyusun pada DITANDATANGANI_PJ_EVALUATOR → DITANDATANGANI_PJ_PENYUSUN.',
   })
   @ApiResponse({ status: 200, description: 'Berhasil' })
   async tandaTanganiBa(
@@ -206,7 +208,12 @@ export class TteController {
     @Param('pengajuanId', ParseUUIDPipe) pengajuanId: string,
     @Body() dto: TandaTanganiSemuaSopDto,
   ): Promise<ApiSuccessResponse<TteBatchSignSopPengajuanResponse>> {
-    const data = await this.tteService.tandaTanganiSemuaSopPengajuan(req.user, pengajuanId, dto, req);
+    const data = await this.tteService.tandaTanganiSemuaSopPengajuan(
+      req.user,
+      pengajuanId,
+      dto,
+      req,
+    );
     return {
       message: 'Seluruh SOP dalam pengajuan berhasil ditandatangani',
       success: true,
@@ -237,5 +244,4 @@ export class TteController {
       data,
     };
   }
-
 }

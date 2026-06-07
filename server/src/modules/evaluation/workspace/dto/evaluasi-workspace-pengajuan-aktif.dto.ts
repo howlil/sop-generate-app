@@ -12,7 +12,7 @@ export class EvaluasiWorkspacePengajuanAktifDto {
   @ApiProperty()
   readonly statusLabel!: string;
 
-  @ApiProperty({ enum: ['TERJADWAL', 'MANDIRI'] })
+  @ApiProperty({ enum: ['EVALUASI_REQUEST_EVALUATOR', 'EVALUASI_REQUEST_OPD'] })
   readonly jenis!: string;
 
   @ApiProperty({ type: () => [EvaluasiWorkspaceNilaiPerDetailDto] })

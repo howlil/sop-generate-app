@@ -62,7 +62,7 @@ export function DaftarSOPEvaluasi() {
     <ListPageLayout
       breadcrumb={[{ label: 'Evaluasi SOP' }]}
       title="Evaluasi SOP"
-      description="Pilih satu pengajuan evaluasi untuk membuka workspace (daftar SOP dalam pengajuan tersebut)."
+      description="Pilih satu pengajuan evaluasi untuk membuka halaman penilaian (daftar SOP dalam pengajuan tersebut)."
       toolbar={
         <div className="flex flex-col gap-3 w-full">
           <SearchToolbar
@@ -110,7 +110,7 @@ export function DaftarSOPEvaluasi() {
                 icon: Eye,
                 to: ROUTES.EVALUATOR.DETAIL_EVALUASI_PENGAJUAN,
                 params: { id: row.pengajuanEvaluasiId },
-                title: 'Buka workspace',
+                title: 'Buka penilaian',
                 variant: 'outline',
               },
             ]}

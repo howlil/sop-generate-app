@@ -17,12 +17,6 @@ function normalizeStatusInQueryValues(value: unknown): string[] | undefined {
   return trimmed.length === 0 ? undefined : trimmed;
 }
 
-function mapLegacyStatusPengajuanEvaluasi(raw: string): string {
-  if (raw === 'DIVERIFIKASI_BIRO') return 'DIVERIFIKASI_PJ_EVALUATOR';
-  if (raw === 'DITANDATANGANI_KOORDINATOR') return 'DITANDATANGANI_PJ_PENYUSUN';
-  return raw;
-}
-
 /** Query GET `/evaluasi/ringkas` — daftar ringkas terpaginasi untuk dashboard evaluator. */
 export class PengajuanEvaluasiRingkasQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ format: 'uuid' })
@@ -41,10 +35,7 @@ export class PengajuanEvaluasiRingkasQueryDto extends PaginationQueryDto {
     description: 'Filter beberapa status (`statusIn=A` diulang atau koma)',
   })
   @IsOptional()
-  @Transform(({ value }) => {
-    const normalized = normalizeStatusInQueryValues(value);
-    return normalized?.map(mapLegacyStatusPengajuanEvaluasi);
-  })
+  @Transform(({ value }) => normalizeStatusInQueryValues(value))
   @IsArray()
   @IsEnum(StatusPengajuanEvaluasi, { each: true })
   readonly statusIn?: StatusPengajuanEvaluasi[];

@@ -16,13 +16,6 @@ function normalizeStatusInQueryValues(value: unknown): string[] | undefined {
   return trimmed.length === 0 ? undefined : trimmed;
 }
 
-function mapLegacyStatusPengajuanEvaluasi(raw: string): string {
-  // Kompatibilitas transisi: terima nilai lama dari klien lama.
-  if (raw === 'DIVERIFIKASI_BIRO') return 'DIVERIFIKASI_PJ_EVALUATOR';
-  if (raw === 'DITANDATANGANI_KOORDINATOR') return 'DITANDATANGANI_PJ_PENYUSUN';
-  return raw;
-}
-
 /** Query GET `/evaluasi` — daftar pengajuan evaluasi (filter opsional). */
 export class PengajuanEvaluasiListQueryDto {
   @ApiPropertyOptional({ format: 'uuid' })
@@ -42,10 +35,7 @@ export class PengajuanEvaluasiListQueryDto {
       'Filter beberapa status (`?statusIn=A&statusIn=B` atau koma); jika ada, mengalahkan `status` tunggal.',
   })
   @IsOptional()
-  @Transform(({ value }) => {
-    const normalized = normalizeStatusInQueryValues(value);
-    return normalized?.map(mapLegacyStatusPengajuanEvaluasi);
-  })
+  @Transform(({ value }) => normalizeStatusInQueryValues(value))
   @IsArray()
   @IsEnum(StatusPengajuanEvaluasi, { each: true })
   readonly statusIn?: StatusPengajuanEvaluasi[];

@@ -81,7 +81,7 @@ export class TteProfilService {
     if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
     const existing = await this.tteRepository.findKredensial(user.sub);
     if (existing === null) throw new BadRequestException('PIN TTE belum diatur.');
-    
+
     const pinValid = await bcrypt.compare(dto.pin, existing.hashPin);
     if (!pinValid) throw new UnauthorizedException('PIN tidak sesuai');
 
@@ -93,16 +93,16 @@ export class TteProfilService {
       jabatan: pengguna.jabatan,
       passphrase: randomPassphrase,
     });
-    
+
     const p12Base64 = p12Buffer.toString('base64');
     const encryptedPassphrase = encryptP12Passphrase(randomPassphrase, dto.pin);
-    
+
     const row = await this.tteRepository.updateKredensialP12({
       userId: user.sub,
       p12Base64,
       p12PassphraseEncrypted: encryptedPassphrase,
     });
-    
+
     return this.buildProfilResponse(pengguna, row);
   }
 
@@ -110,13 +110,18 @@ export class TteProfilService {
    * Setup awal TTE: buat sertifikat P12 otomatis + set PIN dalam satu operasi.
    * Tidak membutuhkan PIN lama — auth via JWT (setup pertama kali).
    */
-  async setupTteGenerate(user: JwtAccessPayload, dto: SetupTteGenerateDto): Promise<TteProfilResponse> {
+  async setupTteGenerate(
+    user: JwtAccessPayload,
+    dto: SetupTteGenerateDto,
+  ): Promise<TteProfilResponse> {
     const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
     if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
 
     const existing = await this.tteRepository.findKredensial(user.sub);
     if (existing !== null) {
-      throw new ConflictException('TTE sudah diatur. Gunakan endpoint update jika ingin mengubah PIN atau sertifikat.');
+      throw new ConflictException(
+        'TTE sudah diatur. Gunakan endpoint update jika ingin mengubah PIN atau sertifikat.',
+      );
     }
 
     const hashPin = await bcrypt.hash(dto.pin, 10);
@@ -156,7 +161,9 @@ export class TteProfilService {
 
     const existing = await this.tteRepository.findKredensial(user.sub);
     if (existing !== null) {
-      throw new ConflictException('TTE sudah diatur. Gunakan endpoint update jika ingin mengubah PIN atau sertifikat.');
+      throw new ConflictException(
+        'TTE sudah diatur. Gunakan endpoint update jika ingin mengubah PIN atau sertifikat.',
+      );
     }
 
     try {
@@ -180,7 +187,11 @@ export class TteProfilService {
     return this.buildProfilResponse(pengguna, row);
   }
 
-  async uploadP12(user: JwtAccessPayload, dto: UploadP12Dto, file: { buffer: Buffer }): Promise<TteProfilResponse> {
+  async uploadP12(
+    user: JwtAccessPayload,
+    dto: UploadP12Dto,
+    file: { buffer: Buffer },
+  ): Promise<TteProfilResponse> {
     const pengguna = await this.tteRepository.findPenggunaAktif(user.sub);
     if (pengguna === null) throw new NotFoundException('Pengguna tidak ditemukan');
     const existing = await this.tteRepository.findKredensial(user.sub);
@@ -199,7 +210,7 @@ export class TteProfilService {
 
     const p12Base64 = file.buffer.toString('base64');
     const encryptedPassphrase = encryptP12Passphrase(dto.p12Passphrase, dto.pin);
-    
+
     const row = await this.tteRepository.updateKredensialP12({
       userId: user.sub,
       p12Base64,

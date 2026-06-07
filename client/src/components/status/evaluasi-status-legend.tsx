@@ -13,12 +13,12 @@ import { PengajuanStatusBadge } from './pengajuan-status-badge'
 import { SopStatusBadge } from './sop-status-badge'
 
 const LEGEND_PENGAJUAN_EVALUASI = {
-  status: 'DIVERIFIKASI_PJ_EVALUATOR',
-  label: 'BA diverifikasi PJ Evaluator',
+  status: 'DITANDATANGANI_PJ_EVALUATOR',
+  label: 'BA ditandatangani PJ Evaluator',
 } as const
 const LEGEND_DOKUMEN = {
-  status: 'SIAP_DIVERIFIKASI',
-  label: 'Menunggu verifikasi PJ Evaluator',
+  status: 'MENUNGGU_TTD_PJ_EVALUATOR',
+  label: 'Menunggu TTD PJ Evaluator',
 } as const
 const LEGEND_SESUAI = { hasil: 'SESUAI', label: 'Sesuai' } as const
 const LEGEND_PERBAIKAN = { hasil: 'PERLU_PERBAIKAN', label: 'Perlu perbaikan' } as const
@@ -45,7 +45,7 @@ export function EvaluasiStatusLegend() {
         <div className="space-y-4 pt-1">
           <div>
             <p className="text-gray-600 mb-2">
-              <strong>Pengajuan evaluasi</strong> — progres pengajuan evaluasi OPD (penilaian → TTE → selesai).
+              <strong>Pengajuan evaluasi</strong> — progres pengajuan evaluasi OPD (penilaian → tanda tangan → selesai).
             </p>
             <PengajuanStatusBadge
               status={LEGEND_PENGAJUAN_EVALUASI.status}

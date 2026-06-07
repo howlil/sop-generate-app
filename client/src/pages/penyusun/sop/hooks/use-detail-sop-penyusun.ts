@@ -38,7 +38,7 @@ interface UseDetailSopPenyusunActionsParams {
 }
 
 /**
- * Aksi tingkat halaman editor: Selesai → SIAP_DIEVALUASI; alur revisi → POST kirim ulang ke evaluator.
+ * Aksi tingkat halaman editor: Selesai → MENUNGGU_PENGAJUAN_EVALUASI; alur revisi → POST kirim ulang ke evaluator.
  * Persistensi data (header, swimlane, langkah) seluruhnya ditangani oleh autosave.
  */
 export function useDetailSopPenyusunActions({
@@ -59,8 +59,8 @@ export function useDetailSopPenyusunActions({
     invalidateKeys: [
       ...SOP_EVALUASI_WORKFLOW_QUERY_KEYS,
     ],
-    successMessage: "SOP berhasil dikirim ulang ke evaluator",
-    errorMessagePrefix: "Gagal mengirim ulang ke evaluator",
+    successMessage: "SOP berhasil dikirim ulang evaluasi",
+    errorMessagePrefix: "Gagal mengirim ulang evaluasi",
     onSuccess: async (data, sopOrDetailId) => {
       queryClient.setQueryData(queryKeys.penyusunWorkbench(sopOrDetailId), data);
       const invalidations = [
@@ -106,8 +106,8 @@ export function useDetailSopPenyusunActions({
           }
           await kirimUlangKeEvaluatorMutation.mutateAsync(id);
         } else {
-          await setSopStatusOverrideAsync({ sopId: id, status: "SIAP_DIEVALUASI" });
-          showToast("SOP berhasil disimpan dan siap diajukan ke evaluasi.");
+          await setSopStatusOverrideAsync({ sopId: id, status: "MENUNGGU_PENGAJUAN_EVALUASI" });
+          showToast("SOP berhasil disimpan dan menunggu pengajuan evaluasi.");
         }
         if (navigateFn) {
           navigateFn({ to: ROUTES.PENYUSUN.SOP });
@@ -316,7 +316,7 @@ export function useDetailSopPenyusunData(
   const isRevisionFlow = currentSopStatus === "REVISI_DARI_EVALUATOR";
   const canKirimUlangKeEvaluator = canKirimUlangKeEvaluatorAfterRevisi(role);
   const primaryActionLabel =
-    isRevisionFlow && canKirimUlangKeEvaluator ? "Kirim ulang ke evaluator" : "Selesai";
+    isRevisionFlow && canKirimUlangKeEvaluator ? "Kirim ulang evaluasi" : "Selesai";
   const isLoading = isLoadingWorkbench;
 
   return {

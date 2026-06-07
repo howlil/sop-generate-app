@@ -34,14 +34,14 @@ Aktor mengisi atau memperbarui substansi SOP.
 4. Aktor menyusun langkah SOP dan relasi alur keputusan jika ada.
 5. Sistem memvalidasi kelengkapan dan konsistensi data.
 6. Sistem menyimpan perubahan dan mencatat riwayat edit.
-7. Jika dokumen sudah lengkap, aktor menandai draft sebagai siap dievaluasi.
-8. Sistem mengubah status SOP menjadi siap dievaluasi.
+7. Jika dokumen sudah lengkap, aktor menandai draft sebagai menunggu pengajuan evaluasi.
+8. Sistem mengubah status SOP menjadi menunggu pengajuan evaluasi.
 
 ## Alur alternatif
 
 - Jika status SOP sedang dievaluasi atau sudah berlaku, sistem menolak pengeditan.
 - Jika langkah keputusan tidak memiliki cabang ya dan tidak, sistem menolak penyimpanan atau penandaan siap.
-- Jika draft belum lengkap, sistem menyimpan sebagai draft tetapi menolak status siap dievaluasi.
+- Jika draft belum lengkap, sistem menyimpan sebagai draft tetapi menolak status menunggu pengajuan evaluasi.
 
 ## Hasil akhir
 

@@ -84,7 +84,7 @@ export class BeritaAcaraEvaluasiViewDto {
   readonly tanggalEvaluasi?: string;
 
   @ApiPropertyOptional({
-    description: 'Setelah diverifikasi PJ Evaluator; untuk tempat-tanggal di BA',
+    description: 'Setelah ditandatangani PJ Evaluator; untuk tempat-tanggal di BA',
   })
   readonly tanggalVerifikasiPjEvaluator?: string;
 

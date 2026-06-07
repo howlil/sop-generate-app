@@ -9,7 +9,10 @@ export class SetupTteUploadDto {
   @MaxLength(32)
   readonly pin!: string;
 
-  @ApiProperty({ example: 'passphrase123', description: 'Passphrase asli dari file P12 yang diunggah' })
+  @ApiProperty({
+    example: 'passphrase123',
+    description: 'Passphrase asli dari file P12 yang diunggah',
+  })
   @IsString()
   readonly p12Passphrase!: string;
 }

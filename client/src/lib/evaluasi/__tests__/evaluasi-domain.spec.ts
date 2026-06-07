@@ -21,7 +21,7 @@ function pengajuan(
     id: 'pengajuan-1',
     status: 'SEDANG_DIEVALUASI',
     statusLabel: 'Sedang dievaluasi',
-    jenis: 'TERJADWAL',
+    jenis: 'EVALUASI_REQUEST_EVALUATOR',
     nilaiPerDetail,
   }
 }
@@ -167,10 +167,10 @@ describe('deriveTahapPenilaianSop', () => {
 })
 
 describe('kirim ulang setelah revisi', () => {
-  it('should_block_kirim_ulang_when_status_terbuka', () => {
+  it('should_allow_kirim_ulang_when_status_terbuka', () => {
     const input = umpanBalik('TERBUKA')
-    expect(canKirimUlangSetelahRevisi(input)).toBe(false)
-    expect(getKirimUlangBlockingReason(input)).toContain('Umpan balik')
+    expect(canKirimUlangSetelahRevisi(input)).toBe(true)
+    expect(getKirimUlangBlockingReason(input)).toBeNull()
   })
 
   it('should_allow_kirim_ulang_when_status_selesai', () => {

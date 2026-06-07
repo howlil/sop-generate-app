@@ -70,10 +70,10 @@ Pemetaan ke kebutuhan fungsional resmi (`docs/requirements.md`):
 | TC-11 | `SopDiagramService` | Mengatur konfigurasi diagram SOP | Data konfigurasi diagram dan path override | Konfigurasi diagram tersimpan dan workbench dikembalikan | Lulus |
 | TC-12 | `SopCompletenessValidator` | Validasi SOP lengkap sebelum evaluasi | Workbench berisi header, langkah, pelaksana, dan lampiran lengkap | Sistem tidak menemukan issue kelengkapan | Lulus |
 | TC-13 | `SopCompletenessValidator` | Validasi SOP kosong/tidak lengkap | Workbench tanpa langkah atau header penting | Sistem mengembalikan daftar kekurangan SOP | Lulus |
-| TC-14 | `SopStatusPolicy` | Penyusun menandai SOP siap dievaluasi | Status awal `DRAFT` atau `SEDANG_DISUSUN` | Status dapat berubah ke `SIAP_DIEVALUASI` | Lulus |
-| TC-15 | `SopStatusPolicy` | Penyusun biasa mengajukan SOP ke evaluasi | User role `PENYUSUN`, status SOP `SIAP_DIEVALUASI` | Sistem menolak karena pengajuan hanya boleh oleh PJ Penyusun | Lulus |
-| TC-16 | `SopCatalogService` | PJ Penyusun mengajukan SOP dari status siap | User role `PJ_PENYUSUN`, status SOP `SIAP_DIEVALUASI` | Status SOP berubah ke `DIAJUKAN_EVALUASI` | Lulus |
-| TC-17 | `PengajuanEvaluasiService` | PJ Penyusun membuat pengajuan evaluasi | Data pengajuan dengan DetailSOP berstatus `SIAP_DIEVALUASI` | Pengajuan evaluasi dibuat dan SOP masuk proses evaluasi | Lulus |
+| TC-14 | `SopStatusPolicy` | Penyusun menandai SOP menunggu pengajuan evaluasi | Status awal `DRAFT` atau `SEDANG_DISUSUN` | Status dapat berubah ke `MENUNGGU_PENGAJUAN_EVALUASI` | Lulus |
+| TC-15 | `SopStatusPolicy` | Penyusun biasa mengajukan SOP ke evaluasi | User role `PENYUSUN`, status SOP `MENUNGGU_PENGAJUAN_EVALUASI` | Sistem menolak karena pengajuan hanya boleh oleh PJ Penyusun | Lulus |
+| TC-16 | `SopCatalogService` | PJ Penyusun mengajukan SOP dari status siap | User role `PJ_PENYUSUN`, status SOP `MENUNGGU_PENGAJUAN_EVALUASI` | Status SOP berubah ke `DIAJUKAN_EVALUASI` | Lulus |
+| TC-17 | `PengajuanEvaluasiService` | PJ Penyusun membuat pengajuan evaluasi | Data pengajuan dengan DetailSOP berstatus `MENUNGGU_PENGAJUAN_EVALUASI` | Pengajuan evaluasi dibuat dan SOP masuk proses evaluasi | Lulus |
 | TC-18 | `PengajuanEvaluasiService` | Non-PJ Penyusun membuat pengajuan evaluasi | User bukan `PJ_PENYUSUN` | Sistem menolak akses pembuatan pengajuan | Lulus |
 | TC-19 | `EvaluasiNilaiService` | Evaluator memberi nilai `PERLU_PERBAIKAN` tanpa catatan | Hasil evaluasi `PERLU_PERBAIKAN`, catatan kosong | Sistem menolak input karena catatan wajib diisi | Lulus |
 | TC-20 | `EvaluasiNilaiService` | Evaluator memberi nilai `PERLU_PERBAIKAN` dengan catatan | Hasil evaluasi `PERLU_PERBAIKAN` dan catatan valid | Status tindak lanjut menjadi `TERBUKA` | Lulus |
@@ -83,7 +83,7 @@ Pemetaan ke kebutuhan fungsional resmi (`docs/requirements.md`):
 | TC-24 | `SopCatalogService` | PJ Penyusun mengirim ulang SOP setelah revisi | DetailSOP berstatus `REVISI_DARI_EVALUATOR` dan tindak lanjut selesai | SOP dikirim kembali ke evaluator | Lulus |
 | TC-25 | `SopCatalogService` | Kirim ulang revisi saat umpan balik belum selesai | Tindak lanjut evaluasi masih `TERBUKA` | Sistem menolak pengiriman ulang | Lulus |
 | TC-26 | `EvaluasiNilaiService` | Menyelesaikan evaluasi saat belum semua SOP `SESUAI` | Masih ada nilai `PERLU_PERBAIKAN` | Sistem menolak penyelesaian evaluasi | Lulus |
-| TC-27 | `EvaluasiNilaiService` | Menyelesaikan evaluasi saat semua SOP `SESUAI` | Semua baris nilai evaluasi `SESUAI` | Pengajuan menjadi `SELESAI_DIEVALUASI` dan SOP menjadi `SIAP_DIVERIFIKASI` | Lulus |
+| TC-27 | `EvaluasiNilaiService` | Menyelesaikan evaluasi saat semua SOP `SESUAI` | Semua baris nilai evaluasi `SESUAI` | Pengajuan menjadi `SELESAI_DIEVALUASI` dan SOP menjadi `MENUNGGU_TTD_PJ_EVALUATOR` | Lulus |
 | TC-28 | `TteService` | PJ Evaluator menandatangani BA pada status salah | Pengajuan belum berstatus `SELESAI_DIEVALUASI` | Sistem menolak tanda tangan BA | Lulus |
 | TC-29 | `TteService` | PIN TTE salah | PIN tidak sesuai dengan hash yang tersimpan | Sistem menolak autentikasi PIN | Lulus |
 | TC-30 | `TteService` | PJ Evaluator menandatangani BA valid | Pengajuan berstatus `SELESAI_DIEVALUASI` dan PIN valid | Riwayat tanda tangan BA tersimpan | Lulus |

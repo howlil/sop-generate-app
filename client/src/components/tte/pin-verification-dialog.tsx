@@ -16,7 +16,7 @@ export function PinVerificationDialog({
   title,
   description = 'Masukkan PIN TTE Anda untuk melanjutkan (simulasi).',
   onConfirm,
-  confirmLabel = 'Verifikasi PIN',
+  confirmLabel = 'Tanda Tangan',
 }: PinVerificationDialogProps) {
   return (
     <PinDialog
@@ -25,7 +25,7 @@ export function PinVerificationDialog({
       title={title}
       description={description}
       confirmLabel={confirmLabel}
-      loadingLabel="Memverifikasi..."
+      loadingLabel="Menandatangani..."
       pinLabel="PIN TTE"
       pinPlaceholder="Masukkan PIN"
       maxLength={8}

@@ -24,7 +24,7 @@ export function DetailSOPMetadataPanel() {
 
   return (
     <>
-      <div className="p-4 space-y-4">
+      <div className="space-y-3 bg-gray-50/80 p-2">
         <SOPHeaderSection
           onOpenLawBasisDialog={() => setIsLawBasisOpen(true)}
           onOpenRelatedPosDialog={() => setIsRelatedPosOpen(true)}

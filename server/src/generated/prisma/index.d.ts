@@ -177,11 +177,11 @@ export type PeranPengguna = (typeof PeranPengguna)[keyof typeof PeranPengguna]
 export const StatusSOP: {
   DRAFT: 'DRAFT',
   SEDANG_DISUSUN: 'SEDANG_DISUSUN',
-  SIAP_DIEVALUASI: 'SIAP_DIEVALUASI',
+  MENUNGGU_PENGAJUAN_EVALUASI: 'MENUNGGU_PENGAJUAN_EVALUASI',
   DIAJUKAN_EVALUASI: 'DIAJUKAN_EVALUASI',
   SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
   REVISI_DARI_EVALUATOR: 'REVISI_DARI_EVALUATOR',
-  SIAP_DIVERIFIKASI: 'SIAP_DIVERIFIKASI',
+  MENUNGGU_TTD_PJ_EVALUATOR: 'MENUNGGU_TTD_PJ_EVALUATOR',
   DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI: 'DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI',
   BERLAKU: 'BERLAKU',
   DIGANTIKAN: 'DIGANTIKAN',
@@ -213,8 +213,8 @@ export type SatuanWaktu = (typeof SatuanWaktu)[keyof typeof SatuanWaktu]
 
 
 export const JenisPengajuanEvaluasi: {
-  TERJADWAL: 'TERJADWAL',
-  MANDIRI: 'MANDIRI'
+  EVALUASI_REQUEST_EVALUATOR: 'EVALUASI_REQUEST_EVALUATOR',
+  EVALUASI_REQUEST_OPD: 'EVALUASI_REQUEST_OPD'
 };
 
 export type JenisPengajuanEvaluasi = (typeof JenisPengajuanEvaluasi)[keyof typeof JenisPengajuanEvaluasi]
@@ -223,7 +223,7 @@ export type JenisPengajuanEvaluasi = (typeof JenisPengajuanEvaluasi)[keyof typeo
 export const StatusPengajuanEvaluasi: {
   SEDANG_DIEVALUASI: 'SEDANG_DIEVALUASI',
   SELESAI_DIEVALUASI: 'SELESAI_DIEVALUASI',
-  DIVERIFIKASI_PJ_EVALUATOR: 'DIVERIFIKASI_PJ_EVALUATOR',
+  DITANDATANGANI_PJ_EVALUATOR: 'DITANDATANGANI_PJ_EVALUATOR',
   DITANDATANGANI_PJ_PENYUSUN: 'DITANDATANGANI_PJ_PENYUSUN',
   SELESAI: 'SELESAI'
 };
@@ -6712,10 +6712,6 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       penggunaId: string
       opdId: string
-      /**
-       * Histori penempatan OPD. Sumber kebenaran OPD aktif tetap `Pengguna.opdId`;
-       * `isAktif` disinkronkan service untuk kemudahan tampilan riwayat.
-       */
       isAktif: boolean
       createdAt: Date
       updatedAt: Date

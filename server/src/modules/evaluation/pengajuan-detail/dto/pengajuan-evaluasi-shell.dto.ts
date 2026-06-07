@@ -125,11 +125,16 @@ export class PengajuanEvaluasiShellDto {
   @ApiProperty({ format: 'uuid' })
   readonly id!: string;
 
-  @ApiProperty({ format: 'uuid' })
-  readonly opdId!: string;
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description: 'Tidak dikirim untuk PJ Penyusun (konteks OPD implisit).',
+  })
+  readonly opdId?: string;
 
-  @ApiProperty()
-  readonly opdNama!: string;
+  @ApiPropertyOptional({
+    description: 'Tidak dikirim untuk PJ Penyusun (konteks OPD implisit).',
+  })
+  readonly opdNama?: string;
 
   @ApiProperty()
   readonly jenis!: string;
@@ -152,10 +157,12 @@ export class PengajuanEvaluasiShellDto {
   @ApiPropertyOptional()
   readonly tanggalEvaluasi?: string;
 
-  @ApiPropertyOptional({ description: 'Terisi bila status diverifikasi PJ Evaluator' })
+  @ApiPropertyOptional({ description: 'Terisi bila status ditandatangani PJ Evaluator' })
   readonly tanggalVerifikasi?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'Tidak dikirim untuk PJ Penyusun (konteks OPD implisit).',
+  })
   readonly nilaiOPD?: number;
 
   @ApiPropertyOptional()
@@ -179,8 +186,11 @@ export class PengajuanEvaluasiShellDto {
   @ApiPropertyOptional({ type: () => Object })
   readonly diselesaikanOleh?: { id: string; nama: string };
 
-  @ApiProperty({ type: () => PengajuanShellOpdDto })
-  readonly opd!: PengajuanShellOpdDto;
+  @ApiPropertyOptional({
+    type: () => PengajuanShellOpdDto,
+    description: 'Tidak dikirim untuk PJ Penyusun (konteks OPD implisit).',
+  })
+  readonly opd?: PengajuanShellOpdDto;
 
   @ApiPropertyOptional()
   readonly timEvaluasi?: string;

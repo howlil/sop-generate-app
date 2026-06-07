@@ -41,7 +41,7 @@ describe('Pengujian SopCatalogService', () => {
       | 'findDetailIdByDetailOrSopId'
       | 'findLatestDetailStatusContext'
       | 'updateDetailSopStatus'
-      | 'transitionDetailSopRevisiToDiajukanEvaluasi'
+      | 'transitionDetailSopRevisiToSedangDievaluasi'
       | 'updateSopHeaderTransaction'
       | 'cloneDetailSopFromBerlaku'
       | 'findRiwayatVersiBySopId'
@@ -58,7 +58,7 @@ describe('Pengujian SopCatalogService', () => {
     findDetailIdByDetailOrSopId: jest.fn(),
     findLatestDetailStatusContext: jest.fn(),
     updateDetailSopStatus: jest.fn(),
-    transitionDetailSopRevisiToDiajukanEvaluasi: jest.fn(),
+    transitionDetailSopRevisiToSedangDievaluasi: jest.fn(),
     updateSopHeaderTransaction: jest.fn(),
     cloneDetailSopFromBerlaku: jest.fn(),
     findRiwayatVersiBySopId: jest.fn(),
@@ -270,11 +270,14 @@ describe('Pengujian SopCatalogService', () => {
       email: 'ev2@b.c',
       peran: PeranPengguna.EVALUATOR,
     };
-    const query = { status: 'SIAP_DIEVALUASI', tanggalDari: '2026-02-01' } as ListSopQueryDto;
+    const query = {
+      status: 'MENUNGGU_PENGAJUAN_EVALUASI',
+      tanggalDari: '2026-02-01',
+    } as ListSopQueryDto;
     repoMock.findDaftarAll.mockResolvedValue([]);
     await service.listForCurrentUser(evaluatorUser, query);
     expect(repoMock.findDaftarAll).toHaveBeenCalledWith({
-      status: 'SIAP_DIEVALUASI',
+      status: 'MENUNGGU_PENGAJUAN_EVALUASI',
       tanggalDari: '2026-02-01',
       tanggalSampai: undefined,
     });
@@ -1015,7 +1018,7 @@ describe('Pengujian SopCatalogService', () => {
 
     it('seharusnya melempar NotFoundException ketika detail tidak ditemukan', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValueOnce(null);
-      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI };
       await expect(
         service.transitionDetailSopStatus(user, 'unknown-id', dto),
       ).rejects.toBeInstanceOf(NotFoundException);
@@ -1051,7 +1054,7 @@ describe('Pengujian SopCatalogService', () => {
       expect(repoMock.updateDetailSopStatus).not.toHaveBeenCalled();
     });
 
-    it('seharusnya mengizinkan draft menjadi siap dievaluasi untuk penyusun ketika workbench lengkap', async () => {
+    it('seharusnya mengizinkan draft menjadi menunggu pengajuan evaluasi untuk penyusun ketika workbench lengkap', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
@@ -1059,21 +1062,21 @@ describe('Pengujian SopCatalogService', () => {
         sopOpdId: 'opd-1',
       });
       const draftRow = stubWorkbenchSiapLengkap('DRAFT');
-      const refreshed = stubWorkbenchSiapLengkap('SIAP_DIEVALUASI');
+      const refreshed = stubWorkbenchSiapLengkap('MENUNGGU_PENGAJUAN_EVALUASI');
       repoMock.findWorkbenchPayloadByDetailOrSopId
         .mockResolvedValueOnce(draftRow)
         .mockResolvedValueOnce(refreshed);
-      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI };
       const actual = await service.transitionDetailSopStatus(user, 'det-st', dto);
       expect(repoMock.updateDetailSopStatus).toHaveBeenCalledWith({
         detailSopId: 'det-st',
-        status: StatusSOP.SIAP_DIEVALUASI,
+        status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
         userId: 'pengguna-1',
       });
-      expect(actual.detail.status).toBe('SIAP_DIEVALUASI');
+      expect(actual.detail.status).toBe('MENUNGGU_PENGAJUAN_EVALUASI');
     });
 
-    it('seharusnya melempar BadRequestException ketika workbench tidak lengkap untuk siap dievaluasi', async () => {
+    it('seharusnya melempar BadRequestException ketika workbench tidak lengkap untuk menunggu pengajuan evaluasi', async () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
@@ -1083,7 +1086,7 @@ describe('Pengujian SopCatalogService', () => {
       repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(
         stubWorkbenchPayload('DRAFT'),
       );
-      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.SIAP_DIEVALUASI };
+      const dto: UpdateDetailSopStatusDto = { status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI };
       await expect(service.transitionDetailSopStatus(user, 'det-st', dto)).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -1094,7 +1097,7 @@ describe('Pengujian SopCatalogService', () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
-        status: StatusSOP.SIAP_DIEVALUASI,
+        status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
         sopOpdId: 'opd-1',
       });
       const dto: UpdateDetailSopStatusDto = { status: StatusSOP.DIAJUKAN_EVALUASI };
@@ -1109,7 +1112,7 @@ describe('Pengujian SopCatalogService', () => {
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-st',
         sopId: 'sop-st',
-        status: StatusSOP.SIAP_DIEVALUASI,
+        status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
         sopOpdId: 'opd-1',
       });
       const refreshed = stubWorkbenchPayload('DIAJUKAN_EVALUASI');
@@ -1275,7 +1278,7 @@ describe('Pengujian SopCatalogService', () => {
     }
 
     beforeEach(() => {
-      repoMock.transitionDetailSopRevisiToDiajukanEvaluasi.mockResolvedValue(undefined);
+      repoMock.transitionDetailSopRevisiToSedangDievaluasi.mockResolvedValue(undefined);
     });
 
     it('seharusnya menolak akses evaluator', async () => {
@@ -1297,7 +1300,7 @@ describe('Pengujian SopCatalogService', () => {
       await expect(
         service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev'),
       ).rejects.toBeInstanceOf(ConflictException);
-      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
+      expect(repoMock.transitionDetailSopRevisiToSedangDievaluasi).not.toHaveBeenCalled();
     });
 
     it('seharusnya menolak akses penyusun', async () => {
@@ -1305,7 +1308,7 @@ describe('Pengujian SopCatalogService', () => {
         service.kirimUlangKeEvaluatorSetelahRevisi(user, 'det-rev'),
       ).rejects.toBeInstanceOf(ForbiddenException);
       expect(repoMock.findLatestDetailStatusContext).not.toHaveBeenCalled();
-      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
+      expect(repoMock.transitionDetailSopRevisiToSedangDievaluasi).not.toHaveBeenCalled();
     });
 
     it('seharusnya mengizinkan PJ penyusun', async () => {
@@ -1319,20 +1322,20 @@ describe('Pengujian SopCatalogService', () => {
       const lengkap = minimalRevisiWorkbench();
       const refreshed = {
         ...lengkap,
-        status: 'DIAJUKAN_EVALUASI',
+        status: 'SEDANG_DIEVALUASI',
       } as unknown as SopWorkbenchDbPayload;
       repoMock.findWorkbenchPayloadByDetailOrSopId
         .mockResolvedValueOnce(lengkap)
         .mockResolvedValueOnce(refreshed);
       const actual = await service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev');
-      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).toHaveBeenCalledWith({
+      expect(repoMock.transitionDetailSopRevisiToSedangDievaluasi).toHaveBeenCalledWith({
         detailSopId: 'det-rev',
         userId: 'pengguna-1',
       });
-      expect(actual.detail.status).toBe('DIAJUKAN_EVALUASI');
+      expect(actual.detail.status).toBe('SEDANG_DIEVALUASI');
     });
 
-    it('seharusnya menolak kirim ulang ketika umpan balik belum selesai', async () => {
+    it('seharusnya tetap mengirim ulang meski umpan balik belum ditandai selesai terpisah', async () => {
       const pjUser: JwtAccessPayload = { ...user, peran: PeranPengguna.PJ_PENYUSUN };
       repoMock.findLatestDetailStatusContext.mockResolvedValue({
         detailSopId: 'det-rev',
@@ -1340,14 +1343,20 @@ describe('Pengujian SopCatalogService', () => {
         status: StatusSOP.REVISI_DARI_EVALUATOR,
         sopOpdId: 'opd-1',
       });
-      repoMock.findWorkbenchPayloadByDetailOrSopId.mockResolvedValueOnce(minimalRevisiWorkbench());
-      evaluasiNilaiServiceMock.assertBolehKirimUlangSetelahRevisi.mockRejectedValueOnce(
-        new BadRequestException('Umpan balik evaluasi belum ditindaklanjuti'),
-      );
-      await expect(
-        service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev'),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(repoMock.transitionDetailSopRevisiToDiajukanEvaluasi).not.toHaveBeenCalled();
+      const lengkap = minimalRevisiWorkbench();
+      const refreshed = {
+        ...lengkap,
+        status: 'SEDANG_DIEVALUASI',
+      } as unknown as SopWorkbenchDbPayload;
+      repoMock.findWorkbenchPayloadByDetailOrSopId
+        .mockResolvedValueOnce(lengkap)
+        .mockResolvedValueOnce(refreshed);
+      await service.kirimUlangKeEvaluatorSetelahRevisi(pjUser, 'det-rev');
+      expect(evaluasiNilaiServiceMock.assertBolehKirimUlangSetelahRevisi).not.toHaveBeenCalled();
+      expect(repoMock.transitionDetailSopRevisiToSedangDievaluasi).toHaveBeenCalledWith({
+        detailSopId: 'det-rev',
+        userId: 'pengguna-1',
+      });
     });
   });
 

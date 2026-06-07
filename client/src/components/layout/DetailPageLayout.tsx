@@ -54,7 +54,9 @@ function DetailWorkspace({
           </div>
         )}
         <div className="flex min-h-[40vh] min-w-0 flex-1 flex-col overflow-hidden bg-white px-2 py-2 sm:px-3 sm:py-3 lg:border-r lg:border-slate-200/80">
-          {main}
+          <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+            {main}
+          </div>
         </div>
         {rightPanel != null && (
           <div

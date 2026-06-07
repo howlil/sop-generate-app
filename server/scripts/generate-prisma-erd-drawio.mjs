@@ -330,13 +330,8 @@ function buildXml(models) {
       const parent = modelMap.get(field.type);
       if (!parent) continue;
       const targetFields = field.relation.fields;
-      const isUnique = isUniqueFieldSet(model, targetFields);
-      const required = targetFields.every((name) => {
-        const scalar = model.scalarFields.find((item) => item.name === name);
-        return scalar?.isRequired;
-      });
-      const parentCardinality = required ? 'ERone' : 'ERzeroToOne';
-      const childCardinality = isUnique ? 'ERzeroToOne' : 'ERzeroToMany';
+      const parentCardinality = 'ERmandOne';
+      const childCardinality = 'ERoneToMany';
       addEdge(
         cells,
         `rel_${edgeIndex++}_${parent.name}_${model.name}_${field.name}`,

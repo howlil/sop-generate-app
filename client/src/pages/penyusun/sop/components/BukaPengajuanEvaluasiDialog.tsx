@@ -28,11 +28,11 @@ const JENIS_OPTIONS: ReadonlyArray<{
   value: JenisPengajuanEvaluasi;
   label: string;
 }> = [
-  { value: "TERJADWAL", label: "Terjadwal" },
-  { value: "MANDIRI", label: "Mandiri" },
+  { value: "EVALUASI_REQUEST_EVALUATOR", label: "Request evaluator" },
+  { value: "EVALUASI_REQUEST_OPD", label: "Request OPD" },
 ];
 
-const STATUS_DETAIL_SIAP_DIAJUKAN_EVALUASI = "SIAP_DIEVALUASI";
+const STATUS_DETAIL_MENUNGGU_PENGAJUAN_EVALUASI = "MENUNGGU_PENGAJUAN_EVALUASI";
 
 export function BukaPengajuanEvaluasiDialog({
   open,
@@ -41,7 +41,7 @@ export function BukaPengajuanEvaluasiDialog({
   const [selectedDetailIds, setSelectedDetailIds] = useState<Set<string>>(
     () => new Set(),
   );
-  const [jenis, setJenis] = useState<JenisPengajuanEvaluasi>("TERJADWAL");
+  const [jenis, setJenis] = useState<JenisPengajuanEvaluasi>("EVALUASI_REQUEST_EVALUATOR");
   const { create, isCreating } = useEvaluasi({ enabled: false });
   const {
     data: workspace,
@@ -52,15 +52,15 @@ export function BukaPengajuanEvaluasiDialog({
   useEffect(() => {
     if (!open) {
       setSelectedDetailIds(new Set());
-      setJenis("TERJADWAL");
+      setJenis("EVALUASI_REQUEST_EVALUATOR");
     }
   }, [open]);
 
   const hasBlockingPengajuan = workspace?.pengajuanAktif != null;
   const workspaceBusy = isLoadingWorkspace || isFetchingWorkspace;
-  const sopSiapDievaluasi =
+  const sopMenungguPengajuanEvaluasi =
     workspace?.daftarSop.filter(
-      (row) => row.statusDetail === STATUS_DETAIL_SIAP_DIAJUKAN_EVALUASI,
+      (row) => row.statusDetail === STATUS_DETAIL_MENUNGGU_PENGAJUAN_EVALUASI,
     ) ?? [];
 
   const handleConfirm = useCallback(() => {
@@ -92,9 +92,9 @@ export function BukaPengajuanEvaluasiDialog({
     <FormDialog
       open={open}
       onOpenChange={onOpenChange}
-      title="Buka pengajuan evaluasi"
-      description="Pilih dokumen SOP yang akan dikirim ke evaluator."
-      confirmLabel="Buat pengajuan"
+      title="Ajukan evaluasi SOP"
+      description="Pilih SOP dan jenis pengajuan untuk dikirim ke Biro Organisasi."
+      confirmLabel="Ajukan evaluasi"
       size="lg"
       onConfirm={handleConfirm}
       confirmDisabled={confirmDisabled}
@@ -105,21 +105,18 @@ export function BukaPengajuanEvaluasiDialog({
           role="status"
           className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950"
         >
-          Masih ada pengajuan evaluasi aktif. Selesaikan pengajuan tersebut
-          terlebih dahulu sebelum membuka pengajuan baru.
+          Masih ada pengajuan evaluasi aktif. Selesaikan terlebih dahulu.
         </div>
       ) : null}
       <div className="space-y-1.5">
-        <Label required>Dokumen SOP</Label>
+        <Label required>SOP menunggu pengajuan evaluasi</Label>
         {workspaceBusy ? (
           <p className="text-xs text-gray-500">Memuat daftar SOP...</p>
-        ) : sopSiapDievaluasi.length === 0 ? (
-          <p className="text-xs text-gray-500">
-            Tidak ada SOP yang siap dievaluasi.
-          </p>
+        ) : sopMenungguPengajuanEvaluasi.length === 0 ? (
+          <p className="text-xs text-gray-500">Belum ada SOP menunggu pengajuan evaluasi.</p>
         ) : (
           <ul className="max-h-56 overflow-y-auto rounded-md border border-gray-200 divide-y divide-gray-100">
-            {sopSiapDievaluasi.map((row) => {
+            {sopMenungguPengajuanEvaluasi.map((row) => {
               const checked = selectedDetailIds.has(row.detailSopId);
               return (
                 <li key={row.detailSopId}>
@@ -139,7 +136,7 @@ export function BukaPengajuanEvaluasiDialog({
                         {row.judul}
                       </span>
                       <span className="text-gray-500">
-                        {row.nomorSOP} - {row.statusDetail}
+                        {row.nomorSOP} · {row.statusDetailLabel}
                       </span>
                     </span>
                   </label>

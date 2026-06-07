@@ -11,9 +11,7 @@ import { GenerateP12Dto } from '../shared/dto/generate-p12.dto';
 import { UploadP12Dto } from '../shared/dto/upload-p12.dto';
 import { SetupTteGenerateDto } from '../shared/dto/setup-tte-generate.dto';
 import { SetupTteUploadDto } from '../shared/dto/setup-tte-upload.dto';
-import {
-  TtePdfSigningService,
-} from '../penandatanganan/tte-pdf-signing.service';
+import { TtePdfSigningService } from '../penandatanganan/tte-pdf-signing.service';
 import type { VerifyPdfDto } from '../shared/dto/verify-pdf.dto';
 import { TtePenandatangananService } from '../penandatanganan/tte-penandatanganan.service';
 import { TteProfilService } from '../profil/tte-profil.service';
@@ -75,7 +73,11 @@ export class TteService {
     return this.profilService.setupTteGenerate(user, dto);
   }
 
-  setupTteWithUpload(user: JwtAccessPayload, dto: SetupTteUploadDto, file: any): Promise<TteProfilResponse> {
+  setupTteWithUpload(
+    user: JwtAccessPayload,
+    dto: SetupTteUploadDto,
+    file: any,
+  ): Promise<TteProfilResponse> {
     return this.profilService.setupTteWithUpload(user, dto, file);
   }
 
@@ -113,7 +115,6 @@ export class TteService {
   signPdf(user: JwtAccessPayload, dto: SignPdfDto): Promise<SignPdfResponse> {
     return this.pdfSigningService.signPdf(user, dto);
   }
-
 
   getPdfSigningStatus(): PdfSigningStatusResponse {
     return this.pdfSigningService.getPdfSigningStatus();

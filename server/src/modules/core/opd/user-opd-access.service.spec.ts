@@ -54,7 +54,9 @@ describe('Pengujian UserOpdAccessService', () => {
 
   describe('assertSameOpd', () => {
     it('seharusnya melempar ForbiddenException ketika OPD target tidak sama (False case)', async () => {
-      await expect(service.assertSameOpd('u1', 'opd-lain')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.assertSameOpd('u1', 'opd-lain')).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
     });
 
     it('seharusnya melewati pengecekan ketika OPD target sama persis', async () => {
@@ -70,21 +72,19 @@ describe('Pengujian UserOpdAccessService', () => {
     });
 
     it('seharusnya mengembalikan OPD sendiri jika query string kosong (Edge case)', async () => {
-      await expect(
-        service.resolveOwnOpdAllowingOptionalQuery('u1', ''),
-      ).resolves.toBe('opd-1');
+      await expect(service.resolveOwnOpdAllowingOptionalQuery('u1', '')).resolves.toBe('opd-1');
     });
 
     it('seharusnya mengembalikan OPD sendiri jika query undefined', async () => {
-      await expect(
-        service.resolveOwnOpdAllowingOptionalQuery('u1', undefined),
-      ).resolves.toBe('opd-1');
+      await expect(service.resolveOwnOpdAllowingOptionalQuery('u1', undefined)).resolves.toBe(
+        'opd-1',
+      );
     });
 
     it('seharusnya mengembalikan OPD sendiri jika query sama persis', async () => {
-      await expect(
-        service.resolveOwnOpdAllowingOptionalQuery('u1', 'opd-1'),
-      ).resolves.toBe('opd-1');
+      await expect(service.resolveOwnOpdAllowingOptionalQuery('u1', 'opd-1')).resolves.toBe(
+        'opd-1',
+      );
     });
   });
 
@@ -105,7 +105,9 @@ describe('Pengujian UserOpdAccessService', () => {
         email: 'p@x.c',
         peran: PeranPengguna.PENYUSUN,
       };
-      await expect(service.assertWorkbenchAccess(user, 'opd-lain')).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(service.assertWorkbenchAccess(user, 'opd-lain')).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
     });
 
     it('seharusnya mengijinkan akses untuk peran penyusun dengan OPD yang sama', async () => {

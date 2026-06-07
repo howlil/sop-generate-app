@@ -8,15 +8,15 @@ describe('Pengujian mapStatusSopUntukPengajuan', () => {
     );
   });
 
-  it('seharusnya memetakan SELESAI_DIEVALUASI menjadi SIAP_DIVERIFIKASI', () => {
+  it('seharusnya memetakan SELESAI_DIEVALUASI menjadi MENUNGGU_TTD_PJ_EVALUATOR', () => {
     expect(mapStatusSopUntukPengajuan(StatusPengajuanEvaluasi.SELESAI_DIEVALUASI)).toBe(
-      StatusSOP.SIAP_DIVERIFIKASI,
+      StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
     );
   });
 
-  it('seharusnya memetakan DIVERIFIKASI_PJ_EVALUATOR menjadi SIAP_DIVERIFIKASI', () => {
-    expect(mapStatusSopUntukPengajuan(StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR)).toBe(
-      StatusSOP.SIAP_DIVERIFIKASI,
+  it('seharusnya memetakan DITANDATANGANI_PJ_EVALUATOR menjadi MENUNGGU_TTD_PJ_EVALUATOR', () => {
+    expect(mapStatusSopUntukPengajuan(StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR)).toBe(
+      StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
     );
   });
 

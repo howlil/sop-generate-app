@@ -15,7 +15,6 @@ export class TtePublicUrlResolver {
     return resolvePublicAppOrigin({
       configOrigin: this.configService.get<string>('PUBLIC_APP_ORIGIN'),
       requestOrigin: req === undefined ? null : extractAppOriginFromRequest(req),
-      legacyVerifyBaseUrl: this.configService.get<string>('PUBLIC_TTE_VERIFY_BASE_URL'),
     });
   }
 

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
-import { Building2, FileText, Hash, ShieldAlert, Users, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Building2, ClipboardList, FileText, Hash, Link2, Package, Scale, ShieldAlert, Users } from 'lucide-react'
 import { AutoResizeTextarea } from '@/components/ui/auto-resize-textarea'
 import { Input } from '@/components/ui/input'
 import { FormField } from '@/components/ui/form-field'
 import { Textarea } from '@/components/ui/textarea'
-import { EditableStringList } from '@/components/ui/editable-string-list'
+import { AddItemIconButton, EditableStringList } from '@/components/ui/editable-string-list'
+import { FieldWithCornerRemoveButton } from '@/components/ui/field-with-corner-remove-button'
 import type { SOPDetailMetadata } from '@/types/ui/sop'
 import { cn } from '@/utils/cn'
 import { useSopEditor } from '../SopEditorContext'
@@ -38,23 +38,33 @@ function asArray(v: string | string[] | undefined): string[] {
   return []
 }
 
-function SectionTitle({
+function MetadataFieldCard({
   icon,
   title,
   subtitle,
+  children,
+  action,
 }: {
   icon: ReactNode
   title: string
   subtitle?: string
+  children: ReactNode
+  action?: ReactNode
 }) {
   return (
-    <div className="flex items-start gap-2">
-      <div className="mt-0.5 text-gray-500">{icon}</div>
-      <div>
-        <h3 className="text-xs font-semibold text-gray-900">{title}</h3>
-        {subtitle ? <p className="text-[11px] text-gray-500 mt-0.5">{subtitle}</p> : null}
+    <section className="rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="flex items-start justify-between gap-2 border-b border-gray-100 px-3 py-2.5">
+        <div className="flex min-w-0 items-start gap-2">
+          <div className="mt-0.5 shrink-0 text-gray-500">{icon}</div>
+          <div className="min-w-0">
+            <h3 className="text-xs font-semibold text-gray-900">{title}</h3>
+            {subtitle ? <p className="mt-0.5 text-[11px] leading-snug text-gray-500">{subtitle}</p> : null}
+          </div>
+        </div>
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
-    </div>
+      <div className="space-y-3 px-3 py-3">{children}</div>
+    </section>
   )
 }
 
@@ -104,329 +114,360 @@ export function SOPHeaderSection({
   const sopNumber = metadataDisplayNumber(metadata)
 
   return (
-    <div className="space-y-4">
-      <p className="text-xs font-semibold text-gray-900 px-1">
+    <div className="space-y-3">
+      <p className="px-0.5 text-xs font-semibold text-gray-700">
         Header SOP{isReadOnly ? ' (lihat)' : ''}
       </p>
-      <div className="space-y-4">
-        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
-          <SectionTitle
-            icon={<Building2 className="h-3.5 w-3.5" />}
-            title="Identitas Dokumen"
-            subtitle="Informasi utama SOP untuk header dokumen."
+
+      <MetadataFieldCard
+        icon={<Building2 className="h-3.5 w-3.5" />}
+        title="Nama/Detail lembaga"
+        subtitle="Empat baris identitas lembaga pada header dokumen."
+      >
+        {isReadOnly ? (
+          <ReadOnlyTextBlock
+            value={institutionText}
+            placeholder="Belum diisi."
+            multiline
           />
-          <FormField label={<span className="font-semibold text-gray-900">Nama/Detail lembaga (4 baris)</span>}>
-            {isReadOnly ? (
-              <ReadOnlyTextBlock
-                value={institutionText}
-                placeholder="Belum diisi."
-                multiline
-              />
-            ) : (
-              <Textarea
-                className={cn('text-xs min-h-[84px]', roInput)}
-                readOnly={isReadOnly}
-                disabled={isReadOnly}
-                value={institutionText}
-                onChange={(e) => {
-                  const lines = toLinesKeepEmpty(e.target.value)
-                  handleMetadataChange('institutionLines', lines)
-                  handleMetadataChange('lembaga', lines.join('\n'))
-                }}
-                placeholder="Baris 1&#10;Baris 2&#10;Baris 3&#10;Baris 4"
-              />
-            )}
-          </FormField>
-          <FormField label={<span className="font-semibold text-gray-900">Nama SOP</span>}>
-            {isReadOnly ? (
-              <ReadOnlyTextBlock value={sopName} placeholder="Belum ada nama SOP." />
-            ) : (
-              <AutoResizeTextarea
-                className={cn('text-xs min-h-9 py-1.5', roInput)}
-                minRows={1}
-                maxRows={8}
-                readOnly={isReadOnly}
-                disabled={isReadOnly}
-                value={sopName}
-                onChange={(e) => {
-                  const v = e.target.value
-                  handleMetadataChange('judul', v)
-                  handleMetadataChange('nama', v)
-                }}
-                placeholder="Judul SOP"
-              />
-            )}
-          </FormField>
-          <FormField label={<span className="font-semibold text-gray-900">Nomor SOP</span>}>
-            {isReadOnly ? (
-              <ReadOnlyTextBlock value={sopNumber} placeholder="Belum ada nomor SOP." />
-            ) : (
-              <Input
-                className={cn('h-9 text-xs', roInput)}
-                readOnly={isReadOnly}
-                disabled={isReadOnly}
-                value={sopNumber}
-                onChange={(e) => {
-                  const v = e.target.value
-                  handleMetadataChange('nomorSOP', v)
-                  handleMetadataChange('nomor', v)
-                }}
-                placeholder="Mis. 001/SOP/2026"
-              />
-            )}
-          </FormField>
-        </section>
-
-        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
-          <SectionTitle
-            icon={<FileText className="h-3.5 w-3.5" />}
-            title="Referensi Dokumen"
-            subtitle="Dasar hukum dan keterkaitan dengan SOP lain."
+        ) : (
+          <Textarea
+            className={cn('text-xs min-h-[84px]', roInput)}
+            readOnly={isReadOnly}
+            disabled={isReadOnly}
+            value={institutionText}
+            onChange={(e) => {
+              const lines = toLinesKeepEmpty(e.target.value)
+              handleMetadataChange('institutionLines', lines)
+              handleMetadataChange('lembaga', lines.join('\n'))
+            }}
+            placeholder="Baris 1&#10;Baris 2&#10;Baris 3&#10;Baris 4"
           />
+        )}
+      </MetadataFieldCard>
 
-        <FormField label={<span className="font-semibold text-gray-900">Dasar hukum</span>}>
-          {!isReadOnly ? (
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={onOpenLawBasisDialog}
-            >
-              Tambah
-            </Button>
-          </div>
-          ) : null}
-          <div className="space-y-1 mt-1.5">
-            {(metadata.lawBasis ?? []).length === 0 ? (
-              <p className="text-xs text-gray-500">Belum ada dasar hukum.</p>
-            ) : (
-              (metadata.lawBasis ?? []).map((item: string, idx: number) => (
-                <div key={`${idx}-${item}`} className="flex items-start gap-2">
-                  <p className="text-xs text-gray-700 flex-1">• {item}</p>
-                  {!isReadOnly ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-gray-500 hover:text-red-600"
-                    onClick={() => {
-                      const nextLabels = (metadata.lawBasis ?? []).filter((_, i) => i !== idx)
-                      const nextIds = (metadata.lawBasisIds ?? []).filter((_, i) => i !== idx)
-                      handleMetadataChange('lawBasis', nextLabels)
-                      handleMetadataChange('lawBasisIds', nextIds)
-                    }}
-                    title="Hapus"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                  ) : null}
-                </div>
-              ))
-            )}
-          </div>
-        </FormField>
-
-        <FormField label={<span className="font-semibold text-gray-900">Keterkaitan dengan SOP</span>}>
-          {!isReadOnly ? (
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={onOpenRelatedPosDialog}
-            >
-              Tambah
-            </Button>
-          </div>
-          ) : null}
-          <div className="space-y-1 mt-1.5">
-            {(metadata.relatedSop ?? []).length === 0 ? (
-              <p className="text-xs text-gray-500">Belum ada keterkaitan SOP.</p>
-            ) : (
-              (metadata.relatedSop ?? []).map((item: string, idx: number) => (
-                <div key={`${idx}-${item}`} className="flex items-start gap-2">
-                  <p className="text-xs text-gray-700 flex-1">• {item}</p>
-                  {!isReadOnly ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-gray-500 hover:text-red-600"
-                    onClick={() => {
-                      const nextLabels = (metadata.relatedSop ?? []).filter((_, i) => i !== idx)
-                      const nextIds = (metadata.relatedSopDetailIds ?? []).filter((_, i) => i !== idx)
-                      handleMetadataChange('relatedSop', nextLabels)
-                      handleMetadataChange('relatedSopDetailIds', nextIds)
-                    }}
-                    title="Hapus"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                  ) : null}
-                </div>
-              ))
-            )}
-          </div>
-        </FormField>
-        </section>
-
-        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
-          <SectionTitle
-            icon={<Hash className="h-3.5 w-3.5" />}
-            title="Ketentuan Pelaksanaan"
-            subtitle="Informasi teknis pendukung pelaksanaan SOP."
-          />
-
-        <FormField label={<span className="font-semibold text-gray-900">Peringatan</span>}>
+      <MetadataFieldCard
+        icon={<FileText className="h-3.5 w-3.5" />}
+        title="Identitas SOP"
+        subtitle="Judul dan nomor dokumen SOP."
+      >
+        <FormField label={<span className="font-medium text-gray-800">Nama SOP</span>}>
           {isReadOnly ? (
-            <ul className="mt-1 space-y-1 list-disc pl-4">
-              {asArray(metadata.warning).length === 0 ? (
-                <li className="text-xs text-gray-500">Tidak ada peringatan.</li>
-              ) : (
-                asArray(metadata.warning).map((line, idx) => (
-                  <li key={`${idx}-${line}`} className="text-xs text-gray-700">
-                    {line}
-                  </li>
-                ))
-              )}
-            </ul>
+            <ReadOnlyTextBlock value={sopName} placeholder="Belum ada nama SOP." />
           ) : (
-            <EditableStringList
-              items={asArray(metadata.warning)}
-              onChange={(next) => handleMetadataChange('warning', next)}
-              placeholder="Peringatan"
-              emptyMessage='Belum ada peringatan. Klik "Tambah" untuk menambahkan.'
+            <AutoResizeTextarea
+              className={cn('text-xs min-h-9 py-1.5', roInput)}
+              minRows={1}
+              maxRows={8}
+              readOnly={isReadOnly}
+              disabled={isReadOnly}
+              value={sopName}
+              onChange={(e) => {
+                const v = e.target.value
+                handleMetadataChange('judul', v)
+                handleMetadataChange('nama', v)
+              }}
+              placeholder="Judul SOP"
             />
           )}
         </FormField>
-
-        <FormField label={<span className="font-semibold text-gray-900">Kualifikasi pelaksanaan</span>}>
+        <FormField label={<span className="font-medium text-gray-800">Nomor SOP</span>}>
           {isReadOnly ? (
-            <ul className="mt-1 space-y-1 list-disc pl-4">
-              {asArray(metadata.implementQualification).length === 0 ? (
-                <li className="text-xs text-gray-500">Belum ada kualifikasi.</li>
-              ) : (
-                asArray(metadata.implementQualification).map((line, idx) => (
-                  <li key={`${idx}-${line}`} className="text-xs text-gray-700">
-                    {line}
-                  </li>
-                ))
-              )}
-            </ul>
+            <ReadOnlyTextBlock value={sopNumber} placeholder="Belum ada nomor SOP." />
           ) : (
+            <Input
+              className={cn('h-9 text-xs', roInput)}
+              readOnly={isReadOnly}
+              disabled={isReadOnly}
+              value={sopNumber}
+              onChange={(e) => {
+                const v = e.target.value
+                handleMetadataChange('nomorSOP', v)
+                handleMetadataChange('nomor', v)
+              }}
+              placeholder="Mis. 001/SOP/2026"
+            />
+          )}
+        </FormField>
+      </MetadataFieldCard>
+
+      <MetadataFieldCard
+        icon={<Scale className="h-3.5 w-3.5" />}
+        title="Dasar hukum"
+        subtitle="Peraturan atau dasar hukum yang menjadi acuan SOP."
+        action={
+          !isReadOnly ? (
+            <AddItemIconButton onClick={onOpenLawBasisDialog} label="Tambah dasar hukum" />
+          ) : undefined
+        }
+      >
+        <div className="space-y-1">
+          {(metadata.lawBasis ?? []).length === 0 ? (
+            <p className="text-xs text-gray-500">Belum ada dasar hukum.</p>
+          ) : (
+            (metadata.lawBasis ?? []).map((item: string, idx: number) =>
+              !isReadOnly ? (
+                <FieldWithCornerRemoveButton
+                  key={`${idx}-${item}`}
+                  className="rounded-md border border-gray-200 bg-gray-50"
+                  contentClassName="px-3 py-2 pr-8 text-xs text-gray-700"
+                  onRemove={() => {
+                    const nextLabels = (metadata.lawBasis ?? []).filter((_, i) => i !== idx)
+                    const nextIds = (metadata.lawBasisIds ?? []).filter((_, i) => i !== idx)
+                    handleMetadataChange('lawBasis', nextLabels)
+                    handleMetadataChange('lawBasisIds', nextIds)
+                  }}
+                >
+                  • {item}
+                </FieldWithCornerRemoveButton>
+              ) : (
+                <p key={`${idx}-${item}`} className="text-xs text-gray-700">
+                  • {item}
+                </p>
+              ),
+            )
+          )}
+        </div>
+      </MetadataFieldCard>
+
+      <MetadataFieldCard
+        icon={<Link2 className="h-3.5 w-3.5" />}
+        title="Keterkaitan dengan SOP"
+        subtitle="SOP lain yang terkait dengan prosedur ini."
+        action={
+          !isReadOnly ? (
+            <AddItemIconButton onClick={onOpenRelatedPosDialog} label="Tambah keterkaitan SOP" />
+          ) : undefined
+        }
+      >
+        <div className="space-y-1">
+          {(metadata.relatedSop ?? []).length === 0 ? (
+            <p className="text-xs text-gray-500">Belum ada keterkaitan SOP.</p>
+          ) : (
+            (metadata.relatedSop ?? []).map((item: string, idx: number) =>
+              !isReadOnly ? (
+                <FieldWithCornerRemoveButton
+                  key={`${idx}-${item}`}
+                  className="rounded-md border border-gray-200 bg-gray-50"
+                  contentClassName="px-3 py-2 pr-8 text-xs text-gray-700"
+                  onRemove={() => {
+                    const nextLabels = (metadata.relatedSop ?? []).filter((_, i) => i !== idx)
+                    const nextIds = (metadata.relatedSopDetailIds ?? []).filter((_, i) => i !== idx)
+                    handleMetadataChange('relatedSop', nextLabels)
+                    handleMetadataChange('relatedSopDetailIds', nextIds)
+                  }}
+                >
+                  • {item}
+                </FieldWithCornerRemoveButton>
+              ) : (
+                <p key={`${idx}-${item}`} className="text-xs text-gray-700">
+                  • {item}
+                </p>
+              ),
+            )
+          )}
+        </div>
+      </MetadataFieldCard>
+
+      <MetadataFieldCard
+        icon={<Hash className="h-3.5 w-3.5" />}
+        title="Peringatan"
+        subtitle="Hal-hal yang perlu diperhatikan saat pelaksanaan."
+        action={
+          !isReadOnly ? (
+            <AddItemIconButton
+              onClick={() =>
+                handleMetadataChange('warning', [...asArray(metadata.warning), ''])
+              }
+              label="Tambah peringatan"
+            />
+          ) : undefined
+        }
+      >
+        {isReadOnly ? (
+          <ul className="space-y-1 list-disc pl-4">
+            {asArray(metadata.warning).length === 0 ? (
+              <li className="text-xs text-gray-500">Tidak ada peringatan.</li>
+            ) : (
+              asArray(metadata.warning).map((line, idx) => (
+                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                  {line}
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
+          <EditableStringList
+            items={asArray(metadata.warning)}
+            onChange={(next) => handleMetadataChange('warning', next)}
+            placeholder="Peringatan"
+            emptyMessage="Belum ada peringatan."
+            showAddButton={false}
+          />
+        )}
+      </MetadataFieldCard>
+
+      <MetadataFieldCard
+        icon={<Hash className="h-3.5 w-3.5" />}
+        title="Kualifikasi pelaksanaan"
+        subtitle="Persyaratan kompetensi pelaksana SOP."
+        action={
+          !isReadOnly ? (
+            <AddItemIconButton
+              onClick={() =>
+                handleMetadataChange('implementQualification', [
+                  ...asArray(metadata.implementQualification),
+                  '',
+                ])
+              }
+              label="Tambah kualifikasi"
+            />
+          ) : undefined
+        }
+      >
+        {isReadOnly ? (
+          <ul className="space-y-1 list-disc pl-4">
+            {asArray(metadata.implementQualification).length === 0 ? (
+              <li className="text-xs text-gray-500">Belum ada kualifikasi.</li>
+            ) : (
+              asArray(metadata.implementQualification).map((line, idx) => (
+                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                  {line}
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
           <EditableStringList
             items={asArray(metadata.implementQualification)}
             onChange={(next) => handleMetadataChange('implementQualification', next)}
             placeholder="Kualifikasi"
-            emptyMessage='Belum ada kualifikasi. Klik "Tambah" untuk menambahkan.'
+            emptyMessage="Belum ada kualifikasi."
+            showAddButton={false}
           />
-          )}
-        </FormField>
+        )}
+      </MetadataFieldCard>
 
-        <FormField label={<span className="font-semibold text-gray-900">Peralatan dan perlengkapan</span>}>
-          {isReadOnly ? (
-            <ul className="mt-1 space-y-1 list-disc pl-4">
-              {asArray(metadata.equipment).length === 0 ? (
-                <li className="text-xs text-gray-500">Belum ada peralatan/perlengkapan.</li>
-              ) : (
-                asArray(metadata.equipment).map((line, idx) => (
-                  <li key={`${idx}-${line}`} className="text-xs text-gray-700">
-                    {line}
-                  </li>
-                ))
-              )}
-            </ul>
-          ) : (
+      <MetadataFieldCard
+        icon={<Package className="h-3.5 w-3.5" />}
+        title="Peralatan dan perlengkapan"
+        subtitle="Alat dan bahan yang dibutuhkan untuk pelaksanaan."
+        action={
+          !isReadOnly ? (
+            <AddItemIconButton
+              onClick={() =>
+                handleMetadataChange('equipment', [...asArray(metadata.equipment), ''])
+              }
+              label="Tambah peralatan"
+            />
+          ) : undefined
+        }
+      >
+        {isReadOnly ? (
+          <ul className="space-y-1 list-disc pl-4">
+            {asArray(metadata.equipment).length === 0 ? (
+              <li className="text-xs text-gray-500">Belum ada peralatan/perlengkapan.</li>
+            ) : (
+              asArray(metadata.equipment).map((line, idx) => (
+                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                  {line}
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
           <EditableStringList
             items={asArray(metadata.equipment)}
             onChange={(next) => handleMetadataChange('equipment', next)}
             placeholder="Peralatan"
-            emptyMessage='Belum ada peralatan/perlengkapan. Klik "Tambah" untuk menambahkan.'
+            emptyMessage="Belum ada peralatan/perlengkapan."
+            showAddButton={false}
           />
-          )}
-        </FormField>
+        )}
+      </MetadataFieldCard>
 
-        <FormField label={<span className="font-semibold text-gray-900">Pencatatan dan pendataan</span>}>
-          {isReadOnly ? (
-            <ul className="mt-1 space-y-1 list-disc pl-4">
-              {asArray(metadata.recordData).length === 0 ? (
-                <li className="text-xs text-gray-500">Belum ada pencatatan/pendataan.</li>
-              ) : (
-                asArray(metadata.recordData).map((line, idx) => (
-                  <li key={`${idx}-${line}`} className="text-xs text-gray-700">
-                    {line}
-                  </li>
-                ))
-              )}
-            </ul>
-          ) : (
+      <MetadataFieldCard
+        icon={<ClipboardList className="h-3.5 w-3.5" />}
+        title="Pencatatan dan pendataan"
+        subtitle="Dokumen atau catatan yang harus dibuat saat pelaksanaan."
+        action={
+          !isReadOnly ? (
+            <AddItemIconButton
+              onClick={() =>
+                handleMetadataChange('recordData', [...asArray(metadata.recordData), ''])
+              }
+              label="Tambah pencatatan"
+            />
+          ) : undefined
+        }
+      >
+        {isReadOnly ? (
+          <ul className="space-y-1 list-disc pl-4">
+            {asArray(metadata.recordData).length === 0 ? (
+              <li className="text-xs text-gray-500">Belum ada pencatatan/pendataan.</li>
+            ) : (
+              asArray(metadata.recordData).map((line, idx) => (
+                <li key={`${idx}-${line}`} className="text-xs text-gray-700">
+                  {line}
+                </li>
+              ))
+            )}
+          </ul>
+        ) : (
           <EditableStringList
             items={asArray(metadata.recordData)}
             onChange={(next) => handleMetadataChange('recordData', next)}
             placeholder="Pencatatan"
-            emptyMessage='Belum ada pencatatan/pendataan. Klik "Tambah" untuk menambahkan.'
+            emptyMessage="Belum ada pencatatan/pendataan."
+            showAddButton={false}
           />
+        )}
+      </MetadataFieldCard>
+
+      <MetadataFieldCard
+        icon={<Users className="h-3.5 w-3.5" />}
+        title="Aktor pelaksana"
+        subtitle="Daftar pelaksana yang terlibat pada SOP."
+        action={
+          !isReadOnly && onOpenPelaksanaDialog ? (
+            <AddItemIconButton onClick={onOpenPelaksanaDialog} label="Tambah aktor pelaksana" />
+          ) : undefined
+        }
+      >
+        <div className="space-y-1">
+          {implementers.length === 0 ? (
+            <p className="text-xs text-gray-500">Belum ada aktor pelaksana.</p>
+          ) : (
+            implementers.map((imp, idx) =>
+              !isReadOnly ? (
+                <FieldWithCornerRemoveButton
+                  key={imp.id}
+                  className="rounded-md border border-gray-200 bg-gray-50"
+                  contentClassName="px-3 py-2 pr-8 text-xs text-gray-700"
+                  onRemove={() => setImplementers((prev) => prev.filter((_, i) => i !== idx))}
+                >
+                  • {imp.name}
+                </FieldWithCornerRemoveButton>
+              ) : (
+                <p key={imp.id} className="text-xs text-gray-700">
+                  • {imp.name}
+                </p>
+              ),
+            )
           )}
-        </FormField>
-        </section>
+        </div>
+      </MetadataFieldCard>
 
-        <section className="space-y-3 rounded-md border border-gray-100 bg-white p-3">
-          <SectionTitle
-            icon={<Users className="h-3.5 w-3.5" />}
-            title="Aktor Pelaksana"
-            subtitle="Daftar pelaksana yang terlibat pada SOP."
-          />
-
-        <FormField label={<span className="font-semibold text-gray-900">Aktor pelaksana</span>}>
-          {!isReadOnly ? (
-          <div className="flex justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs"
-              onClick={onOpenPelaksanaDialog}
-            >
-              Tambah
-            </Button>
+      {isReadOnly ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <div className="flex items-start gap-2">
+            <ShieldAlert className="mt-0.5 h-3.5 w-3.5 text-amber-700" />
+            <p className="text-[11px] leading-relaxed text-amber-800">
+              Mode lihat aktif. Gunakan tab Edit pada dokumen yang dapat diubah untuk memperbarui metadata.
+            </p>
           </div>
-          ) : null}
-          <div className="space-y-1 mt-1.5">
-            {implementers.length === 0 ? (
-              <p className="text-xs text-gray-500">Belum ada aktor pelaksana.</p>
-            ) : (
-              implementers.map((imp, idx) => (
-                <div key={imp.id} className="flex items-start gap-2">
-                  <p className="text-xs text-gray-700 flex-1">• {imp.name}</p>
-                  {!isReadOnly ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0 text-gray-500 hover:text-red-600"
-                    onClick={() =>
-                      setImplementers((prev) => prev.filter((_, i) => i !== idx))
-                    }
-                    title="Hapus"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </Button>
-                  ) : null}
-                </div>
-              ))
-            )}
-          </div>
-        </FormField>
-        </section>
-
-        {isReadOnly ? (
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
-            <div className="flex items-start gap-2">
-              <ShieldAlert className="h-3.5 w-3.5 mt-0.5 text-amber-700" />
-              <p className="text-[11px] leading-relaxed text-amber-800">
-                Mode lihat aktif. Gunakan tab Edit pada dokumen yang dapat diubah untuk memperbarui metadata.
-              </p>
-            </div>
-          </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </div>
   )
 }

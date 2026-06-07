@@ -137,12 +137,12 @@ export function DetailSOPPenyusunHeader({
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const indicator = isReadOnly ? null : autosaveAppearance(autosaveStatus)
   const confirmTitle = isRevisionFlow
-    ? 'Kirim ulang ke evaluator?'
+    ? 'Kirim ulang evaluasi?'
     : 'Yakin SOP sudah siap?'
   const confirmDescription = isRevisionFlow
     ? kirimUlangBlockingReason ??
-      'SOP akan langsung diajukan kembali ke evaluator. Pastikan umpan balik evaluasi sudah ditandai selesai dan semua perbaikan tersimpan.'
-    : 'Status SOP akan diubah menjadi Siap dievaluasi. PJ Penyusun dapat membuka pengajuan evaluasi ke Biro Organisasi. Pastikan dokumen sudah lengkap sebelum melanjutkan.'
+      'SOP akan dikirim ulang untuk evaluasi oleh tim evaluator. Pastikan semua perbaikan sudah tersimpan.'
+    : 'Status SOP akan diubah menjadi Menunggu pengajuan evaluasi. PJ Penyusun dapat membuka pengajuan evaluasi ke Biro Organisasi. Pastikan dokumen sudah lengkap sebelum melanjutkan.'
   const confirmLabel = isRevisionFlow ? 'Ya, kirim ulang' : 'Ya, selesai'
   const handleConfirmComplete = () => {
     setIsConfirmOpen(false)
@@ -254,17 +254,14 @@ export function DetailSOPPenyusunHeader({
             kirimUlangBlockingReason
           ) : !canShowKirimUlangAction ? (
             <>
-              SOP ini dikembalikan oleh evaluator untuk revisi. Selesaikan perbaikan dan tandai umpan
-              balik di tab <span className="font-semibold">Umpan balik</span>, lalu minta{' '}
-              <span className="font-semibold">PJ Penyusun</span> mengirim ulang ke evaluator.
+              SOP ini dikembalikan oleh evaluator untuk revisi. Selesaikan perbaikan, lalu minta{' '}
+              <span className="font-semibold">PJ Penyusun</span> mengirim ulang evaluasi.
             </>
           ) : (
             <>
-              SOP ini dikembalikan oleh evaluator untuk revisi. Tandai umpan balik selesai di tab
-              {' '}
-              <span className="font-semibold">Umpan balik</span>
-              , lalu klik{' '}
-              <span className="font-semibold">Kirim ulang ke evaluator</span>.
+              SOP ini dikembalikan oleh evaluator untuk revisi. Pastikan perbaikan tersimpan, lalu
+              klik{' '}
+              <span className="font-semibold">Kirim ulang evaluasi</span>.
             </>
           )}
         </div>

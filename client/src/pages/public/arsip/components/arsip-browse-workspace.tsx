@@ -92,8 +92,8 @@ export function ArsipBrowseWorkspace({
   const showOpdPicker = !isGlobalMode && !opdId
   return (
     <div
-      className="hidden min-h-[calc(100vh-12rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:flex"
-      aria-label="Workspace arsip SOP"
+      className="hidden h-[calc(100dvh-14rem)] min-h-[min(420px,55vh)] max-h-[calc(100dvh-10rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm lg:flex"
+      aria-label="Penelusuran arsip SOP"
     >
       <CollapsibleSidePanel
         side="left"

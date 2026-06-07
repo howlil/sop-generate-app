@@ -115,7 +115,12 @@ export class SopPublicRepository {
     skip: number;
     take: number;
   }): Promise<PublicSopDbRow[]> {
-    return this.findPublishedSopRows(Prisma.sql`s.opdId = ${params.opdId}`, params.search, params.skip, params.take);
+    return this.findPublishedSopRows(
+      Prisma.sql`s.opdId = ${params.opdId}`,
+      params.search,
+      params.skip,
+      params.take,
+    );
   }
 
   async countBerlakuSopGlobal(search?: string): Promise<number> {
@@ -140,7 +145,13 @@ export class SopPublicRepository {
     skip: number;
     take: number;
   }): Promise<PublicSopDbRow[]> {
-    return this.findPublishedSopRows(Prisma.sql`1 = 1`, params.search, params.skip, params.take, true);
+    return this.findPublishedSopRows(
+      Prisma.sql`1 = 1`,
+      params.search,
+      params.skip,
+      params.take,
+      true,
+    );
   }
 
   async findPublishedPdfByDetailSopId(detailSopId: string): Promise<PublicSopPdfDbRow | null> {

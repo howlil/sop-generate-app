@@ -383,7 +383,7 @@ Fitur berikut ada di [`requirements.md`](requirements.md) dan `server/`, tetapi 
 ## Urutan bisnis utama (evaluasi → pengesahan)
 
 ```text
-Penyusun/PJ Penyusun: Inisiasi + Menyusun Draft (UC-16, UC-15) → siap dievaluasi
+Penyusun/PJ Penyusun: Inisiasi + Menyusun Draft (UC-16, UC-15) → menunggu pengajuan evaluasi
 PJ Penyusun: Mengajukan Evaluasi (UC-14 / No 12)
 Evaluator: Mengevaluasi + Komentar bila perlu (UC-11, UC-12 / No 15–16)
 Penyusun/PJ Penyusun: tindak lanjut & pengajuan ulang (No 14, 13 — tanpa oval terpisah)
@@ -1094,7 +1094,7 @@ Dokumen ini merinci use case **Mengajukan Evaluasi SOP** sesuai [`../usecase.md`
 ## Prasyarat
 
 - PJ Penyusun sudah login.
-- Terdapat minimal satu SOP pada OPD yang siap dievaluasi.
+- Terdapat minimal satu SOP pada OPD yang menunggu pengajuan evaluasi.
 - Tidak ada pengajuan aktif yang melanggar aturan proses berjalan.
 
 ## Pemicu
@@ -1113,7 +1113,7 @@ PJ Penyusun ingin menyerahkan SOP kepada evaluator untuk dinilai.
 
 ## Alur alternatif
 
-- Jika ada SOP yang belum siap dievaluasi, sistem menolak SOP tersebut dari pengajuan.
+- Jika ada SOP yang belum menunggu pengajuan evaluasi, sistem menolak SOP tersebut dari pengajuan.
 - Jika OPD masih memiliki pengajuan aktif, sistem menolak pembuatan pengajuan baru.
 - Jika daftar SOP kosong, sistem menampilkan bahwa belum ada SOP yang dapat diajukan.
 
@@ -1564,14 +1564,14 @@ Aktor mengisi atau memperbarui substansi SOP.
 4. Aktor menyusun langkah SOP dan relasi alur keputusan jika ada.
 5. Sistem memvalidasi kelengkapan dan konsistensi data.
 6. Sistem menyimpan perubahan dan mencatat riwayat edit.
-7. Jika dokumen sudah lengkap, aktor menandai draft sebagai siap dievaluasi.
-8. Sistem mengubah status SOP menjadi siap dievaluasi.
+7. Jika dokumen sudah lengkap, aktor menandai draft sebagai menunggu pengajuan evaluasi.
+8. Sistem mengubah status SOP menjadi menunggu pengajuan evaluasi.
 
 ## Alur alternatif
 
 - Jika status SOP sedang dievaluasi atau sudah berlaku, sistem menolak pengeditan.
 - Jika langkah keputusan tidak memiliki cabang ya dan tidak, sistem menolak penyimpanan atau penandaan siap.
-- Jika draft belum lengkap, sistem menyimpan sebagai draft tetapi menolak status siap dievaluasi.
+- Jika draft belum lengkap, sistem menyimpan sebagai draft tetapi menolak status menunggu pengajuan evaluasi.
 
 ## Hasil akhir
 

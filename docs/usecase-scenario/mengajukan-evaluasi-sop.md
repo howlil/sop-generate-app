@@ -19,7 +19,7 @@ Dokumen ini merinci use case **Mengajukan Evaluasi SOP** sesuai [`../usecase.md`
 ## Prasyarat
 
 - PJ Penyusun sudah login.
-- Terdapat minimal satu SOP pada OPD yang siap dievaluasi.
+- Terdapat minimal satu SOP pada OPD yang menunggu pengajuan evaluasi.
 - Tidak ada pengajuan aktif yang melanggar aturan proses berjalan.
 
 ## Pemicu
@@ -38,7 +38,7 @@ PJ Penyusun ingin menyerahkan SOP kepada evaluator untuk dinilai.
 
 ## Alur alternatif
 
-- Jika ada SOP yang belum siap dievaluasi, sistem menolak SOP tersebut dari pengajuan.
+- Jika ada SOP yang belum menunggu pengajuan evaluasi, sistem menolak SOP tersebut dari pengajuan.
 - Jika OPD masih memiliki pengajuan aktif, sistem menolak pembuatan pengajuan baru.
 - Jika daftar SOP kosong, sistem menampilkan bahwa belum ada SOP yang dapat diajukan.
 

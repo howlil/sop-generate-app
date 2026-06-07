@@ -41,7 +41,7 @@ const workflowSteps = [
   },
   {
     step: '03',
-    title: 'Verifikasi',
+    title: 'Tanda Tangan',
     description: 'PJ Evaluator Organisasi meninjau hasil penilaian dan berita acara sebelum pengajuan ke Kepala OPD.',
     icon: CheckCircle,
     color: 'green',
@@ -73,7 +73,7 @@ const roleBenefits = [
   {
     role: 'PJ Evaluator Organisasi',
     description: 'Mengkoordinasikan evaluasi lintas OPD, mengelola tim evaluator/penyusun, dan memverifikasi berita acara.',
-    features: ['Grafik evaluasi tahunan', 'Manajemen akun tim', 'Verifikasi berita acara', 'Laporan evaluasi'],
+    features: ['Grafik evaluasi tahunan', 'Manajemen akun tim', 'Tanda tangan berita acara', 'Laporan evaluasi'],
     icon: CheckCircle,
     gradient: 'from-green-500 to-green-600',
   },
@@ -240,7 +240,7 @@ function RolePreview({ roleIndex }: { roleIndex: number }) {
   if (roleIndex === 0) {
     return (
       <div className="space-y-1.5">
-        {['Pelayanan · Draft', 'Evaluasi · Review', 'Verifikasi · Final'].map((item, i) => (
+        {['Pelayanan · Draft', 'Evaluasi · Review', 'Tanda Tangan · Final'].map((item, i) => (
           <div key={i} className="flex items-center justify-between bg-white rounded-lg border px-3 py-2">
             <div className="flex items-center gap-2 min-w-0">
               <FileText className={cn('w-3.5 h-3.5 shrink-0', i === 0 ? 'text-blue-500' : i === 1 ? 'text-amber-500' : 'text-green-500')} />

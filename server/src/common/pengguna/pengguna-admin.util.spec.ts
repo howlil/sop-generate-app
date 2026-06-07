@@ -97,7 +97,13 @@ describe('Pengujian util pengguna admin', () => {
     });
 
     it('seharusnya hanya memvalidasi Email jika hanya emailNext yang berubah dan tidak undef (Edge Case)', async () => {
-      await assertEmailNipUniqueOnUpdate(repo, 'u1', { email: 'a@x.id', nip: '1' }, 'b@x.id', undefined);
+      await assertEmailNipUniqueOnUpdate(
+        repo,
+        'u1',
+        { email: 'a@x.id', nip: '1' },
+        'b@x.id',
+        undefined,
+      );
       expect(repo.existsEmailOtherThan).toHaveBeenCalledWith('b@x.id', 'u1');
       expect(repo.existsNipOtherThan).not.toHaveBeenCalled();
     });

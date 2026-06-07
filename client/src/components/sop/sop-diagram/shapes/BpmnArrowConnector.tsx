@@ -76,7 +76,7 @@ interface BpmnArrowConnectorProps {
   rerouteVersion?: number
   /** Precomputed obstacle rects from parent (saves DOM reads when set). */
   obstacleRectsRef?: MutableRefObject<Array<{ left: number; top: number; width: number; height: number }> | null>
-  /** Parent-level result. Missing value keeps the legacy per-connector fallback available. */
+  /** Parent-level result. Missing value keeps the per-connector fallback available. */
   plannedPath?: PlannedBpmnPath | null
   /** Map logical workflow node IDs to IDs isolated inside this rendered DOM tree. */
   resolveElementId?: (logicalElementId: string) => string

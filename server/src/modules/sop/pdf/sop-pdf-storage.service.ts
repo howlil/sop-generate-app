@@ -50,7 +50,9 @@ export class SopPdfStorageService {
     } catch (error) {
       await fs.rm(tmpPath, { force: true }).catch(() => undefined);
       throw new InternalServerErrorException(
-        error instanceof Error ? `Gagal menyimpan PDF SOP: ${error.message}` : 'Gagal menyimpan PDF SOP',
+        error instanceof Error
+          ? `Gagal menyimpan PDF SOP: ${error.message}`
+          : 'Gagal menyimpan PDF SOP',
       );
     }
   }

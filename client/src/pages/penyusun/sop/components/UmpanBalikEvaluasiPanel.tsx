@@ -1,19 +1,15 @@
 import { Check } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { HasilEvaluasiBadge } from '@/components/status/hasil-evaluasi-badge'
 import {
   getStatusTindakLanjutBadgeClass,
   getStatusTindakLanjutLabel,
 } from '@/lib/status'
-import { useTandaiTindakLanjutSelesai } from '@/api/evaluasi'
 import type { UmpanBalikEvaluasiDetail } from '@/types/dto/evaluasi.dto'
 
 export interface UmpanBalikEvaluasiPanelProps {
-  detailSopId: string
   umpanBalik: UmpanBalikEvaluasiDetail | null | undefined
   isLoading?: boolean
-  isReadOnly?: boolean
 }
 
 function formatDate(iso: string): string {
@@ -31,14 +27,9 @@ function formatDate(iso: string): string {
 }
 
 export function UmpanBalikEvaluasiPanel({
-  detailSopId,
   umpanBalik,
   isLoading = false,
-  isReadOnly = false,
 }: UmpanBalikEvaluasiPanelProps) {
-  const { mutateAsync: tandaiSelesai, isPending: isMarking } =
-    useTandaiTindakLanjutSelesai(detailSopId)
-
   if (isLoading) {
     return <p className="p-3 text-xs text-gray-500">Memuat komentar evaluasi…</p>
   }
@@ -59,18 +50,11 @@ export function UmpanBalikEvaluasiPanel({
     umpanBalikData.statusTindakLanjutLabel,
   )
 
-  async function handleMarkSelesai() {
-    await tandaiSelesai({
-      pengajuanEvaluasiId: umpanBalikData.pengajuanEvaluasiId,
-      detailSopId: umpanBalikData.detailSopId,
-    })
-  }
-
   return (
     <div className="p-3 space-y-3">
       <p className="text-[10px] text-gray-500 leading-snug">
-        Komentar evaluator disimpan pada nilai evaluasi (bukan tabel komentar terpisah). Tandai
-        selesai setelah perbaikan Anda selesai.
+        Komentar evaluator disimpan pada nilai evaluasi. Kirim ulang evaluasi setelah perbaikan
+        tersimpan.
       </p>
       <div className="rounded-md border border-orange-200 bg-orange-50 p-3 text-xs space-y-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -100,23 +84,6 @@ export function UmpanBalikEvaluasiPanel({
           </p>
         ) : null}
       </div>
-      {!isReadOnly && isTerbuka ? (
-        <Button
-          type="button"
-          size="sm"
-          className="w-full h-8 text-xs gap-1.5"
-          disabled={isMarking}
-          onClick={() => void handleMarkSelesai()}
-        >
-          <Check className="w-3.5 h-3.5" aria-hidden />
-          {isMarking ? 'Menyimpan…' : 'Tandai sudah ditindaklanjuti'}
-        </Button>
-      ) : null}
-      {!isReadOnly && isSelesai ? (
-        <p className="text-xs text-green-800 bg-green-50 border border-green-200 rounded-md px-2 py-1.5">
-          Anda dapat mengirim ulang ke evaluator setelah memastikan semua perbaikan tersimpan.
-        </p>
-      ) : null}
     </div>
   )
 }

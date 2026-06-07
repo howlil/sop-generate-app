@@ -58,7 +58,7 @@ describe('EvaluasiNilaiService', () => {
     pengajuanEvaluasiId: 'p1',
     opdId: 'opd-1',
     status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-    jenis: JenisPengajuanEvaluasi.TERJADWAL,
+    jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
     nilaiOPD: null,
     tanggalEvaluasi: null,
     tanggalDiselesaikan: null,
@@ -169,7 +169,10 @@ describe('EvaluasiNilaiService', () => {
             updatedAt: new Date('2026-05-05T10:00:00.000Z'),
           }),
         },
-        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }) },
+        logNilaiEvaluasi: {
+          create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
         detailSOP: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
       };
       const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
@@ -222,7 +225,10 @@ describe('EvaluasiNilaiService', () => {
             updatedAt: new Date('2026-05-05T10:00:00.000Z'),
           }),
         },
-        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }) },
+        logNilaiEvaluasi: {
+          create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
         detailSOP: { updateMany: jest.fn() },
       };
       const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
@@ -271,7 +277,10 @@ describe('EvaluasiNilaiService', () => {
             updatedAt: new Date('2026-05-05T10:00:00.000Z'),
           }),
         },
-        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }) },
+        logNilaiEvaluasi: {
+          create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
       };
       const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
         fn(mockTx),
@@ -374,7 +383,10 @@ describe('EvaluasiNilaiService', () => {
             }),
           ),
         },
-        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }) },
+        logNilaiEvaluasi: {
+          create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
         detailSOP: { updateMany: jest.fn().mockResolvedValue({ count: 1 }) },
       };
       const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
@@ -430,7 +442,10 @@ describe('EvaluasiNilaiService', () => {
             }),
           ),
         },
-        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }) },
+        logNilaiEvaluasi: {
+          create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
       };
       const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
         fn(mockTx),
@@ -483,7 +498,10 @@ describe('EvaluasiNilaiService', () => {
             updatedAt: new Date('2026-05-06T10:00:00.000Z'),
           }),
         },
-        logNilaiEvaluasi: { create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }) },
+        logNilaiEvaluasi: {
+          create: jest.fn().mockResolvedValue({ nomorBA: 'BA-001' }),
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
       };
       const runTransaction = jest.fn(async (fn: (tx: typeof mockTx) => Promise<unknown>) =>
         fn(mockTx),
@@ -739,7 +757,7 @@ describe('EvaluasiNilaiService', () => {
   });
 
   describe('assertBolehKirimUlangSetelahRevisi', () => {
-    it('should_throw_when_status_masih_terbuka', async () => {
+    it('should_pass_when_status_masih_terbuka', async () => {
       const repo = {
         findNilaiRevisiAktifForDetail: jest.fn().mockResolvedValue({
           pengajuanEvaluasiId: 'p1',
@@ -749,9 +767,7 @@ describe('EvaluasiNilaiService', () => {
         }),
       } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
-      await expect(service.assertBolehKirimUlangSetelahRevisi('d1')).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(service.assertBolehKirimUlangSetelahRevisi('d1')).resolves.toBeUndefined();
     });
 
     it('should_pass_when_status_selesai', async () => {
@@ -769,9 +785,9 @@ describe('EvaluasiNilaiService', () => {
     it('should_forbid_when_bukan_evaluator', async () => {
       const repo = { nomorBA: 'BA-001' } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
-      await expect(service.selesai(pjEvaluatorUser, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        ForbiddenException,
-      );
+      await expect(
+        service.selesai(pjEvaluatorUser, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('should_reject_when_belum_semua_SESUAI', async () => {
@@ -780,7 +796,7 @@ describe('EvaluasiNilaiService', () => {
           findUnique: jest.fn().mockResolvedValue({
             pengajuanEvaluasiId: 'p1',
             status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-            jenis: JenisPengajuanEvaluasi.TERJADWAL,
+            jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
             tanggalEvaluasi: null,
             nilaiEvaluasi: [
               { detailSopId: 'a', hasil: HasilEvaluasi.SESUAI },
@@ -794,9 +810,9 @@ describe('EvaluasiNilaiService', () => {
       );
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('should_throw_bad_request_when_selesai_but_status_not_sedang_dievaluasi', async () => {
@@ -812,17 +828,17 @@ describe('EvaluasiNilaiService', () => {
       );
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_throw_bad_request_when_selesai_mandiri_with_nilaiOPD', async () => {
+    it('should_throw_bad_request_when_selesai_request_opd_with_nilaiOPD', async () => {
       const mockTx = {
         pengajuanEvaluasi: {
           findUnique: jest.fn().mockResolvedValue({
             status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-            jenis: JenisPengajuanEvaluasi.MANDIRI,
+            jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
           }),
         },
       };
@@ -831,17 +847,17 @@ describe('EvaluasiNilaiService', () => {
       );
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should_throw_bad_request_when_selesai_terjadwal_without_valid_nilaiOPD', async () => {
+    it('should_throw_bad_request_when_selesai_request_evaluator_without_valid_nilaiOPD', async () => {
       const mockTx = {
         pengajuanEvaluasi: {
           findUnique: jest.fn().mockResolvedValue({
             status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-            jenis: JenisPengajuanEvaluasi.TERJADWAL,
+            jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           }),
         },
       };
@@ -850,7 +866,9 @@ describe('EvaluasiNilaiService', () => {
       );
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
 
     it('seharusnya melempar NotFoundException ketika pengajuan tidak ditemukan (False Case)', async () => {
@@ -863,9 +881,9 @@ describe('EvaluasiNilaiService', () => {
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
 
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it.each([
@@ -875,13 +893,13 @@ describe('EvaluasiNilaiService', () => {
       ['di atas maksimum', 6],
       ['pecahan', 2.5],
     ])(
-      'seharusnya menolak nilaiOPD terjadwal yang invalid: %s (Edge Case)',
+      'seharusnya menolak nilaiOPD EVALUASI_REQUEST_EVALUATOR yang invalid: %s (Edge Case)',
       async (_label, nilaiOPD) => {
         const mockTx = {
           pengajuanEvaluasi: {
             findUnique: jest.fn().mockResolvedValue(
               basePengajuanRow({
-                jenis: JenisPengajuanEvaluasi.TERJADWAL,
+                jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
               }),
             ),
           },
@@ -914,9 +932,9 @@ describe('EvaluasiNilaiService', () => {
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
 
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('seharusnya melempar ConflictException ketika sebagian detail SOP gagal dipromosikan (Worst Case)', async () => {
@@ -939,12 +957,12 @@ describe('EvaluasiNilaiService', () => {
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
 
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        ConflictException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
 
-    it('seharusnya menyelesaikan evaluasi terjadwal dengan skor batas minimum dan mempertahankan tanggalEvaluasi lama (Edge/Success Case)', async () => {
+    it('seharusnya menyelesaikan evaluasi EVALUASI_REQUEST_EVALUATOR dengan skor batas minimum dan mempertahankan tanggalEvaluasi lama (Edge/Success Case)', async () => {
       const tanggalEvaluasi = new Date('2026-05-10T10:00:00.000Z');
       const finishedRow = {
         ...basePengajuanRow({
@@ -962,7 +980,7 @@ describe('EvaluasiNilaiService', () => {
             .fn()
             .mockResolvedValueOnce(
               basePengajuanRow({
-                jenis: JenisPengajuanEvaluasi.TERJADWAL,
+                jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
                 tanggalEvaluasi,
                 nilaiEvaluasi: [{ detailSopId: 'd1', hasil: HasilEvaluasi.SESUAI }],
               }),
@@ -992,7 +1010,7 @@ describe('EvaluasiNilaiService', () => {
             ],
           },
         },
-        data: { status: StatusSOP.SIAP_DIVERIFIKASI },
+        data: { status: StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR },
       });
       expect(mockTx.pengajuanEvaluasi.update).toHaveBeenCalledWith({
         where: { pengajuanEvaluasiId: 'p1' },
@@ -1016,9 +1034,9 @@ describe('EvaluasiNilaiService', () => {
       );
     });
 
-    it('seharusnya menyelesaikan evaluasi mandiri tanpa nilaiOPD dan menyimpan skor null (Success Case)', async () => {
+    it('seharusnya menyelesaikan evaluasi EVALUASI_REQUEST_OPD tanpa nilaiOPD dan menyimpan skor null (Success Case)', async () => {
       const finishedRow = basePengajuanRow({
-        jenis: JenisPengajuanEvaluasi.MANDIRI,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
         status: StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
         nilaiOPD: null,
         tanggalEvaluasi: new Date('2026-05-11T10:00:00.000Z'),
@@ -1032,7 +1050,7 @@ describe('EvaluasiNilaiService', () => {
             .fn()
             .mockResolvedValueOnce(
               basePengajuanRow({
-                jenis: JenisPengajuanEvaluasi.MANDIRI,
+                jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
                 nilaiEvaluasi: [{ detailSopId: 'd1', hasil: HasilEvaluasi.SESUAI }],
               }),
             )
@@ -1076,9 +1094,9 @@ describe('EvaluasiNilaiService', () => {
       const repo = { runTransaction } as unknown as EvaluasiNilaiRepository;
       const service = new EvaluasiNilaiService(repo, noopPengajuanRepo);
 
-      await expect(service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 })).rejects.toBeInstanceOf(
-        ConflictException,
-      );
+      await expect(
+        service.selesai(user, 'p1', { nomorBA: 'BA-001', nilaiOPD: 5 }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 });

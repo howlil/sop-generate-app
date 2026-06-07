@@ -120,7 +120,7 @@ export interface StatusHasilEvaluasiForm {
 }
 
 export function getStatusSopAfterEvaluasi(hasil: StatusHasilEvaluasi): string {
-  return hasil === 'SESUAI' ? 'SIAP_DIVERIFIKASI' : 'REVISI_DARI_EVALUATOR'
+  return hasil === 'SESUAI' ? 'MENUNGGU_TTD_PJ_EVALUATOR' : 'REVISI_DARI_EVALUATOR'
 }
 
 export function isFormEvaluasiSopComplete(
@@ -153,7 +153,7 @@ export function getAjukanEvaluasiBlockingReason(
   if (!pengajuan) {
     return 'Tidak ada pengajuan evaluasi aktif untuk OPD ini.'
   }
-  const wajibSkorOpd = pengajuan.jenis !== 'MANDIRI'
+  const wajibSkorOpd = pengajuan.jenis !== 'EVALUASI_REQUEST_OPD'
   if (
     wajibSkorOpd &&
     (ratingOPD === null || ratingOPD < 1 || ratingOPD > 5)
@@ -183,7 +183,7 @@ export function canKirimUlangSetelahRevisi(
   if (!umpanBalik) {
     return false
   }
-  return umpanBalik.statusTindakLanjut === 'SELESAI'
+  return true
 }
 
 export function getKirimUlangBlockingReason(
@@ -191,12 +191,6 @@ export function getKirimUlangBlockingReason(
 ): string | null {
   if (!umpanBalik) {
     return 'Tidak ada umpan balik evaluasi aktif untuk dokumen ini.'
-  }
-  if (umpanBalik.statusTindakLanjut === 'TERBUKA') {
-    return 'Tandai umpan balik evaluasi sebagai selesai di tab Umpan balik sebelum mengirim ulang ke evaluator.'
-  }
-  if (umpanBalik.statusTindakLanjut !== 'SELESAI') {
-    return 'Selesaikan tindak lanjut umpan balik evaluasi terlebih dahulu.'
   }
   return null
 }

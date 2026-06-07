@@ -379,7 +379,7 @@ Fitur berikut ada di [`requirements.md`](requirements.md) dan `server/`, tetapi 
 ## Urutan bisnis utama (evaluasi → pengesahan)
 
 ```text
-Penyusun/PJ Penyusun: Inisiasi + Menyusun Draft (UC-16, UC-15) → siap dievaluasi
+Penyusun/PJ Penyusun: Inisiasi + Menyusun Draft (UC-16, UC-15) → menunggu pengajuan evaluasi
 PJ Penyusun: Mengajukan Evaluasi (UC-14 / No 12)
 Evaluator: Mengevaluasi + Komentar bila perlu (UC-11, UC-12 / No 15–16)
 Penyusun/PJ Penyusun: tindak lanjut & pengajuan ulang (No 14, 13 — tanpa oval terpisah)

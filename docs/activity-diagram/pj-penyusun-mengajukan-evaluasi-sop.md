@@ -23,7 +23,7 @@ start
 
 |Sistem|
 :Memeriksa hak akses PJ Penyusun;
-:Mencari SOP pada OPD pengguna yang sudah siap dievaluasi;
+:Mencari SOP pada OPD pengguna yang sudah menunggu pengajuan evaluasi;
 :Menampilkan daftar SOP yang dapat diajukan;
 
 |PJ Penyusun|

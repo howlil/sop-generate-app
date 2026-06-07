@@ -11,7 +11,7 @@ export class PengajuanEvaluasiRingkasRowDto {
   @ApiProperty()
   readonly opdNama!: string;
 
-  @ApiProperty({ enum: ['TERJADWAL', 'MANDIRI'] })
+  @ApiProperty({ enum: ['EVALUASI_REQUEST_EVALUATOR', 'EVALUASI_REQUEST_OPD'] })
   readonly jenis!: string;
 
   @ApiProperty()

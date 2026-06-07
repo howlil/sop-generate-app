@@ -7,7 +7,7 @@ describe('Pengujian kebijakan revisi evaluasi', () => {
     expect(() => assertBolehKirimUlangSetelahRevisi(null)).not.toThrow();
   });
 
-  it('seharusnya melempar error ketika status masih terbuka', () => {
+  it('seharusnya lolos ketika status masih terbuka', () => {
     expect(() =>
       assertBolehKirimUlangSetelahRevisi({
         pengajuanEvaluasiId: 'p1',
@@ -15,7 +15,7 @@ describe('Pengujian kebijakan revisi evaluasi', () => {
         hasil: HasilEvaluasi.PERLU_PERBAIKAN,
         statusTindakLanjut: StatusTindakLanjut.TERBUKA,
       }),
-    ).toThrow(BadRequestException);
+    ).not.toThrow();
   });
 
   it('seharusnya melempar error ketika status tindak lanjut masih kosong', () => {

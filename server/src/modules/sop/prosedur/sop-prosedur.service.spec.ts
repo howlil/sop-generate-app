@@ -315,7 +315,7 @@ describe('Pengujian SopProsedurService', () => {
       });
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
       repoMock.findExistingSwimlanePelaksanaIds.mockResolvedValueOnce([]); // no existing pelaksana
-      
+
       await expect(
         service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
           langkah: [
@@ -361,7 +361,7 @@ describe('Pengujian SopProsedurService', () => {
       });
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
       repoMock.findPelaksanaIdsByOpd.mockResolvedValueOnce(new Set(['p-1']));
-      
+
       const p2002 = new Prisma.PrismaClientKnownRequestError('duplicate', {
         code: 'P2002',
         clientVersion: 'test',
@@ -369,7 +369,9 @@ describe('Pengujian SopProsedurService', () => {
       repoMock.updateProsedurTransaction.mockRejectedValueOnce(p2002);
 
       await expect(
-        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', { pelaksana: [{ pelaksanaId: 'p-1' }] }),
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
+          pelaksana: [{ pelaksanaId: 'p-1' }],
+        }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
 
@@ -380,7 +382,7 @@ describe('Pengujian SopProsedurService', () => {
       });
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
       repoMock.findPelaksanaIdsByOpd.mockResolvedValueOnce(new Set(['p-1']));
-      
+
       const p2025 = new Prisma.PrismaClientKnownRequestError('not found', {
         code: 'P2025',
         clientVersion: 'test',
@@ -388,7 +390,9 @@ describe('Pengujian SopProsedurService', () => {
       repoMock.updateProsedurTransaction.mockRejectedValueOnce(p2025);
 
       await expect(
-        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', { pelaksana: [{ pelaksanaId: 'p-1' }] }),
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
+          pelaksana: [{ pelaksanaId: 'p-1' }],
+        }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -399,11 +403,15 @@ describe('Pengujian SopProsedurService', () => {
       });
       repoMock.findOpdIdByPenggunaId.mockResolvedValueOnce('opd-1');
       repoMock.findPelaksanaIdsByOpd.mockResolvedValueOnce(new Set(['p-1']));
-      
-      repoMock.updateProsedurTransaction.mockRejectedValueOnce(new Error('Langkah tujuan cabang terdeteksi melintas batas SOP'));
+
+      repoMock.updateProsedurTransaction.mockRejectedValueOnce(
+        new Error('Langkah tujuan cabang terdeteksi melintas batas SOP'),
+      );
 
       await expect(
-        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', { pelaksana: [{ pelaksanaId: 'p-1' }] }),
+        service.updateProsedur(makeUser(PeranPengguna.PENYUSUN), 'det-1', {
+          pelaksana: [{ pelaksanaId: 'p-1' }],
+        }),
       ).rejects.toThrow(BadRequestException);
     });
   });

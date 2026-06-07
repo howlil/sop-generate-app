@@ -36,7 +36,6 @@ export function extractAppOriginFromRequest(req: Pick<Request, 'headers'>): stri
 export function resolvePublicAppOrigin(params: {
   configOrigin?: string | undefined;
   requestOrigin?: string | null;
-  legacyVerifyBaseUrl?: string | undefined;
 }): string | null {
   const fromConfig = normalizePublicVerifyBaseUrl(params.configOrigin);
   if (fromConfig !== null) {
@@ -45,15 +44,7 @@ export function resolvePublicAppOrigin(params: {
   if (params.requestOrigin !== undefined && params.requestOrigin !== null) {
     return params.requestOrigin;
   }
-  const legacy = normalizePublicVerifyBaseUrl(params.legacyVerifyBaseUrl);
-  if (legacy === null) {
-    return null;
-  }
-  if (legacy.endsWith(VALIDASI_PENGESAHAN_PATH)) {
-    const stripped = legacy.slice(0, -VALIDASI_PENGESAHAN_PATH.length);
-    return stripped === '' ? legacy : normalizePublicVerifyBaseUrl(stripped);
-  }
-  return legacy;
+  return null;
 }
 
 export function buildValidasiPengesahanBaseUrl(appOrigin: string): string {

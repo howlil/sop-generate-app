@@ -30,7 +30,7 @@ export class EvaluasiWorkspaceController {
   @Roles(PeranPengguna.PJ_PENYUSUN, PeranPengguna.KEPALA_OPD)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Workspace evaluasi OPD pengguna (tanpa param opdId)',
+    summary: 'Evaluasi OPD pengguna (tanpa param opdId)',
     description:
       'OPD diambil dari akun JWT. Dipakai dialog buka pengajuan PJ Penyusun dan layar terkait Kepala OPD.',
   })
@@ -54,7 +54,7 @@ export class EvaluasiWorkspaceController {
   ): Promise<ApiSuccessResponse<EvaluasiWorkspaceOpdResponseDto>> {
     const data = await this.evaluasiWorkspaceService.getWorkspaceOpdSaya(req.user, query);
     return {
-      message: 'Data workspace evaluasi berhasil diambil',
+      message: 'Data evaluasi berhasil diambil',
       success: true,
       data,
     };
@@ -64,7 +64,7 @@ export class EvaluasiWorkspaceController {
   @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR, PeranPengguna.PJ_PENYUSUN)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Workspace evaluasi per OPD (agregat untuk halaman evaluator)',
+    summary: 'Evaluasi per OPD (agregat untuk halaman evaluator)',
     description:
       'Menggabungkan OPD, daftar SOP alur evaluasi, pengajuan aktif, riwayat terbatas, dan pratinjau area kerja opsional saat `expand=preview` + `detailSopId`. PJ Penyusun hanya dapat membuka area kerja OPD sendiri.',
   })
@@ -93,7 +93,7 @@ export class EvaluasiWorkspaceController {
   ): Promise<ApiSuccessResponse<EvaluasiWorkspaceOpdResponseDto>> {
     const data = await this.evaluasiWorkspaceService.getWorkspaceOpd(req.user, opdId, query);
     return {
-      message: 'Data workspace evaluasi berhasil diambil',
+      message: 'Data evaluasi berhasil diambil',
       success: true,
       data,
     };
@@ -103,7 +103,7 @@ export class EvaluasiWorkspaceController {
   @Roles(PeranPengguna.EVALUATOR, PeranPengguna.PJ_EVALUATOR)
   @ApiCookieAuth(ACCESS_TOKEN_COOKIE_NAME)
   @ApiOperation({
-    summary: 'Workspace evaluasi untuk satu pengajuan (daftar SOP = anggota pengajuan evaluasi)',
+    summary: 'Evaluasi untuk satu pengajuan (daftar SOP = anggota pengajuan evaluasi)',
     description:
       'Sama bentuk respons dengan GET `.../workspace/opd/:opdId`, tetapi `daftarSop` dan `pengajuanAktif` selalu terikat pada `pengajuanEvaluasiId` yang diminta.',
   })
@@ -122,7 +122,7 @@ export class EvaluasiWorkspaceController {
       query,
     );
     return {
-      message: 'Data workspace evaluasi pengajuan berhasil diambil',
+      message: 'Data evaluasi pengajuan berhasil diambil',
       success: true,
       data,
     };

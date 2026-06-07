@@ -327,22 +327,25 @@ export class TtePenandatangananService {
     throw new ConflictException('Gagal menandatangani seluruh SOP dalam pengajuan');
   }
 
-  private mapRiwayat(row: {
-    userId: string;
-    dokumenTteId: string;
-    peran: PeranPengguna;
-    ditandatanganiPada: Date;
-    dokumenTte: {
+  private mapRiwayat(
+    row: {
+      userId: string;
       dokumenTteId: string;
-      nomorDokumen: string;
-      judulDokumen: string;
-      hashDokumen: string;
-      jenisDokumen: JenisDokumenTte;
-      detailSopId: string | null;
-      pengajuanEvaluasiId: string | null;
-    };
-    user: { penggunaId: string; nama: string; nip: string };
-  }, req?: Pick<Request, 'headers'>): TteRiwayatResponse {
+      peran: PeranPengguna;
+      ditandatanganiPada: Date;
+      dokumenTte: {
+        dokumenTteId: string;
+        nomorDokumen: string;
+        judulDokumen: string;
+        hashDokumen: string;
+        jenisDokumen: JenisDokumenTte;
+        detailSopId: string | null;
+        pengajuanEvaluasiId: string | null;
+      };
+      user: { penggunaId: string; nama: string; nip: string };
+    },
+    req?: Pick<Request, 'headers'>,
+  ): TteRiwayatResponse {
     const peranMap = mapTtePeranResponse(row.peran);
     const qr = buildTteQrPayload({
       publicVerifyBaseUrl: this.publicUrlResolver.resolveDocumentVerifyBaseUrl(req),

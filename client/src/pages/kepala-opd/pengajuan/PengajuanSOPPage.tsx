@@ -79,7 +79,7 @@ export function PengajuanSOPPage() {
           },
           {
             id: "tanggal-verifikasi",
-            header: "Tanggal Verifikasi",
+            header: "Tanggal Tanda Tangan",
             render: (item) => (
               <PengajuanDateCell
                 value={item.tanggalTTDBaPjPenyusun ?? item.updatedAt}

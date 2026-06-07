@@ -3,11 +3,11 @@ import type { TTESignaturePayload } from "./tte.dto";
 export type StatusSOP =
   | "DRAFT"
   | "SEDANG_DISUSUN"
-  | "SIAP_DIEVALUASI"
+  | "MENUNGGU_PENGAJUAN_EVALUASI"
   | "DIAJUKAN_EVALUASI"
   | "SEDANG_DIEVALUASI"
   | "REVISI_DARI_EVALUATOR"
-  | "SIAP_DIVERIFIKASI"
+  | "MENUNGGU_TTD_PJ_EVALUATOR"
   | "DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI"
   | "BERLAKU"
   | "DIGANTIKAN"
@@ -63,7 +63,7 @@ export interface SopRiwayatVersiRow {
   canHapusDraft: boolean;
 }
 
-/** Header SOP + meta legacy (POST/PATCH detail, mock); daftar penyusun memakai `SopDaftarRow`. */
+/** Header SOP + meta lama (POST/PATCH detail, mock); daftar penyusun memakai `SopDaftarRow`. */
 export interface Sop {
   id: string;
   opdId: string;

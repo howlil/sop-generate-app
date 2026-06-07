@@ -77,7 +77,7 @@ export function ManajemenSOP() {
     <ListPageLayout
       breadcrumb={[{ label: "Manajemen SOP" }]}
       title="Manajemen SOP"
-      description="Daftar SOP yang Anda kelola. Penyusun menyelesaikan penyusunan lewat tombol Selesai di editor (status Siap dievaluasi). PJ Penyusun membuka pengajuan evaluasi ke Biro lewat tombol di halaman ini. Klik baris untuk melihat atau mengedit detail SOP."
+      description="Daftar SOP yang Anda kelola. Penyusun menyelesaikan penyusunan lewat tombol Selesai di editor (status Menunggu pengajuan evaluasi). PJ Penyusun membuka pengajuan evaluasi ke Biro lewat tombol di halaman ini. Klik baris untuk melihat atau mengedit detail SOP."
       toolbar={
         <SearchToolbar
           searchPlaceholder="Cari judul atau nomor SOP..."
@@ -132,7 +132,7 @@ export function ManajemenSOP() {
               onClick={() => setIsBukaPengajuanEvaluasiDialogOpen(true)}
             >
               <Send className="w-3.5 h-3.5" />
-              Buka pengajuan evaluasi
+              Ajukan evaluasi SOP
             </Button>
           )}
           <Button

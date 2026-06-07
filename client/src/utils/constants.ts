@@ -88,17 +88,17 @@ export const ROUTES = {
 } as const;
 
 export const IA = {
-  NAV_BIRO_EVALUASI_TERJADWAL: "Evaluasi Terjadwal",
+  NAV_BIRO_EVALUASI_REQUEST_EVALUATOR: "Evaluasi Request Evaluator",
   NAV_BIRO_BATCH_BA: "Manajemen Evaluasi SOP",
-  NAV_BIRO_VERIFIKASI_BA: "Verifikasi BA",
+  NAV_BIRO_VERIFIKASI_BA: "Tanda Tangan BA",
   NAV_TP_BA_KOORDINATOR: "Berita Acara PJ Penyusun",
   NAV_KO_BA_PENGESAHAN: "Berita Acara Pengesahan",
   NAV_TE_EVALUASI: "Evaluasi SOP",
   BERITA_ACARA: "Berita Acara",
   PENGAJUAN_EVALUASI_OPD: "Pengajuan evaluasi OPD",
-  TERJADWAL_EVALUASI_OPD: "Terjadwal Evaluasi OPD",
-  VERIFIKASI_BA_BIRO: "Verifikasi Berita Acara oleh PJ Evaluator",
-  VERIFIKASI_BA_KOORDINATOR: "Verifikasi Berita Acara oleh PJ Penyusun",
+  REQUEST_EVALUATOR_EVALUASI_OPD: "Request Evaluator Evaluasi OPD",
+  VERIFIKASI_BA_BIRO: "Tanda Tangan Berita Acara oleh PJ Evaluator",
+  VERIFIKASI_BA_KOORDINATOR: "Tanda Tangan Berita Acara oleh PJ Penyusun",
   PENGESAHAN_SOP: "Pengesahan SOP",
 } as const;
 

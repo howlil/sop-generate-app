@@ -19,7 +19,7 @@ import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 
 export function ManajemenEvaluasiSop() {
-  useDocumentTitle(`${IA.NAV_BIRO_EVALUASI_TERJADWAL} — PJ Evaluator`)
+  useDocumentTitle(`${IA.NAV_BIRO_EVALUASI_REQUEST_EVALUATOR} — PJ Evaluator`)
   const [page, setPage] = useState(1)
   const [filterTab, setFilterTab] = useState<EvaluasiFilterTab>('pengajuan')
   const [searchQuery, setSearchQuery] = useState('')

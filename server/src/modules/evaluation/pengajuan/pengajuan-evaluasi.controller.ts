@@ -114,7 +114,7 @@ export class PengajuanEvaluasiController {
   @ApiOperation({
     summary: 'Buka pengajuan evaluasi untuk sekumpulan DetailSOP satu OPD',
     description:
-      'Hanya PJ Penyusun OPD. OPD diambil otomatis dari akun login. Body wajib `jenis`: TERJADWAL (pengajuan evaluasi terjadwal; evaluator wajib mengisi skor OPD 1-5 saat PATCH selesai) atau MANDIRI (tanpa penilaian OPD tingkat pengajuan). Hanya DetailSOP berstatus SIAP_DIEVALUASI yang dapat diajukan. Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI.',
+      'Hanya PJ Penyusun OPD. OPD diambil otomatis dari akun login. Body wajib `jenis`: EVALUASI_REQUEST_EVALUATOR (pengajuan evaluasi EVALUASI_REQUEST_EVALUATOR; evaluator wajib mengisi skor OPD 1-5 saat PATCH selesai) atau EVALUASI_REQUEST_OPD (tanpa penilaian OPD tingkat pengajuan). Hanya DetailSOP berstatus MENUNGGU_PENGAJUAN_EVALUASI yang dapat diajukan. Membuat pengajuan SEDANG_DIEVALUASI, baris NilaiEvaluasi per dokumen, dan menyelaraskan status DetailSOP ke SEDANG_DIEVALUASI.',
   })
   @ApiResponse({ status: 201 })
   @ApiForbiddenResponse({ description: 'Bukan PJ Penyusun atau OPD tidak sesuai' })

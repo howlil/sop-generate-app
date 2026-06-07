@@ -236,8 +236,6 @@ describe('Pengujian TteService', () => {
     ).rejects.toThrow('Status sebagian SOP sudah berubah (1/2)');
   });
 
-
-
   it('seharusnya melempar NotFoundException untuk tidak dikenal pengguna pada profil', async () => {
     const repo = createRepoMock({
       findPenggunaAktif: jest.fn().mockResolvedValue(null),
@@ -406,23 +404,24 @@ describe('Pengujian TteService', () => {
     );
   });
 
-
-
   it('seharusnya mendelegasikan signPdf ke pdfSigningService (Edge Case Delegation)', async () => {
     const repo = createRepoMock({});
     const service = buildTteService(repo, config());
     (service as any).pdfSigningService.signPdf.mockResolvedValueOnce({ status: 'OK' });
-    const actual = await service.signPdf(evaluatorUser, { fileBase64: 'base64', pin: '123' } as any);
+    const actual = await service.signPdf(evaluatorUser, {
+      fileBase64: 'base64',
+      pin: '123',
+    } as any);
     expect(actual).toEqual({ status: 'OK' });
     expect((service as any).pdfSigningService.signPdf).toHaveBeenCalled();
   });
 
-
-
   it('seharusnya mendelegasikan getPdfSigningStatus ke pdfSigningService (Edge Case Delegation)', () => {
     const repo = createRepoMock({});
     const service = buildTteService(repo, config());
-    (service as any).pdfSigningService.getPdfSigningStatus = jest.fn().mockReturnValue({ available: true });
+    (service as any).pdfSigningService.getPdfSigningStatus = jest
+      .fn()
+      .mockReturnValue({ available: true });
     const actual = service.getPdfSigningStatus();
     expect(actual).toEqual({ available: true });
     expect((service as any).pdfSigningService.getPdfSigningStatus).toHaveBeenCalled();

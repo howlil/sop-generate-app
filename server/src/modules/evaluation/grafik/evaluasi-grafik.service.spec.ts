@@ -33,38 +33,38 @@ describe('Pengujian EvaluasiGrafikService', () => {
     it('seharusnya menetapkan tahunDari = tahunSampai = tahun jika hanya query "tahun" diberikan', async () => {
       findDaftarOpdAktifMock.mockResolvedValue([]);
       findAgregasiPerTahunOpdMock.mockResolvedValue([]);
-      
+
       await service.getGrafikTahunan({ tahun: 2024 });
-      
+
       expect(findAgregasiPerTahunOpdMock).toHaveBeenCalledWith(2024, 2024);
     });
 
     it('seharusnya memakai tahun berjalan untuk default tahunDari (sampai - 4) jika hanya tahunSampai diberikan', async () => {
       findDaftarOpdAktifMock.mockResolvedValue([]);
       findAgregasiPerTahunOpdMock.mockResolvedValue([]);
-      
+
       await service.getGrafikTahunan({ tahunSampai: 2025 });
-      
+
       expect(findAgregasiPerTahunOpdMock).toHaveBeenCalledWith(2021, 2025);
     });
 
     it('seharusnya memakai tahun berjalan untuk default tahunSampai jika hanya tahunDari diberikan', async () => {
       findDaftarOpdAktifMock.mockResolvedValue([]);
       findAgregasiPerTahunOpdMock.mockResolvedValue([]);
-      
+
       const currentYear = new Date().getFullYear();
       await service.getGrafikTahunan({ tahunDari: 2020 });
-      
+
       expect(findAgregasiPerTahunOpdMock).toHaveBeenCalledWith(2020, currentYear);
     });
 
     it('seharusnya memakai default 5 tahun terakhir (termasuk tahun ini) jika tidak ada query tahun sama sekali', async () => {
       findDaftarOpdAktifMock.mockResolvedValue([]);
       findAgregasiPerTahunOpdMock.mockResolvedValue([]);
-      
+
       const currentYear = new Date().getFullYear();
       await service.getGrafikTahunan({});
-      
+
       expect(findAgregasiPerTahunOpdMock).toHaveBeenCalledWith(currentYear - 4, currentYear);
     });
   });
@@ -85,13 +85,13 @@ describe('Pengujian EvaluasiGrafikService', () => {
 
       expect(actual.totalOpdAktif).toBe(2);
       expect(actual.ringkasanPerTahun).toHaveLength(2); // 2024, 2025
-      
-      const y2024 = actual.ringkasanPerTahun.find(r => r.tahun === 2024);
+
+      const y2024 = actual.ringkasanPerTahun.find((r) => r.tahun === 2024);
       expect(y2024?.totalPenilaian).toBe(3);
       expect(y2024?.jumlahOpdDenganPenilaian).toBe(2);
       expect(y2024?.rataRataSkorOpd).toBe(3.06); // (4.11 + 2) / 2 = 6.11 / 2 = 3.055 => rounded to 3.06
-      
-      const y2025 = actual.ringkasanPerTahun.find(r => r.tahun === 2025);
+
+      const y2025 = actual.ringkasanPerTahun.find((r) => r.tahun === 2025);
       expect(y2025?.totalPenilaian).toBe(0);
       expect(y2025?.jumlahOpdDenganPenilaian).toBe(0);
       expect(y2025?.rataRataSkorOpd).toBeNull();
@@ -125,15 +125,15 @@ describe('Pengujian EvaluasiGrafikService', () => {
       ]);
 
       const actual = await service.getGrafikTahunan({ tahun: 2025 });
-      const perOpd = actual.ringkasanPerTahun[0]!.perOpd;
-      
-      expect(perOpd.find(p => p.opdId === 'a')?.rataRataSkor).toBeNull();
-      expect(perOpd.find(p => p.opdId === 'b')?.rataRataSkor).toBeNull();
-      expect(perOpd.find(p => p.opdId === 'c')?.rataRataSkor).toBeNull();
-      expect(perOpd.find(p => p.opdId === 'd')?.rataRataSkor).toBeNull();
-      
-      expect(perOpd.find(p => p.opdId === 'e')?.rataRataSkor).toBe(3.5);
-      
+      const perOpd = actual.ringkasanPerTahun[0].perOpd;
+
+      expect(perOpd.find((p) => p.opdId === 'a')?.rataRataSkor).toBeNull();
+      expect(perOpd.find((p) => p.opdId === 'b')?.rataRataSkor).toBeNull();
+      expect(perOpd.find((p) => p.opdId === 'c')?.rataRataSkor).toBeNull();
+      expect(perOpd.find((p) => p.opdId === 'd')?.rataRataSkor).toBeNull();
+
+      expect(perOpd.find((p) => p.opdId === 'e')?.rataRataSkor).toBe(3.5);
+
       expect(actual.ringkasanPerTahun[0]?.rataRataSkorOpd).toBe(3.5);
     });
 
@@ -153,7 +153,7 @@ describe('Pengujian EvaluasiGrafikService', () => {
     it('seharusnya meneruskan error dari database secara langsung tanpa menelannya (worst case)', async () => {
       findDaftarOpdAktifMock.mockRejectedValue(new Error('DB Timeout'));
       findAgregasiPerTahunOpdMock.mockResolvedValue([]);
-      
+
       await expect(service.getGrafikTahunan({ tahun: 2025 })).rejects.toThrow('DB Timeout');
     });
   });

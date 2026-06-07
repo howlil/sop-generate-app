@@ -2,11 +2,11 @@
  * Integration Test: Evaluasi Edge Cases
  *
  * Menguji skenario evaluasi yang sulit diuji di unit test:
- *  - Evaluasi MANDIRI vs TERJADWAL (nilaiOPD)
+ *  - Evaluasi EVALUASI_REQUEST_OPD vs EVALUASI_REQUEST_EVALUATOR (nilaiOPD)
  *  - Loop evaluasi: PERLU_PERBAIKAN → revisi → kirim ulang → SESUAI
  *  - False cases: duplikasi pengajuan, nilai di luar pengajuan, stale version
  *  - Worst cases: kirim ulang sebelum revisi selesai, selesai dengan status salah
- *  - Edge cases: sopDetailIds duplikat, status bukan SIAP_DIEVALUASI
+ *  - Edge cases: sopDetailIds duplikat, status bukan MENUNGGU_PENGAJUAN_EVALUASI
  *
  * CATATAN DESAIN: Setiap describe group menggunakan OPD TERPISAH untuk menghindari
  * konflik bisnis — pengajuan yg SELESAI_DIEVALUASI masih memblokir pengajuan baru
@@ -32,6 +32,7 @@ import {
   PeranPengguna,
   SatuanWaktu,
   StatusSOP,
+  StatusTindakLanjut,
 } from '../../src/generated/prisma';
 
 const describeIntegration = isIntegrationEnabled() ? describe : describe.skip;
@@ -146,7 +147,7 @@ async function seedGroupOpdAndAgents(
   };
 }
 
-/** Buat SOP lengkap dengan status SIAP_DIEVALUASI */
+/** Buat SOP lengkap dengan status MENUNGGU_PENGAJUAN_EVALUASI */
 async function buildMinimalReadySop(
   penyusunAgent: Agent,
   pelaksanaId: string,
@@ -203,7 +204,7 @@ async function buildMinimalReadySop(
 
   await penyusunAgent
     .patch(`${API}/sop/status/${detailSopId}`)
-    .send({ status: StatusSOP.SIAP_DIEVALUASI })
+    .send({ status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI })
     .expect(200);
 
   return detailSopId;
@@ -215,9 +216,9 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
 
   // Per-group resources (OPD terpisah untuk isolasi)
   let falseCaseGroup: EvalGroupContext;
-  let mandiriGroup: EvalGroupContext;
+  let requestOpdGroup: EvalGroupContext;
   let loopGroup: EvalGroupContext;
-  let terjadwalGroup: EvalGroupContext;
+  let requestEvaluatorGroup: EvalGroupContext;
 
   beforeAll(async () => {
     assertSafeIntegrationDatabase();
@@ -236,9 +237,14 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
 
     // Seed 4 OPD terpisah untuk isolasi antar describe group
     falseCaseGroup = await seedGroupOpdAndAgents(prisma, app, 'OPD False Case', 'ee-fc');
-    mandiriGroup = await seedGroupOpdAndAgents(prisma, app, 'OPD Mandiri', 'ee-md');
+    requestOpdGroup = await seedGroupOpdAndAgents(prisma, app, 'OPD EVALUASI_REQUEST_OPD', 'ee-md');
     loopGroup = await seedGroupOpdAndAgents(prisma, app, 'OPD Loop Revisi', 'ee-lp');
-    terjadwalGroup = await seedGroupOpdAndAgents(prisma, app, 'OPD Terjadwal', 'ee-tj');
+    requestEvaluatorGroup = await seedGroupOpdAndAgents(
+      prisma,
+      app,
+      'OPD EVALUASI_REQUEST_EVALUATOR',
+      'ee-tj',
+    );
   });
 
   afterAll(async () => {
@@ -257,7 +263,7 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
     let draftSopId: string;
 
     beforeAll(async () => {
-      // Buat satu SOP SIAP_DIEVALUASI untuk test yang membutuhkan
+      // Buat satu SOP MENUNGGU_PENGAJUAN_EVALUASI untuk test yang membutuhkan
       draftSopId = await buildMinimalReadySop(
         falseCaseGroup.penyusunAgent,
         falseCaseGroup.pelaksanaId,
@@ -270,25 +276,24 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
     it('POST /evaluasi dengan sopDetailIds yang kosong → 400 (False Case)', async () => {
       const res = await falseCaseGroup.pjPenyusunAgent
         .post(`${API}/evaluasi`)
-        .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [] });
+        .send({ jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD, sopDetailIds: [] });
       expect([400, 409]).toContain(res.status);
     });
 
     it('POST /evaluasi dengan sopDetailIds berisi UUID duplikat → 400 (Edge Case)', async () => {
-      const res = await falseCaseGroup.pjPenyusunAgent
-        .post(`${API}/evaluasi`)
-        .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [draftSopId, draftSopId] });
+      const res = await falseCaseGroup.pjPenyusunAgent.post(`${API}/evaluasi`).send({
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+        sopDetailIds: [draftSopId, draftSopId],
+      });
       expect([400, 409]).toContain(res.status);
     });
 
-    it('POST /evaluasi dengan SOP berstatus DRAFT (bukan SIAP_DIEVALUASI) → 409 (False Case)', async () => {
+    it('POST /evaluasi dengan SOP berstatus DRAFT (bukan MENUNGGU_PENGAJUAN_EVALUASI) → 409 (False Case)', async () => {
       // sharedRelatedSopId masih berstatus DRAFT
-      const res = await falseCaseGroup.pjPenyusunAgent
-        .post(`${API}/evaluasi`)
-        .send({
-          jenis: JenisPengajuanEvaluasi.MANDIRI,
-          sopDetailIds: [falseCaseGroup.relatedSopId],
-        });
+      const res = await falseCaseGroup.pjPenyusunAgent.post(`${API}/evaluasi`).send({
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+        sopDetailIds: [falseCaseGroup.relatedSopId],
+      });
       expect([400, 409]).toContain(res.status);
     });
 
@@ -301,45 +306,49 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
   });
 
   // ============================
-  // MANDIRI WORKFLOW (OPD: mandiriGroup)
+  // EVALUASI_REQUEST_OPD WORKFLOW (OPD: requestOpdGroup)
   // ============================
 
-  describe('Pengajuan MANDIRI — workflow evaluasi tanpa nilaiOPD', () => {
+  describe('Pengajuan EVALUASI_REQUEST_OPD — workflow evaluasi tanpa nilaiOPD', () => {
     let sopUtamaId: string;
     let pengajuanId: string;
 
     beforeAll(async () => {
       sopUtamaId = await buildMinimalReadySop(
-        mandiriGroup.penyusunAgent,
-        mandiriGroup.pelaksanaId,
-        mandiriGroup.peraturanId,
-        mandiriGroup.relatedSopId,
-        { judul: 'SOP Mandiri Edge', nomorSop: 'EE-SOP-MD-001', namaLembaga: 'OPD Mandiri' },
+        requestOpdGroup.penyusunAgent,
+        requestOpdGroup.pelaksanaId,
+        requestOpdGroup.peraturanId,
+        requestOpdGroup.relatedSopId,
+        {
+          judul: 'SOP EVALUASI_REQUEST_OPD Edge',
+          nomorSop: 'EE-SOP-MD-001',
+          namaLembaga: 'OPD EVALUASI_REQUEST_OPD',
+        },
       );
     });
 
-    it('POST /evaluasi MANDIRI — berhasil dibuat (Success Case)', async () => {
-      const res = await mandiriGroup.pjPenyusunAgent
+    it('POST /evaluasi EVALUASI_REQUEST_OPD — berhasil dibuat (Success Case)', async () => {
+      const res = await requestOpdGroup.pjPenyusunAgent
         .post(`${API}/evaluasi`)
-        .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [sopUtamaId] })
+        .send({ jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD, sopDetailIds: [sopUtamaId] })
         .expect(201);
       expect(res.body.success).toBe(true);
       const pengajuan = await prisma.pengajuanEvaluasi.findFirstOrThrow({
-        where: { opdId: mandiriGroup.opdId },
+        where: { opdId: requestOpdGroup.opdId },
         orderBy: { createdAt: 'desc' },
       });
       pengajuanId = pengajuan.pengajuanEvaluasiId;
     });
 
     it('POST /evaluasi duplikasi (masih ada pengajuan aktif) → 409 (Worst Case)', async () => {
-      const res = await mandiriGroup.pjPenyusunAgent
+      const res = await requestOpdGroup.pjPenyusunAgent
         .post(`${API}/evaluasi`)
-        .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [sopUtamaId] });
+        .send({ jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD, sopDetailIds: [sopUtamaId] });
       expect([409, 400]).toContain(res.status);
     });
 
     it('PATCH nilai tanpa catatan saat PERLU_PERBAIKAN → 400 (False Case)', async () => {
-      const res = await mandiriGroup.evaluatorAgent
+      const res = await requestOpdGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/nilai/${sopUtamaId}`)
         .send({ hasil: HasilEvaluasi.PERLU_PERBAIKAN }); // tanpa catatan
       expect([400]).toContain(res.status);
@@ -347,13 +356,13 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
 
     it('PATCH nilai SOP di luar pengajuan → 403/404 (False Case)', async () => {
       const fakeDetailSopId = '00000000-0000-4000-8000-000000009001';
-      const res = await mandiriGroup.evaluatorAgent
+      const res = await requestOpdGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/nilai/${fakeDetailSopId}`)
         .send({ hasil: HasilEvaluasi.SESUAI });
       expect([403, 404]).toContain(res.status);
     });
 
-    it('PATCH /evaluasi/:id/selesai dengan nilaiOPD pada MANDIRI → 400 (False Case)', async () => {
+    it('PATCH /evaluasi/:id/selesai dengan nilaiOPD pada EVALUASI_REQUEST_OPD → 400 (False Case)', async () => {
       const nilai = await prisma.nilaiEvaluasi.findUniqueOrThrow({
         where: {
           pengajuanEvaluasiId_detailSopId: {
@@ -362,19 +371,19 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
           },
         },
       });
-      await mandiriGroup.evaluatorAgent
+      await requestOpdGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/nilai/${sopUtamaId}`)
         .send({ hasil: HasilEvaluasi.SESUAI, version: nilai.version })
         .expect(200);
 
-      const res = await mandiriGroup.evaluatorAgent
+      const res = await requestOpdGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/selesai`)
-        .send({ nomorBA: 'BA-EVAL-EE-MD-001', nilaiOPD: 5 }); // MANDIRI tidak boleh ada nilaiOPD
+        .send({ nomorBA: 'BA-EVAL-EE-MD-001', nilaiOPD: 5 }); // EVALUASI_REQUEST_OPD tidak boleh ada nilaiOPD
       expect([400]).toContain(res.status);
     });
 
-    it('PATCH /evaluasi/:id/selesai tanpa nilaiOPD pada MANDIRI → 200 (Success Case)', async () => {
-      await mandiriGroup.evaluatorAgent
+    it('PATCH /evaluasi/:id/selesai tanpa nilaiOPD pada EVALUASI_REQUEST_OPD → 200 (Success Case)', async () => {
+      await requestOpdGroup.evaluatorAgent
         .patch(`${API}/evaluasi/${pengajuanId}/selesai`)
         .send({ nomorBA: 'BA-EVAL-EE-MD-001' })
         .expect(200);
@@ -382,7 +391,7 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
   });
 
   // ============================
-  // LOOP PERLU PERBAIKAN (OPD: loopGroup — TERPISAH dari MANDIRI)
+  // LOOP PERLU PERBAIKAN (OPD: loopGroup — TERPISAH dari EVALUASI_REQUEST_OPD)
   // ============================
 
   describe('Loop PERLU_PERBAIKAN — revisi dan kirim ulang evaluasi', () => {
@@ -400,7 +409,7 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
 
       await loopGroup.pjPenyusunAgent
         .post(`${API}/evaluasi`)
-        .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [sopLoopId] })
+        .send({ jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD, sopDetailIds: [sopLoopId] })
         .expect(201);
       const pengajuan = await prisma.pengajuanEvaluasi.findFirstOrThrow({
         where: { opdId: loopGroup.opdId },
@@ -428,23 +437,21 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
         .expect(200);
     });
 
-    it('kirim ulang evaluasi sebelum tindak lanjut selesai → 409 (Worst Case)', async () => {
-      const res = await loopGroup.pjPenyusunAgent.post(
-        `${API}/sop/penyusun-workbench/${sopLoopId}/kirim-ulang-evaluasi`,
-      );
-      expect([409, 400]).toContain(res.status);
-    });
-
-    it('penyusun menyelesaikan tindak lanjut (Success Case)', async () => {
-      await loopGroup.penyusunAgent
-        .patch(`${API}/evaluasi/${pengajuanId}/nilai/${sopLoopId}/tindak-lanjut-selesai`)
-        .expect(200);
-    });
-
-    it('PJ Penyusun kirim ulang evaluasi setelah revisi selesai (Success Case)', async () => {
+    it('PJ Penyusun kirim ulang evaluasi sekaligus menyelesaikan tindak lanjut (Success Case)', async () => {
       await loopGroup.pjPenyusunAgent
         .post(`${API}/sop/penyusun-workbench/${sopLoopId}/kirim-ulang-evaluasi`)
         .expect(200);
+
+      const nilai = await prisma.nilaiEvaluasi.findUniqueOrThrow({
+        where: {
+          pengajuanEvaluasiId_detailSopId: {
+            pengajuanEvaluasiId: pengajuanId,
+            detailSopId: sopLoopId,
+          },
+        },
+      });
+      expect(nilai.statusTindakLanjut).toBe(StatusTindakLanjut.SELESAI);
+      expect(nilai.ditindaklanjutiOlehId).toBeTruthy();
     });
 
     it('PATCH nilai stale version → 409 (Worst Case)', async () => {
@@ -456,70 +463,77 @@ describeIntegration('Evaluasi Edge Cases — skenario evaluasi komprehensif', ()
   });
 
   // ============================
-  // TERJADWAL WORKFLOW (OPD: terjadwalGroup — TERPISAH)
+  // EVALUASI_REQUEST_EVALUATOR WORKFLOW (OPD: requestEvaluatorGroup — TERPISAH)
   // ============================
 
-  describe('Pengajuan TERJADWAL — wajib nilaiOPD saat selesai', () => {
-    let sopTerjadwalId: string;
-    let pengajuanTerjadwalId: string;
+  describe('Pengajuan EVALUASI_REQUEST_EVALUATOR — wajib nilaiOPD saat selesai', () => {
+    let sopRequestEvaluatorId: string;
+    let pengajuanRequestEvaluatorId: string;
 
     beforeAll(async () => {
-      sopTerjadwalId = await buildMinimalReadySop(
-        terjadwalGroup.penyusunAgent,
-        terjadwalGroup.pelaksanaId,
-        terjadwalGroup.peraturanId,
-        terjadwalGroup.relatedSopId,
-        { judul: 'SOP Terjadwal Edge', nomorSop: 'EE-SOP-TJ-001', namaLembaga: 'OPD Terjadwal' },
+      sopRequestEvaluatorId = await buildMinimalReadySop(
+        requestEvaluatorGroup.penyusunAgent,
+        requestEvaluatorGroup.pelaksanaId,
+        requestEvaluatorGroup.peraturanId,
+        requestEvaluatorGroup.relatedSopId,
+        {
+          judul: 'SOP EVALUASI_REQUEST_EVALUATOR Edge',
+          nomorSop: 'EE-SOP-TJ-001',
+          namaLembaga: 'OPD EVALUASI_REQUEST_EVALUATOR',
+        },
       );
 
-      await terjadwalGroup.pjPenyusunAgent
+      await requestEvaluatorGroup.pjPenyusunAgent
         .post(`${API}/evaluasi`)
-        .send({ jenis: JenisPengajuanEvaluasi.TERJADWAL, sopDetailIds: [sopTerjadwalId] })
+        .send({
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
+          sopDetailIds: [sopRequestEvaluatorId],
+        })
         .expect(201);
 
       const pengajuan = await prisma.pengajuanEvaluasi.findFirstOrThrow({
-        where: { opdId: terjadwalGroup.opdId },
+        where: { opdId: requestEvaluatorGroup.opdId },
         orderBy: { createdAt: 'desc' },
       });
-      pengajuanTerjadwalId = pengajuan.pengajuanEvaluasiId;
+      pengajuanRequestEvaluatorId = pengajuan.pengajuanEvaluasiId;
 
       // Nilai dulu agar bisa test selesai
       const nilai = await prisma.nilaiEvaluasi.findUniqueOrThrow({
         where: {
           pengajuanEvaluasiId_detailSopId: {
-            pengajuanEvaluasiId: pengajuanTerjadwalId,
-            detailSopId: sopTerjadwalId,
+            pengajuanEvaluasiId: pengajuanRequestEvaluatorId,
+            detailSopId: sopRequestEvaluatorId,
           },
         },
       });
-      await terjadwalGroup.evaluatorAgent
-        .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/nilai/${sopTerjadwalId}`)
+      await requestEvaluatorGroup.evaluatorAgent
+        .patch(`${API}/evaluasi/${pengajuanRequestEvaluatorId}/nilai/${sopRequestEvaluatorId}`)
         .send({ hasil: HasilEvaluasi.SESUAI, version: nilai.version })
         .expect(200);
     });
 
-    it('PATCH selesai tanpa nilaiOPD pada TERJADWAL → 400 (False Case)', async () => {
-      const res = await terjadwalGroup.evaluatorAgent
-        .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/selesai`)
-        .send({ nomorBA: 'BA-EVAL-EE-TJ-001' }); // tanpa nilaiOPD untuk TERJADWAL
+    it('PATCH selesai tanpa nilaiOPD pada EVALUASI_REQUEST_EVALUATOR → 400 (False Case)', async () => {
+      const res = await requestEvaluatorGroup.evaluatorAgent
+        .patch(`${API}/evaluasi/${pengajuanRequestEvaluatorId}/selesai`)
+        .send({ nomorBA: 'BA-EVAL-EE-TJ-001' }); // tanpa nilaiOPD untuk EVALUASI_REQUEST_EVALUATOR
       expect([400]).toContain(res.status);
     });
 
     it('PATCH selesai dengan nilaiOPD di luar range 1-5 → 400 (Edge Case)', async () => {
-      const res = await terjadwalGroup.evaluatorAgent
-        .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/selesai`)
+      const res = await requestEvaluatorGroup.evaluatorAgent
+        .patch(`${API}/evaluasi/${pengajuanRequestEvaluatorId}/selesai`)
         .send({ nomorBA: 'BA-EVAL-EE-TJ-001', nilaiOPD: 10 }); // di luar range
       expect([400]).toContain(res.status);
     });
 
-    it('PATCH selesai dengan nilaiOPD valid pada TERJADWAL → 200 (Success Case)', async () => {
-      await terjadwalGroup.evaluatorAgent
-        .patch(`${API}/evaluasi/${pengajuanTerjadwalId}/selesai`)
+    it('PATCH selesai dengan nilaiOPD valid pada EVALUASI_REQUEST_EVALUATOR → 200 (Success Case)', async () => {
+      await requestEvaluatorGroup.evaluatorAgent
+        .patch(`${API}/evaluasi/${pengajuanRequestEvaluatorId}/selesai`)
         .send({ nomorBA: 'BA-EVAL-EE-TJ-001', nilaiOPD: 4 })
         .expect(200);
 
       const result = await prisma.pengajuanEvaluasi.findUniqueOrThrow({
-        where: { pengajuanEvaluasiId: pengajuanTerjadwalId },
+        where: { pengajuanEvaluasiId: pengajuanRequestEvaluatorId },
       });
       expect(result.nilaiOPD).toBe(4);
     });

@@ -104,7 +104,6 @@ type PdfSigningConfig = {
 const PDF_VERIFICATION_DISCLAIMER =
   'Verifikasi ini memakai CA internal Sistem Informasi SOP. Untuk TTE tersertifikasi nasional, gunakan portal resmi Komdigi atau BSrE.';
 
-
 @Injectable()
 export class TtePdfSigningService {
   private readonly logger = new Logger(TtePdfSigningService.name);
@@ -160,11 +159,13 @@ export class TtePdfSigningService {
     if (dto.jenisDokumen !== JenisDokumenTte.SOP_BERLAKU) {
       return this.buildSkippedCaResponse(pdfBuffer);
     }
-    
+
     // Ambil kredensial P12 pengguna
     const kredensial = await this.repository.findKredensial(dto.userId);
     if (!kredensial || !kredensial.p12Base64 || !kredensial.p12PassphraseEncrypted) {
-      throw new BadRequestException('Sertifikat TTE personal belum diatur. Silakan buat di halaman Profil.');
+      throw new BadRequestException(
+        'Sertifikat TTE personal belum diatur. Silakan buat di halaman Profil.',
+      );
     }
 
     let p12Passphrase: string;

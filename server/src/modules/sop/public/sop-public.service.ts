@@ -125,6 +125,9 @@ export class SopPublicService {
   }
 
   private sanitizeFilename(value: string): string {
-    return value.replace(/[^\w.-]+/g, '-').replace(/-+/g, '-').slice(0, 120);
+    return value
+      .replace(/[^\w.-]+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 120);
   }
 }

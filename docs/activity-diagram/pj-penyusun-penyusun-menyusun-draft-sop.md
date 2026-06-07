@@ -47,11 +47,11 @@ endif
 
 |PJ Penyusun / Penyusun|
 if (Dokumen sudah siap diajukan?) then (Ya)
-  :Memilih aksi tandai siap dievaluasi;
+  :Memilih aksi tandai menunggu pengajuan evaluasi;
   |Sistem|
   :Memeriksa kelengkapan akhir dokumen SOP;
   if (Dokumen lengkap?) then (Ya)
-    :Mengubah status SOP menjadi siap dievaluasi;
+    :Mengubah status SOP menjadi menunggu pengajuan evaluasi;
     :Menampilkan pemberitahuan bahwa SOP siap diajukan;
   else (Tidak)
     :Menampilkan daftar kekurangan dokumen;

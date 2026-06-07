@@ -19,7 +19,7 @@ export type EvaluasiGrafikOpdAktifRow = {
 
 /** Nilai status enum di DB (MySQL); diselaraskan dengan kebijakan statistik evaluasi selesai. */
 const STATUS_SELESAI_SQL_IN = Prisma.raw(
-  `'SELESAI_DIEVALUASI', 'DIVERIFIKASI_PJ_EVALUATOR', 'DITANDATANGANI_PJ_PENYUSUN', 'SELESAI'`,
+  `'SELESAI_DIEVALUASI', 'DITANDATANGANI_PJ_EVALUATOR', 'DITANDATANGANI_PJ_PENYUSUN', 'SELESAI'`,
 );
 
 @Injectable()

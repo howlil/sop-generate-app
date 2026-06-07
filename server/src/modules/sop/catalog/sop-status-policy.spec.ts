@@ -13,22 +13,22 @@ describe('Pengujian kebijakan status SOP', () => {
     ).toThrow(ConflictException);
   });
 
-  it('seharusnya mengizinkan penyusun draft menjadi siap dievaluasi', () => {
+  it('seharusnya mengizinkan penyusun draft menjadi menunggu pengajuan evaluasi', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.PENYUSUN,
         current: StatusSOP.DRAFT,
-        target: StatusSOP.SIAP_DIEVALUASI,
+        target: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
       }),
     ).not.toThrow();
   });
 
-  it('seharusnya menolak akses evaluator saat menandai siap dievaluasi', () => {
+  it('seharusnya menolak akses evaluator saat menandai menunggu pengajuan evaluasi', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.EVALUATOR,
         current: StatusSOP.DRAFT,
-        target: StatusSOP.SIAP_DIEVALUASI,
+        target: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
       }),
     ).toThrow(ForbiddenException);
   });
@@ -37,7 +37,7 @@ describe('Pengujian kebijakan status SOP', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.PJ_PENYUSUN,
-        current: StatusSOP.SIAP_DIEVALUASI,
+        current: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
         target: StatusSOP.DIAJUKAN_EVALUASI,
       }),
     ).not.toThrow();
@@ -47,7 +47,7 @@ describe('Pengujian kebijakan status SOP', () => {
     expect(() =>
       assertAllowedSopStatusTransition({
         role: PeranPengguna.KEPALA_OPD,
-        current: StatusSOP.SIAP_DIEVALUASI,
+        current: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
         target: StatusSOP.BERLAKU,
       }),
     ).toThrow(ConflictException);

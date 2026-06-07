@@ -84,11 +84,11 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
   }
 
   function createPastikanMock(): {
-    pastikanPengajuanMandiriUntukEvaluator: jest.Mock;
+    pastikanPengajuanRequestOpdUntukEvaluator: jest.Mock;
     assertUserCanAccessPengajuan: jest.Mock;
   } {
     return {
-      pastikanPengajuanMandiriUntukEvaluator: jest.fn().mockResolvedValue(undefined),
+      pastikanPengajuanRequestOpdUntukEvaluator: jest.fn().mockResolvedValue(undefined),
       assertUserCanAccessPengajuan: jest.fn().mockResolvedValue(undefined),
     };
   }
@@ -125,7 +125,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         .mockResolvedValueOnce({
           pengajuanEvaluasiId: 'p-new',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.MANDIRI,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
           nilaiEvaluasi: [nilaiEvaluasiRow()],
         }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
@@ -140,14 +140,14 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       pastikan as unknown as PengajuanEvaluasiService,
     );
     const actual = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {});
-    expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).toHaveBeenCalledWith(
+    expect(pastikan.pastikanPengajuanRequestOpdUntukEvaluator).toHaveBeenCalledWith(
       userEvaluator,
       'opd-1',
       expect.arrayContaining([expect.objectContaining({ detailSopId: detailId })]),
     );
     expect(repo.findPengajuanAktif).toHaveBeenCalledTimes(2);
     expect(actual.pengajuanAktif?.id).toBe('p-new');
-    expect(actual.pengajuanAktif?.jenis).toBe('MANDIRI');
+    expect(actual.pengajuanAktif?.jenis).toBe('EVALUASI_REQUEST_OPD');
     expect(actual.daftarSop).toHaveLength(1);
     expect(actual.daftarSop[0]?.tampilanAlur).toBe('sedang_dievaluasi');
     expect(sopCatalog.getPenyusunWorkbench).not.toHaveBeenCalled();
@@ -175,7 +175,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       pastikan as unknown as PengajuanEvaluasiService,
     );
     const actual = await service.getWorkspaceOpd(userPj, 'opd-1', {});
-    expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
+    expect(pastikan.pastikanPengajuanRequestOpdUntukEvaluator).not.toHaveBeenCalled();
     expect(repo.findPengajuanAktif).toHaveBeenCalledTimes(1);
     expect(actual.pengajuanAktif).toBeNull();
   });
@@ -197,7 +197,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       findPengajuanAktif: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         nilaiEvaluasi: [
           nilaiEvaluasiRow(),
           nilaiEvaluasiRow({
@@ -220,7 +220,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       pastikan as unknown as PengajuanEvaluasiService,
     );
     const actual = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {});
-    expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
+    expect(pastikan.pastikanPengajuanRequestOpdUntukEvaluator).not.toHaveBeenCalled();
     expect(actual.daftarSop).toHaveLength(2);
     expect(actual.daftarSop.find((r) => r.detailSopId === detailId)?.tampilanAlur).toBe(
       'sedang_dievaluasi',
@@ -287,7 +287,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
     });
     expect(actual.preview).toBeNull();
     expect(getWorkbench).not.toHaveBeenCalled();
-    expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
+    expect(pastikan.pastikanPengajuanRequestOpdUntukEvaluator).not.toHaveBeenCalled();
   });
 
   it('seharusnya melempar NotFoundException ketika bundle pengajuan tidak ditemukan', async () => {
@@ -313,7 +313,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         pengajuanEvaluasiId: 'peng-1',
         opdId: 'opd-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         nilaiEvaluasi: [nilaiEvaluasiRow()],
         daftarRows: [pipelineRow({ statusDetail: StatusSOP.SEDANG_DIEVALUASI })],
       }),
@@ -334,7 +334,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
     expect(actual.daftarSop).toHaveLength(1);
     expect(actual.daftarSop[0]?.detailSopId).toBe(detailId);
     expect(actual.pengajuanAktif?.id).toBe('peng-1');
-    expect(actual.pengajuanAktif?.jenis).toBe('TERJADWAL');
+    expect(actual.pengajuanAktif?.jenis).toBe('EVALUASI_REQUEST_EVALUATOR');
     expect(actual.pengajuanAktif?.nilaiPerDetail).toHaveLength(1);
     expect(actual.opd.id).toBe('opd-1');
   });
@@ -362,7 +362,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       findPengajuanAktif: jest.fn().mockResolvedValue({
         pengajuanEvaluasiId: 'peng-1',
         status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         nilaiEvaluasi: [nilaiEvaluasiRow({ hasil: 'SESUAI', version: 1 })],
       }),
       findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
@@ -391,7 +391,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         pengajuanEvaluasiId: 'peng-2',
         opdId: 'opd-1',
         status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
-        jenis: JenisPengajuanEvaluasi.TERJADWAL,
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
         nilaiEvaluasi: [nilaiEvaluasiRow({ hasil: 'SESUAI', version: 2 })],
         daftarRows: [
           pipelineRow({
@@ -427,11 +427,10 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       const sopCatalog = { getPenyusunWorkbench: jest.fn() } as unknown as SopCatalogService;
       const pastikan = createPastikanMock();
       const mockResolve = jest.fn().mockResolvedValue('opd-saya');
-      const service = new EvaluasiWorkspaceService(
-        repo,
-        sopCatalog,
-        { ...pastikan, resolveOpdIdTerikat: mockResolve } as unknown as PengajuanEvaluasiService,
-      );
+      const service = new EvaluasiWorkspaceService(repo, sopCatalog, {
+        ...pastikan,
+        resolveOpdIdTerikat: mockResolve,
+      } as unknown as PengajuanEvaluasiService);
 
       const res = await service.getWorkspaceOpdSaya(userEvaluator, {});
       expect(mockResolve).toHaveBeenCalledWith(userEvaluator);
@@ -455,10 +454,12 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         pastikan as unknown as PengajuanEvaluasiService,
       );
 
-      await expect(service.getWorkspaceOpd(userEvaluator, 'opd-1', {})).rejects.toThrow('Akses ditolak');
+      await expect(service.getWorkspaceOpd(userEvaluator, 'opd-1', {})).rejects.toThrow(
+        'Akses ditolak',
+      );
     });
 
-    it('seharusnya tidak memanggil pastikanPengajuanMandiriUntukEvaluator jika pengguna evaluator tetapi daftar detail kosong', async () => {
+    it('seharusnya tidak memanggil pastikanPengajuanRequestOpdUntukEvaluator jika pengguna evaluator tetapi daftar detail kosong', async () => {
       const repo = createRepoMock({
         findOpdRingkas: jest.fn().mockResolvedValue({ opdId: 'opd-1', nama: 'OPD Test' }),
         findDaftarDetailPipeline: jest.fn().mockResolvedValue([]),
@@ -476,7 +477,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       );
 
       const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {});
-      expect(pastikan.pastikanPengajuanMandiriUntukEvaluator).not.toHaveBeenCalled();
+      expect(pastikan.pastikanPengajuanRequestOpdUntukEvaluator).not.toHaveBeenCalled();
       expect(res.pengajuanAktif).toBeNull();
     });
 
@@ -488,7 +489,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         findPengajuanAktif: jest.fn().mockResolvedValue({
           pengajuanEvaluasiId: 'peng-1',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.MANDIRI,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
           nilaiEvaluasi: [nilaiEvaluasiRow()],
         }),
         findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
@@ -507,7 +508,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
 
       const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
         detailSopId: foreignId,
-        expand: 'preview'
+        expand: 'preview',
       });
 
       expect(repo.findLogNilaiUntukDetailWorkspace).not.toHaveBeenCalled();
@@ -557,7 +558,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
 
       const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
         detailSopId: detailId,
-        expand: 'preview'
+        expand: 'preview',
       });
 
       expect(repo.detailMilikiOpd).toHaveBeenCalledWith(detailId, 'opd-1');
@@ -583,7 +584,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
       );
 
       const res = await service.getWorkspaceOpd(userEvaluator, 'opd-1', {
-        expand: 'preview'
+        expand: 'preview',
       });
 
       expect(res.preview).toBeNull();
@@ -596,7 +597,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         findPengajuanAktif: jest.fn().mockResolvedValue({
           pengajuanEvaluasiId: 'peng-1',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.MANDIRI,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
           nilaiEvaluasi: [], // Kosong
         }),
         findRiwayatOpdSelesai: jest.fn().mockResolvedValue([]),
@@ -624,7 +625,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
           pengajuanEvaluasiId: 'peng-1',
           opdId: 'opd-1',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           nilaiEvaluasi: [],
           daftarRows: [],
         }),
@@ -639,7 +640,9 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         pastikan as unknown as PengajuanEvaluasiService,
       );
 
-      await expect(service.getWorkspacePengajuan(userEvaluator, 'peng-1', {})).rejects.toThrow(NotFoundException);
+      await expect(service.getWorkspacePengajuan(userEvaluator, 'peng-1', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('seharusnya melempar error dari assertUserCanAccessPengajuan jika pengguna tidak berwenang', async () => {
@@ -648,7 +651,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
           pengajuanEvaluasiId: 'peng-1',
           opdId: 'opd-1',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           nilaiEvaluasi: [],
           daftarRows: [],
         }),
@@ -663,7 +666,9 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
         pastikan as unknown as PengajuanEvaluasiService,
       );
 
-      await expect(service.getWorkspacePengajuan(userEvaluator, 'peng-1', {})).rejects.toThrow('Unauthorized');
+      await expect(service.getWorkspacePengajuan(userEvaluator, 'peng-1', {})).rejects.toThrow(
+        'Unauthorized',
+      );
     });
 
     it('seharusnya mengabaikan log nilai dan preview jika detailSopId di query tidak ada di dalam bundle', async () => {
@@ -673,7 +678,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
           pengajuanEvaluasiId: 'peng-1',
           opdId: 'opd-1',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           nilaiEvaluasi: [nilaiEvaluasiRow()],
           daftarRows: [pipelineRow()],
         }),
@@ -694,7 +699,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
 
       const res = await service.getWorkspacePengajuan(userEvaluator, 'peng-1', {
         detailSopId: foreignId,
-        expand: 'preview'
+        expand: 'preview',
       });
 
       expect(repo.findLogNilaiUntukDetailWorkspace).not.toHaveBeenCalled();
@@ -708,7 +713,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
           pengajuanEvaluasiId: 'peng-1',
           opdId: 'opd-1',
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
-          jenis: JenisPengajuanEvaluasi.TERJADWAL,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_EVALUATOR,
           nilaiEvaluasi: [nilaiEvaluasiRow()],
           daftarRows: [pipelineRow()],
         }),
@@ -729,7 +734,7 @@ describe('Pengujian EvaluasiWorkspaceService', () => {
 
       const res = await service.getWorkspacePengajuan(userEvaluator, 'peng-1', {
         detailSopId: detailId,
-        expand: 'preview'
+        expand: 'preview',
       });
 
       expect(repo.detailMilikiOpd).toHaveBeenCalledWith(detailId, 'opd-1');

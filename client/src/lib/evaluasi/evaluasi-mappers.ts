@@ -5,7 +5,7 @@ import type {
 } from '@/types/dto/evaluasi.dto'
 import { buildNilaiEvaluasiClientId } from '@/types/dto/evaluasi.dto'
 
-export function mapEvaluasiShellToLegacyPengajuan(
+export function mapEvaluasiShellToPengajuan(
   shell: PengajuanEvaluasiShell,
 ): PengajuanEvaluasi {
   return {

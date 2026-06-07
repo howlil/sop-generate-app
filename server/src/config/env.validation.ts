@@ -42,11 +42,7 @@ const envSchema = z
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
       z.string().url().optional(),
     ),
-    /** Legacy; gunakan PUBLIC_APP_ORIGIN. Jika di-set, dipakai sebagai fallback bila request tanpa Origin. */
-    PUBLIC_TTE_VERIFY_BASE_URL: z.preprocess(
-      (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),
-      z.string().optional(),
-    ),
+
     PDF_SIGNING_ENABLED: envBoolean(false),
     PDF_SIGNING_P12_BASE64: z.preprocess(
       (val) => (typeof val === 'string' && val.trim() === '' ? undefined : val),

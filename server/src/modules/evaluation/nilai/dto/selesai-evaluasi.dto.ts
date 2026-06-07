@@ -12,7 +12,7 @@ export class SelesaiEvaluasiDto {
 
   @ApiPropertyOptional({
     description:
-      'Skor evaluasi tingkat OPD (1–5). Wajib untuk pengajuan TERJADWAL; untuk MANDIRI jangan kirim — server menyimpan tanpa skor OPD.',
+      'Skor evaluasi tingkat OPD (1–5). Wajib untuk pengajuan EVALUASI_REQUEST_EVALUATOR; untuk EVALUASI_REQUEST_OPD jangan kirim — server menyimpan tanpa skor OPD.',
     minimum: 1,
     maximum: 5,
   })

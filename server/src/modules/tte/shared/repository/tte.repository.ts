@@ -146,7 +146,12 @@ export class TteRepository {
   async findKredensial(userId: string): Promise<TteKredensialRow | null> {
     const row = await this.prisma.pengguna.findFirst({
       where: { penggunaId: userId, deletedAt: null },
-      select: { ttePinHash: true, tteP12Base64: true, tteP12PassphraseEncrypted: true, updatedAt: true },
+      select: {
+        ttePinHash: true,
+        tteP12Base64: true,
+        tteP12PassphraseEncrypted: true,
+        updatedAt: true,
+      },
     });
     if (row === null || row.ttePinHash === null) {
       return null;
@@ -168,7 +173,12 @@ export class TteRepository {
       data: {
         ttePinHash: params.hashPin,
       },
-      select: { ttePinHash: true, tteP12Base64: true, tteP12PassphraseEncrypted: true, updatedAt: true },
+      select: {
+        ttePinHash: true,
+        tteP12Base64: true,
+        tteP12PassphraseEncrypted: true,
+        updatedAt: true,
+      },
     });
     return {
       hashPin: row.ttePinHash!,
@@ -192,7 +202,12 @@ export class TteRepository {
         tteP12Base64: params.p12Base64,
         tteP12PassphraseEncrypted: params.p12PassphraseEncrypted,
       },
-      select: { ttePinHash: true, tteP12Base64: true, tteP12PassphraseEncrypted: true, updatedAt: true },
+      select: {
+        ttePinHash: true,
+        tteP12Base64: true,
+        tteP12PassphraseEncrypted: true,
+        updatedAt: true,
+      },
     });
     return {
       hashPin: row.ttePinHash!,
@@ -209,7 +224,12 @@ export class TteRepository {
     const row = await this.prisma.pengguna.update({
       where: { penggunaId: params.userId },
       data: { ttePinHash: params.hashPin },
-      select: { ttePinHash: true, tteP12Base64: true, tteP12PassphraseEncrypted: true, updatedAt: true },
+      select: {
+        ttePinHash: true,
+        tteP12Base64: true,
+        tteP12PassphraseEncrypted: true,
+        updatedAt: true,
+      },
     });
     if (row.ttePinHash === null) {
       throw new Error('Kredensial TTE tidak ditemukan setelah pembaruan');
@@ -233,7 +253,12 @@ export class TteRepository {
         tteP12Base64: params.p12Base64,
         tteP12PassphraseEncrypted: params.p12PassphraseEncrypted,
       },
-      select: { ttePinHash: true, tteP12Base64: true, tteP12PassphraseEncrypted: true, updatedAt: true },
+      select: {
+        ttePinHash: true,
+        tteP12Base64: true,
+        tteP12PassphraseEncrypted: true,
+        updatedAt: true,
+      },
     });
     if (row.ttePinHash === null) {
       throw new Error('Kredensial TTE tidak ditemukan (belum ada PIN)');
@@ -423,7 +448,7 @@ export class TteRepository {
   }
 
   /**
-   * PJ Evaluator menandatangani BA: pengajuan SELESAI_DIEVALUASI → DIVERIFIKASI_PJ_EVALUATOR.
+   * PJ Evaluator menandatangani BA: pengajuan SELESAI_DIEVALUASI → DITANDATANGANI_PJ_EVALUATOR.
    */
   async transaksiTandaTanganiBaEvaluator(params: {
     pengajuanEvaluasiId: string;
@@ -484,7 +509,7 @@ export class TteRepository {
       await tx.pengajuanEvaluasi.update({
         where: { pengajuanEvaluasiId: params.pengajuanEvaluasiId },
         data: {
-          status: StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+          status: StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
           diverifikasiOlehUserId: params.userId,
           version: { increment: 1 },
         },
@@ -503,7 +528,7 @@ export class TteRepository {
   }
 
   /**
-   * PJ Penyusun menandatangani BA: DIVERIFIKASI_PJ_EVALUATOR → DITANDATANGANI_PJ_PENYUSUN; DetailSOP SIAP_DIVERIFIKASI → DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI.
+   * PJ Penyusun menandatangani BA: DITANDATANGANI_PJ_EVALUATOR → DITANDATANGANI_PJ_PENYUSUN; DetailSOP MENUNGGU_TTD_PJ_EVALUATOR → DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI.
    */
   async transaksiTandaTanganiBaPjPenyusun(params: {
     pengajuanEvaluasiId: string;
@@ -525,7 +550,7 @@ export class TteRepository {
       if (pengajuan.opdId !== params.userOpdId) {
         return { error: 'FORBIDDEN_OPD' as const };
       }
-      if (pengajuan.status !== StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR) {
+      if (pengajuan.status !== StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR) {
         return { error: 'BAD_STATUS' as const, status: pengajuan.status };
       }
       const dokumen =
@@ -563,7 +588,7 @@ export class TteRepository {
       const promoted = await tx.detailSOP.updateMany({
         where: {
           detailSopId: { in: detailIds },
-          status: StatusSOP.SIAP_DIVERIFIKASI,
+          status: StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
         },
         data: { status: StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI },
       });

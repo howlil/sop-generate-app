@@ -1,5 +1,3 @@
-import { flushSync } from 'react-dom'
-import { SOP_BEFORE_PRINT_EVENT } from './sop-print-events'
 import { waitForPaintFrames } from './print-frame-wait'
 
 export const SOP_PRINT_READY_TIMEOUT_MS = 6000
@@ -12,9 +10,7 @@ export interface WaitForSopDiagramPrintReadyOptions {
   requiredKinds?: SopDiagramKind[]
 }
 
-export interface PrintSopDocumentResult {
-  diagramReady: boolean
-}
+
 
 /** Judul kosong mengurangi header bawaan browser (tanggal/judul) di dialog cetak. */
 export function suppressBrowserPrintChrome(): () => void {
@@ -25,17 +21,9 @@ export function suppressBrowserPrintChrome(): () => void {
   }
 }
 
-type SopPrintPrepareHandler = () => void
 export type SopDiagramKind = 'flowchart' | 'bpmn'
 
 const ALL_SOP_DIAGRAM_KINDS: SopDiagramKind[] = ['flowchart', 'bpmn']
-
-let sopPrintPrepareHandler: SopPrintPrepareHandler | null = null
-
-/** Daftarkan handler React (flushSync mount diagram) dari lapisan cetak SOP. */
-export function registerSopPrintPrepareHandler(handler: SopPrintPrepareHandler | null): void {
-  sopPrintPrepareHandler = handler
-}
 
 function waitForPrintPaint(): Promise<void> {
   return waitForPaintFrames(2)
@@ -168,53 +156,4 @@ export async function waitForSopDiagramPrintReady(
 }
 
 
-function mountDiagramsForPrint(): void {
-  if (sopPrintPrepareHandler != null) {
-    sopPrintPrepareHandler()
-  }
-  window.dispatchEvent(new Event(SOP_BEFORE_PRINT_EVENT))
-}
 
-/** Lepas mode cetak SOP dari DOM. */
-export function cleanupSopPrintDocument(): void {
-  document.body.classList.remove('print-mode-sop', 'sop-print-preparing')
-}
-
-/**
- * Browser print legacy (Ctrl+P / lapisan cetak tersembunyi).
- * @deprecated Untuk cetak produksi gunakan `printSopPdfDocument` / `printSopFromPreviewProps`.
- */
-export async function printSopDocument(): Promise<PrintSopDocumentResult> {
-  const scope = getPrintScope()
-
-  document.body.classList.add('sop-print-preparing')
-  mountDiagramsForPrint()
-  await waitForPrintPaint()
-
-  const diagramReady = await waitForSopDiagramPrintReady({
-    timeoutMs: SOP_PRINT_READY_TIMEOUT_MS,
-    scope,
-  })
-
-  document.body.classList.remove('sop-print-preparing')
-  await waitForPrintPaint()
-
-  return new Promise((resolve) => {
-    const onAfterPrint = () => {
-      cleanupSopPrintDocument()
-      window.removeEventListener('afterprint', onAfterPrint)
-      resolve({ diagramReady })
-    }
-    window.addEventListener('afterprint', onAfterPrint)
-    window.print()
-  })
-}
-
-/** Util untuk template: flushSync + callback terdaftar. */
-export function createSopPrintPrepareHandler(
-  prepare: () => void,
-): SopPrintPrepareHandler {
-  return () => {
-    flushSync(prepare)
-  }
-}

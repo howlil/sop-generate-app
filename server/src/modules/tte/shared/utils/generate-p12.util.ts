@@ -84,7 +84,7 @@ export function generatePersonalP12(params: {
     signingKeys.privateKey,
     [signingCert, caCert],
     params.passphrase,
-    { generateLocalKeyId: true, friendlyName: params.nama }
+    { generateLocalKeyId: true, friendlyName: params.nama },
   );
 
   const p12Der = forge.asn1.toDer(p12Asn1).getBytes();

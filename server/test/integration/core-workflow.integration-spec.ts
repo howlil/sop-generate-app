@@ -201,7 +201,7 @@ describeIntegration('Core workflow integration test', () => {
     await request(app.getHttpServer()).get(`${API}/sop`).expect(401);
 
     const response = await penyusunAgent.post(`${API}/evaluasi`).send({
-      jenis: JenisPengajuanEvaluasi.MANDIRI,
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
       sopDetailIds: ['00000000-0000-4000-8000-000000000001'],
     });
     expectRejected(response.status);
@@ -336,7 +336,7 @@ describeIntegration('Core workflow integration test', () => {
   it('mengubah SOP lengkap menjadi siap evaluasi dan membuat pengajuan evaluasi', async () => {
     await penyusunAgent
       .patch(`${API}/sop/status/${state.detailSopId}`)
-      .send({ status: StatusSOP.SIAP_DIEVALUASI })
+      .send({ status: StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI })
       .expect(200);
 
     const penyusunSubmit = await penyusunAgent
@@ -346,7 +346,10 @@ describeIntegration('Core workflow integration test', () => {
 
     await pjPenyusunAgent
       .post(`${API}/evaluasi`)
-      .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [state.detailSopId] })
+      .send({
+        jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+        sopDetailIds: [state.detailSopId],
+      })
       .expect(201);
 
     const pengajuan = await prisma.pengajuanEvaluasi.findFirstOrThrow({
@@ -358,9 +361,10 @@ describeIntegration('Core workflow integration test', () => {
     expect(pengajuan.status).toBe(StatusPengajuanEvaluasi.SEDANG_DIEVALUASI);
     expect(pengajuan.nilaiEvaluasi).toHaveLength(1);
 
-    const duplicate = await pjPenyusunAgent
-      .post(`${API}/evaluasi`)
-      .send({ jenis: JenisPengajuanEvaluasi.MANDIRI, sopDetailIds: [state.detailSopId] });
+    const duplicate = await pjPenyusunAgent.post(`${API}/evaluasi`).send({
+      jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
+      sopDetailIds: [state.detailSopId],
+    });
     expectRejected(duplicate.status);
   });
 
@@ -394,16 +398,6 @@ describeIntegration('Core workflow integration test', () => {
       .expect(200);
     expect(feedback.body.data.catatan).toContain('Tambahkan detail');
 
-    const earlyResubmit = await pjPenyusunAgent.post(
-      `${API}/sop/penyusun-workbench/${state.detailSopId}/kirim-ulang-evaluasi`,
-    );
-    expectRejected(earlyResubmit.status);
-
-    await penyusunAgent
-      .patch(
-        `${API}/evaluasi/${state.pengajuanId}/nilai/${state.detailSopId}/tindak-lanjut-selesai`,
-      )
-      .expect(200);
     await pjPenyusunAgent
       .post(`${API}/sop/penyusun-workbench/${state.detailSopId}/kirim-ulang-evaluasi`)
       .expect(200);
@@ -444,10 +438,10 @@ describeIntegration('Core workflow integration test', () => {
       .send({ hasil: HasilEvaluasi.SESUAI, version: nilaiSaatIni.version })
       .expect(200);
 
-    const mandiriWithScore = await evaluatorAgent
+    const requestOpdWithScore = await evaluatorAgent
       .patch(`${API}/evaluasi/${state.pengajuanId}/selesai`)
       .send({ nomorBA: 'BA-EVAL-INT-001', nilaiOPD: 5 });
-    expectRejected(mandiriWithScore.status);
+    expectRejected(requestOpdWithScore.status);
 
     await evaluatorAgent
       .patch(`${API}/evaluasi/${state.pengajuanId}/selesai`)
@@ -463,7 +457,7 @@ describeIntegration('Core workflow integration test', () => {
     const detail = await prisma.detailSOP.findUniqueOrThrow({
       where: { detailSopId: state.detailSopId },
     });
-    expect(detail.status).toBe(StatusSOP.SIAP_DIVERIFIKASI);
+    expect(detail.status).toBe(StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR);
   });
 
   it('menjalankan TTE BA, menolak duplikasi tanda tangan, dan mengesahkan SOP oleh Kepala OPD', async () => {
@@ -480,7 +474,7 @@ describeIntegration('Core workflow integration test', () => {
     let pengajuan = await prisma.pengajuanEvaluasi.findUniqueOrThrow({
       where: { pengajuanEvaluasiId: state.pengajuanId },
     });
-    expect(pengajuan.status).toBe(StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR);
+    expect(pengajuan.status).toBe(StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR);
 
     const duplicatePjEvaluator = await pjEvaluatorAgent
       .post(`${API}/tte/tanda-tangani/ba/${state.pengajuanId}`)
@@ -497,9 +491,7 @@ describeIntegration('Core workflow integration test', () => {
     });
     expect(pengajuan.status).toBe(StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN);
 
-    const sopPdfBase64 = (await createMinimalPdfBuffer('SOP Integration Utama')).toString(
-      'base64',
-    );
+    const sopPdfBase64 = (await createMinimalPdfBuffer('SOP Integration Utama')).toString('base64');
     const sopPdfs = [{ detailSopId: state.detailSopId, pdfBase64: sopPdfBase64 }];
     const wrongKepala = await kepalaLainAgent
       .post(`${API}/tte/tanda-tangani/pengajuan/${state.pengajuanId}/sop-semua`)

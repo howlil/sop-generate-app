@@ -4,8 +4,6 @@ export type PengajuanPrintTarget = 'ba' | 'sop'
 export const PRINT_DELAY_MS = 150
 
 import type { SopPreviewWorkbenchProps } from '@/components/pengajuan/sop-document-preview-pane'
-import { printSopDocument } from './sop-browser-print'
-import { SOP_BEFORE_PRINT_EVENT } from './sop-print-events'
 import {
   downloadSopPdf,
   buildSopOfficialPdfBase64,
@@ -16,8 +14,7 @@ import { sopPreviewPropsToPdfDocumentProps } from './sop-pdf-props.util'
 import type { SopPdfDocumentProps } from '@/components/sop/sop-pdf-document'
 import type { TTESignaturePayload } from '@/types/dto/tte.dto'
 
-export { SOP_BEFORE_PRINT_EVENT }
-export { printSopDocument } from './sop-browser-print'
+
 export { downloadSopPdf, printSopPdfDocument } from './print-sop-pdf'
 
 export const CETAK_ARSIP_DISABLED_TITLE =
@@ -36,10 +33,7 @@ export function canCetakSopArsipPengajuan(status: string | undefined): boolean {
   return status === 'SELESAI'
 }
 
-/** @deprecated Gunakan canCetakSopArsipPengajuan */
-export function canCetakArsipPengajuan(status: string | undefined): boolean {
-  return canCetakSopArsipPengajuan(status)
-}
+
 
 export interface SopPdfFromPreviewOptions extends SopPdfPrintOptions {
   includeHeader?: boolean
@@ -129,18 +123,4 @@ export function scheduleSopDocumentPrint(
   return schedulePengajuanPrint('sop', props, delayMs, options)
 }
 
-/** @deprecated Gunakan triggerSopPrint dengan props PDF */
-export function triggerPengajuanPrint(
-  target: PengajuanPrintTarget,
-  props?: SopPdfDocumentProps,
-  options?: SopPdfPrintOptions,
-): void {
-  if (target === 'sop' && props != null) {
-    triggerSopPrint(props, options)
-  }
-}
 
-/** @deprecated Browser print — gunakan printSopPdfDocument untuk cetak produksi. */
-export function triggerSopBrowserPrint(): void {
-  void printSopDocument()
-}

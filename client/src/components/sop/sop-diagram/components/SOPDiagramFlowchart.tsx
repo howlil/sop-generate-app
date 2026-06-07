@@ -44,8 +44,6 @@ import {
   type PositionedOpcEndpoint,
 } from '../core/route/flowchart/flowchartPagination'
 import { SOP_DOCUMENT_PAGE_WIDTH_CLASS } from '../layout/sopDocumentLayout'
-import { SOP_BEFORE_PRINT_EVENT } from '@/lib/print/sop-print-events'
-import { useSopDiagramPrintReadyDispatch } from '../hooks/use-sop-diagram-print-ready-dispatch'
 import {
   findConnectionIdsWithCrossings,
   sortConnectionsForRouting,
@@ -66,8 +64,6 @@ const DEFAULT_LAYOUT = {
 const MAX_ROUTING_RECONCILE_PASSES = 4
 const MEASURE_RETRY_MAX_FRAMES = 12
 const MEASURE_RETRY_TIMEOUT_MS = 500
-const GRAPH_BUILD_MAX_FRAMES = 4 // kept for unused reference cleanup
-void GRAPH_BUILD_MAX_FRAMES
 
 /** Lebar tetap A4 content agar konsisten (path/arrow tidak berubah saat resize); scroll horizontal jika viewport sempit */
 const PAGE_WIDTH_CLASS = SOP_DOCUMENT_PAGE_WIDTH_CLASS
@@ -577,10 +573,8 @@ export function SOPDiagramFlowchart({
       measurePelaksanaBounds()
     }
     window.addEventListener('beforeprint', onBeforePrint)
-    window.addEventListener(SOP_BEFORE_PRINT_EVENT, onBeforePrint)
     return () => {
       window.removeEventListener('beforeprint', onBeforePrint)
-      window.removeEventListener(SOP_BEFORE_PRINT_EVENT, onBeforePrint)
     }
   }, [measurePelaksanaBounds])
 
@@ -773,8 +767,6 @@ function FlowchartPage({
   }, [arrowsReady, areaId])
 
   const canRenderArrows = arrowsReady && connections.length > 0
-
-  useSopDiagramPrintReadyDispatch(areaId, arrowsReady, connections.length, rerouteVersion)
 
   return (
     <div

@@ -1,4 +1,9 @@
-import { BadRequestException, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { JenisDiagram, PeranPengguna } from '../../../generated/prisma';
 import { SopDiagramService } from './sop-diagram.service';
 
@@ -71,38 +76,62 @@ describe('Pengujian SopDiagramService', () => {
   });
 
   // --- COMPREHENSIVE TESTS (FALSE, WORST, EDGE CASES) ---
-  
+
   describe('updateDiagram (Tambahan Kasus Otorisasi dan Validasi Status)', () => {
     it('seharusnya melempar ForbiddenException jika peran bukan PENYUSUN/PJ_PENYUSUN (False Case)', async () => {
       const { service } = createService();
       const badUser = { sub: 'user-1', peran: PeranPengguna.EVALUATOR, email: 'a@b.c' } as never;
-      await expect(service.updateDiagram(badUser, 'det-1', { jenis: JenisDiagram.FLOWCHART })).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(
+        service.updateDiagram(badUser, 'det-1', { jenis: JenisDiagram.FLOWCHART }),
+      ).rejects.toBeInstanceOf(ForbiddenException);
     });
 
     it('seharusnya melempar NotFoundException jika status detail tidak ditemukan (Edge Case)', async () => {
       const { service } = createService({ status: null });
-      await expect(service.updateDiagram(user, 'det-1', { jenis: JenisDiagram.FLOWCHART })).rejects.toBeInstanceOf(NotFoundException);
+      await expect(
+        service.updateDiagram(user, 'det-1', { jenis: JenisDiagram.FLOWCHART }),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('seharusnya melempar ConflictException jika status detail tidak dapat diedit (False Case)', async () => {
       const { service } = createService({ status: 'DITANDATANGANI_KEPALA_OPD' });
-      await expect(service.updateDiagram(user, 'det-1', { jenis: JenisDiagram.FLOWCHART })).rejects.toBeInstanceOf(ConflictException);
+      await expect(
+        service.updateDiagram(user, 'det-1', { jenis: JenisDiagram.FLOWCHART }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
   });
 
   describe('updateDiagram (Tambahan Kasus Validasi Payload)', () => {
     it('seharusnya melempar BadRequestException jika struktur pathOverrides rusak - array (Worst Case)', async () => {
       const { service } = createService();
-      await expect(service.updateDiagram(user, 'det-1', { jenis: JenisDiagram.FLOWCHART, pathOverrides: [] as never }))
-        .rejects.toBeInstanceOf(BadRequestException);
+      await expect(
+        service.updateDiagram(user, 'det-1', {
+          jenis: JenisDiagram.FLOWCHART,
+          pathOverrides: [] as never,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('seharusnya melempar BadRequestException jika kunci edge pathOverrides tidak valid (Worst Case)', async () => {
       const { service } = createService();
       // Kunci yang salah misal "nodeA|nodeB" tanpa cabang (UTAMA, dll)
-      const badOverrides = { edges: { "nodeA|nodeB": { sSide: 'top', eSide: 'bottom', startPoint: { x: 0, y: 0 }, endPoint: { x: 0, y: 0 }, bendPoints: [] } } };
-      await expect(service.updateDiagram(user, 'det-1', { jenis: JenisDiagram.FLOWCHART, pathOverrides: badOverrides as never }))
-        .rejects.toBeInstanceOf(BadRequestException);
+      const badOverrides = {
+        edges: {
+          'nodeA|nodeB': {
+            sSide: 'top',
+            eSide: 'bottom',
+            startPoint: { x: 0, y: 0 },
+            endPoint: { x: 0, y: 0 },
+            bendPoints: [],
+          },
+        },
+      };
+      await expect(
+        service.updateDiagram(user, 'det-1', {
+          jenis: JenisDiagram.FLOWCHART,
+          pathOverrides: badOverrides as never,
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('seharusnya tidak memanggil upsertConfig dan langsung return workbench jika tidak ada perubahan relevan (Edge Case)', async () => {

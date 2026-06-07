@@ -227,32 +227,82 @@ describe('Pengujian PenyusunService', () => {
 
   describe('create (Tambahan Kasus)', () => {
     it('seharusnya membersihkan spasi dan mengecilkan huruf email (Worst Case)', async () => {
-      penyusunRepoMock.createWithRiwayatOpd.mockResolvedValueOnce({ penggunaId: 'new', email: 'e@x.id' } as Pengguna);
+      penyusunRepoMock.createWithRiwayatOpd.mockResolvedValueOnce({
+        penggunaId: 'new',
+        email: 'e@x.id',
+      } as Pengguna);
       await service.create({
-        opdId: 'opd-1', nama: ' X ', nip: ' 1 ', peran: 'PENYUSUN', pangkat: ' P ', jabatan: ' J ', email: ' E@X.ID ', nohp: ' 0 '
+        opdId: 'opd-1',
+        nama: ' X ',
+        nip: ' 1 ',
+        peran: 'PENYUSUN',
+        pangkat: ' P ',
+        jabatan: ' J ',
+        email: ' E@X.ID ',
+        nohp: ' 0 ',
       });
       expect(penyusunRepoMock.createWithRiwayatOpd).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'e@x.id', nama: 'X', nip: '1', pangkat: 'P', jabatan: 'J', nohp: '0' })
+        expect.objectContaining({
+          email: 'e@x.id',
+          nama: 'X',
+          nip: '1',
+          pangkat: 'P',
+          jabatan: 'J',
+          nohp: '0',
+        }),
       );
     });
 
     it('seharusnya melempar NotFoundException jika OPD tidak ditemukan saat create (False Case)', async () => {
       penyusunRepoMock.findOpdById.mockResolvedValueOnce(null);
-      await expect(service.create({ opdId: 'invalid', nama: 'X', nip: '1', peran: 'PENYUSUN', pangkat: 'P', jabatan: 'J', email: 'e@x.id', nohp: '0' }))
-        .rejects.toBeInstanceOf(NotFoundException);
+      await expect(
+        service.create({
+          opdId: 'invalid',
+          nama: 'X',
+          nip: '1',
+          peran: 'PENYUSUN',
+          pangkat: 'P',
+          jabatan: 'J',
+          email: 'e@x.id',
+          nohp: '0',
+        }),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('seharusnya melempar ConflictException jika terjadi Prisma P2002 pada create (False Case)', async () => {
-      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', { code: 'P2002', clientVersion: '1' });
+      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', {
+        code: 'P2002',
+        clientVersion: '1',
+      });
       penyusunRepoMock.createWithRiwayatOpd.mockRejectedValueOnce(prismaErr);
-      await expect(service.create({ opdId: 'opd-1', nama: 'X', nip: '1', peran: 'PENYUSUN', pangkat: 'P', jabatan: 'J', email: 'e@x.id', nohp: '0' }))
-        .rejects.toBeInstanceOf(ConflictException);
+      await expect(
+        service.create({
+          opdId: 'opd-1',
+          nama: 'X',
+          nip: '1',
+          peran: 'PENYUSUN',
+          pangkat: 'P',
+          jabatan: 'J',
+          email: 'e@x.id',
+          nohp: '0',
+        }),
+      ).rejects.toBeInstanceOf(ConflictException);
     });
 
     it('seharusnya meneruskan error general pada create (False Case)', async () => {
       penyusunRepoMock.createWithRiwayatOpd.mockRejectedValueOnce(new Error('DB Error'));
-      await expect(service.create({ opdId: 'opd-1', nama: 'X', nip: '1', peran: 'PENYUSUN', pangkat: 'P', jabatan: 'J', email: 'e@x.id', nohp: '0' }))
-        .rejects.toThrow('DB Error');
+      await expect(
+        service.create({
+          opdId: 'opd-1',
+          nama: 'X',
+          nip: '1',
+          peran: 'PENYUSUN',
+          pangkat: 'P',
+          jabatan: 'J',
+          email: 'e@x.id',
+          nohp: '0',
+        }),
+      ).rejects.toThrow('DB Error');
     });
   });
 
@@ -268,35 +318,70 @@ describe('Pengujian PenyusunService', () => {
     });
 
     it('seharusnya tidak memanggil fungsi unik jika email/nip sama persis (Edge Case)', async () => {
-      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u', email: 'e@x.id', nip: '1' } as Pengguna);
-      penyusunRepoMock.updatePenyusun.mockResolvedValueOnce({ penggunaId: 'u', email: 'e@x.id', nip: '1' } as Pengguna);
+      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        email: 'e@x.id',
+        nip: '1',
+      } as Pengguna);
+      penyusunRepoMock.updatePenyusun.mockResolvedValueOnce({
+        penggunaId: 'u',
+        email: 'e@x.id',
+        nip: '1',
+      } as Pengguna);
       await service.update('u', { email: 'e@x.id', nip: '1' });
       expect(penggunaRepoMock.existsEmailOtherThan).not.toHaveBeenCalled();
       expect(penggunaRepoMock.existsNipOtherThan).not.toHaveBeenCalled();
     });
 
     it('seharusnya melempar BadRequestException ketika mempromosikan PJ pada akun nonaktif (Edge Case)', async () => {
-      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u', peran: PeranPengguna.PENYUSUN, deletedAt: new Date() } as Pengguna);
-      await expect(service.update('u', { peran: 'PJ_PENYUSUN' })).rejects.toBeInstanceOf(BadRequestException);
+      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        peran: PeranPengguna.PENYUSUN,
+        deletedAt: new Date(),
+      } as Pengguna);
+      await expect(service.update('u', { peran: 'PJ_PENYUSUN' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
     });
 
     it('seharusnya set deletedAt ke tanggal saat status NONAKTIF (Edge Case)', async () => {
-      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u', deletedAt: null } as Pengguna);
-      penyusunRepoMock.updatePenyusun.mockResolvedValueOnce({ penggunaId: 'u', deletedAt: new Date() } as Pengguna);
+      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        deletedAt: null,
+      } as Pengguna);
+      penyusunRepoMock.updatePenyusun.mockResolvedValueOnce({
+        penggunaId: 'u',
+        deletedAt: new Date(),
+      } as Pengguna);
       await service.update('u', { status: 'NONAKTIF' });
-      expect(penyusunRepoMock.updatePenyusun).toHaveBeenCalledWith('u', expect.objectContaining({ deletedAt: expect.any(Date) }));
+      expect(penyusunRepoMock.updatePenyusun).toHaveBeenCalledWith(
+        'u',
+        expect.objectContaining({ deletedAt: expect.any(Date) }),
+      );
     });
 
     it('seharusnya set deletedAt ke null saat status AKTIF (Edge Case)', async () => {
-      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u', deletedAt: new Date() } as Pengguna);
-      penyusunRepoMock.updatePenyusun.mockResolvedValueOnce({ penggunaId: 'u', deletedAt: null } as Pengguna);
+      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        deletedAt: new Date(),
+      } as Pengguna);
+      penyusunRepoMock.updatePenyusun.mockResolvedValueOnce({
+        penggunaId: 'u',
+        deletedAt: null,
+      } as Pengguna);
       await service.update('u', { status: 'AKTIF' });
-      expect(penyusunRepoMock.updatePenyusun).toHaveBeenCalledWith('u', expect.objectContaining({ deletedAt: null }));
+      expect(penyusunRepoMock.updatePenyusun).toHaveBeenCalledWith(
+        'u',
+        expect.objectContaining({ deletedAt: null }),
+      );
     });
 
     it('seharusnya melempar ConflictException jika terjadi Prisma P2002 pada update (False Case)', async () => {
       penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u' } as Pengguna);
-      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', { code: 'P2002', clientVersion: '1' });
+      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', {
+        code: 'P2002',
+        clientVersion: '1',
+      });
       penyusunRepoMock.updatePenyusun.mockRejectedValueOnce(prismaErr);
       await expect(service.update('u', { nama: 'X' })).rejects.toBeInstanceOf(ConflictException);
     });
@@ -322,13 +407,22 @@ describe('Pengujian PenyusunService', () => {
     });
 
     it('seharusnya melempar BadRequestException jika pengguna sudah aktif (False Case)', async () => {
-      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u', deletedAt: null } as Pengguna);
+      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        deletedAt: null,
+      } as Pengguna);
       await expect(service.aktifkan('u')).rejects.toBeInstanceOf(BadRequestException);
     });
 
     it('seharusnya melempar ConflictException jika terjadi Prisma P2002 pada aktifkan (False Case)', async () => {
-      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u', deletedAt: new Date() } as Pengguna);
-      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', { code: 'P2002', clientVersion: '1' });
+      penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        deletedAt: new Date(),
+      } as Pengguna);
+      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', {
+        code: 'P2002',
+        clientVersion: '1',
+      });
       penyusunRepoMock.aktifkanPenyusun.mockRejectedValueOnce(prismaErr);
       await expect(service.aktifkan('u')).rejects.toBeInstanceOf(ConflictException);
     });
@@ -347,15 +441,24 @@ describe('Pengujian PenyusunService', () => {
     });
 
     it('seharusnya melempar ConflictException jika dipindah ke OPD yang sama (Edge Case)', async () => {
-      penyusunRepoMock.findPenyusunAktifById.mockResolvedValueOnce({ penggunaId: 'u', opdId: 'opd-1' } as Pengguna);
+      penyusunRepoMock.findPenyusunAktifById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        opdId: 'opd-1',
+      } as Pengguna);
       penyusunRepoMock.findOpdById.mockResolvedValueOnce({ opdId: 'opd-1', nama: 'OPD 1' });
       await expect(service.pindah('u', 'opd-1')).rejects.toBeInstanceOf(ConflictException);
     });
 
     it('seharusnya melempar ConflictException jika terjadi Prisma P2002 pada pindah (False Case)', async () => {
-      penyusunRepoMock.findPenyusunAktifById.mockResolvedValueOnce({ penggunaId: 'u', opdId: 'opd-lama' } as Pengguna);
+      penyusunRepoMock.findPenyusunAktifById.mockResolvedValueOnce({
+        penggunaId: 'u',
+        opdId: 'opd-lama',
+      } as Pengguna);
       penyusunRepoMock.findOpdById.mockResolvedValueOnce({ opdId: 'opd-baru', nama: 'OPD Baru' });
-      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', { code: 'P2002', clientVersion: '1' });
+      const prismaErr = new Prisma.PrismaClientKnownRequestError('err', {
+        code: 'P2002',
+        clientVersion: '1',
+      });
       penyusunRepoMock.pindahPenyusun.mockRejectedValueOnce(prismaErr);
       await expect(service.pindah('u', 'opd-baru')).rejects.toBeInstanceOf(ConflictException);
     });
@@ -364,7 +467,9 @@ describe('Pengujian PenyusunService', () => {
   describe('listRiwayatOpdPenyusun (Tambahan Kasus)', () => {
     it('seharusnya melempar NotFoundException jika pengguna tidak ditemukan (False Case)', async () => {
       penyusunRepoMock.findPenyusunById.mockResolvedValueOnce(null);
-      await expect(service.listRiwayatOpdPenyusun('invalid')).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.listRiwayatOpdPenyusun('invalid')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
 
     it('seharusnya mengembalikan array kosong jika riwayat belum ada (Edge Case)', async () => {
@@ -378,10 +483,24 @@ describe('Pengujian PenyusunService', () => {
       penyusunRepoMock.findPenyusunById.mockResolvedValueOnce({ penggunaId: 'u' } as Pengguna);
       const d = new Date();
       penyusunRepoMock.findRiwayatOpdByPenggunaId.mockResolvedValueOnce([
-        { opdId: 'opd-1', namaOpd: 'Dinas A', pertamaDicatat: d, terakhirDiperbarui: d, isAktif: true }
+        {
+          opdId: 'opd-1',
+          namaOpd: 'Dinas A',
+          pertamaDicatat: d,
+          terakhirDiperbarui: d,
+          isAktif: true,
+        },
       ]);
       const res = await service.listRiwayatOpdPenyusun('u');
-      expect(res).toEqual([{ opdId: 'opd-1', namaOpd: 'Dinas A', pertamaDicatat: d, terakhirDiperbarui: d, isAktif: true }]);
+      expect(res).toEqual([
+        {
+          opdId: 'opd-1',
+          namaOpd: 'Dinas A',
+          pertamaDicatat: d,
+          terakhirDiperbarui: d,
+          isAktif: true,
+        },
+      ]);
     });
   });
 
@@ -413,8 +532,8 @@ describe('Pengujian PenyusunService', () => {
           pengajuanEvaluasiDitandatangani: 0,
           pengajuanEvaluasiDiverifikasi: 0,
           riwayatOpd: 0,
-          tandaTangan: 0
-        }
+          tandaTangan: 0,
+        },
       });
       await expect(service.hapusPermanen('u')).rejects.toBeInstanceOf(ConflictException);
     });
@@ -435,8 +554,8 @@ describe('Pengujian PenyusunService', () => {
           pengajuanEvaluasiDitandatangani: 0,
           pengajuanEvaluasiDiverifikasi: 0,
           riwayatOpd: 0,
-          tandaTangan: 0
-        }
+          tandaTangan: 0,
+        },
       });
       await expect(service.hapusPermanen('u')).rejects.toBeInstanceOf(ConflictException);
     });
@@ -457,8 +576,8 @@ describe('Pengujian PenyusunService', () => {
           pengajuanEvaluasiDitandatangani: 0,
           pengajuanEvaluasiDiverifikasi: 0,
           riwayatOpd: 0,
-          tandaTangan: 0
-        }
+          tandaTangan: 0,
+        },
       });
       await expect(service.hapusPermanen('u')).rejects.toBeInstanceOf(ConflictException);
     });
@@ -479,8 +598,8 @@ describe('Pengujian PenyusunService', () => {
           pengajuanEvaluasiDitandatangani: 0,
           pengajuanEvaluasiDiverifikasi: 0,
           riwayatOpd: 0,
-          tandaTangan: 0
-        }
+          tandaTangan: 0,
+        },
       });
       await service.hapusPermanen('u');
       expect(penyusunRepoMock.deletePenyusunPermanen).toHaveBeenCalledWith('u');

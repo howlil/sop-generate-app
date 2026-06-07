@@ -114,7 +114,7 @@ Keterangan:
 | P31 | P | Dalam proses manual, apakah status dokumen mudah dipantau? Misalnya sedang disusun, sedang dievaluasi, atau sedang revisi. |
 | N31 | N | Belum mudah. Karena statusnya sering diketahui dari komunikasi langsung atau dari dokumen yang sedang beredar. Kalau ada banyak SOP dari banyak OPD, memantau satu-satu secara manual tentu sulit. Makanya sistem status itu penting, supaya semua pihak tahu dokumen sedang di tahap apa. |
 | P32 | P | Status apa saja yang menurut Bapak penting untuk terlihat dalam sistem? |
-| N32 | N | Minimal ada draft, siap diajukan atau siap dievaluasi, sedang dievaluasi, perlu revisi, siap diverifikasi, sudah ditandatangani, berlaku, digantikan, dan dicabut. Tidak harus persis istilahnya seperti itu, tapi intinya alur status harus menggambarkan posisi dokumen. |
+| N32 | N | Minimal ada draft, siap diajukan atau menunggu pengajuan evaluasi, sedang dievaluasi, perlu revisi, menunggu TTD PJ Evaluator, sudah ditandatangani, berlaku, digantikan, dan dicabut. Tidak harus persis istilahnya seperti itu, tapi intinya alur status harus menggambarkan posisi dokumen. |
 | P33 | P | Apakah perlu laporan otomatis, misalnya laporan bulanan jumlah SOP yang selesai? |
 | N33 | N | Perlu. Biro perlu melihat perkembangan, misalnya OPD mana yang sudah menyelesaikan SOP, berapa yang masih revisi, berapa yang sudah berlaku, atau mana OPD yang belum menindaklanjuti. Laporan seperti itu membantu monitoring dan evaluasi. |
 | P34 | P | Selain laporan, apakah grafik monitoring evaluasi per OPD juga bermanfaat? |
@@ -164,7 +164,7 @@ Pertanyaan berikut dapat digunakan untuk wawancara lanjutan atau validasi kebutu
 | :---: | :--- | :--- | :--- |
 | 1 | Proses bisnis | Apakah semua SOP wajib melalui evaluasi Biro sebelum disahkan oleh Kepala OPD? | Menentukan aturan status dan validasi sebelum pengesahan. |
 | 2 | Proses bisnis | Apakah evaluasi bisa dimulai dari pengajuan OPD dan juga dari jadwal evaluasi Biro? | Menentukan apakah sistem perlu dua sumber pengajuan evaluasi. |
-| 3 | Workflow | Kapan sebuah SOP dianggap siap dievaluasi? | Menentukan validasi kelengkapan dokumen sebelum pengajuan. |
+| 3 | Workflow | Kapan sebuah SOP dianggap menunggu pengajuan evaluasi? | Menentukan validasi kelengkapan dokumen sebelum pengajuan. |
 | 4 | Workflow | Apakah satu pengajuan evaluasi boleh berisi lebih dari satu SOP? | Menentukan struktur data pengajuan dan nilai evaluasi. |
 | 5 | Workflow | Apakah OPD boleh memiliki lebih dari satu pengajuan evaluasi aktif dalam waktu yang sama? | Menentukan constraint bisnis agar tidak terjadi tumpang tindih proses. |
 | 6 | Revisi | Jika hanya satu SOP dalam satu pengajuan yang perlu revisi, apakah SOP lain tetap bisa lanjut? | Menentukan aturan evaluasi sebagian dan status tindak lanjut. |

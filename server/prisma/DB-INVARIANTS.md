@@ -16,15 +16,15 @@ Dokumen ini merangkum aturan bisnis yang tidak cukup dijelaskan oleh foreign key
 
 Transisi manual lewat endpoint status hanya memperbolehkan:
 
-- `DRAFT`, `SEDANG_DISUSUN`, atau `REVISI_DARI_EVALUATOR` ke `SIAP_DIEVALUASI` oleh `PENYUSUN` atau `PJ_PENYUSUN`.
-- `SIAP_DIEVALUASI` ke `DIAJUKAN_EVALUASI` oleh `PJ_PENYUSUN`.
+- `DRAFT`, `SEDANG_DISUSUN`, atau `REVISI_DARI_EVALUATOR` ke `MENUNGGU_PENGAJUAN_EVALUASI` oleh `PENYUSUN` atau `PJ_PENYUSUN`.
+- `MENUNGGU_PENGAJUAN_EVALUASI` ke `DIAJUKAN_EVALUASI` oleh `PJ_PENYUSUN`.
 - `BERLAKU` ke `DICABUT` oleh `KEPALA_OPD`.
 
 Transisi lain dikendalikan oleh proses evaluasi dan TTE:
 
-- Saat pengajuan evaluasi dibuat, `DetailSOP.SIAP_DIEVALUASI` berubah menjadi `SEDANG_DIEVALUASI`.
+- Saat pengajuan evaluasi dibuat, `DetailSOP.MENUNGGU_PENGAJUAN_EVALUASI` berubah menjadi `SEDANG_DIEVALUASI`.
 - Jika evaluator memberi `PERLU_PERBAIKAN`, `DetailSOP` berubah menjadi `REVISI_DARI_EVALUATOR`.
-- Jika seluruh nilai evaluasi `SESUAI`, `DetailSOP` berubah menjadi `SIAP_DIVERIFIKASI`.
+- Jika seluruh nilai evaluasi `SESUAI`, `DetailSOP` berubah menjadi `MENUNGGU_TTD_PJ_EVALUATOR`.
 - Setelah BA ditandatangani `PJ_PENYUSUN`, `DetailSOP` berubah menjadi `DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI`.
 - `DetailSOP.BERLAKU` hanya boleh terjadi melalui TTE `KEPALA_OPD`; service membuat `DokumenTte` jenis `SOP_BERLAKU`, mencatat `RiwayatTandaTangan`, mengisi `tanggalEfektif`, dan mengganti versi lama yang `BERLAKU` menjadi `DIGANTIKAN`.
 
@@ -35,8 +35,8 @@ Database juga menjaga maksimal satu `DetailSOP.BERLAKU` per `SOP`.
 Alur status pengajuan evaluasi:
 
 - `SEDANG_DIEVALUASI`: evaluator mengisi nilai per SOP.
-- `SELESAI_DIEVALUASI`: hanya boleh jika seluruh `NilaiEvaluasi.hasil = SESUAI`; untuk pengajuan `TERJADWAL`, `nilaiOPD` wajib 1 sampai 5.
-- `DIVERIFIKASI_PJ_EVALUATOR`: terjadi setelah BA ditandatangani `PJ_EVALUATOR`.
+- `SELESAI_DIEVALUASI`: hanya boleh jika seluruh `NilaiEvaluasi.hasil = SESUAI`; untuk pengajuan `EVALUASI_REQUEST_EVALUATOR`, `nilaiOPD` wajib 1 sampai 5.
+- `DITANDATANGANI_PJ_EVALUATOR`: terjadi setelah BA ditandatangani `PJ_EVALUATOR`.
 - `DITANDATANGANI_PJ_PENYUSUN`: terjadi setelah BA ditandatangani `PJ_PENYUSUN`.
 - `SELESAI`: terjadi setelah `KEPALA_OPD` menandatangani semua SOP dalam pengajuan.
 
@@ -57,7 +57,7 @@ Semua `NilaiEvaluasi.detailSopId` dalam satu `PengajuanEvaluasi` harus berasal d
 Aturan ini dijaga oleh service saat pengajuan dibuat:
 
 - Detail SOP wajib ditemukan pada OPD pengguna/pengajuan.
-- Detail SOP wajib berada pada status `SIAP_DIEVALUASI`.
+- Detail SOP wajib berada pada status `MENUNGGU_PENGAJUAN_EVALUASI`.
 - Satu OPD tidak boleh punya lebih dari satu pengajuan aktif lintas jobdesk.
 
 ## Invariant Pelaksana dan Langkah SOP

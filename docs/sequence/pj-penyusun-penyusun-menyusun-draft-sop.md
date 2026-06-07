@@ -9,7 +9,7 @@ Sumber use case: `UC-15` pada [`../usecase.md`](../usecase.md).
 | Use case | Menyusun Draft SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 10 |
-| Tujuan | Menggambarkan interaksi pengguna dan sistem saat menyusun, menyimpan, dan menandai draft SOP sebagai siap dievaluasi. |
+| Tujuan | Menggambarkan interaksi pengguna dan sistem saat menyusun, menyimpan, dan menandai draft SOP sebagai menunggu pengajuan evaluasi. |
 
 ## PlantUML
 
@@ -57,13 +57,13 @@ else Data draft belum valid
   UI --> Aktor : Menampilkan pesan perbaikan
 end
 
-opt Pengguna menandai draft siap dievaluasi
-  Aktor -> UI : Memilih aksi tandai siap dievaluasi
+opt Pengguna menandai draft menunggu pengajuan evaluasi
+  Aktor -> UI : Memilih aksi tandai menunggu pengajuan evaluasi
   UI -> SOPCtrl : Mengirim permintaan perubahan status
   SOPCtrl -> Validasi : Memeriksa kelengkapan akhir SOP
   alt Dokumen lengkap
     Validasi --> SOPCtrl : Lengkap
-    SOPCtrl -> Detail : Mengubah status menjadi siap dievaluasi
+    SOPCtrl -> Detail : Mengubah status menjadi menunggu pengajuan evaluasi
     SOPCtrl --> UI : Status berhasil diperbarui
     UI --> Aktor : Menampilkan SOP siap diajukan
   else Dokumen belum lengkap

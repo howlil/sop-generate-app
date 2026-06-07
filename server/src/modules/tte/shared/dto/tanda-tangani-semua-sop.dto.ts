@@ -20,7 +20,9 @@ export class SopOfficialPdfDto {
   @IsUUID()
   readonly detailSopId!: string;
 
-  @ApiProperty({ description: 'PDF hasil renderer kanvas SOP sebagai base64 tanpa prefix data URL.' })
+  @ApiProperty({
+    description: 'PDF hasil renderer kanvas SOP sebagai base64 tanpa prefix data URL.',
+  })
   @IsString()
   @IsBase64()
   @MaxLength(PDF_BASE64_MAX_LENGTH)

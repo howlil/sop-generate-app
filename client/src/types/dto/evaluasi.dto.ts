@@ -13,7 +13,7 @@ export const STATUS_HASIL_EVALUASI = {
   PERLU_PERBAIKAN: "PERLU_PERBAIKAN",
 } as const;
 
-/** Skor evaluasi tingkat OPD (pengajuan terjadwal) — selaras server `SelesaiEvaluasiDto`. */
+/** Skor evaluasi tingkat OPD (pengajuan EVALUASI_REQUEST_EVALUATOR) — selaras server `SelesaiEvaluasiDto`. */
 export const NILAI_OPD_SKOR_MIN = 1;
 export const NILAI_OPD_SKOR_MAX = 5;
 
@@ -27,10 +27,10 @@ export interface PengajuanEvaluasiSubmitError {
 export type StatusPengajuanEvaluasi =
   | "SEDANG_DIEVALUASI"
   | "SELESAI_DIEVALUASI"
-  | "DIVERIFIKASI_PJ_EVALUATOR"
+  | "DITANDATANGANI_PJ_EVALUATOR"
   | "DITANDATANGANI_PJ_PENYUSUN"
   | "SELESAI";
-export type JenisPengajuanEvaluasi = "TERJADWAL" | "MANDIRI";
+export type JenisPengajuanEvaluasi = "EVALUASI_REQUEST_EVALUATOR" | "EVALUASI_REQUEST_OPD";
 
 export interface EvaluasiGrafikTahunanPerOpd {
   opdId: string
@@ -63,7 +63,8 @@ export interface EvaluasiGrafikTahunanQueryParams {
 
 export interface PengajuanEvaluasi {
   id: string;
-  opdId: string;
+  /** Tidak dikirim untuk PJ Penyusun (konteks OPD implisit). */
+  opdId?: string;
   opdNama?: string;
   jenis: JenisPengajuanEvaluasi;
   status: StatusPengajuanEvaluasi;
@@ -162,8 +163,9 @@ export interface PengajuanEvaluasiShellOpd {
 
 export interface PengajuanEvaluasiShell {
   id: string;
-  opdId: string;
-  opdNama: string;
+  /** Tidak dikirim untuk PJ Penyusun (konteks OPD implisit). */
+  opdId?: string;
+  opdNama?: string;
   jenis: string;
   status: string;
   statusLabel: string;
@@ -180,7 +182,7 @@ export interface PengajuanEvaluasiShell {
   tanggalTTDBaPjPenyusun?: string;
   diselesaikanOlehId?: string;
   diselesaikanOleh?: { id: string; nama: string };
-  opd: PengajuanEvaluasiShellOpd;
+  opd?: PengajuanEvaluasiShellOpd;
   timEvaluasi?: string;
   tanggalDiselesaikan?: string;
   sopItems: PengajuanSopItemShell[];
@@ -298,7 +300,7 @@ export interface CreatePengajuanEvaluasiDto {
 export interface SelesaiEvaluasiDto {
   /** Nomor Berita Acara yang diinputkan oleh Evaluator (wajib untuk semua evaluasi). */
   nomorBA: string;
-  /** Skor evaluasi tingkat OPD (1-5). Wajib untuk TERJADWAL, jangan kirim untuk MANDIRI. */
+  /** Skor evaluasi tingkat OPD (1-5). Wajib untuk EVALUASI_REQUEST_EVALUATOR, jangan kirim untuk EVALUASI_REQUEST_OPD. */
   nilaiOPD?: number;
 }
 

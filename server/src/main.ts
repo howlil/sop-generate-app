@@ -34,10 +34,7 @@ function buildCorsOptions(configService: ConfigService): CorsOptions {
   return {
     origin: allowAllOrigins
       ? true
-      : (
-          origin: string | undefined,
-          callback: (error: Error | null, allow?: boolean) => void,
-        ) => {
+      : (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
           if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
             return;

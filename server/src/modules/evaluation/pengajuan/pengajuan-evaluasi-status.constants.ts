@@ -4,6 +4,6 @@ import { StatusPengajuanEvaluasi } from '../../../generated/prisma';
 export const STATUS_PENGAJUAN_AKTIF_LINTAS_JOBDESK: readonly StatusPengajuanEvaluasi[] = [
   StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
   StatusPengajuanEvaluasi.SELESAI_DIEVALUASI,
-  StatusPengajuanEvaluasi.DIVERIFIKASI_PJ_EVALUATOR,
+  StatusPengajuanEvaluasi.DITANDATANGANI_PJ_EVALUATOR,
   StatusPengajuanEvaluasi.DITANDATANGANI_PJ_PENYUSUN,
 ] as const;

@@ -215,7 +215,7 @@ export class EvaluasiWorkspaceService {
       pengajuanAktifRepo === null &&
       daftarRows.length > 0
     ) {
-      await this.pengajuanEvaluasiService.pastikanPengajuanMandiriUntukEvaluator(
+      await this.pengajuanEvaluasiService.pastikanPengajuanRequestOpdUntukEvaluator(
         user,
         opdId,
         daftarRows,

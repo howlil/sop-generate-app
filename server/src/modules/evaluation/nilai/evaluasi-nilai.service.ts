@@ -27,12 +27,6 @@ import { assertBolehKirimUlangSetelahRevisi } from './evaluasi-revisi.policy';
 import { EvaluasiNilaiRepository } from './evaluasi-nilai.repository';
 import { PengajuanEvaluasiRepository } from '../pengajuan/pengajuan-evaluasi.repository';
 
-/**
- * Kebijakan mutasi evaluasi:
- * - `isiNilai`: pengajuan `SEDANG_DIEVALUASI`; `PERLU_PERBAIKAN` wajib catatan + `statusTindakLanjut` TERBUKA; `DetailSOP` → REVISI.
- * - `tandaiTindakLanjutSelesai`: penyusun/PJ menandai umpan balik sudah ditindaklanjuti (SELESAI).
- * - `selesai`: semua baris `SESUAI`; pengajuan evaluasi → SELESAI_DIEVALUASI; dokumen → SIAP_DIVERIFIKASI.
- */
 @Injectable()
 export class EvaluasiNilaiService {
   constructor(
@@ -132,10 +126,7 @@ export class EvaluasiNilaiService {
         });
 
         if (lastLog) {
-          if (
-            lastLog.hasilSebelum === hasil &&
-            (lastLog.catatanSebelum ?? null) === catatanNorm
-          ) {
+          if (lastLog.hasilSebelum === hasil && (lastLog.catatanSebelum ?? null) === catatanNorm) {
             // Reverted back to the original state within the idle window. Delete the log to avoid spam.
             await tx.logNilaiEvaluasi.delete({
               where: {
@@ -351,13 +342,13 @@ export class EvaluasiNilaiService {
         if (pengajuan.status !== StatusPengajuanEvaluasi.SEDANG_DIEVALUASI) {
           throw new BadRequestException('Pengajuan tidak dalam status pengisian evaluator');
         }
-        const mandiri = pengajuan.jenis === JenisPengajuanEvaluasi.MANDIRI;
-        if (mandiri && dto.nilaiOPD !== undefined) {
+        const pengajuanRequestOpd = pengajuan.jenis === JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD;
+        if (pengajuanRequestOpd && dto.nilaiOPD !== undefined) {
           throw new BadRequestException(
-            'Evaluasi mandiri tidak menggunakan penilaian tingkat OPD; jangan kirim nilaiOPD.',
+            'Evaluasi request OPD tidak menggunakan penilaian tingkat OPD; jangan kirim nilaiOPD.',
           );
         }
-        if (!mandiri) {
+        if (!pengajuanRequestOpd) {
           const skor = dto.nilaiOPD;
           if (
             skor === undefined ||
@@ -367,18 +358,18 @@ export class EvaluasiNilaiService {
             skor > 5
           ) {
             throw new BadRequestException(
-              'Skor evaluasi tingkat OPD (1–5) wajib untuk pengajuan terjadwal.',
+              'Skor evaluasi tingkat OPD (1–5) wajib untuk pengajuan evaluator.',
             );
           }
         }
-        const nilaiOpdFinal = mandiri ? null : dto.nilaiOPD!;
+        const nilaiOpdFinal = pengajuanRequestOpd ? null : dto.nilaiOPD!;
         if (pengajuan.nilaiEvaluasi.length === 0) {
           throw new BadRequestException('Pengajuan tidak memiliki dokumen untuk dinilai');
         }
         for (const row of pengajuan.nilaiEvaluasi) {
           if (row.hasil !== HasilEvaluasi.SESUAI) {
             throw new BadRequestException(
-              'Semua SOP harus bernilai Sesuai sebelum mengajukan hasil ke PJ Evaluator. Perbaiki atau lengkapi evaluasi per dokumen.',
+              'Semua SOP harus bernilai Sesuai sebelum mengajukan tanda tangan Berita Acara. Perbaiki atau lengkapi evaluasi per dokumen.',
             );
           }
         }
@@ -394,7 +385,7 @@ export class EvaluasiNilaiService {
               ],
             },
           },
-          data: { status: StatusSOP.SIAP_DIVERIFIKASI },
+          data: { status: StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR },
         });
         if (promoted.count !== detailIds.length) {
           throw new ConflictException(
@@ -408,7 +399,9 @@ export class EvaluasiNilaiService {
           select: { pengajuanEvaluasiId: true },
         });
         if (existingBA !== null && existingBA.pengajuanEvaluasiId !== pengajuanEvaluasiId) {
-          throw new ConflictException(`Nomor Berita Acara "${dto.nomorBA}" sudah digunakan oleh pengajuan lain.`);
+          throw new ConflictException(
+            `Nomor Berita Acara "${dto.nomorBA}" sudah digunakan oleh pengajuan lain.`,
+          );
         }
 
         const selesai = new Date();

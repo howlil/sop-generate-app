@@ -31,12 +31,12 @@ import { PengajuanEvaluasiRepository } from './pengajuan-evaluasi.repository';
 
 /** Detail SOP yang boleh dimasukkan pengajuan evaluasi baru (alur penyusun → evaluator). */
 const STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI: readonly StatusSOP[] = [
-  StatusSOP.SIAP_DIEVALUASI,
+  StatusSOP.MENUNGGU_PENGAJUAN_EVALUASI,
 ] as const;
 
 const statusSiapPengajuanEvaluasiSet = new Set<string>(STATUS_DETAIL_SIAP_PENGAJUAN_EVALUASI);
 
-/** Satu baris pipeline workspace (detail terbaru per SOP) untuk bootstrap mandiri. */
+/** Satu baris pipeline workspace (detail terbaru per SOP) untuk bootstrap EVALUASI_REQUEST_OPD. */
 export type BarisPipelineEvaluasiOpd = Readonly<{
   detailSopId: string;
   statusDetail: StatusSOP;
@@ -60,7 +60,7 @@ export class PengajuanEvaluasiService {
     const forcedOpdId = await this.resolveForcedOpdFilter(user);
     const whereInput = this.pengajuanEvaluasiRepository.buildWhereFromQuery(query, forcedOpdId);
     const rows = await this.pengajuanEvaluasiRepository.findManyFiltered(whereInput);
-    return rows.map((r) => mapPengajuanEvaluasiRow(r));
+    return rows.map((r) => mapPengajuanEvaluasiRow(r, user.peran));
   }
 
   /** Daftar ringkas terpaginasi untuk dashboard evaluator / PJ (performa). */
@@ -91,7 +91,7 @@ export class PengajuanEvaluasiService {
       throw new NotFoundException('Pengajuan evaluasi tidak ditemukan');
     }
     await this.assertCanAccessPengajuan(user, row.opdId);
-    return mapPengajuanEvaluasiRow(row);
+    return mapPengajuanEvaluasiRow(row, user.peran);
   }
 
   /** Membuka pengajuan evaluasi (SEDANG_DIEVALUASI + baris nilai per dokumen). Hanya PJ Penyusun OPD terkait. */
@@ -147,7 +147,7 @@ export class PengajuanEvaluasiService {
         });
         if (promoted.count !== sopDetailIds.length) {
           throw new ConflictException(
-            'Sebagian SOP tidak lagi berstatus SIAP_DIEVALUASI. Muat ulang daftar SOP lalu coba lagi.',
+            'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang daftar SOP lalu coba lagi.',
           );
         }
         return dibuat.pengajuanEvaluasiId;
@@ -157,15 +157,15 @@ export class PengajuanEvaluasiService {
     if (created === null) {
       throw new ConflictException('Gagal memuat pengajuan setelah pembuatan');
     }
-    return mapPengajuanEvaluasiRow(created);
+    return mapPengajuanEvaluasiRow(created, user.peran);
   }
 
   /**
    * Untuk workspace evaluator: jika belum ada pengajuan aktif dan ada dokumen eligibel,
-   * buat pengajuan `MANDIRI` + baris `NilaiEvaluasi` (tanpa menunggu PJ membuka pengajuan evaluasi).
+   * buat pengajuan `EVALUASI_REQUEST_OPD` + baris `NilaiEvaluasi` (tanpa menunggu PJ membuka pengajuan evaluasi).
    * No-op jika sudah ada pengajuan aktif atau pemanggil bukan EVALUATOR.
    */
-  async pastikanPengajuanMandiriUntukEvaluator(
+  async pastikanPengajuanRequestOpdUntukEvaluator(
     user: JwtAccessPayload,
     opdId: string,
     pipelineRows: ReadonlyArray<BarisPipelineEvaluasiOpd>,
@@ -197,7 +197,7 @@ export class PengajuanEvaluasiService {
       await tx.pengajuanEvaluasi.create({
         data: {
           opdId,
-          jenis: JenisPengajuanEvaluasi.MANDIRI,
+          jenis: JenisPengajuanEvaluasi.EVALUASI_REQUEST_OPD,
           status: StatusPengajuanEvaluasi.SEDANG_DIEVALUASI,
           tanggalPermintaan: sekarang,
           tanggalEvaluasi: sekarang,
@@ -216,7 +216,7 @@ export class PengajuanEvaluasiService {
       });
       if (promoted.count !== sopDetailIds.length) {
         throw new ConflictException(
-          'Sebagian SOP tidak lagi berstatus SIAP_DIEVALUASI. Muat ulang workspace lalu coba lagi.',
+          'Sebagian SOP tidak lagi berstatus MENUNGGU_PENGAJUAN_EVALUASI. Muat ulang halaman lalu coba lagi.',
         );
       }
     });
@@ -227,7 +227,7 @@ export class PengajuanEvaluasiService {
     const opdId = await this.resolveForcedOpdFilter(user);
     if (opdId === undefined) {
       throw new ForbiddenException(
-        'Hanya PJ Penyusun atau Kepala OPD yang dapat menggunakan workspace OPD sendiri',
+        'Hanya PJ Penyusun atau Kepala OPD yang dapat mengakses evaluasi OPD sendiri',
       );
     }
     return opdId;
