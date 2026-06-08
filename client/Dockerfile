@@ -14,14 +14,13 @@ RUN pnpm build && test -f dist/server/server.js
 FROM node:22-alpine
 WORKDIR /app
 
-RUN apk add --no-cache nginx \
+RUN apk add --no-cache nginx wget \
   && mkdir -p /run/nginx
 
-RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
-
-COPY package.json pnpm-lock.yaml vite.config.ts ./
-COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY production-server.mjs ./production-server.mjs
 
 COPY nginx.conf /etc/nginx/http.d/default.conf
 COPY docker-entrypoint.sh /docker-entrypoint.sh
