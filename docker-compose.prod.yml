@@ -1,10 +1,8 @@
-version: '3.8'
-
 # Variabel lingkungan: file .env di root repo.
+# Jangan pakai container_name — Dokploy memakai project prefix (-p) agar nama unik per deploy.
 services:
   db:
     image: mariadb:11.4
-    container_name: sop-prod-db
     restart: always
     command:
       - --lower_case_table_names=1
@@ -25,7 +23,6 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: sop-backend
     restart: always
     depends_on:
       - db
@@ -40,7 +37,6 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: sop-frontend
     restart: always
     depends_on:
       - backend
