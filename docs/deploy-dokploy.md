@@ -32,12 +32,32 @@ Alur CI/CD (*Continuous Integration & Deployment*):
 
 ## 2. Setup Environment Variables
 
-Dokploy membutuhkan *environment variables* yang serupa dengan yang ada di lokal kamu.
-1. Di halaman konfigurasi *Compose* tadi, pilih tab **Environment**.
-2. Salin isi file `.env.example` atau file `.env` produksi kamu.
-3. Paste ke kolom yang tersedia di Dokploy dan sesuaikan nilainya (misal: password database, JWT secret, dll).
-4. Klik **Save**.
+Dokploy menulis variabel ke file `.env` saat deploy. Backend membutuhkan koneksi database dan JWT.
 
+1. Buka tab **Environment** pada compose `sop-app`.
+2. Salin isi `.env.example` dari repo, ganti semua nilai `GANTI_*`.
+3. **Save**, lalu redeploy.
+
+Contoh minimal (ganti password/secret):
+
+```env
+DB_ROOT_PASSWORD=password-root-kuat
+DB_NAME=sop_biro_organisasi
+DB_USER=sop_app
+DB_PASSWORD=password-app-kuat
+
+JWT_SECRET=secret-jwt-minimal-32-karakter-panjang
+JWT_REFRESH_SECRET=secret-refresh-bedaa-min-32-karakter
+
+PDF_SIGNING_ENABLED=true
+PDF_SIGNING_P12_PASSPHRASE=passphrase-sertifikat
+PDF_SIGNING_P12_BASE64=...
+```
+
+`DATABASE_HOST`, `DATABASE_URL`, dan `NODE_ENV=production` di-set otomatis di `docker-compose.prod.yml` — tidak perlu diisi manual.
+
+**Catatan:** jika `DB_PASSWORD` mengandung karakter khusus (`@`, `#`, `%`, dll.), hindari simbol tersebut atau encode URL di `DATABASE_URL` (hubungi tim jika perlu).
+w
 ---
 
 ## 3. Menghubungkan Dokploy dengan GitHub Actions (Webhook)
