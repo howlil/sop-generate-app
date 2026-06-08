@@ -17,7 +17,7 @@ COPY . .
 
 # Generate Prisma Client & Build Aplikasi
 RUN pnpm prisma generate
-RUN pnpm build
+RUN pnpm build && test -f dist/src/main.js
 
 # Expose port yang digunakan backend
 EXPOSE 3000
