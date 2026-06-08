@@ -17,8 +17,6 @@ build/
 .env
 .env.*
 !.env.example
-komodo/variables.local.toml
-komodo/secrets-core.snippet.toml
 server/.env
 server/.env.*
 !server/.env.test

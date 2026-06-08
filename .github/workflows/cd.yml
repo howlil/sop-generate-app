@@ -33,48 +33,17 @@ jobs:
         if: always()
         run: docker compose -f docker-compose.test.yml --profile test down -v
 
-  sync-komodo-resources:
-    needs: integration-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/final'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Sinkronkan definisi Komodo dari repo
-        env:
-          WEBHOOK_URL: ${{ secrets.KOMODO_SYNC_WEBHOOK_URL }}
-          WEBHOOK_SECRET: ${{ secrets.KOMODO_WEBHOOK_SECRET }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
-        run: |
-          if [[ -z "${WEBHOOK_URL}" ]]; then
-            echo "KOMODO_SYNC_WEBHOOK_URL tidak di-set; lewati sync (stack/procedure harus sudah ada di Komodo)."
-            exit 0
-          fi
-          chmod +x scripts/trigger-komodo-github-webhook.sh
-          ./scripts/trigger-komodo-github-webhook.sh
-
   deploy-production:
-    needs:
-      - integration-test
-      - sync-komodo-resources
-    if: github.event_name == 'push' && github.ref == 'refs/heads/final'
+    needs: integration-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/final' # Ubah ke 'main' jika ingin deploy dari branch main
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy produksi via Komodo
-        env:
-          WEBHOOK_URL: ${{ secrets.KOMODO_PROCEDURE_WEBHOOK_URL }}
-          WEBHOOK_SECRET: ${{ secrets.KOMODO_WEBHOOK_SECRET }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
+      - name: Deploy ke Dokploy
         run: |
-          if [[ -z "${WEBHOOK_URL}" || -z "${WEBHOOK_SECRET}" ]]; then
-            echo "::error::Set GitHub Secrets KOMODO_PROCEDURE_WEBHOOK_URL dan KOMODO_WEBHOOK_SECRET."
+          if [[ -z "${{ secrets.DOKPLOY_WEBHOOK_URL }}" ]]; then
+            echo "::error::Secret DOKPLOY_WEBHOOK_URL belum diset!"
             exit 1
           fi
-          chmod +x scripts/trigger-komodo-github-webhook.sh
-          ./scripts/trigger-komodo-github-webhook.sh
+          echo "Men-trigger deployment di Dokploy..."
+          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}"
+

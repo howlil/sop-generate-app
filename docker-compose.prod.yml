@@ -1,6 +1,6 @@
 version: '3.8'
 
-# Variabel lingkungan: file .env di root repo (ditulis Komodo dari stack.environment).
+# Variabel lingkungan: file .env di root repo.
 services:
   db:
     image: mariadb:11.4
