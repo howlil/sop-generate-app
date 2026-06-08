@@ -127,7 +127,7 @@ async function bootstrap() {
   if (swaggerEnabled) {
     logger.log(`📚 Swagger docs: http://localhost:${configuredPort}/docs`);
   }
-  logger.log(`💚 Health check: http://localhost:${configuredPort}/health`);
+  logger.log(`💚 Health check: http://localhost:${configuredPort}/api/health`);
 }
 
 void bootstrap();

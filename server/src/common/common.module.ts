@@ -1,5 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { HealthController } from './health.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { RolesGuard } from './guards/roles.guard';
 
@@ -10,6 +11,7 @@ import { RolesGuard } from './guards/roles.guard';
 @Global()
 @Module({
   imports: [PrismaModule],
+  controllers: [HealthController],
   providers: [JwtAuthGuard, RolesGuard],
   exports: [JwtAuthGuard, RolesGuard],
 })

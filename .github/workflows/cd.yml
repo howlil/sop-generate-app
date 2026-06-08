@@ -15,11 +15,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  integration-test:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validasi build image produksi
+        run: |
+          docker compose -f docker-compose.prod.yml config --quiet
+          docker compose -f docker-compose.prod.yml build backend frontend
+        env:
+          DB_ROOT_PASSWORD: ci-root-password
+          DB_NAME: sop_biro_organisasi
+          DB_USER: sop_app
+          DB_PASSWORD: ci-db-password
+          JWT_SECRET: ci-jwt-secret-minimal-32-karakter
+          JWT_REFRESH_SECRET: ci-refresh-secret-minimal-32-karakter
+          JWT_EXPIRATION: 15m
+          JWT_REFRESH_EXPIRATION: 7d
+          PDF_SIGNING_ENABLED: "false"
 
       - name: Jalankan integration test
         run: |
@@ -34,16 +49,19 @@ jobs:
         run: docker compose -f docker-compose.test.yml --profile test down -v
 
   deploy-production:
-    needs: integration-test
+    needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/final' # Ubah ke 'main' jika ingin deploy dari branch main
     runs-on: ubuntu-latest
     steps:
       - name: Deploy ke Dokploy
+        env:
+          DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
         run: |
-          if [[ -z "${{ secrets.DOKPLOY_WEBHOOK_URL }}" ]]; then
+          if [[ -z "$DOKPLOY_WEBHOOK_URL" ]]; then
             echo "::error::Secret DOKPLOY_WEBHOOK_URL belum diset!"
             exit 1
           fi
           echo "Men-trigger deployment di Dokploy..."
-          curl -X POST "${{ secrets.DOKPLOY_WEBHOOK_URL }}"
-
+          curl --fail-with-body --show-error --silent --location \
+            --connect-timeout 15 --max-time 120 \
+            --request POST "$DOKPLOY_WEBHOOK_URL"

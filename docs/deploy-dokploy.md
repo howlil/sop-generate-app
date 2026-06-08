@@ -1,44 +1,34 @@
-# Panduan Deploy ke Dokploy
+# Panduan CI/CD ke Dokploy + Cloudflare Tunnel
 
-Proyek ini telah dikonfigurasi untuk di-*deploy* menggunakan **Dokploy** yang menggantikan setup Komodo sebelumnya.
+Target setup:
 
-Alur CI/CD (*Continuous Integration & Deployment*):
-1. **Push** ke branch `final` atau `main` (tergantung konfigurasi `.github/workflows/cd.yml`).
-2. **GitHub Actions** akan menjalankan `integration-test`.
-3. Jika tes lulus, GitHub Actions akan memanggil **Dokploy Webhook**.
-4. **Dokploy** akan mem-*build* ulang container (Frontend, Backend) dan me-*restart* *service* secara otomatis.
+1. GitHub Actions menjalankan validasi build image produksi dan integration test.
+2. Jika push ke branch `final` berhasil, GitHub Actions memanggil webhook deploy Dokploy.
+3. Dokploy pull repo, build `docker-compose.prod.yml`, menjalankan migrasi Prisma, lalu menyalakan `db`, `backend`, dan `frontend`.
+4. Cloudflare Tunnel mengarah ke Traefik Dokploy, lalu Traefik meneruskan domain ke service `frontend` port `80`.
 
----
+Referensi utama:
 
-## Prasyarat
-- Server VPS dengan Dokploy yang sudah ter-install.
-- Repositori GitHub/GitLab.
+- Dokploy Auto Deploy: https://docs.dokploy.com/docs/core/auto-deploy
+- Dokploy Docker Compose: https://docs.dokploy.com/docs/core/docker-compose
+- Dokploy Cloudflare Tunnels: https://docs.dokploy.com/docs/core/guides/cloudflare-tunnels
 
----
+## 1. Setup Compose Application di Dokploy
 
-## 1. Konfigurasi Awal di Dokploy
+1. Buat project baru di Dokploy, misalnya `sop-app-project`.
+2. Buat Docker Compose application.
+3. Pilih provider GitHub dan repo ini.
+4. Set branch deploy ke `final` agar sama dengan `.github/workflows/cd.yml`.
+5. Set Compose File Path ke `docker-compose.prod.yml`.
+6. Simpan.
 
-1. **Masuk ke Dashboard Dokploy**
-2. Klik **Create Project** lalu buat project baru (misal: `sop-app-project`).
-3. Masuk ke project tersebut, lalu klik tab **Compose**.
-4. Klik **Create Compose Application**.
-5. Isi konfigurasi sebagai berikut:
-   - **Name**: `sop-app` (atau bebas)
-   - **Provider**: **Github** (Pilih repositori proyek ini dan tentukan branch, misalnya `main` atau `final`)
-   - **Compose File Path**: `docker-compose.prod.yml`
-6. **Simpan** konfigurasi.
+Catatan: branch di Dokploy dan branch di GitHub Actions harus sama. Jika berbeda, Dokploy bisa menolak deploy dengan status branch tidak cocok.
 
----
+## 2. Environment Variables
 
-## 2. Setup Environment Variables
+Dokploy menyimpan environment dari UI ke file `.env`. Sesuai dokumentasi Docker Compose Dokploy, variabel dari UI tidak otomatis masuk container kecuali dipakai lewat `env_file` atau `${VAR}`. File `docker-compose.prod.yml` sudah memakai keduanya.
 
-Dokploy menulis variabel ke file `.env` saat deploy. Backend membutuhkan koneksi database dan JWT.
-
-1. Buka tab **Environment** pada compose `sop-app`.
-2. Salin isi `.env.example` dari repo, ganti semua nilai `GANTI_*`.
-3. **Save**, lalu redeploy.
-
-Contoh minimal (ganti password/secret):
+Di tab Environment aplikasi Compose, isi variabel dari `.env.example` dan ganti semua nilai contoh:
 
 ```env
 DB_ROOT_PASSWORD=password-root-kuat
@@ -47,46 +37,88 @@ DB_USER=sop_app
 DB_PASSWORD=password-app-kuat
 
 JWT_SECRET=secret-jwt-minimal-32-karakter-panjang
-JWT_REFRESH_SECRET=secret-refresh-bedaa-min-32-karakter
+JWT_REFRESH_SECRET=secret-refresh-berbeda-min-32-karakter
+JWT_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
+SWAGGER_ENABLED=false
+
+PUBLIC_APP_ORIGIN=https://sop.example.com
+ALLOWED_ORIGINS=https://sop.example.com
 
 PDF_SIGNING_ENABLED=true
 PDF_SIGNING_P12_PASSPHRASE=passphrase-sertifikat
 PDF_SIGNING_P12_BASE64=...
 ```
 
-`DATABASE_HOST`, `DATABASE_URL`, dan `NODE_ENV=production` di-set otomatis di `docker-compose.prod.yml` — tidak perlu diisi manual.
+`DATABASE_HOST`, `DATABASE_PORT`, `DATABASE_USER`, `DATABASE_PASSWORD`, `DATABASE_NAME`, `DATABASE_URL`, dan `NODE_ENV=production` diset oleh `docker-compose.prod.yml`; tidak perlu diisi manual di Dokploy.
 
-**Catatan:** jika `DB_PASSWORD` mengandung karakter khusus (`@`, `#`, `%`, dll.), hindari simbol tersebut atau encode URL di `DATABASE_URL` (hubungi tim jika perlu).
-w
----
+Jika `DB_PASSWORD` memakai karakter khusus seperti `@`, `#`, `%`, atau `/`, ganti dengan password alfanumerik panjang. `DATABASE_URL` dibentuk otomatis dari `DB_PASSWORD`, jadi karakter URL khusus bisa membuat URL tidak valid.
 
-## 3. Menghubungkan Dokploy dengan GitHub Actions (Webhook)
+## 3. Cloudflare Tunnel
 
-Agar Dokploy *hanya* men-*deploy* ketika tes CI kita lulus, kita harus mengatur **Webhook**.
+Pola yang direkomendasikan dokumentasi Dokploy:
 
-1. Di halaman *Compose* aplikasi kamu di Dokploy, pilih tab **Deployments** atau **Settings**.
-2. Cari bagian **Webhook URL** atau **Deployment Webhook**.
-3. **Copy / Salin** URL webhook tersebut.
-4. (Penting) **Matikan fitur Auto Deploy** di Dokploy jika kamu ingin *deploy* hanya di-trigger lewat keberhasilan GitHub Actions.
-5. Buka repositori GitHub proyek ini.
-6. Pergi ke **Settings** > **Secrets and variables** > **Actions**.
-7. Buat *Repository secret* baru:
-   - **Name**: `DOKPLOY_WEBHOOK_URL`
-   - **Secret**: *(Paste URL yang kamu dapatkan di Langkah 3)*
-8. Klik **Add secret**.
+```text
+Cloudflare -> Tunnel -> dokploy-traefik:80 -> frontend:80 -> backend:3000
+```
 
----
+Langkah ringkas:
 
-## 4. Cara Penggunaan (Deploy)
+1. Di Cloudflare Zero Trust, buat tunnel baru dan salin `TUNNEL_TOKEN`.
+2. Di Dokploy, buat aplikasi Docker provider untuk `cloudflare/cloudflared`.
+3. Tambahkan environment `TUNNEL_TOKEN="TOKEN_DARI_CLOUDFLARE"`.
+4. Di Advanced Arguments, isi dua argumen: `tunnel` dan `run`.
+5. Deploy aplikasi cloudflared.
+6. Di Cloudflare Tunnel, buat Published Application Route:
+   - Type: `HTTP`
+   - URL: `dokploy-traefik:80`
+7. Di Dokploy Compose application, buka tab Domains:
+   - Domain: domain yang sama dengan route Cloudflare, misalnya `sop.example.com`
+   - Service: `frontend`
+   - Port: `80`
+   - Jangan aktifkan HTTPS/Let's Encrypt di Dokploy untuk domain ini.
+8. Di Cloudflare SSL/TLS, gunakan `Full` atau `Full (Strict)`. Jangan gunakan `Flexible` karena bisa menyebabkan redirect loop dengan Traefik.
 
-Setelah semuanya diatur, proses *deploy* sepenuhnya otomatis.
-1. Setiap kali kamu melakukan `git push` (atau *merge Pull Request*) ke branch yang telah dikonfigurasi (contoh: `final` atau `main`).
-2. GitHub Actions (`.github/workflows/cd.yml`) akan menjalankan tes.
-3. Setelah sukses, Dokploy akan menerima sinyal webhook untuk melakukan proses *pull*, *build*, dan menjalankan ulang container (seperti `db`, `backend`, `frontend`).
+Untuk wildcard multi-app, arahkan route `*.example.com` ke `dokploy-traefik:80`, lalu buat domain masing-masing app di Dokploy.
 
-### Mengakses Aplikasi
-Sesuai `docker-compose.prod.yml`:
-- **Frontend**: `http://[IP-VPS]:8080` — UI aplikasi; request `/api/*` di-proxy ke backend internal.
-- **Backend**: tidak di-expose ke host (port `3000` sudah dipakai Dokploy). Akses API lewat frontend (`/api/...`) atau tambahkan **Domain** di Dokploy yang mengarah ke service `frontend` port `80`.
+## 4. GitHub Actions ke Dokploy
 
-Kamu dapat menambahkan Domain dan SSL gratis melalui menu **Domains** di Dashboard Dokploy (service: `frontend`, container port: `80`).
+Workflow `.github/workflows/cd.yml` berjalan pada push/PR ke `main` dan `final`. Deploy production hanya berjalan untuk push ke `final`.
+
+Setup secret:
+
+1. Di Dokploy, buka tab Deployments aplikasi Compose dan salin Webhook URL.
+2. Jika ingin deploy hanya setelah CI lulus, matikan Auto Deploy bawaan Dokploy.
+3. Di GitHub repo, buka Settings -> Secrets and variables -> Actions.
+4. Tambahkan repository secret:
+   - Name: `DOKPLOY_WEBHOOK_URL`
+   - Value: Webhook URL dari Dokploy.
+
+Workflow sekarang memakai `curl --fail-with-body`, jadi job akan gagal jika webhook mengembalikan HTTP error.
+
+## 5. Runtime Production
+
+`docker-compose.prod.yml` menjalankan:
+
+- `db`: MariaDB 11.4 dengan named volume `db-prod-data`.
+- `backend`: menunggu database sehat, menjalankan `pnpm prisma migrate deploy`, lalu `pnpm start:prod`.
+- `frontend`: menunggu backend sehat, menjalankan TanStack Start SSR di port internal `4173`, Nginx di port `80`, dan proxy `/api/*` ke `backend:3000`.
+
+Endpoint health backend tersedia di:
+
+```text
+/api/health
+```
+
+Karena Cloudflare Tunnel lewat Traefik Dokploy, `frontend` hanya memakai `expose: 80`, bukan host port `8080`.
+
+## 6. Checklist Saat Deploy Pertama
+
+1. Environment di Dokploy sudah terisi dan tersimpan.
+2. Domain di Cloudflare Tunnel dan domain di Dokploy sama.
+3. HTTPS/Let's Encrypt di domain Dokploy tidak aktif saat memakai Cloudflare Tunnel.
+4. Secret GitHub `DOKPLOY_WEBHOOK_URL` sudah ada.
+5. Branch Dokploy sama dengan branch deploy workflow (`final`).
+6. Push ke branch `final`.
+7. Cek GitHub Actions sampai job `verify` dan `deploy-production` sukses.
+8. Cek logs Dokploy untuk migrasi Prisma dan health service.
