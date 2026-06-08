@@ -65,8 +65,8 @@ Setelah semuanya diatur, proses *deploy* sepenuhnya otomatis.
 3. Setelah sukses, Dokploy akan menerima sinyal webhook untuk melakukan proses *pull*, *build*, dan menjalankan ulang container (seperti `db`, `backend`, `frontend`).
 
 ### Mengakses Aplikasi
-Sesuai `docker-compose.prod.yml`, aplikasi di-binding di port:
-- **Frontend**: `8080` (Bisa diakses di `http://[IP-VPS]:8080`)
-- **Backend**: `3000` (Bisa diakses di `http://[IP-VPS]:3000`)
+Sesuai `docker-compose.prod.yml`:
+- **Frontend**: `http://[IP-VPS]:8080` — UI aplikasi; request `/api/*` di-proxy ke backend internal.
+- **Backend**: tidak di-expose ke host (port `3000` sudah dipakai Dokploy). Akses API lewat frontend (`/api/...`) atau tambahkan **Domain** di Dokploy yang mengarah ke service `frontend` port `80`.
 
-Kamu dapat menambahkan Domain dan SSL gratis melalui menu **Domains** di Dashboard Dokploy untuk masing-masing port tersebut.
+Kamu dapat menambahkan Domain dan SSL gratis melalui menu **Domains** di Dashboard Dokploy (service: `frontend`, container port: `80`).
