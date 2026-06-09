@@ -75,7 +75,7 @@ export function TTESignatureBlock({
         </>
       ) : (
         <>
-          <p className="text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
+          <p className="mt-2 text-sm font-semibold text-gray-900">{payload.namaLengkap}</p>
           {showNip ? <p className="text-xs text-gray-600">NIP. {payload.nip}</p> : null}
           {showCaption ? <p className="text-xs text-gray-500 mt-1">TTE simulasi (format selaras BSRE)</p> : null}
           {showSignedDate ? <p className="text-xs text-gray-500">{signedDate}</p> : null}

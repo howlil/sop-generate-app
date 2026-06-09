@@ -21,11 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validasi build image produksi
+      - name: Validate production compose and build images
         run: |
           docker compose -f docker-compose.prod.yml config --quiet
           docker compose -f docker-compose.prod.yml build backend frontend
         env:
+          APP_VERSION: ci
           DB_ROOT_PASSWORD: ci-root-password
           DB_NAME: sop_biro_organisasi
           DB_USER: sop_app
@@ -34,9 +35,14 @@ jobs:
           JWT_REFRESH_SECRET: ci-refresh-secret-minimal-32-karakter
           JWT_EXPIRATION: 15m
           JWT_REFRESH_EXPIRATION: 7d
+          PUBLIC_APP_ORIGIN: http://127.0.0.1
+          ALLOWED_ORIGINS: http://127.0.0.1
+          SOP_PDF_STORAGE_DIR: /app/storage/sop-pdf
           PDF_SIGNING_ENABLED: "false"
+          PDF_SIGNING_P12_PASSPHRASE: ci-passphrase
+          PDF_SIGNING_P12_BASE64: ci-disabled
 
-      - name: Jalankan integration test
+      - name: Run integration tests
         run: |
           docker compose -f docker-compose.test.yml --profile test up \
             --abort-on-container-exit \
@@ -44,24 +50,152 @@ jobs:
         env:
           INTEGRATION_TEST_PATTERN: ""
 
-      - name: Bersihkan container test
+      - name: Clean integration test containers
         if: always()
         run: docker compose -f docker-compose.test.yml --profile test down -v
 
   deploy-production:
     needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/final' # Ubah ke 'main' jika ingin deploy dari branch main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/final'
     runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.VPS_HOST }}
+      DEPLOY_USER: ${{ secrets.VPS_USER }}
+      DEPLOY_PASSWORD: ${{ secrets.VPS_PASSWORD }}
+      DEPLOY_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      DEPLOY_SUDO_PASSWORD: ${{ secrets.VPS_SUDO_PASSWORD }}
+      ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
+      DEPLOY_DIR: /opt/sop-app
     steps:
-      - name: Deploy ke Dokploy
-        env:
-          DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS with Docker Compose
+        shell: bash
         run: |
-          if [[ -z "$DOKPLOY_WEBHOOK_URL" ]]; then
-            echo "::error::Secret DOKPLOY_WEBHOOK_URL belum diset!"
+          set -euo pipefail
+
+          if [ -z "${DEPLOY_HOST:-}" ]; then
+            echo "VPS_HOST secret is required." >&2
             exit 1
           fi
-          echo "Men-trigger deployment di Dokploy..."
-          curl --fail-with-body --show-error --silent --location \
-            --connect-timeout 15 --max-time 120 \
-            --request POST "$DOKPLOY_WEBHOOK_URL"
+
+          if [ -z "${DEPLOY_USER:-}" ]; then
+            echo "VPS_USER secret is required." >&2
+            exit 1
+          fi
+
+          if [ -z "${ENV_PRODUCTION:-}" ]; then
+            echo "ENV_PRODUCTION secret is required." >&2
+            exit 1
+          fi
+
+          if [ -z "${DEPLOY_SSH_KEY:-}" ] && [ -z "${DEPLOY_PASSWORD:-}" ]; then
+            echo "Set either VPS_SSH_KEY or VPS_PASSWORD in GitHub Secrets." >&2
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          if [ -n "${DEPLOY_SSH_KEY:-}" ]; then
+            printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+            chmod 600 ~/.ssh/deploy_key
+            SSH_CMD=(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes)
+            SCP_CMD=(scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes)
+          else
+            sudo apt-get update
+            sudo apt-get install -y sshpass
+            export SSHPASS="$DEPLOY_PASSWORD"
+            SSH_CMD=(sshpass -e ssh -o StrictHostKeyChecking=yes)
+            SCP_CMD=(sshpass -e scp -o StrictHostKeyChecking=yes)
+          fi
+
+          APP_VERSION="${GITHUB_SHA::12}"
+          ARCHIVE="/tmp/sop-app-${APP_VERSION}.tar.gz"
+          ENV_FILE="/tmp/sop-app-${APP_VERSION}.env"
+          SUDO_FILE="/tmp/sop-app-${APP_VERSION}.sudo"
+
+          git archive --format=tar.gz --output="$ARCHIVE" HEAD
+          {
+            printf '%s\n' "$ENV_PRODUCTION"
+            printf 'APP_VERSION=%s\n' "$APP_VERSION"
+          } > "$ENV_FILE"
+          chmod 600 "$ENV_FILE"
+
+          if [ -n "${DEPLOY_SUDO_PASSWORD:-}" ]; then
+            printf '%s\n' "$DEPLOY_SUDO_PASSWORD" > "$SUDO_FILE"
+            chmod 600 "$SUDO_FILE"
+          fi
+
+          "${SCP_CMD[@]}" "$ARCHIVE" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sop-app-${APP_VERSION}.tar.gz"
+          "${SCP_CMD[@]}" "$ENV_FILE" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sop-app-${APP_VERSION}.env"
+          if [ -f "$SUDO_FILE" ]; then
+            "${SCP_CMD[@]}" "$SUDO_FILE" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sop-app-${APP_VERSION}.sudo"
+            rm -f "$SUDO_FILE"
+          fi
+
+          "${SSH_CMD[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "DEPLOY_DIR='$DEPLOY_DIR' APP_VERSION='$APP_VERSION' bash -s" <<'REMOTE_DEPLOY'
+          set -euo pipefail
+
+          RELEASE_DIR="$DEPLOY_DIR/releases/$APP_VERSION"
+          ARCHIVE="/tmp/sop-app-$APP_VERSION.tar.gz"
+          ENV_FILE="/tmp/sop-app-$APP_VERSION.env"
+          SUDO_PASSWORD_FILE="/tmp/sop-app-$APP_VERSION.sudo"
+
+          SUDO_PASSWORD=""
+          if [ -s "$SUDO_PASSWORD_FILE" ]; then
+            SUDO_PASSWORD="$(cat "$SUDO_PASSWORD_FILE")"
+          fi
+
+          cleanup_secret() {
+            rm -f "$SUDO_PASSWORD_FILE"
+          }
+          trap cleanup_secret EXIT
+
+          run_sudo() {
+            if [ -n "$SUDO_PASSWORD" ]; then
+              printf '%s\n' "$SUDO_PASSWORD" | sudo -S -p '' "$@"
+            else
+              "$@"
+            fi
+          }
+
+          run_docker() {
+            if docker info >/dev/null 2>&1; then
+              docker "$@"
+            else
+              run_sudo docker "$@"
+            fi
+          }
+
+          DEPLOY_OWNER="$(id -un)"
+          DEPLOY_GROUP="$(id -gn)"
+
+          run_sudo mkdir -p "$RELEASE_DIR" "$DEPLOY_DIR/shared"
+          run_sudo chown -R "$DEPLOY_OWNER:$DEPLOY_GROUP" "$DEPLOY_DIR"
+          tar -xzf "$ARCHIVE" -C "$RELEASE_DIR"
+          mv "$ENV_FILE" "$DEPLOY_DIR/shared/.env"
+          chmod 600 "$DEPLOY_DIR/shared/.env"
+          ln -sfn "$DEPLOY_DIR/shared/.env" "$RELEASE_DIR/.env"
+          ln -sfn "$RELEASE_DIR" "$DEPLOY_DIR/current"
+
+          cd "$DEPLOY_DIR/current"
+
+          run_docker compose -f docker-compose.prod.yml config --quiet
+          run_docker compose -f docker-compose.prod.yml build backend frontend
+          run_docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+          # Remove unused old images only. This does not remove containers, named volumes, or database data.
+          run_docker image prune -af
+
+          # Keep the latest 3 release folders for quick rollback; remove older source bundles.
+          find "$DEPLOY_DIR/releases" -mindepth 1 -maxdepth 1 -type d ! -name "$APP_VERSION" \
+            -printf '%T@ %p\n' | sort -nr | tail -n +3 | cut -d' ' -f2- | xargs -r rm -rf
+
+          rm -f "$ARCHIVE"
+          run_docker compose -f docker-compose.prod.yml ps
+          REMOTE_DEPLOY

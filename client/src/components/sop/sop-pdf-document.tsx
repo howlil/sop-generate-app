@@ -47,6 +47,8 @@ const A4_LANDSCAPE: [number, number] = [841.89, 595.28];
 const PAGE_PADDING = 28;
 const CONTENT_WIDTH = A4_LANDSCAPE[0] - PAGE_PADDING * 2;
 const STEP_ROWS_PER_PAGE = 8;
+const SIGNATURE_ROLE_BOTTOM_MARGIN = 8;
+const SIGNATURE_NAME_TOP_MARGIN = 8;
 
 const styles = StyleSheet.create({
   page: {
@@ -116,7 +118,14 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     alignSelf: "center",
-    marginBottom: 3,
+  },
+  signatureRole: {
+    fontSize: 7,
+    marginBottom: SIGNATURE_ROLE_BOTTOM_MARGIN,
+    textAlign: "center",
+  },
+  signatureName: {
+    marginTop: SIGNATURE_NAME_TOP_MARGIN,
   },
   signatureSpacer: {
     height: 44,
@@ -348,7 +357,7 @@ function HeaderPage({
                 <View
                   style={[styles.cellTight, { width: "48%", minHeight: 110, alignItems: "center", justifyContent: "center" }]}
                 >
-                  <Text style={{ fontSize: 7, marginBottom: 4, textAlign: "center" }}>
+                  <Text style={styles.signatureRole}>
                     {metadata.picRole || "Penanggung Jawab"},
                   </Text>
                   {qrDataUrlKepalaOpd ? (
@@ -356,7 +365,7 @@ function HeaderPage({
                   ) : (
                     <View style={styles.signatureSpacer} />
                   )}
-                  <Text style={[styles.label, styles.centerText]}>
+                  <Text style={[styles.label, styles.centerText, styles.signatureName]}>
                     {tteSignaturePayload?.namaLengkap || metadata.picName || " - "}
                   </Text>
                   <Text style={[styles.centerText, { fontSize: 7 }]}>

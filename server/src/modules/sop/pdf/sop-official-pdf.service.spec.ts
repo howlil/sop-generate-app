@@ -32,19 +32,18 @@ describe('SopOfficialPdfService', () => {
     await expect(PDFDocument.load(stampedPdf)).resolves.toBeDefined();
   });
 
-  it('menjaga posisi QR relatif terhadap sudut kanan atas halaman', () => {
-    expect(resolveSignatureQrPlacement({ width: 841.89, height: 595.28 })).toEqual({
-      x: 683,
-      y: 449,
-      width: 54,
-      height: 54,
-    });
-    expect(resolveSignatureQrPlacement({ width: 900, height: 700 })).toEqual({
-      x: 741.11,
-      y: 553.72,
-      width: 54,
-      height: 54,
-    });
+  it('menjaga posisi QR di tengah sel tanda tangan Kepala OPD', () => {
+    const a4Landscape = resolveSignatureQrPlacement({ width: 841.89, height: 595.28 });
+    expect(a4Landscape.x).toBeCloseTo(683.15252, 5);
+    expect(a4Landscape.y).toBeCloseTo(352.64, 5);
+    expect(a4Landscape.width).toBe(54);
+    expect(a4Landscape.height).toBe(54);
+
+    const largerPage = resolveSignatureQrPlacement({ width: 900, height: 700 });
+    expect(largerPage.x).toBeCloseTo(733.592, 5);
+    expect(largerPage.y).toBeCloseTo(405, 5);
+    expect(largerPage.width).toBe(54);
+    expect(largerPage.height).toBe(54);
   });
 
   it('menolak (melempar BadRequestException) jika PDF buffer rusak/corrupt (Bad Case)', async () => {

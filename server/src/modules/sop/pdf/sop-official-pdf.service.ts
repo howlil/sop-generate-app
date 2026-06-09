@@ -5,8 +5,18 @@ import { assertValidPdfBuffer } from '../../tte/shared/utils/pdf-signature-verif
 
 const SIGNATURE_QR_DRAW_SIZE = 54;
 const SIGNATURE_QR_RENDER_SIZE = 192;
-const SIGNATURE_QR_RIGHT_INSET = 104.89;
-const SIGNATURE_QR_TOP_INSET = 92.28;
+const SOP_PDF_PAGE_PADDING = 28;
+const SIGNATURE_LABEL_COLUMN_RATIO = 0.45;
+const SIGNATURE_RIGHT_COLUMN_RATIO = 0.55;
+const SIGNATURE_VALUE_COLUMN_START_RATIO = 0.52;
+const SIGNATURE_VALUE_COLUMN_RATIO = 0.48;
+const SIGNATURE_METADATA_ROW_HEIGHT = 14;
+const SIGNATURE_ROW_HEIGHT = 110;
+const SIGNATURE_TABLE_HEIGHT = 376;
+const SIGNATURE_ROLE_TEXT_HEIGHT = 8;
+const SIGNATURE_ROLE_BOTTOM_MARGIN = 8;
+const SIGNATURE_NAME_TOP_MARGIN = 8;
+const SIGNATURE_CELL_PADDING = 2;
 
 export function resolveSignatureQrPlacement(pageSize: { width: number; height: number }): {
   x: number;
@@ -14,9 +24,36 @@ export function resolveSignatureQrPlacement(pageSize: { width: number; height: n
   width: number;
   height: number;
 } {
+  const contentWidth = pageSize.width - SOP_PDF_PAGE_PADDING * 2;
+  const contentHeight = pageSize.height - SOP_PDF_PAGE_PADDING * 2;
+  const tableTopFromPageTop =
+    SOP_PDF_PAGE_PADDING + Math.max((contentHeight - SIGNATURE_TABLE_HEIGHT) / 2, 0);
+  const signatureRowTopFromPageTop = tableTopFromPageTop + SIGNATURE_METADATA_ROW_HEIGHT * 4;
+  const signatureValueCellX =
+    SOP_PDF_PAGE_PADDING +
+    contentWidth * SIGNATURE_LABEL_COLUMN_RATIO +
+    contentWidth * SIGNATURE_RIGHT_COLUMN_RATIO * SIGNATURE_VALUE_COLUMN_START_RATIO;
+  const signatureValueCellWidth =
+    contentWidth * SIGNATURE_RIGHT_COLUMN_RATIO * SIGNATURE_VALUE_COLUMN_RATIO;
+  const signatureContentHeight =
+    SIGNATURE_ROLE_TEXT_HEIGHT +
+    SIGNATURE_ROLE_BOTTOM_MARGIN +
+    SIGNATURE_QR_DRAW_SIZE +
+    SIGNATURE_NAME_TOP_MARGIN +
+    10 +
+    8;
+  const signatureInnerTopOffset =
+    SIGNATURE_CELL_PADDING +
+    Math.max((SIGNATURE_ROW_HEIGHT - SIGNATURE_CELL_PADDING * 2 - signatureContentHeight) / 2, 0);
+  const qrTopFromPageTop =
+    signatureRowTopFromPageTop +
+    signatureInnerTopOffset +
+    SIGNATURE_ROLE_TEXT_HEIGHT +
+    SIGNATURE_ROLE_BOTTOM_MARGIN;
+
   return {
-    x: pageSize.width - SIGNATURE_QR_RIGHT_INSET - SIGNATURE_QR_DRAW_SIZE,
-    y: pageSize.height - SIGNATURE_QR_TOP_INSET - SIGNATURE_QR_DRAW_SIZE,
+    x: signatureValueCellX + (signatureValueCellWidth - SIGNATURE_QR_DRAW_SIZE) / 2,
+    y: pageSize.height - qrTopFromPageTop - SIGNATURE_QR_DRAW_SIZE,
     width: SIGNATURE_QR_DRAW_SIZE,
     height: SIGNATURE_QR_DRAW_SIZE,
   };
