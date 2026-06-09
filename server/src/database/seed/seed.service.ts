@@ -2421,14 +2421,10 @@ export class SeedService {
         },
       },
     });
-    const activeByOpd = new Map<string, string[]>();
     const activeByDetail = new Map<string, string[]>();
     for (const row of pengajuan) {
       const isAktif = STATUS_PENGAJUAN_AKTIF_SEED.includes(row.status);
       if (isAktif) {
-        const opdRows = activeByOpd.get(row.opdId) ?? [];
-        opdRows.push(row.nomorBA ?? row.pengajuanEvaluasiId);
-        activeByOpd.set(row.opdId, opdRows);
         for (const nilai of row.nilaiEvaluasi) {
           const detailRows = activeByDetail.get(nilai.detailSopId) ?? [];
           detailRows.push(row.nomorBA ?? row.pengajuanEvaluasiId);
@@ -2454,13 +2450,6 @@ export class SeedService {
             `Seed invalid: nilai PERLU_PERBAIKAN aktif pada ${row.nomorBA ?? row.pengajuanEvaluasiId} harus membuat DetailSOP REVISI_DARI_EVALUATOR.`,
           );
         }
-      }
-    }
-    for (const [opdId, rows] of activeByOpd) {
-      if (rows.length > 1) {
-        throw new Error(
-          `Seed invalid: OPD ${opdId} memiliki lebih dari satu pengajuan aktif (${rows.join(', ')}).`,
-        );
       }
     }
     for (const [detailSopId, rows] of activeByDetail) {
