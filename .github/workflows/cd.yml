@@ -58,13 +58,9 @@ jobs:
   deploy-production:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/final'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     environment: production
     env:
-      DEPLOY_HOST: ${{ secrets.VPS_HOST }}
-      DEPLOY_USER: ${{ secrets.VPS_USER }}
-      DEPLOY_PASSWORD: ${{ secrets.VPS_PASSWORD }}
-      DEPLOY_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
       DEPLOY_SUDO_PASSWORD: ${{ secrets.VPS_SUDO_PASSWORD }}
       ENV_PRODUCTION: ${{ secrets.ENV_PRODUCTION }}
       DEPLOY_DIR: /opt/sop-app
@@ -72,90 +68,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy to VPS with Docker Compose
+      - name: Deploy locally with Docker Compose
         shell: bash
         run: |
           set -euo pipefail
-
-          if [ -z "${DEPLOY_HOST:-}" ]; then
-            echo "VPS_HOST secret is required." >&2
-            exit 1
-          fi
-
-          if [ -z "${DEPLOY_USER:-}" ]; then
-            echo "VPS_USER secret is required." >&2
-            exit 1
-          fi
 
           if [ -z "${ENV_PRODUCTION:-}" ]; then
             echo "ENV_PRODUCTION secret is required." >&2
             exit 1
           fi
 
-          if [ -z "${DEPLOY_SSH_KEY:-}" ] && [ -z "${DEPLOY_PASSWORD:-}" ]; then
-            echo "Set either VPS_SSH_KEY or VPS_PASSWORD in GitHub Secrets." >&2
-            exit 1
-          fi
-
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-
-          if [ -n "${DEPLOY_SSH_KEY:-}" ]; then
-            printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
-            chmod 600 ~/.ssh/deploy_key
-            SSH_CMD=(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes)
-            SCP_CMD=(scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes)
-          else
-            sudo apt-get update
-            sudo apt-get install -y sshpass
-            export SSHPASS="$DEPLOY_PASSWORD"
-            SSH_CMD=(sshpass -e ssh -o StrictHostKeyChecking=yes)
-            SCP_CMD=(sshpass -e scp -o StrictHostKeyChecking=yes)
-          fi
-
           APP_VERSION="${GITHUB_SHA::12}"
           ARCHIVE="/tmp/sop-app-${APP_VERSION}.tar.gz"
           ENV_FILE="/tmp/sop-app-${APP_VERSION}.env"
-          SUDO_FILE="/tmp/sop-app-${APP_VERSION}.sudo"
-
-          git archive --format=tar.gz --output="$ARCHIVE" HEAD
-          {
-            printf '%s\n' "$ENV_PRODUCTION"
-            printf 'APP_VERSION=%s\n' "$APP_VERSION"
-          } > "$ENV_FILE"
-          chmod 600 "$ENV_FILE"
-
-          if [ -n "${DEPLOY_SUDO_PASSWORD:-}" ]; then
-            printf '%s\n' "$DEPLOY_SUDO_PASSWORD" > "$SUDO_FILE"
-            chmod 600 "$SUDO_FILE"
-          fi
-
-          "${SCP_CMD[@]}" "$ARCHIVE" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sop-app-${APP_VERSION}.tar.gz"
-          "${SCP_CMD[@]}" "$ENV_FILE" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sop-app-${APP_VERSION}.env"
-          if [ -f "$SUDO_FILE" ]; then
-            "${SCP_CMD[@]}" "$SUDO_FILE" "$DEPLOY_USER@$DEPLOY_HOST:/tmp/sop-app-${APP_VERSION}.sudo"
-            rm -f "$SUDO_FILE"
-          fi
-
-          "${SSH_CMD[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "DEPLOY_DIR='$DEPLOY_DIR' APP_VERSION='$APP_VERSION' bash -s" <<'REMOTE_DEPLOY'
-          set -euo pipefail
-
           RELEASE_DIR="$DEPLOY_DIR/releases/$APP_VERSION"
-          ARCHIVE="/tmp/sop-app-$APP_VERSION.tar.gz"
-          ENV_FILE="/tmp/sop-app-$APP_VERSION.env"
-          SUDO_PASSWORD_FILE="/tmp/sop-app-$APP_VERSION.sudo"
-
-          SUDO_PASSWORD=""
-          if [ -s "$SUDO_PASSWORD_FILE" ]; then
-            SUDO_PASSWORD="$(cat "$SUDO_PASSWORD_FILE")"
-          fi
-
-          cleanup_secret() {
-            rm -f "$SUDO_PASSWORD_FILE"
-          }
-          trap cleanup_secret EXIT
+          SUDO_PASSWORD="${DEPLOY_SUDO_PASSWORD:-}"
 
           run_sudo() {
             if [ -n "$SUDO_PASSWORD" ]; then
@@ -175,6 +102,13 @@ jobs:
 
           DEPLOY_OWNER="$(id -un)"
           DEPLOY_GROUP="$(id -gn)"
+
+          git archive --format=tar.gz --output="$ARCHIVE" HEAD
+          {
+            printf '%s\n' "$ENV_PRODUCTION"
+            printf 'APP_VERSION=%s\n' "$APP_VERSION"
+          } > "$ENV_FILE"
+          chmod 600 "$ENV_FILE"
 
           run_sudo mkdir -p "$RELEASE_DIR" "$DEPLOY_DIR/shared"
           run_sudo chown -R "$DEPLOY_OWNER:$DEPLOY_GROUP" "$DEPLOY_DIR"
@@ -199,4 +133,3 @@ jobs:
 
           rm -f "$ARCHIVE"
           run_docker compose -f docker-compose.prod.yml ps
-          REMOTE_DEPLOY

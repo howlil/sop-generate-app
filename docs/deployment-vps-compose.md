@@ -1,6 +1,8 @@
 # Deployment VPS dengan GitHub Actions dan Docker Compose
 
-Target deploy ini sengaja tidak memakai PaaS. GitHub Actions mengirim source ke VPS via SSH, lalu VPS menjalankan `docker compose`.
+Target deploy ini sengaja tidak memakai PaaS. GitHub Actions menjalankan job deploy di self-hosted runner pada VPS atau mesin yang satu jaringan dengan VPS, lalu menjalankan `docker compose` secara lokal.
+
+IP `10.44.8.17` adalah IP private. GitHub-hosted runner dari internet tidak bisa diandalkan untuk SSH ke IP private itu. Karena itu deploy production memakai `runs-on: self-hosted`.
 
 ## Data yang Dipertahankan
 
@@ -15,15 +17,11 @@ Deploy tidak menjalankan `docker compose down -v` dan tidak menjalankan `docker 
 
 Tambahkan secrets di repository GitHub:
 
-- `VPS_HOST`: IP/domain VPS yang bisa dijangkau GitHub Actions. Contoh: `10.44.8.17` hanya bisa dipakai jika runner GitHub punya akses ke network private tersebut.
-- `VPS_USER`: contoh `howlil`.
-- `VPS_SSH_KEY`: private key SSH untuk user deploy. Ini yang direkomendasikan.
-- `VPS_PASSWORD`: alternatif jika belum memakai key SSH.
 - `VPS_SUDO_PASSWORD`: isi jika user deploy harus memakai `sudo` untuk Docker atau folder `/opt/sop-app`.
 - `ENV_PRODUCTION`: isi lengkap file `.env` production.
 
-Gunakan salah satu dari `VPS_SSH_KEY` atau `VPS_PASSWORD`. Jangan commit password ke repo.
 Jika `docker compose ps` bisa jalan tanpa `sudo` di VPS, `VPS_SUDO_PASSWORD` tidak wajib. Jika Docker hanya bisa jalan dengan `sudo docker ...`, isi secret `VPS_SUDO_PASSWORD`.
+Jangan commit password atau env production ke repo.
 
 ## ENV_PRODUCTION Minimal
 
@@ -51,6 +49,23 @@ PDF_SIGNING_P12_BASE64=...
 GitHub Actions akan menambahkan `APP_VERSION=<commit-sha>` saat deploy.
 
 ## Persiapan VPS Satu Kali
+
+Install GitHub Actions self-hosted runner pada VPS atau mesin yang satu jaringan dengan VPS. Di GitHub repo:
+
+`Settings` -> `Actions` -> `Runners` -> `New self-hosted runner`
+
+Ikuti command yang diberikan GitHub untuk Linux x64. Jalankan runner sebagai service supaya deploy otomatis:
+
+```sh
+sudo ./svc.sh install
+sudo ./svc.sh start
+```
+
+Pastikan runner punya label `self-hosted`, `Linux`, dan `X64`, karena workflow production memakai:
+
+```yaml
+runs-on: [self-hosted, Linux, X64]
+```
 
 Di VPS, pastikan Docker dan Compose plugin tersedia:
 
@@ -83,10 +98,10 @@ Setiap push ke branch `final`:
 
 1. GitHub Actions build image production dan menjalankan integration test.
 2. Source commit dikemas dengan `git archive`.
-3. Bundle dikirim ke `/opt/sop-app/releases/<sha>`.
+3. Bundle diekstrak ke `/opt/sop-app/releases/<sha>` oleh self-hosted runner.
 4. `.env` dari `ENV_PRODUCTION` ditulis ke `/opt/sop-app/shared/.env`.
 5. `/opt/sop-app/current` diarahkan ke release terbaru.
-6. VPS menjalankan:
+6. Runner menjalankan:
 
 ```sh
 docker compose -f docker-compose.prod.yml config --quiet
