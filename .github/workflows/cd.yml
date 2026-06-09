@@ -23,24 +23,25 @@ jobs:
 
       - name: Validate production compose and build images
         run: |
+          cat > .env <<'ENV'
+          APP_VERSION=ci
+          DB_ROOT_PASSWORD=ci-root-password
+          DB_NAME=sop_biro_organisasi
+          DB_USER=sop_app
+          DB_PASSWORD=ci-db-password
+          JWT_SECRET=ci-jwt-secret-minimal-32-karakter
+          JWT_REFRESH_SECRET=ci-refresh-secret-minimal-32-karakter
+          JWT_EXPIRATION=15m
+          JWT_REFRESH_EXPIRATION=7d
+          PUBLIC_APP_ORIGIN=http://127.0.0.1
+          ALLOWED_ORIGINS=http://127.0.0.1
+          SOP_PDF_STORAGE_DIR=/app/storage/sop-pdf
+          PDF_SIGNING_ENABLED=false
+          PDF_SIGNING_P12_PASSPHRASE=ci-passphrase
+          PDF_SIGNING_P12_BASE64=ci-disabled
+          ENV
           docker compose -f docker-compose.prod.yml config --quiet
           docker compose -f docker-compose.prod.yml build backend frontend
-        env:
-          APP_VERSION: ci
-          DB_ROOT_PASSWORD: ci-root-password
-          DB_NAME: sop_biro_organisasi
-          DB_USER: sop_app
-          DB_PASSWORD: ci-db-password
-          JWT_SECRET: ci-jwt-secret-minimal-32-karakter
-          JWT_REFRESH_SECRET: ci-refresh-secret-minimal-32-karakter
-          JWT_EXPIRATION: 15m
-          JWT_REFRESH_EXPIRATION: 7d
-          PUBLIC_APP_ORIGIN: http://127.0.0.1
-          ALLOWED_ORIGINS: http://127.0.0.1
-          SOP_PDF_STORAGE_DIR: /app/storage/sop-pdf
-          PDF_SIGNING_ENABLED: "false"
-          PDF_SIGNING_P12_PASSPHRASE: ci-passphrase
-          PDF_SIGNING_P12_BASE64: ci-disabled
 
       - name: Run integration tests
         run: |
