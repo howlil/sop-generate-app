@@ -51,7 +51,7 @@ services:
       DATABASE_NAME: ${DB_NAME}
       DATABASE_URL: mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
       SOP_PDF_STORAGE_DIR: ${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
-    command: ["sh", "-c", "pnpm prisma migrate deploy && pnpm start:prod"]
+    command: ["sh", "-c", "pnpm prisma migrate deploy && pnpm prisma db seed && pnpm start:prod"]
     volumes:
       - sop-pdf-prod-data:${SOP_PDF_STORAGE_DIR:-/app/storage/sop-pdf}
     # Tidak publish ke host. API diakses via frontend (/api/ → backend:3000).

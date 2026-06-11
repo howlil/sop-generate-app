@@ -32,6 +32,56 @@ const STATUS_SOP_WAJIB_PUNYA_PENGAJUAN_AKTIF_SEED: readonly StatusSOP[] = [
   StatusSOP.MENUNGGU_TTD_PJ_EVALUATOR,
   StatusSOP.DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI,
 ] as const;
+const SEED_WORKFLOW_SOP_NUMBERS = [
+  'SOP-DINKES-001-V1',
+  'SOP-DINKES-001-V2',
+  'SOP-DINKES-002-V1',
+  'SOP-DINKES-003-V1',
+  'SOP-DINKES-004-V1',
+  'SOP-DINKES-005-V1',
+  'SOP-DINKES-006-V1',
+  'SOP-DISKOMINFO-001-V1',
+  'SOP-DISKOMINFO-002-V1',
+  'SOP-DISKOMINFO-003-V1',
+  'SOP-DISDIK-001-V1',
+  'SOP-DISDIK-001-V2',
+  'SOP-DISDIK-002-V1',
+] as const;
+const SEED_WORKFLOW_SOP_TITLES = [
+  'Pelayanan Surat Keterangan Sehat',
+  'Imunisasi Rutin',
+  'Surveilans Epidemiologi',
+  'Penanganan Gizi Buruk',
+  'Pelayanan Rawat Inap',
+  'Manajemen Farmasi Puskesmas',
+  'Permohonan Informasi Publik',
+  'Pengelolaan Media Sosial Pemerintah',
+  'Penanganan Aduan Masyarakat Digital',
+  'Penerimaan Peserta Didik Baru (PPDB)',
+  'Akreditasi Sekolah',
+] as const;
+const SEED_WORKFLOW_BA_NUMBERS = [
+  'BA-DINKES-2026-001',
+  'BA-DINKES-2026-002',
+  'BA-DISKOMINFO-2026-001',
+  'BA-DISKOMINFO-2026-002',
+  'BA-DISDIK-2026-001',
+  'BA-DISDIK-2026-002',
+  'BA-SYNTH-2026-001',
+  'BA-SYNTH-2026-002',
+  'BA-SYNTH-2026-003',
+  'BA-SYNTH-2026-004',
+  'BA-SYNTH-2026-005',
+  'BA-SYNTH-2026-006',
+  'BA-SYNTH-2026-007',
+  'BA-SYNTH-2026-008',
+] as const;
+const SEED_WORKFLOW_DOCUMENT_NUMBERS = [
+  'DOC-SOP-DINKES-2024-001',
+  'DOC-BA-DINKES-2026-001',
+  'DOC-SOP-DISDIK-2024-001',
+  'DOC-BA-DISDIK-2023-001',
+] as const;
 
 /** Identitas OPD — dipakai sebagai kunci lookup di SEED_USERS */
 const SEED_OPD_PJ_EVALUATOR = 'Biro Organisasi Sekretariat Daerah';
@@ -278,80 +328,78 @@ export class SeedService {
         opdDisdikId: opdDisdik.opdId,
       });
 
-      // 7. SOP & DetailSOP — mencakup SEMUA 11 StatusSOP
-      const d = await this.seedSopDanDetail(tx, {
-        opdDinkesId: opdDinkes.opdId,
-        opdDiskominfoId: opdDiskominfo.opdId,
-        opdDisdikId: opdDisdik.opdId,
-        penyusunDinkesId: u['penyusun.dinkes@gmail.com'].penggunaId,
-        penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
-        penyusunDisdikId: u['penyusun.disdik@gmail.com'].penggunaId,
-      });
+      if (this.config.get<string>('SEED_INCLUDE_WORKFLOW_DUMMY') === 'true') {
+        // Legacy demo mode: hanya aktif bila env di-set eksplisit.
+        const d = await this.seedSopDanDetail(tx, {
+          opdDinkesId: opdDinkes.opdId,
+          opdDiskominfoId: opdDiskominfo.opdId,
+          opdDisdikId: opdDisdik.opdId,
+          penyusunDinkesId: u['penyusun.dinkes@gmail.com'].penggunaId,
+          penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
+          penyusunDisdikId: u['penyusun.disdik@gmail.com'].penggunaId,
+        });
 
-      // 8. Dasar Hukum & SOP Terkait
-      await this.seedDasarHukumDanRelasi(tx, {
-        d,
-        p,
-      });
+        await this.seedDasarHukumDanRelasi(tx, {
+          d,
+          p,
+        });
 
-      // 9. Swimlane (DetailSOPPelaksana) & LangkahSOP — mencakup SEMUA SatuanWaktu & JenisLangkahProsedur
-      await this.seedSwimlaneDanLangkah(tx, { d, pel });
+        await this.seedSwimlaneDanLangkah(tx, { d, pel });
 
-      // 10. Lampiran (semua 4 tipe) untuk beberapa SOP
-      await this.seedLampiran(tx, { d });
+        await this.seedLampiran(tx, { d });
 
-      // 11. Kolaborasi: LogEditSOP — mencakup SEMUA BagianSOP
-      await this.seedKolaborasi(tx, {
-        d,
-        evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-        evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
-        penyusunDinkesId: u['penyusun.dinkes@gmail.com'].penggunaId,
-        pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
-        penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
-      });
+        await this.seedKolaborasi(tx, {
+          d,
+          evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
+          evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+          penyusunDinkesId: u['penyusun.dinkes@gmail.com'].penggunaId,
+          pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
+          penyusunDiskominfoId: u['penyusun.diskominfo@gmail.com'].penggunaId,
+        });
 
-      // 12. PengajuanEvaluasi & NilaiEvaluasi (+ pengajuan sintetis untuk pagination)
-      const pe = await this.seedPengajuanDanNilaiEvaluasi(tx, {
-        d,
-        opdDinkesId: opdDinkes.opdId,
-        opdDiskominfoId: opdDiskominfo.opdId,
-        opdDisdikId: opdDisdik.opdId,
-        evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-        evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
-        pjEvaluatorId: u['pjevaluator@gmail.com'].penggunaId,
-        pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
-        pjPenyusunDiskominfoId: u['pjpenyusun.diskominfo@gmail.com'].penggunaId,
-        pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
-      });
+        const pe = await this.seedPengajuanDanNilaiEvaluasi(tx, {
+          d,
+          opdDinkesId: opdDinkes.opdId,
+          opdDiskominfoId: opdDiskominfo.opdId,
+          opdDisdikId: opdDisdik.opdId,
+          evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
+          evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+          pjEvaluatorId: u['pjevaluator@gmail.com'].penggunaId,
+          pjPenyusunDinkesId: u['pjpenyusun.dinkes@gmail.com'].penggunaId,
+          pjPenyusunDiskominfoId: u['pjpenyusun.diskominfo@gmail.com'].penggunaId,
+          pjPenyusunDisdikId: u['pjpenyusun.disdik@gmail.com'].penggunaId,
+        });
 
-      await this.syncSemuaStatusDetailSopPengajuan(tx, pe);
+        await this.syncSemuaStatusDetailSopPengajuan(tx, pe);
 
-      await this.ensureProsedurUntukSemuaNilaiEvaluasi(tx, pel, {
-        opdDinkesId: opdDinkes.opdId,
-        opdDiskominfoId: opdDiskominfo.opdId,
-        opdDisdikId: opdDisdik.opdId,
-      });
+        await this.ensureProsedurUntukSemuaNilaiEvaluasi(tx, pel, {
+          opdDinkesId: opdDinkes.opdId,
+          opdDiskominfoId: opdDiskominfo.opdId,
+          opdDisdikId: opdDisdik.opdId,
+        });
 
-      // 13. Log Nilai Evaluasi
-      await this.seedLogNilaiEvaluasi(tx, {
-        d,
-        pe,
-        evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
-        evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
-      });
+        await this.seedLogNilaiEvaluasi(tx, {
+          d,
+          pe,
+          evaluator1Id: u['evaluator1@gmail.com'].penggunaId,
+          evaluator2Id: u['evaluator2@gmail.com'].penggunaId,
+        });
 
-      await this.validateSeedEvaluationBusinessRules(tx);
+        await this.validateSeedEvaluationBusinessRules(tx);
 
-      // 14. DokumenTTE - JenisDokumenTte: SOP_BERLAKU, BERITA_ACARA_EVALUASI
-      await this.seedDokumenTte(tx, { d, pe });
+        await this.seedDokumenTte(tx, { d, pe });
+      } else {
+        // Default: master-only; hapus artifact workflow dummy lama dari seed versi sebelumnya.
+        await this.cleanupLegacyWorkflowSeedData(tx);
+      }
     });
 
     this.logger.log(
       [
         'Seed selesai.',
         'Reset dev: pnpm db:fresh (prisma migrate reset + seed).',
-        'Cakupan: 4 OPD, 12 pengguna, 12 DetailSOP, 14+ PengajuanEvaluasi,',
-        'invariant status SOP seragam per pengajuan, prosedur minimal (≥3 langkah, ≥2 pelaksana).',
+        'Cakupan: master data saja: 4 OPD, 12 pengguna, riwayat OPD aktif,',
+        '4 peraturan, relasi OPD-peraturan, dan master pelaksana SOP.',
       ].join(' '),
     );
     this.logger.warn(`Login: SEED_DEFAULT_PASSWORD (${DEFAULT_SEED_PASSWORD}).`);
@@ -371,6 +419,76 @@ export class SeedService {
       data: { nama },
       select: { opdId: true },
     });
+  }
+
+  private async cleanupLegacyWorkflowSeedData(tx: Prisma.TransactionClient): Promise<void> {
+    const seedDetails = await tx.detailSOP.findMany({
+      where: { nomorSOP: { in: [...SEED_WORKFLOW_SOP_NUMBERS] } },
+      select: { detailSopId: true, sopId: true },
+    });
+    const seedPengajuan = await tx.pengajuanEvaluasi.findMany({
+      where: { nomorBA: { in: [...SEED_WORKFLOW_BA_NUMBERS] } },
+      select: { pengajuanEvaluasiId: true },
+    });
+    const detailSopIds = seedDetails.map((detail) => detail.detailSopId);
+    const sopIds = [...new Set(seedDetails.map((detail) => detail.sopId))];
+    const pengajuanEvaluasiIds = seedPengajuan.map((pengajuan) => pengajuan.pengajuanEvaluasiId);
+    const documentWhere: Prisma.DokumenTteWhereInput[] = [
+      { nomorDokumen: { in: [...SEED_WORKFLOW_DOCUMENT_NUMBERS] } },
+    ];
+    if (detailSopIds.length > 0) {
+      documentWhere.push({ detailSopId: { in: detailSopIds } });
+    }
+    if (pengajuanEvaluasiIds.length > 0) {
+      documentWhere.push({ pengajuanEvaluasiId: { in: pengajuanEvaluasiIds } });
+    }
+
+    const seedDocuments = await tx.dokumenTte.findMany({
+      where: { OR: documentWhere },
+      select: { dokumenTteId: true },
+    });
+    const dokumenTteIds = seedDocuments.map((document) => document.dokumenTteId);
+    if (dokumenTteIds.length > 0) {
+      await tx.riwayatTandaTangan.deleteMany({
+        where: { dokumenTteId: { in: dokumenTteIds } },
+      });
+      await tx.dokumenTte.deleteMany({
+        where: { dokumenTteId: { in: dokumenTteIds } },
+      });
+    }
+
+    if (pengajuanEvaluasiIds.length > 0) {
+      await tx.logNilaiEvaluasi.deleteMany({
+        where: { pengajuanEvaluasiId: { in: pengajuanEvaluasiIds } },
+      });
+      await tx.nilaiEvaluasi.deleteMany({
+        where: { pengajuanEvaluasiId: { in: pengajuanEvaluasiIds } },
+      });
+      await tx.pengajuanEvaluasi.deleteMany({
+        where: { pengajuanEvaluasiId: { in: pengajuanEvaluasiIds } },
+      });
+    }
+
+    if (detailSopIds.length > 0) {
+      await tx.logNilaiEvaluasi.deleteMany({
+        where: { detailSopId: { in: detailSopIds } },
+      });
+      await tx.nilaiEvaluasi.deleteMany({
+        where: { detailSopId: { in: detailSopIds } },
+      });
+      await tx.logEditSOP.deleteMany({
+        where: { detailSopId: { in: detailSopIds } },
+      });
+    }
+
+    if (sopIds.length > 0) {
+      await tx.sOP.deleteMany({
+        where: {
+          sopId: { in: sopIds },
+          judul: { in: [...SEED_WORKFLOW_SOP_TITLES] },
+        },
+      });
+    }
   }
 
   private async seedUsers(
