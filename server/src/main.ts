@@ -18,31 +18,55 @@ import {
 
 const DEFAULT_PORT = 3000;
 const CORS_MAX_AGE_SECONDS = 3600;
+const DEFAULT_PRODUCTION_CORS_ORIGINS = [
+  'https://sopflow.siunand.my.id',
+  'http://sopflow.siunand.my.id',
+  'http://10.44.8.17',
+  'https://10.44.8.17',
+];
+
+function normalizeCorsOrigin(origin: string | undefined): string {
+  const value = origin?.trim();
+  if (!value) {
+    return '';
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value.replace(/\/+$/, '');
+  }
+}
 
 function buildCorsOptions(configService: ConfigService): CorsOptions {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
   const allowedOriginsRaw = configService.get<string>('ALLOWED_ORIGINS', '').trim();
+  const publicAppOrigin = configService.get<string>('PUBLIC_APP_ORIGIN', '').trim();
   const allowAllOrigins =
     nodeEnv !== 'production' ||
-    allowedOriginsRaw === '' ||
     allowedOriginsRaw === '*' ||
     allowedOriginsRaw.toLowerCase() === 'all';
-  const allowedOrigins = allowedOriginsRaw
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  const allowedOrigins = new Set(
+    [
+      ...DEFAULT_PRODUCTION_CORS_ORIGINS,
+      ...allowedOriginsRaw.split(','),
+      publicAppOrigin,
+    ]
+      .map(normalizeCorsOrigin)
+      .filter(Boolean),
+  );
   return {
     origin: allowAllOrigins
       ? true
       : (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
-          if (!origin || allowedOrigins.includes(origin)) {
+          if (!origin || allowedOrigins.has(normalizeCorsOrigin(origin))) {
             callback(null, true);
             return;
           }
-          callback(new Error('CORS policy violation'));
+          callback(null, false);
         },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-CSRF-Token'],
     credentials: true,
     maxAge: CORS_MAX_AGE_SECONDS,
   };
