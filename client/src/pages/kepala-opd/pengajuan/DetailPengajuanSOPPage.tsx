@@ -54,14 +54,13 @@ export function DetailPengajuanSOPPage() {
   const canCetakSopArsip = canCetakSopArsipPengajuan(pengajuan?.status);
   const canSignAll = pengajuan?.status === "DITANDATANGANI_PJ_PENYUSUN";
   const isSudahBerlaku = pengajuan?.status === "SELESAI";
-  const sopList = useMemo(
-    () =>
-      canSignAll
-        ? allSopList.filter((item) => item.status === STATUS_SOP_SIAP_TTD_KEPALA_OPD)
-        : allSopList,
-    [allSopList, canSignAll],
+  const signableSopList = useMemo(
+    () => allSopList.filter((item) => item.status === STATUS_SOP_SIAP_TTD_KEPALA_OPD),
+    [allSopList],
   );
-  const sopTidakEligibleCount = allSopList.length - sopList.length;
+  const sopList = allSopList;
+  const canShowSignAll = canSignAll && signableSopList.length > 0;
+  const sopTidakEligibleCount = canSignAll ? allSopList.length - signableSopList.length : 0;
   const firstSopDetailId = sopList[0]?.sopDetailId ?? null;
   const effectiveSopDetailId = selectedSopId ?? firstSopDetailId;
   const selectedSop = sopList.find((item) => item.sopDetailId === effectiveSopDetailId) ?? null;
@@ -121,7 +120,7 @@ export function DetailPengajuanSOPPage() {
     let signingRequestStarted = false;
     try {
       const sopPdfs = [];
-      for (const sop of sopList) {
+      for (const sop of signableSopList) {
         const dokumen = await evaluasiApi.findPengajuanSopDokumen(
           id,
           sop.sopDetailId,
@@ -206,7 +205,7 @@ export function DetailPengajuanSOPPage() {
                   cetakLoading={cetakLoading}
                   onCetak={handleCetak}
                 />
-                {canSignAll && (
+                {canShowSignAll && (
                   <Button
                     size="sm"
                     className="h-8 text-xs gap-1.5"
@@ -237,7 +236,7 @@ export function DetailPengajuanSOPPage() {
               <InfoField label="Tanggal BA Ditandatangani PJ Penyusun">
                 {formatDateIdFull(pengajuan.tanggalTTDBaPjPenyusun)}
               </InfoField>
-              <InfoField label="Jumlah SOP">{`${sopList.length} dokumen`}</InfoField>
+              <InfoField label="Jumlah SOP">{`${allSopList.length} dokumen`}</InfoField>
             </div>
             <PengajuanEvaluasiStatusHeader
               status={pengajuan.status}
@@ -250,9 +249,9 @@ export function DetailPengajuanSOPPage() {
               </InfoCard>
             )}
             {canSignAll && sopTidakEligibleCount > 0 && (
-              <InfoCard variant="warning" icon={<AlertCircle />} title="Sebagian SOP belum eligible TTD">
-                {sopTidakEligibleCount} SOP disembunyikan karena status SOP belum{" "}
-                {STATUS_SOP_SIAP_TTD_KEPALA_OPD}.
+              <InfoCard variant="warning" icon={<AlertCircle />} title="Sebagian SOP tidak perlu TTD ulang">
+                {sopTidakEligibleCount} dari {allSopList.length} SOP tidak masuk payload tanda tangan karena statusnya
+                bukan {STATUS_SOP_SIAP_TTD_KEPALA_OPD}. SOP tetap ditampilkan untuk pratinjau.
               </InfoCard>
             )}
           </div>
