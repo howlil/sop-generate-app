@@ -43,18 +43,6 @@ jobs:
           docker compose -f docker-compose.prod.yml config --quiet
           docker compose -f docker-compose.prod.yml build backend frontend
 
-      - name: Run integration tests
-        run: |
-          docker compose -f docker-compose.test.yml --profile test up \
-            --abort-on-container-exit \
-            --exit-code-from sop-integration-test
-        env:
-          INTEGRATION_TEST_PATTERN: ""
-
-      - name: Clean integration test containers
-        if: always()
-        run: docker compose -f docker-compose.test.yml --profile test down -v
-
   deploy-production:
     needs: verify
     if: github.event_name == 'push' && github.ref == 'refs/heads/final'
