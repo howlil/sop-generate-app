@@ -430,8 +430,31 @@ export class SeedService {
       where: { nomorBA: { in: [...SEED_WORKFLOW_BA_NUMBERS] } },
       select: { pengajuanEvaluasiId: true },
     });
-    const detailSopIds = seedDetails.map((detail) => detail.detailSopId);
-    const sopIds = [...new Set(seedDetails.map((detail) => detail.sopId))];
+    const candidateSopIds = [...new Set(seedDetails.map((detail) => detail.sopId))];
+    const legacySeedSops =
+      candidateSopIds.length > 0
+        ? await tx.sOP.findMany({
+            where: {
+              sopId: { in: candidateSopIds },
+              judul: { in: [...SEED_WORKFLOW_SOP_TITLES] },
+            },
+            select: { sopId: true },
+          })
+        : [];
+    const sopIds = legacySeedSops.map((sop) => sop.sopId);
+    const detailsInLegacySeedSops =
+      sopIds.length > 0
+        ? await tx.detailSOP.findMany({
+            where: { sopId: { in: sopIds } },
+            select: { detailSopId: true },
+          })
+        : [];
+    const detailSopIds = [
+      ...new Set([
+        ...seedDetails.map((detail) => detail.detailSopId),
+        ...detailsInLegacySeedSops.map((detail) => detail.detailSopId),
+      ]),
+    ];
     const pengajuanEvaluasiIds = seedPengajuan.map((pengajuan) => pengajuan.pengajuanEvaluasiId);
     const documentWhere: Prisma.DokumenTteWhereInput[] = [
       { nomorDokumen: { in: [...SEED_WORKFLOW_DOCUMENT_NUMBERS] } },
@@ -470,6 +493,31 @@ export class SeedService {
     }
 
     if (detailSopIds.length > 0) {
+      await tx.detailSOP.updateMany({
+        where: { revisiDariDetailSopId: { in: detailSopIds } },
+        data: { revisiDariDetailSopId: null },
+      });
+
+      const langkahSopIds = (
+        await tx.langkahSOP.findMany({
+          where: { detailSopId: { in: detailSopIds } },
+          select: { langkahSopId: true },
+        })
+      ).map((langkah) => langkah.langkahSopId);
+
+      if (langkahSopIds.length > 0) {
+        await tx.langkahSOP.updateMany({
+          where: {
+            OR: [
+              { detailSopId: { in: detailSopIds } },
+              { langkahSelanjutnyaYaId: { in: langkahSopIds } },
+              { langkahSelanjutnyaTidakId: { in: langkahSopIds } },
+            ],
+          },
+          data: { langkahSelanjutnyaYaId: null, langkahSelanjutnyaTidakId: null },
+        });
+      }
+
       await tx.logNilaiEvaluasi.deleteMany({
         where: { detailSopId: { in: detailSopIds } },
       });
@@ -485,7 +533,6 @@ export class SeedService {
       await tx.sOP.deleteMany({
         where: {
           sopId: { in: sopIds },
-          judul: { in: [...SEED_WORKFLOW_SOP_TITLES] },
         },
       });
     }
