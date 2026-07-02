@@ -1,72 +1,100 @@
-  # Diagram Aktivitas: Evaluator - Mengevaluasi SOP
+# Diagram Aktivitas: Evaluator - Mengevaluasi SOP
 
-  Sumber use case: `UC-11` pada [`../usecase.md`](../usecase.md).
+Sumber use case: `UC-11` pada [`../usecase.md`](../usecase.md).
 
-  ## Metadata
+## Metadata
 
-  | Elemen | Deskripsi |
-  | :--- | :--- |
-  | Use case | Mengevaluasi SOP |
-  | Aktor utama | Evaluator |
-  | Nomor kebutuhan fungsional | 15 |
-  | Tujuan | Menjelaskan proses evaluator dalam memeriksa SOP, memberi hasil penilaian, dan menentukan tindak lanjut dokumen. |
+| Elemen | Deskripsi |
+| :--- | :--- |
+| Use case | Mengevaluasi SOP |
+| Aktor utama | Evaluator |
+| Nomor kebutuhan fungsional | 15, 16 |
+| Tujuan | Menjelaskan proses evaluator menilai SOP, memberi catatan resmi bila perlu perbaikan, membuka tindak lanjut penyusun, dan menyelesaikan pengajuan. |
 
-  ## PlantUML
+## PlantUML
 
-  ```plantuml
-  @startuml
-  title Diagram Aktivitas - Mengevaluasi SOP
+```plantuml
+@startuml
+title Diagram Aktivitas - Mengevaluasi SOP
 
-  |Evaluator|
-  start
-  :Membuka halaman daftar pengajuan evaluasi;
+|Evaluator|
+start
+:Membuka dashboard atau workspace evaluasi;
 
-  |Sistem|
-  :Memeriksa hak akses evaluator;
-  :Menampilkan pengajuan SOP yang perlu dievaluasi;
+|Sistem|
+:Memeriksa sesi dan peran Evaluator;
+:Menampilkan daftar pengajuan evaluasi beserta OPD, status, progres penilaian, dan filter;
 
-  |Evaluator|
-  :Memilih pengajuan evaluasi;
+|Evaluator|
+:Memilih pengajuan evaluasi;
 
-  |Sistem|
-  :Menampilkan daftar SOP dalam pengajuan tersebut;
+|Sistem|
+:Memastikan evaluator berwenang melihat pengajuan;
+:Menampilkan detail pengajuan, daftar SOP, dokumen SOP, diagram, riwayat nilai, dan form penilaian;
 
-  |Evaluator|
-  :Memilih SOP yang akan diperiksa;
-  :Membaca dan menilai isi SOP;
-  :Mengisi hasil penilaian;
+|Evaluator|
+:Memilih salah satu SOP dalam pengajuan;
+:Memeriksa substansi, kelengkapan, dan kesesuaian SOP;
+:Memilih hasil penilaian;
 
-  |Sistem|
-  :Memeriksa kelengkapan hasil penilaian;
-  if (SOP perlu diperbaiki?) then (Ya)
-    |Evaluator|
-    :Menulis komentar atau catatan perbaikan;
-    |Sistem|
-    :Memastikan catatan perbaikan sudah diisi;
-    :Menyimpan hasil penilaian dan catatan perbaikan;
-    :Membuka proses tindak lanjut untuk penyusun;
-    :Mengubah status SOP menjadi revisi dari evaluator;
-    :Menampilkan pemberitahuan bahwa hasil evaluasi tersimpan;
-    stop
-  else (Tidak)
-    :Menyimpan hasil bahwa SOP sudah sesuai;
-    :Mencatat riwayat penilaian;
-  endif
+if (Hasil PERLU_PERBAIKAN?) then (Ya)
+  :Mengisi catatan perbaikan yang harus ditindaklanjuti penyusun;
+else (Tidak)
+  :Memilih hasil SESUAI dan meninjau kembali catatan bila ada;
+endif
 
-  |Evaluator|
-  if (Semua SOP dalam pengajuan sudah sesuai?) then (Ya)
-    :Memilih aksi selesaikan evaluasi pengajuan;
-    |Sistem|
-    :Memastikan seluruh SOP telah dinilai sesuai;
-    :Mengubah status pengajuan menjadi selesai dievaluasi;
-    :Menampilkan pemberitahuan bahwa evaluasi selesai;
-  else (Tidak)
-    |Sistem|
-    :Menampilkan SOP yang masih perlu dinilai atau diperbaiki;
-  endif
+:Menyimpan nilai evaluasi SOP;
 
+|Sistem|
+:Memeriksa status pengajuan masih dalam evaluasi;
+:Memastikan SOP termasuk dalam pengajuan yang dipilih;
+:Memeriksa perubahan terakhir agar penilaian tidak menimpa data yang lebih baru;
+
+if (PERLU_PERBAIKAN tanpa catatan?) then (Ya)
+  :Menampilkan pesan bahwa catatan perbaikan wajib diisi;
   stop
-  @enduml
-  ```
+else (Tidak)
+endif
 
-****
+:Menyimpan hasil penilaian, catatan, evaluator penilai, dan riwayat penilaian;
+
+if (Hasil PERLU_PERBAIKAN?) then (Ya)
+  :Menandai SOP sebagai revisi dari evaluator;
+  :Membuka status tindak lanjut untuk penyusun;
+  :Menampilkan status perlu perbaikan pada pengajuan;
+else (Tidak)
+  :Menandai SOP bernilai sesuai;
+  :Menutup tindak lanjut terbuka bila nilai sebelumnya perlu perbaikan;
+  :Menampilkan nilai tersimpan sebagai sesuai;
+endif
+
+|Evaluator|
+if (Semua SOP sudah bernilai SESUAI?) then (Ya)
+  :Mengisi nomor Berita Acara;
+  if (Jenis pengajuan membutuhkan nilai OPD?) then (Ya)
+    :Mengisi nilai OPD;
+  else (Tidak)
+    :Melewati pengisian nilai OPD;
+  endif
+  :Memilih selesaikan evaluasi;
+else (Tidak)
+  :Melanjutkan penilaian SOP lain atau menunggu perbaikan penyusun;
+  stop
+endif
+
+|Sistem|
+:Memastikan seluruh SOP dalam pengajuan bernilai sesuai;
+:Memvalidasi nomor Berita Acara dan nilai OPD bila diperlukan;
+
+if (Syarat penyelesaian terpenuhi?) then (Ya)
+  :Mengubah pengajuan menjadi selesai dievaluasi;
+  :Mengubah SOP terkait menjadi menunggu tanda tangan PJ Evaluator;
+  :Menyimpan nomor Berita Acara, nilai OPD, tanggal selesai, dan penanggung jawab;
+  :Menampilkan pengajuan siap ditandatangani;
+else (Tidak)
+  :Menampilkan SOP atau data pengajuan yang masih perlu dilengkapi;
+endif
+
+stop
+@enduml
+```

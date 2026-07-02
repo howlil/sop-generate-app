@@ -11,6 +11,13 @@ import { RouteErrorPage } from "@/components/ui/route-error";
 import { RouteFocusManager } from "@/components/ui/route-focus-manager";
 import { queryClient } from "@/config/query-client";
 import { useAuthStore, ensureAuthHydrated, syncAuthFromCookie } from "@/stores/authStore";
+import {
+  getRoleDefaultLandingPath,
+  isPathAccessibleByRole,
+  redirectArgsFromAppPath,
+} from "@/utils/role-routing";
+
+const ROLE_ROUTE_PREFIXES = ["/pj-evaluator", "/penyusun", "/kepala-opd", "/evaluator"] as const;
 
 export const Route = createRootRoute({
   beforeLoad: async ({ location }) => {
@@ -32,11 +39,21 @@ export const Route = createRootRoute({
       await syncAuthFromCookie();
     }
 
-    if (!useAuthStore.getState().user) {
+    const user = useAuthStore.getState().user;
+    if (!user) {
       throw redirect({
         to: "/login",
         search: { redirect: location.href },
       });
+    }
+
+    const isRoleScopedPath = ROLE_ROUTE_PREFIXES.some(
+      (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+    );
+    if (isRoleScopedPath && !isPathAccessibleByRole(path, user.peran)) {
+      throw redirect(
+        redirectArgsFromAppPath(getRoleDefaultLandingPath(user.peran) ?? "/"),
+      );
     }
   },
   pendingComponent: () => (

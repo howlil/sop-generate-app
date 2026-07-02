@@ -7,9 +7,9 @@ Sumber use case: `UC-09` pada [`../../usecase.md`](../../usecase.md).
 | Elemen | Deskripsi |
 | :--- | :--- |
 | Use case | Membuat Tanda Tangan Elektronik |
-| Aktor utama | PJ Evaluator, PJ Penyusun |
+| Aktor utama | PJ Evaluator, PJ Penyusun, Kepala OPD |
 | Nomor kebutuhan fungsional | 9 |
-| Tujuan | Menggambarkan proses pembuatan atau perubahan PIN tanda tangan elektronik. |
+| Tujuan | Menggambarkan penyiapan dan pemeliharaan tanda tangan elektronik, termasuk kredensial, sertifikat, dan hasil validasi. |
 
 ## PlantUML
 
@@ -17,36 +17,42 @@ Sumber use case: `UC-09` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Membuat Tanda Tangan Elektronik
 autonumber
+autoactivate on
 
-actor "PJ Evaluator / PJ Penyusun" as Aktor
-boundary "Halaman Pengaturan TTE" as UI
-control "TTE Controller" as TTECtrl
-control "Validasi PIN TTE" as Validasi
-entity "Data Pengguna" as Pengguna
-entity "PIN TTE Pengguna" as Pin
+actor "Pengguna Berwenang" as A
+boundary "Halaman Profil Tanda Tangan Elektronik" as B
+control "Pengelola Profil Tanda Tangan Elektronik" as C
+control "Pemeriksa Kredensial Tanda Tangan" as D
+entity "Pengguna" as Pengguna
+entity "Kredensial Tanda Tangan" as Kredensial
+entity "Sertifikat Tanda Tangan" as Sertifikat
 
-Aktor -> UI : Membuka pengaturan tanda tangan elektronik
-UI -> TTECtrl : Meminta status PIN TTE
-TTECtrl -> Pengguna : Mengambil data pengguna
-TTECtrl -> Pin : Memeriksa apakah PIN sudah dibuat
-TTECtrl --> UI : Menampilkan formulir PIN TTE
+A -> B : Membuka halaman profil tanda tangan elektronik
+B -> C : Meminta profil tanda tangan pengguna
+C -> Kredensial : Mengambil status kredensial pengguna
+Kredensial --> C : Status kredensial
+C -> Sertifikat : Mengambil sertifikat pengguna
+Sertifikat --> C : Status sertifikat
+C --> B : Mengirim profil tanda tangan
+B --> A : Menampilkan status tanda tangan elektronik dan aksi yang tersedia
 
-Aktor -> UI : Mengisi PIN baru dan konfirmasi PIN
-UI -> TTECtrl : Mengirim data PIN
-TTECtrl -> Validasi : Memeriksa format dan konfirmasi PIN
-
-alt PIN valid
-  Validasi --> TTECtrl : Valid
-  TTECtrl -> Pin : Menyimpan PIN dalam bentuk aman
-  TTECtrl -> Pengguna : Memperbarui waktu pengaturan PIN
-  TTECtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan pemberitahuan PIN TTE berhasil disimpan
-else PIN tidak valid
-  Validasi --> TTECtrl : Tidak valid
-  TTECtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pesan perbaikan PIN
+A -> B : Memilih penyiapan awal, perubahan kredensial, atau pembaruan sertifikat
+B --> A : Menampilkan formulir tanda tangan elektronik
+A -> B : Mengisi kredensial dan melampirkan sertifikat bila diperlukan
+B -> C : Meminta penyimpanan profil tanda tangan elektronik
+C -> D : Memeriksa peran pengguna, kecocokan kredensial, konfirmasi, dan kelayakan sertifikat
+D --> C : Hasil pemeriksaan tanda tangan elektronik
+alt Profil tanda tangan dapat disimpan
+  C -> Kredensial : Menyimpan kredensial tanda tangan
+  Kredensial --> C : Kredensial tersimpan
+  C -> Sertifikat : Menyimpan sertifikat tanda tangan
+  Sertifikat --> C : Sertifikat tersimpan
+  C --> B : Mengirim profil terbaru
+  B --> A : Menampilkan tanda tangan elektronik siap digunakan atau berhasil diperbarui
+else Profil tanda tangan belum sesuai
+  C --> B : Mengirim alasan penyimpanan ditolak
+  B --> A : Menampilkan kredensial, sertifikat, atau peran yang perlu diperbaiki
 end
 
 @enduml
 ```
-

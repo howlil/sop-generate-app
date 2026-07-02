@@ -9,7 +9,7 @@ Sumber use case: `UC-05` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 1 |
-| Tujuan | Menggambarkan proses PJ Evaluator menambah, mengubah, atau menonaktifkan data OPD. |
+| Tujuan | Menggambarkan proses PJ Evaluator melihat, menambah, mengubah, dan menonaktifkan OPD dengan respons balik eksplisit. |
 
 ## PlantUML
 
@@ -17,34 +17,36 @@ Sumber use case: `UC-05` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Mengelola OPD
 autonumber
+autoactivate on
 
-actor "PJ Evaluator" as Aktor
-boundary "Halaman Manajemen OPD" as UI
-control "OPD Controller" as OPDCtrl
-control "Validasi Data OPD" as Validasi
-entity "Data OPD" as OPD
+actor "PJ Evaluator" as A
+boundary "Halaman Manajemen OPD" as B
+control "Pengelola Data OPD" as C
+control "Pemeriksa Aturan OPD" as D
+entity "OPD" as OPD
 
-Aktor -> UI : Membuka halaman manajemen OPD
-UI -> OPDCtrl : Meminta daftar OPD
-OPDCtrl -> OPD : Mengambil data OPD
-OPDCtrl --> UI : Menampilkan daftar OPD
+A -> B : Membuka halaman manajemen OPD
+B -> C : Meminta daftar OPD
+C -> OPD : Mengambil data OPD sesuai filter tampilan
+OPD --> C : Daftar OPD
+C --> B : Mengirim daftar OPD
+B --> A : Menampilkan daftar OPD
 
-Aktor -> UI : Memilih tambah, ubah, atau nonaktifkan OPD
-Aktor -> UI : Mengisi data OPD
-UI -> OPDCtrl : Mengirim perubahan data OPD
-OPDCtrl -> Validasi : Memeriksa kelengkapan dan duplikasi data
-
-alt Data OPD valid
-  Validasi --> OPDCtrl : Valid
-  OPDCtrl -> OPD : Menyimpan perubahan data OPD
-  OPDCtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan pemberitahuan berhasil
-else Data OPD tidak valid
-  Validasi --> OPDCtrl : Tidak valid
-  OPDCtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pesan perbaikan data
+A -> B : Memilih tambah atau ubah OPD
+B --> A : Menampilkan formulir OPD
+A -> B : Mengisi kode, nama, dan keterangan OPD
+B -> C : Meminta penyimpanan OPD
+C -> D : Memeriksa kelengkapan data, keunikan kode, dan hubungan dengan data lain
+D --> C : Hasil pemeriksaan OPD
+alt Data OPD dapat disimpan
+  C -> OPD : Menyimpan data OPD
+  OPD --> C : Data OPD tersimpan
+  C --> B : Mengirim hasil penyimpanan
+  B --> A : Menampilkan OPD berhasil disimpan
+else Data OPD belum sesuai
+  C --> B : Mengirim alasan data OPD ditolak
+  B --> A : Menampilkan bagian OPD yang perlu diperbaiki
 end
 
 @enduml
 ```
-

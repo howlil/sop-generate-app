@@ -9,7 +9,7 @@ Sumber use case: `UC-07` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Kepala OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 4 |
-| Tujuan | Menggambarkan proses menetapkan dan memperbarui Kepala OPD aktif. |
+| Tujuan | Menggambarkan proses menetapkan, mengubah, menonaktifkan, dan melihat riwayat Kepala OPD. |
 
 ## PlantUML
 
@@ -17,37 +17,49 @@ Sumber use case: `UC-07` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Mengelola Kepala OPD
 autonumber
+autoactivate on
 
-actor "PJ Evaluator" as Aktor
-boundary "Halaman Kepala OPD" as UI
-control "Kepala OPD Controller" as KepalaCtrl
-control "Validasi Kepala OPD" as Validasi
-entity "Data Pengguna" as Pengguna
-entity "Data OPD" as OPD
-entity "Riwayat Penugasan OPD" as RiwayatOPD
+actor "PJ Evaluator" as A
+boundary "Halaman Kepala OPD" as B
+control "Pengelola Kepala OPD" as C
+control "Pemeriksa Penugasan Kepala OPD" as D
+entity "Pengguna" as Pengguna
+entity "OPD" as OPD
+entity "Riwayat Penugasan" as RiwayatPenugasan
 
-Aktor -> UI : Membuka halaman Kepala OPD
-UI -> KepalaCtrl : Meminta daftar Kepala OPD
-KepalaCtrl -> Pengguna : Mengambil akun Kepala OPD
-KepalaCtrl -> OPD : Mengambil daftar OPD
-KepalaCtrl --> UI : Menampilkan daftar Kepala OPD dan OPD
+A -> B : Membuka halaman Kepala OPD
+B -> C : Meminta daftar Kepala OPD
+C -> Pengguna : Mengambil akun Kepala OPD
+Pengguna --> C : Daftar Kepala OPD
+C -> OPD : Mengambil penugasan OPD
+OPD --> C : Penugasan OPD
+C --> B : Mengirim daftar Kepala OPD
+B --> A : Menampilkan daftar Kepala OPD
 
-Aktor -> UI : Memilih OPD dan mengisi data Kepala OPD
-UI -> KepalaCtrl : Mengirim data Kepala OPD
-KepalaCtrl -> Validasi : Memeriksa data akun dan aturan satu Kepala OPD aktif
+A -> B : Memilih salah satu Kepala OPD
+B -> C : Meminta riwayat penugasan Kepala OPD
+C -> RiwayatPenugasan : Mengambil riwayat OPD pengguna tersebut
+RiwayatPenugasan --> C : Riwayat penugasan
+C --> B : Mengirim riwayat penugasan
+B --> A : Menampilkan riwayat OPD Kepala OPD
 
-alt Kepala OPD dapat disimpan
-  Validasi --> KepalaCtrl : Valid
-  KepalaCtrl -> Pengguna : Menyimpan akun Kepala OPD
-  KepalaCtrl -> RiwayatOPD : Mencatat penugasan Kepala OPD
-  KepalaCtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan pemberitahuan berhasil
-else OPD sudah memiliki Kepala OPD aktif atau data tidak valid
-  Validasi --> KepalaCtrl : Tidak valid
-  KepalaCtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pesan penolakan
+A -> B : Memilih tambah atau ubah Kepala OPD
+B --> A : Menampilkan formulir Kepala OPD
+A -> B : Mengisi identitas, jabatan, pangkat, kontak, dan OPD
+B -> C : Meminta penyimpanan Kepala OPD
+C -> D : Memeriksa identitas, peran, keunikan akun, OPD aktif, dan periode penugasan
+D --> C : Hasil pemeriksaan Kepala OPD
+alt Data Kepala OPD dapat disimpan
+  C -> Pengguna : Menyimpan akun Kepala OPD
+  Pengguna --> C : Akun Kepala OPD tersimpan
+  C -> RiwayatPenugasan : Menyimpan riwayat penugasan Kepala OPD
+  RiwayatPenugasan --> C : Riwayat penugasan tersimpan
+  C --> B : Mengirim hasil penyimpanan
+  B --> A : Menampilkan Kepala OPD berhasil disimpan
+else Data Kepala OPD belum sesuai
+  C --> B : Mengirim alasan data Kepala OPD ditolak
+  B --> A : Menampilkan bagian yang perlu diperbaiki
 end
 
 @enduml
 ```
-

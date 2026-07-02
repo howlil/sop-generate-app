@@ -9,7 +9,7 @@ Sumber use case: `UC-21` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memverifikasi Tanda Tangan Digital |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 24 |
-| Tujuan | Menjelaskan proses pengunjung mengunggah dokumen PDF untuk memeriksa validitas tanda tangan digital. |
+| Tujuan | Menjelaskan proses publik mengunggah PDF dan memverifikasi tanda tangan PKCS#7 terhadap CA internal aplikasi. |
 
 ## PlantUML
 
@@ -19,26 +19,41 @@ title Diagram Aktivitas - Memverifikasi Tanda Tangan Digital
 
 |Pengunjung|
 start
-:Membuka halaman verifikasi tanda tangan digital;
-:Mengunggah dokumen PDF;
+:Membuka halaman validasi PDF;
 
 |Sistem|
-:Memeriksa format dan ukuran berkas;
-if (Berkas dapat diperiksa?) then (Ya)
-  :Memeriksa tanda tangan digital pada PDF;
-else (Tidak)
-  :Menolak berkas;
-  :Menampilkan alasan berkas tidak dapat diperiksa;
+:Menampilkan status layanan verifikasi tanda tangan digital dan informasi CA internal;
+
+|Pengunjung|
+:Memilih file PDF untuk diperiksa;
+:Mengirim file untuk diverifikasi;
+
+|Sistem|
+:Memvalidasi tipe file dan struktur PDF;
+
+if (File bukan PDF atau rusak?) then (Ya)
+  :Menampilkan alasan file tidak dapat diverifikasi;
   stop
+else (Tidak)
 endif
 
-if (Tanda tangan digital valid?) then (Ya)
-  :Menampilkan hasil bahwa tanda tangan digital valid;
+:Mencari tanda tangan digital yang tertanam pada PDF;
+
+if (PDF memiliki tanda tangan digital?) then (Ya)
+  :Memverifikasi tanda tangan terhadap CA internal yang dikonfigurasi;
+  :Membaca subjek, penerbit, fingerprint, masa berlaku, dan status validitas;
 else (Tidak)
-  :Menampilkan hasil bahwa tanda tangan tidak valid atau tidak ditemukan;
+  :Menandai PDF tidak memiliki tanda tangan digital;
+endif
+
+if (Semua tanda tangan valid?) then (Ya)
+  :Menampilkan hasil semua tanda tangan valid;
+elseif (Ada tanda tangan tetapi tidak valid?) then (Ya)
+  :Menampilkan daftar tanda tangan yang tidak valid beserta alasannya;
+else (Tidak ada tanda tangan)
+  :Menampilkan PDF tidak memiliki tanda tangan digital;
 endif
 
 stop
 @enduml
 ```
-

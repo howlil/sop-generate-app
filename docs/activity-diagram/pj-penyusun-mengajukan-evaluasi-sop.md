@@ -9,7 +9,7 @@ Sumber use case: `UC-14` pada [`../usecase.md`](../usecase.md).
 | Use case | Mengajukan Evaluasi SOP |
 | Aktor utama | PJ Penyusun |
 | Nomor kebutuhan fungsional | 12 |
-| Tujuan | Menjelaskan proses PJ Penyusun dalam memilih SOP yang sudah siap dan mengajukannya kepada evaluator untuk dinilai. |
+| Tujuan | Menjelaskan proses PJ Penyusun membuat pengajuan evaluasi dari SOP yang sudah berstatus siap diajukan. |
 
 ## PlantUML
 
@@ -19,38 +19,44 @@ title Diagram Aktivitas - Mengajukan Evaluasi SOP
 
 |PJ Penyusun|
 start
-:Membuka halaman pengajuan evaluasi SOP;
+:Membuka halaman pengajuan evaluasi OPD sendiri;
 
 |Sistem|
-:Memeriksa hak akses PJ Penyusun;
-:Mencari SOP pada OPD pengguna yang sudah menunggu pengajuan evaluasi;
-:Menampilkan daftar SOP yang dapat diajukan;
+:Memeriksa sesi, peran PJ Penyusun, dan OPD pengguna;
+:Menampilkan daftar SOP OPD yang siap diajukan serta ringkasan pengajuan aktif;
 
 |PJ Penyusun|
-:Memilih satu atau beberapa SOP yang akan diajukan;
-:Mengisi informasi pengajuan evaluasi;
-:Mengirim pengajuan evaluasi;
+if (Ada SOP yang akan diajukan?) then (Ya)
+  :Memilih satu atau beberapa SOP;
+  :Memilih jenis pengajuan evaluasi;
+  :Mengirim pengajuan evaluasi;
+else (Tidak)
+  |Sistem|
+  :Menampilkan informasi bahwa belum ada SOP siap diajukan;
+  stop
+endif
 
 |Sistem|
-:Memeriksa kepemilikan OPD dan status setiap SOP;
-if (Masih ada pengajuan lain yang sedang diproses?) then (Ya)
-  :Menolak pengajuan baru;
-  :Menampilkan alasan bahwa pengajuan sebelumnya belum selesai;
+:Memastikan pengguna berwenang membuat pengajuan untuk OPD sendiri;
+:Memeriksa apakah OPD masih memiliki pengajuan aktif yang belum selesai;
+
+if (Masih ada pengajuan aktif?) then (Ya)
+  :Menolak pengajuan baru dan menampilkan pengajuan yang harus diselesaikan dahulu;
   stop
 else (Tidak)
 endif
 
-if (Semua SOP memenuhi syarat?) then (Ya)
-  :Membuat catatan pengajuan evaluasi;
-  :Menyiapkan lembar penilaian untuk setiap SOP;
-  :Mengubah status SOP menjadi sedang dievaluasi;
-  :Menampilkan pemberitahuan bahwa pengajuan berhasil dikirim;
+:Memvalidasi SOP yang dipilih tidak duplikat, milik OPD pengguna, dan berstatus menunggu pengajuan evaluasi;
+
+if (Semua SOP valid?) then (Ya)
+  :Membuat pengajuan evaluasi berstatus sedang dievaluasi;
+  :Membuat daftar nilai evaluasi awal untuk setiap SOP;
+  :Mengubah status setiap SOP menjadi sedang dievaluasi;
+  :Menampilkan notifikasi pengajuan berhasil dan daftar pengajuan terbaru;
 else (Tidak)
-  :Menolak pengajuan;
-  :Menampilkan daftar SOP yang belum memenuhi syarat;
+  :Menampilkan daftar SOP yang tidak valid, beda OPD, duplikat, atau belum siap diajukan;
 endif
 
 stop
 @enduml
 ```
-

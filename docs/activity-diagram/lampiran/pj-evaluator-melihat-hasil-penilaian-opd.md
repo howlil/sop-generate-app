@@ -9,7 +9,7 @@ Sumber use case: `UC-04` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat Hasil Penilaian OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 20 |
-| Tujuan | Menjelaskan proses PJ Evaluator melihat rekap hasil penilaian SOP pada OPD. |
+| Tujuan | Menjelaskan proses PJ Evaluator melihat grafik dan ringkasan evaluasi tahunan per OPD. |
 
 ## PlantUML
 
@@ -19,23 +19,23 @@ title Diagram Aktivitas - Melihat Hasil Penilaian OPD
 
 |PJ Evaluator|
 start
-:Membuka halaman laporan hasil penilaian OPD;
-:Memilih periode atau filter laporan;
+:Membuka halaman grafik evaluasi;
+:Memilih tahun, OPD, atau filter laporan;
 
 |Sistem|
-:Memeriksa hak akses PJ Evaluator;
-:Mengambil data hasil evaluasi SOP;
-if (Data hasil penilaian tersedia?) then (Ya)
-  :Mengolah data menjadi ringkasan dan grafik;
-  :Menampilkan grafik serta tabel hasil penilaian;
+:Memeriksa sesi dan peran PJ Evaluator;
+:Memvalidasi filter tahun dan OPD;
+:Mengolah data pengajuan selesai, nilai OPD, tanggal evaluasi, dan status terkait;
+
+if (Data tersedia?) then (Ya)
+  :Menampilkan grafik tahunan, tabel OPD, ringkasan nilai, dan tren evaluasi;
 else (Tidak)
-  :Menampilkan informasi bahwa data penilaian belum tersedia;
+  :Menampilkan informasi belum ada data evaluasi untuk filter yang dipilih;
 endif
 
 |PJ Evaluator|
-:Meninjau hasil penilaian OPD;
+:Meninjau hasil penilaian dan membandingkan capaian OPD;
 
 stop
 @enduml
 ```
-

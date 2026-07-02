@@ -9,7 +9,7 @@ Sumber use case: `UC-04` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Melihat Hasil Penilaian OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 20 |
-| Tujuan | Menggambarkan proses PJ Evaluator melihat rekap dan grafik hasil penilaian SOP pada OPD. |
+| Tujuan | Menggambarkan proses melihat grafik evaluasi tahunan OPD dari rekap hasil evaluasi. |
 
 ## PlantUML
 
@@ -17,31 +17,31 @@ Sumber use case: `UC-04` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Melihat Hasil Penilaian OPD
 autonumber
+autoactivate on
 
-actor "PJ Evaluator" as Aktor
-boundary "Halaman Laporan Evaluasi" as UI
-control "Laporan Evaluasi Controller" as LaporanCtrl
-control "Pengolah Grafik Evaluasi" as GrafikCtrl
+actor "PJ Evaluator" as A
+boundary "Halaman Grafik Evaluasi" as B
+control "Pengelola Rekap Evaluasi" as C
+control "Pemeriksa Cakupan Laporan" as D
 entity "Pengajuan Evaluasi" as Pengajuan
-entity "Nilai Evaluasi" as Nilai
+entity "OPD" as OPD
+entity "Nilai OPD" as NilaiOPD
 
-Aktor -> UI : Membuka halaman laporan hasil penilaian OPD
-Aktor -> UI : Memilih periode atau filter laporan
-UI -> LaporanCtrl : Meminta data hasil penilaian
-LaporanCtrl -> Pengajuan : Mengambil pengajuan selesai atau dalam tahap akhir
-LaporanCtrl -> Nilai : Mengambil nilai evaluasi OPD
-LaporanCtrl -> GrafikCtrl : Mengolah data menjadi ringkasan grafik
-
-alt Data penilaian tersedia
-  GrafikCtrl --> LaporanCtrl : Data grafik dan tabel
-  LaporanCtrl --> UI : Mengirim hasil laporan
-  UI --> Aktor : Menampilkan grafik dan tabel penilaian OPD
-else Data belum tersedia
-  GrafikCtrl --> LaporanCtrl : Data kosong
-  LaporanCtrl --> UI : Mengirim hasil kosong
-  UI --> Aktor : Menampilkan informasi data belum tersedia
-end
+A -> B : Membuka halaman grafik evaluasi
+B --> A : Menampilkan pilihan tahun, OPD, dan jenis rekap
+A -> B : Memilih parameter penilaian OPD
+B -> C : Meminta rekap hasil evaluasi OPD
+C -> D : Memeriksa kewenangan PJ Evaluator melihat rekap
+D --> C : Hasil pemeriksaan cakupan laporan
+C -> Pengajuan : Mengambil pengajuan selesai sesuai parameter
+Pengajuan --> C : Pengajuan selesai
+C -> NilaiOPD : Mengambil nilai OPD
+NilaiOPD --> C : Nilai OPD
+C -> OPD : Mengambil identitas OPD
+OPD --> C : Identitas OPD
+C -> C : Menyusun ringkasan, tren, dan peringkat penilaian
+C --> B : Mengirim data grafik dan tabel rekap
+B --> A : Menampilkan grafik hasil penilaian OPD dan ringkasannya
 
 @enduml
 ```
-

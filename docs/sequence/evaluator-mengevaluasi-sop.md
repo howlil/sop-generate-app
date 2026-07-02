@@ -8,8 +8,8 @@ Sumber use case: `UC-11` pada [`../usecase.md`](../usecase.md).
 | :--- | :--- |
 | Use case | Mengevaluasi SOP |
 | Aktor utama | Evaluator |
-| Nomor kebutuhan fungsional | 15 |
-| Tujuan | Menggambarkan proses evaluator memeriksa SOP, menyimpan hasil penilaian, dan menyelesaikan evaluasi pengajuan. |
+| Nomor kebutuhan fungsional | 15, 16 |
+| Tujuan | Menggambarkan proses evaluator membuka ruang kerja, menilai SOP dengan pemeriksaan perubahan data, menyimpan catatan resmi, membuka tindak lanjut, dan menyelesaikan pengajuan evaluasi. |
 
 ## PlantUML
 
@@ -17,65 +17,103 @@ Sumber use case: `UC-11` pada [`../usecase.md`](../usecase.md).
 @startuml
 title Sequence Diagram - Mengevaluasi SOP
 autonumber
+autoactivate on
 
-actor "Evaluator" as Aktor
-boundary "Halaman Evaluasi SOP" as UI
-control "Evaluasi Controller" as EvalCtrl
-control "Validasi Penilaian" as Validasi
+actor "Evaluator" as A
+boundary "Ruang Kerja Evaluasi SOP" as B
+control "Pengelola Evaluasi SOP" as C
+control "Pemeriksa Penilaian" as D
 entity "Pengajuan Evaluasi" as Pengajuan
-entity "Detail SOP" as Detail
+entity "Detail SOP" as DetailSOP
 entity "Nilai Evaluasi" as Nilai
-entity "Catatan Evaluasi" as Catatan
-entity "Log Penilaian" as Log
+entity "Riwayat Penilaian" as RiwayatNilai
 
-Aktor -> UI : Membuka halaman evaluasi SOP
-UI -> EvalCtrl : Meminta daftar pengajuan yang perlu dievaluasi
-EvalCtrl -> Pengajuan : Mengambil pengajuan berstatus sedang dievaluasi
-EvalCtrl --> UI : Menampilkan daftar pengajuan
+A -> B : Membuka ruang kerja evaluasi
+B -> C : Meminta daftar pengajuan yang dapat dinilai
+C -> D : Memeriksa kewenangan evaluator
+D --> C : Hasil pemeriksaan kewenangan
+C -> Pengajuan : Mengambil pengajuan dan OPD terkait
+Pengajuan --> C : Daftar pengajuan evaluasi
+C -> Nilai : Mengambil progres penilaian
+Nilai --> C : Progres penilaian
+C --> B : Mengirim daftar pengajuan
+B --> A : Menampilkan pengajuan yang dapat dinilai
 
-Aktor -> UI : Memilih pengajuan dan SOP yang akan dinilai
-UI -> EvalCtrl : Meminta detail SOP dan data penilaian
-EvalCtrl -> Detail : Mengambil dokumen SOP
-EvalCtrl -> Nilai : Mengambil nilai evaluasi sebelumnya
-EvalCtrl --> UI : Menampilkan dokumen dan form penilaian
+A -> B : Memilih pengajuan evaluasi
+B -> C : Meminta isi pengajuan
+C -> Pengajuan : Mengambil ringkasan pengajuan
+Pengajuan --> C : Ringkasan pengajuan
+C -> DetailSOP : Mengambil daftar SOP dalam pengajuan
+DetailSOP --> C : Daftar SOP dalam pengajuan
+C -> Nilai : Mengambil penilaian terkini
+Nilai --> C : Penilaian terkini
+C --> B : Mengirim isi pengajuan
+B --> A : Menampilkan daftar SOP dalam pengajuan
 
-Aktor -> UI : Mengisi hasil penilaian SOP
-UI -> EvalCtrl : Mengirim hasil penilaian
-EvalCtrl -> Validasi : Memeriksa kelengkapan penilaian dan versi data
-
-alt SOP perlu perbaikan
-  Validasi --> EvalCtrl : Perlu catatan perbaikan
-  EvalCtrl --> UI : Meminta catatan perbaikan
-  Aktor -> UI : Mengisi catatan perbaikan
-  UI -> EvalCtrl : Mengirim catatan perbaikan
-  EvalCtrl -> Catatan : Menyimpan catatan evaluasi
-  EvalCtrl -> Nilai : Menyimpan hasil perlu perbaikan
-  EvalCtrl -> Detail : Mengubah status SOP menjadi revisi dari evaluator
-  EvalCtrl -> Log : Mencatat riwayat penilaian
-  EvalCtrl --> UI : Mengirim hasil evaluasi tersimpan
-  UI --> Aktor : Menampilkan SOP perlu ditindaklanjuti
-else SOP sudah sesuai
-  Validasi --> EvalCtrl : Penilaian valid
-  EvalCtrl -> Nilai : Menyimpan hasil sesuai
-  EvalCtrl -> Log : Mencatat riwayat penilaian
-  EvalCtrl --> UI : Mengirim hasil penilaian tersimpan
-  UI --> Aktor : Menampilkan hasil bahwa SOP sesuai
+A -> B : Memilih SOP untuk diperiksa
+B -> C : Meminta dokumen SOP untuk dinilai
+C -> D : Memeriksa apakah SOP termasuk dalam pengajuan dan boleh dinilai
+D --> C : Hasil pemeriksaan akses dokumen
+alt Dokumen dapat dibuka
+  C -> DetailSOP : Mengambil dokumen SOP dan diagram
+  DetailSOP --> C : Dokumen SOP dan diagram
+  C -> Nilai : Mengambil catatan dan nilai
+  Nilai --> C : Catatan dan nilai
+  C -> RiwayatNilai : Mengambil riwayat penilaian
+  RiwayatNilai --> C : Riwayat penilaian
+  C --> B : Mengirim dokumen dan formulir penilaian
+  B --> A : Menampilkan dokumen SOP, catatan, riwayat nilai, dan pilihan hasil penilaian
+else Dokumen tidak dapat dibuka
+  C --> B : Mengirim alasan dokumen tidak dapat dinilai
+  B --> A : Menampilkan informasi akses ditolak
 end
 
-opt Evaluator menyelesaikan evaluasi pengajuan
-  Aktor -> UI : Memilih aksi selesai evaluasi
-  UI -> EvalCtrl : Mengirim permintaan penyelesaian pengajuan
-  EvalCtrl -> Nilai : Memeriksa seluruh hasil penilaian
-  alt Semua SOP sudah sesuai
-    EvalCtrl -> Pengajuan : Mengubah status menjadi selesai dievaluasi
-    EvalCtrl --> UI : Mengirim status evaluasi selesai
-    UI --> Aktor : Menampilkan pemberitahuan evaluasi selesai
-  else Masih ada SOP belum sesuai
-    EvalCtrl --> UI : Mengirim daftar SOP yang belum selesai
-    UI --> Aktor : Menampilkan SOP yang masih perlu dinilai atau diperbaiki
+A -> B : Memilih hasil sesuai atau perlu perbaikan dan mengisi catatan bila diperlukan
+B --> A : Menampilkan ringkasan penilaian sebelum disimpan
+B -> C : Meminta penyimpanan hasil penilaian
+C -> D : Memeriksa kewenangan, keadaan pengajuan, kelengkapan catatan, dan perubahan data terakhir
+D --> C : Hasil pemeriksaan penilaian
+alt Catatan wajib belum diisi atau data berubah
+  C --> B : Mengirim alasan penilaian belum dapat disimpan
+  B --> A : Menampilkan catatan yang perlu diisi atau instruksi memuat ulang data
+else Penilaian dapat disimpan
+  C -> Nilai : Menyimpan hasil penilaian
+  Nilai --> C : Penilaian tersimpan
+  C -> RiwayatNilai : Mencatat riwayat penilaian
+  RiwayatNilai --> C : Riwayat penilaian tercatat
+  alt Hasil perlu perbaikan
+    C -> DetailSOP : Menandai SOP perlu revisi
+    DetailSOP --> C : Keadaan revisi tersimpan
+    C -> Nilai : Membuka tindak lanjut penyusun
+    Nilai --> C : Tindak lanjut terbuka
+  else Hasil sesuai
+    C -> Nilai : Menutup tindak lanjut yang sudah terpenuhi bila ada
+    Nilai --> C : Keadaan penilaian tersimpan
+  end
+  C --> B : Mengirim hasil penilaian terbaru
+  B --> A : Menampilkan hasil tersimpan dan keadaan SOP terbaru
+end
+
+opt Menyelesaikan pengajuan evaluasi
+  A -> B : Mengisi nomor berita acara, nilai OPD bila diperlukan, lalu memilih selesai evaluasi
+  B --> A : Menampilkan konfirmasi penyelesaian evaluasi
+  B -> C : Meminta penyelesaian pengajuan evaluasi
+  C -> Nilai : Mengambil seluruh hasil penilaian dalam pengajuan
+  Nilai --> C : Rangkuman nilai per SOP
+  C -> D : Memeriksa seluruh SOP sudah sesuai dan data berita acara sudah lengkap
+  D --> C : Hasil pemeriksaan penyelesaian
+  alt Semua syarat terpenuhi
+    C -> Pengajuan : Menandai pengajuan selesai dievaluasi
+    Pengajuan --> C : Keadaan pengajuan tersimpan
+    C -> DetailSOP : Menandai SOP menunggu tanda tangan berita acara
+    DetailSOP --> C : Keadaan SOP tersimpan
+    C --> B : Mengirim hasil penyelesaian evaluasi
+    B --> A : Menampilkan pengajuan siap ditandatangani PJ Evaluator
+  else Masih ada syarat belum terpenuhi
+    C --> B : Mengirim daftar penilaian atau data yang belum lengkap
+    B --> A : Menampilkan bagian yang harus diperbaiki sebelum pengajuan selesai
   end
 end
 
 @enduml
 ```
-

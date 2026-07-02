@@ -9,7 +9,7 @@ Sumber use case: `UC-18` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Peraturan SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 5 |
-| Tujuan | Menggambarkan proses pengelolaan peraturan sebagai dasar hukum SOP. |
+| Tujuan | Menggambarkan pengelolaan master peraturan dan penautannya sebagai dasar hukum pada SOP. |
 
 ## PlantUML
 
@@ -17,45 +17,60 @@ Sumber use case: `UC-18` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Mengelola Peraturan SOP
 autonumber
+autoactivate on
 
-actor "PJ Penyusun / Penyusun" as Aktor
-boundary "Halaman Peraturan SOP" as UI
-control "Peraturan Controller" as PeraturanCtrl
-control "Validasi Peraturan" as Validasi
-entity "Data Peraturan" as Peraturan
-entity "Relasi OPD Peraturan" as OPDPeraturan
-entity "Dasar Hukum SOP" as DasarHukum
+actor "PJ Penyusun / Penyusun" as A
+boundary "Halaman Peraturan / Dasar Hukum" as B
+control "Pengelola Peraturan SOP" as C
+control "Pemeriksa Pemakaian Peraturan" as D
+entity "Peraturan" as Peraturan
+entity "OPD" as OPD
+entity "Dasar Hukum" as DasarHukum
 
-Aktor -> UI : Membuka halaman peraturan SOP
-UI -> PeraturanCtrl : Meminta daftar peraturan
-PeraturanCtrl -> Peraturan : Mengambil data peraturan
-PeraturanCtrl -> OPDPeraturan : Mengambil peraturan yang terhubung dengan OPD
-PeraturanCtrl --> UI : Menampilkan daftar peraturan
+A -> B : Membuka halaman peraturan atau tab dasar hukum SOP
+B --> A : Menampilkan proses pemuatan daftar peraturan
+B -> C : Meminta daftar peraturan
+C -> Peraturan : Mengambil peraturan
+Peraturan --> C : Daftar peraturan
+C -> OPD : Mengambil OPD pemakai peraturan
+OPD --> C : OPD pemakai peraturan
+C --> B : Mengirim daftar peraturan
+B --> A : Menampilkan daftar peraturan
 
-Aktor -> UI : Mengisi atau memilih peraturan yang digunakan
-UI -> PeraturanCtrl : Mengirim data peraturan
-PeraturanCtrl -> Validasi : Memeriksa kelengkapan dan kemungkinan duplikasi
+A -> B : Memilih tambah, ubah, atau hapus peraturan
+B --> A : Menampilkan formulir atau konfirmasi peraturan
+A -> B : Mengisi nama, nomor, tahun, dan tentang peraturan
+B -> C : Meminta perubahan data peraturan
+C -> D : Memeriksa kelengkapan, keunikan nomor dan tahun, serta pemakaian pada SOP
+D --> C : Hasil pemeriksaan peraturan
+alt Peraturan dapat diproses
+  C -> Peraturan : Menyimpan, memperbarui, atau menghapus peraturan
+  Peraturan --> C : Data peraturan terbaru
+  C --> B : Mengirim hasil perubahan
+  B --> A : Menampilkan peraturan berhasil diproses
+else Peraturan tidak dapat diproses
+  C --> B : Mengirim alasan perubahan ditolak
+  B --> A : Menampilkan duplikasi atau relasi pemakaian yang menghalangi
+end
 
-alt Peraturan baru valid
-  Validasi --> PeraturanCtrl : Valid
-  PeraturanCtrl -> Peraturan : Menyimpan data peraturan
-  PeraturanCtrl -> OPDPeraturan : Menghubungkan peraturan dengan OPD
-  opt Digunakan pada SOP tertentu
-    PeraturanCtrl -> DasarHukum : Menghubungkan peraturan sebagai dasar hukum SOP
+opt Menautkan peraturan sebagai dasar hukum SOP
+  A -> B : Memilih peraturan sebagai dasar hukum SOP
+  B --> A : Menampilkan daftar dasar hukum terpilih
+  B -> C : Meminta penyimpanan dasar hukum SOP
+  C -> D : Memeriksa dokumen SOP dapat diubah dan peraturan tersedia
+  D --> C : Hasil pemeriksaan dasar hukum
+  alt Dasar hukum dapat disimpan
+    C -> DasarHukum : Menyimpan relasi dasar hukum
+    DasarHukum --> C : Dasar hukum tersimpan
+    C -> OPD : Mencatat pemakaian peraturan oleh OPD
+    OPD --> C : Pemakaian peraturan tercatat
+    C --> B : Mengirim dasar hukum terbaru
+    B --> A : Menampilkan dasar hukum pada pratinjau SOP
+  else Dasar hukum ditolak
+    C --> B : Mengirim alasan peraturan tidak dapat dipakai
+    B --> A : Menampilkan peraturan yang harus diganti
   end
-  PeraturanCtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan pemberitahuan berhasil
-else Peraturan sudah ada
-  Validasi --> PeraturanCtrl : Gunakan data yang sudah tersedia
-  PeraturanCtrl -> OPDPeraturan : Menghubungkan peraturan yang sudah ada dengan OPD
-  PeraturanCtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan peraturan berhasil digunakan
-else Data tidak valid
-  Validasi --> PeraturanCtrl : Tidak valid
-  PeraturanCtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pesan perbaikan data
 end
 
 @enduml
 ```
-

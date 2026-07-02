@@ -9,7 +9,7 @@ Sumber use case: `UC-16` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Inisiasi Dokumen SOP |
 | Aktor utama | PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 10 |
-| Tujuan | Menjelaskan proses pengguna membuat wadah awal dokumen SOP sebelum draft disusun. |
+| Tujuan | Menjelaskan pembuatan SOP baru atau versi baru sebelum dokumen disusun pada workbench. |
 
 ## PlantUML
 
@@ -19,28 +19,46 @@ title Diagram Aktivitas - Inisiasi Dokumen SOP
 
 |PJ Penyusun / Penyusun|
 start
-:Membuka halaman pembuatan SOP baru;
+:Membuka halaman manajemen SOP;
 
 |Sistem|
-:Memeriksa hak akses pengguna pada OPD;
-:Menampilkan formulir data awal SOP;
+:Memeriksa sesi, peran penyusun, dan OPD pengguna;
+:Menampilkan daftar SOP versi terbaru dan aksi tambah SOP atau buat versi baru;
 
 |PJ Penyusun / Penyusun|
-:Mengisi judul, nomor, dan informasi awal SOP;
-:Mengirim data pembuatan SOP;
+if (Membuat SOP baru?) then (Ya)
+  :Memilih tambah SOP;
+  :Mengisi judul, nomor SOP, dan nama lembaga awal bila ada;
+  :Menyimpan SOP baru;
 
-|Sistem|
-:Memeriksa kelengkapan data awal SOP;
-:Memeriksa apakah nomor SOP sudah digunakan;
-if (Data awal dapat digunakan?) then (Ya)
-  :Membuat dokumen SOP baru sebagai draft;
-  :Menampilkan halaman penyusunan draft SOP;
+  |Sistem|
+  :Memvalidasi judul, nomor SOP, OPD pengguna, dan keunikan nomor SOP;
+
+  if (Data awal valid?) then (Ya)
+    :Membuat header SOP dan detail versi pertama berstatus draft;
+    :Mencatat pembuat dokumen;
+    :Membuka workbench detail SOP baru;
+  else (Tidak)
+    :Menampilkan error nomor SOP duplikat atau field wajib;
+    stop
+  endif
 else (Tidak)
-  :Menolak pembuatan SOP;
-  :Menampilkan alasan, misalnya nomor SOP sudah digunakan;
+  :Memilih buat versi baru dari SOP berlaku;
+  :Mengonfirmasi pembuatan revisi;
+
+  |Sistem|
+  :Memvalidasi OPD, sumber SOP berlaku, dan memastikan tidak ada revisi berjalan;
+
+  if (Versi baru dapat dibuat?) then (Ya)
+    :Menyalin isi SOP berlaku ke versi baru;
+    :Menghubungkan versi baru dengan versi sumber;
+    :Menetapkan status awal sebagai draft;
+    :Membuka workbench versi baru;
+  else (Tidak)
+    :Menampilkan alasan seperti belum ada versi berlaku atau revisi masih berjalan;
+  endif
 endif
 
 stop
 @enduml
 ```
-

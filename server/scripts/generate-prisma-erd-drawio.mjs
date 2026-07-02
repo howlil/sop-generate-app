@@ -179,6 +179,10 @@ function toDbType(field) {
     const size = attrs.match(/@db\.VarChar\((\d+)\)/)?.[1] ?? '191';
     return `VARCHAR(${size})${field.isRequired ? '' : ' NULL'}`;
   }
+  if (attrs.includes('@db.Char')) {
+    const size = attrs.match(/@db\.Char\((\d+)\)/)?.[1] ?? '191';
+    return `CHAR(${size})${field.isRequired ? '' : ' NULL'}`;
+  }
   if (attrs.includes('@db.LongText')) return `LONGTEXT${field.isRequired ? '' : ' NULL'}`;
   if (attrs.includes('@db.Text')) return `TEXT${field.isRequired ? '' : ' NULL'}`;
   if (attrs.includes('@db.DateTime')) {

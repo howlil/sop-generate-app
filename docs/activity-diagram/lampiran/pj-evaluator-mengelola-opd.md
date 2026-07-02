@@ -9,7 +9,7 @@ Sumber use case: `UC-05` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 1 |
-| Tujuan | Menjelaskan proses PJ Evaluator menambah, mengubah, atau menonaktifkan data OPD. |
+| Tujuan | Menjelaskan proses PJ Evaluator melihat, menambah, mengubah, dan menonaktifkan data OPD. |
 
 ## PlantUML
 
@@ -19,28 +19,33 @@ title Diagram Aktivitas - Mengelola OPD
 
 |PJ Evaluator|
 start
-:Membuka halaman pengelolaan OPD;
+:Membuka halaman manajemen OPD;
 
 |Sistem|
-:Memeriksa hak akses PJ Evaluator;
-:Menampilkan daftar OPD;
+:Memeriksa sesi dan peran PJ Evaluator;
+:Menampilkan daftar OPD aktif, pencarian, dan aksi tambah, ubah, atau nonaktifkan;
 
 |PJ Evaluator|
-:Memilih tambah, ubah, atau nonaktifkan OPD;
-:Mengisi atau memperbarui data OPD;
-:Menyimpan perubahan;
+:Memilih aksi tambah, ubah, atau nonaktifkan OPD;
+
+if (Aksi tambah atau ubah?) then (Ya)
+  :Mengisi atau memperbarui nama OPD;
+else (Nonaktifkan)
+  :Mengonfirmasi penonaktifan OPD;
+endif
+
+:Menyimpan aksi OPD;
 
 |Sistem|
-:Memeriksa kelengkapan dan kesesuaian data OPD;
-if (Data OPD valid?) then (Ya)
-  :Menyimpan perubahan data OPD;
-  :Menampilkan pemberitahuan berhasil;
+:Memvalidasi kewenangan, nama OPD, keunikan data, dan relasi yang masih memakai OPD;
+
+if (Data valid dan aturan terpenuhi?) then (Ya)
+  :Menyimpan OPD baru, memperbarui nama, atau menonaktifkan OPD;
+  :Menampilkan daftar OPD terbaru dan notifikasi berhasil;
 else (Tidak)
-  :Menolak penyimpanan;
-  :Menampilkan alasan data belum sesuai;
+  :Menampilkan alasan kegagalan seperti data duplikat, tidak ditemukan, atau masih digunakan;
 endif
 
 stop
 @enduml
 ```
-

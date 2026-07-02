@@ -9,7 +9,7 @@ Sumber use case: `UC-07` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Kepala OPD |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 4 |
-| Tujuan | Menjelaskan proses PJ Evaluator menetapkan atau memperbarui Kepala OPD yang aktif. |
+| Tujuan | Menjelaskan proses PJ Evaluator menetapkan Kepala OPD aktif, memperbarui data, dan melihat riwayat penugasan. |
 
 ## PlantUML
 
@@ -19,29 +19,37 @@ title Diagram Aktivitas - Mengelola Kepala OPD
 
 |PJ Evaluator|
 start
-:Membuka halaman pengelolaan Kepala OPD;
+:Membuka tab Kepala OPD;
 
 |Sistem|
-:Memeriksa hak akses PJ Evaluator;
-:Menampilkan daftar Kepala OPD dan OPD terkait;
+:Memeriksa sesi dan peran PJ Evaluator;
+:Menampilkan daftar Kepala OPD, OPD aktif, status penugasan, dan riwayat penugasan;
 
 |PJ Evaluator|
-:Memilih OPD yang akan diatur;
-:Mengisi atau memperbarui data Kepala OPD;
+:Memilih tambah, ubah, nonaktifkan, atau lihat riwayat Kepala OPD;
+
+if (Melihat riwayat?) then (Ya)
+  |Sistem|
+  :Menampilkan riwayat penugasan Kepala OPD pada OPD terkait;
+  stop
+else (Mengelola data)
+endif
+
+|PJ Evaluator|
+:Memilih OPD dan mengisi identitas Kepala OPD;
 :Menyimpan perubahan;
 
 |Sistem|
-:Memeriksa kelengkapan data akun;
-:Memeriksa apakah OPD sudah memiliki Kepala OPD aktif;
-if (Data dapat disimpan?) then (Ya)
-  :Menyimpan data Kepala OPD;
-  :Menampilkan pemberitahuan berhasil;
+:Memvalidasi field akun, email atau NIP unik, OPD aktif, dan aturan satu Kepala OPD aktif per OPD;
+
+if (Aturan terpenuhi?) then (Ya)
+  :Menyimpan akun Kepala OPD;
+  :Memperbarui penugasan aktif dan riwayat OPD pengguna;
+  :Menampilkan daftar terbaru dan notifikasi berhasil;
 else (Tidak)
-  :Menolak penyimpanan;
-  :Menampilkan alasan, misalnya Kepala OPD aktif sudah ada;
+  :Menampilkan alasan seperti OPD sudah memiliki Kepala OPD aktif atau identitas duplikat;
 endif
 
 stop
 @enduml
 ```
-

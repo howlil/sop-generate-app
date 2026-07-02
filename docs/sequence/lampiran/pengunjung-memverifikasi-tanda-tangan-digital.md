@@ -9,7 +9,7 @@ Sumber use case: `UC-21` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memverifikasi Tanda Tangan Digital |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 24 |
-| Tujuan | Menggambarkan proses pengunjung mengunggah PDF dan menerima hasil verifikasi tanda tangan digital. |
+| Tujuan | Menggambarkan proses pengunjung memeriksa kesiapan layanan, memilih dokumen digital, dan menerima hasil pemeriksaan tanda tangan digital. |
 
 ## PlantUML
 
@@ -17,37 +17,45 @@ Sumber use case: `UC-21` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Memverifikasi Tanda Tangan Digital
 autonumber
+autoactivate on
 
-actor "Pengunjung" as Aktor
-boundary "Halaman Verifikasi PDF" as UI
-control "Verifikasi PDF Controller" as PdfCtrl
-control "Pemeriksa Tanda Tangan Digital" as VerifPdf
-entity "Berkas PDF" as PDF
-entity "Hasil Verifikasi PDF" as Hasil
+actor "Pengunjung" as A
+boundary "Halaman Validasi Dokumen" as B
+control "Pengelola Verifikasi Dokumen" as C
+control "Pemeriksa Tanda Tangan Digital" as D
+entity "Berkas Dokumen" as BerkasDokumen
+entity "Hasil Verifikasi" as HasilVerifikasi
 
-Aktor -> UI : Membuka halaman verifikasi PDF
-Aktor -> UI : Mengunggah dokumen PDF
-UI -> PdfCtrl : Mengirim berkas PDF
-PdfCtrl -> PDF : Menerima dan memeriksa format berkas
+A -> B : Membuka halaman verifikasi dokumen
+B -> C : Meminta status layanan verifikasi
+C --> B : Mengirim kesiapan layanan verifikasi
+B --> A : Menampilkan status layanan verifikasi
 
-alt Berkas dapat diperiksa
-  PdfCtrl -> VerifPdf : Memeriksa tanda tangan digital PDF
-  VerifPdf -> Hasil : Menyimpan ringkasan hasil pemeriksaan
-  alt Tanda tangan valid
-    VerifPdf --> PdfCtrl : Hasil valid
-    PdfCtrl --> UI : Mengirim hasil tanda tangan valid
-    UI --> Aktor : Menampilkan hasil valid
-  else Tanda tangan tidak valid atau tidak ditemukan
-    VerifPdf --> PdfCtrl : Hasil tidak valid
-    PdfCtrl --> UI : Mengirim hasil tidak valid
-    UI --> Aktor : Menampilkan hasil tidak valid atau tidak ditemukan
-  end
-else Berkas tidak dapat diperiksa
-  PDF --> PdfCtrl : Format atau ukuran tidak sesuai
-  PdfCtrl --> UI : Mengirim alasan penolakan berkas
-  UI --> Aktor : Menampilkan pesan berkas tidak dapat diperiksa
+A -> B : Memilih dokumen untuk diverifikasi
+B --> A : Menampilkan nama dokumen dan pemeriksaan awal ukuran serta jenis berkas
+B -> BerkasDokumen : Membaca berkas dokumen yang dipilih
+BerkasDokumen --> B : Isi dokumen siap diperiksa
+B --> A : Menampilkan proses verifikasi
+B -> C : Meminta verifikasi tanda tangan digital
+C -> D : Memeriksa keberadaan, keutuhan, penerbit, subjek, dan masa berlaku tanda tangan
+D --> C : Hasil pemeriksaan tanda tangan digital
+alt Dokumen rusak atau tidak dapat dibaca
+  C --> B : Mengirim alasan dokumen tidak dapat diperiksa
+  B --> A : Menampilkan dokumen tidak dapat diverifikasi
+else Dokumen tidak memiliki tanda tangan digital
+  C --> B : Mengirim hasil tidak ada tanda tangan digital
+  B --> A : Menampilkan dokumen tidak memiliki tanda tangan digital
+else Tanda tangan digital valid
+  C -> HasilVerifikasi : Menyusun ringkasan hasil verifikasi valid
+  HasilVerifikasi --> C : Ringkasan hasil valid
+  C --> B : Mengirim hasil tanda tangan valid
+  B --> A : Menampilkan tanda tangan digital valid
+else Tanda tangan digital tidak valid
+  C -> HasilVerifikasi : Menyusun ringkasan hasil verifikasi tidak valid
+  HasilVerifikasi --> C : Ringkasan hasil tidak valid
+  C --> B : Mengirim detail tanda tangan yang bermasalah
+  B --> A : Menampilkan tanda tangan digital tidak valid beserta alasannya
 end
 
 @enduml
 ```
-

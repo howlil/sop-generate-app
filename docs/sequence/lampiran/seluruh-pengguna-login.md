@@ -9,7 +9,7 @@ Sumber use case: `UC-01` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Login |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | 7 |
-| Tujuan | Menggambarkan proses pengguna masuk ke sistem dan memperoleh sesi sesuai peran. |
+| Tujuan | Menggambarkan proses pengguna masuk ke sistem, pencatatan sesi pengguna, dan pengarahan halaman sesuai peran. |
 
 ## PlantUML
 
@@ -17,39 +17,34 @@ Sumber use case: `UC-01` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Login
 autonumber
+autoactivate on
 
-actor "Pengguna" as Aktor
-boundary "Halaman Login" as UI
-control "Auth Controller" as AuthCtrl
-control "Layanan Autentikasi" as AuthService
-entity "Data Pengguna" as Pengguna
+actor "Pengguna" as A
+boundary "Halaman Login" as B
+control "Pengelola Autentikasi" as C
+control "Pemeriksa Identitas dan Peran" as D
+entity "Pengguna" as Pengguna
 entity "Sesi Pengguna" as Sesi
 
-Aktor -> UI : Mengisi identitas akun dan kata sandi
-UI -> AuthCtrl : Mengirim data login
-AuthCtrl -> AuthService : Memvalidasi data login
-AuthService -> Pengguna : Mencari akun aktif berdasarkan identitas
-
-alt Akun ditemukan
-  Pengguna --> AuthService : Data akun dan hash kata sandi
-  AuthService -> AuthService : Memeriksa kecocokan kata sandi
-  alt Kata sandi sesuai
-    AuthService -> Sesi : Membuat sesi pengguna
-    AuthService --> AuthCtrl : Login berhasil dan data peran
-    AuthCtrl --> UI : Mengirim sesi dan tujuan halaman
-    UI --> Aktor : Menampilkan halaman utama sesuai peran
-  else Kata sandi salah
-    AuthService --> AuthCtrl : Login ditolak
-    AuthCtrl --> UI : Mengirim pesan kredensial tidak sesuai
-    UI --> Aktor : Menampilkan pesan login gagal
-  end
-else Akun tidak ditemukan atau tidak aktif
-  Pengguna --> AuthService : Tidak ada akun aktif
-  AuthService --> AuthCtrl : Login ditolak
-  AuthCtrl --> UI : Mengirim pesan login gagal
-  UI --> Aktor : Menampilkan pesan login gagal
+A -> B : Membuka halaman login
+B --> A : Menampilkan formulir identitas dan kata sandi
+A -> B : Mengisi identitas dan kata sandi
+B --> A : Menampilkan masukan yang siap dikirim
+A -> B : Memilih masuk
+B -> C : Meminta proses masuk pengguna
+C -> Pengguna : Mencari akun aktif berdasarkan identitas
+Pengguna --> C : Informasi akun pengguna
+C -> D : Memeriksa kecocokan kata sandi, status akun, dan peran
+D --> C : Hasil pemeriksaan identitas
+alt Identitas tidak sesuai atau akun tidak aktif
+  C --> B : Mengirim alasan login ditolak
+  B --> A : Menampilkan pesan login gagal
+else Identitas sesuai
+  C -> Sesi : Mencatat sesi pengguna baru
+  Sesi --> C : Sesi pengguna tercatat
+  C --> B : Mengirim profil dan tujuan halaman sesuai peran
+  B --> A : Mengarahkan pengguna ke halaman utama sesuai peran
 end
 
 @enduml
 ```
-

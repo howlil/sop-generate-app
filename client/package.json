@@ -8,7 +8,15 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:critical": "playwright test auth.spec.ts role-access.spec.ts sop-authoring.spec.ts evaluasi-workflow.spec.ts tte-pengesahan.spec.ts arsip-public.spec.ts pdf-verification.spec.ts --project=chromium",
+    "test:e2e:all": "playwright test --project=chromium",
+    "test:e2e:all-browsers": "node -e \"process.env.E2E_ALL_BROWSERS='true'; const r=require('node:child_process').spawnSync('playwright',['test'],{stdio:'inherit',shell:true,env:process.env}); process.exit(r.status ?? 1)\"",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:install": "playwright install"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.2",
@@ -44,6 +52,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/router-zod-adapter": "^1.81.5",
     "@testing-library/dom": "^10.4.0",

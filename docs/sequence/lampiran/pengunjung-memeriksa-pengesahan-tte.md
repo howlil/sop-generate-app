@@ -9,7 +9,7 @@ Sumber use case: `UC-20` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memeriksa Pengesahan TTE |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 23 |
-| Tujuan | Menggambarkan proses pemeriksaan pengesahan tanda tangan elektronik melalui tautan atau kode verifikasi. |
+| Tujuan | Menggambarkan proses pengunjung memeriksa keabsahan pengesahan dokumen melalui penanda pengesahan publik. |
 
 ## PlantUML
 
@@ -17,30 +17,38 @@ Sumber use case: `UC-20` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Memeriksa Pengesahan TTE
 autonumber
+autoactivate on
 
-actor "Pengunjung" as Aktor
-boundary "Halaman Verifikasi Pengesahan" as UI
-control "Verifikasi TTE Controller" as VerifCtrl
+actor "Pengunjung" as A
+boundary "Halaman Validasi Pengesahan" as B
+control "Pengelola Validasi Pengesahan" as C
+control "Pemeriksa Riwayat Tanda Tangan" as D
 entity "Dokumen TTE" as DokumenTTE
-entity "Riwayat Tanda Tangan" as Riwayat
-entity "Detail SOP" as Detail
+entity "Riwayat Tanda Tangan" as RiwayatTandaTangan
 
-Aktor -> UI : Membuka tautan atau memindai kode verifikasi
-UI -> VerifCtrl : Mengirim kode verifikasi pengesahan
-VerifCtrl -> DokumenTTE : Mencari dokumen TTE berdasarkan kode
-
-alt Dokumen TTE ditemukan
-  DokumenTTE --> VerifCtrl : Data dokumen TTE
-  VerifCtrl -> Riwayat : Mengambil riwayat tanda tangan
-  VerifCtrl -> Detail : Mengambil status dokumen SOP
-  VerifCtrl --> UI : Mengirim hasil pengesahan dan status dokumen
-  UI --> Aktor : Menampilkan informasi pengesahan
-else Dokumen TTE tidak ditemukan
-  DokumenTTE --> VerifCtrl : Tidak ditemukan
-  VerifCtrl --> UI : Mengirim hasil tidak valid
-  UI --> Aktor : Menampilkan pengesahan tidak ditemukan
+A -> B : Membuka halaman validasi pengesahan
+B --> A : Menampilkan formulir kode atau penanda pengesahan
+A -> B : Memasukkan kode pengesahan dari dokumen
+B --> A : Menampilkan proses pemeriksaan pengesahan
+B -> C : Meminta pemeriksaan pengesahan dokumen
+C -> D : Memeriksa format kode dan kelengkapan penanda pengesahan
+D --> C : Hasil pemeriksaan awal
+alt Kode pengesahan dapat diperiksa
+  C -> DokumenTTE : Mencari dokumen berdasarkan kode pengesahan
+  DokumenTTE --> C : Data dokumen atau tidak ditemukan
+  C -> RiwayatTandaTangan : Mencari riwayat tanda tangan dokumen
+  RiwayatTandaTangan --> C : Riwayat tanda tangan atau tidak ditemukan
+  alt Pengesahan ditemukan
+    C --> B : Mengirim identitas dokumen, penandatangan, waktu pengesahan, dan keadaan dokumen
+    B --> A : Menampilkan pengesahan valid dan informasi dokumen
+  else Pengesahan tidak ditemukan
+    C --> B : Mengirim alasan pengesahan tidak ditemukan
+    B --> A : Menampilkan pengesahan tidak dapat diverifikasi
+  end
+else Kode pengesahan tidak sesuai
+  C --> B : Mengirim alasan kode tidak dapat diperiksa
+  B --> A : Menampilkan petunjuk memperbaiki kode pengesahan
 end
 
 @enduml
 ```
-

@@ -9,7 +9,7 @@ Sumber use case: `UC-10` pada [`../usecase.md`](../usecase.md).
 | Use case | Menandatangani Berita Acara |
 | Aktor utama | PJ Evaluator, PJ Penyusun |
 | Nomor kebutuhan fungsional | 17 |
-| Tujuan | Menggambarkan proses tanda tangan elektronik berita acara oleh PJ Evaluator dan PJ Penyusun secara berurutan. |
+| Tujuan | Menggambarkan penandatanganan Berita Acara secara berurutan oleh PJ Evaluator dan PJ Penyusun, termasuk pemeriksaan kewenangan penandatangan dan umpan balik ke masing-masing aktor. |
 
 ## PlantUML
 
@@ -17,66 +17,80 @@ Sumber use case: `UC-10` pada [`../usecase.md`](../usecase.md).
 @startuml
 title Sequence Diagram - Menandatangani Berita Acara
 autonumber
+autoactivate on
 
 actor "PJ Evaluator" as PJE
 actor "PJ Penyusun" as PJP
-boundary "Halaman Tanda Tangan BA" as UI
-control "TTE Controller" as TTECtrl
-control "Validasi TTE" as Validasi
+boundary "Halaman Berita Acara" as B
+control "Pengelola Berita Acara Evaluasi" as C
+control "Pengelola Tanda Tangan Elektronik" as D
+control "Pemeriksa Kewenangan Penandatangan" as E
 entity "Pengajuan Evaluasi" as Pengajuan
-entity "Dokumen TTE Berita Acara" as DokumenTTE
-entity "Detail SOP" as Detail
-entity "Riwayat Tanda Tangan" as Riwayat
-entity "PIN TTE Pengguna" as Pin
+entity "Berita Acara" as BeritaAcara
+entity "Riwayat Tanda Tangan" as RiwayatTandaTangan
 
-PJE -> UI : Membuka daftar pengajuan selesai evaluasi
-UI -> TTECtrl : Meminta pengajuan siap ditandatangani PJ Evaluator
-TTECtrl -> Pengajuan : Mengambil pengajuan selesai dievaluasi
-TTECtrl --> UI : Menampilkan daftar pengajuan
+PJE -> B : Membuka daftar pengajuan selesai evaluasi
+B -> C : Meminta pengajuan yang siap ditandatangani PJ Evaluator
+C -> Pengajuan : Mengambil pengajuan selesai evaluasi
+Pengajuan --> C : Daftar pengajuan selesai evaluasi
+C -> BeritaAcara : Mengambil berita acara terkait
+BeritaAcara --> C : Berita acara siap tanda tangan
+C --> B : Mengirim daftar pengajuan
+B --> PJE : Menampilkan pengajuan yang siap ditandatangani
 
-PJE -> UI : Memilih pengajuan dan memasukkan PIN TTE
-UI -> TTECtrl : Mengirim permintaan tanda tangan PJ Evaluator
-TTECtrl -> Validasi : Memeriksa status pengajuan dan hak akses PJ Evaluator
-TTECtrl -> Pin : Mengambil PIN TTE PJ Evaluator
-Validasi -> Pin : Memeriksa kecocokan PIN
+PJE -> B : Memilih pengajuan dan membuka berita acara
+B -> C : Meminta pratinjau berita acara
+C -> Pengajuan : Mengambil data pengajuan dan hasil evaluasi
+Pengajuan --> C : Data pengajuan dan hasil evaluasi
+C -> BeritaAcara : Mengambil berita acara
+BeritaAcara --> C : Data berita acara
+C --> B : Mengirim pratinjau berita acara
+B --> PJE : Menampilkan berita acara untuk diperiksa
 
-alt PIN dan status valid
-  Validasi --> TTECtrl : Valid
-  TTECtrl -> DokumenTTE : Membuat atau memperbarui dokumen BA
-  TTECtrl -> Riwayat : Mencatat tanda tangan PJ Evaluator
-  TTECtrl -> Pengajuan : Mengubah status pengajuan menjadi diverifikasi PJ Evaluator
-  TTECtrl --> UI : Mengirim hasil tanda tangan berhasil
-  UI --> PJE : Menampilkan pemberitahuan berhasil
-else PIN atau status tidak valid
-  Validasi --> TTECtrl : Tidak valid
-  TTECtrl --> UI : Mengirim alasan kegagalan
-  UI --> PJE : Menampilkan tanda tangan ditolak
+PJE -> B : Mengisi kredensial tanda tangan dan memilih tandatangani
+B --> PJE : Menampilkan konfirmasi tanda tangan PJ Evaluator
+B -> D : Meminta penandatanganan berita acara oleh PJ Evaluator
+D -> E : Memeriksa peran, kewenangan, kredensial, urutan, dan keadaan pengajuan
+E --> D : Hasil pemeriksaan penandatangan PJ Evaluator
+alt Pemeriksaan berhasil
+  D -> RiwayatTandaTangan : Mencatat tanda tangan PJ Evaluator
+  RiwayatTandaTangan --> D : Tanda tangan tercatat
+  D -> BeritaAcara : Menandai berita acara sudah ditandatangani PJ Evaluator
+  BeritaAcara --> D : Keadaan berita acara diperbarui
+  D -> Pengajuan : Menandai pengajuan menunggu tanda tangan PJ Penyusun
+  Pengajuan --> D : Keadaan pengajuan diperbarui
+  D --> B : Mengirim hasil tanda tangan berhasil
+  B --> PJE : Menampilkan berita acara sudah ditandatangani PJ Evaluator
+else Pemeriksaan gagal
+  D --> B : Mengirim alasan tanda tangan ditolak
+  B --> PJE : Menampilkan alasan PJ Evaluator belum dapat menandatangani
 end
 
-PJP -> UI : Membuka daftar pengajuan menunggu tanda tangan PJ Penyusun
-UI -> TTECtrl : Meminta pengajuan siap ditandatangani PJ Penyusun
-TTECtrl -> Pengajuan : Mengambil pengajuan sesuai OPD PJ Penyusun
-TTECtrl --> UI : Menampilkan daftar pengajuan
+PJP -> B : Membuka daftar berita acara yang menunggu tanda tangan PJ Penyusun
+B -> C : Meminta berita acara yang siap ditandatangani PJ Penyusun
+C -> BeritaAcara : Mengambil berita acara yang sudah ditandatangani PJ Evaluator
+BeritaAcara --> C : Daftar berita acara siap ditandatangani PJ Penyusun
+C --> B : Mengirim daftar berita acara
+B --> PJP : Menampilkan berita acara yang menunggu tanda tangan PJ Penyusun
 
-PJP -> UI : Memilih pengajuan dan memasukkan PIN TTE
-UI -> TTECtrl : Mengirim permintaan tanda tangan PJ Penyusun
-TTECtrl -> Validasi : Memeriksa status pengajuan, OPD, dan hak akses PJ Penyusun
-TTECtrl -> Pin : Mengambil PIN TTE PJ Penyusun
-Validasi -> Pin : Memeriksa kecocokan PIN
-
-alt PIN dan status valid
-  Validasi --> TTECtrl : Valid
-  TTECtrl -> Riwayat : Mencatat tanda tangan PJ Penyusun
-  TTECtrl -> Pengajuan : Mengubah status pengajuan menjadi ditandatangani PJ Penyusun
-  TTECtrl -> Detail : Mengubah status SOP menjadi diverifikasi PJ Evaluator Organisasi
-  TTECtrl --> UI : Mengirim hasil tanda tangan berhasil
-  UI --> PJP : Menampilkan berita acara berhasil ditandatangani
-else PIN atau status tidak valid
-  Validasi --> TTECtrl : Tidak valid
-  TTECtrl --> UI : Mengirim alasan kegagalan
-  UI --> PJP : Menampilkan tanda tangan ditolak
+PJP -> B : Memeriksa berita acara dan memilih tandatangani
+B --> PJP : Menampilkan konfirmasi tanda tangan PJ Penyusun
+B -> D : Meminta penandatanganan berita acara oleh PJ Penyusun
+D -> E : Memeriksa peran, OPD, kredensial, urutan tanda tangan, dan keadaan pengajuan
+E --> D : Hasil pemeriksaan penandatangan PJ Penyusun
+alt Pemeriksaan berhasil
+  D -> RiwayatTandaTangan : Mencatat tanda tangan PJ Penyusun
+  RiwayatTandaTangan --> D : Tanda tangan tercatat
+  D -> BeritaAcara : Menandai berita acara lengkap
+  BeritaAcara --> D : Keadaan berita acara diperbarui
+  D -> Pengajuan : Menandai pengajuan siap disahkan Kepala OPD
+  Pengajuan --> D : Keadaan pengajuan diperbarui
+  D --> B : Mengirim hasil tanda tangan berhasil
+  B --> PJP : Menampilkan berita acara sudah lengkap dan menunggu pengesahan SOP
+else Pemeriksaan gagal
+  D --> B : Mengirim alasan tanda tangan ditolak
+  B --> PJP : Menampilkan alasan PJ Penyusun belum dapat menandatangani
 end
 
 @enduml
 ```
-

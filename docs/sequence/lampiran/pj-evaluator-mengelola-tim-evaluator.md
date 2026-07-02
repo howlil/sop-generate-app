@@ -9,7 +9,7 @@ Sumber use case: `UC-06` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Tim Evaluator |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 2 |
-| Tujuan | Menggambarkan proses pengelolaan akun evaluator oleh PJ Evaluator. |
+| Tujuan | Menggambarkan pengelolaan akun evaluator, termasuk tambah, ubah, dan nonaktifkan dengan validasi identitas. |
 
 ## PlantUML
 
@@ -17,36 +17,41 @@ Sumber use case: `UC-06` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Mengelola Tim Evaluator
 autonumber
+autoactivate on
 
-actor "PJ Evaluator" as Aktor
-boundary "Halaman Tim Evaluator" as UI
-control "Evaluator Controller" as EvalUserCtrl
-control "Validasi Akun Pengguna" as Validasi
-entity "Data Pengguna" as Pengguna
-entity "Riwayat Penugasan OPD" as RiwayatOPD
+actor "PJ Evaluator" as A
+boundary "Halaman Tim Evaluator" as B
+control "Pengelola Tim Evaluator" as C
+control "Pemeriksa Akun Evaluator" as D
+entity "Pengguna" as Pengguna
+entity "OPD" as OPD
 
-Aktor -> UI : Membuka halaman tim evaluator
-UI -> EvalUserCtrl : Meminta daftar evaluator
-EvalUserCtrl -> Pengguna : Mengambil akun evaluator
-EvalUserCtrl --> UI : Menampilkan daftar evaluator
+A -> B : Membuka halaman tim evaluator
+B -> C : Meminta daftar evaluator
+C -> Pengguna : Mengambil data evaluator
+Pengguna --> C : Daftar evaluator
+C -> OPD : Mengambil OPD terkait
+OPD --> C : Daftar OPD terkait
+C --> B : Mengirim daftar evaluator
+B --> A : Menampilkan daftar evaluator
 
-Aktor -> UI : Memilih tambah, ubah, atau nonaktifkan evaluator
-Aktor -> UI : Mengisi data akun evaluator
-UI -> EvalUserCtrl : Mengirim perubahan data evaluator
-EvalUserCtrl -> Validasi : Memeriksa kelengkapan dan keunikan akun
-
-alt Data evaluator valid
-  Validasi --> EvalUserCtrl : Valid
-  EvalUserCtrl -> Pengguna : Menyimpan data akun evaluator
-  EvalUserCtrl -> RiwayatOPD : Mencatat penugasan pengguna
-  EvalUserCtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan pemberitahuan berhasil
-else Data evaluator tidak valid
-  Validasi --> EvalUserCtrl : Tidak valid
-  EvalUserCtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pesan perbaikan data
+A -> B : Memilih tambah atau ubah evaluator
+B --> A : Menampilkan formulir evaluator
+A -> B : Mengisi identitas, kontak, jabatan, dan penugasan evaluator
+B -> C : Meminta penyimpanan evaluator
+C -> D : Memeriksa kelengkapan identitas, keunikan akun, peran, dan relasi OPD
+D --> C : Hasil pemeriksaan evaluator
+alt Data evaluator dapat disimpan
+  C -> Pengguna : Menyimpan akun evaluator
+  Pengguna --> C : Data evaluator tersimpan
+  C -> OPD : Menyimpan relasi penugasan
+  OPD --> C : Relasi penugasan tersimpan
+  C --> B : Mengirim hasil penyimpanan
+  B --> A : Menampilkan evaluator berhasil disimpan
+else Data evaluator belum sesuai
+  C --> B : Mengirim alasan data evaluator ditolak
+  B --> A : Menampilkan bagian evaluator yang perlu diperbaiki
 end
 
 @enduml
 ```
-

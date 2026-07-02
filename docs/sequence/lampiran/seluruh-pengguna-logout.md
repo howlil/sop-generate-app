@@ -9,7 +9,7 @@ Sumber use case: `UC-02` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Logout |
 | Aktor utama | PJ Evaluator, Evaluator, Kepala OPD, PJ Penyusun, Penyusun |
 | Nomor kebutuhan fungsional | Pendukung login |
-| Tujuan | Menggambarkan proses pengguna keluar dari sistem dan mengakhiri sesi akses. |
+| Tujuan | Menggambarkan proses keluar dari sistem, pengakhiran sesi aktif, dan pembersihan tampilan pengguna. |
 
 ## PlantUML
 
@@ -17,19 +17,30 @@ Sumber use case: `UC-02` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Logout
 autonumber
+autoactivate on
 
-actor "Pengguna" as Aktor
-boundary "Menu Profil" as UI
-control "Auth Controller" as AuthCtrl
+actor "Pengguna" as A
+boundary "Menu Profil / Header" as B
+control "Pengelola Autentikasi" as C
+control "Pengelola Sesi" as D
+entity "Pengguna" as Pengguna
 entity "Sesi Pengguna" as Sesi
 
-Aktor -> UI : Memilih menu keluar
-UI -> AuthCtrl : Mengirim permintaan logout
-AuthCtrl -> Sesi : Menghapus atau membatalkan sesi aktif
-Sesi --> AuthCtrl : Sesi berhasil diakhiri
-AuthCtrl --> UI : Mengirim konfirmasi logout
-UI --> Aktor : Menampilkan halaman publik atau login
+A -> B : Memilih keluar
+B --> A : Menampilkan proses keluar
+B -> C : Meminta pengakhiran akses pengguna
+C -> D : Memeriksa sesi yang sedang aktif
+D -> Sesi : Mencari catatan sesi pengguna
+Sesi --> D : Informasi sesi
+alt Sesi aktif ditemukan
+  D -> Sesi : Menandai sesi sebagai berakhir
+  Sesi --> D : Sesi berhasil diakhiri
+  D --> C : Pengakhiran sesi berhasil
+else Sesi tidak ditemukan
+  D --> C : Tidak ada sesi yang perlu diakhiri
+end
+C --> B : Mengirim hasil keluar dari sistem
+B --> A : Menampilkan halaman publik atau halaman login
 
 @enduml
 ```
-

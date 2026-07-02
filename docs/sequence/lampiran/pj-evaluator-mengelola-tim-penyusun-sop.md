@@ -9,7 +9,7 @@ Sumber use case: `UC-08` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Mengelola Tim Penyusun SOP |
 | Aktor utama | PJ Evaluator |
 | Nomor kebutuhan fungsional | 3 |
-| Tujuan | Menggambarkan proses PJ Evaluator mengelola akun PJ Penyusun dan Penyusun pada OPD. |
+| Tujuan | Menggambarkan pengelolaan akun PJ Penyusun/Penyusun, aktivasi, nonaktivasi, mutasi OPD, dan riwayat penugasan. |
 
 ## PlantUML
 
@@ -17,38 +17,49 @@ Sumber use case: `UC-08` pada [`../../usecase.md`](../../usecase.md).
 @startuml
 title Sequence Diagram - Mengelola Tim Penyusun SOP
 autonumber
+autoactivate on
 
-actor "PJ Evaluator" as Aktor
-boundary "Halaman Tim Penyusun SOP" as UI
-control "Penyusun Controller" as PenyusunCtrl
-control "Validasi Tim Penyusun" as Validasi
-entity "Data Pengguna" as Pengguna
-entity "Data OPD" as OPD
-entity "Riwayat Penugasan OPD" as RiwayatOPD
+actor "PJ Evaluator" as A
+boundary "Halaman Tim Penyusun" as B
+control "Pengelola Tim Penyusun" as C
+control "Pemeriksa Penugasan Penyusun" as D
+entity "Pengguna" as Pengguna
+entity "OPD" as OPD
+entity "Riwayat Penugasan" as RiwayatPenugasan
 
-Aktor -> UI : Membuka halaman tim penyusun SOP
-UI -> PenyusunCtrl : Meminta daftar tim penyusun
-PenyusunCtrl -> Pengguna : Mengambil akun PJ Penyusun dan Penyusun
-PenyusunCtrl -> OPD : Mengambil daftar OPD
-PenyusunCtrl --> UI : Menampilkan data tim penyusun
+A -> B : Membuka halaman tim penyusun
+B -> C : Meminta daftar penyusun
+C -> Pengguna : Mengambil akun penyusun
+Pengguna --> C : Daftar penyusun
+C -> OPD : Mengambil OPD terkait
+OPD --> C : Daftar OPD terkait
+C --> B : Mengirim daftar penyusun
+B --> A : Menampilkan daftar penyusun dan PJ Penyusun
 
-Aktor -> UI : Memilih tambah, ubah, mutasi, atau nonaktifkan anggota
-Aktor -> UI : Mengisi data akun dan OPD penugasan
-UI -> PenyusunCtrl : Mengirim perubahan data tim penyusun
-PenyusunCtrl -> Validasi : Memeriksa akun, OPD, dan aturan PJ Penyusun aktif
+A -> B : Memilih salah satu penyusun
+B -> C : Meminta riwayat penugasan penyusun
+C -> RiwayatPenugasan : Mengambil riwayat OPD penyusun
+RiwayatPenugasan --> C : Riwayat penugasan penyusun
+C --> B : Mengirim riwayat penugasan
+B --> A : Menampilkan riwayat penugasan penyusun
 
-alt Data tim penyusun valid
-  Validasi --> PenyusunCtrl : Valid
-  PenyusunCtrl -> Pengguna : Menyimpan data akun penyusun
-  PenyusunCtrl -> RiwayatOPD : Mencatat riwayat penugasan
-  PenyusunCtrl --> UI : Mengirim hasil berhasil
-  UI --> Aktor : Menampilkan pemberitahuan berhasil
-else Data tidak valid
-  Validasi --> PenyusunCtrl : Tidak valid
-  PenyusunCtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pesan perbaikan data
+A -> B : Memilih tambah, ubah, atau pindah penugasan penyusun
+B --> A : Menampilkan formulir penyusun dan penugasan
+A -> B : Mengisi identitas, peran penyusun, dan OPD tujuan
+B -> C : Meminta penyimpanan penyusun atau penugasan
+C -> D : Memeriksa identitas, peran, keunikan akun, OPD tujuan, dan aturan penugasan
+D --> C : Hasil pemeriksaan penyusun
+alt Data penyusun dapat disimpan
+  C -> Pengguna : Menyimpan akun dan peran penyusun
+  Pengguna --> C : Data penyusun tersimpan
+  C -> RiwayatPenugasan : Menyimpan riwayat penugasan
+  RiwayatPenugasan --> C : Riwayat penugasan tersimpan
+  C --> B : Mengirim hasil penyimpanan
+  B --> A : Menampilkan penyusun berhasil disimpan
+else Data penyusun belum sesuai
+  C --> B : Mengirim alasan penyimpanan ditolak
+  B --> A : Menampilkan bagian penyusun yang perlu diperbaiki
 end
 
 @enduml
 ```
-

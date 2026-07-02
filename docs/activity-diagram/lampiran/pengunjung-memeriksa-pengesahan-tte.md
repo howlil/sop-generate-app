@@ -9,7 +9,7 @@ Sumber use case: `UC-20` pada [`../../usecase.md`](../../usecase.md).
 | Use case | Memeriksa Pengesahan TTE |
 | Aktor utama | Pengunjung |
 | Nomor kebutuhan fungsional | 23 |
-| Tujuan | Menjelaskan proses pengunjung memeriksa keabsahan pengesahan tanda tangan elektronik melalui tautan atau kode verifikasi. |
+| Tujuan | Menjelaskan pemeriksaan pengesahan dari QR atau tautan publik berdasarkan pasangan dokumenTteId dan userId. |
 
 ## PlantUML
 
@@ -19,19 +19,25 @@ title Diagram Aktivitas - Memeriksa Pengesahan TTE
 
 |Pengunjung|
 start
-:Membuka tautan atau memindai kode verifikasi pengesahan;
+:Memindai QR atau membuka tautan validasi pengesahan;
 
 |Sistem|
-:Menerima kode verifikasi;
-:Mencari data pengesahan dokumen;
-if (Data pengesahan ditemukan?) then (Ya)
-  :Memeriksa status dokumen;
-  :Menampilkan informasi pengesahan dan status dokumen;
+:Membaca identitas dokumen TTE dan pengguna penandatangan dari tautan;
+:Memvalidasi format identitas dokumen dan penandatangan;
+
+if (Format tautan valid?) then (Ya)
+  :Mencari riwayat tanda tangan yang sesuai;
 else (Tidak)
-  :Menampilkan informasi bahwa pengesahan tidak ditemukan atau tidak valid;
+  :Menampilkan pengesahan tidak valid;
+  stop
+endif
+
+if (Riwayat pengesahan ditemukan?) then (Ya)
+  :Menampilkan status pengesahan, jenis dokumen, nomor dokumen, nama penandatangan, peran, dan waktu tanda tangan;
+else (Tidak)
+  :Menampilkan pengesahan tidak ditemukan atau tidak valid;
 endif
 
 stop
 @enduml
 ```
-

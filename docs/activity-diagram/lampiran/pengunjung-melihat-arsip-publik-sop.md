@@ -8,8 +8,8 @@ Sumber use case: `UC-19` pada [`../../usecase.md`](../../usecase.md).
 | :--- | :--- |
 | Use case | Melihat Arsip Publik SOP |
 | Aktor utama | Pengunjung |
-| Nomor kebutuhan fungsional | 22 |
-| Tujuan | Menjelaskan proses pengunjung melihat dokumen SOP yang sudah berlaku tanpa login. |
+| Nomor kebutuhan fungsional | 22, 21 |
+| Tujuan | Menjelaskan akses publik tanpa login untuk melihat OPD, daftar SOP berlaku, detail dokumen, preview, dan PDF arsip. |
 
 ## PlantUML
 
@@ -22,27 +22,31 @@ start
 :Membuka halaman arsip publik SOP;
 
 |Sistem|
-:Menampilkan daftar SOP yang sudah berlaku;
+:Menampilkan daftar OPD yang memiliki SOP berlaku, kolom pencarian, dan daftar arsip awal;
 
 |Pengunjung|
-:Mengisi kata kunci atau filter pencarian;
+:Memilih OPD, memasukkan kata kunci, atau memilih SOP tertentu;
 
 |Sistem|
-:Mencari SOP sesuai kata kunci atau filter;
-if (SOP ditemukan?) then (Ya)
-  :Menampilkan daftar hasil pencarian;
-else (Tidak)
-  :Menampilkan informasi bahwa SOP tidak ditemukan;
-  stop
+if (Pengunjung melihat daftar SOP OPD?) then (Ya)
+  :Memfilter hanya SOP yang berstatus berlaku;
+  :Menampilkan ringkasan nomor SOP, judul, versi, tanggal efektif, dan OPD;
+else (Melihat detail dokumen)
+  :Memastikan dokumen yang dipilih masih berstatus berlaku;
+  :Menampilkan detail header, dasar hukum, lampiran, pelaksana, langkah prosedur, diagram, dan informasi pengesahan publik;
 endif
 
 |Pengunjung|
-:Memilih SOP yang ingin dilihat;
+if (Mengunduh atau membuka PDF arsip?) then (Ya)
+  :Memilih aksi unduh atau lihat PDF;
 
-|Sistem|
-:Menampilkan detail atau pratinjau dokumen SOP;
+  |Sistem|
+  :Memastikan PDF resmi tersedia untuk SOP berlaku;
+  :Menampilkan atau menyiapkan PDF arsip;
+else (Tidak)
+  :Tetap membaca arsip pada halaman publik;
+endif
 
 stop
 @enduml
 ```
-

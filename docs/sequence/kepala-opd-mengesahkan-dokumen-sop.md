@@ -8,8 +8,8 @@ Sumber use case: `UC-13` pada [`../usecase.md`](../usecase.md).
 | :--- | :--- |
 | Use case | Mengesahkan Dokumen SOP |
 | Aktor utama | Kepala OPD |
-| Nomor kebutuhan fungsional | 18 |
-| Tujuan | Menggambarkan proses Kepala OPD mengesahkan SOP hingga dokumen berstatus berlaku dan tampil pada arsip publik. |
+| Nomor kebutuhan fungsional | 18, 19, 21 |
+| Tujuan | Menggambarkan proses Kepala OPD melihat pengajuan siap disahkan, menandatangani seluruh SOP dalam pengajuan, menerbitkan SOP berlaku, dan menerima hasil proses dari sistem. |
 
 ## PlantUML
 
@@ -17,48 +17,92 @@ Sumber use case: `UC-13` pada [`../usecase.md`](../usecase.md).
 @startuml
 title Sequence Diagram - Mengesahkan Dokumen SOP
 autonumber
+autoactivate on
 
-actor "Kepala OPD" as Aktor
-boundary "Halaman Pengesahan SOP" as UI
-control "TTE Controller" as TTECtrl
-control "Validasi Pengesahan" as Validasi
+actor "Kepala OPD" as A
+boundary "Halaman Pengesahan SOP" as B
+control "Pengelola Pengesahan SOP" as C
+control "Pengelola Tanda Tangan Elektronik" as D
+control "Pemeriksa Kelayakan Pengesahan" as E
 entity "Pengajuan Evaluasi" as Pengajuan
-entity "Detail SOP" as Detail
-entity "Dokumen TTE SOP" as DokumenTTE
-entity "Riwayat Tanda Tangan" as Riwayat
-entity "PIN TTE Pengguna" as Pin
-entity "Arsip Publik SOP" as Arsip
+entity "Detail SOP" as DetailSOP
+entity "Dokumen TTE" as DokumenTTE
+entity "Riwayat Tanda Tangan" as RiwayatTandaTangan
+entity "Arsip Publik" as ArsipPublik
+entity "Riwayat Perubahan" as RiwayatPerubahan
 
-Aktor -> UI : Membuka daftar SOP siap disahkan
-UI -> TTECtrl : Meminta pengajuan siap pengesahan
-TTECtrl -> Pengajuan : Mengambil pengajuan yang sudah selesai TTE berita acara
-TTECtrl -> Detail : Mengambil daftar SOP dalam pengajuan
-TTECtrl --> UI : Menampilkan daftar SOP siap disahkan
+A -> B : Membuka daftar pengajuan yang siap disahkan
+B -> C : Meminta pengajuan milik OPD yang sudah melewati tanda tangan berita acara
+C -> Pengajuan : Mengambil pengajuan yang siap disahkan
+Pengajuan --> C : Daftar pengajuan siap pengesahan
+C -> DetailSOP : Mengambil SOP terkait
+DetailSOP --> C : Daftar SOP terkait
+C -> DokumenTTE : Mengambil kelengkapan berita acara
+DokumenTTE --> C : Kelengkapan berita acara
+C --> B : Mengirim daftar pengajuan
+B --> A : Menampilkan pengajuan dan SOP yang siap disahkan
 
-Aktor -> UI : Meninjau dokumen dan memilih aksi pengesahan
-Aktor -> UI : Memasukkan PIN TTE
-UI -> TTECtrl : Mengirim permintaan pengesahan SOP
-TTECtrl -> Validasi : Memeriksa hak akses, OPD, dan status pengajuan
-TTECtrl -> Pin : Mengambil PIN TTE Kepala OPD
-Validasi -> Pin : Memeriksa kecocokan PIN
+A -> B : Memilih pengajuan dan meninjau SOP
+B -> C : Meminta detail dokumen untuk pengesahan
+C -> E : Memeriksa kewenangan Kepala OPD terhadap pengajuan
+E --> C : Hasil pemeriksaan kewenangan
+alt Dokumen dapat ditinjau
+  C -> DetailSOP : Mengambil SOP untuk pengesahan
+  DetailSOP --> C : Dokumen SOP
+  C -> Pengajuan : Mengambil hasil evaluasi
+  Pengajuan --> C : Hasil evaluasi
+  C -> DokumenTTE : Mengambil berita acara
+  DokumenTTE --> C : Berita acara
+  C -> RiwayatTandaTangan : Mengambil riwayat tanda tangan
+  RiwayatTandaTangan --> C : Riwayat tanda tangan
+  C --> B : Mengirim detail pengesahan
+  B --> A : Menampilkan dokumen SOP, berita acara, dan status prapengesahan
+else Dokumen tidak dapat ditinjau
+  C --> B : Mengirim alasan dokumen tidak dapat dibuka
+  B --> A : Menampilkan informasi akses ditolak
+end
 
-alt Data pengesahan valid
-  Validasi --> TTECtrl : Valid
-  TTECtrl -> DokumenTTE : Membuat dokumen TTE SOP berlaku
-  loop Untuk setiap SOP dalam pengajuan
-    TTECtrl -> Riwayat : Mencatat tanda tangan Kepala OPD
-    TTECtrl -> Detail : Mengubah status SOP menjadi berlaku
-    TTECtrl -> Arsip : Memperbarui arsip publik SOP
+A -> B : Mengisi kredensial tanda tangan dan memilih sahkan seluruh SOP
+B --> A : Menampilkan konfirmasi pengesahan seluruh SOP
+B -> D : Meminta penandatanganan dan pengesahan SOP
+D -> E : Memeriksa kewenangan, kredensial, urutan berita acara, kelengkapan SOP, dan keadaan pengajuan
+E --> D : Hasil pemeriksaan pengesahan
+alt Pengesahan dapat dilakukan
+  D -> DokumenTTE : Mencatat dokumen pengesahan untuk setiap SOP
+  DokumenTTE --> D : Dokumen pengesahan tersimpan
+  D -> RiwayatTandaTangan : Mencatat riwayat tanda tangan Kepala OPD
+  RiwayatTandaTangan --> D : Riwayat tanda tangan tersimpan
+  D -> DetailSOP : Menandai SOP sebagai berlaku dan memperbarui tanggal efektif
+  DetailSOP --> D : SOP berlaku tersimpan
+  D -> RiwayatPerubahan : Menandai versi lama sesuai aturan pergantian versi
+  RiwayatPerubahan --> D : Riwayat versi diperbarui
+  D -> ArsipPublik : Menyiapkan arsip publik
+  ArsipPublik --> D : Arsip publik siap
+  D --> B : Mengirim hasil pengesahan berhasil
+  B --> A : Menampilkan seluruh SOP sudah disahkan dan tersedia sebagai arsip berlaku
+else Pengesahan belum dapat dilakukan
+  D --> B : Mengirim alasan pengesahan ditolak
+  B --> A : Menampilkan SOP atau persyaratan yang belum memenuhi syarat
+end
+
+opt Mencabut SOP berlaku
+  A -> B : Memilih cabut SOP berlaku
+  B --> A : Menampilkan konfirmasi pencabutan SOP
+  B -> C : Meminta pencabutan SOP berlaku
+  C -> E : Memeriksa kewenangan, kepemilikan OPD, keberadaan SOP berlaku, dan revisi yang masih berjalan
+  E --> C : Hasil pemeriksaan pencabutan
+  alt SOP dapat dicabut
+    C -> DetailSOP : Menandai SOP sebagai dicabut
+    DetailSOP --> C : Pencabutan tersimpan
+    C -> RiwayatPerubahan : Mencatat riwayat pencabutan
+    RiwayatPerubahan --> C : Riwayat pencabutan tercatat
+    C --> B : Mengirim hasil pencabutan
+    B --> A : Menampilkan SOP dicabut dan tidak lagi menjadi arsip berlaku
+  else SOP belum dapat dicabut
+    C --> B : Mengirim alasan pencabutan ditolak
+    B --> A : Menampilkan penyebab pencabutan belum dapat dilakukan
   end
-  TTECtrl -> Pengajuan : Mengubah status pengajuan menjadi selesai
-  TTECtrl --> UI : Mengirim hasil pengesahan berhasil
-  UI --> Aktor : Menampilkan SOP berhasil disahkan
-else Data pengesahan tidak valid
-  Validasi --> TTECtrl : Tidak valid
-  TTECtrl --> UI : Mengirim alasan kegagalan
-  UI --> Aktor : Menampilkan pengesahan ditolak
 end
 
 @enduml
 ```
-
