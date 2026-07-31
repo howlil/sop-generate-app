@@ -1,0 +1,1121 @@
+
+> server@0.0.1 test:cov C:\Users\howlil\Documents\tugas-akhir\codingan\server
+> jest --coverage
+
+PASS src/modules/sop/catalog/sop-catalog-repo-error.util.spec.ts (22.907 s)
+  Pengujian assertSopCatalogRepoOk
+    √ seharusnya mengembalikan data ketika result ok (26 ms)
+    √ seharusnya memetakan NOT_FOUND menjadi NotFoundException (53 ms)
+    √ seharusnya memetakan CONFLICT menjadi ConflictException (9 ms)
+    √ seharusnya memetakan BAD_REQUEST menjadi BadRequestException (5 ms)
+    √ seharusnya memetakan INVALID_STATE menjadi BadRequestException (4 ms)
+    √ seharusnya memakai fallback BadRequestException untuk reason tidak dikenal (3 ms)
+
+PASS src/modules/core/opd/opd.service.spec.ts (27.053 s)
+  Pengujian OpdService
+    listRingkas
+      √ seharusnya mengembalikan seluruh opd untuk peran PJ_EVALUATOR (101 ms)
+      √ seharusnya mengembalikan [] ketika pengguna bukan PJ_EVALUATOR dan belum terhubung dengan OPD manapun (Worst case) (7 ms)
+      √ seharusnya mengembalikan [] ketika OPD pengguna tidak ditemukan atau tidak aktif (Edge case) (6 ms)
+      √ seharusnya mengembalikan OPD milik pengguna ketika ditemukan (8 ms)
+    create
+      √ seharusnya dapat membuat OPD baru dan membersihkan spasi (21 ms)
+    update
+      √ seharusnya melempar NotFoundException jika OPD tidak ditemukan (False case) (6 ms)
+      √ seharusnya memperbarui nama OPD dan memotong spasi (5 ms)
+    softDelete
+      √ seharusnya melempar NotFoundException jika OPD yang akan dihapus tidak ditemukan (False case) (4 ms)
+      √ seharusnya melempar ConflictException ketika soft delete dan pengguna struktural masih ada (4 ms)
+      √ seharusnya melempar ConflictException ketika soft delete dan OPD masih memiliki baris terkait (5 ms)
+      √ seharusnya melakukan softDelete jika tidak ada konflik atau halangan (5 ms)
+
+PASS src/modules/core/auth/helpers/jwt-access.strategy.spec.ts
+  Pengujian JwtAccessStrategy
+    √ seharusnya mengembalikan payload dari database ketika versi sesi cocok (5 ms)
+    √ seharusnya menolak payload tanpa versi sesi (3 ms)
+    √ seharusnya menolak ketika pengguna tidak ditemukan (2 ms)
+    √ seharusnya menolak ketika versi sesi token tidak sama dengan database (1 ms)
+
+PASS src/modules/tte/penandatanganan/tte-penandatanganan.service.spec.ts (27.307 s)
+  Pengujian TtePenandatangananService
+    Pengujian Dasar & Validasi PIN
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (112 ms)
+      √ seharusnya melempar BadRequestException jika kredensial PIN belum dibuat (3 ms)
+      √ seharusnya melempar ForbiddenException jika PIN tidak valid (4 ms)
+    tandaTanganiBa (Skenario PJ_EVALUATOR)
+      √ seharusnya melempar NotFoundException ketika NOT_FOUND (12 ms)
+      √ seharusnya melempar ConflictException ketika BAD_STATUS (10 ms)
+      √ seharusnya melempar ConflictException ketika ALREADY_SIGNED (8 ms)
+      √ seharusnya melempar ConflictException ketika INVALID_DOC_PARENT (3 ms)
+      √ seharusnya melempar ConflictException ketika transaksi tidak sukses (ok=false) (6 ms)
+    tandaTanganiBa (Skenario PJ_PENYUSUN)
+      √ seharusnya melempar ForbiddenException ketika FORBIDDEN_OPD (10 ms)
+      √ seharusnya melempar ConflictException ketika DOC_MISMATCH (7 ms)
+      √ seharusnya melempar ConflictException ketika SOP_STATUS_DRIFT (2 ms)
+      √ seharusnya mengembalikan riwayat jika transaksi PJ Penyusun berhasil (3 ms)
+    tandaTanganiBa (Skenario Role Invalid)
+      √ seharusnya melempar ForbiddenException jika peran bukan PJ_EVALUATOR atau PJ_PENYUSUN (2 ms)
+    tandaTanganiSemuaSopPengajuan
+      √ seharusnya melempar ForbiddenException jika peran bukan Kepala OPD (4 ms)
+      √ seharusnya menerjemahkan error BAD_PENGAJUAN_STATUS (3 ms)
+      √ seharusnya menerjemahkan error EMPTY_SOP (2 ms)
+      √ seharusnya menerjemahkan error BAD_SOP_STATUS (1 ms)
+      √ seharusnya menerjemahkan error ALREADY_SIGNED (1 ms)
+      √ seharusnya menerjemahkan error INVALID_DOC_PARENT (1 ms)
+      √ seharusnya melempar ConflictException ketika ok=false (Gagal sistem) (2 ms)
+      √ seharusnya menolak batch jika PDF kanvas tidak lengkap (2 ms)
+      √ seharusnya mengembalikan response batch berhasil ketika transaksi OK (8 ms)
+
+PASS src/modules/evaluation/pengajuan-detail/pengajuan-evaluasi-detail.service.spec.ts (27.541 s)
+  Pengujian PengajuanEvaluasiDetailService
+    √ seharusnya melempar NotFoundException pada shell ketika pengajuan tidak ada (53 ms)
+    √ seharusnya melempar ForbiddenException pada arsip ketika pengajuan belum selesai (25 ms)
+    √ seharusnya melempar ForbiddenException pada SOP ketika detail bukan anggota pengajuan (2 ms)
+    √ seharusnya mengembalikan workbench ketika detail anggota pengajuan (4 ms)
+    √ seharusnya menyertakan TTE payload kepala OPD ketika SOP sudah ditandatangani (3 ms)
+    √ seharusnya memuat item SOP, timeline nilai, dan nilai evaluasi pada shell (9 ms)
+    √ shell seharusnya menghilangkan field OPD untuk PJ Penyusun (5 ms)
+    √ BA view seharusnya urut hasil per SOP nomor numerically (26 ms)
+    √ seharusnya memuat tanggal verifikasi pada shell ketika status ditandatangani PJ evaluator (1 ms)
+    getShell (Tambahan)
+      √ seharusnya melempar error jika otorisasi gagal (False Case) (6 ms)
+      √ seharusnya menghandle fallback nomorBA, evaluator null, dan status unverified dengan benar (Edge/Worst Case) (2 ms)
+    getSopDokumen (Tambahan)
+      √ seharusnya melempar NotFoundException jika pengajuan tidak ditemukan (False Case) (1 ms)
+      √ seharusnya melempar error jika otorisasi gagal (False Case) (1 ms)
+      √ seharusnya menggunakan DEFAULT_LOGS_LIMIT jika limit tidak diberikan (Edge Case) (1 ms)
+      √ seharusnya skip TTE jika rt.user null atau peran bukan KEPALA_OPD (Edge Case) (1 ms)
+    getBeritaAcaraView (Tambahan)
+      √ seharusnya melempar NotFoundException jika pengajuan tidak ditemukan (False Case) (1 ms)
+      √ seharusnya membuang whitespace dan string kosong saat mapping evaluator (Worst Case) (2 ms)
+      √ seharusnya mengabaikan tanda tangan duplikat dan ambil yang pertama untuk PJ_EVALUATOR (Edge Case) (1 ms)
+      √ seharusnya menset tteBeritaAcara undefined jika dokumen tidak ada, dan handle fallback nomorBA (Edge Case) (2 ms)
+
+PASS src/modules/sop/pdf/sop-official-pdf.service.spec.ts (27.966 s)
+  SopOfficialPdfService
+    √ menggunakan PDF hasil renderer kanvas sebagai artefak resmi (20 ms)
+    √ menolak payload yang bukan PDF (93 ms)
+    √ menyisipkan QR tanda tangan ke halaman pertama PDF resmi (1538 ms)
+    √ menjaga posisi QR di tengah sel tanda tangan Kepala OPD (18 ms)
+    √ menolak (melempar BadRequestException) jika PDF buffer rusak/corrupt (Bad Case) (4 ms)
+
+PASS src/modules/evaluation/workspace/evaluasi-workspace.service.spec.ts (28.033 s)
+  Pengujian EvaluasiWorkspaceService
+    √ seharusnya melempar NotFoundException ketika OPD tidak ditemukan (57 ms)
+    √ seharusnya memanggil bootstrap lalu memuat ulang pengajuan ketika pengguna evaluator dan data awal null (18 ms)
+    √ seharusnya tidak memanggil bootstrap ketika PJ evaluator (3 ms)
+    √ seharusnya memetakan tampilan alur ketika nilai draft dan selesai (3 ms)
+    √ seharusnya hanya mengisi preview ketika preview diperluas dan detail diperbolehkan (3 ms)
+    √ seharusnya melewati preview ketika detail tidak berada dalam alur evaluasi (8 ms)
+    √ seharusnya melempar NotFoundException ketika bundle pengajuan tidak ditemukan (7 ms)
+    √ seharusnya memetakan workspace pengajuan hanya dari bundle nilai (6 ms)
+    √ seharusnya mengembalikan log nilai SOP terpilih untuk pengajuan aktif ketika detail SOP tersedia (12 ms)
+    √ seharusnya mempertahankan status pengajuan tetap terlihat pada tahap jobdesk akhir (2 ms)
+    getWorkspaceOpdSaya
+      √ seharusnya memanggil resolveOpdIdTerikat dan mendelegasikan ke getWorkspaceOpd (2 ms)
+    Edge/False/Worst Cases - getWorkspaceOpd
+      √ seharusnya melempar error jika pengguna tidak memiliki akses pengajuan OPD (71 ms)
+      √ seharusnya tidak memanggil pastikanPengajuanRequestOpdUntukEvaluator jika pengguna evaluator tetapi daftar detail kosong (1 ms)
+      √ seharusnya mengabaikan log dan preview jika detailSopId tidak ada di dalam daftar detail pipeline (foreign id) (4 ms)
+      √ seharusnya menangani query expand kosong atau whitespace dengan aman tanpa error (2 ms)
+      √ seharusnya mengembalikan preview null jika detailMilikiOpd mengembalikan false meskipun ada di pipeline (2 ms)
+      √ seharusnya mengembalikan preview null jika query.expand="preview" tetapi query.detailSopId undefined (1 ms)
+      √ seharusnya menangani map evaluasi kosong atau evaluator terakhir null tanpa melempar error (2 ms)
+    Edge/False/Worst Cases - getWorkspacePengajuan
+      √ seharusnya melempar NotFoundException jika bundle ditemukan tetapi data OPD ringkas tidak ditemukan (43 ms)
+      √ seharusnya melempar error dari assertUserCanAccessPengajuan jika pengguna tidak berwenang (3 ms)
+      √ seharusnya mengabaikan log nilai dan preview jika detailSopId di query tidak ada di dalam bundle (2 ms)
+      √ seharusnya mengembalikan preview null jika expand preview diminta tetapi detailMilikiOpd false (4 ms)
+
+PASS src/modules/sop/public/sop-public.service.spec.ts (28.716 s)
+  Pengujian SopPublicService
+    √ seharusnya mengembalikan daftar OPD terpaginasi (163 ms)
+    √ seharusnya melempar NotFoundException ketika OPD tidak ditemukan untuk SOP daftar (33 ms)
+    √ seharusnya mengembalikan daftar SOP terpaginasi untuk OPD (10 ms)
+    √ seharusnya mengembalikan hasil pencarian SOP global secara terpaginasi (10 ms)
+    √ seharusnya mendelegasikan getDokumen ke service katalog (16 ms)
+    Edge/False/Worst Cases - listOpd
+      √ seharusnya membiarkan exception dari database (worst case) mengalir ke atas (72 ms)
+      √ seharusnya menangani query paginasi dengan fallback aman jika dikirim undefined atau negatif (6 ms)
+      √ seharusnya menangani kembalian kosong dengan benar (page 9999) (4 ms)
+    Edge/False/Worst Cases - listSopByOpd
+      √ seharusnya mengembalikan daftar SOP kosong tetapi tetap memetakan data OPD jika OPD valid tapi belum ada SOP (5 ms)
+      √ seharusnya menangani query search kosong tanpa menyebabkan error (5 ms)
+    Edge/False/Worst Cases - listSopGlobal
+      √ seharusnya membiarkan pengecualian jika count database gagal (worst case) (7 ms)
+    Edge/False/Worst Cases - getDokumen
+      √ seharusnya membiarkan NotFoundException dari katalog mengalir secara langsung (worst case) (4 ms)
+
+PASS src/modules/sop/prosedur/sop-prosedur.service.spec.ts (29.222 s)
+  Pengujian SopProsedurService
+    Pengujian update prosedur
+      √ seharusnya melempar NotFoundException ketika id tidak dapat ditemukan (107 ms)
+      √ seharusnya melempar ForbiddenException ketika peran bukan penyusun (11 ms)
+      √ seharusnya melempar ForbiddenException ketika OPD penyusun tidak cocok (9 ms)
+      √ seharusnya mengembalikan workbench tanpa memanggil repository ketika DTO kosong (28 ms)
+      √ seharusnya melempar ConflictException ketika detail sudah berlaku (14 ms)
+      √ seharusnya melempar BadRequestException ketika pelaksana duplikat in DTO (7 ms)
+      √ seharusnya melempar BadRequestException ketika pelaksana tidak in OPD (6 ms)
+      √ seharusnya melempar BadRequestException ketika temp Id duplikat (8 ms)
+      √ seharusnya melempar BadRequestException ketika cabang referensi tidak dikenal temp Id (18 ms)
+      √ seharusnya melempar BadRequestException ketika langkah pelaksana tidak in swimlane payload (8 ms)
+      √ seharusnya memanggil repository hanya dengan field pelaksana yang berubah (76 ms)
+      √ seharusnya memanggil repository hanya dengan field langkah yang berubah dan memvalidasi terhadap swimlane yang sudah ada (6 ms)
+      √ seharusnya memanggil repository dengan kedua field yang berubah dan menghubungkan ulang cabang (5 ms)
+      √ seharusnya melempar NotFoundException ketika detail status tidak ditemukan di tengah proses (Edge Case) (26 ms)
+      √ seharusnya melempar BadRequestException ketika LangkahSOP tidak diset pelaksanaId dan pelaksana cadangan kosong (Edge Case) (5 ms)
+      √ seharusnya mengamankan jenis cabang dengan membuang (set null) langkah selanjutnya Ya/Tidak jika jenis BUKAN KEPUTUSAN (5 ms)
+      √ seharusnya memetakan error Prisma P2002 menjadi ConflictException (Worst Case Konflik Unik) (7 ms)
+      √ seharusnya memetakan error referensi P2003/P2025 menjadi BadRequestException (Worst Case Referensi Hilang) (40 ms)
+      √ seharusnya merespons dengan BadRequestException khusus jika database mengembalikan error trigger Langkah tujuan cabang (190 ms)
+
+PASS src/modules/core/auth/auth.controller.spec.ts (30.009 s)
+  Pengujian AuthController
+    √ seharusnya set cookie access dan refresh ketika login berhasil (19 ms)
+    √ seharusnya menggunakan opsi cookie production saat NODE_ENV production (2 ms)
+    √ seharusnya refresh sesi dari cookie refresh token dan set ulang dua cookie (36 ms)
+    √ seharusnya logout dengan refresh token dari cookie dan membersihkan dua cookie (7 ms)
+    √ seharusnya mengambil profil dari sub pengguna di request (6 ms)
+
+PASS src/modules/core/penyusun/penyusun.service.spec.ts
+  Pengujian PenyusunService
+    √ seharusnya memetakan daftar grup dengan status (14 ms)
+    √ seharusnya melempar ConflictException ketika OPD sudah memiliki PJ (10 ms)
+    √ seharusnya melempar ConflictException ketika mempromosikan menjadi PJ tetapi PJ lain masih ada (6 ms)
+    √ seharusnya melempar ConflictException ketika mengaktifkan PJ tetapi slot sudah terisi (5 ms)
+    √ seharusnya melempar ConflictException ketika memindahkan PJ ke OPD yang sudah memiliki PJ (6 ms)
+    √ seharusnya membuat penyusun melalui repository (7 ms)
+    √ seharusnya memindahkan penyusun melalui repository (5 ms)
+    create (Tambahan Kasus)
+      √ seharusnya membersihkan spasi dan mengecilkan huruf email (Worst Case) (4 ms)
+      √ seharusnya melempar NotFoundException jika OPD tidak ditemukan saat create (False Case) (9 ms)
+      √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada create (False Case) (5 ms)
+      √ seharusnya meneruskan error general pada create (False Case) (129 ms)
+    update (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika penyusun tidak ada (False Case) (4 ms)
+      √ seharusnya melempar BadRequestException jika payload update kosong (Edge Case) (3 ms)
+      √ seharusnya tidak memanggil fungsi unik jika email/nip sama persis (Edge Case) (5 ms)
+      √ seharusnya melempar BadRequestException ketika mempromosikan PJ pada akun nonaktif (Edge Case) (4 ms)
+      √ seharusnya set deletedAt ke tanggal saat status NONAKTIF (Edge Case) (4 ms)
+      √ seharusnya set deletedAt ke null saat status AKTIF (Edge Case) (4 ms)
+      √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada update (False Case) (5 ms)
+    nonaktifkan (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika tidak aktif atau tidak ditemukan (False Case) (5 ms)
+      √ seharusnya memanggil softDeletePenyusun jika ditemukan (Success/Edge Case) (4 ms)
+    aktifkan (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (False Case) (6 ms)
+      √ seharusnya melempar BadRequestException jika pengguna sudah aktif (False Case) (4 ms)
+      √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada aktifkan (False Case) (7 ms)
+    pindah (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika penyusun aktif tidak ditemukan (False Case) (4 ms)
+      √ seharusnya melempar NotFoundException jika OPD tujuan tidak ditemukan (False Case) (3 ms)
+      √ seharusnya melempar ConflictException jika dipindah ke OPD yang sama (Edge Case) (6 ms)
+      √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada pindah (False Case) (5 ms)
+    listRiwayatOpdPenyusun (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (False Case) (11 ms)
+      √ seharusnya mengembalikan array kosong jika riwayat belum ada (Edge Case) (11 ms)
+      √ seharusnya memetakan riwayat dengan benar (Success Case) (5 ms)
+    hapusPermanen (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (False Case) (7 ms)
+      √ seharusnya melempar NotFoundException jika delete guard row mengembalikan null (False Case) (14 ms)
+      √ seharusnya melempar ConflictException jika masih ada referensi tabel terkait > 0 (False Case) (10 ms)
+      √ seharusnya melempar ConflictException jika memiliki ttePinHash (False Case) (3 ms)
+      √ seharusnya melempar ConflictException jika pengguna masih memiliki peran PJ_PENYUSUN (False Case) (4 ms)
+      √ seharusnya berhasil memanggil deletePenyusunPermanen jika memenuhi syarat (Success/Edge Case) (5 ms)
+
+PASS src/modules/sop/pelaksana/pelaksana.controller.spec.ts (30.944 s)
+  Pengujian PelaksanaController
+    √ seharusnya meneruskan user dan query opdId ke service list (48 ms)
+    √ seharusnya meneruskan user dan dto ke service create (3 ms)
+    √ seharusnya meneruskan user, id, dan dto ke service update (3 ms)
+    √ seharusnya meneruskan user dan id ke service remove (1 ms)
+
+PASS src/modules/evaluation/nilai/evaluasi-nilai.controller.spec.ts (31.737 s)
+  Pengujian EvaluasiNilaiController
+    √ seharusnya meneruskan user, id, dan dto ke service isiNilai lalu membungkus response (20 ms)
+    √ seharusnya meneruskan user dan id ke service tandaiTindakLanjutSelesai (3 ms)
+    √ seharusnya meneruskan user, id, dan dto ke service selesai (3 ms)
+
+PASS src/modules/core/kepala-opd/kepala-opd.controller.spec.ts (31.654 s)
+  Pengujian KepalaOpdController
+    √ seharusnya membungkus response daftar kepala OPD (38 ms)
+    √ seharusnya membungkus response create kepala OPD (3 ms)
+    √ seharusnya membungkus response update kepala OPD (2 ms)
+    √ seharusnya membungkus response remove kepala OPD (1 ms)
+    √ seharusnya membungkus response riwayat OPD (2 ms)
+
+PASS src/modules/tte/shared/utils/pdf-signature-verification.util.spec.ts (32.325 s)
+  Pengujian util verifikasi tanda tangan PDF
+    √ seharusnya memverifikasi bertanda tangan PDF ketika chain dan digest cocok (6852 ms)
+    √ seharusnya menolak tanpa tanda tangan PDF (293 ms)
+
+PASS src/modules/sop/pelaksana/dto/pelaksana.dto.spec.ts (5.499 s)
+  Pengujian DTO Pelaksana
+    √ seharusnya menerima create tanpa opdId karena OPD dapat diambil dari user (7 ms)
+    √ seharusnya menerima create dengan opdId UUID valid (1 ms)
+    √ seharusnya menolak create dengan opdId bukan UUID (2 ms)
+    √ seharusnya menolak namaPelaksana kosong pada create dan update (2 ms)
+    √ seharusnya menolak namaPelaksana lebih dari 255 karakter (1 ms)
+    √ seharusnya menolak namaPelaksana bukan string (1 ms)
+
+PASS src/modules/core/kepala-opd/dto/kepala-opd.dto.spec.ts (5.677 s)
+  Pengujian DTO Kepala OPD
+    √ seharusnya menerima payload create yang valid (12 ms)
+    √ seharusnya menolak create dengan opdId bukan UUID v4 (12 ms)
+    √ seharusnya menolak create ketika field profil wajib kosong atau invalid (3 ms)
+    √ seharusnya menerima payload update parsial yang valid (2 ms)
+    √ seharusnya menolak update dengan status di luar AKTIF/NONAKTIF (1 ms)
+    √ seharusnya menolak update dengan nohp terlalu pendek dan opdId invalid (1 ms)
+
+PASS src/modules/core/auth/dto/auth.dto.spec.ts
+  Pengujian DTO Auth
+    √ seharusnya menerima payload login valid (13 ms)
+    √ seharusnya menolak email login yang tidak valid (3 ms)
+    √ seharusnya menolak password login kosong (2 ms)
+    √ seharusnya menerima payload ubah password valid (2 ms)
+    √ seharusnya menolak password baru kurang dari delapan karakter (2 ms)
+    √ seharusnya menolak password lama kosong (1 ms)
+
+PASS src/modules/sop/catalog/sop-catalog.repository.spec.ts
+  Pengujian logging status pada SopCatalogRepository
+    √ seharusnya menulis log status terpisah ketika memperbarui status detail SOP (6 ms)
+    √ seharusnya menulis dua log status terpisah ketika revisi menjadi sedang dievaluasi (3 ms)
+    √ seharusnya otomatis menandai tindak lanjut selesai saat kirim ulang revisi (3 ms)
+
+PASS src/modules/core/kepala-opd/kepala-opd.service.spec.ts
+  Pengujian KepalaOpdService
+    √ seharusnya membuat kepala OPD ketika belum ada kepala aktif (72 ms)
+    √ seharusnya melempar ConflictException ketika OPD sudah memiliki kepala (7 ms)
+    √ seharusnya melempar ConflictException ketika mengaktifkan ulang tetapi kepala lain masih aktif (21 ms)
+    √ seharusnya melempar ConflictException ketika pindah ke OPD yang sudah memiliki kepala (6 ms)
+    √ seharusnya melempar BadRequestException ketika nonaktif pindah OPD (7 ms)
+    √ seharusnya melempar ConflictException ketika menghapus kepala OPD yang masih memiliki SOP (5 ms)
+    √ seharusnya melempar NotFoundException ketika OPD tidak ditemukan pada membuat (8 ms)
+    √ seharusnya melempar ConflictException ketika email sudah digunakan (7 ms)
+    √ seharusnya melempar ConflictException ketika NIP sudah digunakan (8 ms)
+    create (Tambahan Kasus)
+      √ seharusnya membersihkan input spasi dan kapitalisasi pada email (Worst Case) (29 ms)
+      √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada create (False Case) (13 ms)
+      √ seharusnya meneruskan error tak terduga selain P2002 pada create (False Case) (87 ms)
+      √ seharusnya melempar NotFoundException jika data kepala tidak ditemukan sesaat setelah dibuat (False Case) (7 ms)
+    findAll (Tambahan Kasus)
+      √ seharusnya meneruskan search ke repository dan memetakan status aktif serta dapatDihapus (8 ms)
+    update (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika kepala tidak ada saat update (False Case) (5 ms)
+      √ seharusnya melempar BadRequestException jika payload kosong (Edge Case) (26 ms)
+      √ seharusnya tidak memanggil existsEmailOtherThan atau existsNipOtherThan jika email dan nip tidak berubah (Edge Case) (5 ms)
+      √ seharusnya mengecek uniqueness dengan email ternormalisasi dan nip trim ketika berubah (Worst Case) (7 ms)
+      √ seharusnya melempar NotFoundException ketika OPD tujuan tidak ada (False Case) (6 ms)
+      √ seharusnya memindahkan kepala OPD aktif ke OPD tujuan kosong dan sinkron riwayat (Success/Worst Case) (6 ms)
+      √ seharusnya tidak memvalidasi OPD tujuan ketika opdId sama dengan existing (Edge Case) (5 ms)
+      √ seharusnya membersihkan semua field profil pada update parsial (Worst Case) (6 ms)
+      √ seharusnya menetapkan deletedAt pada pembaruan status ke NONAKTIF (Edge Case) (6 ms)
+      √ seharusnya menetapkan deletedAt menjadi null dan syncRiwayatOpdId jika status menjadi AKTIF dan belum ada yang aktif (Edge Case) (4 ms)
+      √ seharusnya tidak mengecek slot OPD ketika status AKTIF dikirim untuk akun yang sudah aktif (Edge Case) (5 ms)
+      √ seharusnya memakai OPD tujuan untuk cek slot saat reaktivasi dengan opdId sama seperti existing (Edge Case) (6 ms)
+      √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada persistUpdate (False Case) (34 ms)
+      √ seharusnya melempar NotFoundException jika data tidak ditemukan sesaat setelah persistUpdate (False Case) (25 ms)
+    remove (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (False Case) (12 ms)
+      √ seharusnya memanggil softDeleteKepalaOpd jika _count.detailSopDibuat adalah 0 (Success/Edge Case) (13 ms)
+    listRiwayatOpd (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika kepala tidak ditemukan (False Case) (17 ms)
+      √ seharusnya mengembalikan array kosong jika tidak ada riwayat (Edge Case) (4 ms)
+      √ seharusnya melakukan map riwayat dengan benar (Normal Case) (5 ms)
+
+PASS src/modules/evaluation/nilai/dto/evaluasi-nilai.dto.spec.ts (5.966 s)
+  Pengujian DTO Evaluasi Nilai
+    √ seharusnya menerima payload isi nilai valid (15 ms)
+    √ seharusnya menolak hasil evaluasi di luar enum (11 ms)
+    √ seharusnya menolak version negatif dan pecahan (13 ms)
+    √ seharusnya menolak catatan yang melebihi batas panjang (9 ms)
+    √ seharusnya menerima payload selesai tanpa nilaiOPD karena validasi bisnis dilakukan di service (3 ms)
+    √ seharusnya menerima nilaiOPD batas 1 dan 5 (2 ms)
+    √ seharusnya menolak nilaiOPD di luar 1 sampai 5 atau bukan integer (3 ms)
+
+PASS src/modules/tte/shared/dto/tte-profil.dto.spec.ts (5.488 s)
+  Pengujian DTO Profil TTE
+    √ seharusnya menerima PIN batas minimum dan maksimum untuk register (7 ms)
+    √ seharusnya menolak PIN register yang kosong, kurang dari 4, lebih dari 32, atau bukan string (6 ms)
+    √ seharusnya menerima PIN lama dan PIN baru pada batas valid untuk update (1 ms)
+    √ seharusnya menolak update ketika PIN lama invalid (3 ms)
+    √ seharusnya menolak update ketika PIN baru invalid (3 ms)
+    √ seharusnya tidak memaksa PIN numeric-only karena kontrak DTO hanya string panjang 4-32 (1 ms)
+
+PASS src/modules/core/auth/auth.service.spec.ts
+  Pengujian AuthService
+    √ seharusnya melempar UnauthorizedException ketika pengguna tidak ditemukan (37 ms)
+    √ seharusnya melempar UnauthorizedException ketika password tidak cocok (6 ms)
+    √ seharusnya mengembalikan token dan publik pengguna ketika kredensial valid (13 ms)
+    √ seharusnya menandai status TTE configured ketika hash PIN tersedia (6 ms)
+    √ seharusnya melempar NotFoundException ketika getMe tidak menemukan pengguna (6 ms)
+    √ seharusnya mengembalikan data publik pengguna ketika getMe berhasil (5 ms)
+    √ seharusnya memperbarui password ketika lama password valid (9 ms)
+    √ seharusnya melempar UnauthorizedException ketika password lama salah saat changePassword (6 ms)
+    √ seharusnya merotasi refresh token dan menerbitkan access token baru (8 ms)
+    √ seharusnya menolak refresh token yang tidak cocok dengan hash tersimpan (7 ms)
+    √ seharusnya menolak refresh token kosong atau hanya spasi (6 ms)
+    √ seharusnya menolak payload refresh token dengan tipe token yang salah (6 ms)
+    √ seharusnya menolak refresh token ketika pengguna tidak ditemukan (5 ms)
+    √ seharusnya menolak refresh token ketika hash tersimpan kosong (5 ms)
+    √ seharusnya menolak refresh token yang sudah kedaluwarsa di database (5 ms)
+    √ seharusnya menolak refresh token dengan versi sesi lama (6 ms)
+    √ seharusnya revoke sesi saat logout dengan refresh token valid dan hash cocok (5 ms)
+    √ seharusnya tidak revoke sesi saat logout tanpa refresh token (5 ms)
+    √ seharusnya tidak melempar error saat logout menerima token invalid (5 ms)
+    √ seharusnya tidak revoke sesi saat logout jika refresh token tidak cocok dengan hash (3 ms)
+    √ seharusnya melempar NotFoundException ketika changePassword tidak menemukan pengguna (5 ms)
+
+PASS src/modules/evaluation/pengajuan/pengajuan-evaluasi.service.spec.ts
+  Pengujian PengajuanEvaluasiService
+    √ seharusnya mengembalikan ringkasan terpaginasi dengan total item (8 ms)
+    √ seharusnya menerapkan filter OPD untuk penyusun pada pencarian semua data (4 ms)
+    √ seharusnya menghilangkan field OPD pada findAll untuk PJ Penyusun (5 ms)
+    √ seharusnya tetap menyertakan field OPD pada findAll untuk PJ Evaluator (5 ms)
+    √ seharusnya menerapkan filter OPD untuk PJ penyusun pada pencarian semua data (6 ms)
+    √ seharusnya menolak akses membuat ketika bukan PJ penyusun (9 ms)
+    √ seharusnya menolak akses membuat ketika PJ penyusun tidak punya OPD (3 ms)
+    √ seharusnya menyimpan jenis EVALUASI_REQUEST_EVALUATOR saat membuat pengajuan (7 ms)
+    √ seharusnya menyimpan jenis EVALUASI_REQUEST_OPD saat membuat pengajuan (2 ms)
+    √ seharusnya menolak pembuatan ketika status detail belum menunggu pengajuan evaluasi (1 ms)
+    √ seharusnya menolak pembuatan ketika detail SOP milik OPD berbeda (5 ms)
+    √ seharusnya melempar ConflictException ketika OPD masih memiliki pengajuan evaluasi aktif (2 ms)
+    √ seharusnya melempar ConflictException ketika status berubah sebelum dipromosikan (6 ms)
+    √ seharusnya tidak melakukan perubahan pada evaluasi EVALUASI_REQUEST_OPD ketika pengguna bukan evaluator (1 ms)
+    √ seharusnya tidak melakukan perubahan pada evaluasi EVALUASI_REQUEST_OPD ketika alur pengajuan tidak memenuhi syarat
+    √ seharusnya tidak melakukan perubahan pada evaluasi EVALUASI_REQUEST_OPD ketika status sudah diajukan evaluasi
+    √ seharusnya keluar dari transaksi lebih awal ketika pengajuan penghambat masih ada (2 ms)
+    √ seharusnya memeriksa pengajuan penghambat pada semua status jobdesk aktif (2 ms)
+    √ seharusnya membuat evaluasi EVALUASI_REQUEST_OPD dalam transaksi ketika tidak ada penghambat (2 ms)
+    findOne (Tambahan Kasus)
+      √ seharusnya melempar NotFoundException jika pengajuanEvaluasiId tidak ditemukan (False Case) (1 ms)
+      √ seharusnya melempar ForbiddenException jika mencoba mengakses pengajuan dari OPD lain (False Case) (2 ms)
+      √ seharusnya mengembalikan data ringkas jika ditemukan dan terotorisasi (Success Case) (1 ms)
+    create (Tambahan Kasus)
+      √ seharusnya melempar BadRequestException jika sopDetailIds mengandung duplikasi (Worst/Edge Case) (1 ms)
+      √ seharusnya melempar ConflictException jika data langsung hilang sesaat sesudah transaksi dibuat (False Case) (2 ms)
+    pastikanPengajuanRequestOpdUntukEvaluator (Tambahan Kasus)
+      √ seharusnya no-op tanpa transaksi jika pipeline valid namun detail tidak ada yang siap evaluasi (Edge Case) (1 ms)
+      √ seharusnya melempar ConflictException jika baris diupdate tidak cocok (promoted.count !== sopDetailIds.length) di transaksi (False Case) (1 ms)
+    Otorisasi Akses: resolveOpdIdTerikat & assertUserCanAccessPengajuan (Tambahan Kasus)
+      √ resolveOpdIdTerikat seharusnya melempar ForbiddenException jika user adalah EVALUATOR (karena global) (False Case) (1 ms)
+      √ resolveOpdIdTerikat seharusnya mengembalikan opdId untuk PJ_PENYUSUN (Success Case) (1 ms)
+      √ assertUserCanAccessPengajuan seharusnya me-resolve jika user adalah EVALUATOR tanpa cek OPD (Edge Case) (1 ms)
+      √ assertUserCanAccessPengajuan seharusnya melempar ForbiddenException untuk role yang tidak dikenal (False Case) (1 ms)
+
+PASS src/modules/sop/diagram/sop-diagram.service.spec.ts
+  Pengujian SopDiagramService
+    √ seharusnya melempar NotFoundException ketika detail tidak ditemukan (6 ms)
+    √ seharusnya upsert konfigurasi dan mengembalikan workbench (3 ms)
+    √ seharusnya menolak tidak valid path overrides (3 ms)
+    updateDiagram (Tambahan Kasus Otorisasi dan Validasi Status)
+      √ seharusnya melempar ForbiddenException jika peran bukan PENYUSUN/PJ_PENYUSUN (False Case) (1 ms)
+      √ seharusnya melempar NotFoundException jika status detail tidak ditemukan (Edge Case) (2 ms)
+      √ seharusnya melempar ConflictException jika status detail tidak dapat diedit (False Case) (1 ms)
+    updateDiagram (Tambahan Kasus Validasi Payload)
+      √ seharusnya melempar BadRequestException jika struktur pathOverrides rusak - array (Worst Case) (1 ms)
+      √ seharusnya melempar BadRequestException jika kunci edge pathOverrides tidak valid (Worst Case) (2 ms)
+      √ seharusnya tidak memanggil upsertConfig dan langsung return workbench jika tidak ada perubahan relevan (Edge Case) (3 ms)
+
+PASS src/modules/tte/core/tte.service.spec.ts (5.586 s)
+  Pengujian TteService
+    √ seharusnya melempar error ketika evaluator menandatangani BA dengan status yang salah (6 ms)
+    √ seharusnya melempar error ketika PIN tidak valid (3 ms)
+    √ seharusnya mengembalikan riwayat ketika BA evaluator valid (5 ms)
+    √ seharusnya melempar ConflictException ketika status SOP drift saat PJ Penyusun menandatangani BA (104 ms)
+    √ seharusnya melempar NotFoundException untuk tidak dikenal pengguna pada profil (13 ms)
+    √ seharusnya melempar NotFoundException ketika getPengesahanPublic tidak menemukan riwayat (2 ms)
+    √ seharusnya mengembalikan pengesahan publik ketika riwayat masih ada (2 ms)
+    √ seharusnya membuat PIN ketika register profil dan PIN belum ada (2 ms)
+    √ seharusnya melempar ConflictException ketika register profil tetapi PIN sudah ada (1 ms)
+    √ seharusnya memperbarui PIN ketika PIN lama valid (2 ms)
+    √ seharusnya melempar UnauthorizedException ketika PIN lama salah saat memperbarui profil PIN (1 ms)
+    √ seharusnya menampilkan konteks detail status ketika batch penandatanganan memiliki SOP yang tidak memenuhi syarat (5 ms)
+    √ seharusnya mendelegasikan signPdf ke pdfSigningService (Edge Case Delegation) (2 ms)
+    √ seharusnya mendelegasikan getPdfSigningStatus ke pdfSigningService (Edge Case Delegation) (2 ms)
+    √ seharusnya mendelegasikan verifyPdf ke pdfSigningService (Edge Case Delegation) (1 ms)
+
+PASS src/modules/sop/catalog/sop-catalog.service.spec.ts (7.221 s)
+  Pengujian SopCatalogService
+    √ seharusnya melempar ForbiddenException ketika pengguna tidak memiliki OPD (53 ms)
+    √ seharusnya memetakan terbaru detail dan terakhir diedit (12 ms)
+    √ seharusnya memetakan baris tanpa detail (16 ms)
+    √ seharusnya mengatur canCabutSop ketika SOP berlaku tanpa revisi berjalan (8 ms)
+    √ seharusnya mengosongkan canCabutSop ketika revisi sedang berjalan (6 ms)
+    √ seharusnya menggunakan findDaftarSemua untuk evaluator (7 ms)
+    √ seharusnya meneruskan filter ke repository ketika pengguna adalah penyusun (6 ms)
+    √ seharusnya menggunakan findDaftarSemua dengan filter ketika pengguna adalah evaluator (5 ms)
+    √ seharusnya melempar BadRequestException ketika tanggal awal setelah tanggal akhir (6 ms)
+    √ seharusnya memperlakukan status semua sebagai tanpa filter status (5 ms)
+    √ seharusnya membuat SOP dengan nama lembaga kosong ketika DTO tidak mengirim field tersebut (7 ms)
+    √ seharusnya menyimpan nama lembaga kosong ketika DTO tidak mengirim field meskipun nama OPD tidak dikenal (12 ms)
+    √ seharusnya menyimpan nama lembaga yang sudah di-trim ketika DTO mengirim nilai (5 ms)
+    √ seharusnya melempar ForbiddenException ketika membuat SOP tanpa OPD (6 ms)
+    √ seharusnya memetakan P2002 menjadi ConflictException (4 ms)
+    √ seharusnya melempar NotFoundException ketika workbench detail tidak ditemukan (4 ms)
+    √ seharusnya melempar ForbiddenException ketika OPD workbench tidak cocok (5 ms)
+    √ seharusnya mengembalikan workbench ketika OPD penyusun cocok (7 ms)
+    Pengujian memperbarui penyusun header
+      √ seharusnya melempar NotFoundException ketika detail atau SOP id tidak dapat ditemukan (5 ms)
+      √ seharusnya melempar ConflictException ketika detail sudah berlaku (4 ms)
+      √ seharusnya melempar ForbiddenException ketika OPD tidak cocok (5 ms)
+      √ seharusnya memperbarui judul pada header SOP ketika judul dikirim (5 ms)
+      √ seharusnya mengembalikan workbench dengan log edit setelah patch header (5 ms)
+      √ seharusnya memperbarui nomor dan nama lembaga pada detail ketika dikirim (5 ms)
+      √ seharusnya mengganti dasar hukum ketika daftar ID dikirim (5 ms)
+      √ seharusnya mengganti SOP terkait ketika daftar ID dikirim (6 ms)
+      √ seharusnya mengganti lampiran per jenis ketika array dikirim (6 ms)
+      √ seharusnya melempar ConflictException ketika nomor SOP duplikat (5 ms)
+      √ seharusnya melempar BadRequestException ketika invariant DB SOP terkait gagal (6 ms)
+      √ seharusnya melewati repository ketika DTO tidak memiliki field (5 ms)
+      √ seharusnya mengembalikan workbench dengan lampiran terkelompok setelah pembaruan (5 ms)
+    Pengujian transisi status detail SOP
+      √ seharusnya melempar NotFoundException ketika detail tidak ditemukan (5 ms)
+      √ seharusnya melempar ConflictException ketika target sama dengan status saat ini (5 ms)
+      √ seharusnya melempar ConflictException ketika endpoint status umum mengatur status berlaku (4 ms)
+      √ seharusnya mengizinkan draft menjadi menunggu pengajuan evaluasi untuk penyusun ketika workbench lengkap (10 ms)
+      √ seharusnya melempar BadRequestException ketika workbench tidak lengkap untuk menunggu pengajuan evaluasi (4 ms)
+      √ seharusnya menolak akses penyusun saat mengajukan evaluasi dari status siap (10 ms)
+      √ seharusnya mengizinkan PJ penyusun mengajukan evaluasi dari status siap (6 ms)
+    Pengujian kirim ulang ke evaluator setelah revisi
+      √ seharusnya menolak akses evaluator (5 ms)
+      √ seharusnya melempar ConflictException ketika status bukan revisi (7 ms)
+      √ seharusnya menolak akses penyusun (4 ms)
+      √ seharusnya mengizinkan PJ penyusun (6 ms)
+      √ seharusnya tetap mengirim ulang meski umpan balik belum ditandai selesai terpisah (4 ms)
+    Pengujian buat versi baru dari SOP berlaku
+      √ seharusnya mengkloning dari versi berlaku dan mengembalikan workbench (4 ms)
+      √ seharusnya melempar ForbiddenException ketika pengguna bukan penyusun (3 ms)
+    Pengujian cabut SOP berlaku
+      √ seharusnya cabut berlaku versi dan mengembalikan workbench (5 ms)
+      √ seharusnya mencabut versi berlaku ketika parameter adalah header SOP dan versi terbaru adalah draft (11 ms)
+      √ seharusnya menolak cabut untuk non kepala OPD (108 ms)
+      √ seharusnya menolak cabut ketika tidak ada berlaku versi (29 ms)
+      √ seharusnya menolak pencabutan ketika revisi sedang berjalan (32 ms)
+      √ seharusnya mendelegasikan dicabut dari transition detail SOP status (6 ms)
+    Pengujian hapus versi draft
+      √ seharusnya memanggil repository menghapus ketika penyusun (6 ms)
+    Pengujian hapus SOP draft awal
+      √ seharusnya memanggil repository untuk menghapus header SOP ketika penyusun (4 ms)
+      √ seharusnya meneruskan konflik ketika repository menolak draft yang bukan draft awal (12 ms)
+
+PASS src/common/guards/roles.guard.spec.ts
+  Pengujian RolesGuard
+    √ seharusnya mengizinkan ketika tidak ada peran metadata (2 ms)
+    √ seharusnya mengizinkan akses ketika peran pengguna termasuk dalam daftar peran yang diperbolehkan
+    √ seharusnya melempar error ketika peran required tetapi peran tidak cocok (75 ms)
+    √ seharusnya melempar error ketika peran required tetapi pengguna tidak ditemukan (3 ms)
+    √ seharusnya mengizinkan ketika metadata peran diset sebagai array kosong (Edge Case) (1 ms)
+
+PASS src/modules/tte/shared/repository/tte.repository.spec.ts
+  Pengujian TteRepository
+    √ seharusnya menggunakan unique nomor dokumen per SOP ketika batch penandatanganan lebih dari satu SOP (15 ms)
+    √ seharusnya sufiks nomor dokumen ketika batch penandatanganan tunggal SOP (4 ms)
+    transaksiTandaTanganiBaEvaluator (Tambahan Kasus)
+      √ seharusnya mengembalikan error NOT_FOUND jika pengajuan tidak ada (1 ms)
+      √ seharusnya mengembalikan error BAD_STATUS jika status pengajuan tidak SELESAI_DIEVALUASI (2 ms)
+      √ seharusnya mengembalikan error INVALID_DOC_PARENT jika dokumenTte berbagi parent (Edge Case) (2 ms)
+      √ seharusnya mengembalikan error ALREADY_SIGNED jika peran sudah tanda tangan (Edge Case) (1 ms)
+      √ seharusnya berhasil menandatangani BA Evaluator (Success) (2 ms)
+    transaksiTandaTanganiBaPjPenyusun (Tambahan Kasus)
+      √ seharusnya mengembalikan error FORBIDDEN_OPD jika opd pengguna berbeda (2 ms)
+      √ seharusnya mengembalikan error DOC_MISMATCH jika dokumenTte milik pengajuan lain (Worst Case) (1 ms)
+      √ seharusnya mengembalikan error SOP_STATUS_DRIFT jika jumlah SOP yang diupdate tidak cocok (Edge Case) (3 ms)
+    transaksiTandaTanganiSemuaSopPengajuan (Tambahan Kasus Kepala OPD)
+      √ seharusnya mengembalikan error EMPTY_SOP jika array nilaiEvaluasi kosong (Worst Case) (1 ms)
+      √ seharusnya mengembalikan error BAD_SOP_STATUS jika ada sop yang belum diverifikasi organisasi (False Case) (1 ms)
+
+PASS src/modules/tte/verifikasi/tte-verifikasi.service.spec.ts
+  Pengujian TteVerifikasiService
+    getPengesahanPublic
+      √ seharusnya melempar NotFoundException jika data tidak ditemukan (False Case) (9 ms)
+      √ seharusnya melempar NotFoundException jika relasi dokumenTte putus/null (Worst Case) (2 ms)
+      √ seharusnya melempar NotFoundException jika relasi profil user putus/null (Worst Case) (1 ms)
+      √ seharusnya mengembalikan fallback string kosong jika jabatan bernilai null (Edge Case) (3 ms)
+      √ seharusnya mengubah null menjadi undefined untuk sopDetailId dan pengajuanEvaluasiId jika kosong (Edge Case) (2 ms)
+      √ seharusnya memakai payload JSON ketika origin publik tidak dapat ditentukan (4 ms)
+      √ seharusnya mengembalikan mapping response dengan lengkap (Success Case) (2 ms)
+
+PASS src/modules/tte/core/tte.controller.spec.ts (35.436 s)
+  Pengujian TteController - Profil
+    √ seharusnya mengembalikan pesan kredensial belum ada ketika profil null (102 ms)
+    √ seharusnya membungkus respons profil yang sudah ada (2 ms)
+    √ seharusnya mendelegasikan pendaftaran PIN profil (2 ms)
+    √ seharusnya mendelegasikan perubahan PIN profil (2 ms)
+
+PASS src/modules/core/peraturan/peraturan.service.spec.ts
+  Pengujian PeraturanService
+    list()
+      √ harus mengembalikan list kosong (101 ms)
+      √ harus menyertakan data terakhir diedit jika ada dan menangani yang null (31 ms)
+      √ harus melemparkan error jika resolusi OPD gagal (56 ms)
+    getById()
+      √ harus melempar NotFoundException jika peraturan tidak ditemukan (22 ms)
+      √ harus mengembalikan data peraturan jika ditemukan (9 ms)
+    create()
+      √ harus berhasil membuat peraturan baru (6 ms)
+      √ harus melempar ConflictException jika nomor dan tahun sudah ada (Prisma P2002) (7 ms)
+      √ harus melemparkan error lain selain P2002 secara langsung (6 ms)
+    update()
+      √ harus melempar NotFoundException jika hasOpdLink mengembalikan false (5 ms)
+      √ harus mengambil data master saat tidak ada patch data (DTO kosong) namun melempar NotFoundException jika tidak ditemukan (5 ms)
+      √ harus mengembalikan data tanpa update ketika DTO kosong (5 ms)
+      √ harus memanggil updateMasterWithLastEditor jika ada patch sebagian (14 ms)
+      √ harus memanggil updateMasterWithLastEditor jika ada patch penuh (4 ms)
+      √ harus melempar ConflictException jika terjadi Prisma P2002 saat update (5 ms)
+      √ harus meneruskan error selain P2002 secara langsung saat update (5 ms)
+    remove()
+      √ harus melempar NotFoundException jika hasOpdLink mengembalikan false (17 ms)
+      √ seharusnya melempar ConflictException ketika menghapus peraturan yang masih menjadi dasar hukum (6 ms)
+      √ seharusnya menghapus relasi dan master ketika tidak ada OPD lain setelah penghapusan (4 ms)
+      √ seharusnya tidak menghapus master ketika OPD lain masih terhubung (6 ms)
+
+PASS src/modules/tte/profil/tte-profil.service.spec.ts
+  Pengujian TteProfilService
+    getProfil
+      √ seharusnya melempar NotFoundException ketika pengguna aktif tidak ditemukan (5 ms)
+      √ seharusnya mengembalikan null ketika pengguna ada tetapi PIN TTE belum dibuat (3 ms)
+      √ seharusnya memetakan profil untuk peran KEPALA_OPD (3 ms)
+      √ seharusnya memetakan profil untuk peran PJ_EVALUATOR (2 ms)
+      √ seharusnya memetakan profil untuk peran PJ_PENYUSUN (2 ms)
+      √ seharusnya menolak peran aktif yang tidak mendukung TTE (2 ms)
+    registerProfil
+      √ seharusnya melempar NotFoundException dan berhenti ketika user tidak aktif (4 ms)
+      √ seharusnya melempar ConflictException dan tidak hash PIN ketika kredensial sudah ada (2 ms)
+      √ seharusnya hash PIN dengan cost 10 lalu membuat kredensial baru (2 ms)
+      √ seharusnya meneruskan error repository saat create kredensial gagal (32 ms)
+    updateProfilPin
+      √ seharusnya melempar NotFoundException dan tidak membaca kredensial ketika user tidak aktif (2 ms)
+      √ seharusnya melempar BadRequestException ketika PIN belum pernah dibuat (2 ms)
+      √ seharusnya melempar UnauthorizedException ketika PIN lama salah (2 ms)
+      √ seharusnya compare PIN lama, hash PIN baru, lalu update kredensial (2 ms)
+      √ seharusnya meneruskan error repository saat update hash PIN gagal (3 ms)
+    generateP12
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (2 ms)
+      √ seharusnya membuat kredensial p12 untuk pengguna (3 ms)
+    uploadP12
+      √ seharusnya melempar NotFoundException jika pengguna tidak ditemukan (1 ms)
+      √ seharusnya mengunggah dan menyimpan file p12 (1 ms)
+
+PASS src/modules/evaluation/nilai/evaluasi-nilai.service.spec.ts
+  EvaluasiNilaiService
+    isiNilai
+      √ should_forbid_when_bukan_evaluator (3 ms)
+      √ should_reject_perlu_perbaikan_when_catatan_kosong (1 ms)
+      √ should_throw_not_found_when_pengajuan_not_sedang_dievaluasi (3 ms)
+      √ should_throw_conflict_when_version_mismatch (1 ms)
+      √ should_set_status_tindak_lanjut_terbuka_when_perlu_perbaikan (2 ms)
+      √ should_clear_status_tindak_lanjut_when_sesuai (2 ms)
+      √ should_write_log_with_previous_hasil_and_catatan (2 ms)
+      √ seharusnya menolak PERLU_PERBAIKAN dengan catatan hanya spasi dan tidak membuka transaksi (Edge Case) (1 ms)
+      √ seharusnya melempar NotFoundException ketika pengajuan tidak ditemukan (False Case) (1 ms)
+      √ seharusnya melempar NotFoundException ketika baris nilai tidak ada dalam pengajuan (False Case) (1 ms)
+      √ seharusnya memakai version default 0 dan trim catatan sebelum update dan log (Edge/Worst Case) (2 ms)
+      √ seharusnya tidak menghapus status tindak lanjut SELESAI ketika nilai diubah menjadi SESUAI (Edge Case) (2 ms)
+    tandaiTindakLanjutSelesai
+      √ should_mark_selesai_when_revisi_and_terbuka (3 ms)
+      √ seharusnya menolak peran selain penyusun dan PJ penyusun (False Case) (1 ms)
+      √ seharusnya menolak ketika OPD pengguna tidak ditemukan (False Case) (1 ms)
+      √ seharusnya menyembunyikan pengajuan beda OPD sebagai NotFound (Worst Case) (1 ms)
+      √ seharusnya menolak pengajuan yang tidak sedang dievaluasi (False Case)
+      √ seharusnya melempar NotFoundException ketika detail SOP tidak ada di OPD pengguna (False Case) (1 ms)
+      √ seharusnya menolak detail SOP yang belum berstatus revisi dari evaluator (Edge Case) (1 ms)
+      √ seharusnya melempar NotFoundException ketika baris nilai evaluasi tidak ada (False Case) (1 ms)
+      √ seharusnya menolak nilai yang hasilnya bukan PERLU_PERBAIKAN (Edge Case) (1 ms)
+      √ seharusnya menolak tindak lanjut yang sudah SELESAI (Edge Case) (1 ms)
+      √ seharusnya menolak ketika tidak ada tindak lanjut TERBUKA (Edge Case) (1 ms)
+    assertBolehKirimUlangSetelahRevisi
+      √ should_pass_when_status_masih_terbuka (1 ms)
+      √ should_pass_when_status_selesai
+    selesai
+      √ should_forbid_when_bukan_evaluator (1 ms)
+      √ should_reject_when_belum_semua_SESUAI (1 ms)
+      √ should_throw_bad_request_when_selesai_but_status_not_sedang_dievaluasi (2 ms)
+      √ should_throw_bad_request_when_selesai_request_opd_with_nilaiOPD (1 ms)
+      √ should_throw_bad_request_when_selesai_request_evaluator_without_valid_nilaiOPD (1 ms)
+      √ seharusnya melempar NotFoundException ketika pengajuan tidak ditemukan (False Case) (2 ms)
+      √ seharusnya menolak nilaiOPD EVALUASI_REQUEST_EVALUATOR yang invalid: null (Edge Case) (1 ms)
+      √ seharusnya menolak nilaiOPD EVALUASI_REQUEST_EVALUATOR yang invalid: nol (Edge Case) (1 ms)
+      √ seharusnya menolak nilaiOPD EVALUASI_REQUEST_EVALUATOR yang invalid: di bawah minimum (Edge Case) (1 ms)
+      √ seharusnya menolak nilaiOPD EVALUASI_REQUEST_EVALUATOR yang invalid: di atas maksimum (Edge Case) (1 ms)
+      √ seharusnya menolak nilaiOPD EVALUASI_REQUEST_EVALUATOR yang invalid: pecahan (Edge Case) (1 ms)
+      √ seharusnya menolak pengajuan tanpa dokumen nilai (False Case) (1 ms)
+      √ seharusnya melempar ConflictException ketika sebagian detail SOP gagal dipromosikan (Worst Case) (2 ms)
+      √ seharusnya menyelesaikan evaluasi EVALUASI_REQUEST_EVALUATOR dengan skor batas minimum dan mempertahankan tanggalEvaluasi lama (Edge/Success Case) (4 ms)
+      √ seharusnya menyelesaikan evaluasi EVALUASI_REQUEST_OPD tanpa nilaiOPD dan menyimpan skor null (Success Case) (3 ms)
+      √ seharusnya melempar ConflictException ketika pengajuan gagal dimuat setelah update (False Case) (2 ms)
+
+PASS src/modules/core/evaluator/evaluator.service.spec.ts
+  Pengujian EvaluatorService
+    √ seharusnya melakukan hash password default saat membuat evaluator (60 ms)
+    √ seharusnya mengembalikan grup dari listGrup (10 ms)
+    √ seharusnya meneruskan pencarian ke findEvaluatorsByOpd (13 ms)
+    √ seharusnya melempar ServiceUnavailableException pada listGrup ketika PJ tidak ada (17 ms)
+    √ seharusnya melempar ServiceUnavailableException ketika biro tidak dikonfigurasi pada membuat (8 ms)
+    √ seharusnya menetapkan evaluator menjadi biro OPD pada membuat (8 ms)
+    √ seharusnya melempar NotFoundException ketika memperbarui evaluator di luar biro (12 ms)
+    √ seharusnya membersihkan spasi dan mengecilkan huruf email pada createAnggota (Worst Case) (7 ms)
+    √ seharusnya melempar ConflictException jika email/nip sudah ada pada createAnggota (False Case) (8 ms)
+    √ seharusnya melempar ServiceUnavailableException jika biro tidak ada pada updateAnggota (False Case) (5 ms)
+    √ seharusnya melempar BadRequestException jika tidak ada field yang dikirim pada updateAnggota (Edge/False Case) (5 ms)
+    √ seharusnya membersihkan spasi dan mengubah huruf email pada updateAnggota (Worst Case) (8 ms)
+    √ seharusnya mengubah deletedAt menjadi saat ini jika status NONAKTIF, dan null jika AKTIF (Edge Case) (9 ms)
+    √ seharusnya melempar ConflictException jika terjadi Prisma P2002 pada updateEvaluator (False Case) (8 ms)
+    √ seharusnya melempar ServiceUnavailableException jika biro tidak ada pada softDeleteAnggota (False Case) (6 ms)
+    √ seharusnya melempar NotFoundException jika evaluator aktif tidak ditemukan pada softDeleteAnggota (False Case) (5 ms)
+    √ seharusnya memanggil softDeleteEvaluator jika berhasil (Edge/Success Case) (6 ms)
+    √ seharusnya tidak mengecek ke database jika email dan NIP yang dikirim sama dengan data lama (Edge Case) (5 ms)
+    √ seharusnya meneruskan error jika terjadi kegagalan sistem selain Prisma P2002 (False Case) (42 ms)
+    √ seharusnya mengembalikan array kosong untuk evaluator jika listGrup dipanggil saat belum ada evaluator (Edge Case) (5 ms)
+    √ seharusnya hanya memperbarui satu field pada pembaruan parsial (Edge Case) (4 ms)
+    √ seharusnya mengonversi response DTO dengan benar saat deletedAt terisi (Edge Case) (5 ms)
+
+PASS src/modules/sop/pelaksana/pelaksana.service.spec.ts
+  Pengujian PelaksanaService
+    √ seharusnya menolak akses membuat ketika OPD query tidak cocok (89 ms)
+    √ seharusnya membuat pelaksana untuk OPD yang sudah ditentukan (4 ms)
+    √ seharusnya membuat pelaksana memakai OPD pengguna ketika dto tidak mengirim opdId (Edge Case) (1 ms)
+    √ seharusnya melempar ConflictException ketika nama pelaksana duplikat dalam OPD saat create (1 ms)
+    √ seharusnya mengembalikan daftar pelaksana terpetakan dan meneruskan query OPD opsional (2 ms)
+    √ seharusnya mengembalikan array kosong saat list tidak punya data (Edge Case) (2 ms)
+    √ seharusnya meneruskan ForbiddenException dari resolver OPD saat list query OPD tidak cocok (False Case) (1 ms)
+    √ seharusnya melempar NotFoundException ketika memperbarui pelaksana di luar OPD (2 ms)
+    √ seharusnya memperbarui nama ketika pelaksana in OPD (2 ms)
+    √ seharusnya melempar ConflictException ketika nama pelaksana duplikat dalam OPD saat update (1 ms)
+    √ seharusnya tidak mengubah nama ketika resolver OPD gagal saat update (False Case) (1 ms)
+    √ seharusnya melempar ConflictException ketika menghapus data yang masih direferensikan (1 ms)
+    √ seharusnya melempar NotFoundException ketika menghapus pelaksana yang tidak ada di OPD pengguna (False Case) (3 ms)
+    √ seharusnya melempar ConflictException ketika pelaksana masih direferensikan sebagai swimlane (Worst Case) (2 ms)
+    √ seharusnya menghapus pelaksana ketika tidak ada referensi langkah maupun swimlane (Success Case) (1 ms)
+
+PASS src/modules/evaluation/grafik/evaluasi-grafik.service.spec.ts
+  Pengujian EvaluasiGrafikService
+    resolveRentangTahun (Validasi & Default Rentang)
+      √ seharusnya melempar BadRequestException ketika tahunDari lebih besar dari tahunSampai (6 ms)
+      √ seharusnya menetapkan tahunDari = tahunSampai = tahun jika hanya query "tahun" diberikan (3 ms)
+      √ seharusnya memakai tahun berjalan untuk default tahunDari (sampai - 4) jika hanya tahunSampai diberikan (1 ms)
+      √ seharusnya memakai tahun berjalan untuk default tahunSampai jika hanya tahunDari diberikan (1 ms)
+      √ seharusnya memakai default 5 tahun terakhir (termasuk tahun ini) jika tidak ada query tahun sama sekali
+    buildResponse (Agregasi Data)
+      √ seharusnya menghitung agregasi dengan benar untuk multi-tahun (normal case) (6 ms)
+      √ seharusnya menangani jumlahEvaluasi bertipe bigint dari database (4 ms)
+      √ seharusnya mengabaikan nilai OPD di luar skala 1 sampai 5 (dan NaN/Infinity) serta menganggapnya null (4 ms)
+      √ seharusnya mengembalikan ringkasan kosong jika daftar OPD kosong (edge case) (2 ms)
+      √ seharusnya meneruskan error dari database secara langsung tanpa menelannya (worst case) (57 ms)
+
+PASS src/modules/core/kepala-opd/kepala-opd.repository.spec.ts
+  Pengujian KepalaOpdRepository
+    √ seharusnya mencari OPD aktif berdasarkan id (3 ms)
+    √ seharusnya mencari kepala OPD berdasarkan id dan peran KEPALA_OPD (1 ms)
+    √ seharusnya mencari semua kepala tanpa filter ketika search kosong (2 ms)
+    √ seharusnya mencari semua kepala dengan filter nama, nip, atau email ketika search berisi nilai (1 ms)
+    √ seharusnya membuat kepala OPD dalam transaksi dan sync riwayat aktif (2 ms)
+    √ seharusnya persist pindah OPD dengan menonaktifkan riwayat lama dan sync tujuan (7 ms)
+    √ seharusnya persist profil hanya ketika profil berisi field (7 ms)
+    √ seharusnya tidak update profil ketika profil kosong (2 ms)
+    √ seharusnya sync riwayat saat syncRiwayatOpdId dikirim (1 ms)
+    √ seharusnya soft delete kepala OPD dengan deletedAt baru (1 ms)
+
+PASS src/modules/sop/prosedur/sop-prosedur.repository.spec.ts
+  Pengujian SopProsedurRepository.updateProsedurTransaction
+    √ seharusnya hanya mengganti pelaksana ketika hanya pelaksana yang dikirim (8 ms)
+    √ seharusnya memutus self FK, menghapus, menambahkan, lalu menghubungkan ulang (6 ms)
+    √ seharusnya menambahkan langkah baru tanpa cleanup diagram ketika belum ada langkah (2 ms)
+    √ seharusnya memanggil log helper dengan bagian LANGKAH dan field yang berubah (2 ms)
+
+PASS src/modules/core/auth/auth.repository.spec.ts
+  Pengujian AuthRepository
+    √ seharusnya mencari pengguna aktif berdasarkan email (3 ms)
+    √ seharusnya mencari pengguna aktif berdasarkan id (9 ms)
+    √ seharusnya update password, menaikkan versi sesi, dan menghapus refresh token (2 ms)
+    √ seharusnya startSession menaikkan versi sesi dan menghapus refresh token lama (1 ms)
+    √ seharusnya menyimpan hash refresh token dan masa berlaku (2 ms)
+    √ seharusnya revokeSession menaikkan versi sesi dan menghapus refresh token (1 ms)
+
+PASS src/common/pengguna/pengguna-admin.util.spec.ts
+  Pengujian util pengguna admin
+    Pengujian rethrowPrismaUniqueViolation
+      √ seharusnya melempar ConflictException ketika error Prisma P2002 terjadi (53 ms)
+      √ seharusnya tidak melempar error untuk jenis error lain (2 ms)
+    Pengujian resolveDeletedAtFromStatus
+      √ seharusnya mengisi tanggal ketika status nonaktif (1 ms)
+      √ seharusnya mengosongkan nilai ketika status aktif (1 ms)
+      √ seharusnya mempertahankan nilai saat ini ketika status tidak dikirim (1 ms)
+    Pengujian assertAtLeastOneUpdateField
+      √ seharusnya melempar error ketika semua field update kosong (2 ms)
+      √ seharusnya tidak melempar error ketika ada nilai yang bukan undefined (termasuk null atau falsy) (Edge Case) (2 ms)
+    Pengujian assertEmailNipUniqueOnUpdate
+      √ seharusnya melempar error ketika email sudah digunakan (1 ms)
+      √ seharusnya melempar error ketika NIP sudah digunakan (1 ms)
+      √ seharusnya melewati pengecekan ketika nilai tidak berubah (2 ms)
+      √ seharusnya hanya memvalidasi NIP jika hanya nipNext yang berubah dan tidak undef (Edge Case) (1 ms)
+      √ seharusnya hanya memvalidasi Email jika hanya emailNext yang berubah dan tidak undef (Edge Case) (1 ms)
+
+PASS src/modules/evaluation/pengajuan/pengajuan-evaluasi.repository.spec.ts
+  Pengujian PengajuanEvaluasiRepository.buildWhere dari query
+    √ seharusnya menggunakan status In ketika non kosong dan mengabaikan tunggal status (4 ms)
+    √ seharusnya memakai status tunggal ketika daftar status kosong (1 ms)
+  Pengujian repairPengesahanKepalaOpdStatusJikaDokumenSudahSigned
+    √ seharusnya menyelaraskan status pengajuan dan detail SOP jika dokumen resmi sudah signed dan published (8 ms)
+
+PASS src/modules/core/pengguna/pengguna.repository.spec.ts
+  Pengujian PenggunaRepository.createPengguna
+    √ seharusnya menyimpan membuat input (6 ms)
+
+PASS src/modules/evaluation/nilai/evaluasi-nilai.repository.spec.ts
+  Pengujian EvaluasiNilaiRepository
+    √ seharusnya menjalankan callback dalam transaksi Prisma (3 ms)
+    √ seharusnya mencari nilai revisi aktif terbaru untuk detail SOP (2 ms)
+    √ seharusnya mencari umpan balik aktif untuk detail SOP dan OPD (2 ms)
+    √ seharusnya mengembalikan OPD id dari detail SOP (2 ms)
+    √ seharusnya mengembalikan null ketika detail SOP tidak ditemukan saat mencari OPD id (1 ms)
+
+PASS src/database/seed/seed-status.util.spec.ts
+  Pengujian mapStatusSopUntukPengajuan
+    √ seharusnya memetakan SEDANG_DIEVALUASI tetap menjadi SEDANG_DIEVALUASI (9 ms)
+    √ seharusnya memetakan SELESAI_DIEVALUASI menjadi MENUNGGU_TTD_PJ_EVALUATOR
+    √ seharusnya memetakan DITANDATANGANI_PJ_EVALUATOR menjadi MENUNGGU_TTD_PJ_EVALUATOR
+    √ seharusnya memetakan DITANDATANGANI_PJ_PENYUSUN menjadi DIVERIFIKASI_PJ_EVALUATOR_ORGANISASI (1 ms)
+    √ seharusnya memetakan SELESAI menjadi BERLAKU
+
+PASS src/modules/evaluation/nilai/evaluasi-revisi.policy.spec.ts
+  Pengujian kebijakan revisi evaluasi
+    √ seharusnya lolos ketika nilai tidak ada (3 ms)
+    √ seharusnya lolos ketika status masih terbuka (9 ms)
+    √ seharusnya melempar error ketika status tindak lanjut masih kosong (53 ms)
+    √ seharusnya lolos ketika status selesai (1 ms)
+
+PASS src/modules/evaluation/umpan-balik/evaluasi-umpan-balik.service.spec.ts (6.01 s)
+  Pengujian EvaluasiUmpanBalikService
+    Validasi Hak Akses (RBAC & OPD)
+      √ seharusnya menolak akses (Forbidden) jika peran pengguna bukan PENYUSUN, PJ_PENYUSUN, atau KEPALA_OPD (84 ms)
+      √ seharusnya mengizinkan pengecekan jika peran valid (PENYUSUN, PJ_PENYUSUN, KEPALA_OPD) (21 ms)
+      √ seharusnya melempar ForbiddenException jika OPD pengguna tidak terdaftar di database (6 ms)
+      √ seharusnya melempar NotFoundException jika Detail SOP tidak ada di database (2 ms)
+      √ seharusnya melempar ForbiddenException jika Detail SOP berada di instansi (OPD) yang berbeda dengan milik pengguna (2 ms)
+    Pengambilan dan Pemetaan Data Umpan Balik
+      √ seharusnya mengembalikan null jika data umpan balik evaluasi tidak ditemukan untuk SOP tersebut (1 ms)
+      √ seharusnya memetakan nilai default hasil = PERLU_PERBAIKAN jika di DB bernilai null (Edge Case) (2 ms)
+      √ seharusnya memetakan secara utuh jika ada status tindak lanjut, tanggal, dan user yang menilai/menindaklanjuti (Normal Case) (5 ms)
+      √ seharusnya meneruskan error jika service di bawahnya gagal (Worst Case) (9 ms)
+
+PASS src/modules/sop/collaboration/log-edit-session.helper.spec.ts
+  Pengujian helper sesi log edit
+    Pengujian translateField
+      √ seharusnya mengembalikan label Indonesia untuk field yang dikenal (2 ms)
+      √ seharusnya meneruskan field yang tidak dikenal apa adanya
+    Pengujian buildLogSummary
+      √ seharusnya memformat ringkasan ketika jumlah lebih dari satu (1 ms)
+      √ seharusnya memformat tunggal tanpa jumlah sufiks
+      √ seharusnya menangani field kosong hanya dengan label bagian
+    Pengujian appendOrCreateLogSession
+      √ seharusnya membuat sesi baru ketika tidak ada sesi terbuka (3 ms)
+      √ seharusnya menggabungkan ke sesi terbuka dalam jendela waktu idle (6 ms)
+      √ seharusnya membuat sesi kedua setelah jendela waktu idle berakhir (3 ms)
+      √ seharusnya melewati sesi menggabungkan ketika terpisah true (3 ms)
+      √ seharusnya menggabungkan sesi langkah ketika masih dalam window idle yang sama (2 ms)
+    Pengujian encodeLogEditSopClientId
+      √ seharusnya mengenkode id klien dengan pemisah unit (Success Case) (1 ms)
+    Pengujian Edge & Worst Cases untuk appendOrCreateLogSession
+      √ seharusnya menangani input fields yang kotor (string kosong, undefined, whitespace, null) dengan aman (Worst Case) (2 ms)
+      √ seharusnya melewati createMany domain fields jika fields disanitasi menjadi kosong sepenuhnya (Edge Case) (4 ms)
+      √ seharusnya menghormati override idleWindowMs dan memisahkan sesi walaupun dalam jendela default (Edge Case) (2 ms)
+      √ seharusnya bisa menutup banyak sesi stale secara massal (stale session closure race condition) (Edge Case) (2 ms)
+
+PASS src/modules/tte/shared/utils/tte-public-origin.util.spec.ts
+  Pengujian util origin publik TTE
+    √ seharusnya mengambil origin dari header Origin (2 ms)
+    √ seharusnya mengambil origin dari header referer ketika origin tidak ada (1 ms)
+    √ seharusnya mengembalikan null ketika referer tidak valid
+    √ seharusnya membangun origin dari forwarded proto dan forwarded host
+    √ seharusnya memakai host dan default https ketika forwarded proto tidak ada (1 ms)
+    √ seharusnya mengambil nilai pertama ketika header berbentuk array (1 ms)
+    √ seharusnya mengembalikan null ketika host tidak ada atau kosong (1 ms)
+    √ seharusnya memprioritaskan origin dari konfigurasi
+    √ seharusnya memakai request origin ketika konfigurasi kosong
+    √ seharusnya mengembalikan null ketika konfigurasi dan request origin tidak tersedia (1 ms)
+    √ seharusnya membangun path validasi pengesahan dari origin
+    √ seharusnya menolak origin aplikasi yang tidak valid saat membangun URL validasi (31 ms)
+
+PASS src/common/prisma/prisma-db-invariant.util.spec.ts
+  Pengujian extractDbInvariantMessage
+    √ seharusnya mengambil pesan dari bentuk error driver adapter (2 ms)
+    √ seharusnya mengembalikan null untuk error yang tidak terkait (1 ms)
+    √ seharusnya mengambil pesan self-loop SOP terkait
+    √ seharusnya mengembalikan null jika input null, undefined, atau tipe primitif (Edge Case) (1 ms)
+    √ seharusnya menghentikan traversal dan tidak terjebak infinite loop jika terdeteksi circular reference (Worst Case)
+    √ seharusnya menemukan originalMessage meskipun jauh di dalam struktur nested object (1 ms)
+
+PASS src/modules/core/auth/helpers/auth.shared.spec.ts
+  Pengujian resolveAccessTokenExpiry
+    √ seharusnya menggunakan nilai default ketika konfigurasi tidak diisi (3 ms)
+    √ seharusnya menggunakan nilai default ketika konfigurasi kosong atau hanya berisi spasi (1 ms)
+    √ seharusnya menggunakan nilai default ketika ms gagal memproses konfigurasi (1 ms)
+    √ seharusnya memproses string rentang waktu yang valid (1 ms)
+    √ seharusnya memperlakukan integer positif sebagai detik (1 ms)
+    √ seharusnya menggunakan default ketika konfigurasi berupa angka tidak valid (1 ms)
+  Pengujian resolveRefreshTokenExpiry
+    √ seharusnya menggunakan default tujuh hari ketika konfigurasi tidak diisi (1 ms)
+    √ seharusnya memproses konfigurasi refresh token valid
+  Pengujian buildClearAccessTokenCookieOptions
+    √ seharusnya mengatur opsi cookie yang sesuai selain maxAge (1 ms)
+  Pengujian cookie auth
+    √ seharusnya membedakan opsi sameSite production dan non-production (2 ms)
+    √ seharusnya mengatur opsi clear refresh cookie konsisten dengan set refresh cookie (1 ms)
+
+PASS src/modules/sop/pelaksana/pelaksana.repository.spec.ts
+  Pengujian PelaksanaRepository
+    √ seharusnya mencari OPD pengguna aktif berdasarkan id pengguna (4 ms)
+    √ seharusnya mengembalikan null ketika pengguna aktif tidak ditemukan (1 ms)
+    √ seharusnya mencari daftar pelaksana per OPD berurutan nama (1 ms)
+    √ seharusnya mencari pelaksana berdasarkan id dan OPD (1 ms)
+    √ seharusnya membuat pelaksana dengan opdId dan nama (1 ms)
+    √ seharusnya memperbarui nama pelaksana berdasarkan id (1 ms)
+    √ seharusnya menghapus pelaksana berdasarkan id (2 ms)
+    √ seharusnya menghitung referensi pelaksana pada langkah dan swimlane (2 ms)
+
+PASS src/modules/core/opd/user-opd-access.service.spec.ts
+  Pengujian UserOpdAccessService
+    isEvaluatorRole
+      √ seharusnya mengembalikan true untuk EVALUATOR dan PJ_EVALUATOR (5 ms)
+      √ seharusnya mengembalikan false untuk peran lain (1 ms)
+    isOpdScopedRole
+      √ seharusnya mengembalikan true untuk KEPALA_OPD, PJ_PENYUSUN, dan PENYUSUN (7 ms)
+      √ seharusnya mengembalikan false untuk peran non-OPD scoped (1 ms)
+    getRequiredUserOpdId
+      √ seharusnya melempar error ketika pengguna belum terhubung ke OPD (False case) (1 ms)
+      √ seharusnya mengembalikan opdId ketika ditemukan (1 ms)
+    assertSameOpd
+      √ seharusnya melempar ForbiddenException ketika OPD target tidak sama (False case) (1 ms)
+      √ seharusnya melewati pengecekan ketika OPD target sama persis (1 ms)
+    resolveOwnOpdAllowingOptionalQuery
+      √ seharusnya menolak query OPD tidak cocok (False case) (1 ms)
+      √ seharusnya mengembalikan OPD sendiri jika query string kosong (Edge case) (1 ms)
+      √ seharusnya mengembalikan OPD sendiri jika query undefined (1 ms)
+      √ seharusnya mengembalikan OPD sendiri jika query sama persis (1 ms)
+    assertWorkbenchAccess
+      √ seharusnya melewati validasi workbench untuk evaluator (1 ms)
+      √ seharusnya melempar ForbiddenException untuk peran penyusun dengan OPD yang berbeda (1 ms)
+      √ seharusnya mengijinkan akses untuk peran penyusun dengan OPD yang sama (1 ms)
+
+PASS src/common/http/client-identity.util.spec.ts
+  client-identity.util
+    getClientIp
+      √ seharusnya mengembalikan ip jika ip ada (5 ms)
+      √ seharusnya mengembalikan ip dari remoteAddress jika ip kosong (2 ms)
+      √ seharusnya menghapus awalan ::ffff: (1 ms)
+      √ seharusnya mengembalikan unknown jika ip kosong dan remoteAddress kosong (1 ms)
+      √ seharusnya mengembalikan unknown jika string hanya berisi spasi kosong (Edge case)
+    getClientUserAgent
+      √ seharusnya mengembalikan user agent yang dipotong 512 karakter (Worst case) (1 ms)
+      √ seharusnya mengembalikan string aslinya jika kurang dari 512 karakter
+      √ seharusnya mengembalikan null jika user-agent tidak ada atau hanya spasi (Edge case) (3 ms)
+      √ seharusnya mengembalikan null jika header undefined (1 ms)
+
+PASS src/common/status/status-display.spec.ts
+  Pengujian displayStatusSop
+    √ seharusnya menyediakan label untuk setiap enum StatusSOP (5 ms)
+    √ seharusnya menangani input yang tidak dikenal pada displayStatusSop dengan label fallback (False Case) (1 ms)
+    √ seharusnya memetakan status SOP rename ke label baru (1 ms)
+    √ seharusnya menangani input kosong / null dengan string fallback (Edge Case) (1 ms)
+  Pengujian displayStatusPengajuan
+    √ seharusnya menyediakan label untuk setiap enum StatusPengajuanEvaluasi (1 ms)
+    √ seharusnya memetakan DITANDATANGANI_PJ_EVALUATOR menjadi BA ditandatangani PJ Evaluator
+    √ seharusnya memetakan DITANDATANGANI_PJ_PENYUSUN menjadi menunggu pengesahan Kepala OPD (1 ms)
+  Pengujian displayHasilEvaluasi
+    √ seharusnya mengembalikan BELUM_DINILAI ketika hasil bernilai null (1 ms)
+    √ seharusnya memetakan SESUAI dan PERLU_PERBAIKAN (1 ms)
+  Pengujian displayTampilanAlur
+    √ seharusnya menyediakan label untuk semua nilai alur (2 ms)
+  Pengujian displayStatusTindakLanjut
+    √ seharusnya mengembalikan null ketika input bernilai null atau undefined (Edge Case) (1 ms)
+    √ seharusnya memetakan nilai Enum yang valid
+    √ seharusnya menggunakan label fallback ketika nilai tidak dikenal (False Case)
+
+PASS src/modules/sop/diagram/diagram-edge-key.util.spec.ts
+  Pengujian util kunci edge diagram
+    √ seharusnya mendeteksi tidak valid edge key (7 ms)
+    √ seharusnya meratakan path overrides menjadi relasional baris (4 ms)
+    √ seharusnya memproses valid edge key (1 ms)
+    √ seharusnya membuang edge dengan ID langkah yang tidak dikenal (3 ms)
+
+PASS src/modules/evaluation/nilai/nilai-opd-skor.constants.spec.ts
+  Pengujian nilai OPD skor constants
+    √ seharusnya menerima skor batas minimum dan maksimum (3 ms)
+    √ seharusnya menolak null, undefined, pecahan, dan skor di luar rentang (1 ms)
+
+PASS src/modules/tte/penandatanganan/tte-pdf-signing.service.spec.ts (38.85 s)
+  Pengujian TtePdfSigningService
+    √ seharusnya tidak menginjeksi CA ketika signPdf menerima jenis Berita Acara (358 ms)
+    √ seharusnya menyimpan metadata sertifikat real dan binding TTE pada PDF SOP (7237 ms)
+
+PASS src/modules/sop/catalog/sop-completeness.validator.spec.ts
+  Pengujian validator kelengkapan SOP
+    √ seharusnya mengembalikan daftar issue kosong ketika workbench lengkap (3 ms)
+    √ seharusnya mengumpulkan issue ketika header dan langkah kosong (1 ms)
+    √ seharusnya melempar BadRequestException dengan prefix ketika validasi gagal (42 ms)
+
+PASS src/modules/tte/shared/utils/tte-verifikasi-qr.util.spec.ts
+  Pengujian util verifikasi QR TTE
+    Pengujian normalizePublicVerifyBaseUrl
+      √ seharusnya mengembalikan null untuk input kosong (3 ms)
+      √ seharusnya menghapus garis miring di akhir URL (4 ms)
+    Pengujian buildTteQrVerificationUrl
+      √ seharusnya menambahkan path dan query hash (4 ms)
+    Pengujian buildTteQrPayload
+      √ seharusnya menggunakan URL sebagai payload ketika base URL tersedia (1 ms)
+      √ seharusnya menggunakan payload JSON ketika base URL tidak tersedia (2 ms)
+
+PASS src/modules/evaluation/nilai/nilai-evaluasi-client-id.spec.ts
+  Pengujian buildNilaiEvaluasiClientId
+    √ seharusnya membangun id stabil dari pengajuanEvaluasiId dan detailSopId (5 ms)
+
+PASS src/common/date/wib-date.util.spec.ts
+  Pengujian fungsi toWibDateOnly
+    √ seharusnya menormalkan waktu WIB ke tengah malam pada tanggal kalender yang sama (7 ms)
+    √ seharusnya menggunakan tanggal kalender Jakarta ketika UTC masih hari sebelumnya (2 ms)
+    √ seharusnya menangani rollover bulan dan tahun secara akurat (Edge Case - Tahun Baru WIB) (1 ms)
+
+PASS src/database/seed/seed.service.spec.ts
+  SeedService cleanup legacy workflow data
+    √ seharusnya memutus self-FK revisi dan langkah sebelum menghapus SOP legacy seed (8 ms)
+
+PASS src/modules/sop/catalog/sop-status-policy.spec.ts
+  Pengujian kebijakan status SOP
+    √ seharusnya melempar ConflictException ketika target sama dengan status saat ini (38 ms)
+    √ seharusnya mengizinkan penyusun draft menjadi menunggu pengajuan evaluasi (2 ms)
+    √ seharusnya menolak akses evaluator saat menandai menunggu pengajuan evaluasi (2 ms)
+    √ seharusnya mengizinkan PJ penyusun siap menjadi diajukan evaluasi (1 ms)
+    √ seharusnya menolak status berlaku melalui endpoint umum (1 ms)
+    √ seharusnya mengizinkan kepala OPD cabut berlaku
+
+PASS src/modules/sop/catalog/sop-catalog.mapper.spec.ts
+  Pengujian SopCatalogMapper
+    √ seharusnya memformat tanggal sebagai string ISO (2 ms)
+    √ seharusnya memetakan workbench dengan keputusan langkah dan nilai evaluasi (5 ms)
+    √ seharusnya memetakan baris daftar dengan flag versi berlaku (2 ms)
+    √ seharusnya mengizinkan hapus SOP hanya untuk draft awal satu-satunya
+
+PASS src/common/utils/pagination.util.spec.ts
+  Pengujian util pagination
+    √ seharusnya memakai default page dan limit ketika query kosong (1 ms)
+    √ seharusnya menormalisasi page dan limit minimum ke 1
+    √ seharusnya menghitung skip dan take dari query valid
+    √ seharusnya membungkus item dan meta pagination (1 ms)
+    √ seharusnya mengembalikan totalPages nol ketika limit tidak valid
+
+-----------------------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------
+File                                     | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                
+-----------------------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------
+All files                                |   86.75 |    80.88 |   86.16 |   87.08 |                                                                                                                  
+ common                                  |     100 |      100 |      60 |     100 |                                                                                                                  
+  index.ts                               |     100 |      100 |      60 |     100 |                                                                                                                  
+ common/auth                             |     100 |      100 |     100 |     100 |                                                                                                                  
+  password.constants.ts                  |     100 |      100 |     100 |     100 |                                                                                                                  
+ common/date                             |     100 |      100 |     100 |     100 |                                                                                                                  
+  wib-date.util.ts                       |     100 |      100 |     100 |     100 |                                                                                                                  
+ common/decorators                       |     100 |      100 |     100 |     100 |                                                                                                                  
+  roles.decorator.ts                     |     100 |      100 |     100 |     100 |                                                                                                                  
+ common/guards                           |     100 |      100 |     100 |     100 |                                                                                                                  
+  jwt-auth.guard.ts                      |     100 |      100 |     100 |     100 |                                                                                                                  
+  roles.guard.ts                         |     100 |      100 |     100 |     100 |                                                                                                                  
+ common/http                             |     100 |      100 |     100 |     100 |                                                                                                                  
+  client-identity.util.ts                |     100 |      100 |     100 |     100 |                                                                                                                  
+  request-body-limits.ts                 |     100 |      100 |     100 |     100 |                                                                                                                  
+ common/logger                           |       0 |      100 |     100 |       0 |                                                                                                                  
+  winston.config.ts                      |       0 |      100 |     100 |       0 | 1-4                                                                                                              
+ common/pengguna                         |     100 |      100 |     100 |     100 |                                                                                                                  
+  pengguna-admin.util.ts                 |     100 |      100 |     100 |     100 |                                                                                                                  
+ common/pipes                            |   66.66 |      100 |       0 |   66.66 |                                                                                                                  
+  default-validation.pipe.ts             |   66.66 |      100 |       0 |   66.66 | 8                                                                                                                
+ common/prisma                           |   86.48 |    96.77 |      25 |   85.71 |                                                                                                                  
+  prisma-db-invariant.util.ts            |   96.15 |    96.77 |     100 |   96.15 | 14                                                                                                               
+  prisma.service.ts                      |   63.63 |      100 |       0 |   55.55 | 9-27                                                                                                             
+ common/status                           |     100 |       95 |     100 |     100 |                                                                                                                  
+  sop-editable.util.ts                   |     100 |      100 |     100 |     100 |                                                                                                                  
+  status-display.ts                      |     100 |    94.44 |     100 |     100 | 96                                                                                                               
+ common/utils                            |     100 |      100 |     100 |     100 |                                                                                                                  
+  pagination.util.ts                     |     100 |      100 |     100 |     100 |                                                                                                                  
+ database/seed                           |   88.88 |    83.33 |     100 |   88.88 |                                                                                                                  
+  seed-status.util.ts                    |   88.88 |    83.33 |     100 |   88.88 | 20                                                                                                               
+ modules/core/auth                       |   98.76 |    93.02 |     100 |   98.73 |                                                                                                                  
+  auth.service.ts                        |   98.76 |    93.02 |     100 |   98.73 | 144                                                                                                              
+ modules/core/auth/helpers               |   90.76 |    83.33 |   83.33 |   90.47 |                                                                                                                  
+  auth.shared.ts                         |   93.33 |     92.3 |     100 |   93.33 | 25,66,103                                                                                                        
+  jwt-access.strategy.ts                 |      85 |       60 |      50 |   83.33 | 10-11,22                                                                                                         
+ modules/core/evaluator                  |   98.33 |      100 |     100 |   98.27 |                                                                                                                  
+  evaluator.service.ts                   |   98.33 |      100 |     100 |   98.27 | 114                                                                                                              
+ modules/core/kepala-opd                 |     100 |      100 |     100 |     100 |                                                                                                                  
+  kepala-opd.service.ts                  |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/core/opd                        |     100 |      100 |     100 |     100 |                                                                                                                  
+  opd.service.ts                         |     100 |      100 |     100 |     100 |                                                                                                                  
+  user-opd-access.service.ts             |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/core/pengguna/helpers           |      40 |      100 |       0 |      40 |                                                                                                                  
+  riwayat-opd.sync.ts                    |      40 |      100 |       0 |      40 | 9,24-28                                                                                                          
+ modules/core/penyusun                   |   91.86 |    91.66 |   93.75 |   95.49 |                                                                                                                  
+  penyusun.service.ts                    |   91.86 |    91.66 |   93.75 |   95.49 | 44,136,161,164,192                                                                                               
+ modules/core/peraturan                  |     100 |      100 |     100 |     100 |                                                                                                                  
+  peraturan.service.ts                   |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/evaluation/grafik               |     100 |      100 |     100 |     100 |                                                                                                                  
+  evaluasi-grafik.service.ts             |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/evaluation/nilai                |    95.8 |    89.14 |   88.88 |   95.71 |                                                                                                                  
+  evaluasi-nilai.service.ts              |   95.23 |    87.93 |   85.71 |   95.12 | 129-143,315-322,402                                                                                              
+  evaluasi-revisi.policy.ts              |     100 |      100 |     100 |     100 |                                                                                                                  
+  log-nilai-evaluasi-client-id.ts        |     100 |      100 |     100 |     100 |                                                                                                                  
+  nilai-evaluasi-client-id.ts            |     100 |      100 |     100 |     100 |                                                                                                                  
+  nilai-opd-skor.constants.ts            |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/evaluation/pengajuan            |   98.43 |    79.16 |      96 |   99.18 |                                                                                                                  
+  pengajuan-evaluasi-status.constants.ts |     100 |      100 |     100 |     100 |                                                                                                                  
+  pengajuan-evaluasi.mapper.ts           |   96.55 |     65.3 |      80 |     100 | 31,62-89,114                                                                                                     
+  pengajuan-evaluasi.service.ts          |   98.96 |    93.61 |     100 |   98.92 | 250                                                                                                              
+ modules/evaluation/pengajuan-detail     |   98.94 |     87.5 |     100 |   98.91 |                                                                                                                  
+  pengajuan-evaluasi-detail.service.ts   |   98.94 |     87.5 |     100 |   98.91 | 190                                                                                                              
+ modules/evaluation/umpan-balik          |     100 |      100 |     100 |     100 |                                                                                                                  
+  evaluasi-umpan-balik.service.ts        |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/evaluation/workspace            |   96.26 |     90.9 |      90 |   97.97 |                                                                                                                  
+  evaluasi-workspace.service.ts          |   96.26 |     90.9 |      90 |   97.97 | 338-343                                                                                                          
+ modules/sop/catalog                     |   80.25 |       72 |   77.96 |   79.88 |                                                                                                                  
+  sop-catalog-repo-error.util.ts         |     100 |      100 |     100 |     100 |                                                                                                                  
+  sop-catalog.mapper.ts                  |   85.13 |    69.81 |      75 |   84.61 | 29,45,52,60,74,206-218                                                                                           
+  sop-catalog.repo-result.ts             |     100 |      100 |     100 |     100 |                                                                                                                  
+  sop-catalog.service.ts                 |   77.62 |     74.6 |   76.92 |   76.84 | 51,54,92-115,143,147,159,172,207,221,243,257,269,320,343,351,406,424,430,434-445,457-468,486,496                 
+  sop-completeness.validator.ts          |   78.43 |     57.5 |      80 |   79.59 | 18,46,49,52,55,58,61-73                                                                                          
+  sop-status-policy.ts                   |   82.14 |    79.16 |     100 |   82.14 | 25,38,54,57,61                                                                                                   
+ modules/sop/collaboration               |      98 |    89.28 |     100 |   97.91 |                                                                                                                  
+  log-edit-session.helper.ts             |      98 |    89.28 |     100 |   97.91 | 111                                                                                                              
+ modules/sop/diagram                     |   76.69 |    68.22 |   80.95 |   80.17 |                                                                                                                  
+  diagram-edge-key.util.ts               |   70.78 |    64.19 |   76.47 |   75.67 | 108,115-116,143,210,220-240                                                                                      
+  diagram-workbench.mapper.ts            |   54.54 |     37.5 |     100 |   54.54 | 36-46                                                                                                            
+  sop-diagram.service.ts                 |     100 |      100 |     100 |     100 |                                                                                                                  
+ modules/sop/pdf                         |   70.37 |     9.09 |      25 |   70.66 |                                                                                                                  
+  sop-official-pdf.service.ts            |      98 |       50 |     100 |   97.91 | 86                                                                                                               
+  sop-pdf-storage.service.ts             |    25.8 |        0 |       0 |   22.22 | 19-80                                                                                                            
+ modules/sop/pelaksana                   |   95.12 |    91.66 |     100 |   94.73 |                                                                                                                  
+  pelaksana.service.ts                   |   95.12 |    91.66 |     100 |   94.73 | 47,66                                                                                                            
+ modules/sop/prosedur                    |   97.93 |    88.88 |     100 |   97.82 |                                                                                                                  
+  sop-prosedur.service.ts                |   97.93 |    88.88 |     100 |   97.82 | 82,224                                                                                                           
+ modules/sop/public                      |   79.48 |    66.66 |   81.81 |   76.47 |                                                                                                                  
+  sop-public.service.ts                  |   79.48 |    66.66 |   81.81 |   76.47 | 111-128                                                                                                          
+ modules/tte/core                        |      84 |      100 |   71.42 |    82.6 |                                                                                                                  
+  tte.service.ts                         |      84 |      100 |   71.42 |    82.6 | 65-81                                                                                                            
+ modules/tte/penandatanganan             |   89.39 |    77.66 |     100 |   89.92 |                                                                                                                  
+  tte-penandatanganan.service.ts         |   89.39 |    77.66 |     100 |   89.92 | 109,115,120,123,136,153,171,176,218,294,297,323,382                                                              
+ modules/tte/profil                      |   66.33 |    57.89 |   77.77 |   69.23 |                                                                                                                  
+  tte-profil.service.ts                  |   66.33 |    57.89 |   77.77 |   69.23 | 117-187,207-208                                                                                                  
+ modules/tte/shared/utils                |   67.81 |    57.46 |   81.03 |   67.41 |                                                                                                                  
+  generate-p12.util.ts                   |    6.06 |      100 |       0 |    6.06 | 10-91                                                                                                            
+  pdf-signature-verification.util.ts     |   61.16 |    51.56 |      70 |   60.89 | 56,75,85,116,152-159,178,187,193,234-292,325,331-347,375,383,387,394-396,399-400,407-421,465,491,500-501,511-540 
+  pdf-signing-certificate.util.ts        |      76 |    37.93 |     100 |      75 | 27,37-46,50,58,84,89,93                                                                                          
+  tte-crypto.util.ts                     |   96.29 |       50 |     100 |   96.29 | 37                                                                                                               
+  tte-public-origin.util.ts              |     100 |      100 |     100 |     100 |                                                                                                                  
+  tte-public-url.resolver.ts             |   92.85 |    66.66 |     100 |   91.66 | 24                                                                                                               
+  tte-support.ts                         |   77.27 |     37.5 |     100 |   77.27 | 39-47                                                                                                            
+  tte-verifikasi-qr.util.ts              |      95 |       90 |     100 |      95 | 33                                                                                                               
+ modules/tte/verifikasi                  |     100 |      100 |     100 |     100 |                                                                                                                  
+  tte-verifikasi.service.ts              |     100 |      100 |     100 |     100 |                                                                                                                  
+-----------------------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------
+Test Suites: 66 passed, 66 total
+Tests:       709 passed, 709 total
+Snapshots:   0 total
+Time:        55.254 s
+Ran all test suites.

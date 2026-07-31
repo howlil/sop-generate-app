@@ -8,22 +8,23 @@ const esc = (value) =>
     .replaceAll('"', '&quot;');
 
 const header = (stereotype, name) =>
-  '&lt;div style=&quot;text-align:center;line-height:1.3&quot;&gt;&lt;div style=&quot;font-weight:normal;font-size:12px&quot;&gt;&amp;lt;&amp;lt;' +
+  '&lt;div style=&quot;text-align:center;line-height:1.25&quot;&gt;&lt;div style=&quot;font-weight:normal;font-size:16px&quot;&gt;&amp;lt;&amp;lt;' +
   esc(stereotype) +
   '&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;' +
   esc(name) +
   '&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;';
 
 const SWIM =
-  'swimlane;fontStyle=0;align=center;childLayout=stackLayout;horizontal=1;startSize=52;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;separatorColor=#000000;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=13;';
+  'swimlane;fontStyle=0;align=center;childLayout=stackLayout;horizontal=1;startSize=58;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;separatorColor=#000000;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;fontSize=16;';
 const TXT =
-  'text;strokeColor=#000000;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=10;spacingRight=6;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=13;fontColor=#000000;';
+  'text;strokeColor=#000000;fillColor=#ffffff;align=left;verticalAlign=top;spacingLeft=10;spacingRight=8;spacingTop=4;spacingBottom=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;fontSize=16;fontColor=#000000;';
 const TITLE =
   'text;html=1;strokeColor=none;fillColor=none;fontColor=#000000;fontSize=18;fontStyle=1;align=center;';
 
-const HDR = 52;
-const LINE_H = 18;
-const PAD = 12;
+const HDR = 58;
+const LINE_H = 24;
+const PAD = 14;
+const V_GAP = 30;
 
 function lines(value) {
   return value.map(esc).join('&#10;');
@@ -61,11 +62,11 @@ function klass(id, name, stereotype, x, y, w, attrs = [], ops = []) {
 }
 
 function section(id, value, x, y, w) {
-  return `                <mxCell id="${esc(id)}" value="${esc(value)}" style="${TITLE}" parent="1" vertex="1"><mxGeometry x="${x}" y="${y}" width="${w}" height="32" as="geometry"/></mxCell>\n`;
+  return `                <mxCell id="${esc(id)}" value="${esc(value)}" style="${TITLE}" parent="1" vertex="1"><mxGeometry x="${x}" y="${y}" width="${w}" height="34" as="geometry"/></mxCell>\n`;
 }
 
 function edge(id, src, tgt, style, label = '') {
-  return `                <mxCell id="${esc(id)}" value="${esc(label)}" style="${style}" edge="1" parent="1" source="${esc(src)}" target="${esc(tgt)}">
+  return `                <mxCell id="${esc(id)}" value="" style="${style}" edge="1" parent="1" source="${esc(src)}" target="${esc(tgt)}">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>\n`;
 }
@@ -601,36 +602,38 @@ const enums = [
 let cells = '';
 let edges = '';
 
-cells += section('repoSection', 'REPOSITORY CLASSES', 40, 20, 420);
-cells += section('entitySection', 'ENTITY CLASSES (PRISMA MODELS)', 520, 20, 1660);
-cells += section('enumSection', 'ENUM CLASSES', 2240, 20, 780);
+cells += section('repoSection', 'REPOSITORY CLASSES', 60, 40, 950);
+cells += section('entitySection', 'ENTITY CLASSES (PRISMA MODELS)', 1080, 40, 1420);
+cells += section('enumSection', 'ENUM CLASSES', 2620, 40, 760);
 
-const repoX = 50;
-let repoY = 70;
-for (const repo of repositories) {
-  const node = klass(repo.id, repo.name, 'repository', repoX, repoY, 400, repo.attrs, repo.ops);
+const repoColumns = [60, 560];
+const repoY = [100, 100];
+for (let i = 0; i < repositories.length; i += 1) {
+  const col = i % repoColumns.length;
+  const repo = repositories[i];
+  const node = klass(repo.id, repo.name, 'repository', repoColumns[col], repoY[col], 450, repo.attrs, repo.ops);
   cells += node.xml;
-  repoY += node.h + 28;
+  repoY[col] += node.h + V_GAP;
 }
 
-const entityColumns = [520, 880, 1240, 1600, 1960];
-const entityY = [70, 70, 70, 70, 70];
+const entityColumns = [1080, 1560, 2040];
+const entityY = [100, 100, 100];
 for (let i = 0; i < entities.length; i += 1) {
   const col = i % entityColumns.length;
   const entity = entities[i];
-  const node = klass(entity.id, entity.id, 'entity', entityColumns[col], entityY[col], 330, entity.attrs, []);
+  const node = klass(entity.id, entity.id, 'entity', entityColumns[col], entityY[col], 430, entity.attrs, []);
   cells += node.xml;
-  entityY[col] += node.h + 28;
+  entityY[col] += node.h + V_GAP;
 }
 
-const enumColumns = [2240, 2630];
-const enumY = [70, 70];
+const enumColumns = [2620, 3020];
+const enumY = [100, 100];
 for (let i = 0; i < enums.length; i += 1) {
   const col = i % enumColumns.length;
   const en = enums[i];
-  const node = klass(en.id, en.id, 'enumeration', enumColumns[col], enumY[col], 350, en.values, []);
+  const node = klass(en.id, en.id, 'enumeration', enumColumns[col], enumY[col], 360, en.values, []);
   cells += node.xml;
-  enumY[col] += node.h + 28;
+  enumY[col] += node.h + V_GAP;
 }
 
 const repoEntityLinks = [
@@ -766,10 +769,10 @@ for (const [src, tgt, label] of enumLinks) {
   edges += edge(`enum-${src}-${tgt}`, src, tgt, enumUse, label);
 }
 
-const pageHeight = Math.max(...entityY, ...enumY, repoY) + 120;
+const pageHeight = Math.max(...entityY, ...enumY, ...repoY) + 120;
 const xml = `<mxfile host="65bd71144e">
     <diagram id="server-uml-repository-entity-enum-class-diagram" name="Repository Entity Enum Class Diagram">
-        <mxGraphModel dx="1549" dy="940" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3060" pageHeight="${pageHeight}" background="#ffffff" math="0" shadow="0" adaptiveColors="auto">
+        <mxGraphModel dx="3540" dy="1903" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>

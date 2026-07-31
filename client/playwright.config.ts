@@ -1,11 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
+import { fileURLToPath } from 'node:url'
 
+const clientDir = fileURLToPath(new URL('.', import.meta.url))
 const baseURL = process.env.E2E_BASE_URL ?? 'http://127.0.0.1:5173'
 const startClient = process.env.E2E_SKIP_WEB_SERVER !== 'true'
 
 export default defineConfig({
-  testDir: './e2e',
-  globalSetup: './e2e/global-setup.ts',
+  testDir: fileURLToPath(new URL('./e2e', import.meta.url)),
+  globalSetup: fileURLToPath(new URL('./e2e/global-setup.ts', import.meta.url)),
   timeout: 45_000,
   expect: {
     timeout: 10_000,
@@ -29,6 +31,7 @@ export default defineConfig({
   webServer: startClient
     ? {
         command: 'pnpm dev --host 127.0.0.1',
+        cwd: clientDir,
         url: baseURL,
         reuseExistingServer: true,
         timeout: 120_000,

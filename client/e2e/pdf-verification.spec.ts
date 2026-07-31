@@ -5,7 +5,7 @@ import { users } from './fixtures/users'
 import { apiGet, apiPost, createAuthenticatedApiContext } from './support/api'
 import { waitForAppReady } from './support/app'
 import { createApprovedSopFixture } from './support/e2e-flow'
-import { validPdfBase64 } from './support/test-data'
+import { e2ePin, validPdfBase64 } from './support/test-data'
 
 test.describe('E2E verifikasi tanda tangan PDF', () => {
   test('tombol verifikasi disabled sebelum file dipilih', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('E2E verifikasi tanda tangan PDF', () => {
     try {
       const status = await apiGet<{ enabled: boolean }>(kepalaOpd, '/tte/public/pdf-signing/status')
       const signed = await apiPost<{ signedPdfBase64: string }>(kepalaOpd, '/tte/pdf/sign', {
-        pin: process.env.E2E_TTE_PIN ?? '123456',
+        pin: e2ePin,
         dokumenTteId: approved.pengesahan.dokumenTteId,
         userId: approved.pengesahan.userId,
         jenisDokumen: 'SOP_BERLAKU',

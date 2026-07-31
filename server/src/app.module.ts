@@ -35,7 +35,11 @@ import { TteCoreModule } from './modules/tte/core/tte-core.module';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}.local`, '.env'],
+      envFilePath: [
+        '.env',
+        `.env.${process.env.NODE_ENV ?? 'development'}`,
+        `.env.${process.env.NODE_ENV ?? 'development'}.local`,
+      ],
       validate: validateEnv,
     }),
     WinstonModule.forRoot(WinstonLoggerConfig),

@@ -16,7 +16,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       connectTimeout: 15_000,
       allowPublicKeyRetrieval: true,
     });
-    super({ adapter });
+    super({
+      adapter,
+      transactionOptions: {
+        maxWait: 30_000,
+        timeout: 120_000,
+      },
+    });
   }
 
   async onModuleInit() {

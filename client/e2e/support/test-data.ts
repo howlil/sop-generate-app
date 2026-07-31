@@ -1,4 +1,4 @@
-export const e2ePin = process.env.E2E_TTE_PIN ?? '123456'
+export const e2ePin = process.env.E2E_TTE_PIN ?? '1234'
 
 export function e2eRunId(prefix = 'E2E'): string {
   const configured = process.env.E2E_TEST_RUN_ID

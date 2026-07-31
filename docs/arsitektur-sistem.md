@@ -4,11 +4,11 @@
 
 Sistem Pengelolaan SOP Biro Organisasi dirancang sebagai aplikasi web berbasis arsitektur client-server. Pada arsitektur ini, frontend berperan sebagai antarmuka pengguna yang menyediakan halaman kerja untuk setiap aktor, sedangkan backend berperan sebagai penyedia layanan aplikasi, validasi proses bisnis, pengelolaan autentikasi, serta penghubung antara aplikasi dan basis data. Pemisahan tersebut membuat tanggung jawab sistem menjadi lebih jelas karena proses penyajian tampilan, pengelolaan status antarmuka, dan komunikasi API berada pada sisi client, sedangkan aturan bisnis utama, otorisasi, transaksi data, serta integritas domain dikendalikan pada sisi server.
 
-Secara umum, sistem terdiri atas tiga komponen utama. Komponen pertama adalah frontend berbasis React yang dibangun menggunakan Vite, TanStack Router, TanStack Query, Zustand, dan Tailwind CSS. Komponen ini menangani navigasi, manajemen sesi pada sisi klien, pemanggilan API, serta penyajian fitur berdasarkan peran pengguna. Komponen kedua adalah backend berbasis NestJS yang menyediakan REST API dengan prefix `/api` dan versioning URI melalui `/api/v1`. Komponen ini memuat modul-modul domain seperti autentikasi, master data, SOP, evaluasi, tanda tangan elektronik, dan arsip publik. Komponen ketiga adalah basis data MariaDB yang diakses backend menggunakan Prisma ORM.
+Secara umum, sistem terdiri atas tiga komponen utama. Komponen pertama adalah frontend berbasis React yang dibangun menggunakan Vite, TanStack Router, TanStack Query, Zustand, dan Tailwind CSS. Komponen ini menangani navigasi, manajemen sesi pada sisi klien, pemanggilan API, serta penyajian fitur berdasarkan peran pengguna. Komponen kedua adalah backend berbasis NestJS yang menyediakan REST API dengan prefix `/api` dan versioning URI melalui `/api/v1`. Komponen ini memuat modul-modul domain seperti autentikasi, master data, SOP, evaluasi, tanda tangan elektronik, dan arsip publik. Komponen ketiga adalah basis data MySQL yang diakses backend menggunakan Prisma ORM.
 
-Pada lingkungan produksi, sistem dijalankan menggunakan Docker Compose dengan tiga layanan utama, yaitu `frontend`, `backend`, dan `db`. Layanan frontend berada di depan sebagai titik masuk HTTP pada port 80. Nginx pada container frontend meneruskan request `/api/` ke backend NestJS, sedangkan request halaman aplikasi diteruskan ke server frontend pada port internal 4173. Backend tidak dipublikasikan langsung ke host dan hanya diekspos pada jaringan internal Docker. Basis data MariaDB juga berada pada jaringan internal yang sama sehingga akses data hanya dilakukan melalui backend.
+Pada lingkungan produksi, sistem dijalankan menggunakan Docker Compose dengan tiga layanan utama, yaitu `frontend`, `backend`, dan `db`. Layanan frontend berada di depan sebagai titik masuk HTTP pada port 80. Nginx pada container frontend meneruskan request `/api/` ke backend NestJS, sedangkan request halaman aplikasi diteruskan ke server frontend pada port internal 4173. Backend tidak dipublikasikan langsung ke host dan hanya diekspos pada jaringan internal Docker. Basis data MySQL juga berada pada jaringan internal yang sama sehingga akses data hanya dilakukan melalui backend.
 
-Struktur tersebut menunjukkan bahwa sistem menerapkan pola aplikasi web berlapis. Lapisan presentasi berada pada frontend, lapisan layanan aplikasi berada pada backend, dan lapisan persistensi berada pada MariaDB. Pemisahan lapisan ini penting karena setiap perubahan pada tampilan tidak harus mengubah struktur penyimpanan data, sedangkan perubahan aturan bisnis dapat dikendalikan pada backend tanpa menduplikasi logika kritis pada client.
+Struktur tersebut menunjukkan bahwa sistem menerapkan pola aplikasi web berlapis. Lapisan presentasi berada pada frontend, lapisan layanan aplikasi berada pada backend, dan lapisan persistensi berada pada MySQL. Pemisahan lapisan ini penting karena setiap perubahan pada tampilan tidak harus mengubah struktur penyimpanan data, sedangkan perubahan aturan bisnis dapat dikendalikan pada backend tanpa menduplikasi logika kritis pada client.
 
 ```text
 Pengguna
@@ -17,10 +17,10 @@ Pengguna
   -> Nginx reverse proxy
   -> Backend NestJS REST API
   -> Prisma ORM
-  -> MariaDB
+  -> MySQL
 ```
 
-Diagram berikut menggambarkan arsitektur lengkap sistem pada lingkungan produksi. Diagram ini menempatkan frontend sebagai pintu masuk utama, backend sebagai lapisan layanan aplikasi, dan MariaDB sebagai lapisan penyimpanan data. Pada konfigurasi produksi, hanya layanan frontend yang dipublikasikan ke host melalui port 80. Backend dan basis data berada pada jaringan internal Docker sehingga tidak diakses langsung oleh pengguna.
+Diagram berikut menggambarkan arsitektur lengkap sistem pada lingkungan produksi. Diagram ini menempatkan frontend sebagai pintu masuk utama, backend sebagai lapisan layanan aplikasi, dan MySQL sebagai lapisan penyimpanan data. Pada konfigurasi produksi, hanya layanan frontend yang dipublikasikan ke host melalui port 80. Backend dan basis data berada pada jaringan internal Docker sehingga tidak diakses langsung oleh pengguna.
 
 ```plantuml
 @startuml
@@ -77,7 +77,7 @@ node "Host / VPS Produksi" as VPS {
       component "Prisma ORM" as PrismaOrm
     }
 
-    database "MariaDB Database" as MariaDb
+    database "MySQL Database" as MySQL
 
     storage "Volume: db-prod-data" as DbVolume
     storage "Volume: sop-pdf-prod" as PdfVolume
@@ -97,13 +97,13 @@ BrowserApp --> Nginx : Fetch API (/api/v1)
 NestApi --> BackendSecurity : Validasi sesi & akses
 BackendSecurity --> DomainModules : Request tervalidasi
 DomainModules --> PrismaOrm : Operasi domain & transaksi
-PrismaOrm --> MariaDb : Query & mutasi data
+PrismaOrm --> MySQL : Query & mutasi data
 
 DomainModules --> PdfVolume : Simpan artefak PDF
-MariaDb --> DbVolume : Persistensi data
+MySQL --> DbVolume : Persistensi data
 
 Nginx ..> NestApi : Healthcheck (menunggu backend sehat)
-NestApi ..> MariaDb : Healthcheck (menunggu database sehat)
+NestApi ..> MySQL : Healthcheck (menunggu database sehat)
 
 note right of Nginx
   <b>Single Entry Point</b>
@@ -117,7 +117,7 @@ note right of BackendSecurity
   dan validasi payload.
 end note
 
-note bottom of MariaDb
+note bottom of MySQL
   <b>Persistensi Data Terisolasi</b>
   Berada pada jaringan internal Docker,
   data disimpan persisten di volume.
@@ -128,7 +128,7 @@ end note
 
 Secara arsitektural, diagram tersebut menunjukkan bahwa sistem menggunakan pendekatan reverse proxy. Semua request dari browser masuk ke Nginx pada container frontend. Request halaman aplikasi diteruskan ke server SSR TanStack Start, sedangkan request API dengan path `/api/` diteruskan ke backend NestJS. Dengan demikian, frontend dan API dapat disajikan melalui satu origin produksi. Pendekatan ini membantu menyederhanakan konfigurasi cookie, CORS, dan akses pengguna karena browser tidak perlu mengetahui alamat internal backend.
 
-Backend NestJS berada di belakang Nginx dan hanya dapat diakses melalui jaringan internal Docker. Backend menjalankan autentikasi, otorisasi, validasi request, dan aturan bisnis domain. Setelah request dinyatakan valid, backend menggunakan Prisma ORM untuk menjalankan query dan transaksi pada MariaDB. Artefak PDF SOP disimpan pada volume khusus, sedangkan data relasional disimpan pada volume MariaDB. Pemakaian volume membuat data tetap persisten meskipun container diperbarui atau dibuat ulang.
+Backend NestJS berada di belakang Nginx dan hanya dapat diakses melalui jaringan internal Docker. Backend menjalankan autentikasi, otorisasi, validasi request, dan aturan bisnis domain. Setelah request dinyatakan valid, backend menggunakan Prisma ORM untuk menjalankan query dan transaksi pada MySQL. Artefak PDF SOP disimpan pada volume khusus, sedangkan data relasional disimpan pada volume MySQL. Pemakaian volume membuat data tetap persisten meskipun container diperbarui atau dibuat ulang.
 
 Pola ini dapat dikategorikan sebagai arsitektur production-grade karena memiliki pemisahan komponen yang jelas, isolasi jaringan internal, reverse proxy sebagai pintu masuk, health check antarservice, persistensi data melalui volume, serta pemusatan validasi dan keamanan pada backend. Namun, aspek operasional seperti konfigurasi HTTPS, backup basis data, monitoring, dan strategi pemulihan masih perlu dilengkapi sesuai kebutuhan deployment yang digunakan.
 
@@ -145,6 +145,101 @@ b. **Controller Layer**: Lapisan ini bertugas menerima permintaan HTTP dari anta
 c. **DTO & Validation Pipe Layer**: Sebelum permintaan masuk ke proses lebih lanjut, data divalidasi oleh lapisan ini. Lapisan ini menggunakan *Data Transfer Object* (DTO) untuk memvalidasi kelengkapan data masuk dan memastikan struktur input sesuai standar (misalnya validasi PIN TTE atau kelengkapan data dokumen SOP).
 d. **Service Layer**: Lapisan ini menjadi pusat logika bisnis aplikasi. Segala aturan komputasi, pengecekan kelayakan akses berdasarkan OPD, dan perubahan status dokumen (seperti transisi dari status *DRAFT* menjadi *SEDANG_DIEVALUASI*) dieksekusi di sini. Hal ini memastikan konsistensi logika sebelum disimpan.
 e. **Repository Layer (Prisma Service)**: Lapisan ini bertanggung jawab mengabstraksi operasi komunikasi basis data menggunakan *Prisma ORM*. Pemisahan ini memberikan manfaat teknis yang signifikan; ketika terdapat perubahan skema tabel di masa depan, penyesuaian kueri cukup dilakukan pada lapisan *repository* ini tanpa merusak logika di lapisan *service* maupun *controller*.
+
+Kode PlantUML berikut menyesuaikan penjelasan arsitektur backend pada laporan, yaitu module sebagai pengelompokan fitur, controller sebagai penerima request, DTO dan validation pipe sebagai pemeriksa data masukan, service sebagai pengelola logika bisnis, serta repository layer melalui Prisma Service sebagai penghubung ke basis data.
+
+```plantuml
+@startuml
+title Arsitektur Backend Sistem Pengelolaan SOP
+
+skinparam {
+  componentStyle rectangle
+  shadowing false
+  linetype ortho
+  packageStyle rectangle
+  defaultFontName sans-serif
+  roundCorner 8
+  
+  ActorBorderColor #2D3748
+  ActorBackgroundColor #E2E8F0
+  
+  NodeBorderColor #4A5568
+  NodeBackgroundColor #F7FAFC
+  
+  ComponentBorderColor #3182CE
+  ComponentBackgroundColor #EBF8FF
+  
+  DatabaseBorderColor #38A169
+  DatabaseBackgroundColor #F0FFF4
+  
+  StorageBorderColor #D69E2E
+  StorageBackgroundColor #FFFFF0
+  
+  FrameBorderColor #718096
+  FrameBackgroundColor #FFFFFF
+}
+
+actor "Klien API\n(Frontend / Nginx)" as ApiClient
+
+node "Backend Container" as BackendContainer {
+  frame "NestJS Application" as NestApp {
+    component "Module Layer\nPengelompokan fitur,\ncontroller, service, provider" as ModuleLayer
+    component "Controller Layer\nEndpoint API, parameter request,\nJWT Guard, Roles Guard" as ControllerLayer
+    component "DTO dan Validation Layer\nPemeriksaan struktur\n& aturan data masukan" as ValidationLayer
+    component "Service Layer\nLogika bisnis, validasi domain,\nperubahan status, transaksi" as ServiceLayer
+    component "Repository Layer\nPrisma Service / Prisma ORM" as RepositoryLayer
+    component "PDF Storage Service\nPenyimpanan artefak PDF" as PdfStorageService
+  }
+}
+
+database "MySQL / MariaDB Database" as Database
+storage "Volume: db-prod-data" as DbVolume
+storage "Volume: sop-pdf-prod" as PdfVolume
+
+ApiClient --> ModuleLayer : Request API\n/api/v1/*
+ModuleLayer --> ControllerLayer : Route fitur aktif
+ControllerLayer --> ValidationLayer : Data request\ndiperiksa
+ValidationLayer --> ControllerLayer : Data valid
+ControllerLayer --> ServiceLayer : Delegasi proses
+ServiceLayer --> RepositoryLayer : Operasi data\n& transaksi
+RepositoryLayer --> Database : Query dan mutasi data
+Database --> DbVolume : Persistensi data
+
+ServiceLayer --> PdfStorageService : Simpan/ambil\nartefak PDF
+PdfStorageService --> PdfVolume : Persistensi PDF
+
+note right of ModuleLayer
+  <b>Module Layer</b>
+  Mengelompokkan komponen
+  berdasarkan domain fitur.
+end note
+
+note right of ControllerLayer
+  <b>Controller Layer</b>
+  Route dideklarasikan langsung
+  pada controller melalui decorator.
+end note
+
+note right of ValidationLayer
+  <b>DTO dan Validation</b>
+  Mencegah data tidak valid
+  masuk ke logika bisnis.
+end note
+
+note right of ServiceLayer
+  <b>Service Layer</b>
+  Menjadi pusat aturan bisnis
+  dan alur proses backend.
+end note
+
+note bottom of RepositoryLayer
+  <b>Repository Layer</b>
+  Prisma Service memusatkan
+  akses aplikasi ke database.
+end note
+
+@enduml
+```
 
 ### 5.1.2.2 Potongan Kode
 
@@ -218,7 +313,7 @@ export class PengajuanEvaluasiService {
 ```
 
 **e. Layer Repository (`prisma.service.ts`)**  
-Lapisan abstraksi basis data yang memusatkan koneksi basis data ORM MariaDB agar kueri terisolasi dengan aman.
+Lapisan abstraksi basis data yang memusatkan koneksi basis data ORM MySQL agar kueri terisolasi dengan aman.
 
 ```typescript
 @Injectable()
@@ -241,6 +336,94 @@ a. **Router & Pages Layer**: Menggunakan `TanStack Router` untuk memetakan URL k
 b. **State & Hooks Layer**: Lapisan ini bertugas mengelola proses pengambilan data secara asinkron dari *backend* dan menyimpannya ke memori peramban (*caching*). Dengan *custom hooks* berbasis `TanStack Query`, halaman antarmuka dipisahkan dari kompleksitas siklus data (*loading*, *error*, dan mutasi perubahan data).
 c. **API Service Layer**: Lapisan ini mengabstraksi komunikasi antarmuka jaringan. Segala permintaan *fetch* ke *backend* melewati abstraksi ini agar pengaturan *header*, kredensial sesi *cookie* JWT, serta mekanisme pengulangan otomatis saat gagal, dapat dikelola dari satu tempat.
 d. **Component Layer**: Berisi entitas visual antarmuka pengguna yang bisa digunakan ulang (*reusable UI*). Komponen-komponen ini bersifat murni hanya menyajikan data yang diterimanya dari halaman (*props*) tanpa harus melakukan kueri secara independen, seperti tabel data atau penampil formulir.
+
+Kode PlantUML berikut menyesuaikan penjelasan arsitektur *frontend* pada laporan, yaitu router dan pages sebagai pengatur halaman, state dan hooks sebagai pengelola data antarmuka, API service sebagai penghubung ke backend, serta component layer sebagai penyusun tampilan.
+
+```plantuml
+@startuml
+title Arsitektur Frontend Sistem Pengelolaan SOP
+
+skinparam {
+  componentStyle rectangle
+  shadowing false
+  linetype ortho
+  packageStyle rectangle
+  defaultFontName sans-serif
+  roundCorner 8
+  
+  ActorBorderColor #2D3748
+  ActorBackgroundColor #E2E8F0
+  
+  NodeBorderColor #4A5568
+  NodeBackgroundColor #F7FAFC
+  
+  ComponentBorderColor #3182CE
+  ComponentBackgroundColor #EBF8FF
+  
+  DatabaseBorderColor #38A169
+  DatabaseBackgroundColor #F0FFF4
+  
+  StorageBorderColor #D69E2E
+  StorageBackgroundColor #FFFFF0
+  
+  FrameBorderColor #718096
+  FrameBackgroundColor #FFFFFF
+}
+
+actor "Pengguna" as User
+
+node "Browser Pengguna" as Browser {
+  frame "Frontend Application" as FrontendApp {
+    component "Router dan Pages Layer\nPemetaan URL, halaman,\ndan route guard" as RouterPagesLayer
+    component "State dan Hooks Layer\nCustom hooks, loading,\nerror, cache, mutasi data" as StateHooksLayer
+    component "API Service Layer\nHTTP client, endpoint,\nheader, kredensial sesi" as ApiServiceLayer
+    component "Component Layer\nReusable UI components,\nprops, event handler" as ComponentLayer
+  }
+
+  storage "Browser State\nCache dan sesi pengguna" as BrowserState
+}
+
+cloud "Backend API\n/api/v1" as BackendApi
+
+User --> Browser : Membuka aplikasi
+Browser --> RouterPagesLayer : Akses URL
+RouterPagesLayer --> StateHooksLayer : Halaman membutuhkan data
+StateHooksLayer --> ApiServiceLayer : Delegasi request API
+ApiServiceLayer --> BackendApi : HTTP request\n/api/v1/*
+BackendApi --> ApiServiceLayer : Response data
+ApiServiceLayer --> StateHooksLayer : Data terstruktur
+StateHooksLayer --> RouterPagesLayer : Data, loading,\nerror state
+RouterPagesLayer --> ComponentLayer : Kirim props\n& event handler
+ComponentLayer --> Browser : Render UI
+StateHooksLayer --> BrowserState : Cache data\n& state sesi
+
+note right of RouterPagesLayer
+  <b>Router dan Pages</b>
+  URL dipetakan ke halaman
+  dan akses dibatasi
+  berdasarkan peran.
+end note
+
+note right of StateHooksLayer
+  <b>State dan Hooks</b>
+  Mengelola cache, loading,
+  error, dan perubahan data.
+end note
+
+note right of ApiServiceLayer
+  <b>API Service</b>
+  Komunikasi HTTP ke backend
+  dikelola secara terpusat.
+end note
+
+note bottom of ComponentLayer
+  <b>Component Layer</b>
+  Komponen reusable menerima
+  data melalui props.
+end note
+
+@enduml
+```
 
 ### 5.1.3.2 Potongan Kode
 

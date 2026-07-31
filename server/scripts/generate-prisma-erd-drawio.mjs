@@ -37,43 +37,34 @@ const moduleNames = {
   OverrideLabelDiagramSOP: 'DIAGRAM SOP',
 };
 
-const layout = {
-  'MASTER & AKSES': { x: 60, y: 80, models: ['OPD', 'Pengguna', 'RiwayatOpdPengguna'] },
-  REGULASI: { x: 1060, y: 80, models: ['Peraturan', 'OPDPeraturan'] },
-  'AUTHORING SOP': {
-    x: 60,
-    y: 980,
-    models: [
-      'SOP',
-      'DetailSOP',
-      'Pelaksana',
-      'LangkahSOP',
-      'DetailSOPPelaksana',
-      'DasarHukum',
-      'SopTerkait',
-      'LampiranPeringatan',
-      'LampiranKualifikasiPelaksanaan',
-      'LampiranPeralatanPerlengkapan',
-      'LampiranPencatatanPendataan',
-    ],
-  },
-  'KOLABORASI SOP': { x: 2060, y: 1550, models: ['LogEditSOP', 'LogEditSopDomainField'] },
-  'PENGAJUAN & EVALUASI': {
-    x: 1060,
-    y: 980,
-    models: ['PengajuanEvaluasi', 'NilaiEvaluasi', 'LogNilaiEvaluasi'],
-  },
-  'LEGALISASI & TTE': { x: 2060, y: 980, models: ['DokumenTte', 'RiwayatTandaTangan'] },
-  'DIAGRAM SOP': {
-    x: 2060,
-    y: 80,
-    models: [
-      'KonfigurasiDiagramSOP',
-      'OverridePanahDiagramSOP',
-      'TitikTekukPanahDiagramSOP',
-      'OverrideLabelDiagramSOP',
-    ],
-  },
+const layoutPositions = {
+  OPD: { x: 380, y: 1987 },
+  Pengguna: { x: 830, y: 1662 },
+  RiwayatOpdPengguna: { x: 1361, y: 1833 },
+  Peraturan: { x: 1361, y: 947 },
+  OPDPeraturan: { x: 1892.5, y: 320 },
+  SOP: { x: 850.5, y: 1480 },
+  DetailSOP: { x: 1360.5, y: 1340 },
+  LampiranPeringatan: { x: 1892.5, y: 1498 },
+  LampiranKualifikasiPelaksanaan: { x: 1865.5, y: 636 },
+  LampiranPeralatanPerlengkapan: { x: 1869, y: 818 },
+  LampiranPencatatanPendataan: { x: 1876, y: 1000 },
+  DasarHukum: { x: 1892.5, y: 478 },
+  SopTerkait: { x: 1892.5, y: 1182 },
+  LangkahSOP: { x: 1851, y: 1680 },
+  Pelaksana: { x: 1361, y: 2015 },
+  DetailSOPPelaksana: { x: 1892.5, y: 2886 },
+  LogEditSOP: { x: 1892.5, y: 2102 },
+  LogEditSopDomainField: { x: 2394, y: 1733 },
+  PengajuanEvaluasi: { x: 1291, y: 2591 },
+  NilaiEvaluasi: { x: 1856, y: 3068 },
+  LogNilaiEvaluasi: { x: 2354, y: 3056 },
+  DokumenTte: { x: 1887, y: 2356 },
+  RiwayatTandaTangan: { x: 2394, y: 1891 },
+  KonfigurasiDiagramSOP: { x: 1889, y: 1340 },
+  OverridePanahDiagramSOP: { x: 2394, y: 1320 },
+  TitikTekukPanahDiagramSOP: { x: 2810, y: 1320 },
+  OverrideLabelDiagramSOP: { x: 2810, y: 1574 },
 };
 
 const enumBlocks = [...schema.matchAll(/enum\s+(\w+)\s*\{([\s\S]*?)\}/g)].map((match) => ({
@@ -240,28 +231,20 @@ function keyFor(model, field) {
 
 function placeModels(models) {
   const placements = new Map();
-  for (const [moduleName, section] of Object.entries(layout)) {
-    let x = section.x;
-    let y = section.y + 44;
-    let rowHeight = 0;
-    let column = 0;
-    for (const modelName of section.models) {
-      const model = models.find((item) => item.name === modelName);
-      if (!model) continue;
-      const width = tableWidth(model);
-      const height = tableHeight(model);
-      placements.set(model.name, { x, y, width, height, moduleName });
-      rowHeight = Math.max(rowHeight, height);
-      column += 1;
-      if (column >= 2) {
-        column = 0;
-        x = section.x;
-        y += rowHeight + 80;
-        rowHeight = 0;
-      } else {
-        x += width + 80;
-      }
-    }
+  let fallbackIndex = 0;
+  for (const model of models) {
+    const position = layoutPositions[model.name] ?? {
+      x: 320 + (fallbackIndex % 4) * 500,
+      y: 3400 + Math.floor(fallbackIndex / 4) * 220,
+    };
+    if (!layoutPositions[model.name]) fallbackIndex += 1;
+    placements.set(model.name, {
+      x: position.x,
+      y: position.y,
+      width: tableWidth(model),
+      height: tableHeight(model),
+      moduleName: model.module,
+    });
   }
   return placements;
 }
@@ -347,12 +330,10 @@ function buildXml(models) {
     }
   }
 
-  addEnumSummary(cells);
-
   return `<?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="app.diagrams.net" modified="2026-05-25T00:00:00.000Z" agent="Codex" version="24.7.17" type="device">
   <diagram id="prisma-erd" name="Prisma ERD">
-    <mxGraphModel dx="3000" dy="2500" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3400" pageHeight="3200" background="#ffffff" math="0" shadow="0" adaptiveColors="auto">
+    <mxGraphModel dx="3540" dy="1903" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         ${cells.join('\n        ')}
       </root>
@@ -374,23 +355,6 @@ function isUniqueFieldSet(model, fields) {
 
 function sameSet(left, right) {
   return left.length === right.length && left.every((item) => right.includes(item));
-}
-
-function addEnumSummary(cells) {
-  const x = 60;
-  const y = 2840;
-  const width = 3160;
-  const lines = enumBlocks.map((item) => `<b>${item.name}</b>: ${item.values.join(', ')}`);
-  addVertex(
-    cells,
-    'enum_summary',
-    lines.join('<br>'),
-    'rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=10;fillColor=#ffffff;strokeColor=#000000;fontColor=#000000;',
-    x,
-    y,
-    width,
-    270,
-  );
 }
 
 const models = parseModels(schema);

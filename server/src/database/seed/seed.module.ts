@@ -12,7 +12,11 @@ import { SeedService } from './seed.service';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      envFilePath: [`.env.${process.env.NODE_ENV ?? 'development'}.local`, '.env'],
+      envFilePath: [
+        '.env',
+        `.env.${process.env.NODE_ENV ?? 'development'}`,
+        `.env.${process.env.NODE_ENV ?? 'development'}.local`,
+      ],
       validate: validateEnv,
     }),
     PrismaModule,

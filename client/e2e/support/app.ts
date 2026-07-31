@@ -103,12 +103,21 @@ export async function searchPageIfAvailable(
   page: Page,
   value: string,
 ): Promise<void> {
-  const input = page
-    .getByPlaceholder(/cari|pencarian|search/i)
-    .or(page.getByRole('searchbox'))
-    .first()
-  if (!(await input.isVisible().catch(() => false))) return
-  await input.fill(value)
+  const inputs = page.locator(
+    'main input[placeholder*="cari" i], main input[placeholder*="pencarian" i], main input[placeholder*="search" i], main input[aria-label*="cari" i], main input[aria-label*="pencarian" i], main input[aria-label*="search" i]',
+  )
+  await expect(inputs.first()).toBeVisible()
+  const count = await inputs.count()
+
+  for (let index = 0; index < count; index += 1) {
+    const input = inputs.nth(index)
+    if (!(await input.isVisible().catch(() => false))) continue
+    await input.fill(value)
+    await expect(input).toHaveValue(value)
+    return
+  }
+
+  throw new Error('Search input tidak ditemukan pada halaman ini')
 }
 
 export async function apiDeleteViaActivePageSession(

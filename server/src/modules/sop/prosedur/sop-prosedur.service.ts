@@ -19,6 +19,9 @@ import {
   type UpdateSopProsedurRepoInput,
 } from './sop-prosedur.repository';
 
+const MAX_UPDATE_PROSEDUR_TRANSACTION_ATTEMPTS = 5;
+const UPDATE_PROSEDUR_RETRY_BASE_DELAY_MS = 40;
+
 @Injectable()
 export class SopProsedurService {
   constructor(
@@ -60,7 +63,7 @@ export class SopProsedurService {
     const repoInput = await this.buildRepoInput(dto, resolved.detailSopId, resolved.sopOpdId);
 
     try {
-      await this.sopProsedurRepository.updateProsedurTransaction({
+      await this.runUpdateProsedurTransactionWithRetry({
         detailSopId: resolved.detailSopId,
         userId: user.sub,
         input: repoInput,
@@ -83,6 +86,31 @@ export class SopProsedurService {
     }
 
     return this.sopCatalogService.getPenyusunWorkbench(user, resolved.detailSopId, logsLimit);
+  }
+
+  private async runUpdateProsedurTransactionWithRetry(params: {
+    detailSopId: string;
+    userId: string;
+    input: UpdateSopProsedurRepoInput;
+    changedFields: string[];
+  }): Promise<void> {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= MAX_UPDATE_PROSEDUR_TRANSACTION_ATTEMPTS; attempt += 1) {
+      try {
+        await this.sopProsedurRepository.updateProsedurTransaction(params);
+        return;
+      } catch (err) {
+        lastError = err;
+        if (
+          attempt === MAX_UPDATE_PROSEDUR_TRANSACTION_ATTEMPTS ||
+          !isTransientTransactionError(err)
+        ) {
+          throw err;
+        }
+        await delay(UPDATE_PROSEDUR_RETRY_BASE_DELAY_MS * attempt);
+      }
+    }
+    throw lastError;
   }
 
   private async assertPenyusunOpdAccess(user: JwtAccessPayload, sopOpdId: string): Promise<void> {
@@ -252,4 +280,23 @@ export class SopProsedurService {
       langkahSelanjutnyaTidakTempId: tidakTempId,
     };
   }
+}
+
+function isTransientTransactionError(err: unknown): boolean {
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    return err.code === 'P2034';
+  }
+  const message = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+  return (
+    message.includes('deadlock') ||
+    message.includes('lock wait timeout') ||
+    message.includes('write conflict') ||
+    message.includes('transaction conflict')
+  );
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
