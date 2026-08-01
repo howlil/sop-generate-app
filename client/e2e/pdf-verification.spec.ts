@@ -60,6 +60,15 @@ test.describe('E2E verifikasi tanda tangan PDF', () => {
       await expect(page.locator('body')).toContainText(
         status.enabled ? /valid|terverifikasi|tanda tangan/i : /tidak aktif|nonaktif|disabled|verifikasi/i,
       )
+      if (status.enabled) {
+        await expect(page.getByText('TTE ini sudah cocok dengan signature PDF').first()).toBeVisible()
+        await expect(page.getByText('Penandatangan', { exact: true }).first()).toBeVisible()
+        await expect(page.getByText('Diterbitkan oleh', { exact: true }).first()).toBeVisible()
+        await expect(page.getByText('Waktu penandatanganan', { exact: true }).first()).toBeVisible()
+        await expect(page.getByText('Kode keamanan')).toHaveCount(0)
+        await expect(page.getByText('Hasil Pemeriksaan')).toHaveCount(0)
+        await expect(page.getByText('Tampilkan informasi teknis sertifikat')).toHaveCount(0)
+      }
     } finally {
       await kepalaOpd.dispose()
     }

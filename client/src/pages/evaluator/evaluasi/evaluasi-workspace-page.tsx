@@ -537,7 +537,7 @@ export function EvaluasiWorkspacePage(props: EvaluasiWorkspacePageProps) {
                       setIsSubmitOpen(true);
                     }}
                   >
-                    <Send className="w-3.5 h-3.5" /> Ajukan Tanda Tangan BA
+                    <Send className="w-3.5 h-3.5" /> Ajukan Persetujuan Evaluasi
                   </Button>
                 ) : null}
               </div>

@@ -306,6 +306,9 @@ export function DetailEvaluasiOPDFormPanel({
                         "Tidak ada skor OPD untuk pengajuan ini."
                       )}
                     </p>
+                    <p className="mt-2 text-[10px] leading-relaxed text-gray-600">
+                      1 = Sangat rendah · 2 = Rendah · 3 = Sedang · 4 = Tinggi · 5 = Sangat tinggi
+                    </p>
                   </InfoCard>
                 ) : (
                   <SkorRatingPicker

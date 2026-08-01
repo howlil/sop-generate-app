@@ -5,6 +5,14 @@ import { FormField } from '@/components/ui/form-field'
 
 const SKOR_OPTIONS = [1, 2, 3, 4, 5] as const
 
+const SKOR_LABELS: Record<(typeof SKOR_OPTIONS)[number], string> = {
+  1: 'Sangat rendah',
+  2: 'Rendah',
+  3: 'Sedang',
+  4: 'Tinggi',
+  5: 'Sangat tinggi',
+}
+
 export interface SkorRatingPickerProps {
   value: number | null
   onChange: (value: number) => void
@@ -28,6 +36,8 @@ export function SkorRatingPicker({
             key={n}
             type="button"
             disabled={disabled}
+            aria-label={`${n} - ${SKOR_LABELS[n]}`}
+            title={`${n} - ${SKOR_LABELS[n]}`}
             onClick={() => {
               if (!disabled) {
                 onChange(n);
@@ -44,6 +54,14 @@ export function SkorRatingPicker({
         ))}
       </div>
       {hint && <p className="text-[10px] text-gray-500 mt-1">{hint}</p>}
+      <div className="mt-2 rounded-md border border-blue-100 bg-blue-50 px-3 py-2">
+        <p className="text-[11px] font-medium text-blue-900">
+          Arti nilai: 1 adalah nilai terendah dan 5 adalah nilai tertinggi.
+        </p>
+        <p className="mt-1 text-[10px] leading-relaxed text-blue-800">
+          1 = Sangat rendah · 2 = Rendah · 3 = Sedang · 4 = Tinggi · 5 = Sangat tinggi
+        </p>
+      </div>
     </FormField>
   )
 }
